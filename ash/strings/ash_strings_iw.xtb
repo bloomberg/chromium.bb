@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">מצב ניגודיות גבוהה</translation>
 <translation id="2597972630681408282">תאורת לילה: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">שלח</translation>
+<translation id="2675319268637823299">מנהל מערכת ביטל את ההרשאה של <ph name="USER_EMAIL" /> לכניסה עם מספר חשבונות.
+כדי להמשיך, כל המשתמשים חייבים לצאת מהחשבון.</translation>
 <translation id="2700058918926273959">הפעילות באתר תסתיים בעוד <ph name="SESSION_TIME_REMAINING" />. תנותק מהחשבון.</translation>
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
 <translation id="2761704814324807722">מגש מערכת, שעה <ph name="TIME" />‏, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">מחובר</translation>
 <translation id="3371140690572404006">‏מכשיר עם יציאת USB-C (יציאה ימנית-קדמית)</translation>
 <translation id="3400357268283240774">הגדרות נוספות</translation>
+<translation id="3413817803639110246">עדיין אין מה לראות</translation>
 <translation id="3445925074670675829">‏מכשיר עם יציאת USB-C</translation>
 <translation id="3465566417615315331">לחץ על התמונה שלך</translation>
 <translation id="3473479545200714844">מגדיל התצוגה</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">שכבת-על של מקלדת</translation>
 <translation id="639644700271529076">‏CAPS LOCK כבוי</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">הפעולה הושלמה</translation>
 <translation id="6452181791372256707">דחה</translation>
 <translation id="6453179446719226835">שינוי השפה הסתיים</translation>
 <translation id="6459472438155181876">מרחיב את המסך אל <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@
 <translation id="8825534185036233643">אין תמיכה בשיקוף מסך עם יותר משני מסכים.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8870509716567206129">האפליקציה אינה תומכת במסך מפוצל.</translation>
 <translation id="8878886163241303700">מסך מתרחב</translation>
 <translation id="8921624153894383499">‏Google Assistant לא מדבר בשפה הזאת.</translation>
 <translation id="8938800817013097409">‏מכשיר עם יציאת USB-C (יציאה ימנית מאחור)</translation>
@@ -310,7 +315,7 @@
 <translation id="9091626656156419976">הוסרה התצוגה של <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">בטל נעילה</translation>
 <translation id="9151726767154816831">‏הפעל מחדש ובצע פעולת Powerwash כדי לעדכן</translation>
-<translation id="9181036778675416867">הקשה על לחצן הסטיילוס במדף מאפשרת לכתוב הערות, לצלם את המסך, להשתמש באסיסטנט, להפעיל את סמן הלייזר או את הזכוכית המגדלת.</translation>
+<translation id="9181036778675416867">הקשה על לחצן הסטיילוס במדף מאפשרת לכתוב הערות, לצלם את המסך, להשתמש באסיסטנט ולהפעיל את סמן הלייזר או את הזכוכית המגדלת.</translation>
 <translation id="9194617393863864469">הוסף משתמש אחר...</translation>
 <translation id="9201131092683066720">‏הסוללה טעונה ברמה של ‎<ph name="PERCENTAGE" />%‎.</translation>
 <translation id="9210037371811586452">‏יציאה ממצב Unified Desktop</translation>

@@ -71,7 +71,7 @@
 <translation id="2597972630681408282">Nočný režim: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2675319268637823299">Správca zakázal viacnásobné prihlásenie pre používateľa <ph name="USER_EMAIL" />.
-Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</translation>
+Všetci používatelia sa musia odhlásiť a až potom je možné pokračovať.</translation>
 <translation id="2700058918926273959">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING" />. Následne budete odhlásený/-á.</translation>
 <translation id="2727977024730340865">Batéria je zapojená do nabíjačky s nízkym výkonom. Nabíjanie batérie nemusí byť spoľahlivé.</translation>
 <translation id="2761704814324807722">Stavový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -106,6 +106,7 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tr
 <translation id="3368922792935385530">Pripojené</translation>
 <translation id="3371140690572404006">zariadenia USB-C (port vpravo vpredu)</translation>
 <translation id="3400357268283240774">Ďalšie nastavenia</translation>
+<translation id="3413817803639110246">Zatiaľ nie je čo zobraziť</translation>
 <translation id="3445925074670675829">Zariadenie USB-C</translation>
 <translation id="3465566417615315331">Kliknite na svoju fotku</translation>
 <translation id="3473479545200714844">Lupa</translation>
@@ -314,7 +315,7 @@ Nasledujúce upozornenia, okná a dialógové okná sa môžu zobraziť rozdele
 <translation id="9091626656156419976">Obrazovka <ph name="DISPLAY_NAME" /> bola odstránená</translation>
 <translation id="9111102763498581341">Odomknúť</translation>
 <translation id="9151726767154816831">Aktualizáciu uskutočníte reštartovaním a použitím funkcie Powerwash</translation>
-<translation id="9181036778675416867">Klepnite na tlačidlo dotykového pera na poličke a vytvorte poznámku, snímku obrazovky, použite asistenta, laserové ukazovátko alebo lupu.</translation>
+<translation id="9181036778675416867">Klepnite na tlačidlo dotykového pera na poličke a vytvorte poznámku, snímku obrazovky, použite asistenta, laserové ukazovadlo alebo lupu.</translation>
 <translation id="9194617393863864469">Prihlásiť ďalšieho používateľa...</translation>
 <translation id="9201131092683066720">Batéria je nabitá na <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Ukončuje sa režim jednotnej pracovnej plochy</translation>

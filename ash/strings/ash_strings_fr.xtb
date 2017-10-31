@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Mode Contraste élevé</translation>
 <translation id="2597972630681408282">Éclairage nocturne : <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Valider</translation>
+<translation id="2675319268637823299">Un administrateur a désactivé la connexion multicompte pour <ph name="USER_EMAIL" />.
+Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="2700058918926273959">Fin de la session dans <ph name="SESSION_TIME_REMAINING" />. Vous allez être déconnecté.</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
 <translation id="2761704814324807722">Barre d'état – Heure : <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Connecté</translation>
 <translation id="3371140690572404006">Appareil USB de type C (port situé sur la droite de l'appareil, à l'avant)</translation>
 <translation id="3400357268283240774">Autres paramètres</translation>
+<translation id="3413817803639110246">Aucune notification</translation>
 <translation id="3445925074670675829">Appareil USB de type C</translation>
 <translation id="3465566417615315331">Cliquez sur votre photo</translation>
 <translation id="3473479545200714844">Loupe</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Clavier en superposition</translation>
 <translation id="639644700271529076">La touche de verrouillage des majuscules est désactivée.</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Terminé</translation>
 <translation id="6452181791372256707">Refuser</translation>
 <translation id="6453179446719226835">La langue a été modifiée</translation>
 <translation id="6459472438155181876">Extension de l'écran pour <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Suite à cette opération, les notifications, les fenêtres et les boîtes de di
 <translation id="8825534185036233643">La duplication d'écran avec plus de deux écrans n'est pas acceptée.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Recherche+Échap</translation>
+<translation id="8870509716567206129">Application incompatible avec l'écran partagé.</translation>
 <translation id="8878886163241303700">Extension de l'écran</translation>
 <translation id="8921624153894383499">L'Assistant Google ne parle pas cette langue.</translation>
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>

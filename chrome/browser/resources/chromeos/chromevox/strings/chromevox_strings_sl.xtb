@@ -4,6 +4,7 @@
 <translation id="100812568230599391">Spreminjanje sloga prikaza na prepletanje.</translation>
 <translation id="1012173283529841972">Element seznama</translation>
 <translation id="1013742170491673792">iskel</translation>
+<translation id="1022586497894531524">Ali prvič uporabljate glasovni odziv ChromeVoxa? V tej kratki vadnici so pojasnjene osnove, ki jih morate vedeti, če želite začeti uporabljati ChromeVox.</translation>
 <translation id="1023866615269196768">Razpeta.</translation>
 <translation id="1025074108959230262">Način zaklepanja je onemogočen</translation>
 <translation id="1031961866430398710">nato</translation>
@@ -29,6 +30,8 @@
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1206619573307042055">potujoči napis</translation>
 <translation id="1213216066620407844">ChromeVox – naj Chrome govori</translation>
+<translation id="1225437811932752266">Čestitamo. Naučili ste se osnovne stvari, ki jih morate vedeti, če želite uspešno uporabljati ChromeVox. Ukazni meni ChromeVoxa lahko kadar koli odprete, tako da pritisnete tipko za iskanje in piko. Če želite izvedeti še več o ChromeVoxu in operacijskem sistemu OS Chrome, si oglejte te članke.
+Če ste dokončali vadnico, se s ChromeVoxom pomaknite do gumba za zapiranje in ga kliknite.</translation>
 <translation id="1229276918471378188">Prejšnji skok</translation>
 <translation id="1237866625126425153">izbskp</translation>
 <translation id="1251750620252348585">Naslednji naslov na ravni 6</translation>
@@ -40,6 +43,7 @@
 <translation id="1339428534620983148">Prejšnji stolpec tabele</translation>
 <translation id="1342835525016946179">člnk</translation>
 <translation id="1346748346194534595">V desno</translation>
+<translation id="135978014023467274">ChromeVox je bil posodobljen na različico 63.</translation>
 <translation id="136718599399906424">Naslednja vrstica tabele</translation>
 <translation id="1377925789329510816">To je zadnji naslov. Pritisnite tipko za iskanje in tipko H, če želite prelomiti vrstico do prvega naslova, ali tipko za iskanje, tipko Shift in tipko H, če se želite pomakniti do drugega naslova na tej strani.</translation>
 <translation id="1383876407941801731">Išči</translation>
@@ -167,6 +171,7 @@
 <translation id="2770781857296573485">Vnos raziskovanja skupine</translation>
 <translation id="2777845298774924149">Izhod</translation>
 <translation id="2781264313200109999">Začetek povezave</translation>
+<translation id="2784959586797362050">Povratne informacije nam lahko kot vedno pošljete neposredno tako, da pritisnete tipko za iskanje in tipko »a«, nato pa tipko »i«. Želimo slišati vaše mnenje.</translation>
 <translation id="2800204403141299078">Ni več različnih elementov.</translation>
 <translation id="2800780099804980316">Ni prejšnjega naslova na ravni 1.</translation>
 <translation id="280499067616661124">Iskanje na strani s ChromeVoxom</translation>
@@ -232,6 +237,7 @@
 <translation id="3241638166094654466">Celice v posamezni vrstici:</translation>
 <translation id="3286390186030710347">Drsnik</translation>
 <translation id="3299925995433437805">Ni naslednje obiskane povezave</translation>
+<translation id="3300348286427369683">Podpora za obogateno besedilo. ChromeVox zdaj podpira polja z obogatenim besedilom, vključno z ukazi za preskakovanje, usmerjanjem kazalca z bralnikom zaslona braille, izbiro in drugim.</translation>
 <translation id="3307886118343381874">Pomik na konec tabele</translation>
 <translation id="3311969765485641742">Pritisnite Alt + Shift + A, če želite pregledati opozorila</translation>
 <translation id="3312997241656799641">Naslednja obiskana povezava</translation>
@@ -335,6 +341,7 @@
 <translation id="3897092660631435901">Meni</translation>
 <translation id="3909320334364316587">Prejšnji naslov na ravni 6</translation>
 <translation id="3914173277599553213">Obvezno</translation>
+<translation id="3914732343065571127">Viri glede ukazov za ChromeVox</translation>
 <translation id="3962990492275676168">Začetek branja na trenutni lokaciji</translation>
 <translation id="4004802134384979325">potrjeno</translation>
 <translation id="4006140876663370126">slk</translation>
@@ -405,7 +412,9 @@
 <translation id="4601367666219428522">razpr <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Prezrtje naslednjega pritiska tipke</translation>
 <translation id="461613135510474570">Stavčna</translation>
+<translation id="463135993322337640">Pritisnite tipko za ChromeVox, tipko O in tipko N, če želite izvedeti novosti</translation>
 <translation id="4647836961514597010">Izbirnik barve</translation>
+<translation id="4660783501463101648">Klasična različica je bila odstranjena. Preklopna tipka za preklop v klasično različico ChromeVoxa je odstranjena.</translation>
 <translation id="4661075872484491155">drevo</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">mrež</translation>
@@ -425,6 +434,7 @@
 <translation id="4827410568042294688">neizbrano</translation>
 <translation id="4842108708071771135">Ni naslednjega daljšega citata.</translation>
 <translation id="4844625982113518938">Če želite izvedeti ime poljubne tipke, jo pritisnite. Če pritisnete tipki Ctrl in W, boste zaprli način učenja.</translation>
+<translation id="4846428657345567687">Pozdravljeni v ChromeVoxu.</translation>
 <translation id="4846487886195635104">Konec prečrtanega besedila</translation>
 <translation id="4848993367330139335">časov</translation>
 <translation id="4850023505158945298">Prejšnji podobni element.</translation>
@@ -462,6 +472,7 @@
 <translation id="5098541983634824365">Izhod iz mreže.</translation>
 <translation id="5102981729317424850">Orodna vrstica</translation>
 <translation id="5105050547967751155">zh</translation>
+<translation id="5106547198195128110">V tej različici je nekaj vznemirljivih sprememb; to so novosti:</translation>
 <translation id="5110983769041734144">Ni prejšnjega polja obrazca.</translation>
 <translation id="5111640677200759579">Glava stolpca</translation>
 <translation id="5136967254288895616">Ni prejšnje povezave.</translation>
@@ -578,6 +589,7 @@
 <translation id="6065293622157674001">Začetek slovnične napake</translation>
 <translation id="6082768461603900813">Osnovno pomikanje</translation>
 <translation id="6092707270915298410">Konec povezave</translation>
+<translation id="6118126368611144850">Aplikacije Android za Chrome. Če imate v napravi Trgovino Play, si lahko z aplikacijami za Android pred izdajo ogledate ChromeVox. Preskusite poskusno podporo, tako da iz Trgovine Play prenesete delovno različico Google Chroma.</translation>
 <translation id="611827076493383239">obs</translation>
 <translation id="6119955456199054975">Konec celice.</translation>
 <translation id="6122013438240733403">bgmb</translation>
@@ -618,6 +630,7 @@
 <translation id="6493991254603208962">zmanjšanje svetlosti</translation>
 <translation id="6508059270146105198">Premik Braillove vrstice na dno strani</translation>
 <translation id="6536864053412760904">Žeton Math ML</translation>
+<translation id="6540201937398578274">V ChromeVoxu je tipka za iskanje modifikatorska tipka. Večina bližnjičnih tipk ChromeVoxa se začne s tipko za iskanje. Za pomikanje boste prav tako uporabljali puščične tipke.</translation>
 <translation id="6550720799683018100">Trenutno razporeditev tipk spremenite tako, da izberete možnost na spodnjem seznamu.</translation>
 <translation id="6561818612645211875">Pomik na začetek trenutne vrstice</translation>
 <translation id="6587021927234520429">Ni naslednjega naslova na ravni 4.</translation>

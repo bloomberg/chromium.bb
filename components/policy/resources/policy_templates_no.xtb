@@ -100,6 +100,7 @@
 <translation id="1454846751303307294">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke tillates å kjøre JavaScript.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
+<translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-klienter):</translation>
 <translation id="1464848559468748897">Kontrollér brukeratferden i flerprofiløkter på <ph name="PRODUCT_OS_NAME" />-enheter.
 
       Hvis denne innstillingen angis til «MultiProfileUserBehaviorUnrestricted», kan brukeren enten være en primær eller sekundær bruker i en flerprofiløkt.
@@ -291,6 +292,7 @@
 <translation id="2067011586099792101">Blokkér tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2077273864382355561">Forsinkelse for avslått skjerm når enheten kjører på batteristrøm</translation>
+<translation id="2082205219176343977">Konfigurer minimum tillatt Chrome-versjon for enheten.</translation>
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="2098658257603918882">Aktiver rapportering av bruk og programstopprelaterte data</translation>
 <translation id="2113068765175018713">Begrens enhetens driftstid ved å bruke automatisk omstart</translation>
@@ -375,6 +377,13 @@
 <translation id="2303795211377219696">Slå på autofyll for kredittkort</translation>
 <translation id="2309390639296060546">Standardinnstilling for geoposisjonering</translation>
 <translation id="2312134445771258233">Lar deg konfigurere sidene som lastes inn ved oppstart. Innholdet i listen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
+<translation id="2334591568684482454">Konfigurerer tilgjengelighet og virkemåte for funksjonaliteten for å oppdatere <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
+
+      Enkeltinnstillinger kan angis i JSON-egenskaper:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Hvis regelen er angitt som <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, kan brukere utløse Powerwash-prosessen for å installere en oppdatering av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
+
+      Hvis regelen ikke er angitt, blir ikke funksjonaliteten for å oppdatere <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren tilgjengelig.</translation>
 <translation id="2337466621458842053">Gjør at du kan angi en liste over nettadressemønstre for nettsteder som kan vise bilder. Hvis denne retningslinjen ikke angis, blir den globale standardverdien brukt for alle nettsteder, enten fra retningslinjen DefaultImagesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="2372547058085956601">Tid før automatisk pålogging til offentlig økt.
 
@@ -554,6 +563,7 @@
           Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres ut av brannmuren, vil denne maskinen bare tillate forbindelser fra klientmaskiner i det lokale nettverket.
 
           Hvis denne retningslinjen ikke angis, er innstillingen aktivert.</translation>
+<translation id="2823870601012066791">Plasseringen av Windows-registeret for <ph name="PRODUCT_OS_NAME" />-klienter:</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
 <translation id="2838830882081735096">Ikke tillat dataoverføring og ARC</translation>
 <translation id="2844404652289407061">Gjør «Trykk for å søke» tilgjengelig i innholdsvisningen i <ph name="PRODUCT_NAME" />.
@@ -889,6 +899,19 @@
 
           Dette deaktiveres vanligvis for å beskytte seg mot nettfisking. Hvis denne retningslinjen ikke er angitt, er den deaktivert, og tredjeparts underinnhold kan ikke åpne en HTTP Basic Auth-dialogrute som forgrunnsvindu.</translation>
 <translation id="4056910949759281379">Deaktiver SPDY-protokoll</translation>
+<translation id="4077363032873906037">Aktiverer begrenset pålogging for <ph name="PRODUCT_NAME" /> i Google Apps og hindrer brukere fra å endre denne regelen.
+
+      Hvis du definerer denne innstillingen, har brukerne bare tilgang til Google Apps via kontoer fra de spesifiserte domenene (merk at dette ikke fungerer for gmail.com/googlemail.com).
+
+      Denne innstillingen hindrer IKKE brukerne fra å logge på administrerte enheter som krever Google-autentisering. Brukerne kan fremdeles logge på kontoene sine fra andre domener, men de får opp en feil når de prøver å bruke Google Apps med disse kontoene.
+
+      Hvis du lar denne innstillingen stå tom / ikke konfigurerer den, har brukerne tilgang til Google Apps med hvilken som helst konto.
+
+      Denne regelen gjør at hodeelementet X-GoogApps-Allowed-Domains blir lagt til i
+      alle HTTP- og HTTPS-forespørsler til alle google.com-domener, som beskrevet i
+      https://support.google.com/a/answer/1668854.
+
+      Brukere kan ikke endre eller overstyre denne innstillingen.</translation>
 <translation id="408029843066770167">Tillat forespørsler til en Google-tjeneste for klokkeslett</translation>
 <translation id="4088589230932595924">Tvungen inkognitomodus</translation>
 <translation id="4088983553732356374">Gjør det mulig å velge om nettsteder kan angi lokale data. Dette kan enten tillates for alle nettsteder eller blokkeres for alle nettsteder.
@@ -1078,6 +1101,7 @@
           Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
 
           Hvis denne innstillingen ikke angis, deaktiveres den store musepekeren til å å begynne med, men brukere kan aktivere den når som helst.</translation>
+<translation id="4802905909524200151">Konfigurer funksjonaliteten for oppdatering av <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvare</translation>
 <translation id="4807950475297505572">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt»</translation>
 <translation id="4815725774537609998">Denne regelen er avviklet. Bruk ProxyMode i stedet.
 
@@ -1110,6 +1134,19 @@
 
           Hvis denne regelen har verdien «false», ignoreres forespørsler om låsing av skjermaktivering.</translation>
 <translation id="4876805738539874299">Høyeste SSL-versjon er slått på</translation>
+<translation id="4881315447528084360">Spesifiserer en liste over apper og utvidelser som installeres stille, uten brukerinteraksjon, og som ikke kan avinstalleres eller deaktiveres av brukeren. Alle tillatelser som blir bedt om av appene/utvidelsene, gis implisitt, uten brukerinteraksjon, inkludert eventuelle ekstra tillatelser som fremtidige versjoner av appen/utvidelsen ber om. I tillegg gis tillatelser for utvidelses-API-ene enterprise.deviceAttributes og enterprise.platformKeys. (Disse to API-ene er ikke tilgjengelige for apper/utvidelser som ikke tvangsinstalleres.)
+
+          Denne regelen kommer foran en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-regel som kan være i konflikt med den. Hvis en app eller utvidelse som tidligere ble tvangsinstallert, fjernes fra denne listen, avinstalleres den automatisk av <ph name="PRODUCT_NAME" />.
+
+          For Windows-forekomster som ikke er koblet til et <ph name="MS_AD_NAME" />-domene, er tvungen installasjon begrenset til apper og utvidelser oppført i Chrome Nettmarked.
+
+          Merk at kildekoden for alle utvidelser kan endres av brukere via utviklerverktøyene (noe som potensielt kan ødelegge funksjonaliteten for utvidelsen). Hvis dette er noe som skaper bekymring, er det best å angi <ph name="DEVELOPER_TOOLS_POLICY_NAME" />-regelen.
+
+          Listeelementene i regelen er strenger som inneholder en utvidelses-ID og en nettadresse for oppdatering atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn man for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når man er i utviklermodus. Nettadressen for oppdatering skal peke til oppdateringsmanifestet i XML-format som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Merk at nettadressen for oppdatering som er angitt i denne regelen, bare brukes for første installasjon – senere oppdateringer av utvidelsen bruker nettadressen for oppdatering oppgitt i utvidelsens manifest.
+
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer for eksempel <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />-appen fra standardnettadressen for oppdatering for Chrome Nettmarked. Hvis du vil ha mer informasjon om vertsutvidelser, kan du se: <ph name="LINK_TO_EXTENSION_DOC2" />
+
+          Hvis denne regelen ikke angis, installeres ingen apper eller utvidelser automatisk, og brukeren kan avinstallere hvilken som helst app eller utvidelse i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Spesifiser hvilke domener som har tilgang til Google-apper</translation>
 <translation id="4897928009230106190">Angir parameterene som brukes når du utfører et forslagssøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelige søkeordsdata.
 
@@ -1132,6 +1169,7 @@
 <translation id="4980635395568992380">Datatype:</translation>
 <translation id="4983201894483989687">Tillat kjøring av foreldede programtillegg</translation>
 <translation id="4988291787868618635">Handling som skal utføres når inaktivitetsforsinkelsen blir overskredet</translation>
+<translation id="4995548127349206948">Om NTLMv2-autentisering er aktivert eller ikke.</translation>
 <translation id="5047604665028708335">Gi tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5056708224511062314">Skjermforstørrelse deaktivert</translation>
@@ -1310,15 +1348,15 @@
 <translation id="5732972008943405952">Importér autofylldata for skjemaer fra standardnettleseren ved den første kjøringen</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5768309557753179144">Både Chromium og Google Chrome støtter det samme settet med regler. Merk at dette dokumentet kan inneholde upubliserte regler 
-      (som kjennetegnes ved at oppføringen for «Støttes på» i slike regler refererer til en upublisert versjon av
-      <ph name="PRODUCT_NAME" />) som kan endres eller fjernes uten varsel. Det gis ingen garantier av noe slag, verken i forbindelse med sikkerhet og personvern eller annet, for slike upubliserte regler.
+      (dvs. at reglenes «Støttes på»-informasjon kan vise til en upublisert versjon
+      <ph name="PRODUCT_NAME" />) som kan endres eller fjernes uten varsel. Det gis ingen garantier av noe slag, verken i forbindelse med sikkerhet, personvern eller annet, for slike upubliserte regler.
 
       Disse reglene er kun ment å brukes for å konfigurere forekomster av 
       <ph name="PRODUCT_NAME" /> internt i organisasjonen din. Bruk av disse reglene utenfor organisasjonen (for eksempel i et offentlig distribuert program) regnes som skadelig programvare og blir sannsynligvis merket som skadelig programvare av Google og antivirus-leverandører.
 
       Disse innstillingene trenger ikke å konfigureres manuelt. Maler for Windows, Mac og Linux som er enkle å bruke, er tilgjengelige for nedlasting fra <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
-      Vi anbefaler å konfigurere regelen på Windows via GPO, men
+      Vi anbefaler å konfigurere regler på Windows via GPO, men
       tildeling av regler via registeret støttes fortsatt for Windows-forekomster som er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="5770738360657678870">Utviklerkanal (kan være ustabil)</translation>
 <translation id="5774856474228476867">Nettadresse for søk for standard søkeleverandør</translation>
@@ -1478,6 +1516,7 @@
 <translation id="6076099373507468537">Definerer listen over USB-enheter som kan kobles fra kjernedriveren, så de kan brukes via chrome.usb API direkte i nettprogrammer. Oppføringene er parvise leverandør- og produktkoder som identifiserer spesifikke USB-enheter.
 
       Hvis denne regelen ikke er spesifisert, er listen over frakoblingsbare USB-enheter tom.</translation>
+<translation id="6083631234867522991">Windows (Windows-klienter):</translation>
 <translation id="6093156968240188330">Tillat at eksterne brukere kommuniserer via uthevede vinduer i fjernhjelpøkter.</translation>
 <translation id="6095999036251797924">Angir hvor mye tid som kan gå uten brukeraktivitet før skjermen låses når nettstrøm eller batteri brukes.
 
@@ -1981,6 +2020,39 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7841880500990419427">Laveste TLS-versjon som kan brukes som reserve</translation>
 <translation id="7842869978353666042">Konfigurer Google Disk-alternativer</translation>
 <translation id="7843525027689416831">Spesifiserer flaggene som skal gjelde for <ph name="PRODUCT_NAME" /> når det startes opp. De spesifiserte flaggene brukes bare på påloggingsskjermen. Flagg som angis via denne regelen, videreføres ikke til brukerøkter.</translation>
+<translation id="7844537954833753199">Konfigurerer innstillingene for administrering av utvidelser for <ph name="PRODUCT_NAME" />.
+
+          Denne regelen bestemmer flere innstillinger, inkludert innstillinger kontrollert av eventuelle eksisterende regler som er relatert til utvidelser. Denne regelen overstyrer eventuelle eldre regler som også er aktive.
+
+          Denne regelen knytter en utvidelses-ID eller en nettadresse for oppdatering til en konfigurasjon. Hvis det brukes en utvidelses-ID, blir konfigurasjonen bare angitt for den spesifiserte utvidelsen. En standard konfigurasjon kan angis for den spesielle ID-en <ph name="DEFAULT_SCOPE" />, som så gjelder for alle utvidelser det ikke er angitt noen tilpasset konfigurasjon for i denne regelen. Hvis det brukes en nettadresse for oppdatering, brukes konfigurasjonen for alle utvidelser med nøyaktig den nettadressen for oppdatering som er oppgitt i utvidelsens manifest, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurasjonen for hver enkelt utvidelse (eller utvidelser med samme nettadresse for oppdatering) er en oppslagsliste som kan inneholde feltene dokumentert nedenfor.
+
+          <ph name="INSTALLATION_MODE" />: knyttes til en streng som indikerer installasjonsmodusen for utvidelsen. De gyldige strengene er
+          * <ph name="ALLOWED" />: tillater at utvidelsen installeres av brukeren (denne funksjonaliteten brukes som standard)
+          * <ph name="BLOCKED" />: blokkerer installasjon av utvidelsen
+          * <ph name="FORCE_INSTALLED" />: gjør at utvidelsen installeres automatisk, men kan ikke fjernes av brukeren
+          * <ph name="NORMAL_INSTALLED" />: gjør at utvidelsen installeres automatisk, men brukeren kan slå den av
+
+          <ph name="INSTALLTION_MODE" /> kan også konfigureres for flere utvidelser, inkludert ved bruk av <ph name="DEFAULT_SCOPE" />-utvidelsen (som standardinnstillinger) samt utvidelser med samme nettadresse for oppdatering. I dette tilfellet kan bare verdiene <ph name="ALLOWED" /> og <ph name="BLOCKED" /> brukes.
+
+          Hvis modusen er angitt som <ph name="FORCE_INSTALLED" /> eller <ph name="NORMAL_INSTALLED" />, må en <ph name="UPDATE_URL" /> konfigureres også. Merk at nettadressen for oppdatering som er angitt i denne regelen, bare brukes for første installasjon – påfølgende oppdateringer av utvidelsen bruker nettadressen for oppdatering som er oppgitt i utvidelsens manifest. Nettadressen for oppdatering skal peke til et oppdateringsmanifest i XML-format som nevnt ovenfor.
+
+          <ph name="BLOCKED_PERMISSIONS" />: knyttes til en liste over strenger som indikerer hvilke API-tillatelser som er blokkert for utvidelsen. Tillatelsesnavnene er identiske med tillatelsesstrengene som oppgis i manifestet for utvidelsen, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC3" />. Denne innstillingen kan også konfigureres for <ph name="DEFAULT_SCOPE" />-utvidelse. Hvis utvidelsen krever en tillatelse som er på blokkeringslisten, får den ikke tillatelse til å kjøre. Hvis utvidelsen inneholder en blokkert tillatelse som en valgfri tillatelse, behandles den som vanlig, men forespørsler om blokkerte tillatelser blir avvist automatisk under kjøring.
+
+          <ph name="ALLOWED_PERMISSIONS" />: ligner på <ph name="BLOCKED_PERMISSIONS" />, men tillater i stedet uttrykkelig noen tillatelser som kan være blokkert av den globale listen for blokkerte tillatelser. Denne innstillingen kan derfor ikke konfigureres for <ph name="DEFAULT_SCOPE" />-utvidelse. Merk at denne innstillingen ikke gir innvilgede tillatelser til utvidelser automatisk.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: knyttes til en versjonsstreng. Formatet for versjonsstrengen er det samme som er brukt i utvidelsesmanifestet, som beskrevet her: <ph name="LINK_TO_EXTENSION_DOC4" />. Utvidelser med en versjon som er eldre enn den spesifiserte minimumsversjonen, blir deaktivert. Dette gjelder for utvidelser med tvungen installering (FORCE_INSTALLED) også.
+
+          Følgende innstillinger kan bare brukes for standardkonfigurasjonen <ph name="DEFAULT_SCOPE" />:
+
+          <ph name="INSTALL_SOURCES" />: Hvert element i denne listen er et samsvarsmønster av typen som brukes for utvidelser (<ph name="LINK_TO_MATCH_PATTERNS" />). Brukere kan enkelt installere elementer fra alle nettadresser som samsvarer med et element på denne listen. Både plasseringen av <ph name="EXTENSION_SUFFIX_WILDCARD" />-filen og siden der nedlastingen startes fra (dvs. henvisningsadressen), må samsvare med disse mønstrene.
+
+          <ph name="ALLOWED_TYPES" />: Denne innstillingen er en godkjenningsliste for de tillatte typene utvidelser/apper som kan installeres på <ph name="PRODUCT_NAME" />. Verdien er en liste over strenger, og hver streng må være ett av følgende: <ph name="VALID_ALLOWED_TYPES" />. Slå opp i dokumentasjonen for <ph name="PRODUCT_NAME" />-utvidelser for mer informasjon om disse typene.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Hvis en bruker prøver å installere en utvidelse, men forsøket blir blokkert i henhold til en regel, viser Chrome Nettmarked en generisk feilmelding. Denne innstillingen har støtte for egendefinert tekst for feilmeldingen. Dette kan brukes til å henvise brukere til brukerstøtten din, forklare hvorfor en bestemt utvidelse er blokkert, eller noe annet. Feilmeldingen blir avkortet hvis den er lengre enn 1000 tegn.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Godtar en liste over verter som en utvidelse blir blokkert fra å interagere med. Dette omfatter injisering av JavaScript-kode, endring og åpning av webRequests/webNavigation samt endring og åpning av informasjonskapsler. Dette formatet ligner på Match Patterns (<ph name="LINK_TO_MATCH_PATTERNS" />), bortsett fra at det ikke er nødvendig å angi noen bane etter nettstedsnavnet (for eksempel støttes «*://*.example.com»). Formatet støtter også effektive TLD-jokertegn, for eksempel «*://example.*».
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Godtar en liste over verter som utvidelsen kan interagere med, uansett om de er oppført i <ph name="RUNTIME_BLOCKED_HOSTS" /> eller ikke. Dette er det samme formatet som <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="787125417158068494">Hvis denne er angitt som SyncDisabled eller ikke er konfigurert, er ikke <ph name="PRODUCT_OS_NAME" />-sertifikater tilgjengelige for ARC-apper.
 
       Hvis denne er angitt som CopyCaCerts, er alle ONC-installerte CA-sertifikater med <ph name="WEB_TRUSTED_BIT" /> tilgjengelige for ARC-apper.</translation>
@@ -2149,6 +2221,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8451988835943702790">Bruk siden Ny fane som startside</translation>
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
+<translation id="8476127435468057643">Kontrollerer om NTLMv2 er aktivert eller ikke.
+
+          Alle nylige versjoner av Samba og Windows-tjenere støtter NTLMv2. NTLMv2 må bare slås av for bakoverkompatibilitet, siden sikkerheten for autentisering reduseres.
+
+          Standardverdien når denne regelen ikke er definert, er for øyeblikket «false» for bakoverkompatibilitet, men skal endres til «true» senere.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Tilpass listen over nettadressemønstre som alltid skal gjengis av vertsnettleseren.
 
@@ -2164,6 +2241,12 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne regelen brukes, får brukeren tilgang til alle skrivere – unntatt eventuelle ID-er som er oppført i denne regelen.
       </translation>
+<translation id="8538235451413605457">Konfigurerer kravet for laveste tillatte versjon av <ph name="PRODUCT_NAME" />. Versjoner under denne behandles som foreldede, og enheten tillater ikke brukerpålogging før operativsystemet er oppdatert.
+      Hvis gjeldende versjon blir foreldet i løpet av brukerøkten, blir brukeren logget av automatisk.
+
+      Hvis denne regelen ikke er angitt, gjelder ingen begrensninger, og brukeren kan logge på uavhengig av versjonsnummeret for <ph name="PRODUCT_NAME" />.
+
+      «Version» her kan enten være et eksakt versjonsnummer som «61.0.3163.120» eller et versjonsprefiks som «61.0».  </translation>
 <translation id="8544375438507658205">Standard gjengivelse av HTML for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
@@ -2176,6 +2259,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis denne innstillingen angis til «false», kommer ikke enheten til å bruke ekstern godkjenning for innholdsbeskyttelse, og enheten kan sannsynligvis ikke spille av beskyttet innhold.
 
           Hvis denne innstillingen angis til «true», eller ikke angis i det hele tatt, kan ekstern godkjenning brukes for innholdsbeskyttelse.</translation>
+<translation id="8650974590712548439">Plasseringen av Windows-registeret for Windows-klienter:</translation>
 <translation id="8654286232573430130">Angi hvilke tjenere som skal godkjennes for integrert autentisering. Integrert autentisering er bare på når <ph name="PRODUCT_NAME" /> mottar en autentiseringoppgave fra en proxy-tjener eller en tjener i denne tillatt-listen.
 
           Adskill tjenernavn med komma. Jokertegn (*) er tillatt.

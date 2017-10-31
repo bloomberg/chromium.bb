@@ -261,7 +261,7 @@
       Se esta política for definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> tentará transferir payloads de atualização automática através de HTTP. Se esta política for definida como falsa ou não for definida, será utilizado HTTPS para transferir payloads de atualização automática.</translation>
 <translation id="2006530844219044261">Gestão de energia</translation>
 <translation id="201557587962247231">Frequência de carregamentos de relatórios de estado do dispositivo</translation>
-<translation id="2018836497795982119">Especifica o período em milissegundos no qual o serviço de gestão de dispositivos é consultado quanto a informações da política do utilizador.
+<translation id="2018836497795982119">Especifica o período em milissegundos no qual o serviço de gestão de dispositivos é consultado quanto a informações da Política do Utilizador.
 
       A definição desta política substitui o valor predefinido de 3 horas. Os valores válidos para esta política encontram-se no intervalo de 1 800 000 (30 minutos) a 86 400 000 (1 dia). Quaisquer valores que não se encontrem neste intervalo são ajustados para o respetivo limite. Se a plataforma suportar notificações sobre políticas, o atraso de atualização é definido para 24 horas porque é esperado que as notificações sobre políticas forcem uma atualização automaticamente, sempre que a política sofrer alterações.
 
@@ -286,6 +286,7 @@
 <translation id="2067011586099792101">Bloquear o acesso a sites fora de pacotes de conteúdo</translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2077273864382355561">Atraso para desligar o ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
+<translation id="2082205219176343977">Configurar a versão mínima do Chrome permitida para o dispositivo</translation>
 <translation id="209586405398070749">Canal estável</translation>
 <translation id="2098658257603918882">Ativar registos de utilização e dados relacionados com falhas</translation>
 <translation id="2113068765175018713">Limitar o tempo de atividade do dispositivo reiniciando automaticamente</translation>
@@ -377,6 +378,13 @@
 <translation id="2303795211377219696">Ativar Preenchimento automático para cartões de crédito</translation>
 <translation id="2309390639296060546">Definição de geolocalização predefinida</translation>
 <translation id="2312134445771258233">Permite-lhe configurar as páginas que são carregadas no arranque. O conteúdo da lista "URLs a abrir no aranque" é ignorado, a menos que selecione "Abrir uma lista de URLs" em "Ação no arranque".</translation>
+<translation id="2334591568684482454">Configura a disponibilidade e o comportamento da funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      É possível especificar definições individuais nas propriedades de JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: se for definida como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, os utilizadores podem acionar o fluxo de Powerwash para instalar uma atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Se a política não for definida, a funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /> não estará disponível.</translation>
 <translation id="2337466621458842053">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a apresentar imagens. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultImagesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="2372547058085956601">O atraso do início automático da sessão pública.
 
@@ -885,6 +893,27 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4027608872760987929">Ativar o fornecedor de pesquisas personalizado</translation>
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros numa página tem permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP. Normalmente, esta definição está desativada como uma defesa contra phishing. Se esta política não for definida, a definição será desativada e o subconteúdo de terceiros não terá permissão para apresentar uma caixa de diálogo de Autenticação Básica de HTTP.</translation>
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
+<translation id="4077363032873906037">Ativa a funcionalidade de início de sessão restrito do <ph name="PRODUCT_NAME" /> no Google Apps e impede os utilizadores de alterar esta definição.
+
+      Se ativar esta definição, o utilizador só consegue aceder ao Google
+      Apps através de contas dos domínios especificados (tenha em
+      atenção que não funciona para o gmail.com/googlemail.com).
+
+      Esta definição NÃO impede o utilizador de iniciar sessão num
+      dispositivo gerido que requeira a autenticação Google. O utilizador
+      continua a ter permissão para iniciar sessão em contas a partir de
+      outros domínios, mas depara-se com um erro quando tenta utilizar
+      o Google Apps com essas contas.
+
+      Se deixar esta definição vazia/não configurada, o utilizador pode
+      aceder ao Google Apps com qualquer conta.
+
+      Esta política faz com que o cabeçalho X-GoogApps-Allowed-Domains
+      seja anexado a todos os pedidos de HTTP e HTTPS para todos os
+      domínios de google.com, conforme descrito em
+      https://support.google.com/a/answer/1668854.
+
+      Os utilizadores não podem alterar nem substituir esta definição.</translation>
 <translation id="408029843066770167">Permitir consultas a um serviço de hora da Google</translation>
 <translation id="4088589230932595924">Modo de navegação anónima forçado</translation>
 <translation id="4088983553732356374">Permite-lhe definir se os Sites estão autorizados a definir dados locais. A definição dos dados locais pode ser autorizada para todos os Sites ou negada para todos os Sites.
@@ -1013,7 +1042,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se deixar esta política por definir, a definição será ativada mas o utilizador poderá alterá-la.</translation>
 <translation id="4525521128313814366">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a apresentar imagens. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultImagesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
-<translation id="4531706050939927436">As aplicações Android podem ser instaladas à força a partir da Consola do administrador do Google através do Google Play. Essas aplicações não utilizam esta política.</translation>
+<translation id="4531706050939927436">As aplicações Android podem ser instaladas à força a partir da Consola do gestor do Google através do Google Play. Essas aplicações não utilizam esta política.</translation>
 <translation id="4534500438517478692">Nome de restrição Android:</translation>
 <translation id="4541530620466526913">Contas locais do dispositivo</translation>
 <translation id="4555850956567117258">Permitir a comprovação remota para o utilizador</translation>
@@ -1065,6 +1094,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Se definir esta política, os utilizadores não a poderão alterar ou substituir.
 
           Se esta política não for definida, o cursor grande estará inicialmente desativado, mas poderá ser ativado a qualquer momento pelo utilizador.</translation>
+<translation id="4802905909524200151">Configurar o comportamento de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4807950475297505572">Os utilizadores menos recentemente utilizados são removidos até existir espaço livre suficiente</translation>
 <translation id="4815725774537609998">Esta política está obsoleta; em alternativa, utilize o ProxyMode.
 
@@ -1097,6 +1127,29 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
           Se esta política estiver definida como falsa, os pedidos de bloqueio da ativação do ecrã serão ignorados.</translation>
 <translation id="4876805738539874299">Versão SSL máxima ativada</translation>
+<translation id="4881315447528084360">Especifica uma lista de aplicações e de extensões que são instaladas
+          em segundo plano, sem a interação do utilizador, e que não podem
+          ser desinstaladas nem desativadas pelo utilizador. Todas as
+          autorizações pedidas pelas aplicações/extensões são concedidas
+          implicitamente, sem a interação do utilizador, incluindo quaisquer
+          autorizações adicionais necessárias para versões futuras da
+          aplicação/extensão. Além disso, as autorizações são concedidas
+          para as APIs de extensões enterprise.deviceAttributes e
+          enterprise.platformKeys. (Estas duas APIs não estão disponíveis
+          para as aplicações/extensões que não sejam de instalação
+          forçada.)
+
+          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> que esteja potencialmente em conflito. Se uma aplicação ou uma extensão de instalação forçada anterior for removida desta lista, é desinstalada automaticamente pelo <ph name="PRODUCT_NAME" />.
+
+          Para as instâncias do Windows que não estão associadas a um domínio do <ph name="MS_AD_NAME" />, a instalação forçada está limitada às aplicações e às extensões indicadas na Web Store do Chrome.
+
+          Tenha em atenção que o código-fonte de qualquer extensão pode ser alterado pelos utilizadores através das Ferramentas do programador (o que pode deixar a extensão disfuncional). Se isto for uma preocupação, deve definir a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada item de lista da política é uma string que inclui um ID de extensão e um URL de "atualização", separados por ponto e vírgula (<ph name="SEMICOLON" />). O ID de extensão é uma string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> quando está no modo de programador. O URL de "atualização" deve indicar um documento XML de manifesto de atualização, tal como descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Tenha em atenção que o URL de "atualização" definido nesta política apenas é utilizado para a instalação inicial, uma vez que as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão.
+
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a aplicação <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> a partir do URL de "atualização" padrão da Web Store do Chrome. Para mais informações acerca do alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se deixar esta política por definir, não são instaladas automaticamente quaisquer aplicações ou extensões e o utilizador pode desinstalar qualquer aplicação ou extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Definir domínios com permissão para aceder ao Google Apps</translation>
 <translation id="4897928009230106190">Especifica os parâmetros utilizados ao efetuar uma pesquisa de sugestões com POST. Consiste em pares de nome/valor separados por vírgulas. Se um valor for o parâmetro de um modelo, como {searchTerms} no exemplo acima, será substituído por dados dos termos de pesquisa reais.
 
@@ -1119,6 +1172,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4980635395568992380">Tipo de dados:</translation>
 <translation id="4983201894483989687">Permitir a execução de plug-ins desatualizados</translation>
 <translation id="4988291787868618635">Ação a realizar quando o atraso de inatividade for alcançado</translation>
+<translation id="4995548127349206948">Se a autenticação NTLMv2 está ativada.</translation>
 <translation id="5047604665028708335">Permitir o acesso a sites fora dos pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se esta política estiver ativada, força a importação do histórico de navegação a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o histórico de navegação não é importado. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>
@@ -1607,7 +1661,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6689792153960219308">Comunicar o estado do hardware</translation>
 <translation id="6693751878507293182">Se configurar esta definição como ativada, a pesquisa automática e a instalação de plug-ins em falta serão desativadas no <ph name="PRODUCT_NAME" />. Se definir desta opção como desativada ou não a definir, o localizador de plug-ins estará ativo.</translation>
 <translation id="6699880231565102694">Ativar a autenticação de dois fatores para anfitriões de acesso remoto</translation>
-<translation id="6724842112053619797">Se ativar esta definição, as definições armazenadas nos perfis do <ph name="PRODUCT_NAME" />, tais como marcadores, dados de preenchimento automático, palavras-passe, etc., também são escritas num ficheiro armazenado na pasta do perfil de utilizador Roaming ou numa localização especificada pelo administrador através da política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se ativar esta política, desativa a sincronização na nuvem.
+<translation id="6724842112053619797">Se ativar esta definição, as definições armazenadas nos perfis do <ph name="PRODUCT_NAME" />, tais como marcadores, dados de preenchimento automático, palavras-passe, etc., também são escritas num ficheiro armazenado na pasta do perfil de utilizador Roaming ou numa localização especificada pelo gestor através da política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se ativar esta política, desativa a sincronização na nuvem.
 
       Se esta política estiver desativada ou não estiver definida, apenas são utilizados os perfis locais normais.
 
@@ -1950,7 +2004,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           <ph name="INSTALL_SOURCES" />: cada item nesta lista é um padrão de correspondência ao estilo de extensão (<ph name="LINK_TO_MATCH_PATTERNS" />). Os utilizadores podem instalar itens facilmente a partir de qualquer URL que corresponda a um item nesta lista. Tanto a localização do ficheiro <ph name="EXTENSION_SUFFIX_WILDCARD" /> como a página a partir da qual foi iniciada a transferência (ou seja, o referenciador) têm de estar autorizadas por estes padrões.
 
           <ph name="ALLOWED_TYPES" />: esta definição adiciona à lista de autorizações os tipos permitidos de extensões/aplicações que podem ser instalados no <ph name="PRODUCT_NAME" />. O valor é uma lista de strings, em que cada uma deve ser de um dos seguintes tipos: <ph name="VALID_ALLOWED_TYPES" />. Consulte a documentação de extensões do <ph name="PRODUCT_NAME" /> para mais informações sobre estes tipos.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: se um utilizador tentar instalar uma extensão, mas esta estiver bloqueada pela política, a Web Store do Chrome apresenta uma mensagem de erro genérica. Esta definição permite-lhe anexar texto à mensagem de erro. Isto pode ser utilizado para direcionar os utilizadores para o serviço de assistência, explicar os motivos do bloqueio de uma determinada extensão ou outras questões. Esta mensagem de erro é truncada se exceder o limite de 1000 carateres.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: se um utilizador tentar instalar uma extensão, mas esta estiver bloqueada pela política, a Web Store do Chrome apresenta uma mensagem de erro genérica. Esta definição permite-lhe anexar texto à mensagem de erro. Isto pode ser utilizado para direcionar os utilizadores para o serviço de assistência, explicar os motivos do bloqueio de uma determinada extensão ou outras questões. Esta mensagem de erro é cortada se exceder o limite de 1000 carateres.
           <ph name="RUNTIME_BLOCKED_HOSTS" />: aceita uma lista de anfitriões com os quais uma extensão está impedida de interagir. Isto inclui a injeção de JavaScript, a alteração e a visualização de webRequests/webNavigation, a visualização e a alteração de cookies. O formato é semelhante aos padrões de correspondência <ph name="LINK_TO_MATCH_PATTERNS" />, com a diferença de que não é possível definir caminhos, por exemplo, "*://*.example.com". Também suporta a atribuição eficaz de carateres universais TLD, por exemplo, "*://example.*".
           <ph name="RUNTIME_ALLOWED_HOSTS" />: aceita uma lista de anfitriões com os quais uma extensão pode interagir, independentemente de estarem listados em <ph name="RUNTIME_BLOCKED_HOSTS" />. O formato é igual a <ph name="RUNTIME_BLOCKED_HOSTS" />.
           </translation>
@@ -2129,6 +2183,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="8451988835943702790">Utilizar a página Novo separador como página inicial</translation>
 <translation id="8465065632133292531">Parâmetros do URL instantâneo que utilize POST</translation>
 <translation id="847472800012384958">Não permitir que os sites mostrem pop-ups</translation>
+<translation id="8476127435468057643">Controla se o NTLMv2 está ativado.
+
+          Todas as versões recentes dos servidores Samba e Windows são compatíveis com o NTLMv2. Só deve ser desativado para retrocompatibilidade e reduz a segurança da autenticação.
+
+          Quando esta política não está definida, o valor predefinido é atualmente falso para retrocompatabilidade, mas será alterado para verdadeiro no futuro.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Personaliza a lista de padrões de URL que devem ser sempre processados pelo navegador anfitrião.
 
@@ -2144,6 +2203,12 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se esta política for utilizada, todas as impressoras são disponibilizadas ao utilizador, exceto aquelas cujos IDs forem indicados nesta política.
       </translation>
+<translation id="8538235451413605457">Configura o requisito da versão mínima permitida do <ph name="PRODUCT_NAME" />. As versões inferiores são tratadas como obsoletas e o dispositivo não permite ao utilizador iniciar sessão até o SO ser atualizado.
+      Se a versão atual se tornar obsoleta durante a sessão do utilizador, esta é terminada à força.
+
+      Se esta política não estiver definida, não são aplicadas restrições e o utilizador pode iniciar sessão, independentemente da versão do <ph name="PRODUCT_NAME" />.
+
+      Aqui, "Versão" pode ser uma versão exata, como "61.0.3163.120" ou um prefixo de versão, como "61.0".  </translation>
 <translation id="8544375438507658205">Processador de HTML predefinido para <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avisar quando estiver a visitar sites fora dos pacotes de conteúdo</translation>
 <translation id="8566842294717252664">Ocultar a Web Store da página Novo separador e do iniciador de aplicações</translation>
@@ -2234,7 +2299,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se deixar esta política por definir, o Google Sync está disponível para o utilizador decidir se pretende ou não utilizá-lo.
 
-      Para desativar totalmente o Google Sync, recomenda-se que desative o serviço Google Sync na Consola do administrador do Google.
+      Para desativar totalmente o Google Sync, recomenda-se que desative o serviço Google Sync na Consola do gestor do Google.
 
       Não deve ativar esta política quando a política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> estiver ativada, uma vez que essa funcionalidade partilha a mesma funcionalidade do lado do cliente. Neste caso, a sincronização alojada no Google é totalmente desativada.</translation>
 <translation id="8955719471735800169">Voltar ao início</translation>

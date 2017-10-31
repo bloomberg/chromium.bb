@@ -99,6 +99,7 @@
 <translation id="114140604515785785">Hoofddirectory van extensie:</translation>
 <translation id="1143142264369994168">Ondertekenaar van het certificaat</translation>
 <translation id="1145292499998999162">Plug-in geblokkeerd</translation>
+<translation id="1145532888383813076">Zoek op je apparaat, in apps en op internet.</translation>
 <translation id="1146204723345436916">Bladwijzers importeren uit HTML-bestand...</translation>
 <translation id="1149401351239820326">Vervalmaand</translation>
 <translation id="1153356358378277386">Gekoppelde apparaten</translation>
@@ -243,6 +244,7 @@
 <translation id="1368832886055348810">Links naar rechts</translation>
 <translation id="1370646789215800222">Persoon verwijderen?</translation>
 <translation id="1374844444528092021">Het certificaat dat wordt vereist door het netwerk '<ph name="NETWORK_NAME" />', is niet geïnstalleerd of is niet meer geldig. Haal een nieuw certificaat op en probeer opnieuw verbinding te maken.</translation>
+<translation id="1374962581120570592">Cookies ingesteld</translation>
 <translation id="1375321115329958930">Opgeslagen wachtwoorden</translation>
 <translation id="137651782282853227">Opgeslagen adressen worden hier weergegeven</translation>
 <translation id="1377600615067678409">Nu overslaan</translation>
@@ -532,12 +534,14 @@
 <translation id="1794791083288629568">Feedback verzenden om ons te helpen dit probleem op te lossen.</translation>
 <translation id="1795214765651529549">Klassiek thema gebruiken</translation>
 <translation id="179767530217573436">de afgelopen 4 weken</translation>
+<translation id="1798688944196431257">Cookies geblokkeerd</translation>
 <translation id="1799071797295057738">De extensie <ph name="EXTENSION_NAME" /> is automatisch uitgeschakeld.</translation>
 <translation id="180035236176489073">Je moet online zijn om deze bestanden te openen.</translation>
 <translation id="1801298019027379214">Onjuiste pincode, probeer het opnieuw. Resterende pogingen: <ph name="TRIES_COUNT" /></translation>
 <translation id="1801827354178857021">Periode</translation>
 <translation id="1802931390041703523">Flash is geblokkeerd op deze pagina</translation>
 <translation id="1803545009660609783">Opnieuw trainen</translation>
+<translation id="1805822111539868586">Weergaven bekijken</translation>
 <translation id="1807938677607439181">Alle bestanden</translation>
 <translation id="1809734401532861917">Mijn bladwijzers, geschiedenis, wachtwoorden en andere instellingen toevoegen aan <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1810107444790159527">Keuzelijst</translation>
@@ -605,6 +609,7 @@
 <translation id="1916502483199172559">Standaard rode avatar</translation>
 <translation id="1918141783557917887">&amp;Kleiner</translation>
 <translation id="1919345977826869612">Advertenties</translation>
+<translation id="1919814239594435008">Plug-in zonder sandbox toegestaan</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="192494336144674234">Openen met</translation>
 <translation id="1925021887439448749">Aangepast webadres opgeven</translation>
@@ -636,6 +641,7 @@
 <translation id="197560921582345123">Kan bewerken</translation>
 <translation id="1975841812214822307">Verwijderen...</translation>
 <translation id="1976150099241323601">Inloggen bij beveiligingsapparaat</translation>
+<translation id="1976315108329706992">Je kunt nu Android-apps gebruiken.</translation>
 <translation id="1976323404609382849">Cookies van meerdere sites geblokkeerd.</translation>
 <translation id="1977965994116744507">Plaats je telefoon dichterbij om je <ph name="DEVICE_TYPE" /> te ontgrendelen.</translation>
 <translation id="1979280758666859181">Je wijzigt naar een kanaal met een oudere versie van <ph name="PRODUCT_NAME" />. De wijziging van kanaal wordt toegepast wanneer de versie van het kanaal overeenkomt met de versie die momenteel op het apparaat is geïnstalleerd.</translation>
@@ -1063,6 +1069,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2638286699381354126">Updaten...</translation>
 <translation id="2638942478653899953">Google Drive kan niet worden bereikt. <ph name="BEGIN_LINK" />Log uit<ph name="END_LINK" /> en log weer in.</translation>
 <translation id="2642111877055905627">Voetbal</translation>
+<translation id="2643569582440544295">Notities op het vergrendelingsscherm zijn toegankelijk vanaf het vergrendelingsscherm en worden automatisch opgeslagen in <ph name="LOCK_SCREEN_APP_NAME" />.</translation>
 <translation id="2643698698624765890">Je kunt je extensies beheren door in het paginamenu te klikken op 'Extensies'.</translation>
 <translation id="2647142853114880570">herladen</translation>
 <translation id="2647269890314209800">Gebruikte cookies</translation>
@@ -1100,6 +1107,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2686759344028411998">Kan geen modules vinden die zijn geladen.</translation>
 <translation id="2688196195245426394">Fout bij het registreren van het apparaat bij de server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Taalopties weergeven</translation>
+<translation id="2690405692940015382">Afbeeldingen geblokkeerd</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Er is een onbekende fout opgetreden. Probeer het later opnieuw of neem contact op met je beheerder als het probleem blijft optreden.</translation>
 <translation id="2694026874607847549">1 cookie</translation>
@@ -1557,6 +1565,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3348038390189153836">Verwisselbaar apparaat gedetecteerd</translation>
 <translation id="3348459612390503954">Gefeliciteerd</translation>
 <translation id="3348643303702027858">Het maken van het OS-herstelmedium is geannuleerd.</translation>
+<translation id="3349933790966648062">Geheugenvoetafdruk</translation>
 <translation id="3353984535370177728">Een map voor uploaden selecteren</translation>
 <translation id="335581015389089642">Spraak</translation>
 <translation id="3355936511340229503">Verbindingsfout</translation>
@@ -1713,6 +1722,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3584169441612580296">Foto's, muziek en andere media van je computer lezen en wijzigen</translation>
 <translation id="3587482841069643663">Alles</translation>
 <translation id="358796204584394954">Typ deze code op '<ph name="DEVICE_NAME" />' om te koppelen:</translation>
+<translation id="3589766037099229847">Onveilige content geblokkeerd</translation>
 <translation id="3590194807845837023">Profiel ontgrendelen en opnieuw starten</translation>
 <translation id="3592260987370335752">&amp;Meer informatie</translation>
 <translation id="359283478042092570">Invoeren</translation>
@@ -1792,6 +1802,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3697100740575341996">Je IT-beheerder heeft Chrome Goodies uitgeschakeld voor je apparaat. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">E-mailadres</translation>
 <translation id="3702500414347826004">Je startpagina's zijn gewijzigd en bevatten nu ook <ph name="URL" />.</translation>
+<translation id="370415077757856453">JavaScript geblokkeerd</translation>
 <translation id="3704331259350077894">Activiteit gestaakt</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Bezig met laden...</translation>
@@ -1826,6 +1837,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3755411799582650620">Je <ph name="PHONE_NAME" /> kan deze <ph name="DEVICE_TYPE" /> nu ook ontgrendelen.</translation>
 <translation id="3758201569871381925">Controleer of je Hotrod-apparaat is ingeschakeld en verbonden is met een tv.</translation>
 <translation id="375841316537350618">Proxyscript downloaden...</translation>
+<translation id="3758842566811519622">Cookies ingesteld</translation>
 <translation id="3759371141211657149">Instellingen voor handler beheren...</translation>
 <translation id="3759933321830434300">Delen van webpagina's blokkeren</translation>
 <translation id="3760460896538743390">&amp;Achtergrondpagina controleren</translation>
@@ -1919,6 +1931,7 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3878840326289104869">Gebruiker met beperkte rechten maken</translation>
 <translation id="3879748587602334249">Downloadbeheer</translation>
 <translation id="388485010393668001">Aanvulling beschikbaar: <ph name="COMPLETION_TEXT" /></translation>
+<translation id="3888550877729210209">Notities maken met <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">OpenVPN/L2TP toevoegen...</translation>
 <translation id="3893536212201235195">Je toegankelijkheidsinstellingen lezen en wijzigen</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
@@ -2319,6 +2332,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4590324241397107707">Opslag in database</translation>
 <translation id="4593021220803146968">&amp;Ga naar <ph name="URL" /></translation>
 <translation id="4595560905247879544">Apps en extensies kunnen alleen worden aangepast door de beheerder (<ph name="CUSTODIAN_NAME" />).</translation>
+<translation id="4595989643015195102">Plug-in zonder sandbox geblokkeerd</translation>
 <translation id="4596295440756783523">Je hebt certificaten waarmee deze servers worden geïdentificeerd</translation>
 <translation id="4598556348158889687">Opslagbeheer</translation>
 <translation id="4598776695426288251">Wifi beschikbaar via meerdere apparaten</translation>
@@ -2336,6 +2350,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4620809267248568679">Deze instelling wordt door een extensie afgedwongen.</translation>
 <translation id="4624768044135598934">Gereed</translation>
 <translation id="4625078469366263107">App inschakelen</translation>
+<translation id="4627427111733173920">Cookies geblokkeerd</translation>
 <translation id="4627442949885028695">Doorgaan vanaf een ander apparaat</translation>
 <translation id="4628314759732363424">Wijzigen...</translation>
 <translation id="4628757576491864469">Apparaten</translation>
@@ -2884,6 +2899,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5457113250005438886">Ongeldig</translation>
 <translation id="5457459357461771897">Foto's, muziek en andere media van je computer lezen en verwijderen</translation>
 <translation id="5457599981699367932">Gebruiken als gast</translation>
+<translation id="5457950659230097883">JavaScript geblokkeerd</translation>
 <translation id="5458998536542739734">Notities op vergrendelingsscherm</translation>
 <translation id="5463275305984126951">Index van <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu met verborgen bladwijzers</translation>
@@ -2924,6 +2940,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5513242761114685513">Contextmenu</translation>
 <translation id="5516183516694518900">Log in bij Chrome met je Google-account om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op al je apparaten op te halen.</translation>
 <translation id="551752069230578406">De printer wordt toegevoegd aan je account. Dit kan even duren…</translation>
+<translation id="5517535964909391608">Onveilige content geblokkeerd</translation>
 <translation id="5518584115117143805">Coderingscertificaat voor e-mail</translation>
 <translation id="5521078259930077036">Is dit de homepage die je had verwacht?</translation>
 <translation id="5521348028713515143">Bureaubladsnelkoppeling toevoegen</translation>
@@ -2990,6 +3007,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5612734644261457353">Je wachtwoord kan nog steeds niet worden geverifieerd. Opmerking: als je je wachtwoord onlangs hebt gewijzigd, wordt je nieuwe wachtwoord doorgevoerd zodra je uitlogt. Gebruik hier het oude wachtwoord.</translation>
 <translation id="5613695965848159202">Anonieme identiteit:</translation>
 <translation id="5614190747811328134">Gebruikerskennisgeving</translation>
+<translation id="561698261642843490">Firefox sluiten</translation>
 <translation id="5618075537869101857">De kiosk-app kan niet worden gestart.</translation>
 <translation id="5618333180342767515">(dit kan enkele minuten duren)</translation>
 <translation id="5618972959246891967">Systeemdatum</translation>
@@ -3020,6 +3038,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5662477687021125631">Oneindig</translation>
 <translation id="5669267381087807207">Wordt geactiveerd</translation>
 <translation id="5669691691057771421">Nieuwe pincode opgeven</translation>
+<translation id="5671641761787789573">Afbeeldingen geblokkeerd</translation>
 <translation id="5677503058916217575">Brontaal:</translation>
 <translation id="5677928146339483299">Geblokkeerd</translation>
 <translation id="5678550637669481956">Lees- en schrijftoegang tot <ph name="VOLUME_NAME" /> is toegekend.</translation>
@@ -3241,6 +3260,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="6025215716629925253">Stack-tracering</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" />: USB-apparaat verbonden</translation>
 <translation id="6032912588568283682">Bestandssysteem</translation>
+<translation id="6034662038931255275">OS-update voltooid</translation>
 <translation id="6039651071822577588">Woordenboek van netwerkproperty is onjuist opgemaakt</translation>
 <translation id="604001903249547235">Cloudback-up</translation>
 <translation id="6040143037577758943">Sluiten</translation>
@@ -3741,6 +3761,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="6798954102094737107">Plug-in: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Touchscreen kalibreren</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
+<translation id="6804124853318036372">Laden. Een ogenblik geduld...</translation>
 <translation id="6804671422566312077">Alle bladwijzers openen in een &amp;nieuw venster</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Log in bij <ph name="TOKEN_NAME" /> om het klantcertificaat van <ph name="HOST_NAME" /> te importeren.</translation>
@@ -3807,6 +3828,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="6910211073230771657">Verwijderd</translation>
 <translation id="691024665142758461">Meerdere bestanden downloaden</translation>
 <translation id="6911324888870229398">De netwerkverbinding is verbroken. Controleer de verbinding of probeer een ander wifi-netwerk.</translation>
+<translation id="6911734910326569517">Geheugenvoetafdruk</translation>
 <translation id="6915804003454593391">Gebruiker:</translation>
 <translation id="6916590542764765824">Extensies beheren</translation>
 <translation id="6920989436227028121">Openen als normaal tabblad</translation>
@@ -3921,6 +3943,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="7077829361966535409">De inlogpagina kan niet worden geladen met de huidige proxyinstellingen. <ph name="GAIA_RELOAD_LINK_START" />Probeer opnieuw in te loggen<ph name="GAIA_RELOAD_LINK_END" /> of gebruik andere <ph name="PROXY_SETTINGS_LINK_START" />proxyinstellingen<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="7078120482318506217">Alle netwerken</translation>
 <translation id="708060913198414444">Adres van audio k&amp;opiëren</translation>
+<translation id="708278670402572152">Verbreek de verbinding om te scannen</translation>
 <translation id="7084192839369222683">Alleen belangrijke content uitvoeren</translation>
 <translation id="7088434364990739311">Het starten van de updatecontrole is mislukt (foutcode <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver: zip-bestanden openen en inpakken in de Bestanden-app.</translation>
@@ -4133,6 +4156,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="744341768939279100">Een nieuw profiel maken</translation>
 <translation id="7444726222535375658">Doorgaan naar Hangouts Meet</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> uitschakelen</translation>
+<translation id="7445682342344043969">Pop-ups geblokkeerd</translation>
 <translation id="744859430125590922">Beheer en bekijk de websites die deze persoon bezoekt via <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="7453008956351770337">Door het selecteren van deze printer geef je de volgende extensie toegang tot je printer:</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4251,6 +4275,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="7632948528260659758">Bijwerken van de volgende kiosk-apps is mislukt:</translation>
 <translation id="7634566076839829401">Er is iets misgegaan. Probeer het opnieuw.</translation>
 <translation id="7639178625568735185">Begrepen!</translation>
+<translation id="763959977925219242">Pop-ups geblokkeerd</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> logt je automatisch in bij geschikte sites met wachtwoorden die je hebt opgeslagen.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eigenaar)</translation>
 <translation id="7648992873808071793">Bestanden op dit apparaat bewaren</translation>
@@ -4330,6 +4355,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="7784067724422331729">Beveiligingsinstellingen op je computer hebben dit bestand geblokkeerd.</translation>
 <translation id="7786207843293321886">Gastsessie sluiten</translation>
 <translation id="7786889348652477777">App opnieuw &amp;laden</translation>
+<translation id="7787052136533704473">Plug-in zonder sandbox toegestaan</translation>
 <translation id="7787129790495067395">Je gebruikt momenteel een wachtwoordzin. Als je je wachtwoordzin bent vergeten, kun je de synchronisatie opnieuw instellen, zodat je je gegevens van de servers van Google kunt verwijderen met Google Dashboard.</translation>
 <translation id="7787308148023287649">Weergeven op een ander scherm</translation>
 <translation id="7788080748068240085">Als je '<ph name="FILE_NAME" />' offline wilt opslaan, moet je <ph name="TOTAL_FILE_SIZE" /> extra ruimte vrijmaken:<ph name="MARKUP_1" />
@@ -4832,6 +4858,7 @@ Tijd berekenen tot vol</translation>
 <translation id="8596540852772265699">Aangepaste bestanden</translation>
 <translation id="8596785155158796745">Microfoon is tijdelijk niet beschikbaar. <ph name="BEGIN_LINK" />Microfoon beheren<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">Notatie van property:</translation>
+<translation id="8598453409908276158">Plug-in zonder sandbox geblokkeerd</translation>
 <translation id="8598687241883907630">Je Google-account ontkoppelen...</translation>
 <translation id="8601206103050338563">TLS WWW-clientverificatie</translation>
 <translation id="8602851771975208551">Een ander programma op je computer heeft een app toegevoegd die de manier waarop Chrome werkt kan wijzigen.</translation>

@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Didelio kontrasto režimas</translation>
 <translation id="2597972630681408282">Nakties šviesa: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Pateikti</translation>
+<translation id="2675319268637823299">Administratorius neleido <ph name="USER_EMAIL" /> prisijungti prie kelių paskyrų.
+    Kad būtų galima tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="2700058918926273959">Sesija baigsis po <ph name="SESSION_TIME_REMAINING" />. Būsite atjungti.</translation>
 <translation id="2727977024730340865">Prijungtas mažos galios įkroviklis. Akumuliatoriaus įkrovimas gali būti nepatikimas.</translation>
 <translation id="2761704814324807722">Būsenos dėklas, laikas <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Prijungta</translation>
 <translation id="3371140690572404006">USB-C įrenginys (prievadas dešinėje, priekinėje dalyje)</translation>
 <translation id="3400357268283240774">Papildomi nustatymai</translation>
+<translation id="3413817803639110246">Dar nėra nieko, ką būtų galima peržiūrėti</translation>
 <translation id="3445925074670675829">USB-C įrenginys</translation>
 <translation id="3465566417615315331">Spustelėkite savo nuotrauką</translation>
 <translation id="3473479545200714844">Ekrano didintuvas</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Klaviatūros perdanga</translation>
 <translation id="639644700271529076">DIDŽIŲJŲ RAIDŽIŲ RAŠYMAS išjungtas</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Viskas atlikta</translation>
 <translation id="6452181791372256707">Atmesti</translation>
 <translation id="6453179446719226835">Kalba pakeista</translation>
 <translation id="6459472438155181876">Ekranas išplečiamas į <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Vėlesni pranešimai, langai ir dialogų langai gali būti padalyti keliuose dar
 <translation id="8825534185036233643">Negalima bendrinti daugiau nei dviejų ekranų vaizdų.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Paieškos klavišas + „Esc“</translation>
+<translation id="8870509716567206129">Programoje nepalaikomas skaidytas ekranas.</translation>
 <translation id="8878886163241303700">Išplečiamas ekranas</translation>
 <translation id="8921624153894383499">„Google“ padėjėjas nekalba šia kalba.</translation>
 <translation id="8938800817013097409">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>

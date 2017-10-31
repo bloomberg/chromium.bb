@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Modalità ad alto contrasto</translation>
 <translation id="2597972630681408282">Luminosità notturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Invia</translation>
+<translation id="2675319268637823299">Un amministratore ha vietato l'accesso simultaneo per <ph name="USER_EMAIL" />.
+Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="2700058918926273959">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />. Verrà eseguita la disconnessione.</translation>
 <translation id="2727977024730340865">Collegato a un caricabatterie a basso consumo. La carica della batteria potrebbe non essere affidabile.</translation>
 <translation id="2761704814324807722">Barra di stato, ora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Connessa</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
 <translation id="3400357268283240774">Impostazioni aggiuntive</translation>
+<translation id="3413817803639110246">Niente da vedere in questo momento</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3465566417615315331">Fai clic sulla tua foto</translation>
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Overlay tastiera</translation>
 <translation id="639644700271529076">Funzione BLOC MAIUSC non attiva</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Operazioni completate</translation>
 <translation id="6452181791372256707">Rifiuto</translation>
 <translation id="6453179446719226835">La lingua è stata modificata</translation>
 <translation id="6459472438155181876">Estensione dello schermo su <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere 
 <translation id="8825534185036233643">Il mirroring con più di due display non è supportato.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Tasto di ricerca+ESC</translation>
+<translation id="8870509716567206129">L'app non supporta la modalità Schermo diviso.</translation>
 <translation id="8878886163241303700">Estensione schermo</translation>
 <translation id="8921624153894383499">L'Assistente Google non parla questa lingua.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta posteriore destra)</translation>

@@ -4,6 +4,7 @@
 <translation id="100812568230599391">প্রদর্শন শৈলীকে একটি অন্যটির মাঝে সমাবেশিত হিসেবে পরিবর্তন করুন।</translation>
 <translation id="1012173283529841972">তালিকা আইটেম</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1022586497894531524">আপনি কি প্রথমবারের জন্য ChromeVox পড়ে শোনানো প্রতিক্রিয়া ব্যবহার করছেন? কিভাবে ChromeVox ব্যবহার করা শুরু করতে হয় এই সংক্ষিপ্ত টিউটোরিয়ালটি সে বিষয়ে প্রয়োজনীয় বিষয়গুলি ব্যাখ্যা করে।</translation>
 <translation id="1023866615269196768">স্প্যান্ড</translation>
 <translation id="1025074108959230262">স্টিকি মোড অক্ষম</translation>
 <translation id="1031961866430398710">তারপর</translation>
@@ -29,6 +30,8 @@
 <translation id="1201402288615127009">পরবর্তী</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome কে ভয়েস প্রদান</translation>
+<translation id="1225437811932752266">অভিনন্দন! আপনি ChromeVox ব্যবহার করার অত্যাবশ্যক বিষয়গুলি সফলভাবে শিখেছেন। মনে রাখবেন যে, আপনি যেকোনও সময় অনুসন্ধান+ফুলস্টপ টিপে ChromeVox কমান্ড মেনু খুলতে পারেন। ChromeVox এবং Chrome OS সম্পর্কে আরও জানার জন্য, নিম্নোক্ত নিবন্ধগুলি দেখুন।
+টিউটোরিয়ালটি শেষ করার পর, বন্ধ করার বোতামে নেভিগেট করার জন্য ChromeVox ব্যবহার করুন এবং সেটিতে ক্লিক করুন।</translation>
 <translation id="1229276918471378188">পূর্ববর্তী জাম্প</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">পরবর্তী স্তর ৬ শিরোনাম</translation>
@@ -40,6 +43,7 @@
 <translation id="1339428534620983148">পরবর্তী সারণী কলাম</translation>
 <translation id="1342835525016946179">নিবন্ধ</translation>
 <translation id="1346748346194534595">ডানে</translation>
+<translation id="135978014023467274">আপনার ChormeVox, ChromeVox 63তে আপগ্রেড করা হয়েছে!</translation>
 <translation id="136718599399906424">পরবর্তী সারণী সারি</translation>
 <translation id="1377925789329510816">এটিই সর্বশেষ শিরোনাম। প্রথম শিরোনামে ফিরে যেতে অনুসন্ধান+H টিপুন, অথবা এই পৃষ্ঠার দ্বিতীয় শিরোনামে যেতে অনুসন্ধান+Shift+H টিপুন।</translation>
 <translation id="1383876407941801731">অনুসন্ধান</translation>
@@ -167,6 +171,7 @@
 <translation id="2770781857296573485">গোষ্ঠী অন্বেষণ প্রবেশ করে</translation>
 <translation id="2777845298774924149">বের করা হয়েছে</translation>
 <translation id="2781264313200109999">লিঙ্ক শুরু করুন</translation>
+<translation id="2784959586797362050">আপনি যথারীতি অনুসন্ধান+a এবং তারপর i টিপে আমাদের সরাসরি প্রতিক্রিয়া পাঠাতে পারেন। আমরা আপনার প্রতিক্রিয়া শোনার অপেক্ষায় আছি।</translation>
 <translation id="2800204403141299078">কোনো পৃথক উপাদান নেই৷</translation>
 <translation id="2800780099804980316">কোনো পূর্ববর্তী স্তর ১ শিরোনাম নেই৷</translation>
 <translation id="280499067616661124">ChromeVox পৃষ্ঠাতে খুঁজুন</translation>
@@ -232,6 +237,7 @@
 <translation id="3241638166094654466">প্রতিটি লাইনে কক্ষের সংখ্যা:</translation>
 <translation id="3286390186030710347">স্লাইডার</translation>
 <translation id="3299925995433437805">কোনো পরবর্তী ঘুরে দেখা লিঙ্ক নেই</translation>
+<translation id="3300348286427369683">রিচ টেক্সট সমর্থন। ChromeVox এখন জাম্প কমান্ড, ব্রেইল কারসর রুটিং, নির্বাচন এবং আরও অনেক কিছু সহ রিচ টেক্সট ফিল্ডগুলি সমর্থন করে।</translation>
 <translation id="3307886118343381874">সারণীর শেষে যান</translation>
 <translation id="3311969765485641742">এই সতর্কতা পর্যালোচনা করতে Alt+Shift+A টিপুন</translation>
 <translation id="3312997241656799641">পরবর্তী ঘুরে দেখা লিঙ্ক</translation>
@@ -335,6 +341,7 @@
 <translation id="3897092660631435901">মেনু</translation>
 <translation id="3909320334364316587">পূর্ববর্তী স্তর ৬ শিরোনাম</translation>
 <translation id="3914173277599553213">প্রয়োজন</translation>
+<translation id="3914732343065571127">ChromeVox কমান্ড রেফারেন্স</translation>
 <translation id="3962990492275676168">বর্তমান অবস্থান থেকে পড়া শুরু করুন</translation>
 <translation id="4004802134384979325">চেক করা</translation>
 <translation id="4006140876663370126">img</translation>
@@ -405,7 +412,9 @@
 <translation id="4601367666219428522">সারণী <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">পরবর্তী কি টেপা উপেক্ষা করা হচ্ছে</translation>
 <translation id="461613135510474570">বাক্য</translation>
+<translation id="463135993322337640">নতুন কি আছে তা দেখার জন্য ChromeVox o, n টিপুন</translation>
 <translation id="4647836961514597010">রঙ চয়নকারী</translation>
+<translation id="4660783501463101648">ক্লাসিক সরানো হয়েছে। ChromeVox ক্লাসিকে ফিরে যাওয়ার জন্য কীবোর্ড উল্টানো সরিয়ে দেওয়া হয়েছে।</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -425,6 +434,7 @@
 <translation id="4827410568042294688">অনির্বাচিত</translation>
 <translation id="4842108708071771135">কোনো পরবর্তী অবরুদ্ধ উর্দ্ধৃতি নেই৷</translation>
 <translation id="4844625982113518938">যেকোনো কী’র নাম জানতে সেটি টিপুন। Ctrl+W টিপলে শিখন মোড বন্ধ হবে।</translation>
+<translation id="4846428657345567687">ChromeVox এ স্বাগতম!</translation>
 <translation id="4846487886195635104">কাটা অক্ষর শেষ</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">পূর্ববর্তী অনুরূপ উপাদান৷</translation>
@@ -462,6 +472,7 @@
 <translation id="5098541983634824365">গ্রিড ত্যাগ করছে৷</translation>
 <translation id="5102981729317424850">সরঞ্জাম দণ্ড</translation>
 <translation id="5105050547967751155">rq</translation>
+<translation id="5106547198195128110">এই নতুন রিলিজে আমরা কিছু আকর্ষণীয় পরিবর্তন নিয়ে এসেছি; নতুন কি আছে তা এখানে দেওয়া হল:</translation>
 <translation id="5110983769041734144">কোনো পরবর্তী ফর্ম ক্ষেত্র নেই৷</translation>
 <translation id="5111640677200759579">কলাম শিরোলেখ</translation>
 <translation id="5136967254288895616">কোনো পূর্ববর্তী লিঙ্ক নেই৷</translation>
@@ -578,6 +589,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6065293622157674001">ব্যাকরণের ত্রুটি শুরু</translation>
 <translation id="6082768461603900813">প্রাথমিক নেভিগেশান</translation>
 <translation id="6092707270915298410">লিঙ্কটি শেষ করুন</translation>
+<translation id="6118126368611144850">Chrome এর জন্য Android অ্যাপ। আপনার ডিভাইসে যদি Play স্টোর থাকে, তাহলে Android অ্যাপের সাথে ChromeVox ব্যবহার করে দেখুন। Play স্টোর থেকে Google Chrome Canary ডাউনলোড করার মাধ্যমে পরীক্ষামূলক সহায়তা পান।</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">কক্ষের সমাপ্তি৷</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -618,6 +630,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6493991254603208962">উজ্জ্বলতা কমান</translation>
 <translation id="6508059270146105198">পৃষ্ঠার নীচের দিকে ব্রেইল প্রদর্শন সরান</translation>
 <translation id="6536864053412760904">গাণিতিক ML টোকেন</translation>
+<translation id="6540201937398578274">ChromeVox এ, অনুসন্ধান কী হল পরিবর্তক কী। বেশিরভাগ ChromeVox শর্টকাটগুলি অনুসন্ধান কী দিয়ে শুরু হয়। এছাড়াও, নেভিগেশানের জন্য আপনি তীরচিহ্নগুলি ব্যবহার করবেন।</translation>
 <translation id="6550720799683018100">নিচের তালিকা থেকে একটি বিকল্প নির্বাচনের মাধ্যমে বর্তমান কীম্যাপটি পরিবর্তন করুন৷</translation>
 <translation id="6561818612645211875">বর্তমান সারির শুরুতে যান</translation>
 <translation id="6587021927234520429">কোনো পূর্ববর্তী স্তর ৪ শিরোনাম নেই৷</translation>

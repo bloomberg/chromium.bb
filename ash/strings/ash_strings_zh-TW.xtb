@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">高反差模式</translation>
 <translation id="2597972630681408282">夜燈功能：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">提交</translation>
+<translation id="2675319268637823299">管理員已禁止 <ph name="USER_EMAIL" /> 的多重登入功能。
+    所有使用者都必須登出，才能繼續操作。</translation>
 <translation id="2700058918926273959">這個工作階段將在 <ph name="SESSION_TIME_REMAINING" />後結束，屆時系統會將你登出。</translation>
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2761704814324807722">狀態匣：時間 <ph name="TIME" />，<ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">已連線</translation>
 <translation id="3371140690572404006">USB-C 裝置 (右前方連接埠)</translation>
 <translation id="3400357268283240774">其他設定</translation>
+<translation id="3413817803639110246">目前還沒有任何通知</translation>
 <translation id="3445925074670675829">USB-C 裝置</translation>
 <translation id="3465566417615315331">點選您的相片</translation>
 <translation id="3473479545200714844">畫面放大鏡</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">鍵盤自訂快速鍵</translation>
 <translation id="639644700271529076">大寫鍵已關閉</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">沒有通知</translation>
 <translation id="6452181791372256707">拒絕</translation>
 <translation id="6453179446719226835">語言已變更</translation>
 <translation id="6459472438155181876">正在擴充 <ph name="DISPLAY_NAME" /> 畫面</translation>
@@ -299,6 +303,7 @@
 <translation id="8825534185036233643">鏡像處理作業最多支援兩部顯示器。</translation>
 <translation id="8828714802988429505">90 度</translation>
 <translation id="8850991929411075241">搜尋鍵 + Esc 鍵</translation>
+<translation id="8870509716567206129">這個應用程式不支援分割畫面。</translation>
 <translation id="8878886163241303700">延伸螢幕</translation>
 <translation id="8921624153894383499">Google 個人助理不支援這個語言。</translation>
 <translation id="8938800817013097409">USB-C 裝置 (背面右側連接埠)</translation>

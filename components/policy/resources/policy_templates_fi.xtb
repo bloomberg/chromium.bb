@@ -285,6 +285,7 @@
 <translation id="2067011586099792101">Estä pääsy sisältöpakkauksiin kuulumattomiin sivustoihin</translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="2077273864382355561">Ruudun sammutuksen viive käytettäessä laitetta akkuvirralla</translation>
+<translation id="2082205219176343977">Määritä vanhin sallittu Chrome-versio laitteelle.</translation>
 <translation id="209586405398070749">Vakaa versio</translation>
 <translation id="2098658257603918882">Ota käyttö- ja kaatumistietojen raportointi käyttöön</translation>
 <translation id="2113068765175018713">Rajoita laitteen käyttöaikaa automaattisella uudelleenkäynnistyksellä</translation>
@@ -370,6 +371,13 @@
 <translation id="2303795211377219696">Salli luottokorttitietojen automaattinen täyttö</translation>
 <translation id="2309390639296060546">Maantieteellisen sijainnin oletusasetus</translation>
 <translation id="2312134445771258233">Voit määrittää käynnistettäessä avattavat sivut. Käynnistettäessä avattavat sivut -luettelo ohitetaan, jos et valitse Toiminto käynnistettäessä -asetukseksi vaihtoehtoa Avaa seuraavat sivut:.</translation>
+<translation id="2334591568684482454">Määrittää <ph name="TPM_FIRMWARE_UPDATE_TPM" />-laiteohjelmiston päivitystoiminnon saatavuuden ja toiminnan.
+
+      Tarkemmat asetukset voidaan määrittää JSON-arvoissa:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Jos tämän arvo on <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, käyttäjä voi käynnistää powerwash-toiminnon, joka asentaa <ph name="TPM_FIRMWARE_UPDATE_TPM" />:nlaiteohjelmistopäivityksen.
+
+      Jos käytäntöä ei määritetä, <ph name="TPM_FIRMWARE_UPDATE_TPM" />-laiteohjelmiston päivitystoiminto ei ole saatavilla.</translation>
 <translation id="2337466621458842053">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat näyttää kuvia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="2372547058085956601">Julkisen istunnon automaattisen kirjautumisen viive.
 
@@ -877,6 +885,25 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4027608872760987929">Ota oletushakupalvelu käyttöön</translation>
 <translation id="4039085364173654945">Määrittää, saako sivulla oleva kolmannen osapuolen alasisältö näyttää HTTP Basic Auth -valintaikkunan. Asetus on yleensä poistettu käytöstä tietojenkalastelun estotoimenpiteenä. Jos käytäntöä ei ole määritetty, asetus ei ole käytössä eikä kolmannen osapuolen alasisältö saa näyttää HTTP Basic Auth -valintaikkunaa.</translation>
 <translation id="4056910949759281379">Poista SPDY-protokolla käytöstä</translation>
+<translation id="4077363032873906037">Sallii kohteen <ph name="PRODUCT_NAME" /> rajoitetun Google Apps ‑kirjautumistoiminnon ja estää käyttäjiä muuttamasta tätä asetusta.
+
+      Jos määrität tämän asetuksen, käyttäjä pääsee Google
+      Apps ‑sovelluksiin vain määrättyjen verkkotunnusten tileiltä (huomaa, että tämä ei
+      toimi gmail.comin/googlemail.comin kohdalla).
+
+      Asetus ei estä käyttäjää kirjautumasta sisään hallinnoidulla laitteella,
+      joka edellyttää Google-todennusta. Käyttäjä voi silti kirjautua muiden
+      verkkotunnusten tileille, mutta Google Appsiin siirtyminen johtaa 
+      virheilmoitukseen.
+
+      Jos tätä asetusta ei määritetä, käyttäjät voivat käyttää Google Appsia
+      millä tahansa tilillä.
+
+      Tämän käytännön seurauksena X-GoogApps-Allowed-Domains-otsikko lisätään
+      kaikkiin google.com-verkkotunnuksiin tehtäviin HTTP- ja HTTPS-pyyntöihin.
+      Lisätietoja on artikkelissa https://support.google.com/a/answer/1668854.
+
+      Käyttäjät eivät voi muuttaa tai ohittaa tätä asetusta.</translation>
 <translation id="408029843066770167">Salli kyselyt Googlen aikapalveluun</translation>
 <translation id="4088589230932595924">Incognito-tila pakotettu</translation>
 <translation id="4088983553732356374">Tällä käytännöllä määritetään, onko sivustoilla lupa luoda paikallisia tietoja. Paikallisten tietojen luominen voidaan sallia kaikille sivustoille tai kieltää kaikilta sivustoilta.
@@ -1058,6 +1085,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
 
           Jos tätä käytäntöä ei ole määritetty, suuri osoitin ei ole käytössä aluksi, mutta käyttäjä voi ottaa sen käyttöön milloin tahansa.</translation>
+<translation id="4802905909524200151">Määritä <ph name="TPM_FIRMWARE_UPDATE_TPM" />-laiteohjelmiston päivittäminen</translation>
 <translation id="4807950475297505572">Kauimmin käyttämättä olleet käyttäjät poistetaan, kunnes vapaata tilaa on riittävästi</translation>
 <translation id="4815725774537609998">Tämä käytäntö on vanhentunut. Käytä tämän käytännön sijaan ProxyModea.
 
@@ -1090,6 +1118,27 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos käytännön asetus on epätosi, näytön herätyksen lukituspyynnöt ohitetaan.</translation>
 <translation id="4876805738539874299">Uusin SSL-versio käytössä</translation>
+<translation id="4881315447528084360">Määrittää sovellukset ja laajennukset, jotka asennetaan huomaamattomasti
+          ilman käyttäjän vuorovaikutusta ja joita käyttäjä ei voi poistaa tai
+          poistaa käytöstä. Kaikki sovellusten/laajennusten pyytämät käyttöoikeudet
+          myönnetään implisiittisesti ilman käyttäjän vuorovaikutusta, mukaan lukien
+          kaikki sovelluksen/laajennuksen tulevien versioiden pyytämät käyttöoikeudet.
+          Tämän lisäksi käyttöoikeudet myönnetään enterprise.deviceAttributes-
+          ja enterprise.platformKeys-laajennusten sovellusliittymille. (Nämä kaksi
+          sovellusliittymää eivät ole sellaisten sovellusten/laajennusten käytettävissä,
+          joita ei ole asennettu automaattisesti.)
+
+          Tämä käytäntö ohittaa sen kanssa mahdollisesti ristiriidassa olevan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-käytännön. Jos aiemmin automaattisesti asennettu sovellus tai laajennus poistetaan tästä luettelosta, <ph name="PRODUCT_NAME" /> poistaa sen automaattisesti.
+
+          Jos kyseessä on Windowsin esiintymä, jota ei ole liitetty verkkotunnukseen <ph name="MS_AD_NAME" />, automaattiset asennukset on rajoitettu Chrome Web Storesta saatavilla oleviin sovelluksiin ja laajennuksiin. 
+
+          Huomaa, että kehittäjätyökaluilla käyttäjät voivat muokata minkä tahansa laajennuksen lähdekoodia, mikä voi mahdollisesti haitata laajennuksen toimintaa. Tämä voidaan tarvittaessa estää asettamalla käytäntö <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Käytännön jokainen rivikohta on merkkijono, joka sisältää laajennustunnuksen ja puolipisteellä (<ph name="SEMICOLON" />) erotetun päivitysosoitteen. Laajennustunnus on 32-kirjaiminen merkkijono, jonka esimerkiksi <ph name="CHROME_EXTENSIONS_LINK" /> näyttää kehittäjätilassa. Päivitysosoitteen on johdettava päivitysluettelotyyppiseen XML-asiakirjaan. Katso <ph name="LINK_TO_EXTENSION_DOC1" />. Huomaa, että tässä käytännössä määritettyä päivitysosoitetta käytetään vain ensimmäiseen asennukseen. Laajennuksen myöhempiin päivityksiin käytetään laajennuksen luettelossa ilmoitettua URL-osoitetta.
+
+          Esimerkiksi <ph name="EXTENSION_POLICY_EXAMPLE" /> asentaa sovelluksen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> Chrome Web Storen tavallisen päivitysosoitteen kautta. Lisätietoja laajennusten isännöinnistä: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jos tätä käytäntöä ei ole määritetty, mitään sovelluksia tai laajennuksia ei asenneta automaattisesti ja käyttäjä voi poistaa minkä tahansa sovelluksen tai laajennuksen kohteessa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Määritä verkkotunnukset, joille sallitaan Google Apps -käyttö</translation>
 <translation id="4897928009230106190">Määrittää parametrit, joita käytetään tehtäessä ehdotushakuja POST-metodin avulla. Se koostuu pilkuilla erotetuista nimi/arvo-pareista. Jos arvo on malliparametri kuten yllä olevan esimerkin {searchTerms}, se korvataan oikeilla hakusanatiedoilla.
 
@@ -1112,6 +1161,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4980635395568992380">Tietotyyppi:</translation>
 <translation id="4983201894483989687">Salli vanhentuneiden laajennuksien käyttö</translation>
 <translation id="4988291787868618635">Toiminto, joka suoritetaan käyttämättömyysajan kuluttua</translation>
+<translation id="4995548127349206948">Onko NTLMv2-todennus käytössä</translation>
 <translation id="5047604665028708335">Salli sisältöpaketteihin kuulumattomien sivustojen käyttö</translation>
 <translation id="5052081091120171147">Tämä käytäntö pakottaa selaushistorian tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, selaushistoriaa ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda selaushistorian, tai historia voidaan tuoda automaattisesti.</translation>
 <translation id="5056708224511062314">Näytön suurentaja ei käytössä</translation>
@@ -2100,6 +2150,11 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8451988835943702790">Käytä Uusi välilehti -sivua etusivuna</translation>
 <translation id="8465065632133292531">POST-metodia käyttävän pikahaun URL-osoitteen parametrit</translation>
 <translation id="847472800012384958">Älä anna sivustojen näyttää ponnahdusikkunoita</translation>
+<translation id="8476127435468057643">Hallinnoi NTLMv2:n käytössä oloa.
+
+          Kaikki Samba- ja Windows-palvelinten viimeaikaiset versiot tukevat NTLMv2:ta. Se pitäisi poistaa käytöstä vain takautuvan yhteensopivuuden vuoksi, sillä tämä huonontaa todennuksen turvallisuutta.
+
+          Kun tätä käytäntöä ei ole määritetty, sen oletusarvo on epätosi takautuvan yhteensopivuuden vuoksi, mutta tämä muuttuu tulevaisuudessa.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Muokkaa niiden URL-mallien luetteloa, jotka isäntäselaimen tulee aina piirtää näytölle.
  
@@ -2115,6 +2170,12 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 
       Jos tämä käytäntö on käytössä, käyttäjä voi käyttää kaikkia tulostimia, paitsi niitä, joiden tunnukset on lueteltu tässä.
       </translation>
+<translation id="8538235451413605457">Määrittää kohteen <ph name="PRODUCT_NAME" /> vanhimman sallitun version. Tätä vanhempia versioita kohdellaan vanhentuneina ja laite ei salli käyttäjän kirjautua sisään, ennen kuin hän on päivittänyt käyttöjärjestelmän.
+      Jos nykyinen versio vanhenee käyttökerran aikana, käyttäjä kirjataan ulos automaattisesti.
+
+      Jos tätä käytäntöä ei ole määritetty, rajoituksia ei ole ja käyttäjä voi kirjautua sisään kohteen <ph name="PRODUCT_NAME" /> versiosta riippumatta.
+
+      Versio voi tässä tarkoittaa joko tarkkaa versiota, esim. 61.0.3163.120, tai version alkuosaa, esim. 61.0.  </translation>
 <translation id="8544375438507658205">HTML-osoitteiden oletushahmonnin tuotteelle <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varoita, kun sisältöpaketteihin kuulumaton sivusto avataan</translation>
 <translation id="8566842294717252664">Piilota verkkokauppa uusi välilehti -sivulla ja sovellusten käynnistysohjelmassa</translation>

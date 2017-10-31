@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Nagy kontrasztú mód</translation>
 <translation id="2597972630681408282">Éjszakai fény: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Elküldés</translation>
+<translation id="2675319268637823299">Egy rendszergazda letiltotta a többfiókos bejelentkezést <ph name="USER_EMAIL" /> számára.
+    Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="2700058918926273959">A munkamenet <ph name="SESSION_TIME_REMAINING" /> múlva véget ér. A rendszer ekkor kijelentkezteti Önt.</translation>
 <translation id="2727977024730340865">Kis teljesítményű töltőt csatlakoztatott. Az akkumulátor töltése nem megbízható.</translation>
 <translation id="2761704814324807722">Állapotterület, idő: <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Kapcsolódva</translation>
 <translation id="3371140690572404006">C típusú USB-vel kompatibilis eszköz (jobb első port)</translation>
 <translation id="3400357268283240774">További beállítások</translation>
+<translation id="3413817803639110246">Itt most nem látható semmi</translation>
 <translation id="3445925074670675829">C típusú USB-vel kompatibilis eszköz</translation>
 <translation id="3465566417615315331">Kattintson a képére</translation>
 <translation id="3473479545200714844">Képernyőnagyító</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Billentyűzetkiosztás</translation>
 <translation id="639644700271529076">A CAPS LOCK ki van kapcsolva</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Elkészült</translation>
 <translation id="6452181791372256707">Elutasítás</translation>
 <translation id="6453179446719226835">A nyelv módosult</translation>
 <translation id="6459472438155181876">Képernyő kiterjesztése erre: <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Az ezt követő értesítéseket, ablakokat és párbeszédpaneleket a rendszer 
 <translation id="8825534185036233643">A böngésző nem támogatja a tükrözést kettőnél több megjelenítő esetén.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Keresés+Esc</translation>
+<translation id="8870509716567206129">Az alkalmazás nem támogatja az osztott képernyős nézetet.</translation>
 <translation id="8878886163241303700">Kibővített képernyő</translation>
 <translation id="8921624153894383499">A Google Segéd nem beszél ezen a nyelven.</translation>
 <translation id="8938800817013097409">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>

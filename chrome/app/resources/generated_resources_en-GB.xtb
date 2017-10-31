@@ -99,6 +99,7 @@
 <translation id="114140604515785785">Extension root directory:</translation>
 <translation id="1143142264369994168">Certificate Signer</translation>
 <translation id="1145292499998999162">Plug-in blocked</translation>
+<translation id="1145532888383813076">Search your device, apps and web.</translation>
 <translation id="1146204723345436916">Import bookmarks from HTML file...</translation>
 <translation id="1149401351239820326">Expiry month</translation>
 <translation id="1153356358378277386">Paired devices</translation>
@@ -243,6 +244,7 @@
 <translation id="1368832886055348810">Left to Right</translation>
 <translation id="1370646789215800222">Remove person?</translation>
 <translation id="1374844444528092021">The certificate required by network "<ph name="NETWORK_NAME" />" is either not installed or is no longer valid.  Please get a new certificate and try connecting again.</translation>
+<translation id="1374962581120570592">Cookies Set</translation>
 <translation id="1375321115329958930">Saved Passwords</translation>
 <translation id="137651782282853227">Saved addresses will appear here</translation>
 <translation id="1377600615067678409">Skip for now</translation>
@@ -533,12 +535,14 @@
 <translation id="1794791083288629568">Send feedback to help us fix this issue.</translation>
 <translation id="1795214765651529549">Use Classic</translation>
 <translation id="179767530217573436">the last 4 weeks</translation>
+<translation id="1798688944196431257">Cookies Blocked</translation>
 <translation id="1799071797295057738">The extension "<ph name="EXTENSION_NAME" />" was automatically disabled.</translation>
 <translation id="180035236176489073">You must be online to access these files.</translation>
 <translation id="1801298019027379214">Incorrect PIN. Please try again. Tries left: <ph name="TRIES_COUNT" /></translation>
 <translation id="1801827354178857021">Period</translation>
 <translation id="1802931390041703523">Flash was blocked on this page</translation>
 <translation id="1803545009660609783">Retrain</translation>
+<translation id="1805822111539868586">Inspect views</translation>
 <translation id="1807938677607439181">All files</translation>
 <translation id="1809734401532861917">Add my bookmarks, history, passwords and other settings to <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1810107444790159527">List box</translation>
@@ -606,6 +610,7 @@
 <translation id="1916502483199172559">Default red avatar</translation>
 <translation id="1918141783557917887">&amp;Smaller</translation>
 <translation id="1919345977826869612">Ads</translation>
+<translation id="1919814239594435008">Unsandboxed plug-in allowed</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="192494336144674234">Open with</translation>
 <translation id="1925021887439448749">Enter custom web address</translation>
@@ -637,6 +642,7 @@
 <translation id="197560921582345123">Can edit</translation>
 <translation id="1975841812214822307">Remove...</translation>
 <translation id="1976150099241323601">Sign in to Security Device</translation>
+<translation id="1976315108329706992">You can now use Android apps.</translation>
 <translation id="1976323404609382849">Cookies from multiple sites blocked.</translation>
 <translation id="1977965994116744507">Bring your phone closer to unlock your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1979280758666859181">You are changing to a channel with an older version of <ph name="PRODUCT_NAME" />. The channel change will be applied when the channel version matches the version currently installed on your device.</translation>
@@ -1063,6 +1069,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2638286699381354126">Update...</translation>
 <translation id="2638942478653899953">Google Drive could not be reached. Please <ph name="BEGIN_LINK" />log out<ph name="END_LINK" /> and log back in.</translation>
 <translation id="2642111877055905627">Football</translation>
+<translation id="2643569582440544295">Lock screen notes are accessible from the lock screen and automatically saved to <ph name="LOCK_SCREEN_APP_NAME" />.</translation>
 <translation id="2643698698624765890">Manage your extensions by clicking Extensions in the Window menu.</translation>
 <translation id="2647142853114880570">reload</translation>
 <translation id="2647269890314209800">Cookies in Use</translation>
@@ -1100,6 +1107,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2686759344028411998">Unable to detect any modules loaded.</translation>
 <translation id="2688196195245426394">Error when registering the device with the server: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">Show language options</translation>
+<translation id="2690405692940015382">Images blocked</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Oops!  An unknown error occurred. Please try again later or contact your administrator if the issue persists.</translation>
 <translation id="2694026874607847549">1 cookie</translation>
@@ -1557,6 +1565,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3348038390189153836">Removable device detected</translation>
 <translation id="3348459612390503954">Congratulations</translation>
 <translation id="3348643303702027858">OS Recovery Media creation has been cancelled.</translation>
+<translation id="3349933790966648062">Memory footprint</translation>
 <translation id="3353984535370177728">Select a folder to upload</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="3355936511340229503">Connection error</translation>
@@ -1713,6 +1722,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3584169441612580296">Read and change photos, music and other media from your computer</translation>
 <translation id="3587482841069643663">All</translation>
 <translation id="358796204584394954">Type this code on "<ph name="DEVICE_NAME" />" to pair:</translation>
+<translation id="3589766037099229847">Insecure content blocked</translation>
 <translation id="3590194807845837023">Unlock Profile and Relaunch</translation>
 <translation id="3592260987370335752">&amp;Learn more</translation>
 <translation id="359283478042092570">Enter</translation>
@@ -1792,6 +1802,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3697100740575341996">Your IT administrator has disabled Chrome Goodies for your device. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">Email address</translation>
 <translation id="3702500414347826004">Your start-up pages were changed to include <ph name="URL" />.</translation>
+<translation id="370415077757856453">JavaScript blocked</translation>
 <translation id="3704331259350077894">Cessation of Operation</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">Loading...</translation>
@@ -1826,6 +1837,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3755411799582650620">Your <ph name="PHONE_NAME" /> can now unlock this <ph name="DEVICE_TYPE" /> too.</translation>
 <translation id="3758201569871381925">Please make sure that your Hotrod device is turned on and connected to a TV.</translation>
 <translation id="375841316537350618">Downloading proxy script...</translation>
+<translation id="3758842566811519622">Cookies set</translation>
 <translation id="3759371141211657149">Manage handler settings...</translation>
 <translation id="3759933321830434300">Block parts of web pages</translation>
 <translation id="3760460896538743390">Inspect &amp;Background Page</translation>
@@ -1919,6 +1931,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3878840326289104869">Creating supervised user</translation>
 <translation id="3879748587602334249">Download manager</translation>
 <translation id="388485010393668001">Completion available: <ph name="COMPLETION_TEXT" /></translation>
+<translation id="3888550877729210209">Taking notes with <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Add OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Read and change your accessibility settings</translation>
 <translation id="3893630138897523026">ChromeVox (spoken feedback)</translation>
@@ -2319,6 +2332,7 @@ Press any key to continue exploring.</translation>
 <translation id="4590324241397107707">Database Storage</translation>
 <translation id="4593021220803146968">&amp;Go to <ph name="URL" /></translation>
 <translation id="4595560905247879544">Apps and extensions can only be modified by the manager (<ph name="CUSTODIAN_NAME" />).</translation>
+<translation id="4595989643015195102">Unsandboxed Plug-in Blocked</translation>
 <translation id="4596295440756783523">You have certificates on file that identify these servers</translation>
 <translation id="4598556348158889687">Storage management</translation>
 <translation id="4598776695426288251">Wi-Fi available via multiple devices</translation>
@@ -2336,6 +2350,7 @@ Press any key to continue exploring.</translation>
 <translation id="4620809267248568679">This setting is enforced by an extension.</translation>
 <translation id="4624768044135598934">Success!</translation>
 <translation id="4625078469366263107">Enable App</translation>
+<translation id="4627427111733173920">Cookies blocked</translation>
 <translation id="4627442949885028695">Continue from another device</translation>
 <translation id="4628314759732363424">Change...</translation>
 <translation id="4628757576491864469">Devices</translation>
@@ -2883,6 +2898,7 @@ Press any key to continue exploring.</translation>
 <translation id="5457113250005438886">Invalid</translation>
 <translation id="5457459357461771897">Read and delete photos, music and other media from your computer</translation>
 <translation id="5457599981699367932">Browse as Guest</translation>
+<translation id="5457950659230097883">JavaScript Blocked</translation>
 <translation id="5458998536542739734">Lock screen notes</translation>
 <translation id="5463275305984126951">Index of <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu containing hidden bookmarks</translation>
@@ -2923,6 +2939,7 @@ Press any key to continue exploring.</translation>
 <translation id="5513242761114685513">Context menu</translation>
 <translation id="5516183516694518900">Sign in to Chrome with your Google Account to get your bookmarks, history, passwords and other settings on all your devices.</translation>
 <translation id="551752069230578406">Adding the printer to your account - this may take a moment...</translation>
+<translation id="5517535964909391608">Insecure Content Blocked</translation>
 <translation id="5518584115117143805">Email Encryption Certificate</translation>
 <translation id="5521078259930077036">Is this the home page that you were expecting?</translation>
 <translation id="5521348028713515143">Add desktop shortcut</translation>
@@ -2989,6 +3006,7 @@ Press any key to continue exploring.</translation>
 <translation id="5612734644261457353">Sorry, your password still could not be verified. Note: if you changed your password recently, your new password will be applied once you sign out, please use the old password here.</translation>
 <translation id="5613695965848159202">Anonymous identity:</translation>
 <translation id="5614190747811328134">User Notice</translation>
+<translation id="561698261642843490">Close Firefox</translation>
 <translation id="5618075537869101857">Oh no, the kiosk application could not be launched.</translation>
 <translation id="5618333180342767515">(this might take a few minutes)</translation>
 <translation id="5618972959246891967">System date</translation>
@@ -3019,6 +3037,7 @@ Press any key to continue exploring.</translation>
 <translation id="5662477687021125631">Perpetual</translation>
 <translation id="5669267381087807207">Activating</translation>
 <translation id="5669691691057771421">Enter new PIN</translation>
+<translation id="5671641761787789573">Images blocked</translation>
 <translation id="5677503058916217575">Page language:</translation>
 <translation id="5677928146339483299">Blocked</translation>
 <translation id="5678550637669481956">Read and write access to <ph name="VOLUME_NAME" /> has been granted.</translation>
@@ -3240,6 +3259,7 @@ Press any key to continue exploring.</translation>
 <translation id="6025215716629925253">Stack Trace</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – USB device connected</translation>
 <translation id="6032912588568283682">File system</translation>
+<translation id="6034662038931255275">OS update successful</translation>
 <translation id="6039651071822577588">Network property dictionary malformed</translation>
 <translation id="604001903249547235">Cloud backup</translation>
 <translation id="6040143037577758943">Close</translation>
@@ -3740,6 +3760,7 @@ Press any key to continue exploring.</translation>
 <translation id="6798954102094737107">Plug-in: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">Calibrate touchscreen</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
+<translation id="6804124853318036372">Loading, please wait...</translation>
 <translation id="6804671422566312077">Open All Bookmarks in &amp;New Window</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Please sign in to <ph name="TOKEN_NAME" /> to import client certificate from <ph name="HOST_NAME" />.</translation>
@@ -3806,6 +3827,7 @@ Press any key to continue exploring.</translation>
 <translation id="6910211073230771657">Deleted</translation>
 <translation id="691024665142758461">Download multiple files</translation>
 <translation id="6911324888870229398">Network connection was lost. Please check your connection or try another Wi-Fi network.</translation>
+<translation id="6911734910326569517">Memory footprint</translation>
 <translation id="6915804003454593391">User:</translation>
 <translation id="6916590542764765824">Manage Extensions</translation>
 <translation id="6920989436227028121">Open as standard tab</translation>
@@ -3920,6 +3942,7 @@ Press any key to continue exploring.</translation>
 <translation id="7077829361966535409">The sign-in page failed to load using the current proxy settings. Please <ph name="GAIA_RELOAD_LINK_START" />try to sign in again<ph name="GAIA_RELOAD_LINK_END" /> or use different <ph name="PROXY_SETTINGS_LINK_START" />proxy settings<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="7078120482318506217">All networks</translation>
 <translation id="708060913198414444">C&amp;opy audio address</translation>
+<translation id="708278670402572152">Disconnect to enable scanning</translation>
 <translation id="7084192839369222683">Run only important content</translation>
 <translation id="7088434364990739311">Update check failed to start (error code <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – Open and pack ZIP files in Files app.</translation>
@@ -4132,6 +4155,7 @@ Press any key to continue exploring.</translation>
 <translation id="744341768939279100">Create a new profile</translation>
 <translation id="7444726222535375658">Continue to Hangouts Meet</translation>
 <translation id="7444983668544353857">Disable <ph name="NETWORKDEVICE" /></translation>
+<translation id="7445682342344043969">Pop-ups blocked</translation>
 <translation id="744859430125590922">Control and view the websites this person visits from <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="7453008956351770337">By selecting this printer, you are giving the following extension the permission to access your printer:</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4250,6 +4274,7 @@ Press any key to continue exploring.</translation>
 <translation id="7632948528260659758">The following kiosk apps have been failed for updating:</translation>
 <translation id="7634566076839829401">Something went wrong. Please try again.</translation>
 <translation id="7639178625568735185">Got it!</translation>
+<translation id="763959977925219242">Pop-ups blocked</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> automatically signs you in to eligible sites with passwords that you saved.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>
 <translation id="7648992873808071793">Store files on this device</translation>
@@ -4329,6 +4354,7 @@ Press any key to continue exploring.</translation>
 <translation id="7784067724422331729">Security settings on your computer blocked this file.</translation>
 <translation id="7786207843293321886">Exit Guest</translation>
 <translation id="7786889348652477777">&amp;Reload App</translation>
+<translation id="7787052136533704473">Unsandboxed Plug-in Allowed</translation>
 <translation id="7787129790495067395">You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your data from Google's servers, using the Google Dashboard.</translation>
 <translation id="7787308148023287649">Display on another screen</translation>
 <translation id="7788080748068240085">To save "<ph name="FILE_NAME" />" offline you must free up an additional <ph name="TOTAL_FILE_SIZE" /> of space:<ph name="MARKUP_1" />
@@ -4832,6 +4858,7 @@ Calculating time until full</translation>
 <translation id="8596540852772265699">Customised Files</translation>
 <translation id="8596785155158796745">Microphone is currently unavailable. <ph name="BEGIN_LINK" />Manage microphone<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">Property format:</translation>
+<translation id="8598453409908276158">Unsandboxed plug-in blocked</translation>
 <translation id="8598687241883907630">Disconnect your Google Account...</translation>
 <translation id="8601206103050338563">TLS WWW Client Authentication</translation>
 <translation id="8602851771975208551">Another programme on your computer added an app that may change the way Chrome works.</translation>

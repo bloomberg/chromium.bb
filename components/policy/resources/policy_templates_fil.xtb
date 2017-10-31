@@ -100,6 +100,7 @@
 <translation id="1454846751303307294">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na hindi pinapayagang magpatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
+<translation id="1456822151187621582">Windows (mga kliyente ng <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Kontrolin ang gawi ng user sa isang multiprofile session sa mga <ph name="PRODUCT_OS_NAME" /> device.
 
       Kung itinakda ang patakarang ito sa 'MultiProfileUserBehaviorUnrestricted', ang user ay maaaring maging pangunahin o pangalawang user sa isang multiprofile session.
@@ -291,6 +292,7 @@
 <translation id="2067011586099792101">I-block ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="2077129598763517140">Gamitin ang pagpapabilis ng hardware kapag available</translation>
 <translation id="2077273864382355561">Delay ng pag-off ng screen kapag tumatakbo gamit ang power ng baterya</translation>
+<translation id="2082205219176343977">I-configure ang minimum na pinapayagang bersyon ng Chrome para sa device.</translation>
 <translation id="209586405398070749">Stable na channel</translation>
 <translation id="2098658257603918882">Paganahin ang pag-uulat ng data ng paggamit at kaugnay ng crash</translation>
 <translation id="2113068765175018713">Limitahan ang uptime ng device sa pamamagitan ng awtomatikong pag-reboot</translation>
@@ -377,6 +379,13 @@
 <translation id="2303795211377219696">I-enable ang AutoFill para sa mga credit card</translation>
 <translation id="2309390639296060546">Default na setting ng geolocation</translation>
 <translation id="2312134445771258233">Pinapayagan kang i-configure ang mga pahina na na-load sa startup. Ang mga nilalaman ng listahan ng 'Mga URL upang buksan sa startup' ay binabalewala maliban kung piliin mo ang 'Magbukas ng listahan ng mga URL' sa 'Pagkilos sa startup'.</translation>
+<translation id="2334591568684482454">Nagko-configure ng availability at gawi ng functionality ng pag-update sa firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Maaaring tumukoy ng mga indibidwal na setting sa mga property ng JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Kung nakatakda sa <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, mati-trigger ng mga user ang powerwash flow upang mag-install ng update sa firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Kung hindi nakatakda ang patakaran, magiging hindi available ang functionality ng pag-update sa firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" />.</translation>
 <translation id="2337466621458842053">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url  na tumutukoy sa mga site na pinapayagang magpakita ng mga larawan.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultImagesSetting' kung nakatakda ito, o kung hindi man, ang personal na configuration ng user.</translation>
@@ -562,6 +571,7 @@
           Kung naka-disable ang setting na ito at pini-filter ng firewall ang mga papalabas na UDP na koneksyon, papayagan lang ng makinang ito ang mga koneksyon mula sa mga makina ng kliyente sa loob ng lokal na network.
 
           Kung iniwang hindi nakatakda ang patakarang ito, i-e-enable ang setting.</translation>
+<translation id="2823870601012066791">Lookasyon ng registry ng windows para sa mga kliyente ng <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
 <translation id="2838830882081735096">Huwag payagan ang paglipat ng data at ARC</translation>
 <translation id="2844404652289407061">Ine-enable ang availability ng Pindutin upang Hanapin sa view ng content ng <ph name="PRODUCT_NAME" />.
@@ -906,6 +916,25 @@
 
           Karaniwang hindi ito pinapagana bilang isang depensa sa phishing. Kung hindi nakatakda ang patakarang ito, hindi ito pinapagana at hindi papayagan ang sub-content ng third-party na mag-pop up ng isang dialog box ng HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Huwag paganahin ang SPDY protocol</translation>
+<translation id="4077363032873906037">Ine-enable ang pinaghihigpitang log ng <ph name="PRODUCT_NAME" /> sa feature sa Google Apps at pinipigilan ang mga user na baguhin ang setting na ito.
+
+      Kung tutukuyin mo ang setting na ito, maa-access lang ng user ang Google
+      Apps gamit ang mga account mula sa mga natukoy na domain (tandaang hindi ito
+      gumagana para sa gmail.com/googlemail.com).
+
+      HINDI pipigilan ng setting na ito ang user na mag-log in sa isang pinamamahalaang device
+      na nangangailangan ng pag-authenticate ng Google. Papayagan pa rin ang user na
+      mag-sign in sa mga account mula sa iba pang domain, ngunit makakatanggap siya ng error
+      kapag sinubukang gamitin ang Google Apps gamit ang mga account na iyon.
+
+      Kung hahayaan mong walang laman/hindi na-configure ang setting na ito, maa-access ng user
+      ang Google Apps gamit ang anumang account.
+
+      Dahil sa patakarang ito, maa-append ang header na X-GoogApps-Allowed-Domains
+      sa lahat ng kahilingan sa HTTP at HTTPS sa lahat ng google.com na domain, gaya ng nakasaad sa
+      https://support.google.com/a/answer/1668854.
+
+      Hindi mababago o mao-override ng mga user ang setting na ito.</translation>
 <translation id="408029843066770167">Payagan ang mga query sa isang serbisyo ng oras ng Google</translation>
 <translation id="4088589230932595924">Pinuwersa ang mode na incognito</translation>
 <translation id="4088983553732356374">Nagbibigay-daan sa iyong itakda kung maaari bang magtakda ng lokal na data ang mga website. Maaaring payagan para sa lahat ng website o tanggihan para sa lahat ng website ang pagtatakda ng lokal na data.
@@ -1096,6 +1125,7 @@
           Kung itatakda mo ang patakarang ito, hindi ito maaaring baguhin o i-override ng mga user.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable ang malaking cursor sa umpisa ngunit maaaring i-enable ng user anumang oras.</translation>
+<translation id="4802905909524200151">I-configure ang gawi sa pag-update ng firmware na <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4807950475297505572">Inaalis ang mga user na pinakahindi nagagamit kamakailan hangga't mayroon nang sapat na espasyo</translation>
 <translation id="4815725774537609998">Hindi na ginagamit ang patakarang ito, gamitin na lang ang ProxyMode.
 
@@ -1128,6 +1158,27 @@
 
           Kung nakatakda sa false ang patakarang ito, babalewalain ang mga kahilingan sa lock ng pagpapagana ng screen.</translation>
 <translation id="4876805738539874299">Naka-enable ang maximum na bersyon ng SSL</translation>
+<translation id="4881315447528084360">Tumutukoy ng listahan ng mga app at extension na na-install nang walang tunog,
+          nang walang pakikipag-ugnayan sa user, at na hindi maa-uninstall o
+          madi-disable ng user. Ang lahat ng pahintulot na hiniling
+          ng mga app/extension ay ibinibigay nang tuwiran, nang walang pakikipag-ugnayan sa user,
+          kabilang ang anumang karagdagang pahintulot na hihilingin ng mga darating na bersyon ng
+          app/extension. Dagdag pa rito, ibinibigay ang mga pahintulot para sa
+          enterprise.deviceAttributes at enterprise.platformKeys extension
+          API. (Ang dalawang API na ito ay hindi available sa mga app/extension na
+          hindi sapilitang na-install.)
+
+          Mananaig ang patakarang ito sa posibleng sumalungat na patakaran ng <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Kung inalis sa listahang ito ang isang app o extension na kamakailang sapilitang na-install, awtomatiko itong ia-uninstall ng <ph name="PRODUCT_NAME" />.
+
+          Para sa mga instance ng Windows na hindi nasali sa isang <ph name="MS_AD_NAME" /> domain, nalilimitahan ang sapilitang pag-install sa mga app at extension na nakalista sa Chrome Web Store.
+
+          Tandaang maaaring baguhin ng mga user ang source code ng anumang extension sa pamamagitan ng Mga Tool ng Developer (posibleng nagre-render upang hindi gumana nang maayos ang extension). Kung inaalala mo ito, dapat itakda ang patakaran ng <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Ang bawat item ng listahan ng patakaran ay isang string na may extension ID at URL ng "update" na pinaghihiwalay ng semicolon (<ph name="SEMICOLON" />). Ang extension ID ang 32 titik na string na makikita kapag ang <ph name="CHROME_EXTENSIONS_LINK" /> ay nasa developer mode. Dapat humantong ang URL ng "update" sa isang Update Manifest XML document gaya ng nakasaad sa <ph name="LINK_TO_EXTENSION_DOC1" />. Tandaang ginagamit lang ang URL ng "update" na itinakda sa patakarang ito para sa unang pag-install; ine-employ ng mga susunod na update ng extension ang URL ng update na nakalagay sa manifest ng extension.
+
+          Halimbawa, ini-install ng <ph name="EXTENSION_POLICY_EXAMPLE" /> ang <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app mula sa karaniwang Chrome Web Store "update" URL. Para sa higit pang impormasyon tungkol sa pag-host ng mga extension, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Kung hinayaang hindi nakatakda ang patakarang ito, walang app o extension ang awtomatikong ii-install at maa-uninstall ng user ang anumang app o extension sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Tukuyin ang mga domain na pinapayagang i-access ang Google Apps</translation>
 <translation id="4897928009230106190">Tinutukoy ang mga parameter na ginamit kapag gumagawa ng paghahanap ng mungkahi gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {searchTerms} sa halimbawa sa itaas, papalitan ito ng data ng tunay na mga termino para sa paghahanap.
 
@@ -1150,6 +1201,7 @@
 <translation id="4980635395568992380">Uri ng data:</translation>
 <translation id="4983201894483989687">Payagan ang pagpapatakbo ng mga plugin na wala na sa panahon</translation>
 <translation id="4988291787868618635">Pagkilos na gagawin kapag naabot ang idle delay</translation>
+<translation id="4995548127349206948">Kung naka-enable ang pag-authenticate ng NTLMv2.</translation>
 <translation id="5047604665028708335">Payagan ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="5052081091120171147">Pinupwersa ng patakarang ito na ma-import mula sa kasalukuyang default na browser ang kasaysayan ng pagba-browse kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng pag-import.
 
@@ -1508,6 +1560,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6076099373507468537">Inilalarawan ang listahan ng mga USB device na pinahihintulutang i-detach mula sa kernel driver ng mga ito upang magamit sa chrome.usb API sa mismong web application. Ang mga entry ay mga pares ng Identifier ng USB Vendor at Identifier ng Produkto na magagamit sa pagtukoy ng isang partikular na hardware.
 
       Kung hindi mako-configure ang patakarang ito, hindi magkakaroon ng laman ang listahan ng mga nade-detach na USB device.</translation>
+<translation id="6083631234867522991">Windows (mga kliyente ng Windows):</translation>
 <translation id="6093156968240188330">Binibigyang-daan ang mga remote na user na makipag-ugnayan sa mga elevated window sa mga session ng remote na tulong</translation>
 <translation id="6095999036251797924">Tinutukoy kung gaano katagal dapat na walang input mula sa user bago ma-lock ang screen kapag AC power o baterya ang ginagamit
 
@@ -2018,6 +2071,39 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7841880500990419427">Minimum na bersyon ng TLB na babalikan</translation>
 <translation id="7842869978353666042">I-configure ang mga pagpipilian sa Google Drive</translation>
 <translation id="7843525027689416831">Tinutukoy ang mga flag na dapat ilapat sa <ph name="PRODUCT_NAME" /> kapag nagsimula ito. Inilalapat ang mga flag sa screen ng pag-log in lang. Ang mga flag na sine-set sa pamamagitan ng patakarang ito ay hindi nalilipat sa mga session ng user.</translation>
+<translation id="7844537954833753199">Kino-confiigure ang mga setting ng pamamahala ng extension para sa <ph name="PRODUCT_NAME" />.
+
+          Kinokontrol ng patakarang ito ang maraming setting, kabilang ang mga setting na kinokontrol ng anumang kasalukuyang patakarang nauugnay sa extension. Io-overide ng patakarang ito ang anumang legacy na patakaran kung itatakda pareho.
+
+          Minamapa ng patakarang ito ang isang extension ID o URL ng update sa configuration nito. Gamit ang isang extension ID, malalapat lang ang configuration sa tinukoy na extension. Maaaring itakda ang default na configuration para sa special ID <ph name="DEFAULT_SCOPE" />, na ilalapat sa lahat ng extension na walang nakatakdang custom na configuration sa patakarang ito. Gamit ang URL ng update, ilalapat ang configuration sa lahat ng extension na may eksaktong na-update na URL na nakasaad sa manifest ng extension na ito, tulad ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Ang configuration para sa bawat extension (o mga extension na may parehong URL ng update) ay isa pang dictionary na maaaring maglaman ng mga field na nakadokumento sa ibaba.
+
+          <ph name="INSTALLATION_MODE" />: nagmamapa sa isang string na nagsasaad ng mode sa pag-install para sa extension. Ang mga valid na string ay:
+          * <ph name="ALLOWED" />: pinapayagan ang extension na ma-install ng user. Ito ang default na gawi.
+          * <ph name="BLOCKED" />: bina-block ang pag-install ng extension.
+          * <ph name="FORCE_INSTALLED" />: awtomatikong naka-install ang extension at hindi maaaring alisin ng user.
+          * <ph name="NORMAL_INSTALLED" />: awtomatikong naka-install ang extension ngunit maaaring i-disable ng user.
+
+          Maaari ding i-configure ang <ph name="INSTALLTION_MODE" /> para sa maraming extension, kasama na rin ang extension na <ph name="DEFAULT_SCOPE" /> (bilang mga default na setting) at mga extension na may parehong URL ng update. Ang mga value na <ph name="ALLOWED" /> at <ph name="BLOCKED" /> lang ang maaaring gamitin sa kasong ito.
+
+          Kung nakatakda ang mode sa <ph name="FORCE_INSTALLED" /> o <ph name="NORMAL_INSTALLED" />, dapat na i-configure din ang <ph name="UPDATE_URL" />. Tandaan na ang URL ng update na nakatakda sa patakarang ito ay ginagamit lang sa unang pag-install; gagamitin ng mga susunod na update ng extension ang URL ng update na nakasaad sa manifest ng extension. Dapat humantong ang URL ng update sa isang Update Manifest XML document tulad ng binabanggit sa itaas.
+
+          <ph name="BLOCKED_PERMISSIONS" />: nagmamapa sa isang listahan ng mga string na nagsasaad ng mga naka-block na pahintulot ng API para sa extension. Magkakapareho lang ang mga pangalan ng pahintulot at ang mga string ng pahintulot na idineklara sa manifest ng extension tulad ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC3" />. Maaari ding i-configure ang setting na ito para sa extension na <ph name="DEFAULT_SCOPE" />. Kung nangangailangan ng pahintulot ang extension na nasa blocklist, hind ito papayagang mag-load. Kung naglalaman ito ng naka-block na pahintulot bilang opsyonal na kinakailangan, pangangasiwaan ito sa normal na paraan, ngunit awtomatikong tatanggihan ang paghiling ng salungat na pahintulot sa runtime.
+
+          <ph name="ALLOWED_PERMISSIONS" />: katulad sa <ph name="BLOCKED_PERMISSIONS" />, ngunit sa halip ay pinapayagan ang ilang pahintulot na maaaring na-block sa listahan ng naka-block na pahintulot sa buong mundo, kaya hindi maaaring i-configure para sa extension na <ph name="DEFAULT_SCOPE" />. Tandaang hindi awtomatikong nagbibigay ng mga pahintulot sa mga extension ang setting na ito.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: nagmamapa sa isang string ng bersyon. Ang format ng string ng bersyon ay kapareho lang ng ginagamit sa manifest ng extension, tulad ng inilalarawan sa <ph name="LINK_TO_EXTENSION_DOC4" />. Idi-disable ang extension na may mas lumang bersyon kaysa sa tinukoy na minimum na bersyon. Nalalapat din ito sa mga extension na sapilitang na-install.
+
+          Maaari lang gamitin ang mga sumusunod na setting para sa default na configuration na <ph name="DEFAULT_SCOPE" />:
+
+          <ph name="INSTALL_SOURCES" />: Ang bawat item sa listahang ito ay isang match pattern na uri ng extension (<ph name="LINK_TO_MATCH_PATTERNS" />). Madaling mai-install ng mga user ang mga item mula sa anumang URL na tumutugma sa isang item na nasa listahang ito. Dapat payagan ng mga pattern na ito ang lokasyon ng file na <ph name="EXTENSION_SUFFIX_WILDCARD" /> at ang page kung saan nagsimula ang pag-download (ibig sabihin, ang referrer).
+
+          <ph name="ALLOWED_TYPES" />: Iwa-whitelist ng setting na ito ang mga pinapayagang uri ng extension/app na maaaring i-install sa <ph name="PRODUCT_NAME" />.  Ang value ay isang listahan ng mga string, na dapat isa sa mga sumusunod: <ph name="VALID_ALLOWED_TYPES" />. Tingnan ang dokumentasyon ng mga extension ng <ph name="PRODUCT_NAME" /> para sa higit pang impormasyon tungkol sa ganitong mga uri.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Kung sinusubukan ng user na mag-install ng extension, ngunit na-block ito ng patakaran, magpapakita ang Chrome Webstore ng karaniwang mensahe ng error. Pinapayagan ka ng setting na ito na magsama ng text sa mensahe ng error. Magagamit ito upang idirekta ang mga user sa iyong help desk, ipaliwanag kung bakit na-block ang isang partikular na extension, o ibang bagay. Puputulin ang mensaheng ito kung lalampas sa 1000 character ang mensahe ng error.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Tumatanggap ng listahan ng mga host kung saan iba-block sa pakikipag-ugnayan ang isang extension. Kabilang dito ang paglalagay ng javascript, pagbago at pagtingin sa webRequests / webNavigation, pagtingin at pagbago ng cookies. Pareho ang format sa Mga Match Pattern <ph name="LINK_TO_MATCH_PATTERNS" /> ngunit walang maaaring tukuying path. hal. "*://*.example.com". Sinusuportahan din nito ang epektibong TLD wildcarding hal. "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Tumatanggap ng listahan ng mga host kung saan maaaring makipag-ugnayan ang isang extension nakalista man ang mga ito sa <ph name="RUNTIME_BLOCKED_HOSTS" />. Kapareho nito ng format ang <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="787125417158068494">Kung nakatakda sa SyncDisabled o hindi naka-configure, hindi available ang mga certificate ng <ph name="PRODUCT_OS_NAME" /> para sa mga ARC app.
 
       Kung nakatakda sa CopyCaCerts, available para sa mga ARC app ang lahat ng CA certificate na may <ph name="WEB_TRUSTED_BIT" /> na na-install ng ONC.</translation>
@@ -2190,6 +2276,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8451988835943702790">Gamitin ang Pahina ng Bagong Tab bilang homepage</translation>
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
 <translation id="847472800012384958">Huwag payagang magpakita ng mga popup ang anumang site</translation>
+<translation id="8476127435468057643">Kinokontrol kung naka-enable ang NTLMv2.
+
+          Sinusuportahan ng lahat ng kamakailang bersyon ng mga server ng Samba at Windows ang NTLMv2. Dapat lang itong i-disable para sa backwards compatability at mabawasan ang seguridad ng authentication.
+
+          Ang default na value kapag hindi tinukoy ang patakarang ito at kasalukuyang false para sa backwards compatibility, ngunit magiging true sa hinaharap.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">I-customize ang listahan ng mga pattern ng URL na dapat na palaging i-render ng browser ng host.
 
@@ -2205,6 +2296,12 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung ginagamit ang patakarang ito, ibibigay ang lahat ng printer sa user maliban sa mga id na nakalista sa patakarang ito.
       </translation>
+<translation id="8538235451413605457">Kino-configure ang kinakailangan ng minimum na pinapayagang bersyon ng <ph name="PRODUCT_NAME" />. Itinuturing ang mga bersyong nasa ibaba bilang hindi na ginagamit at hindi papayagan ng device ang user na mag-sign in bago ma-update ang OS.
+      Kung hindi na ginagamit ang kasalukuyang bersyon sa session ng user, sapilitang masa-sign out ang user.
+
+      Kung hindi nakatakda ang patakarang ito, walang ilalapat na paghihigpit, at makakapag-sign in ang user anuman ang bersyon ng <ph name="PRODUCT_NAME" />.
+
+      Dito, ang "Bersyon" ay maaaring maging eksaktong bersyon tulad ng '61.0.3163.120' o prefix ng bersyon, tulad ng '61.0'  </translation>
 <translation id="8544375438507658205">Default na taga-render ng HTML para sa <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="8566842294717252664">Itago ang web store sa Page ng Bagong Tab at app launcher</translation>
@@ -2217,6 +2314,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung false ang setting na ito, hindi gagamit ng malayuang attestation ang device para sa pagprotekta sa nilalaman at maaaring hindi makapag-play ang device ng pinoprotektahang nilalaman.
 
           Kung true ang setting na ito, o kung hindi nakatakda, maaaring gamitin ang malayuang attestation para sa pagprotekta sa nilalaman.</translation>
+<translation id="8650974590712548439">Lokasyon ng registry ng windows para sa mga kliyente ng Windows:</translation>
 <translation id="8654286232573430130">Tinutukoy kung aling mga server ang dapat na naka-whitelist para sa pinagsamang pagpapatotoo. Naka-enable lang ang pinagsamang pagpapatotoo kapag tumanggap ang <ph name="PRODUCT_NAME" /> ng hamon sa pagpapatotoo mula sa isang proxy o mula sa isang server na nasa pinahihintulutang listahang ito.
 
           Paghiwalayin ang maraming pangalan ng server gamit ang mga kuwit. Pinapayagan ang mga wildcard (*).

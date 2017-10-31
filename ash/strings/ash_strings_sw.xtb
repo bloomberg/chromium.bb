@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Hali ya juu ya utofautishaji</translation>
 <translation id="2597972630681408282">Mwanga wa Usiku: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Wasilisha</translation>
+<translation id="2675319268637823299">Msimamizi amezuia uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja kwa <ph name="USER_EMAIL" />.
+    Watumiaji wote lazima waondoke ili waendelee.</translation>
 <translation id="2700058918926273959">Kipindi kitakwisha baada ya <ph name="SESSION_TIME_REMAINING" />. Utaondolewa katika akaunti.</translation>
 <translation id="2727977024730340865">Imechomekwa katika chaja ya kawi ya chini. Huenda kuchaji kwa betri hakutakuwa kuzuri.</translation>
 <translation id="2761704814324807722">Treya ya hali, saa <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Umeunganishwa</translation>
 <translation id="3371140690572404006">Kifaa cha USB-C (mlango wa upande wa kulia mbele)</translation>
 <translation id="3400357268283240774">Mipangilio ya ziada</translation>
+<translation id="3413817803639110246">Bado hakuna chochote hapa</translation>
 <translation id="3445925074670675829">Kifaa cha USB-C</translation>
 <translation id="3465566417615315331">Bofya picha yako</translation>
 <translation id="3473479545200714844">Kikuza skrini</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Kuelea kwa kibodi</translation>
 <translation id="639644700271529076">CAPS LOCK imezimwa</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Hakuna arifa</translation>
 <translation id="6452181791372256707">Kataa</translation>
 <translation id="6453179446719226835">Lugha imebadilishwa</translation>
 <translation id="6459472438155181876">Inapanua skrini kwenye <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa baina ya maeneo-kazi.</tr
 <translation id="8825534185036233643">Kuakisi ukitumia zaidi ya skrini mbili hakuruhusiwi.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8870509716567206129">Programu haiwezi kutumia skrini iliyogawanywa.</translation>
 <translation id="8878886163241303700">Kuongeza skrini</translation>
 <translation id="8921624153894383499">Programu ya Mratibu wa Google haina huduma ya lugha hii.</translation>
 <translation id="8938800817013097409">Kifaa cha USB-C (mlango wa kulia nyuma)</translation>
@@ -310,7 +315,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa baina ya maeneo-kazi.</tr
 <translation id="9091626656156419976">Imeondoa onyesho la <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Fungua</translation>
 <translation id="9151726767154816831">Zima na uwashe na utumie powerwash ili kusasisha</translation>
-<translation id="9181036778675416867">Gonga kitufe cha stylus kwenye rafu ili uandike kidokezo, upige picha ya skrini, utumie programu ya mratibu, kielekezi cha leza au lenzi.</translation>
+<translation id="9181036778675416867">Gonga kitufe cha stylus kwenye rafu ili uandike kidokezo, upige picha ya skrini, utumie programu ya Mratibu, kielekezi cha leza au lenzi.</translation>
 <translation id="9194617393863864469">Ongeza akaunti nyingine...</translation>
 <translation id="9201131092683066720">Betri imejaa <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Mfumo unaondoka kwenye hali ya eneo-kazi lililounganishwa</translation>

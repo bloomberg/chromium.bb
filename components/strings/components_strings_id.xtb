@@ -111,7 +111,7 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Coba jalankan Diagnostik Jaringan Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Perbarui frasa sandi sinkronisasi Anda.</translation>
 <translation id="1787142507584202372">Tab yang terbuka muncul di sini</translation>
-<translation id="1789575671122666129">Munculan</translation>
+<translation id="1789575671122666129">Pop-up</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Nama Pemegang Kartu</translation>
 <translation id="1806541873155184440">Ditambahkan pada <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
@@ -511,7 +511,7 @@
 <translation id="4759118997339041434">IsiOtomatis pembayaran dinonaktifkan</translation>
 <translation id="4764776831041365478">Laman web di <ph name="URL" /> mungkin sedang tidak aktif untuk sementara atau dipindahkan secara permanen ke alamat web baru.</translation>
 <translation id="4771973620359291008">Terjadi kesalahan yang tidak diketahui.</translation>
-<translation id="4792143361752574037">Terjadi masalah saat mengakses file sesi. Menyimpan ke disk saat ini dinonaktifkan. Harap muat ulang halaman untuk mencoba lagi.</translation>
+<translation id="4792143361752574037">Terjadi masalah saat mengakses file sesi. Fitur menyimpan ke disk saat ini dinonaktifkan. Harap muat ulang halaman untuk mencoba lagi.</translation>
 <translation id="4800132727771399293">Periksa tanggal masa berlaku habis dan CVC, lalu coba lagi</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">Saat ini Anda tidak dapat mengunjungi <ph name="SITE" /> karena situs web tersebut mengirim kredensial acak yang tidak dapat diproses oleh Google Chrome. Kesalahan jaringan dan serangan biasanya bersifat sementara, jadi halaman ini mungkin akan bekerja nanti.</translation>
@@ -554,6 +554,7 @@
 <translation id="5094747076828555589">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh Chromium. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="5095208057601539847">Provinsi</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
+<translation id="5128122789703661928">Sesi dengan nama ini tidak valid untuk dihapus.</translation>
 <translation id="5141240743006678641">Enkripsikan sandi yang disinkronkan dengan kredensial Google Anda</translation>
 <translation id="5145883236150621069">Ada kode kesalahan dalam tanggapan kebijakan</translation>
 <translation id="5159010409087891077">Buka halaman dalam Jendela samaran baru (⇧⌘N)</translation>

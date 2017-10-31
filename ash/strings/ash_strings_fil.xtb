@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">High contrast mode</translation>
 <translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Isumite</translation>
+<translation id="2675319268637823299">Hindi pinayagan ng isang administrator ang maraming pag-sign in para sa <ph name="USER_EMAIL" />.
+    Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="2700058918926273959">Matatapos ang session pagkalipas ng <ph name="SESSION_TIME_REMAINING" />. Masa-sign out ka.</translation>
 <translation id="2727977024730340865">Naka-saksak sa isang low-power charger. Maaaring hindi maging tiyak ang pag-charge ng baterya.</translation>
 <translation id="2761704814324807722">Status tray, oras <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Nakakonekta</translation>
 <translation id="3371140690572404006">USB-C device (port sa kanang bahagi sa harap)</translation>
 <translation id="3400357268283240774">Mga karagdagang setting</translation>
+<translation id="3413817803639110246">Wala pang makikita</translation>
 <translation id="3445925074670675829">USB-C device</translation>
 <translation id="3465566417615315331">I-click ang iyong larawan</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Overlay ng keyboard</translation>
 <translation id="639644700271529076">Naka-off ang CAPS LOCK</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Tapos na ang lahat</translation>
 <translation id="6452181791372256707">Tanggihan</translation>
 <translation id="6453179446719226835">Napalitan na ang wika</translation>
 <translation id="6459472438155181876">Pinapalawak ang screen sa <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Maaaring hatiin ang mga kasunod na notification, window at dialog sa pagitan ng 
 <translation id="8825534185036233643">Hindi sinusuportahan ang pagmi-mirror sa mahigit sa dalawang display.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8870509716567206129">Hindi sinusuportahan ng app ang split-screen.</translation>
 <translation id="8878886163241303700">Pinapalawak ang screen</translation>
 <translation id="8921624153894383499">Hindi nagsasalita ng ganitong wika ang Google Assistant.</translation>
 <translation id="8938800817013097409">USB-C device (kanang port sa likod)</translation>

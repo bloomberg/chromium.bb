@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ്</translation>
 <translation id="2597972630681408282">നൈറ്റ് ‌ലൈറ്റ്: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">സമര്‍പ്പിക്കൂ</translation>
+<translation id="2675319268637823299">അഡ്‌മിനിസ്‌ട്രേറ്റർ <ph name="USER_EMAIL" /> എന്ന ഇമെയിലിലേക്ക് ഒന്നിലധികം സൈൻ ഇൻ അനുവദിക്കുന്നില്ല.
+    തുടരുന്നതിന്, എല്ലാ ഉപയോക്താക്കളും സൈൻ ഔട്ട് ചെയ്യണം.</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു. നിങ്ങൾ സൈൻ ഔട്ടാകും.</translation>
 <translation id="2727977024730340865">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജ്ജറിലേക്ക് പ്ലഗ് ചെയ്‌തിരിക്കുന്നു. ബാറ്ററി ചാർജുചെയ്യൽ വിശ്വസനീയമാകണമെന്നില്ല.</translation>
 <translation id="2761704814324807722">സ്‌റ്റാറ്റസ് ട്രേ, സമയം, <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">ബന്ധിപ്പിച്ചു</translation>
 <translation id="3371140690572404006">USB-C ഉപകരണം (വലതുവശത്ത് മുന്നിലെ പോർട്ട്)</translation>
 <translation id="3400357268283240774">അധിക ക്രമീകരണങ്ങൾ</translation>
+<translation id="3413817803639110246">ഇതുവരെ കാണാൻ ഒന്നുമില്ല</translation>
 <translation id="3445925074670675829">USB-C ഉപകരണം</translation>
 <translation id="3465566417615315331">നിങ്ങളുടെ ഫോട്ടോ ക്ലിക്കുചെയ്യുക</translation>
 <translation id="3473479545200714844">സ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">കീബോർഡ് ഓവർലേ</translation>
 <translation id="639644700271529076">CAPS LOCK ഓഫാണ്</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">എല്ലാം ചെയ്‌തു</translation>
 <translation id="6452181791372256707">നിരസിക്കുക</translation>
 <translation id="6453179446719226835">ഭാഷ മാറ്റിയിരിക്കുന്നു</translation>
 <translation id="6459472438155181876">സ്‌ക്രീൻ <ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് വികസിപ്പിക്കുന്നു</translation>
@@ -299,6 +303,7 @@
 <translation id="8825534185036233643">രണ്ടിലധികം ഡിസ്‌പ്ലേകളിൽ മിററിംഗ് ചെയ്യുന്നത് പിന്തുണയ്‌ക്കുന്നില്ല.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">തിരയൽ+Esc</translation>
+<translation id="8870509716567206129">സ്പ്ലിറ്റ്-സ്ക്രീനിനെ ആപ്പ് പിന്തുണയ്ക്കുന്നില്ല.</translation>
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>
 <translation id="8921624153894383499">Google അസിസ്‌റ്റന്‍റ് ഈ ഭാഷ സംസാരിക്കില്ല.</translation>
 <translation id="8938800817013097409">USB-C ഉപകരണം (പുറകിൽ വലതുവശത്തെ പോർട്ട്)</translation>

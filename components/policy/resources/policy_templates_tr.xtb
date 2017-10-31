@@ -297,6 +297,7 @@
 <translation id="2067011586099792101">İçerik paketlerinin dışındaki sitelere erişimi engelle</translation>
 <translation id="2077129598763517140">Kullanılabilir olduğunda donanım hızlandırmayı kullan</translation>
 <translation id="2077273864382355561">Pil gücüyle çalışırken ekran kapatma gecikmesi</translation>
+<translation id="2082205219176343977">Cihaz için izin verilen minimum Chrome sürümünü yapılandır.</translation>
 <translation id="209586405398070749">Mevcut ürün kanalı</translation>
 <translation id="2098658257603918882">Kullanım ve kilitlenme ile ilgili verilerin raporlanmasını etkinleştir</translation>
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
@@ -383,6 +384,13 @@
 <translation id="2303795211377219696">Kredi kartları için Otomatik Doldurma özelliğini etkinleştirme</translation>
 <translation id="2309390639296060546">Varsayılan coğrafi konum ayarı</translation>
 <translation id="2312134445771258233">Başlangıçta yüklenen sayfaları yapılandırmanıza olanak verir. 'Başlangıçtaki işlem' içinde 'URL listesi aç'ı seçmediğiniz sürece 'Başlangıçta açılan URL'ler' listesinin içeriği göz ardı edilir.</translation>
+<translation id="2334591568684482454"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımını güncelleme işlevinin kullanımını ve davranışını yapılandırır.
+
+      Bağımsız ayarlar JSON özelliklerinde belirtilebilir:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" /> olarak ayarlanırsa kullanıcılar <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımı güncellemesini yüklemek için powerwash sürecini tetikleyebilirler.
+
+      Politika ayarlanmazsa <ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımını güncelleme işlevi kullanılamaz.</translation>
 <translation id="2337466621458842053">Resimleri görüntülemelerine izin verilen sitelerin belirtildiği bir URL kalıpları listesini ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultImagesSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -909,6 +917,27 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 
           Genellikle, kimlik avından korunma amacıyla bu özellik devre dışı bırakılır. Bu politika ayarlanmazsa, bu özellik devre dışı bırakılır ve üçüncü taraf alt içeriğinin bir HTTP Basic Auth iletişim kutusu görüntülemesine izin verilmez.</translation>
 <translation id="4056910949759281379">SPDY protokolünü devre dışı bırak</translation>
+<translation id="4077363032873906037">Google Apps'te <ph name="PRODUCT_NAME" />
+      ürününün kısıtlanmış giriş yapma özelliğini etkinleştirir ve kullanıcıların
+      bu ayarı değiştirmesini engeller.
+
+      Bu ayarı tanımlarsanız kullanıcı, Google Apps'e yalnızca belirtilen
+      alan adlarındaki hesapları kullanarak erişebilir (bunun gmail.com/googlemail.com
+      için işe yaramadığını unutmayın).
+
+      Bu ayar, kullanıcının Google kimlik doğrulaması gerektiren yönetilen bir
+      cihazdan giriş yapmasını ENGELLEMEZ. Kullanıcıların diğer alan adlarından
+      hesaplarda oturum açmaya devam etmesine izin verilir, ancak bu hesaplarla
+      Google Apps'i kullanmaya çalıştıklarında bir hata alırlar.
+
+      Bu ayarı boş/yapılandırılmamış durumda bırakmanız halinde kullanıcı herhangi bir hesapla
+      Google Apps'e erişebilir.
+
+      Bu politika, tüm google.com alan adlarına yapılan HTTP ve HTTPS
+      isteklerinin hepsine X-GoogApps-Allowed-Domains üst bilgisinin eklenmesine neden olur.
+      Ayrıntılı bilgi için https://support.google.com/a/answer/1668854 adresine bakın.
+
+      Kullanıcılar bu ayarı değiştiremez veya geçersiz kılamaz.</translation>
 <translation id="408029843066770167">Google zaman hizmetini sorgulamaya izin ver</translation>
 <translation id="4088589230932595924">Gizli mod zorunlu</translation>
 <translation id="4088983553732356374">Web sitelerinin yerel verileri ayarlamasına izin verilip verilmeyeceğini belirlemenize olanak sağlar. Yerel verileri ayarlamaları için ya tüm web sitelerine izin verilir ya da hiçbirine izin verilmez.
@@ -1100,6 +1129,7 @@ politikayı geçersiz kılamaz.
           Bu politikayı ayarlarsanız, kullanıcılar bunu değiştiremez ve geçersiz kılamaz.
 
           Bu politika ayarlanmadan bırakılırsa, büyük imleç başta devre dışıdır, ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
+<translation id="4802905909524200151"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımını güncelleme davranışını yapılandır</translation>
 <translation id="4807950475297505572">Yeterli boş alan sağlanıncaya kadar en seyrek kullanılan kullanıcılar kaldırılır</translation>
 <translation id="4815725774537609998">Bu politika kullanımdan kaldırılmıştır. Bunun yerine ProxyMode politikasını kullanın.
 
@@ -1132,6 +1162,47 @@ politikayı geçersiz kılamaz.
 
           Bu politika yanlış seçeneğine ayarlanırsa, ekran uyandırma kilitleri için yapılan istekler dikkate alınmaz.</translation>
 <translation id="4876805738539874299">Etkinleştirilen maksimum SSL sürümü</translation>
+<translation id="4881315447528084360">Kullanıcı müdahalesi olmadan, sessiz şekilde yüklenecek ve kullanıcı tarafından
+          kaldırılamayacak uygulamaların ve uzantıların listesini belirlemenize
+          olanak sağlar. Uygulamalar/uzantılar tarafından istenen tüm izinler ve
+          uygulamanın/uzantının gelecekteki sürümleri tarafından istenecek ek
+          izinler kullanıcı etkileşimi olmadan, örtülü olarak verilir.
+          Ayrıca, izinler enterprise.deviceAttributes ve enterprise.platformKeys
+          uzantı API'leri için verilir. (Bu iki API zorunlu olarak yüklenmemiş
+          uygulamalar/uzantılar tarafından kullanılamaz.)
+
+          Bu politika, çakışabilecek bir <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> politikasına göre
+          önceliklidir. Daha önce zorunlu olarak yüklenmiş bir uygulama veya
+          uzantı bu listeden kaldırılırsa <ph name="PRODUCT_NAME" /> tarafından da yüklemesi
+          otomatik olarak kaldırılır.
+
+          Bir <ph name="MS_AD_NAME" /> alan adına katılmamış Windows örnekleri için 
+          zorunlu olarak yüklenen uygulamalar ve uzantılar yalnızca Chrome
+          Web Mağazası'nda listelenenlerle sınırlıdır.
+
+          Bir uzantının kaynak kodunun kullanıcılar tarafından Geliştirici Araçları
+          kullanılarak (uzantının işlevselliğini devre dışı bırakabilecek şekilde)
+          değiştirilebileceğini unutmayın. Böyle bir endişe olması durumunda,
+          <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> politikası ayarlanmalıdır.
+
+          Politikaya ait her liste öğesi, noktalı virgülle (<ph name="SEMICOLON" />) ayrılmış bir
+          uzantı kimliği ve bir "güncelleme" URL'si içeren bir dizedir. Uzantı kimliği,
+          örneğin, geliştirici modundayken <ph name="CHROME_EXTENSIONS_LINK" /> bağlantısında
+          bulunabilen 32 harfli bir dizedir. "Güncelleme" URL'si, <ph name="LINK_TO_EXTENSION_DOC1" />
+          belgesinde açıklandığı gibi bir Güncelleme Manifest XML belgesine işaret
+          etmelidir. Bu politikada ayarlanmış "güncelleme" URL'sinin sadece ilk
+          yükleme için kullanıldığına, uzantının sonraki güncellemelerinde ise
+          uzantının manifest dosyasında belirtilen güncelleme URL'sinin
+          kullanıldığına dikkat edin.
+
+          Örneğin, <ph name="EXTENSION_POLICY_EXAMPLE" />, standart Chrome Web Mağazası
+          "güncelleme" URL'sinden <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />
+          uygulamasını yükler. Uzantıların barındırılması ile ilgili daha fazla bilgi için
+          bkz. <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Bu politika ayarlanmadan bırakılırsa, hiçbir uygulama veya uzantı otomatik
+          olarak yüklenmez
+          ve kullanıcı <ph name="PRODUCT_NAME" /> ürünündeki uygulama veya uzantıları kaldırabilir.</translation>
 <translation id="4882546920824859909">Google Apps'e erişmesine izin verilen alan adlarını tanımlayın</translation>
 <translation id="4897928009230106190">POST ile öneri araması yaparken kullanılan parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {searchTerms} gibi bir şablon parametresi ise gerçek arama terimleri verisiyle değiştirilir.
 
@@ -1154,6 +1225,7 @@ politikayı geçersiz kılamaz.
 <translation id="4980635395568992380">Veri türü:</translation>
 <translation id="4983201894483989687">Eski eklentilerin çalıştırılmasına izin ver</translation>
 <translation id="4988291787868618635">Boşta kalma gecikme süresine ulaşıldığında uygulanacak işlem</translation>
+<translation id="4995548127349206948">NTLMv2 kimlik doğrulamasının etkinleştirilip etkinleştirilmediği.</translation>
 <translation id="5047604665028708335">İçerik paketlerinin dışındaki sitelere erişime izin ver</translation>
 <translation id="5052081091120171147">Bu politika, göz atma geçmişini etkin olması durumunda geçerli varsayılan tarayıcıdan içe aktarır. Bu politika etkinleştirilirse, içe aktarma iletişim kutusunu da etkiler.
 
@@ -2020,7 +2092,7 @@ Her bir uzantının (veya aynı güncelleme URL'sine sahip uzantıların) yapıl
 * <ph name="FORCE_INSTALLED" />: Uzantı otomatik olarak yüklenir ve kullanıcı tarafından kaldırılamaz.
 * <ph name="NORMAL_INSTALLED" />: Uzantı otomatik olarak yüklenir, ancak kullanıcı tarafından devre dışı bırakılabilir.
 
-<ph name="INSTALLTION_MODE" />, <ph name="DEFAULT_SCOPE" /> uzantısı (varsayılan ayarlar olarak) dahil olmak üzere birden fazla uzantı ve aynı güncelleme URL'sine sahip uzantılar için de yapılandırılabilir. Bu durumda sadece <ph name="ALLOWED" /> ve <ph name="BLOCKED" /> değerleri kullanılabilir.
+<ph name="INSTALLTION_MODE" />, <ph name="DEFAULT_SCOPE" /> uzantısı dahil olmak üzere birden fazla uzantı ve aynı güncelleme URL'sine sahip uzantılar için de (varsayılan ayarlar olarak) yapılandırılabilir. Bu durumda sadece <ph name="ALLOWED" /> ve <ph name="BLOCKED" /> değerleri kullanılabilir.
 
 Mod <ph name="FORCE_INSTALLED" /> veya <ph name="NORMAL_INSTALLED" /> seçeneğine ayarlanırsa ayrıca <ph name="UPDATE_URL" /> yapılandırılmalıdır. Bu politikada ayarlanmış olan güncelleme URL'sinin sadece ilk yükleme için kullanıldığını unutmayın. Uzantının sonraki güncellemelerinde, uzantının manifest dosyasında belirtilen güncelleme URL'si kullanılır. Güncelleme URL'si, yukarıda belirtildiği gibi bir Güncelleme Manifest XML dokümanını işaret etmelidir.
 
@@ -2214,6 +2286,11 @@ Aşağıdaki ayarlar sadece varsayılan <ph name="DEFAULT_SCOPE" /> yapılandır
 <translation id="8451988835943702790">Ana sayfa olarak Yeni Sekme Sayfası'nı kullan</translation>
 <translation id="8465065632133292531">POST kullanan anlık URL parametreleri</translation>
 <translation id="847472800012384958">Hiçbir sitenin pop-up göstermesine izin verme</translation>
+<translation id="8476127435468057643">NTLMv2'nin etkinleştirilip etkinleştirilmeyeceğini kontrol eder.
+
+          Son Samba ve Windows sürümlerinin tamamı NTLMv2'yi destekler. Bu politika yalnızca geriye dönük uyumluluk için devre dışı bırakılmalıdır ve devre dışı bırakıldığında kimlik doğrulaması güvenliğini azaltır.
+
+          Bu politika tanımlanmadığında varsayılan değer şimdilik geriye dönük uyumluluk için false (yanlış) olarak belirlenmektedir, ancak ileride true (doğru) olarak değiştirilecektir.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Her zaman ana makine tarayıcısı tarafından oluşturulması gereken URL kalıplarının listesini özelleştirir.
 
@@ -2229,6 +2306,12 @@ Aşağıdaki ayarlar sadece varsayılan <ph name="DEFAULT_SCOPE" /> yapılandır
 
       Bu politika kullanılırsa, bu politikada listelenen kimlikler dışında tüm yazıcılar kullanıcıya sağlanır.
       </translation>
+<translation id="8538235451413605457">İzin verilen minimum <ph name="PRODUCT_NAME" /> sürümü gereksinimini yapılandırır. Aşağıda belirtilen sürümler eski olarak kabul edilir ve cihaz, OS güncellenmeden kullanıcının oturum açmasına izin vermez.
+      Geçerli sürüm, kullanıcı oturumu sırasında eski durumuna dönüşürse kullanıcı oturumunu kapatmaya zorlanır.
+
+      Bu politika ayarlanmazsa herhangi bir kısıtlama uygulanmaz ve kullanıcı, <ph name="PRODUCT_NAME" /> sürümünden bağımsız olarak oturum açabilir.
+
+      Buradaki "Sürüm" değeri, "61.0.3163.120" gibi kesin bir sürüm düzeyi veya "61.0" gibi bir sürüm öneki olabilir.  </translation>
 <translation id="8544375438507658205"><ph name="PRODUCT_FRAME_NAME" /> için varsayılan HTML oluşturucusu</translation>
 <translation id="8549772397068118889">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar</translation>
 <translation id="8566842294717252664">Yeni sekme sayfasında ve uygulama başlatıcıda web mağazasını gizle</translation>

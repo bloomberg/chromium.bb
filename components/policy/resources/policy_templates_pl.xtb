@@ -284,6 +284,7 @@
 <translation id="2067011586099792101">Blokuj dostęp do witryn spoza pakietów treści</translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
 <translation id="2077273864382355561">Opóźnienie wyłączenia ekranu przy zasilaniu z baterii</translation>
+<translation id="2082205219176343977">Skonfiguruj minimalną dozwoloną wersję Chrome dla urządzenia.</translation>
 <translation id="209586405398070749">Wersja stabilna</translation>
 <translation id="2098658257603918882">Włącz przesyłanie raportów o użytkowaniu i danych dotyczących awarii</translation>
 <translation id="2113068765175018713">Ogranicz czas działania urządzenia przez automatyczne ponowne uruchamianie</translation>
@@ -369,6 +370,13 @@
 <translation id="2303795211377219696">Włącz autouzupełnianie kart kredytowych</translation>
 <translation id="2309390639296060546">Domyślne ustawienie geolokalizacji</translation>
 <translation id="2312134445771258233">Umożliwia skonfigurowanie stron wczytywanych po uruchomieniu. Zawartość listy „Adresy URL otwierane po uruchomieniu” jest ignorowana, chyba że wybierzesz opcję „Otwórz adresy URL z listy” w ustawieniu „Działanie po uruchomieniu”.</translation>
+<translation id="2334591568684482454">Konfiguruje dostępność i zachowanie funkcji aktualizacji oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Poszczególne ustawienia można określić we właściwościach JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: jeśli ustawiono na wartość <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, użytkownicy mogą wyzwalać procedurę Powerwash, by zainstalować aktualizację oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Jeśli zasada nie jest ustawiona, funkcja aktualizacji oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" /> nie jest dostępna.</translation>
 <translation id="2337466621458842053">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być wyświetlane obrazy. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="2372547058085956601">Opóźnienie automatycznego logowania się do sesji publicznej.
 
@@ -873,6 +881,26 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
 
 Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku nieskonfigurowania zasady ustawienie jest wyłączone i treść dodatkowa innej firmy nie może wyświetlać okna dialogowego z podstawowym uwierzytelnianiem HTTP.</translation>
 <translation id="4056910949759281379">Wyłącz protokół SPDY</translation>
+<translation id="4077363032873906037">Włącza w <ph name="PRODUCT_NAME" /> funkcję ograniczonego logowania w Google Apps for Work i nie pozwala użytkownikom zmieniać tego ustawienia.
+
+      Jeśli skonfigurujesz to ustawienie, użytkownik będzie mógł uzyskiwać dostęp
+      do Google Apps for Work tylko za pomocą kont z określonych domen
+      (gmail.com/googlemail.com nie działa).
+
+      To ustawienie NIE uniemożliwia użytkownikowi logowania się na urządzeniu
+      zarządzanym wymagającym uwierzytelniania Google. Użytkownik nadal
+      będzie mógł logować się na konta z innych domen, ale jeśli spróbuje na tych
+      kontach skorzystać z Google Apps for Work, napotka błąd.
+
+      Jeśli pozostawisz to ustawienie puste/nieskonfigurowane, użytkownik będzie
+      mógł uzyskiwać dostęp do Google Apps for Work z dowolnego konta.
+
+      Ta zasada powoduje, że do wszystkich żądań HTTP i HTTPS dotyczących
+      wszystkich domen google.com jest dodawany nagłówek
+      X-GoogApps-Allowed-Domains, zgodnie z opisem na
+      https://support.google.com/a/answer/1668854
+
+      Użytkownicy nie mogą zmienić ani zastąpić tego ustawienia.</translation>
 <translation id="408029843066770167">Zezwalaj na wysyłanie zapytań do usługi czasu Google</translation>
 <translation id="4088589230932595924">Tryb incognito wymuszany</translation>
 <translation id="4088983553732356374">Pozwala określić, czy witryny mogą tworzyć dane lokalne. Może to być dozwolone lub zabronione dla wszystkich witryn.
@@ -1049,6 +1077,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Gdy ją ustawisz, użytkownicy nie mogą jej zmienić ani zastąpić.
 
           Jeśli zasada pozostanie nieustawiona, duży kursor jest początkowo wyłączony, ale użytkownik może go w każdej chwili włączyć.</translation>
+<translation id="4802905909524200151">Konfigurowanie zachowania aktualizacji oprogramowania <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4807950475297505572">Użytkownicy, którzy najdłużej byli nieaktywni, są usuwani aż do uzyskania odpowiedniej ilości wolnego miejsca</translation>
 <translation id="4815725774537609998">Ta zasada jest przestarzała. Zamiast niej użyj zasady ProxyMode.
 
@@ -1075,12 +1104,33 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta zasada pozostanie nieustawiona lub pusta, każdy użytkownik będzie mógł zalogować się w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Zezwalaj na tryb pełnoekranowy</translation>
-<translation id="4869787217450099946">Określa, czy jest dozwolona blokada wybudzania ekranu. Blokady takie mogą być żądane przez rozszerzenia poprzez interfejs API zarządzania energią.
+<translation id="4869787217450099946">Określa, czy jest dozwolona blokada uśpienia ekranu. Blokady takie mogą być żądane przez rozszerzenia poprzez interfejs API zarządzania energią.
 
-          Jeśli ta zasada ma ustawienie Prawda lub nie jest ustawiona, blokada wybudzania ekranu będzie respektowana w celu zarządzania energią.
+          Jeśli ta zasada ma ustawienie Prawda lub nie jest ustawiona, blokada uśpienia ekranu będzie respektowana w celu zarządzania energią.
 
-          Jeśli ma ona ustawienie Fałsz, blokada wybudzania ekranu będzie ignorowana.</translation>
+          Jeśli ma ona ustawienie Fałsz, blokada uśpienia ekranu będzie ignorowana.</translation>
 <translation id="4876805738539874299">Najwyższa włączona wersja protokołu SSL</translation>
+<translation id="4881315447528084360">Określa listę aplikacji i rozszerzeń, które są instalowane dyskretnie,
+          bez udziału użytkownika, i których nie może on odinstalować ani wyłączyć.
+          Wszystkie uprawnienia aplikacja lub rozszerzenie otrzymuje domyślnie,
+          bez interakcji z użytkownikiem. Dotyczy to też wszelkich dodatkowych
+          uprawnień, o które mogą prosić przyszłe wersje aplikacji lub rozszerzeń.
+          Uprawnienia otrzymują też interfejsy API rozszerzeń
+          enterprise.deviceAttributes oraz enterprise.platformKeys. Te dwa interfejsy
+          API nie są dostępne w przypadku aplikacji lub rozszerzeń, których
+          instalacja nie została wymuszona.
+
+          Ta zasada ma pierwszeństwo przed potencjalnie powodującą konflikt zasadą <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Jeśli z tej listy zostaną usunięte aplikacja lub rozszerzenie, których instalacja została wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie je odinstaluje.
+
+          W przypadku systemów Windows niepodłączonych do domeny <ph name="MS_AD_NAME" /> wymuszona instalacja jest ograniczona do aplikacji i rozszerzeń dostępnych w Chrome Web Store.
+
+          Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą narzędzi dla programistów (potencjalnie blokując jego działanie). Jeśli jest to problemem, ustaw zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i URL „aktualizacji” oddzielony średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem w dokumencie <ph name="LINK_TO_EXTENSION_DOC1" />. Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu.
+
+          Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Jeśli ta zasada nie jest ustawiona, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Zdefiniuj domeny, które będą mogły uzyskiwać dostęp do Google Apps for Work</translation>
 <translation id="4897928009230106190">Określa parametry używane przy sugerowaniu haseł z użyciem POST. Składa się z rozdzielonych przecinkami par nazwy i wartości. Jeśli wartość jest parametrem szablonu, tak jak w przykładzie powyżej {searchTerms}, zostanie ona zastąpiona rzeczywistymi danymi wyszukiwanych słów.
 
@@ -1103,6 +1153,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4980635395568992380">Typ danych:</translation>
 <translation id="4983201894483989687">Zezwalaj na uruchamianie nieaktualnych wtyczek</translation>
 <translation id="4988291787868618635">Działanie, jakie ma zostać wykonane po osiągnięciu opóźnienia bezczynności</translation>
+<translation id="4995548127349206948">Czy uwierzytelnianie NTLMv2 jest włączone.</translation>
 <translation id="5047604665028708335">Zezwalaj na dostęp do witryn spoza pakietów treści</translation>
 <translation id="5052081091120171147">Po włączeniu tej zasady wymuszany jest import historii przeglądania z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia historia przeglądania nie jest importowana. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować historię lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="5056708224511062314">Lupa wyłączona</translation>
@@ -1263,7 +1314,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5768309557753179144">Zarówno Chromium, jak i Google Chrome obsługują jednakowy zestaw
       zasad. Ten dokument może zawierać nieopublikowane zasady
-      (tzn. wpis „Obsługiwana w” odnosi się do jeszcze nieopublikowanej wersji <ph name="PRODUCT_NAME" />),
+      (tzn. wpis „Obsługiwana przez” odnosi się do jeszcze nieopublikowanej wersji <ph name="PRODUCT_NAME" />),
       które mogą zostać zmienione lub usunięte bez powiadomienia i nie podlegają
       żadnej gwarancji. Między innymi nie ma żadnych gwarancji dotyczących ich zabezpieczeń
       i właściwości związanych z prywatnością.
@@ -1275,7 +1326,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       przez Google i programy antywirusowe.
 
       Nie musisz konfigurować tych ustawień ręcznie. Możesz pobrać łatwe w użyciu
-      szablony dla systemów Windows, Mac OS i Linux ze strony <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+      szablony dla systemów Windows, macOS i Linux ze strony <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
       Zalecamy skonfigurowanie zasady w systemie Windows za pośrednictwem
       obiektu zasad grupy (GPO), mimo że obsługa zasady przez rejestr jest nadal
@@ -1633,7 +1684,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6923366716660828830">Określa nazwę domyślnego dostawcy wyszukiwania. Jeśli ta zasada pozostanie pusta lub nieskonfigurowana, będzie używana nazwa hosta określona w URL-u wyszukiwarki. Ta zasada jest uwzględniana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="6931242315485576290">Wyłącz synchronizację danych z Google</translation>
 <translation id="6936894225179401731">Określa maksymalną liczbę jednoczesnych połączeń z serwerem proxy. Niektóre serwery proxy nie są w stanie obsłużyć dużej liczby jednoczesnych połączeń z tym samym klientem. W takiej sytuacji można rozwiązać problem, ustawiając dla tej zasady mniejszą wartość. Jej wartość powinna być mniejsza niż 100 i większa niż 6. Wartość domyślna wynosi 32. Niektóre aplikacje sieciowe używają wielu połączeń z oczekującymi żądaniami GET, dlatego zmniejszenie wartości tej zasady poniżej wartości 32 może powodować przerwy w działaniu sieci, jeśli zbyt wiele takich aplikacji będzie otwartych. Zmniejszasz wartości domyślne na własne ryzyko. W przypadku nieskonfigurowania tej zasady będzie używana wartość domyślna, czyli 32.</translation>
-<translation id="6943577887654905793">Nazwa ustawienia w systemie Mac OS/Linux:</translation>
+<translation id="6943577887654905793">Nazwa ustawienia w systemie macOS/Linux:</translation>
 <translation id="69525503251220566">Parametr udostępniający funkcję wyszukiwania obrazem dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="6956272732789158625">Nie zezwalaj na generowanie kluczy w żadnej witrynie</translation>
 <translation id="6994082778848658360">Określa, jak można użyć zainstalowanego sprzętowego elementu zabezpieczeń w celu stosowania uwierzytelniania dwuskładnikowego, jeśli jest on zgodny z tą funkcją. Przycisk zasilania komputera wykrywa fizyczną obecność użytkownika.
@@ -1897,11 +1948,11 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
           Ta zasada zarządza wieloma ustawieniami, w tym ustawieniami objętymi istniejącymi zasadami dotyczącymi rozszerzeń. Zastępuje wszelkie poprzednie zasady, jeśli są skonfigurowane.
 
-          Zasada mapuje identyfikator rozszerzenia lub adres URL aktualizacji w jego konfiguracji. Identyfikator rozszerzenia pozwala stosować daną konfigurację tylko do wskazanego rozszerzenia. W konfiguracji domyślnej występuje identyfikator <ph name="DEFAULT_SCOPE" /> i konfiguracja ta jest stosowana w przypadku wszystkich rozszerzeń, dla których zasada nie określa konfiguracji niestandardowych. W przypadku adresu URL aktualizowania konfiguracja jest stosowana do wszystkich rozszerzeń, w których pliku manifestu podany jest dany adres URL rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC1" />).
+          Zasada przyporządkowuje identyfikator rozszerzenia lub adres URL aktualizacji do jego konfiguracji. Identyfikator rozszerzenia pozwala stosować daną konfigurację tylko do wskazanego rozszerzenia. W konfiguracji domyślnej występuje identyfikator <ph name="DEFAULT_SCOPE" /> i konfiguracja ta jest stosowana w przypadku wszystkich rozszerzeń, dla których zasada nie określa konfiguracji niestandardowych. W przypadku adresu URL aktualizacji konfiguracja jest stosowana do wszystkich rozszerzeń, w których pliku manifestu podany jest dany adres URL rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC1" />).
 
-          Konfiguracje dla poszczególnych rozszerzeń (lub rozszerzeń z tym samym adresem URL aktualizowania) stanowią kolejny słownik, który może zawierać te pola.
+          Konfiguracje dla poszczególnych rozszerzeń (lub rozszerzeń z tym samym adresem URL aktualizacji) stanowią kolejny słownik, który może zawierać te pola.
 
-          <ph name="INSTALLATION_MODE" />: mapuje ciąg wskazujący tryb instalowania rozszerzenia. Poprawne ciągi to:
+          <ph name="INSTALLATION_MODE" />: przyporządkowuje ciąg wskazujący tryb instalowania rozszerzenia. Poprawne ciągi to:
           * <ph name="ALLOWED" />: pozwala na instalowanie rozszerzenia przez użytkownika. Jest to działanie domyślne.
           * <ph name="BLOCKED" />: blokuje możliwość instalowania rozszerzenia przez użytkownika.
           * <ph name="FORCE_INSTALLED" />: rozszerzenie jest instalowane automatycznie, a użytkownik nie może go usunąć. 
@@ -1909,21 +1960,21 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
           Ustawienie <ph name="INSTALLTION_MODE" /> można skonfigurować również dla wielu rozszerzeń, w tym dla rozszerzenia <ph name="DEFAULT_SCOPE" /> (jako ustawienia domyślne) oraz rozszerzeń z tym samym adresem URL aktualizacji. W takim przypadku dostępne są tylko wartości <ph name="ALLOWED" /> i <ph name="BLOCKED" />.
 
-          Jeśli wybierzesz tryb <ph name="FORCE_INSTALLED" /> lub <ph name="NORMAL_INSTALLED" />, musisz skonfigurować również <ph name="UPDATE_URL" />. Pamiętaj, że adres URL aktualizowania ustawiony w tej zasadzie jest stosowany tylko przy instalacji początkowej, a kolejne aktualizacje rozszerzenia wykorzystują adres URL podany w pliku manifestu. Adres URL aktualizacji powinien wskazywać na plik XML z dokumentem manifestu aktualizacji, jak wyżej.
+          Jeśli wybierzesz tryb <ph name="FORCE_INSTALLED" /> lub <ph name="NORMAL_INSTALLED" />, musisz skonfigurować również <ph name="UPDATE_URL" />. Pamiętaj, że adres URL aktualizacji ustawiony w tej zasadzie jest stosowany tylko przy instalacji początkowej, a kolejne aktualizacje rozszerzenia wykorzystują adres URL podany w pliku manifestu rozszerzenia. Adres URL aktualizacji powinien wskazywać na plik XML z dokumentem manifestu aktualizacji, jak wyżej.
 
-          <ph name="BLOCKED_PERMISSIONS" />: mapuje listę ciągów wskazujących zablokowane uprawnienia interfejsu API w przypadku danego rozszerzenia. Nazwy uprawnień są identyczne z nazwami ciągów uprawnień podanych w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC3" />. To ustawienie można też skonfigurować dla rozszerzenia <ph name="DEFAULT_SCOPE" />. Załadowanie rozszerzenia wymagającego uprawnień, które znajdują się na czarnej liście, nie będzie możliwe. Jeśli zablokowane uprawnienia są wymagane opcjonalnie, rozszerzenie będzie traktowane normalnie, ale żądanie uprawnień powodujących konflikt zostanie odrzucone przy uruchomieniu.
+          <ph name="BLOCKED_PERMISSIONS" />: przyporządkowuje listę ciągów wskazujących zablokowane uprawnienia interfejsu API w przypadku danego rozszerzenia. Nazwy uprawnień są identyczne z nazwami ciągów uprawnień podanych w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC3" />. To ustawienie można też skonfigurować dla rozszerzenia <ph name="DEFAULT_SCOPE" />. Załadowanie rozszerzenia wymagającego uprawnień, które znajdują się na liście zablokowanych, nie będzie możliwe. Jeśli zablokowane uprawnienia są wymagane opcjonalnie, rozszerzenie będzie traktowane normalnie, ale żądanie uprawnień powodujących konflikt zostanie odrzucone przy uruchomieniu.
 
-          <ph name="ALLOWED_PERMISSIONS" />: działa podobnie jak <ph name="BLOCKED_PERMISSIONS" />, ale odnosi się do konkretnych uprawnień z listy zablokowanych, więc nie można skonfigurować rozszerzenia <ph name="DEFAULT_SCOPE" />. Pamiętaj, że to ustawienie nie powoduje automatycznego przyznawania uprawnień rozszerzeniom.
+          <ph name="ALLOWED_PERMISSIONS" />: działa podobnie jak <ph name="BLOCKED_PERMISSIONS" />, ale umożliwia udzielenie konkretnych uprawnień z listy zablokowanych, więc nie można skonfigurować go dla rozszerzenia <ph name="DEFAULT_SCOPE" />. Zauważ, że to ustawienie nie powoduje automatycznego przyznawania uprawnień rozszerzeniom.
 
-          <ph name="MINIMUM_VERSION_REQUIRED" />: mapuje ciąg wersji. Format ciągu wersji jest taki sam jak w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC4" />). Rozszerzenie w wersji starszej niż podana wersja minimalna jest wyłączane. Zasada wpływa też na rozszerzenia i aplikacje, których instalacja jest wymuszana.
+          <ph name="MINIMUM_VERSION_REQUIRED" />: przyporządkowuje ciąg wersji. Format ciągu wersji jest taki sam jak w pliku manifestu rozszerzenia (więcej informacji znajdziesz w artykule <ph name="LINK_TO_EXTENSION_DOC4" />). Rozszerzenie w wersji starszej niż podana wersja minimalna jest wyłączane. To ustawienie wpływa też na rozszerzenia i aplikacje, których instalacja jest wymuszana.
 
           Tych ustawień możesz użyć tylko w przypadku domyślnej konfiguracji <ph name="DEFAULT_SCOPE" />:
 
           <ph name="INSTALL_SOURCES" />: każda pozycja na liście to wzorzec dopasowania rozszerzenia (więcej informacji znajdziesz na <ph name="LINK_TO_MATCH_PATTERNS" />). Użytkownicy mogą łatwo instalować elementy z każdego adresu URL, który pasuje do pozycji na liście. Wzorce muszą zezwalać na dostęp zarówno do lokalizacji pliku <ph name="EXTENSION_SUFFIX_WILDCARD" />, jak i strony, na której rozpoczyna się pobieranie (strony odsyłającej).
 
           <ph name="ALLOWED_TYPES" />: tworzy białą listę typów rozszerzeń lub aplikacji, których instalacja jest dozwolona w <ph name="PRODUCT_NAME" />. Wartość jest listą ciągów znaków z tego zestawu: <ph name="VALID_ALLOWED_TYPES" />. Więcej informacji o tych typach znajdziesz w dokumentacji rozszerzeń <ph name="PRODUCT_NAME" />.
-          <ph name="BLOCKED_INSTALL_MESSAGE" />: jeśli użytkownik próbuje zainstalować rozszerzenie, ale tę czynność blokuje zasada, Chrome Web Store wyświetla ogólny komunikat o błędzie. To ustawienie pozwala dołączyć tekst do komunikatu o błędzie. Można skorzystać z tej możliwości, by przekierować użytkownika do działu pomocy, wytłumaczyć przyczynę blokowania rozszerzenia lub podać inne informacje. Ten komunikat o błędzie zostanie skrócony, jeśli liczba znaków przekroczy 1000.
-          <ph name="RUNTIME_BLOCKED_HOSTS" />: akceptuje listę hostów, z którymi rozszerzenie nie będzie mogło działać. Obejmuje to wstawianie kodu JavaScript, zmienianie i wyświetlanie elementów webRequests/webNavigation, a także wyświetlanie i zmienianie plików cookie. Ten format jest podobny do wzorców dopasowania <ph name="LINK_TO_MATCH_PATTERNS" />, ale nie można zdefiniować w nich ścieżek (np. „*://*.example.com”). Obsługiwane jest wstawianie symboli zastępczych także w domenach najwyższego poziomu, np. „*://example.*”.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: jeśli użytkownik próbuje zainstalować rozszerzenie, ale tę czynność blokuje zasada, Chrome Web Store wyświetla ogólny komunikat o błędzie. To ustawienie pozwala dołączyć tekst do komunikatu o błędzie. Można skorzystać z tej możliwości, by przekierować użytkownika do działu pomocy, wytłumaczyć przyczynę blokowania rozszerzenia lub podać inne informacje. Komunikat o błędzie zostanie skrócony, jeśli liczba znaków przekroczy 1000.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: akceptuje listę hostów, z którymi rozszerzenie nie będzie mogło działać. Obejmuje to wstawianie kodu JavaScript, zmienianie i wyświetlanie elementów webRequests/webNavigation, a także wyświetlanie i zmienianie plików cookie. Ten format jest podobny do wzorców dopasowania <ph name="LINK_TO_MATCH_PATTERNS" />, ale nie można zdefiniować w nich ścieżek (np. „*://*.example.com”). Obsługiwane jest wstawianie symboli wieloznacznych także w domenach najwyższego poziomu, np. „*://example.*”.
           <ph name="RUNTIME_ALLOWED_HOSTS" />: akceptuje listę hostów, z którymi może działać rozszerzenie, niezależnie od tego, czy są wymienione na liście <ph name="RUNTIME_BLOCKED_HOSTS" />. Ma taki sam format jak <ph name="RUNTIME_BLOCKED_HOSTS" />.
           </translation>
 <translation id="787125417158068494">Jeśli ustawisz wartość SyncDisabled lub pozostawisz tę opcję nieskonfigurowaną, certyfikaty <ph name="PRODUCT_OS_NAME" /> nie będą dostępne dla aplikacji ARC.
@@ -2089,6 +2140,11 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8451988835943702790">Używaj strony Nowa karta jako strony początkowej</translation>
 <translation id="8465065632133292531">Parametry dla URL-i dynamicznych używających POST</translation>
 <translation id="847472800012384958">Nie zezwalaj na pokazywanie wyskakujących okienek w żadnej witrynie</translation>
+<translation id="8476127435468057643">Określa, czy uwierzytelnianie NTLMv2 jest włączone.
+
+          Wszystkie obecne wersje serwerów Samba i Windows obsługują uwierzytelnianie NTLMv2. Należy je wyłączyć tylko w celu zapewnienia wstecznej zgodności, co zmniejsza bezpieczeństwo uwierzytelniania.
+
+          Domyślną wartością, gdy ta zasada jest nieokreślona, jest brak wstecznej zgodności (fałsz). W przyszłości wartość ta zostanie zmieniona na „prawda”.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Pozwala dostosować listę wzorców adresów URL stron, które przeglądarka hosta ma zawsze renderować.
 
@@ -2104,6 +2160,13 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
       Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich drukarek oprócz tych, których identyfikatory w niej określono.
       </translation>
+<translation id="8538235451413605457">Konfiguruje wymóg minimalnej dozwolonej wersji <ph name="PRODUCT_NAME" />. Wersje poniżej podanej są traktowane jako przestarzałe. W takim przypadku urządzenie zezwala na zalogowanie się użytkownika dopiero wtedy, gdy zaktualizuje on system operacyjny.
+      
+Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, jego wylogowanie się zostanie wymuszone.
+
+      Jeśli ta zasada nie jest określona, nie są stosowane żadne ograniczenia. Użytkownik może się logować niezależnie od wersji <ph name="PRODUCT_NAME" />.
+
+      „Wersja” może być określona dokładnym numerem wersji, np. „61.0.3163.120”, lub prefiksem, np. „61.0”.  </translation>
 <translation id="8544375438507658205">Domyślny mechanizm renderowania HTML wtyczki <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
 <translation id="8566842294717252664">Ukryj Chrome Web Store na stronie Nowa karta i w menu z aplikacjami</translation>
