@@ -26,7 +26,7 @@ typedef NTSTATUS(WINAPI* NtQuerySystemInformationPtr)(SYSTEM_INFORMATION_CLASS,
 // high, in hard page-fault / [sampling frequency].
 //
 // TODO(sebmarchand): Confirm that this value is adequate, crbug.com/779332.
-const size_t kHighSwappingThreshold = 8;
+const size_t kHighSwappingThreshold = 20;
 
 // The minimum number of samples that need to be above the threshold to be in
 // the suspected state.
@@ -168,7 +168,12 @@ void SwapThrashingMonitorDelegateWin::HardFaultDeltasWindow::OnObservation(
     observation_deltas_.pop_front();
   }
 
-  size_t delta = hard_fault_count - latest_hard_fault_count_.value();
+  size_t delta = 0;
+  if (hard_fault_count > latest_hard_fault_count_.value()) {
+    delta = hard_fault_count - latest_hard_fault_count_.value();
+  } else {
+    delta = latest_hard_fault_count_.value() - hard_fault_count;
+  }
   observation_deltas_.push_back(delta);
   latest_hard_fault_count_ = hard_fault_count;
   if (delta >= kHighSwappingThreshold)
