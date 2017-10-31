@@ -13,6 +13,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -54,42 +56,211 @@ const size_t kTinyTransferBufferSize = 3;
 #define GPU_FUZZER_USE_STUB
 #endif
 
+constexpr const char* kExtensions[] = {
+    "GL_AMD_compressed_ATC_texture",
+    "GL_ANGLE_client_arrays",
+    "GL_ANGLE_depth_texture",
+    "GL_ANGLE_framebuffer_multisample",
+    "GL_ANGLE_instanced_arrays",
+    "GL_ANGLE_request_extension",
+    "GL_ANGLE_robust_client_memory",
+    "GL_ANGLE_robust_resource_initialization",
+    "GL_ANGLE_texture_compression_dxt3",
+    "GL_ANGLE_texture_compression_dxt5",
+    "GL_ANGLE_texture_rectangle",
+    "GL_ANGLE_texture_usage",
+    "GL_ANGLE_translated_shader_source",
+    "GL_ANGLE_webgl_compatibility",
+    "GL_APPLE_texture_format_BGRA8888",
+    "GL_APPLE_vertex_array_object",
+    "GL_APPLE_ycbcr_422",
+    "GL_ARB_blend_func_extended",
+    "GL_ARB_depth_texture",
+    "GL_ARB_draw_buffers",
+    "GL_ARB_draw_instanced",
+    "GL_ARB_ES3_compatibility",
+    "GL_ARB_explicit_attrib_location",
+    "GL_ARB_explicit_uniform_location",
+    "GL_ARB_framebuffer_sRGB",
+    "GL_ARB_instanced_arrays",
+    "GL_ARB_map_buffer_range",
+    "GL_ARB_occlusion_query",
+    "GL_ARB_occlusion_query2",
+    "GL_ARB_pixel_buffer_object",
+    "GL_ARB_program_interface_query",
+    "GL_ARB_robustness",
+    "GL_ARB_sampler_objects",
+    "GL_ARB_shader_image_load_store",
+    "GL_ARB_shading_language_420pack",
+    "GL_ARB_texture_float",
+    "GL_ARB_texture_gather",
+    "GL_ARB_texture_non_power_of_two",
+    "GL_ARB_texture_rectangle",
+    "GL_ARB_texture_rg",
+    "GL_ARB_texture_storage",
+    "GL_ARB_timer_query",
+    "GL_ARB_vertex_array_object",
+    "GL_ATI_texture_compression_atitc",
+    "GL_CHROMIUM_bind_generates_resource",
+    "GL_CHROMIUM_color_buffer_float_rgb",
+    "GL_CHROMIUM_color_buffer_float_rgba",
+    "GL_CHROMIUM_copy_compressed_texture",
+    "GL_CHROMIUM_copy_texture",
+    "GL_CHROMIUM_texture_filtering_hint",
+    "GL_EXT_blend_func_extended",
+    "GL_EXT_blend_minmax",
+    "GL_EXT_color_buffer_float",
+    "GL_EXT_color_buffer_half_float",
+    "GL_EXT_debug_marker",
+    "GL_EXT_direct_state_access",
+    "GL_EXT_discard_framebuffer",
+    "GL_EXT_disjoint_timer_query",
+    "GL_EXT_draw_buffers",
+    "GL_EXT_frag_depth",
+    "GL_EXT_framebuffer_multisample",
+    "GL_EXT_framebuffer_sRGB",
+    "GL_EXT_map_buffer_range",
+    "GL_EXT_multisample_compatibility",
+    "GL_EXT_multisampled_render_to_texture",
+    "GL_EXT_occlusion_query_boolean",
+    "GL_EXT_packed_depth_stencil",
+    "GL_EXT_read_format_bgra",
+    "GL_EXT_robustness",
+    "GL_EXT_shader_texture_lod",
+    "GL_EXT_sRGB",
+    "GL_EXT_sRGB_write_control",
+    "GL_EXT_texture_compression_dxt1",
+    "GL_EXT_texture_compression_s3tc",
+    "GL_EXT_texture_compression_s3tc_srgb",
+    "GL_EXT_texture_filter_anisotropic",
+    "GL_EXT_texture_format_BGRA8888",
+    "GL_EXT_texture_norm16",
+    "GL_EXT_texture_rg",
+    "GL_EXT_texture_sRGB",
+    "GL_EXT_texture_sRGB_decode",
+    "GL_EXT_texture_storage",
+    "GL_EXT_timer_query",
+    "GL_IMG_multisampled_render_to_texture",
+    "GL_IMG_texture_compression_pvrtc",
+    "GL_INTEL_framebuffer_CMAA",
+    "GL_KHR_blend_equation_advanced",
+    "GL_KHR_blend_equation_advanced_coherent",
+    "GL_KHR_debug",
+    "GL_KHR_robustness",
+    "GL_KHR_texture_compression_astc_ldr",
+    "GL_NV_blend_equation_advanced",
+    "GL_NV_blend_equation_advanced_coherent",
+    "GL_NV_draw_buffers",
+    "GL_NV_EGL_stream_consumer_external",
+    "GL_NV_fence",
+    "GL_NV_framebuffer_mixed_samples",
+    "GL_NV_path_rendering",
+    "GL_NV_pixel_buffer_object",
+    "GL_NV_sRGB_formats",
+    "GL_OES_compressed_ETC1_RGB8_texture",
+    "GL_OES_depth24",
+    "GL_OES_depth_texture",
+    "GL_OES_EGL_image_external",
+    "GL_OES_element_index_uint",
+    "GL_OES_packed_depth_stencil",
+    "GL_OES_rgb8_rgba8",
+    "GL_OES_standard_derivatives",
+    "GL_OES_texture_float",
+    "GL_OES_texture_float_linear",
+    "GL_OES_texture_half_float",
+    "GL_OES_texture_half_float_linear",
+    "GL_OES_texture_npot",
+    "GL_OES_vertex_array_object"};
+constexpr size_t kExtensionCount = arraysize(kExtensions);
+
 #if defined(GPU_FUZZER_USE_STUB)
-static const char kExtensions[] =
-    "GL_AMD_compressed_ATC_texture "
-    "GL_ANGLE_texture_compression_dxt3 "
-    "GL_ANGLE_texture_compression_dxt5 "
-    "GL_ANGLE_texture_usage "
-    "GL_APPLE_ycbcr_422 "
-    "GL_ARB_texture_rectangle "
-    "GL_EXT_blend_func_extended "
-    "GL_EXT_color_buffer_float "
-    "GL_EXT_disjoint_timer_query "
-    "GL_EXT_draw_buffers "
-    "GL_EXT_frag_depth "
-    "GL_EXT_multisample_compatibility "
-    "GL_EXT_multisampled_render_to_texture "
-    "GL_EXT_occlusion_query_boolean "
-    "GL_EXT_read_format_bgra "
-    "GL_EXT_shader_texture_lod "
-    "GL_EXT_texture_compression_s3tc "
-    "GL_EXT_texture_filter_anisotropic "
-    "GL_IMG_texture_compression_pvrtc "
-    "GL_KHR_blend_equation_advanced "
-    "GL_KHR_blend_equation_advanced_coherent "
-    "GL_KHR_texture_compression_astc_ldr "
-    "GL_NV_EGL_stream_consumer_external "
-    "GL_NV_framebuffer_mixed_samples "
-    "GL_NV_path_rendering "
-    "GL_OES_compressed_ETC1_RGB8_texture "
-    "GL_OES_depth24 "
-    "GL_OES_EGL_image_external "
-    "GL_OES_rgb8_rgba8 "
-    "GL_OES_texture_float "
-    "GL_OES_texture_float_linear "
-    "GL_OES_texture_half_float "
-    "GL_OES_texture_half_float_linear";
+constexpr const char* kDriverVersions[] = {"OpenGL ES 2.0", "OpenGL ES 3.1",
+                                           "2.0", "4.5.0"};
 #endif
+
+class BitIterator {
+ public:
+  BitIterator(const uint8_t* data, size_t size) : data_(data), size_(size) {}
+
+  bool GetBit() {
+    if (offset_ == size_)
+      return false;
+    bool value = !!(data_[offset_] & (1u << bit_));
+    if (++bit_ == 8) {
+      bit_ = 0;
+      ++offset_;
+    }
+    return value;
+  }
+
+  void Advance(size_t bits) {
+    bit_ += bits;
+    offset_ += bit_ / 8;
+    if (offset_ >= size_) {
+      offset_ = size_;
+      bit_ = 0;
+    } else {
+      bit_ = bit_ % 8;
+    }
+  }
+
+  size_t consumed_bytes() const { return offset_ + (bit_ + 7) / 8; }
+
+ private:
+  const uint8_t* data_;
+  size_t size_;
+  size_t offset_ = 0;
+  size_t bit_ = 0;
+};
+
+struct Config {
+  size_t MakeFromBits(const uint8_t* bits, size_t size) {
+    BitIterator it(bits, size);
+    attrib_helper.red_size = 8;
+    attrib_helper.green_size = 8;
+    attrib_helper.blue_size = 8;
+    attrib_helper.alpha_size = it.GetBit() ? 8 : 0;
+    attrib_helper.depth_size = it.GetBit() ? 24 : 0;
+    attrib_helper.stencil_size = it.GetBit() ? 8 : 0;
+    attrib_helper.buffer_preserved = it.GetBit();
+    attrib_helper.bind_generates_resource = it.GetBit();
+    attrib_helper.single_buffer = it.GetBit();
+    bool es3 = it.GetBit();
+    attrib_helper.context_type =
+        es3 ? gles2::CONTEXT_TYPE_OPENGLES3 : gles2::CONTEXT_TYPE_OPENGLES2;
+
+#if defined(GPU_FUZZER_USE_STUB)
+    std::vector<base::StringPiece> enabled_extensions;
+    enabled_extensions.reserve(kExtensionCount);
+    for (const char* extension : kExtensions) {
+      if (it.GetBit())
+        enabled_extensions.push_back(extension);
+    }
+    extensions = base::JoinString(enabled_extensions, " ");
+
+    bool desktop_driver = it.GetBit();
+    size_t version_index = (desktop_driver ? 2 : 0) + (es3 ? 1 : 0);
+    version = kDriverVersions[version_index];
+#else
+    // We consume bits even if we don't use them, so that the same inputs can be
+    // used for every fuzzer variation
+    it.Advance(kExtensionCount + 1);
+#endif
+
+#define GPU_OP(type, name) workarounds.name = it.GetBit();
+    GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
+
+    return it.consumed_bytes();
+  };
+
+  GpuDriverBugWorkarounds workarounds;
+  gles2::ContextCreationAttribHelper attrib_helper;
+#if defined(GPU_FUZZER_USE_STUB)
+  const char* version;
+  std::string extensions;
+#endif
+};
 
 GpuPreferences GetGpuPreferences() {
   GpuPreferences preferences;
@@ -124,37 +295,37 @@ class CommandBufferSetup {
                                     gl::kGLImplementationSwiftShaderName);
     CHECK(gl::init::InitializeGLOneOffImplementation(
         gl::kGLImplementationSwiftShaderGL, false, false, false, true));
+#elif defined(GPU_FUZZER_USE_STUB)
+    gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
+    // Because the context depends on configuration bits, we want to recreate
+    // it every time.
+    recreate_context_ = true;
+#else
+#error invalid configuration
 #endif
     discardable_manager_ = std::make_unique<ServiceDiscardableManager>();
 
     if (gpu_preferences_.use_passthrough_cmd_decoder)
       recreate_context_ = true;
 
-#if !defined(GPU_FUZZER_USE_STUB)
-    surface_ = new gl::PbufferGLSurfaceEGL(gfx::Size());
-    surface_->Initialize();
+    surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
     if (!recreate_context_) {
       InitContext();
     }
-#else   // defined(GPU_FUZZER_USE_STUB)
-    surface_ = new gl::GLSurfaceStub;
-    InitContext();
-    gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
-#endif  // defined(GPU_FUZZER_USE_STUB)
   }
 
-  void InitDecoder() {
+  bool InitDecoder() {
     if (recreate_context_) {
       InitContext();
     }
 
     context_->MakeCurrent(surface_.get());
     scoped_refptr<gles2::FeatureInfo> feature_info =
-        new gles2::FeatureInfo();
+        new gles2::FeatureInfo(config_.workarounds);
     scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
         gpu_preferences_, true, &mailbox_manager_, nullptr /* memory_tracker */,
         &translator_cache_, &completeness_cache_, feature_info,
-        true /* bind_generates_resource */, &image_manager_,
+        config_.attrib_helper.bind_generates_resource, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
         GpuFeatureInfo(), discardable_manager_.get());
     command_buffer_.reset(new CommandBufferDirect(
@@ -163,36 +334,26 @@ class CommandBufferSetup {
     decoder_.reset(gles2::GLES2Decoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         context_group.get()));
-    command_buffer_->set_handler(decoder_.get());
-
-    InitializeInitialCommandBuffer();
 
     decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
-    gles2::ContextCreationAttribHelper attrib_helper;
-    attrib_helper.offscreen_framebuffer_size = gfx::Size(16, 16);
-    attrib_helper.red_size = 8;
-    attrib_helper.green_size = 8;
-    attrib_helper.blue_size = 8;
-    attrib_helper.alpha_size = 8;
-    attrib_helper.depth_size = 0;
-    attrib_helper.stencil_size = 0;
-    attrib_helper.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
+    auto result = decoder_->Initialize(surface_.get(), context_.get(), true,
+                                       gles2::DisallowedFeatures(),
+                                       config_.attrib_helper);
+    if (result != gpu::ContextResult::kSuccess)
+      return false;
 
-    auto result =
-        decoder_->Initialize(surface_.get(), context_.get(), true,
-                             gles2::DisallowedFeatures(), attrib_helper);
-    CHECK_EQ(result, gpu::ContextResult::kSuccess);
+    command_buffer_->set_handler(decoder_.get());
+    InitializeInitialCommandBuffer();
+
     decoder_->set_max_bucket_size(8 << 20);
     context_group->buffer_manager()->set_max_buffer_size(8 << 20);
-    if (!vertex_translator_) {
-      // Keep a reference to the translators, which keeps them in the cache even
-      // after the decoder is reset. They are expensive to initialize, but they
-      // don't keep state.
-      vertex_translator_ = decoder_->GetTranslator(GL_VERTEX_SHADER);
-      fragment_translator_ = decoder_->GetTranslator(GL_FRAGMENT_SHADER);
-    }
-    decoder_->MakeCurrent();
+    // Keep a reference to the translators, which keeps them in the cache even
+    // after the decoder is reset. They are expensive to initialize, but they
+    // don't keep state.
+    decoder_->GetTranslator(GL_VERTEX_SHADER)->AddRef();
+    decoder_->GetTranslator(GL_FRAGMENT_SHADER)->AddRef();
+    return decoder_->MakeCurrent();
   }
 
   void ResetDecoder() {
@@ -206,6 +367,12 @@ class CommandBufferSetup {
   }
 
   void RunCommandBuffer(const uint8_t* data, size_t size) {
+    size_t consumed = config_.MakeFromBits(data, size);
+    consumed = (consumed + 3) & ~3;
+    if (consumed > size)
+      return;
+    data += consumed;
+    size -= consumed;
     // The commands are flushed at a uint32_t granularity. If the data is not
     // a full command, we zero-pad it.
     size_t padded_size = (size + 3) & ~3;
@@ -214,7 +381,9 @@ class CommandBufferSetup {
     if (padded_size > kCommandBufferSize)
       return;
 
-    InitDecoder();
+    if (!InitDecoder())
+      return;
+
     size_t buffer_size = buffer_->size();
     CHECK_LE(padded_size, buffer_size);
     command_buffer_->SetGetBuffer(buffer_id_);
@@ -254,8 +423,8 @@ class CommandBufferSetup {
 #else
     scoped_refptr<gl::GLContextStub> context_stub =
         new gl::GLContextStub(share_group_.get());
-    context_stub->SetGLVersionString("OpenGL ES 3.1");
-    context_stub->SetExtensionsString(kExtensions);
+    context_stub->SetGLVersionString(config_.version);
+    context_stub->SetExtensionsString(config_.extensions.c_str());
     context_stub->SetUseStubApi(true);
     context_ = context_stub;
 #endif
@@ -264,6 +433,8 @@ class CommandBufferSetup {
   base::AtExitManager atexit_manager_;
 
   GpuPreferences gpu_preferences_;
+
+  Config config_;
 
   gles2::MailboxManagerImpl mailbox_manager_;
   gles2::TraceOutputter outputter_;
@@ -282,9 +453,6 @@ class CommandBufferSetup {
   std::unique_ptr<CommandBufferDirect> command_buffer_;
 
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
-
-  scoped_refptr<gles2::ShaderTranslatorInterface> vertex_translator_;
-  scoped_refptr<gles2::ShaderTranslatorInterface> fragment_translator_;
 
   scoped_refptr<Buffer> buffer_;
   int32_t buffer_id_ = 0;

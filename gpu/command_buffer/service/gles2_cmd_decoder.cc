@@ -16378,6 +16378,8 @@ bool GLES2DecoderImpl::CheckResetStatus() {
 error::Error GLES2DecoderImpl::HandleDescheduleUntilFinishedCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
+  if (!gl::GLFence::IsSupported())
+    return error::kNoError;
   std::unique_ptr<gl::GLFence> fence(gl::GLFence::Create());
   deschedule_until_finished_fences_.push_back(std::move(fence));
 

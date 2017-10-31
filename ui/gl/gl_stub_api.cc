@@ -133,11 +133,20 @@ void GLStubApi::glGetIntegervFn(GLenum pname, GLint* params) {
     case GL_MAX_VARYING_VECTORS:
       *params = 8;
       break;
+    case GL_MAX_VARYING_FLOATS:
+      *params = 32;
+      break;
     case GL_MAX_VERTEX_UNIFORM_VECTORS:
       *params = 128;
       break;
+    case GL_MAX_VERTEX_UNIFORM_COMPONENTS:
+      *params = 512;
+      break;
     case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
       *params = 16;
+      break;
+    case GL_MAX_FRAGMENT_UNIFORM_COMPONENTS:
+      *params = 64;
       break;
     case GL_MAX_VERTEX_OUTPUT_COMPONENTS:
       *params = 64;
