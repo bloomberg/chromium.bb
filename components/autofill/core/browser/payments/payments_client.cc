@@ -53,6 +53,9 @@ const char kUploadCardRequestPath[] =
 const char kUploadCardRequestFormat[] =
     "requestContentType=application/json; charset=utf-8&request=%s"
     "&s7e_1_pan=%s&s7e_13_cvc=%s";
+const char kUploadCardRequestFormatWithoutCvc[] =
+    "requestContentType=application/json; charset=utf-8&request=%s"
+    "&s7e_1_pan=%s";
 
 const char kTokenServiceConsumerId[] = "wallet_client";
 const char kPaymentsOAuth2Scope[] =
@@ -341,7 +344,8 @@ class UploadCardRequest : public PaymentsRequest {
   std::string GetRequestContent() override {
     base::DictionaryValue request_dict;
     request_dict.SetString("encrypted_pan", "__param:s7e_1_pan");
-    request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");
+    if (!request_details_.cvc.empty())
+      request_dict.SetString("encrypted_cvc", "__param:s7e_13_cvc");
     request_dict.SetKey("risk_data_encoded",
                         BuildRiskDictionary(request_details_.risk_data));
 
@@ -384,13 +388,21 @@ class UploadCardRequest : public PaymentsRequest {
         AutofillType(CREDIT_CARD_NUMBER), app_locale);
     std::string json_request;
     base::JSONWriter::Write(request_dict, &json_request);
-    std::string request_content = base::StringPrintf(
-        kUploadCardRequestFormat,
-        net::EscapeUrlEncodedData(json_request, true).c_str(),
-        net::EscapeUrlEncodedData(base::UTF16ToASCII(pan), true).c_str(),
-        net::EscapeUrlEncodedData(base::UTF16ToASCII(request_details_.cvc),
-                                  true)
-            .c_str());
+    std::string request_content;
+    if (request_details_.cvc.empty()) {
+      request_content = base::StringPrintf(
+          kUploadCardRequestFormatWithoutCvc,
+          net::EscapeUrlEncodedData(json_request, true).c_str(),
+          net::EscapeUrlEncodedData(base::UTF16ToASCII(pan), true).c_str());
+    } else {
+      request_content = base::StringPrintf(
+          kUploadCardRequestFormat,
+          net::EscapeUrlEncodedData(json_request, true).c_str(),
+          net::EscapeUrlEncodedData(base::UTF16ToASCII(pan), true).c_str(),
+          net::EscapeUrlEncodedData(base::UTF16ToASCII(request_details_.cvc),
+                                    true)
+              .c_str());
+    }
     VLOG(3) << "savecard request body: " << request_content;
     return request_content;
   }

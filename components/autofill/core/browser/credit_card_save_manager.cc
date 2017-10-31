@@ -428,7 +428,8 @@ void CreditCardSaveManager::SendUploadCardRequest() {
   upload_request_.app_locale = app_locale_;
   // If the upload request does not have card CVC, populate it with the value
   // provided by the user:
-  if (upload_request_.cvc.empty()) {
+  if (upload_request_.cvc.empty() &&
+      IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled()) {
     DCHECK(client_->GetSaveCardBubbleController());
     upload_request_.cvc =
         client_->GetSaveCardBubbleController()->GetCvcEnteredByUser();
