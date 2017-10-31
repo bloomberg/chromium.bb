@@ -297,8 +297,7 @@ void DevToolsAndroidBridge::RequestDeviceCount(
     const base::Callback<void(int)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (device_count_listeners_.empty() ||
-      !callback.Equals(device_count_callback_.callback()))
+  if (device_count_listeners_.empty() || callback.IsCancelled())
     return;
 
   UsbDeviceProvider::CountDevices(callback);
