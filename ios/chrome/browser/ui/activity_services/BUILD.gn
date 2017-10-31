@@ -119,3 +119,14 @@ source_set("eg_tests") {
   ]
   libs = [ "XCTest.framework" ]
 }
+
+source_set("features") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "canonical_url_feature.cc",
+    "canonical_url_feature.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
