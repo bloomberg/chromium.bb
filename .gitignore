@@ -44,6 +44,7 @@
 /win_toolchain/*.timestamps
 /win_toolchain/.vspro
 /win_toolchain/data.json
+/win_toolchain/vs_files.ciopfs
 
 # Ignore ctags/cscope index files
 /TAGS
