@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
@@ -1116,6 +1117,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
 
   pref_change_registrar_.reset();
   local_state_pref_change_registrar_.reset();
+
+  // Cancel pending PostLoadChromeVox, PostSwitchChromeVoxProfile, and other
+  // in-flight callbacks - otherwise these callbacks would have operated on
+  // a different |profile_| than the one they were originally meant for.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 
   if (profile) {
     // TODO(yoshiki): Move following code to PrefHandler.
