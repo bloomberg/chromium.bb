@@ -12,14 +12,15 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
-#include "base/strings/string16.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
-#include "chrome/common/features.h"
-#include "content/public/common/webplugininfo.h"
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace content {
+struct WebPluginInfo;
 }
 
 class PluginInstaller;
@@ -40,15 +41,6 @@ class PluginFinder {
 
   void ReinitializePlugins(const base::DictionaryValue* json_metadata);
 
-  // Finds a plugin for the given MIME type and language (specified as an IETF
-  // language tag, i.e. en-US). If found, sets |installer| to the
-  // corresponding PluginInstaller and |plugin_metadata| to a copy of the
-  // corresponding PluginMetadata.
-  bool FindPlugin(const std::string& mime_type,
-                  const std::string& language,
-                  PluginInstaller** installer,
-                  std::unique_ptr<PluginMetadata>* plugin_metadata);
-
   // Finds the plugin with the given identifier. If found, sets |installer|
   // to the corresponding PluginInstaller and |plugin_metadata| to a copy
   // of the corresponding PluginMetadata. |installer| may be null.
@@ -62,16 +54,17 @@ class PluginFinder {
       const content::WebPluginInfo& plugin);
 
  private:
-  friend struct base::DefaultSingletonTraits<PluginFinder>;
   FRIEND_TEST_ALL_PREFIXES(PluginFinderTest, JsonSyntax);
-  FRIEND_TEST_ALL_PREFIXES(PluginFinderTest, PluginGroups);
+  FRIEND_TEST_ALL_PREFIXES(PluginFinderTest, ReinitializePlugins);
 
   PluginFinder();
   ~PluginFinder();
 
   // Loads the plugin information from the browser resources and parses it.
   // Returns null if the plugin list couldn't be parsed.
-  static base::DictionaryValue* LoadBuiltInPluginList();
+  static std::unique_ptr<base::DictionaryValue> LoadBuiltInPluginList();
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   std::map<std::string, std::unique_ptr<PluginInstaller>> installers_;
 

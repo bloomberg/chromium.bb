@@ -32,6 +32,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/common/webplugininfo.h"
 #include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/common/error_utils.h"
 
