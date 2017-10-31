@@ -17,14 +17,23 @@ import sys
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
 
-# Current stable Windows NVIDIA GT 610 device/driver identifier.
+# Current stable Windows NVIDIA GeForce GT 610 device/driver identifier.
 WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER = '10de:104a-23.21.13.8792'
 
-# Current experimental Windows NVIDIA GT 610 device/driver identifier.
+# Current stable Windows NVIDIA Quadro P400 device/driver identifier.
+WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER = '10de:1cb3-23.21.13.8792'
+
+# Current experimental Windows NVIDIA GeForce GT 610 device/driver identifier.
 WIN_NVIDIA_GEFORCE_610_EXPERIMENTAL_DRIVER = '10de:104a-23.21.13.8792'
 
-# Use this to match all drivers for the NVIDIA GT 610.
+# Use this to match all drivers for the NVIDIA GeForce GT 610.
 NVIDIA_GEFORCE_610_ALL_DRIVERS = '10de:104a-*'
+
+# Linux NVIDIA GeForce GT 610.
+LINUX_GEFORCE_610_STABLE_DRIVER = '10de:104a'
+
+# Linux NVIDIA Quadro P400.
+LINUX_QUADRO_P400_STABLE_DRIVER = '10de:1cb3-384.90'
 
 # "Types" of waterfalls and bots. A bot's type is the union of its own
 # type and the type of its waterfall. Predicates can apply to these
@@ -193,7 +202,7 @@ WATERFALL = {
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -205,7 +214,7 @@ WATERFALL = {
     'Linux Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -255,6 +264,18 @@ FYI_WATERFALL = {
         },
       ],
       'build_config': 'Debug',
+      'swarming': True,
+      'os_type': 'win',
+    },
+    'Win7 Release (NVIDIA Quadro P400)': {
+      'swarming_dimensions': [
+        {
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
+          'os': 'Windows-2008ServerR2-SP1',
+          'pool': 'Chrome-GPU',
+        },
+      ],
+      'build_config': 'Release',
       'swarming': True,
       'os_type': 'win',
     },
@@ -608,7 +629,7 @@ FYI_WATERFALL = {
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -620,20 +641,19 @@ FYI_WATERFALL = {
     'Linux Release (NVIDIA Quadro P400)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:1cb3',
-          'os': 'Ubuntu'
+          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
         },
       ],
       'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
+      'swarming': True,
       'os_type': 'linux',
     },
     'Linux Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -645,7 +665,7 @@ FYI_WATERFALL = {
     'Linux dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -684,7 +704,7 @@ FYI_WATERFALL = {
     'Linux GPU TSAN Release': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -867,7 +887,7 @@ FYI_WATERFALL = {
     'Optional Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -991,7 +1011,7 @@ V8_FYI_WATERFALL = {
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -1003,7 +1023,7 @@ V8_FYI_WATERFALL = {
     'Linux Release - concurrent marking (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:104a',
+          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -1100,9 +1120,14 @@ COMMON_GTESTS = {
       {
         'predicate': Predicates.DEQP,
         'swarming_dimension_sets': [
-          # Linux NVIDIA
+          # Linux NVIDIA GeForce GT 610
           {
-            'gpu': '10de:104a',
+            'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+            'os': 'Ubuntu'
+          },
+          # Linux NVIDIA Quadro P400
+          {
+            'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
             'os': 'Ubuntu'
           },
           # Mac Intel
@@ -1260,9 +1285,14 @@ COMMON_GTESTS = {
         # TODO(jmadill): Run this on ANGLE roll tryservers.
         'predicate': Predicates.DEQP,
         'swarming_dimension_sets': [
-          # NVIDIA Linux
+          # NVIDIA Linux GeForce GT 610
           {
-            'gpu': '10de:104a',
+            'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+            'os': 'Ubuntu'
+          },
+          # NVIDIA Linux Quadro P400
+          {
+            'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
             'os': 'Ubuntu'
           },
           # Mac Intel
@@ -1335,7 +1365,11 @@ COMMON_GTESTS = {
             'os': 'Windows-2008ServerR2-SP1'
           },
           {
-            'gpu': '10de:104a',
+            'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+            'os': 'Ubuntu'
+          },
+          {
+            'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
             'os': 'Ubuntu'
           }
         ],
@@ -2142,7 +2176,11 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Only run on the NVIDIA Release and Intel Release Linux bots.
         'swarming_dimension_sets': [
           {
-            'gpu': '10de:104a',
+            'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+            'os': 'Ubuntu'
+          },
+          {
+            'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
             'os': 'Ubuntu'
           },
           {
@@ -2284,7 +2322,11 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
             'os': 'Windows-2008ServerR2-SP1'
           },
           {
-            'gpu': '10de:104a',
+            'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+            'os': 'Ubuntu'
+          },
+          {
+            'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
             'os': 'Ubuntu'
           },
           {
