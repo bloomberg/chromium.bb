@@ -198,6 +198,8 @@ blink_core_sources("css") {
     "FontFaceSetDocument.h",
     "FontFaceSetLoadEvent.cpp",
     "FontFaceSetLoadEvent.h",
+    "FontFaceSetWorker.cpp",
+    "FontFaceSetWorker.h",
     "FontFaceSource.cpp",
     "FontFaceSource.h",
     "FontSize.cpp",

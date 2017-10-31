@@ -38,6 +38,7 @@ namespace blink {
 class ExecutionContext;
 class FontData;
 class FontDescription;
+class FontFaceCache;
 class FontSelectorClient;
 class GenericFontFamilySettings;
 
@@ -66,6 +67,12 @@ class PLATFORM_EXPORT FontSelector : public FontCacheClient {
   virtual void FontFaceInvalidated(){};
 
   virtual ExecutionContext* GetExecutionContext() const = 0;
+
+  virtual FontFaceCache* GetFontFaceCache() = 0;
+
+  virtual bool IsPlatformFamilyMatchAvailable(
+      const FontDescription&,
+      const AtomicString& passed_family) = 0;
 
  protected:
   static AtomicString FamilyNameFromSettings(

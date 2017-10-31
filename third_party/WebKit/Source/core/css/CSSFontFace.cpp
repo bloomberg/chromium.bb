@@ -30,8 +30,10 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontFaceSetDocument.h"
+#include "core/css/FontFaceSetWorker.h"
 #include "core/css/RemoteFontFaceSource.h"
 #include "core/frame/UseCounter.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
 
@@ -185,12 +187,20 @@ void CSSFontFace::SetLoadStatus(FontFace::LoadStatusType new_status) {
   else
     font_face_->SetLoadStatus(new_status);
 
-  if (!segmented_font_face_ || !font_face_->GetExecutionContext() ||
-      !font_face_->GetExecutionContext()->IsDocument())
+  if (!segmented_font_face_ || !font_face_->GetExecutionContext())
     return;
-  Document* document = ToDocument(font_face_->GetExecutionContext());
-  if (document && new_status == FontFace::kLoading)
-    FontFaceSetDocument::From(*document)->BeginFontLoading(font_face_);
+
+  if (font_face_->GetExecutionContext()->IsDocument()) {
+    Document* document = ToDocument(font_face_->GetExecutionContext());
+    if (new_status == FontFace::kLoading)
+      FontFaceSetDocument::From(*document)->BeginFontLoading(font_face_);
+  }
+  if (font_face_->GetExecutionContext()->IsWorkerGlobalScope()) {
+    WorkerGlobalScope* scope =
+        ToWorkerGlobalScope(font_face_->GetExecutionContext());
+    if (new_status == FontFace::kLoading)
+      FontFaceSetWorker::From(*scope)->BeginFontLoading(font_face_);
+  }
 }
 
 void CSSFontFace::Trace(blink::Visitor* visitor) {

@@ -51,10 +51,11 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
 
   void UpdateGenericFontFamilySettings(const GenericFontFamilySettings&);
 
-  FontFaceCache* GetFontFaceCache() { return &font_face_cache_; }
+  FontFaceCache* GetFontFaceCache() override { return &font_face_cache_; }
 
-  bool IsPlatformFamilyMatchAvailable(const FontDescription&,
-                                      const AtomicString& passed_family);
+  bool IsPlatformFamilyMatchAvailable(
+      const FontDescription&,
+      const AtomicString& passed_family) override;
 
   ExecutionContext* GetExecutionContext() const override {
     return execution_context_;
