@@ -84,6 +84,9 @@ size_t RegisterCastCrashKeys() {
       // Accessibility keys. Temporary for http://crbug.com/765490.
       {"ax_tree_error", ::crash_keys::kSmallSize},
       {"ax_tree_update", ::crash_keys::kMediumSize},
+
+      // Temporary for crbug.com/756624.
+      {"break_iterator", ::crash_keys::kSmallSize},
   };
 
   return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),

@@ -23,6 +23,7 @@
 
 #include "platform/text/TextBreakIterator.h"
 
+#include "build/build_config.h"
 #include "platform/text/Character.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -30,6 +31,18 @@
 
 #include <unicode/uchar.h>
 #include <unicode/uvernum.h>
+
+#if defined(OS_ANDROID)
+// Investigate crash on Android crbug.com/756624
+// TODO(kojii): Remove this when investigation is done.
+#include "base/strings/stringprintf.h"
+#include "platform/wtf/debug/CrashLogging.h"
+#define SET_CRASH_KEY 1
+
+using WTF::debug::ScopedCrashKey;
+
+const char kCrashKey[] = "break_iterator";
+#endif
 
 namespace blink {
 
@@ -259,6 +272,11 @@ template <typename CharacterType,
 inline int LazyLineBreakIterator::NextBreakablePosition(
     int pos,
     const CharacterType* str) const {
+#if defined(SET_CRASH_KEY)
+  ScopedCrashKey crash_key(kCrashKey,
+                           base::StringPrintf("%d %d %p", lineBreakType, pos,
+                                              static_cast<const void*>(str)));
+#endif
   int len = static_cast<int>(string_.length());
   int next_break = -1;
 
@@ -268,7 +286,8 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
   ULineBreak last_line_break;
   if (lineBreakType == LineBreakType::kBreakAll)
     last_line_break = LineBreakPropertyValue(last_last_ch, last_ch);
-  unsigned prior_context_length = PriorContextLength();
+  const unsigned prior_context_length = PriorContextLength();
+  TextBreakIterator* break_iterator = nullptr;
   CharacterType ch;
   bool is_space;
   for (int i = pos; i < len;
@@ -319,8 +338,16 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
         // Don't break if positioned at start of primary context and there is no
         // prior context.
         if (i || prior_context_length) {
-          TextBreakIterator* break_iterator = Get(prior_context_length);
+          if (!break_iterator) {
+#if defined(SET_CRASH_KEY)
+            ScopedCrashKey crash_key(kCrashKey, "Get");
+#endif
+            break_iterator = Get(prior_context_length);
+          }
           if (break_iterator) {
+#if defined(SET_CRASH_KEY)
+            ScopedCrashKey crash_key(kCrashKey, "following");
+#endif
             next_break =
                 break_iterator->following(i - 1 + prior_context_length);
             if (next_break >= 0) {
@@ -371,6 +398,10 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
 
 template <LineBreakType lineBreakType>
 inline int LazyLineBreakIterator::NextBreakablePosition(int pos) const {
+#if defined(SET_CRASH_KEY)
+  ScopedCrashKey crash_key(kCrashKey,
+                           base::StringPrintf("%d %d", lineBreakType, pos));
+#endif
   if (UNLIKELY(string_.IsNull()))
     return 0;
   if (string_.Is8Bit()) {
