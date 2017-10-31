@@ -85,6 +85,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     network::mojom::FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,
+    bool keepalive,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -100,6 +101,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
       credentials_mode_(credentials_mode),
       redirect_mode_(redirect_mode),
       integrity_(integrity),
+      keepalive_(keepalive),
       request_context_type_(request_context_type),
       frame_type_(frame_type),
       body_(body),
@@ -163,8 +165,8 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
       new ServiceWorkerURLRequestJob(
           request, network_delegate, provider_host_->client_uuid(),
           blob_storage_context_, resource_context, request_mode_,
-          credentials_mode_, redirect_mode_, integrity_, resource_type_,
-          request_context_type_, frame_type_, body_,
+          credentials_mode_, redirect_mode_, integrity_, keepalive_,
+          resource_type_, request_context_type_, frame_type_, body_,
           ServiceWorkerFetchType::FETCH, base::nullopt, this));
   url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(job->GetWeakPtr());
 

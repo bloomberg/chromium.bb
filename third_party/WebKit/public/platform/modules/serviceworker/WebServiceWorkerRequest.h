@@ -82,6 +82,9 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   void SetCacheMode(mojom::FetchCacheMode);
   mojom::FetchCacheMode CacheMode() const;
 
+  void SetKeepalive(bool);
+  bool Keepalive() const;
+
   void SetRedirectMode(WebURLRequest::FetchRedirectMode);
   WebURLRequest::FetchRedirectMode RedirectMode() const;
 

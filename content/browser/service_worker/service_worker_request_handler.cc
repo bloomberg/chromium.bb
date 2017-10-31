@@ -104,8 +104,9 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
           network::mojom::FetchRequestMode::kNavigate,
           network::mojom::FetchCredentialsMode::kInclude,
           FetchRedirectMode::MANUAL_MODE, std::string() /* integrity */,
-          resource_type, request_context_type, frame_type,
-          blob_storage_context->AsWeakPtr(), body, skip_service_worker));
+          false /* keepalive */, resource_type, request_context_type,
+          frame_type, blob_storage_context->AsWeakPtr(), body,
+          skip_service_worker));
   if (handler)
     request->SetUserData(&kUserDataKey, std::move(handler));
 
@@ -158,8 +159,9 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
           network::mojom::FetchRequestMode::kNavigate,
           network::mojom::FetchCredentialsMode::kInclude,
           FetchRedirectMode::MANUAL_MODE, std::string() /* integrity */,
-          resource_type, request_context_type, frame_type,
-          blob_storage_context->AsWeakPtr(), body, skip_service_worker));
+          false /* keepalive */, resource_type, request_context_type,
+          frame_type, blob_storage_context->AsWeakPtr(), body,
+          skip_service_worker));
 
   // Transfer ownership to the ServiceWorkerNavigationHandleCore.
   // In the case of a successful navigation, the SWProviderHost will be
@@ -182,6 +184,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     network::mojom::FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,
+    bool keepalive,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -205,7 +208,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
 
   std::unique_ptr<ServiceWorkerRequestHandler> handler(
       provider_host->CreateRequestHandler(
-          request_mode, credentials_mode, redirect_mode, integrity,
+          request_mode, credentials_mode, redirect_mode, integrity, keepalive,
           resource_type, request_context_type, frame_type,
           blob_storage_context->AsWeakPtr(), body, skip_service_worker));
   if (handler)

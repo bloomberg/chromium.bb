@@ -127,6 +127,10 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
     return request.integrity;
   }
 
+  static bool keepalive(const content::ServiceWorkerFetchRequest& request) {
+    return request.keepalive;
+  }
+
   static const std::string& client_id(
       const content::ServiceWorkerFetchRequest& request) {
     return request.client_id;

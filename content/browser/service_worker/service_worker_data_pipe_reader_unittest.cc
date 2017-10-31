@@ -38,6 +38,7 @@ class MockServiceWorkerURLRequestJob : public ServiceWorkerURLRequestJob {
                                    network::mojom::FetchCredentialsMode::kOmit,
                                    FetchRedirectMode::FOLLOW_MODE,
                                    std::string() /* integrity */,
+                                   false /* keepalive */,
                                    RESOURCE_TYPE_MAIN_FRAME,
                                    REQUEST_CONTEXT_TYPE_HYPERLINK,
                                    REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,

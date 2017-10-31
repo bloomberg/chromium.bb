@@ -123,6 +123,7 @@ struct FetchAPIRequest {
   FetchCacheMode cache_mode;
   FetchRedirectMode redirect_mode;
   string? integrity;
+  bool keepalive;
   string? client_id;
   bool is_reload;
   ServiceWorkerFetchType fetch_type;

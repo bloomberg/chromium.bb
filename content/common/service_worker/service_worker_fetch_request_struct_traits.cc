@@ -345,6 +345,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   if (blob)
     out->blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob));
   out->cache_mode = data.cache_mode();
+  out->keepalive = data.keepalive();
   out->is_reload = data.is_reload();
   return true;
 }

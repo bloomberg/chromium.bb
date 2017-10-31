@@ -33,6 +33,7 @@ ServiceWorkerLoaderHelpers::CreateFetchRequest(const ResourceRequest& request) {
   new_request->cache_mode =
       ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(request.load_flags);
   new_request->redirect_mode = request.fetch_redirect_mode;
+  new_request->keepalive = request.keepalive;
   new_request->is_reload = ui::PageTransitionCoreTypeIs(
       request.transition_type, ui::PAGE_TRANSITION_RELOAD);
   new_request->referrer =
