@@ -228,6 +228,62 @@ TEST_P(GLES2DecoderLostContextTest, TextureDestroyAfterLostFromMakeCurrent) {
   ClearCurrentDecoderError();
 }
 
+TEST_P(GLES2DecoderLostContextTest, QueryDestroyAfterLostFromMakeCurrent) {
+  InitState init;
+  init.extensions = "GL_EXT_occlusion_query_boolean GL_ARB_sync";
+  init.gl_version = "2.0";
+  init.has_alpha = true;
+  init.request_alpha = true;
+  init.bind_generates_resource = true;
+  InitDecoder(init);
+
+  const GLsync kGlSync = reinterpret_cast<GLsync>(0xdeadbeef);
+  GenHelper<GenQueriesEXTImmediate>(kNewClientId);
+
+  BeginQueryEXT begin_cmd;
+  begin_cmd.Init(GL_COMMANDS_COMPLETED_CHROMIUM, kNewClientId,
+                 shared_memory_id_, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(begin_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != nullptr);
+  QueryManager::Query* query = query_manager->GetQuery(kNewClientId);
+  ASSERT_TRUE(query != nullptr);
+  EXPECT_FALSE(query->IsPending());
+
+  EXPECT_CALL(*gl_, Flush()).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+      .WillOnce(Return(kGlSync))
+      .RetiresOnSaturation();
+#if DCHECK_IS_ON()
+  EXPECT_CALL(*gl_, IsSync(kGlSync))
+      .WillOnce(Return(GL_TRUE))
+      .RetiresOnSaturation();
+#endif
+
+  EndQueryEXT end_cmd;
+  end_cmd.Init(GL_COMMANDS_COMPLETED_CHROMIUM, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(end_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+#if DCHECK_IS_ON()
+  EXPECT_CALL(*gl_, IsSync(kGlSync)).Times(0).RetiresOnSaturation();
+#endif
+  EXPECT_CALL(*gl_, DeleteSync(kGlSync)).Times(0).RetiresOnSaturation();
+
+  // Force context lost for MakeCurrent().
+  EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(false));
+  // Expect the group to be lost.
+  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
+
+  decoder_->MakeCurrent();
+  EXPECT_TRUE(decoder_->WasContextLost());
+  EXPECT_EQ(error::kMakeCurrentFailed, GetContextLostReason());
+  ClearCurrentDecoderError();
+  ResetDecoder();
+}
+
 TEST_P(GLES2DecoderLostContextTest, LostFromResetAfterMakeCurrent) {
   Init(true); // with robustness
   InSequence seq;

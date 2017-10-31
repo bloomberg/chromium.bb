@@ -482,8 +482,7 @@ void CommandsCompletedQuery::Resume() {
 void CommandsCompletedQuery::End(base::subtle::Atomic32 submit_count) {
   if (fence_ && fence_->ResetSupported()) {
     fence_->ResetState();
-  }
-  else {
+  } else {
     fence_.reset(gl::GLFence::Create());
   }
   DCHECK(fence_);
@@ -509,6 +508,8 @@ void CommandsCompletedQuery::Destroy(bool have_context) {
   if (have_context && !IsDeleted()) {
     fence_.reset();
     MarkAsDeleted();
+  } else if (fence_ && !have_context) {
+    fence_->Invalidate();
   }
 }
 
