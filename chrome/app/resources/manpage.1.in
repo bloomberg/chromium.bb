@@ -24,7 +24,7 @@ stable flags.
 \fB\-\-user\-data\-dir\fR=\fIDIR\fR
 Specifies the directory that user data (your "profile") is kept in.
 Defaults to
-.I ~/.config/@@PACKAGE@@ .
+.I $HOME/.config/@@PACKAGE@@ .
 Separate instances of @@MENUNAME@@ must use separate user data directories;
 repeated invocations of @@PACKAGE@@ will reuse an existing process for
 a given user data directory.
@@ -150,11 +150,11 @@ Comma separated list of hosts or patterns to bypass proxying.
 
 .SH FILES
 .TP
-.I ~/.config/@@PACKAGE@@
+.I $HOME/.config/@@PACKAGE@@
 Default directory for configuration data.
 
 .TP
-.I ~/.cache/@@PACKAGE@@
+.I $HOME/.cache/@@PACKAGE@@
 Default directory for cache data.  (Why?  See
 <http://standards.freedesktop.org/basedir-spec/latest/> .)
 
