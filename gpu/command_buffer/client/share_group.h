@@ -14,6 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "gles2_impl_export.h"
 #include "gpu/command_buffer/client/client_discardable_manager.h"
+#include "gpu/command_buffer/client/client_discardable_texture_manager.h"
 #include "gpu/command_buffer/client/ref_counted.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 
@@ -153,8 +154,8 @@ class GLES2_IMPL_EXPORT ShareGroup
 
   uint64_t TracingGUID() const { return tracing_guid_; }
 
-  ClientDiscardableManager* discardable_manager() {
-    return &discardable_manager_;
+  ClientDiscardableTextureManager* discardable_texture_manager() {
+    return &discardable_texture_manager_;
   }
 
   // Mark the ShareGroup as lost when an error occurs on any context in the
@@ -177,7 +178,7 @@ class GLES2_IMPL_EXPORT ShareGroup
   std::unique_ptr<RangeIdHandlerInterface>
       range_id_handlers_[id_namespaces::kNumRangeIdNamespaces];
   std::unique_ptr<ProgramInfoManager> program_info_manager_;
-  ClientDiscardableManager discardable_manager_;
+  ClientDiscardableTextureManager discardable_texture_manager_;
 
   bool bind_generates_resource_;
   uint64_t tracing_guid_;

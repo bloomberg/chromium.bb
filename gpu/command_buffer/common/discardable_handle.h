@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_COMMON_DISCARDABLE_HANDLE_H_
 
 #include "base/memory/ref_counted.h"
+#include "gpu/command_buffer/common/id_type.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -66,6 +67,10 @@ class GPU_EXPORT DiscardableHandleBase {
 // handle (via the constructor), and can Lock an existing handle.
 class GPU_EXPORT ClientDiscardableHandle : public DiscardableHandleBase {
  public:
+  using Id = IdType<ClientDiscardableHandle,
+                    uint64_t,
+                    std::numeric_limits<uint64_t>::max()>;
+
   ClientDiscardableHandle(scoped_refptr<Buffer> buffer,
                           uint32_t byte_offset,
                           int32_t shm_id);
@@ -81,6 +86,10 @@ class GPU_EXPORT ClientDiscardableHandle : public DiscardableHandleBase {
   // Returns true if the handle has been deleted on service side and can be
   // re-used on the client.
   bool CanBeReUsed() const;
+
+  // Gets an Id which uniquely identifies this ClientDiscardableHandle within
+  // the ClientDiscardableManager which created it.
+  Id GetId() const;
 };
 
 // ServiceDiscardableHandle can wrap an existing handle (via the constructor),
