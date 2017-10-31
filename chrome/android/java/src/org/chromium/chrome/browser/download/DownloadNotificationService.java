@@ -874,7 +874,11 @@ public class DownloadNotificationService extends Service {
     public void notifyDownloadCanceled(ContentId id) {
         DownloadSharedPreferenceEntry entry =
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(id);
-        if (entry == null) return;
+        if (entry == null) {
+            // In case notifyDownloadCanceled was called after the entry has already been removed.
+            stopTrackingInProgressDownload(id, hasDownloadNotificationsInternal(-1));
+            return;
+        }
         cancelNotification(entry.notificationId, id);
     }
 
