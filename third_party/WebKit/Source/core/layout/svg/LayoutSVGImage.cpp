@@ -185,7 +185,9 @@ bool LayoutSVGImage::NodeAtFloatPoint(HitTestResult& result,
   return false;
 }
 
-void LayoutSVGImage::ImageChanged(WrappedImagePtr, const IntRect*) {
+void LayoutSVGImage::ImageChanged(WrappedImagePtr,
+                                  CanDeferInvalidation defer,
+                                  const IntRect*) {
   // Notify parent resources that we've changed. This also invalidates
   // references from resources (filters) that may have a cached
   // representation of this image/layout object.

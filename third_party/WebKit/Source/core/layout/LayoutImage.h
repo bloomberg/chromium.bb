@@ -82,7 +82,7 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
 
   void IntrinsicSizeChanged() override {
     if (image_resource_)
-      ImageChanged(image_resource_->ImagePtr());
+      ImageChanged(image_resource_->ImagePtr(), CanDeferInvalidation::kNo);
   }
 
   const char* GetName() const override { return "LayoutImage"; }
@@ -92,7 +92,9 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   LayoutReplaced* EmbeddedReplacedContent() const final;
   void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
 
-  void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+  void ImageChanged(WrappedImagePtr,
+                    CanDeferInvalidation,
+                    const IntRect* = nullptr) override;
 
   void Paint(const PaintInfo&, const LayoutPoint&) const final;
 
@@ -126,7 +128,7 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
                    const LayoutPoint& accumulated_offset,
                    HitTestAction) final;
 
-  void InvalidatePaintAndMarkForLayoutIfNeeded();
+  void InvalidatePaintAndMarkForLayoutIfNeeded(CanDeferInvalidation);
   void UpdateIntrinsicSizeIfNeeded(const LayoutSize&);
 
   // This member wraps the associated decoded image.

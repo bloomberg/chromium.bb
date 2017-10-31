@@ -1787,7 +1787,9 @@ void LayoutBox::PaintMask(const PaintInfo& paint_info,
   BoxPainter(*this).PaintMask(paint_info, paint_offset);
 }
 
-void LayoutBox::ImageChanged(WrappedImagePtr image, const IntRect*) {
+void LayoutBox::ImageChanged(WrappedImagePtr image,
+                             CanDeferInvalidation defer,
+                             const IntRect*) {
   // TODO(chrishtr): support PaintInvalidationReason::kDelayedFull for animated
   // border images.
   if ((StyleRef().BorderImage().GetImage() &&
@@ -1818,7 +1820,7 @@ void LayoutBox::ImageChanged(WrappedImagePtr image, const IntRect*) {
             layer->GetImage()->CachedImage() &&
             layer->GetImage()->CachedImage()->GetImage() &&
             layer->GetImage()->CachedImage()->GetImage()->MaybeAnimated();
-        if (maybe_animated) {
+        if (defer == CanDeferInvalidation::kYes && maybe_animated) {
           SetMayNeedPaintInvalidationAnimatedBackgroundImage();
         } else {
           SetShouldDoFullPaintInvalidationWithoutGeometryChange(

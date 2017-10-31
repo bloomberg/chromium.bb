@@ -122,7 +122,9 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   ScriptPromise Decode(ScriptState*, ExceptionState&);
 
  protected:
-  void ImageChanged(ImageResourceContent*, const IntRect*) override;
+  void ImageChanged(ImageResourceContent*,
+                    CanDeferInvalidation,
+                    const IntRect*) override;
   void ImageNotifyFinished(ImageResourceContent*) override;
 
  private:

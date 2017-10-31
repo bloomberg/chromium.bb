@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
+#include "core/loader/resource/ImageResourceObserver.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageObserver.h"
@@ -173,6 +174,8 @@ class CORE_EXPORT ImageResourceContent final
   }
 
  private:
+  using CanDeferInvalidation = ImageResourceObserver::CanDeferInvalidation;
+
   explicit ImageResourceContent(scoped_refptr<blink::Image> = nullptr);
 
   // ImageObserver
@@ -189,6 +192,7 @@ class CORE_EXPORT ImageResourceContent final
 
   // If not null, changeRect is the changed part of the image.
   void NotifyObservers(NotifyFinishOption,
+                       CanDeferInvalidation,
                        const IntRect* change_rect = nullptr);
   void MarkObserverFinished(ImageResourceObserver*);
   void UpdateToLoadedContentStatus(ResourceStatus);

@@ -82,7 +82,9 @@ void LayoutImage::SetImageResource(LayoutImageResource* image_resource) {
   image_resource_->Initialize(this);
 }
 
-void LayoutImage::ImageChanged(WrappedImagePtr new_image, const IntRect* rect) {
+void LayoutImage::ImageChanged(WrappedImagePtr new_image,
+                               CanDeferInvalidation defer,
+                               const IntRect* rect) {
   DCHECK(View());
   DCHECK(View()->GetFrameView());
   if (DocumentBeingDestroyed())
@@ -90,7 +92,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image, const IntRect* rect) {
 
   if (HasBoxDecorationBackground() || HasMask() || HasShapeOutside() ||
       HasReflection())
-    LayoutReplaced::ImageChanged(new_image, rect);
+    LayoutReplaced::ImageChanged(new_image, defer, rect);
 
   if (!image_resource_)
     return;
@@ -122,7 +124,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image, const IntRect* rect) {
     did_increment_visually_non_empty_pixel_count_ = true;
   }
 
-  InvalidatePaintAndMarkForLayoutIfNeeded();
+  InvalidatePaintAndMarkForLayoutIfNeeded(defer);
 }
 
 void LayoutImage::UpdateIntrinsicSizeIfNeeded(const LayoutSize& new_size) {
@@ -131,7 +133,8 @@ void LayoutImage::UpdateIntrinsicSizeIfNeeded(const LayoutSize& new_size) {
   SetIntrinsicSize(new_size);
 }
 
-void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded() {
+void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
+    CanDeferInvalidation defer) {
   LayoutSize old_intrinsic_size = IntrinsicSize();
   LayoutSize new_intrinsic_size =
       image_resource_->ImageSize(Style()->EffectiveZoom());
@@ -171,7 +174,8 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded() {
   }
 
   SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-      ImageResource() && ImageResource()->MaybeAnimated()
+      defer == CanDeferInvalidation::kYes && ImageResource() &&
+              ImageResource()->MaybeAnimated()
           ? PaintInvalidationReason::kDelayedFull
           : PaintInvalidationReason::kImage);
 
@@ -211,7 +215,7 @@ void LayoutImage::AreaElementFocusChanged(HTMLAreaElement* area_element) {
   if (area_element->GetPath(this).IsEmpty())
     return;
 
-  InvalidatePaintAndMarkForLayoutIfNeeded();
+  InvalidatePaintAndMarkForLayoutIfNeeded(CanDeferInvalidation::kYes);
 }
 
 bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(

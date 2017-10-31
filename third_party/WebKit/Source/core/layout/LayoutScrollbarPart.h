@@ -78,7 +78,9 @@ class LayoutScrollbarPart final : public LayoutBlock {
   void StyleWillChange(StyleDifference,
                        const ComputedStyle& new_style) override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-  void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+  void ImageChanged(WrappedImagePtr,
+                    CanDeferInvalidation,
+                    const IntRect* = nullptr) override;
 
  private:
   LayoutScrollbarPart(ScrollableArea*, LayoutScrollbar*, ScrollbarPart);

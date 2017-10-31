@@ -36,16 +36,29 @@ class IntRect;
 
 class CORE_EXPORT ImageResourceObserver {
  public:
+  // Used to notify the observers whether the invalidation resulting from an
+  // image change notification can be deferred. In cases where the image is
+  // changing as a result of an animation, its performant to avoid continuous
+  // invalidations of offscreen content.
+  // Note that the observer can ignore kYes and perform an immediate
+  // invalidation, but kNo must be strictly enforced, i.e., if specified the
+  // invalidation can not be deferred.
+  enum class CanDeferInvalidation { kYes, kNo };
+
   virtual ~ImageResourceObserver() {}
 
   // Called whenever a frame of an image changes, either because we got more
   // data from the network or because we are animating. If not null, the IntRect
   // is the changed rect of the image.
-  virtual void ImageChanged(ImageResourceContent*, const IntRect* = nullptr) {}
+  virtual void ImageChanged(ImageResourceContent*,
+                            CanDeferInvalidation,
+                            const IntRect* = nullptr) {}
 
   // Sub-classes that have an associated image need to override this function
   // to get notified of any image change.
-  virtual void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) {}
+  virtual void ImageChanged(WrappedImagePtr,
+                            CanDeferInvalidation,
+                            const IntRect* = nullptr) {}
 
   // Called just after imageChanged() if all image data is received or errored.
   // TODO(hiroshige): Merge imageNotifyFinished() into imageChanged().

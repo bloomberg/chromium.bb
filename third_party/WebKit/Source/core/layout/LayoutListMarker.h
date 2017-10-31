@@ -95,7 +95,9 @@ class LayoutListMarker final : public LayoutBox {
 
   void UpdateLayout() override;
 
-  void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+  void ImageChanged(WrappedImagePtr,
+                    CanDeferInvalidation,
+                    const IntRect* = nullptr) override;
 
   InlineBox* CreateInlineBox() override;
 

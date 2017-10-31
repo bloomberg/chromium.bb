@@ -3179,6 +3179,7 @@ bool LayoutObject::IsInert() const {
 }
 
 void LayoutObject::ImageChanged(ImageResourceContent* image,
+                                CanDeferInvalidation defer,
                                 const IntRect* rect) {
   DCHECK(node_);
 
@@ -3188,7 +3189,7 @@ void LayoutObject::ImageChanged(ImageResourceContent* image,
   DCHECK_NE(GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::LifecycleState::kInPaint);
 
-  ImageChanged(static_cast<WrappedImagePtr>(image), rect);
+  ImageChanged(static_cast<WrappedImagePtr>(image), defer, rect);
 }
 
 Element* LayoutObject::OffsetParent(const Element* base) const {

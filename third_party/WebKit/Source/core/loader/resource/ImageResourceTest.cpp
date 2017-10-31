@@ -1924,5 +1924,24 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   WTF::SetTimeFunctionsForTesting(nullptr);
 }
 
+TEST(ImageResourceTest, DeferredInvalidation) {
+  ImageResource* image_resource = ImageResource::CreateForTest(NullURL());
+  std::unique_ptr<MockImageResourceObserver> obs =
+      MockImageResourceObserver::Create(image_resource->GetContent());
+
+  // Image loaded.
+  ReceiveResponse(image_resource, NullURL(), "image/jpeg",
+                  reinterpret_cast<const char*>(kJpegImage),
+                  sizeof(kJpegImage));
+  EXPECT_EQ(obs->ImageChangedCount(), 2);
+  EXPECT_EQ(obs->Defer(), ImageResourceObserver::CanDeferInvalidation::kNo);
+
+  // Image animated.
+  static_cast<ImageObserver*>(image_resource->GetContent())
+      ->AnimationAdvanced(image_resource->GetContent()->GetImage());
+  EXPECT_EQ(obs->ImageChangedCount(), 3);
+  EXPECT_EQ(obs->Defer(), ImageResourceObserver::CanDeferInvalidation::kYes);
+}
+
 }  // namespace
 }  // namespace blink

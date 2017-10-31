@@ -250,11 +250,13 @@ scoped_refptr<Image> CSSCrossfadeValue::GetImage(
       FixedSize(document, FloatSize(size)), size);
 }
 
-void CSSCrossfadeValue::CrossfadeChanged(const IntRect&) {
+void CSSCrossfadeValue::CrossfadeChanged(
+    const IntRect&,
+    ImageResourceObserver::CanDeferInvalidation defer) {
   for (const auto& curr : Clients()) {
     ImageResourceObserver* client =
         const_cast<ImageResourceObserver*>(curr.key);
-    client->ImageChanged(static_cast<WrappedImagePtr>(this));
+    client->ImageChanged(static_cast<WrappedImagePtr>(this), defer);
   }
 }
 
@@ -268,9 +270,10 @@ bool CSSCrossfadeValue::WillRenderImage() const {
 
 void CSSCrossfadeValue::CrossfadeSubimageObserverProxy::ImageChanged(
     ImageResourceContent*,
+    CanDeferInvalidation defer,
     const IntRect* rect) {
   if (ready_)
-    owner_value_->CrossfadeChanged(*rect);
+    owner_value_->CrossfadeChanged(*rect, defer);
 }
 
 bool CSSCrossfadeValue::CrossfadeSubimageObserverProxy::WillRenderImage() {

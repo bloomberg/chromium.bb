@@ -36,16 +36,21 @@ class MockImageResourceObserver final : public ImageResourceObserver {
     return status_on_image_notify_finished_;
   }
 
+  CanDeferInvalidation Defer() const { return defer_; }
+
  private:
   explicit MockImageResourceObserver(ImageResourceContent*);
 
   // ImageResourceObserver overrides.
   void ImageNotifyFinished(ImageResourceContent*) override;
-  void ImageChanged(ImageResourceContent*, const IntRect*) override;
+  void ImageChanged(ImageResourceContent*,
+                    CanDeferInvalidation,
+                    const IntRect*) override;
   String DebugName() const override { return "MockImageResourceObserver"; }
 
   Persistent<ImageResourceContent> content_;
   int image_changed_count_;
+  CanDeferInvalidation defer_;
   int image_width_on_last_image_changed_;
   int image_notify_finished_count_;
   int image_width_on_image_notify_finished_;
