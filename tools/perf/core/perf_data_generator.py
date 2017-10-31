@@ -443,7 +443,7 @@ def get_waterfall_config():
     'chromium-rel-win7-gpu-nvidia', 'win',
     swarming=[
       {
-       'gpu': '10de:104a',
+       'gpu': '10de:1cb3',
        'os': 'Windows-2008ServerR2-SP1',
        'pool': 'Chrome-perf',
        'device_ids': [
