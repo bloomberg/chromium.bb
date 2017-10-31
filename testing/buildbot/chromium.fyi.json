@@ -3820,9 +3820,6 @@
         "test": "media_unittests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_common_unittests.filter"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -4130,13 +4127,7 @@
       "content_unittests",
       "gl_unittests",
       "headless_shell",
-      "ipc_tests",
       "media_unittests",
-      "mojo_common_unittests",
-      "mojo_js_unittests",
-      "mojo_public_bindings_unittests",
-      "mojo_public_system_unittests",
-      "mojo_system_unittests",
       "net_unittests",
       "skia_unittests",
       "service_manager_unittests",
@@ -4157,6 +4148,51 @@
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ipc_tests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ipc_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mojo_common_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_js_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mojo_js_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mojo_public_bindings_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mojo_public_system_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_system_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mojo_system_unittests"
       }
     ]
   },
