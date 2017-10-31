@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
@@ -234,9 +235,12 @@ class DOMEditor::SetOuterHTMLAction final : public InspectorHistory::Action {
 
   bool Perform(ExceptionState& exception_state) override {
     old_html_ = CreateMarkup(node_.Get());
-    DCHECK(node_->ownerDocument());
-    DOMPatchSupport dom_patch_support(dom_editor_.Get(),
-                                      *node_->ownerDocument());
+    Document* document =
+        node_->IsDocumentNode() ? ToDocument(node_) : node_->ownerDocument();
+    DCHECK(document);
+    if (!document->documentElement())
+      return false;
+    DOMPatchSupport dom_patch_support(dom_editor_.Get(), *document);
     new_node_ =
         dom_patch_support.PatchNode(node_.Get(), html_, exception_state);
     return !exception_state.HadException();
