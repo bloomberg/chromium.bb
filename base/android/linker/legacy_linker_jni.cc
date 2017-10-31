@@ -52,7 +52,7 @@ crazy_context_t* GetCrazyContext() {
     // Ensure libraries located in the same directory as the linker
     // can be loaded before system ones.
     crazy_context_add_search_path_for_address(
-        s_crazy_context, reinterpret_cast<void*>(&s_crazy_context));
+        s_crazy_context, reinterpret_cast<void*>(&GetCrazyContext));
   }
 
   return s_crazy_context;
