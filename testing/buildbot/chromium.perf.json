@@ -73987,7 +73987,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74017,7 +74017,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74049,7 +74049,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74079,7 +74079,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74111,7 +74111,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74141,7 +74141,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74173,7 +74173,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74203,7 +74203,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74235,7 +74235,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74265,7 +74265,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74297,7 +74297,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74327,7 +74327,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74359,7 +74359,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74389,7 +74389,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74421,7 +74421,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74451,7 +74451,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74483,7 +74483,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74513,7 +74513,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74545,7 +74545,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74575,7 +74575,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74607,7 +74607,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74637,7 +74637,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74669,7 +74669,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74699,7 +74699,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74731,7 +74731,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74761,7 +74761,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74793,7 +74793,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74823,7 +74823,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74855,7 +74855,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74885,7 +74885,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74917,7 +74917,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74947,7 +74947,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -74979,7 +74979,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75009,7 +75009,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75041,7 +75041,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75071,7 +75071,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75103,7 +75103,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75133,7 +75133,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75165,7 +75165,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75195,7 +75195,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75227,7 +75227,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75257,7 +75257,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75289,7 +75289,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75310,7 +75310,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75340,7 +75340,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75370,7 +75370,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75402,7 +75402,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75432,7 +75432,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75464,7 +75464,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75494,7 +75494,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75526,7 +75526,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75547,7 +75547,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75577,7 +75577,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75609,7 +75609,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75639,7 +75639,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75671,7 +75671,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75701,7 +75701,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75733,7 +75733,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75763,7 +75763,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75795,7 +75795,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75825,7 +75825,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75857,7 +75857,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75881,7 +75881,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75911,7 +75911,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75941,7 +75941,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -75973,7 +75973,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76003,7 +76003,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76035,7 +76035,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76065,7 +76065,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76097,7 +76097,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76127,7 +76127,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76159,7 +76159,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76189,7 +76189,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76221,7 +76221,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76251,7 +76251,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76283,7 +76283,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76313,7 +76313,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76345,7 +76345,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76375,7 +76375,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76407,7 +76407,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76437,7 +76437,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76469,7 +76469,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76499,7 +76499,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76531,7 +76531,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76561,7 +76561,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76593,7 +76593,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76623,7 +76623,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76655,7 +76655,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76685,7 +76685,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76717,7 +76717,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76747,7 +76747,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76779,7 +76779,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76809,7 +76809,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76841,7 +76841,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76871,7 +76871,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76903,7 +76903,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76933,7 +76933,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76965,7 +76965,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -76995,7 +76995,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77027,7 +77027,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77057,7 +77057,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77089,7 +77089,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77119,7 +77119,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77151,7 +77151,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77181,7 +77181,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77213,7 +77213,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77243,7 +77243,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77275,7 +77275,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77305,7 +77305,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77337,7 +77337,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77367,7 +77367,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77399,7 +77399,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77429,7 +77429,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77461,7 +77461,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build96-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77491,7 +77491,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77523,7 +77523,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77553,7 +77553,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77585,7 +77585,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77615,7 +77615,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77647,7 +77647,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77677,7 +77677,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77709,7 +77709,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77739,7 +77739,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77771,7 +77771,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77801,7 +77801,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77833,7 +77833,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77863,7 +77863,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77895,7 +77895,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77925,7 +77925,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build92-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77955,7 +77955,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -77987,7 +77987,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build93-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -78011,7 +78011,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build94-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -78041,7 +78041,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
@@ -78073,7 +78073,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3",
               "id": "build95-m1",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-perf"
