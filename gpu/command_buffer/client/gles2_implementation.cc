@@ -52,6 +52,8 @@
 #if !defined(OS_NACL)
 #include "cc/paint/display_item_list.h"  // nogncheck
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/skia_util.h"
 #endif
 
 #if !defined(__native_client__)
@@ -7176,6 +7178,14 @@ struct SerializeHelper {
     free_bytes_ -= size;
   }
 
+  int Save(const cc::PlaybackParams& playback_params) {
+    int save_count = canvas_.getSaveCount();
+    cc::SaveOp save_op;
+    save_op.type = static_cast<uint8_t>(cc::PaintOpType::Save);
+    Serialize(&save_op, playback_params);
+    return save_count;
+  }
+
   void RestoreTo(int count, const cc::PlaybackParams& playback_params) {
     cc::RestoreOp restore_op;
     restore_op.type = static_cast<uint8_t>(cc::PaintOpType::Restore);
@@ -7201,10 +7211,6 @@ struct SerializeHelper {
   cc::PaintOp::SerializeOptions& options_;
   ScopedTransferBufferPtr transfer_buffer_;
   GLES2CmdHelper* helper_;
-  // TODO(enne): this canvas needs to persist across multiple raster calls.
-  // Probably the solution here is to move the "preamble" into the raster
-  // command itself so that the entire raster call + preamble happens in
-  // one call to GLES2Implementation::RasterChromium.
   SkNoDrawCanvas canvas_;
 
   size_t written_bytes_ = 0;
@@ -7215,44 +7221,47 @@ void SerializeRecursive(const cc::PaintOpBuffer* buffer,
                         const std::vector<size_t>* indices,
                         SerializeHelper* serializer) {
   cc::PlaybackParams params(nullptr, serializer->canvas()->getTotalMatrix());
-  int save_count = serializer->canvas()->getSaveCount();
 
   for (cc::PaintOpBuffer::CompositeIterator iter(buffer, indices); iter;
        ++iter) {
     const cc::PaintOp* op = *iter;
     if (op->GetType() == cc::PaintOpType::DrawRecord) {
       // TODO(enne): Add some flag here to save ctm, or adjust setmatrix ops.
-      cc::SaveOp save_op;
-      save_op.type = static_cast<uint8_t>(cc::PaintOpType::Save);
-      serializer->Serialize(&save_op, params);
-
+      int save_count = serializer->Save(params);
       SerializeRecursive(static_cast<const cc::DrawRecordOp*>(op)->record.get(),
                          nullptr, serializer);
-
-      cc::RestoreOp restore_op;
-      restore_op.type = static_cast<uint8_t>(cc::PaintOpType::Restore);
-      serializer->Serialize(&restore_op, params);
-      continue;
+      serializer->RestoreTo(save_count, params);
+    } else {
+      serializer->Serialize(op, params);
     }
-
-    serializer->Serialize(op, params);
   }
-
-  serializer->RestoreTo(save_count, params);
 }
 #endif
 
 void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
-                                         GLint x,
-                                         GLint y,
-                                         GLint w,
-                                         GLint h) {
+                                         GLint translate_x,
+                                         GLint translate_y,
+                                         GLint clip_x,
+                                         GLint clip_y,
+                                         GLint clip_w,
+                                         GLint clip_h,
+                                         GLfloat post_translate_x,
+                                         GLfloat post_translate_y,
+                                         GLfloat post_scale) {
 #if defined(OS_NACL)
   NOTREACHED();
 #else
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glRasterChromium(" << list << ", "
-                     << x << ", " << y << ", " << w << ", " << h << ")");
+                     << translate_x << ", " << translate_y << ", " << clip_x
+                     << ", " << clip_y << ", " << clip_w << ", " << clip_h
+                     << ", " << post_translate_x << ", " << post_translate_y
+                     << ", " << post_scale << ")");
+
+  gfx::Rect playback_rect(clip_x, clip_y, clip_w, clip_h);
+  std::vector<size_t> indices = list->rtree_.Search(playback_rect);
+  if (indices.empty())
+    return;
 
   // TODO(enne): tune these numbers
   // TODO(enne): convert these types here and in transfer buffer to be size_t.
@@ -7261,11 +7270,35 @@ void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   cc::PaintOp::SerializeOptions options;
   SerializeHelper serializer(options, free_size, transfer_buffer_, helper_);
 
+  // This section duplicates RasterSource::PlaybackToCanvas setup preamble.
+  cc::PlaybackParams params(nullptr, serializer.canvas()->getTotalMatrix());
+  // Bookend with save/restore so each RasterCHROMIUM command is independent.
+  int save_count = serializer.Save(params);
+
+  cc::TranslateOp translate(-translate_x, -translate_y);
+  translate.type = static_cast<uint8_t>(cc::PaintOpType::Translate);
+  serializer.Serialize(&translate, params);
+
+  cc::ClipRectOp clip(SkRect::MakeFromIRect(gfx::RectToSkIRect(playback_rect)),
+                      SkClipOp::kIntersect, false);
+  clip.type = static_cast<uint8_t>(cc::PaintOpType::ClipRect);
+  serializer.Serialize(&clip, params);
+
+  if (post_translate_x != 0.f || post_translate_y != 0.f) {
+    cc::TranslateOp post_translate(post_translate_x, post_translate_y);
+    post_translate.type = static_cast<uint8_t>(cc::PaintOpType::Translate);
+    serializer.Serialize(&post_translate, params);
+  }
+  if (post_scale != 1.f) {
+    cc::ScaleOp scale(post_scale, post_scale);
+    scale.type = static_cast<uint8_t>(cc::PaintOpType::Scale);
+    serializer.Serialize(&scale, params);
+  }
+
   // TODO(enne): need to implement alpha folding optimization from POB.
   // TODO(enne): don't access private members of DisplayItemList.
-  gfx::Rect playback_rect(x, y, w, h);
-  std::vector<size_t> indices = list->rtree_.Search(playback_rect);
   SerializeRecursive(&list->paint_op_buffer_, &indices, &serializer);
+  serializer.RestoreTo(save_count, params);
   serializer.SendSerializedData();
 
   CheckGLError();

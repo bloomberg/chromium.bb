@@ -1247,10 +1247,15 @@ void BeginRasterCHROMIUM(GLuint texture_id,
                          GLint pixel_config) override;
 
 void RasterCHROMIUM(const cc::DisplayItemList* list,
-                    GLint x,
-                    GLint y,
-                    GLint w,
-                    GLint h) override;
+                    GLint translate_x,
+                    GLint translate_y,
+                    GLint clip_x,
+                    GLint clip_y,
+                    GLint clip_w,
+                    GLint clip_h,
+                    GLfloat post_translate_x,
+                    GLfloat post_translate_y,
+                    GLfloat post_scale) override;
 
 void EndRasterCHROMIUM() override;
 
