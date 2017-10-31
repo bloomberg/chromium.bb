@@ -175,6 +175,8 @@ GrPixelConfig ToGrPixelConfig(ResourceFormat format) {
       return kRGBA_4444_GrPixelConfig;
     case RGBA_F16:
       return kRGBA_half_GrPixelConfig;
+    case ALPHA_8:
+      return kAlpha_8_GrPixelConfig;
     default:
       break;
   }
