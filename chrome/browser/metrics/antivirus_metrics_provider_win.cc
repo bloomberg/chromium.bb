@@ -27,9 +27,11 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
+#include "base/win/com_init_util.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_variant.h"
@@ -161,18 +163,26 @@ void AntiVirusMetricsProvider::ProvideSystemProfileMetrics(
 }
 
 void AntiVirusMetricsProvider::AsyncInit(const base::Closure& done_callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  // __uuidof(WSCProductList) expects to be run in an STA and CLSID_WbemLocator
+  // is fine with an STA or MTA. The COM STA task runner accomodates both of
+  // these requirements.
+  base::PostTaskAndReplyWithResult(
+      base::CreateCOMSTATaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
+          .get(),
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&AntiVirusMetricsProvider::GetAntiVirusProductsOnFileThread),
-      base::Bind(&AntiVirusMetricsProvider::GotAntiVirusProducts,
-                 weak_ptr_factory_.GetWeakPtr(), done_callback));
+      base::BindOnce(
+          &AntiVirusMetricsProvider::GetAntiVirusProductsOnCOMSTAThread),
+      base::BindOnce(&AntiVirusMetricsProvider::GotAntiVirusProducts,
+                     weak_ptr_factory_.GetWeakPtr(), done_callback));
 }
 
 // static
 std::vector<AntiVirusMetricsProvider::AvProduct>
-AntiVirusMetricsProvider::GetAntiVirusProductsOnFileThread() {
+AntiVirusMetricsProvider::GetAntiVirusProductsOnCOMSTAThread() {
+  base::win::AssertComApartmentType(base::win::ComApartmentType::STA);
+
   std::vector<AvProduct> av_products;
 
   ResultCode result = RESULT_GENERIC_FAILURE;
@@ -232,10 +242,6 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWSC(
     std::vector<AvProduct>* products) {
   std::vector<AvProduct> result_list;
   base::AssertBlockingAllowed();
-  base::win::ScopedCOMInitializer com_initializer;
-
-  if (!com_initializer.Succeeded())
-    return RESULT_FAILED_TO_INITIALIZE_COM;
 
   Microsoft::WRL::ComPtr<IWSCProductList> product_list;
   HRESULT result =
@@ -333,10 +339,6 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
     std::vector<AvProduct>* products) {
   std::vector<AvProduct> result_list;
   base::AssertBlockingAllowed();
-  base::win::ScopedCOMInitializer com_initializer;
-
-  if (!com_initializer.Succeeded())
-    return RESULT_FAILED_TO_INITIALIZE_COM;
 
   Microsoft::WRL::ComPtr<IWbemLocator> wmi_locator;
   HRESULT hr =
