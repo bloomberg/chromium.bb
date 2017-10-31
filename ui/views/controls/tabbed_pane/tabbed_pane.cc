@@ -44,7 +44,7 @@ const gfx::Font::Weight kHoverWeight = gfx::Font::Weight::NORMAL;
 const gfx::Font::Weight kActiveWeight = gfx::Font::Weight::BOLD;
 const gfx::Font::Weight kInactiveWeight = gfx::Font::Weight::NORMAL;
 
-const int kHarmonyTabStripTabHeight = 40;
+const int kHarmonyTabStripTabHeight = 32;
 
 // The View containing the text for each tab in the tab strip.
 class TabLabel : public Label {
