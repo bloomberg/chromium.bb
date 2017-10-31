@@ -347,6 +347,7 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
   params.process_type = process_type;
   params.min_size_threshold = kMinSizeThreshold;
   params.min_count_threshold = kMinCountThreshold;
+  params.is_argument_filtering_enabled = true;
 
   std::ostringstream oss;
   ExportMemoryMapsAndV2StackTraceToJSON(params, oss);

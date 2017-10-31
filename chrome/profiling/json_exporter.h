@@ -38,6 +38,9 @@ struct ExportParams {
   // Only allocations exceeding this size or count will be exported.
   size_t min_size_threshold = 0;
   size_t min_count_threshold = 0;
+
+  // Whether or not the outputted JSON should filter strings (anonymized trace).
+  bool is_argument_filtering_enabled = false;
 };
 
 // Creates a JSON-encoded string that is similar in form to traces created by

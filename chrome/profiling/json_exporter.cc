@@ -223,12 +223,10 @@ void WriteHeapsV2Footer(std::ostream& out) {
   out << "}";  // heaps_v2
 }
 
-void WriteMemoryMaps(
-    const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
-    std::ostream& out) {
+void WriteMemoryMaps(const ExportParams& params, std::ostream& out) {
   base::trace_event::TracedValue traced_value;
-  memory_instrumentation::TracingObserver::MemoryMapsAsValueInto(maps,
-                                                                 &traced_value);
+  memory_instrumentation::TracingObserver::MemoryMapsAsValueInto(
+      params.maps, &traced_value, params.is_argument_filtering_enabled);
   out << "\"process_mmaps\":" << traced_value.ToString();
 }
 
@@ -463,7 +461,7 @@ void ExportMemoryMapsAndV2StackTraceToJSON(const ExportParams& params,
   // Start dictionary.
   out << "{\n";
 
-  WriteMemoryMaps(params.maps, out);
+  WriteMemoryMaps(params, out);
   out << ",\n";
 
   // Write level of detail.

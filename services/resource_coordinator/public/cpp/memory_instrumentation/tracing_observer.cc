@@ -4,6 +4,7 @@
 
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 
+#include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -152,7 +153,7 @@ bool TracingObserver::AddOsDumpToTraceIfEnabled(
 
   if (memory_maps->size()) {
     traced_value->BeginDictionary("process_mmaps");
-    MemoryMapsAsValueInto(*memory_maps, traced_value.get());
+    MemoryMapsAsValueInto(*memory_maps, traced_value.get(), false);
     traced_value->EndDictionary();
   }
 
@@ -163,7 +164,8 @@ bool TracingObserver::AddOsDumpToTraceIfEnabled(
 // static
 void TracingObserver::MemoryMapsAsValueInto(
     const std::vector<mojom::VmRegionPtr>& memory_maps,
-    TracedValue* value) {
+    TracedValue* value,
+    bool is_argument_filtering_enabled) {
   static const char kHexFmt[] = "%" PRIx64;
 
   // Refer to the design doc goo.gl/sxfFY8 for the semantics of these fields.
@@ -177,7 +179,19 @@ void TracingObserver::MemoryMapsAsValueInto(
       value->SetString("ts",
                        base::StringPrintf(kHexFmt, region->module_timestamp));
     value->SetInteger("pf", region->protection_flags);
-    value->SetString("mf", region->mapped_file);
+
+    // The module path will be the basename when argument filtering is
+    // activated. The whitelisting implemented for filtering string values
+    // doesn't allow rewriting. Therefore, a different path is produced here
+    // when argument filtering is activated.
+    if (is_argument_filtering_enabled) {
+      base::FilePath::StringType module_path(region->mapped_file.begin(),
+                                             region->mapped_file.end());
+      value->SetString("mf",
+                       base::FilePath(module_path).BaseName().AsUTF8Unsafe());
+    } else {
+      value->SetString("mf", region->mapped_file);
+    }
 
     value->BeginDictionary("bs");  // byte stats
     value->SetString(

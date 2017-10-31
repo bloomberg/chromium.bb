@@ -92,7 +92,7 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   void RequestProcessReport(base::ProcessId pid, std::string trigger_name);
 
   // For testing. Only one can be set at a time. Will be called after the
-  // profiling proecss dumps heaps into the trace log. No guarantees are made
+  // profiling process dumps heaps into the trace log. No guarantees are made
   // about the task queue on which the callback will be Run.
   void SetDumpProcessForTracingCallback(base::OnceClosure callback);
 
