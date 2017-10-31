@@ -19,11 +19,12 @@ BlinkInterfaceRegistryImpl::~BlinkInterfaceRegistryImpl() = default;
 
 void BlinkInterfaceRegistryImpl::AddInterface(
     const char* name,
-    const blink::InterfaceFactory& factory) {
+    const blink::InterfaceFactory& factory,
+    blink::SingleThreadTaskRunnerRefPtr task_runner) {
   if (!interface_registry_)
     return;
 
-  interface_registry_->AddInterface(name, factory);
+  interface_registry_->AddInterface(name, factory, std::move(task_runner));
 }
 
 }  // namespace content

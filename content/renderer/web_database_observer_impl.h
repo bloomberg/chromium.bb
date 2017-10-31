@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/web_database.mojom.h"
 #include "storage/common/database/database_connections.h"
 #include "third_party/WebKit/public/platform/WebDatabaseObserver.h"
+#include "third_party/WebKit/public/platform/modules/webdatabase/web_database.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -20,7 +20,8 @@ namespace content {
 class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
  public:
   explicit WebDatabaseObserverImpl(
-      scoped_refptr<mojom::ThreadSafeWebDatabaseHostPtr> web_database_host);
+      scoped_refptr<blink::mojom::ThreadSafeWebDatabaseHostPtr>
+          web_database_host);
   virtual ~WebDatabaseObserverImpl();
 
   void DatabaseOpened(const blink::WebSecurityOrigin& origin,
@@ -69,9 +70,9 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
                          int error);
 
   // Return the mojo interface for making WebDatabaseHost calls.
-  mojom::WebDatabaseHost& GetWebDatabaseHost();
+  blink::mojom::WebDatabaseHost& GetWebDatabaseHost();
 
-  scoped_refptr<mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
+  scoped_refptr<blink::mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
   scoped_refptr<storage::DatabaseConnectionsWrapper> open_connections_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

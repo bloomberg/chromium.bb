@@ -8,10 +8,10 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "content/common/web_database.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/public/platform/modules/webdatabase/web_database.mojom.h"
 
 namespace url {
 class Origin;
@@ -19,7 +19,7 @@ class Origin;
 
 namespace content {
 
-class WebDatabaseHostImpl : public content::mojom::WebDatabaseHost,
+class WebDatabaseHostImpl : public blink::mojom::WebDatabaseHost,
                             public storage::DatabaseTracker::Observer {
  public:
   WebDatabaseHostImpl(int proess_id,
@@ -28,10 +28,10 @@ class WebDatabaseHostImpl : public content::mojom::WebDatabaseHost,
 
   static void Create(int process_id,
                      scoped_refptr<storage::DatabaseTracker> db_tracker,
-                     content::mojom::WebDatabaseHostRequest request);
+                     blink::mojom::WebDatabaseHostRequest request);
 
  private:
-  // content::mojom::WebDatabaseHost:
+  // blink::mojom::WebDatabaseHost:
   void OpenFile(const base::string16& vfs_file_name,
                 int32_t desired_flags,
                 OpenFileCallback callback) override;
@@ -84,7 +84,7 @@ class WebDatabaseHostImpl : public content::mojom::WebDatabaseHost,
   // Helper function to get the mojo interface for the WebDatabase on the
   // render process. Creates the WebDatabase connection if it does not already
   // exist.
-  content::mojom::WebDatabase& GetWebDatabase();
+  blink::mojom::WebDatabase& GetWebDatabase();
 
   // Our render process host ID, used to bind to the correct render process.
   const int process_id_;
@@ -97,7 +97,7 @@ class WebDatabaseHostImpl : public content::mojom::WebDatabaseHost,
   storage::DatabaseConnections database_connections_;
 
   // Interface to the render process WebDatabase.
-  content::mojom::WebDatabasePtr database_provider_;
+  blink::mojom::WebDatabasePtr database_provider_;
 
   // The database tracker for the current browser context.
   const scoped_refptr<storage::DatabaseTracker> db_tracker_;

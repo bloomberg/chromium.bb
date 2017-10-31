@@ -268,7 +268,10 @@ class RendererBlinkPlatformImpl::SandboxSupport
 
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     blink::scheduler::RendererScheduler* renderer_scheduler)
-    : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
+    : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner(),
+                        RenderThreadImpl::current()
+                            ? RenderThreadImpl::current()->GetIOTaskRunner()
+                            : nullptr),
       compositor_thread_(nullptr),
       main_thread_(renderer_scheduler->CreateMainThread()),
       clipboard_delegate_(new RendererClipboardDelegate),
@@ -1413,14 +1416,14 @@ void RendererBlinkPlatformImpl::RequestPurgeMemory() {
 
 void RendererBlinkPlatformImpl::InitializeWebDatabaseHostIfNeeded() {
   if (!web_database_host_) {
-    web_database_host_ = content::mojom::ThreadSafeWebDatabaseHostPtr::Create(
+    web_database_host_ = blink::mojom::ThreadSafeWebDatabaseHostPtr::Create(
         std::move(web_database_host_info_),
         base::CreateSequencedTaskRunnerWithTraits(
             {base::WithBaseSyncPrimitives()}));
   }
 }
 
-mojom::WebDatabaseHost& RendererBlinkPlatformImpl::GetWebDatabaseHost() {
+blink::mojom::WebDatabaseHost& RendererBlinkPlatformImpl::GetWebDatabaseHost() {
   InitializeWebDatabaseHostIfNeeded();
   return **web_database_host_;
 }

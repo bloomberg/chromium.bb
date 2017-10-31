@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "media/base/media.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/InterfaceRegistry.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -97,7 +98,8 @@ void BlinkMediaTestSuite::Initialize() {
   std::unique_ptr<base::MessageLoop> message_loop;
   if (!base::MessageLoop::current())
     message_loop.reset(new base::MessageLoop());
-  blink::Initialize(blink_platform_support_.get());
+  blink::Initialize(blink_platform_support_.get(),
+                    blink::InterfaceRegistry::GetEmptyInterfaceRegistry());
 }
 
 int main(int argc, char** argv) {

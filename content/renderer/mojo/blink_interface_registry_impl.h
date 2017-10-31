@@ -20,7 +20,8 @@ class BlinkInterfaceRegistryImpl final : public blink::InterfaceRegistry {
 
   // blink::InterfaceRegistry override.
   void AddInterface(const char* name,
-                    const blink::InterfaceFactory& factory) override;
+                    const blink::InterfaceFactory& factory,
+                    blink::SingleThreadTaskRunnerRefPtr task_runner) override;
 
  private:
   const base::WeakPtr<service_manager::BinderRegistry> interface_registry_;

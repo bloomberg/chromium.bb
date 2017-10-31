@@ -69,7 +69,7 @@ WebDatabaseHostImpl::~WebDatabaseHostImpl() {
 void WebDatabaseHostImpl::Create(
     int process_id,
     scoped_refptr<storage::DatabaseTracker> db_tracker,
-    content::mojom::WebDatabaseHostRequest request) {
+    blink::mojom::WebDatabaseHostRequest request) {
   DCHECK(db_tracker->task_runner()->RunsTasksInCurrentSequence());
   mojo::MakeStrongBinding(
       std::make_unique<WebDatabaseHostImpl>(process_id, std::move(db_tracker)),
@@ -351,7 +351,7 @@ void WebDatabaseHostImpl::OnDatabaseScheduledForDeletion(
       database_name);
 }
 
-content::mojom::WebDatabase& WebDatabaseHostImpl::GetWebDatabase() {
+blink::mojom::WebDatabase& WebDatabaseHostImpl::GetWebDatabase() {
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
   if (!database_provider_) {
     // The interface binding needs to occur on the UI thread, as we can
@@ -359,7 +359,7 @@ content::mojom::WebDatabase& WebDatabaseHostImpl::GetWebDatabase() {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
-            [](int process_id, content::mojom::WebDatabaseRequest request) {
+            [](int process_id, blink::mojom::WebDatabaseRequest request) {
               RenderProcessHost* host = RenderProcessHost::FromID(process_id);
               if (host) {
                 content::BindInterface(host, std::move(request));

@@ -68,6 +68,7 @@ namespace blink {
 namespace scheduler {
 class WebThreadBase;
 }
+class InterfaceRegistry;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 }
@@ -571,7 +572,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void InitializeCompositorThread();
 
   void InitializeWebKit(
-      const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
+      const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue,
+      blink::InterfaceRegistry* registry);
 
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnGetAccessibilityTree();

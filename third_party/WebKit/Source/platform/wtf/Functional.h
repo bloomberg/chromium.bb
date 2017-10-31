@@ -298,8 +298,9 @@ Bind(FunctionType function, BoundParameters&&... bound_parameters) {
 
 // TODO(tzik): Replace WTF::Function with base::OnceCallback, and
 // WTF::RepeatingFunction with base::RepeatingCallback.
-template <typename T>
-using RepeatingFunction = Function<T>;
+template <typename T,
+          FunctionThreadAffinity threadAffinity = kSameThreadAffinity>
+using RepeatingFunction = Function<T, threadAffinity>;
 using RepeatingClosure = Function<void()>;
 
 using Closure = Function<void(), kSameThreadAffinity>;

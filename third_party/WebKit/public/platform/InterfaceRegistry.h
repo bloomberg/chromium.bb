@@ -8,9 +8,11 @@
 #include "base/callback_forward.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/scheduler/single_thread_task_runner.h"
 
 #if INSIDE_BLINK
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/wtf/Functional.h"
 #endif
 
@@ -20,11 +22,13 @@ using InterfaceFactory = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
 
 class BLINK_PLATFORM_EXPORT InterfaceRegistry {
  public:
-  virtual void AddInterface(const char* name, const InterfaceFactory&) = 0;
+  virtual void AddInterface(const char* name,
+                            const InterfaceFactory&,
+                            SingleThreadTaskRunnerRefPtr = nullptr) = 0;
 
-#if INSIDE_BLINK
   static InterfaceRegistry* GetEmptyInterfaceRegistry();
 
+#if INSIDE_BLINK
   template <typename Interface>
   void AddInterface(
       WTF::RepeatingFunction<void(mojo::InterfaceRequest<Interface>)> factory) {
@@ -34,11 +38,25 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
                      std::move(factory))));
   }
 
- private:
   template <typename Interface>
+  void AddInterface(WTF::Function<void(mojo::InterfaceRequest<Interface>),
+                                  WTF::kCrossThreadAffinity> factory,
+                    SingleThreadTaskRunnerRefPtr task_runner) {
+    AddInterface(Interface::Name_,
+                 ConvertToBaseCallback(blink::CrossThreadBind(
+                     &InterfaceRegistry::ForwardToInterfaceFactory<
+                         Interface, WTF::kCrossThreadAffinity>,
+                     std::move(factory))),
+                 std::move(task_runner));
+  }
+
+ private:
+  template <
+      typename Interface,
+      WTF::FunctionThreadAffinity ThreadAffinity = WTF::kSameThreadAffinity>
   static void ForwardToInterfaceFactory(
-      const WTF::RepeatingFunction<void(mojo::InterfaceRequest<Interface>)>&
-          factory,
+      const WTF::RepeatingFunction<void(mojo::InterfaceRequest<Interface>),
+                                   ThreadAffinity>& factory,
       mojo::ScopedMessagePipeHandle handle) {
     factory.Run(mojo::InterfaceRequest<Interface>(std::move(handle)));
   }

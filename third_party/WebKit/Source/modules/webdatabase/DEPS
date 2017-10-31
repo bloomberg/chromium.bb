@@ -2,4 +2,5 @@ include_rules = [
     "-modules",
     "+modules/ModulesExport.h",
     "+modules/webdatabase",
+    "+mojo/public/cpp/bindings/strong_binding.h",
 ]

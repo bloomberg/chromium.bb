@@ -52,7 +52,8 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
  public:
   BlinkPlatformImpl();
   explicit BlinkPlatformImpl(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
   ~BlinkPlatformImpl() override;
 
   // Platform methods (partial implementation):
@@ -122,12 +123,15 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
 
   void WaitUntilWebThreadTLSUpdate(blink::scheduler::WebThreadBase* thread);
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
+
  private:
   void UpdateWebThreadTLS(blink::WebThread* thread, base::WaitableEvent* event);
 
   bool IsMainThread() const;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   WebThemeEngineImpl native_theme_engine_;
   WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
