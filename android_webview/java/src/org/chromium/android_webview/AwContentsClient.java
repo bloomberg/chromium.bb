@@ -210,6 +210,12 @@ public abstract class AwContentsClient {
         // same application can be opened in the same tab.
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
 
+        // Check whether the context is activity context.
+        if (AwContents.activityFromContext(context) == null) {
+            Log.w(TAG, "Cannot call startActivity on non-activity context.");
+            return false;
+        }
+
         try {
             context.startActivity(intent);
         } catch (ActivityNotFoundException ex) {
