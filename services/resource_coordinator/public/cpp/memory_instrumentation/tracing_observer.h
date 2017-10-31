@@ -39,7 +39,8 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT TracingObserver
 
   static void MemoryMapsAsValueInto(
       const std::vector<mojom::VmRegionPtr>& memory_maps,
-      base::trace_event::TracedValue* value);
+      base::trace_event::TracedValue* value,
+      bool is_argument_filtering_enabled);
 
  private:
   // Returns true if the dump mode is allowed for current tracing session.
