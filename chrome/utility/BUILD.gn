@@ -18,8 +18,6 @@ static_library("utility") {
     "cloud_print/bitmap_image.h",
     "cloud_print/pwg_encoder.cc",
     "cloud_print/pwg_encoder.h",
-    "shell_handler_impl_win.cc",
-    "shell_handler_impl_win.h",
     "utility_message_handler.h",
   ]
 
@@ -135,6 +133,8 @@ static_library("utility") {
       # Add ESE library for Edge Import support.
       libs = [ "esent.lib" ]
       ldflags += [ "/DELAYLOAD:esent.dll" ]
+
+      deps += [ "//chrome/services/util_win:lib" ]
     }
 
     if (is_win || is_mac) {
