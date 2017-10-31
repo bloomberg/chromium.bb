@@ -106,9 +106,6 @@ class CORE_EXPORT NGOffsetMapping {
 
   // ------ Mapping APIs from DOM to text content ------
 
-  // TODO(xiaochengh): Change the functions to take Positions instead of (node,
-  // offset) pairs.
-
   // Note: any Position passed to the APIs must be in either of the two types:
   // 1. Offset-in-anchor in text node
   // 2. Before/After-anchor of BR or atomic inline
@@ -128,10 +125,9 @@ class CORE_EXPORT NGOffsetMapping {
   const NGOffsetMappingUnit* GetMappingUnitForPosition(const Position&) const;
 
   // Returns all NGOffsetMappingUnits whose DOM ranges has non-empty (but
-  // possibly collapsed) intersections with the passed in DOM offset range.
-  NGMappingUnitRange GetMappingUnitsForDOMOffsetRange(const Node&,
-                                                      unsigned,
-                                                      unsigned) const;
+  // possibly collapsed) intersections with the passed in DOM range. This API
+  // only accepts ranges whose start and end have the same anchor node.
+  NGMappingUnitRange GetMappingUnitsForDOMRange(const EphemeralRange&) const;
 
   // Returns the text content offset corresponding to the given position.
   // Returns nullopt when the position is not laid out in this block.

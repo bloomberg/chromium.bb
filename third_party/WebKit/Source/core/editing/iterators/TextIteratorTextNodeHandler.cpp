@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include "core/dom/FirstLetterPseudoElement.h"
+#include "core/editing/EphemeralRange.h"
 #include "core/editing/iterators/TextIteratorTextState.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/line/InlineTextBox.h"
@@ -91,9 +92,12 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
   }
 
   while (offset_ < end_offset_ && !text_state_.PositionNode()) {
+    const EphemeralRange range_to_emit(Position(text_node_, offset_),
+                                       Position(text_node_, end_offset_));
+
     // We may go through multiple mappings, which happens when there is
     // ::first-letter and blockifying style.
-    auto* mapping = NGOffsetMapping::GetFor(Position(text_node_, offset_));
+    auto* mapping = NGOffsetMapping::GetFor(range_to_emit.StartPosition());
     if (!mapping) {
       offset_ = end_offset_;
       return;
@@ -101,8 +105,7 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
 
     const unsigned initial_offset = offset_;
     for (const NGOffsetMappingUnit& unit :
-         mapping->GetMappingUnitsForDOMOffsetRange(*text_node_, offset_,
-                                                   end_offset_)) {
+         mapping->GetMappingUnitsForDOMRange(range_to_emit)) {
       const unsigned run_start = std::max(offset_, unit.DOMStart());
       const unsigned run_end = std::min(end_offset_, unit.DOMEnd());
       if (run_start >= run_end ||
