@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_drawer/cr_drawer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -79,16 +80,21 @@
           filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view"
           apps="[[apps]]" extensions="[[extensions]]">
       </extensions-item-list>
-      <extensions-detail-view id="details-view" delegate="[[delegate]]"
-          in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]"
-          slot="view">
-      </extensions-detail-view>
-      <extensions-keyboard-shortcuts delegate="[[delegate]]"
-          id="keyboard-shortcuts" items="[[extensions]]" slot="view">
-      </extensions-keyboard-shortcuts>
-      <extensions-error-page id="error-page"
-          data="[[errorPageItem_]]" delegate="[[delegate]]" slot="view">
-      </extensions-error-page>
+      <template id="details-view" is="cr-lazy-render">
+        <extensions-detail-view delegate="[[delegate]]" slot="view"
+            in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]">
+        </extensions-detail-view>
+      </template>
+      <template id="keyboard-shortcuts" is="cr-lazy-render">
+        <extensions-keyboard-shortcuts delegate="[[delegate]]" slot="view"
+            items="[[extensions]]">
+        </extensions-keyboard-shortcuts>
+      </template>
+      <template id="error-page" is="cr-lazy-render">
+        <extensions-error-page data="[[errorPageItem_]]" slot="view"
+            delegate="[[delegate]]" slot="view">
+        </extensions-error-page>
+      </template>
     </extensions-view-manager>
     <template is="dom-if" if="[[showOptionsDialog_]]" restamp>
       <extensions-options-dialog id="options-dialog"
