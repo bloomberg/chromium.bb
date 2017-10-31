@@ -88,11 +88,10 @@ bool SVGURLReferenceResolver::IsLocal() const {
 }
 
 AtomicString SVGURLReferenceResolver::FragmentIdentifier() const {
-  // If this is a "fragment-only" URL, then the reference is always local, so
-  // just return what's after the '#' as the fragment.
-  if (is_local_)
-    return AtomicString(relative_url_.Substring(1));
-  return AtomicString(AbsoluteUrl().FragmentIdentifier());
+  // Use KURL's FragmentIdentifier to ensure that we're handling the
+  // fragment in a consistent manner.
+  return AtomicString(
+      DecodeURLEscapeSequences(AbsoluteUrl().FragmentIdentifier()));
 }
 
 AtomicString SVGURIReference::FragmentIdentifierFromIRIString(
