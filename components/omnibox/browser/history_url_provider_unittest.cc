@@ -610,8 +610,8 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
 }
 
 TEST_F(HistoryURLProviderTestNoSearchProvider, WhatYouTypedNoSearchProvider) {
-  // When no search provider is available, make sure we provide WYT matches
-  // for text that could be a URL.
+  // When no search provider is available, make sure we provide what-you-typed
+  // matches for text that could be a URL.
 
   const UrlAndLegalDefault results_1[] = {
     { "http://wytmatch/", true }

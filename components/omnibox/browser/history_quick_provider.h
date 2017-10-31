@@ -47,6 +47,10 @@ class HistoryQuickProvider : public HistoryProvider {
   // Performs the autocomplete matching and scoring.
   void DoAutocomplete();
 
+  // Calculates the initial max match score for applying to matches, lowering
+  // it if we believe that there will be a URL-what-you-typed match.
+  int FindMaxMatchScore(const ScoredHistoryMatches& matches);
+
   // Creates an AutocompleteMatch from |history_match|, assigning it
   // the score |score|.
   AutocompleteMatch QuickMatchToACMatch(const ScoredHistoryMatch& history_match,
