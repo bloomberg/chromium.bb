@@ -723,41 +723,45 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     ref_mv_stack[idx].weight += REF_CAT_LEVEL;
 
 #if CONFIG_MFMV
-  int blk_row, blk_col;
-  int coll_blk_count = 0;
-  int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
-  int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n8_w);
+  if (cm->use_prev_frame_mvs) {
+    int blk_row, blk_col;
+    int coll_blk_count = 0;
+    int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
+    int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n8_w);
 
-  int tpl_sample_pos[9][2] = {
-    { -2, hoffset }, { 0, hoffset },  { voffset, hoffset },
-    { voffset, 0 },  { voffset, -2 }, { voffset, -4 },
-    { -4, hoffset }, { voffset, 4 },  { 2, hoffset + 4 },
-  };
-  int i;
+    int tpl_sample_pos[9][2] = {
+      { -2, hoffset }, { 0, hoffset },  { voffset, hoffset },
+      { voffset, 0 },  { voffset, -2 }, { voffset, -4 },
+      { -4, hoffset }, { voffset, 4 },  { 2, hoffset + 4 },
+    };
+    int i;
 
-  for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_size_high[BLOCK_8X8]) {
-    for (blk_col = 0; blk_col < xd->n8_w; blk_col += mi_size_wide[BLOCK_8X8]) {
+    for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_size_high[BLOCK_8X8]) {
+      for (blk_col = 0; blk_col < xd->n8_w;
+           blk_col += mi_size_wide[BLOCK_8X8]) {
+        // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is
+        // used.
+        // Can be modified the same way.
+        int is_available = add_tpl_ref_mv(
+            cm, prev_frame_mvs_base, xd, mi_row, mi_col, ref_frame, blk_row,
+            blk_col, refmv_count, ref_mv_stack, mode_context);
+        if (blk_row == 0 && blk_col == 0) coll_blk_count = is_available;
+      }
+    }
+
+    if (coll_blk_count == 0) mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+
+    for (i = 0; i < 9; ++i) {
+      blk_row = tpl_sample_pos[i][0];
+      blk_col = tpl_sample_pos[i][1];
+
+      if (!check_sb_border(cm, mi_row, mi_col, blk_row, blk_col)) continue;
       // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is used.
       // Can be modified the same way.
-      int is_available = add_tpl_ref_mv(
-          cm, prev_frame_mvs_base, xd, mi_row, mi_col, ref_frame, blk_row,
-          blk_col, refmv_count, ref_mv_stack, mode_context);
-      if (blk_row == 0 && blk_col == 0) coll_blk_count = is_available;
+      coll_blk_count += add_tpl_ref_mv(cm, prev_frame_mvs_base, xd, mi_row,
+                                       mi_col, ref_frame, blk_row, blk_col,
+                                       refmv_count, ref_mv_stack, mode_context);
     }
-  }
-
-  if (coll_blk_count == 0) mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
-
-  for (i = 0; i < 9; ++i) {
-    blk_row = tpl_sample_pos[i][0];
-    blk_col = tpl_sample_pos[i][1];
-
-    if (!check_sb_border(cm, mi_row, mi_col, blk_row, blk_col)) continue;
-    // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is used.
-    // Can be modified the same way.
-    coll_blk_count += add_tpl_ref_mv(cm, prev_frame_mvs_base, xd, mi_row,
-                                     mi_col, ref_frame, blk_row, blk_col,
-                                     refmv_count, ref_mv_stack, mode_context);
   }
 #else
 #if CONFIG_TEMPMV_SIGNALING
