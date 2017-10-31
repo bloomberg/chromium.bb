@@ -855,7 +855,8 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->tile_tok[0][0]);
 
   {
-    unsigned int tokens = get_token_alloc(cm->mb_rows, cm->mb_cols);
+    unsigned int tokens =
+        get_token_alloc(cm->mb_rows, cm->mb_cols, MAX_SB_SIZE_LOG2);
     CHECK_MEM_ERROR(cm, cpi->tile_tok[0][0],
                     aom_calloc(tokens, sizeof(*cpi->tile_tok[0][0])));
   }

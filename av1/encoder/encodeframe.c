@@ -3459,7 +3459,7 @@ void av1_init_tile_data(AV1_COMP *cpi) {
 
       cpi->tile_tok[tile_row][tile_col] = pre_tok + tile_tok;
       pre_tok = cpi->tile_tok[tile_row][tile_col];
-      tile_tok = allocated_tokens(*tile_info);
+      tile_tok = allocated_tokens(*tile_info, cm->mib_size_log2 + MI_SIZE_LOG2);
     }
   }
 }
@@ -3510,7 +3510,8 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   cpi->tok_count[tile_row][tile_col] =
       (unsigned int)(tok - cpi->tile_tok[tile_row][tile_col]);
-  assert(cpi->tok_count[tile_row][tile_col] <= allocated_tokens(*tile_info));
+  assert(cpi->tok_count[tile_row][tile_col] <=
+         allocated_tokens(*tile_info, cm->mib_size_log2 + MI_SIZE_LOG2));
 }
 
 static void encode_tiles(AV1_COMP *cpi) {
