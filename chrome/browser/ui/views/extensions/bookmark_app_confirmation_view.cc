@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/views/extensions/bookmark_app_confirmation_view.h"
 
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -105,7 +107,9 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
 
   // When CanHostedAppsOpenInWindows() returns false, do not show the open as
   // window checkbox to avoid confusing users.
-  if (extensions::util::CanHostedAppsOpenInWindows()) {
+  // Desktop PWAs will choose the display mode automatically.
+  if (extensions::util::CanHostedAppsOpenInWindows() &&
+      !base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
     open_as_window_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
     open_as_window_checkbox_->SetChecked(web_app_info_.open_as_window);

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/favicon_downloader.h"
 
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -31,9 +32,9 @@ void FaviconDownloader::SkipPageFavicons() {
 }
 
 void FaviconDownloader::Start() {
-  FetchIcons(extra_favicon_urls_);
   // If the candidates aren't loaded, icons will be fetched when
   // DidUpdateFaviconURL() is called.
+  FetchIcons(extra_favicon_urls_);
 
   if (need_favicon_urls_) {
     std::vector<content::FaviconURL> favicon_tab_helper_urls =
@@ -91,8 +92,10 @@ void FaviconDownloader::FetchIcons(const std::vector<GURL>& urls) {
 
   // If no downloads were initiated, we can proceed directly to running the
   // callback.
-  if (in_progress_requests_.empty() && !need_favicon_urls_)
-    callback_.Run(true, favicon_map_);
+  if (in_progress_requests_.empty() && !need_favicon_urls_) {
+    base::MessageLoop::current()->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(callback_, true, favicon_map_));
+  }
 }
 
 void FaviconDownloader::DidDownloadFavicon(

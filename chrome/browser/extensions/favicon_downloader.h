@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -18,6 +19,11 @@ class SkBitmap;
 
 namespace content {
 struct FaviconURL;
+}
+
+namespace extensions {
+FORWARD_DECLARE_TEST(BookmarkAppHelperExtensionServiceTest,
+                     CreateBookmarkAppWithManifestIcons);
 }
 
 namespace gfx {
@@ -49,6 +55,8 @@ class FaviconDownloader : public content::WebContentsObserver {
 
  private:
   friend class TestFaviconDownloader;
+  FRIEND_TEST_ALL_PREFIXES(extensions::BookmarkAppHelperExtensionServiceTest,
+                           CreateBookmarkAppWithManifestIcons);
 
   // Initiates a download of the image at |url| and returns the download id.
   // This is overridden in testing.
