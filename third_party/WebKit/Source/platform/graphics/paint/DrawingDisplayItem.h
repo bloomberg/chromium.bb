@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "platform/PlatformExport.h"
-#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/runtime_enabled_features.h"
@@ -51,11 +50,12 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
     return known_to_be_opaque_;
   }
 
+  bool Equals(const DisplayItem& other) const final;
+
  private:
 #ifndef NDEBUG
   void PropertiesAsJSON(JSONObject&) const override;
 #endif
-  bool Equals(const DisplayItem& other) const final;
 
   sk_sp<const PaintRecord> record_;
 
