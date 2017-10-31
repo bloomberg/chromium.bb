@@ -40,6 +40,7 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/base/url_util.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
@@ -552,16 +553,14 @@ void ServiceWorkerProviderHost::PostMessageToClient(
     ServiceWorkerVersion* version,
     const base::string16& message,
     const std::vector<blink::MessagePortChannel>& sent_message_ports) {
+  DCHECK(IsProviderForClient());
   if (!dispatcher_host_)
     return;
 
-  ServiceWorkerMsg_MessageToDocument_Params params;
-  params.thread_id = kDocumentMainThreadId;
-  params.provider_id = provider_id();
-  params.service_worker_info = *GetOrCreateServiceWorkerHandle(version);
-  params.message = message;
-  params.message_ports = sent_message_ports;
-  Send(new ServiceWorkerMsg_MessageToDocument(params));
+  auto message_pipes =
+      blink::MessagePortChannel::ReleaseHandles(sent_message_ports);
+  container_->PostMessageToClient(GetOrCreateServiceWorkerHandle(version),
+                                  message, std::move(message_pipes));
 }
 
 void ServiceWorkerProviderHost::CountFeature(uint32_t feature) {

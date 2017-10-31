@@ -59,6 +59,12 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   void SetController(blink::mojom::ServiceWorkerObjectInfoPtr info,
                      const std::set<uint32_t>& features,
                      bool should_notify_controller_change);
+  // Posts a message to the ServiceWorkerContainer for this provider.
+  // Corresponds to Client#postMessage().
+  void PostMessageToClient(
+      blink::mojom::ServiceWorkerObjectInfoPtr source,
+      const base::string16& message,
+      std::vector<mojo::ScopedMessagePipeHandle> message_pipes);
 
   int provider_id() const;
 

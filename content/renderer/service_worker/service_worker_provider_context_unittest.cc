@@ -303,4 +303,46 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
   EXPECT_TRUE(client->was_set_controller_called());
 }
 
+TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
+  const int kProviderId = 10;
+
+  // Assume that these objects are passed from the browser process and own
+  // references to browser-side registration/worker representations.
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
+      CreateServiceWorkerRegistrationObjectInfo();
+
+  mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
+  mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
+      mojo::MakeRequest(&host_ptr_info);
+
+  mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+  mojom::ServiceWorkerContainerAssociatedRequest container_request =
+      mojo::MakeIsolatedRequest(&container_ptr);
+  auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+      std::move(container_request), std::move(host_ptr_info), dispatcher(),
+      nullptr /* loader_factory_getter */);
+  auto provider_impl = base::MakeUnique<WebServiceWorkerProviderImpl>(
+      thread_safe_sender(), provider_context.get());
+  auto client = base::MakeUnique<MockWebServiceWorkerProviderClientImpl>();
+  provider_impl->SetClient(client.get());
+  ASSERT_FALSE(client->was_dispatch_message_event_called());
+
+  ipc_sink()->ClearMessages();
+  container_ptr->PostMessageToClient(
+      std::move(registration_info->active), base::string16(),
+      std::vector<mojo::ScopedMessagePipeHandle>());
+  base::RunLoop().RunUntilIdle();
+
+  // The passed reference should be owned by the provider client (but the
+  // reference is immediately released due to limitation of the mock provider
+  // client. See the comment on dispatchMessageEvent() of the mock).
+  EXPECT_TRUE(client->was_dispatch_message_event_called());
+  ASSERT_EQ(2UL, ipc_sink()->message_count());
+  EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(0)->type());
+  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(1)->type());
+}
+
 }  // namespace content

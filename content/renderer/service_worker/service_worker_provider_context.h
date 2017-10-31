@@ -179,6 +179,10 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   void SetController(blink::mojom::ServiceWorkerObjectInfoPtr controller,
                      const std::vector<blink::mojom::WebFeature>& used_features,
                      bool should_notify_controllerchange) override;
+  void PostMessageToClient(
+      blink::mojom::ServiceWorkerObjectInfoPtr source,
+      const base::string16& message,
+      std::vector<mojo::ScopedMessagePipeHandle> message_pipes) override;
 
   const ServiceWorkerProviderType provider_type_;
   const int provider_id_;

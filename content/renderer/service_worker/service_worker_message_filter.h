@@ -12,8 +12,6 @@
 #include "content/common/content_export.h"
 #include "content/renderer/worker_thread_message_filter.h"
 
-struct ServiceWorkerMsg_MessageToDocument_Params;
-
 namespace content {
 
 struct ServiceWorkerVersionAttributes;
@@ -42,8 +40,6 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
       int registration_handle_id,
       int changed_mask,
       const ServiceWorkerVersionAttributes& attrs);
-  void OnStaleMessageToDocument(
-      const ServiceWorkerMsg_MessageToDocument_Params& params);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerMessageFilter);
 };

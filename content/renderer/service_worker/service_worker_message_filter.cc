@@ -61,8 +61,6 @@ void ServiceWorkerMessageFilter::OnStaleMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerMessageFilter, msg)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
                         OnStaleSetVersionAttributes)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
-                        OnStaleMessageToDocument)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -79,12 +77,6 @@ void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
                                    attrs.active.handle_id);
   // Don't have to decrement registration refcount because the sender of the
   // SetVersionAttributes message doesn't increment it.
-}
-
-void ServiceWorkerMessageFilter::OnStaleMessageToDocument(
-    const ServiceWorkerMsg_MessageToDocument_Params& params) {
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   params.service_worker_info.handle_id);
 }
 
 }  // namespace content

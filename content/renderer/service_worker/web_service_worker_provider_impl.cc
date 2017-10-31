@@ -17,6 +17,7 @@
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
+#include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
@@ -209,7 +210,6 @@ void WebServiceWorkerProviderImpl::SetController(
       GetDispatcher()->GetOrCreateServiceWorker(
           ServiceWorkerHandleReference::Create(std::move(info),
                                                thread_safe_sender_.get()));
-
   for (uint32_t feature : features)
     provider_client->CountFeature(feature);
   provider_client->SetController(WebServiceWorkerImpl::CreateHandle(controller),
@@ -218,6 +218,27 @@ void WebServiceWorkerProviderImpl::SetController(
 
 int WebServiceWorkerProviderImpl::provider_id() const {
   return context_->provider_id();
+}
+
+void WebServiceWorkerProviderImpl::PostMessageToClient(
+    blink::mojom::ServiceWorkerObjectInfoPtr source,
+    const base::string16& message,
+    std::vector<mojo::ScopedMessagePipeHandle> message_pipes) {
+  blink::WebServiceWorkerProviderClient* provider_client =
+      GetDispatcher()->GetProviderClient(context_->provider_id());
+  // The document may have been destroyed so that |provider_client| is null.
+  if (!provider_client)
+    return;
+
+  scoped_refptr<WebServiceWorkerImpl> worker =
+      GetDispatcher()->GetOrCreateServiceWorker(
+          ServiceWorkerHandleReference::Create(std::move(source),
+                                               thread_safe_sender_.get()));
+  auto message_ports =
+      blink::MessagePortChannel::CreateFromHandles(std::move(message_pipes));
+  provider_client->DispatchMessageEvent(
+      WebServiceWorkerImpl::CreateHandle(std::move(worker)),
+      blink::WebString::FromUTF16(message), std::move(message_ports));
 }
 
 void WebServiceWorkerProviderImpl::RemoveProviderClient() {

@@ -6,6 +6,7 @@ module content.mojom;
 
 import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/service_worker/service_worker_types.mojom";
+import "mojo/common/string16.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom";
@@ -94,8 +95,15 @@ interface ServiceWorkerContainer {
   SetController(blink.mojom.ServiceWorkerObjectInfo controller,
                 array<blink.mojom.WebFeature> used_features,
                 bool should_notify_controllerchange);
-  // TODO(xiaofeng.zhang): implement them.
+
+  // Corresponds to Client#postMessage().
+  // Sends |message| from the service worker |source| to this service worker
+  // client.
+  // TODO(xiaofeng.zhang): Use blink.mojom.TransferableMessage as the parameter.
+  PostMessageToClient(blink.mojom.ServiceWorkerObjectInfo source,
+                      mojo.common.mojom.String16 message,
+                      array<handle<message_pipe>> message_ports);
+
+  // TODO(xiaofeng.zhang): implement it.
   // ServiceWorkerStateChanged();
-  // ServiceWorkerRegistrationUpdateFound();
-  // PostMessage();
 };

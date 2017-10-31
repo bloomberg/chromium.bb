@@ -127,14 +127,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientQueryOptions)
   IPC_STRUCT_TRAITS_MEMBER(include_uncontrolled)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(ServiceWorkerMsg_MessageToDocument_Params)
-  IPC_STRUCT_MEMBER(int, thread_id)
-  IPC_STRUCT_MEMBER(int, provider_id)
-  IPC_STRUCT_MEMBER(blink::mojom::ServiceWorkerObjectInfo, service_worker_info)
-  IPC_STRUCT_MEMBER(base::string16, message)
-  IPC_STRUCT_MEMBER(std::vector<blink::MessagePortChannel>, message_ports)
-IPC_STRUCT_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::PushEventPayload)
   IPC_STRUCT_TRAITS_MEMBER(data)
   IPC_STRUCT_TRAITS_MEMBER(is_null)
@@ -281,10 +273,6 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetNavigationPreloadHeaderError,
                      int /* request_id */,
                      blink::mojom::ServiceWorkerErrorType,
                      std::string /* message */)
-
-// Sends MessageEvent to a client document (browser->renderer).
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_MessageToDocument,
-                     ServiceWorkerMsg_MessageToDocument_Params)
 
 // Notifies a client that its controller used a feature, for UseCounter
 // purposes (browser->renderer). |feature| must be one of the values from
