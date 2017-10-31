@@ -197,7 +197,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ios-share-canonical-url", flag_descriptions::kShareCanonicalURLName,
      flag_descriptions::kShareCanonicalURLDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(activity_services::kShareCanonicalURL)},
-};
+    {"property-animations-toolbar",
+     flag_descriptions::kPropertyAnimationsToolbarName,
+     flag_descriptions::kPropertyAnimationsToolbarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kPropertyAnimationsToolbar)}};
 
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {

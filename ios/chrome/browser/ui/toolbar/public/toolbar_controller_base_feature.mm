@@ -6,3 +6,6 @@
 
 const base::Feature kSafeAreaCompatibleToolbar{
     "SafeAreaCompatibleToolbar", base::FEATURE_DISABLED_BY_DEFAULT};
+
+extern const base::Feature kPropertyAnimationsToolbar{
+    "PropertyAnimationsToolbar", base::FEATURE_DISABLED_BY_DEFAULT};

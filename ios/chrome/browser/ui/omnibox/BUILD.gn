@@ -92,6 +92,7 @@ source_set("omnibox_internal") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
     "//ios/third_party/material_components_ios",
