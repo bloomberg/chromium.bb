@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/ui_devtools/CSS.h"
-#include "components/ui_devtools/views/ui_devtools_dom_agent.h"
+#include "components/ui_devtools/views/dom_agent.h"
 
 namespace ui_devtools {
 
@@ -15,9 +15,9 @@ class UIElement;
 
 class CSSAgent : public ui_devtools::UiDevToolsBaseAgent<
                      ui_devtools::protocol::CSS::Metainfo>,
-                 public UIDevToolsDOMAgentObserver {
+                 public DOMAgentObserver {
  public:
-  explicit CSSAgent(UIDevToolsDOMAgent* dom_agent);
+  explicit CSSAgent(DOMAgent* dom_agent);
   ~CSSAgent() override;
 
   // CSS::Backend:
@@ -34,7 +34,7 @@ class CSSAgent : public ui_devtools::UiDevToolsBaseAgent<
           ui_devtools::protocol::Array<ui_devtools::protocol::CSS::CSSStyle>>*
           result) override;
 
-  // UIDevToolsDOMAgentObserver:
+  // DOMAgentObserver:
   void OnElementBoundsChanged(UIElement* ui_element) override;
 
  private:
@@ -47,7 +47,7 @@ class CSSAgent : public ui_devtools::UiDevToolsBaseAgent<
   bool SetPropertiesForUIElement(UIElement* ui_element,
                                  const gfx::Rect& bounds,
                                  bool visible);
-  UIDevToolsDOMAgent* const dom_agent_;
+  DOMAgent* const dom_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(CSSAgent);
 };
