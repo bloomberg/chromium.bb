@@ -312,6 +312,10 @@ class IsolateServer(StorageApi):
       yield base64.b64decode(content)
       return
 
+    if not response.get('url'):
+      raise IOError(
+          'Invalid response while fetching %s: %s' % (digest, response))
+
     # for GS entities
     connection = net.url_open(response['url'])
     if not connection:
