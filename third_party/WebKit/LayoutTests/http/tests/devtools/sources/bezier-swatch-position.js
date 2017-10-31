@@ -11,31 +11,32 @@
   SourcesTestRunner.showScriptSource('bezier.css', onSourceFrame);
 
   function onSourceFrame(sourceFrame) {
+    var cssPlugin = sourceFrame._plugins.find(plugin => plugin instanceof Sources.CSSPlugin);
     TestRunner.addResult('Initial swatch positions:');
-    SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+    SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
 
     TestRunner.runTestSuite([
       function testEditBezier(next) {
         var swatch = sourceFrame.textEditor._codeMirrorElement.querySelector('span[is=bezier-swatch]');
         swatch.shadowRoot.querySelector('.bezier-swatch-icon').click();
-        sourceFrame._bezierEditor.setBezier(UI.Geometry.CubicBezier.parse('linear'));
-        sourceFrame._bezierEditor._onchange();
-        sourceFrame._swatchPopoverHelper.hide(true);
-        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        cssPlugin._bezierEditor.setBezier(UI.Geometry.CubicBezier.parse('linear'));
+        cssPlugin._bezierEditor._onchange();
+        cssPlugin._swatchPopoverHelper.hide(true);
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
         next();
       },
 
       function testAddBezier(next) {
         var bodyLineEnd = new TextUtils.TextRange(1, 37, 1, 37);
         sourceFrame.textEditor.editRange(bodyLineEnd, ' transition: height 1s cubic-bezier(0, 0.5, 1, 1);');
-        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
         next();
       },
 
       function testInvalidateBezier(next) {
         var startParenthesis = new TextUtils.TextRange(1, 67, 1, 68);
         sourceFrame.textEditor.editRange(startParenthesis, '[');
-        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSSourceFrame.SwatchBookmark);
+        SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
         next();
       }
     ]);

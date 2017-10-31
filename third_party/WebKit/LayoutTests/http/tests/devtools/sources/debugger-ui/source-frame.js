@@ -38,8 +38,8 @@
       function didShowScriptSource(sourceFrame) {
         TestRunner.addResult('Script source was shown.');
         shownSourceFrame = sourceFrame;
-        TestRunner.addSniffer(SourceFrame.UISourceCodeFrame.prototype, '_addMessageToSource', didAddMessage);
-        TestRunner.addSniffer(SourceFrame.UISourceCodeFrame.prototype, '_removeMessageFromSource', didRemoveMessage);
+        TestRunner.addSniffer(Sources.UISourceCodeFrame.prototype, '_addMessageToSource', didAddMessage);
+        TestRunner.addSniffer(Sources.UISourceCodeFrame.prototype, '_removeMessageFromSource', didRemoveMessage);
         TestRunner.evaluateInPage('addErrorToConsole()');
       }
 
