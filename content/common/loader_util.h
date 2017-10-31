@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_LOADER_UTIL_H_
 
 #include "base/memory/ref_counted.h"
+#include "content/public/common/resource_type.h"
 
 namespace net {
 class HttpRawRequestHeaders;
@@ -30,6 +31,8 @@ scoped_refptr<ResourceDevToolsInfo> BuildDevToolsInfo(
     const net::URLRequest& request,
     const net::HttpRawRequestHeaders& raw_request_headers,
     const net::HttpResponseHeaders* raw_response_headers);
+
+void AttachAcceptHeader(ResourceType type, net::URLRequest* request);
 
 }  // namespace content
 

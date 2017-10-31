@@ -162,6 +162,9 @@ class URLLoaderImplTest : public testing::Test {
   void SetUp() override {
     test_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+    // This Unretained is safe because test_server_ is owned by |this|.
+    test_server_.RegisterRequestMonitor(
+        base::Bind(&URLLoaderImplTest::Monitor, base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
   }
 
@@ -174,13 +177,14 @@ class URLLoaderImplTest : public testing::Test {
     DCHECK(!ran_);
     mojom::URLLoaderPtr loader;
 
-    ResourceRequest request =
-        CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME, url);
+    ResourceRequest request = CreateResourceRequest("GET", resource_type_, url);
     uint32_t options = mojom::kURLLoadOptionNone;
     if (send_ssl_)
       options |= mojom::kURLLoadOptionSendSSLInfo;
     if (sniff_)
       options |= mojom::kURLLoadOptionSniffMimeType;
+    if (add_custom_accept_header_)
+      request.headers.SetHeader("accept", "custom/*");
 
     URLLoaderImpl loader_impl(context(), mojo::MakeRequest(&loader), options,
                               request, false, client_.CreateInterfacePtr(),
@@ -281,6 +285,14 @@ class URLLoaderImplTest : public testing::Test {
     DCHECK(!ran_);
     send_ssl_ = true;
   }
+  void set_add_custom_accept_header() {
+    DCHECK(!ran_);
+    add_custom_accept_header_ = true;
+  }
+  void set_resource_type(ResourceType type) {
+    DCHECK(!ran_);
+    resource_type_ = type;
+  }
 
   // Convenience methods after calling Load();
   std::string mime_type() const {
@@ -354,15 +366,26 @@ class URLLoaderImplTest : public testing::Test {
     return std::string(buffer.data(), buffer.size());
   }
 
+  const net::test_server::HttpRequest& sent_request() const {
+    return sent_request_;
+  }
+
  private:
+  void Monitor(const net::test_server::HttpRequest& request) {
+    sent_request_ = request;
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<NetworkContext> context_;
   bool sniff_ = false;
   bool send_ssl_ = false;
+  bool add_custom_accept_header_ = false;
+  ResourceType resource_type_ = RESOURCE_TYPE_MAIN_FRAME;
   // Used to ensure that methods are called either before or after a request is
   // made, since the test fixture is meant to be used only once.
   bool ran_ = false;
+  net::test_server::HttpRequest sent_request_;
   TestURLLoaderClient client_;
 };
 
@@ -851,6 +874,37 @@ TEST_F(URLLoaderImplTest, MultiplePauseResumeReadingBodyFromNet) {
   EXPECT_EQ(std::string(kBodyContentsFirstHalf) +
                 std::string(kBodyContentsSecondHalf),
             ReadBody());
+}
+
+TEST_F(URLLoaderImplTest, AttachAcceptHeaderForStyleSheet) {
+  set_resource_type(RESOURCE_TYPE_STYLESHEET);
+  EXPECT_EQ(net::OK,
+            Load(test_server()->GetURL("/content-sniffer-test0.html")));
+
+  auto it = sent_request().headers.find("accept");
+  ASSERT_NE(it, sent_request().headers.end());
+  EXPECT_EQ(it->second, "text/css,*/*;q=0.1");
+}
+
+TEST_F(URLLoaderImplTest, AttachAcceptHeaderForXHR) {
+  set_resource_type(RESOURCE_TYPE_XHR);
+  EXPECT_EQ(net::OK,
+            Load(test_server()->GetURL("/content-sniffer-test0.html")));
+
+  auto it = sent_request().headers.find("accept");
+  ASSERT_NE(it, sent_request().headers.end());
+  EXPECT_EQ(it->second, "*/*");
+}
+
+TEST_F(URLLoaderImplTest, DoNotOverrideAcceptHeader) {
+  set_resource_type(RESOURCE_TYPE_XHR);
+  set_add_custom_accept_header();
+  EXPECT_EQ(net::OK,
+            Load(test_server()->GetURL("/content-sniffer-test0.html")));
+
+  auto it = sent_request().headers.find("accept");
+  ASSERT_NE(it, sent_request().headers.end());
+  EXPECT_EQ(it->second, "custom/*");
 }
 
 }  // namespace content

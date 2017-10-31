@@ -322,6 +322,9 @@ URLLoaderImpl::URLLoaderImpl(
     url_request_->SetResponseHeadersCallback(base::Bind(
         &URLLoaderImpl::SetRawResponseHeaders, base::Unretained(this)));
   }
+
+  AttachAcceptHeader(request.resource_type, url_request_.get());
+
   url_request_->Start();
 }
 
