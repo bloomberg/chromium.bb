@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS Calling StylePropertyMap.get with an unsupported property throws a TypeError
+PASS Calling StylePropertyMap.get with a property not in the property model returns null
+PASS Calling StylePropertyMap.get with a custom property not in the property model returns null
+PASS Calling StylePropertyMap.get with a valid property returns the correct entry
+PASS StylePropertyMap.get with a valid property in mixed case returns the correct entry
+FAIL Calling StylePropertyMap.get with a valid custom property returns the correct entry Illegal constructor
+PASS Calling StylePropertyMap.get with a list-valued property returns only the first value
+Harness: the test ran to completion.
+

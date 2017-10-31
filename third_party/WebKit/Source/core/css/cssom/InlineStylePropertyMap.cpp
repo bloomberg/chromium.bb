@@ -210,6 +210,7 @@ void InlineStylePropertyMap::remove(CSSPropertyID property_id,
 
 HeapVector<StylePropertyMap::StylePropertyMapEntry>
 InlineStylePropertyMap::GetIterationEntries() {
+  // TODO(779841): Needs to be sorted.
   DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
   HeapVector<StylePropertyMap::StylePropertyMapEntry> result;
   StylePropertySet& inline_style_set =
@@ -227,6 +228,7 @@ InlineStylePropertyMap::GetIterationEntries() {
       // TODO(meade): Eventually custom properties will support other types, so
       // actually return them instead of always returning a
       // CSSUnsupportedStyleValue.
+      // TODO(779477): Should these return CSSUnparsedValues?
       value.SetCSSStyleValue(
           CSSUnsupportedStyleValue::Create(custom_declaration.CustomCSSText()));
     } else if (property_id == CSSPropertyApplyAtRule) {
