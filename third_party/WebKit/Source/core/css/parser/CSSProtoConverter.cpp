@@ -11,6 +11,18 @@
 
 namespace css_proto_converter {
 
+const std::string Converter::kViewportPropertyLookupTable[] = {
+    "",  // This is just to fill the zeroth spot. It should not be used.
+    "min-width",  "max-width", "width",       "min-height",
+    "max-height", "height",    "zoom",        "min-zoom",
+    "user-zoom",  "max-zoom",  "orientation",
+};
+
+const std::string Converter::kViewportValueLookupTable[] = {
+    "",  // This is just to fill the zeroth spot. It should not be used.
+    "landscape", "portrait", "auto", "zoom", "fixed", "none",
+};
+
 const std::string Converter::kPseudoLookupTable[] = {
     "",  // This is just to fill the zeroth spot. It should not be used.
     "-internal-list-box",
@@ -1606,9 +1618,24 @@ void Converter::Visit(const StyleSheet& style_sheet) {
     Visit(import);
   for (auto& _namespace : style_sheet.namespaces())
     Visit(_namespace);
-  for (auto& ruleset_media_page_font_face :
-       style_sheet.ruleset_media_page_font_faces())
-    Visit(ruleset_media_page_font_face);
+  for (auto& nested_at_rule : style_sheet.nested_at_rules())
+    Visit(nested_at_rule);
+}
+
+void Converter::Visit(const ViewportValue& viewport_value) {
+  if (viewport_value.has_length())
+    Visit(viewport_value.length());
+  else if (viewport_value.has_num())
+    Visit(viewport_value.num());
+  else  // Default value.
+    AppendTableValue(viewport_value.value_id(), kViewportValueLookupTable);
+}
+
+void Converter::Visit(const Viewport& viewport) {
+  string_ += " @viewport {";
+  for (auto& prop_and_val : viewport.props_and_vals())
+    AppendPropertyAndValue(prop_and_val, kViewportPropertyLookupTable);
+  string_ += " } ";
 }
 
 void Converter::Visit(const CharsetDeclaration& charset_declaration) {
@@ -1618,12 +1645,14 @@ void Converter::Visit(const CharsetDeclaration& charset_declaration) {
   string_ += "\"; ";
 }
 
-void Converter::Visit(
-    const RulesetOrMediaOrPageOrFontFace& ruleset_media_page_font_face) {
-  if (ruleset_media_page_font_face.has_ruleset())
-    Visit(ruleset_media_page_font_face.ruleset());
-  if (ruleset_media_page_font_face.has_media())
-    Visit(ruleset_media_page_font_face.media());
+void Converter::Visit(const NestedAtRule& nested_at_rule) {
+  if (nested_at_rule.has_ruleset())
+    Visit(nested_at_rule.ruleset());
+  else if (nested_at_rule.has_media())
+    Visit(nested_at_rule.media());
+  else if (nested_at_rule.has_viewport())
+    Visit(nested_at_rule.viewport());
+  // Else apppend nothing.
   // TODO(metzman): Support pages and font-faces.
 }
 
@@ -1734,15 +1763,9 @@ void Converter::Visit(const MediaFeature& media_feature) {
   if (media_feature.has_mf_bool()) {
     Visit(media_feature.mf_bool());
   } else if (media_feature.has_mf_plain()) {
-    Visit(media_feature.mf_plain());
+    AppendPropertyAndValue(media_feature.mf_plain(), kMfNameLookupTable, false);
   }
   string_ += ")";
-}
-
-void Converter::Visit(const MfPlain& mf_plain) {
-  Visit(mf_plain.mf_name());
-  string_ += " : ";
-  Visit(mf_plain.mf_value());
 }
 
 void Converter::Visit(const MfBool& mf_bool) {
@@ -1750,7 +1773,7 @@ void Converter::Visit(const MfBool& mf_bool) {
 }
 
 void Converter::Visit(const MfName& mf_name) {
-  AppendTableValue(mf_name.value_id(), kMfNameLookupTable);
+  AppendTableValue(mf_name.id(), kMfNameLookupTable);
 }
 
 void Converter::Visit(const MfValue& mf_value) {
@@ -2000,5 +2023,17 @@ void Converter::AppendTableValue(int id,
                                  const std::string (&lookup_table)[TableSize]) {
   CHECK(id > 0 && static_cast<size_t>(id) < TableSize);
   string_ += lookup_table[id];
+}
+
+template <class T, size_t TableSize>
+void Converter::AppendPropertyAndValue(
+    T property_and_value,
+    const std::string (&lookup_table)[TableSize],
+    bool append_semicolon) {
+  AppendTableValue(property_and_value.property().id(), lookup_table);
+  string_ += " : ";
+  Visit(property_and_value.value());
+  if (append_semicolon)
+    string_ += "; ";
 }
 };  // namespace css_proto_converter

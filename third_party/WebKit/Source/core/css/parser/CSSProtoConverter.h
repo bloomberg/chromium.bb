@@ -25,6 +25,8 @@ class Converter {
   static const std::string kEncodingLookupTable[];
   static const std::string kValueLookupTable[];
   static const std::string kPropertyLookupTable[];
+  static const std::string kViewportPropertyLookupTable[];
+  static const std::string kViewportValueLookupTable[];
 
   void Visit(const Unicode&);
   void Visit(const Escape&);
@@ -47,7 +49,7 @@ class Converter {
   void Visit(const FunctionToken&);
   void Visit(const StyleSheet&);
   void Visit(const CharsetDeclaration&);
-  void Visit(const RulesetOrMediaOrPageOrFontFace&);
+  void Visit(const NestedAtRule&);
   void Visit(const Import&);
   void Visit(const Namespace&);
   void Visit(const NamespacePrefix&);
@@ -78,7 +80,6 @@ class Converter {
   void Visit(const MediaOr&);
   void Visit(const MediaInParens&);
   void Visit(const MediaFeature&);
-  void Visit(const MfPlain&);
   void Visit(const MfBool&);
   void Visit(const MfName&);
   void Visit(const MfValue&);
@@ -86,7 +87,13 @@ class Converter {
   void Visit(const MediaConditionWithoutOr&);
   void Visit(const Selector&, bool is_first);
   void Visit(const PseudoPage&);
+  void Visit(const ViewportValue&);
+  void Visit(const Viewport&);
   void Reset();
+  template <class T, size_t TableSize>
+  void AppendPropertyAndValue(T property_and_value,
+                              const std::string (&lookup_table)[TableSize],
+                              bool append_semicolon = true);
   template <size_t TableSize>
   void AppendTableValue(int id, const std::string (&lookup_table)[TableSize]);
 };
