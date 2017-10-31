@@ -31,7 +31,6 @@
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/PointerEvent.h"
 #include "core/frame/DOMVisualViewport.h"
@@ -79,6 +78,7 @@
 #include "modules/remoteplayback/RemotePlayback.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/runtime_enabled_features.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebSize.h"
 
 namespace blink {
@@ -306,8 +306,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       orientation_lock_delegate_(nullptr),
       rotate_to_fullscreen_delegate_(nullptr),
       hide_media_controls_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
-                                &media_element.GetDocument()),
+          media_element.GetDocument().GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &MediaControlsImpl::HideMediaControlsTimerFired),
       hide_timer_behavior_flags_(kIgnoreNone),
@@ -317,8 +316,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
           media_element.GetDocument(),
           new MediaControlsResizeObserverDelegate(this))),
       element_size_changed_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
-                                &media_element.GetDocument()),
+          media_element.GetDocument().GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &MediaControlsImpl::ElementSizeChangedTimerFired),
       keep_showing_until_timer_fires_(false) {

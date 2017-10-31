@@ -4,12 +4,12 @@
 
 #include "modules/sensor/SensorProxy.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/page/FocusController.h"
 #include "modules/sensor/SensorProviderProxy.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 
 namespace blink {
@@ -27,10 +27,10 @@ SensorProxy::SensorProxy(SensorType sensor_type,
       client_binding_(this),
       state_(SensorProxy::kUninitialized),
       suspended_(false),
-      polling_timer_(TaskRunnerHelper::Get(TaskType::kSensor,
-                                           provider->GetSupplementable()),
-                     this,
-                     &SensorProxy::OnPollingTimer) {}
+      polling_timer_(
+          provider->GetSupplementable()->GetTaskRunner(TaskType::kSensor),
+          this,
+          &SensorProxy::OnPollingTimer) {}
 
 SensorProxy::~SensorProxy() {}
 

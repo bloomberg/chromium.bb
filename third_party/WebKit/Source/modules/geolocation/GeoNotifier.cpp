@@ -4,12 +4,12 @@
 
 #include "modules/geolocation/GeoNotifier.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "modules/geolocation/Geolocation.h"
 #include "modules/geolocation/PositionError.h"
 #include "modules/geolocation/PositionOptions.h"
 #include "platform/Histogram.h"
 #include "platform/wtf/Assertions.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -21,10 +21,10 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
       success_callback_(success_callback),
       error_callback_(error_callback),
       options_(options),
-      timer_(TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
-                                   geolocation->GetDocument()),
-             this,
-             &GeoNotifier::TimerFired),
+      timer_(
+          geolocation->GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI),
+          this,
+          &GeoNotifier::TimerFired),
       use_cached_position_(false) {
   DCHECK(geolocation_);
   DCHECK(success_callback_);

@@ -33,10 +33,10 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/UseCounter.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
+#include "public/platform/TaskType.h"
 
 using midi::mojom::PortState;
 
@@ -103,7 +103,8 @@ ScriptPromise MIDIPort::open(ScriptState* script_state) {
     return Accept(script_state);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, GetExecutionContext())
+  GetExecutionContext()
+      ->GetTaskRunner(TaskType::kMiscPlatformAPI)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&MIDIPort::OpenAsynchronously, WrapPersistent(this),
                            WrapPersistent(resolver)));
@@ -114,7 +115,8 @@ ScriptPromise MIDIPort::open(ScriptState* script_state) {
 void MIDIPort::open() {
   if (connection_ == kConnectionStateOpen || running_open_count_)
     return;
-  TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, GetExecutionContext())
+  GetExecutionContext()
+      ->GetTaskRunner(TaskType::kMiscPlatformAPI)
       ->PostTask(BLINK_FROM_HERE, WTF::Bind(&MIDIPort::OpenAsynchronously,
                                             WrapPersistent(this), nullptr));
   running_open_count_++;
@@ -125,7 +127,8 @@ ScriptPromise MIDIPort::close(ScriptState* script_state) {
     return Accept(script_state);
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, GetExecutionContext())
+  GetExecutionContext()
+      ->GetTaskRunner(TaskType::kMiscPlatformAPI)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&MIDIPort::CloseAsynchronously, WrapPersistent(this),
                            WrapPersistent(resolver)));

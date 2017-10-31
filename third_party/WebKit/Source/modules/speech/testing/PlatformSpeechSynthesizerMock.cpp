@@ -25,8 +25,9 @@
 
 #include "modules/speech/testing/PlatformSpeechSynthesizerMock.h"
 
-#include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/ExecutionContext.h"
 #include "platform/speech/PlatformSpeechSynthesisUtterance.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -45,11 +46,11 @@ PlatformSpeechSynthesizerMock::PlatformSpeechSynthesizerMock(
     ExecutionContext* context)
     : PlatformSpeechSynthesizer(client),
       speaking_error_occurred_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, context),
+          context->GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &PlatformSpeechSynthesizerMock::SpeakingErrorOccurred),
       speaking_finished_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, context),
+          context->GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &PlatformSpeechSynthesizerMock::SpeakingFinished) {}
 

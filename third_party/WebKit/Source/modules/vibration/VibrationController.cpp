@@ -21,12 +21,12 @@
 
 #include "bindings/modules/v8/unsigned_long_or_unsigned_long_sequence.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 // Maximum number of entries in a vibration pattern.
@@ -78,10 +78,10 @@ VibrationController::SanitizeVibrationPattern(
 VibrationController::VibrationController(LocalFrame& frame)
     : ContextLifecycleObserver(frame.GetDocument()),
       PageVisibilityObserver(frame.GetDocument()->GetPage()),
-      timer_do_vibrate_(TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
-                                              frame.GetDocument()),
-                        this,
-                        &VibrationController::DoVibrate),
+      timer_do_vibrate_(
+          frame.GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI),
+          this,
+          &VibrationController::DoVibrate),
       is_running_(false),
       is_calling_cancel_(false),
       is_calling_vibrate_(false) {

@@ -34,7 +34,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Settings.h"
 #include "core/html/media/AutoplayPolicy.h"
 #include "core/html/media/HTMLMediaElement.h"
@@ -79,6 +78,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -699,7 +699,8 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
 
   // Notify context that state changed
   if (GetExecutionContext())
-    TaskRunnerHelper::Get(TaskType::kMediaElementEvent, GetExecutionContext())
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kMediaElementEvent)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&BaseAudioContext::NotifyStateChange,
                              WrapPersistent(this)));

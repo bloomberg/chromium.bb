@@ -16,7 +16,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/dom/events/EventQueue.h"
 #include "core/event_type_names.h"
@@ -49,6 +48,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/HashSet.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebTraceLocation.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -1052,7 +1052,7 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
       options_(options),
       client_binding_(this),
       complete_timer_(
-          TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI, execution_context),
+          execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
           &PaymentRequest::OnCompleteTimeout) {
   if (!GetExecutionContext()->IsSecureContext()) {

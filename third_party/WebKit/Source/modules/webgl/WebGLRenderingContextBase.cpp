@@ -33,7 +33,6 @@
 #include "bindings/modules/v8/html_canvas_element_or_offscreen_canvas.h"
 #include "build/build_config.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
@@ -107,6 +106,7 @@
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "skia/ext/texture_handle.h"
 
 namespace blink {
@@ -983,8 +983,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     unsigned version)
     : WebGLRenderingContextBase(
           host,
-          TaskRunnerHelper::Get(TaskType::kWebGL,
-                                host->GetTopExecutionContext()),
+          host->GetTopExecutionContext()->GetTaskRunner(TaskType::kWebGL),
           std::move(context_provider),
           requested_attributes,
           version) {}

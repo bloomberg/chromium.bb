@@ -10,9 +10,9 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "modules/payments/PaymentUpdater.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
@@ -162,10 +162,9 @@ PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(
     const PaymentRequestUpdateEventInit& init)
     : Event(type, init),
       wait_for_update_(false),
-      abort_timer_(
-          TaskRunnerHelper::Get(TaskType::kUserInteraction, execution_context),
-          this,
-          &PaymentRequestUpdateEvent::OnUpdateEventTimeout) {}
+      abort_timer_(execution_context->GetTaskRunner(TaskType::kUserInteraction),
+                   this,
+                   &PaymentRequestUpdateEvent::OnUpdateEventTimeout) {}
 
 void PaymentRequestUpdateEvent::OnUpdateEventTimeout(TimerBase*) {
   OnUpdatePaymentDetailsFailure("Timed out waiting for a response to a '" +

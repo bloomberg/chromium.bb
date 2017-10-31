@@ -4,7 +4,6 @@
 
 #include "modules/media_controls/elements/MediaControlOverflowMenuListElement.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "platform/Histogram.h"
@@ -58,7 +57,8 @@ void MediaControlOverflowMenuListElement::SetIsWanted(bool wanted) {
     // is not needed.
     DCHECK(!current_task_handle_.IsActive());
     current_task_handle_ =
-        TaskRunnerHelper::Get(TaskType::kMediaElementEvent, &GetDocument())
+        GetDocument()
+            .GetTaskRunner(TaskType::kMediaElementEvent)
             ->PostCancellableTask(
                 BLINK_FROM_HERE,
                 WTF::Bind(

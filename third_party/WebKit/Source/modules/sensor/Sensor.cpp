@@ -6,13 +6,13 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "modules/sensor/SensorErrorEvent.h"
 #include "modules/sensor/SensorProviderProxy.h"
 #include "platform/LayoutTestSupport.h"
+#include "public/platform/TaskType.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "services/device/public/interfaces/sensor.mojom-blink.h"
 
@@ -200,12 +200,14 @@ void Sensor::OnSensorReadingChanged() {
     // possible modifications of SensorProxy::observers_ container
     // while it is being iterated through.
     pending_reading_notification_ =
-        TaskRunnerHelper::Get(TaskType::kSensor, GetExecutionContext())
+        GetExecutionContext()
+            ->GetTaskRunner(TaskType::kSensor)
             ->PostCancellableTask(BLINK_FROM_HERE,
                                   std::move(sensor_reading_changed));
   } else {
     pending_reading_notification_ =
-        TaskRunnerHelper::Get(TaskType::kSensor, GetExecutionContext())
+        GetExecutionContext()
+            ->GetTaskRunner(TaskType::kSensor)
             ->PostDelayedCancellableTask(
                 BLINK_FROM_HERE, std::move(sensor_reading_changed),
                 WTF::TimeDelta::FromSecondsD(waitingTime));
@@ -231,7 +233,8 @@ void Sensor::OnAddConfigurationRequestCompleted(bool result) {
     return;
 
   pending_activated_notification_ =
-      TaskRunnerHelper::Get(TaskType::kSensor, GetExecutionContext())
+      GetExecutionContext()
+          ->GetTaskRunner(TaskType::kSensor)
           ->PostCancellableTask(
               BLINK_FROM_HERE,
               WTF::Bind(&Sensor::NotifyActivated, WrapWeakPersistent(this)));
@@ -309,7 +312,8 @@ void Sensor::HandleError(ExceptionCode code,
   auto error =
       DOMException::Create(code, sanitized_message, unsanitized_message);
   pending_error_notification_ =
-      TaskRunnerHelper::Get(TaskType::kSensor, GetExecutionContext())
+      GetExecutionContext()
+          ->GetTaskRunner(TaskType::kSensor)
           ->PostCancellableTask(
               BLINK_FROM_HERE,
               WTF::Bind(&Sensor::NotifyError, WrapWeakPersistent(this),
@@ -331,7 +335,8 @@ void Sensor::NotifyActivated() {
     // right away.
     DCHECK(!pending_reading_notification_.IsActive());
     pending_reading_notification_ =
-        TaskRunnerHelper::Get(TaskType::kSensor, GetExecutionContext())
+        GetExecutionContext()
+            ->GetTaskRunner(TaskType::kSensor)
             ->PostCancellableTask(
                 BLINK_FROM_HERE,
                 WTF::Bind(&Sensor::NotifyReading, WrapWeakPersistent(this)));

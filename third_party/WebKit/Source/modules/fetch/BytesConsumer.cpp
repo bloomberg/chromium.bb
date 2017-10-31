@@ -7,13 +7,13 @@
 #include <string.h>
 #include <algorithm>
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "modules/fetch/BlobBytesConsumer.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobData.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/debug/Alias.h"
+#include "public/platform/TaskType.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -195,7 +195,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
       }
       if (chunks_.IsEmpty() && tee_->GetPublicState() == PublicState::kClosed) {
         // All data has been consumed.
-        TaskRunnerHelper::Get(TaskType::kNetworking, execution_context_)
+        execution_context_->GetTaskRunner(TaskType::kNetworking)
             ->PostTask(BLINK_FROM_HERE,
                        WTF::Bind(&Destination::Close, WrapPersistent(this)));
       }

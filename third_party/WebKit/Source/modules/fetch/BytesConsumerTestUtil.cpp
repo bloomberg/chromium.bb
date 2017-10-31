@@ -5,11 +5,11 @@
 #include "modules/fetch/BytesConsumerTestUtil.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -74,7 +74,7 @@ Result BytesConsumerTestUtil::ReplayingBytesConsumer::BeginRead(
     case Command::kWait:
       commands_.pop_front();
       state_ = InternalState::kWaiting;
-      TaskRunnerHelper::Get(TaskType::kNetworking, execution_context_)
+      execution_context_->GetTaskRunner(TaskType::kNetworking)
           ->PostTask(BLINK_FROM_HERE,
                      WTF::Bind(&ReplayingBytesConsumer::NotifyAsReadable,
                                WrapPersistent(this), notification_token_));

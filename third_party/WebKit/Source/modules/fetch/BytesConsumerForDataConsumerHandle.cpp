@@ -5,9 +5,9 @@
 #include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/Functional.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebTraceLocation.h"
 
 #include <algorithm>
@@ -69,7 +69,7 @@ BytesConsumer::Result BytesConsumerForDataConsumerHandle::EndRead(size_t read) {
   }
   if (has_pending_notification_) {
     has_pending_notification_ = false;
-    TaskRunnerHelper::Get(TaskType::kNetworking, execution_context_)
+    execution_context_->GetTaskRunner(TaskType::kNetworking)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&BytesConsumerForDataConsumerHandle::Notify,
                              WrapPersistent(this)));

@@ -38,7 +38,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -61,6 +60,7 @@
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 
 static const size_t kMaxByteSizeForHistogram = 100 * 1000 * 1000;
@@ -71,10 +71,10 @@ namespace blink {
 DOMWebSocket::EventQueue::EventQueue(EventTarget* target)
     : state_(kActive),
       target_(target),
-      resume_timer_(TaskRunnerHelper::Get(TaskType::kWebSocket,
-                                          target->GetExecutionContext()),
-                    this,
-                    &EventQueue::ResumeTimerFired) {}
+      resume_timer_(
+          target->GetExecutionContext()->GetTaskRunner(TaskType::kWebSocket),
+          this,
+          &EventQueue::ResumeTimerFired) {}
 
 DOMWebSocket::EventQueue::~EventQueue() {
   ContextDestroyed();
@@ -231,7 +231,7 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
       extensions_(""),
       event_queue_(EventQueue::Create(this)),
       buffered_amount_consume_timer_(
-          TaskRunnerHelper::Get(TaskType::kWebSocket, context),
+          context->GetTaskRunner(TaskType::kWebSocket),
           this,
           &DOMWebSocket::ReflectBufferedAmountConsumption) {}
 
