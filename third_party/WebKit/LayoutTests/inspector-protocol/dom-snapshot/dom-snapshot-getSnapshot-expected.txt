@@ -1219,8 +1219,8 @@ Tests DOMSnapshot.getSnapshot method.
     {
       "domNodeIndex": 35,
       "boundingBox": {
-        "x": 10,
-        "y": 634,
+        "x": 0,
+        "y": 0,
         "width": 400,
         "height": 200
       },
@@ -1229,8 +1229,8 @@ Tests DOMSnapshot.getSnapshot method.
     {
       "domNodeIndex": 42,
       "boundingBox": {
-        "x": 18,
-        "y": 642,
+        "x": 8,
+        "y": 8,
         "width": 384,
         "height": 184
       },
@@ -1239,8 +1239,8 @@ Tests DOMSnapshot.getSnapshot method.
     {
       "domNodeIndex": 44,
       "boundingBox": {
-        "x": 18,
-        "y": 642,
+        "x": 8,
+        "y": 8,
         "width": 384,
         "height": 16
       },
