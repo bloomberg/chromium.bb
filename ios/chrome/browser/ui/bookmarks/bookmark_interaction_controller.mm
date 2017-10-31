@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/ui/util/form_sheet_navigation_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/public/referrer.h"
@@ -185,8 +186,9 @@ using bookmarks::BookmarkNode;
     if (bookmark_utils_ios::GetBookmarkUIPositionCache(self.bookmarkModel)) {
       self.bookmarkBrowser.isReconstructingFromCache = YES;
     }
-    UINavigationController* navController = [[UINavigationController alloc]
-        initWithRootViewController:self.bookmarkBrowser];
+    FormSheetNavigationController* navController =
+        [[FormSheetNavigationController alloc]
+            initWithRootViewController:self.bookmarkBrowser];
     [navController setModalPresentationStyle:UIModalPresentationFormSheet];
     [_parentController presentViewController:navController
                                     animated:YES
