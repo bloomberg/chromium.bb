@@ -111,6 +111,8 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
     return display_list_;
   }
 
+  float recording_scale_factor() const { return recording_scale_factor_; }
+
   SkColor background_color() const { return background_color_; }
 
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode>

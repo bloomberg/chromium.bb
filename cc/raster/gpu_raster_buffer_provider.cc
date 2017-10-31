@@ -30,27 +30,6 @@
 namespace cc {
 namespace {
 
-// Reuse canvas setup code from RasterSource by storing it into a PaintRecord
-// that can then be transported.  This is somewhat more convoluted then it
-// should be.
-static sk_sp<PaintRecord> SetupForRaster(
-    const RasterSource* raster_source,
-    const gfx::Rect& raster_full_rect,
-    const gfx::Rect& playback_rect,
-    const gfx::AxisTransform2d& transform) {
-  PaintRecorder recorder;
-  PaintCanvas* canvas =
-      recorder.beginRecording(gfx::RectToSkRect(raster_full_rect));
-  // TODO(enne): The GLES2Decoder is guaranteeing the clear here, but it
-  // might be nice to figure out how to include the debugging clears for
-  // this mode.
-  canvas->translate(-raster_full_rect.x(), -raster_full_rect.y());
-  canvas->clipRect(SkRect::MakeFromIRect(gfx::RectToSkIRect(playback_rect)));
-  canvas->translate(transform.translation().x(), transform.translation().y());
-  canvas->scale(transform.scale(), transform.scale());
-  return recorder.finishRecordingAsPicture();
-}
-
 static void RasterizeSourceOOP(
     const RasterSource* raster_source,
     bool resource_has_previous_content,
@@ -66,24 +45,19 @@ static void RasterizeSourceOOP(
   gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
   GLuint texture_id = resource_lock->ConsumeTexture(gl);
 
-  auto setup_list = base::MakeRefCounted<DisplayItemList>(
-      DisplayItemList::kTopLevelDisplayItemList);
-  setup_list->StartPaint();
-  setup_list->push<DrawRecordOp>(SetupForRaster(raster_source, raster_full_rect,
-                                                playback_rect, transform));
-  setup_list->EndPaintOfUnpaired(raster_full_rect);
-  setup_list->Finalize();
-
-  // TODO(enne): need to pass color space and transform in the decoder.
   gl->BeginRasterCHROMIUM(texture_id, raster_source->background_color(),
                           msaa_sample_count, playback_settings.use_lcd_text,
                           use_distance_field_text,
                           resource_lock->PixelConfig());
-  gl->RasterCHROMIUM(setup_list.get(), playback_rect.x(), playback_rect.y(),
-                     playback_rect.width(), playback_rect.height());
+  // TODO(enne): need to pass color space into this function as well.
+  float recording_to_raster_scale =
+      transform.scale() / raster_source->recording_scale_factor();
   gl->RasterCHROMIUM(raster_source->GetDisplayItemList().get(),
+                     raster_full_rect.x(), raster_full_rect.y(),
                      playback_rect.x(), playback_rect.y(),
-                     playback_rect.width(), playback_rect.height());
+                     playback_rect.width(), playback_rect.height(),
+                     transform.translation().x(), transform.translation().y(),
+                     recording_to_raster_scale);
   gl->EndRasterCHROMIUM();
 
   gl->DeleteTextures(1, &texture_id);
