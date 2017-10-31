@@ -44,9 +44,7 @@ cr.define('extensions', function() {
       chrome.developerPrivate.getExtensionsInfo(
           {includeDisabled: true, includeTerminated: true}, extensions => {
             this.extensions_ = extensions;
-            for (let extension of extensions)
-              this.manager_.addItem(extension);
-
+            this.manager_.initAppsAndExtensions(extensions);
             this.manager_.initPage();
           });
       chrome.developerPrivate.getProfileConfiguration(
