@@ -554,13 +554,13 @@ message FunctionToken {
 // end tokens
 
 // rules
-// TODO(metzman): Add rules for @apply, @keyframes (including
-// -webkit-keyframes), @viewport, @supports.
+// TODO(metzman): Add rules for @keyframes (including
+// -webkit-keyframes), and @supports.
 message StyleSheet {
   optional CharsetDeclaration charset_declaration = 1;
   repeated Import imports = 2;
   repeated Namespace namespaces = 3;
-  repeated RulesetOrMediaOrPageOrFontFace ruleset_media_page_font_faces = 4;
+  repeated NestedAtRule nested_at_rules = 4;
 }
 
 // Not in grammar.
@@ -574,12 +574,55 @@ message CharsetDeclaration {
 }
 
 // Not in grammar.
-message RulesetOrMediaOrPageOrFontFace {
+message NestedAtRule {
   oneof rhs {
     Ruleset ruleset = 1;
     Media media = 2;
     Page page = 3;
     FontFace font_face = 4;
+    Viewport viewport = 5;
+  }
+}
+
+message Viewport {
+  repeated ViewportPropertyAndValue props_and_vals = 1;
+}
+
+message ViewportPropertyAndValue {
+  required ViewportProperty property = 1;
+  required ViewportValue value = 2;
+}
+
+message ViewportProperty {
+  enum PropertyId {
+    MIN_WIDTH = 1;
+    MAX_WIDTH = 2;
+    WIDTH = 3;
+    MIN_HEIGHT = 4;
+    MAX_HEIGHT = 5;
+    HEIGHT = 6;
+    ZOOM = 7;
+    MIN_ZOOM = 8;
+    USER_ZOOM = 9;
+    MAX_ZOOM = 10;
+    ORIENTATION = 11;
+  }
+  required PropertyId id = 1;
+}
+
+message ViewportValue {
+  enum ValueId {
+    LANDSCAPE = 1;
+    PORTRAIT = 2;
+    AUTO = 3;
+    ZOOM = 4;
+    FIXED = 5;
+    NONE = 6;
+  }
+  required ValueId value_id = 1;
+  oneof rhs {
+    Length length = 2;
+    Num num = 3;
   }
 }
 
@@ -677,8 +720,8 @@ message MediaFeature {
 // TODO(metzman): implement <general-enclosed>
 
 message MfPlain {
-  required MfName mf_name = 1;
-  required MfValue mf_value = 2;
+  required MfName property = 1;
+  required MfValue value = 2;
 }
 
 message MfBool {
@@ -733,7 +776,7 @@ message MfName {
     SHAPE = 44;
     INVALID_NAME = 45;
   }
-  required ValueId value_id = 1;
+  required ValueId id = 1;
 }
 
 message MfValue {
