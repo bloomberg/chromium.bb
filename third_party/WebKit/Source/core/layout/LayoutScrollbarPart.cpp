@@ -209,9 +209,10 @@ void LayoutScrollbarPart::StyleDidChange(StyleDifference diff,
 }
 
 void LayoutScrollbarPart::ImageChanged(WrappedImagePtr image,
+                                       CanDeferInvalidation defer,
                                        const IntRect* rect) {
   SetNeedsPaintInvalidation();
-  LayoutBlock::ImageChanged(image, rect);
+  LayoutBlock::ImageChanged(image, defer, rect);
 }
 
 LayoutObject* LayoutScrollbarPart::ScrollbarStyleSource() const {

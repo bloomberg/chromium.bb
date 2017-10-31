@@ -66,10 +66,14 @@ void LayoutImageResource::SetImageResource(ImageResourceContent* new_image) {
   cached_image_ = new_image;
   if (cached_image_) {
     cached_image_->AddObserver(layout_object_);
-    if (cached_image_->ErrorOccurred())
-      layout_object_->ImageChanged(cached_image_.Get());
+    if (cached_image_->ErrorOccurred()) {
+      layout_object_->ImageChanged(
+          cached_image_.Get(),
+          ImageResourceObserver::CanDeferInvalidation::kNo);
+    }
   } else {
-    layout_object_->ImageChanged(cached_image_.Get());
+    layout_object_->ImageChanged(
+        cached_image_.Get(), ImageResourceObserver::CanDeferInvalidation::kNo);
   }
 }
 

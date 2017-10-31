@@ -108,8 +108,10 @@ LayoutSize LayoutVideo::CalculateIntrinsicSize() {
   return DefaultSize();
 }
 
-void LayoutVideo::ImageChanged(WrappedImagePtr new_image, const IntRect* rect) {
-  LayoutMedia::ImageChanged(new_image, rect);
+void LayoutVideo::ImageChanged(WrappedImagePtr new_image,
+                               CanDeferInvalidation defer,
+                               const IntRect* rect) {
+  LayoutMedia::ImageChanged(new_image, defer, rect);
 
   // Cache the image intrinsic size so we can continue to use it to draw the
   // image correctly even if we know the video intrinsic size but aren't able to

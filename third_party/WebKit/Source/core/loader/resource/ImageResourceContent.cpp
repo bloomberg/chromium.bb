@@ -128,7 +128,7 @@ void ImageResourceContent::AddObserver(ImageResourceObserver* observer) {
     return;
 
   if (image_ && !image_->IsNull()) {
-    observer->ImageChanged(this);
+    observer->ImageChanged(this, CanDeferInvalidation::kNo);
   }
 
   if (IsLoaded() && observers_.Contains(observer) &&
@@ -235,6 +235,7 @@ IntSize ImageResourceContent::IntrinsicSize(
 
 void ImageResourceContent::NotifyObservers(
     NotifyFinishOption notifying_finish_option,
+    CanDeferInvalidation defer,
     const IntRect* change_rect) {
   {
     Vector<ImageResourceObserver*> finished_observers_as_vector;
@@ -246,7 +247,7 @@ void ImageResourceContent::NotifyObservers(
 
     for (auto* observer : finished_observers_as_vector) {
       if (finished_observers_.Contains(observer))
-        observer->ImageChanged(this, change_rect);
+        observer->ImageChanged(this, defer, change_rect);
     }
   }
   {
@@ -259,7 +260,7 @@ void ImageResourceContent::NotifyObservers(
 
     for (auto* observer : observers_as_vector) {
       if (observers_.Contains(observer)) {
-        observer->ImageChanged(this, change_rect);
+        observer->ImageChanged(this, defer, change_rect);
         if (notifying_finish_option == kShouldNotifyFinish &&
             observers_.Contains(observer) &&
             !info_->SchedulingReloadOrShouldReloadBrokenPlaceholder()) {
@@ -368,7 +369,7 @@ void ImageResourceContent::AsyncLoadCompleted(const blink::Image* image) {
   CHECK_EQ(size_available_, Image::kSizeAvailableAndLoadingAsynchronously);
   size_available_ = Image::kSizeAvailable;
   UpdateToLoadedContentStatus(ResourceStatus::kCached);
-  NotifyObservers(kShouldNotifyFinish);
+  NotifyObservers(kShouldNotifyFinish, CanDeferInvalidation::kNo);
 }
 
 ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
@@ -448,12 +449,16 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
   // In the case of kSizeAvailableAndLoadingAsynchronously, we are waiting for
   // SVG image completion, and thus we notify observers of kDoNotNotifyFinish
   // here, and will notify observers of finish later in AsyncLoadCompleted().
+  //
+  // Don't allow defering of invalidation if it resulted from a data update.
+  // This is necessary to ensure that all PaintImages in a recording committed
+  // to the compositor have the same data.
   if (all_data_received &&
       size_available_ != Image::kSizeAvailableAndLoadingAsynchronously) {
     UpdateToLoadedContentStatus(status);
-    NotifyObservers(kShouldNotifyFinish);
+    NotifyObservers(kShouldNotifyFinish, CanDeferInvalidation::kNo);
   } else {
-    NotifyObservers(kDoNotNotifyFinish);
+    NotifyObservers(kDoNotNotifyFinish, CanDeferInvalidation::kNo);
   }
 
   return UpdateImageResult::kNoDecodeError;
@@ -489,7 +494,7 @@ bool ImageResourceContent::ShouldPauseAnimation(const blink::Image* image) {
 void ImageResourceContent::AnimationAdvanced(const blink::Image* image) {
   if (!image || image != image_)
     return;
-  NotifyObservers(kDoNotNotifyFinish);
+  NotifyObservers(kDoNotNotifyFinish, CanDeferInvalidation::kYes);
 }
 
 void ImageResourceContent::UpdateImageAnimationPolicy() {
@@ -517,7 +522,7 @@ void ImageResourceContent::ChangedInRect(const blink::Image* image,
                                          const IntRect& rect) {
   if (!image || image != image_)
     return;
-  NotifyObservers(kDoNotNotifyFinish, &rect);
+  NotifyObservers(kDoNotNotifyFinish, CanDeferInvalidation::kYes, &rect);
 }
 
 bool ImageResourceContent::IsAccessAllowed(SecurityOrigin* security_origin) {

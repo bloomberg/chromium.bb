@@ -6,7 +6,9 @@
 
 #include "build/build_config.h"
 #include "core/html/HTMLElement.h"
+#include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutTestHelper.h"
+#include "platform/graphics/test/StubImage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -348,6 +350,38 @@ TEST_F(LayoutBoxTest, ContentsVisualOverflowPropagation) {
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), a->SelfVisualOverflowRect());
   EXPECT_EQ(LayoutRect(-70, 50, 230, 160), a->ContentsVisualOverflowRect());
   EXPECT_EQ(LayoutRect(-70, 0, 230, 210), a->VisualOverflowRect());
+}
+
+class AnimatedImage : public StubImage {
+ public:
+  bool MaybeAnimated() override { return true; }
+};
+
+TEST_F(LayoutBoxTest, DeferredInvalidation) {
+  SetBodyInnerHTML("<img id='image' style='width: 100px; height: 100px;'/>");
+  auto* obj = ToLayoutBox(GetLayoutObjectByElementId("image"));
+  ASSERT_TRUE(obj);
+
+  // Inject an animated image since deferred invalidations are only done for
+  // animated images.
+  auto* image =
+      ImageResourceContent::CreateLoaded(WTF::AdoptRef(new AnimatedImage()));
+  ToLayoutImage(obj)->ImageResource()->SetImageResource(image);
+  ASSERT_TRUE(ToLayoutImage(obj)->CachedImage()->GetImage()->MaybeAnimated());
+
+  // CanDeferInvalidation::kYes results in a deferred invalidation.
+  obj->ClearPaintInvalidationFlags();
+  EXPECT_EQ(obj->FullPaintInvalidationReason(), PaintInvalidationReason::kNone);
+  obj->ImageChanged(image, ImageResourceObserver::CanDeferInvalidation::kYes);
+  EXPECT_EQ(obj->FullPaintInvalidationReason(),
+            PaintInvalidationReason::kDelayedFull);
+
+  // CanDeferInvalidation::kNo results in a immediate invalidation.
+  obj->ClearPaintInvalidationFlags();
+  EXPECT_EQ(obj->FullPaintInvalidationReason(), PaintInvalidationReason::kNone);
+  obj->ImageChanged(image, ImageResourceObserver::CanDeferInvalidation::kNo);
+  EXPECT_EQ(obj->FullPaintInvalidationReason(),
+            PaintInvalidationReason::kImage);
 }
 
 }  // namespace blink

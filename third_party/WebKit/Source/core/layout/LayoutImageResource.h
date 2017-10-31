@@ -27,6 +27,7 @@
 #ifndef LayoutImageResource_h
 #define LayoutImageResource_h
 
+#include "core/CoreExport.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/StyleImage.h"
 
@@ -34,7 +35,7 @@ namespace blink {
 
 class LayoutObject;
 
-class LayoutImageResource
+class CORE_EXPORT LayoutImageResource
     : public GarbageCollectedFinalized<LayoutImageResource> {
   WTF_MAKE_NONCOPYABLE(LayoutImageResource);
 

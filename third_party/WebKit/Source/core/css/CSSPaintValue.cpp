@@ -104,7 +104,8 @@ void CSSPaintValue::PaintImageGeneratorReady() {
     // TODO(ikilpatrick): We shouldn't be casting like this or mutate the layout
     // tree from a const pointer.
     const_cast<ImageResourceObserver*>(client)->ImageChanged(
-        static_cast<WrappedImagePtr>(this));
+        static_cast<WrappedImagePtr>(this),
+        ImageResourceObserver::CanDeferInvalidation::kNo);
   }
 }
 

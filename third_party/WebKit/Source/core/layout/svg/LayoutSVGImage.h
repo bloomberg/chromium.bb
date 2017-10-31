@@ -62,7 +62,9 @@ class LayoutSVGImage final : public LayoutSVGModelObject {
                        const LayoutPoint& additional_offset,
                        IncludeBlockVisualOverflowOrNot) const override;
 
-  void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+  void ImageChanged(WrappedImagePtr,
+                    CanDeferInvalidation,
+                    const IntRect* = nullptr) override;
 
   void UpdateLayout() override;
   void Paint(const PaintInfo&, const LayoutPoint&) const override;
