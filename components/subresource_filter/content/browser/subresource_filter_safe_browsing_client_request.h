@@ -13,7 +13,8 @@
 #include "base/timer/timer.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/util.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -33,7 +34,6 @@ class SubresourceFilterSafeBrowsingClientRequest
     : public safe_browsing::SafeBrowsingDatabaseManager::Client {
  public:
   SubresourceFilterSafeBrowsingClientRequest(
-      const GURL& url,
       size_t request_id,
       scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
           database_manager,
@@ -41,7 +41,7 @@ class SubresourceFilterSafeBrowsingClientRequest
       SubresourceFilterSafeBrowsingClient* client);
   ~SubresourceFilterSafeBrowsingClientRequest() override;
 
-  void Start();
+  void Start(const GURL& url);
 
   // safe_browsing::SafeBrowsingDatabaseManager::Client:
   void OnCheckBrowseUrlResult(
@@ -49,7 +49,6 @@ class SubresourceFilterSafeBrowsingClientRequest
       safe_browsing::SBThreatType threat_type,
       const safe_browsing::ThreatMetadata& metadata) override;
 
-  const GURL& url() const { return url_; }
   size_t request_id() const { return request_id_; }
 
   // Maximum time in milliseconds to wait for the Safe Browsing service to
@@ -67,8 +66,6 @@ class SubresourceFilterSafeBrowsingClientRequest
   void SendCheckResultToClient(bool served_from_network,
                                safe_browsing::SBThreatType threat_type,
                                const safe_browsing::ThreatMetadata& metadata);
-
-  const GURL url_;
 
   // The |request_id_| identifies a particular request, as issued from the
   // SubresourceFilterSafeBrowsingClient. It will be unique in the scope of a
