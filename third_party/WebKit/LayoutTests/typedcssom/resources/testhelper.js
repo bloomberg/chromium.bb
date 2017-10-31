@@ -19,3 +19,10 @@ function assert_style_value_array_equals(a, b) {
     assert_style_value_equals(a[i], b[i]);
   }
 }
+
+// Creates a new div element with specified inline style.
+function newDivWithStyle(style) {
+  let target = document.createElement('div');
+  target.style = style;
+  return target;
+}
