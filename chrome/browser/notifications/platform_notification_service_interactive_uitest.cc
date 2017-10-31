@@ -141,16 +141,6 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
            RequestAndRespondToPermission(PermissionRequestManager::DENY_ALL);
   }
 
-  void EnableFullscreenNotifications() {
-    feature_list_.InitAndEnableFeature(
-        features::kAllowFullscreenWebNotificationsFeature);
-  }
-
-  void DisableFullscreenNotifications() {
-    feature_list_.InitAndDisableFeature(
-        features::kAllowFullscreenWebNotificationsFeature);
-  }
-
   double GetEngagementScore(const GURL& origin) const {
     return SiteEngagementService::Get(browser()->profile())->GetScore(origin);
   }
@@ -198,7 +188,6 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
 PlatformNotificationServiceBrowserTest::PlatformNotificationServiceBrowserTest()
@@ -702,7 +691,6 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        TestShouldDisplayFullscreen) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
-  EnableFullscreenNotifications();
 
   std::string script_result;
   ASSERT_TRUE(RunScript(
@@ -732,43 +720,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
-                       TestShouldDisplayFullscreenOff) {
-  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
-  DisableFullscreenNotifications();
-
-  std::string script_result;
-  ASSERT_TRUE(RunScript(
-      "DisplayPersistentNotification('display_normal')", &script_result));
-  EXPECT_EQ("ok", script_result);
-
-  // Set the page fullscreen
-  browser()->exclusive_access_manager()->fullscreen_controller()->
-      ToggleBrowserFullscreenMode();
-
-  {
-    FullscreenStateWaiter fs_state(browser(), true);
-    fs_state.Wait();
-  }
-
-  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-      browser()->window()->GetNativeWindow()));
-
-  ASSERT_TRUE(browser()->window()->IsActive())
-      << "Browser is active after going fullscreen";
-
-  std::vector<message_center::Notification> notifications =
-      GetDisplayedNotifications(true /* is_persistent */);
-  ASSERT_EQ(1u, notifications.size());
-
-  // When the experiment flag is off, then ShouldDisplayOverFullscreen should
-  // return false.
-  EXPECT_FALSE(notifications[0].delegate()->ShouldDisplayOverFullscreen());
-}
-
-IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        TestShouldDisplayMultiFullscreen) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
-  EnableFullscreenNotifications();
 
   Browser* other_browser = CreateBrowser(browser()->profile());
   ui_test_utils::NavigateToURL(other_browser, GURL("about:blank"));

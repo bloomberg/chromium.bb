@@ -318,30 +318,6 @@ void NotificationsTest::EnablePermissionsEmbargo(
 #endif  //  BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 }
 
-void NotificationsTest::EnableFullscreenNotifications(
-    base::test::ScopedFeatureList* scoped_feature_list) {
-#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-  scoped_feature_list->InitWithFeatures(
-      {features::kAllowFullscreenWebNotificationsFeature},
-      {features::kNativeNotifications});
-#else
-  scoped_feature_list->InitAndEnableFeature(
-      features::kAllowFullscreenWebNotificationsFeature);
-#endif  //  BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-}
-
-void NotificationsTest::DisableFullscreenNotifications(
-    base::test::ScopedFeatureList* scoped_feature_list) {
-#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-  scoped_feature_list->InitWithFeatures(
-      {}, {features::kAllowFullscreenWebNotificationsFeature,
-           features::kNativeNotifications});
-#else
-  scoped_feature_list->InitAndDisableFeature(
-      features::kAllowFullscreenWebNotificationsFeature);
-#endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
-}
-
 void NotificationsTest::DropOriginPreference(const GURL& origin) {
   DesktopNotificationProfileUtil::ClearSetting(browser()->profile(), origin);
 }
