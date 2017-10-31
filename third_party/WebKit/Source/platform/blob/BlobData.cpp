@@ -400,7 +400,8 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
       size_(size),
       is_single_unknown_size_file_(false) {
   if (RuntimeEnabledFeatures::MojoBlobsEnabled()) {
-    SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Storage.Blob.GetBlobFromUUIDTime");
+    SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(
+        "Storage.Blob.GetBlobFromUUIDTime");
     // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
     // ends up going through the main thread. Ideally workers wouldn't need
     // to do that.
