@@ -642,7 +642,6 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 }
 #endif  // !CONFIG_LV_MAP
 
-#if !CONFIG_COEF_INTERLEAVE
 #if CONFIG_LV_MAP
 static void pack_txb_tokens(aom_writer *w, AV1_COMMON *cm, MACROBLOCK *const x,
                             const TOKENEXTRA **tp,
@@ -772,7 +771,6 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   }
 }
 #endif  // CONFIG_LV_MAP
-#endif
 
 static void write_segment_id(aom_writer *w, const struct segmentation *seg,
                              struct segmentation_probs *segp, int segment_id) {
@@ -2127,82 +2125,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     }
   }
 
-#if CONFIG_COEF_INTERLEAVE
-  if (!mbmi->skip) {
-    const struct macroblockd_plane *const pd_y = &xd->plane[0];
-    const struct macroblockd_plane *const pd_c = &xd->plane[1];
-    const TX_SIZE tx_log2_y = mbmi->tx_size;
-    const TX_SIZE tx_log2_c = av1_get_uv_tx_size(mbmi, pd_c);
-    const int tx_sz_y = (1 << tx_log2_y);
-    const int tx_sz_c = (1 << tx_log2_c);
-
-    const BLOCK_SIZE plane_bsize_y =
-        get_plane_block_size(AOMMAX(mbmi->sb_type, 3), pd_y);
-    const BLOCK_SIZE plane_bsize_c =
-        get_plane_block_size(AOMMAX(mbmi->sb_type, 3), pd_c);
-
-    const int num_4x4_w_y = num_4x4_blocks_wide_lookup[plane_bsize_y];
-    const int num_4x4_w_c = num_4x4_blocks_wide_lookup[plane_bsize_c];
-    const int num_4x4_h_y = num_4x4_blocks_high_lookup[plane_bsize_y];
-    const int num_4x4_h_c = num_4x4_blocks_high_lookup[plane_bsize_c];
-
-    const int max_4x4_w_y = get_max_4x4_size(num_4x4_w_y, xd->mb_to_right_edge,
-                                             pd_y->subsampling_x);
-    const int max_4x4_h_y = get_max_4x4_size(num_4x4_h_y, xd->mb_to_bottom_edge,
-                                             pd_y->subsampling_y);
-    const int max_4x4_w_c = get_max_4x4_size(num_4x4_w_c, xd->mb_to_right_edge,
-                                             pd_c->subsampling_x);
-    const int max_4x4_h_c = get_max_4x4_size(num_4x4_h_c, xd->mb_to_bottom_edge,
-                                             pd_c->subsampling_y);
-
-    // The max_4x4_w/h may be smaller than tx_sz under some corner cases,
-    // i.e. when the SB is splitted by tile boundaries.
-    const int tu_num_w_y = (max_4x4_w_y + tx_sz_y - 1) / tx_sz_y;
-    const int tu_num_h_y = (max_4x4_h_y + tx_sz_y - 1) / tx_sz_y;
-    const int tu_num_w_c = (max_4x4_w_c + tx_sz_c - 1) / tx_sz_c;
-    const int tu_num_h_c = (max_4x4_h_c + tx_sz_c - 1) / tx_sz_c;
-    const int tu_num_y = tu_num_w_y * tu_num_h_y;
-    const int tu_num_c = tu_num_w_c * tu_num_h_c;
-
-    int tu_idx_y = 0, tu_idx_c = 0;
-    TOKEN_STATS token_stats;
-    init_token_stats(&token_stats);
-
-    assert(*tok < tok_end);
-
-    while (tu_idx_y < tu_num_y) {
-      pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx_log2_y, &token_stats);
-      assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
-      (*tok)++;
-      tu_idx_y++;
-
-      if (tu_idx_c < tu_num_c) {
-        pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx_log2_c, &token_stats);
-        assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
-        (*tok)++;
-
-        pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx_log2_c, &token_stats);
-        assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
-        (*tok)++;
-
-        tu_idx_c++;
-      }
-    }
-
-    // In 422 case, it's possilbe that Chroma has more TUs than Luma
-    while (tu_idx_c < tu_num_c) {
-      pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx_log2_c, &token_stats);
-      assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
-      (*tok)++;
-
-      pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx_log2_c, &token_stats);
-      assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
-      (*tok)++;
-
-      tu_idx_c++;
-    }
-  }
-#else  // CONFIG_COEF_INTERLEAVE
   if (!mbmi->skip) {
 #if !CONFIG_LV_MAP
     assert(*tok < tok_end);
@@ -2313,7 +2235,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif
     }
   }
-#endif  // CONFIG_COEF_INTERLEAVE
 }
 
 #if NC_MODE_INFO

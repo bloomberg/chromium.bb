@@ -307,7 +307,6 @@ static void predict_and_reconstruct_intra_block(
 #endif  // CONFIG_CFL
 }
 
-#if !CONFIG_COEF_INTERLEAVE
 static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                   aom_reader *r, MB_MODE_INFO *const mbmi,
                                   int plane, BLOCK_SIZE plane_bsize,
@@ -392,49 +391,6 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     }
   }
 }
-#endif
-
-#if CONFIG_COEF_INTERLEAVE
-static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
-                                   aom_reader *const r, int segment_id,
-                                   int plane, int row, int col,
-                                   TX_SIZE tx_size) {
-  PLANE_TYPE plane_type = get_plane_type(plane);
-  int block_idx = get_block_idx(xd, plane, row, col);
-  struct macroblockd_plane *const pd = &xd->plane[plane];
-
-#if CONFIG_LV_MAP
-  (void)segment_id;
-  int16_t max_scan_line = 0;
-  int eob;
-  av1_read_coeffs_txb_facade(cm, xd, r, row, col, block_idx, plane, pd->dqcoeff,
-                             tx_size, &max_scan_line, &eob);
-  // tx_type will be read out in av1_read_coeffs_txb_facade
-  const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, row, col, block_idx, tx_size);
-#else   // CONFIG_LV_MAP
-  int16_t max_scan_line = 0;
-  const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, row, col, block_idx, tx_size);
-  const SCAN_ORDER *scan_order =
-      get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
-  const int eob =
-      av1_decode_block_tokens(cm, xd, plane, scan_order, col, row, tx_size,
-                              tx_type, &max_scan_line, r, segment_id);
-#endif  // CONFIG_LV_MAP
-  uint8_t *dst =
-      &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
-  if (eob)
-    inverse_transform_block(xd, plane,
-#if CONFIG_LGT_FROM_PRED
-                            xd->mi[0]->mbmi.mode,
-#endif
-                            tx_type, tx_size, dst, pd->dst.stride,
-                            max_scan_line, eob);
-
-  return eob;
-}
-#endif  // CONFIG_COEF_INTERLEAVE
 
 static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                         BLOCK_SIZE bsize, int mi_row, int mi_col, int bw,
@@ -641,121 +597,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   }
   if (mbmi->skip) av1_reset_skip_context(xd, mi_row, mi_col, bsize);
 
-#if CONFIG_COEF_INTERLEAVE
-  {
-    const struct macroblockd_plane *const pd_y = &xd->plane[0];
-    const struct macroblockd_plane *const pd_c = &xd->plane[1];
-    const TX_SIZE tx_log2_y = mbmi->tx_size;
-    const TX_SIZE tx_log2_c = av1_get_uv_tx_size(mbmi, pd_c);
-    const int tx_sz_y = (1 << tx_log2_y);
-    const int tx_sz_c = (1 << tx_log2_c);
-    const int num_4x4_w_y = pd_y->n4_w;
-    const int num_4x4_h_y = pd_y->n4_h;
-    const int num_4x4_w_c = pd_c->n4_w;
-    const int num_4x4_h_c = pd_c->n4_h;
-    const int max_4x4_w_y = get_max_4x4_size(num_4x4_w_y, xd->mb_to_right_edge,
-                                             pd_y->subsampling_x);
-    const int max_4x4_h_y = get_max_4x4_size(num_4x4_h_y, xd->mb_to_bottom_edge,
-                                             pd_y->subsampling_y);
-    const int max_4x4_w_c = get_max_4x4_size(num_4x4_w_c, xd->mb_to_right_edge,
-                                             pd_c->subsampling_x);
-    const int max_4x4_h_c = get_max_4x4_size(num_4x4_h_c, xd->mb_to_bottom_edge,
-                                             pd_c->subsampling_y);
-
-    // The max_4x4_w/h may be smaller than tx_sz under some corner cases,
-    // i.e. when the SB is splitted by tile boundaries.
-    const int tu_num_w_y = (max_4x4_w_y + tx_sz_y - 1) / tx_sz_y;
-    const int tu_num_h_y = (max_4x4_h_y + tx_sz_y - 1) / tx_sz_y;
-    const int tu_num_w_c = (max_4x4_w_c + tx_sz_c - 1) / tx_sz_c;
-    const int tu_num_h_c = (max_4x4_h_c + tx_sz_c - 1) / tx_sz_c;
-    const int tu_num_c = tu_num_w_c * tu_num_h_c;
-
-    if (!is_inter_block(mbmi)) {
-      int tu_idx_c = 0;
-      int row_y, col_y, row_c, col_c;
-      int plane;
-
-      for (plane = 0; plane <= 1; ++plane) {
-        if (mbmi->palette_mode_info.palette_size[plane])
-          av1_decode_palette_tokens(xd, plane, r);
-      }
-
-      for (row_y = 0; row_y < tu_num_h_y; row_y++) {
-        for (col_y = 0; col_y < tu_num_w_y; col_y++) {
-          // luma
-          predict_and_reconstruct_intra_block(
-              cm, xd, r, mbmi, 0, row_y * tx_sz_y, col_y * tx_sz_y, tx_log2_y);
-          // chroma
-          if (tu_idx_c < tu_num_c) {
-            row_c = (tu_idx_c / tu_num_w_c) * tx_sz_c;
-            col_c = (tu_idx_c % tu_num_w_c) * tx_sz_c;
-            predict_and_reconstruct_intra_block(cm, xd, r, mbmi, 1, row_c,
-                                                col_c, tx_log2_c);
-            predict_and_reconstruct_intra_block(cm, xd, r, mbmi, 2, row_c,
-                                                col_c, tx_log2_c);
-            tu_idx_c++;
-          }
-        }
-      }
-
-      // In 422 case, it's possilbe that Chroma has more TUs than Luma
-      while (tu_idx_c < tu_num_c) {
-        row_c = (tu_idx_c / tu_num_w_c) * tx_sz_c;
-        col_c = (tu_idx_c % tu_num_w_c) * tx_sz_c;
-        predict_and_reconstruct_intra_block(cm, xd, r, mbmi, 1, row_c, col_c,
-                                            tx_log2_c);
-        predict_and_reconstruct_intra_block(cm, xd, r, mbmi, 2, row_c, col_c,
-                                            tx_log2_c);
-        tu_idx_c++;
-      }
-    } else {
-      // Prediction
-      av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL,
-                                    AOMMAX(bsize, BLOCK_8X8));
-
-      // Reconstruction
-      if (!mbmi->skip) {
-        int eobtotal = 0;
-        int tu_idx_c = 0;
-        int row_y, col_y, row_c, col_c;
-
-        for (row_y = 0; row_y < tu_num_h_y; row_y++) {
-          for (col_y = 0; col_y < tu_num_w_y; col_y++) {
-            // luma
-            eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id, 0,
-                                                row_y * tx_sz_y,
-                                                col_y * tx_sz_y, tx_log2_y);
-            // chroma
-            if (tu_idx_c < tu_num_c) {
-              row_c = (tu_idx_c / tu_num_w_c) * tx_sz_c;
-              col_c = (tu_idx_c % tu_num_w_c) * tx_sz_c;
-              eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id,
-                                                  1, row_c, col_c, tx_log2_c);
-              eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id,
-                                                  2, row_c, col_c, tx_log2_c);
-              tu_idx_c++;
-            }
-          }
-        }
-
-        // In 422 case, it's possilbe that Chroma has more TUs than Luma
-        while (tu_idx_c < tu_num_c) {
-          row_c = (tu_idx_c / tu_num_w_c) * tx_sz_c;
-          col_c = (tu_idx_c % tu_num_w_c) * tx_sz_c;
-          eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id, 1,
-                                              row_c, col_c, tx_log2_c);
-          eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id, 2,
-                                              row_c, col_c, tx_log2_c);
-          tu_idx_c++;
-        }
-
-        // TODO(CONFIG_COEF_INTERLEAVE owners): bring eob == 0 corner case
-        // into line with the defaut configuration
-        if (bsize >= BLOCK_8X8 && eobtotal == 0) mbmi->skip = 1;
-      }
-    }
-  }
-#else  // CONFIG_COEF_INTERLEAVE
   if (!is_inter_block(mbmi)) {
     int plane;
 
@@ -912,7 +753,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     }
   }
 #endif  // CONFIG_CFL
-#endif  // CONFIG_COEF_INTERLEAVE
 
   int reader_corrupted_flag = aom_reader_has_error(r);
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);

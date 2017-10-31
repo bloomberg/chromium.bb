@@ -520,11 +520,6 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
     pt = get_coef_context(nb, token_cache, AOMMIN(c, eob - 1));
   }
 
-#if CONFIG_COEF_INTERLEAVE
-  t->token = EOSB_TOKEN;
-  t++;
-#endif
-
   *tp = t;
 
 #if CONFIG_ADAPT_SCAN
@@ -745,9 +740,6 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
   }
 
   if (!dry_run) {
-#if CONFIG_COEF_INTERLEAVE
-    av1_foreach_transformed_block_interleave(xd, bsize, tokenize_b, &arg);
-#else
     int plane;
 
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
@@ -764,7 +756,6 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
       (*t)->token = EOSB_TOKEN;
       (*t)++;
     }
-#endif
   } else if (dry_run == DRY_RUN_NORMAL) {
     int plane;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
