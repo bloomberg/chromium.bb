@@ -7184,6 +7184,7 @@ interface VRDevicePose
     attribute @@toStringTag
     getter poseModelMatrix
     method constructor
+    method getViewMatrix
 interface VRDisplay : EventTarget
     attribute @@toStringTag
     getter capabilities
@@ -7247,6 +7248,7 @@ interface VRPose
 interface VRPresentationFrame
     attribute @@toStringTag
     getter session
+    getter views
     method constructor
     method getDevicePose
 interface VRSession : EventTarget
@@ -7288,6 +7290,11 @@ interface VRStageParameters
     getter sittingToStandingTransform
     getter sizeX
     getter sizeZ
+    method constructor
+interface VRView
+    attribute @@toStringTag
+    getter eye
+    getter projectionMatrix
     method constructor
 interface VTTCue : TextTrackCue
     attribute @@toStringTag

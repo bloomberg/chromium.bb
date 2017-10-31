@@ -315,6 +315,7 @@ modules_idl_files =
           "vr/latest/VRSessionEvent.idl",
           "vr/latest/VRStageBounds.idl",
           "vr/latest/VRStageBoundsPoint.idl",
+          "vr/latest/VRView.idl",
           "webaudio/AnalyserNode.idl",
           "webaudio/AudioBuffer.idl",
           "webaudio/AudioBufferSourceNode.idl",

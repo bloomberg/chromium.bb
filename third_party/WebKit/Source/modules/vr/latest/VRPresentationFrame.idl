@@ -8,6 +8,7 @@
     RuntimeEnabled=WebVR2
 ] interface VRPresentationFrame {
   readonly attribute VRSession session;
+  readonly attribute FrozenArray<VRView> views;
 
   VRDevicePose? getDevicePose(VRCoordinateSystem coordinateSystem);
 };

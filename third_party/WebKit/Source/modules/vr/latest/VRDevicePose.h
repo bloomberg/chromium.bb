@@ -13,6 +13,7 @@
 namespace blink {
 
 class VRSession;
+class VRView;
 
 class VRDevicePose final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -21,6 +22,7 @@ class VRDevicePose final : public ScriptWrappable {
   VRDevicePose(VRSession*, std::unique_ptr<TransformationMatrix>);
 
   DOMFloat32Array* poseModelMatrix() const;
+  DOMFloat32Array* getViewMatrix(VRView*);
 
   virtual void Trace(blink::Visitor*);
 

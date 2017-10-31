@@ -18,6 +18,7 @@ namespace blink {
 class V8VRFrameRequestCallback;
 class VRDevice;
 class VRFrameOfReferenceOptions;
+class VRView;
 
 class VRSession final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
@@ -63,12 +64,15 @@ class VRSession final : public EventTargetWithInlineData {
   void OnBlur();
   void OnFrame(std::unique_ptr<TransformationMatrix>);
 
+  const HeapVector<Member<VRView>>& views();
+
   void Trace(blink::Visitor*) override;
   virtual void TraceWrappers(const blink::ScriptWrappableVisitor*) const;
 
  private:
   const Member<VRDevice> device_;
   const bool exclusive_;
+  HeapVector<Member<VRView>> views_;
 
   VRFrameRequestCallbackCollection callback_collection_;
 
@@ -78,6 +82,7 @@ class VRSession final : public EventTargetWithInlineData {
   bool detached_ = false;
   bool pending_frame_ = false;
   bool resolving_frame_ = false;
+  bool views_dirty_ = true;
 };
 
 }  // namespace blink

@@ -7,11 +7,16 @@
 #include "modules/vr/latest/VRCoordinateSystem.h"
 #include "modules/vr/latest/VRDevicePose.h"
 #include "modules/vr/latest/VRSession.h"
+#include "modules/vr/latest/VRView.h"
 
 namespace blink {
 
 VRPresentationFrame::VRPresentationFrame(VRSession* session)
     : session_(session) {}
+
+const HeapVector<Member<VRView>>& VRPresentationFrame::views() const {
+  return session_->views();
+}
 
 VRDevicePose* VRPresentationFrame::getDevicePose(
     VRCoordinateSystem* coordinate_system) const {

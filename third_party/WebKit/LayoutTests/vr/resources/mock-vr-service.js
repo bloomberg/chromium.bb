@@ -242,6 +242,36 @@ function matrixFrom11Pose(pose) {
   return out;
 }
 
+function perspectiveFromFieldOfView(fov, near, far) {
+  let upTan = Math.tan(fov.upDegrees * Math.PI/180.0);
+  let downTan = Math.tan(fov.downDegrees * Math.PI/180.0);
+  let leftTan = Math.tan(fov.leftDegrees * Math.PI/180.0);
+  let rightTan = Math.tan(fov.rightDegrees * Math.PI/180.0);
+  let xScale = 2.0 / (leftTan + rightTan);
+  let yScale = 2.0 / (upTan + downTan);
+  let nf = 1.0 / (near - far);
+
+  let out = new Float32Array(16);
+  out[0] = xScale;
+  out[1] = 0.0;
+  out[2] = 0.0;
+  out[3] = 0.0;
+  out[4] = 0.0;
+  out[5] = yScale;
+  out[6] = 0.0;
+  out[7] = 0.0;
+  out[8] = -((leftTan - rightTan) * xScale * 0.5);
+  out[9] = ((upTan - downTan) * yScale * 0.5);
+  out[10] = (near + far) * nf;
+  out[11] = -1.0;
+  out[12] = 0.0;
+  out[13] = 0.0;
+  out[14] = (2.0 * far * near) * nf;
+  out[15] = 0.0;
+
+  return out;
+}
+
 function assert_matrices_approx_equal(matA, matB, epsilon = FLOAT_EPSILON) {
   if (matA == null && matB == null) {
     return;

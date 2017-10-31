@@ -17,6 +17,7 @@ namespace blink {
 class VRCoordinateSystem;
 class VRDevicePose;
 class VRSession;
+class VRView;
 
 class VRPresentationFrame final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -26,6 +27,7 @@ class VRPresentationFrame final : public ScriptWrappable {
 
   VRSession* session() const { return session_; }
 
+  const HeapVector<Member<VRView>>& views() const;
   VRDevicePose* getDevicePose(VRCoordinateSystem*) const;
 
   void UpdateBasePose(std::unique_ptr<TransformationMatrix>);

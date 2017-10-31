@@ -16,6 +16,7 @@
 #include "modules/vr/latest/VRFrameProvider.h"
 #include "modules/vr/latest/VRPresentationFrame.h"
 #include "modules/vr/latest/VRSessionEvent.h"
+#include "modules/vr/latest/VRView.h"
 #include "platform/wtf/AutoReset.h"
 
 namespace blink {
@@ -29,6 +30,23 @@ const char kUnknownFrameOfReference[] = "Unknown frame of reference type";
 const char kNonEmulatedStageNotSupported[] =
     "Non-emulated 'stage' frame of reference not yet supported";
 
+const double kDegToRad = M_PI / 180.0;
+
+void UpdateViewFromEyeParameters(
+    VRView* view,
+    const device::mojom::blink::VREyeParametersPtr& eye,
+    double depth_near,
+    double depth_far) {
+  const device::mojom::blink::VRFieldOfViewPtr& fov = eye->fieldOfView;
+
+  view->UpdateProjectionMatrixFromFoV(
+      fov->upDegrees * kDegToRad, fov->downDegrees * kDegToRad,
+      fov->leftDegrees * kDegToRad, fov->rightDegrees * kDegToRad, depth_near,
+      depth_far);
+
+  view->UpdateOffset(eye->offset[0], eye->offset[1], eye->offset[2]);
+}
+
 }  // namespace
 
 VRSession::VRSession(VRDevice* device, bool exclusive)
@@ -37,11 +55,17 @@ VRSession::VRSession(VRDevice* device, bool exclusive)
       callback_collection_(device->GetExecutionContext()) {}
 
 void VRSession::setDepthNear(double value) {
-  depth_near_ = value;
+  if (depth_near_ != value) {
+    views_dirty_ = true;
+    depth_near_ = value;
+  }
 }
 
 void VRSession::setDepthFar(double value) {
-  depth_far_ = value;
+  if (depth_far_ != value) {
+    views_dirty_ = true;
+    depth_far_ = value;
+  }
 }
 
 ExecutionContext* VRSession::GetExecutionContext() const {
@@ -180,8 +204,34 @@ void VRSession::OnFrame(
   }
 }
 
+const HeapVector<Member<VRView>>& VRSession::views() {
+  if (views_dirty_) {
+    if (exclusive_) {
+      // If we don't already have the views allocated, do so now.
+      if (views_.IsEmpty()) {
+        views_.push_back(new VRView(this, VRView::kEyeLeft));
+        views_.push_back(new VRView(this, VRView::kEyeRight));
+      }
+
+      // In exclusive mode the projection and view matrices must be aligned with
+      // the device's physical optics.
+      UpdateViewFromEyeParameters(views_[VRView::kEyeLeft],
+                                  device_->vrDisplayInfoPtr()->leftEye,
+                                  depth_near_, depth_far_);
+      UpdateViewFromEyeParameters(views_[VRView::kEyeRight],
+                                  device_->vrDisplayInfoPtr()->rightEye,
+                                  depth_near_, depth_far_);
+    }
+
+    views_dirty_ = false;
+  }
+
+  return views_;
+}
+
 void VRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_);
+  visitor->Trace(views_);
   visitor->Trace(callback_collection_);
   EventTargetWithInlineData::Trace(visitor);
 }
