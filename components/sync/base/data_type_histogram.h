@@ -14,12 +14,6 @@
 // Prefix for histogram recording datatype's memory usage.
 extern const char kModelTypeMemoryHistogramPrefix[];
 
-// This function adds |value| to |sample| bucket of histogram |name|. |value|
-// should be greater or equal to 1 and |name| can be variable. DataTypes are
-// mapped to proper |sample| bucket by using ModelTypeToHistogramInt() function.
-// So different DataTypes play the role of different buckets in this histogram.
-void SyncRecordDatatypeBin(const std::string& name, int sample, int value);
-
 // Converts memory size |value| into kilobytes and records it into |model_type|
 // related histogram with prefix |histogram_name_prefix|.
 void SyncRecordMemoryKbHistogram(const std::string& histogram_name_prefix,

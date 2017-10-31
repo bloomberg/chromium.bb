@@ -94,19 +94,9 @@ std::unique_ptr<Commit> Commit::Init(ModelTypeSet requested_types,
   commit_util::AddClientConfigParamsToMessage(
       enabled_types, cookie_jar_mismatch, commit_message);
 
-  int previous_message_size = message.ByteSize();
   // Finally, serialize all our contributions.
   for (const auto& contribution : contributions) {
     contribution.second->AddToCommitMessage(&message);
-    int current_entry_size = message.ByteSize() - previous_message_size;
-    previous_message_size = message.ByteSize();
-    int local_integer_model_type = ModelTypeToHistogramInt(contribution.first);
-    if (current_entry_size > 0) {
-      SyncRecordDatatypeBin("DataUse.Sync.Upload.Bytes",
-                            local_integer_model_type, current_entry_size);
-    }
-    UMA_HISTOGRAM_SPARSE_SLOWLY("DataUse.Sync.Upload.Count",
-                                local_integer_model_type);
   }
 
   // If we made it this far, then we've successfully prepared a commit message.
