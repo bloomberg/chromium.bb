@@ -151,7 +151,7 @@ void WebrtcFrameSchedulerSimple::OnChannelParameters(int packet_loss,
 
 void WebrtcFrameSchedulerSimple::OnTargetBitrateChanged(int bandwidth_kbps) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = Now();
   processing_time_estimator_.SetBandwidthKbps(bandwidth_kbps);
   pacing_bucket_.UpdateRate(bandwidth_kbps * 1000 / 8, now);
   encoder_bitrate_.SetBandwidthEstimate(bandwidth_kbps, now);
@@ -183,7 +183,7 @@ bool WebrtcFrameSchedulerSimple::OnFrameCaptured(
     WebrtcVideoEncoder::FrameParams* params_out) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = Now();
 
   // Null |frame| indicates a capturer error.
   if (!frame) {
@@ -259,7 +259,7 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
   DCHECK(frame_pending_);
   frame_pending_ = false;
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = Now();
 
   if (frame_stats) {
     // Calculate |send_pending_delay| before refilling |pacing_bucket_|.
@@ -289,9 +289,13 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
   }
 }
 
+void WebrtcFrameSchedulerSimple::SetCurrentTimeForTest(base::TimeTicks now) {
+  fake_now_for_test_ = now;
+}
+
 void WebrtcFrameSchedulerSimple::ScheduleNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = Now();
 
   if (!encoder_ready_ || paused_ || pacing_bucket_.rate() == 0 ||
       capture_callback_.is_null() || frame_pending_) {
@@ -332,10 +336,15 @@ void WebrtcFrameSchedulerSimple::ScheduleNextFrame() {
 void WebrtcFrameSchedulerSimple::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!frame_pending_);
-  last_capture_started_time_ = base::TimeTicks::Now();
+  last_capture_started_time_ = Now();
   processing_time_estimator_.StartFrame();
   frame_pending_ = true;
   capture_callback_.Run();
+}
+
+base::TimeTicks WebrtcFrameSchedulerSimple::Now() {
+  return fake_now_for_test_.is_null() ? base::TimeTicks::Now()
+                                      : fake_now_for_test_;
 }
 
 }  // namespace protocol
