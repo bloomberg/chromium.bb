@@ -27,12 +27,24 @@ static INLINE tran_high_t dct_const_round_shift(tran_high_t input) {
 }
 
 static INLINE tran_high_t check_range(tran_high_t input, int bd) {
-  const int32_t int_max = (1 << (7 + bd)) - 1;
+#if CONFIG_DAALA_TX
+  // Daala TX coeffs cover a different range from AV1 TX
+  // Temporary: this will be changing shortly upon moving to a fixed
+  // coeff depth!
+  // - 8 bit: signed 18 bit integer
+  // - 10 bit: signed 20 bit integer
+  // - 12 bit: signed 22 bit integer
+  const int32_t int_max = (1 << (9 + bd)) - 1;
   const int32_t int_min = -int_max - 1;
-#if CONFIG_COEFFICIENT_RANGE_CHECKING
+#else
+  // AV1 TX case
   // - 8 bit: signed 16 bit integer
   // - 10 bit: signed 18 bit integer
   // - 12 bit: signed 20 bit integer
+  const int32_t int_max = (1 << (7 + bd)) - 1;
+  const int32_t int_min = -int_max - 1;
+#endif
+#if CONFIG_COEFFICIENT_RANGE_CHECKING
   assert(int_min <= input);
   assert(input <= int_max);
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING

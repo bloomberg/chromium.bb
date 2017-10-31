@@ -17,9 +17,6 @@
 
 #if CONFIG_DAALA_TX
 
-// Temporary while we still need av1_get_tx_scale() for testing
-#include "av1/common/idct.h"
-
 // Complete Daala TX map, sans lossless which is special cased
 typedef void (*daala_ftx)(od_coeff[], const od_coeff *, int);
 
@@ -62,7 +59,7 @@ void daala_fwd_txfm(const int16_t *input_pixels, tran_low_t *output_coeffs,
     av1_fwht4x4(input_pixels, output_coeffs, input_stride);
   } else {
     // General TX case
-    // up 4, down 1 compatability mode with av1_get_tx_scale
+    // up 4, down 1 compatability mode
     const int upshift = 4;
 
     assert(upshift >= 0);
@@ -115,8 +112,8 @@ void daala_fwd_txfm(const int16_t *input_pixels, tran_low_t *output_coeffs,
     }
 
     // This is temporary while we're testing against existing
-    // behavior (preshift up 4, then downshift by one plus av1_get_tx_scale)
-    int downshift = 1 + av1_get_tx_scale(tx_size);
+    // behavior (preshift up 4, then downshift by one)
+    int downshift = 1;
     for (r = 0; r < rows; ++r)
       for (c = 0; c < cols; ++c)
         output_coeffs[r * cols + c] =

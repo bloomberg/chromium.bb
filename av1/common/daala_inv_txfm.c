@@ -14,11 +14,9 @@
 #include "./aom_dsp_rtcd.h"
 #include "av1/common/daala_tx.h"
 #include "av1/common/daala_inv_txfm.h"
+#include "av1/common/idct.h"
 
 #if CONFIG_DAALA_TX
-
-// Temporary while we still need av1_get_tx_scale() for testing
-#include "av1/common/idct.h"
 
 // Complete Daala TX map, sans lossless which is special cased
 typedef void (*daala_itx)(od_coeff *, int, const od_coeff[]);
@@ -69,7 +67,7 @@ void daala_inv_txfm_add(const tran_low_t *input_coeffs, void *output_pixels,
                              txfm_param->eob, px_depth);
   } else {
     // General TX case
-    // Q3 coeff Q4 TX compatability mode, with av1_get_tx_scale
+    // Q3 coeff Q4 TX compatability mode
     const int downshift = 4;
     assert(sizeof(tran_low_t) == sizeof(od_coeff));
     assert(sizeof(tran_low_t) >= 4);
@@ -96,10 +94,10 @@ void daala_inv_txfm_add(const tran_low_t *input_coeffs, void *output_pixels,
     assert(row_tx);
 
     // This is temporary while we're testing against existing
-    // behavior (preshift up one plus av1_get_tx_scale).
+    // behavior (preshift up one).
     // Remove before flight
     od_coeff tmp[MAX_TX_SQUARE];
-    int upshift = 1 + av1_get_tx_scale(tx_size);
+    int upshift = 1;
     for (r = 0; r < rows; ++r)
       for (c = 0; c < cols; ++c)
         tmp[r * cols + c] = input_coeffs[r * cols + c] << upshift;

@@ -570,8 +570,13 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     if (LIKELY(!x->skip_block)) {
+#if CONFIG_DAALA_TX
+      quant_func_list[xform_quant_idx][1](coeff, tx2d_size, p, qcoeff, dqcoeff,
+                                          eob, scan_order, &qparam);
+#else
       quant_func_list[xform_quant_idx][txfm_param.is_hbd](
           coeff, tx2d_size, p, qcoeff, dqcoeff, eob, scan_order, &qparam);
+#endif
     } else {
       av1_quantize_skip(tx2d_size, qcoeff, dqcoeff, eob);
     }
