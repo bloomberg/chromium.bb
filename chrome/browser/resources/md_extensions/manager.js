@@ -249,6 +249,24 @@ cr.define('extensions', function() {
     },
 
     /**
+     * Categorizes |items| to apps and extensions and initializes those lists.
+     * This is faster than calling |addItem| multiple times.
+     * @param {!Array<!chrome.developerPrivate.ExtensionInfo>} items
+     */
+    initAppsAndExtensions(items) {
+      items.sort(compareExtensions);
+      let apps = [];
+      let extensions = [];
+      for (let i of items) {
+        let list = this.getListId_(i) === 'apps' ? apps : extensions;
+        list.push(i);
+      }
+
+      this.apps = apps;
+      this.extensions = extensions;
+    },
+
+    /**
      * Creates and adds a new extensions-item element to the list, inserting it
      * into its sorted position in the relevant section.
      * @param {!chrome.developerPrivate.ExtensionInfo} item The extension
