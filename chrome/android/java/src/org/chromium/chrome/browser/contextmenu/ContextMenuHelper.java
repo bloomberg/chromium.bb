@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextmenu;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.util.Pair;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.MenuSourceType;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 
@@ -120,7 +122,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             }
         };
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)
+                && params.getSourceType() != MenuSourceType.MENU_SOURCE_MOUSE) {
             List<Pair<Integer, List<ContextMenuItem>>> items =
                     mPopulator.buildContextMenu(null, mActivity, mCurrentContextMenuParams);
             if (items.isEmpty()) {
@@ -160,7 +163,18 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         // The Platform Context Menu requires the listener within this helper since this helper and
         // provides context menu for us to show.
         view.setOnCreateContextMenuListener(this);
-        if (view.showContextMenu()) {
+        boolean wasContextMenuShown = false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                && params.getSourceType() == MenuSourceType.MENU_SOURCE_MOUSE) {
+            final float density = view.getResources().getDisplayMetrics().density;
+            final float touchPointXPx = params.getTriggeringTouchXDp() * density;
+            final float touchPointYPx =
+                    (params.getTriggeringTouchYDp() * density) + topContentOffsetPx;
+            wasContextMenuShown = view.showContextMenu(touchPointXPx, touchPointYPx);
+        } else {
+            wasContextMenuShown = view.showContextMenu();
+        }
+        if (wasContextMenuShown) {
             mOnMenuShown.run();
             windowAndroid.addContextMenuCloseListener(new OnCloseContextMenuListener() {
                 @Override
