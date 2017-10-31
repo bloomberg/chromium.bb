@@ -172,9 +172,8 @@ void ContentSettingsObserver::DidBlockContentType(
     ContentSettingsType settings_type,
     const base::string16& details) {
   // Send multiple ContentBlocked messages if details are provided.
-  bool& blocked = content_blocked_[settings_type];
-  if (!blocked || !details.empty()) {
-    blocked = true;
+  bool newly_blocked = content_blocked_.insert(settings_type).second;
+  if (newly_blocked || !details.empty()) {
     Send(new ChromeViewHostMsg_ContentBlocked(routing_id(), settings_type,
                                               details));
   }
@@ -531,7 +530,7 @@ void ContentSettingsObserver::OnSetAsInterstitial() {
 void ContentSettingsObserver::OnRequestFileSystemAccessAsyncResponse(
     int request_id,
     bool allowed) {
-  PermissionRequestMap::iterator it = permission_requests_.find(request_id);
+  auto it = permission_requests_.find(request_id);
   if (it == permission_requests_.end())
     return;
 
