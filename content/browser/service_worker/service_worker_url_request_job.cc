@@ -325,6 +325,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     network::mojom::FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,
+    bool keepalive,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -344,6 +345,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       credentials_mode_(credentials_mode),
       redirect_mode_(redirect_mode),
       integrity_(integrity),
+      keepalive_(keepalive),
       resource_type_(resource_type),
       request_context_type_(request_context_type),
       frame_type_(frame_type),
@@ -582,6 +584,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
       request_->load_flags());
   request->redirect_mode = redirect_mode_;
   request->integrity = integrity_;
+  request->keepalive = keepalive_;
   request->client_id = client_id_;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info) {

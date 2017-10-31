@@ -129,6 +129,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
       blink::mojom::FetchCacheMode::kDefault;
   FetchRedirectMode redirect_mode = FetchRedirectMode::FOLLOW_MODE;
   std::string integrity;
+  bool keepalive = false;
   std::string client_id;
   bool is_reload = false;
   ServiceWorkerFetchType fetch_type = ServiceWorkerFetchType::FETCH;

@@ -222,6 +222,7 @@ void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
   web_request->SetClientId(blink::WebString::FromUTF8(request.client_id));
   web_request->SetIsReload(request.is_reload);
   web_request->SetIntegrity(blink::WebString::FromUTF8(request.integrity));
+  web_request->SetKeepalive(request.keepalive);
 }
 
 // Converts |response| to its equivalent type in the Blink API.

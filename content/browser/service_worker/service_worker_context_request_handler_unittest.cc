@@ -125,8 +125,9 @@ class ServiceWorkerContextRequestHandlerTest : public testing::Test {
         network::mojom::FetchRequestMode::kNoCORS,
         network::mojom::FetchCredentialsMode::kOmit,
         FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
-        RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
-        REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr);
+        false /* keepalive */, RESOURCE_TYPE_SERVICE_WORKER,
+        REQUEST_CONTEXT_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_FRAME_TYPE_NONE,
+        nullptr);
   }
 
  protected:
@@ -258,8 +259,9 @@ TEST_F(ServiceWorkerContextRequestHandlerTest,
       true /* skip_service_worker */, network::mojom::FetchRequestMode::kNoCORS,
       network::mojom::FetchCredentialsMode::kOmit,
       FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
-      RESOURCE_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_TYPE_SERVICE_WORKER,
-      REQUEST_CONTEXT_FRAME_TYPE_NONE, nullptr);
+      false /* keepalive */, RESOURCE_TYPE_SERVICE_WORKER,
+      REQUEST_CONTEXT_TYPE_SERVICE_WORKER, REQUEST_CONTEXT_FRAME_TYPE_NONE,
+      nullptr);
   // Verify a ServiceWorkerRequestHandler was created.
   ServiceWorkerRequestHandler* handler =
       ServiceWorkerRequestHandler::GetHandler(request.get());

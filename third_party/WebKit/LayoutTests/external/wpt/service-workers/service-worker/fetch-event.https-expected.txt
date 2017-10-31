@@ -16,5 +16,6 @@ PASS Service Worker should intercept EventSource
 FAIL Service Worker responds to fetch event with the correct integrity_metadata assert_unreached: unexpected rejection: assert_equals: integrity expected "gs0nqru8KbsrIt5YToQqS9fYao4GQJXtcId610g7cCU=" but got "" Reached unreachable code
 PASS FetchEvent#body is a string
 PASS FetchEvent#body is a blob
+PASS Service Worker responds to fetch event with the correct keepalive value
 Harness: the test ran to completion.
 

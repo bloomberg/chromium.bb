@@ -123,7 +123,7 @@ class MockProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
         network::mojom::FetchRequestMode::kNoCORS,
         network::mojom::FetchCredentialsMode::kOmit,
         FetchRedirectMode::FOLLOW_MODE, std::string() /* integrity */,
-        resource_type_, REQUEST_CONTEXT_TYPE_HYPERLINK,
+        false /* keepalive */, resource_type_, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
         scoped_refptr<ResourceRequestBody>(), ServiceWorkerFetchType::FETCH,
         custom_timeout_, delegate_);

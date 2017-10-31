@@ -101,6 +101,9 @@ struct StructTraits<::blink::mojom::FetchAPIRequestDataView,
   }
 
   static WTF::String integrity(const ::blink::WebServiceWorkerRequest&);
+  static bool keepalive(const ::blink::WebServiceWorkerRequest& request) {
+    return request.Keepalive();
+  }
   static WTF::String client_id(const ::blink::WebServiceWorkerRequest&);
 
   static bool is_reload(const ::blink::WebServiceWorkerRequest& request) {

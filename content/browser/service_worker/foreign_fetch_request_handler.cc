@@ -78,6 +78,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
     network::mojom::FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,
+    bool keepalive,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -132,7 +133,7 @@ void ForeignFetchRequestHandler::InitializeHandler(
   std::unique_ptr<ForeignFetchRequestHandler> handler =
       base::WrapUnique(new ForeignFetchRequestHandler(
           context_wrapper, blob_storage_context->AsWeakPtr(), request_mode,
-          credentials_mode, redirect_mode, integrity, resource_type,
+          credentials_mode, redirect_mode, integrity, keepalive, resource_type,
           request_context_type, frame_type, body, timeout));
   request->SetUserData(&kUserDataKey, std::move(handler));
 }
@@ -185,8 +186,9 @@ net::URLRequestJob* ForeignFetchRequestHandler::MaybeCreateJob(
   ServiceWorkerURLRequestJob* job = new ServiceWorkerURLRequestJob(
       request, network_delegate, std::string(), blob_storage_context_,
       resource_context, request_mode_, credentials_mode_, redirect_mode_,
-      integrity_, resource_type_, request_context_type_, frame_type_, body_,
-      ServiceWorkerFetchType::FOREIGN_FETCH, timeout_, this);
+      integrity_, keepalive_, resource_type_, request_context_type_,
+      frame_type_, body_, ServiceWorkerFetchType::FOREIGN_FETCH, timeout_,
+      this);
   job_ = job->GetWeakPtr();
   resource_context_ = resource_context;
 
@@ -205,6 +207,7 @@ ForeignFetchRequestHandler::ForeignFetchRequestHandler(
     network::mojom::FetchCredentialsMode credentials_mode,
     FetchRedirectMode redirect_mode,
     const std::string& integrity,
+    bool keepalive,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -217,6 +220,7 @@ ForeignFetchRequestHandler::ForeignFetchRequestHandler(
       credentials_mode_(credentials_mode),
       redirect_mode_(redirect_mode),
       integrity_(integrity),
+      keepalive_(keepalive),
       request_context_type_(request_context_type),
       frame_type_(frame_type),
       body_(body),
