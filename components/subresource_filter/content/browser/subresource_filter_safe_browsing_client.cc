@@ -50,7 +50,7 @@ void SubresourceFilterSafeBrowsingClient::CheckUrlOnIO(const GURL& url,
   DCHECK(!url.is_empty());
 
   auto request = base::MakeUnique<SubresourceFilterSafeBrowsingClientRequest>(
-      url, request_id, database_manager_, io_task_runner_, this);
+      request_id, database_manager_, io_task_runner_, this);
   auto* raw_request = request.get();
   DCHECK(requests_.find(raw_request) == requests_.end());
   requests_[raw_request] = std::move(request);
@@ -58,7 +58,7 @@ void SubresourceFilterSafeBrowsingClient::CheckUrlOnIO(const GURL& url,
                            "SubresourceFilterSBCheck", raw_request,
                            "check_result",
                            base::MakeUnique<base::trace_event::TracedValue>());
-  raw_request->Start();
+  raw_request->Start(url);
   // Careful, |raw_request| can be destroyed after this line.
 }
 
