@@ -31,13 +31,14 @@ TEST_F(ElementTest, SupportsFocus) {
 TEST_F(ElementTest,
        GetBoundingClientRectCorrectForStickyElementsAfterInsertion) {
   Document& document = GetDocument();
-  SetBodyContent(
-      "<style>body { margin: 0 }"
-      "#scroller { overflow: scroll; height: 100px; width: 100px; }"
-      "#sticky { height: 25px; position: sticky; top: 0; left: 25px; }"
-      "#padding { height: 500px; width: 300px; }</style>"
-      "<div id='scroller'><div id='writer'></div><div id='sticky'></div>"
-      "<div id='padding'></div></div>");
+  SetBodyContent(R"HTML(
+    <style>body { margin: 0 }
+    #scroller { overflow: scroll; height: 100px; width: 100px; }
+    #sticky { height: 25px; position: sticky; top: 0; left: 25px; }
+    #padding { height: 500px; width: 300px; }</style>
+    <div id='scroller'><div id='writer'></div><div id='sticky'></div>
+    <div id='padding'></div></div>
+  )HTML");
 
   Element* scroller = document.getElementById("scroller");
   Element* writer = document.getElementById("writer");
@@ -76,13 +77,14 @@ TEST_F(ElementTest,
 
 TEST_F(ElementTest, OffsetTopAndLeftCorrectForStickyElementsAfterInsertion) {
   Document& document = GetDocument();
-  SetBodyContent(
-      "<style>body { margin: 0 }"
-      "#scroller { overflow: scroll; height: 100px; width: 100px; }"
-      "#sticky { height: 25px; position: sticky; top: 0; left: 25px; }"
-      "#padding { height: 500px; width: 300px; }</style>"
-      "<div id='scroller'><div id='writer'></div><div id='sticky'></div>"
-      "<div id='padding'></div></div>");
+  SetBodyContent(R"HTML(
+    <style>body { margin: 0 }
+    #scroller { overflow: scroll; height: 100px; width: 100px; }
+    #sticky { height: 25px; position: sticky; top: 0; left: 25px; }
+    #padding { height: 500px; width: 300px; }</style>
+    <div id='scroller'><div id='writer'></div><div id='sticky'></div>
+    <div id='padding'></div></div>
+  )HTML");
 
   Element* scroller = document.getElementById("scroller");
   Element* writer = document.getElementById("writer");
@@ -132,13 +134,14 @@ TEST_F(ElementTest, OffsetTopAndLeftCorrectForStickyElementsAfterInsertion) {
 
 TEST_F(ElementTest, BoundsInViewportCorrectForStickyElementsAfterInsertion) {
   Document& document = GetDocument();
-  SetBodyContent(
-      "<style>body { margin: 0 }"
-      "#scroller { overflow: scroll; height: 100px; width: 100px; }"
-      "#sticky { height: 25px; position: sticky; top: 0; left: 25px; }"
-      "#padding { height: 500px; width: 300px; }</style>"
-      "<div id='scroller'><div id='writer'></div><div id='sticky'></div>"
-      "<div id='padding'></div></div>");
+  SetBodyContent(R"HTML(
+    <style>body { margin: 0 }
+    #scroller { overflow: scroll; height: 100px; width: 100px; }
+    #sticky { height: 25px; position: sticky; top: 0; left: 25px; }
+    #padding { height: 500px; width: 300px; }</style>
+    <div id='scroller'><div id='writer'></div><div id='sticky'></div>
+    <div id='padding'></div></div>
+  )HTML");
 
   Element* scroller = document.getElementById("scroller");
   Element* writer = document.getElementById("writer");
@@ -177,17 +180,18 @@ TEST_F(ElementTest, BoundsInViewportCorrectForStickyElementsAfterInsertion) {
 
 TEST_F(ElementTest, StickySubtreesAreTrackedCorrectly) {
   Document& document = GetDocument();
-  SetBodyContent(
-      "<div id='ancestor'>"
-      "  <div id='outerSticky' style='position:sticky;'>"
-      "    <div id='child'>"
-      "      <div id='grandchild'></div>"
-      "      <div id='innerSticky' style='position:sticky;'>"
-      "        <div id='greatGrandchild'></div>"
-      "      </div>"
-      "    </div"
-      "  </div>"
-      "</div>");
+  SetBodyContent(R"HTML(
+    <div id='ancestor'>
+      <div id='outerSticky' style='position:sticky;'>
+        <div id='child'>
+          <div id='grandchild'></div>
+          <div id='innerSticky' style='position:sticky;'>
+            <div id='greatGrandchild'></div>
+          </div>
+        </div
+      </div>
+    </div>
+  )HTML");
 
   LayoutObject* ancestor =
       document.getElementById("ancestor")->GetLayoutObject();
@@ -254,24 +258,25 @@ TEST_F(ElementTest, GetElementsByClassNameCrash) {
 
 TEST_F(ElementTest, GetBoundingClientRectForSVG) {
   Document& document = GetDocument();
-  SetBodyContent(
-      "<style>body { margin: 0 }</style>"
-      "<svg width='500' height='500'>"
-      "  <rect id='rect' x='10' y='100' width='100' height='71'/>"
-      "  <rect id='stroke' x='10' y='100' width='100' height='71' "
-      "      stroke-width='7'/>"
-      "  <rect id='stroke_transformed' x='10' y='100' width='100' height='71' "
-      "      stroke-width='7' transform='translate(3, 5)'/>"
-      "  <foreignObject id='foreign' x='10' y='100' width='100' height='71'/>"
-      "  <foreignObject id='foreign_transformed' transform='translate(3, 5)' "
-      "      x='10' y='100' width='100' height='71'/>"
-      "  <svg id='svg' x='10' y='100'>"
-      "    <rect width='100' height='71'/>"
-      "  </svg>"
-      "  <svg id='svg_stroke' x='10' y='100'>"
-      "    <rect width='100' height='71' stroke-width='7'/>"
-      "  </svg>"
-      "</svg>");
+  SetBodyContent(R"HTML(
+    <style>body { margin: 0 }</style>
+    <svg width='500' height='500'>
+      <rect id='rect' x='10' y='100' width='100' height='71'/>
+      <rect id='stroke' x='10' y='100' width='100' height='71'
+          stroke-width='7'/>
+      <rect id='stroke_transformed' x='10' y='100' width='100' height='71'
+          stroke-width='7' transform='translate(3, 5)'/>
+      <foreignObject id='foreign' x='10' y='100' width='100' height='71'/>
+      <foreignObject id='foreign_transformed' transform='translate(3, 5)'
+          x='10' y='100' width='100' height='71'/>
+      <svg id='svg' x='10' y='100'>
+        <rect width='100' height='71'/>
+      </svg>
+      <svg id='svg_stroke' x='10' y='100'>
+        <rect width='100' height='71' stroke-width='7'/>
+      </svg>
+    </svg>
+  )HTML");
 
   Element* rect = document.getElementById("rect");
   DOMRect* rect_bounding_client_rect = rect->getBoundingClientRect();

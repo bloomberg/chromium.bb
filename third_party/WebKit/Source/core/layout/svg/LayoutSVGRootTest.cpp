@@ -14,11 +14,12 @@ namespace blink {
 using LayoutSVGRootTest = RenderingTest;
 
 TEST_F(LayoutSVGRootTest, VisualRectMappingWithoutViewportClipWithBorder) {
-  SetBodyInnerHTML(
-      "<svg id='root' style='border: 10px solid red; width: 200px; height: "
-      "100px; overflow: visible' viewBox='0 0 200 100'>"
-      "   <rect id='rect' x='80' y='80' width='100' height='100'/>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='root' style='border: 10px solid red; width: 200px; height:
+    100px; overflow: visible' viewBox='0 0 200 100'>
+       <rect id='rect' x='80' y='80' width='100' height='100'/>
+    </svg>
+  )HTML");
 
   const LayoutSVGRoot& root =
       *ToLayoutSVGRoot(GetLayoutObjectByElementId("root"));
@@ -41,11 +42,12 @@ TEST_F(LayoutSVGRootTest, VisualRectMappingWithoutViewportClipWithBorder) {
 }
 
 TEST_F(LayoutSVGRootTest, VisualRectMappingWithViewportClipAndBorder) {
-  SetBodyInnerHTML(
-      "<svg id='root' style='border: 10px solid red; width: 200px; height: "
-      "100px; overflow: hidden' viewBox='0 0 200 100'>"
-      "   <rect id='rect' x='80' y='80' width='100' height='100'/>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='root' style='border: 10px solid red; width: 200px; height:
+    100px; overflow: hidden' viewBox='0 0 200 100'>
+       <rect id='rect' x='80' y='80' width='100' height='100'/>
+    </svg>
+  )HTML");
 
   const LayoutSVGRoot& root =
       *ToLayoutSVGRoot(GetLayoutObjectByElementId("root"));
@@ -70,11 +72,12 @@ TEST_F(LayoutSVGRootTest, VisualRectMappingWithViewportClipAndBorder) {
 }
 
 TEST_F(LayoutSVGRootTest, VisualRectMappingWithViewportClipWithoutBorder) {
-  SetBodyInnerHTML(
-      "<svg id='root' style='width: 200px; height: 100px; overflow: hidden' "
-      "viewBox='0 0 200 100'>"
-      "   <rect id='rect' x='80' y='80' width='100' height='100'/>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='root' style='width: 200px; height: 100px; overflow: hidden'
+    viewBox='0 0 200 100'>
+       <rect id='rect' x='80' y='80' width='100' height='100'/>
+    </svg>
+  )HTML");
 
   const LayoutSVGRoot& root =
       *ToLayoutSVGRoot(GetLayoutObjectByElementId("root"));

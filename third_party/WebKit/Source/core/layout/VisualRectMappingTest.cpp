@@ -79,12 +79,13 @@ class VisualRectMappingTest : public RenderingTest {
 };
 
 TEST_F(VisualRectMappingTest, LayoutText) {
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id='container' style='overflow: scroll; width: 50px; height: 50px'>"
-      "  <span><img style='width: 20px; height: 100px'></span>"
-      "  text text text text text text text"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='container' style='overflow: scroll; width: 50px; height: 50px'>
+      <span><img style='width: 20px; height: 100px'></span>
+      text text text text text text text
+    </div>
+  )HTML");
 
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
@@ -114,12 +115,13 @@ TEST_F(VisualRectMappingTest, LayoutText) {
 
 TEST_F(VisualRectMappingTest, LayoutInline) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id='container' style='overflow: scroll; width: 50px; height: 50px'>"
-      "  <span><img style='width: 20px; height: 100px'></span>"
-      "  <span id='leaf'></span>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='container' style='overflow: scroll; width: 50px; height: 50px'>
+      <span><img style='width: 20px; height: 100px'></span>
+      <span id='leaf'></span>
+    </div>
+  )HTML");
 
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
@@ -149,12 +151,13 @@ TEST_F(VisualRectMappingTest, LayoutInline) {
 
 TEST_F(VisualRectMappingTest, LayoutView) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id=frameContainer>"
-      "  <iframe src='http://test.com' width='50' height='50' "
-      "      frameBorder='0'></iframe>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id=frameContainer>
+      <iframe src='http://test.com' width='50' height='50'
+          frameBorder='0'></iframe>
+    </div>
+  )HTML");
   SetChildFrameHTML(
       "<style>body { margin: 0; }</style>"
       "<span><img style='width: 20px; height: 100px'></span>text text text");
@@ -193,16 +196,18 @@ TEST_F(VisualRectMappingTest, LayoutView) {
 
 TEST_F(VisualRectMappingTest, LayoutViewSubpixelRounding) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id=frameContainer style='position: relative; left: 0.5px'>"
-      "  <iframe style='position: relative; left: 0.5px' width='200'"
-      "      height='200' src='http://test.com' frameBorder='0'></iframe>"
-      "</div>");
-  SetChildFrameHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id='target' style='position: relative; width: 100px; height: 100px;"
-      "    left: 0.5px'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id=frameContainer style='position: relative; left: 0.5px'>
+      <iframe style='position: relative; left: 0.5px' width='200'
+          height='200' src='http://test.com' frameBorder='0'></iframe>
+    </div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='target' style='position: relative; width: 100px; height: 100px;
+        left: 0.5px'></div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -221,12 +226,13 @@ TEST_F(VisualRectMappingTest, LayoutViewSubpixelRounding) {
 
 TEST_F(VisualRectMappingTest, LayoutViewDisplayNone) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id=frameContainer>"
-      "  <iframe id='frame' src='http://test.com' width='50' height='50' "
-      "      frameBorder='0'></iframe>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id=frameContainer>
+      <iframe id='frame' src='http://test.com' width='50' height='50'
+          frameBorder='0'></iframe>
+    </div>
+  )HTML");
   SetChildFrameHTML(
       "<style>body { margin: 0; }</style>"
       "<div style='width:100px;height:100px;'></div>");
@@ -258,11 +264,12 @@ TEST_F(VisualRectMappingTest, LayoutViewDisplayNone) {
 }
 
 TEST_F(VisualRectMappingTest, SelfFlippedWritingMode) {
-  SetBodyInnerHTML(
-      "<div id='target' style='writing-mode: vertical-rl;"
-      "    box-shadow: 40px 20px black; width: 100px; height: 50px;"
-      "    position: absolute; top: 111px; left: 222px'>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='target' style='writing-mode: vertical-rl;
+        box-shadow: 40px 20px black; width: 100px; height: 50px;
+        position: absolute; top: 111px; left: 222px'>
+    </div>
+  )HTML");
 
   LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
   LayoutRect local_visual_rect = target->LocalVisualRect();
@@ -289,13 +296,14 @@ TEST_F(VisualRectMappingTest, SelfFlippedWritingMode) {
 }
 
 TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode) {
-  SetBodyInnerHTML(
-      "<div id='container' style='writing-mode: vertical-rl;"
-      "    position: absolute; top: 111px; left: 222px'>"
-      "  <div id='target' style='box-shadow: 40px 20px black; width: 100px;"
-      "      height: 90px'></div>"
-      "  <div style='width: 100px; height: 100px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='writing-mode: vertical-rl;
+        position: absolute; top: 111px; left: 222px'>
+      <div id='target' style='box-shadow: 40px 20px black; width: 100px;
+          height: 90px'></div>
+      <div style='width: 100px; height: 100px'></div>
+    </div>
+  )HTML");
 
   LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
   LayoutRect target_local_visual_rect = target->LocalVisualRect();
@@ -340,13 +348,14 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode) {
 }
 
 TEST_F(VisualRectMappingTest, ContainerOverflowScroll) {
-  SetBodyInnerHTML(
-      "<div id='container' style='position: absolute; top: 111px; left: 222px;"
-      "    border: 10px solid red; overflow: scroll; width: 50px;"
-      "    height: 80px'>"
-      "  <div id='target' style='box-shadow: 40px 20px black; width: 100px;"
-      "      height: 90px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position: absolute; top: 111px; left: 222px;
+        border: 10px solid red; overflow: scroll; width: 50px;
+        height: 80px'>
+      <div id='target' style='box-shadow: 40px 20px black; width: 100px;
+          height: 90px'></div>
+    </div>
+  )HTML");
 
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
@@ -397,15 +406,16 @@ TEST_F(VisualRectMappingTest, ContainerOverflowScroll) {
 }
 
 TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
-  SetBodyInnerHTML(
-      "<div id='container' style='writing-mode: vertical-rl;"
-      "    position: absolute; top: 111px; left: 222px; border: solid red;"
-      "    border-width: 10px 20px 30px 40px; overflow: scroll; width: 50px;"
-      "    height: 80px'>"
-      "  <div id='target' style='box-shadow: 40px 20px black; width: 100px;"
-      "      height: 90px'></div>"
-      "  <div style='width: 100px; height: 100px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='writing-mode: vertical-rl;
+        position: absolute; top: 111px; left: 222px; border: solid red;
+        border-width: 10px 20px 30px 40px; overflow: scroll; width: 50px;
+        height: 80px'>
+      <div id='target' style='box-shadow: 40px 20px black; width: 100px;
+          height: 90px'></div>
+      <div style='width: 100px; height: 100px'></div>
+    </div>
+  )HTML");
 
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
@@ -471,13 +481,14 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
 }
 
 TEST_F(VisualRectMappingTest, ContainerOverflowHidden) {
-  SetBodyInnerHTML(
-      "<div id='container' style='position: absolute; top: 111px; left: 222px;"
-      "    border: 10px solid red; overflow: hidden; width: 50px;"
-      "    height: 80px;'>"
-      "  <div id='target' style='box-shadow: 40px 20px black; width: 100px;"
-      "      height: 90px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position: absolute; top: 111px; left: 222px;
+        border: 10px solid red; overflow: hidden; width: 50px;
+        height: 80px;'>
+      <div id='target' style='box-shadow: 40px 20px black; width: 100px;
+          height: 90px'></div>
+    </div>
+  )HTML");
 
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
@@ -502,15 +513,16 @@ TEST_F(VisualRectMappingTest, ContainerOverflowHidden) {
 }
 
 TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
-  SetBodyInnerHTML(
-      "<div id='container' style='writing-mode: vertical-rl; "
-      "    position: absolute; top: 111px; left: 222px; border: solid red; "
-      "    border-width: 10px 20px 30px 40px; overflow: hidden; width: 50px; "
-      "    height: 80px'>"
-      "  <div id='target' style='box-shadow: 40px 20px black; width: 100px; "
-      "      height: 90px'></div>"
-      "  <div style='width: 100px; height: 100px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='writing-mode: vertical-rl;
+        position: absolute; top: 111px; left: 222px; border: solid red;
+        border-width: 10px 20px 30px 40px; overflow: hidden; width: 50px;
+        height: 80px'>
+      <div id='target' style='box-shadow: 40px 20px black; width: 100px;
+          height: 90px'></div>
+      <div style='width: 100px; height: 100px'></div>
+    </div>
+  )HTML");
 
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
@@ -545,15 +557,16 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
 }
 
 TEST_F(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
-  SetBodyInnerHTML(
-      "<div id='container' style='writing-mode: vertical-rl;"
-      "    position: absolute; top: 111px; left: 222px; border: solid red;"
-      "    border-width: 10px 20px 30px 40px; overflow: scroll; width: 50px;"
-      "    height: 80px'>"
-      "  <div id='target' style='writing-mode: vertical-lr; width: 100px;"
-      "      height: 90px; box-shadow: 40px 20px black'></div>"
-      "  <div style='width: 100px; height: 100px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='writing-mode: vertical-rl;
+        position: absolute; top: 111px; left: 222px; border: solid red;
+        border-width: 10px 20px 30px 40px; overflow: scroll; width: 50px;
+        height: 80px'>
+      <div id='target' style='writing-mode: vertical-lr; width: 100px;
+          height: 90px; box-shadow: 40px 20px black'></div>
+      <div style='width: 100px; height: 100px'></div>
+    </div>
+  )HTML");
 
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
@@ -593,18 +606,19 @@ TEST_F(VisualRectMappingTest,
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
 
-  SetBodyInnerHTML(
-      "<div id='stacking-context' style='opacity: 0.9; background: blue;"
-      "    will-change: transform'>"
-      "  <div id='scroller' style='overflow: scroll; width: 80px;"
-      "      height: 80px'>"
-      "    <div id='absolute' style='position: absolute; top: 111px;"
-      "        left: 222px; width: 50px; height: 50px; background: green'>"
-      "    </div>"
-      "    <div id='normal-flow' style='width: 2000px; height: 2000px;"
-      "        background: yellow'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='stacking-context' style='opacity: 0.9; background: blue;
+        will-change: transform'>
+      <div id='scroller' style='overflow: scroll; width: 80px;
+          height: 80px'>
+        <div id='absolute' style='position: absolute; top: 111px;
+            left: 222px; width: 50px; height: 50px; background: green'>
+        </div>
+        <div id='normal-flow' style='width: 2000px; height: 2000px;
+            background: yellow'></div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutBlock* scroller = ToLayoutBlock(GetLayoutObjectByElementId("scroller"));
   scroller->SetScrollTop(LayoutUnit(77));
@@ -673,11 +687,12 @@ TEST_F(VisualRectMappingTest,
 }
 
 TEST_F(VisualRectMappingTest, CSSClip) {
-  SetBodyInnerHTML(
-      "<div id='container' style='position: absolute; top: 0px; left: 0px; "
-      "    clip: rect(0px, 200px, 200px, 0px)'>"
-      "  <div id='target' style='width: 400px; height: 400px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position: absolute; top: 0px; left: 0px;
+        clip: rect(0px, 200px, 200px, 0px)'>
+      <div id='target' style='width: 400px; height: 400px'></div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
 
@@ -687,11 +702,12 @@ TEST_F(VisualRectMappingTest, CSSClip) {
 }
 
 TEST_F(VisualRectMappingTest, ContainPaint) {
-  SetBodyInnerHTML(
-      "<div id='container' style='position: absolute; top: 0px; left: 0px; "
-      "    width: 200px; height: 200px; contain: paint'>"
-      "  <div id='target' style='width: 400px; height: 400px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position: absolute; top: 0px; left: 0px;
+        width: 200px; height: 200px; contain: paint'>
+      <div id='target' style='width: 400px; height: 400px'></div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
 
@@ -701,13 +717,14 @@ TEST_F(VisualRectMappingTest, ContainPaint) {
 }
 
 TEST_F(VisualRectMappingTest, FloatUnderInline) {
-  SetBodyInnerHTML(
-      "<div style='position: absolute; top: 55px; left: 66px'>"
-      "  <span id='span' style='position: relative; top: 100px; left: 200px'>"
-      "    <div id='target' style='float: left; width: 33px; height: 44px'>"
-      "    </div>"
-      "  </span>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='position: absolute; top: 55px; left: 66px'>
+      <span id='span' style='position: relative; top: 100px; left: 200px'>
+        <div id='target' style='float: left; width: 33px; height: 44px'>
+        </div>
+      </span>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject* span =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("span"));
@@ -728,20 +745,21 @@ TEST_F(VisualRectMappingTest, FloatUnderInline) {
 
 TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3d) {
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<style>"
-      "* { margin: 0; }"
-      "#container {"
-      "  transform: rotateX(-45deg);"
-      "  width: 100px; height: 100px;"
-      "}"
-      "#target {"
-      "  transform-style: preserve-3d; transform: rotateX(45deg);"
-      "  background: lightblue;"
-      "  width: 100px; height: 100px;"
-      "}"
-      "</style>"
-      "<div id='container'><div id='target'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    * { margin: 0; }
+    #container {
+      transform: rotateX(-45deg);
+      width: 100px; height: 100px;
+    }
+    #target {
+      transform-style: preserve-3d; transform: rotateX(45deg);
+      background: lightblue;
+      width: 100px; height: 100px;
+    }
+    </style>
+    <div id='container'><div id='target'></div></div>
+  )HTML");
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
   LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
@@ -757,21 +775,22 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3d) {
 
 TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<style>"
-      "* { margin: 0; }"
-      "#container {"
-      "  transform-style: preserve-3d;"
-      "  transform: rotateX(-45deg);"
-      "  width: 100px; height: 100px;"
-      "}"
-      "#target {"
-      "  transform-style: preserve-3d; transform: rotateX(45deg);"
-      "  background: lightblue;"
-      "  width: 100px; height: 100px;"
-      "}"
-      "</style>"
-      "<div id='container'><div id='target'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    * { margin: 0; }
+    #container {
+      transform-style: preserve-3d;
+      transform: rotateX(-45deg);
+      width: 100px; height: 100px;
+    }
+    #target {
+      transform-style: preserve-3d; transform: rotateX(45deg);
+      background: lightblue;
+      width: 100px; height: 100px;
+    }
+    </style>
+    <div id='container'><div id='target'></div></div>
+  )HTML");
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
   LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
@@ -786,20 +805,21 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
 
 TEST_F(VisualRectMappingTest, ShouldAccountForPerspective) {
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<style>"
-      "* { margin: 0; }"
-      "#container {"
-      "  transform: rotateX(-45deg); perspective: 100px;"
-      "  width: 100px; height: 100px;"
-      "}"
-      "#target {"
-      "  transform-style: preserve-3d; transform: rotateX(45deg);"
-      "  background: lightblue;"
-      "  width: 100px; height: 100px;"
-      "}"
-      "</style>"
-      "<div id='container'><div id='target'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    * { margin: 0; }
+    #container {
+      transform: rotateX(-45deg); perspective: 100px;
+      width: 100px; height: 100px;
+    }
+    #target {
+      transform-style: preserve-3d; transform: rotateX(45deg);
+      background: lightblue;
+      width: 100px; height: 100px;
+    }
+    </style>
+    <div id='container'><div id='target'></div></div>
+  )HTML");
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
   LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
@@ -818,21 +838,22 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPerspective) {
 
 TEST_F(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<style>"
-      "* { margin: 0; }"
-      "#container {"
-      "  transform-style: preserve-3d;"
-      "  transform: rotateX(-45deg); perspective: 100px;"
-      "  width: 100px; height: 100px;"
-      "}"
-      "#target {"
-      "  transform-style: preserve-3d; transform: rotateX(45deg);"
-      "  background: lightblue;"
-      "  width: 100px; height: 100px;"
-      "}"
-      "</style>"
-      "<div id='container'><div id='target'></div></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    * { margin: 0; }
+    #container {
+      transform-style: preserve-3d;
+      transform: rotateX(-45deg); perspective: 100px;
+      width: 100px; height: 100px;
+    }
+    #target {
+      transform-style: preserve-3d; transform: rotateX(45deg);
+      background: lightblue;
+      width: 100px; height: 100px;
+    }
+    </style>
+    <div id='container'><div id='target'></div></div>
+  )HTML");
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
   LayoutBlock* target = ToLayoutBlock(GetLayoutObjectByElementId("target"));
@@ -850,27 +871,28 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
 
 TEST_F(VisualRectMappingTest, PerspectivePlusScroll) {
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<style>"
-      "* { margin: 0; }"
-      "#container {"
-      "  perspective: 100px;"
-      "  width: 100px; height: 100px;"
-      "  overflow: scroll;"
-      "}"
-      "#target {"
-      "  transform: rotatex(45eg);"
-      "  background: lightblue;"
-      "  width: 100px; height: 100px;"
-      "}"
-      "#spacer {"
-      "  width: 10px; height:2000px;"
-      "}"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='target'></div>"
-      "  <div id='spacer'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    * { margin: 0; }
+    #container {
+      perspective: 100px;
+      width: 100px; height: 100px;
+      overflow: scroll;
+    }
+    #target {
+      transform: rotatex(45eg);
+      background: lightblue;
+      width: 100px; height: 100px;
+    }
+    #spacer {
+      width: 10px; height:2000px;
+    }
+    </style>
+    <div id='container'>
+      <div id='target'></div>
+      <div id='spacer'></div>
+    </div>
+  )HTML");
   LayoutBlock* container =
       ToLayoutBlock(GetLayoutObjectByElementId("container"));
   ToElement(container->GetNode())->scrollTo(0, 5);

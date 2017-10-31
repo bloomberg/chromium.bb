@@ -18,26 +18,27 @@ TEST_F(WindowProxyTest, ReinitializedAfterNavigation) {
 
   SimRequest main_resource("https://example.com/index.html", "text/html");
   LoadURL("https://example.com/index.html");
-  main_resource.Complete(
-      "<!DOCTYPE html>"
-      "<html><head><script>"
-      "var childWindow;"
-      "function runTest() {"
-      "  childWindow = window[0];"
-      "  document.querySelector('iframe').onload = runTest2;"
-      "  childWindow.location = 'data:text/plain,Initial.';"
-      "}"
-      "function runTest2() {"
-      "  try {"
-      "    childWindow.location = 'data:text/plain,Final.';"
-      "    console.log('PASSED');"
-      "  } catch (e) {"
-      "    console.log('FAILED');"
-      "  }"
-      "  document.querySelector('iframe').onload = null;"
-      "}"
-      "</script></head><body onload='runTest()'>"
-      "<iframe></iframe></body></html>");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <html><head><script>
+    var childWindow;
+    function runTest() {
+      childWindow = window[0];
+      document.querySelector('iframe').onload = runTest2;
+      childWindow.location = 'data:text/plain,Initial.';
+    }
+    function runTest2() {
+      try {
+        childWindow.location = 'data:text/plain,Final.';
+        console.log('PASSED');
+      } catch (e) {
+        console.log('FAILED');
+      }
+      document.querySelector('iframe').onload = null;
+    }
+    </script></head><body onload='runTest()'>
+    <iframe></iframe></body></html>
+  )HTML");
 
   // Wait for the first data: URL to load
   testing::RunPendingTasks();

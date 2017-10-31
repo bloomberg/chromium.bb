@@ -259,10 +259,11 @@ TEST_F(DeferredLoadingTest, DisplayNoneThenTwoScreensAway) {
   ExpectCount(WouldLoadReason::kCreated, 1);
   ExpectTotalCount(6);
 
-  main_resource->Write(
-      "<script>theFrame.style.top='200vh';"
-      "theFrame.style.position='absolute';"
-      "theFrame.style.display='block';</script>");
+  main_resource->Write(R"HTML(
+    <script>theFrame.style.top='200vh';
+    theFrame.style.position='absolute';
+    theFrame.style.display='block';</script>
+  )HTML");
   main_resource->Finish();
 
   CompositeFrame();
@@ -279,12 +280,13 @@ TEST_F(DeferredLoadingTest, DisplayNoneAsync) {
 
   CompositeFrame();
 
-  main_resource->Write(
-      "<script>frame = document.createElement('iframe');"
-      "frame.setAttribute('sandbox', true);"
-      "frame.style.display = 'none';"
-      "document.body.appendChild(frame);"
-      "</script>");
+  main_resource->Write(R"HTML(
+    <script>frame = document.createElement('iframe');
+    frame.setAttribute('sandbox', true);
+    frame.style.display = 'none';
+    document.body.appendChild(frame);
+    </script>
+  )HTML");
   main_resource->Finish();
 
   CompositeFrame();

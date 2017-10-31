@@ -21,17 +21,18 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
 
 TEST_P(BlockPainterTest, ScrollHitTestProperties) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none; }"
-      "  body { margin: 0 }"
-      "  #container { width: 200px; height: 200px;"
-      "              overflow: scroll; background: blue; }"
-      "  #child { width: 100px; height: 300px; background: green; }"
-      "</style>"
-      "<div id='container'>"
-      "  <div id='child'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      body { margin: 0 }
+      #container { width: 200px; height: 200px;
+                  overflow: scroll; background: blue; }
+      #child { width: 100px; height: 300px; background: green; }
+    </style>
+    <div id='container'>
+      <div id='child'></div>
+    </div>
+  )HTML");
 
   auto& container = *GetLayoutObjectByElementId("container");
   auto& child = *GetLayoutObjectByElementId("child");
@@ -102,13 +103,14 @@ TEST_P(BlockPainterTest, ScrollHitTestProperties) {
 }
 
 TEST_P(BlockPainterTest, FrameScrollHitTestProperties) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none; }"
-      "  body { margin: 0; }"
-      "  #child { width: 100px; height: 2000px; background: green; }"
-      "</style>"
-      "<div id='child'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      body { margin: 0; }
+      #child { width: 100px; height: 2000px; background: green; }
+    </style>
+    <div id='child'></div>
+  )HTML");
 
   auto& html = *GetDocument().documentElement()->GetLayoutObject();
   auto& child = *GetLayoutObjectByElementId("child");

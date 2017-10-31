@@ -73,13 +73,14 @@ INSTANTIATE_TEST_CASE_P(All,
                         ::testing::ValuesIn(kDefaultPaintTestConfigurations));
 
 TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithBorderInvalidation) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "  #transformed { transform: translate(100px, 100px); }"
-      "  .border { border: 10px solid black; }"
-      "</style>"
-      "<div id='transformed'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      #transformed { transform: translate(100px, 100px); }
+      .border { border: 10px solid black; }
+    </style>
+    <div id='transformed'></div>
+  )HTML");
 
   auto* transformed_element = GetDocument().getElementById("transformed");
   const auto* transformed_properties =
@@ -114,13 +115,14 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithFrameScroll) {
 }
 
 TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithCSSTransformInvalidation) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  .transformA { transform: translate(100px, 100px); }"
-      "  .transformB { transform: translate(200px, 200px); }"
-      "  #transformed { will-change: transform; }"
-      "</style>"
-      "<div id='transformed' class='transformA'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .transformA { transform: translate(100px, 100px); }
+      .transformB { transform: translate(200px, 200px); }
+      #transformed { will-change: transform; }
+    </style>
+    <div id='transformed' class='transformA'></div>
+  )HTML");
 
   auto* transformed_element = GetDocument().getElementById("transformed");
   const auto* transformed_properties =
@@ -141,12 +143,13 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithOpacityInvalidation) {
   // In SPv1 mode, we don't need or store property tree nodes for effects.
   if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
-  SetBodyInnerHTML(
-      "<style>"
-      "  .opacityA { opacity: 0.9; }"
-      "  .opacityB { opacity: 0.4; }"
-      "</style>"
-      "<div id='transparent' class='opacityA'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .opacityA { opacity: 0.9; }
+      .opacityB { opacity: 0.4; }
+    </style>
+    <div id='transparent' class='opacityA'></div>
+  )HTML");
 
   auto* transparent_element = GetDocument().getElementById("transparent");
   const auto* transparent_properties =
@@ -162,16 +165,17 @@ TEST_P(PrePaintTreeWalkTest, PropertyTreesRebuiltWithOpacityInvalidation) {
 }
 
 TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChange) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  .clip { overflow: hidden }"
-      "</style>"
-      "<div id='parent' style='transform: translateZ(0); width: 100px;"
-      "  height: 100px;'>"
-      "  <div id='child' style='isolation: isolate'>"
-      "    content"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .clip { overflow: hidden }
+    </style>
+    <div id='parent' style='transform: translateZ(0); width: 100px;
+      height: 100px;'>
+      <div id='child' style='isolation: isolate'>
+        content
+      </div>
+    </div>
+  )HTML");
 
   auto* parent = GetDocument().getElementById("parent");
   auto* child = GetDocument().getElementById("child");
@@ -187,16 +191,17 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChange) {
 }
 
 TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChange2DTransform) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  .clip { overflow: hidden }"
-      "</style>"
-      "<div id='parent' style='transform: translateX(0); width: 100px;"
-      "  height: 100px;'>"
-      "  <div id='child' style='isolation: isolate'>"
-      "    content"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .clip { overflow: hidden }
+    </style>
+    <div id='parent' style='transform: translateX(0); width: 100px;
+      height: 100px;'>
+      <div id='child' style='isolation: isolate'>
+        content
+      </div>
+    </div>
+  )HTML");
 
   auto* parent = GetDocument().getElementById("parent");
   auto* child = GetDocument().getElementById("child");
@@ -212,17 +217,18 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChange2DTransform) {
 }
 
 TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosAbs) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  .clip { overflow: hidden }"
-      "</style>"
-      "<div id='parent' style='transform: translateZ(0); width: 100px;"
-      "  height: 100px; position: absolute'>"
-      "  <div id='child' style='overflow: hidden; position: relative;"
-      "      z-index: 0; width: 50px; height: 50px'>"
-      "    content"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .clip { overflow: hidden }
+    </style>
+    <div id='parent' style='transform: translateZ(0); width: 100px;
+      height: 100px; position: absolute'>
+      <div id='child' style='overflow: hidden; position: relative;
+          z-index: 0; width: 50px; height: 50px'>
+        content
+      </div>
+    </div>
+  )HTML");
 
   auto* parent = GetDocument().getElementById("parent");
   auto* child = GetDocument().getElementById("child");
@@ -240,17 +246,18 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosAbs) {
 }
 
 TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosFixed) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  .clip { overflow: hidden }"
-      "</style>"
-      "<div id='parent' style='transform: translateZ(0); width: 100px;"
-      "  height: 100px; trans'>"
-      "  <div id='child' style='overflow: hidden; z-index: 0;"
-      "      position: absolute; width: 50px; height: 50px'>"
-      "    content"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .clip { overflow: hidden }
+    </style>
+    <div id='parent' style='transform: translateZ(0); width: 100px;
+      height: 100px; trans'>
+      <div id='child' style='overflow: hidden; z-index: 0;
+          position: absolute; width: 50px; height: 50px'>
+        content
+      </div>
+    </div>
+  )HTML");
 
   auto* parent = GetDocument().getElementById("parent");
   auto* child = GetDocument().getElementById("child");
@@ -268,19 +275,20 @@ TEST_P(PrePaintTreeWalkTest, ClearSubsequenceCachingClipChangePosFixed) {
 }
 
 TEST_P(PrePaintTreeWalkTest, VisualRectClipForceSubtree) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #parent { height: 75px; position: relative; width: 100px; }"
-      "</style>"
-      "<div id='parent' style='height: 100px;'>"
-      "  <div id='child' style='overflow: hidden; width: 100%; height: 100%; "
-      "      position: relative'>"
-      "    <div>"
-      "      <div id='grandchild' style='width: 50px; height: 200px; '>"
-      "      </div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent { height: 75px; position: relative; width: 100px; }
+    </style>
+    <div id='parent' style='height: 100px;'>
+      <div id='child' style='overflow: hidden; width: 100%; height: 100%;
+          position: relative'>
+        <div>
+          <div id='grandchild' style='width: 50px; height: 200px; '>
+          </div>
+        </div>
+      </div>
+    </div>
+  )HTML");
 
   auto* grandchild = GetLayoutObjectByElementId("grandchild");
 
@@ -296,17 +304,18 @@ TEST_P(PrePaintTreeWalkTest, VisualRectClipForceSubtree) {
 }
 
 TEST_P(PrePaintTreeWalkTest, ClipChangeHasRadius) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #target {"
-      "    position: absolute;"
-      "    z-index: 0;"
-      "    overflow: hidden;"
-      "    width: 50px;"
-      "    height: 50px;"
-      "  }"
-      "</style>"
-      "<div id='target'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        position: absolute;
+        z-index: 0;
+        overflow: hidden;
+        width: 50px;
+        height: 50px;
+      }
+    </style>
+    <div id='target'></div>
+  )HTML");
 
   auto* target = GetDocument().getElementById("target");
   auto* target_object = ToLayoutBoxModelObject(target->GetLayoutObject());

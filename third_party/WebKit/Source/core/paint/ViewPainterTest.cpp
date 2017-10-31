@@ -30,17 +30,18 @@ void ViewPainterTest::RunFixedBackgroundTest(
     Settings* settings = GetDocument().GetFrame()->GetSettings();
     settings->SetPreferCompositingToLCDTextEnabled(true);
   }
-  SetBodyInnerHTML(
-      "<style>"
-      "  ::-webkit-scrollbar { display: none; }"
-      "  body {"
-      "    margin: 0;"
-      "    width: 1200px;"
-      "    height: 900px;"
-      "    background: radial-gradient("
-      "      circle at 100px 100px, blue, transparent 200px) fixed;"
-      "  }"
-      "</style>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 900px;
+        background: radial-gradient(
+          circle at 100px 100px, blue, transparent 200px) fixed;
+      }
+    </style>
+  )HTML");
 
   LocalFrameView* frame_view = GetDocument().View();
   ScrollableArea* layout_viewport = frame_view->LayoutViewportScrollableArea();

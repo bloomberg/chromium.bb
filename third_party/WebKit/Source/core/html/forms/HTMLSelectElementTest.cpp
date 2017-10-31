@@ -114,11 +114,12 @@ TEST_F(HTMLSelectElementTest, RestoreUnmatchedFormControlState) {
   // restoreFormControlState() couldn't find matched OPTIONs.
   // crbug.com/627833.
 
-  GetDocument().documentElement()->SetInnerHTMLFromString(
-      "<select id='sel'>"
-      "<option selected>Default</option>"
-      "<option id='2'>222</option>"
-      "</select>");
+  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+    <select id='sel'>
+    <option selected>Default</option>
+    <option id='2'>222</option>
+    </select>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
   Element* element = GetDocument().getElementById("sel");
   HTMLFormControlElementWithState* select = ToHTMLSelectElement(element);
@@ -493,10 +494,11 @@ TEST_F(HTMLSelectElementTest, SetRecalcListItemsByOptgroupRemoval) {
 TEST_F(HTMLSelectElementTest, ScrollToOptionAfterLayoutCrash) {
   // crbug.com/737447
   // This test passes if no crash.
-  GetDocument().documentElement()->SetInnerHTMLFromString(
-      "<style>*:checked { position:fixed; }</style>"
-      "<select multiple><<option>o1</option><option "
-      "selected>o2</option></select>");
+  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+    <style>*:checked { position:fixed; }</style>
+    <select multiple><<option>o1</option><option
+    selected>o2</option></select>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
 

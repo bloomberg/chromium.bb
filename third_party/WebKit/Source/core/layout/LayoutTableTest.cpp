@@ -19,22 +19,23 @@ class LayoutTableTest : public RenderingTest {
 };
 
 TEST_F(LayoutTableTest, OverflowWithCollapsedBorders) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  table { border-collapse: collapse }"
-      "  td { border: 0px solid blue; padding: 0; width: 100px; height: 100px }"
-      "</style>"
-      "<table id='table'>"
-      "  <tr>"
-      "    <td style='border-top-width: 2px; border-left-width: 2px;"
-      "        outline: 6px solid blue'></td>"
-      "    <td style='border-top-width: 4px; border-right-width: 10px'></td>"
-      "  </tr>"
-      "  <tr style='outline: 8px solid green'>"
-      "    <td style='border-left-width: 20px'></td>"
-      "    <td style='border-right-width: 20px'></td>"
-      "  </tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      table { border-collapse: collapse }
+      td { border: 0px solid blue; padding: 0; width: 100px; height: 100px }
+    </style>
+    <table id='table'>
+      <tr>
+        <td style='border-top-width: 2px; border-left-width: 2px;
+            outline: 6px solid blue'></td>
+        <td style='border-top-width: 4px; border-right-width: 10px'></td>
+      </tr>
+      <tr style='outline: 8px solid green'>
+        <td style='border-left-width: 20px'></td>
+        <td style='border-right-width: 20px'></td>
+      </tr>
+    </table>
+  )HTML");
 
   auto* table = GetTableByElementId("table");
 
@@ -115,38 +116,39 @@ TEST_F(LayoutTableTest, CollapsedBorders) {
 }
 
 TEST_F(LayoutTableTest, CollapsedBordersWithCol) {
-  SetBodyInnerHTML(
-      "<style>table { border-collapse: collapse }</style>"
-      "<table id='table1' style='border: hidden'>"
-      "  <colgroup>"
-      "    <col span='2000' style='border: 10px solid'>"
-      "    <col span='2000' style='border: 20px solid'>"
-      "  </colgroup>"
-      "  <tr>"
-      "    <td colspan='2000'>A</td>"
-      "    <td colspan='2000'>B</td>"
-      "  </tr>"
-      "</table>"
-      "<table id='table2' style='border: 10px solid'>"
-      "  <colgroup>"
-      "    <col span='2000' style='border: 10px solid'>"
-      "    <col span='2000' style='border: 20px solid'>"
-      "  </colgroup>"
-      "  <tr>"
-      "    <td colspan='2000' style='border: hidden'>C</td>"
-      "    <td colspan='2000' style='border: hidden'>D</td>"
-      "  </tr>"
-      "</table>"
-      "<table id='table3'>"
-      "  <colgroup>"
-      "    <col span='2000' style='border: 10px solid'>"
-      "    <col span='2000' style='border: 20px solid'>"
-      "  </colgroup>"
-      "  <tr>"
-      "    <td colspan='2000' style='border: 12px solid'>E</td>"
-      "    <td colspan='2000' style='border: 16px solid'>F</td>"
-      "  </tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <style>table { border-collapse: collapse }</style>
+    <table id='table1' style='border: hidden'>
+      <colgroup>
+        <col span='2000' style='border: 10px solid'>
+        <col span='2000' style='border: 20px solid'>
+      </colgroup>
+      <tr>
+        <td colspan='2000'>A</td>
+        <td colspan='2000'>B</td>
+      </tr>
+    </table>
+    <table id='table2' style='border: 10px solid'>
+      <colgroup>
+        <col span='2000' style='border: 10px solid'>
+        <col span='2000' style='border: 20px solid'>
+      </colgroup>
+      <tr>
+        <td colspan='2000' style='border: hidden'>C</td>
+        <td colspan='2000' style='border: hidden'>D</td>
+      </tr>
+    </table>
+    <table id='table3'>
+      <colgroup>
+        <col span='2000' style='border: 10px solid'>
+        <col span='2000' style='border: 20px solid'>
+      </colgroup>
+      <tr>
+        <td colspan='2000' style='border: 12px solid'>E</td>
+        <td colspan='2000' style='border: 16px solid'>F</td>
+      </tr>
+    </table>
+  )HTML");
 
   // Table has hidden border.
   auto* table1 = GetTableByElementId("table1");
@@ -175,21 +177,22 @@ TEST_F(LayoutTableTest, CollapsedBordersWithCol) {
 }
 
 TEST_F(LayoutTableTest, WidthPercentagesExceedHundred) {
-  SetBodyInnerHTML(
-      "<style>#outer { width: 2000000px; }"
-      "table { border-collapse: collapse; }</style>"
-      "<div id='outer'>"
-      "<table id='onlyTable'>"
-      "  <tr>"
-      "    <td width='100%'>"
-      "      <div></div>"
-      "    </td>"
-      "    <td width='60%'>"
-      "      <div width='10px;'></div>"
-      "    </td>"
-      "  </tr>"
-      "</table>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#outer { width: 2000000px; }
+    table { border-collapse: collapse; }</style>
+    <div id='outer'>
+    <table id='onlyTable'>
+      <tr>
+        <td width='100%'>
+          <div></div>
+        </td>
+        <td width='60%'>
+          <div width='10px;'></div>
+        </td>
+      </tr>
+    </table>
+    </div>
+  )HTML");
 
   // Table width should be TableLayoutAlgorithm::kMaxTableWidth
   auto* table = GetTableByElementId("onlyTable");
@@ -197,18 +200,19 @@ TEST_F(LayoutTableTest, WidthPercentagesExceedHundred) {
 }
 
 TEST_F(LayoutTableTest, CloseToMaxWidth) {
-  SetBodyInnerHTML(
-      "<style>#outer { width: 2000000px; }"
-      "table { border-collapse: collapse; }</style>"
-      "<div id='outer'>"
-      "<table id='onlyTable' width='999999px;'>"
-      "  <tr>"
-      "    <td>"
-      "      <div></div>"
-      "    </td>"
-      "  </tr>"
-      "</table>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#outer { width: 2000000px; }
+    table { border-collapse: collapse; }</style>
+    <div id='outer'>
+    <table id='onlyTable' width='999999px;'>
+      <tr>
+        <td>
+          <div></div>
+        </td>
+      </tr>
+    </table>
+    </div>
+  )HTML");
 
   // Table width should be 999999
   auto* table = GetTableByElementId("onlyTable");
@@ -216,10 +220,11 @@ TEST_F(LayoutTableTest, CloseToMaxWidth) {
 }
 
 TEST_F(LayoutTableTest, PaddingWithCollapsedBorder) {
-  SetBodyInnerHTML(
-      "<table id='table' style='padding: 20px; border-collapse: collapse'>"
-      "  <tr><td>TD</td</tr>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <table id='table' style='padding: 20px; border-collapse: collapse'>
+      <tr><td>TD</td</tr>
+    </table>
+  )HTML");
 
   auto* table = GetTableByElementId("table");
   EXPECT_EQ(0, table->PaddingLeft());
@@ -235,11 +240,12 @@ TEST_F(LayoutTableTest, PaddingWithCollapsedBorder) {
 }
 
 TEST_F(LayoutTableTest, OutOfOrderHeadAndBody) {
-  SetBodyInnerHTML(
-      "<table id='table' style='border-collapse: collapse'>"
-      "  <tbody id='body'><tr><td>Body</td></tr></tbody>"
-      "  <thead id='head'></thead>"
-      "<table>");
+  SetBodyInnerHTML(R"HTML(
+    <table id='table' style='border-collapse: collapse'>
+      <tbody id='body'><tr><td>Body</td></tr></tbody>
+      <thead id='head'></thead>
+    <table>
+  )HTML");
   auto* table = GetTableByElementId("table");
   EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("head")),
             table->TopSection());
@@ -252,11 +258,12 @@ TEST_F(LayoutTableTest, OutOfOrderHeadAndBody) {
 }
 
 TEST_F(LayoutTableTest, OutOfOrderFootAndBody) {
-  SetBodyInnerHTML(
-      "<table id='table'>"
-      "  <tfoot id='foot'></tfoot>"
-      "  <tbody id='body'><tr><td>Body</td></tr></tbody>"
-      "<table>");
+  SetBodyInnerHTML(R"HTML(
+    <table id='table'>
+      <tfoot id='foot'></tfoot>
+      <tbody id='body'><tr><td>Body</td></tr></tbody>
+    <table>
+  )HTML");
   auto* table = GetTableByElementId("table");
   EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("body")),
             table->TopSection());
@@ -269,12 +276,13 @@ TEST_F(LayoutTableTest, OutOfOrderFootAndBody) {
 }
 
 TEST_F(LayoutTableTest, OutOfOrderHeadFootAndBody) {
-  SetBodyInnerHTML(
-      "<table id='table' style='border-collapse: collapse'>"
-      "  <tfoot id='foot'><tr><td>foot</td></tr></tfoot>"
-      "  <thead id='head'><tr><td>head</td></tr></thead>"
-      "  <tbody id='body'><tr><td>Body</td></tr></tbody>"
-      "<table>");
+  SetBodyInnerHTML(R"HTML(
+    <table id='table' style='border-collapse: collapse'>
+      <tfoot id='foot'><tr><td>foot</td></tr></tfoot>
+      <thead id='head'><tr><td>head</td></tr></thead>
+      <tbody id='body'><tr><td>Body</td></tr></tbody>
+    <table>
+  )HTML");
   auto* table = GetTableByElementId("table");
   EXPECT_EQ(ToLayoutTableSection(GetLayoutObjectByElementId("head")),
             table->TopSection());

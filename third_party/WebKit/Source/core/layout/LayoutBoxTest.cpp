@@ -16,46 +16,48 @@ namespace blink {
 class LayoutBoxTest : public RenderingTest {};
 
 TEST_F(LayoutBoxTest, BackgroundObscuredInRect) {
-  SetBodyInnerHTML(
-      "<style>.column { width: 295.4px; padding-left: 10.4px; } "
-      ".white-background { background: red; position: relative; overflow: "
-      "hidden; border-radius: 1px; }"
-      ".black-background { height: 100px; background: black; color: white; } "
-      "</style>"
-      "<div class='column'> <div> <div id='target' class='white-background'> "
-      "<div class='black-background'></div> </div> </div> </div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>.column { width: 295.4px; padding-left: 10.4px; }
+    .white-background { background: red; position: relative; overflow:
+    hidden; border-radius: 1px; }
+    .black-background { height: 100px; background: black; color: white; }
+    </style>
+    <div class='column'> <div> <div id='target' class='white-background'>
+    <div class='black-background'></div> </div> </div> </div>
+  )HTML");
   LayoutObject* layout_object = GetLayoutObjectByElementId("target");
   ASSERT_TRUE(layout_object);
   ASSERT_TRUE(layout_object->BackgroundIsKnownToBeObscured());
 }
 
 TEST_F(LayoutBoxTest, BackgroundRect) {
-  SetBodyInnerHTML(
-      "<style>div { position: absolute; width: 100px; height: 100px; padding: "
-      "10px; border: 10px solid black; overflow: scroll; }"
-      "#target1 { background: "
-      "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) border-box, green "
-      "content-box;}"
-      "#target2 { background: "
-      "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) content-box, green "
-      "local border-box;}"
-      "#target3 { background: "
-      "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) content-box, rgba(0, "
-      "255, 0, 0.5) border-box;}"
-      "#target4 { background-image: "
-      "url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg), none;"
-      "           background-clip: content-box, border-box;"
-      "           background-blend-mode: normal, multiply;"
-      "           background-color: green; }"
-      "#target5 { background: none border-box, green content-box;}"
-      "#target6 { background: green content-box local; }"
-      "</style>"
-      "<div id='target1'></div>"
-      "<div id='target2'></div>"
-      "<div id='target3'></div>"
-      "<div id='target4'></div>"
-      "<div id='target5'></div>"
-      "<div id='target6'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>div { position: absolute; width: 100px; height: 100px; padding:
+    10px; border: 10px solid black; overflow: scroll; }
+    #target1 { background:
+    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) border-box, green
+    content-box;}
+    #target2 { background:
+    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) content-box, green
+    local border-box;}
+    #target3 { background:
+    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg) content-box, rgba(0,
+    255, 0, 0.5) border-box;}
+    #target4 { background-image:
+    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUg), none;
+               background-clip: content-box, border-box;
+               background-blend-mode: normal, multiply;
+               background-color: green; }
+    #target5 { background: none border-box, green content-box;}
+    #target6 { background: green content-box local; }
+    </style>
+    <div id='target1'></div>
+    <div id='target2'></div>
+    <div id='target3'></div>
+    <div id='target4'></div>
+    <div id='target5'></div>
+    <div id='target6'></div>
+  )HTML");
 
   // #target1's opaque background color only fills the content box but its
   // translucent image extends to the borders.
@@ -104,17 +106,18 @@ TEST_F(LayoutBoxTest, BackgroundRect) {
 }
 
 TEST_F(LayoutBoxTest, LocationContainer) {
-  SetBodyInnerHTML(
-      "<div id='div'>"
-      "  <b>Inline content<img id='img'></b>"
-      "</div>"
-      "<table id='table'>"
-      "  <tbody id='tbody'>"
-      "    <tr id='row'>"
-      "      <td id='cell' style='width: 100px; height: 80px'></td>"
-      "    </tr>"
-      "  </tbody>"
-      "</table>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='div'>
+      <b>Inline content<img id='img'></b>
+    </div>
+    <table id='table'>
+      <tbody id='tbody'>
+        <tr id='row'>
+          <td id='cell' style='width: 100px; height: 80px'></td>
+        </tr>
+      </tbody>
+    </table>
+  )HTML");
 
   const LayoutBox* body = GetDocument().body()->GetLayoutBox();
   const LayoutBox* div = ToLayoutBox(GetLayoutObjectByElementId("div"));
@@ -133,11 +136,12 @@ TEST_F(LayoutBoxTest, LocationContainer) {
 }
 
 TEST_F(LayoutBoxTest, TopLeftLocationFlipped) {
-  SetBodyInnerHTML(
-      "<div style='width: 600px; height: 200px; writing-mode: vertical-rl'>"
-      "  <div id='box1' style='width: 100px'></div>"
-      "  <div id='box2' style='width: 200px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='width: 600px; height: 200px; writing-mode: vertical-rl'>
+      <div id='box1' style='width: 100px'></div>
+      <div id='box2' style='width: 200px'></div>
+    </div>
+  )HTML");
 
   const LayoutBox* box1 = ToLayoutBox(GetLayoutObjectByElementId("box1"));
   EXPECT_EQ(LayoutPoint(0, 0), box1->Location());
@@ -149,20 +153,21 @@ TEST_F(LayoutBoxTest, TopLeftLocationFlipped) {
 }
 
 TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
-  SetBodyInnerHTML(
-      "<div style='writing-mode: vertical-rl'>"
-      "  <table style='border-spacing: 0'>"
-      "    <thead><tr><td style='width: 50px'></td></tr></thead>"
-      "    <tbody>"
-      "      <tr id='row1'>"
-      "        <td id='cell1' style='width: 100px; height: 80px'></td>"
-      "      </tr>"
-      "      <tr id='row2'>"
-      "        <td id='cell2' style='width: 300px; height: 80px'></td>"
-      "      </tr>"
-      "    </tbody>"
-      "  </table>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='writing-mode: vertical-rl'>
+      <table style='border-spacing: 0'>
+        <thead><tr><td style='width: 50px'></td></tr></thead>
+        <tbody>
+          <tr id='row1'>
+            <td id='cell1' style='width: 100px; height: 80px'></td>
+          </tr>
+          <tr id='row2'>
+            <td id='cell2' style='width: 300px; height: 80px'></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  )HTML");
 
   // location and physicalLocation of a table row or a table cell should be
   // relative to the containing section.
@@ -185,13 +190,14 @@ TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
 }
 
 TEST_F(LayoutBoxTest, LocationContainerOfSVG) {
-  SetBodyInnerHTML(
-      "<svg id='svg' style='writing-mode:vertical-rl' width='500' height='500'>"
-      "  <foreignObject x='44' y='77' width='100' height='80' id='foreign'>"
-      "    <div id='child' style='width: 33px; height: 55px'>"
-      "    </div>"
-      "  </foreignObject>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg' style='writing-mode:vertical-rl' width='500' height='500'>
+      <foreignObject x='44' y='77' width='100' height='80' id='foreign'>
+        <div id='child' style='width: 33px; height: 55px'>
+        </div>
+      </foreignObject>
+    </svg>
+  )HTML");
   const LayoutBox* svg_root = ToLayoutBox(GetLayoutObjectByElementId("svg"));
   const LayoutBox* foreign = ToLayoutBox(GetLayoutObjectByElementId("foreign"));
   const LayoutBox* child = ToLayoutBox(GetLayoutObjectByElementId("child"));
@@ -214,15 +220,16 @@ TEST_F(LayoutBoxTest, LocationContainerOfSVG) {
 }
 
 TEST_F(LayoutBoxTest, ControlClip) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  * { margin: 0; }"
-      "  #target {"
-      "    position: relative;"
-      "    width: 100px; height: 50px;"
-      "  }"
-      "</style>"
-      "<input id='target' type='button' value='some text'/>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      #target {
+        position: relative;
+        width: 100px; height: 50px;
+      }
+    </style>
+    <input id='target' type='button' value='some text'/>
+  )HTML");
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   EXPECT_TRUE(target->HasControlClip());
   EXPECT_TRUE(target->HasClipRelatedProperty());
@@ -238,11 +245,12 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMask) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  SetBodyInnerHTML(
-      "<div id='target' style='-webkit-mask-image: url(#a);"
-      "     width: 100px; height: 100px; background: blue'>"
-      "  <div style='width: 300px; height: 10px; background: green'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='target' style='-webkit-mask-image: url(#a);
+         width: 100px; height: 100px; background: blue'>
+      <div style='width: 300px; height: 10px; background: green'></div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   EXPECT_TRUE(target->HasMask());
@@ -254,11 +262,12 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMaskAndOverflowClip) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  SetBodyInnerHTML(
-      "<div id='target' style='-webkit-mask-image: url(#a); overflow: hidden;"
-      "     width: 100px; height: 100px; background: blue'>"
-      "  <div style='width: 300px; height: 10px; background: green'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='target' style='-webkit-mask-image: url(#a); overflow: hidden;
+         width: 100px; height: 100px; background: blue'>
+      <div style='width: 300px; height: 10px; background: green'></div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   EXPECT_TRUE(target->HasMask());
@@ -271,12 +280,13 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMaskWithOutset) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  SetBodyInnerHTML(
-      "<div id='target' style='-webkit-mask-box-image-source: url(#a); "
-      "-webkit-mask-box-image-outset: 10px 20px;"
-      "     width: 100px; height: 100px; background: blue'>"
-      "  <div style='width: 300px; height: 10px; background: green'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='target' style='-webkit-mask-box-image-source: url(#a);
+    -webkit-mask-box-image-outset: 10px 20px;
+         width: 100px; height: 100px; background: blue'>
+      <div style='width: 300px; height: 10px; background: green'></div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   EXPECT_TRUE(target->HasMask());
@@ -288,12 +298,13 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMaskWithOutsetAndOverflowClip) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  SetBodyInnerHTML(
-      "<div id='target' style='-webkit-mask-box-image-source: url(#a); "
-      "-webkit-mask-box-image-outset: 10px 20px; overflow: hidden;"
-      "     width: 100px; height: 100px; background: blue'>"
-      "  <div style='width: 300px; height: 10px; background: green'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='target' style='-webkit-mask-box-image-source: url(#a);
+    -webkit-mask-box-image-outset: 10px 20px; overflow: hidden;
+         width: 100px; height: 100px; background: blue'>
+      <div style='width: 300px; height: 10px; background: green'></div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   EXPECT_TRUE(target->HasMask());
@@ -303,24 +314,25 @@ TEST_F(LayoutBoxTest, LocalVisualRectWithMaskWithOutsetAndOverflowClip) {
 }
 
 TEST_F(LayoutBoxTest, ContentsVisualOverflowPropagation) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  div { width: 100px; height: 100px }"
-      "</style>"
-      "<div id='a'>"
-      "  <div style='height: 50px'></div>"
-      "  <div id='b' style='writing-mode: vertical-rl; margin-left: 60px'>"
-      "    <div style='width: 30px'></div>"
-      "    <div id='c' style='margin-top: 40px'>"
-      "      <div style='width: 10px'></div>"
-      "      <div style='margin-top: 20px; margin-left: 10px'></div>"
-      "    </div>"
-      "    <div id='d' style='writing-mode: vertical-lr; margin-top: 40px'>"
-      "      <div style='width: 10px'></div>"
-      "      <div style='margin-top: 20px'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      div { width: 100px; height: 100px }
+    </style>
+    <div id='a'>
+      <div style='height: 50px'></div>
+      <div id='b' style='writing-mode: vertical-rl; margin-left: 60px'>
+        <div style='width: 30px'></div>
+        <div id='c' style='margin-top: 40px'>
+          <div style='width: 10px'></div>
+          <div style='margin-top: 20px; margin-left: 10px'></div>
+        </div>
+        <div id='d' style='writing-mode: vertical-lr; margin-top: 40px'>
+          <div style='width: 10px'></div>
+          <div style='margin-top: 20px'></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
 
   auto* c = ToLayoutBox(GetLayoutObjectByElementId("c"));
   EXPECT_EQ(LayoutRect(0, 0, 100, 100), c->SelfVisualOverflowRect());

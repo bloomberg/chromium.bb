@@ -80,17 +80,18 @@ TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
 }
 
 TEST_F(StyleEngineTest, AnalyzedInject) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<style>"
-      " #t1 { color: red !important }"
-      " #t2 { color: black }"
-      " #t4 { animation-name: dummy-animation }"
-      "</style>"
-      "<div id='t1'>Green</div>"
-      "<div id='t2'>White</div>"
-      "<div id='t3' style='color: black !important'>White</div>"
-      "<div id='t4'>I animate!</div>"
-      "<div></div>");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+     #t1 { color: red !important }
+     #t2 { color: black }
+     #t4 { animation-name: dummy-animation }
+    </style>
+    <div id='t1'>Green</div>
+    <div id='t2'>White</div>
+    <div id='t3' style='color: black !important'>White</div>
+    <div id='t4'>I animate!</div>
+    <div></div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
@@ -282,17 +283,18 @@ TEST_F(StyleEngineTest, TextToSheetCache) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<div>"
-      "  <span></span>"
-      "  <div></div>"
-      "</div>"
-      "<b></b><b></b><b></b><b></b>"
-      "<i id=i>"
-      "  <i>"
-      "    <b></b>"
-      "  </i>"
-      "</i>");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div>
+      <span></span>
+      <div></div>
+    </div>
+    <b></b><b></b><b></b><b></b>
+    <i id=i>
+      <i>
+        <b></b>
+      </i>
+    </i>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -327,10 +329,11 @@ TEST_F(StyleEngineTest, RuleSetInvalidationTypeSelectors) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationCustomPseudo) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<style>progress { -webkit-appearance:none }</style>"
-      "<progress></progress>"
-      "<div></div><div></div><div></div><div></div><div></div><div></div>");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>progress { -webkit-appearance:none }</style>
+    <progress></progress>
+    <div></div><div></div><div></div><div></div><div></div><div></div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -387,13 +390,14 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<div id=host>"
-      "  <span slot=other class=s1></span>"
-      "  <span class=s2></span>"
-      "  <span class=s1></span>"
-      "  <span></span>"
-      "</div>");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div id=host>
+      <span slot=other class=s1></span>
+      <span class=s2></span>
+      <span class=s1></span>
+      <span></span>
+    </div>
+  )HTML");
 
   Element* host = GetDocument().getElementById("host");
   ASSERT_TRUE(host);
@@ -488,11 +492,12 @@ TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
 }
 
 TEST_F(StyleEngineTest, HasViewportDependentMediaQueries) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<style>div {}</style>"
-      "<style id='sheet' media='(min-width: 200px)'>"
-      "  div {}"
-      "</style>");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>div {}</style>
+    <style id='sheet' media='(min-width: 200px)'>
+      div {}
+    </style>
+  )HTML");
 
   Element* style_element = GetDocument().getElementById("sheet");
 
@@ -608,14 +613,15 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
 }
 
 TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<style id='s1'>"
-      "  .t1 span { color: green }"
-      "  .t2 span { color: green }"
-      "</style>"
-      "<style id='s2'>div { background: lime }</style>"
-      "<div id='t1'></div>"
-      "<div id='t2'></div>");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style id='s1'>
+      .t1 span { color: green }
+      .t2 span { color: green }
+    </style>
+    <style id='s2'>div { background: lime }</style>
+    <div id='t1'></div>
+    <div id='t2'></div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* t1 = GetDocument().getElementById("t1");
@@ -692,13 +698,14 @@ TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
                          init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadow_root);
 
-  shadow_root->SetInnerHTMLFromString(
-      "<style>"
-      "  span { color: green }"
-      "  t1 { color: green }"
-      "</style>"
-      "<div id='t1'></div>"
-      "<span></span>");
+  shadow_root->SetInnerHTMLFromString(R"HTML(
+    <style>
+      span { color: green }
+      t1 { color: green }
+    </style>
+    <div id='t1'></div>
+    <span></span>
+  )HTML");
 
   GetStyleEngine().UpdateActiveStyle();
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());

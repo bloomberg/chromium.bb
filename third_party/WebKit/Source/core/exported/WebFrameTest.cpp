@@ -11344,12 +11344,13 @@ TEST_P(WebFrameSimTest, ScrollOriginChangeUpdatesLayerPositions) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
 
   LoadURL("https://example.com/test.html");
-  main_resource.Complete(
-      "<!DOCTYPE html>"
-      "<body dir='rtl'>"
-      "  <div style='width:1px; height:1px; position:absolute; left:-10000px'>"
-      "  </div>"
-      "</body>");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <body dir='rtl'>
+      <div style='width:1px; height:1px; position:absolute; left:-10000px'>
+      </div>
+    </body>
+  )HTML");
 
   Compositor().BeginFrame();
   ScrollableArea* area = GetDocument().View()->LayoutViewportScrollableArea();

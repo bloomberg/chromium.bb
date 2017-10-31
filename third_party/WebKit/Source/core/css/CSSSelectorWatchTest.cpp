@@ -43,12 +43,13 @@ void CSSSelectorWatchTest::ClearAddedRemoved(CSSSelectorWatch& watch) {
 }
 
 TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {
-  GetDocument().body()->SetInnerHTMLFromString(
-      "<div>"
-      "  <span id='x' class='a'></span>"
-      "  <span id='y' class='b'><span></span></span>"
-      "  <span id='z'><span></span></span>"
-      "</div>");
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div>
+      <span id='x' class='a'></span>
+      <span id='y' class='b'><span></span></span>
+      <span id='z'><span></span></span>
+    </div>
+  )HTML");
 
   CSSSelectorWatch& watch = CSSSelectorWatch::From(GetDocument());
 

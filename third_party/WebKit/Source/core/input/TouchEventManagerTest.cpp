@@ -49,10 +49,11 @@ TEST_F(TouchEventManagerTest, LostTouchDueToInnerIframeRemove) {
   WebView().Resize(WebSize(400, 400));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<body style='padding: 0px; width: 400px; height: 400px;'>"
-      "<iframe id='target' style='width: 200px; height: 200px;'></iframe>"
-      "</body>");
+  request.Complete(R"HTML(
+    <body style='padding: 0px; width: 400px; height: 400px;'>
+    <iframe id='target' style='width: 200px; height: 200px;'></iframe>
+    </body>
+  )HTML");
   CheckEventListenerCallback* callback = CheckEventListenerCallback::Create();
   GetDocument().body()->addEventListener(EventTypeNames::touchstart, callback);
 

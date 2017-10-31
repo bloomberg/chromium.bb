@@ -21,27 +21,28 @@ TEST_F(ObjectPaintInvalidatorTest,
     return;
 
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<style>div { width: 10px; height: 10px; background-color: green; "
-      "}</style>"
-      "<div id='container' style='position: fixed'>"
-      "  <div id='normal-child'></div>"
-      "  <div id='stacked-child' style='position: relative'></div>"
-      "  <div id='composited-stacking-context' style='will-change: transform'>"
-      "    <div id='normal-child-of-composited-stacking-context'></div>"
-      "    <div id='stacked-child-of-composited-stacking-context' "
-      "style='position: relative'></div>"
-      "  </div>"
-      "  <div id='composited-non-stacking-context' style='backface-visibility: "
-      "hidden'>"
-      "    <div id='normal-child-of-composited-non-stacking-context'></div>"
-      "    <div id='stacked-child-of-composited-non-stacking-context' "
-      "style='position: relative'></div>"
-      "    <div "
-      "id='non-stacked-layered-child-of-composited-non-stacking-context' "
-      "style='overflow: scroll'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>div { width: 10px; height: 10px; background-color: green;
+    }</style>
+    <div id='container' style='position: fixed'>
+      <div id='normal-child'></div>
+      <div id='stacked-child' style='position: relative'></div>
+      <div id='composited-stacking-context' style='will-change: transform'>
+        <div id='normal-child-of-composited-stacking-context'></div>
+        <div id='stacked-child-of-composited-stacking-context'
+    style='position: relative'></div>
+      </div>
+      <div id='composited-non-stacking-context' style='backface-visibility:
+    hidden'>
+        <div id='normal-child-of-composited-non-stacking-context'></div>
+        <div id='stacked-child-of-composited-non-stacking-context'
+    style='position: relative'></div>
+        <div
+    id='non-stacked-layered-child-of-composited-non-stacking-context'
+    style='overflow: scroll'></div>
+      </div>
+    </div>
+  )HTML");
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   ObjectPaintInvalidator(*GetLayoutObjectByElementId("container"))
@@ -71,15 +72,16 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
     return;
 
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<div id='compositedContainer' style='position: relative;"
-      "    will-change: transform'>"
-      "  <div id='containingBlock' style='position: relative'>"
-      "    <span id='span' style='position: relative; will-change: transform'>"
-      "      <div id='target' style='float: right'></div>"
-      "    </span>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='compositedContainer' style='position: relative;
+        will-change: transform'>
+      <div id='containingBlock' style='position: relative'>
+        <span id='span' style='position: relative; will-change: transform'>
+          <div id='target' style='float: right'></div>
+        </span>
+      </div>
+    </div>
+  )HTML");
 
   auto* target = GetLayoutObjectByElementId("target");
   auto* containing_block = GetLayoutObjectByElementId("containingBlock");
@@ -157,18 +159,19 @@ TEST_F(ObjectPaintInvalidatorTest,
     return;
 
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<div id='compositedContainer' style='position: relative;"
-      "    will-change: transform'>"
-      "  <div id='containingBlock' style='position: relative; z-index: 0'>"
-      "    <span id='span' style='position: relative; will-change: transform'>"
-      "      <span id='innerSpan'"
-      "          style='position: relative; will-change: transform'>"
-      "        <div id='target' style='float: right'></div>"
-      "      </span>"
-      "    </span>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='compositedContainer' style='position: relative;
+        will-change: transform'>
+      <div id='containingBlock' style='position: relative; z-index: 0'>
+        <span id='span' style='position: relative; will-change: transform'>
+          <span id='innerSpan'
+              style='position: relative; will-change: transform'>
+            <div id='target' style='float: right'></div>
+          </span>
+        </span>
+      </div>
+    </div>
+  )HTML");
 
   auto* target = GetLayoutObjectByElementId("target");
   auto* containing_block = GetLayoutObjectByElementId("containingBlock");
@@ -224,10 +227,11 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
     return;
 
   EnableCompositing();
-  SetBodyInnerHTML(
-      "<span id='span' style='position: relative; will-change: transform'>"
-      "  <div id='target' style='position: relative; float: right'></div>"
-      "</span>");
+  SetBodyInnerHTML(R"HTML(
+    <span id='span' style='position: relative; will-change: transform'>
+      <div id='target' style='position: relative; float: right'></div>
+    </span>
+  )HTML");
 
   auto* target = GetLayoutObjectByElementId("target");
   auto* target_layer = ToLayoutBoxModelObject(target)->Layer();

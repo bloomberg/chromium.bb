@@ -77,12 +77,13 @@ TEST_F(SmoothScrollTest, NestedContainer) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<div id='space' style='height: 1000px'></div>"
-      "<div id='container' style='height: 600px; overflow: scroll'>"
-      "  <div id='space1' style='height: 1000px'></div>"
-      "  <div id='content' style='height: 1000px'></div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <div id='space' style='height: 1000px'></div>
+    <div id='container' style='height: 600px; overflow: scroll'>
+      <div id='space1' style='height: 1000px'></div>
+      <div id='content' style='height: 1000px'></div>
+    </div>
+  )HTML");
 
   Element* container = GetDocument().getElementById("container");
   Element* content = GetDocument().getElementById("content");
@@ -124,15 +125,16 @@ TEST_F(SmoothScrollTest, NewScrollIntoViewAbortsCurrentAnimation) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<div id='container2' style='height: 1000px; overflow: scroll'>"
-      "  <div id='space2' style='height: 1200px'></div>"
-      "  <div id='content2' style='height: 1000px'></div>"
-      "</div>"
-      "<div id='container1' style='height: 600px; overflow: scroll'>"
-      "  <div id='space1' style='height: 1000px'></div>"
-      "  <div id='content1' style='height: 1000px'></div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <div id='container2' style='height: 1000px; overflow: scroll'>
+      <div id='space2' style='height: 1200px'></div>
+      <div id='content2' style='height: 1000px'></div>
+    </div>
+    <div id='container1' style='height: 600px; overflow: scroll'>
+      <div id='space1' style='height: 1000px'></div>
+      <div id='content1' style='height: 1000px'></div>
+    </div>
+  )HTML");
 
   Element* container1 = GetDocument().getElementById("container1");
   Element* container2 = GetDocument().getElementById("container2");
@@ -188,12 +190,13 @@ TEST_F(SmoothScrollTest, ScrollWindowAbortsCurrentAnimation) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<div id='space' style='height: 1000px'></div>"
-      "<div id='container' style='height: 600px; overflow: scroll'>"
-      "  <div id='space1' style='height: 1000px'></div>"
-      "  <div id='content' style='height: 1000px'></div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <div id='space' style='height: 1000px'></div>
+    <div id='container' style='height: 600px; overflow: scroll'>
+      <div id='space1' style='height: 1000px'></div>
+      <div id='content' style='height: 1000px'></div>
+    </div>
+  )HTML");
 
   Element* container = GetDocument().getElementById("container");
   Element* content = GetDocument().getElementById("content");
@@ -234,11 +237,12 @@ TEST_F(SmoothScrollTest, BlockAndInlineSettings) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<div id='container' style='height: 2500px; width: 2500px;'>"
-      "<div id='content' style='height: 500px; width: 500px;"
-      "margin-left: 1000px; margin-right: 1000px; margin-top: 1000px;"
-      "margin-bottom: 1000px'></div></div>");
+  request.Complete(R"HTML(
+    <div id='container' style='height: 2500px; width: 2500px;'>
+    <div id='content' style='height: 500px; width: 500px;
+    margin-left: 1000px; margin-right: 1000px; margin-top: 1000px;
+    margin-bottom: 1000px'></div></div>
+  )HTML");
 
   int content_height = 500;
   int content_width = 500;
@@ -290,16 +294,17 @@ TEST_F(SmoothScrollTest, SmoothAndInstantInChain) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<div id='space' style='height: 1000px'></div>"
-      "<div id='container' style='height: 600px; overflow: scroll;"
-      "  scroll-behavior: smooth'>"
-      "  <div id='space1' style='height: 1000px'></div>"
-      "  <div id='inner_container' style='height: 1000px; overflow: scroll;'>"
-      "    <div id='space2' style='height: 1000px'></div>"
-      "    <div id='content' style='height: 1000px;'></div>"
-      "  </div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <div id='space' style='height: 1000px'></div>
+    <div id='container' style='height: 600px; overflow: scroll;
+      scroll-behavior: smooth'>
+      <div id='space1' style='height: 1000px'></div>
+      <div id='inner_container' style='height: 1000px; overflow: scroll;'>
+        <div id='space2' style='height: 1000px'></div>
+        <div id='content' style='height: 1000px;'></div>
+      </div>
+    </div>
+  )HTML");
 
   Element* container = GetDocument().getElementById("container");
   Element* inner_container = GetDocument().getElementById("inner_container");
@@ -340,13 +345,14 @@ TEST_F(SmoothScrollTest, SmoothScrollAnchor) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<div id='container' style='height: 600px; overflow: scroll;"
-      "  scroll-behavior: smooth'>"
-      "  <div id='space' style='height: 1000px'></div>"
-      "  <div style='height: 1000px'><a name='link' "
-      "id='content'>hello</a></div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <div id='container' style='height: 600px; overflow: scroll;
+      scroll-behavior: smooth'>
+      <div id='space' style='height: 1000px'></div>
+      <div style='height: 1000px'><a name='link'
+    id='content'>hello</a></div>
+    </div>
+  )HTML");
 
   Element* content = GetDocument().getElementById("content");
   Element* container = GetDocument().getElementById("container");
@@ -373,11 +379,12 @@ TEST_F(SmoothScrollTest, FindDoesNotScrollOverflowHidden) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<div id='container' style='height: 400px; overflow: hidden;'>"
-      "  <div id='space' style='height: 500px'></div>"
-      "  <div style='height: 500px'>hello</div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <div id='container' style='height: 400px; overflow: hidden;'>
+      <div id='space' style='height: 500px'></div>
+      <div style='height: 500px'>hello</div>
+    </div>
+  )HTML");
   Element* container = GetDocument().getElementById("container");
   Compositor().BeginFrame();
   ASSERT_EQ(container->scrollTop(), 0);
@@ -423,41 +430,42 @@ TEST_F(SmoothScrollTest, RemoveSequencedScrollableArea) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  request.Complete(
-      "<!DOCTYPE html>"
-      "<style>"
-      ".scroller {"
-      "  scroll-behavior: smooth;"
-      "  overflow: scroll;"
-      "  position: absolute;"
-      "  z-index: 0;"
-      "  border: 10px solid #cce;"
-      "}"
-      "#outer {"
-      "  width: 350px;"
-      "  height: 200px;"
-      "  left: 50px;"
-      "  top: 50px;"
-      "}"
-      "#inner {"
-      "  width: 200px;"
-      "  height: 100px;"
-      "  left: 50px;"
-      "  top: 200px;"
-      "}"
-      "#target {"
-      "  margin: 200px 0 20px 200px;"
-      "  width: 50px;"
-      "  height: 30px;"
-      "  background-color: #c88;"
-      "}"
-      "</style>"
-      "<body>"
-      "<div class='scroller' id='outer'>"
-      "  <div class='scroller' id='inner'>"
-      "    <div id='target'></div>"
-      "  </div>"
-      "</div>");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    .scroller {
+      scroll-behavior: smooth;
+      overflow: scroll;
+      position: absolute;
+      z-index: 0;
+      border: 10px solid #cce;
+    }
+    #outer {
+      width: 350px;
+      height: 200px;
+      left: 50px;
+      top: 50px;
+    }
+    #inner {
+      width: 200px;
+      height: 100px;
+      left: 50px;
+      top: 200px;
+    }
+    #target {
+      margin: 200px 0 20px 200px;
+      width: 50px;
+      height: 30px;
+      background-color: #c88;
+    }
+    </style>
+    <body>
+    <div class='scroller' id='outer'>
+      <div class='scroller' id='inner'>
+        <div id='target'></div>
+      </div>
+    </div>
+  )HTML");
 
   Compositor().BeginFrame();
 

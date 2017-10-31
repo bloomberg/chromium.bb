@@ -72,10 +72,11 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(
-      "<div id='leading-space' style='height: 700px;'></div>"
-      "<div id='target'></div>"
-      "<div id='trailing-space' style='height: 700px;'></div>");
+  main_resource.Complete(R"HTML(
+    <div id='leading-space' style='height: 700px;'></div>
+    <div id='target'></div>
+    <div id='trailing-space' style='height: 700px;'></div>
+  )HTML");
 
   IntersectionObserverInit observer_init;
   DummyExceptionStateForTesting exception_state;
@@ -131,10 +132,11 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(
-      "<div id='leading-space' style='height: 700px;'></div>"
-      "<div id='target'></div>"
-      "<div id='trailing-space' style='height: 700px;'></div>");
+  main_resource.Complete(R"HTML(
+    <div id='leading-space' style='height: 700px;'></div>
+    <div id='target'></div>
+    <div id='trailing-space' style='height: 700px;'></div>
+  )HTML");
 
   IntersectionObserverInit observer_init;
   DummyExceptionStateForTesting exception_state;

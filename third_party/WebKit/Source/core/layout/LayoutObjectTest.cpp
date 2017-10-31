@@ -119,13 +119,14 @@ TEST_F(
 }
 
 TEST_F(LayoutObjectTest, PaintingLayerOfOverflowClipLayerUnderColumnSpanAll) {
-  SetBodyInnerHTML(
-      "<div id='columns' style='columns: 3'>"
-      "  <div style='column-span: all'>"
-      "    <div id='overflow-clip-layer' style='height: 100px; overflow: "
-      "hidden'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='columns' style='columns: 3'>
+      <div style='column-span: all'>
+        <div id='overflow-clip-layer' style='height: 100px; overflow:
+    hidden'></div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutObject* overflow_clip_object =
       GetLayoutObjectByElementId("overflow-clip-layer");
@@ -134,12 +135,13 @@ TEST_F(LayoutObjectTest, PaintingLayerOfOverflowClipLayerUnderColumnSpanAll) {
 }
 
 TEST_F(LayoutObjectTest, FloatUnderBlock) {
-  SetBodyInnerHTML(
-      "<div id='layered-div' style='position: absolute'>"
-      "  <div id='container'>"
-      "    <div id='floating' style='float: left'>FLOAT</div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='layered-div' style='position: absolute'>
+      <div id='container'>
+        <div id='floating' style='float: left'>FLOAT</div>
+      </div>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject* layered_div =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("layered-div"));
@@ -154,14 +156,15 @@ TEST_F(LayoutObjectTest, FloatUnderBlock) {
 }
 
 TEST_F(LayoutObjectTest, FloatUnderInline) {
-  SetBodyInnerHTML(
-      "<div id='layered-div' style='position: absolute'>"
-      "  <div id='container'>"
-      "    <span id='layered-span' style='position: relative'>"
-      "      <div id='floating' style='float: left'>FLOAT</div>"
-      "    </span>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='layered-div' style='position: absolute'>
+      <div id='container'>
+        <span id='layered-span' style='position: relative'>
+          <div id='floating' style='float: left'>FLOAT</div>
+        </span>
+      </div>
+    </div>
+  )HTML");
 
   LayoutBoxModelObject* layered_div =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("layered-div"));

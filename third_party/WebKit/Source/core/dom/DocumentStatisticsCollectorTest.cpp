@@ -62,10 +62,11 @@ TEST_F(DocumentStatisticsCollectorTest, HasOpenGraphArticle) {
 
 // This test checks non-existence of open graph articles can be recognized.
 TEST_F(DocumentStatisticsCollectorTest, NoOpenGraphArticle) {
-  SetHtmlInnerHTML(
-      "<head>"
-      "    <meta property='og:type' content='movie' />"
-      "</head>");
+  SetHtmlInnerHTML(R"HTML(
+    <head>
+        <meta property='og:type' content='movie' />
+    </head>
+  )HTML");
   WebDistillabilityFeatures features =
       DocumentStatisticsCollector::CollectStatistics(GetDocument());
 
@@ -74,14 +75,15 @@ TEST_F(DocumentStatisticsCollectorTest, NoOpenGraphArticle) {
 
 // This test checks element counts are correct.
 TEST_F(DocumentStatisticsCollectorTest, CountElements) {
-  SetHtmlInnerHTML(
-      "<form>"
-      "    <input type='text'>"
-      "    <input type='password'>"
-      "</form>"
-      "<pre></pre>"
-      "<p><a>    </a></p>"
-      "<ul><li><p><a>    </a></p></li></ul>");
+  SetHtmlInnerHTML(R"HTML(
+    <form>
+        <input type='text'>
+        <input type='password'>
+    </form>
+    <pre></pre>
+    <p><a>    </a></p>
+    <ul><li><p><a>    </a></p></li></ul>
+  )HTML");
   WebDistillabilityFeatures features =
       DocumentStatisticsCollector::CollectStatistics(GetDocument());
 

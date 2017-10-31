@@ -19,22 +19,23 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(PaintPropertyTreeUpdateTest,
        ThreadedScrollingDisabledMainThreadScrollReason) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #overflowA {"
-      "    position: absolute;"
-      "    overflow: scroll;"
-      "    width: 20px;"
-      "    height: 20px;"
-      "  }"
-      "  .forceScroll {"
-      "    height: 4000px;"
-      "  }"
-      "</style>"
-      "<div id='overflowA'>"
-      "  <div class='forceScroll'></div>"
-      "</div>"
-      "<div class='forceScroll'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #overflowA {
+        position: absolute;
+        overflow: scroll;
+        width: 20px;
+        height: 20px;
+      }
+      .forceScroll {
+        height: 4000px;
+      }
+    </style>
+    <div id='overflowA'>
+      <div class='forceScroll'></div>
+    </div>
+    <div class='forceScroll'></div>
+  )HTML");
   Element* overflow_a = GetDocument().getElementById("overflowA");
   EXPECT_FALSE(FrameScroll()->ThreadedScrollingDisabled());
   EXPECT_FALSE(overflow_a->GetLayoutObject()
@@ -61,35 +62,36 @@ TEST_P(PaintPropertyTreeUpdateTest,
 
 TEST_P(PaintPropertyTreeUpdateTest,
        BackgroundAttachmentFixedMainThreadScrollReasonsWithNestedScrollers) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #overflowA {"
-      "    position: absolute;"
-      "    overflow: scroll;"
-      "    width: 20px;"
-      "    height: 20px;"
-      "  }"
-      "  #overflowB {"
-      "    position: absolute;"
-      "    overflow: scroll;"
-      "    width: 5px;"
-      "    height: 3px;"
-      "  }"
-      "  .backgroundAttachmentFixed {"
-      "    background-image: url('foo');"
-      "    background-attachment: fixed;"
-      "  }"
-      "  .forceScroll {"
-      "    height: 4000px;"
-      "  }"
-      "</style>"
-      "<div id='overflowA'>"
-      "  <div id='overflowB' class='backgroundAttachmentFixed'>"
-      "    <div class='forceScroll'></div>"
-      "  </div>"
-      "  <div class='forceScroll'></div>"
-      "</div>"
-      "<div class='forceScroll'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #overflowA {
+        position: absolute;
+        overflow: scroll;
+        width: 20px;
+        height: 20px;
+      }
+      #overflowB {
+        position: absolute;
+        overflow: scroll;
+        width: 5px;
+        height: 3px;
+      }
+      .backgroundAttachmentFixed {
+        background-image: url('foo');
+        background-attachment: fixed;
+      }
+      .forceScroll {
+        height: 4000px;
+      }
+    </style>
+    <div id='overflowA'>
+      <div id='overflowB' class='backgroundAttachmentFixed'>
+        <div class='forceScroll'></div>
+      </div>
+      <div class='forceScroll'></div>
+    </div>
+    <div class='forceScroll'></div>
+  )HTML");
   Element* overflow_a = GetDocument().getElementById("overflowA");
   Element* overflow_b = GetDocument().getElementById("overflowB");
 
@@ -143,17 +145,18 @@ TEST_P(PaintPropertyTreeUpdateTest,
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ParentFrameMainThreadScrollReasons) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "  .fixedBackground {"
-      "    background-image: url('foo');"
-      "    background-attachment: fixed;"
-      "  }"
-      "</style>"
-      "<iframe></iframe>"
-      "<div id='fixedBackground' class='fixedBackground'></div>"
-      "<div id='forceScroll' style='height: 8888px;'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .fixedBackground {
+        background-image: url('foo');
+        background-attachment: fixed;
+      }
+    </style>
+    <iframe></iframe>
+    <div id='fixedBackground' class='fixedBackground'></div>
+    <div id='forceScroll' style='height: 8888px;'></div>
+  )HTML");
   SetChildFrameHTML(
       "<style>body { margin: 0; }</style>"
       "<div id='forceScroll' style='height: 8888px;'></div>");
@@ -178,20 +181,22 @@ TEST_P(PaintPropertyTreeUpdateTest, ParentFrameMainThreadScrollReasons) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ChildFrameMainThreadScrollReasons) {
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<iframe></iframe>"
-      "<div id='forceScroll' style='height: 8888px;'></div>");
-  SetChildFrameHTML(
-      "<style>"
-      "  body { margin: 0; }"
-      "  .fixedBackground {"
-      "    background-image: url('foo');"
-      "    background-attachment: fixed;"
-      "  }"
-      "</style>"
-      "<div id='fixedBackground' class='fixedBackground'></div>"
-      "<div id='forceScroll' style='height: 8888px;'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <iframe></iframe>
+    <div id='forceScroll' style='height: 8888px;'></div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      body { margin: 0; }
+      .fixedBackground {
+        background-image: url('foo');
+        background-attachment: fixed;
+      }
+    </style>
+    <div id='fixedBackground' class='fixedBackground'></div>
+    <div id='forceScroll' style='height: 8888px;'></div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   LocalFrameView* parent = GetDocument().View();
@@ -215,35 +220,36 @@ TEST_P(PaintPropertyTreeUpdateTest, ChildFrameMainThreadScrollReasons) {
 
 TEST_P(PaintPropertyTreeUpdateTest,
        BackgroundAttachmentFixedMainThreadScrollReasonsWithFixedScroller) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  #overflowA {"
-      "    position: absolute;"
-      "    overflow: scroll;"
-      "    width: 20px;"
-      "    height: 20px;"
-      "  }"
-      "  #overflowB {"
-      "    position: fixed;"
-      "    overflow: scroll;"
-      "    width: 5px;"
-      "    height: 3px;"
-      "  }"
-      "  .backgroundAttachmentFixed {"
-      "    background-image: url('foo');"
-      "    background-attachment: fixed;"
-      "  }"
-      "  .forceScroll {"
-      "    height: 4000px;"
-      "  }"
-      "</style>"
-      "<div id='overflowA'>"
-      "  <div id='overflowB' class='backgroundAttachmentFixed'>"
-      "    <div class='forceScroll'></div>"
-      "  </div>"
-      "  <div class='forceScroll'></div>"
-      "</div>"
-      "<div class='forceScroll'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #overflowA {
+        position: absolute;
+        overflow: scroll;
+        width: 20px;
+        height: 20px;
+      }
+      #overflowB {
+        position: fixed;
+        overflow: scroll;
+        width: 5px;
+        height: 3px;
+      }
+      .backgroundAttachmentFixed {
+        background-image: url('foo');
+        background-attachment: fixed;
+      }
+      .forceScroll {
+        height: 4000px;
+      }
+    </style>
+    <div id='overflowA'>
+      <div id='overflowB' class='backgroundAttachmentFixed'>
+        <div class='forceScroll'></div>
+      </div>
+      <div class='forceScroll'></div>
+    </div>
+    <div class='forceScroll'></div>
+  )HTML");
   Element* overflow_a = GetDocument().getElementById("overflowA");
   Element* overflow_b = GetDocument().getElementById("overflowB");
 
@@ -295,11 +301,12 @@ TEST_P(PaintPropertyTreeUpdateTest,
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, DescendantNeedsUpdateAcrossFrames) {
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id='divWithTransform' style='transform: translate3d(1px,2px,3px);'>"
-      "  <iframe style='border: 7px solid black'></iframe>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='divWithTransform' style='transform: translate3d(1px,2px,3px);'>
+      <iframe style='border: 7px solid black'></iframe>
+    </div>
+  )HTML");
   SetChildFrameHTML(
       "<style>body { margin: 0; }</style><div id='transform' style='transform: "
       "translate3d(4px, 5px, 6px); width: 100px; height: 200px'></div>");
@@ -369,15 +376,17 @@ TEST_P(PaintPropertyTreeUpdateTest, UpdatingFrameViewContentClip) {
 // testing with real frame viewport intersection observer. This one tests
 // paint property update with or without AllowThrottlingScope.
 TEST_P(PaintPropertyTreeUpdateTest, BuildingStopsAtThrottledFrames) {
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id='transform' style='transform: translate3d(4px, 5px, 6px);'>"
-      "</div>"
-      "<iframe id='iframe' sandbox></iframe>");
-  SetChildFrameHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id='iframeTransform'"
-      "  style='transform: translate3d(4px, 5px, 6px);'/>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='transform' style='transform: translate3d(4px, 5px, 6px);'>
+    </div>
+    <iframe id='iframe' sandbox></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='iframeTransform'
+      style='transform: translate3d(4px, 5px, 6px);'/>
+  )HTML");
 
   // Move the child frame offscreen so it becomes available for throttling.
   auto* iframe = ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
@@ -445,12 +454,13 @@ TEST_P(PaintPropertyTreeUpdateTest, BuildingStopsAtThrottledFrames) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ClipChangesUpdateOverflowClip) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin:0 }"
-      "  #div { overflow:hidden; height:0px; }"
-      "</style>"
-      "<div id='div'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin:0 }
+      #div { overflow:hidden; height:0px; }
+    </style>
+    <div id='div'></div>
+  )HTML");
   auto* div = GetDocument().getElementById("div");
   div->setAttribute(HTMLNames::styleAttr, "display:inline-block; width:7px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -512,12 +522,13 @@ TEST_P(PaintPropertyTreeUpdateTest, ClipChangesUpdateOverflowClip) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ContainPaintChangesUpdateOverflowClip) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin:0 }"
-      "  #div { will-change:transform; width:7px; height:6px; }"
-      "</style>"
-      "<div id='div' style='contain:paint;'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin:0 }
+      #div { will-change:transform; width:7px; height:6px; }
+    </style>
+    <div id='div' style='contain:paint;'></div>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
   auto* div = GetDocument().getElementById("div");
   auto* properties =
@@ -547,11 +558,12 @@ TEST_P(PaintPropertyTreeUpdateTest, NoPaintPropertyUpdateOnBackgroundChange) {
 // Disabled due to stale scrollsOverflow values, see: https://crbug.com/675296.
 TEST_P(PaintPropertyTreeUpdateTest,
        DISABLED_FrameVisibilityChangeUpdatesProperties) {
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div id='iframeContainer'>"
-      "  <iframe id='iframe' style='width: 100px; height: 100px;'></iframe>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div id='iframeContainer'>
+      <iframe id='iframe' style='width: 100px; height: 100px;'></iframe>
+    </div>
+  )HTML");
   SetChildFrameHTML(
       "<style>body { margin: 0; }</style>"
       "<div id='forceScroll' style='height: 3000px;'></div>");
@@ -641,19 +653,20 @@ TEST_P(PaintPropertyTreeUpdateTest,
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, PerspectiveOriginUpdatesOnSizeChanges) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0 }"
-      "  #perspective {"
-      "    position: absolute;"
-      "    perspective: 100px;"
-      "    width: 100px;"
-      "    perspective-origin: 50% 50% 0;"
-      "  }"
-      "</style>"
-      "<div id='perspective'>"
-      "  <div id='contents'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      #perspective {
+        position: absolute;
+        perspective: 100px;
+        width: 100px;
+        perspective-origin: 50% 50% 0;
+      }
+    </style>
+    <div id='perspective'>
+      <div id='contents'></div>
+    </div>
+  )HTML");
 
   auto* perspective = GetLayoutObjectByElementId("perspective");
   EXPECT_EQ(
@@ -675,16 +688,17 @@ TEST_P(PaintPropertyTreeUpdateTest, PerspectiveOriginUpdatesOnSizeChanges) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, TransformUpdatesOnRelativeLengthChanges) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0 }"
-      "  #transform {"
-      "    transform: translate3d(50%, 50%, 0);"
-      "    width: 100px;"
-      "    height: 200px;"
-      "  }"
-      "</style>"
-      "<div id='transform'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      #transform {
+        transform: translate3d(50%, 50%, 0);
+        width: 100px;
+        height: 200px;
+      }
+    </style>
+    <div id='transform'></div>
+  )HTML");
 
   auto* transform = GetDocument().getElementById("transform");
   auto* transform_object = transform->GetLayoutObject();
@@ -704,22 +718,23 @@ TEST_P(PaintPropertyTreeUpdateTest, TransformUpdatesOnRelativeLengthChanges) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, CSSClipDependingOnSize) {
-  SetBodyInnerHTML(
-      "<style>"
-      "  body { margin: 0 }"
-      "  #outer {"
-      "    position: absolute;"
-      "    width: 100px; height: 100px; top: 50px; left: 50px;"
-      "  }"
-      "  #clip {"
-      "    position: absolute;"
-      "    clip: rect(auto auto auto -5px);"
-      "    top: 0; left: 0; right: 0; bottom: 0;"
-      "  }"
-      "</style>"
-      "<div id='outer'>"
-      "  <div id='clip'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body { margin: 0 }
+      #outer {
+        position: absolute;
+        width: 100px; height: 100px; top: 50px; left: 50px;
+      }
+      #clip {
+        position: absolute;
+        clip: rect(auto auto auto -5px);
+        top: 0; left: 0; right: 0; bottom: 0;
+      }
+    </style>
+    <div id='outer'>
+      <div id='clip'></div>
+    </div>
+  )HTML");
 
   auto* outer = GetDocument().getElementById("outer");
   auto* clip = GetLayoutObjectByElementId("clip");
@@ -735,11 +750,12 @@ TEST_P(PaintPropertyTreeUpdateTest, CSSClipDependingOnSize) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
-  SetBodyInnerHTML(
-      "<div id='container'"
-      "    style='width: 100px; height: 100px; overflow: scroll'>"
-      "  <div id='content' style='width: 200px; height: 200px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container'
+        style='width: 100px; height: 100px; overflow: scroll'>
+      <div id='content' style='width: 200px; height: 200px'></div>
+    </div>
+  )HTML");
 
   auto* container = GetLayoutObjectByElementId("container");
   auto* scroll_node = container->FirstFragment()
@@ -761,12 +777,13 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollBoundsChange) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
-  SetBodyInnerHTML(
-      "<style>::-webkit-scrollbar {width: 20px; height: 20px}</style>"
-      "<div id='container'"
-      "    style='width: 100px; height: 100px; overflow: scroll'>"
-      "  <div id='content' style='width: 200px; height: 200px'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>::-webkit-scrollbar {width: 20px; height: 20px}</style>
+    <div id='container'
+        style='width: 100px; height: 100px; overflow: scroll'>
+      <div id='content' style='width: 200px; height: 200px'></div>
+    </div>
+  )HTML");
 
   auto* container = GetLayoutObjectByElementId("container");
   auto* overflow_clip =
@@ -784,10 +801,11 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, Preserve3DChange) {
-  SetBodyInnerHTML(
-      "<div id='parent'>"
-      "  <div id='child' style='transform: translate3D(1px, 2px, 3px)'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent'>
+      <div id='child' style='transform: translate3D(1px, 2px, 3px)'></div>
+    </div>
+  )HTML");
 
   auto* child = GetLayoutObjectByElementId("child");
   auto* transform = child->FirstFragment().PaintProperties()->Transform();
@@ -801,11 +819,12 @@ TEST_P(PaintPropertyTreeUpdateTest, Preserve3DChange) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, MenuListControlClipChange) {
-  SetBodyInnerHTML(
-      "<select id='select' style='white-space: normal'>"
-      "  <option></option>"
-      "  <option>bar</option>"
-      "</select>");
+  SetBodyInnerHTML(R"HTML(
+    <select id='select' style='white-space: normal'>
+      <option></option>
+      <option>bar</option>
+    </select>
+  )HTML");
 
   auto* select = GetLayoutObjectByElementId("select");
   EXPECT_NE(nullptr, select->FirstFragment().PaintProperties()->OverflowClip());
@@ -817,11 +836,12 @@ TEST_P(PaintPropertyTreeUpdateTest, MenuListControlClipChange) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, BoxAddRemoveMask) {
-  SetBodyInnerHTML(
-      "<style>#target {width: 100px; height: 100px}</style>"
-      "<div id='target'>"
-      "  <div style='width:500px; height:500px; background:green;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#target {width: 100px; height: 100px}</style>
+    <div id='target'>
+      <div style='width:500px; height:500px; background:green;'></div>
+    </div>
+  )HTML");
 
   EXPECT_EQ(nullptr, PaintPropertiesForElement("target"));
 
@@ -844,17 +864,18 @@ TEST_P(PaintPropertyTreeUpdateTest, BoxAddRemoveMask) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, MaskClipNodeBoxSizeChange) {
-  SetBodyInnerHTML(
-      "<style>"
-      "#target {"
-      "  width: 100px;"
-      "  height: 100px;"
-      "  -webkit-mask: linear-gradient(red, blue);"
-      "}"
-      "</style>"
-      "<div id='target'>"
-      "  <div style='width:500px; height:500px; background:green;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #target {
+      width: 100px;
+      height: 100px;
+      -webkit-mask: linear-gradient(red, blue);
+    }
+    </style>
+    <div id='target'>
+      <div style='width:500px; height:500px; background:green;'></div>
+    </div>
+  )HTML");
 
   const auto* properties = PaintPropertiesForElement("target");
   ASSERT_NE(nullptr, properties);
@@ -895,10 +916,11 @@ TEST_P(PaintPropertyTreeUpdateTest, InlineAddRemoveMask) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, MaskClipNodeInlineBoundsChange) {
-  SetBodyInnerHTML(
-      "<span id='target' style='-webkit-mask: linear-gradient(red, blue)'>"
-      "  <img id='img' style='width: 50px'>"
-      "</span>");
+  SetBodyInnerHTML(R"HTML(
+    <span id='target' style='-webkit-mask: linear-gradient(red, blue)'>
+      <img id='img' style='width: 50px'>
+    </span>
+  )HTML");
 
   const auto* properties = PaintPropertiesForElement("target");
   ASSERT_NE(nullptr, properties);
@@ -915,15 +937,16 @@ TEST_P(PaintPropertyTreeUpdateTest, MaskClipNodeInlineBoundsChange) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, AddRemoveSVGMask) {
-  SetBodyInnerHTML(
-      "<svg width='200' height='200'>"
-      "  <rect id='rect' x='0' y='100' width='100' height='100' fill='blue'/>"
-      "  <defs>"
-      "    <mask id='mask' x='0' y='0' width='100' height='200'>"
-      "      <rect width='100' height='200' fill='red'/>"
-      "    </mask>"
-      "  </defs>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg width='200' height='200'>
+      <rect id='rect' x='0' y='100' width='100' height='100' fill='blue'/>
+      <defs>
+        <mask id='mask' x='0' y='0' width='100' height='200'>
+          <rect width='100' height='200' fill='red'/>
+        </mask>
+      </defs>
+    </svg>
+  )HTML");
 
   EXPECT_EQ(nullptr, PaintPropertiesForElement("rect"));
 
@@ -943,17 +966,18 @@ TEST_P(PaintPropertyTreeUpdateTest, AddRemoveSVGMask) {
 }
 
 TEST_P(PaintPropertyTreeUpdateTest, SVGMaskTargetBoundsChange) {
-  SetBodyInnerHTML(
-      "<svg width='500' height='500'>"
-      "  <g id='target' mask='url(#mask)'>"
-      "    <rect id='rect' x='0' y='50' width='50' height='100' fill='blue'/>"
-      "  </g>"
-      "  <defs>"
-      "    <mask id='mask' x='0' y='0' width='100' height='200'>"
-      "      <rect width='100' height='200' fill='red'/>"
-      "    </mask>"
-      "  </defs>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg width='500' height='500'>
+      <g id='target' mask='url(#mask)'>
+        <rect id='rect' x='0' y='50' width='50' height='100' fill='blue'/>
+      </g>
+      <defs>
+        <mask id='mask' x='0' y='0' width='100' height='200'>
+          <rect width='100' height='200' fill='red'/>
+        </mask>
+      </defs>
+    </svg>
+  )HTML");
 
   const auto* properties = PaintPropertiesForElement("target");
   ASSERT_NE(nullptr, properties);

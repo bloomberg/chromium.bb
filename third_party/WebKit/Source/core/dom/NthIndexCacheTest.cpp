@@ -28,18 +28,19 @@ void NthIndexCacheTest::SetUp() {
 }
 
 TEST_F(NthIndexCacheTest, NthIndex) {
-  GetDocument().documentElement()->SetInnerHTMLFromString(
-      "<body>"
-      "<span "
-      "id=first></span><span></span><span></span><span></span><span></span>"
-      "<span></span><span></span><span></span><span></span><span></span>"
-      "Text does not count"
-      "<span id=nth-last-child></span>"
-      "<span id=nth-child></span>"
-      "<span></span><span></span><span></span><span></span><span></span>"
-      "<span></span><span></span><span></span><span></span><span "
-      "id=last></span>"
-      "</body>");
+  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+    <body>
+    <span
+    id=first></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    Text does not count
+    <span id=nth-last-child></span>
+    <span id=nth-child></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span
+    id=last></span>
+    </body>
+  )HTML");
 
   NthIndexCache nth_index_cache(GetDocument());
 

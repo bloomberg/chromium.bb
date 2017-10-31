@@ -141,11 +141,12 @@ TEST_P(MapCoordinatesTest, SimpleInline) {
 }
 
 TEST_P(MapCoordinatesTest, SimpleBlock) {
-  SetBodyInnerHTML(
-      "<div style='margin:666px; border:8px solid; padding:7px;'>"
-      "    <div id='target' style='margin:10px; border:666px; "
-      "padding:666px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='margin:666px; border:8px solid; padding:7px;'>
+        <div id='target' style='margin:10px; border:666px;
+    padding:666px;'></div>
+    </div>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   FloatPoint mapped_point = MapLocalToAncestor(
@@ -157,13 +158,14 @@ TEST_P(MapCoordinatesTest, SimpleBlock) {
 }
 
 TEST_P(MapCoordinatesTest, OverflowClip) {
-  SetBodyInnerHTML(
-      "<div id='overflow' style='height: 100px; width: 100px; border:8px "
-      "solid; padding:7px; overflow:scroll'>"
-      "    <div style='height:200px; width:200px'></div>"
-      "    <div id='target' style='margin:10px; border:666px; "
-      "padding:666px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='overflow' style='height: 100px; width: 100px; border:8px
+    solid; padding:7px; overflow:scroll'>
+        <div style='height:200px; width:200px'></div>
+        <div id='target' style='margin:10px; border:666px;
+    padding:666px;'></div>
+    </div>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutObject* overflow = GetLayoutObjectByElementId("overflow");
@@ -208,13 +210,14 @@ TEST_P(MapCoordinatesTest, RelposInline) {
 }
 
 TEST_P(MapCoordinatesTest, RelposInlineInRelposInline) {
-  SetBodyInnerHTML(
-      "<div style='padding-left:10px;'>"
-      "    <span style='position:relative; left:5px; top:6px;'>"
-      "        <span id='target' style='position:relative; left:50px; "
-      "top:100px;'>text</span>"
-      "    </span>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='padding-left:10px;'>
+        <span style='position:relative; left:5px; top:6px;'>
+            <span id='target' style='position:relative; left:50px;
+    top:100px;'>text</span>
+        </span>
+    </div>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutInline* parent = ToLayoutInline(target->Parent());
@@ -241,14 +244,15 @@ TEST_P(MapCoordinatesTest, RelposInlineInRelposInline) {
 }
 
 TEST_P(MapCoordinatesTest, RelPosBlock) {
-  SetBodyInnerHTML(
-      "<div id='container' style='margin:666px; border:8px solid; "
-      "padding:7px;'>"
-      "    <div id='middle' style='margin:30px; border:1px solid;'>"
-      "        <div id='target' style='position:relative; left:50px; top:50px; "
-      "margin:10px; border:666px; padding:666px;'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='margin:666px; border:8px solid;
+    padding:7px;'>
+        <div id='middle' style='margin:30px; border:1px solid;'>
+            <div id='target' style='position:relative; left:50px; top:50px;
+    margin:10px; border:666px; padding:666px;'></div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -275,15 +279,16 @@ TEST_P(MapCoordinatesTest, RelPosBlock) {
 }
 
 TEST_P(MapCoordinatesTest, AbsPos) {
-  SetBodyInnerHTML(
-      "<div id='container' style='position:relative; margin:666px; border:8px "
-      "solid; padding:7px;'>"
-      "    <div id='staticChild' style='margin:30px; padding-top:666px;'>"
-      "        <div style='padding-top:666px;'></div>"
-      "        <div id='target' style='position:absolute; left:-1px; top:-1px; "
-      "margin:10px; border:666px; padding:666px;'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position:relative; margin:666px; border:8px
+    solid; padding:7px;'>
+        <div id='staticChild' style='margin:30px; padding-top:666px;'>
+            <div style='padding-top:666px;'></div>
+            <div id='target' style='position:absolute; left:-1px; top:-1px;
+    margin:10px; border:666px; padding:666px;'></div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -311,15 +316,16 @@ TEST_P(MapCoordinatesTest, AbsPos) {
 }
 
 TEST_P(MapCoordinatesTest, AbsPosAuto) {
-  SetBodyInnerHTML(
-      "<div id='container' style='position:absolute; margin:666px; border:8px "
-      "solid; padding:7px;'>"
-      "    <div id='staticChild' style='margin:30px; padding-top:5px;'>"
-      "        <div style='padding-top:20px;'></div>"
-      "        <div id='target' style='position:absolute; margin:10px; "
-      "border:666px; padding:666px;'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position:absolute; margin:666px; border:8px
+    solid; padding:7px;'>
+        <div id='staticChild' style='margin:30px; padding-top:5px;'>
+            <div style='padding-top:20px;'></div>
+            <div id='target' style='position:absolute; margin:10px;
+    border:666px; padding:666px;'></div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -348,15 +354,16 @@ TEST_P(MapCoordinatesTest, AbsPosAuto) {
 
 TEST_P(MapCoordinatesTest, FixedPos) {
   // Assuming BODY margin of 8px.
-  SetBodyInnerHTML(
-      "<div id='container' style='position:absolute; margin:4px; border:5px "
-      "solid; padding:7px;'>"
-      "    <div id='staticChild' style='padding-top:666px;'>"
-      "        <div style='padding-top:666px;'></div>"
-      "        <div id='target' style='position:fixed; left:-1px; top:-1px; "
-      "margin:10px; border:666px; padding:666px;'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position:absolute; margin:4px; border:5px
+    solid; padding:7px;'>
+        <div id='staticChild' style='padding-top:666px;'>
+            <div style='padding-top:666px;'></div>
+            <div id='target' style='position:fixed; left:-1px; top:-1px;
+    margin:10px; border:666px; padding:666px;'></div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* static_child =
@@ -406,15 +413,16 @@ TEST_P(MapCoordinatesTest, FixedPos) {
 
 TEST_P(MapCoordinatesTest, FixedPosAuto) {
   // Assuming BODY margin of 8px.
-  SetBodyInnerHTML(
-      "<div id='container' style='position:absolute; margin:3px; border:8px "
-      "solid; padding:7px;'>"
-      "    <div id='staticChild' style='padding-top:5px;'>"
-      "        <div style='padding-top:20px;'></div>"
-      "        <div id='target' style='position:fixed; margin:10px; "
-      "border:666px; padding:666px;'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position:absolute; margin:3px; border:8px
+    solid; padding:7px;'>
+        <div id='staticChild' style='padding-top:5px;'>
+            <div style='padding-top:20px;'></div>
+            <div id='target' style='position:fixed; margin:10px;
+    border:666px; padding:666px;'></div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* static_child =
@@ -466,18 +474,19 @@ TEST_P(MapCoordinatesTest, FixedPosAuto) {
 
 TEST_P(MapCoordinatesTest, FixedPosInFixedPos) {
   // Assuming BODY margin of 8px.
-  SetBodyInnerHTML(
-      "<div id='container' style='position:absolute; margin:4px; border:5px "
-      "solid; padding:7px;'>"
-      "    <div id='staticChild' style='padding-top:666px;'>"
-      "        <div style='padding-top:666px;'></div>"
-      "        <div id='outerFixed' style='position:fixed; left:100px; "
-      "top:100px; margin:10px; border:666px; padding:666px;'>"
-      "            <div id='target' style='position:fixed; left:-1px; "
-      "top:-1px; margin:10px; border:666px; padding:666px;'></div>"
-      "        </div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position:absolute; margin:4px; border:5px
+    solid; padding:7px;'>
+        <div id='staticChild' style='padding-top:666px;'>
+            <div style='padding-top:666px;'></div>
+            <div id='outerFixed' style='position:fixed; left:100px;
+    top:100px; margin:10px; border:666px; padding:666px;'>
+                <div id='target' style='position:fixed; left:-1px;
+    top:-1px; margin:10px; border:666px; padding:666px;'></div>
+            </div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* outer_fixed =
@@ -534,12 +543,13 @@ TEST_P(MapCoordinatesTest, FixedPosInFixedPos) {
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInFixedPosScrollView) {
-  SetBodyInnerHTML(
-      "<div style='height: 4000px'></div>"
-      "<div id='container' style='position:fixed; top: 100px; left: 100px'>"
-      "  <div id='target' style='position:fixed; top: 200px; left: 200px'>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='height: 4000px'></div>
+    <div id='container' style='position:fixed; top: 100px; left: 100px'>
+      <div id='target' style='position:fixed; top: 200px; left: 200px'>
+      </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -569,12 +579,13 @@ TEST_P(MapCoordinatesTest, FixedPosInFixedPosScrollView) {
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInAbsolutePosScrollView) {
-  SetBodyInnerHTML(
-      "<div style='height: 4000px'></div>"
-      "<div id='container' style='position:absolute; top: 100px; left: 100px'>"
-      "  <div id='target' style='position:fixed; top: 200px; left: 200px'>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='height: 4000px'></div>
+    <div id='container' style='position:absolute; top: 100px; left: 100px'>
+      <div id='target' style='position:fixed; top: 200px; left: 200px'>
+      </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -604,13 +615,14 @@ TEST_P(MapCoordinatesTest, FixedPosInAbsolutePosScrollView) {
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInTransform) {
-  SetBodyInnerHTML(
-      "<style>#container { transform: translateY(100px); position: absolute; "
-      "left: 0; top: 100px; }"
-      ".fixed { position: fixed; top: 0; }"
-      ".spacer { height: 2000px; } </style>"
-      "<div id='container'><div class='fixed' id='target'></div></div>"
-      "<div class='spacer'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#container { transform: translateY(100px); position: absolute;
+    left: 0; top: 100px; }
+    .fixed { position: fixed; top: 0; }
+    .spacer { height: 2000px; } </style>
+    <div id='container'><div class='fixed' id='target'></div></div>
+    <div class='spacer'></div>
+  )HTML");
 
   GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0.0, 50), kProgrammaticScroll);
@@ -645,13 +657,14 @@ TEST_P(MapCoordinatesTest, FixedPosInTransform) {
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInContainPaint) {
-  SetBodyInnerHTML(
-      "<style>#container { contain: paint; position: absolute; left: 0; top: "
-      "100px; }"
-      ".fixed { position: fixed; top: 0; }"
-      ".spacer { height: 2000px; } </style>"
-      "<div id='container'><div class='fixed' id='target'></div></div>"
-      "<div class='spacer'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>#container { contain: paint; position: absolute; left: 0; top:
+    100px; }
+    .fixed { position: fixed; top: 0; }
+    .spacer { height: 2000px; } </style>
+    <div id='container'><div class='fixed' id='target'></div></div>
+    <div class='spacer'></div>
+  )HTML");
 
   GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0.0, 50), kProgrammaticScroll);
@@ -688,12 +701,13 @@ TEST_P(MapCoordinatesTest, FixedPosInContainPaint) {
 // TODO(chrishtr): add more multi-frame tests.
 TEST_P(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<div style='width: 200; height: 8000px'></div>"
-      "<iframe src='http://test.com' width='500' height='500' "
-      "frameBorder='0'>"
-      "</iframe>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <div style='width: 200; height: 8000px'></div>
+    <iframe src='http://test.com' width='500' height='500'
+    frameBorder='0'>
+    </iframe>
+  )HTML");
   SetChildFrameHTML(
       "<style>body { margin: 0; } #target { width: 200px; height: 200px; "
       "position:fixed}</style><div id=target></div>");
@@ -717,11 +731,12 @@ TEST_P(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
 
 TEST_P(MapCoordinatesTest, IFrameTransformed) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<style>body { margin: 0; }</style>"
-      "<iframe style='transform: scale(2)' src='http://test.com' "
-      "width='500' height='500' frameBorder='0'>"
-      "</iframe>");
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; }</style>
+    <iframe style='transform: scale(2)' src='http://test.com'
+    width='500' height='500' frameBorder='0'>
+    </iframe>
+  )HTML");
   SetChildFrameHTML(
       "<style>body { margin: 0; } #target { width: 200px; "
       "height: 8000px}</style><div id=target></div>");
@@ -749,17 +764,19 @@ TEST_P(MapCoordinatesTest, IFrameTransformed) {
 
 TEST_P(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
-  SetBodyInnerHTML(
-      "<style>* { margin: 0; }</style>"
-      "<div style='position: absolute; left: 0px; top: 0px; width: 1024px; "
-      "height: 768px; transform-origin: 0 0; transform: scale(0.5, 0.5);'>"
-      "    <iframe frameborder=0 src='http://test.com' "
-      "sandbox='allow-same-origin' width='1024' height='768'></iframe>"
-      "</div>");
-  SetChildFrameHTML(
-      "<style>* { margin: 0; } #target { width: 200px; height: 200px; "
-      "position:fixed}</style><div id=target></div>"
-      "<div style='width: 200; height: 8000px'></div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>* { margin: 0; }</style>
+    <div style='position: absolute; left: 0px; top: 0px; width: 1024px;
+    height: 768px; transform-origin: 0 0; transform: scale(0.5, 0.5);'>
+        <iframe frameborder=0 src='http://test.com'
+    sandbox='allow-same-origin' width='1024' height='768'></iframe>
+    </div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>* { margin: 0; } #target { width: 200px; height: 200px;
+    position:fixed}</style><div id=target></div>
+    <div style='width: 200; height: 8000px'></div>
+  )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
   ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
@@ -776,12 +793,13 @@ TEST_P(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithText) {
-  SetBodyInnerHTML(
-      "<div id='multicol' style='columns:2; column-gap:20px; width:400px; "
-      "line-height:50px; padding:5px; orphans:1; widows:1;'>"
-      "    <br id='sibling'>"
-      "    text"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='multicol' style='columns:2; column-gap:20px; width:400px;
+    line-height:50px; padding:5px; orphans:1; widows:1;'>
+        <br id='sibling'>
+        text
+    </div>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("sibling")->NextSibling();
   ASSERT_TRUE(target->IsText());
@@ -802,11 +820,12 @@ TEST_P(MapCoordinatesTest, MulticolWithText) {
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithInline) {
-  SetBodyInnerHTML(
-      "<div id='multicol' style='columns:2; column-gap:20px; width:400px; "
-      "line-height:50px; padding:5px; orphans:1; widows:1;'>"
-      "    <span id='target'><br>text</span>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='multicol' style='columns:2; column-gap:20px; width:400px;
+    line-height:50px; padding:5px; orphans:1; widows:1;'>
+        <span id='target'><br>text</span>
+    </div>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutBox* flow_thread = ToLayoutBox(target->Parent());
@@ -826,14 +845,15 @@ TEST_P(MapCoordinatesTest, MulticolWithInline) {
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithBlock) {
-  SetBodyInnerHTML(
-      "<div id='container' style='-webkit-columns:3; -webkit-column-gap:0; "
-      "column-fill:auto; width:300px; height:100px; border:8px solid; "
-      "padding:7px;'>"
-      "    <div style='height:110px;'></div>"
-      "    <div id='target' style='margin:10px; border:13px; "
-      "padding:13px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='-webkit-columns:3; -webkit-column-gap:0;
+    column-fill:auto; width:300px; height:100px; border:8px solid;
+    padding:7px;'>
+        <div style='height:110px;'></div>
+        <div id='target' style='margin:10px; border:13px;
+    padding:13px;'></div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -860,11 +880,12 @@ TEST_P(MapCoordinatesTest, MulticolWithBlock) {
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithBlockAbove) {
-  SetBodyInnerHTML(
-      "<div id='container' style='columns:3; column-gap:0; "
-      "column-fill:auto; width:300px; height:200px;'>"
-      "    <div id='target' style='margin-top:-50px; height:100px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='columns:3; column-gap:0;
+    column-fill:auto; width:300px; height:200px;'>
+        <div id='target' style='margin-top:-50px; height:100px;'></div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -890,17 +911,18 @@ TEST_P(MapCoordinatesTest, MulticolWithBlockAbove) {
 }
 
 TEST_P(MapCoordinatesTest, NestedMulticolWithBlock) {
-  SetBodyInnerHTML(
-      "<div id='outerMulticol' style='columns:2; column-gap:0; "
-      "column-fill:auto; width:560px; height:215px; border:8px solid; "
-      "padding:7px;'>"
-      "    <div style='height:10px;'></div>"
-      "    <div id='innerMulticol' style='columns:2; column-gap:0; border:8px "
-      "solid; padding:7px;'>"
-      "        <div style='height:630px;'></div>"
-      "        <div id='target' style='width:50px; height:50px;'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='outerMulticol' style='columns:2; column-gap:0;
+    column-fill:auto; width:560px; height:215px; border:8px solid;
+    padding:7px;'>
+        <div style='height:10px;'></div>
+        <div id='innerMulticol' style='columns:2; column-gap:0; border:8px
+    solid; padding:7px;'>
+            <div style='height:630px;'></div>
+            <div id='target' style='width:50px; height:50px;'></div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* outer_multicol =
@@ -947,16 +969,17 @@ TEST_P(MapCoordinatesTest, NestedMulticolWithBlock) {
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithAbsPosInRelPos) {
-  SetBodyInnerHTML(
-      "<div id='multicol' style='-webkit-columns:3; -webkit-column-gap:0; "
-      "column-fill:auto; width:300px; height:100px; border:8px solid; "
-      "padding:7px;'>"
-      "    <div style='height:110px;'></div>"
-      "    <div id='relpos' style='position:relative; left:4px; top:4px;'>"
-      "        <div id='target' style='position:absolute; left:15px; top:15px; "
-      "margin:10px; border:13px; padding:13px;'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='multicol' style='-webkit-columns:3; -webkit-column-gap:0;
+    column-fill:auto; width:300px; height:100px; border:8px solid;
+    padding:7px;'>
+        <div style='height:110px;'></div>
+        <div id='relpos' style='position:relative; left:4px; top:4px;'>
+            <div id='target' style='position:absolute; left:15px; top:15px;
+    margin:10px; border:13px; padding:13px;'></div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* multicol = ToLayoutBox(GetLayoutObjectByElementId("multicol"));
@@ -988,17 +1011,18 @@ TEST_P(MapCoordinatesTest, MulticolWithAbsPosInRelPos) {
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithAbsPosNotContained) {
-  SetBodyInnerHTML(
-      "<div id='container' style='position:relative; margin:666px; border:7px "
-      "solid; padding:3px;'>"
-      "    <div id='multicol' style='-webkit-columns:3; -webkit-column-gap:0; "
-      "column-fill:auto; width:300px; height:100px; border:8px solid; "
-      "padding:7px;'>"
-      "        <div style='height:110px;'></div>"
-      "        <div id='target' style='position:absolute; left:-1px; top:-1px; "
-      "margin:10px; border:13px; padding:13px;'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position:relative; margin:666px; border:7px
+    solid; padding:3px;'>
+        <div id='multicol' style='-webkit-columns:3; -webkit-column-gap:0;
+    column-fill:auto; width:300px; height:100px; border:8px solid;
+    padding:7px;'>
+            <div style='height:110px;'></div>
+            <div id='target' style='position:absolute; left:-1px; top:-1px;
+    margin:10px; border:13px; padding:13px;'></div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1035,12 +1059,13 @@ TEST_P(MapCoordinatesTest, MulticolWithAbsPosNotContained) {
 }
 
 TEST_P(MapCoordinatesTest, MulticolRtl) {
-  SetBodyInnerHTML(
-      "<div id='container' style='columns:3; column-gap:0; column-fill:auto; "
-      "width:300px; height:200px; direction:rtl;'>"
-      "    <div style='height:200px;'></div>"
-      "    <div id='target' style='height:50px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='columns:3; column-gap:0; column-fill:auto;
+    width:300px; height:200px; direction:rtl;'>
+        <div style='height:200px;'></div>
+        <div id='target' style='height:50px;'></div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1066,13 +1091,14 @@ TEST_P(MapCoordinatesTest, MulticolRtl) {
 }
 
 TEST_P(MapCoordinatesTest, MulticolWithLargeBorder) {
-  SetBodyInnerHTML(
-      "<div id='container' style='columns:3; column-gap:0; column-fill:auto; "
-      "width:300px; height:200px; border:200px solid;'>"
-      "    <div style='height:200px;'></div>"
-      "    <div id='target' style='height:50px;'></div>"
-      "    <div style='height:200px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='columns:3; column-gap:0; column-fill:auto;
+    width:300px; height:200px; border:200px solid;'>
+        <div style='height:200px;'></div>
+        <div id='target' style='height:50px;'></div>
+        <div style='height:200px;'></div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1098,14 +1124,15 @@ TEST_P(MapCoordinatesTest, MulticolWithLargeBorder) {
 }
 
 TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithText) {
-  SetBodyInnerHTML(
-      "<div style='-webkit-writing-mode:vertical-rl;'>"
-      "    <div style='width:13px;'></div>"
-      "    <div style='width:200px; height:400px; line-height:50px;'>"
-      "        <br id='sibling'>text"
-      "    </div>"
-      "    <div style='width:5px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='-webkit-writing-mode:vertical-rl;'>
+        <div style='width:13px;'></div>
+        <div style='width:200px; height:400px; line-height:50px;'>
+            <br id='sibling'>text
+        </div>
+        <div style='width:5px;'></div>
+    </div>
+  )HTML");
 
   LayoutObject* br = GetLayoutObjectByElementId("sibling");
   LayoutObject* text = br->NextSibling();
@@ -1143,16 +1170,17 @@ TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithText) {
 }
 
 TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithInline) {
-  SetBodyInnerHTML(
-      "<div style='-webkit-writing-mode:vertical-rl;'>"
-      "    <div style='width:13px;'></div>"
-      "    <div style='width:200px; height:400px; line-height:50px;'>"
-      "        <span>"
-      "            <span id='target'><br>text</span>"
-      "        </span>"
-      "    </div>"
-      "    <div style='width:7px;'></div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='-webkit-writing-mode:vertical-rl;'>
+        <div style='width:13px;'></div>
+        <div style='width:200px; height:400px; line-height:50px;'>
+            <span>
+                <span id='target'><br>text</span>
+            </span>
+        </div>
+        <div style='width:7px;'></div>
+    </div>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   ASSERT_TRUE(target);
@@ -1208,14 +1236,15 @@ TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithInline) {
 }
 
 TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithBlock) {
-  SetBodyInnerHTML(
-      "<div id='container' style='-webkit-writing-mode:vertical-rl; border:8px "
-      "solid; padding:7px; width:200px; height:200px;'>"
-      "    <div id='middle' style='border:1px solid;'>"
-      "        <div style='width:30px;'></div>"
-      "        <div id='target' style='margin:6px; width:25px;'></div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='-webkit-writing-mode:vertical-rl; border:8px
+    solid; padding:7px; width:200px; height:200px;'>
+        <div id='middle' style='border:1px solid;'>
+            <div style='width:30px;'></div>
+            <div id='target' style='margin:6px; width:25px;'></div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1240,35 +1269,36 @@ TEST_P(MapCoordinatesTest, FlippedBlocksWritingModeWithBlock) {
 }
 
 TEST_P(MapCoordinatesTest, Table) {
-  SetBodyInnerHTML(
-      "<style>td { padding: 2px; }</style>"
-      "<div id='container' style='border:3px solid;'>"
-      "    <table style='margin:9px; border:5px solid; border-spacing:10px;'>"
-      "        <thead>"
-      "            <tr>"
-      "                <td>"
-      "                    <div style='width:100px; height:100px;'></div>"
-      "                </td>"
-      "            </tr>"
-      "        </thead>"
-      "        <tbody>"
-      "            <tr>"
-      "                <td>"
-      "                    <div style='width:100px; height:100px;'></div>"
-      "                 </td>"
-      "            </tr>"
-      "            <tr>"
-      "                <td>"
-      "                     <div style='width:100px; height:100px;'></div>"
-      "                </td>"
-      "                <td>"
-      "                    <div id='target' style='width:100px; "
-      "height:10px;'></div>"
-      "                </td>"
-      "            </tr>"
-      "        </tbody>"
-      "    </table>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <style>td { padding: 2px; }</style>
+    <div id='container' style='border:3px solid;'>
+        <table style='margin:9px; border:5px solid; border-spacing:10px;'>
+            <thead>
+                <tr>
+                    <td>
+                        <div style='width:100px; height:100px;'></div>
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div style='width:100px; height:100px;'></div>
+                     </td>
+                </tr>
+                <tr>
+                    <td>
+                         <div style='width:100px; height:100px;'></div>
+                    </td>
+                    <td>
+                        <div id='target' style='width:100px;
+    height:10px;'></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1339,16 +1369,17 @@ static bool FloatQuadsAlmostEqual(const FloatQuad& expected,
   } while (false)
 
 TEST_P(MapCoordinatesTest, Transforms) {
-  SetBodyInnerHTML(
-      "<div id='container'>"
-      "    <div id='outerTransform' style='transform:rotate(45deg); "
-      "width:200px; height:200px;'>"
-      "        <div id='innerTransform' style='transform:rotate(45deg); "
-      "width:200px; height:200px;'>"
-      "            <div id='target' style='width:200px; height:200px;'></div>"
-      "        </div>"
-      "    </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container'>
+        <div id='outerTransform' style='transform:rotate(45deg);
+    width:200px; height:200px;'>
+            <div id='innerTransform' style='transform:rotate(45deg);
+    width:200px; height:200px;'>
+                <div id='target' style='width:200px; height:200px;'></div>
+            </div>
+        </div>
+    </div>
+  )HTML");
 
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1406,12 +1437,13 @@ TEST_P(MapCoordinatesTest, Transforms) {
 }
 
 TEST_P(MapCoordinatesTest, SVGShape) {
-  SetBodyInnerHTML(
-      "<svg id='container'>"
-      "    <g transform='translate(100 200)'>"
-      "        <rect id='target' width='100' height='100'/>"
-      "    </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='container'>
+        <g transform='translate(100 200)'>
+            <rect id='target' width='100' height='100'/>
+        </g>
+    </svg>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1423,13 +1455,14 @@ TEST_P(MapCoordinatesTest, SVGShape) {
 }
 
 TEST_P(MapCoordinatesTest, SVGShapeScale) {
-  SetBodyInnerHTML(
-      "<svg id='container'>"
-      "    <g transform='scale(2) translate(50 40)'>"
-      "        <rect id='target' transform='translate(50 80)' x='66' y='77' "
-      "width='100' height='100'/>"
-      "    </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='container'>
+        <g transform='scale(2) translate(50 40)'>
+            <rect id='target' transform='translate(50 80)' x='66' y='77'
+    width='100' height='100'/>
+        </g>
+    </svg>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1441,12 +1474,13 @@ TEST_P(MapCoordinatesTest, SVGShapeScale) {
 }
 
 TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithoutScale) {
-  SetBodyInnerHTML(
-      "<svg id='container' viewBox='0 0 200 200' width='400' height='200'>"
-      "    <g transform='translate(100 50)'>"
-      "        <rect id='target' width='100' height='100'/>"
-      "    </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='container' viewBox='0 0 200 200' width='400' height='200'>
+        <g transform='translate(100 50)'>
+            <rect id='target' width='100' height='100'/>
+        </g>
+    </svg>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1458,12 +1492,13 @@ TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithoutScale) {
 }
 
 TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithScale) {
-  SetBodyInnerHTML(
-      "<svg id='container' viewBox='0 0 100 100' width='400' height='200'>"
-      "    <g transform='translate(50 50)'>"
-      "        <rect id='target' width='100' height='100'/>"
-      "    </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='container' viewBox='0 0 100 100' width='400' height='200'>
+        <g transform='translate(50 50)'>
+            <rect id='target' width='100' height='100'/>
+        </g>
+    </svg>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1475,13 +1510,14 @@ TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithScale) {
 }
 
 TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffset) {
-  SetBodyInnerHTML(
-      "<svg id='container' viewBox='100 100 200 200' width='400' height='200'>"
-      "    <g transform='translate(100 50)'>"
-      "        <rect id='target' transform='translate(100 100)' width='100' "
-      "height='100'/>"
-      "    </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='container' viewBox='100 100 200 200' width='400' height='200'>
+        <g transform='translate(100 50)'>
+            <rect id='target' transform='translate(100 100)' width='100'
+    height='100'/>
+        </g>
+    </svg>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1493,13 +1529,14 @@ TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffset) {
 }
 
 TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffsetAndScale) {
-  SetBodyInnerHTML(
-      "<svg id='container' viewBox='100 100 100 100' width='400' height='200'>"
-      "    <g transform='translate(50 50)'>"
-      "        <rect id='target' transform='translate(100 100)' width='100' "
-      "height='100'/>"
-      "    </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='container' viewBox='100 100 100 100' width='400' height='200'>
+        <g transform='translate(50 50)'>
+            <rect id='target' transform='translate(100 100)' width='100'
+    height='100'/>
+        </g>
+    </svg>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1511,17 +1548,18 @@ TEST_P(MapCoordinatesTest, SVGShapeWithViewBoxWithNonZeroOffsetAndScale) {
 }
 
 TEST_P(MapCoordinatesTest, SVGForeignObject) {
-  SetBodyInnerHTML(
-      "<svg id='container' viewBox='0 0 100 100' width='400' height='200'>"
-      "    <g transform='translate(50 50)'>"
-      "        <foreignObject transform='translate(-25 -25)'>"
-      "            <div xmlns='http://www.w3.org/1999/xhtml' id='target' "
-      "style='margin-left: 50px; border: 42px; padding: 84px; width: 50px; "
-      "height: 50px'>"
-      "            </div>"
-      "        </foreignObject>"
-      "    </g>"
-      "</svg>");
+  SetBodyInnerHTML(R"HTML(
+    <svg id='container' viewBox='0 0 100 100' width='400' height='200'>
+        <g transform='translate(50 50)'>
+            <foreignObject transform='translate(-25 -25)'>
+                <div xmlns='http://www.w3.org/1999/xhtml' id='target'
+    style='margin-left: 50px; border: 42px; padding: 84px; width: 50px;
+    height: 50px'>
+                </div>
+            </foreignObject>
+        </g>
+    </svg>
+  )HTML");
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
@@ -1546,13 +1584,14 @@ TEST_P(MapCoordinatesTest, SVGForeignObject) {
 }
 
 TEST_P(MapCoordinatesTest, LocalToAbsoluteTransform) {
-  SetBodyInnerHTML(
-      "<div id='container' style='position: absolute; left: 0; top: 0;'>"
-      "  <div id='scale' style='transform: scale(2.0); transform-origin: left "
-      "top;'>"
-      "    <div id='child'></div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container' style='position: absolute; left: 0; top: 0;'>
+      <div id='scale' style='transform: scale(2.0); transform-origin: left
+    top;'>
+        <div id='child'></div>
+      </div>
+    </div>
+  )HTML");
   LayoutBoxModelObject* container =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("container"));
   TransformationMatrix container_matrix = container->LocalToAbsoluteTransform();
@@ -1569,16 +1608,17 @@ TEST_P(MapCoordinatesTest, LocalToAbsoluteTransform) {
 }
 
 TEST_P(MapCoordinatesTest, LocalToAncestorTransform) {
-  SetBodyInnerHTML(
-      "<div id='container'>"
-      "  <div id='rotate1' style='transform: rotate(45deg); transform-origin: "
-      "left top;'>"
-      "    <div id='rotate2' style='transform: rotate(90deg); "
-      "transform-origin: left top;'>"
-      "      <div id='child'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div id='container'>
+      <div id='rotate1' style='transform: rotate(45deg); transform-origin:
+    left top;'>
+        <div id='rotate2' style='transform: rotate(90deg);
+    transform-origin: left top;'>
+          <div id='child'></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
   LayoutBoxModelObject* container =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("container"));
   LayoutBoxModelObject* rotate1 =
@@ -1615,21 +1655,22 @@ TEST_P(MapCoordinatesTest, LocalToAncestorTransform) {
 TEST_P(MapCoordinatesTest, LocalToAbsoluteTransformFlattens) {
   GetDocument().GetFrame()->GetSettings()->SetAcceleratedCompositingEnabled(
       true);
-  SetBodyInnerHTML(
-      "<div style='position: absolute; left: 0; top: 0;'>"
-      "  <div style='transform: rotateY(45deg); "
-      "-webkit-transform-style:preserve-3d;'>"
-      "    <div style='transform: rotateY(-45deg); "
-      "-webkit-transform-style:preserve-3d;'>"
-      "      <div id='child1'></div>"
-      "    </div>"
-      "  </div>"
-      "  <div style='transform: rotateY(45deg);'>"
-      "    <div style='transform: rotateY(-45deg);'>"
-      "      <div id='child2'></div>"
-      "    </div>"
-      "  </div>"
-      "</div>");
+  SetBodyInnerHTML(R"HTML(
+    <div style='position: absolute; left: 0; top: 0;'>
+      <div style='transform: rotateY(45deg);
+    -webkit-transform-style:preserve-3d;'>
+        <div style='transform: rotateY(-45deg);
+    -webkit-transform-style:preserve-3d;'>
+          <div id='child1'></div>
+        </div>
+      </div>
+      <div style='transform: rotateY(45deg);'>
+        <div style='transform: rotateY(-45deg);'>
+          <div id='child2'></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
   LayoutObject* child1 = GetLayoutObjectByElementId("child1");
   LayoutObject* child2 = GetLayoutObjectByElementId("child2");
   TransformationMatrix matrix;

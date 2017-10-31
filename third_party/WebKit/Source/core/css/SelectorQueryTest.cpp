@@ -110,27 +110,28 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
 
 TEST(SelectorQueryTest, StandardsModeFastPaths) {
   Document* document = HTMLDocument::CreateForTest();
-  document->write(
-      "<!DOCTYPE html>"
-      "<html>"
-      "  <head></head>"
-      "  <body>"
-      "    <span id=first class=A>"
-      "      <span id=a class=one></span>"
-      "      <span id=b class=two></span>"
-      "      <span id=c class=one></span>"
-      "      <div id=multiple class=two></div>"
-      "    </span>"
-      "    <div>"
-      "      <span id=second class=B>"
-      "        <span id=A class=one></span>"
-      "        <span id=B class=two></span>"
-      "        <span id=C class=one></span>"
-      "        <span id=multiple class=two></span>"
-      "      </span>"
-      "    </div>"
-      "  </body>"
-      "</html>");
+  document->write(R"HTML(
+    <!DOCTYPE html>
+    <html>
+      <head></head>
+      <body>
+        <span id=first class=A>
+          <span id=a class=one></span>
+          <span id=b class=two></span>
+          <span id=c class=one></span>
+          <div id=multiple class=two></div>
+        </span>
+        <div>
+          <span id=second class=B>
+            <span id=A class=one></span>
+            <span id=B class=two></span>
+            <span id=C class=one></span>
+            <span id=multiple class=two></span>
+          </span>
+        </div>
+      </body>
+    </html>
+  )HTML");
   static const struct QueryTest kTestCases[] = {
       // Id in right most selector fast path.
       {"#A", false, 1, {1, 1, 0, 0, 0, 0, 0}},
@@ -221,23 +222,24 @@ TEST(SelectorQueryTest, StandardsModeFastPaths) {
 
 TEST(SelectorQueryTest, FastPathScoped) {
   Document* document = HTMLDocument::CreateForTest();
-  document->write(
-      "<!DOCTYPE html>"
-      "<html id=root-id class=root-class>"
-      "  <head></head>"
-      "  <body>"
-      "    <span id=first>"
-      "      <span id=A class='a child'></span>"
-      "      <span id=B class='a child'>"
-      "          <a class=first></a>"
-      "          <a class=second></a>"
-      "          <a class=third></a>"
-      "      </span>"
-      "      <span id=multiple class='b child'></span>"
-      "      <span id=multiple class='c child'></span>"
-      "    </span>"
-      "  </body>"
-      "</html>");
+  document->write(R"HTML(
+    <!DOCTYPE html>
+    <html id=root-id class=root-class>
+      <head></head>
+      <body>
+        <span id=first>
+          <span id=A class='a child'></span>
+          <span id=B class='a child'>
+              <a class=first></a>
+              <a class=second></a>
+              <a class=third></a>
+          </span>
+          <span id=multiple class='b child'></span>
+          <span id=multiple class='c child'></span>
+        </span>
+      </body>
+    </html>
+  )HTML");
   // TODO(esprehn): Element::attachShadow() should not require a ScriptState,
   // it should handle the use counting in the bindings layer instead of in the
   // C++.
@@ -290,16 +292,17 @@ TEST(SelectorQueryTest, FastPathScoped) {
 
 TEST(SelectorQueryTest, QuirksModeSlowPath) {
   Document* document = HTMLDocument::CreateForTest();
-  document->write(
-      "<html>"
-      "  <head></head>"
-      "  <body>"
-      "    <span id=first>"
-      "      <span id=One class=Two></span>"
-      "      <span id=one class=tWo></span>"
-      "    </span>"
-      "  </body>"
-      "</html>");
+  document->write(R"HTML(
+    <html>
+      <head></head>
+      <body>
+        <span id=first>
+          <span id=One class=Two></span>
+          <span id=one class=tWo></span>
+        </span>
+      </body>
+    </html>
+  )HTML");
   static const struct QueryTest kTestCases[] = {
       // Quirks mode can't use the id fast path due to being case-insensitive.
       {"#one", false, 1, {5, 0, 0, 0, 5, 0, 0}},
@@ -326,15 +329,16 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
 TEST(SelectorQueryTest, DisconnectedSubtree) {
   Document* document = HTMLDocument::CreateForTest();
   Element* scope = document->createElement("div");
-  scope->SetInnerHTMLFromString(
-      "<section>"
-      "  <span id=first>"
-      "    <span id=A class=A></span>"
-      "    <span id=B class=child></span>"
-      "    <span id=multiple class=child></span>"
-      "    <span id=multiple class=B></span>"
-      "  </span>"
-      "</section>");
+  scope->SetInnerHTMLFromString(R"HTML(
+    <section>
+      <span id=first>
+        <span id=A class=A></span>
+        <span id=B class=child></span>
+        <span id=multiple class=child></span>
+        <span id=multiple class=B></span>
+      </span>
+    </section>
+  )HTML");
   static const struct QueryTest kTestCases[] = {
       {"#A", false, 1, {3, 0, 0, 0, 3, 0, 0}},
       {"#B", false, 1, {4, 0, 0, 0, 4, 0, 0}},
@@ -357,15 +361,16 @@ TEST(SelectorQueryTest, DisconnectedTreeScope) {
   // C++.
   ShadowRoot& shadowRoot =
       host->EnsureShadow().AddShadowRoot(*host, ShadowRootType::kOpen);
-  shadowRoot.SetInnerHTMLFromString(
-      "<section>"
-      "  <span id=first>"
-      "    <span id=A class=A></span>"
-      "    <span id=B class=child></span>"
-      "    <span id=multiple class=child></span>"
-      "    <span id=multiple class=B></span>"
-      "  </span>"
-      "</section>");
+  shadowRoot.SetInnerHTMLFromString(R"HTML(
+    <section>
+      <span id=first>
+        <span id=A class=A></span>
+        <span id=B class=child></span>
+        <span id=multiple class=child></span>
+        <span id=multiple class=B></span>
+      </span>
+    </section>
+  )HTML");
   static const struct QueryTest kTestCases[] = {
       {"#A", false, 1, {1, 1, 0, 0, 0, 0, 0}},
       {"#B", false, 1, {1, 1, 0, 0, 0, 0, 0}},
