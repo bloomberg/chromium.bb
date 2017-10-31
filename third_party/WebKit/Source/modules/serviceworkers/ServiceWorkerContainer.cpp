@@ -56,7 +56,6 @@
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
-#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
@@ -66,17 +65,17 @@
 
 namespace blink {
 
+namespace {
+
 class GetRegistrationCallback : public WebServiceWorkerProvider::
                                     WebServiceWorkerGetRegistrationCallbacks {
  public:
   explicit GetRegistrationCallback(ScriptPromiseResolver* resolver)
       : resolver_(resolver) {}
-  ~GetRegistrationCallback() override {}
+  ~GetRegistrationCallback() override = default;
 
-  void OnSuccess(std::unique_ptr<WebServiceWorkerRegistration::Handle>
-                     web_pass_handle) override {
-    std::unique_ptr<WebServiceWorkerRegistration::Handle> handle =
-        WTF::WrapUnique(web_pass_handle.release());
+  void OnSuccess(
+      std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
@@ -101,13 +100,15 @@ class GetRegistrationCallback : public WebServiceWorkerProvider::
   WTF_MAKE_NONCOPYABLE(GetRegistrationCallback);
 };
 
+}  // namespace
+
 class ServiceWorkerContainer::GetRegistrationForReadyCallback
     : public WebServiceWorkerProvider::
           WebServiceWorkerGetRegistrationForReadyCallbacks {
  public:
   explicit GetRegistrationForReadyCallback(ReadyProperty* ready)
       : ready_(ready) {}
-  ~GetRegistrationForReadyCallback() override {}
+  ~GetRegistrationForReadyCallback() override = default;
 
   void OnSuccess(
       std::unique_ptr<WebServiceWorkerRegistration::Handle> handle) override {
@@ -116,7 +117,7 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
     if (ready_->GetExecutionContext() &&
         !ready_->GetExecutionContext()->IsContextDestroyed()) {
       ready_->Resolve(ServiceWorkerRegistration::GetOrCreate(
-          ready_->GetExecutionContext(), WTF::WrapUnique(handle.release())));
+          ready_->GetExecutionContext(), std::move(handle)));
     }
   }
 
@@ -298,8 +299,8 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   RegisterServiceWorkerImpl(
       execution_context, script_url, pattern_url,
-      WTF::MakeUnique<CallbackPromiseAdapter<ServiceWorkerRegistration,
-                                             ServiceWorkerErrorForUpdate>>(
+      std::make_unique<CallbackPromiseAdapter<ServiceWorkerRegistration,
+                                              ServiceWorkerErrorForUpdate>>(
           resolver));
 
   return promise;
@@ -358,7 +359,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
     return promise;
   }
   provider_->GetRegistration(
-      completed_url, WTF::MakeUnique<GetRegistrationCallback>(resolver));
+      completed_url, std::make_unique<GetRegistrationCallback>(resolver));
 
   return promise;
 }
@@ -397,8 +398,8 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
   }
 
   provider_->GetRegistrations(
-      WTF::MakeUnique<CallbackPromiseAdapter<ServiceWorkerRegistrationArray,
-                                             ServiceWorkerError>>(resolver));
+      std::make_unique<CallbackPromiseAdapter<ServiceWorkerRegistrationArray,
+                                              ServiceWorkerError>>(resolver));
 
   return promise;
 }
@@ -425,7 +426,7 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* caller_state) {
     ready_ = CreateReadyProperty();
     if (provider_) {
       provider_->GetRegistrationForReady(
-          WTF::MakeUnique<GetRegistrationForReadyCallback>(ready_.Get()));
+          std::make_unique<GetRegistrationForReadyCallback>(ready_.Get()));
     }
   }
 
@@ -437,8 +438,7 @@ void ServiceWorkerContainer::SetController(
     bool should_notify_controller_change) {
   if (!GetExecutionContext())
     return;
-  controller_ = ServiceWorker::From(GetExecutionContext(),
-                                    WTF::WrapUnique(handle.release()));
+  controller_ = ServiceWorker::From(GetExecutionContext(), std::move(handle));
   if (controller_) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kServiceWorkerControlledPage);
@@ -458,8 +458,8 @@ void ServiceWorkerContainer::DispatchMessageEvent(
       MessagePort::EntanglePorts(*GetExecutionContext(), std::move(channels));
   scoped_refptr<SerializedScriptValue> value =
       SerializedScriptValue::Create(message);
-  ServiceWorker* source = ServiceWorker::From(
-      GetExecutionContext(), WTF::WrapUnique(handle.release()));
+  ServiceWorker* source =
+      ServiceWorker::From(GetExecutionContext(), std::move(handle));
   DispatchEvent(MessageEvent::Create(
       ports, value, GetExecutionContext()->GetSecurityOrigin()->ToString(),
       String() /* lastEventId */, source, String() /* suborigin */));

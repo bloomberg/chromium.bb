@@ -108,10 +108,10 @@ class MODULES_EXPORT ServiceWorkerContainer final
   ServiceWorkerContainer(ExecutionContext*, NavigatorServiceWorker*);
 
   class GetRegistrationForReadyCallback;
-  typedef ScriptPromiseProperty<Member<ServiceWorkerContainer>,
-                                Member<ServiceWorkerRegistration>,
-                                Member<ServiceWorkerRegistration>>
-      ReadyProperty;
+  using ReadyProperty =
+      ScriptPromiseProperty<Member<ServiceWorkerContainer>,
+                            Member<ServiceWorkerRegistration>,
+                            Member<ServiceWorkerRegistration>>;
   ReadyProperty* CreateReadyProperty();
 
   WebServiceWorkerProvider* provider_;
