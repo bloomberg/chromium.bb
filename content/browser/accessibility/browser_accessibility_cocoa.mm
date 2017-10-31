@@ -805,13 +805,55 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 }
 
+- (BOOL)isColumnHeaderForCurrentCell:(BrowserAccessibility*)header {
+  int cell_first_col = -1;
+  int cell_colspan = -1;
+  browserAccessibility_->GetIntAttribute(ui::AX_ATTR_ARIA_CELL_COLUMN_INDEX,
+                                         &cell_first_col);
+  if (cell_first_col < 0) {
+    browserAccessibility_->GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX,
+                                           &cell_first_col);
+  }
+  if (cell_first_col < 0)
+    return false;
+  browserAccessibility_->GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN,
+                                         &cell_colspan);
+  if (cell_colspan <= 0)
+    cell_colspan = 1;
+  int cell_last_col = cell_first_col + cell_colspan - 1;
+
+  int header_first_col = -1;
+  int header_colspan = -1;
+  header->GetIntAttribute(ui::AX_ATTR_ARIA_CELL_COLUMN_INDEX,
+                          &header_first_col);
+  if (header_first_col < 0) {
+    header->GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX,
+                            &header_first_col);
+  }
+  if (header_first_col < 0)
+    return false;
+
+  header->GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN, &header_colspan);
+  if (header_colspan <= 0)
+    header_colspan = 1;
+  int header_last_col = header_first_col + header_colspan - 1;
+
+  int topmost_col_of_either = std::max(cell_first_col, header_first_col);
+  int bottommost_col_of_either = std::min(cell_last_col, header_last_col);
+  bool has_col_intersection = topmost_col_of_either <= bottommost_col_of_either;
+
+  return has_col_intersection;
+}
+
 - (NSArray*)columnHeaders {
   if (![self instanceActive])
     return nil;
-  if (!ui::IsTableLikeRole(browserAccessibility_->GetRole()) &&
-      !ui::IsCellOrTableHeaderRole(browserAccessibility_->GetRole())) {
+
+  bool is_cell_or_table_header =
+      ui::IsCellOrTableHeaderRole(browserAccessibility_->GetRole());
+  bool is_table_like = ui::IsTableLikeRole(browserAccessibility_->GetRole());
+  if (!is_table_like && !is_cell_or_table_header)
     return nil;
-  }
   BrowserAccessibility* table = [self containingTable];
   if (!table)
     return nil;
@@ -823,10 +865,14 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     int id = uniqueCellIds[i];
     BrowserAccessibility* cell =
         browserAccessibility_->manager()->GetFromID(id);
-    if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER)
-      [ret addObject:ToBrowserAccessibilityCocoa(cell)];
+    if (cell && cell->GetRole() == ui::AX_ROLE_COLUMN_HEADER) {
+      // Expose all column headers on table object.
+      // Expose only relevant column headers on cell object.
+      if (is_table_like || [self isColumnHeaderForCurrentCell:cell])
+        [ret addObject:ToBrowserAccessibilityCocoa(cell)];
+    }
   }
-  return ret;
+  return [ret count] ? ret : nil;
 }
 
 - (NSValue*)columnIndexRange {
@@ -1617,13 +1663,56 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return NSAccessibilityRoleDescription(role, nil);
 }
 
+- (BOOL)isRowHeaderForCurrentCell:(BrowserAccessibility*)header {
+  int cell_first_row = -1;
+  int cell_rowspan = -1;
+  browserAccessibility_->GetIntAttribute(ui::AX_ATTR_ARIA_CELL_ROW_INDEX,
+                                         &cell_first_row);
+  if (cell_first_row < 0) {
+    browserAccessibility_->GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX,
+                                           &cell_first_row);
+  }
+  if (cell_first_row < 0)
+    return false;
+
+  browserAccessibility_->GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN,
+                                         &cell_rowspan);
+  if (cell_rowspan <= 0)
+    cell_rowspan = 1;
+
+  int cell_last_row = cell_first_row + cell_rowspan - 1;
+
+  int header_first_row = -1;
+  int header_rowspan = -1;
+  header->GetIntAttribute(ui::AX_ATTR_ARIA_CELL_ROW_INDEX, &header_first_row);
+  if (header_first_row < 0) {
+    header->GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX,
+                            &header_first_row);
+  }
+  if (header_first_row < 0)
+    return false;
+
+  header->GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN, &header_rowspan);
+  if (header_rowspan <= 0)
+    header_rowspan = 1;
+
+  int header_last_row = header_first_row + header_rowspan - 1;
+
+  int topmost_row_of_either = std::max(cell_first_row, header_first_row);
+  int bottommost_row_of_either = std::min(cell_last_row, header_last_row);
+  bool has_row_intersection = topmost_row_of_either <= bottommost_row_of_either;
+
+  return has_row_intersection;
+}
+
 - (NSArray*)rowHeaders {
   if (![self instanceActive])
     return nil;
-  if (!ui::IsTableLikeRole(browserAccessibility_->GetRole()) &&
-      !ui::IsCellOrTableHeaderRole(browserAccessibility_->GetRole())) {
+  bool is_cell_or_table_header =
+      ui::IsCellOrTableHeaderRole(browserAccessibility_->GetRole());
+  bool is_table_like = ui::IsTableLikeRole(browserAccessibility_->GetRole());
+  if (!is_table_like && !is_cell_or_table_header)
     return nil;
-  }
   BrowserAccessibility* table = [self containingTable];
   if (!table)
     return nil;
@@ -1635,10 +1724,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     int id = uniqueCellIds[i];
     BrowserAccessibility* cell =
         browserAccessibility_->manager()->GetFromID(id);
-    if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER)
-      [ret addObject:ToBrowserAccessibilityCocoa(cell)];
+    if (cell && cell->GetRole() == ui::AX_ROLE_ROW_HEADER) {
+      if (is_table_like || [self isRowHeaderForCurrentCell:cell])
+        [ret addObject:ToBrowserAccessibilityCocoa(cell)];
+    }
   }
-  return ret;
+  return [ret count] ? ret : nil;
 }
 
 - (NSValue*)rowIndexRange {
@@ -2054,17 +2145,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSArray*)visibleChildren {
   if (![self instanceActive])
     return nil;
-  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-  uint32_t childCount = browserAccessibility_->PlatformChildCount();
-  for (uint32_t index = 0; index < childCount; ++index) {
-    BrowserAccessibilityCocoa* child = ToBrowserAccessibilityCocoa(
-        browserAccessibility_->PlatformGetChild(index));
-    if ([child isIgnored])
-      [ret addObjectsFromArray:[child visibleChildren]];
-    else
-      [ret addObject:child];
-  }
-  return ret;
+  return [self children];
 }
 
 - (NSArray*)visibleColumns {
@@ -2753,12 +2834,20 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     [ret addObjectsFromArray:@[
       NSAccessibilityColumnIndexRangeAttribute,
       NSAccessibilityRowIndexRangeAttribute,
-      NSAccessibilityColumnHeaderUIElementsAttribute,
-      NSAccessibilityRowHeaderUIElementsAttribute,
       NSAccessibilityARIAColumnIndexAttribute,
       NSAccessibilityARIARowIndexAttribute,
       @"AXSortDirection",
     ]];
+    if ([self internalRole] != ui::AX_ROLE_COLUMN_HEADER) {
+      [ret addObjectsFromArray:@[
+        NSAccessibilityColumnHeaderUIElementsAttribute,
+      ]];
+    }
+    if ([self internalRole] != ui::AX_ROLE_ROW_HEADER) {
+      [ret addObjectsFromArray:@[
+        NSAccessibilityRowHeaderUIElementsAttribute,
+      ]];
+    }
   } else if ([role isEqualToString:@"AXWebArea"]) {
     [ret addObjectsFromArray:@[
       @"AXLoaded", NSAccessibilityLoadingProgressAttribute

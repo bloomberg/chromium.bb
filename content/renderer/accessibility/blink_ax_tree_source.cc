@@ -905,15 +905,15 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   // parent is the row, the row adds it as a child, and the column adds it
   // as an indirect child.
   int child_count = src.ChildCount();
+  std::vector<int32_t> indirect_child_ids;
   for (int i = 0; i < child_count; ++i) {
     WebAXObject child = src.ChildAt(i);
-    std::vector<int32_t> indirect_child_ids;
     if (!is_iframe && !child.IsDetached() && !IsParentUnignoredOf(src, child))
       indirect_child_ids.push_back(child.AxID());
-    if (indirect_child_ids.size() > 0) {
-      dst->AddIntListAttribute(
-          ui::AX_ATTR_INDIRECT_CHILD_IDS, indirect_child_ids);
-    }
+  }
+  if (indirect_child_ids.size() > 0) {
+    dst->AddIntListAttribute(ui::AX_ATTR_INDIRECT_CHILD_IDS,
+                             indirect_child_ids);
   }
 
   if (src.IsScrollableContainer()) {
