@@ -102,10 +102,6 @@ class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
         'load:tools:drive',
         [expectations.ANDROID_NEXUS5X, expectations.ANDROID_WEBVIEW],
         'crbug.com/738854')
-    self.DisableStory('browse:shopping:lazada', [expectations.ANDROID_NEXUS5],
-                      'crbug.com/778108')
-    self.DisableStory('load:tools:weather', [expectations.ANDROID_NEXUS5],
-                      'crbug.com/778108')
     self.DisableStory('long_running:tools:gmail-background',
                       [expectations.ANDROID_SVELTE], 'crbug.com/777355')
     # TODO(rnephew): This disabling should move to CanRunOnBrowser.
