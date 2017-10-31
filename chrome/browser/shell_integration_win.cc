@@ -54,11 +54,8 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/scoped_user_protocol_entry.h"
 #include "chrome/installer/util/shell_util.h"
-#include "chrome/services/util_win/public/interfaces/constants.mojom.h"
-#include "chrome/services/util_win/public/interfaces/shell_util_win.mojom.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "content/public/browser/utility_process_mojo_client.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace shell_integration {
@@ -454,29 +451,22 @@ class OpenSystemSettingsHelper {
 OpenSystemSettingsHelper* OpenSystemSettingsHelper::instance_ = nullptr;
 
 // Helper class to determine if Chrome is pinned to the taskbar. Hides the
-// complexity of managing the lifetime of the connection to the ChromeWinUtil
-// service.
+// complexity of managing the lifetime of a UtilityProcessMojoClient.
 class IsPinnedToTaskbarHelper {
  public:
   using ResultCallback = win::IsPinnedToTaskbarCallback;
   using ErrorCallback = win::ConnectionErrorCallback;
-  static void GetState(std::unique_ptr<service_manager::Connector> connector,
-                       const ErrorCallback& error_callback,
+  static void GetState(const ErrorCallback& error_callback,
                        const ResultCallback& result_callback);
 
  private:
-  IsPinnedToTaskbarHelper(std::unique_ptr<service_manager::Connector> connector,
-                          const ErrorCallback& error_callback,
+  IsPinnedToTaskbarHelper(const ErrorCallback& error_callback,
                           const ResultCallback& result_callback);
 
   void OnConnectionError();
   void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar);
 
-  chrome::mojom::ShellUtilWinPtr shell_util_win_ptr_;
-  // The connector used to retrieve the Patch service. We can't simply use
-  // content::ServiceManagerConnection::GetForProcess()->GetConnector() as this
-  // is called on a background thread.
-  std::unique_ptr<service_manager::Connector> connector_;
+  content::UtilityProcessMojoClient<chrome::mojom::ShellHandler> shell_handler_;
 
   ErrorCallback error_callback_;
   ResultCallback result_callback_;
@@ -487,38 +477,37 @@ class IsPinnedToTaskbarHelper {
 };
 
 // static
-void IsPinnedToTaskbarHelper::GetState(
-    std::unique_ptr<service_manager::Connector> connector,
-    const ErrorCallback& error_callback,
-    const ResultCallback& result_callback) {
+void IsPinnedToTaskbarHelper::GetState(const ErrorCallback& error_callback,
+                                       const ResultCallback& result_callback) {
   // Self-deleting when the ShellHandler completes.
-  new IsPinnedToTaskbarHelper(std::move(connector), error_callback,
-                              result_callback);
+  new IsPinnedToTaskbarHelper(error_callback, result_callback);
 }
 
 IsPinnedToTaskbarHelper::IsPinnedToTaskbarHelper(
-    std::unique_ptr<service_manager::Connector> connector,
     const ErrorCallback& error_callback,
     const ResultCallback& result_callback)
-    : connector_(std::move(connector)),
+    : shell_handler_(
+          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_SHELL_HANDLER_NAME)),
       error_callback_(error_callback),
       result_callback_(result_callback) {
   DCHECK(error_callback_);
   DCHECK(result_callback_);
 
-  connector_->BindInterface(chrome::mojom::kUtilWinServiceName,
-                            &shell_util_win_ptr_);
-  // |shell_util_win_ptr_| owns the callbacks and is guaranteed to be destroyed
+  // |shell_handler_| owns the callbacks and is guaranteed to be destroyed
   // before |this|, therefore making base::Unretained() safe to use.
-  shell_util_win_ptr_.set_connection_error_handler(base::Bind(
+  shell_handler_.set_error_callback(base::Bind(
       &IsPinnedToTaskbarHelper::OnConnectionError, base::Unretained(this)));
-  shell_util_win_ptr_->IsPinnedToTaskbar(
+  shell_handler_.set_disable_sandbox();
+  shell_handler_.Start();
+
+  shell_handler_.service()->IsPinnedToTaskbar(
       base::Bind(&IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult,
                  base::Unretained(this)));
 }
 
 void IsPinnedToTaskbarHelper::OnConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   error_callback_.Run();
   delete this;
 }
@@ -755,11 +744,9 @@ void MigrateTaskbarPins() {
 }
 
 void GetIsPinnedToTaskbarState(
-    std::unique_ptr<service_manager::Connector> connector,
     const ConnectionErrorCallback& on_error_callback,
     const IsPinnedToTaskbarCallback& result_callback) {
-  IsPinnedToTaskbarHelper::GetState(std::move(connector), on_error_callback,
-                                    result_callback);
+  IsPinnedToTaskbarHelper::GetState(on_error_callback, result_callback);
 }
 
 int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
