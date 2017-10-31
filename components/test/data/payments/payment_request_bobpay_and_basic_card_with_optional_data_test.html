@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!--
+Copyright 2017 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<html>
+<head>
+<title>Bob Pay and basic-card with optional data test</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<button onclick="buy()" id="buy">Bob Pay Test</button>
+<button onclick="buyWithAllCards()" id="buy_with_all_cards">All cards test</button>
+<button onclick="buyWithVisaCredit()" id="buy_with_visa_credit">Visa credit card test</button>
+<button onclick="buyWithVisaDebit()" id="buy_with_visa_debit">Visa debit card test</button>
+<button onclick="buyWithCredit()" id="buy_with_credit">Credit card test</button>
+<button onclick="buyWithVisa()" id="buy_with_visa">Visa card test</button>
+<button onclick="buyWithBobPayAndVisa()" id="buy_with_bobpay_and_visa">Bob Pay And Visa card test</button>
+<pre id="result"></pre>
+<script src="util.js"></script>
+<script src="bobpay_and_basic_card_with_optional_data.js"></script>
+</body>
+</html>

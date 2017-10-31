@@ -10,6 +10,12 @@ StoredRelatedApplication::StoredRelatedApplication() = default;
 
 StoredRelatedApplication::~StoredRelatedApplication() = default;
 
+StoredCapabilities::StoredCapabilities() = default;
+
+StoredCapabilities::StoredCapabilities(const StoredCapabilities&) = default;
+
+StoredCapabilities::~StoredCapabilities() = default;
+
 StoredPaymentApp::StoredPaymentApp() = default;
 
 StoredPaymentApp::~StoredPaymentApp() = default;

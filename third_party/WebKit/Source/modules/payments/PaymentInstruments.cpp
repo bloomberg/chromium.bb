@@ -12,6 +12,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/DOMException.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "modules/payments/BasicCardHelper.h"
 #include "modules/payments/PaymentInstrument.h"
 #include "modules/payments/PaymentManager.h"
 #include "platform/wtf/Vector.h"
@@ -200,6 +201,11 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
       return exception_state.Reject(script_state);
     }
     instrument->stringified_capabilities = ToCoreString(value);
+    if (instrument->enabled_methods.Contains("basic-card")) {
+      BasicCardHelper::parseBasiccardData(
+          details.capabilities(), instrument->supported_networks,
+          instrument->supported_types, exception_state);
+    }
   } else {
     instrument->stringified_capabilities = WTF::g_empty_string;
   }
