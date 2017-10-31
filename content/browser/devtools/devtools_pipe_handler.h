@@ -28,8 +28,7 @@ class DevToolsPipeHandler : public DevToolsAgentHostClient {
   // DevToolsAgentHostClient overrides
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
-  void AgentHostClosed(DevToolsAgentHost* agent_host,
-                       bool replaced_with_another_client) override;
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override;
 
   void Shutdown();
 

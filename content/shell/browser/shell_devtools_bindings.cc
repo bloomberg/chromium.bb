@@ -382,8 +382,7 @@ void ShellDevToolsBindings::SendMessageAck(int request_id,
   CallClientFunction("DevToolsAPI.embedderMessageAck", &id_value, arg, nullptr);
 }
 
-void ShellDevToolsBindings::AgentHostClosed(DevToolsAgentHost* agent_host,
-                                            bool replaced) {
+void ShellDevToolsBindings::AgentHostClosed(DevToolsAgentHost* agent_host) {
   agent_host_ = nullptr;
   if (delegate_)
     delegate_->Close();

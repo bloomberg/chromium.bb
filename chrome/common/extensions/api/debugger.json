@@ -27,7 +27,7 @@
         "id": "DetachReason",
         "type": "string",
         "description": "Connection termination reason.",
-        "enum": [ "target_closed", "canceled_by_user", "replaced_with_devtools" ]
+        "enum": [ "target_closed", "canceled_by_user" ]
       },
       {
         "id": "TargetInfo",

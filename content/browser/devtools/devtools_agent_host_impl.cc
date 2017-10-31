@@ -169,7 +169,7 @@ void DevToolsAgentHostImpl::ForceAttachClient(DevToolsAgentHostClient* client) {
     return;
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   if (!sessions_.empty())
-    ForceDetachAllClients(true);
+    ForceDetachAllClients();
   DCHECK(sessions_.empty());
   InnerAttachClient(client);
 }
@@ -282,19 +282,19 @@ bool DevToolsAgentHostImpl::Inspect() {
   return false;
 }
 
-void DevToolsAgentHostImpl::ForceDetachAllClients(bool replaced) {
+void DevToolsAgentHostImpl::ForceDetachAllClients() {
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
   while (!session_by_client_.empty()) {
     DevToolsAgentHostClient* client = session_by_client_.begin()->first;
     InnerDetachClient(client);
-    client->AgentHostClosed(this, replaced);
+    client->AgentHostClosed(this);
   }
 }
 
 void DevToolsAgentHostImpl::ForceDetachSession(DevToolsSession* session) {
   DevToolsAgentHostClient* client = session->client();
   InnerDetachClient(client);
-  client->AgentHostClosed(this, false);
+  client->AgentHostClosed(this);
 }
 
 void DevToolsAgentHostImpl::InspectElement(
@@ -313,7 +313,7 @@ void DevToolsAgentHost::DetachAllClients() {
   DevToolsMap copy = g_devtools_instances.Get();
   for (DevToolsMap::iterator it(copy.begin()); it != copy.end(); ++it) {
     DevToolsAgentHostImpl* agent_host = it->second;
-    agent_host->ForceDetachAllClients(true);
+    agent_host->ForceDetachAllClients();
   }
 }
 

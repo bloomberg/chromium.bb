@@ -45,9 +45,7 @@ class TestClient: public DevToolsAgentHostClient {
     }
   }
 
-  void AgentHostClosed(
-      DevToolsAgentHost* agent_host,
-      bool replaced_with_another_client) override {
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override {
     closed_ = true;
   }
 

@@ -929,7 +929,7 @@ void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
   UpdateProtocolHandlers(nullptr);
   if (IsAttached())
     OnClientsDetached();
-  ForceDetachAllClients(false);
+  ForceDetachAllClients();
   frame_host_ = nullptr;
   pending_.reset();
   current_.reset();

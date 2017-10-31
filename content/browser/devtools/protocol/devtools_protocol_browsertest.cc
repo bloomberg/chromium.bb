@@ -473,7 +473,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     }
   }
 
-  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override {
     if (!agent_host_can_close_)
       NOTREACHED();
   }

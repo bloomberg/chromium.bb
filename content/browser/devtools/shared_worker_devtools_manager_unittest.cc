@@ -31,7 +31,7 @@ class TestDevToolsClientHost : public DevToolsAgentHostClient {
   ~TestDevToolsClientHost() override {}
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override {}
-  void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {}
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override {}
 
   void InspectAgentHost(DevToolsAgentHost* agent_host) {
     if (agent_host_.get())
