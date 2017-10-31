@@ -55,8 +55,14 @@ class CONTENT_EXPORT OverscrollWindowDelegate
   // The latest delta_x scroll update.
   float delta_x_;
 
-  // The ratio of overscroll at which we consider the overscroll completed.
-  const float complete_threshold_ratio_;
+  // The ratio of overscroll at which we consider the overscroll completed, for
+  // touchscreen or touchpad.
+  const float complete_threshold_ratio_touchscreen_;
+  const float complete_threshold_ratio_touchpad_;
+
+  // The ratio of overscroll at which we consider the overscroll completed for
+  // the current touch input.
+  float active_complete_threshold_ratio_;
 
   // The threshold for starting the overscroll gesture, for touchscreen or
   // touchpads.

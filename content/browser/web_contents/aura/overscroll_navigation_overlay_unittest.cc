@@ -496,9 +496,10 @@ TEST_F(OverscrollNavigationOverlayTest, OverlayWindowSwap) {
   int overscroll_complete_distance =
       root_window()->bounds().size().width() *
           content::GetOverscrollConfig(
-              content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE) +
+              content::OverscrollConfig::THRESHOLD_COMPLETE_TOUCHSCREEN) +
       ui::GestureConfiguration::GetInstance()
-          ->max_touch_move_in_pixels_for_click() + 1;
+          ->max_touch_move_in_pixels_for_click() +
+      1;
 
   // Start and complete a back navigation via a gesture.
   ui::test::EventGenerator generator(root_window());
