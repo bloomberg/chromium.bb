@@ -1365,6 +1365,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
     }
   }
 
+  resource->VirtualTimePauser().PauseVirtualTime(false);
   Context().DispatchDidFinishLoading(
       resource->Identifier(), finish_time, encoded_data_length,
       resource->GetResponse().DecodedBodyLength());
@@ -1386,6 +1387,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
   bool is_internal_request = resource->Options().initiator_info.name ==
                              FetchInitiatorTypeNames::internal;
 
+  resource->VirtualTimePauser().PauseVirtualTime(false);
   Context().DispatchDidFail(resource->Identifier(), error,
                             resource->GetResponse().EncodedDataLength(),
                             is_internal_request);
@@ -1431,6 +1433,12 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
                                             request, response,
                                             resource->Options().initiator_info);
 
+    if (Context().GetFrameScheduler()) {
+      ScopedVirtualTimePauser virtual_time_pauser =
+          Context().GetFrameScheduler()->CreateScopedVirtualTimePauser();
+      virtual_time_pauser.PauseVirtualTime(true);
+      resource->VirtualTimePauser() = std::move(virtual_time_pauser);
+    }
     Context().DispatchWillSendRequest(resource->Identifier(), request, response,
                                       resource->GetType(),
                                       resource->Options().initiator_info);

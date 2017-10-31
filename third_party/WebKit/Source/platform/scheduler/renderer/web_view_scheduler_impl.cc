@@ -102,7 +102,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
     : intervention_reporter_(intervention_reporter),
       renderer_scheduler_(renderer_scheduler),
       virtual_time_policy_(VirtualTimePolicy::ADVANCE),
-      background_parser_count_(0),
+      virtual_time_pause_count_(0),
       max_task_starvation_count_(0),
       page_visible_(true),
       disable_background_timer_throttling_(disable_background_timer_throttling),
@@ -113,7 +113,8 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       has_active_connection_(false),
       nested_runloop_(false),
       background_time_budget_pool_(nullptr),
-      delegate_(delegate) {
+      delegate_(delegate),
+      weak_factory_(this) {
   renderer_scheduler->AddWebViewScheduler(this);
 }
 
@@ -166,8 +167,6 @@ WebViewSchedulerImpl::CreateFrameScheduler(
 void WebViewSchedulerImpl::Unregister(WebFrameSchedulerImpl* frame_scheduler) {
   DCHECK(frame_schedulers_.find(frame_scheduler) != frame_schedulers_.end());
   frame_schedulers_.erase(frame_scheduler);
-  provisional_loads_.erase(frame_scheduler);
-  expect_backward_forwards_navigation_.erase(frame_scheduler);
 }
 
 void WebViewSchedulerImpl::OnNavigation() {
@@ -236,44 +235,14 @@ bool WebViewSchedulerImpl::VirtualTimeAllowedToAdvance() const {
   return allow_virtual_time_to_advance_;
 }
 
-void WebViewSchedulerImpl::DidStartLoading(unsigned long identifier) {
-  pending_loads_.insert(identifier);
+void WebViewSchedulerImpl::IncrementVirtualTimePauseCount() {
+  virtual_time_pause_count_++;
   ApplyVirtualTimePolicy();
 }
 
-void WebViewSchedulerImpl::DidStopLoading(unsigned long identifier) {
-  pending_loads_.erase(identifier);
-  ApplyVirtualTimePolicy();
-}
-
-void WebViewSchedulerImpl::IncrementBackgroundParserCount() {
-  background_parser_count_++;
-  ApplyVirtualTimePolicy();
-}
-
-void WebViewSchedulerImpl::DecrementBackgroundParserCount() {
-  background_parser_count_--;
-  DCHECK_GE(background_parser_count_, 0);
-  ApplyVirtualTimePolicy();
-}
-
-void WebViewSchedulerImpl::WillNavigateBackForwardSoon(
-    WebFrameSchedulerImpl* frame_scheduler) {
-  expect_backward_forwards_navigation_.insert(frame_scheduler);
-  ApplyVirtualTimePolicy();
-}
-
-void WebViewSchedulerImpl::DidBeginProvisionalLoad(
-    WebFrameSchedulerImpl* frame_scheduler) {
-  expect_backward_forwards_navigation_.erase(frame_scheduler);
-  provisional_loads_.insert(frame_scheduler);
-  ApplyVirtualTimePolicy();
-}
-
-void WebViewSchedulerImpl::DidEndProvisionalLoad(
-    WebFrameSchedulerImpl* frame_scheduler) {
-  expect_backward_forwards_navigation_.erase(frame_scheduler);
-  provisional_loads_.erase(frame_scheduler);
+void WebViewSchedulerImpl::DecrementVirtualTimePauseCount() {
+  virtual_time_pause_count_--;
+  DCHECK_GE(virtual_time_pause_count_, 0);
   ApplyVirtualTimePolicy();
 }
 
@@ -377,10 +346,8 @@ void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
       // something modal is happening such as the DevTools debugger pausing the
       // system.  We also pause while the renderer is either waiting for a
       // resource load or a navigation is about to start.
-      SetAllowVirtualTimeToAdvance(
-          pending_loads_.size() == 0 && background_parser_count_ == 0 &&
-          provisional_loads_.empty() && !nested_runloop_ &&
-          expect_backward_forwards_navigation_.empty());
+      SetAllowVirtualTimeToAdvance(virtual_time_pause_count_ == 0 &&
+                                   !nested_runloop_);
       break;
   }
 }
@@ -409,10 +376,9 @@ void WebViewSchedulerImpl::OnTraceLogEnabled() {
 
 void WebViewSchedulerImpl::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  state->SetDouble("pending_loads", pending_loads_.size());
+  state->SetDouble("virtual_time_pause_count", virtual_time_pause_count_);
   state->SetString("virtual_time_policy",
                    VirtualTimePolicyToString(virtual_time_policy_));
-  state->SetDouble("background_parser_count", background_parser_count_);
   state->SetBoolean("page_visible", page_visible_);
   state->SetBoolean("disable_background_timer_throttling",
                     disable_background_timer_throttling_);

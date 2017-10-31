@@ -308,6 +308,7 @@ jumbo_component("platform") {
     "ResolutionUnits.h",
     "ScopedOrientationChangeIndicator.cpp",
     "ScopedOrientationChangeIndicator.h",
+    "ScopedVirtualTimePauser.h",
     "SecureTextInput.cpp",
     "SecureTextInput.h",
     "SerializedResource.h",

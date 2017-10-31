@@ -405,6 +405,7 @@ void LocalFrameClientImpl::DispatchDidNavigateWithinPage(
         WebHistoryItem(item), static_cast<WebHistoryCommitType>(commit_type),
         content_initiated);
   }
+  virtual_time_pauser_.PauseVirtualTime(false);
 }
 
 void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
@@ -422,6 +423,7 @@ void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidStartProvisionalLoad(web_frame_->GetFrame());
+  virtual_time_pauser_.PauseVirtualTime(true);
 }
 
 void LocalFrameClientImpl::DispatchDidReceiveTitle(const String& title) {
@@ -451,6 +453,8 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
 
+  virtual_time_pauser_.PauseVirtualTime(false);
+
   // Reset certificate warning state that prevents log spam.
   num_certificate_warning_messages_ = 0;
   certificate_warning_hosts_.clear();
@@ -460,6 +464,7 @@ void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
     const ResourceError& error,
     HistoryCommitType commit_type) {
   web_frame_->DidFail(error, true, commit_type);
+  virtual_time_pauser_.PauseVirtualTime(false);
 }
 
 void LocalFrameClientImpl::DispatchDidFailLoad(const ResourceError& error,
@@ -657,7 +662,7 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
     return false;
   if (offset < -webview->Client()->HistoryBackListCount())
     return false;
-  web_frame_->Scheduler()->WillNavigateBackForwardSoon();
+  virtual_time_pauser_.PauseVirtualTime(true);
   webview->Client()->NavigateBackForwardSoon(offset);
   return true;
 }
@@ -1119,6 +1124,11 @@ void LocalFrameClientImpl::ScrollRectToVisibleInParentFrame(
     const WebRemoteScrollProperties& properties) {
   web_frame_->Client()->ScrollRectToVisibleInParentFrame(rect_to_scroll,
                                                          properties);
+}
+
+void LocalFrameClientImpl::SetVirtualTimePauser(
+    ScopedVirtualTimePauser virtual_time_pauser) {
+  virtual_time_pauser_ = std::move(virtual_time_pauser);
 }
 
 }  // namespace blink

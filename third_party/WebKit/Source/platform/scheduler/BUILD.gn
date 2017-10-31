@@ -95,6 +95,7 @@ jumbo_source_set("scheduler") {
     "renderer/renderer_scheduler_impl.h",
     "renderer/renderer_web_scheduler_impl.cc",
     "renderer/renderer_web_scheduler_impl.h",
+    "renderer/scoped_virtual_time_pauser.cc",
     "renderer/task_cost_estimator.cc",
     "renderer/task_cost_estimator.h",
     "renderer/task_duration_metric_reporter.h",

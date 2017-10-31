@@ -411,7 +411,6 @@ void DocumentLoader::LoadFailed(const ResourceError& error) {
     // Fall-through
     case kProvisional:
       state_ = kSentDidFinishLoad;
-      frame_->FrameScheduler()->DidFailProvisionalLoad();
       GetLocalFrameClient().DispatchDidFailProvisionalLoad(error,
                                                            history_commit_type);
       if (frame_)

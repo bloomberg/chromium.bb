@@ -5,6 +5,7 @@
 #ifndef WebFrameScheduler_h
 #define WebFrameScheduler_h
 
+#include "platform/ScopedVirtualTimePauser.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/TaskType.h"
 
@@ -121,38 +122,24 @@ class WebFrameScheduler {
   // Returns the parent WebViewScheduler.
   virtual WebViewScheduler* GetWebViewScheduler() = 0;
 
-  // Tells the scheduler a resource load has started. The scheduler may make
-  // policy decisions based on this.
-  virtual void DidStartLoading(unsigned long identifier) = 0;
+  // Returns a ScopedVirtualTimePauser which can be used to vote for pausing
+  // virtual time. Virtual time will be paused if any ScopedVirtualTimePauser
+  // votes to pause it, and only unpaused only if all ScopedVirtualTimePausers
+  // are either destroyed or vote to unpause.  Note the ScopedVirtualTimePauser
+  // returned by this method is initially unpaused.
+  virtual ScopedVirtualTimePauser CreateScopedVirtualTimePauser() = 0;
 
-  // Tells the scheduler a resource load has stopped. The scheduler may make
-  // policy decisions based on this.
-  virtual void DidStopLoading(unsigned long identifier) = 0;
-
-  // Tells the scheduler that a history navigation is expected soon, virtual
-  // time may be paused. Must be called from the main thread.
-  virtual void WillNavigateBackForwardSoon() = 0;
-
-  // Tells the scheduler that a provisional load has started, virtual time may
-  // be paused. Must be called from the main thread.
+  // Tells the scheduler that a provisional load has started, the scheduler may
+  // reset the task cost estimators and the UserModel. Must be called from the
+  // main thread.
   virtual void DidStartProvisionalLoad(bool is_main_frame) = 0;
 
-  // Tells the scheduler that a provisional load has failed, virtual time may be
-  // unpaused. Must be called from the main thread.
-  virtual void DidFailProvisionalLoad() = 0;
-
-  // Tells the scheduler that a provisional load has committed, virtual time ma
-  // be unpaused. In addition the scheduler may reset the task cost estimators
-  // and the UserModel. Must be called from the main thread.
+  // Tells the scheduler that a provisional load has committed, the scheduler
+  // may reset the task cost estimators and the UserModel. Must be called from
+  // the main thread.
   virtual void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
                                         bool is_reload,
                                         bool is_main_frame) = 0;
-
-  // Tells the scheduler if we are parsing a document on another thread. This
-  // tells the scheduler not to advance virtual time if it's using the
-  // DETERMINISTIC_LOADING policy.
-  virtual void SetDocumentParsingInBackground(
-      bool background_parsing_enabled) = 0;
 
   // Tells the scheduler that the first meaningful paint has occured for this
   // frame.

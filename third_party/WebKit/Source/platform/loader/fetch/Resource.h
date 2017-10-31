@@ -27,6 +27,7 @@
 #include <memory>
 #include "platform/MemoryCoordinator.h"
 #include "platform/PlatformExport.h"
+#include "platform/ScopedVirtualTimePauser.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Timer.h"
 #include "platform/WebTaskRunner.h"
@@ -341,6 +342,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
         : AutoReset(&resource->is_revalidation_start_forbidden_, true) {}
   };
 
+  ScopedVirtualTimePauser& VirtualTimePauser() { return virtual_time_pauser_; }
+
  protected:
   Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
@@ -485,6 +488,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   ResourceResponse response_;
 
   scoped_refptr<SharedBuffer> data_;
+
+  ScopedVirtualTimePauser virtual_time_pauser_;
 };
 
 class ResourceFactory {
