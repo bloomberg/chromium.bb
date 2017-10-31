@@ -123,16 +123,6 @@ bool DeviceState::PropertyChanged(const std::string& key,
   return false;
 }
 
-bool DeviceState::InitialPropertiesReceived(
-    const base::DictionaryValue& properties) {
-  // Update UMA stats.
-  if (sim_present_) {
-    bool locked = !sim_lock_type_.empty();
-    UMA_HISTOGRAM_BOOLEAN("Cellular.SIMLocked", locked);
-  }
-  return false;
-}
-
 void DeviceState::IPConfigPropertiesChanged(
     const std::string& ip_config_path,
     const base::DictionaryValue& properties) {
