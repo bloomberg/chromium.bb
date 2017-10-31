@@ -130,6 +130,16 @@ def run_gsutil(force_version, fallback, target, args, clean=False):
     gsutil_bin = fallback
   disable_update = ['-o', 'GSUtil:software_update_check_period=0']
 
+  if sys.platform == 'cygwin':
+    # This script requires Windows Python, so invoke with depot_tools'
+    # Python.
+    def winpath(path):
+      return subprocess.check_output(['cygpath', '-w', path]).strip()
+    cmd = ['python.bat', winpath(__file__)]
+    cmd.extend(args)
+    sys.exit(subprocess.call(cmd))
+  assert sys.platform != 'cygwin'
+
   # Run "gsutil" through "vpython". We need to do this because on GCE instances,
   # expectations are made about Python having access to "google-compute-engine"
   # and "boto" packages that are not met with non-system Python (e.g., bundles).
