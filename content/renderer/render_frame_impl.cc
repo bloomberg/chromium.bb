@@ -743,9 +743,14 @@ class RenderFrameImpl::FrameURLLoaderFactory
     DCHECK(frame_);
     frame_->UpdatePeakMemoryStats();
 
-    mojom::URLLoaderFactory* factory =
-        frame_->GetDefaultURLLoaderFactoryGetter()->GetFactoryForURL(
-            request.Url(), frame_->custom_url_loader_factory());
+    mojom::URLLoaderFactory* factory;
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+      factory = frame_->GetSubresourceLoaderFactories().GetFactoryForRequest(
+          request.Url());
+    } else {
+      factory = frame_->GetDefaultURLLoaderFactoryGetter()->GetFactoryForURL(
+          request.Url(), frame_->custom_url_loader_factory());
+    }
     DCHECK(factory);
 
     mojom::KeepAliveHandlePtr keep_alive_handle;
@@ -1816,7 +1821,8 @@ void RenderFrameImpl::OnNavigate(
   TRACE_EVENT2("navigation,rail", "RenderFrameImpl::OnNavigate", "id",
                routing_id_, "url", common_params.url.possibly_invalid_spec());
   NavigateInternal(common_params, start_params, request_params,
-                   std::unique_ptr<StreamOverrideParameters>());
+                   std::unique_ptr<StreamOverrideParameters>(),
+                   /*subresource_loader_factories=*/base::nullopt);
 }
 
 void RenderFrameImpl::BindEngagement(
@@ -3011,7 +3017,7 @@ void RenderFrameImpl::CommitNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     mojo::ScopedDataPipeConsumerHandle body_data,
-    mojom::URLLoaderFactoryPtr default_subresource_url_loader_factory) {
+    base::Optional<URLLoaderFactoryBundle> subresource_loader_factories) {
   CHECK(IsBrowserSideNavigationEnabled());
   // If this was a renderer-initiated navigation (nav_entry_id == 0) from this
   // frame, but it was aborted, then ignore it.
@@ -3046,8 +3052,6 @@ void RenderFrameImpl::CommitNavigation(
       },
       weak_factory_.GetWeakPtr());
 
-  SetCustomURLLoaderFactory(std::move(default_subresource_url_loader_factory));
-
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
   std::unique_ptr<blink::WebScopedUserGesture> gesture(
@@ -3058,7 +3062,8 @@ void RenderFrameImpl::CommitNavigation(
   browser_side_navigation_pending_url_ = GURL();
 
   NavigateInternal(common_params, StartNavigationParams(), request_params,
-                   std::move(stream_override));
+                   std::move(stream_override),
+                   std::move(subresource_loader_factories));
 
   // Don't add code after this since NavigateInternal may have destroyed this
   // RenderFrameImpl.
@@ -6169,7 +6174,8 @@ void RenderFrameImpl::NavigateInternal(
     const CommonNavigationParams& common_params,
     const StartNavigationParams& start_params,
     const RequestNavigationParams& request_params,
-    std::unique_ptr<StreamOverrideParameters> stream_params) {
+    std::unique_ptr<StreamOverrideParameters> stream_params,
+    base::Optional<URLLoaderFactoryBundle> subresource_loader_factories) {
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
 
   // PlzNavigate
@@ -6232,6 +6238,15 @@ void RenderFrameImpl::NavigateInternal(
   bool is_same_document =
       IsBrowserSideNavigationEnabled() &&
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type);
+
+  // The browser only provides new subresource loader factories on
+  // cross-document navigations. In other cases we are free to keep reusing the
+  // ones we have.
+  if (!is_same_document &&
+      base::FeatureList::IsEnabled(features::kNetworkService)) {
+    DCHECK(subresource_loader_factories);
+    subresource_loader_factories_ = std::move(subresource_loader_factories);
+  }
 
   WebURLRequest request = CreateURLRequestForNavigation(
       common_params, request_params, std::move(stream_params),
@@ -6439,6 +6454,18 @@ void RenderFrameImpl::NavigateInternal(
   }
 }
 
+URLLoaderFactoryBundle& RenderFrameImpl::GetSubresourceLoaderFactories() {
+  DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
+  if (!subresource_loader_factories_) {
+    RenderFrameImpl* creator = RenderFrameImpl::FromWebFrame(
+        frame_->Parent() ? frame_->Parent() : frame_->Opener());
+    DCHECK(creator);
+    subresource_loader_factories_ =
+        creator->GetSubresourceLoaderFactories().Clone();
+  }
+  return *subresource_loader_factories_;
+}
+
 void RenderFrameImpl::UpdateEncoding(WebFrame* frame,
                                      const std::string& encoding_name) {
   // Only update main frame's encoding_name.
@@ -6507,7 +6534,14 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
 
 void RenderFrameImpl::SetCustomURLLoaderFactory(
     mojom::URLLoaderFactoryPtr factory) {
-  custom_url_loader_factory_ = std::move(factory);
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    // When the network service is enabled, all subresource loads go through
+    // a factory from |subresource_loader_factories|. In this case we simply
+    // replace the existing default factory within the bundle.
+    GetSubresourceLoaderFactories().SetDefaultFactory(std::move(factory));
+  } else {
+    custom_url_loader_factory_ = std::move(factory);
+  }
 }
 
 void RenderFrameImpl::InitializeUserMediaClient() {
