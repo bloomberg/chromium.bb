@@ -68,6 +68,7 @@ enum UiElementName {
   kSpeechRecognitionPromptInnerCircle,
   kSpeechRecognitionPromptMicrophoneIcon,
   kSpeechRecognitionPromptBackplane,
+  kSuggestionLayout,
 };
 
 }  // namespace vr

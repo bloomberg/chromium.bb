@@ -64,6 +64,7 @@ class VrTestContext : public vr::ContentInputDelegate,
 
  private:
   unsigned int CreateFakeContentTexture();
+  void CreateFakeOmniboxSuggestions();
 
   std::unique_ptr<Ui> ui_;
   gfx::Size window_size_;

@@ -686,4 +686,26 @@ TEST_F(UiSceneManagerTest, SpeechRecognitionPromptBindings) {
   EXPECT_TRUE(IsVisible(k2dBrowsingForeground));
 }
 
+TEST_F(UiSceneManagerTest, OmniboxSuggestionBindings) {
+  MakeManager(kNotInCct, kNotInWebVr);
+  UiElement* container = scene_->GetUiElementByName(kSuggestionLayout);
+  ASSERT_NE(container, nullptr);
+
+  OnBeginFrame();
+  EXPECT_EQ(container->children().size(), 0u);
+  int initially_visible = NumVisibleChildren(kSuggestionLayout);
+
+  model_->omnibox_suggestions.emplace_back(
+      OmniboxSuggestion(base::string16(), base::string16(),
+                        AutocompleteMatch::Type::VOICE_SUGGEST));
+  OnBeginFrame();
+  EXPECT_EQ(container->children().size(), 1u);
+  EXPECT_GT(NumVisibleChildren(kSuggestionLayout), initially_visible);
+
+  model_->omnibox_suggestions.clear();
+  OnBeginFrame();
+  EXPECT_EQ(container->children().size(), 0u);
+  EXPECT_EQ(NumVisibleChildren(kSuggestionLayout), initially_visible);
+}
+
 }  // namespace vr

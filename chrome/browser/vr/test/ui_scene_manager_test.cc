@@ -120,6 +120,21 @@ bool UiSceneManagerTest::VerifyVisibility(const std::set<UiElementName>& names,
   return true;
 }
 
+int UiSceneManagerTest::NumVisibleChildren(UiElementName name) const {
+  auto* root = scene_->GetUiElementByName(name);
+  EXPECT_NE(root, nullptr);
+  if (!root) {
+    return 0;
+  }
+  int visible = 0;
+  for (const auto& element : *root) {
+    if (element.IsVisible()) {
+      visible++;
+    }
+  }
+  return visible;
+}
+
 bool UiSceneManagerTest::VerifyRequiresLayout(
     const std::set<UiElementName>& names,
     bool requires_layout) const {

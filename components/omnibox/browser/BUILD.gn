@@ -2,11 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+import("//device/vr/features/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//components/vector_icons/vector_icons.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+}
+
+buildflag_header("build_features") {
+  header = "features.h"
+  flags = [ "ENABLE_VR=$enable_vr" ]
 }
 
 aggregate_vector_icons("omnibox_vector_icons") {
@@ -56,6 +63,7 @@ static_library("browser") {
     "clipboard_url_provider.h",
     "contextual_suggestions_service.cc",
     "contextual_suggestions_service.h",
+    "features.h",
     "history_match.cc",
     "history_match.h",
     "history_provider.cc",
@@ -140,6 +148,7 @@ static_library("browser") {
     "//third_party/metrics_proto",
   ]
   deps = [
+    ":build_features",
     ":in_memory_url_index_cache_proto",
     "//base",
     "//base:i18n",
@@ -173,7 +182,7 @@ static_library("browser") {
     "//url",
   ]
 
-  if (!is_android && !is_ios) {
+  if ((!is_android || enable_vr) && !is_ios) {
     sources += get_target_outputs(":omnibox_vector_icons")
     deps += [
       ":omnibox_vector_icons",

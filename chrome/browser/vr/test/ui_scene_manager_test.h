@@ -59,6 +59,9 @@ class UiSceneManagerTest : public testing::Test {
   bool VerifyVisibility(const std::set<UiElementName>& names,
                         bool visible) const;
 
+  // Count the number of elements in the named element's subtree.
+  int NumVisibleChildren(UiElementName name) const;
+
   // Return false if not all elements in the set match the specified requires
   // layout state. Other elements are ignored.
   bool VerifyRequiresLayout(const std::set<UiElementName>& names,
