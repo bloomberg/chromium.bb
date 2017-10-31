@@ -627,22 +627,21 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
       GetUmaNavigationType(GetDirectionFromMode(mode_), source_),
       UmaNavigationType::NAVIGATION_TYPE_COUNT);
 
-  bool is_vertical = mode_ == OVERSCROLL_SOUTH;
+  const bool is_touchpad = source == OverscrollSource::TOUCHPAD;
   const float start_threshold = GetOverscrollConfig(
-      is_vertical ? OVERSCROLL_CONFIG_VERT_THRESHOLD_START
-                  : source == OverscrollSource::TOUCHPAD
-                        ? OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD
-                        : OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN);
-  const int size =
-      is_vertical ? GetDisplaySize().height() : GetDisplaySize().width();
+      is_touchpad ? OverscrollConfig::THRESHOLD_START_TOUCHPAD
+                  : OverscrollConfig::THRESHOLD_START_TOUCHSCREEN);
+  const gfx::Size size = GetDisplaySize();
+  const int max_size = std::max(size.width(), size.height());
   completion_threshold_ =
-      size * GetOverscrollConfig(
-                 is_vertical ? OVERSCROLL_CONFIG_VERT_THRESHOLD_COMPLETE
-                             : OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE) -
+      max_size * GetOverscrollConfig(
+                     is_touchpad
+                         ? OverscrollConfig::THRESHOLD_COMPLETE_TOUCHPAD
+                         : OverscrollConfig::THRESHOLD_COMPLETE_TOUCHSCREEN) -
       start_threshold;
   DCHECK_LE(0, completion_threshold_);
 
-  max_delta_ = size - start_threshold;
+  max_delta_ = max_size - start_threshold;
   DCHECK_LE(0, max_delta_);
 
   aura::Window* window = web_contents_->GetNativeView();

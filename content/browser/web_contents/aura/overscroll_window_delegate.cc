@@ -21,12 +21,15 @@ OverscrollWindowDelegate::OverscrollWindowDelegate(
     : delegate_(delegate),
       overscroll_mode_(OVERSCROLL_NONE),
       delta_x_(0.f),
-      complete_threshold_ratio_(content::GetOverscrollConfig(
-          content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE)),
+      complete_threshold_ratio_touchscreen_(content::GetOverscrollConfig(
+          content::OverscrollConfig::THRESHOLD_COMPLETE_TOUCHSCREEN)),
+      complete_threshold_ratio_touchpad_(content::GetOverscrollConfig(
+          content::OverscrollConfig::THRESHOLD_COMPLETE_TOUCHPAD)),
+      active_complete_threshold_ratio_(0.f),
       start_threshold_touchscreen_(content::GetOverscrollConfig(
-          content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN)),
+          content::OverscrollConfig::THRESHOLD_START_TOUCHSCREEN)),
       start_threshold_touchpad_(content::GetOverscrollConfig(
-          content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD)),
+          content::OverscrollConfig::THRESHOLD_START_TOUCHPAD)),
       active_start_threshold_(0.f) {
   SetImage(image);
 }
@@ -55,8 +58,10 @@ void OverscrollWindowDelegate::ResetOverscroll() {
 void OverscrollWindowDelegate::CompleteOrResetOverscroll() {
   if (overscroll_mode_ == OVERSCROLL_NONE)
     return;
-  float ratio = (fabs(delta_x_)) / delegate_->GetDisplaySize().width();
-  if (ratio < complete_threshold_ratio_) {
+  gfx::Size display_size = delegate_->GetDisplaySize();
+  int max_size = std::max(display_size.width(), display_size.height());
+  float ratio = (fabs(delta_x_)) / max_size;
+  if (ratio < active_complete_threshold_ratio_) {
     ResetOverscroll();
     return;
   }
@@ -94,6 +99,7 @@ void OverscrollWindowDelegate::OnMouseEvent(ui::MouseEvent* event) {
 
 void OverscrollWindowDelegate::OnScrollEvent(ui::ScrollEvent* event) {
   active_start_threshold_ = start_threshold_touchpad_;
+  active_complete_threshold_ratio_ = complete_threshold_ratio_touchpad_;
   if (event->type() == ui::ET_SCROLL)
     UpdateOverscroll(event->x_offset_ordinal(), OverscrollSource::TOUCHPAD);
   else if (event->type() == ui::ET_SCROLL_FLING_START)
@@ -105,6 +111,7 @@ void OverscrollWindowDelegate::OnScrollEvent(ui::ScrollEvent* event) {
 
 void OverscrollWindowDelegate::OnGestureEvent(ui::GestureEvent* event) {
   active_start_threshold_ = start_threshold_touchscreen_;
+  active_complete_threshold_ratio_ = complete_threshold_ratio_touchscreen_;
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_UPDATE:
       UpdateOverscroll(event->details().scroll_x(),

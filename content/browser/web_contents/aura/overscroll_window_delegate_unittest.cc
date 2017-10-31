@@ -30,9 +30,9 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
         mode_changed_(false),
         current_mode_(OVERSCROLL_NONE),
         touch_start_threshold_(content::GetOverscrollConfig(
-            content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN)),
+            OverscrollConfig::THRESHOLD_START_TOUCHSCREEN)),
         touch_complete_threshold_(content::GetOverscrollConfig(
-            content::OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE)) {}
+            OverscrollConfig::THRESHOLD_COMPLETE_TOUCHSCREEN)) {}
 
   ~OverscrollWindowDelegateTest() override {}
 

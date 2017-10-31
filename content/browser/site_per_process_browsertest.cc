@@ -1814,7 +1814,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 #if defined(USE_AURA)
   const float overscroll_threshold =
-      GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN);
+      GetOverscrollConfig(OverscrollConfig::THRESHOLD_START_TOUCHSCREEN);
 #elif defined(OS_ANDROID)
   const float overscroll_threshold = 0.f;
 #endif

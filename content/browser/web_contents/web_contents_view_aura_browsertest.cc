@@ -473,9 +473,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   gesture_scroll_update.data.scroll_update.delta_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
   gesture_scroll_update.data.scroll_update.delta_y = 0.f;
-  float horiz_threshold =
-      GetOverscrollConfig(OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN);
-  gesture_scroll_update.data.scroll_update.delta_x = horiz_threshold + 1;
+  float start_threshold =
+      GetOverscrollConfig(OverscrollConfig::THRESHOLD_START_TOUCHSCREEN);
+  gesture_scroll_update.data.scroll_update.delta_x = start_threshold + 1;
   GetRenderWidgetHost()->ForwardGestureEvent(gesture_scroll_update);
 
   // Wait for the overscroll gesture to start and then allow some time for the
