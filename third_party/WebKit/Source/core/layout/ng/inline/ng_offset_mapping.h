@@ -144,17 +144,14 @@ class CORE_EXPORT NGOffsetMapping {
   Position StartOfNextNonCollapsedContent(const Position&) const;
   Position EndOfLastNonCollapsedContent(const Position&) const;
 
-  // Returns true if the offset is right before a non-collapsed character. If
-  // the offset is at the end of the node, returns false.
-  bool IsBeforeNonCollapsedCharacter(const Node&, unsigned offset) const;
+  // Returns true if the position is right before/after non-collapsed content.
+  // Note that false is returned if the position is already at node end/start.
+  bool IsBeforeNonCollapsedContent(const Position&) const;
+  bool IsAfterNonCollapsedContent(const Position&) const;
 
-  // Returns true if the offset is right after a non-collapsed character. If the
-  // offset is at the beginning of the node, returns false.
-  bool IsAfterNonCollapsedCharacter(const Node&, unsigned offset) const;
-
-  // Maps the given DOM offset to text content, and then returns the text
+  // Maps the given position to text content, and then returns the text
   // content character before the offset. Returns nullopt if it does not exist.
-  Optional<UChar> GetCharacterBefore(const Node&, unsigned offset) const;
+  Optional<UChar> GetCharacterBefore(const Position&) const;
 
   // ------ Mapping APIs from text content to DOM ------
 
