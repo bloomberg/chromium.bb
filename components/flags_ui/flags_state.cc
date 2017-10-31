@@ -374,7 +374,7 @@ void FlagsState::SetFeatureEntryEnabled(FlagsStorage* flags_storage,
 }
 
 void FlagsState::RemoveFlagsSwitches(
-    std::map<std::string, base::CommandLine::StringType>* switch_list) {
+    base::CommandLine::SwitchMap* switch_list) {
   for (const auto& entry : flags_switches_)
     switch_list->erase(entry.first);
 

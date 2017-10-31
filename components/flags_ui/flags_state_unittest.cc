@@ -440,7 +440,7 @@ TEST_F(FlagsStateTest, CompareSwitchesToCurrentCommandLine) {
 }
 
 TEST_F(FlagsStateTest, RemoveFlagSwitches) {
-  std::map<std::string, base::CommandLine::StringType> switch_list;
+  base::CommandLine::SwitchMap switch_list;
   switch_list[kSwitch1] = base::CommandLine::StringType();
   switch_list[switches::kFlagSwitchesBegin] = base::CommandLine::StringType();
   switch_list[switches::kFlagSwitchesEnd] = base::CommandLine::StringType();

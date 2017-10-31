@@ -40,8 +40,7 @@ class BASE_EXPORT CommandLine {
 
   using CharType = StringType::value_type;
   using StringVector = std::vector<StringType>;
-  using SwitchMap = std::map<std::string, StringType>;
-  using StringPieceSwitchMap = std::map<StringPiece, const StringType*>;
+  using SwitchMap = std::map<std::string, StringType, std::less<>>;
 
   // A constructor for CommandLines that only carry switches and arguments.
   enum NoProgram { NO_PROGRAM };
@@ -230,11 +229,6 @@ class BASE_EXPORT CommandLine {
   // also quotes parts with '%' in them.
   StringType GetArgumentsStringInternal(bool quote_placeholders) const;
 
-  // Reconstruct |switches_by_stringpiece| to be a mirror of |switches|.
-  // |switches_by_stringpiece| only contains pointers to objects owned by
-  // |switches|.
-  void ResetStringPieces();
-
   // The singleton CommandLine representing the current process's command line.
   static CommandLine* current_process_commandline_;
 
@@ -243,12 +237,6 @@ class BASE_EXPORT CommandLine {
 
   // Parsed-out switch keys and values.
   SwitchMap switches_;
-
-  // A mirror of |switches_| with only references to the actual strings.
-  // The StringPiece internally holds a pointer to a key in |switches_| while
-  // the mapped_type points to a value in |switches_|.
-  // Used for allocation-free lookups.
-  StringPieceSwitchMap switches_by_stringpiece_;
 
   // The index after the program and switches, any arguments start here.
   size_t begin_args_;

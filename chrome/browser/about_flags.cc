@@ -3802,8 +3802,7 @@ void SetFeatureEntryEnabled(flags_ui::FlagsStorage* flags_storage,
       flags_storage, internal_name, enable);
 }
 
-void RemoveFlagsSwitches(
-    std::map<std::string, base::CommandLine::StringType>* switch_list) {
+void RemoveFlagsSwitches(base::CommandLine::SwitchMap* switch_list) {
   FlagsStateSingleton::GetFlagsState()->RemoveFlagsSwitches(switch_list);
 }
 

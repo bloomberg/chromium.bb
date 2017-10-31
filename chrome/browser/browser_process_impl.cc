@@ -1375,9 +1375,7 @@ void BrowserProcessImpl::RestartBackgroundInstance() {
   base::CommandLine* old_cl = base::CommandLine::ForCurrentProcess();
   auto new_cl = base::MakeUnique<base::CommandLine>(old_cl->GetProgram());
 
-  std::map<std::string, base::CommandLine::StringType> switches =
-      old_cl->GetSwitches();
-
+  base::CommandLine::SwitchMap switches = old_cl->GetSwitches();
   switches::RemoveSwitchesForAutostart(&switches);
 
   // Append the rest of the switches (along with their values, if any)
