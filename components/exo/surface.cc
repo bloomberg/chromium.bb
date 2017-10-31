@@ -291,6 +291,7 @@ void Surface::AddSubSurface(Surface* sub_surface) {
   DCHECK(!ListContainsEntry(pending_sub_surfaces_, sub_surface));
   pending_sub_surfaces_.push_back(std::make_pair(sub_surface, gfx::Point()));
   sub_surfaces_.push_back(std::make_pair(sub_surface, gfx::Point()));
+  sub_surfaces_changed_ = true;
 }
 
 void Surface::RemoveSubSurface(Surface* sub_surface) {
@@ -307,13 +308,10 @@ void Surface::RemoveSubSurface(Surface* sub_surface) {
 
   DCHECK(ListContainsEntry(sub_surfaces_, sub_surface));
   auto it = FindListEntry(sub_surfaces_, sub_surface);
-  pending_damage_.op(SkIRect::MakeXYWH(it->second.x(), it->second.y(),
-                                       sub_surface->content_size().width(),
-                                       sub_surface->content_size().height()),
-                     SkRegion::kUnion_Op);
   sub_surfaces_.erase(it);
   // Force recreating resources when the surface is added to a tree again.
   sub_surface->SurfaceHierarchyResourcesLost();
+  sub_surfaces_changed_ = true;
 }
 
 void Surface::SetSubSurfacePosition(Surface* sub_surface,
@@ -439,7 +437,10 @@ gfx::Rect Surface::CommitSurfaceHierarchy(
   if (needs_commit_surface_) {
     needs_commit_surface_ = false;
 
+    // TODO(penghuang): Make the damage more precise for sub surface changes.
+    // https://crbug.com/779704
     bool needs_full_damage =
+        sub_surfaces_changed_ ||
         pending_state_.opaque_region != state_.opaque_region ||
         pending_state_.buffer_scale != state_.buffer_scale ||
         pending_state_.buffer_transform != state_.buffer_transform ||
@@ -517,7 +518,7 @@ gfx::Rect Surface::CommitSurfaceHierarchy(
       damage_.setRect(output_rect);
     } else {
       // pending_damage_ is in Surface coordinates.
-      damage_.set(pending_damage_);
+      damage_.swap(pending_damage_);
       damage_.intersects(output_rect);
     }
     pending_damage_.setEmpty();
@@ -660,8 +661,6 @@ void Surface::SetStylusOnly() {
 void Surface::SurfaceHierarchyResourcesLost() {
   // Update resource and full damage are needed for next frame.
   needs_update_resource_ = true;
-  damage_.setRect(
-      SkIRect::MakeWH(content_size_.width(), content_size_.height()));
   for (const auto& sub_surface : sub_surfaces_)
     sub_surface.first->SurfaceHierarchyResourcesLost();
 }
