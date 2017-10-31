@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/content_settings_observer.h"
 
+#include <vector>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/client_hints.mojom.h"
@@ -75,7 +77,6 @@ ContentSetting GetContentSettingFromRules(
     const ContentSettingsForOneType& rules,
     const WebFrame* frame,
     const URL& secondary_url) {
-  ContentSettingsForOneType::const_iterator it;
   // If there is only one rule, it's the default rule and we don't need to match
   // the patterns.
   if (rules.size() == 1) {
@@ -85,10 +86,10 @@ ContentSetting GetContentSettingFromRules(
   }
   const GURL& primary_url = GetOriginOrURL(frame);
   const GURL& secondary_gurl = secondary_url;
-  for (it = rules.begin(); it != rules.end(); ++it) {
-    if (it->primary_pattern.Matches(primary_url) &&
-        it->secondary_pattern.Matches(secondary_gurl)) {
-      return it->GetContentSetting();
+  for (const auto& rule : rules) {
+    if (rule.primary_pattern.Matches(primary_url) &&
+        rule.secondary_pattern.Matches(secondary_gurl)) {
+      return rule.GetContentSetting();
     }
   }
   NOTREACHED();
@@ -97,6 +98,11 @@ ContentSetting GetContentSettingFromRules(
 
 bool IsScriptDisabledForPreview(const content::RenderFrame* render_frame) {
   return render_frame->GetPreviewsState() & content::NOSCRIPT_ON;
+}
+
+bool IsUniqueFrame(WebFrame* frame) {
+  return frame->GetSecurityOrigin().IsUnique() ||
+         frame->Top()->GetSecurityOrigin().IsUnique();
 }
 
 }  // namespace
@@ -113,7 +119,7 @@ ContentSettingsObserver::ContentSettingsObserver(
       extension_dispatcher_(extension_dispatcher),
 #endif
       allow_running_insecure_content_(false),
-      content_setting_rules_(NULL),
+      content_setting_rules_(nullptr),
       is_interstitial_page_(false),
       current_request_id_(0),
       should_whitelist_(should_whitelist) {
@@ -153,10 +159,8 @@ bool ContentSettingsObserver::IsPluginTemporarilyAllowed(
     const std::string& identifier) {
   // If the empty string is in here, it means all plugins are allowed.
   // TODO(bauerb): Remove this once we only pass in explicit identifiers.
-  return (temporarily_allowed_plugins_.find(identifier) !=
-          temporarily_allowed_plugins_.end()) ||
-         (temporarily_allowed_plugins_.find(std::string()) !=
-          temporarily_allowed_plugins_.end());
+  return base::ContainsKey(temporarily_allowed_plugins_, identifier) ||
+         base::ContainsKey(temporarily_allowed_plugins_, std::string());
 }
 
 void ContentSettingsObserver::DidBlockContentType(
@@ -242,8 +246,7 @@ bool ContentSettingsObserver::AllowDatabase(const WebString& name,
                                             const WebString& display_name,
                                             unsigned estimated_size) {
   WebFrame* frame = render_frame()->GetWebFrame();
-  if (frame->GetSecurityOrigin().IsUnique() ||
-      frame->Top()->GetSecurityOrigin().IsUnique())
+  if (IsUniqueFrame(frame))
     return false;
 
   bool result = false;
@@ -257,19 +260,18 @@ bool ContentSettingsObserver::AllowDatabase(const WebString& name,
 void ContentSettingsObserver::RequestFileSystemAccessAsync(
     const WebContentSettingCallbacks& callbacks) {
   WebFrame* frame = render_frame()->GetWebFrame();
-  if (frame->GetSecurityOrigin().IsUnique() ||
-      frame->Top()->GetSecurityOrigin().IsUnique()) {
+  if (IsUniqueFrame(frame)) {
     WebContentSettingCallbacks permissionCallbacks(callbacks);
     permissionCallbacks.DoDeny();
     return;
   }
   ++current_request_id_;
-  std::pair<PermissionRequestMap::iterator, bool> insert_result =
-      permission_requests_.insert(
-          std::make_pair(current_request_id_, callbacks));
+  bool inserted = permission_requests_
+                      .insert(std::make_pair(current_request_id_, callbacks))
+                      .second;
 
   // Verify there are no duplicate insertions.
-  DCHECK(insert_result.second);
+  DCHECK(inserted);
 
   Send(new ChromeViewHostMsg_RequestFileSystemAccessAsync(
       routing_id(), current_request_id_,
@@ -301,8 +303,7 @@ bool ContentSettingsObserver::AllowImage(bool enabled_per_settings,
 bool ContentSettingsObserver::AllowIndexedDB(const WebString& name,
                                              const WebSecurityOrigin& origin) {
   WebFrame* frame = render_frame()->GetWebFrame();
-  if (frame->GetSecurityOrigin().IsUnique() ||
-      frame->Top()->GetSecurityOrigin().IsUnique())
+  if (IsUniqueFrame(frame))
     return false;
 
   bool result = false;
@@ -327,7 +328,7 @@ bool ContentSettingsObserver::AllowScript(bool enabled_per_settings) {
     return it->second;
 
   // Evaluate the content setting rules before
-  // |IsWhitelistedForContentSettings|; if there is only the default rule
+  // IsWhitelistedForContentSettings(); if there is only the default rule
   // allowing all scripts, it's quicker this way.
   bool allow = true;
   if (content_setting_rules_) {
@@ -364,8 +365,7 @@ bool ContentSettingsObserver::AllowScriptFromSource(
 
 bool ContentSettingsObserver::AllowStorage(bool local) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  if (frame->GetSecurityOrigin().IsUnique() ||
-      frame->Top()->GetSecurityOrigin().IsUnique())
+  if (IsUniqueFrame(frame))
     return false;
 
   StoragePermissionsKey key(
@@ -471,16 +471,17 @@ void ContentSettingsObserver::PersistClientHints(
   // browser side or the renderer. If the value needs to be overridden,
   // this method should not return early if |update_count| is 0.
   std::vector<::blink::mojom::WebClientHintsType> client_hints;
+  static constexpr size_t kWebClientHintsCount =
+      static_cast<size_t>(blink::mojom::WebClientHintsType::kLast) + 1;
+  client_hints.reserve(kWebClientHintsCount);
 
-  size_t update_count = 0;
-  for (size_t i = 0;
-       i < static_cast<int>(blink::mojom::WebClientHintsType::kLast) + 1; ++i) {
+  for (size_t i = 0; i < kWebClientHintsCount; ++i) {
     if (enabled_client_hints.IsEnabled(
             static_cast<blink::mojom::WebClientHintsType>(i))) {
       client_hints.push_back(static_cast<blink::mojom::WebClientHintsType>(i));
-      update_count++;
     }
   }
+  size_t update_count = client_hints.size();
   if (update_count == 0)
     return;
 
@@ -565,16 +566,17 @@ bool ContentSettingsObserver::IsPlatformApp() {
 const extensions::Extension* ContentSettingsObserver::GetExtension(
     const WebSecurityOrigin& origin) const {
   if (origin.Protocol().Ascii() != extensions::kExtensionScheme)
-    return NULL;
+    return nullptr;
 
   const std::string extension_id = origin.Host().Utf8().data();
   if (!extension_dispatcher_->IsExtensionActive(extension_id))
-    return NULL;
+    return nullptr;
 
   return extensions::RendererExtensionRegistry::Get()->GetByID(extension_id);
 }
 #endif
 
+// static
 bool ContentSettingsObserver::IsWhitelistedForContentSettings() const {
   if (should_whitelist_)
     return true;

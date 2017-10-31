@@ -67,7 +67,7 @@ class ContentSettingsObserver
   void DidBlockContentType(ContentSettingsType settings_type,
                            const base::string16& details);
 
-  // blink::WebContentSettingsClient implementation.
+  // blink::WebContentSettingsClient:
   bool AllowDatabase(const blink::WebString& name,
                      const blink::WebString& display_name,
                      unsigned estimated_size) override;
@@ -143,6 +143,8 @@ class ContentSettingsObserver
   // True if |render_frame()| contains content that is white-listed for content
   // settings.
   bool IsWhitelistedForContentSettings() const;
+
+  // Exposed for unit tests.
   static bool IsWhitelistedForContentSettings(
       const blink::WebSecurityOrigin& origin,
       const blink::WebURL& document_url);
