@@ -358,15 +358,16 @@ h2 {
 
 .tab-content {
   display: none;
-  left: 0;
   line-height: 25px;
+  margin-top: -50px;
   /* Bottom padding should be greater than evaluated height of needs-restart */
   padding-bottom: 200px;
-  padding-top: 24px;
-  position: absolute;
-  top: -25px;
-  width: 100%;
-  z-index: 0;
+  position: relative;
+  width: 200%;
+}
+
+.tabs li:nth-child(2) .tab-content {
+  margin-left: -100%;
 }
 
 .selected .tab-content {
