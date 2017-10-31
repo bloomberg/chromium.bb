@@ -70,13 +70,16 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
       const CreditCard& card,
       payments::PaymentsClient::UploadRequestDetails* upload_request) const;
 
-  // Sets |user_did_accept_upload_prompt_| and calls UploadCard if the risk data
-  // is available.
+  // Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
+  // the risk data is available.
   void OnUserDidAcceptUpload();
 
-  // Saves risk data in |uploading_risk_data_| and calls UploadCard if the user
-  // has accepted the prompt.
+  // Saves risk data in |uploading_risk_data_| and calls SendUploadCardRequest
+  // if the user has accepted the prompt.
   void OnDidGetUploadRiskData(const std::string& risk_data);
+
+  // Finalizes the upload request and calls PaymentsClient::UploadCard().
+  void SendUploadCardRequest();
 
   // Returns metric relevant to the CVC field based on values in
   // |found_cvc_field_|, |found_value_in_cvc_field_| and

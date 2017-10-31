@@ -122,16 +122,17 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
 
   if (!credit_card_save_manager_->IsCreditCardUploadEnabled() ||
       imported_credit_card_matches_masked_server_credit_card) {
-    // This block will only be reached if we have observed a new card or a card
-    // whose |TypeAndLastFourDigits| matches a masked server card.
-    // |ImportFormData| will return false if the card matches a full card that
-    // we have already stored.
+    // Offer local save. This block will only be reached if we have observed a
+    // new card or a card whose |TypeAndLastFourDigits| matches a masked server
+    // card. |ImportFormData| will return false if the card matches a full card
+    // that we have already stored.
     credit_card_save_manager_->OfferCardLocalSave(*imported_credit_card);
   } else {
-    // Whereas, because we pass IsCreditCardUploadEnabled() to ImportFormData,
-    // this block can be reached on observing either a new card or one already
-    // stored locally and whose |TypeAndLastFourDigits| do not match a masked
-    // server card. We will offer to upload either kind.
+    // Attempt to offer upload save. Because we pass IsCreditCardUploadEnabled()
+    // to ImportFormData, this block can be reached on observing either a new
+    // card or one already stored locally and whose |TypeAndLastFourDigits| do
+    // not match a masked server card. We can offer to upload either kind, but
+    // note that they must pass address/name/CVC validation requirements first.
     credit_card_save_manager_->AttemptToOfferCardUploadSave(
         submitted_form, *imported_credit_card);
   }
