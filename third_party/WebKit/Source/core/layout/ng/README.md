@@ -55,8 +55,7 @@ TODO(layout-dev): Document with lots of pretty pictures.
 
 ## Block Flow Algorithm ##
 
-This section contains details specific to the
-[NGBlockLayoutAlgorithm](ng_block_layout_algorithm.h).
+Please refer to the [block flow layout docs](BlockLayout.md).
 
 ### Collapsing Margins ###
 
