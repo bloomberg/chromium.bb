@@ -43,9 +43,18 @@ Specification](https://html.spec.whatwg.org/multipage/structured-data.html#seria
 Blink's implementation of the specification is responsible for converting
 between [V8](https://developers.google.com/v8/) values and the byte sequences in
 IndexedDB's backing store. The implementation is in `SerializedScriptValue`
-(SSV), which delegates to `v8::ValueSerializer`. A serialized value handled by
-the backing store is essentially a data buffer that stores a sequence of bytes,
-and a list (technically, an ordered set) of Blobs.
+(SSV), which delegates to `v8::ValueSerializer` and `v8::ValueDeserializer`. A
+serialized value handled by the backing store is essentially a data buffer that
+stores a sequence of bytes, and a list (technically, an ordered set) of Blobs.
+
+While V8 drives the serialization process, Blink implements the serialization of
+objects not covered by the JavaScript specification, such as `Blob` and
+`ImageData`. This is accomplished by having V8 expose the interfaces
+`v8::ValueSerializer::Delegate` and `v8::ValueDeserializer::Delegate`, which are
+implemented by Blink. The canonical example methods of these interfaces are
+`v8::ValueSerializer::Delegate::WriteHostObject()` and
+`v8::ValueDeserializer::Delegate::ReadHostObject()`, which are used to
+completely delegate the serialization of a V8 object to Blink.
 
 Changes to the IndexedDB serialization format are delicate because our backing
 store does not have any form of data migration. Once written to the backing
@@ -71,10 +80,10 @@ IndexedDB serialization changes must take the following subtleties into account:
 
 * The SerializedScriptValue code is tightly coupled with
   v8::ValueSerializer. For this reason, SSV should not host logic that might
-  later be moved to the browser process. Such moves are bound to be difficult,
-  because operating on V8 values (in the manner required by the serialization
-  specification) requires a V8 execution context, which can only be hosted in a
-  renderer process.
+  later be moved to the browser process (e.g., to the IndexedDB backing store).
+  Such moves are bound to be difficult, because operating on V8 values (in the
+  manner required by the serialization specification) requires a V8 execution
+  context, which can only be hosted in a renderer process.
 * The SerializedScriptValue API, which is synchronous, is incompatible with
   reading Blobs (or any sort of files), which must be done asynchronously. All
   the information needed by SSV deserialization must be fetched before the
