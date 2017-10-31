@@ -670,8 +670,13 @@ class DnsTransactionImpl : public DnsTransaction,
   }
 
   void DoCallback(AttemptResult result) {
-    DCHECK(!callback_.is_null());
     DCHECK_NE(ERR_IO_PENDING, result.rv);
+
+    // TODO(mgersh): consider changing back to a DCHECK once
+    // https://crbug.com/779589 is fixed.
+    if (callback_.is_null())
+      return;
+
     const DnsResponse* response = result.attempt ?
         result.attempt->GetResponse() : NULL;
     CHECK(result.rv != OK || response != NULL);
@@ -883,8 +888,12 @@ class DnsTransactionImpl : public DnsTransaction,
           session_->RecordServerSuccess(result.attempt->server_index());
           net_log_.EndEventWithNetErrorCode(
               NetLogEventType::DNS_TRANSACTION_QUERY, result.rv);
-          // Try next suffix.
-          qnames_.pop_front();
+          // Try next suffix. Check that qnames_ isn't already empty first,
+          // which can happen when there are two attempts running at once.
+          // TODO(mgersh): remove this workaround for https://crbug.com/774846
+          // when https://crbug.com/779589 is fixed.
+          if (!qnames_.empty())
+            qnames_.pop_front();
           if (qnames_.empty()) {
             return AttemptResult(ERR_NAME_NOT_RESOLVED, NULL);
           } else {

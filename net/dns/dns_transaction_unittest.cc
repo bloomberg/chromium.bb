@@ -643,6 +643,26 @@ TEST_F(DnsTransactionTest, MismatchedResponseFail) {
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
 }
 
+TEST_F(DnsTransactionTest, MismatchedResponseNxdomain) {
+  config_.attempts = 2;
+  config_.timeout = TestTimeouts::tiny_timeout();
+  ConfigureFactory();
+
+  // First attempt receives mismatched response followed by valid NXDOMAIN
+  // response.
+  // Second attempt receives valid NXDOMAIN response.
+  std::unique_ptr<DnsSocketData> data(
+      new DnsSocketData(0 /* id */, kT0HostName, kT0Qtype, SYNCHRONOUS, false));
+  data->AddResponseData(kT1ResponseDatagram, arraysize(kT1ResponseDatagram),
+                        SYNCHRONOUS);
+  data->AddRcode(dns_protocol::kRcodeNXDOMAIN, ASYNC);
+  AddSocketData(std::move(data));
+  AddSyncQueryAndRcode(kT0HostName, kT0Qtype, dns_protocol::kRcodeNXDOMAIN);
+
+  TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_NAME_NOT_RESOLVED);
+  EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
+}
+
 TEST_F(DnsTransactionTest, ServerFail) {
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype, dns_protocol::kRcodeSERVFAIL);
 
