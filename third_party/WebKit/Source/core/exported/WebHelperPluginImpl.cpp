@@ -30,11 +30,11 @@
 
 #include "core/exported/WebHelperPluginImpl.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLObjectElement.h"
+#include "public/platform/TaskType.h"
 #include "public/web/WebPlugin.h"
 
 namespace blink {
@@ -88,8 +88,8 @@ void WebHelperPluginImpl::Destroy() {
   // Page and a WebFrame, and destroying it would cause JavaScript triggered by
   // frame detach to run, which isn't allowed inside stopSuspendableObjects().
   // Removing this causes one Chrome test to fail with a timeout.
-  TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
-                        &object_element_->GetDocument())
+  object_element_->GetDocument()
+      .GetTaskRunner(TaskType::kUnspecedTimer)
       ->PostTask(BLINK_FROM_HERE, WTF::Bind(&WebHelperPluginImpl::ReallyDestroy,
                                             WTF::Unretained(this)));
 }

@@ -31,7 +31,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/IdTargetObserver.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/layout/svg/LayoutSVGTransformableContainer.h"
 #include "core/svg/SVGGElement.h"
@@ -46,6 +45,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/Vector.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -721,7 +721,8 @@ void SVGUseElement::NotifyFinished(Resource* resource) {
       return;
     DCHECK(!have_fired_load_event_);
     have_fired_load_event_ = true;
-    TaskRunnerHelper::Get(TaskType::kDOMManipulation, &GetDocument())
+    GetDocument()
+        .GetTaskRunner(TaskType::kDOMManipulation)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&SVGUseElement::DispatchPendingEvent,
                              WrapPersistent(this)));

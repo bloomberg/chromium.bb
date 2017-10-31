@@ -25,10 +25,10 @@
 
 #include "core/dom/events/MediaElementEventQueue.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -41,7 +41,7 @@ MediaElementEventQueue* MediaElementEventQueue::Create(
 MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner,
                                                ExecutionContext* context)
     : owner_(owner),
-      timer_(TaskRunnerHelper::Get(TaskType::kMediaElementEvent, context),
+      timer_(context->GetTaskRunner(TaskType::kMediaElementEvent),
              this,
              &MediaElementEventQueue::TimerFired),
       is_closed_(false) {}

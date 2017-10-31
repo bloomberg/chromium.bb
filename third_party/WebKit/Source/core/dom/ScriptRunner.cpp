@@ -29,18 +29,18 @@
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptLoader.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "platform/heap/Handle.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {
 
 ScriptRunner::ScriptRunner(Document* document)
     : document_(document),
-      task_runner_(TaskRunnerHelper::Get(TaskType::kNetworking, document)),
+      task_runner_(document->GetTaskRunner(TaskType::kNetworking)),
       number_of_in_order_scripts_with_pending_notification_(0),
       is_suspended_(false) {
   DCHECK(document);

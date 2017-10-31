@@ -10,12 +10,12 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentWriteIntervention.h"
 #include "core/dom/ScriptLoader.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/SubresourceIntegrityHelper.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/loader/fetch/MemoryCache.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -412,12 +412,12 @@ bool ClassicPendingScript::StartStreamingIfPossible(
   if (ready_state_ == kReady) {
     ScriptStreamer::StartStreamingLoadedScript(
         this, streamer_type, document->GetFrame()->GetSettings(), script_state,
-        TaskRunnerHelper::Get(task_type, document));
+        document->GetTaskRunner(task_type));
     success = streamer_ && !streamer_->IsStreamingFinished();
   } else {
     ScriptStreamer::StartStreaming(
         this, streamer_type, document->GetFrame()->GetSettings(), script_state,
-        TaskRunnerHelper::Get(task_type, document));
+        document->GetTaskRunner(task_type));
     success = streamer_;
   }
 

@@ -27,7 +27,6 @@
 #include "core/html/forms/SpinButtonElement.h"
 
 #include "build/build_config.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/WheelEvent.h"
 #include "core/frame/LocalFrame.h"
@@ -38,6 +37,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -50,10 +50,9 @@ inline SpinButtonElement::SpinButtonElement(Document& document,
       capturing_(false),
       up_down_state_(kIndeterminate),
       press_starting_state_(kIndeterminate),
-      repeating_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &document),
-          this,
-          &SpinButtonElement::RepeatingTimerFired) {}
+      repeating_timer_(document.GetTaskRunner(TaskType::kUnspecedTimer),
+                       this,
+                       &SpinButtonElement::RepeatingTimerFired) {}
 
 SpinButtonElement* SpinButtonElement::Create(
     Document& document,

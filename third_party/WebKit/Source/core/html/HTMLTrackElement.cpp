@@ -26,13 +26,13 @@
 #include "core/html/HTMLTrackElement.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/html/track/LoadableTextTrack.h"
 #include "core/html_names.h"
+#include "public/platform/TaskType.h"
 
 #define TRACK_LOG_LEVEL 3
 
@@ -50,7 +50,7 @@ static String UrlForLoggingTrack(const KURL& url) {
 
 inline HTMLTrackElement::HTMLTrackElement(Document& document)
     : HTMLElement(trackTag, document),
-      load_timer_(TaskRunnerHelper::Get(TaskType::kNetworking, &document),
+      load_timer_(document.GetTaskRunner(TaskType::kNetworking),
                   this,
                   &HTMLTrackElement::LoadTimerFired) {
   DVLOG(TRACK_LOG_LEVEL) << "HTMLTrackElement - " << (void*)this;

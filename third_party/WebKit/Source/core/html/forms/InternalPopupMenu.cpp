@@ -9,7 +9,6 @@
 #include "core/css/StyleEngine.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
@@ -28,6 +27,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebMouseEvent.h"
 #include "public/web/WebColorChooser.h"
 
@@ -498,8 +498,9 @@ void InternalPopupMenu::UpdateFromElement(UpdateReason) {
   if (needs_update_)
     return;
   needs_update_ = true;
-  TaskRunnerHelper::Get(TaskType::kUserInteraction,
-                        &OwnerElement().GetDocument())
+  OwnerElement()
+      .GetDocument()
+      .GetTaskRunner(TaskType::kUserInteraction)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&InternalPopupMenu::Update, WrapPersistent(this)));
 }

@@ -9,7 +9,6 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Modulator.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/probe/CoreProbes.h"
@@ -19,6 +18,7 @@
 #include "core/workers/WorkletModuleTreeClient.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/bindings/TraceWrapperMember.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -110,7 +110,7 @@ void WorkletGlobalScope::FetchAndInvokeScript(
     // loading and this usage is not explicitly spec'ed.
     module_responses_map_proxy_ = WorkletModuleResponsesMapProxy::Create(
         module_responses_map, outside_settings_task_runner,
-        TaskRunnerHelper::Get(TaskType::kUnspecedLoading, this));
+        GetTaskRunner(TaskType::kUnspecedLoading));
   }
 
   // Step 1: "Let insideSettings be the workletGlobalScope's associated

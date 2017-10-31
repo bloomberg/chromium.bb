@@ -32,7 +32,6 @@
 #include "core/dom/DocumentParser.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
@@ -691,8 +690,8 @@ void SVGImage::LoadCompleted() {
       // Document::ImplicitClose(), we defer AsyncLoadCompleted() to avoid
       // potential bugs and timing dependencies around ImplicitClose() and
       // to make LoadEventFinished() true when AsyncLoadCompleted() is called.
-      TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
-                            ToLocalFrame(page_->MainFrame()))
+      ToLocalFrame(page_->MainFrame())
+          ->GetTaskRunner(TaskType::kUnspecedLoading)
           ->PostTask(BLINK_FROM_HERE,
                      WTF::Bind(&SVGImage::NotifyAsyncLoadCompleted,
                                scoped_refptr<SVGImage>(this)));

@@ -46,7 +46,6 @@
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/ScriptedIdleTaskController.h"
 #include "core/dom/SinkDocument.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/events/DOMWindowEventQueue.h"
 #include "core/dom/events/ScopedEventQueue.h"
@@ -95,6 +94,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/site_engagement.mojom-blink.h"
 
@@ -253,10 +253,9 @@ static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : DOMWindow(frame),
       visualViewport_(DOMVisualViewport::Create(this)),
-      unused_preloads_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
-          this,
-          &LocalDOMWindow::WarnUnusedPreloads),
+      unused_preloads_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
+                             this,
+                             &LocalDOMWindow::WarnUnusedPreloads),
       should_print_when_finished_loading_(false) {}
 
 void LocalDOMWindow::ClearDocument() {
@@ -376,7 +375,7 @@ void LocalDOMWindow::DispatchWindowLoadEvent() {
   // workaround to avoid Editing code crashes.  We should always dispatch
   // 'load' event asynchronously.  crbug.com/569511.
   if (ScopedEventQueue::Instance()->ShouldQueueEvents() && document_) {
-    TaskRunnerHelper::Get(TaskType::kNetworking, document_)
+    document_->GetTaskRunner(TaskType::kNetworking)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&LocalDOMWindow::DispatchLoadEvent,
                              WrapPersistent(this)));

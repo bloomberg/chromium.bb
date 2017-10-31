@@ -5,7 +5,6 @@
 #include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 
 #include "core/dom/IdleRequestOptions.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
@@ -24,6 +23,7 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/CurrentTime.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -57,7 +57,7 @@ IdleSpellCheckCallback::IdleSpellCheckCallback(LocalFrame& frame)
       frame_(frame),
       last_processed_undo_step_sequence_(0),
       cold_mode_requester_(ColdModeSpellCheckRequester::Create(frame)),
-      cold_mode_timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
+      cold_mode_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
                        this,
                        &IdleSpellCheckCallback::ColdModeTimerFired) {}
 

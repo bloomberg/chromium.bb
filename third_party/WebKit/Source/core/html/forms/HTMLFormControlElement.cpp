@@ -26,7 +26,6 @@
 
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/forms/HTMLDataListElement.h"
@@ -44,6 +43,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/wtf/Vector.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -608,7 +608,8 @@ void HTMLFormControlElement::SetNeedsValidityCheck() {
   if (IsValidationMessageVisible()) {
     // Calls UpdateVisibleValidationMessage() even if is_valid_ is not
     // changed because a validation message can be changed.
-    TaskRunnerHelper::Get(TaskType::kDOMManipulation, &GetDocument())
+    GetDocument()
+        .GetTaskRunner(TaskType::kDOMManipulation)
         ->PostTask(
             BLINK_FROM_HERE,
             WTF::Bind(&HTMLFormControlElement::UpdateVisibleValidationMessage,

@@ -4,11 +4,11 @@
 
 #include "core/html/media/MediaCustomControlsFullscreenDetector.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/media/HTMLVideoElement.h"
 #include "core/layout/IntersectionGeometry.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -25,7 +25,7 @@ MediaCustomControlsFullscreenDetector::MediaCustomControlsFullscreenDetector(
     : EventListener(kCPPEventListenerType),
       video_element_(video),
       check_viewport_intersection_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled, &video.GetDocument()),
+          video.GetDocument().GetTaskRunner(TaskType::kUnthrottled),
           this,
           &MediaCustomControlsFullscreenDetector::
               OnCheckViewportIntersectionTimerFired) {

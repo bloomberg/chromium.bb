@@ -29,7 +29,6 @@
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/dom/Document.h"
 #include "core/dom/IdTargetObserver.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/dom/events/EventListener.h"
 #include "core/frame/UseCounter.h"
@@ -41,6 +40,7 @@
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -1246,7 +1246,8 @@ void SVGSMILElement::ScheduleRepeatEvents(unsigned count) {
 }
 
 void SVGSMILElement::ScheduleEvent(const AtomicString& event_type) {
-  TaskRunnerHelper::Get(TaskType::kDOMManipulation, &GetDocument())
+  GetDocument()
+      .GetTaskRunner(TaskType::kDOMManipulation)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&SVGSMILElement::DispatchPendingEvent,
                            WrapPersistent(this), event_type));

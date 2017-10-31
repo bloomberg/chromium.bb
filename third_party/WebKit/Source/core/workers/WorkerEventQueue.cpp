@@ -26,11 +26,11 @@
 
 #include "core/workers/WorkerEventQueue.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -65,7 +65,7 @@ bool WorkerEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
   // database concurrently. See also comments in the ctor of
   // DOMWindowEventQueueTimer.
   // TODO(nhiroki): Callers of enqueueEvent() should specify the task type.
-  TaskRunnerHelper::Get(TaskType::kUnthrottled, worker_global_scope_.Get())
+  worker_global_scope_->GetTaskRunner(TaskType::kUnthrottled)
       ->PostTask(from_here,
                  WTF::Bind(&WorkerEventQueue::DispatchEvent,
                            WrapPersistent(this), WrapWeakPersistent(event)));

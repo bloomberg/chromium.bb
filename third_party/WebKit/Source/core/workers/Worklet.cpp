@@ -7,11 +7,11 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/WTF.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -122,7 +122,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   // document's UnspecedLoading task runner as that is what we commonly use for
   // module loading.
   scoped_refptr<WebTaskRunner> outside_settings_task_runner =
-      TaskRunnerHelper::Get(TaskType::kUnspecedLoading, GetExecutionContext());
+      GetExecutionContext()->GetTaskRunner(TaskType::kUnspecedLoading);
 
   // Step 8: "Let moduleResponsesMap be worklet's module responses map."
   WorkletModuleResponsesMap* module_responses_map = module_responses_map_;

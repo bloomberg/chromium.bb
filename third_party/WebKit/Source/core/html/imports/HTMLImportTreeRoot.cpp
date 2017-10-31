@@ -19,7 +19,7 @@ HTMLImportTreeRoot::HTMLImportTreeRoot(Document* document)
     : HTMLImport(HTMLImport::kSync),
       document_(document),
       recalc_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, document->GetFrame()),
+          document->GetFrame()->GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &HTMLImportTreeRoot::RecalcTimerFired) {
   ScheduleRecalcState();  // This recomputes initial state.

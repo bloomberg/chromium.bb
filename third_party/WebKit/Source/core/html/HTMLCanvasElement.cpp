@@ -41,7 +41,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/File.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -86,6 +85,7 @@
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebTraceLocation.h"
 #include "v8/include/v8.h"
 
@@ -800,7 +800,8 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback,
 
   if (!IsPaintable()) {
     // If the canvas element's bitmap has no pixels
-    TaskRunnerHelper::Get(TaskType::kCanvasBlobSerialization, &GetDocument())
+    GetDocument()
+        .GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&BlobCallback::handleEvent,
                              WrapPersistent(callback), nullptr));
@@ -823,7 +824,8 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback,
 
   if (!image_data) {
     // ImageData allocation faillure
-    TaskRunnerHelper::Get(TaskType::kCanvasBlobSerialization, &GetDocument())
+    GetDocument()
+        .GetTaskRunner(TaskType::kCanvasBlobSerialization)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&BlobCallback::handleEvent,
                              WrapPersistent(callback), nullptr));

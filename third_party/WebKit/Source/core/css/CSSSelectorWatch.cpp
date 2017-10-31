@@ -35,9 +35,9 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -47,7 +47,7 @@ static const char kSupplementNameWatch[] = "CSSSelectorWatch";
 CSSSelectorWatch::CSSSelectorWatch(Document& document)
     : Supplement<Document>(document),
       callback_selector_change_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &document),
+          document.GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &CSSSelectorWatch::CallbackSelectorChangeTimerFired),
       timer_expirations_(0) {}

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
@@ -15,6 +14,7 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/StringBuilder.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
@@ -75,7 +75,7 @@ bool SubresourceFilter::AllowWebSocketConnection(const KURL& url) {
   // because there aren't developer-invisible connections (like speculative
   // preloads) happening here.
   scoped_refptr<WebTaskRunner> task_runner =
-      TaskRunnerHelper::Get(TaskType::kNetworking, execution_context_);
+      execution_context_->GetTaskRunner(TaskType::kNetworking);
   DCHECK(task_runner->RunsTasksInCurrentSequence());
   task_runner->PostTask(BLINK_FROM_HERE,
                         WTF::Bind(&SubresourceFilter::ReportLoad,

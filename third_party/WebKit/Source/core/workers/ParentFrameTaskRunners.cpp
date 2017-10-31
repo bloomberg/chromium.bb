@@ -5,11 +5,11 @@
 #include "core/workers/ParentFrameTaskRunners.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -32,7 +32,7 @@ ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
         TaskType::kNetworking, TaskType::kPostedMessage,
         TaskType::kCanvasBlobSerialization, TaskType::kUnthrottled}) {
     auto task_runner =
-        frame ? TaskRunnerHelper::Get(type, frame)
+        frame ? frame->GetTaskRunner(type)
               : Platform::Current()->MainThread()->GetWebTaskRunner();
     task_runners_.insert(type, std::move(task_runner));
   }

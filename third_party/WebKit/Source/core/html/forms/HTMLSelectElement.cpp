@@ -43,7 +43,6 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
@@ -73,6 +72,7 @@
 #include "core/page/SpatialNavigation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/text/PlatformLocale.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -887,7 +887,8 @@ void HTMLSelectElement::ScrollToOption(HTMLOptionElement* option) {
   // inserted before executing scrollToOptionTask().
   option_to_scroll_to_ = option;
   if (!has_pending_task) {
-    TaskRunnerHelper::Get(TaskType::kUserInteraction, &GetDocument())
+    GetDocument()
+        .GetTaskRunner(TaskType::kUserInteraction)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&HTMLSelectElement::ScrollToOptionTask,
                              WrapPersistent(this)));

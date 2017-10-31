@@ -26,7 +26,6 @@
 #include "core/page/ValidationMessageClientImpl.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
@@ -34,6 +33,7 @@
 #include "core/page/ValidationMessageOverlayDelegate.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformChromeClient.h"
+#include "public/platform/TaskType.h"
 #include "public/web/WebTextDirection.h"
 
 namespace blink {
@@ -102,8 +102,8 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
   DCHECK(overlay_);
   overlay_delegate_->StartToHide();
   timer_ = WTF::MakeUnique<TaskRunnerTimer<ValidationMessageClientImpl>>(
-      TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &anchor.GetDocument()),
-      this, &ValidationMessageClientImpl::Reset);
+      anchor.GetDocument().GetTaskRunner(TaskType::kUnspecedTimer), this,
+      &ValidationMessageClientImpl::Reset);
   // This should be equal to or larger than transition duration of
   // #container.hiding in validation_bubble.css.
   const double kHidingAnimationDuration = 0.13333;

@@ -377,7 +377,7 @@ WorkerGlobalScope::WorkerGlobalScope(
       v8_cache_options_(creation_params->v8_cache_options),
       thread_(thread),
       event_queue_(WorkerEventQueue::Create(this)),
-      timers_(TaskRunnerHelper::Get(TaskType::kJavascriptTimer, this)),
+      timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       time_origin_(time_origin),
       font_selector_(OffscreenFontSelector::Create(this)) {
   InstanceCounters::IncrementCounter(

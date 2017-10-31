@@ -158,7 +158,7 @@ void ImageDocumentParser::Finish() {
     cached_image->SetResponse(loader->GetResponse());
     cached_image->Finish(
         loader->GetTiming().ResponseEnd(),
-        TaskRunnerHelper::Get(TaskType::kUnspecedLoading, GetDocument()).get());
+        GetDocument()->GetTaskRunner(TaskType::kUnspecedLoading).get());
 
     // Report the natural image size in the page title, regardless of zoom
     // level.  At a zoom level of 1 the image is guaranteed to have an integer

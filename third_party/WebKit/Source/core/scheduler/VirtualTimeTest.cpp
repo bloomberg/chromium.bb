@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/web/WebLocalFrame.h"
 #include "public/web/WebScriptExecutionCallback.h"
 #include "public/web/WebScriptSource.h"
@@ -224,8 +224,8 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
       "setTimeout(() => { run_order.push(1); }, 1000);"
       "setTimeout(() => { run_order.push(2); }, 1001);");
 
-  scoped_refptr<WebTaskRunner> runner = TaskRunnerHelper::Get(
-      TaskType::kJavascriptTimer, Window().GetExecutionContext());
+  scoped_refptr<WebTaskRunner> runner =
+      Window().GetExecutionContext()->GetTaskRunner(TaskType::kJavascriptTimer);
 
   // Schedule a task to suspend virtual time at the same point in time.
   runner->PostDelayedTask(BLINK_FROM_HERE,

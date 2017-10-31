@@ -33,7 +33,6 @@
 #include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/Range.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
@@ -52,6 +51,7 @@
 #include "core/page/Page.h"
 #include "platform/Timer.h"
 #include "platform/wtf/CurrentTime.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebFindOptions.h"
@@ -87,8 +87,8 @@ class TextFinder::DeferredScopeStringMatches
                              int identifier,
                              const WebString& search_text,
                              const WebFindOptions& options)
-      : timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
-                                     text_finder->OwnerFrame().GetFrame()),
+      : timer_(text_finder->OwnerFrame().GetFrame()->GetTaskRunner(
+                   TaskType::kUnspecedTimer),
                this,
                &DeferredScopeStringMatches::DoTimeout),
         text_finder_(text_finder),

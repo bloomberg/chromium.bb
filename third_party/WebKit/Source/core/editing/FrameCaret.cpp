@@ -25,7 +25,6 @@
 
 #include "core/editing/FrameCaret.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/CaretDisplayItemClient.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
@@ -40,6 +39,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/page/Page.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
@@ -51,7 +51,7 @@ FrameCaret::FrameCaret(LocalFrame& frame,
       display_item_client_(new CaretDisplayItemClient()),
       caret_visibility_(CaretVisibility::kHidden),
       caret_blink_timer_(new TaskRunnerTimer<FrameCaret>(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
+          frame.GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &FrameCaret::CaretBlinkTimerFired)),
       should_paint_caret_(true),

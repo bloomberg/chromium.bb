@@ -33,12 +33,13 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/Animation.h"
-#include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/Document.h"
 #include "platform/Timer.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Vector.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -59,7 +60,7 @@ class CORE_EXPORT PendingAnimations final
     : public GarbageCollectedFinalized<PendingAnimations> {
  public:
   explicit PendingAnimations(Document& document)
-      : timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &document),
+      : timer_(document.GetTaskRunner(TaskType::kUnspecedTimer),
                this,
                &PendingAnimations::TimerFired),
         compositor_group_(1) {}

@@ -27,7 +27,6 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -37,6 +36,7 @@
 #include "core/html/forms/TextControlElement.h"
 #include "platform/Histogram.h"
 #include "platform/text/TextCheckerClient.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -129,7 +129,7 @@ SpellCheckRequester::SpellCheckRequester(LocalFrame& frame)
       last_processed_sequence_(0),
       last_request_time_(0.0),
       timer_to_process_queued_request_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
+          frame.GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &SpellCheckRequester::TimerFiredToProcessQueuedRequest) {}
 
