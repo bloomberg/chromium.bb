@@ -289,7 +289,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7d1c484ecd93e94c5258dc330602ac37c5efab44',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'ab816ce8ff61f206ea9d3734b6736fea9fa07aa5',
 
   # DevTools node modules. Used on Linux buildbots only.
   'src/third_party/devtools-node-modules': {
