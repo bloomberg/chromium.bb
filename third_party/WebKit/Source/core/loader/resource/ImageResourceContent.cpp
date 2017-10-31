@@ -209,20 +209,6 @@ blink::Image* ImageResourceContent::GetImage() {
   return image_.get();
 }
 
-bool ImageResourceContent::UsesImageContainerSize() const {
-  if (image_)
-    return image_->UsesContainerSize();
-
-  return false;
-}
-
-bool ImageResourceContent::ImageHasRelativeSize() const {
-  if (image_)
-    return image_->HasRelativeSize();
-
-  return false;
-}
-
 IntSize ImageResourceContent::IntrinsicSize(
     RespectImageOrientationEnum should_respect_image_orientation) {
   if (!image_)

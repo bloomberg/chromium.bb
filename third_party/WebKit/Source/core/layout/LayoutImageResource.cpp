@@ -88,6 +88,10 @@ void LayoutImageResource::ResetAnimation() {
   layout_object_->SetShouldDoFullPaintInvalidation();
 }
 
+bool LayoutImageResource::ImageHasRelativeSize() const {
+  return cached_image_ && cached_image_->GetImage()->HasRelativeSize();
+}
+
 LayoutSize LayoutImageResource::ImageSize(float multiplier) const {
   if (!cached_image_)
     return LayoutSize();

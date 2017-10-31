@@ -63,9 +63,7 @@ class CORE_EXPORT LayoutImageResource
   // the "broken image".
   void UseBrokenImage();
 
-  virtual bool ImageHasRelativeSize() const {
-    return cached_image_ ? cached_image_->ImageHasRelativeSize() : false;
-  }
+  virtual bool ImageHasRelativeSize() const;
 
   virtual LayoutSize ImageSize(float multiplier) const;
 

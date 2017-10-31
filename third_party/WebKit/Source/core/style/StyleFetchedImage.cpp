@@ -95,11 +95,11 @@ LayoutSize StyleFetchedImage::ImageSize(
 }
 
 bool StyleFetchedImage::ImageHasRelativeSize() const {
-  return image_->ImageHasRelativeSize();
+  return image_->GetImage()->HasRelativeSize();
 }
 
 bool StyleFetchedImage::UsesImageContainerSize() const {
-  return image_->UsesImageContainerSize();
+  return image_->GetImage()->UsesContainerSize();
 }
 
 void StyleFetchedImage::AddClient(ImageResourceObserver* observer) {
