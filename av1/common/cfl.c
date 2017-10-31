@@ -363,6 +363,16 @@ static void cfl_luma_subsampling_444_lbd(const uint8_t *input, int input_stride,
   }
 }
 
+typedef void (*cfl_subsample_lbd_fn)(const uint8_t *input, int input_stride,
+                                     int16_t *output_q3, int width, int height);
+
+static const cfl_subsample_lbd_fn subsample_lbd[2][2] = {
+  //  (sub_y == 0, sub_x == 0)       (sub_y == 0, sub_x == 1)
+  //  (sub_y == 1, sub_x == 0)       (sub_y == 1, sub_x == 1)
+  { cfl_luma_subsampling_444_lbd, cfl_luma_subsampling_422_lbd },
+  { cfl_luma_subsampling_440_lbd, cfl_luma_subsampling_420_lbd },
+};
+
 #if CONFIG_HIGHBITDEPTH
 static void cfl_luma_subsampling_420_hbd(const uint16_t *input,
                                          int input_stride, int16_t *output_q3,
@@ -415,71 +425,20 @@ static void cfl_luma_subsampling_444_hbd(const uint16_t *input,
     output_q3 += MAX_SB_SIZE;
   }
 }
+
+typedef void (*cfl_subsample_hbd_fn)(const uint16_t *input, int input_stride,
+                                     int16_t *output_q3, int width, int height);
+
+static const cfl_subsample_hbd_fn subsample_hbd[2][2] = {
+  //  (sub_y == 0, sub_x == 0)       (sub_y == 0, sub_x == 1)
+  //  (sub_y == 1, sub_x == 0)       (sub_y == 1, sub_x == 1)
+  { cfl_luma_subsampling_444_hbd, cfl_luma_subsampling_422_hbd },
+  { cfl_luma_subsampling_440_hbd, cfl_luma_subsampling_420_hbd },
+};
 #endif  // CONFIG_HIGHBITDEPTH
 
-static void cfl_luma_subsampling_420(const uint8_t *input, int input_stride,
-                                     int16_t *output_q3, int width, int height,
-                                     int use_hbd) {
-#if CONFIG_HIGHBITDEPTH
-  if (use_hbd) {
-    const uint16_t *input_16 = CONVERT_TO_SHORTPTR(input);
-    cfl_luma_subsampling_420_hbd(input_16, input_stride, output_q3, width,
-                                 height);
-    return;
-  }
-#endif  // CONFIG_HIGHBITDEPTH
-  (void)use_hbd;
-  cfl_luma_subsampling_420_lbd(input, input_stride, output_q3, width, height);
-}
-
-static void cfl_luma_subsampling_422(const uint8_t *input, int input_stride,
-                                     int16_t *output_q3, int width, int height,
-                                     int use_hbd) {
-#if CONFIG_HIGHBITDEPTH
-  if (use_hbd) {
-    const uint16_t *input_16 = CONVERT_TO_SHORTPTR(input);
-    cfl_luma_subsampling_422_hbd(input_16, input_stride, output_q3, width,
-                                 height);
-    return;
-  }
-#endif  // CONFIG_HIGHBITDEPTH
-  (void)use_hbd;
-  cfl_luma_subsampling_422_lbd(input, input_stride, output_q3, width, height);
-}
-
-static void cfl_luma_subsampling_440(const uint8_t *input, int input_stride,
-                                     int16_t *output_q3, int width, int height,
-                                     int use_hbd) {
-#if CONFIG_HIGHBITDEPTH
-  if (use_hbd) {
-    const uint16_t *input_16 = CONVERT_TO_SHORTPTR(input);
-    cfl_luma_subsampling_440_hbd(input_16, input_stride, output_q3, width,
-                                 height);
-    return;
-  }
-#endif  // CONFIG_HIGHBITDEPTH
-  (void)use_hbd;
-  cfl_luma_subsampling_440_lbd(input, input_stride, output_q3, width, height);
-}
-
-static void cfl_luma_subsampling_444(const uint8_t *input, int input_stride,
-                                     int16_t *output_q3, int width, int height,
-                                     int use_hbd) {
-#if CONFIG_HIGHBITDEPTH
-  if (use_hbd) {
-    uint16_t *input_16 = CONVERT_TO_SHORTPTR(input);
-    cfl_luma_subsampling_444_hbd(input_16, input_stride, output_q3, width,
-                                 height);
-    return;
-  }
-#endif  // CONFIG_HIGHBITDEPTH
-  (void)use_hbd;
-  cfl_luma_subsampling_444_lbd(input, input_stride, output_q3, width, height);
-}
-
-static INLINE void cfl_store(CFL_CTX *cfl, const uint8_t *input,
-                             int input_stride, int row, int col, int width,
-                             int height, int use_hbd) {
+static void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride,
+                      int row, int col, int width, int height, int use_hbd) {
   const int tx_off_log2 = tx_size_wide_log2[0];
   const int sub_x = cfl->subsampling_x;
   const int sub_y = cfl->subsampling_y;
@@ -510,25 +469,21 @@ static INLINE void cfl_store(CFL_CTX *cfl, const uint8_t *input,
   int16_t *pred_buf_q3 =
       cfl->pred_buf_q3 + (store_row * MAX_SB_SIZE + store_col);
 
-  if (sub_y == 0 && sub_x == 0) {
-    cfl_luma_subsampling_444(input, input_stride, pred_buf_q3, store_width,
-                             store_height, use_hbd);
-  } else if (sub_y == 1 && sub_x == 1) {
-    cfl_luma_subsampling_420(input, input_stride, pred_buf_q3, store_width,
-                             store_height, use_hbd);
-  } else if (sub_y == 0 && sub_x == 1) {
-    cfl_luma_subsampling_422(input, input_stride, pred_buf_q3, store_width,
-                             store_height, use_hbd);
-  } else if (sub_y == 1 && sub_x == 0) {
-    cfl_luma_subsampling_440(input, input_stride, pred_buf_q3, store_width,
-                             store_height, use_hbd);
-  } else {
-    fprintf(stderr,
-            "Only 4:4:4, 4:4:0, 4:2:2 and 4:2:0 are currently supported by "
-            "CfL, %d %d subsampling is not supported.\n",
-            sub_x, sub_y);
-    abort();
+#if CONFIG_HIGHBITDEPTH
+  if (use_hbd) {
+    const uint16_t *input_16 = CONVERT_TO_SHORTPTR(input);
+    // AND sub_x and sub_y with 1 to ensures that an attacker won't be able to
+    // index the function pointer array out of bounds.
+    subsample_hbd[sub_y & 1][sub_x & 1](input_16, input_stride, pred_buf_q3,
+                                        store_width, store_height);
+    return;
   }
+#endif  // CONFIG_HIGHBITDEPTH
+  (void)use_hbd;
+  // AND sub_x and sub_y with 1 to ensures that an attacker won't be able to
+  // index the function pointer array out of bounds.
+  subsample_lbd[sub_y & 1][sub_x & 1](input, input_stride, pred_buf_q3,
+                                      store_width, store_height);
 }
 
 // Adjust the row and column of blocks smaller than 8X8, as chroma-referenced
