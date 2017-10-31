@@ -70,9 +70,7 @@ WebViewBrowserState::WebViewBrowserState(bool off_the_record)
 
   base::ThreadRestrictions::SetIOAllowed(wasIOAllowed);
 
-  ActiveStateManager* active_state_manager =
-      ActiveStateManager::FromBrowserState(this);
-  active_state_manager->SetActive(true);
+  ActiveStateManager::FromBrowserState(this)->SetActive(true);
 
   BrowserStateDependencyManager::GetInstance()->CreateBrowserStateServices(
       this);
@@ -81,6 +79,8 @@ WebViewBrowserState::WebViewBrowserState(bool off_the_record)
 WebViewBrowserState::~WebViewBrowserState() {
   BrowserStateDependencyManager::GetInstance()->DestroyBrowserStateServices(
       this);
+
+  ActiveStateManager::FromBrowserState(this)->SetActive(false);
 }
 
 PrefService* WebViewBrowserState::GetPrefs() {
