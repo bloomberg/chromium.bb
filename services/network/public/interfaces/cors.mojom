@@ -4,8 +4,9 @@
 
 module network.mojom;
 
-// Error conditions of the CORS access control check.
-enum CORSAccessError {
+// Error conditions of the CORS check.
+enum CORSError {
+  // Access control
   kInvalidResponse,
   kAllowOriginMismatch,
   kSubOriginMismatch,
@@ -15,25 +16,17 @@ enum CORSAccessError {
   kInvalidAllowOriginValue,
   kDisallowCredentialsNotSetToTrue,
 
-  kLast = kDisallowCredentialsNotSetToTrue,
-};
-
-// Error conditions of CORS preflight.
-enum CORSPreflightError {
-  kInvalidStatus,
+  // Preflight
+  kPreflightInvalidStatus,
   // "Access-Control-Allow-External:"
   // ( https://wicg.github.io/cors-rfc1918/#headers ) specific error
   // conditions:
-  kMissingAllowExternal,
-  kInvalidAllowExternal,
+  kPreflightMissingAllowExternal,
+  kPreflightInvalidAllowExternal,
 
-  kLast = kInvalidAllowExternal,
-};
+  // Redirect
+  kRedirectDisallowedScheme,
+  kRedirectContainsCredentials,
 
-// Error conditions of CORS redirect target URL checks.
-enum CORSRedirectError {
-  kDisallowedScheme,
-  kContainsCredentials,
-
-  kLast = kContainsCredentials,
+  kLast = kRedirectContainsCredentials,
 };

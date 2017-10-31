@@ -682,41 +682,37 @@ bool DocumentThreadableLoader::RedirectReceivedBlinkCORS(
           : nullptr,
       redirect_response, resource);
 
-  WTF::Optional<network::mojom::CORSRedirectError> redirect_error =
+  WTF::Optional<network::mojom::CORSError> redirect_error =
       WebCORS::CheckRedirectLocation(new_url);
   if (redirect_error) {
     DispatchDidFailAccessControlCheck(
         ResourceError::CancelledDueToAccessCheckError(
             original_url, ResourceRequestBlockedReason::kOther,
-            WebCORS::RedirectErrorString(*redirect_error, original_url,
-                                         new_url)));
+            WebCORS::GetErrorString(*redirect_error, original_url, new_url,
+                                    redirect_response.HttpStatusCode(),
+                                    redirect_response.HttpHeaderFields(),
+                                    WebSecurityOrigin(GetSecurityOrigin()),
+                                    request_context_)));
     return false;
   }
 
   if (cors_flag_) {
     // The redirect response must pass the access control check if the CORS
     // flag is set.
-    WTF::Optional<network::mojom::CORSAccessError> access_error =
-        WebCORS::CheckAccess(redirect_response.Url(),
-                             redirect_response.HttpStatusCode(),
+    WTF::Optional<network::mojom::CORSError> access_error =
+        WebCORS::CheckAccess(original_url, redirect_response.HttpStatusCode(),
                              redirect_response.HttpHeaderFields(),
                              new_request.GetFetchCredentialsMode(),
                              WebSecurityOrigin(GetSecurityOrigin()));
     if (access_error) {
-      StringBuilder builder;
-      builder.Append("Redirect from '");
-      builder.Append(original_url.GetString());
-      builder.Append("' to '");
-      builder.Append(new_url.GetString());
-      builder.Append("' has been blocked by CORS policy: ");
-      builder.Append(WebCORS::AccessControlErrorString(
-          *access_error, redirect_response.HttpStatusCode(),
-          redirect_response.HttpHeaderFields(),
-          WebSecurityOrigin(GetSecurityOrigin()), request_context_));
       DispatchDidFailAccessControlCheck(
           ResourceError::CancelledDueToAccessCheckError(
               original_url, ResourceRequestBlockedReason::kOther,
-              builder.ToString()));
+              WebCORS::GetErrorString(*access_error, original_url, new_url,
+                                      redirect_response.HttpStatusCode(),
+                                      redirect_response.HttpHeaderFields(),
+                                      WebSecurityOrigin(GetSecurityOrigin()),
+                                      request_context_)));
       return false;
     }
   }
@@ -829,42 +825,45 @@ void DocumentThreadableLoader::ResponseReceived(
 
 void DocumentThreadableLoader::HandlePreflightResponse(
     const ResourceResponse& response) {
-  WTF::Optional<network::mojom::CORSAccessError> cors_error =
-      WebCORS::CheckAccess(response.Url(), response.HttpStatusCode(),
-                           response.HttpHeaderFields(),
-                           actual_request_.GetFetchCredentialsMode(),
-                           WebSecurityOrigin(GetSecurityOrigin()));
+  WTF::Optional<network::mojom::CORSError> cors_error = WebCORS::CheckAccess(
+      response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
+      actual_request_.GetFetchCredentialsMode(),
+      WebSecurityOrigin(GetSecurityOrigin()));
   if (cors_error) {
     StringBuilder builder;
     builder.Append(
         "Response to preflight request doesn't pass access "
         "control check: ");
-    builder.Append(WebCORS::AccessControlErrorString(
-        *cors_error, response.HttpStatusCode(), response.HttpHeaderFields(),
-        WebSecurityOrigin(GetSecurityOrigin()), request_context_));
+    builder.Append(WebCORS::GetErrorString(
+        *cors_error, response.Url(), WebURL(), response.HttpStatusCode(),
+        response.HttpHeaderFields(), WebSecurityOrigin(GetSecurityOrigin()),
+        request_context_));
     HandlePreflightFailure(response.Url(), builder.ToString());
     return;
   }
 
-  WTF::Optional<network::mojom::CORSPreflightError> preflight_error =
+  WTF::Optional<network::mojom::CORSError> preflight_error =
       WebCORS::CheckPreflight(response.HttpStatusCode());
   if (preflight_error) {
-    HandlePreflightFailure(response.Url(),
-                           WebCORS::PreflightErrorString(
-                               *preflight_error, response.HttpHeaderFields(),
-                               response.HttpStatusCode()));
+    HandlePreflightFailure(
+        response.Url(),
+        WebCORS::GetErrorString(
+            *preflight_error, response.Url(), WebURL(),
+            response.HttpStatusCode(), response.HttpHeaderFields(),
+            WebSecurityOrigin(GetSecurityOrigin()), request_context_));
     return;
   }
 
   if (actual_request_.IsExternalRequest()) {
-    WTF::Optional<network::mojom::CORSPreflightError>
-        external_preflight_status =
-            WebCORS::CheckExternalPreflight(response.HttpHeaderFields());
+    WTF::Optional<network::mojom::CORSError> external_preflight_status =
+        WebCORS::CheckExternalPreflight(response.HttpHeaderFields());
     if (external_preflight_status) {
-      HandlePreflightFailure(response.Url(), WebCORS::PreflightErrorString(
-                                                 *external_preflight_status,
-                                                 response.HttpHeaderFields(),
-                                                 response.HttpStatusCode()));
+      HandlePreflightFailure(
+          response.Url(),
+          WebCORS::GetErrorString(
+              *external_preflight_status, response.Url(), WebURL(),
+              response.HttpStatusCode(), response.HttpHeaderFields(),
+              WebSecurityOrigin(GetSecurityOrigin()), request_context_));
       return;
     }
   }
@@ -955,15 +954,14 @@ void DocumentThreadableLoader::HandleResponseBlinkCORS(
     if (request_mode != network::mojom::FetchRequestMode::kNoCORS &&
         response.ResponseTypeViaServiceWorker() ==
             network::mojom::FetchResponseType::kOpaque) {
-      StringBuilder builder;
-      builder.Append(WebCORS::AccessControlErrorString(
-          network::mojom::CORSAccessError::kInvalidResponse,
-          response.HttpStatusCode(), response.HttpHeaderFields(),
-          WebSecurityOrigin(GetSecurityOrigin()), request_context_));
       DispatchDidFailAccessControlCheck(
           ResourceError::CancelledDueToAccessCheckError(
               response.Url(), ResourceRequestBlockedReason::kOther,
-              builder.ToString()));
+              WebCORS::GetErrorString(
+                  network::mojom::CORSError::kInvalidResponse, response.Url(),
+                  WebURL(), response.HttpStatusCode(),
+                  response.HttpHeaderFields(),
+                  WebSecurityOrigin(GetSecurityOrigin()), request_context_)));
       return;
     }
 
@@ -987,7 +985,7 @@ void DocumentThreadableLoader::HandleResponseBlinkCORS(
   fallback_request_for_service_worker_ = ResourceRequest();
 
   if (WebCORS::IsCORSEnabledRequestMode(request_mode) && cors_flag_) {
-    WTF::Optional<network::mojom::CORSAccessError> access_error =
+    WTF::Optional<network::mojom::CORSError> access_error =
         WebCORS::CheckAccess(response.Url(), response.HttpStatusCode(),
                              response.HttpHeaderFields(), credentials_mode,
                              WebSecurityOrigin(GetSecurityOrigin()));
@@ -996,9 +994,9 @@ void DocumentThreadableLoader::HandleResponseBlinkCORS(
       DispatchDidFailAccessControlCheck(
           ResourceError::CancelledDueToAccessCheckError(
               response.Url(), ResourceRequestBlockedReason::kOther,
-              WebCORS::AccessControlErrorString(
-                  *access_error, response.HttpStatusCode(),
-                  response.HttpHeaderFields(),
+              WebCORS::GetErrorString(
+                  *access_error, response.Url(), WebURL(),
+                  response.HttpStatusCode(), response.HttpHeaderFields(),
                   WebSecurityOrigin(GetSecurityOrigin()), request_context_)));
       return;
     }

@@ -41,9 +41,7 @@
 #include "url/gurl.h"
 #include "url/url_util.h"
 
-using network::mojom::CORSAccessError;
-using network::mojom::CORSPreflightError;
-using network::mojom::CORSRedirectError;
+using network::mojom::CORSError;
 
 namespace blink {
 
@@ -172,14 +170,14 @@ static bool IsOriginSeparator(UChar ch) {
 
 }  // namespace
 
-base::Optional<CORSAccessError> CheckAccess(
+base::Optional<CORSError> CheckAccess(
     const WebURL response_url,
     const int response_status_code,
     const WebHTTPHeaderMap& response_header,
     const network::mojom::FetchCredentialsMode credentials_mode,
     const WebSecurityOrigin& security_origin) {
   if (!response_status_code)
-    return CORSAccessError::kInvalidResponse;
+    return CORSError::kInvalidResponse;
 
   const WebString& allow_origin_header_value =
       response_header.Get(HTTPNames::Access_Control_Allow_Origin);
@@ -192,7 +190,7 @@ base::Optional<CORSAccessError> CheckAccess(
         response_header.Get(HTTPNames::Access_Control_Allow_Suborigin);
     if (allow_suborigin_header_value != WebString(g_star_atom) &&
         allow_suborigin_header_value != security_origin.Suborigin()) {
-      return CORSAccessError::kSubOriginMismatch;
+      return CORSError::kSubOriginMismatch;
     }
   }
 
@@ -204,38 +202,38 @@ base::Optional<CORSAccessError> CheckAccess(
     // TODO(hintzed): Is the following a sound substitute for
     // blink::ResourceResponse::IsHTTP()?
     if (GURL(response_url.GetString().Utf16()).SchemeIsHTTPOrHTTPS())
-      return CORSAccessError::kWildcardOriginNotAllowed;
+      return CORSError::kWildcardOriginNotAllowed;
   } else if (allow_origin_header_value != security_origin.ToString()) {
     if (allow_origin_header_value.IsNull())
-      return CORSAccessError::kMissingAllowOriginHeader;
+      return CORSError::kMissingAllowOriginHeader;
     if (String(allow_origin_header_value).Find(IsOriginSeparator, 0) !=
         kNotFound) {
-      return CORSAccessError::kMultipleAllowOriginValues;
+      return CORSError::kMultipleAllowOriginValues;
     }
     KURL header_origin(NullURL(), allow_origin_header_value);
     if (!header_origin.IsValid())
-      return CORSAccessError::kInvalidAllowOriginValue;
+      return CORSError::kInvalidAllowOriginValue;
 
-    return CORSAccessError::kAllowOriginMismatch;
+    return CORSError::kAllowOriginMismatch;
   }
 
   if (FetchUtils::ShouldTreatCredentialsModeAsInclude(credentials_mode)) {
     const WebString& allow_credentials_header_value =
         response_header.Get(HTTPNames::Access_Control_Allow_Credentials);
     if (allow_credentials_header_value != "true")
-      return CORSAccessError::kDisallowCredentialsNotSetToTrue;
+      return CORSError::kDisallowCredentialsNotSetToTrue;
   }
   return base::nullopt;
 }
 
-bool HandleRedirect(WebSecurityOrigin& current_security_origin,
-                    WebURLRequest& new_request,
-                    const WebURL redirect_response_url,
-                    const int redirect_response_status_code,
-                    const WebHTTPHeaderMap& redirect_response_header,
-                    network::mojom::FetchCredentialsMode credentials_mode,
-                    ResourceLoaderOptions& options,
-                    WebString& error_message) {
+base::Optional<CORSError> HandleRedirect(
+    WebSecurityOrigin& current_security_origin,
+    WebURLRequest& new_request,
+    const WebURL redirect_response_url,
+    const int redirect_response_status_code,
+    const WebHTTPHeaderMap& redirect_response_header,
+    network::mojom::FetchCredentialsMode credentials_mode,
+    ResourceLoaderOptions& options) {
   const KURL& last_url = redirect_response_url;
   const KURL& new_url = new_request.Url();
 
@@ -244,29 +242,15 @@ bool HandleRedirect(WebSecurityOrigin& current_security_origin,
   // TODO(tyoshino): This should be fixed to check not only the last one but
   // all redirect responses.
   if (!current_security_origin.CanRequest(last_url)) {
-    base::Optional<CORSRedirectError> redirect_error =
-        CheckRedirectLocation(new_url);
-    if (redirect_error) {
-      error_message = RedirectErrorString(*redirect_error, last_url, new_url);
-      return false;
-    }
+    base::Optional<CORSError> redirect_error = CheckRedirectLocation(new_url);
+    if (redirect_error)
+      return redirect_error;
 
-    base::Optional<CORSAccessError> access_error = CheckAccess(
+    base::Optional<CORSError> access_error = CheckAccess(
         redirect_response_url, redirect_response_status_code,
         redirect_response_header, credentials_mode, current_security_origin);
-    if (access_error) {
-      StringBuilder builder;
-      builder.Append("Redirect from '");
-      builder.Append(last_url.GetString());
-      builder.Append("' has been blocked by CORS policy: ");
-      builder.Append(AccessControlErrorString(
-          *access_error, redirect_response_status_code,
-          redirect_response_header,
-          WebSecurityOrigin(current_security_origin.Get()),
-          new_request.GetRequestContext()));
-      error_message = builder.ToString();
-      return false;
-    }
+    if (access_error)
+      return access_error;
 
     scoped_refptr<SecurityOrigin> last_origin =
         SecurityOrigin::Create(last_url);
@@ -289,11 +273,10 @@ bool HandleRedirect(WebSecurityOrigin& current_security_origin,
 
     options.cors_flag = true;
   }
-  return true;
+  return base::nullopt;
 }
 
-base::Optional<CORSRedirectError> CheckRedirectLocation(
-    const WebURL& web_request_url) {
+base::Optional<CORSError> CheckRedirectLocation(const WebURL& web_request_url) {
   // Block non HTTP(S) schemes as specified in the step 4 in
   // https://fetch.spec.whatwg.org/#http-redirect-fetch. Chromium also allows
   // the data scheme.
@@ -304,7 +287,7 @@ base::Optional<CORSRedirectError> CheckRedirectLocation(
 
   if (!SchemeRegistry::ShouldTreatURLSchemeAsCORSEnabled(
           request_url.Protocol())) {
-    return CORSRedirectError::kDisallowedScheme;
+    return CORSError::kRedirectDisallowedScheme;
   }
 
   // Block URLs including credentials as specified in the step 9 in
@@ -313,30 +296,30 @@ base::Optional<CORSRedirectError> CheckRedirectLocation(
   // TODO(tyoshino): This check should be performed also when request's
   // origin is not same origin with the redirect destination's origin.
   if (!(request_url.User().IsEmpty() && request_url.Pass().IsEmpty()))
-    return CORSRedirectError::kContainsCredentials;
+    return CORSError::kRedirectContainsCredentials;
 
   return base::nullopt;
 }
 
-base::Optional<CORSPreflightError> CheckPreflight(
+base::Optional<CORSError> CheckPreflight(
     const int preflight_response_status_code) {
   // CORS preflight with 3XX is considered network error in
   // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch
   // CORS Spec: http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
   // https://crbug.com/452394
   if (!FetchUtils::IsOkStatus(preflight_response_status_code))
-    return CORSPreflightError::kInvalidStatus;
+    return CORSError::kPreflightInvalidStatus;
   return base::nullopt;
 }
 
-base::Optional<CORSPreflightError> CheckExternalPreflight(
+base::Optional<CORSError> CheckExternalPreflight(
     const WebHTTPHeaderMap& response_header) {
   WebString result =
       response_header.Get(HTTPNames::Access_Control_Allow_External);
   if (result.IsNull())
-    return CORSPreflightError::kMissingAllowExternal;
+    return CORSError::kPreflightMissingAllowExternal;
   if (!EqualIgnoringASCIICase(result, "true"))
-    return CORSPreflightError::kInvalidAllowExternal;
+    return CORSError::kPreflightInvalidAllowExternal;
   return base::nullopt;
 }
 
@@ -375,50 +358,58 @@ WebURLRequest CreateAccessControlPreflightRequest(
   return preflight_request;
 }
 
-WebString AccessControlErrorString(
-    const CORSAccessError error,
-    const int response_status_code,
-    const WebHTTPHeaderMap& response_header,
-    const WebSecurityOrigin& origin,
-    const WebURLRequest::RequestContext context) {
-  String origin_denied =
-      String::Format("Origin '%s' is therefore not allowed access.",
-                     origin.ToString().Utf8().data());
+WebString GetErrorString(const CORSError error,
+                         const WebURL& request_url,
+                         const WebURL& redirect_url,
+                         const int response_status_code,
+                         const WebHTTPHeaderMap& response_header,
+                         const WebSecurityOrigin& origin,
+                         const WebURLRequest::RequestContext context) {
+  static const char kNoCorsInformation[] =
+      " Have the server send the header with a valid value, or, if an opaque "
+      "response serves your needs, set the request's mode to 'no-cors' to "
+      "fetch the resource with CORS disabled.";
 
-  String no_cors_information =
-      context == WebURLRequest::kRequestContextFetch
-          ? " Have the server send the header with a valid value, or, if an "
-            "opaque response serves your needs, set the request's mode to "
-            "'no-cors' to fetch the resource with CORS disabled."
-          : "";
+  String redirect_denied =
+      redirect_url.IsValid()
+          ? String::Format(
+                "Redirect from '%s' to '%s' has been blocked by CORS policy: ",
+                request_url.GetString().Utf8().data(),
+                redirect_url.GetString().Utf8().data())
+          : String();
 
   switch (error) {
-    case CORSAccessError::kInvalidResponse:
-      return String::Format("Invalid response. %s",
-                            origin_denied.Utf8().data());
-    case CORSAccessError::kSubOriginMismatch:
+    case CORSError::kInvalidResponse:
       return String::Format(
-          "The 'Access-Control-Allow-Suborigin' header has a value '%s' that "
-          "is not equal to the supplied suborigin. %s",
+          "%sInvalid response. Origin '%s' is therefore not allowed access.",
+          redirect_denied.Utf8().data(), origin.ToString().Utf8().data());
+    case CORSError::kSubOriginMismatch:
+      return String::Format(
+          "%sThe 'Access-Control-Allow-Suborigin' header has a value '%s' that "
+          "is not equal to the supplied suborigin. Origin '%s' is therefore "
+          "not allowed access.",
+          redirect_denied.Utf8().data(),
           response_header.Get(HTTPNames::Access_Control_Allow_Suborigin)
               .Utf8()
               .data(),
-          origin_denied.Utf8().data());
-    case CORSAccessError::kWildcardOriginNotAllowed:
+          origin.ToString().Utf8().data());
+    case CORSError::kWildcardOriginNotAllowed:
       return String::Format(
-          "The value of the 'Access-Control-Allow-Origin' header in the "
+          "%sThe value of the 'Access-Control-Allow-Origin' header in the "
           "response must not be the wildcard '*' when the request's "
-          "credentials mode is 'include'. %s%s",
-          origin_denied.Utf8().data(),
+          "credentials mode is 'include'. Origin '%s' is therefore not allowed "
+          "access.%s",
+          redirect_denied.Utf8().data(), origin.ToString().Utf8().data(),
           context == WebURLRequest::kRequestContextXMLHttpRequest
               ? " The credentials mode of requests initiated by the "
                 "XMLHttpRequest is controlled by the withCredentials attribute."
               : "");
-    case CORSAccessError::kMissingAllowOriginHeader:
+    case CORSError::kMissingAllowOriginHeader:
       return String::Format(
-          "No 'Access-Control-Allow-Origin' header is present on the "
-          "requested resource. %s%s%s",
-          origin_denied.Utf8().data(),
+          "%sNo 'Access-Control-Allow-Origin' header is present on the "
+          "requested resource. Origin '%s' is therefore not allowed access."
+          "%s%s",
+          redirect_denied.Utf8().data(), origin.ToString().Utf8().data(),
           IsInterestingStatusCode(response_status_code)
               ? String::Format(" The response had HTTP status code %d.",
                                response_status_code)
@@ -429,64 +420,68 @@ WebString AccessControlErrorString(
               ? " If an opaque response serves your needs, set the request's "
                 "mode to 'no-cors' to fetch the resource with CORS disabled."
               : "");
-    case CORSAccessError::kMultipleAllowOriginValues:
+    case CORSError::kMultipleAllowOriginValues:
       return String::Format(
-          "The 'Access-Control-Allow-Origin' header contains multiple values "
-          "'%s', but only one is allowed. %s%s",
+          "%sThe 'Access-Control-Allow-Origin' header contains multiple values "
+          "'%s', but only one is allowed. Origin '%s' is therefore not allowed "
+          "access.%s",
+          redirect_denied.Utf8().data(),
           response_header.Get(HTTPNames::Access_Control_Allow_Origin)
               .Utf8()
               .data(),
-          origin_denied.Utf8().data(), no_cors_information.Utf8().data());
-    case CORSAccessError::kInvalidAllowOriginValue:
+          origin.ToString().Utf8().data(),
+          context == WebURLRequest::kRequestContextFetch ? kNoCorsInformation
+                                                         : "");
+    case CORSError::kInvalidAllowOriginValue:
       return String::Format(
-          "The 'Access-Control-Allow-Origin' header contains the invalid value "
-          "'%s'. %s%s",
+          "%sThe 'Access-Control-Allow-Origin' header contains the invalid "
+          "value '%s'. Origin '%s' is therefore not allowed access.%s",
+          redirect_denied.Utf8().data(),
           response_header.Get(HTTPNames::Access_Control_Allow_Origin)
               .Utf8()
               .data(),
-          origin_denied.Utf8().data(), no_cors_information.Utf8().data());
-    case CORSAccessError::kAllowOriginMismatch:
+          origin.ToString().Utf8().data(),
+          context == WebURLRequest::kRequestContextFetch ? kNoCorsInformation
+                                                         : "");
+    case CORSError::kAllowOriginMismatch:
       return String::Format(
-          "The 'Access-Control-Allow-Origin' header has a value '%s' that is "
-          "not equal to the supplied origin. %s%s",
+          "%sThe 'Access-Control-Allow-Origin' header has a value '%s' that is "
+          "not equal to the supplied origin. Origin '%s' is therefore not "
+          "allowed access.%s",
+          redirect_denied.Utf8().data(),
           response_header.Get(HTTPNames::Access_Control_Allow_Origin)
               .Utf8()
               .data(),
-          origin_denied.Utf8().data(), no_cors_information.Utf8().data());
-    case CORSAccessError::kDisallowCredentialsNotSetToTrue:
+          origin.ToString().Utf8().data(),
+          context == WebURLRequest::kRequestContextFetch ? kNoCorsInformation
+                                                         : "");
+    case CORSError::kDisallowCredentialsNotSetToTrue:
       return String::Format(
-          "The value of the 'Access-Control-Allow-Credentials' header in "
+          "%sThe value of the 'Access-Control-Allow-Credentials' header in "
           "the response is '%s' which must be 'true' when the request's "
-          "credentials mode is 'include'. %s%s",
+          "credentials mode is 'include'. Origin '%s' is therefore not allowed "
+          "access.%s",
+          redirect_denied.Utf8().data(),
           response_header.Get(HTTPNames::Access_Control_Allow_Credentials)
               .Utf8()
               .data(),
-          origin_denied.Utf8().data(),
+          origin.ToString().Utf8().data(),
           (context == WebURLRequest::kRequestContextXMLHttpRequest
                ? " The credentials mode of requests initiated by the "
                  "XMLHttpRequest is controlled by the withCredentials "
                  "attribute."
                : ""));
-  }
-  NOTREACHED();
-  return WebString();
-}
-
-WebString PreflightErrorString(const CORSPreflightError error,
-                               const WebHTTPHeaderMap& response_header,
-                               const int preflight_response_status_code) {
-  switch (error) {
-    case CORSPreflightError::kInvalidStatus:
+    case CORSError::kPreflightInvalidStatus:
       return String::Format(
-          "Response for preflight has invalid HTTP status code %d",
-          preflight_response_status_code);
-    case CORSPreflightError::kMissingAllowExternal:
-      return String::Format(
+          "Response for preflight has invalid HTTP status code %d.",
+          response_status_code);
+    case CORSError::kPreflightMissingAllowExternal:
+      return WebString(
           "No 'Access-Control-Allow-External' header was present in the "
           "preflight response for this external request (This is an "
           "experimental header which is defined in "
           "'https://wicg.github.io/cors-rfc1918/').");
-    case CORSPreflightError::kInvalidAllowExternal:
+    case CORSError::kPreflightInvalidAllowExternal:
       return String::Format(
           "The 'Access-Control-Allow-External' header in the preflight "
           "response for this external request had a value of '%s',  not 'true' "
@@ -495,27 +490,17 @@ WebString PreflightErrorString(const CORSPreflightError error,
           response_header.Get(HTTPNames::Access_Control_Allow_External)
               .Utf8()
               .data());
-  }
-  NOTREACHED();
-  return WebString();
-}
-
-WebString RedirectErrorString(const CORSRedirectError error,
-                              const WebURL& request_url,
-                              const WebURL& redirect_url) {
-  switch (error) {
-    case CORSRedirectError::kDisallowedScheme:
+    case CORSError::kRedirectDisallowedScheme:
       return String::Format(
-          "Redirect from '%s' has been blocked by CORS policy: Redirect "
-          "location '%s' has a disallowed scheme for cross-origin requests.",
-          request_url.GetString().Utf8().data(),
+          "%sRedirect location '%s' has a disallowed scheme for cross-origin "
+          "requests.",
+          redirect_denied.Utf8().data(),
           redirect_url.GetString().Utf8().data());
-    case CORSRedirectError::kContainsCredentials:
+    case CORSError::kRedirectContainsCredentials:
       return String::Format(
-          "Redirect from '%s' has been blocked by CORS policy: Redirect "
-          "location '%s' contains a username and password, which is disallowed "
-          "for cross-origin requests.",
-          request_url.GetString().Utf8().data(),
+          "%sRedirect location '%s' contains a username and password, which is "
+          "disallowed for cross-origin requests.",
+          redirect_denied.Utf8().data(),
           redirect_url.GetString().Utf8().data());
   }
   NOTREACHED();
