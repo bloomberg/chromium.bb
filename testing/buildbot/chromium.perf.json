@@ -75872,6 +75872,30 @@
       },
       {
         "args": [
+          "--use-cmd-decoder=passthrough",
+          "--use-angle=gl-null"
+        ],
+        "isolate_name": "command_buffer_perftests",
+        "name": "passthrough_command_buffer_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "id": "build94-m1",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
           "power.idle_platform",
           "-v",
           "--upload-results",
@@ -77972,6 +77996,30 @@
           "expiration": 36000,
           "hard_timeout": 10800,
           "ignore_task_failure": true,
+          "io_timeout": 600,
+          "upload_test_results": false
+        }
+      },
+      {
+        "args": [
+          "--use-cmd-decoder=validating",
+          "--use-stub"
+        ],
+        "isolate_name": "command_buffer_perftests",
+        "name": "validating_command_buffer_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "id": "build94-m1",
+              "os": "Windows-2008ServerR2-SP1",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
           "io_timeout": 600,
           "upload_test_results": false
         }
