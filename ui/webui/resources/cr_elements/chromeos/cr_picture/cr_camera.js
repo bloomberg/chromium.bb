@@ -37,6 +37,12 @@ Polymer({
     takePhotoLabel: String,
     switchModeLabel: String,
 
+    /** True if video mode is enabled. */
+    videomodeEnabled: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * True if currently in video mode.
      * @private {boolean}
