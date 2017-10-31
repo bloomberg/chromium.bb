@@ -254,30 +254,26 @@ void OfflineAudioDestinationHandler::SuspendOfflineRendering() {
   DCHECK(!IsMainThread());
 
   // The actual rendering has been suspended. Notify the context.
-  if (Context()->GetExecutionContext()) {
-    task_runner_->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(&OfflineAudioDestinationHandler::NotifySuspend,
-                        WrapRefCounted(this), Context()->CurrentSampleFrame()));
-  }
+  task_runner_->PostTask(
+      BLINK_FROM_HERE,
+      CrossThreadBind(&OfflineAudioDestinationHandler::NotifySuspend,
+                      WrapRefCounted(this), Context()->CurrentSampleFrame()));
 }
 
 void OfflineAudioDestinationHandler::FinishOfflineRendering() {
   DCHECK(!IsMainThread());
 
   // The actual rendering has been completed. Notify the context.
-  if (Context()->GetExecutionContext()) {
-    task_runner_->PostTask(
-        BLINK_FROM_HERE,
-        CrossThreadBind(&OfflineAudioDestinationHandler::NotifyComplete,
-                        WrapRefCounted(this)));
-  }
+  task_runner_->PostTask(
+      BLINK_FROM_HERE,
+      CrossThreadBind(&OfflineAudioDestinationHandler::NotifyComplete,
+                      WrapRefCounted(this)));
 }
 
 void OfflineAudioDestinationHandler::NotifySuspend(size_t frame) {
   DCHECK(IsMainThread());
 
-  if (Context())
+  if (Context() && Context()->GetExecutionContext())
     Context()->ResolveSuspendOnMainThread(frame);
 }
 
@@ -288,7 +284,7 @@ void OfflineAudioDestinationHandler::NotifyComplete() {
   render_thread_.reset();
 
   // The OfflineAudioContext might be gone.
-  if (Context())
+  if (Context() && Context()->GetExecutionContext())
     Context()->FireCompletionEvent();
 }
 
