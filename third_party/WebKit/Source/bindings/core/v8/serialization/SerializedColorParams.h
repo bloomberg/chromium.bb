@@ -33,7 +33,11 @@ enum class ImageSerializationTag : uint32_t {
 
 // This enumeration specifies the values used to serialize CanvasColorSpace.
 enum class SerializedColorSpace : uint32_t {
-  kLegacy = 0,
+  // Legacy sRGB color space is deprecated as of M65. Objects in legacy color
+  // space will be serialized as sRGB since the legacy behavior is now merged
+  // with sRGB color space. Deserialized objects with legacy color space also
+  // will be interpreted as sRGB.
+  kLegacyObsolete = 0,
   kSRGB = 1,
   kRec2020 = 2,
   kP3 = 3,

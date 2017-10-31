@@ -250,11 +250,9 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   virtual void WillDrawImage(CanvasImageSource*) const {}
 
-  virtual CanvasColorSpace ColorSpace() const {
-    return kLegacyCanvasColorSpace;
-  };
+  virtual CanvasColorSpace ColorSpace() const { return kSRGBCanvasColorSpace; };
   virtual String ColorSpaceAsString() const {
-    return kLegacyCanvasColorSpaceName;
+    return kSRGBCanvasColorSpaceName;
   }
   virtual CanvasPixelFormat PixelFormat() const {
     return kRGBA8CanvasPixelFormat;

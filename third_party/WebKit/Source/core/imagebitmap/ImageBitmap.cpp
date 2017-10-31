@@ -68,26 +68,25 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions& options,
 
   parsed_options.has_color_space_conversion =
       (options.colorSpaceConversion() != kImageBitmapOptionNone);
-  parsed_options.color_params.SetCanvasColorSpace(kLegacyCanvasColorSpace);
-  if (options.colorSpaceConversion() == kSRGBImageBitmapColorSpaceConversion) {
-    parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
-  } else if (options.colorSpaceConversion() ==
-             kLinearRGBImageBitmapColorSpaceConversion) {
-    parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
+  parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
+  if (options.colorSpaceConversion() != kSRGBImageBitmapColorSpaceConversion &&
+      options.colorSpaceConversion() != kImageBitmapOptionNone &&
+      options.colorSpaceConversion() != kImageBitmapOptionDefault) {
     parsed_options.color_params.SetCanvasPixelFormat(kF16CanvasPixelFormat);
-  } else if (options.colorSpaceConversion() ==
-             kP3ImageBitmapColorSpaceConversion) {
-    parsed_options.color_params.SetCanvasColorSpace(kP3CanvasColorSpace);
-    parsed_options.color_params.SetCanvasPixelFormat(kF16CanvasPixelFormat);
-  } else if (options.colorSpaceConversion() ==
-             kRec2020ImageBitmapColorSpaceConversion) {
-    parsed_options.color_params.SetCanvasColorSpace(kRec2020CanvasColorSpace);
-    parsed_options.color_params.SetCanvasPixelFormat(kF16CanvasPixelFormat);
-  } else if (options.colorSpaceConversion() != kImageBitmapOptionNone &&
-             options.colorSpaceConversion() != kImageBitmapOptionDefault) {
-    NOTREACHED()
-        << "Invalid ImageBitmap creation attribute colorSpaceConversion: "
-        << options.colorSpaceConversion();
+    if (options.colorSpaceConversion() ==
+        kLinearRGBImageBitmapColorSpaceConversion) {
+      parsed_options.color_params.SetCanvasColorSpace(kSRGBCanvasColorSpace);
+    } else if (options.colorSpaceConversion() ==
+               kP3ImageBitmapColorSpaceConversion) {
+      parsed_options.color_params.SetCanvasColorSpace(kP3CanvasColorSpace);
+    } else if (options.colorSpaceConversion() ==
+               kRec2020ImageBitmapColorSpaceConversion) {
+      parsed_options.color_params.SetCanvasColorSpace(kRec2020CanvasColorSpace);
+    } else {
+      NOTREACHED()
+          << "Invalid ImageBitmap creation attribute colorSpaceConversion: "
+          << options.colorSpaceConversion();
+    }
   }
 
   int source_width = source_size.Width();

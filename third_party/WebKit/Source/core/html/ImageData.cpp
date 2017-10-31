@@ -241,9 +241,6 @@ ImageData* ImageData::Create(const IntSize& size,
                              ImageDataStorageFormat storage_format) {
   ImageDataColorSettings color_settings;
   switch (color_space) {
-    case kLegacyCanvasColorSpace:
-      color_settings.setColorSpace(kLegacyCanvasColorSpaceName);
-      break;
     case kSRGBCanvasColorSpace:
       color_settings.setColorSpace(kSRGBCanvasColorSpaceName);
       break;
@@ -497,8 +494,6 @@ DOMUint8ClampedArray* ImageData::data() {
 
 CanvasColorSpace ImageData::GetCanvasColorSpace(
     const String& color_space_name) {
-  if (color_space_name == kLegacyCanvasColorSpaceName)
-    return kLegacyCanvasColorSpace;
   if (color_space_name == kSRGBCanvasColorSpaceName)
     return kSRGBCanvasColorSpace;
   if (color_space_name == kRec2020CanvasColorSpaceName)
@@ -789,8 +784,6 @@ ImageData::ImageData(const IntSize& size,
   // The default color space for ImageData with U16/F32 data should be
   // extended-srgb color space. It is temporarily set to linear-rgb, which is
   // not correct, but fixes crbug.com/779419.
-  if (color_settings_.colorSpace() == kLegacyCanvasColorSpaceName)
-    color_settings_.setColorSpace(kSRGBCanvasColorSpaceName);
 
   switch (storage_format) {
     case kUint8ClampedArrayStorageFormat:

@@ -23,7 +23,6 @@ class ColorSpace;
 namespace blink {
 
 enum CanvasColorSpace {
-  kLegacyCanvasColorSpace,
   kSRGBCanvasColorSpace,
   kRec2020CanvasColorSpace,
   kP3CanvasColorSpace,
@@ -59,7 +58,9 @@ class PLATFORM_EXPORT CanvasColorParams {
   bool NeedsColorConversion(const CanvasColorParams&) const;
 
   // The SkColorSpace to use in the SkImageInfo for allocated SkSurfaces. This
-  // is nullptr in legacy rendering mode.
+  // is nullptr in legacy rendering mode and when the surface is supposed to be
+  // in sRGB (for which we wrap the canvas into a PaintCanvas along with an
+  // SkColorSpaceXformCanvas).
   sk_sp<SkColorSpace> GetSkColorSpaceForSkSurfaces() const;
 
   // Wraps an SkCanvas into a PaintCanvas, along with an SkColorSpaceXformCanvas
@@ -82,7 +83,7 @@ class PLATFORM_EXPORT CanvasColorParams {
   const SkSurfaceProps* GetSkSurfaceProps() const;
 
  private:
-  CanvasColorSpace color_space_ = kLegacyCanvasColorSpace;
+  CanvasColorSpace color_space_ = kSRGBCanvasColorSpace;
   CanvasPixelFormat pixel_format_ = kRGBA8CanvasPixelFormat;
   OpacityMode opacity_mode_ = kNonOpaque;
 };

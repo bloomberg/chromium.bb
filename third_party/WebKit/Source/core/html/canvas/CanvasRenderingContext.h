@@ -48,7 +48,6 @@ class ImageData;
 class ImageBitmap;
 class WebLayer;
 
-constexpr const char* kLegacyCanvasColorSpaceName = "legacy-srgb";
 constexpr const char* kSRGBCanvasColorSpaceName = "srgb";
 constexpr const char* kRec2020CanvasColorSpaceName = "rec2020";
 constexpr const char* kP3CanvasColorSpaceName = "p3";
