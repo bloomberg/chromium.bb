@@ -191,6 +191,9 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
+  // Reached by InsertTextCommandTest.NoVisibleSelectionAfterDeletingSelection
+  ABORT_EDITING_COMMAND_IF(EndingVisibleSelection().IsNone());
+
   Position start_position(EndingVisibleSelection().Start());
 
   Position placeholder;

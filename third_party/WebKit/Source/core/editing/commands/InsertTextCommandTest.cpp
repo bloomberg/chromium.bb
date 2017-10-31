@@ -188,4 +188,29 @@ TEST_F(InsertTextCommandTest, WhitespaceFixupAfterParagraph) {
             GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
 }
 
+// http://crbug.com/779376
+TEST_F(InsertTextCommandTest, NoVisibleSelectionAfterDeletingSelection) {
+  InsertStyleElement(
+      "ruby {display: inline-block; height: 100%}"
+      "navi {float: left}");
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>"
+                             "  <ruby><strike>"
+                             "    <navi></navi>"
+                             "    <rtc>^&#xbbc3;&#xff17;&#x8e99;&#x1550;</rtc>"
+                             "  </strike></ruby>"
+                             "  <hr>|"
+                             "</div>"));
+  // Shouldn't crash inside
+  GetDocument().execCommand("insertText", false, "x", ASSERT_NO_EXCEPTION);
+  // This is only for recording the current behavior, which can be changed.
+  EXPECT_EQ(
+      "<div contenteditable>"
+      "  <ruby><strike>"
+      "    <navi></navi>"
+      "    ^</strike></ruby>"
+      "|</div>",
+      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
+
 }  // namespace blink
