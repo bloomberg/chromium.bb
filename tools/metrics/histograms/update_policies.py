@@ -36,22 +36,6 @@ class UserError(Exception):
     return self.args[0]
 
 
-def FlattenPolicies(policy_definitions, policy_list):
-  """Appends a list of policies defined in |policy_definitions| to
-  |policy_list|, flattening subgroups.
-
-  Args:
-    policy_definitions: A list of policy definitions and groups, as in
-                        policy_templates.json file.
-    policy_list: A list that has policy definitions appended to it.
-  """
-  for policy in policy_definitions:
-    if policy['type'] == 'group':
-      FlattenPolicies(policy['policies'], policy_list)
-    else:
-      policy_list.append(policy)
-
-
 def UpdateHistogramDefinitions(policy_templates, doc):
   """Sets the children of <enum name="EnterprisePolicies" ...> node in |doc| to
   values generated from policy ids contained in |policy_templates|.
@@ -80,8 +64,8 @@ def UpdateHistogramDefinitions(policy_templates, doc):
   policy_enum_node.appendChild(doc.createComment(comment))
 
   # Add values generated from policy templates.
-  ordered_policies = []
-  FlattenPolicies(policy_templates['policy_definitions'], ordered_policies)
+  ordered_policies = [x for x in policy_templates['policy_definitions']
+                      if x['type'] != 'group']
   ordered_policies.sort(key=lambda policy: policy['id'])
   for policy in ordered_policies:
     node = doc.createElement('int')
