@@ -42,7 +42,6 @@ class NetworkConnectTestDelegate : public chromeos::NetworkConnect::Delegate {
   bool ShowEnrollNetwork(const std::string& network_id) override {
     return false;
   }
-  void ShowMobileSimDialog() override {}
   void ShowMobileSetupDialog(const std::string& network_id) override {}
   void ShowNetworkConnectError(const std::string& error_name,
                                const std::string& network_id) override {}

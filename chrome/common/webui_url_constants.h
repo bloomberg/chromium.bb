@@ -206,8 +206,6 @@ extern const char kChromeUIScreenlockIconHost[];
 extern const char kChromeUIScreenlockIconURL[];
 extern const char kChromeUISetTimeHost[];
 extern const char kChromeUISetTimeURL[];
-extern const char kChromeUISimUnlockHost[];
-extern const char kChromeUISimUnlockURL[];
 extern const char kChromeUISlowHost[];
 extern const char kChromeUISlowTraceHost[];
 extern const char kChromeUISlowURL[];

@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/sim_dialog_delegate.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"

@@ -24,7 +24,6 @@ class NetworkConnectDelegateMus : public chromeos::NetworkConnect::Delegate {
   void ShowNetworkConfigure(const std::string& network_id) override;
   void ShowNetworkSettings(const std::string& network_id) override;
   bool ShowEnrollNetwork(const std::string& network_id) override;
-  void ShowMobileSimDialog() override;
   void ShowMobileSetupDialog(const std::string& network_id) override;
   void ShowNetworkConnectError(const std::string& error_name,
                                const std::string& network_id) override;

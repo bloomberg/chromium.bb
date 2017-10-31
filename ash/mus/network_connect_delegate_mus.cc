@@ -32,11 +32,6 @@ bool NetworkConnectDelegateMus::ShowEnrollNetwork(
   return false;
 }
 
-void NetworkConnectDelegateMus::ShowMobileSimDialog() {
-  // TODO(mash): http://crbug.com/644355
-  NOTIMPLEMENTED();
-}
-
 void NetworkConnectDelegateMus::ShowMobileSetupDialog(
     const std::string& network_id) {
   // TODO(mash): http://crbug.com/644355

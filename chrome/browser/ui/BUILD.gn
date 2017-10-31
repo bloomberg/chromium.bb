@@ -1436,8 +1436,6 @@ split_static_library("ui") {
       "webui/chromeos/power_ui.h",
       "webui/chromeos/set_time_ui.cc",
       "webui/chromeos/set_time_ui.h",
-      "webui/chromeos/sim_unlock_ui.cc",
-      "webui/chromeos/sim_unlock_ui.h",
       "webui/chromeos/slow_trace_ui.cc",
       "webui/chromeos/slow_trace_ui.h",
       "webui/chromeos/slow_ui.cc",

@@ -454,10 +454,11 @@ void NetworkConnectImpl::SetTechnologyEnabled(
       NET_LOG_USER("Cannot enable cellular device without SIM.", log_string);
       return;
     }
-    if (!mobile->sim_lock_type().empty()) {
+    if (!mobile->IsSimLocked()) {
       // A SIM has been inserted, but it is locked. Let the user unlock it
-      // via the dialog.
-      delegate_->ShowMobileSimDialog();
+      // via Settings or the details dialog.
+      const NetworkState* network = handler->FirstNetworkByType(technology);
+      delegate_->ShowNetworkSettings(network ? network->guid() : "");
       return;
     }
   }
