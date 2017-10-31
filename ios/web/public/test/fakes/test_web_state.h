@@ -87,6 +87,7 @@ class TestWebState : public WebState {
 
   // Setters for test data.
   void SetBrowserState(BrowserState* browser_state);
+  void SetJSInjectionReceiver(CRWJSInjectionReceiver* injection_receiver);
   void SetContentIsHTML(bool content_is_html);
   void SetLoading(bool is_loading);
   void SetCurrentURL(const GURL& url);
@@ -109,6 +110,7 @@ class TestWebState : public WebState {
 
  private:
   BrowserState* browser_state_;
+  CRWJSInjectionReceiver* injection_receiver_;
   bool web_usage_enabled_;
   bool is_loading_;
   bool is_visible_;

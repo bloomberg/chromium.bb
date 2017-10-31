@@ -128,7 +128,7 @@ void TestWebState::SetIsEvicted(bool value) {
 }
 
 CRWJSInjectionReceiver* TestWebState::GetJSInjectionReceiver() const {
-  return nullptr;
+  return injection_receiver_;
 }
 
 void TestWebState::ExecuteJavaScript(const base::string16& javascript) {}
@@ -171,6 +171,11 @@ WebInterstitial* TestWebState::GetWebInterstitial() const {
 
 void TestWebState::SetBrowserState(BrowserState* browser_state) {
   browser_state_ = browser_state;
+}
+
+void TestWebState::SetJSInjectionReceiver(
+    CRWJSInjectionReceiver* injection_receiver) {
+  injection_receiver_ = injection_receiver;
 }
 
 void TestWebState::SetContentIsHTML(bool content_is_html) {
