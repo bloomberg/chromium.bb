@@ -3819,9 +3819,7 @@ static void write_global_motion_params(const WarpedMotionParams *params,
                                        const WarpedMotionParams *ref_params,
                                        struct aom_write_bit_buffer *wb,
                                        int allow_hp) {
-  TransformationType type = params->wmtype;
-  int trans_bits;
-  int trans_prec_diff;
+  const TransformationType type = params->wmtype;
 
   aom_wb_write_bit(wb, type != IDENTITY);
   if (type != IDENTITY) {
@@ -3833,48 +3831,45 @@ static void write_global_motion_params(const WarpedMotionParams *params,
 #endif  // GLOBAL_TRANS_TYPES > 4
   }
 
-  switch (type) {
-    case AFFINE:
-    case ROTZOOM:
-      aom_wb_write_signed_primitive_refsubexpfin(
-          wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-          (ref_params->wmmat[2] >> GM_ALPHA_PREC_DIFF) -
-              (1 << GM_ALPHA_PREC_BITS),
-          (params->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS));
-      aom_wb_write_signed_primitive_refsubexpfin(
-          wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-          (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF),
-          (params->wmmat[3] >> GM_ALPHA_PREC_DIFF));
-      if (type >= AFFINE) {
-        aom_wb_write_signed_primitive_refsubexpfin(
-            wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-            (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF),
-            (params->wmmat[4] >> GM_ALPHA_PREC_DIFF));
-        aom_wb_write_signed_primitive_refsubexpfin(
-            wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-            (ref_params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
-                (1 << GM_ALPHA_PREC_BITS),
-            (params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
-                (1 << GM_ALPHA_PREC_BITS));
-      }
-    // fallthrough intended
-    case TRANSLATION:
-      trans_bits = (type == TRANSLATION) ? GM_ABS_TRANS_ONLY_BITS - !allow_hp
-                                         : GM_ABS_TRANS_BITS;
-      trans_prec_diff = (type == TRANSLATION)
-                            ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
-                            : GM_TRANS_PREC_DIFF;
-      aom_wb_write_signed_primitive_refsubexpfin(
-          wb, (1 << trans_bits) + 1, SUBEXPFIN_K,
-          (ref_params->wmmat[0] >> trans_prec_diff),
-          (params->wmmat[0] >> trans_prec_diff));
-      aom_wb_write_signed_primitive_refsubexpfin(
-          wb, (1 << trans_bits) + 1, SUBEXPFIN_K,
-          (ref_params->wmmat[1] >> trans_prec_diff),
-          (params->wmmat[1] >> trans_prec_diff));
-      break;
-    case IDENTITY: break;
-    default: assert(0);
+  if (type >= ROTZOOM) {
+    aom_wb_write_signed_primitive_refsubexpfin(
+        wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+        (ref_params->wmmat[2] >> GM_ALPHA_PREC_DIFF) -
+            (1 << GM_ALPHA_PREC_BITS),
+        (params->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS));
+    aom_wb_write_signed_primitive_refsubexpfin(
+        wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+        (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF),
+        (params->wmmat[3] >> GM_ALPHA_PREC_DIFF));
+  }
+
+  if (type >= AFFINE) {
+    aom_wb_write_signed_primitive_refsubexpfin(
+        wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+        (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF),
+        (params->wmmat[4] >> GM_ALPHA_PREC_DIFF));
+    aom_wb_write_signed_primitive_refsubexpfin(
+        wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+        (ref_params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
+            (1 << GM_ALPHA_PREC_BITS),
+        (params->wmmat[5] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS));
+  }
+
+  if (type >= TRANSLATION) {
+    const int trans_bits = (type == TRANSLATION)
+                               ? GM_ABS_TRANS_ONLY_BITS - !allow_hp
+                               : GM_ABS_TRANS_BITS;
+    const int trans_prec_diff = (type == TRANSLATION)
+                                    ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
+                                    : GM_TRANS_PREC_DIFF;
+    aom_wb_write_signed_primitive_refsubexpfin(
+        wb, (1 << trans_bits) + 1, SUBEXPFIN_K,
+        (ref_params->wmmat[0] >> trans_prec_diff),
+        (params->wmmat[0] >> trans_prec_diff));
+    aom_wb_write_signed_primitive_refsubexpfin(
+        wb, (1 << trans_bits) + 1, SUBEXPFIN_K,
+        (ref_params->wmmat[1] >> trans_prec_diff),
+        (params->wmmat[1] >> trans_prec_diff));
   }
 }
 
