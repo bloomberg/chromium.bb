@@ -189,7 +189,7 @@ gfx::Size LabelButton::CalculatePreferredSize() const {
   label.SetLineHeight(label_->line_height());
   label.SetShadows(label_->shadows());
 
-  if (style_ == STYLE_BUTTON && PlatformStyle::kDefaultLabelButtonHasBoldFont) {
+  if (style_ == STYLE_BUTTON) {
     // Some text appears wider when rendered normally than when rendered bold.
     // Accommodate the widest, as buttons may show bold and shouldn't resize.
     const int current_width = label.GetPreferredSize().width();
@@ -468,13 +468,11 @@ void LabelButton::UpdateStyleToIndicateDefaultStatus() {
   // never be given default status.
   DCHECK_EQ(cached_normal_font_list_.GetFontSize(),
             label()->font_list().GetFontSize());
-  const bool bold =
-      PlatformStyle::kDefaultLabelButtonHasBoldFont && is_default_;
   // TODO(tapted): This should use style::GetFont(), but this part can just be
   // deleted when default buttons no longer go bold. Colors will need updating
   // still.
-  label_->SetFontList(bold ? cached_default_button_font_list_
-                           : cached_normal_font_list_);
+  label_->SetFontList(is_default_ ? cached_default_button_font_list_
+                                  : cached_normal_font_list_);
   InvalidateLayout();
   ResetLabelEnabledColor();
 }
@@ -547,10 +545,7 @@ void LabelButton::ResetCachedPreferredSize() {
 }
 
 void LabelButton::ResetLabelEnabledColor() {
-  const SkColor color =
-      explicitly_set_colors_[state()]
-          ? button_state_colors_[state()]
-          : PlatformStyle::TextColorForButton(button_state_colors_, *this);
+  const SkColor color = button_state_colors_[state()];
   if (state() != STATE_DISABLED && label_->enabled_color() != color)
     label_->SetEnabledColor(color);
 }

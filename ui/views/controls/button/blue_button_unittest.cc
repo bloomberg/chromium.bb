@@ -51,17 +51,6 @@ TEST_F(BlueButtonTest, Border) {
 
   widget->GetContentsView()->AddChildView(blue_button);
   blue_button->SizeToPreferredSize();
-#if defined(OS_MACOSX)
-  // On Mac, themed STYLE_BUTTON buttons provide blue theming for dialog-default
-  // buttons. This makes it unlikely that they will appear together with a
-  // BlueButton on the same dialog. So the sizes don't really need to be
-  // consistent. However, for the purposes of this test (e.g. to ensure we don't
-  // accidentally make BlueButtons look like themed buttons on Mac), force the
-  // sizes to match (ignoring the minimum size) so that the bitmaps can be
-  // compared.
-  EXPECT_NE(button->size(), blue_button->size());  // Verify this is needed.
-  blue_button->SetSize(button->size());
-#endif
 
   SkBitmap blue_button_bitmap;
   blue_button_bitmap.allocN32Pixels(blue_button->size().width(),
