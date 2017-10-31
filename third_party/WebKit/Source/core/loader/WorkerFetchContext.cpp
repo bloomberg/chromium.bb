@@ -4,7 +4,6 @@
 
 #include "core/loader/WorkerFetchContext.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/MixedContentChecker.h"
@@ -20,6 +19,7 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebMixedContent.h"
 #include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLLoaderFactory.h"
@@ -88,7 +88,7 @@ WorkerFetchContext::WorkerFetchContext(
     : global_scope_(global_scope),
       web_context_(std::move(web_context)),
       loading_task_runner_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedLoading, global_scope_)) {
+          global_scope_->GetTaskRunner(TaskType::kUnspecedLoading)) {
   web_context_->InitializeOnWorkerThread(
       loading_task_runner_->ToSingleThreadTaskRunner());
   std::unique_ptr<blink::WebDocumentSubresourceFilter> web_filter =

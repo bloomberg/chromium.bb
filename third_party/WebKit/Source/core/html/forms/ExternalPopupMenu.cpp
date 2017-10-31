@@ -32,7 +32,6 @@
 
 #include "build/build_config.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
@@ -46,6 +45,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebVector.h"
@@ -66,10 +66,9 @@ ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
     : owner_element_(owner_element),
       local_frame_(frame),
       web_view_(web_view),
-      dispatch_event_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
-          this,
-          &ExternalPopupMenu::DispatchEvent),
+      dispatch_event_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
+                            this,
+                            &ExternalPopupMenu::DispatchEvent),
       web_external_popup_menu_(nullptr) {}
 
 ExternalPopupMenu::~ExternalPopupMenu() {}
@@ -154,8 +153,8 @@ void ExternalPopupMenu::UpdateFromElement(UpdateReason reason) {
       if (needs_update_)
         return;
       needs_update_ = true;
-      TaskRunnerHelper::Get(TaskType::kUserInteraction,
-                            &owner_element_->GetDocument())
+      owner_element_->GetDocument()
+          .GetTaskRunner(TaskType::kUserInteraction)
           ->PostTask(BLINK_FROM_HERE, WTF::Bind(&ExternalPopupMenu::Update,
                                                 WrapPersistent(this)));
       break;

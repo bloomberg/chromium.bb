@@ -29,7 +29,7 @@ void PlatformEventController::StartUpdating() {
 
   if (HasLastData() && !update_callback_handle_.IsActive()) {
     update_callback_handle_ =
-        TaskRunnerHelper::Get(TaskType::kUnspecedTimer, document_)
+        document_->GetTaskRunner(TaskType::kUnspecedTimer)
             ->PostCancellableTask(
                 BLINK_FROM_HERE,
                 WTF::Bind(&PlatformEventController::UpdateCallback,

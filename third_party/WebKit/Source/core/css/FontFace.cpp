@@ -54,7 +54,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -67,6 +66,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/font_family_names.h"
 #include "platform/runtime_enabled_features.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -375,7 +375,8 @@ void FontFace::SetLoadStatus(LoadStatusType status) {
   if (status_ == kLoaded || status_ == kError) {
     if (loaded_property_) {
       if (status_ == kLoaded) {
-        TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetExecutionContext())
+        GetExecutionContext()
+            ->GetTaskRunner(TaskType::kDOMManipulation)
             ->PostTask(BLINK_FROM_HERE,
                        WTF::Bind(&LoadedProperty::Resolve<FontFace*>,
                                  WrapPersistent(loaded_property_.Get()),
@@ -384,7 +385,8 @@ void FontFace::SetLoadStatus(LoadStatusType status) {
         loaded_property_->Reject(error_.Get());
     }
 
-    TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetExecutionContext())
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kDOMManipulation)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&FontFace::RunCallbacks, WrapPersistent(this)));
   }

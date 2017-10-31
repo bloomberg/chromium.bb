@@ -37,7 +37,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -91,6 +90,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
@@ -442,23 +442,20 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
                                    Document& document)
     : HTMLElement(tag_name, document),
       SuspendableObject(&document),
-      load_timer_(TaskRunnerHelper::Get(TaskType::kUnthrottled, &document),
+      load_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
                   this,
                   &HTMLMediaElement::LoadTimerFired),
-      progress_event_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled, &document),
-          this,
-          &HTMLMediaElement::ProgressEventTimerFired),
-      playback_progress_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled, &document),
-          this,
-          &HTMLMediaElement::PlaybackProgressTimerFired),
-      audio_tracks_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled, &document),
-          this,
-          &HTMLMediaElement::AudioTracksTimerFired),
+      progress_event_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
+                            this,
+                            &HTMLMediaElement::ProgressEventTimerFired),
+      playback_progress_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
+                               this,
+                               &HTMLMediaElement::PlaybackProgressTimerFired),
+      audio_tracks_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
+                          this,
+                          &HTMLMediaElement::AudioTracksTimerFired),
       check_viewport_intersection_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled, &document),
+          document.GetTaskRunner(TaskType::kUnthrottled),
           this,
           &HTMLMediaElement::CheckViewportIntersectionTimerFired),
       played_time_ranges_(),
@@ -478,10 +475,9 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       default_playback_start_position_(0),
       load_state_(kWaitingForSource),
       deferred_load_state_(kNotDeferred),
-      deferred_load_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled, &document),
-          this,
-          &HTMLMediaElement::DeferredLoadTimerFired),
+      deferred_load_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
+                           this,
+                           &HTMLMediaElement::DeferredLoadTimerFired),
       web_layer_(nullptr),
       display_mode_(kUnknown),
       official_playback_position_(0),
@@ -552,17 +548,17 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   BLINK_MEDIA_LOG << "didMoveToNewDocument(" << (void*)this << ")";
 
   load_timer_.MoveToNewTaskRunner(
-      TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
+      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
   progress_event_timer_.MoveToNewTaskRunner(
-      TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
+      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
   playback_progress_timer_.MoveToNewTaskRunner(
-      TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
+      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
   audio_tracks_timer_.MoveToNewTaskRunner(
-      TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
+      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
   check_viewport_intersection_timer_.MoveToNewTaskRunner(
-      TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
+      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
   deferred_load_timer_.MoveToNewTaskRunner(
-      TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
+      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
 
   autoplay_policy_->DidMoveToNewDocument(old_document);
 
@@ -3952,7 +3948,8 @@ void HTMLMediaElement::ScheduleResolvePlayPromises() {
     return;
 
   play_promise_resolve_task_handle_ =
-      TaskRunnerHelper::Get(TaskType::kMediaElementEvent, &GetDocument())
+      GetDocument()
+          .GetTaskRunner(TaskType::kMediaElementEvent)
           ->PostCancellableTask(
               BLINK_FROM_HERE,
               WTF::Bind(&HTMLMediaElement::ResolveScheduledPlayPromises,
@@ -3981,7 +3978,8 @@ void HTMLMediaElement::ScheduleRejectPlayPromises(ExceptionCode code) {
   // member field.
   play_promise_error_code_ = code;
   play_promise_reject_task_handle_ =
-      TaskRunnerHelper::Get(TaskType::kMediaElementEvent, &GetDocument())
+      GetDocument()
+          .GetTaskRunner(TaskType::kMediaElementEvent)
           ->PostCancellableTask(
               BLINK_FROM_HERE,
               WTF::Bind(&HTMLMediaElement::RejectScheduledPlayPromises,

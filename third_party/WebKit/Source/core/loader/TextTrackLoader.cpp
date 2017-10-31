@@ -26,7 +26,6 @@
 #include "core/loader/TextTrackLoader.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/SharedBuffer.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -35,6 +34,7 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/fetch_initiator_type_names.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -42,7 +42,7 @@ TextTrackLoader::TextTrackLoader(TextTrackLoaderClient& client,
                                  Document& document)
     : client_(client),
       document_(document),
-      cue_load_timer_(TaskRunnerHelper::Get(TaskType::kNetworking, &document),
+      cue_load_timer_(document.GetTaskRunner(TaskType::kNetworking),
                       this,
                       &TextTrackLoader::CueLoadTimerFired),
       state_(kLoading),

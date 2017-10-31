@@ -30,7 +30,6 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDocument.h"
@@ -59,6 +58,7 @@
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "public/platform/WebThread.h"
 
@@ -133,8 +133,7 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       tokenizer_(sync_policy == kForceSynchronousParsing
                      ? HTMLTokenizer::Create(options_)
                      : nullptr),
-      loading_task_runner_(
-          TaskRunnerHelper::Get(TaskType::kNetworking, &document)),
+      loading_task_runner_(document.GetTaskRunner(TaskType::kNetworking)),
       parser_scheduler_(
           sync_policy == kAllowAsynchronousParsing
               ? HTMLParserScheduler::Create(this, loading_task_runner_.get())

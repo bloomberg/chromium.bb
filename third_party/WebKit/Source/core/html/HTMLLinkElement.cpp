@@ -29,7 +29,6 @@
 #include "core/CoreInitializer.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/UseCounter.h"
@@ -41,6 +40,7 @@
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/origin_trials/origin_trials.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebIconSizesParser.h"
 #include "public/platform/WebSize.h"
 
@@ -274,7 +274,7 @@ void HTMLLinkElement::DidSendDOMContentLoadedForLinkPrerender() {
 }
 
 scoped_refptr<WebTaskRunner> HTMLLinkElement::GetLoadingTaskRunner() {
-  return TaskRunnerHelper::Get(TaskType::kNetworking, &GetDocument());
+  return GetDocument().GetTaskRunner(TaskType::kNetworking);
 }
 
 bool HTMLLinkElement::SheetLoaded() {
@@ -302,7 +302,8 @@ void HTMLLinkElement::DispatchPendingEvent(
 }
 
 void HTMLLinkElement::ScheduleEvent() {
-  TaskRunnerHelper::Get(TaskType::kDOMManipulation, &GetDocument())
+  GetDocument()
+      .GetTaskRunner(TaskType::kDOMManipulation)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&HTMLLinkElement::DispatchPendingEvent,
                            WrapPersistent(this),

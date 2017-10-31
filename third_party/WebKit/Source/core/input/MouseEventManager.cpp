@@ -9,7 +9,6 @@
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
@@ -35,6 +34,7 @@
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/Histogram.h"
 #include "platform/geometry/FloatQuad.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -85,7 +85,7 @@ MouseEventManager::MouseEventManager(LocalFrame& frame,
     : frame_(frame),
       scroll_manager_(scroll_manager),
       fake_mouse_move_event_timer_(
-          TaskRunnerHelper::Get(TaskType::kUserInteraction, &frame),
+          frame.GetTaskRunner(TaskType::kUserInteraction),
           this,
           &MouseEventManager::FakeMouseMoveEventTimerFired) {
   Clear();

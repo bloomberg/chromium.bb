@@ -37,7 +37,6 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/FrameConsole.h"
@@ -77,6 +76,7 @@
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/Base64.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLRequest.h"
@@ -1586,10 +1586,9 @@ InspectorNetworkAgent::InspectorNetworkAgent(
       pending_request_(nullptr),
       remove_finished_replay_xhr_timer_(
           worker_global_scope_
-              ? TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
-                                      worker_global_scope)
-              : TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
-                                      inspected_frames->Root()),
+              ? worker_global_scope->GetTaskRunner(TaskType::kUnspecedLoading)
+              : inspected_frames->Root()->GetTaskRunner(
+                    TaskType::kUnspecedLoading),
           this,
           &InspectorNetworkAgent::RemoveFinishedReplayXHRFired) {
   DCHECK((IsMainThread() && !worker_global_scope_) ||

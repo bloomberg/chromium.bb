@@ -5,13 +5,13 @@
 #include "core/paint/FirstMeaningfulPaintDetector.h"
 
 #include "core/css/FontFaceSetDocument.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/paint/PaintTiming.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/wtf/Functional.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebLayerTreeView.h"
 
 namespace blink {
@@ -34,11 +34,11 @@ FirstMeaningfulPaintDetector::FirstMeaningfulPaintDetector(
     Document& document)
     : paint_timing_(paint_timing),
       network0_quiet_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &document),
+          document.GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &FirstMeaningfulPaintDetector::Network0QuietTimerFired),
       network2_quiet_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &document),
+          document.GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &FirstMeaningfulPaintDetector::Network2QuietTimerFired) {}
 

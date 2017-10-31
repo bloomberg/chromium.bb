@@ -7,7 +7,6 @@
 #include "core/css/CSSCustomFontData.h"
 #include "core/css/CSSFontFace.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -21,6 +20,7 @@
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/network/NetworkStateNotifier.h"
 #include "platform/wtf/CurrentTime.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebEffectiveConnectionType.h"
 
 namespace blink {
@@ -230,8 +230,8 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
       // Start timers only when load is actually started asynchronously.
       if (!font_->IsLoaded()) {
         font_->StartLoadLimitTimers(
-            TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
-                                  font_selector_->GetExecutionContext())
+            font_selector_->GetExecutionContext()
+                ->GetTaskRunner(TaskType::kUnspecedLoading)
                 .get());
       }
       histograms_.LoadStarted();

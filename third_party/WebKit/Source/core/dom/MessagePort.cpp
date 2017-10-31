@@ -33,7 +33,6 @@
 #include "core/dom/BlinkTransferableMessageStructTraits.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
@@ -43,6 +42,7 @@
 #include "platform/wtf/Atomics.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/AtomicString.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
@@ -56,8 +56,7 @@ MessagePort* MessagePort::Create(ExecutionContext& execution_context) {
 
 MessagePort::MessagePort(ExecutionContext& execution_context)
     : ContextLifecycleObserver(&execution_context),
-      task_runner_(TaskRunnerHelper::Get(TaskType::kPostedMessage,
-                                         &execution_context)) {}
+      task_runner_(execution_context.GetTaskRunner(TaskType::kPostedMessage)) {}
 
 MessagePort::~MessagePort() {
   DCHECK(!started_ || !IsEntangled());

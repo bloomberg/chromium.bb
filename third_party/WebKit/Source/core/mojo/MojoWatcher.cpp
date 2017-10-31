@@ -6,11 +6,11 @@
 
 #include "bindings/core/v8/v8_mojo_watch_callback.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/mojo/MojoHandleSignals.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptState.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -74,7 +74,7 @@ void MojoWatcher::ContextDestroyed(ExecutionContext*) {
 MojoWatcher::MojoWatcher(ExecutionContext* context,
                          V8MojoWatchCallback* callback)
     : ContextLifecycleObserver(context),
-      task_runner_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, context)),
+      task_runner_(context->GetTaskRunner(TaskType::kUnspecedTimer)),
       callback_(callback) {}
 
 MojoResult MojoWatcher::Watch(mojo::Handle handle,

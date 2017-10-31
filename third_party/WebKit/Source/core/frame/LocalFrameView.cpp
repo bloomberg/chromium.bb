@@ -33,7 +33,6 @@
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ElementVisibilityObserver.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/DragCaret.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
@@ -131,6 +130,7 @@
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebRemoteScrollProperties.h"
@@ -197,14 +197,12 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       can_have_scrollbars_(true),
       has_pending_layout_(false),
       in_synchronous_post_layout_(false),
-      post_layout_tasks_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
-          this,
-          &LocalFrameView::PostLayoutTimerFired),
-      update_plugins_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
-          this,
-          &LocalFrameView::UpdatePluginsTimerFired),
+      post_layout_tasks_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
+                               this,
+                               &LocalFrameView::PostLayoutTimerFired),
+      update_plugins_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
+                            this,
+                            &LocalFrameView::UpdatePluginsTimerFired),
       base_background_color_(Color::kWhite),
       media_type_(MediaTypeNames::screen),
       safe_to_propagate_scroll_to_parent_(true),
@@ -212,7 +210,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       sticky_position_object_count_(0),
       input_events_scale_factor_for_emulation_(1),
       layout_size_fixed_to_frame_size_(true),
-      did_scroll_timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
+      did_scroll_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
                         this,
                         &LocalFrameView::DidScrollTimerFired),
       needs_update_geometries_(false),
@@ -679,7 +677,7 @@ FloatQuad LocalFrameView::LocalToVisibleContentQuad(
 }
 
 scoped_refptr<WebTaskRunner> LocalFrameView::GetTimerTaskRunner() const {
-  return TaskRunnerHelper::Get(TaskType::kUnspecedTimer, frame_.Get());
+  return frame_->GetTaskRunner(TaskType::kUnspecedTimer);
 }
 
 void LocalFrameView::SetCanHaveScrollbars(bool can_have_scrollbars) {

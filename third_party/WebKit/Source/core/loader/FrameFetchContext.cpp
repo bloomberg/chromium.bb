@@ -290,7 +290,7 @@ LocalFrame* FrameFetchContext::FrameOfImportsController() const {
 scoped_refptr<WebTaskRunner> FrameFetchContext::GetLoadingTaskRunner() {
   if (IsDetached())
     return FetchContext::GetLoadingTaskRunner();
-  return TaskRunnerHelper::Get(TaskType::kNetworking, GetFrame());
+  return GetFrame()->GetTaskRunner(TaskType::kNetworking);
 }
 
 WebFrameScheduler* FrameFetchContext::GetFrameScheduler() {

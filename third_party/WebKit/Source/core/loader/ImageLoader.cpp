@@ -317,8 +317,9 @@ inline void ImageLoader::DispatchErrorEvent() {
   // |pending_error_event_|) and then re-schedule a new error event here.
   // crbug.com/722500
   pending_error_event_ =
-      TaskRunnerHelper::Get(TaskType::kDOMManipulation,
-                            &GetElement()->GetDocument())
+      GetElement()
+          ->GetDocument()
+          .GetTaskRunner(TaskType::kDOMManipulation)
           ->PostCancellableTask(
               BLINK_FROM_HERE,
               WTF::Bind(&ImageLoader::DispatchPendingErrorEvent,
@@ -660,8 +661,9 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
 
   CHECK(!pending_load_event_.IsActive());
   pending_load_event_ =
-      TaskRunnerHelper::Get(TaskType::kDOMManipulation,
-                            &GetElement()->GetDocument())
+      GetElement()
+          ->GetDocument()
+          .GetTaskRunner(TaskType::kDOMManipulation)
           ->PostCancellableTask(
               BLINK_FROM_HERE,
               WTF::Bind(&ImageLoader::DispatchPendingLoadEvent,

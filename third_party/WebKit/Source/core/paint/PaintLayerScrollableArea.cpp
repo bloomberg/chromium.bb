@@ -49,7 +49,6 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Node.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/frame/LocalFrame.h"
@@ -87,6 +86,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -1006,7 +1006,7 @@ FloatQuad PaintLayerScrollableArea::LocalToVisibleContentQuad(
 
 scoped_refptr<WebTaskRunner> PaintLayerScrollableArea::GetTimerTaskRunner()
     const {
-  return TaskRunnerHelper::Get(TaskType::kUnspecedTimer, Box().GetFrame());
+  return Box().GetFrame()->GetTaskRunner(TaskType::kUnspecedTimer);
 }
 
 ScrollBehavior PaintLayerScrollableArea::ScrollBehaviorStyle() const {

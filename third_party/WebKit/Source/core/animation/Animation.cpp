@@ -40,7 +40,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/AnimationPlaybackEvent.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -55,6 +54,7 @@
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebCompositorSupport.h"
 
 namespace blink {
@@ -1257,7 +1257,8 @@ void Animation::InvalidateKeyframeEffect(const TreeScope& tree_scope) {
 
 void Animation::ResolvePromiseMaybeAsync(AnimationPromise* promise) {
   if (ScriptForbiddenScope::IsScriptForbidden()) {
-    TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetExecutionContext())
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kDOMManipulation)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&AnimationPromise::Resolve<Animation*>,
                              WrapPersistent(promise), WrapPersistent(this)));
@@ -1273,7 +1274,8 @@ void Animation::RejectAndResetPromise(AnimationPromise* promise) {
 
 void Animation::RejectAndResetPromiseMaybeAsync(AnimationPromise* promise) {
   if (ScriptForbiddenScope::IsScriptForbidden()) {
-    TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetExecutionContext())
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kDOMManipulation)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&Animation::RejectAndResetPromise,
                              WrapPersistent(this), WrapPersistent(promise)));

@@ -33,7 +33,6 @@
 
 #include <memory>
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -62,6 +61,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/WeakPtr.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebCORS.h"
 #include "public/platform/WebCORSPreflightResultCache.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -159,7 +159,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(
       fetch_request_mode_(network::mojom::FetchRequestMode::kSameOrigin),
       fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kOmit),
       timeout_timer_(
-          TaskRunnerHelper::Get(TaskType::kNetworking, GetExecutionContext()),
+          GetExecutionContext()->GetTaskRunner(TaskType::kNetworking),
           this,
           &DocumentThreadableLoader::DidTimeout),
       request_started_seconds_(0.0),

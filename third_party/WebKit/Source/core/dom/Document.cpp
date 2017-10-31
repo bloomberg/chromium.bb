@@ -92,7 +92,6 @@
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/StaticNodeList.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/TransformSource.h"
 #include "core/dom/TreeWalker.h"
 #include "core/dom/VisitedLinkState.h"
@@ -257,6 +256,7 @@
 #include "platform/wtf/text/TextEncodingRegistry.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/modules/insecure_input/insecure_input_service.mojom-blink.h"
@@ -526,8 +526,7 @@ class Document::NetworkStateObserver final
   explicit NetworkStateObserver(Document& document)
       : ContextLifecycleObserver(&document) {
     online_observer_handle_ = GetNetworkStateNotifier().AddOnLineObserver(
-        this,
-        TaskRunnerHelper::Get(TaskType::kNetworking, GetExecutionContext()));
+        this, GetExecutionContext()->GetTaskRunner(TaskType::kNetworking));
   }
 
   void OnLineStateChange(bool on_line) override {
@@ -588,10 +587,9 @@ Document::Document(const DocumentInit& initializer,
       compatibility_mode_(kNoQuirksMode),
       compatibility_mode_locked_(false),
       has_autofocused_(false),
-      clear_focused_element_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, this),
-          this,
-          &Document::ClearFocusedElementTimerFired),
+      clear_focused_element_timer_(GetTaskRunner(TaskType::kUnspecedTimer),
+                                   this,
+                                   &Document::ClearFocusedElementTimerFired),
       dom_tree_version_(++global_tree_version_),
       style_version_(0),
       listener_types_(0),
@@ -607,7 +605,7 @@ Document::Document(const DocumentInit& initializer,
       throw_on_dynamic_markup_insertion_count_(0),
       markers_(new DocumentMarkerController(*this)),
       update_focus_appearance_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, this),
+          GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &Document::UpdateFocusAppearanceTimerFired),
       css_target_(nullptr),
@@ -629,20 +627,18 @@ Document::Document(const DocumentInit& initializer,
       layout_view_(nullptr),
       has_fullscreen_supplement_(false),
       load_event_delay_count_(0),
-      load_event_delay_timer_(
-          TaskRunnerHelper::Get(TaskType::kNetworking, this),
-          this,
-          &Document::LoadEventDelayTimerFired),
-      plugin_loading_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedLoading, this),
-          this,
-          &Document::PluginLoadingTimerFired),
+      load_event_delay_timer_(GetTaskRunner(TaskType::kNetworking),
+                              this,
+                              &Document::LoadEventDelayTimerFired),
+      plugin_loading_timer_(GetTaskRunner(TaskType::kUnspecedLoading),
+                            this,
+                            &Document::PluginLoadingTimerFired),
       document_timing_(*this),
       write_recursion_is_too_deep_(false),
       write_recursion_depth_(0),
       registration_context_(initializer.RegistrationContext(this)),
       element_data_cache_clear_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, this),
+          GetTaskRunner(TaskType::kUnspecedTimer),
           this,
           &Document::ElementDataCacheClearTimerFired),
       timeline_(DocumentTimeline::Create(this)),
@@ -650,10 +646,10 @@ Document::Document(const DocumentInit& initializer,
       worklet_animation_controller_(new WorkletAnimationController),
       template_document_host_(nullptr),
       did_associate_form_controls_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedLoading, this),
+          GetTaskRunner(TaskType::kUnspecedLoading),
           this,
           &Document::DidAssociateFormControlsTimerFired),
-      timers_(TaskRunnerHelper::Get(TaskType::kJavascriptTimer, this)),
+      timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       has_viewport_units_(false),
       parser_sync_policy_(kAllowAsynchronousParsing),
       node_count_(0),
@@ -3885,7 +3881,7 @@ void Document::DidLoadAllScriptBlockingResources() {
   // Use wrapWeakPersistent because the task should not keep this Document alive
   // just for executing scripts.
   execute_scripts_waiting_for_resources_task_handle_ =
-      TaskRunnerHelper::Get(TaskType::kNetworking, this)
+      GetTaskRunner(TaskType::kNetworking)
           ->PostCancellableTask(
               BLINK_FROM_HERE,
               WTF::Bind(&Document::ExecuteScriptsWaitingForResources,
@@ -4901,7 +4897,7 @@ void Document::SendSensitiveInputVisibility() {
     return;
 
   sensitive_input_visibility_task_ =
-      TaskRunnerHelper::Get(TaskType::kUnspecedLoading, this)
+      GetTaskRunner(TaskType::kUnspecedLoading)
           ->PostCancellableTask(
               BLINK_FROM_HERE,
               WTF::Bind(&Document::SendSensitiveInputVisibilityInternal,
@@ -6354,7 +6350,7 @@ static void RunAddConsoleMessageTask(MessageSource source,
 
 void Document::AddConsoleMessage(ConsoleMessage* console_message) {
   if (!IsContextThread()) {
-    TaskRunnerHelper::Get(TaskType::kUnthrottled, this)
+    GetTaskRunner(TaskType::kUnthrottled)
         ->PostTask(BLINK_FROM_HERE,
                    CrossThreadBind(
                        &RunAddConsoleMessageTask, console_message->Source(),
@@ -6915,7 +6911,7 @@ void Document::SetAutofocusElement(Element* element) {
   has_autofocused_ = true;
   DCHECK(!autofocus_element_);
   autofocus_element_ = element;
-  TaskRunnerHelper::Get(TaskType::kUserInteraction, this)
+  GetTaskRunner(TaskType::kUserInteraction)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&RunAutofocusTask, WrapWeakPersistent(this)));
 }
@@ -7143,7 +7139,7 @@ void Document::MaybeQueueSendDidEditFieldInInsecureContext() {
   }
   logged_field_edit_ = true;
   sensitive_input_edited_task_ =
-      TaskRunnerHelper::Get(TaskType::kUserInteraction, this)
+      GetTaskRunner(TaskType::kUserInteraction)
           ->PostCancellableTask(
               BLINK_FROM_HERE,
               WTF::Bind(&Document::SendDidEditFieldInInsecureContext,

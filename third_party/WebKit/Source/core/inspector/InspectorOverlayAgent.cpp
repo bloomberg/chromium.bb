@@ -39,7 +39,6 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Node.h"
 #include "core/dom/StaticNodeList.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/WebInputEventConversion.h"
 #include "core/exported/WebViewImpl.h"
 #include "core/frame/LocalFrame.h"
@@ -66,6 +65,7 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/wtf/AutoReset.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebData.h"
 #include "v8/include/v8.h"
 
@@ -231,8 +231,7 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       draw_view_size_(false),
       resize_timer_active_(false),
       omit_tooltip_(false),
-      timer_(TaskRunnerHelper::Get(TaskType::kUnspecedTimer,
-                                   frame_impl->GetFrame()),
+      timer_(frame_impl->GetFrame()->GetTaskRunner(TaskType::kUnspecedTimer),
              this,
              &InspectorOverlayAgent::OnTimer),
       suspended_(false),

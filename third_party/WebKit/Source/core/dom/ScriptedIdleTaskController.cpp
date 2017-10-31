@@ -163,7 +163,8 @@ void ScriptedIdleTaskController::ScheduleCallback(
       WTF::Bind(&internal::IdleRequestCallbackWrapper::IdleTaskFired,
                 callback_wrapper));
   if (timeout_millis > 0) {
-    TaskRunnerHelper::Get(TaskType::kIdleTask, GetExecutionContext())
+    GetExecutionContext()
+        ->GetTaskRunner(TaskType::kIdleTask)
         ->PostDelayedTask(
             BLINK_FROM_HERE,
             WTF::Bind(&internal::IdleRequestCallbackWrapper::TimeoutFired,

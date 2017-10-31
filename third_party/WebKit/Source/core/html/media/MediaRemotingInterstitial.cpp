@@ -5,7 +5,7 @@
 #include "core/html/media/MediaRemotingInterstitial.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/Document.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/media/HTMLVideoElement.h"
 #include "core/html/media/MediaRemotingElements.h"
@@ -25,8 +25,7 @@ MediaRemotingInterstitial::MediaRemotingInterstitial(
     HTMLVideoElement& videoElement)
     : HTMLDivElement(videoElement.GetDocument()),
       toggle_insterstitial_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled,
-                                &videoElement.GetDocument()),
+          videoElement.GetDocument().GetTaskRunner(TaskType::kUnthrottled),
           this,
           &MediaRemotingInterstitial::ToggleInterstitialTimerFired),
       video_element_(&videoElement) {
@@ -97,7 +96,7 @@ void MediaRemotingInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
 
 void MediaRemotingInterstitial::DidMoveToNewDocument(Document& old_document) {
   toggle_insterstitial_timer_.MoveToNewTaskRunner(
-      TaskRunnerHelper::Get(TaskType::kUnthrottled, &GetDocument()));
+      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
 
   HTMLDivElement::DidMoveToNewDocument(old_document);
 }

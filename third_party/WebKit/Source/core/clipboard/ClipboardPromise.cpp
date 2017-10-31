@@ -9,10 +9,10 @@
 #include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/DataTransferItem.h"
 #include "core/clipboard/DataTransferItemList.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -58,8 +58,7 @@ ClipboardPromise::ClipboardPromise(ScriptState* script_state)
 
 scoped_refptr<WebTaskRunner> ClipboardPromise::GetTaskRunner() {
   // TODO(garykac): Replace MiscPlatformAPI with TaskType specific to clipboard.
-  return TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
-                               GetExecutionContext());
+  return GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
 }
 
 // TODO(garykac): This currently only handles plain text.

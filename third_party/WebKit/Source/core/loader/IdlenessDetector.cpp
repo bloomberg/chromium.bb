@@ -5,12 +5,12 @@
 #include "core/loader/IdlenessDetector.h"
 
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/instrumentation/resource_coordinator/FrameResourceCoordinator.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -151,10 +151,9 @@ void IdlenessDetector::DidProcessTask(double start_time, double end_time) {
 IdlenessDetector::IdlenessDetector(LocalFrame* local_frame)
     : local_frame_(local_frame),
       task_observer_added_(false),
-      network_quiet_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnthrottled, local_frame),
-          this,
-          &IdlenessDetector::NetworkQuietTimerFired) {}
+      network_quiet_timer_(local_frame->GetTaskRunner(TaskType::kUnthrottled),
+                           this,
+                           &IdlenessDetector::NetworkQuietTimerFired) {}
 
 void IdlenessDetector::Stop() {
   network_quiet_timer_.Stop();

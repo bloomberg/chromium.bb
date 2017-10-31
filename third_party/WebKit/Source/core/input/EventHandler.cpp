@@ -37,7 +37,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/dom/events/EventPath.h"
 #include "core/editing/EditingUtilities.h"
@@ -99,6 +98,7 @@
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebMouseWheelEvent.h"
 
@@ -143,13 +143,12 @@ constexpr TimeDelta kMinimumActiveInterval = TimeDelta::FromSecondsD(0.15);
 EventHandler::EventHandler(LocalFrame& frame)
     : frame_(frame),
       selection_controller_(SelectionController::Create(frame)),
-      hover_timer_(TaskRunnerHelper::Get(TaskType::kUserInteraction, &frame),
+      hover_timer_(frame.GetTaskRunner(TaskType::kUserInteraction),
                    this,
                    &EventHandler::HoverTimerFired),
-      cursor_update_timer_(
-          TaskRunnerHelper::Get(TaskType::kUnspecedTimer, &frame),
-          this,
-          &EventHandler::CursorUpdateTimerFired),
+      cursor_update_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
+                           this,
+                           &EventHandler::CursorUpdateTimerFired),
       event_handler_will_reset_capturing_mouse_events_node_(0),
       should_only_fire_drag_over_event_(false),
       scroll_manager_(new ScrollManager(frame)),
@@ -164,10 +163,9 @@ EventHandler::EventHandler(LocalFrame& frame)
                                           *mouse_event_manager_,
                                           *pointer_event_manager_,
                                           *selection_controller_)),
-      active_interval_timer_(
-          TaskRunnerHelper::Get(TaskType::kUserInteraction, &frame),
-          this,
-          &EventHandler::ActiveIntervalTimerFired) {}
+      active_interval_timer_(frame.GetTaskRunner(TaskType::kUserInteraction),
+                             this,
+                             &EventHandler::ActiveIntervalTimerFired) {}
 
 void EventHandler::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);

@@ -23,10 +23,10 @@
 #include "core/svg/SVGStyleElement.h"
 
 #include "core/css/CSSStyleSheet.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/media_type_names.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -131,7 +131,8 @@ void SVGStyleElement::ChildrenChanged(const ChildrenChange& change) {
 void SVGStyleElement::NotifyLoadedSheetAndAllCriticalSubresources(
     LoadedSheetErrorStatus error_status) {
   if (error_status != kNoErrorLoadingSubresource)
-    TaskRunnerHelper::Get(TaskType::kDOMManipulation, &GetDocument())
+    GetDocument()
+        .GetTaskRunner(TaskType::kDOMManipulation)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&SVGStyleElement::DispatchPendingEvent,
                              WrapPersistent(this)));

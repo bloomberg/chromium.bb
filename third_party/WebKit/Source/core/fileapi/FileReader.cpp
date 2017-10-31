@@ -35,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/File.h"
 #include "core/frame/UseCounter.h"
@@ -47,6 +46,7 @@
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/CString.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -346,7 +346,8 @@ void FileReader::abort() {
   // called from the event handler and we do not want the resource loading code
   // to be on the stack when doing so. The persistent reference keeps the
   // reader alive until the task has completed.
-  TaskRunnerHelper::Get(TaskType::kFileReading, GetExecutionContext())
+  GetExecutionContext()
+      ->GetTaskRunner(TaskType::kFileReading)
       ->PostTask(BLINK_FROM_HERE,
                  WTF::Bind(&FileReader::Terminate, WrapPersistent(this)));
 }

@@ -6,8 +6,8 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -30,7 +30,8 @@ void IntersectionObserverController::PostTaskToDeliverObservations() {
   // TODO(ojan): These tasks decide whether to throttle a subframe, so they
   // need to be unthrottled, but we should throttle all the other tasks
   // (e.g. ones coming from the web page).
-  TaskRunnerHelper::Get(TaskType::kUnthrottled, GetExecutionContext())
+  GetExecutionContext()
+      ->GetTaskRunner(TaskType::kUnthrottled)
       ->PostTask(
           BLINK_FROM_HERE,
           WTF::Bind(

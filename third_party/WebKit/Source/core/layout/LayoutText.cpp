@@ -26,7 +26,6 @@
 
 #include <algorithm>
 #include "core/dom/AXObjectCache.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/Text.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
@@ -61,6 +60,7 @@
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {
@@ -82,8 +82,8 @@ static SecureTextTimerMap* g_secure_text_timers = nullptr;
 class SecureTextTimer final : public TimerBase {
  public:
   SecureTextTimer(LayoutText* layout_text)
-      : TimerBase(TaskRunnerHelper::Get(TaskType::kUserInteraction,
-                                        &layout_text->GetDocument())),
+      : TimerBase(layout_text->GetDocument().GetTaskRunner(
+            TaskType::kUserInteraction)),
         layout_text_(layout_text),
         last_typed_character_offset_(-1) {}
 

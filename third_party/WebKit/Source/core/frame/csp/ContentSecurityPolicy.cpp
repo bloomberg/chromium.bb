@@ -31,7 +31,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/SandboxFlags.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/EventQueue.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
 #include "core/frame/FrameClient.h"
@@ -68,6 +67,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -1245,7 +1245,7 @@ void ContentSecurityPolicy::ReportViolation(
   // Fire a violation event if we're working within an execution context (e.g.
   // we're not processing 'frame-ancestors').
   if (execution_context_) {
-    TaskRunnerHelper::Get(TaskType::kNetworking, execution_context_)
+    execution_context_->GetTaskRunner(TaskType::kNetworking)
         ->PostTask(BLINK_FROM_HERE,
                    WTF::Bind(&ContentSecurityPolicy::DispatchViolationEvents,
                              WrapPersistent(this), violation_data,

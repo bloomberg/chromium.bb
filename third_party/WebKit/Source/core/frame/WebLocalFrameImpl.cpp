@@ -107,7 +107,6 @@
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
@@ -208,6 +207,7 @@
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebDoubleSize.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
@@ -2477,8 +2477,7 @@ WebFrameScheduler* WebLocalFrameImpl::Scheduler() const {
 
 SingleThreadTaskRunnerRefPtr WebLocalFrameImpl::GetTaskRunner(
     TaskType task_type) {
-  return TaskRunnerHelper::Get(task_type, GetFrame())
-      ->ToSingleThreadTaskRunner();
+  return GetFrame()->GetTaskRunner(task_type)->ToSingleThreadTaskRunner();
 }
 
 WebInputMethodController* WebLocalFrameImpl::GetInputMethodController() {

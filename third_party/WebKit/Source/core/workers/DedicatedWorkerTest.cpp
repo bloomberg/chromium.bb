@@ -70,7 +70,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   void TestTaskRunner() {
     EXPECT_TRUE(IsCurrentThread());
     scoped_refptr<WebTaskRunner> task_runner =
-        TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GlobalScope());
+        GlobalScope()->GetTaskRunner(TaskType::kUnspecedTimer);
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
     GetParentFrameTaskRunners()
         ->Get(TaskType::kUnspecedTimer)
