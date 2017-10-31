@@ -61,7 +61,7 @@ static const int mode_2_counter[] = {
   9,    // PAETH_PRED
   0,    // NEARESTMV
   0,    // NEARMV
-  3,    // ZEROMV
+  3,    // GLOBALMV
   1,    // NEWMV
 #if CONFIG_COMPOUND_SINGLEREF
   0,    // SR_NEAREST_NEARMV
@@ -76,7 +76,7 @@ static const int mode_2_counter[] = {
   1,    // NEW_NEARESTMV
   1,    // NEAR_NEWMV
   1,    // NEW_NEARMV
-  3,    // ZERO_ZEROMV
+  3,    // GLOBAL_GLOBALMV
   1,    // NEW_NEWMV
 };
 

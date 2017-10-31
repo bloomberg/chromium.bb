@@ -337,7 +337,7 @@ static void update_filter_type_count(FRAME_COUNTS *counts,
 static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
                                       const MB_MODE_INFO *mbmi,
                                       RD_COUNTS *rdc) {
-  if (mode == ZEROMV || mode == ZERO_ZEROMV) {
+  if (mode == GLOBALMV || mode == GLOBAL_GLOBALMV) {
     const int num_4x4s =
         num_4x4_blocks_wide_lookup[bsize] * num_4x4_blocks_high_lookup[bsize];
     int ref;
@@ -952,8 +952,8 @@ static void update_inter_mode_stats(FRAME_COUNTS *counts, PREDICTION_MODE mode,
       return;
     }
 
-    mode_ctx = (mode_context >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
-    if (mode == ZEROMV) {
+    mode_ctx = (mode_context >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
+    if (mode == GLOBALMV) {
       ++counts->zeromv_mode[mode_ctx][0];
       return;
     } else {

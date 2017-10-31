@@ -185,12 +185,12 @@ typedef struct frame_contexts {
 #endif
 
   aom_prob newmv_prob[NEWMV_MODE_CONTEXTS];
-  aom_prob zeromv_prob[ZEROMV_MODE_CONTEXTS];
+  aom_prob zeromv_prob[GLOBALMV_MODE_CONTEXTS];
   aom_prob refmv_prob[REFMV_MODE_CONTEXTS];
   aom_prob drl_prob[DRL_MODE_CONTEXTS];
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)];
-  aom_cdf_prob zeromv_cdf[ZEROMV_MODE_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)];
 #endif
@@ -440,7 +440,7 @@ typedef struct FRAME_COUNTS {
 #endif
 
   unsigned int newmv_mode[NEWMV_MODE_CONTEXTS][2];
-  unsigned int zeromv_mode[ZEROMV_MODE_CONTEXTS][2];
+  unsigned int zeromv_mode[GLOBALMV_MODE_CONTEXTS][2];
   unsigned int refmv_mode[REFMV_MODE_CONTEXTS][2];
   unsigned int drl_mode[DRL_MODE_CONTEXTS][2];
 

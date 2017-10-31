@@ -63,21 +63,21 @@ enum {
 //               SR_NEAREST_NEARMV, SR_NEAREST_NEWMV, SR_NEAR_NEWMV,
 //               SR_ZERO_NEWMV, and SR_NEW_NEWMV.
 #endif  // CONFIG_COMPOUND_SINGLEREF
-  INTER_ALL = (1 << NEARESTMV) | (1 << NEARMV) | (1 << ZEROMV) | (1 << NEWMV) |
-              (1 << NEAREST_NEARESTMV) | (1 << NEAR_NEARMV) | (1 << NEW_NEWMV) |
-              (1 << NEAREST_NEWMV) | (1 << NEAR_NEWMV) | (1 << NEW_NEARMV) |
-              (1 << NEW_NEARESTMV) | (1 << ZERO_ZEROMV),
+  INTER_ALL = (1 << NEARESTMV) | (1 << NEARMV) | (1 << GLOBALMV) |
+              (1 << NEWMV) | (1 << NEAREST_NEARESTMV) | (1 << NEAR_NEARMV) |
+              (1 << NEW_NEWMV) | (1 << NEAREST_NEWMV) | (1 << NEAR_NEWMV) |
+              (1 << NEW_NEARMV) | (1 << NEW_NEARESTMV) | (1 << GLOBAL_GLOBALMV),
   INTER_NEAREST = (1 << NEARESTMV) | (1 << NEAREST_NEARESTMV) |
                   (1 << NEW_NEARESTMV) | (1 << NEAREST_NEWMV),
   INTER_NEAREST_NEW = (1 << NEARESTMV) | (1 << NEWMV) |
                       (1 << NEAREST_NEARESTMV) | (1 << NEW_NEWMV) |
                       (1 << NEW_NEARESTMV) | (1 << NEAREST_NEWMV) |
                       (1 << NEW_NEARMV) | (1 << NEAR_NEWMV),
-  INTER_NEAREST_ZERO = (1 << NEARESTMV) | (1 << ZEROMV) |
-                       (1 << NEAREST_NEARESTMV) | (1 << ZERO_ZEROMV) |
+  INTER_NEAREST_ZERO = (1 << NEARESTMV) | (1 << GLOBALMV) |
+                       (1 << NEAREST_NEARESTMV) | (1 << GLOBAL_GLOBALMV) |
                        (1 << NEAREST_NEWMV) | (1 << NEW_NEARESTMV),
-  INTER_NEAREST_NEW_ZERO = (1 << NEARESTMV) | (1 << ZEROMV) | (1 << NEWMV) |
-                           (1 << NEAREST_NEARESTMV) | (1 << ZERO_ZEROMV) |
+  INTER_NEAREST_NEW_ZERO = (1 << NEARESTMV) | (1 << GLOBALMV) | (1 << NEWMV) |
+                           (1 << NEAREST_NEARESTMV) | (1 << GLOBAL_GLOBALMV) |
                            (1 << NEW_NEWMV) | (1 << NEW_NEARESTMV) |
                            (1 << NEAREST_NEWMV) | (1 << NEW_NEARMV) |
                            (1 << NEAR_NEWMV),
@@ -86,8 +86,8 @@ enum {
                            (1 << NEW_NEARESTMV) | (1 << NEAREST_NEWMV) |
                            (1 << NEW_NEARMV) | (1 << NEAR_NEWMV) |
                            (1 << NEAR_NEARMV),
-  INTER_NEAREST_NEAR_ZERO = (1 << NEARESTMV) | (1 << NEARMV) | (1 << ZEROMV) |
-                            (1 << NEAREST_NEARESTMV) | (1 << ZERO_ZEROMV) |
+  INTER_NEAREST_NEAR_ZERO = (1 << NEARESTMV) | (1 << NEARMV) | (1 << GLOBALMV) |
+                            (1 << NEAREST_NEARESTMV) | (1 << GLOBAL_GLOBALMV) |
                             (1 << NEAREST_NEWMV) | (1 << NEW_NEARESTMV) |
                             (1 << NEW_NEARMV) | (1 << NEAR_NEWMV) |
                             (1 << NEAR_NEARMV),
@@ -439,7 +439,7 @@ typedef struct SPEED_FEATURES {
   // by only looking at counts from 1/2 the bands.
   FAST_COEFF_UPDATE use_fast_coef_updates;
 
-  // A binary mask indicating if NEARESTMV, NEARMV, ZEROMV, NEWMV
+  // A binary mask indicating if NEARESTMV, NEARMV, GLOBALMV, NEWMV
   // modes are used in order from LSB to MSB for each BLOCK_SIZE.
   int inter_mode_mask[BLOCK_SIZES_ALL];
 

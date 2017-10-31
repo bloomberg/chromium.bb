@@ -423,7 +423,7 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
         const int bl_index2 = bl_index + y * cm->mi_cols + x;
         // If the block is as a candidate for clean up then mark it
         // for possible boost/refresh (segment 1). The segment id may get
-        // reset to 0 later if block gets coded anything other than ZEROMV.
+        // reset to 0 later if block gets coded anything other than GLOBALMV.
         if (cr->map[bl_index2] == 0) {
           if (cr->last_coded_q_map[bl_index2] > qindex_thresh) sum_map++;
         } else if (cr->map[bl_index2] < 0) {

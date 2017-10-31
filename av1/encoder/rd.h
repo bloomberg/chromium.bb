@@ -75,7 +75,7 @@ typedef enum {
   THR_NEARA,
   THR_NEARG,
 
-  THR_ZEROMV,
+  THR_GLOBALMV,
   THR_ZEROL2,
   THR_ZEROL3,
   THR_ZEROB,

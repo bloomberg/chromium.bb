@@ -338,7 +338,7 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 #endif
     }
 
-    for (i = 0; i < ZEROMV_MODE_CONTEXTS; ++i) {
+    for (i = 0; i < GLOBALMV_MODE_CONTEXTS; ++i) {
 #if CONFIG_NEW_MULTISYMBOL
       av1_cost_tokens_from_cdf(x->zeromv_mode_cost[i], fc->zeromv_cdf[i], NULL);
 #else
@@ -1156,7 +1156,7 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_NEARA] += 1000;
   rd->thresh_mult[THR_NEARG] += 1000;
 
-  rd->thresh_mult[THR_ZEROMV] += 2000;
+  rd->thresh_mult[THR_GLOBALMV] += 2000;
   rd->thresh_mult[THR_ZEROL2] += 2000;
   rd->thresh_mult[THR_ZEROL3] += 2000;
   rd->thresh_mult[THR_ZEROB] += 2000;

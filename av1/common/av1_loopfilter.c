@@ -573,13 +573,13 @@ static const int mode_lf_lut[] = {
 #if CONFIG_SMOOTH_HV
   0, 0,
 #endif         // CONFIG_SMOOTH_HV
-  1, 1, 0, 1,  // INTER_MODES (ZEROMV == 0)
+  1, 1, 0, 1,  // INTER_MODES (GLOBALMV == 0)
 #if CONFIG_COMPOUND_SINGLEREF
   // 1, 1, 1, 1, 1,       // INTER_SINGLEREF_COMP_MODES
   // NOTE(zoeliu): Remove SR_NEAREST_NEWMV
   1, 1, 1, 1,             // INTER_SINGLEREF_COMP_MODES
 #endif                    // CONFIG_COMPOUND_SINGLEREF
-  1, 1, 1, 1, 1, 1, 0, 1  // INTER_COMPOUND_MODES (ZERO_ZEROMV == 0)
+  1, 1, 1, 1, 1, 1, 0, 1  // INTER_COMPOUND_MODES (GLOBAL_GLOBALMV == 0)
 };
 
 static void update_sharpness(loop_filter_info_n *lfi, int sharpness_lvl) {

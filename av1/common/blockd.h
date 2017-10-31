@@ -120,13 +120,13 @@ static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
     MB_MODE_COUNT,  // PAETH_PRED
     MB_MODE_COUNT,  // NEARESTMV
     MB_MODE_COUNT,  // NEARMV
-    MB_MODE_COUNT,  // ZEROMV
+    MB_MODE_COUNT,  // GLOBALMV
     MB_MODE_COUNT,  // NEWMV
 #if CONFIG_COMPOUND_SINGLEREF
     NEARESTMV,  // SR_NEAREST_NEARMV
     // NEARESTMV,  // SR_NEAREST_NEWMV
     NEARMV,     // SR_NEAR_NEWMV
-    ZEROMV,     // SR_ZERO_NEWMV
+    GLOBALMV,   // SR_ZERO_NEWMV
     NEWMV,      // SR_NEW_NEWMV
 #endif          // CONFIG_COMPOUND_SINGLEREF
     NEARESTMV,  // NEAREST_NEARESTMV
@@ -135,7 +135,7 @@ static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
     NEWMV,      // NEW_NEARESTMV
     NEARMV,     // NEAR_NEWMV
     NEWMV,      // NEW_NEARMV
-    ZEROMV,     // ZERO_ZEROMV
+    GLOBALMV,   // GLOBAL_GLOBALMV
     NEWMV,      // NEW_NEWMV
   };
   assert(NELEMENTS(lut) == MB_MODE_COUNT);
@@ -166,7 +166,7 @@ static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
     MB_MODE_COUNT,  // PAETH_PRED
     MB_MODE_COUNT,  // NEARESTMV
     MB_MODE_COUNT,  // NEARMV
-    MB_MODE_COUNT,  // ZEROMV
+    MB_MODE_COUNT,  // GLOBALMV
     MB_MODE_COUNT,  // NEWMV
 #if CONFIG_COMPOUND_SINGLEREF
     NEARMV,  // SR_NEAREST_NEARMV
@@ -181,7 +181,7 @@ static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
     NEARESTMV,  // NEW_NEARESTMV
     NEWMV,      // NEAR_NEWMV
     NEARMV,     // NEW_NEARMV
-    ZEROMV,     // ZERO_ZEROMV
+    GLOBALMV,   // GLOBAL_GLOBALMV
     NEWMV,      // NEW_NEWMV
   };
   assert(NELEMENTS(lut) == MB_MODE_COUNT);
@@ -499,7 +499,7 @@ static INLINE int is_global_mv_block(const MODE_INFO *mi, int block,
   const int block_size_allowed =
       AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
 #endif  // GLOBAL_SUB8X8_USED
-  return (mode == ZEROMV || mode == ZERO_ZEROMV) && type > TRANSLATION &&
+  return (mode == GLOBALMV || mode == GLOBAL_GLOBALMV) && type > TRANSLATION &&
          block_size_allowed;
 }
 
@@ -1502,8 +1502,8 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   int ref;
 
-  // First check if all modes are ZEROMV
-  if (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV) return 0;
+  // First check if all modes are GLOBALMV
+  if (mbmi->mode != GLOBALMV && mbmi->mode != GLOBAL_GLOBALMV) return 0;
 
 #if !GLOBAL_SUB8X8_USED
   if (mbmi->sb_type < BLOCK_8X8) return 0;

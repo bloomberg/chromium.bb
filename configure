@@ -305,7 +305,7 @@ EXPERIMENT_LIST="
     ctx1d
     txk_sel
     mv_compress
-    segment_zeromv
+    segment_globalmv
     frame_superres
     new_multisymbol
     compound_singleref

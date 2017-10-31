@@ -476,7 +476,7 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
         if (blk_row == 0 && blk_col == 0)
           if (abs(this_refmv.as_mv.row) >= 16 ||
               abs(this_refmv.as_mv.col) >= 16)
-            mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+            mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
 
         for (idx = 0; idx < *refmv_count; ++idx)
           if (abs(this_refmv.as_mv.row - ref_mv_stack[idx].this_mv.as_mv.row) <
@@ -514,7 +514,7 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
               abs(this_refmv.as_mv.col) >= 16 ||
               abs(comp_refmv.as_mv.row) >= 16 ||
               abs(comp_refmv.as_mv.col) >= 16)
-            mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+            mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
 
         for (idx = 0; idx < *refmv_count; ++idx)
           if (abs(this_refmv.as_mv.row - ref_mv_stack[idx].this_mv.as_mv.row) <
@@ -597,7 +597,7 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
 #endif
       {
         if (abs(this_refmv.as_mv.row) >= 16 || abs(this_refmv.as_mv.col) >= 16)
-          mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+          mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
       }
 
       for (idx = 0; idx < *refmv_count; ++idx)
@@ -746,7 +746,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       }
     }
 
-    if (coll_blk_count == 0) mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+    if (coll_blk_count == 0) mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
 
     for (i = 0; i < 9; ++i) {
       blk_row = tpl_sample_pos[i][0];
@@ -822,9 +822,9 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
 #endif
 
-    if (coll_blk_count == 0) mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+    if (coll_blk_count == 0) mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
   } else {
-    mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
+    mode_context[ref_frame] |= (1 << GLOBALMV_OFFSET);
   }
 #endif  // CONFIG_MFMV
 

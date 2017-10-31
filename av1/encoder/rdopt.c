@@ -185,13 +185,13 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEARMV, { ALTREF_FRAME, NONE_FRAME } },
   { NEARMV, { GOLDEN_FRAME, NONE_FRAME } },
 
-  { ZEROMV, { LAST_FRAME, NONE_FRAME } },
-  { ZEROMV, { LAST2_FRAME, NONE_FRAME } },
-  { ZEROMV, { LAST3_FRAME, NONE_FRAME } },
-  { ZEROMV, { BWDREF_FRAME, NONE_FRAME } },
-  { ZEROMV, { ALTREF2_FRAME, NONE_FRAME } },
-  { ZEROMV, { GOLDEN_FRAME, NONE_FRAME } },
-  { ZEROMV, { ALTREF_FRAME, NONE_FRAME } },
+  { GLOBALMV, { LAST_FRAME, NONE_FRAME } },
+  { GLOBALMV, { LAST2_FRAME, NONE_FRAME } },
+  { GLOBALMV, { LAST3_FRAME, NONE_FRAME } },
+  { GLOBALMV, { BWDREF_FRAME, NONE_FRAME } },
+  { GLOBALMV, { ALTREF2_FRAME, NONE_FRAME } },
+  { GLOBALMV, { GOLDEN_FRAME, NONE_FRAME } },
+  { GLOBALMV, { ALTREF_FRAME, NONE_FRAME } },
 
 // TODO(zoeliu): May need to reconsider the order on the modes to check
 
@@ -268,7 +268,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
   { NEW_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
-  { ZERO_ZEROMV, { LAST_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST_FRAME, ALTREF_FRAME } },
 
   { NEAR_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
   { NEW_NEARESTMV, { LAST2_FRAME, ALTREF_FRAME } },
@@ -276,7 +276,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
   { NEAR_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
   { NEW_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { ZERO_ZEROMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST2_FRAME, ALTREF_FRAME } },
 
   { NEAR_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
   { NEW_NEARESTMV, { LAST3_FRAME, ALTREF_FRAME } },
@@ -284,7 +284,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
   { NEAR_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
   { NEW_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { ZERO_ZEROMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST3_FRAME, ALTREF_FRAME } },
 
   { NEAR_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
   { NEW_NEARESTMV, { GOLDEN_FRAME, ALTREF_FRAME } },
@@ -292,7 +292,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
   { NEAR_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
   { NEW_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { ZERO_ZEROMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { GOLDEN_FRAME, ALTREF_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, BWDREF_FRAME } },
@@ -300,7 +300,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEW_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
-  { ZERO_ZEROMV, { LAST_FRAME, BWDREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST_FRAME, BWDREF_FRAME } },
 
   { NEAR_NEARMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST2_FRAME, BWDREF_FRAME } },
@@ -308,7 +308,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEW_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
-  { ZERO_ZEROMV, { LAST2_FRAME, BWDREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST2_FRAME, BWDREF_FRAME } },
 
   { NEAR_NEARMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST3_FRAME, BWDREF_FRAME } },
@@ -316,7 +316,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEW_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
-  { ZERO_ZEROMV, { LAST3_FRAME, BWDREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST3_FRAME, BWDREF_FRAME } },
 
   { NEAR_NEARMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { GOLDEN_FRAME, BWDREF_FRAME } },
@@ -324,7 +324,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEW_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
-  { ZERO_ZEROMV, { GOLDEN_FRAME, BWDREF_FRAME } },
+  { GLOBAL_GLOBALMV, { GOLDEN_FRAME, BWDREF_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, ALTREF2_FRAME } },
@@ -332,7 +332,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEW_NEWMV, { LAST_FRAME, ALTREF2_FRAME } },
-  { ZERO_ZEROMV, { LAST_FRAME, ALTREF2_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { LAST2_FRAME, ALTREF2_FRAME } },
@@ -340,7 +340,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEW_NEWMV, { LAST2_FRAME, ALTREF2_FRAME } },
-  { ZERO_ZEROMV, { LAST2_FRAME, ALTREF2_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST2_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { LAST3_FRAME, ALTREF2_FRAME } },
@@ -348,7 +348,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEW_NEWMV, { LAST3_FRAME, ALTREF2_FRAME } },
-  { ZERO_ZEROMV, { LAST3_FRAME, ALTREF2_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST3_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
@@ -356,7 +356,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEW_NEWMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
-  { ZERO_ZEROMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
+  { GLOBAL_GLOBALMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
 
 #if CONFIG_EXT_COMP_REFS
   { NEAR_NEARMV, { LAST_FRAME, LAST2_FRAME } },
@@ -365,7 +365,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST_FRAME, LAST2_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, LAST2_FRAME } },
   { NEW_NEWMV, { LAST_FRAME, LAST2_FRAME } },
-  { ZERO_ZEROMV, { LAST_FRAME, LAST2_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST_FRAME, LAST2_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, LAST3_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, LAST3_FRAME } },
@@ -373,7 +373,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST_FRAME, LAST3_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, LAST3_FRAME } },
   { NEW_NEWMV, { LAST_FRAME, LAST3_FRAME } },
-  { ZERO_ZEROMV, { LAST_FRAME, LAST3_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST_FRAME, LAST3_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, GOLDEN_FRAME } },
@@ -381,7 +381,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEW_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
-  { ZERO_ZEROMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST_FRAME, GOLDEN_FRAME } },
 
   { NEAR_NEARMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEW_NEARESTMV, { BWDREF_FRAME, ALTREF_FRAME } },
@@ -389,7 +389,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { NEW_NEARMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEAR_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEW_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
-  { ZERO_ZEROMV, { BWDREF_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { BWDREF_FRAME, ALTREF_FRAME } },
 #endif  // CONFIG_EXT_COMP_REFS
 
   { H_PRED, { INTRA_FRAME, NONE_FRAME } },
@@ -401,37 +401,37 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
   { D117_PRED, { INTRA_FRAME, NONE_FRAME } },
   { D45_PRED, { INTRA_FRAME, NONE_FRAME } },
 
-  { ZEROMV, { LAST_FRAME, INTRA_FRAME } },
+  { GLOBALMV, { LAST_FRAME, INTRA_FRAME } },
   { NEARESTMV, { LAST_FRAME, INTRA_FRAME } },
   { NEARMV, { LAST_FRAME, INTRA_FRAME } },
   { NEWMV, { LAST_FRAME, INTRA_FRAME } },
 
-  { ZEROMV, { LAST2_FRAME, INTRA_FRAME } },
+  { GLOBALMV, { LAST2_FRAME, INTRA_FRAME } },
   { NEARESTMV, { LAST2_FRAME, INTRA_FRAME } },
   { NEARMV, { LAST2_FRAME, INTRA_FRAME } },
   { NEWMV, { LAST2_FRAME, INTRA_FRAME } },
 
-  { ZEROMV, { LAST3_FRAME, INTRA_FRAME } },
+  { GLOBALMV, { LAST3_FRAME, INTRA_FRAME } },
   { NEARESTMV, { LAST3_FRAME, INTRA_FRAME } },
   { NEARMV, { LAST3_FRAME, INTRA_FRAME } },
   { NEWMV, { LAST3_FRAME, INTRA_FRAME } },
 
-  { ZEROMV, { GOLDEN_FRAME, INTRA_FRAME } },
+  { GLOBALMV, { GOLDEN_FRAME, INTRA_FRAME } },
   { NEARESTMV, { GOLDEN_FRAME, INTRA_FRAME } },
   { NEARMV, { GOLDEN_FRAME, INTRA_FRAME } },
   { NEWMV, { GOLDEN_FRAME, INTRA_FRAME } },
 
-  { ZEROMV, { BWDREF_FRAME, INTRA_FRAME } },
+  { GLOBALMV, { BWDREF_FRAME, INTRA_FRAME } },
   { NEARESTMV, { BWDREF_FRAME, INTRA_FRAME } },
   { NEARMV, { BWDREF_FRAME, INTRA_FRAME } },
   { NEWMV, { BWDREF_FRAME, INTRA_FRAME } },
 
-  { ZEROMV, { ALTREF2_FRAME, INTRA_FRAME } },
+  { GLOBALMV, { ALTREF2_FRAME, INTRA_FRAME } },
   { NEARESTMV, { ALTREF2_FRAME, INTRA_FRAME } },
   { NEARMV, { ALTREF2_FRAME, INTRA_FRAME } },
   { NEWMV, { ALTREF2_FRAME, INTRA_FRAME } },
 
-  { ZEROMV, { ALTREF_FRAME, INTRA_FRAME } },
+  { GLOBALMV, { ALTREF_FRAME, INTRA_FRAME } },
   { NEARESTMV, { ALTREF_FRAME, INTRA_FRAME } },
   { NEARMV, { ALTREF_FRAME, INTRA_FRAME } },
   { NEWMV, { ALTREF_FRAME, INTRA_FRAME } },
@@ -5877,11 +5877,11 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
     return mode_cost;
   } else {
     mode_cost = x->newmv_mode_cost[mode_ctx][1];
-    mode_ctx = (mode_context >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
+    mode_ctx = (mode_context >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
 
     if (is_all_zero_mv) return mode_cost;
 
-    if (mode == ZEROMV) {
+    if (mode == GLOBALMV) {
       mode_cost += x->zeromv_mode_cost[mode_ctx][0];
       return mode_cost;
     } else {
@@ -5950,7 +5950,7 @@ static INLINE int mv_check_bounds(const MvLimits *mv_limits, const MV *mv) {
          (mv->col >> 3) > mv_limits->col_max;
 }
 
-// Check if NEARESTMV/NEARMV/ZEROMV is the cheapest way encode zero motion.
+// Check if NEARESTMV/NEARMV/GLOBALMV is the cheapest way encode zero motion.
 // TODO(aconverse): Find out if this is still productive then clean up or remove
 static int check_best_zero_mv(
     const AV1_COMP *const cpi, const MACROBLOCK *const x,
@@ -5964,7 +5964,7 @@ static int check_best_zero_mv(
   (void)mi_row;
   (void)mi_col;
   (void)cpi;
-  if (this_mode == ZEROMV || this_mode == ZERO_ZEROMV) {
+  if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
     for (int cur_frm = 0; cur_frm < 1 + comp_pred_mode; cur_frm++) {
       zeromv[cur_frm].as_int =
           gm_get_motion_vector(&cpi->common.global_motion[ref_frames[cur_frm]],
@@ -5979,7 +5979,8 @@ static int check_best_zero_mv(
     }
   }
 
-  if ((this_mode == NEARMV || this_mode == NEARESTMV || this_mode == ZEROMV) &&
+  if ((this_mode == NEARMV || this_mode == NEARESTMV ||
+       this_mode == GLOBALMV) &&
       frame_mv[this_mode][ref_frames[0]].as_int == zeromv[0].as_int &&
       (ref_frames[1] <= INTRA_FRAME ||
        frame_mv[this_mode][ref_frames[1]].as_int == zeromv[1].as_int)) {
@@ -5987,14 +5988,14 @@ static int check_best_zero_mv(
         av1_mode_context_analyzer(mode_context, ref_frames, bsize, block);
     int c1 = cost_mv_ref(x, NEARMV, rfc);
     int c2 = cost_mv_ref(x, NEARESTMV, rfc);
-    int c3 = cost_mv_ref(x, ZEROMV, rfc);
+    int c3 = cost_mv_ref(x, GLOBALMV, rfc);
 
     if (this_mode == NEARMV) {
       if (c1 > c3) return 0;
     } else if (this_mode == NEARESTMV) {
       if (c2 > c3) return 0;
     } else {
-      assert(this_mode == ZEROMV);
+      assert(this_mode == GLOBALMV);
       if (ref_frames[1] <= INTRA_FRAME) {
         if ((c3 >= c2 && frame_mv[NEARESTMV][ref_frames[0]].as_int == 0) ||
             (c3 >= c1 && frame_mv[NEARMV][ref_frames[0]].as_int == 0))
@@ -6008,12 +6009,12 @@ static int check_best_zero_mv(
       }
     }
   } else if ((this_mode == NEAREST_NEARESTMV || this_mode == NEAR_NEARMV ||
-              this_mode == ZERO_ZEROMV) &&
+              this_mode == GLOBAL_GLOBALMV) &&
              frame_mv[this_mode][ref_frames[0]].as_int == zeromv[0].as_int &&
              frame_mv[this_mode][ref_frames[1]].as_int == zeromv[1].as_int) {
     int16_t rfc = compound_mode_context[ref_frames[0]];
     int c2 = cost_mv_ref(x, NEAREST_NEARESTMV, rfc);
-    int c3 = cost_mv_ref(x, ZERO_ZEROMV, rfc);
+    int c3 = cost_mv_ref(x, GLOBAL_GLOBALMV, rfc);
     int c5 = cost_mv_ref(x, NEAR_NEARMV, rfc);
 
     if (this_mode == NEAREST_NEARESTMV) {
@@ -6021,7 +6022,7 @@ static int check_best_zero_mv(
     } else if (this_mode == NEAR_NEARMV) {
       if (c5 > c3) return 0;
     } else {
-      assert(this_mode == ZERO_ZEROMV);
+      assert(this_mode == GLOBAL_GLOBALMV);
       if ((c3 >= c2 && frame_mv[NEAREST_NEARESTMV][ref_frames[0]].as_int == 0 &&
            frame_mv[NEAREST_NEARESTMV][ref_frames[1]].as_int == 0) ||
           (c3 >= c5 && frame_mv[NEAR_NEARMV][ref_frames[0]].as_int == 0 &&
@@ -7375,9 +7376,10 @@ static InterpFilter predict_interp_filter(
           if (single_filter[NEARMV][refs[0]] == single_filter[NEARMV][refs[1]])
             best_filter = single_filter[NEARMV][refs[0]];
           break;
-        case ZERO_ZEROMV:
-          if (single_filter[ZEROMV][refs[0]] == single_filter[ZEROMV][refs[1]])
-            best_filter = single_filter[ZEROMV][refs[0]];
+        case GLOBAL_GLOBALMV:
+          if (single_filter[GLOBALMV][refs[0]] ==
+              single_filter[GLOBALMV][refs[1]])
+            best_filter = single_filter[GLOBALMV][refs[0]];
           break;
         case NEW_NEWMV:
           if (single_filter[NEWMV][refs[0]] == single_filter[NEWMV][refs[1]])
@@ -8376,7 +8378,7 @@ static int64_t motion_mode_rd(
       rd_stats->skip = 1;
     }
 
-    if (this_mode == ZEROMV || this_mode == ZERO_ZEROMV) {
+    if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
       if (is_nontrans_global_motion(xd)) {
         rd_stats->rate -= rs;
         mbmi->interp_filters = av1_broadcast_interp_filter(
@@ -9597,7 +9599,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                          frame_mv[NEARESTMV], frame_mv[NEARMV], yv12_mb);
     }
     frame_mv[NEWMV][ref_frame].as_int = INVALID_MV;
-    frame_mv[ZEROMV][ref_frame].as_int =
+    frame_mv[GLOBALMV][ref_frame].as_int =
         gm_get_motion_vector(&cm->global_motion[ref_frame],
                              cm->allow_high_precision_mv, bsize, mi_col, mi_row,
                              0
@@ -9612,7 +9614,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     frame_mv[SR_NEW_NEWMV][ref_frame].as_int = INVALID_MV;
     frame_comp_mv[SR_NEW_NEWMV][ref_frame].as_int = INVALID_MV;
 #endif  // CONFIG_COMPOUND_SINGLEREF
-    frame_mv[ZERO_ZEROMV][ref_frame].as_int =
+    frame_mv[GLOBAL_GLOBALMV][ref_frame].as_int =
         gm_get_motion_vector(&cm->global_motion[ref_frame],
                              cm->allow_high_precision_mv, bsize, mi_col, mi_row,
                              0
@@ -9636,12 +9638,13 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       MV_REFERENCE_FRAME rf[2];
       av1_set_ref_frame(rf, ref_frame);
       if (mbmi_ext->ref_mvs[rf[0]][0].as_int !=
-              frame_mv[ZEROMV][rf[0]].as_int ||
+              frame_mv[GLOBALMV][rf[0]].as_int ||
           mbmi_ext->ref_mvs[rf[0]][1].as_int !=
-              frame_mv[ZEROMV][rf[0]].as_int ||
+              frame_mv[GLOBALMV][rf[0]].as_int ||
           mbmi_ext->ref_mvs[rf[1]][0].as_int !=
-              frame_mv[ZEROMV][rf[1]].as_int ||
-          mbmi_ext->ref_mvs[rf[1]][1].as_int != frame_mv[ZEROMV][rf[1]].as_int)
+              frame_mv[GLOBALMV][rf[1]].as_int ||
+          mbmi_ext->ref_mvs[rf[1]][1].as_int !=
+              frame_mv[GLOBALMV][rf[1]].as_int)
         mbmi_ext->mode_context[ref_frame] &= ~(1 << ALL_ZERO_FLAG_OFFSET);
     }
   }
@@ -9692,7 +9695,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   // segment level feature is enabled for this segment. This is to
   // prevent the possibility that we end up unable to pick any mode.
   if (!segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) {
-    // Only consider ZEROMV/ALTREF_FRAME for alt ref frame,
+    // Only consider GLOBALMV/ALTREF_FRAME for alt ref frame,
     // unless ARNR filtering is enabled in which case we want
     // an unfiltered alternative. We allow near/nearest as well
     // because they may result in zero-zero MVs but be cheaper.
@@ -10975,7 +10978,7 @@ PALETTE_EXIT:
 
 // The inter modes' rate costs are not calculated precisely in some cases.
 // Therefore, sometimes, NEWMV is chosen instead of NEARESTMV, NEARMV, and
-// ZEROMV. Here, checks are added for those cases, and the mode decisions
+// GLOBALMV. Here, checks are added for those cases, and the mode decisions
 // are corrected.
 #if CONFIG_COMPOUND_SINGLEREF
 // NOTE: For SR_NEW_NEWMV, no need to check as the two mvs from the same ref
@@ -11023,7 +11026,7 @@ PALETTE_EXIT:
       if (frame_mv[NEARESTMV][refs[0]].as_int == best_mbmode.mv[0].as_int)
         best_mbmode.mode = NEARESTMV;
       else if (best_mbmode.mv[0].as_int == zeromv[0].as_int)
-        best_mbmode.mode = ZEROMV;
+        best_mbmode.mode = GLOBALMV;
     } else {
       int_mv nearestmv[2];
       int_mv nearmv[2];
@@ -11066,7 +11069,7 @@ PALETTE_EXIT:
         if (best_mbmode.mode == NEW_NEWMV &&
             best_mbmode.mv[0].as_int == zeromv[0].as_int &&
             best_mbmode.mv[1].as_int == zeromv[1].as_int)
-          best_mbmode.mode = ZERO_ZEROMV;
+          best_mbmode.mode = GLOBAL_GLOBALMV;
       }
     }
   }
@@ -11103,7 +11106,7 @@ PALETTE_EXIT:
                                            )
                           .as_int;
       if (best_mbmode.mv[0].as_int == zeromv.as_int) {
-        best_mbmode.mode = ZEROMV;
+        best_mbmode.mode = GLOBALMV;
       }
     }
   }
@@ -11134,15 +11137,15 @@ PALETTE_EXIT:
   x->skip |= best_skip2;
 
   // Note: this section is needed since the mode may have been forced to
-  // ZEROMV by the all-zero mode handling of ref-mv.
-  if (mbmi->mode == ZEROMV || mbmi->mode == ZERO_ZEROMV) {
-    // Correct the motion mode for ZEROMV
+  // GLOBALMV by the all-zero mode handling of ref-mv.
+  if (mbmi->mode == GLOBALMV || mbmi->mode == GLOBAL_GLOBALMV) {
+    // Correct the motion mode for GLOBALMV
     const MOTION_MODE last_motion_mode_allowed =
         motion_mode_allowed(0, xd->global_motion, xd, xd->mi[0]);
     if (mbmi->motion_mode > last_motion_mode_allowed)
       mbmi->motion_mode = last_motion_mode_allowed;
 
-    // Correct the interpolation filter for ZEROMV
+    // Correct the interpolation filter for GLOBALMV
     if (is_nontrans_global_motion(xd)) {
       mbmi->interp_filters = av1_broadcast_interp_filter(
           av1_unswitchable_filter(cm->interp_filter));
@@ -11221,7 +11224,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
 #endif  // CONFIG_FILTER_INTRA
-  mbmi->mode = ZEROMV;
+  mbmi->mode = GLOBALMV;
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   mbmi->uv_mode = UV_DC_PRED;
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME))
@@ -11311,11 +11314,11 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
           av1_extract_interp_filter(mbmi->interp_filters, 0)));
 
   av1_update_rd_thresh_fact(cm, tile_data->thresh_freq_fact,
-                            cpi->sf.adaptive_rd_thresh, bsize, THR_ZEROMV);
+                            cpi->sf.adaptive_rd_thresh, bsize, THR_GLOBALMV);
 
   av1_zero(best_pred_diff);
 
-  store_coding_context(x, ctx, THR_ZEROMV, best_pred_diff, 0);
+  store_coding_context(x, ctx, THR_GLOBALMV, best_pred_diff, 0);
 }
 
 struct calc_target_weighted_pred_ctxt {

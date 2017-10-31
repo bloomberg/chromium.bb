@@ -592,7 +592,7 @@ static const aom_prob default_newmv_prob[NEWMV_MODE_CONTEXTS] = {
   155, 116, 94, 32, 96, 56, 30,
 };
 
-static const aom_prob default_zeromv_prob[ZEROMV_MODE_CONTEXTS] = {
+static const aom_prob default_zeromv_prob[GLOBALMV_MODE_CONTEXTS] = {
   45, 13,
 };
 
@@ -612,7 +612,7 @@ static const aom_cdf_prob default_newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)] =
       { AOM_ICDF(128 * 96), AOM_ICDF(32768), 0 },
       { AOM_ICDF(128 * 56), AOM_ICDF(32768), 0 },
       { AOM_ICDF(128 * 30), AOM_ICDF(32768), 0 } };
-static const aom_cdf_prob default_zeromv_cdf[ZEROMV_MODE_CONTEXTS][CDF_SIZE(
+static const aom_cdf_prob default_zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(
     2)] = { { AOM_ICDF(128 * 45), AOM_ICDF(32768), 0 },
             { AOM_ICDF(128 * 13), AOM_ICDF(32768), 0 } };
 static const aom_cdf_prob default_refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(2)] =
@@ -1117,7 +1117,7 @@ const aom_tree_index av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)] = {
 
 const aom_tree_index av1_inter_compound_mode_tree
     [TREE_SIZE(INTER_COMPOUND_MODES)] = {
-  -INTER_COMPOUND_OFFSET(ZERO_ZEROMV), 2,
+  -INTER_COMPOUND_OFFSET(GLOBAL_GLOBALMV), 2,
   -INTER_COMPOUND_OFFSET(NEAREST_NEARESTMV), 4,
   6, -INTER_COMPOUND_OFFSET(NEW_NEWMV),
   -INTER_COMPOUND_OFFSET(NEAR_NEARMV), 8,
@@ -6082,7 +6082,7 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i)
     fc->newmv_prob[i] =
         av1_mode_mv_merge_probs(pre_fc->newmv_prob[i], counts->newmv_mode[i]);
-  for (i = 0; i < ZEROMV_MODE_CONTEXTS; ++i)
+  for (i = 0; i < GLOBALMV_MODE_CONTEXTS; ++i)
     fc->zeromv_prob[i] =
         av1_mode_mv_merge_probs(pre_fc->zeromv_prob[i], counts->zeromv_mode[i]);
   for (i = 0; i < REFMV_MODE_CONTEXTS; ++i)

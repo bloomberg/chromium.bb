@@ -404,14 +404,14 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob "
                      "default_newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)]");
 
-  cts_each_dim[0] = ZEROMV_MODE_CONTEXTS;
+  cts_each_dim[0] = GLOBALMV_MODE_CONTEXTS;
   cts_each_dim[1] = 2;
   optimize_entropy_table(
       &fc.zeromv_mode[0][0], probsfile, 2, cts_each_dim, NULL, 1,
-      "static const aom_prob default_zeromv_prob[ZEROMV_MODE_CONTEXTS]");
+      "static const aom_prob default_zeromv_prob[GLOBALMV_MODE_CONTEXTS]");
   optimize_cdf_table(&fc.zeromv_mode[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
-                     "default_zeromv_cdf[ZEROMV_MODE_CONTEXTS][CDF_SIZE(2)]");
+                     "default_zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(2)]");
 
   cts_each_dim[0] = REFMV_MODE_CONTEXTS;
   cts_each_dim[1] = 2;

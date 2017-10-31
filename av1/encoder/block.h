@@ -207,7 +207,7 @@ struct macroblock {
 
   int mbmode_cost[BLOCK_SIZE_GROUPS][INTRA_MODES];
   int newmv_mode_cost[NEWMV_MODE_CONTEXTS][2];
-  int zeromv_mode_cost[ZEROMV_MODE_CONTEXTS][2];
+  int zeromv_mode_cost[GLOBALMV_MODE_CONTEXTS][2];
   int refmv_mode_cost[REFMV_MODE_CONTEXTS][2];
   int drl_mode_cost0[DRL_MODE_CONTEXTS][2];
 
