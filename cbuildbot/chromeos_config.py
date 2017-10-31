@@ -1725,6 +1725,12 @@ def GeneralTemplates(site_config, ge_build_config):
           config_lib.TastVMTestConfig('tast_vm_canary', ['(bvt || canary)'])],
   )
 
+  site_config.AddTemplate(
+      'moblab_vm_tests',
+      moblab_vm_tests=[
+          config_lib.MoblabVMTestConfig(constants.MOBLAB_VM_SMOKE_TEST_TYPE)],
+  )
+
 
 def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
   """Create mixin templates for each board."""
@@ -1777,6 +1783,8 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(site_config.templates.no_unittest_builder)
     if board in _beaglebone_boards:
       board_config.apply(site_config.templates.beaglebone)
+    if board == 'moblab-generic-vm':
+      board_config.apply(site_config.templates.moblab_vm_tests)
 
     result[board] = board_config
 

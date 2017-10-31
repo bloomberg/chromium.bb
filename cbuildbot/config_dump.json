@@ -34836,7 +34836,11 @@
         "boards": [
             "moblab-generic-vm"
         ],
+        "buildslave_type": "baremetal",
         "important": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "useflags": [
             "-chrome_internal"
         ],
@@ -34848,6 +34852,7 @@
         "boards": [
             "moblab-generic-vm"
         ],
+        "buildslave_type": "baremetal",
         "debug": true,
         "display_label": "tryjob",
         "hw_tests": [
@@ -34859,6 +34864,9 @@
         ],
         "hw_tests_override": null,
         "important": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "uprev": true,
         "useflags": [
             "-chrome_internal"
@@ -34871,15 +34879,22 @@
             "moblab-generic-vm"
         ],
         "hw_tests_override": null,
-        "image_test": false
+        "image_test": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ]
     },
     "moblab-generic-vm-full": {
         "_template": "full",
         "boards": [
             "moblab-generic-vm"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests_override": null,
         "image_test": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -34892,7 +34907,10 @@
             "moblab-generic-vm"
         ],
         "hw_tests_override": null,
-        "image_test": false
+        "image_test": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ]
     },
     "moblab-generic-vm-paladin": {
         "_template": "paladin",
@@ -34900,8 +34918,12 @@
         "boards": [
             "moblab-generic-vm"
         ],
+        "buildslave_type": "baremetal",
         "image_test": false,
         "important": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -34911,6 +34933,7 @@
         "boards": [
             "moblab-generic-vm"
         ],
+        "buildslave_type": "baremetal",
         "chroot_replace": true,
         "debug": true,
         "display_label": "tryjob",
@@ -34923,6 +34946,9 @@
         "hw_tests_override": null,
         "image_test": false,
         "important": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -34933,6 +34959,9 @@
         ],
         "hw_tests_override": null,
         "image_test": false,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "vm_tests": []
     },
     "moblab-generic-vm-tot-chromium-pfq-informational": {
@@ -34940,7 +34969,11 @@
         "boards": [
             "moblab-generic-vm"
         ],
+        "buildslave_type": "baremetal",
         "hw_tests_override": null,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ],
         "useflags": [
             "-chrome_internal"
         ],
@@ -34951,7 +34984,11 @@
         "boards": [
             "moblab-generic-vm"
         ],
-        "hw_tests_override": null
+        "buildslave_type": "baremetal",
+        "hw_tests_override": null,
+        "moblab_vm_tests": [
+            "{\n    \"test_type\": \"moblab_smoke_test\",\n    \"timeout\": 3600\n}"
+        ]
     },
     "monroe-chrome-pfq": {
         "_template": "chrome_pfq",
