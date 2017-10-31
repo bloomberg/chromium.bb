@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -408,8 +409,9 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
       TabSpecificContentSettings::FromWebContents(web_contents_);
 
   // Create the controls that go into the pane.
-  allowed_label_ = new views::Label(l10n_util::GetStringUTF16(
-      IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL));
+  allowed_label_ = new views::Label(
+      l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL),
+      CONTEXT_BODY_TEXT_LARGE);
   allowed_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   allowed_cookies_tree_model_ =
@@ -479,9 +481,10 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   // Create the controls that go into the pane.
   blocked_label_ = new views::Label(
       l10n_util::GetStringUTF16(
-          prefs->GetBoolean(prefs::kBlockThirdPartyCookies) ?
-              IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED :
-              IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL));
+          prefs->GetBoolean(prefs::kBlockThirdPartyCookies)
+              ? IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED
+              : IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL),
+      CONTEXT_BODY_TEXT_LARGE);
   blocked_label_->SetMultiLine(true);
   blocked_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   blocked_label_->SizeToFit(kTreeViewWidth);
