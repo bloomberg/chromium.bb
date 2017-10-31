@@ -38711,21 +38711,11 @@
     },
     {
       "name": "cloudflare.com",
-      "mode": "force-https", "include_subdomains": false,
+      "mode": "force-https", "include_subdomains": true,
       "expect_staple": true,
-      "expect_staple_report_uri": "https://staple.watch/cdn-cgi/beacon/expect-staple"
-    },
-    {
-      "name": "www.cloudflare.com",
-      "mode": "force-https", "include_subdomains": false,
-      "expect_staple": true,
-      "expect_staple_report_uri": "https://staple.watch/cdn-cgi/beacon/expect-staple"
-    },
-    {
-      "name": "api.cloudflare.com",
-      "mode": "force-https", "include_subdomains": false,
-      "expect_staple": true,
-      "expect_staple_report_uri": "https://staple.watch/cdn-cgi/beacon/expect-staple"
+      "expect_staple_report_uri": "https://report-uri.cloudflare.com/expect-staple",
+      "expect_ct": true,
+      "expect_ct_report_uri": "https://report-uri.cloudflare.com/expect-ct"
     },
     {
       "name": "weeblrpress.com",
