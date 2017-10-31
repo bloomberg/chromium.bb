@@ -364,8 +364,8 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement) {
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         converted_pixel.get(), transformed_pixel.get(), 1,
-        (color_type == kBGRA_8888_SkColorType) ? kUint8ClampedArrayStorageFormat
-                                               : kUint16ArrayStorageFormat,
+        (color_type == kN32_SkColorType) ? kUint8ClampedArrayStorageFormat
+                                         : kUint16ArrayStorageFormat,
         kAlphaMultiplied, kUnpremulRoundTripTolerance);
   }
 }
@@ -486,8 +486,8 @@ TEST_F(ImageBitmapTest, MAYBE_ImageBitmapColorSpaceConversionImageBitmap) {
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         converted_pixel.get(), transformed_pixel.get(), 1,
-        (color_type == kBGRA_8888_SkColorType) ? kUint8ClampedArrayStorageFormat
-                                               : kUint16ArrayStorageFormat,
+        (color_type == kN32_SkColorType) ? kUint8ClampedArrayStorageFormat
+                                         : kUint16ArrayStorageFormat,
         kAlphaMultiplied, kUnpremulRoundTripTolerance);
   }
 }
@@ -602,8 +602,8 @@ TEST_F(ImageBitmapTest,
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         converted_pixel.get(), transformed_pixel.get(), 1,
-        (color_type == kBGRA_8888_SkColorType) ? kUint8ClampedArrayStorageFormat
-                                               : kUint16ArrayStorageFormat,
+        (color_type == kN32_SkColorType) ? kUint8ClampedArrayStorageFormat
+                                         : kUint16ArrayStorageFormat,
         kAlphaMultiplied, unpremul_round_trip_tolerance);
   }
 }
@@ -698,8 +698,8 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         converted_pixel.get(), transformed_pixel.get(), 1,
-        (color_type == kBGRA_8888_SkColorType) ? kUint8ClampedArrayStorageFormat
-                                               : kUint16ArrayStorageFormat,
+        (color_type == kN32_SkColorType) ? kUint8ClampedArrayStorageFormat
+                                         : kUint16ArrayStorageFormat,
         kAlphaUnmultiplied, kUnpremulRoundTripTolerance);
   }
 }
