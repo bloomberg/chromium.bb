@@ -48,7 +48,7 @@ static const char kNoMatchingServiceWorkerMessage[] =
     "check that the service worker for the current page also controls the "
     "start URL from the manifest";
 static const char kNoAcceptableIconMessage[] =
-    "a %dpx square icon is required, but no supplied icon meets this "
+    "a %dpx square PNG icon is required, but no supplied icon meets this "
     "requirement";
 static const char kCannotDownloadIconMessage[] =
     "could not download a required icon from the manifest";
