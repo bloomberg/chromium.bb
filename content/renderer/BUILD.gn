@@ -507,8 +507,6 @@ target(link_target_type, "renderer") {
     "top_level_blame_context.h",
     "v8_value_converter_impl.cc",
     "v8_value_converter_impl.h",
-    "web_database_impl.cc",
-    "web_database_impl.h",
     "web_database_observer_impl.cc",
     "web_database_observer_impl.h",
     "web_frame_utils.cc",

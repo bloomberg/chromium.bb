@@ -5,6 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
+          "blink::mojom::WebDatabase",
           "content::mojom::Child",
           "content::mojom::ChildControl",
           "content::mojom::ChildHistogramFetcher",
@@ -14,7 +15,6 @@
           "content::mojom::FrameFactory",
           "content::mojom::RenderWidgetWindowTreeClientFactory",
           "content::mojom::SharedWorkerFactory",
-          "content::mojom::WebDatabase",
           "IPC::mojom::ChannelBootstrap",
           "visitedlink::mojom::VisitedLinkNotificationSink",
           "web_cache::mojom::WebCache"

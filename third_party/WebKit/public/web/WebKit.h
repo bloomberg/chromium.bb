@@ -36,13 +36,15 @@
 
 namespace blink {
 
+class InterfaceRegistry;
+
 // Initialize the entire Blink (wtf, platform, core, modules and web).
 // If you just need wtf and platform, use Platform::initialize instead.
 //
 // Must be called on the thread that will be the main thread before
 // using any other public APIs. The provided Platform; must be
 // non-null and must remain valid until the current thread calls shutdown.
-BLINK_EXPORT void Initialize(Platform*);
+BLINK_EXPORT void Initialize(Platform*, InterfaceRegistry*);
 
 // Get the V8 Isolate for the main thread.
 // initialize must have been called first.

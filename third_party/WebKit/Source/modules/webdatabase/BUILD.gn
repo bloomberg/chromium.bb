@@ -61,6 +61,8 @@ blink_modules_sources("webdatabase") {
     "SQLTransactionStateMachine.cpp",
     "SQLTransactionStateMachine.h",
     "StorageLog.h",
+    "WebDatabaseImpl.cpp",
+    "WebDatabaseImpl.h",
     "sqlite/SQLLog.h",
     "sqlite/SQLValue.cpp",
     "sqlite/SQLValue.h",

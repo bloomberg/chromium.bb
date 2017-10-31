@@ -12,6 +12,7 @@
 #include "gin/public/isolate_holder.h"
 #include "services/data_decoder/image_decoder_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/InterfaceRegistry.h"
 #include "third_party/WebKit/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -75,7 +76,8 @@ class BlinkInitializer : public blink::Platform {
     gin::V8Initializer::LoadV8Natives();
 #endif
 
-    blink::Initialize(this);
+    blink::Initialize(this,
+                      blink::InterfaceRegistry::GetEmptyInterfaceRegistry());
   }
 
   ~BlinkInitializer() override {}

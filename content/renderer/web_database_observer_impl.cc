@@ -65,7 +65,7 @@ std::string GetIdentifierFromOrigin(const WebSecurityOrigin& origin) {
 }  // namespace
 
 WebDatabaseObserverImpl::WebDatabaseObserverImpl(
-    scoped_refptr<mojom::ThreadSafeWebDatabaseHostPtr> web_database_host)
+    scoped_refptr<blink::mojom::ThreadSafeWebDatabaseHostPtr> web_database_host)
     : web_database_host_(std::move(web_database_host)),
       open_connections_(new storage::DatabaseConnectionsWrapper),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
@@ -190,7 +190,7 @@ void WebDatabaseObserverImpl::HandleSqliteError(const WebSecurityOrigin& origin,
   }
 }
 
-mojom::WebDatabaseHost& WebDatabaseObserverImpl::GetWebDatabaseHost() {
+blink::mojom::WebDatabaseHost& WebDatabaseObserverImpl::GetWebDatabaseHost() {
   return **web_database_host_;
 }
 

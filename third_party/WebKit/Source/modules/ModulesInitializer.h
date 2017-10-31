@@ -13,6 +13,7 @@ namespace blink {
 class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
  public:
   void Initialize() override;
+  void RegisterInterfaces(InterfaceRegistry&) override;
 
  protected:
   void InitLocalFrame(LocalFrame&) const override;

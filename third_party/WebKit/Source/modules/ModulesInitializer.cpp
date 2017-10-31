@@ -79,8 +79,10 @@
 #include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
+#include "modules/webdatabase/WebDatabaseImpl.h"
 #include "modules/webgl/WebGL2RenderingContext.h"
 #include "modules/webgl/WebGLRenderingContext.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/mojo/MojoHelper.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/InterfaceRegistry.h"
@@ -109,8 +111,9 @@ void ModulesInitializer::Initialize() {
   // Some unit tests may have no message loop ready, so we can't initialize the
   // mojo stuff here. They can initialize those mojo stuff they're interested in
   // later after they got a message loop ready.
-  if (CanInitializeMojo())
+  if (CanInitializeMojo()) {
     TimeZoneMonitorClient::Init();
+  }
 
   CoreInitializer::Initialize();
 
@@ -277,6 +280,12 @@ void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {
 
 void ModulesInitializer::CollectAllGarbageForAnimationWorklet() const {
   AnimationWorkletThread::CollectAllGarbage();
+}
+
+void ModulesInitializer::RegisterInterfaces(InterfaceRegistry& registry) {
+  DCHECK(Platform::Current());
+  registry.AddInterface(blink::CrossThreadBind(&WebDatabaseImpl::Create),
+                        Platform::Current()->GetIOTaskRunner());
 }
 
 }  // namespace blink

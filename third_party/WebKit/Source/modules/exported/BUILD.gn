@@ -10,7 +10,6 @@ blink_modules_sources("exported") {
     "WebCryptoNormalize.cpp",
     "WebDOMFileSystem.cpp",
     "WebDOMMediaStreamTrack.cpp",
-    "WebDatabase.cpp",
     "WebEmbeddedWorkerImpl.cpp",
     "WebEmbeddedWorkerImpl.h",
     "WebIDBKey.cpp",

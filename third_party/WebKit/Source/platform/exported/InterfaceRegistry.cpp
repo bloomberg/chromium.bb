@@ -11,7 +11,8 @@ namespace {
 
 class EmptyInterfaceRegistry : public InterfaceRegistry {
   void AddInterface(const char* name,
-                    const InterfaceFactory& factory) override {}
+                    const InterfaceFactory& factory,
+                    SingleThreadTaskRunnerRefPtr task_runner) override {}
 };
 
 }  // namespace

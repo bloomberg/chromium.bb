@@ -72,7 +72,8 @@ static BlinkInitializer& GetBlinkInitializer() {
   return *initializer;
 }
 
-void Initialize(Platform* platform) {
+void Initialize(Platform* platform, InterfaceRegistry* registry) {
+  DCHECK(registry);
   Platform::Initialize(platform);
 
 #if !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) && defined(OS_WIN)
@@ -102,6 +103,8 @@ void Initialize(Platform* platform) {
       V8ContextSnapshotExternalReferences::GetTable());
 
   GetBlinkInitializer().Initialize();
+
+  GetBlinkInitializer().RegisterInterfaces(*registry);
 
   // currentThread is null if we are running on a thread without a message loop.
   if (WebThread* current_thread = platform->CurrentThread()) {

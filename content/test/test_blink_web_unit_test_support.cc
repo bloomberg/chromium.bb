@@ -27,6 +27,7 @@
 #include "media/base/media.h"
 #include "media/media_features.h"
 #include "net/cookies/cookie_monster.h"
+#include "third_party/WebKit/public/platform/InterfaceRegistry.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebNetworkStateNotifier.h"
@@ -158,7 +159,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
 
-  blink::Initialize(this);
+  blink::Initialize(this,
+                    blink::InterfaceRegistry::GetEmptyInterfaceRegistry());
   blink::SetLayoutTestMode(true);
   blink::WebRuntimeFeatures::EnableDatabase(true);
   blink::WebRuntimeFeatures::EnableNotifications(true);
