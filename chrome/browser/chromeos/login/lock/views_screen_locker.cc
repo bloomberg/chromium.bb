@@ -188,7 +188,7 @@ void ViewsScreenLocker::HandleOnFocusPod(const AccountId& account_id) {
     lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
                                           ime_state_.get());
     lock_screen_utils::SetKeyboardSettings(account_id);
-    WallpaperManager::Get()->SetUserWallpaperDelayed(account_id);
+    WallpaperManager::Get()->SetUserWallpaper(account_id);
 
     bool use_24hour_clock = false;
     if (user_manager::known_user::GetBooleanPref(
