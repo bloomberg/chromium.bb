@@ -172,7 +172,11 @@ cr.define('print_preview', function() {
 
     /** Shows the Google Cloud Print promotion banner. */
     showCloudPrintPromo: function() {
-      setIsVisible(this.getChildElement('.cloudprint-promo'), true);
+      const cloudPrintPromoElement = this.getChildElement('.cloudprint-promo');
+      if (getIsVisible(cloudPrintPromoElement))
+        return;
+
+      setIsVisible(cloudPrintPromoElement, true);
       if (this.getIsVisible()) {
         this.metrics_.record(
             print_preview.Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
