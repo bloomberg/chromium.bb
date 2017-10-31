@@ -850,6 +850,13 @@ class SSLUITestHSTS : public SSLUITest {
   }
 };
 
+class SSLUITestCommittedInterstitials : public SSLUITest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kCommittedInterstitials);
+  }
+};
+
 // Visits a regular page over http.
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTP) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -5196,6 +5203,23 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, OSReportsCaptivePortal_FeatureDisabled) {
       SSLErrorHandler::SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE, 0);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::OS_REPORTS_CAPTIVE_PORTAL, 0);
+}
+
+// Tests that the committed interstitial flag triggers the code path to show an
+// error PageType instead of an interstitial PageType.
+IN_PROC_BROWSER_TEST_F(SSLUITestCommittedInterstitials, ErrorPageType) {
+  ASSERT_TRUE(https_server_expired_.Start());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+
+  // TODO(crbug.com/751951, crbug.com/752372): Get the correct cert error and
+  // security state showing in this test.
+  CheckSecurityState(tab, CertError::NONE, security_state::NONE,
+                     AuthState::SHOWING_ERROR);
+
+  NavigationEntry* entry = tab->GetController().GetVisibleEntry();
+  EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
 }
 
 namespace {

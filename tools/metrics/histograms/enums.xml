@@ -24382,6 +24382,7 @@ from previous Chrome versions.
   <int value="-1020450980" label="gesture-deletion"/>
   <int value="-1016202433" label="disable-add-to-shelf"/>
   <int value="-1015006759" label="ImportantSitesInCBD:disabled"/>
+  <int value="-1014649471" label="committed-interstitials"/>
   <int value="-998255750" label="ExperimentalKeyboardLockUI:enabled"/>
   <int value="-996673716" label="enable-web-app-frame"/>
   <int value="-991253797"
