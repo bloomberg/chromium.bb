@@ -269,10 +269,11 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
       const security_interstitials::UnsafeResource& unsafe_resource,
       net::URLRequestContextGetter* request_context_getter,
       history::HistoryService* history_service,
-      bool trim_to_ad_tags) override {
+      bool trim_to_ad_tags,
+      ThreatDetailsDoneCallback done_callback) override {
     return new ThreatDetails(ui_manager, web_contents, unsafe_resource,
                              request_context_getter, history_service,
-                             trim_to_ad_tags);
+                             trim_to_ad_tags, done_callback);
   }
 
  private:
@@ -294,14 +295,15 @@ ThreatDetails* ThreatDetails::NewThreatDetails(
     const UnsafeResource& resource,
     net::URLRequestContextGetter* request_context_getter,
     history::HistoryService* history_service,
-    bool trim_to_ad_tags) {
+    bool trim_to_ad_tags,
+    ThreatDetailsDoneCallback done_callback) {
   // Set up the factory if this has not been done already (tests do that
   // before this method is called).
   if (!factory_)
     factory_ = g_threat_details_factory_impl.Pointer();
   return factory_->CreateThreatDetails(ui_manager, web_contents, resource,
                                        request_context_getter, history_service,
-                                       trim_to_ad_tags);
+                                       trim_to_ad_tags, done_callback);
 }
 
 // Create a ThreatDetails for the given tab. Runs in the UI thread.
@@ -311,7 +313,8 @@ ThreatDetails::ThreatDetails(
     const UnsafeResource& resource,
     net::URLRequestContextGetter* request_context_getter,
     history::HistoryService* history_service,
-    bool trim_to_ad_tags)
+    bool trim_to_ad_tags,
+    ThreatDetailsDoneCallback done_callback)
     : content::WebContentsObserver(web_contents),
       request_context_getter_(request_context_getter),
       ui_manager_(ui_manager),
@@ -321,7 +324,10 @@ ThreatDetails::ThreatDetails(
       num_visits_(0),
       ambiguous_dom_(false),
       trim_to_ad_tags_(trim_to_ad_tags),
-      cache_collector_(new ThreatDetailsCacheCollector) {
+      cache_collector_(new ThreatDetailsCacheCollector),
+      done_callback_(done_callback),
+      all_done_expected_(false),
+      is_all_done_(false) {
   redirects_collector_ = new ThreatDetailsRedirectsCollector(
       history_service ? history_service->AsWeakPtr()
                       : base::WeakPtr<history::HistoryService>());
@@ -335,9 +341,14 @@ ThreatDetails::ThreatDetails()
       did_proceed_(false),
       num_visits_(0),
       ambiguous_dom_(false),
-      trim_to_ad_tags_(false) {}
+      trim_to_ad_tags_(false),
+      done_callback_(nullptr),
+      all_done_expected_(false),
+      is_all_done_(false) {}
 
-ThreatDetails::~ThreatDetails() {}
+ThreatDetails::~ThreatDetails() {
+  DCHECK(all_done_expected_ == is_all_done_);
+}
 
 bool ThreatDetails::OnMessageReceived(const IPC::Message& message,
                                       RenderFrameHost* render_frame_host) {
@@ -646,6 +657,8 @@ void ThreatDetails::AddDOMDetails(
 void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  all_done_expected_ = true;
+
   // Do a second pass over the elements and update iframe elements to have
   // references to their children. Children may have been received from a
   // different renderer than the iframe element.
@@ -739,14 +752,17 @@ void ThreatDetails::OnCacheCollectionReady() {
   std::string serialized;
   if (!report_->SerializeToString(&serialized)) {
     DLOG(ERROR) << "Unable to serialize the threat report.";
+    AllDone();
     return;
   }
 
   // For measuring performance impact of ad sampling reports, we may want to
   // do all the heavy lifting of creating the report but not actually send it.
   if (report_->type() == ClientSafeBrowsingReportRequest::AD_SAMPLE &&
-      base::FeatureList::IsEnabled(kAdSamplerCollectButDontSendFeature))
+      base::FeatureList::IsEnabled(kAdSamplerCollectButDontSendFeature)) {
+    AllDone();
     return;
+  }
 
   BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
@@ -754,6 +770,14 @@ void ThreatDetails::OnCacheCollectionReady() {
                  base::Unretained(WebUIInfoSingleton::GetInstance()),
                  base::Passed(&report_)));
   ui_manager_->SendSerializedThreatDetails(serialized);
+
+  AllDone();
 }
 
+void ThreatDetails::AllDone() {
+  is_all_done_ = true;
+  BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(done_callback_, base::Unretained(web_contents())));
+}
 }  // namespace safe_browsing

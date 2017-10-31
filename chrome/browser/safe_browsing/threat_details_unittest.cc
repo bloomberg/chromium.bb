@@ -154,10 +154,8 @@ void FillCacheHttps(net::URLRequestContextGetter* context_getter) {
   FillCacheBase(context_getter, /*use_https_threat_url=*/true);
 }
 
-// Lets us provide a MockURLRequestContext with an HTTP Cache we pre-populate.
+// Lets us control synchronization of the done callback for ThreatDetails.
 // Also exposes the constructor.
-// TODO(lpz): is this class still needed? ThreatDetails seems to handle the
-// MockURLRequestContext case just fine on its own.
 class ThreatDetailsWrap : public ThreatDetails {
  public:
   ThreatDetailsWrap(
@@ -171,7 +169,11 @@ class ThreatDetailsWrap : public ThreatDetails {
                       unsafe_resource,
                       request_context_getter,
                       history_service,
-                      /*trim_to_ad_tags=*/false) {}
+                      /*trim_to_ad_tags=*/false,
+                      base::Bind(&ThreatDetailsWrap::ThreatDetailsDone,
+                                 base::Unretained(this))),
+        run_loop_(nullptr),
+        done_callback_count_(0) {}
 
   ThreatDetailsWrap(
       SafeBrowsingUIManager* ui_manager,
@@ -185,33 +187,43 @@ class ThreatDetailsWrap : public ThreatDetails {
                       unsafe_resource,
                       request_context_getter,
                       history_service,
-                      trim_to_ad_tags) {}
+                      trim_to_ad_tags,
+                      base::Bind(&ThreatDetailsWrap::ThreatDetailsDone,
+                                 base::Unretained(this))),
+        run_loop_(nullptr),
+        done_callback_count_(0) {}
+
+  void ThreatDetailsDone(content::WebContents* web_contents) {
+    ++done_callback_count_;
+    run_loop_->Quit();
+    run_loop_ = NULL;
+  }
+
+  // Used to synchronize ThreatDetailsDone() with WaitForThreatDetailsDone().
+  // RunLoop::RunUntilIdle() is not sufficient because the MessageLoop task
+  // queue completely drains at some point between the send and the wait.
+  void SetRunLoopToQuit(base::RunLoop* run_loop) {
+    DCHECK(run_loop_ == NULL);
+    run_loop_ = run_loop;
+  }
+
+  size_t done_callback_count() { return done_callback_count_; }
 
  private:
   ~ThreatDetailsWrap() override {}
+
+  base::RunLoop* run_loop_;
+  size_t done_callback_count_;
 };
 
 class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
  public:
-  base::RunLoop* run_loop_;
   // The safe browsing UI manager does not need a service for this test.
-  MockSafeBrowsingUIManager() : SafeBrowsingUIManager(NULL), run_loop_(NULL) {}
+  MockSafeBrowsingUIManager() : SafeBrowsingUIManager(NULL) {}
 
-  // When the ThreatDetails is done, this is called.
+  // When the serialized report is sent, this is called.
   void SendSerializedThreatDetails(const std::string& serialized) override {
-    DVLOG(1) << "SendSerializedThreatDetails";
-    run_loop_->Quit();
-    run_loop_ = NULL;
     serialized_ = serialized;
-  }
-
-  // Used to synchronize SendSerializedThreatDetails() with
-  // WaitForSerializedReport(). RunLoop::RunUntilIdle() is not sufficient
-  // because the MessageLoop task queue completely drains at some point
-  // between the send and the wait.
-  void SetRunLoopToQuit(base::RunLoop* run_loop) {
-    DCHECK(run_loop_ == NULL);
-    run_loop_ = run_loop;
   }
 
   const std::string& GetSerialized() { return serialized_; }
@@ -237,17 +249,18 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
                                                 false /* no_db */));
   }
 
-  std::string WaitForSerializedReport(ThreatDetails* report,
-                                      bool did_proceed,
-                                      int num_visit) {
+  std::string WaitForThreatDetailsDone(ThreatDetailsWrap* report,
+                                       bool did_proceed,
+                                       int num_visit) {
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::BindOnce(&ThreatDetails::FinishCollection,
                                            report, did_proceed, num_visit));
-    // Wait for the callback (SendSerializedThreatDetails).
-    DVLOG(1) << "Waiting for SendSerializedThreatDetails";
+    // Wait for the callback (ThreatDetailsDone).
     base::RunLoop run_loop;
-    ui_manager_->SetRunLoopToQuit(&run_loop);
+    report->SetRunLoopToQuit(&run_loop);
     run_loop.Run();
+    // Make sure the done callback was run exactly once.
+    EXPECT_EQ(1u, report->done_callback_count());
     return ui_manager_->GetSerialized();
   }
 
@@ -412,7 +425,7 @@ TEST_F(ThreatDetailsTest, ThreatSubResource) {
   scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
       ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), true /* did_proceed*/, 1 /* num_visit */);
 
   ClientSafeBrowsingReportRequest actual;
@@ -456,7 +469,7 @@ TEST_F(ThreatDetailsTest, ThreatSubResourceWithOriginalUrl) {
   scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
       ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), false /* did_proceed*/, 1 /* num_visit */);
 
   ClientSafeBrowsingReportRequest actual;
@@ -517,7 +530,7 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails) {
   params.push_back(parent_node);
   report->OnReceivedThreatDOMDetails(main_rfh(), params);
 
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), false /* did_proceed*/, 0 /* num_visit */);
   ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
@@ -713,7 +726,7 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames) {
     report->OnReceivedThreatDOMDetails(main_rfh(), outer_params);
     report->OnReceivedThreatDOMDetails(child_rfh, inner_params);
 
-    std::string serialized = WaitForSerializedReport(
+    std::string serialized = WaitForThreatDetailsDone(
         report.get(), false /* did_proceed*/, 0 /* num_visit */);
     ClientSafeBrowsingReportRequest actual;
     actual.ParseFromString(serialized);
@@ -757,7 +770,7 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames) {
     report->OnReceivedThreatDOMDetails(child_rfh, inner_params);
     report->OnReceivedThreatDOMDetails(main_rfh(), outer_params);
 
-    std::string serialized = WaitForSerializedReport(
+    std::string serialized = WaitForThreatDetailsDone(
         report.get(), false /* did_proceed*/, 0 /* num_visit */);
     ClientSafeBrowsingReportRequest actual;
     actual.ParseFromString(serialized);
@@ -876,7 +889,7 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_AmbiguousDOM) {
   report->OnReceivedThreatDOMDetails(main_rfh(), outer_params);
   report->OnReceivedThreatDOMDetails(child_rfh, inner_params);
 
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), false /* did_proceed*/, 0 /* num_visit */);
   ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
@@ -1098,7 +1111,7 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_TrimToAdTags) {
   trimmed_report->OnReceivedThreatDOMDetails(child_rfh, inner_params);
   trimmed_report->OnReceivedThreatDOMDetails(main_rfh(), outer_params);
 
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       trimmed_report.get(), false /* did_proceed*/, 0 /* num_visit */);
   ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
@@ -1124,7 +1137,7 @@ TEST_F(ThreatDetailsTest, ThreatWithRedirectUrl) {
   scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
       ui_manager_.get(), web_contents(), resource, NULL, history_service());
 
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), true /* did_proceed*/, 0 /* num_visit */);
   ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
@@ -1199,7 +1212,7 @@ TEST_F(ThreatDetailsTest, ThreatOnMainPageLoadBlocked) {
   controller().DiscardNonCommittedEntries();
 
   // Finish ThreatDetails collection.
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), false /* did_proceed*/, 1 /* num_visit */);
 
   ClientSafeBrowsingReportRequest actual;
@@ -1253,7 +1266,7 @@ TEST_F(ThreatDetailsTest, ThreatWithPendingLoad) {
   // Do ThreatDetails collection.
   scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
       ui_manager_.get(), web_contents(), resource, NULL, history_service());
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), true /* did_proceed*/, 1 /* num_visit */);
 
   ClientSafeBrowsingReportRequest actual;
@@ -1300,7 +1313,7 @@ TEST_F(ThreatDetailsTest, ThreatOnFreshTab) {
   // Do ThreatDetails collection.
   scoped_refptr<ThreatDetailsWrap> report = new ThreatDetailsWrap(
       ui_manager_.get(), web_contents(), resource, NULL, history_service());
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), true /* did_proceed*/, 1 /* num_visit */);
 
   ClientSafeBrowsingReportRequest actual;
@@ -1347,7 +1360,7 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
   base::RunLoop().RunUntilIdle();
 
   DVLOG(1) << "Getting serialized report";
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), true /* did_proceed*/, -1 /* num_visit */);
   ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
@@ -1431,7 +1444,7 @@ TEST_F(ThreatDetailsTest, HttpsResourceSanitization) {
   base::RunLoop().RunUntilIdle();
 
   DVLOG(1) << "Getting serialized report";
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), true /* did_proceed*/, -1 /* num_visit */);
   ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
@@ -1509,7 +1522,7 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
   base::RunLoop().RunUntilIdle();
 
   DVLOG(1) << "Getting serialized report";
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), false /* did_proceed*/, -1 /* num_visit */);
   ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
@@ -1564,7 +1577,7 @@ TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
   // Let the redirects callbacks complete.
   base::RunLoop().RunUntilIdle();
 
-  std::string serialized = WaitForSerializedReport(
+  std::string serialized = WaitForThreatDetailsDone(
       report.get(), true /* did_proceed*/, 1 /* num_visit */);
   ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
