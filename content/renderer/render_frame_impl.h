@@ -38,7 +38,6 @@
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
-#include "content/common/url_loader_factory_bundle.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/javascript_dialog_type.h"
@@ -518,14 +517,14 @@ class CONTENT_EXPORT RenderFrameImpl
   // mojom::FrameBindingsControl implementation:
   void AllowBindings(int32_t enabled_bindings_flags) override;
 
-  // mojom::FrameNavigationControl implementation:
-  void CommitNavigation(
-      const ResourceResponseHead& head,
-      const GURL& body_url,
-      const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
-      mojo::ScopedDataPipeConsumerHandle body_data,
-      base::Optional<URLLoaderFactoryBundle> subresource_loaders) override;
+  // mojom::FrameNavigationControl implemenentation:
+  void CommitNavigation(const ResourceResponseHead& head,
+                        const GURL& body_url,
+                        const CommonNavigationParams& common_params,
+                        const RequestNavigationParams& request_params,
+                        mojo::ScopedDataPipeConsumerHandle body_data,
+                        mojom::URLLoaderFactoryPtr
+                            default_subresource_url_loader_factory) override;
 
   // mojom::HostZoom implementation:
   void SetHostZoomLevel(const GURL& url, double zoom_level) override;
@@ -1086,16 +1085,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const CommonNavigationParams& common_params,
       const StartNavigationParams& start_params,
       const RequestNavigationParams& request_params,
-      std::unique_ptr<StreamOverrideParameters> stream_params,
-      base::Optional<URLLoaderFactoryBundle> subresource_loader_factories);
-
-  // Returns a URLLoaderFactoryBundle which can be used to request subresources
-  // for this frame. Only valid to call when the Network Service is enabled.
-  // For frames with committed navigations, this bundle is provided by the
-  // browser at navigation time. For any other frames (i.e. frames on the
-  // initial about:blank Document), the bundle returned here is lazily cloned
-  // from the parent or opener's own bundle.
-  URLLoaderFactoryBundle& GetSubresourceLoaderFactories();
+      std::unique_ptr<StreamOverrideParameters> stream_params);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
@@ -1545,10 +1535,6 @@ class CONTENT_EXPORT RenderFrameImpl
       custom_url_loader_factory_;
 
   scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter_;
-
-  // URLLoaderFactory instances used for subresource loading when the Network
-  // Service is enabled.
-  base::Optional<URLLoaderFactoryBundle> subresource_loader_factories_;
 
   // AndroidOverlay routing token from the browser, if we have one yet.
   base::Optional<base::UnguessableToken> overlay_routing_token_;

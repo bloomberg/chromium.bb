@@ -95,7 +95,6 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
-#include "content/common/url_loader_factory_bundle.mojom.h"
 #include "content/common/widget.mojom.h"
 #include "content/network/restricted_cookie_manager_impl.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -155,7 +154,6 @@
 #include "ui/gfx/geometry/quad_f.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/java_interfaces_impl.h"
@@ -3397,7 +3395,7 @@ void RenderFrameHostImpl::CommitNavigation(
     GetNavigationControl()->CommitNavigation(
         ResourceResponseHead(), GURL(), common_params, request_params,
         mojo::ScopedDataPipeConsumerHandle(),
-        /*subresource_loader_factories=*/base::nullopt);
+        /*default_subresource_url_loader_factory=*/nullptr);
     return;
   }
 
@@ -3417,49 +3415,17 @@ void RenderFrameHostImpl::CommitNavigation(
   const GURL body_url = body.get() ? body->GetURL() : GURL();
   const ResourceResponseHead head = response ?
       response->head : ResourceResponseHead();
-  const bool is_same_document =
-      FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type);
-
-  // TODO(scottmg): Pass a factory for SW, etc. once we have one.
-  base::Optional<URLLoaderFactoryBundle> subresource_loader_factories;
-  if (base::FeatureList::IsEnabled(features::kNetworkService) &&
-      !is_same_document) {
-    // NOTE: On Network Service navigations, we want to ensure that a frame is
-    // given everything it will need to load any accessible subresources. We
-    // however only do this for cross-document navigations, because the
-    // alternative would be redundant effort.
-    mojom::URLLoaderFactoryPtr default_factory;
-    StoragePartitionImpl* storage_partition =
-        static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-            GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
+  mojom::URLLoaderFactoryPtr default_subresource_url_loader_factory;
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     if (subresource_loader_params &&
         subresource_loader_params->loader_factory_info.is_valid()) {
-      // If the caller has supplied a default URLLoaderFactory override (for
-      // e.g. appcache, Service Worker, etc.), use that.
-      default_factory.Bind(
+      default_subresource_url_loader_factory.Bind(
           std::move(subresource_loader_params->loader_factory_info));
-    } else {
-      // Otherwise default to a Network Service-backed loader from the
-      // appropriate NetworkContext.
-      storage_partition->GetNetworkContext()->CreateURLLoaderFactory(
-          mojo::MakeRequest(&default_factory), GetProcess()->GetID());
     }
-
-    DCHECK(default_factory.is_bound());
-    subresource_loader_factories.emplace();
-    subresource_loader_factories->SetDefaultFactory(std::move(default_factory));
-
-    // Everyone gets a blob loader.
-    mojom::URLLoaderFactoryPtr blob_factory;
-    storage_partition->GetBlobURLLoaderFactory()->HandleRequest(
-        mojo::MakeRequest(&blob_factory));
-    subresource_loader_factories->RegisterFactory(url::kBlobScheme,
-                                                  std::move(blob_factory));
   }
-
   GetNavigationControl()->CommitNavigation(
       head, body_url, common_params, request_params, std::move(handle),
-      std::move(subresource_loader_factories));
+      std::move(default_subresource_url_loader_factory));
 
   // If a network request was made, update the Previews state.
   if (IsURLHandledByNetworkStack(common_params.url) &&
@@ -3473,7 +3439,7 @@ void RenderFrameHostImpl::CommitNavigation(
   // same-document navigation would not load any new ones for replacement.
   // The user would finish with a half loaded document.
   // See https://crbug.com/769645.
-  if (!is_same_document) {
+  if (!FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type)) {
     // Released in OnStreamHandleConsumed().
     stream_handle_ = std::move(body);
   }
