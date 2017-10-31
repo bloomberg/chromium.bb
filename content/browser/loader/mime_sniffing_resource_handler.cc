@@ -45,14 +45,6 @@ namespace content {
 
 namespace {
 
-const char kAcceptHeader[] = "Accept";
-const char kFrameAcceptHeader[] =
-    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
-    "image/apng,*/*;q=0.8";
-const char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
-const char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
-const char kDefaultAcceptHeader[] = "*/*";
-
 // Used to write into an existing IOBuffer at a given offset. This is
 // very similar to DependentIOBufferForRedirectToFile and
 // DependentIOBufferForAsyncLoading but not identical.
@@ -139,42 +131,7 @@ void MimeSniffingResourceHandler::OnWillStart(
     std::unique_ptr<ResourceController> controller) {
   DCHECK(!has_controller());
 
-  const char* accept_value = nullptr;
-  switch (GetRequestInfo()->GetResourceType()) {
-    case RESOURCE_TYPE_MAIN_FRAME:
-    case RESOURCE_TYPE_SUB_FRAME:
-      accept_value = kFrameAcceptHeader;
-      break;
-    case RESOURCE_TYPE_STYLESHEET:
-      accept_value = kStylesheetAcceptHeader;
-      break;
-    case RESOURCE_TYPE_FAVICON:
-    case RESOURCE_TYPE_IMAGE:
-      accept_value = kImageAcceptHeader;
-      break;
-    case RESOURCE_TYPE_SCRIPT:
-    case RESOURCE_TYPE_FONT_RESOURCE:
-    case RESOURCE_TYPE_SUB_RESOURCE:
-    case RESOURCE_TYPE_OBJECT:
-    case RESOURCE_TYPE_MEDIA:
-    case RESOURCE_TYPE_WORKER:
-    case RESOURCE_TYPE_SHARED_WORKER:
-    case RESOURCE_TYPE_PREFETCH:
-    case RESOURCE_TYPE_XHR:
-    case RESOURCE_TYPE_PING:
-    case RESOURCE_TYPE_SERVICE_WORKER:
-    case RESOURCE_TYPE_CSP_REPORT:
-    case RESOURCE_TYPE_PLUGIN_RESOURCE:
-      accept_value = kDefaultAcceptHeader;
-      break;
-    case RESOURCE_TYPE_LAST_TYPE:
-      NOTREACHED();
-      break;
-  }
-
-  // The false parameter prevents overwriting an existing accept header value,
-  // which is needed because JS can manually set an accept header on an XHR.
-  request()->SetExtraRequestHeaderByName(kAcceptHeader, accept_value, false);
+  AttachAcceptHeader(GetRequestInfo()->GetResourceType(), request());
   next_handler_->OnWillStart(url, std::move(controller));
 }
 
