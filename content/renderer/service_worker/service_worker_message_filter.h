@@ -5,16 +5,11 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_MESSAGE_FILTER_H_
 
-#include <set>
-#include <vector>
-
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/renderer/worker_thread_message_filter.h"
 
 namespace content {
-
-struct ServiceWorkerVersionAttributes;
 
 class CONTENT_EXPORT ServiceWorkerMessageFilter
     : public WorkerThreadMessageFilter {
@@ -30,16 +25,6 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
   void OnFilteredMessageReceived(const IPC::Message& msg) override;
   bool GetWorkerThreadIdForMessage(const IPC::Message& msg,
                                    int* ipc_thread_id) override;
-
-  // ChildMessageFilter:
-  void OnStaleMessageReceived(const IPC::Message& msg) override;
-
-  // Message handlers for stale messages.
-  void OnStaleSetVersionAttributes(
-      int thread_id,
-      int registration_handle_id,
-      int changed_mask,
-      const ServiceWorkerVersionAttributes& attrs);
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerMessageFilter);
 };

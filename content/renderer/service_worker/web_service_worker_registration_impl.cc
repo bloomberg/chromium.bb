@@ -12,6 +12,7 @@
 #include "content/child/child_process.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
+#include "content/renderer/service_worker/service_worker_handle_reference.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebNavigationPreloadState.h"
@@ -399,6 +400,43 @@ WebServiceWorkerRegistrationImpl::~WebServiceWorkerRegistrationImpl() {
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   if (dispatcher)
     dispatcher->RemoveServiceWorkerRegistration(handle_id_);
+}
+
+void WebServiceWorkerRegistrationImpl::SetVersionAttributes(
+    int changed_mask,
+    blink::mojom::ServiceWorkerObjectInfoPtr installing,
+    blink::mojom::ServiceWorkerObjectInfoPtr waiting,
+    blink::mojom::ServiceWorkerObjectInfoPtr active) {
+  if (!creation_task_runner_->RunsTasksInCurrentSequence()) {
+    // As this posted task will definitely run before OnConnectionError() on the
+    // |creation_task_runner_|, using base::Unretained() here is safe.
+    creation_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WebServiceWorkerRegistrationImpl::SetVersionAttributes,
+                       base::Unretained(this), changed_mask,
+                       std::move(installing), std::move(waiting),
+                       std::move(active)));
+    return;
+  }
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetThreadSpecificInstance();
+  DCHECK(dispatcher);
+  ChangedVersionAttributesMask mask(changed_mask);
+  if (mask.installing_changed()) {
+    DCHECK(installing);
+    SetInstalling(dispatcher->GetOrCreateServiceWorker(
+        dispatcher->Adopt(std::move(installing))));
+  }
+  if (mask.waiting_changed()) {
+    DCHECK(waiting);
+    SetWaiting(dispatcher->GetOrCreateServiceWorker(
+        dispatcher->Adopt(std::move(waiting))));
+  }
+  if (mask.active_changed()) {
+    DCHECK(active);
+    SetActive(dispatcher->GetOrCreateServiceWorker(
+        dispatcher->Adopt(std::move(active))));
+  }
 }
 
 }  // namespace content

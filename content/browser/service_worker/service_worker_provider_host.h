@@ -307,12 +307,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // until the worker thread id is known via SetReadyToSendMessagesToWorker().
   void SendUpdateFoundMessage(
       int registration_handle_id);
-  void SendSetVersionAttributesMessage(
-      int registration_handle_id,
-      ChangedVersionAttributesMask changed_mask,
-      ServiceWorkerVersion* installing_version,
-      ServiceWorkerVersion* waiting_version,
-      ServiceWorkerVersion* active_version);
   void SendServiceWorkerStateChangedMessage(
       int worker_handle_id,
       blink::mojom::ServiceWorkerState state);

@@ -777,39 +777,6 @@ void ServiceWorkerProviderHost::SendUpdateFoundMessage(
       render_thread_id_, registration_handle_id));
 }
 
-void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(
-    int registration_handle_id,
-    ChangedVersionAttributesMask changed_mask,
-    ServiceWorkerVersion* installing_version,
-    ServiceWorkerVersion* waiting_version,
-    ServiceWorkerVersion* active_version) {
-  if (!dispatcher_host_)
-    return;
-  if (!changed_mask.changed())
-    return;
-
-  if (!IsReadyToSendMessages()) {
-    queued_events_.push_back(base::Bind(
-        &ServiceWorkerProviderHost::SendSetVersionAttributesMessage,
-        AsWeakPtr(), registration_handle_id, changed_mask,
-        base::RetainedRef(installing_version),
-        base::RetainedRef(waiting_version), base::RetainedRef(active_version)));
-    return;
-  }
-
-  ServiceWorkerVersionAttributes attrs;
-  if (changed_mask.installing_changed())
-    attrs.installing = *GetOrCreateServiceWorkerHandle(installing_version);
-  if (changed_mask.waiting_changed())
-    attrs.waiting = *GetOrCreateServiceWorkerHandle(waiting_version);
-  if (changed_mask.active_changed())
-    attrs.active = *GetOrCreateServiceWorkerHandle(active_version);
-
-  Send(new ServiceWorkerMsg_SetVersionAttributes(
-      render_thread_id_, registration_handle_id, changed_mask.changed(),
-      attrs));
-}
-
 void ServiceWorkerProviderHost::SendServiceWorkerStateChangedMessage(
     int worker_handle_id,
     blink::mojom::ServiceWorkerState state) {

@@ -78,8 +78,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSetNavigationPreloadHeaderError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetVersionAttributes,
-                        OnSetVersionAttributes)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_UpdateFound,
                         OnUpdateFound)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CountFeature, OnCountFeature)
@@ -338,39 +336,6 @@ void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(
   WorkerObjectMap::iterator worker = service_workers_.find(handle_id);
   if (worker != service_workers_.end())
     worker->second->OnStateChanged(state);
-}
-
-void ServiceWorkerDispatcher::OnSetVersionAttributes(
-    int thread_id,
-    int registration_handle_id,
-    int changed_mask,
-    const ServiceWorkerVersionAttributes& attrs) {
-  TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerDispatcher::OnSetVersionAttributes",
-               "Thread ID", thread_id);
-
-  // Adopt the references sent from the browser process and pass it to the
-  // registration if it exists.
-  std::unique_ptr<ServiceWorkerHandleReference> installing =
-      Adopt(attrs.installing.Clone());
-  std::unique_ptr<ServiceWorkerHandleReference> waiting =
-      Adopt(attrs.waiting.Clone());
-  std::unique_ptr<ServiceWorkerHandleReference> active =
-      Adopt(attrs.active.Clone());
-
-  RegistrationObjectMap::iterator found =
-      registrations_.find(registration_handle_id);
-  if (found != registrations_.end()) {
-    // Populate the version fields (eg. .installing) with worker objects.
-    ChangedVersionAttributesMask mask(changed_mask);
-    if (mask.installing_changed())
-      found->second->SetInstalling(
-          GetOrCreateServiceWorker(std::move(installing)));
-    if (mask.waiting_changed())
-      found->second->SetWaiting(GetOrCreateServiceWorker(std::move(waiting)));
-    if (mask.active_changed())
-      found->second->SetActive(GetOrCreateServiceWorker(std::move(active)));
-  }
 }
 
 void ServiceWorkerDispatcher::OnUpdateFound(
