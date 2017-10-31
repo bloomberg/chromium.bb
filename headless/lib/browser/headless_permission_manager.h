@@ -9,11 +9,15 @@
 #include "base/macros.h"
 #include "content/public/browser/permission_manager.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace headless {
 
 class HeadlessPermissionManager : public content::PermissionManager {
  public:
-  HeadlessPermissionManager();
+  explicit HeadlessPermissionManager(content::BrowserContext* browser_context);
   ~HeadlessPermissionManager() override;
 
   // PermissionManager implementation.
@@ -49,6 +53,8 @@ class HeadlessPermissionManager : public content::PermissionManager {
   void UnsubscribePermissionStatusChange(int subscription_id) override;
 
  private:
+  content::BrowserContext* browser_context_;
+
   DISALLOW_COPY_AND_ASSIGN(HeadlessPermissionManager);
 };
 
