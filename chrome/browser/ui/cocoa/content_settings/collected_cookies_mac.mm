@@ -141,6 +141,8 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
   NSImage* infoIcon = rb.GetNativeImageNamed(IDR_INFO).ToNSImage();
   [infoBarIcon_ setImage:infoIcon];
 
+  [self.window setBackgroundColor:[NSColor windowBackgroundColor]];
+
   // Initialize the banner gradient and stroke color.
   NSColor* bannerStartingColor =
       [NSColor colorWithCalibratedRed:kBannerGradientColorTop[0]
