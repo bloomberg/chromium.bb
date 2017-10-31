@@ -464,5 +464,24 @@ TEST_F(BoxReaderTest, SgpdCount32bitOverflow) {
       kData, sizeof(kData), "Extreme SGPD count exceeds implementation limit.");
 }
 
+TEST_F(BoxReaderTest, OutsideOfBoxRead) {
+  static const uint8_t kData[] = {
+      0x00, 0x00, 0x00, 0x0c, 'f', 'r', 'e', 'e',  // header
+      0x01, 0x02, 0x03, 0x04,                      // box contents
+      0x05, 0x06, 0x07, 0x08,                      // buffer padding
+  };
+
+  std::unique_ptr<BoxReader> reader;
+  ParseResult result =
+      BoxReader::ReadTopLevelBox(kData, sizeof(kData), &media_log_, &reader);
+  EXPECT_EQ(result, ParseResult::kOk);
+  EXPECT_TRUE(reader);
+
+  uint32_t value;
+  EXPECT_TRUE(reader->Read4(&value));
+  EXPECT_EQ(value, 0x01020304u);
+  EXPECT_FALSE(reader->Read4(&value));
+}
+
 }  // namespace mp4
 }  // namespace media

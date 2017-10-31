@@ -192,6 +192,7 @@ bool BoxReader::ScanChildren() {
   DCHECK(!scanned_);
   scanned_ = true;
 
+  DCHECK_LE(pos_, box_size_);
   while (pos_ < box_size_) {
     BoxReader child(&buf_[pos_], box_size_ - pos_, media_log_, is_EOS_);
     if (child.ReadHeader() != ParseResult::kOk)
@@ -199,8 +200,7 @@ bool BoxReader::ScanChildren() {
     children_.insert(std::pair<FourCC, BoxReader>(child.type(), child));
     pos_ += child.box_size();
   }
-
-  DCHECK(pos_ == box_size_);
+  DCHECK_EQ(pos_, box_size_);
   return true;
 }
 
@@ -278,6 +278,10 @@ ParseResult BoxReader::ReadHeader() {
   // header, which is where we want it.
   box_size_ = base::checked_cast<size_t>(box_size);
   box_size_known_ = true;
+
+  // We don't want future reads to go beyond the box.
+  buf_size_ = std::min(buf_size_, box_size_);
+
   return ParseResult::kOk;
 }
 
