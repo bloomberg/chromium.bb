@@ -7,18 +7,17 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/pairing/bluetooth_host_pairing_controller.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace pairing_chromeos {
 
 SharkConnectionListener::SharkConnectionListener(
-    scoped_refptr<base::TaskRunner> input_service_task_runner,
+    service_manager::Connector* connector,
     OnConnectedCallback callback)
     : callback_(callback) {
-  controller_.reset(
-      new BluetoothHostPairingController(std::move(input_service_task_runner)));
+  controller_.reset(new BluetoothHostPairingController(connector));
   controller_->AddObserver(this);
   controller_->StartPairing();
 }

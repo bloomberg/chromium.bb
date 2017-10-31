@@ -33,7 +33,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/device/input_service_proxy.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -104,6 +103,8 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/accelerators/accelerator.h"
 
@@ -427,9 +428,12 @@ BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
         shark_controller_.get());
   } else if (screen == OobeScreen::SCREEN_OOBE_HOST_PAIRING) {
     if (!remora_controller_) {
+      DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+      DCHECK(content::ServiceManagerConnection::GetForProcess());
+      service_manager::Connector* connector =
+          content::ServiceManagerConnection::GetForProcess()->GetConnector();
       remora_controller_.reset(
-          new pairing_chromeos::BluetoothHostPairingController(
-              InputServiceProxy::GetInputServiceTaskRunner()));
+          new pairing_chromeos::BluetoothHostPairingController(connector));
       remora_controller_->StartPairing();
     }
     return new HostPairingScreen(this, this,
@@ -1655,11 +1659,14 @@ void WizardController::MaybeStartListeningForSharkConnection() {
     return;
 
   if (!shark_connection_listener_) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(content::ServiceManagerConnection::GetForProcess());
+    service_manager::Connector* connector =
+        content::ServiceManagerConnection::GetForProcess()->GetConnector();
     shark_connection_listener_.reset(
         new pairing_chromeos::SharkConnectionListener(
-            InputServiceProxy::GetInputServiceTaskRunner(),
-            base::Bind(&WizardController::OnSharkConnected,
-                       weak_factory_.GetWeakPtr())));
+            connector, base::Bind(&WizardController::OnSharkConnected,
+                                  weak_factory_.GetWeakPtr())));
   }
 }
 

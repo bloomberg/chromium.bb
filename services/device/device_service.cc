@@ -34,6 +34,10 @@
 #include "services/device/vibration/vibration_manager_impl.h"
 #endif
 
+#if defined(OS_LINUX) && defined(USE_UDEV)
+#include "device/hid/input_service_linux.h"
+#endif
+
 namespace device {
 
 #if defined(OS_ANDROID)
@@ -119,6 +123,11 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::VibrationManager>(base::Bind(
       &DeviceService::BindVibrationManagerRequest, base::Unretained(this)));
 #endif
+
+#if defined(OS_LINUX) && defined(USE_UDEV)
+  registry_.AddInterface<mojom::InputDeviceManager>(base::Bind(
+      &DeviceService::BindInputDeviceManagerRequest, base::Unretained(this)));
+#endif
 }
 
 void DeviceService::OnBindInterface(
@@ -148,6 +157,15 @@ void DeviceService::BindNFCProviderRequest(mojom::NFCProviderRequest request) {
 void DeviceService::BindVibrationManagerRequest(
     mojom::VibrationManagerRequest request) {
   VibrationManagerImpl::Create(std::move(request));
+}
+#endif
+
+#if defined(OS_LINUX) && defined(USE_UDEV)
+void DeviceService::BindInputDeviceManagerRequest(
+    mojom::InputDeviceManagerRequest request) {
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&InputServiceLinux::BindRequest, std::move(request)));
 }
 #endif
 

@@ -500,8 +500,6 @@ source_set("chromeos") {
     "dbus/kiosk_info_service_provider.h",
     "dbus/screen_lock_service_provider.cc",
     "dbus/screen_lock_service_provider.h",
-    "device/input_service_proxy.cc",
-    "device/input_service_proxy.h",
     "display/display_configuration_observer.cc",
     "display/display_configuration_observer.h",
     "display/display_preferences.cc",

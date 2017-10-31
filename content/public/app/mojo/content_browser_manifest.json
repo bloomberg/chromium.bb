@@ -77,6 +77,7 @@
           "device:battery_monitor",
           "device:generic_sensor",
           "device:hid",
+          "device:input_service",
           "device:nfc",
           "device:serial",
           "device:vibration",

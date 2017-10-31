@@ -35,6 +35,8 @@ source_set("pairing") {
     "//device/bluetooth",
     "//device/hid",
     "//net",
+    "//services/device/public/interfaces:constants",
+    "//services/service_manager/public/cpp",
   ]
 }
 

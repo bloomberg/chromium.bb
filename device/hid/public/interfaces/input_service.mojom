@@ -36,3 +36,23 @@ struct InputDeviceInfo {
   bool is_touchpad;
   bool is_touchscreen;
 };
+
+interface InputDeviceManagerClient {
+  // Notifies the client that a device is added.
+  InputDeviceAdded(InputDeviceInfo device_info);
+
+  // Notifies the client that a device is removed.
+  InputDeviceRemoved(string id);
+};
+
+interface InputDeviceManager {
+  // Returns list of all currently connected input/hid devices and set client
+  // to InputDeviceManager. The implementation of InputDeviceManager guarantees
+  // the returned callback is always posted earlier than InputDeviceAdded()
+  // and InputDeviceRemoved().
+  GetDevicesAndSetClient(associated InputDeviceManagerClient client) =>
+                        (array<InputDeviceInfo> devices);
+
+  // Returns list of all currently connected input/hid devices only.
+  GetDevices() => (array<InputDeviceInfo> devices);
+};

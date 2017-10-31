@@ -19,6 +19,9 @@
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 #include "device/hid/fake_input_service_linux.h"
+#include "device/hid/public/interfaces/input_service.mojom.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/service_context.h"
 
 namespace chromeos {
 
@@ -70,17 +73,21 @@ class BluetoothHostPairingNoInputTest : public OobeBaseTest {
   using InputDeviceInfoPtr = device::mojom::InputDeviceInfoPtr;
 
   BluetoothHostPairingNoInputTest() {
-    InputServiceProxy::SetUseUIThreadForTesting(true);
-    device::InputServiceLinux::SetForTesting(
-        base::MakeUnique<device::FakeInputServiceLinux>());
+    fake_input_service_manager_ =
+        std::make_unique<device::FakeInputServiceLinux>();
+
+    service_manager::ServiceContext::SetGlobalBinderForTesting(
+        device::mojom::kServiceName, device::mojom::InputDeviceManager::Name_,
+        base::Bind(&device::FakeInputServiceLinux::Bind,
+                   base::Unretained(fake_input_service_manager_.get())));
 
     // Set up the fake Bluetooth environment.
     std::unique_ptr<bluez::BluezDBusManagerSetter> bluez_dbus_setter =
         bluez::BluezDBusManager::GetSetterForTesting();
     bluez_dbus_setter->SetBluetoothAdapterClient(
-        base::MakeUnique<bluez::FakeBluetoothAdapterClient>());
+        std::make_unique<bluez::FakeBluetoothAdapterClient>());
     bluez_dbus_setter->SetBluetoothDeviceClient(
-        base::MakeUnique<bluez::FakeBluetoothDeviceClient>());
+        std::make_unique<bluez::FakeBluetoothDeviceClient>());
 
     // Get pointer.
     fake_bluetooth_device_client_ =
@@ -126,39 +133,34 @@ class BluetoothHostPairingNoInputTest : public OobeBaseTest {
   }
 
   void AddUsbMouse() {
-    InputDeviceInfoPtr mouse = device::mojom::InputDeviceInfo::New();
+    auto mouse = device::mojom::InputDeviceInfo::New();
     mouse->id = "usb_mouse";
     mouse->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
     mouse->type = device::mojom::InputDeviceType::TYPE_USB;
     mouse->is_mouse = true;
-    AddDeviceForTesting(std::move(mouse));
+    fake_input_service_manager_->AddDevice(std::move(mouse));
   }
 
   void AddUsbKeyboard() {
-    InputDeviceInfoPtr keyboard = device::mojom::InputDeviceInfo::New();
+    auto keyboard = device::mojom::InputDeviceInfo::New();
     keyboard->id = "usb_keyboard";
     keyboard->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
     keyboard->type = device::mojom::InputDeviceType::TYPE_USB;
     keyboard->is_keyboard = true;
-    AddDeviceForTesting(std::move(keyboard));
+    fake_input_service_manager_->AddDevice(std::move(keyboard));
   }
 
   void AddBluetoothMouse() {
-    InputDeviceInfoPtr mouse = device::mojom::InputDeviceInfo::New();
+    auto mouse = device::mojom::InputDeviceInfo::New();
     mouse->id = "bluetooth_mouse";
     mouse->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
     mouse->type = device::mojom::InputDeviceType::TYPE_BLUETOOTH;
     mouse->is_mouse = true;
-    AddDeviceForTesting(std::move(mouse));
+    fake_input_service_manager_->AddDevice(std::move(mouse));
   }
 
  private:
-  void AddDeviceForTesting(InputDeviceInfoPtr info) {
-    static_cast<device::FakeInputServiceLinux*>(
-        device::InputServiceLinux::GetInstance())
-        ->AddDeviceForTesting(std::move(info));
-  }
-
+  std::unique_ptr<device::FakeInputServiceLinux> fake_input_service_manager_;
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<TestDelegate> delegate_;
   pairing_chromeos::BluetoothHostPairingController* controller_ = nullptr;

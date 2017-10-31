@@ -51,7 +51,7 @@ bool GetBoolProperty(udev_device* device, const char* key) {
   return (value != 0);
 }
 
-device::mojom::InputDeviceType GetDeviceType(udev_device* device) {
+mojom::InputDeviceType GetDeviceType(udev_device* device) {
   // Bluetooth classic hid devices are registered under bluetooth subsystem.
   // Bluetooth LE hid devices are registered under virtual misc/hid subsystems.
   if (udev_device_get_parent_with_subsystem_devtype(device, kTypeBluetooth,
@@ -60,13 +60,13 @@ device::mojom::InputDeviceType GetDeviceType(udev_device* device) {
                                                      NULL) &&
        udev_device_get_parent_with_subsystem_devtype(device, kSubsystemMisc,
                                                      NULL))) {
-    return device::mojom::InputDeviceType::TYPE_BLUETOOTH;
+    return mojom::InputDeviceType::TYPE_BLUETOOTH;
   }
   if (udev_device_get_parent_with_subsystem_devtype(device, kTypeUsb, NULL))
-    return device::mojom::InputDeviceType::TYPE_USB;
+    return mojom::InputDeviceType::TYPE_USB;
   if (udev_device_get_parent_with_subsystem_devtype(device, kTypeSerio, NULL))
-    return device::mojom::InputDeviceType::TYPE_SERIO;
-  return device::mojom::InputDeviceType::TYPE_UNKNOWN;
+    return mojom::InputDeviceType::TYPE_SERIO;
+  return mojom::InputDeviceType::TYPE_UNKNOWN;
 }
 
 std::string GetParentDeviceName(udev_device* device, const char* subsystem) {
@@ -122,17 +122,17 @@ void InputServiceLinuxImpl::OnDeviceAdded(udev_device* device) {
   if (!devnode)
     return;
 
-  auto info = device::mojom::InputDeviceInfo::New();
+  auto info = mojom::InputDeviceInfo::New();
   info->id = devnode;
 
   const char* subsystem = udev_device_get_subsystem(device);
   if (!subsystem)
     return;
   if (strcmp(subsystem, kSubsystemHid) == 0) {
-    info->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_HID;
+    info->subsystem = mojom::InputDeviceSubsystem::SUBSYSTEM_HID;
     info->name = GetParentDeviceName(device, kSubsystemHid);
   } else if (strcmp(subsystem, kSubsystemInput) == 0) {
-    info->subsystem = device::mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
+    info->subsystem = mojom::InputDeviceSubsystem::SUBSYSTEM_INPUT;
     info->name = GetParentDeviceName(device, kSubsystemInput);
   } else {
     return;
@@ -171,6 +171,11 @@ InputServiceLinux::~InputServiceLinux() {
 }
 
 // static
+void InputServiceLinux::BindRequest(mojom::InputDeviceManagerRequest request) {
+  GetInstance()->AddBinding(std::move(request));
+}
+
+// static
 InputServiceLinux* InputServiceLinux::GetInstance() {
   if (!HasInstance())
     g_input_service_linux = new InputServiceLinuxImpl();
@@ -191,36 +196,47 @@ void InputServiceLinux::SetForTesting(
   g_input_service_linux = service.release();
 }
 
-void InputServiceLinux::AddObserver(Observer* observer) {
-  DCHECK(CalledOnValidThread());
-  if (observer)
-    observers_.AddObserver(observer);
+void InputServiceLinux::AddBinding(mojom::InputDeviceManagerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
-void InputServiceLinux::RemoveObserver(Observer* observer) {
-  DCHECK(CalledOnValidThread());
-  if (observer)
-    observers_.RemoveObserver(observer);
+void InputServiceLinux::GetDevicesAndSetClient(
+    mojom::InputDeviceManagerClientAssociatedPtrInfo client,
+    GetDevicesCallback callback) {
+  GetDevices(std::move(callback));
+
+  if (!client.is_valid())
+    return;
+
+  mojom::InputDeviceManagerClientAssociatedPtr client_ptr;
+  client_ptr.Bind(std::move(client));
+  clients_.AddPtr(std::move(client_ptr));
 }
 
-void InputServiceLinux::GetDevices(
-    std::vector<device::mojom::InputDeviceInfoPtr>* devices) {
+void InputServiceLinux::GetDevices(GetDevicesCallback callback) {
   DCHECK(CalledOnValidThread());
+  std::vector<mojom::InputDeviceInfoPtr> devices;
   for (auto& device : devices_)
-    devices->push_back(device.second->Clone());
+    devices.push_back(device.second->Clone());
+
+  std::move(callback).Run(std::move(devices));
 }
 
-void InputServiceLinux::AddDevice(device::mojom::InputDeviceInfoPtr info) {
-  for (auto& observer : observers_)
-    observer.OnInputDeviceAdded(info->Clone());
+void InputServiceLinux::AddDevice(mojom::InputDeviceInfoPtr info) {
+  auto* device_info = info.get();
+  clients_.ForAllPtrs([device_info](mojom::InputDeviceManagerClient* client) {
+    client->InputDeviceAdded(device_info->Clone());
+  });
 
   devices_[info->id] = std::move(info);
 }
 
 void InputServiceLinux::RemoveDevice(const std::string& id) {
   devices_.erase(id);
-  for (auto& observer : observers_)
-    observer.OnInputDeviceRemoved(id);
+
+  clients_.ForAllPtrs([id](mojom::InputDeviceManagerClient* client) {
+    client->InputDeviceRemoved(id);
+  });
 }
 
 bool InputServiceLinux::CalledOnValidThread() const {
