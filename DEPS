@@ -1436,7 +1436,7 @@ hooks = [
     'action': [
       'python',
       'src/build/fuchsia/update_sdk.py',
-      '04840186b5fc14dc35b12e77f8028330a4bd8333',
+      'f6dffb2fee82a21900fc3a00261dc5844901ea9e',
     ],
   },
 
