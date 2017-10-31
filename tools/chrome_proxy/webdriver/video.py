@@ -9,10 +9,18 @@ from common import TestDriver
 from common import IntegrationTest
 from common import ParseFlags
 from decorators import Slow
+from decorators import ChromeVersionEqualOrAfterM
 
 from selenium.webdriver.common.by import By
 
 class Video(IntegrationTest):
+
+  # Returns the ofcl value in chrome-proxy header.
+  def getChromeProxyOFCL(self, response):
+    self.assertIn('chrome-proxy', response.response_headers)
+    chrome_proxy_header = response.response_headers['chrome-proxy']
+    self.assertIn('ofcl=', chrome_proxy_header)
+    return chrome_proxy_header.split('ofcl=', 1)[1].split(',', 1)[0]
 
   # Check videos are proxied.
   def testCheckVideoHasViaHeader(self):
@@ -46,6 +54,70 @@ class Video(IntegrationTest):
         else:
           self.assertHasChromeProxyViaHeader(response)
       self.assertTrue(saw_video_response, 'No video request seen in test!')
+
+  @ChromeVersionEqualOrAfterM(64)
+  def testRangeRequest(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.LoadURL('http://check.googlezip.net/connect')
+      time.sleep(2) # wait for page load
+      initial_ocl_histogram_count = t.GetHistogram(
+        'Net.HttpOriginalContentLengthWithValidOCL')['count']
+      initial_ocl_histogram_sum = t.GetHistogram(
+        'Net.HttpOriginalContentLengthWithValidOCL')['sum']
+      t.ExecuteJavascript(
+        'var xhr = new XMLHttpRequest();'
+        'xhr.open("GET", "/metrics/local.png", false);'
+        'xhr.setRequestHeader("Range", "bytes=0-200");'
+        'xhr.send();'
+        'return;'
+      )
+      saw_range_response = False
+      for response in t.GetHTTPResponses():
+        self.assertHasChromeProxyViaHeader(response)
+        if response.response_headers['status']=='206':
+          saw_range_response = True
+          self.assertEqual('201', response.response_headers['content-length'])
+          content_range = response.response_headers['content-range']
+          self.assertTrue(content_range.startswith('bytes 0-200/'))
+          compressed_full_content_length = int(content_range.split('/')[1])
+          ofcl = int(self.getChromeProxyOFCL(response))
+          # ofcl should be same as compressed full content length, since no
+          # compression for XHR.
+          self.assertEqual(ofcl, compressed_full_content_length)
+      # One new entry should be added to HttpOriginalContentLengthWithValidOCL
+      # histogram and that should match expected OCL which is
+      # compression_ratio * 201 bytes.
+      self.assertEqual(1, t.GetHistogram(
+        'Net.HttpOriginalContentLengthWithValidOCL')['count']
+                       - initial_ocl_histogram_count)
+      self.assertEqual(t.GetHistogram(
+        'Net.HttpOriginalContentLengthWithValidOCL')['sum']
+                       - initial_ocl_histogram_sum,
+                       ofcl/compressed_full_content_length*201)
+      self.assertTrue(saw_range_response, 'No range request was seen in test!')
+
+  @ChromeVersionEqualOrAfterM(64)
+  def testRangeRequestInVideo(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.LoadURL(
+        'http://check.googlezip.net/cacheable/video/buck_bunny_tiny.html')
+      # Wait for the video to finish playing, plus some headroom.
+      time.sleep(5)
+      responses = t.GetHTTPResponses()
+      self.assertEquals(2, len(responses))
+      saw_range_response = False
+      for response in responses:
+        self.assertHasChromeProxyViaHeader(response)
+        if response.response_headers['status']=='206':
+          saw_range_response = True
+          content_range = response.response_headers['content-range']
+          compressed_full_content_length = int(content_range.split('/')[1])
+          ofcl = int(self.getChromeProxyOFCL(response))
+          # ofcl should be greater than the compressed full content length.
+          self.assertTrue(ofcl > compressed_full_content_length)
+      self.assertTrue(saw_range_response, 'No range request was seen in test!')
 
   # Check the compressed video has the same frame count, width, height, and
   # duration as uncompressed.
