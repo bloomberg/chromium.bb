@@ -20,6 +20,8 @@ void IdlenessDetector::Shutdown() {
 }
 
 void IdlenessDetector::WillCommitLoad() {
+  network_2_quiet_ = -1;
+  network_0_quiet_ = -1;
   network_2_quiet_start_time_ = 0;
   network_0_quiet_start_time_ = 0;
 }
