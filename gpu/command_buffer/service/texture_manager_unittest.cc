@@ -92,7 +92,8 @@ class TextureManagerTest : public GpuServiceTest {
   }
 
   void TearDown() override {
-    manager_->Destroy(false);
+    manager_->MarkContextLost();
+    manager_->Destroy();
     manager_.reset();
     GpuServiceTest::TearDown();
   }
@@ -263,7 +264,8 @@ TEST_F(TextureManagerTest, UseDefaultTexturesTrue) {
 
   // TODO(vmiura): Test GL_TEXTURE_EXTERNAL_OES & GL_TEXTURE_RECTANGLE_ARB.
 
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureManagerTest, UseDefaultTexturesFalse) {
@@ -282,7 +284,8 @@ TEST_F(TextureManagerTest, UseDefaultTexturesFalse) {
 
   // TODO(vmiura): Test GL_TEXTURE_EXTERNAL_OES & GL_TEXTURE_RECTANGLE_ARB.
 
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureManagerTest, UseDefaultTexturesTrueES3) {
@@ -299,7 +302,8 @@ TEST_F(TextureManagerTest, UseDefaultTexturesTrueES3) {
   EXPECT_TRUE(manager.GetDefaultTextureInfo(GL_TEXTURE_3D) != NULL);
   EXPECT_TRUE(manager.GetDefaultTextureInfo(GL_TEXTURE_2D_ARRAY) != NULL);
 
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureManagerTest, UseDefaultTexturesFalseES3) {
@@ -316,7 +320,8 @@ TEST_F(TextureManagerTest, UseDefaultTexturesFalseES3) {
   EXPECT_TRUE(manager.GetDefaultTextureInfo(GL_TEXTURE_3D) == NULL);
   EXPECT_TRUE(manager.GetDefaultTextureInfo(GL_TEXTURE_2D_ARRAY) == NULL);
 
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureManagerTest, TextureUsageExt) {
@@ -340,7 +345,8 @@ TEST_F(TextureManagerTest, TextureUsageExt) {
       GL_TEXTURE_USAGE_ANGLE, GL_FRAMEBUFFER_ATTACHMENT_ANGLE, GL_NO_ERROR);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_ATTACHMENT_ANGLE),
             texture_ref->texture()->usage());
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureManagerTest, Destroy) {
@@ -363,7 +369,7 @@ TEST_F(TextureManagerTest, Destroy) {
       .RetiresOnSaturation();
   TestHelper::SetupTextureManagerDestructionExpectations(
       gl_.get(), false, false, {}, kUseDefaultTextures);
-  manager.Destroy(true);
+  manager.Destroy();
   // Check that resources got freed.
   texture = manager.GetTexture(kClient1Id);
   ASSERT_TRUE(texture == NULL);
@@ -515,7 +521,8 @@ TEST_F(TextureManagerTest, ValidForTargetNPOT) {
   EXPECT_TRUE(manager.ValidForTarget(GL_TEXTURE_2D, 1, 5, 2, 1));
   // Check NPOT height on level 1
   EXPECT_TRUE(manager.ValidForTarget(GL_TEXTURE_2D, 1, 2, 5, 1));
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureManagerTest, AlphaLuminanceCompatibilityProfile) {
@@ -707,7 +714,8 @@ class TextureTestBase : public GpuServiceTest {
       }
       texture_ref_ = NULL;
     }
-    manager_->Destroy(false);
+    manager_->MarkContextLost();
+    manager_->Destroy();
     manager_.reset();
     GpuServiceTest::TearDown();
   }
@@ -1037,7 +1045,8 @@ TEST_F(TextureTest, NPOT2DNPOTOK) {
   manager.MarkMipmapsGenerated(texture_ref);
   EXPECT_TRUE(TextureTestHelper::IsTextureComplete(texture));
   EXPECT_TRUE(manager.CanRender(texture_ref));
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureTest, POTCubeMap) {
@@ -1335,7 +1344,8 @@ TEST_F(TextureTest, FloatNotLinear) {
       gl_.get(), error_state_.get(), &manager, texture_ref,
       GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST, GL_NO_ERROR);
   EXPECT_TRUE(manager.CanRender(texture_ref));
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureTest, FloatLinear) {
@@ -1356,7 +1366,8 @@ TEST_F(TextureTest, FloatLinear) {
   manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
                        GL_RGBA, GL_FLOAT, gfx::Rect(1, 1));
   EXPECT_TRUE(manager.CanRender(texture_ref));
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureTest, HalfFloatNotLinear) {
@@ -1385,7 +1396,8 @@ TEST_F(TextureTest, HalfFloatNotLinear) {
       gl_.get(), error_state_.get(), &manager, texture_ref,
       GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST, GL_NO_ERROR);
   EXPECT_TRUE(manager.CanRender(texture_ref));
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureTest, HalfFloatLinear) {
@@ -1406,7 +1418,8 @@ TEST_F(TextureTest, HalfFloatLinear) {
   manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
                        GL_RGBA, GL_HALF_FLOAT_OES, gfx::Rect(1, 1));
   EXPECT_TRUE(manager.CanRender(texture_ref));
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureTest, EGLImageExternal) {
@@ -1425,7 +1438,8 @@ TEST_F(TextureTest, EGLImageExternal) {
   Texture* texture = texture_ref->texture();
   EXPECT_EQ(static_cast<GLenum>(GL_TEXTURE_EXTERNAL_OES), texture->target());
   EXPECT_FALSE(manager.CanGenerateMipmaps(texture_ref));
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureTest, DepthTexture) {
@@ -1444,7 +1458,8 @@ TEST_F(TextureTest, DepthTexture) {
   manager.SetLevelInfo(texture_ref, GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 4, 4,
                        1, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, gfx::Rect());
   EXPECT_FALSE(manager.CanGenerateMipmaps(texture_ref));
-  manager.Destroy(false);
+  manager.MarkContextLost();
+  manager.Destroy();
 }
 
 TEST_F(TextureTest, SafeUnsafe) {
@@ -2232,9 +2247,11 @@ class SharedTextureTest : public GpuServiceTest {
   }
 
   void TearDown() override {
-    texture_manager2_->Destroy(false);
+    texture_manager2_->MarkContextLost();
+    texture_manager2_->Destroy();
     texture_manager2_.reset();
-    texture_manager1_->Destroy(false);
+    texture_manager1_->MarkContextLost();
+    texture_manager1_->Destroy();
     texture_manager1_.reset();
     GpuServiceTest::TearDown();
   }

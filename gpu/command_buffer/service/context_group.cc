@@ -582,7 +582,9 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
   }
 
   if (texture_manager_ != NULL) {
-    texture_manager_->Destroy(have_context);
+    if (!have_context)
+      texture_manager_->MarkContextLost();
+    texture_manager_->Destroy();
     texture_manager_.reset();
     ReportProgress();
   }
