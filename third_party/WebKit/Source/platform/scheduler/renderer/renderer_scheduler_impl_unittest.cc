@@ -707,6 +707,16 @@ class RendererSchedulerImplTest : public ::testing::Test {
         &RendererSchedulerImpl::UseCaseToString);
   }
 
+  static scoped_refptr<TaskQueue> ThrottableTaskQueue(
+      WebFrameSchedulerImpl* scheduler) {
+    return scheduler->ThrottleableTaskQueue();
+  }
+
+  static scoped_refptr<TaskQueue> LoadingTaskQueue(
+      WebFrameSchedulerImpl* scheduler) {
+    return scheduler->LoadingTaskQueue();
+  }
+
   std::unique_ptr<base::SimpleTestTickClock> clock_;
   TaskQueue::Task fake_task_;
   scoped_refptr<MainThreadTaskQueue> fake_queue_;
@@ -3828,10 +3838,7 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
       web_view_scheduler->CreateWebFrameSchedulerImpl(
           nullptr, WebFrameScheduler::FrameType::kSubframe);
 
-  scoped_refptr<WebTaskRunner> timer_wtr =
-      web_frame_scheduler->ThrottleableTaskRunner();
-  TaskQueue* timer_tq =
-      static_cast<WebTaskRunnerImpl*>(timer_wtr.get())->GetTaskQueue();
+  TaskQueue* timer_tq = ThrottableTaskQueue(web_frame_scheduler.get()).get();
 
   web_frame_scheduler->SetCrossOrigin(true);
   web_frame_scheduler->SetFrameVisible(false);
@@ -3892,8 +3899,7 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
 
   scheduler_->TimerTaskQueue()->PostTask(FROM_HERE, base::Bind(NullTask));
 
-  web_frame_scheduler->LoadingTaskRunner()
-      ->ToSingleThreadTaskRunner()
+  LoadingTaskQueue(web_frame_scheduler.get())
       ->PostDelayedTask(FROM_HERE, base::Bind(NullTask),
                         TimeDelta::FromMilliseconds(10));
 

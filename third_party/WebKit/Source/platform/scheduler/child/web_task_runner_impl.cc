@@ -17,8 +17,9 @@ namespace blink {
 namespace scheduler {
 
 scoped_refptr<WebTaskRunnerImpl> WebTaskRunnerImpl::Create(
-    scoped_refptr<TaskQueue> task_queue) {
-  return WTF::AdoptRef(new WebTaskRunnerImpl(std::move(task_queue)));
+    scoped_refptr<TaskQueue> task_queue,
+    base::Optional<TaskType> task_type) {
+  return WTF::AdoptRef(new WebTaskRunnerImpl(std::move(task_queue), task_type));
 }
 
 bool WebTaskRunnerImpl::RunsTasksInCurrentSequence() {
@@ -34,8 +35,9 @@ double WebTaskRunnerImpl::MonotonicallyIncreasingVirtualTimeSeconds() const {
          static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
-WebTaskRunnerImpl::WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue)
-    : task_queue_(std::move(task_queue)) {}
+WebTaskRunnerImpl::WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue,
+                                     base::Optional<TaskType> task_type)
+    : task_queue_(std::move(task_queue)), task_type_(task_type) {}
 
 WebTaskRunnerImpl::~WebTaskRunnerImpl() {}
 
@@ -56,9 +58,8 @@ WebTaskRunnerImpl::ToSingleThreadTaskRunner() {
 bool WebTaskRunnerImpl::PostDelayedTask(const base::Location& location,
                                         base::OnceClosure task,
                                         base::TimeDelta delay) {
-  // TODO(hajimehoshi): Give an appropriate task type
-  return task_queue_->PostTaskWithMetadata(
-      TaskQueue::PostedTask(std::move(task), location, delay));
+  return task_queue_->PostTaskWithMetadata(TaskQueue::PostedTask(
+      std::move(task), location, delay, base::Nestable::kNestable, task_type_));
 }
 
 }  // namespace scheduler

@@ -10,9 +10,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 namespace scheduler {
@@ -21,7 +23,8 @@ class TaskQueue;
 class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
  public:
   static scoped_refptr<WebTaskRunnerImpl> Create(
-      scoped_refptr<TaskQueue> task_queue);
+      scoped_refptr<TaskQueue> task_queue,
+      base::Optional<TaskType> task_type = base::nullopt);
 
   // WebTaskRunner implementation:
   bool RunsTasksInCurrentSequence() override;
@@ -38,12 +41,14 @@ class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
                        base::TimeDelta) override;
 
  private:
-  explicit WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue);
+  WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue,
+                    base::Optional<TaskType> task_type);
   ~WebTaskRunnerImpl() override;
 
   base::TimeTicks Now() const;
 
   scoped_refptr<TaskQueue> task_queue_;
+  base::Optional<TaskType> task_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTaskRunnerImpl);
 };

@@ -32,6 +32,18 @@ class MainThreadTaskQueue;
 class TaskQueue;
 class WebViewSchedulerImpl;
 
+namespace renderer_scheduler_impl_unittest {
+class RendererSchedulerImplTest;
+}
+
+namespace web_frame_scheduler_impl_unittest {
+class WebFrameSchedulerImplTest;
+}
+
+namespace web_view_scheduler_impl_unittest {
+class WebViewSchedulerImplTest;
+}
+
 class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
  public:
   WebFrameSchedulerImpl(RendererSchedulerImpl* renderer_scheduler,
@@ -70,18 +82,11 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
 
   void OnTraceLogEnabled();
 
-  // TODO(hajimehoshi): Some tests like RendererSchedulerImplTest depends on
-  // these functions. These are public or a lot of FORWARD_DECLARE_TEST and
-  // FRIEND_TEST_ALL_PREFIXES would be required. Fix the tests not to use these.
-  scoped_refptr<WebTaskRunner> LoadingTaskRunner();
-  scoped_refptr<WebTaskRunner> LoadingControlTaskRunner();
-  scoped_refptr<WebTaskRunner> ThrottleableTaskRunner();
-  scoped_refptr<WebTaskRunner> DeferrableTaskRunner();
-  scoped_refptr<WebTaskRunner> PausableTaskRunner();
-  scoped_refptr<WebTaskRunner> UnpausableTaskRunner();
-
  private:
   friend class WebViewSchedulerImpl;
+  friend class renderer_scheduler_impl_unittest::RendererSchedulerImplTest;
+  friend class web_frame_scheduler_impl_unittest::WebFrameSchedulerImplTest;
+  friend class web_view_scheduler_impl_unittest::WebViewSchedulerImplTest;
 
   class ActiveConnectionHandleImpl : public ActiveConnectionHandle {
    public:
@@ -104,6 +109,13 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
 
   void DidOpenActiveConnection();
   void DidCloseActiveConnection();
+
+  scoped_refptr<TaskQueue> LoadingTaskQueue();
+  scoped_refptr<TaskQueue> LoadingControlTaskQueue();
+  scoped_refptr<TaskQueue> ThrottleableTaskQueue();
+  scoped_refptr<TaskQueue> DeferrableTaskQueue();
+  scoped_refptr<TaskQueue> PausableTaskQueue();
+  scoped_refptr<TaskQueue> UnpausableTaskQueue();
 
   base::WeakPtr<WebFrameSchedulerImpl> AsWeakPtr();
 
