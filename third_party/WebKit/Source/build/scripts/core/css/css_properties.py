@@ -187,7 +187,7 @@ class CSSProperties(object):
         set_if_none(property_, 'inherited', False)
 
         # Initial function, Getters and Setters for ComputedStyle.
-        set_if_none(property_, 'initial', 'Initial' + name)
+        property_['initial'] = 'Initial' + name
         simple_type_name = str(property_['type_name']).split('::')[-1]
         set_if_none(property_, 'name_for_methods', name)
         set_if_none(property_, 'type_name', 'E' + name)

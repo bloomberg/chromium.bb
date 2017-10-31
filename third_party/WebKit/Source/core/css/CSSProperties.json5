@@ -269,9 +269,6 @@
     // Tweaks how we choose defaults for getter, setter, initial and type_name.
     // For example, setting this to BlendMode will make us use a setter of
     // setBlendMode
-    // - initial
-    // The initial value accessor on the ComputedStyle, defaults to
-    // e.g. initialBoxShadow
     // - getter
     // The ComputedStyle getter, defaults to e.g. borderBottomLeft
     // - setter
@@ -284,8 +281,6 @@
     getter: {
     },
     setter: {
-    },
-    initial: {
     },
     type_name: {
     },
@@ -1692,7 +1687,6 @@
       api_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
-      initial: "InitialLetterWordSpacing",
       converter: "ConvertSpacing",
     },
     {
@@ -2386,7 +2380,6 @@
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
       typedom_types: ["Length", "Percent"],
-      initial: "InitialScrollPadding",
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2401,7 +2394,6 @@
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
       typedom_types: ["Length", "Percent"],
-      initial: "InitialScrollPadding",
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2416,7 +2408,6 @@
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
       typedom_types: ["Length", "Percent"],
-      initial: "InitialScrollPadding",
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2431,7 +2422,6 @@
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
       typedom_types: ["Length", "Percent"],
-      initial: "InitialScrollPadding",
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2485,7 +2475,6 @@
       api_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      initial: "InitialScrollSnapMargin",
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2499,7 +2488,6 @@
       api_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      initial: "InitialScrollSnapMargin",
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2513,7 +2501,6 @@
       api_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      initial: "InitialScrollSnapMargin",
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -2527,7 +2514,6 @@
       api_methods: ["ParseSingleValue"],
       runtime_flag: "CSSScrollSnapPoints",
       include_paths: ["platform/Length.h"],
-      initial: "InitialScrollSnapMargin",
       type_name: "Length",
       converter: "ConvertLength",
       direction_aware_options: {
@@ -3458,8 +3444,8 @@
       field_template: "keyword",
       keywords: ["logical", "visual"],
       default_value: "logical",
+      name_for_methods: "RtlOrdering",
       setter: "SetRtlOrdering",
-      initial: "InitialRtlOrdering",
       type_name: "EOrder",
     },
     {
@@ -3670,7 +3656,6 @@
       api_methods: ["ParseSingleValue"],
       interpolable: true,
       inherited: true,
-      initial: "InitialLetterWordSpacing",
       converter: "ConvertSpacing",
     },
     // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap'
