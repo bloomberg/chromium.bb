@@ -123,10 +123,9 @@ class CORE_EXPORT NGOffsetMapping {
   // mapping object easier when we are holding LayoutObject instead of Node.
   static const NGOffsetMapping* GetFor(const LayoutObject*);
 
-  // Returns the NGOffsetMappingUnit that contains the given offset in the DOM
-  // node. If there are multiple qualifying units, returns the last one.
-  const NGOffsetMappingUnit* GetMappingUnitForDOMOffset(const Node&,
-                                                        unsigned) const;
+  // Returns the NGOffsetMappingUnit that contains the given position.
+  // If there are multiple qualifying units, returns the last one.
+  const NGOffsetMappingUnit* GetMappingUnitForPosition(const Position&) const;
 
   // Returns all NGOffsetMappingUnits whose DOM ranges has non-empty (but
   // possibly collapsed) intersections with the passed in DOM offset range.
