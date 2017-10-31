@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">उच्च तीव्रता मोड</translation>
 <translation id="2597972630681408282">रात्रीचा प्रकाश: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
+<translation id="2675319268637823299">अॅडमिनिस्ट्रेटरने <ph name="USER_EMAIL" /> साठी मल्टिपल साइन-इनची अनुमती दिलेली नाही.
+    सुरू ठेवण्यासाठी सर्व वापरकर्त्यांनी साइन आउट करणे आवश्यक आहे.</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> मध्ये सत्र समाप्त होते. आपल्याला साइन आउट केले जाईल.</translation>
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
 <translation id="2761704814324807722">स्थिती ट्रे, वेळ <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">कनेक्ट केले</translation>
 <translation id="3371140690572404006">USB-C डिव्‍हाइस (उजव्‍या बाजूचे पुढील पोर्ट)</translation>
 <translation id="3400357268283240774">अतिरिक्त सेटिंग्ज</translation>
+<translation id="3413817803639110246">आत्ताच पाहण्यासाठी काहीही नाही</translation>
 <translation id="3445925074670675829">USB-C डिव्‍हाइस</translation>
 <translation id="3465566417615315331">आपला फोटो क्लिक करा</translation>
 <translation id="3473479545200714844">स्क्रीन भिंग</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">कीबोर्ड आच्छादन</translation>
 <translation id="639644700271529076">CAPS LOCK बंद आहे</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">सर्व पूर्ण झाले</translation>
 <translation id="6452181791372256707">नाकारा</translation>
 <translation id="6453179446719226835">भाषा बदलण्यात आली आहे</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> मध्ये स्क्रीन विस्तृत करत आहे</translation>
@@ -299,6 +303,7 @@
 <translation id="8825534185036233643">दोन पेक्षा जास्त प्रदर्शनासाठी मि‍ररिंग समर्थित नाही.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8870509716567206129">अॅप विभाजित-स्क्रीनला सपोर्ट करत नाही.</translation>
 <translation id="8878886163241303700">स्क्रीन विस्तृत करत आहे</translation>
 <translation id="8921624153894383499">Google साहाय्यक ही भाषा बोलत नाही.</translation>
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
@@ -310,7 +315,7 @@
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> प्रदर्शन काढले</translation>
 <translation id="9111102763498581341">अनलॉक करा</translation>
 <translation id="9151726767154816831">अद्यतनासाठी रीस्टार्ट करा आणि powerwash करा</translation>
-<translation id="9181036778675416867">नोट, स्क्रीनशॉट घेण्यासाठी व साहाय्यक, लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
+<translation id="9181036778675416867">नोट व स्क्रीनशॉट घेण्यासाठी, तसेच साहाय्यक, लेझर पॉइंटर किंवा भिंग वापरण्यासाठी शेल्फवरील स्टायलस बटणावर टॅप करा.</translation>
 <translation id="9194617393863864469">दुसरा वापरकर्ता साइन इन करा...</translation>
 <translation id="9201131092683066720">बॅटरी <ph name="PERCENTAGE" />% भरली आहे.</translation>
 <translation id="9210037371811586452">एकीकृत डेस्कटॉप मोड मधून बाहेर पडत आहे</translation>

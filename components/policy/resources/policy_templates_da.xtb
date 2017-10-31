@@ -98,6 +98,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1435659902881071157">Netværkskonfiguration på enhedsniveau</translation>
 <translation id="1438739959477268107">Standardindstilling for nøglegenerering</translation>
 <translation id="1454846751303307294">Gør det muligt at oprette en liste over webadressemønstre for at angive websites, som ikke må køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultJavaScriptSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
+<translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-klienter):</translation>
 <translation id="1464848559468748897">Kontrollér brugeradfærden i en session med flere profiler på <ph name="PRODUCT_OS_NAME" />-enheder.
 
       Hvis politikken er angivet til "MultiProfileUserBehaviorUnrestricted", kan brugeren enten være primær eller sekundær bruger i en session med flere profiler.
@@ -285,6 +286,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2067011586099792101">Bloker adgangen til websites uden for indholdspakker</translation>
 <translation id="2077129598763517140">Brug hardwareacceleration, når det er muligt</translation>
 <translation id="2077273864382355561">Skærmslukforsinkelse, når batteriet bruges</translation>
+<translation id="2082205219176343977">Konfigurer den Chrome-version, der som minimum påkræves for enheden.</translation>
 <translation id="209586405398070749">Stabil kanal</translation>
 <translation id="2098658257603918882">Aktiver rapportering af brugs- og nedbrudsrelaterede data</translation>
 <translation id="2113068765175018713">Begræns oppetid for enheden vha. automatisk genstart</translation>
@@ -369,6 +371,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2303795211377219696">Aktivér AutoFyld for betalingskort</translation>
 <translation id="2309390639296060546">Standardindstilling for geoplacering</translation>
 <translation id="2312134445771258233">Giver dig mulighed for at konfigurere de sider, der indlæses ved opstart. Indholdet af listen "Webadresser, der skal åbnes ved opstart" ignoreres, medmindre du vælger "Åbn en liste over webadresser" i "Handling ved opstart".</translation>
+<translation id="2334591568684482454">Konfigurerer tilgængelighed og adfærd for funktionen til opdatering af <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware.
+
+      Individuelle indstillinger kan angives i JSON-egenskaber:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Hvis den er angivet til <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, kan brugere aktivere Powerwash-processen for at installere en <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmwareopdatering.
+
+      Hvis politikken ikke er angivet, er funktionen til opdatering af <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware ikke tilgængelig.</translation>
 <translation id="2337466621458842053">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor billedvisning tillades. Hvis denne politik ikke er angivet, anvendes den globale standardværdi for alle websites, enten fra politikken "DefaultImagesSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="2372547058085956601">Forsinkelse for automatisk login på offentlige sessioner.
 
@@ -540,6 +549,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, vil denne computer kun tillade forbindelser fra klientcomputere på det lokale netværk.
  
           Hvis denne politik ikke er angivet, aktiveres denne indstilling.</translation>
+<translation id="2823870601012066791">Windows-registreringsdatabase for <ph name="PRODUCT_OS_NAME" />-klienter:</translation>
 <translation id="2824715612115726353">Aktiver inkognitotilstand</translation>
 <translation id="2838830882081735096">Tillad ikke datamigrering og ARC</translation>
 <translation id="2844404652289407061">Aktiverer tilgængeligheden af funktionen "Tryk for at søge" i indholdsvisningen i <ph name="PRODUCT_NAME" />.
@@ -875,6 +885,25 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 <translation id="4027608872760987929">Aktiver standardsøgemaskine</translation>
 <translation id="4039085364173654945">Kontrollerer, om underlæggende tredjepartsindhold på en side har tilladelse til at vise et pop op-vindue med dialogboksen HTTP Basic Auth. Den er typisk deaktiveret som et phishingforsvar. Hvis denne politik ikke er angivet, deaktiveres den og underlæggende tredjepartsindhold har ikke tilladelse til at vise et pop op-vindue med dialogboksen HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Deaktiver SPDY-protokol</translation>
+<translation id="4077363032873906037">Aktiverer den begrænsede funktion til login i Google Apps for <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre denne indstilling.
+
+      Hvis du definerer denne indstilling, kan brugerne kun få adgang til Google
+      Apps via konti fra de angivne domæner (bemærk, at dette ikke
+      gælder gmail.com/googlemail.com).
+
+      Denne indstilling forhindrer IKKE brugerne i at logge ind på en administreret enhed,
+      der kræver Google-godkendelse. Brugerne kan stadig logge ind
+      på konti fra andre domæner, men de modtager en fejlmeddelelse,
+      hvis de forsøger at bruge Google Apps med disse konti.
+
+      Hvis du undlader at markere/konfigurere denne indstilling,
+      kan brugerne få adgang til Google Apps med enhver konto.
+
+      Som følge af denne politik føjes overskriften X-GoogApps-Allowed-Domains til alle
+      HTTP- og HTTPS-anmodninger på alle google.com-domæner, som beskrevet på
+      https://support.google.com/a/answer/1668854.
+
+      Brugerne kan ikke ændre eller tilsidesætte denne indstilling.</translation>
 <translation id="408029843066770167">Tillad forespørgsler til en Google-tidstjeneste</translation>
 <translation id="4088589230932595924">Inkognitotilstand er gennemtvunget</translation>
 <translation id="4088983553732356374">Giver dig mulighed for at angive, om websites må angive lokale data. Angivelse af lokale data kan enten være tilladt for alle websites eller forbudt for alle websites.
@@ -1055,6 +1084,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Hvis du angiver denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
           Hvis denne politik ikke angives, deaktiveres den store markør, men brugeren kan når som helst slå funktionen til.</translation>
+<translation id="4802905909524200151">Konfigurering af adfærd i forbindelse med opdatering af <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4807950475297505572">De brugere, der har været inaktive i længst tid, fjernes, indtil der er frigjort tilstrækkeligt med plads.</translation>
 <translation id="4815725774537609998">Denne politik er forældet, brug i stedet ProxyMode.
 
@@ -1088,6 +1118,27 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Hvis denne politik er angivet til falsk, ignoreres anmodninger om aktiveringslås for skærm.</translation>
 <translation id="4876805738539874299">Maksimalversion af SSL er aktiveret</translation>
+<translation id="4881315447528084360">Angiver en liste over apps og udvidelser, der er installeret.
+          Dette foregår i baggrunden uden brugerinteraktion og kan ikke
+          afinstalleres af brugeren. Alle tilladelser, som apps/udvidelser
+          anmoder om, gives implicit uden brugerinteraktion, herunder
+          eventuelle ekstra tilladelser, der anmodes om af fremtidige
+          versioner af appen/udvidelsen. Derudover gives der tilladelser til
+          udvidelses-API'erne enterprise.deviceAttributes og enterprise.platformKeys.
+          (Disse to API'er er ikke tilgængelige for apps/udvidelser, der ikke
+          tvangsinstalleres).
+
+          Denne politik prioriteres, hvis der skulle opstå en konflikt med en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-politik. Hvis en app eller udvidelse, som tidligere er tvangsinstalleret, fjernes fra denne liste, afinstalleres den automatisk af <ph name="PRODUCT_NAME" />.
+
+          I forbindelse med Windows-forekomster, som ikke er knyttet til et <ph name="MS_AD_NAME" />-domæne, er gennemtvunget installation begrænset til apps og udvidelser, som fås i Chrome Webshop.
+
+          Bemærk, at kildekoden i alle udvidelser kan ændres af brugere via Udviklerværktøjer (hvilket kan medføre, at udvidelsen ikke fungerer). Hvis du vil undgå dette, skal politikken <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> angives.
+
+          Hvert listepunkt for politikken er en streng, som indeholder et udvidelses-id og en "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver, som f.eks. kan findes på <ph name="CHROME_EXTENSIONS_LINK" /> når udviklertilstanden bruges. "Opdateringswebadressen" skal pege på et XML-dokument med manifest om opdatering, som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />. Bemærk, at "opdateringswebadressen", der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse, som er angivet i udvidelsens manifest.
+
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer f.eks. appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> fra "standardopdateringswebadressen" fra Chrome Webshop. Du kan få flere oplysninger om hosting af udvidelser her: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Hvis denne politik ikke angives, installeres ingen apps eller udvidelser automatisk, og brugeren kan afinstallere alle apps og udvidelser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Definer domæner, der har adgang til Google Apps</translation>
 <translation id="4897928009230106190">Angiver de parametre, der anvendes ved forslagssøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes den med rigtige søgetermdata.
 
@@ -1110,6 +1161,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4980635395568992380">Datatype:</translation>
 <translation id="4983201894483989687">Tillad, at der køres forældede plugins</translation>
 <translation id="4988291787868618635">Påkrævet handling for inaktivitetsforsinkelse</translation>
+<translation id="4995548127349206948">Om NTLMv2-godkendelse er aktiveret.</translation>
 <translation id="5047604665028708335">Tillad adgang til websites uden for indholdspakker.</translation>
 <translation id="5052081091120171147">Denne politik tvinger import af browserhistorikken fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres der ikke nogen browserdata. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5056708224511062314">Luppen er deaktiveret</translation>
@@ -1274,13 +1326,13 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
       ændres eller fjernes uden varsel, og for hvilke ingen garantier stilles, herunder
       garantier vedrørende deres sikkerheds- og privatlivsegenskaber.
 
-      Disse politikker er udelukkende beregnet til at blive brugt til at konfigurere
+      Disse politikker er udelukkende beregnet til at blive brugt til konfigurering af
       <ph name="PRODUCT_NAME" /> internt i din virksomhed.
       Brug af disse politikker uden for din virksomhed (f.eks. i et offentligt
       distribueret program) betragtes som malware og vil højst sandsynligt
       blive markeret som malware af Google og antivirus-leverandører.
 
-      Du behøver ikke konfigurere disse indstillinger manuelt.
+      Du behøver ikke at konfigurere disse indstillinger manuelt.
       Du kan downloade tilgængelige Windows-, Mac- og Linux-skabeloner fra <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
       Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via
@@ -1428,6 +1480,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6076099373507468537">Definerer listen over USB-enheder, der gerne må frigøres fra deres kernedriver, så de kan bruges via chrome.usb API direkte i en webapplikation. Poster er par bestående af et USB-leverandør-id og et produkt-id til identifikation af en bestemt hardware.
 
       Hvis denne politik ikke konfigureres, er listen over USB-enheder, der kan frigøres, tom.</translation>
+<translation id="6083631234867522991">Windows (Windows-klienter):</translation>
 <translation id="6093156968240188330">Giv eksterne brugere tilladelse til at interagere med vinduer med administratorrettigheder i eksterne hjælpesessioner</translation>
 <translation id="6095999036251797924">Angiver det tidsrum uden input fra brugeren, der går, før skærmen låses, når enheden kører på strømforsyning eller batteri.
 
@@ -1898,6 +1951,39 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="7841880500990419427">Minimumsversion af TLS som backup</translation>
 <translation id="7842869978353666042">Konfigurer indstillinger for Google Drev</translation>
 <translation id="7843525027689416831">Angiver de markeringer, der skal anvendes for <ph name="PRODUCT_NAME" /> ved opstart. De angivne markeringer anvendes kun på loginskærmen. Markeringer, der angives via denne politik, oveføres ikke til brugersessioner.</translation>
+<translation id="7844537954833753199">Konfigurerer indstillinger for administration af udvidelser for <ph name="PRODUCT_NAME" />.
+
+          Denne politik styrer flere indstillinger, bl.a. indstillinger, der styres af eksisterende politikker, der vedrører udvidelser. Denne politik tilsidesætter eventuelle ældre politikker, hvis begge er angivet.
+
+          Denne politik knytter et udvidelses-id eller en opdateringswebadresse til dens konfiguration. Ved hjælp af et udvidelses-id bliver konfigurationen udelukkende anvendt til den angivne udvidelse. Der kan angives en standardkonfiguration for det særlige id <ph name="DEFAULT_SCOPE" />, som anvendes til alle udvidelser, der ikke har fået angivet en standardkonfiguration i denne politik. Ved hjælp af en opdateringswebadresse anvendes konfigurationen til alle udvidelser, hvor den nøjagtige opdateringswebadresse er angivet i manifestfilen for denne udvidelse, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Konfigurationen for hver udvidelse (eller udvidelser med samme opdateringswebadresse) er en anden ordbog, der kan indeholde de felter, der er dokumenteret nedenfor.
+
+          <ph name="INSTALLATION_MODE" />: Tilknytter en streng, der angiver installationstilstanden for udvidelsen. De gyldige strenge er:
+          * <ph name="ALLOWED" />: Tillader, at udvidelsen installeres af brugeren. Dette er standardadfærden.
+          * <ph name="BLOCKED" />: Blokerer for installation af udvidelsen.
+          * <ph name="FORCE_INSTALLED" />: Udvidelsen installeres automatisk og kan ikke fjernes af brugeren.
+          * <ph name="NORMAL_INSTALLED" />: Udvidelsen installeres automatisk, men kan deaktiveres af brugeren.
+
+          <ph name="INSTALLTION_MODE" /> kan også konfigureres for flere udvidelser, bl.a. udvidelsen <ph name="DEFAULT_SCOPE" /> (som standardindstillinger), og for udvidelser med samme opdateringswebadresse. Det er kun værdierne <ph name="ALLOWED" /> og <ph name="BLOCKED" />, der kan bruges i dette tilfælde.
+
+          Hvis denne tilstand er angivet som <ph name="FORCE_INSTALLED" /> eller <ph name="NORMAL_INSTALLED" />, skal der også konfigureres en <ph name="UPDATE_URL" />. Bemærk, at opdateringswebadressen, der er anigvet i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen bruger den opdateringswebadresse, der er angivet i udvidelsens manifestfil. Som nævnt ovenfor skal opdateringswebadressen pege på et Update Manifest XML-dokument.
+
+          <ph name="BLOCKED_PERMISSIONS" />: Tilknytter en liste over strenge, der angiver de blokerede API-tilladelser for udvidelsen. Navnene på tilladelserne er de samme som de tilladelsesstrenge, der er angivet i udvidelsens manifestfil som beskrevet i <ph name="LINK_TO_EXTENSION_DOC3" />. Denne indstilling kan også konfigureres for udvidelsen <ph name="DEFAULT_SCOPE" />. Hvis udvidelsen kræver en tilladelse, der er på blokeringslisten, tillades det ikke, at den indlæses. Hvis den indeholder en blokeret tilladelse som valgfrit krav, håndteres den på normal vis, men anmodninger om modstridende tilladelser afvises automatisk på udløsningstidspunktet.
+
+          <ph name="ALLOWED_PERMISSIONS" />: Svarer til <ph name="BLOCKED_PERMISSIONS" />, men tillader i stedet udtrykkeligt nogle tilladelser, som kan være blokeret af den globalt blokerede liste over tilladelser, og som dermed ikke kan konfigureres for udvidelsen <ph name="DEFAULT_SCOPE" />. Bemærk, at denne indstilling ikke automatisk giver tildelte tilladelser til udvidelser.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: Tilknytter en versionsstreng. Formatet for versionsstrengen er det samme som det, der bruges i udvidelsesmanifestfilen, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC4" />. En udvidelse med en version, der er ældre end den angivne minimumsversion, deaktiveres. Dette gælder også for udvidelser med tvungen installation.
+
+          Følgende indstillinger kan kun bruges til standardkonfigurationen <ph name="DEFAULT_SCOPE" />:
+
+          <ph name="INSTALL_SOURCES" />: Hvert emne på listen har et matchmønster, der minder om en udvidelse (se <ph name="LINK_TO_MATCH_PATTERNS" />). Brugerne vil være i stand til nemt at installere elementer fra enhver webadresse, der matcher et element på denne liste. Både placeringen af <ph name="EXTENSION_SUFFIX_WILDCARD" />-filen og siden, hvor downloadet er startet fra (dvs. henvisningswebadressen), skal tillades af disse mønstre.
+
+          <ph name="ALLOWED_TYPES" />: Denne indstilling hvidlister de tilladte typer udvidelser/apps, der kan installeres på <ph name="PRODUCT_NAME" />. Værdien er en liste over strenge, hvor hver af disse skal være en af følgende: <ph name="VALID_ALLOWED_TYPES" />. Se udvidelsesdokumentationen for <ph name="PRODUCT_NAME" /> for at få flere oplysninger om disse typer.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: Hvis en bruger forsøger at installere en udvidelse, som er blokeret af en politik, viser Chrome Webshop en generisk fejlmeddelelse. Med denne indstilling kan du føje tekst til fejlmeddelelsen. Teksten kan bruges til at lede brugerne til dit supportteam, forklare, hvorfor en bestemt udvidelse er blokeret eller andet. Denne fejlmeddelelse forkortes, hvis den er på mere end 1000 tegn.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: Accepterer en liste over hosts, som en udvidelse blokeres fra at interagere med. Dette omfatter javascript, ændring og visning af webRequests/webNavigation samt visning og ændring af cookies. Formatet ligner Match Patterns <ph name="LINK_TO_MATCH_PATTERNS" />, bortset fra at der muligvis ikke defineres nogen stier, f.eks. "*://*.eksempel.dk". Dette understøtter også gældende TLD-jokertegn, f.eks. "*://eksempel.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: Accepterer en liste over hosts, som en udvidelse kan interagere med, uanset om de er angivet på <ph name="RUNTIME_BLOCKED_HOSTS" /> eller ej. Dette er det samme format som <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="787125417158068494">Hvis den er angivet til SyncDisabled eller ikke er konfigureret, er certifikater i <ph name="PRODUCT_OS_NAME" /> ikke tilgængelige for ARC-apps.
 
       Hvis den er angivet til CopyCaCerts, er alle ONC-installerede CA-certifikater med <ph name="WEB_TRUSTED_BIT" /> tilgængelige for ARC-apps.</translation>
@@ -2052,6 +2138,11 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="8451988835943702790">Brug siden Ny fane som startside</translation>
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
 <translation id="847472800012384958">Tillad ikke, at websites viser pop op-vinduer</translation>
+<translation id="8476127435468057643">Styrer, om NTLMv2 er aktiveret.
+
+          Alle nye versioner af Samba- og Windows-servere understøtter NTLMv2. Denne politik bør kun deaktiveres for bagudrettet kompatibilitet, og den reducerer godkendelsessikkerheden.
+
+          Standardværdien, når denne politik ikke er defineret, er i øjeblikket falsk for bagudrettet kompatibilitet, men ændres til sand i fremtiden.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Tilpas listen over webstedsmønstre, der altid bør gengives af hostbrowseren.
 
@@ -2067,6 +2158,12 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 
       Hvis denne politik anvendes, kan alle printere anvendes af brugeren, medmindre deres id er angivet i denne politik.
       </translation>
+<translation id="8538235451413605457">Konfigurerer kravene for den <ph name="PRODUCT_NAME" />-version, der som minimum påkræves. De versioner, der ikke opfylder kravene, betragtes som forældede, og enheden tillader ikke, at brugere logger ind, før OS er opdateret.
+      Hvis den nuværende version bliver forældet under brugersessionen, logges brugeren ud ved tvang.
+
+      Hvis denne politik ikke er angivet, gælder ingen begrænsninger, og brugeren kan logge ind i alle <ph name="PRODUCT_NAME" />-versioner.
+
+      Her kan "Version" være enten en eksakt version såsom "61.0.3163.120" eller et præfiks for versionen, f.eks. "61.0"  </translation>
 <translation id="8544375438507658205">Standard HTML-gengivelse for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Vis en advarsel, når du er på websites uden for indholdspakkerne</translation>
 <translation id="8566842294717252664">Skjul webshoppen fra siden Ny fane og applisten</translation>
@@ -2079,6 +2176,7 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
           Hvis denne indstilling er angivet som falsk, anvender enheden ikke ekstern attestation til indholdsbeskyttelse, og enheden kan muligvis ikke afspille beskyttet indhold.
 
           Hvis denne indstilling er angivet som sand, eller hvis den ikke er angivet, anvendes ekstern attestation muligvis i forbindelse med indholdsbeskyttelse.</translation>
+<translation id="8650974590712548439">Windows-registreringsdatabase for Windows-klienter:</translation>
 <translation id="8654286232573430130">Angiver, hvilke servere der skal føjes til hvidlisten til integreret godkendelse. Integreret godkendelse aktiveres kun, når <ph name="PRODUCT_NAME" /> modtager en godkendelsesanmodning fra en proxy eller fra en server, der er tilladt på denne liste.
 
           Adskil servernavne med kommaer. Jokertegn (*) er tilladt.

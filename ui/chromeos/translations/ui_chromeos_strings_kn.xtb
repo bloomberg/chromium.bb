@@ -48,6 +48,7 @@
 <translation id="255937426064304553">US ಇಂಟರ್‌ನ್ಯಾಷನಲ್</translation>
 <translation id="2563185590376525700">ಕಪ್ಪೆ</translation>
 <translation id="2649120831653069427">ರೈನ್‌ಬೋಫಿಶ್</translation>
+<translation id="2656923396825879524">ಜ್ಯಾಮಿತೀಯ ರೇಖಾಚಿತ್ರ 3</translation>
 <translation id="2735698359135166290">ರೊಮೇನಿಯನ್ ಪ್ರಮಾಣಿತ ಕೀಬೋರ್ಡ್</translation>
 <translation id="2771816809568414714">ಚೀಸ್</translation>
 <translation id="2781645665747935084">ಬೆಲ್ಜಿಯನ್</translation>
@@ -84,6 +85,8 @@
 <translation id="3606220979431771195">ಟರ್ಕಿಶ್‌-F</translation>
 <translation id="3619115746895587757">ಕ್ಯಾಪಚಿನೊ</translation>
 <translation id="3678559383040232393">ಮಾಲ್ಟೀಸ್ ಕೀಬೋರ್ಡ್</translation>
+<translation id="3728399474846997774">ಜ್ಯಾಮಿತೀಯ ರೇಖಾಚಿತ್ರ 2</translation>
+<translation id="3734201824773416162">ಜ್ಯಾಮಿತೀಯ ರೇಖಾಚಿತ್ರ 1</translation>
 <translation id="3801082500826908679">ಫರೋಸೆ</translation>
 <translation id="3809272675881623365">ಮೊಲ</translation>
 <translation id="3815016854028376614">ಝುಯಿನ್ ಇನ್‌ಪುಟ್ ವಿಧಾನ</translation>
@@ -94,6 +97,7 @@
 <translation id="3858678421048828670">ಇಟಾಲಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="3910699493603749297">ಖಮೇರ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="391445228316373457">ನೇಪಾಳಿ ಕೀಬೋರ್ಡ್‌ (ಫೋನೆಟಿಕ್)</translation>
+<translation id="3947050919258841761">ಜ್ಯಾಮಿತೀಯ ರೇಖಾಚಿತ್ರ 5</translation>
 <translation id="3958548648197196644">ಕಿವಿ</translation>
 <translation id="4070370845051020638">ಕ್ಯಾಂಟೋನೀಸ್ ಇನ್‌ಪುಟ್ ವಿಧಾನ</translation>
 <translation id="4072248638558688893">ತಮಿಳು ಕೀಬೋರ್ಡ್ (ಫೋನೆಟಿಕ್)</translation>
@@ -161,6 +165,7 @@
 <translation id="5892290200158927959">ಫ್ರೆಂಚ್ BÉPO ಕೀಬೋರ್ಡ್</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">ಲ್ಯಾಟಿನ್ ಅಮೇರಿಕನ್ ಕೀಬೋರ್ಡ್</translation>
+<translation id="6012987430370760224">ಮರಾಠಿ ಕೀಬೋರ್ಡ್ (ಫೋನೆಟಿಕ್)</translation>
 <translation id="60357267506638014">ಜೆಕ್ QWERTY</translation>
 <translation id="6054173164583630569">ಫ್ರೆಂಚ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="6111770213269631447">ಲಿಪ್ಯಂತರಣ (namaskar → নমস্কার)</translation>
@@ -199,6 +204,7 @@
 <translation id="7222624196722476520">ಬಲ್ಗೇರಿಯನ್ ಫೋನೆಟಿಕ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="7348749398828259943">US ವರ್ಕ್‌ಮ್ಯಾನ್ ಅಂತರರಾಷ್ಟ್ರೀಯ ಕೀಬೋರ್ಡ್</translation>
 <translation id="7389722738210761877">ಥಾಯ್ ಕೀಬೋರ್ಡ್ (TIS 820-2531)</translation>
+<translation id="7396038720194014279">ಹಿಂದಿ ಕೀಬೋರ್ಡ್ (ಫೋನೆಟಿಕ್)</translation>
 <translation id="7417453074306512035">ಇಥಿಯೋಪಿಕ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="7419631653042041064">ಕೆಟಲಾನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="7434823369735508263">ಯುಕೆ ಡಿವೊರಾಕ್ ಕೀಬೋರ್ಡ್</translation>
@@ -211,7 +217,9 @@
 <translation id="7774365994322694683">ಪಕ್ಷಿ</translation>
 <translation id="7825423931463735974">ತಮಿಳು ಕೀಬೋರ್ಡ್ (ತಮಿಳ್99)</translation>
 <translation id="7853966320808728790">ಫ್ರೆಂಚ್ BÉPO</translation>
+<translation id="7872088194351932564">ಜ್ಯಾಮಿತೀಯ ರೇಖಾಚಿತ್ರ 4</translation>
 <translation id="7896906914454843592">ಯುಎಸ್ ವಿಸ್ತರಿಸಲಾದ ಕೀಬೋರ್ಡ್</translation>
+<translation id="7898607018410277265">ಗುಜರಾತಿ ಕೀಬೋರ್ಡ್ (ಹೊಸ ಫೋನೆಟಿಕ್)</translation>
 <translation id="7917972308273378936">ಲಿಥುವೇನಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="7943385054491506837">US ಕೋಲ್‌ಮ್ಯಾಕ್</translation>
 <translation id="7969525169268594403">ಸ್ಲೋವೇನಿಯನ್</translation>

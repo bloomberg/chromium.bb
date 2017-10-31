@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Modo de contraste alto</translation>
 <translation id="2597972630681408282">Luz nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Enviar</translation>
+<translation id="2675319268637823299">Un administrador ha inhabilitado el inicio de sesión múltiple para <ph name="USER_EMAIL" />.
+    Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="2700058918926273959">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />. Se cerrará tu sesión.</translation>
 <translation id="2727977024730340865">Conectado a un cargador de baja potencia. Es posible que la carga de la batería no sea fiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Con conexión</translation>
 <translation id="3371140690572404006">Dispositivo USB tipo C (puerto frontal derecho)</translation>
 <translation id="3400357268283240774">Ajustes adicionales</translation>
+<translation id="3413817803639110246">Aún no hay contenido</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3465566417615315331">Haz clic en tu foto</translation>
 <translation id="3473479545200714844">Lupa</translation>
@@ -136,7 +139,7 @@
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">El Asistente se está cargando...</translation>
 <translation id="4378551569595875038">Conectando...</translation>
-<translation id="4379531060876907730">Herramientas del lápiz óptico</translation>
+<translation id="4379531060876907730">Estas son las herramientas del lápiz óptico</translation>
 <translation id="4421231901400348175">Compartiendo control de la pantalla con <ph name="HELPER_NAME" /> a través de Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Superposición de teclado</translation>
 <translation id="639644700271529076">Bloqueo de mayúsculas desactivado</translation>
 <translation id="6406704438230478924">Alt Gr</translation>
+<translation id="643147933154517414">Listo</translation>
 <translation id="6452181791372256707">Rechazar</translation>
 <translation id="6453179446719226835">Se ha cambiado el idioma</translation>
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Puede que las notificaciones, las ventanas y los cuadros de diálogo que aparezc
 <translation id="8825534185036233643">No se puede proyectar contenido en más de dos pantallas.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Buscar+Esc</translation>
+<translation id="8870509716567206129">La aplicación no admite la pantalla dividida.</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
 <translation id="8921624153894383499">El Asistente de Google no habla este idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB tipo C (puerto derecho situado en la parte trasera)</translation>
@@ -310,7 +315,7 @@ Puede que las notificaciones, las ventanas y los cuadros de diálogo que aparezc
 <translation id="9091626656156419976">Se ha quitado la pantalla <ph name="DISPLAY_NAME" /></translation>
 <translation id="9111102763498581341">Desbloquear</translation>
 <translation id="9151726767154816831">Reinicia y aplica la función Powerwash para actualizar el sistema</translation>
-<translation id="9181036778675416867">Toca el botón del lápiz óptico, situado en la estantería para tomar una nota, hacer una captura de pantalla o utilizar el Asistente, el puntero láser o la lupa.</translation>
+<translation id="9181036778675416867">Toca el botón del lápiz óptico situado en la estantería para tomar una nota, hacer una captura de pantalla o utilizar el Asistente, el puntero láser o la lupa.</translation>
 <translation id="9194617393863864469">Iniciar sesión de otro usuario...</translation>
 <translation id="9201131092683066720">La batería está al <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Saliendo del modo de escritorio unificado</translation>

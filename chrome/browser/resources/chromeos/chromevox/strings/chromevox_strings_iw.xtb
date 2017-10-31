@@ -4,6 +4,7 @@
 <translation id="100812568230599391">עבור להצגה משולבת.</translation>
 <translation id="1012173283529841972">פריט רשימה</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1022586497894531524">‏האם זה השימוש הראשון שלך בקורא המסך הקולי ChromeVox? המדריך הקצר הזה מסביר את עקרונות הבסיס של ChromeVox למתחילים.</translation>
 <translation id="1023866615269196768">מורחב.</translation>
 <translation id="1025074108959230262">מצב אתר דביק מושבת</translation>
 <translation id="1031961866430398710">לאחר מכן</translation>
@@ -29,6 +30,8 @@
 <translation id="1201402288615127009">הבא</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">‏ChromeVox - מתן קול ל-Chrome</translation>
+<translation id="1225437811932752266">‏מעולה! למדת את עקרונות השימוש ב-ChromeVox. תמיד אפשר לפתוח את תפריט הפקודות של ChromeVox על-ידי הקשה על מקש החיפוש ומקש הנקודה. מידע נוסף על ChromeVox ו-Chrome OS זמין במאמרים הבאים.
+אם סיימת את המדריך, יש להשתמש ב-ChromeVox כדי לנווט אל כפתור הסגירה וללחוץ עליו.</translation>
 <translation id="1229276918471378188">הדילוג הקודם</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">הכותרת הבאה של רמה 6</translation>
@@ -40,6 +43,7 @@
 <translation id="1339428534620983148">העמודה הקודמת בטבלה</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346748346194534595">ימינה</translation>
+<translation id="135978014023467274">‏ChromeVox עודכן לגירסה 63.</translation>
 <translation id="136718599399906424">השורה הבאה בטבלה</translation>
 <translation id="1377925789329510816">‏זו הכותרת האחרונה. הקש על מקש החיפוש ועל H כדי לחזור לכותרת הראשונה. לחלופין, הקש על מקש החיפוש, על Shift ועל H כדי לעבור אל הכותרת השנייה בדף הזה.</translation>
 <translation id="1383876407941801731">חפש</translation>
@@ -167,6 +171,7 @@
 <translation id="2770781857296573485">הזן סקירת קבוצה</translation>
 <translation id="2777845298774924149">יצאת</translation>
 <translation id="2781264313200109999">התחלת קישור</translation>
+<translation id="2784959586797362050">‏כמו תמיד, אפשר לשלוח לנו משוב באופן ישיר על-ידי הקשה על Search+a+i. נשמח לשמוע ממך.</translation>
 <translation id="2800204403141299078">אין עוד אלמנטים שונים.</translation>
 <translation id="2800780099804980316">אין כותרת קודמת של רמה 1.</translation>
 <translation id="280499067616661124">‏חיפוש של ChromeVox בדף</translation>
@@ -232,6 +237,7 @@
 <translation id="3241638166094654466">תאים בכל שורה:</translation>
 <translation id="3286390186030710347">מחוון</translation>
 <translation id="3299925995433437805">אין עוד קישורים שבהם ביקרת.</translation>
+<translation id="3300348286427369683">‏תמיכה בטקסט עשיר. ChromeVox תומך עכשיו בשדות טקסט עשיר, כולל פקודות דילוג, ניתוב סמן ברייל, בחירה ועוד.</translation>
 <translation id="3307886118343381874">עבור לסוף הטבלה</translation>
 <translation id="3311969765485641742">‏הקש על Alt+Shift+A כדי לעיין בהתראות</translation>
 <translation id="3312997241656799641">הקישור הבא שבו ביקרת</translation>
@@ -335,6 +341,7 @@
 <translation id="3897092660631435901">תפריט</translation>
 <translation id="3909320334364316587">הכותרת הקודמת של רמה 6</translation>
 <translation id="3914173277599553213">נדרש</translation>
+<translation id="3914732343065571127">‏סימוכין פקודות של ChromeVox</translation>
 <translation id="3962990492275676168">התחל לקרוא מהמיקום הנוכחי</translation>
 <translation id="4004802134384979325">מסומנת</translation>
 <translation id="4006140876663370126">img</translation>
@@ -405,7 +412,9 @@
 <translation id="4601367666219428522">‏טבלה <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">מתעלם מלחיצת המקש הבאה</translation>
 <translation id="461613135510474570">משפט</translation>
+<translation id="463135993322337640">‏לחיצה על ChromeVox+o+n תציג את העדכונים</translation>
 <translation id="4647836961514597010">בוחר צבעים</translation>
+<translation id="4660783501463101648">‏הגירסה הקלאסית הוסרה. לחצן החלפת המצב במקלדת למעבר חזרה אל הגירסה הקלאסית של ChromeVox הוסר.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -425,6 +434,7 @@
 <translation id="4827410568042294688">בחירה בוטלה</translation>
 <translation id="4842108708071771135">‏אין blockquote הבא.</translation>
 <translation id="4844625982113518938">‏הקש על מקש כדי לשמוע את שמו. הקשה על Ctrl+W תסגור את מצב הלמידה.</translation>
+<translation id="4846428657345567687">‏זהו ChromeVox החדש!</translation>
 <translation id="4846487886195635104">סוף קו חוצה</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">הרכיב הדומה הקודם.</translation>
@@ -462,6 +472,7 @@
 <translation id="5098541983634824365">יציאה מהרשת.</translation>
 <translation id="5102981729317424850">סרגל כלים</translation>
 <translation id="5105050547967751155">rq</translation>
+<translation id="5106547198195128110">יש שינויים מעניינים בגירסה החדשה. הנה העדכונים:</translation>
 <translation id="5110983769041734144">אין שדה קודם בטופס.</translation>
 <translation id="5111640677200759579">כותרת עמודה</translation>
 <translation id="5136967254288895616">אין קישור קודם.</translation>
@@ -578,6 +589,7 @@
 <translation id="6065293622157674001">תחילת שגיאת דקדוק</translation>
 <translation id="6082768461603900813">ניווט בסיסי</translation>
 <translation id="6092707270915298410">סוף קישור</translation>
+<translation id="6118126368611144850">‏אפליקציות Android ל-Chrome. אם במכשיר מותקנת האפליקציה של חנות Play, אפשר לקבל הצצה אל ChromeVox עם אפליקציות Android. ניתן לנסות את התמיכה הניסיונית על-ידי הורדת Google Chrome Canary מחנות Play.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">סוף התא.</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -618,6 +630,7 @@
 <translation id="6493991254603208962">הפחתת הבהירות</translation>
 <translation id="6508059270146105198">העבר תצוגת ברייל לתחתית הדף</translation>
 <translation id="6536864053412760904">‏אסימון Math ML</translation>
+<translation id="6540201937398578274">‏ב-ChromeVox, מקש החיפוש הוא מקש הצירוף. רוב הרצפים של מקשי הקיצור ב-ChromeVox מתחילים עם מקש החיפוש. כמו כן, מקשי החיצים משמשים לניווט.</translation>
 <translation id="6550720799683018100">שנה את מפת המקשים הנוכחית על ידי בחירה באפשרות מתוך הרשימה בהמשך.</translation>
 <translation id="6561818612645211875">עבור לתחילת השורה הנוכחית</translation>
 <translation id="6587021927234520429">אין עוד כותרת ברמה 4.</translation>

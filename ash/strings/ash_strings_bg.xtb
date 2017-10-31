@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Режим на висок контраст</translation>
 <translation id="2597972630681408282">Нощно осветление: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Изпращане</translation>
+<translation id="2675319268637823299">Администратор е деактивирал централизирания вход за <ph name="USER_EMAIL" />.
+За да продължите, всички потребители трябва да излязат.</translation>
 <translation id="2700058918926273959">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />. Ще излезете от профила.</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
 <translation id="2761704814324807722">Област за състоянието, часът е <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Установена е връзка</translation>
 <translation id="3371140690572404006">устройство с USB-C (предният десен порт)</translation>
 <translation id="3400357268283240774">Допълнителни настройки</translation>
+<translation id="3413817803639110246">Тук още няма нищо</translation>
 <translation id="3445925074670675829">USB-C устройство</translation>
 <translation id="3465566417615315331">Кликнете върху снимката си</translation>
 <translation id="3473479545200714844">Екранна лупа</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Наслагване върху клавиатурата</translation>
 <translation id="639644700271529076">„CAPS LOCK“ е изключен</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Всичко е готово</translation>
 <translation id="6452181791372256707">Отхвърляне</translation>
 <translation id="6453179446719226835">Езикът е променен</translation>
 <translation id="6459472438155181876">Екранът се разширява на „<ph name="DISPLAY_NAME" />“</translation>
@@ -299,6 +303,7 @@
 <translation id="8825534185036233643">Дублирането с повече от два екрана не се поддържа.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">търсене + Esc</translation>
+<translation id="8870509716567206129">Приложението не поддържа разделен екран.</translation>
 <translation id="8878886163241303700">Разгъване на екрана</translation>
 <translation id="8921624153894383499">Google Асистент не поддържа този език.</translation>
 <translation id="8938800817013097409">Устройство с USB-C (десният порт на гърба)</translation>

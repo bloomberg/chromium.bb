@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Visokokontrastni način</translation>
 <translation id="2597972630681408282">Nočna svetloba: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Pošlji</translation>
+<translation id="2675319268637823299">Skrbnik je prepovedal prijavo z več računi za <ph name="USER_EMAIL" />.
+    Če želite nadaljevati, morajo biti odjavljeni vsi uporabniki.</translation>
 <translation id="2700058918926273959">Seja se konča čez <ph name="SESSION_TIME_REMAINING" />. Odjavljeni boste.</translation>
 <translation id="2727977024730340865">Priključen je nizkoenergijski polnilnik. Polnjenje akumulatorja morda ne bo zanesljivo.</translation>
 <translation id="2761704814324807722">Vrstica stanja, čas: <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Povezano</translation>
 <translation id="3371140690572404006">Naprava USB-C (vrata desno spredaj)</translation>
 <translation id="3400357268283240774">Dodatne nastavitve</translation>
+<translation id="3413817803639110246">Zaenkrat ni še ničesar</translation>
 <translation id="3445925074670675829">Naprava USB-C</translation>
 <translation id="3465566417615315331">Kliknite fotografijo</translation>
 <translation id="3473479545200714844">Lupa</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Prekrivna tipkovnica</translation>
 <translation id="639644700271529076">Tipka CAPS LOCK je izklopljena</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Končano</translation>
 <translation id="6452181791372256707">Zavrni</translation>
 <translation id="6453179446719226835">Jezik je spremenjen</translation>
 <translation id="6459472438155181876">Razširitev zaslon na <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</tr
 <translation id="8825534185036233643">Zrcaljenje z več kot dvema zaslonoma ni podprto.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Iskanje + Esc</translation>
+<translation id="8870509716567206129">Aplikacija ne podpira načina razdeljenega zaslona.</translation>
 <translation id="8878886163241303700">Razširjanje zaslona</translation>
 <translation id="8921624153894383499">Pomočnik Google ne podpira tega jezika.</translation>
 <translation id="8938800817013097409">Naprava USB-C (vrata desno zadaj)</translation>

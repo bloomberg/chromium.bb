@@ -4,6 +4,7 @@
 <translation id="100812568230599391">प्रदर्शन शैली इंटरलीववर बदला.</translation>
 <translation id="1012173283529841972">सूची आयटम</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1022586497894531524">तुम्ही ChromeVox वाचिक फीडबॅक पहिल्या वेळी वापरत आहात का? हे जलद ट्युटोरियल ChromeVox सोबत सुरुवात करण्यासाठी आवश्यक गोष्टी समजावून सांगते.</translation>
 <translation id="1023866615269196768">विस्तृत.</translation>
 <translation id="1025074108959230262">रोचक मोड अक्षम</translation>
 <translation id="1031961866430398710">नंतर</translation>
@@ -29,6 +30,8 @@
 <translation id="1201402288615127009">पुढील</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome ला आवाज देत आहे</translation>
+<translation id="1225437811932752266">अभिनंदन! तुम्ही ChromeVox यशस्वीरीत्या वापरण्यासाठी आवश्यक गोष्टी जाणून घेतल्या आहेत. लक्षात ठेवा की तुम्ही कधीही शोध+पूर्णविराम दाबून ChromeVox कमांड मेनू उघडू शकता. ChromeVox आणि Chrome OS विषयी आणखी जास्त जाणून घेण्यासाठी, पुढील लेखांना भेट द्या.
+तुमचे ट्युटोरियल पूर्ण झाले असल्यास, बंद करा बटणावर नेव्हिगेट करण्यासाठी ChromeVox वापरा आणि त्यावर क्लिक करा.</translation>
 <translation id="1229276918471378188">मागील जंप</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">पुढील स्तर 6 शीर्षक</translation>
@@ -40,6 +43,7 @@
 <translation id="1339428534620983148">मागील सारणी स्तंभ</translation>
 <translation id="1342835525016946179">लेख</translation>
 <translation id="1346748346194534595">उजवे</translation>
+<translation id="135978014023467274">तुम्हाला ChromeVox 63 वर अपडेट केले गेले आहे!</translation>
 <translation id="136718599399906424">पुढील सारणी पंक्ती</translation>
 <translation id="1377925789329510816">हे अंतिम शीर्षक आहे. पहिल्या शीर्षकावर वेष्टन घालण्‍यासाठी Search+H दाबा किंवा या पृष्ठावरील दुसर्‍या शीर्षकावर जाण्यासाठी Search+Shift+H दाबा.</translation>
 <translation id="1383876407941801731">शोधा</translation>
@@ -166,6 +170,7 @@
 <translation id="2770781857296573485">गट अन्वेषण प्रविष्ट करा</translation>
 <translation id="2777845298774924149">निर्गमन केले</translation>
 <translation id="2781264313200109999">लिंकची सुरुवात</translation>
+<translation id="2784959586797362050">नेहमीप्रमाणे, शोध+a आणि नंतर i दाबून तुम्ही आम्हाला थेट फीडबॅक पाठवू शकता. आम्ही तुमचे मत जाणून घेण्यास उत्सुक आहोत.</translation>
 <translation id="2800204403141299078">आणखी भिन्न घटक नाहीत.</translation>
 <translation id="2800780099804980316">मागील स्‍तर 1 मथळा नाही.</translation>
 <translation id="280499067616661124">पृष्ठामध्ये ChromeVox शोधा</translation>
@@ -231,6 +236,7 @@
 <translation id="3241638166094654466">प्रत्येक रेषेतील सेल:</translation>
 <translation id="3286390186030710347">स्‍लायडर</translation>
 <translation id="3299925995433437805">पुढील भेट दिलेला दुवा नाही.</translation>
+<translation id="3300348286427369683">रिच टेक्स्ट सपोर्ट. ChromeVox आता जंप कमांड, ब्रेल कर्सर रूटिंग, निवड आणि बर्‍याच गोष्टींसह रिच टेक्स्ट फील्डना सपोर्ट करते.</translation>
 <translation id="3307886118343381874">सारणीच्या शेवटी जा</translation>
 <translation id="3311969765485641742">सूचनांचे पुनरावलोकन करण्यासाठी Alt+Shift+A दाबा</translation>
 <translation id="3312997241656799641">पुढील भेट दिलेला दुवा</translation>
@@ -334,6 +340,7 @@
 <translation id="3897092660631435901">मेनू</translation>
 <translation id="3909320334364316587">मागील स्तर 6 शीर्षक</translation>
 <translation id="3914173277599553213">आवश्यक</translation>
+<translation id="3914732343065571127">ChromeVox कमांड संदर्भ</translation>
 <translation id="3962990492275676168">वर्तमान स्‍थानावरून वाचन प्रारंभ करा</translation>
 <translation id="4004802134384979325">चेक केलेले</translation>
 <translation id="4006140876663370126">img</translation>
@@ -404,7 +411,9 @@
 <translation id="4601367666219428522">tbl <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">पुढील की दाबणे दुर्लक्षित करत आहे</translation>
 <translation id="461613135510474570">वाक्य</translation>
+<translation id="463135993322337640">नवीन काय आहे ते पाहण्यासाठी ChromeVox o, n दाबा</translation>
 <translation id="4647836961514597010">रंग निवडक</translation>
+<translation id="4660783501463101648">क्लासिक काढले. ChromeVox क्लासिक मध्ये परत स्विच करण्यासाठी कीबोर्ड टॉगल काढले गेले आहे.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -424,6 +433,7 @@
 <translation id="4827410568042294688">न निवडलेले</translation>
 <translation id="4842108708071771135">पुढील ब्लॉककोट नाही.</translation>
 <translation id="4844625982113518938">हे नाव जाणून घेण्‍यासाठी कोणतीही की दाबा. Ctrl+W जाणून घ्या मोड बंद करेल.</translation>
+<translation id="4846428657345567687">ChromeVox वर स्वागत!</translation>
 <translation id="4846487886195635104">मध्यरेखीत संपले</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">मागील समान घटक.</translation>
@@ -461,6 +471,7 @@
 <translation id="5098541983634824365">ग्रिड सोडत आहे.</translation>
 <translation id="5102981729317424850">टूलबार</translation>
 <translation id="5105050547967751155">rq</translation>
+<translation id="5106547198195128110">नवीन रिलीजमध्ये आम्ही काही आकर्षक बदल केले आहेत; नवीन काय आहे ते पहा:</translation>
 <translation id="5110983769041734144">मागील फॉर्म फील्‍ड नाही.</translation>
 <translation id="5111640677200759579">स्‍तंभ शीर्षलेख</translation>
 <translation id="5136967254288895616">मागील दुवा नाही.</translation>
@@ -578,6 +589,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="6065293622157674001">व्याकरण एरर सुरू झाली</translation>
 <translation id="6082768461603900813">मूलभूत नेव्हिगेशन</translation>
 <translation id="6092707270915298410">लिंक संपली</translation>
+<translation id="6118126368611144850">Chrome साठी Android अ‍ॅप्स. तुमच्या डिव्हाइसवर Play स्टोअर असल्यास, Android अ‍ॅप्सने ChromeVox वर एक नजर टाका. Play स्टोअर वरून Google Chrome Canary डाउनलोड करून प्रायोगिक सपोर्ट वापरून पहा.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">सेल समाप्त.</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -618,6 +630,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="6493991254603208962">चकाकी कमी करा</translation>
 <translation id="6508059270146105198">पृष्ठाच्या तळाशी ब्रेल प्रदर्शन हलवा</translation>
 <translation id="6536864053412760904">Math ML टोकन</translation>
+<translation id="6540201937398578274">ChromeVox मध्ये, शोध की ही मॉडिफायर की असते. बहुतांश ChromeVox शॉर्टकटची सुरुवात शोध कीने होते. तुम्ही नेव्हिगेशनसाठी बाण कीदेखील वापराल.</translation>
 <translation id="6550720799683018100">खाली असलेल्या सूचीमधील पर्याय निवडून वर्तमान मुख्य नकाशा बदला.</translation>
 <translation id="6561818612645211875">वर्तमान पंक्तीच्या सुरुवातीस जा</translation>
 <translation id="6587021927234520429">पुढील स्‍तर 4 मथळा नाही.</translation>

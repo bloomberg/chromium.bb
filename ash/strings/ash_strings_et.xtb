@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Suure kontrastsusega režiim</translation>
 <translation id="2597972630681408282">Öövalgus: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Esita</translation>
+<translation id="2675319268637823299">Administraator on keelanud e-posti aadressi <ph name="USER_EMAIL" /> jaoks mitmele kontole sisselogimise.
+    Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="2700058918926273959">Seansi lõpuni on jäänud <ph name="SESSION_TIME_REMAINING" />. Teid logitakse välja.</translation>
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
 <translation id="2761704814324807722">Olekusalv, kellaaeg <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Ühendatud</translation>
 <translation id="3371140690572404006">C-tüüpi USB-seade (eesmine parempoolne port)</translation>
 <translation id="3400357268283240774">Lisaseaded</translation>
+<translation id="3413817803639110246">Veel ei ole midagi kuvada</translation>
 <translation id="3445925074670675829">C-tüüpi USB-seade</translation>
 <translation id="3465566417615315331">Klõpsake oma fotol</translation>
 <translation id="3473479545200714844">Ekraanisuurendi</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Klaviatuuri ülekate</translation>
 <translation id="639644700271529076">SUURTÄHELUKK on välja lülitatud</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Kõik on valmis</translation>
 <translation id="6452181791372256707">Lükka tagasi</translation>
 <translation id="6453179446719226835">Keelt muudeti</translation>
 <translation id="6459472438155181876">Ekraani laiendamine seadmesse <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Järgmised märguanded, aknad ja dialoogid võivad jaguneda eri töölaudade vah
 <translation id="8825534185036233643">Rohkem kui kahe ekraaniga peegeldamist ei toetata.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Otsing + ESC</translation>
+<translation id="8870509716567206129">Rakendus ei toeta jagatud ekraani.</translation>
 <translation id="8878886163241303700">Ekraani laiendamine</translation>
 <translation id="8921624153894383499">Google'i assistent ei räägi selles keeles.</translation>
 <translation id="8938800817013097409">C-tüüpi USB-seade (parempoolne port taga)</translation>

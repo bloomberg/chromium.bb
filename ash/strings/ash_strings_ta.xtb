@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">அதிக ஒளி மாறுபாட்டுப் பயன்முறை</translation>
 <translation id="2597972630681408282">இரவு ஒளி: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">சமர்ப்பி</translation>
+<translation id="2675319268637823299"><ph name="USER_EMAIL" />க்கு, பல உள்நுழைவை நிர்வாகி அனுமதிக்கவில்லை.
+    தொடர, எல்லாப் பயனர்களும் வெளியேற வேண்டும்.</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும். வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="2727977024730340865">குறைந்த சக்தியிலான சார்ஜர் செருகப்பட்டுள்ளது. பேட்டரி சார்ஜிங் நம்பகமானதாக இல்லாமல் இருக்கலாம்.</translation>
 <translation id="2761704814324807722">நிலைத் தட்டு, நேரம் <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">இணைக்கப்பட்டது</translation>
 <translation id="3371140690572404006">USB-C சாதனம் (வலது பக்கம் முன்னே இருக்கும் போர்ட்)</translation>
 <translation id="3400357268283240774">கூடுதல் அமைப்புகள்</translation>
+<translation id="3413817803639110246">பார்ப்பதற்கு எதுவுமில்லை</translation>
 <translation id="3445925074670675829">USB-C சாதனம்</translation>
 <translation id="3465566417615315331">உங்கள் படத்தைக் கிளிக் செய்யவும்</translation>
 <translation id="3473479545200714844">திரை உருப்பெருக்கி</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">விசைப்பலகை மேல்தோற்றம்</translation>
 <translation id="639644700271529076">CAPS LOCK முடக்கப்பட்டுள்ளது</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">அனைத்தும் காட்டப்பட்டன</translation>
 <translation id="6452181791372256707">நிராகரி</translation>
 <translation id="6453179446719226835">மொழி மாற்றப்பட்டது</translation>
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> க்கு திரை விரிவாக்கப்படுகிறது</translation>
@@ -299,6 +303,7 @@
 <translation id="8825534185036233643">இரண்டிற்கும் மேற்பட்ட திரைகளில் பிரதிபலிப்பது ஆதரிக்கப்படவில்லை.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8870509716567206129">திரையைப் பிரிப்பதைப் பயன்பாடு ஆதரிக்கவில்லை.</translation>
 <translation id="8878886163241303700">திரையை விரிவாக்குகிறது</translation>
 <translation id="8921624153894383499">Google அசிஸ்டண்ட், இந்த மொழியை ஆதரிக்கவில்லை.</translation>
 <translation id="8938800817013097409">USB-C சாதனம் (பின்பக்கம் உள்ள வலது போர்ட்)</translation>
@@ -310,7 +315,7 @@
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> டிஸ்ப்ளே அகற்றப்பட்டது</translation>
 <translation id="9111102763498581341">பூட்டைத் திற</translation>
 <translation id="9151726767154816831">புதுப்பிக்க, மறுதுவக்கம் செய்து பவர்வாஷ் செய்யவும்</translation>
-<translation id="9181036778675416867">குறிப்பெடுக்க, ஸ்கிரீன்ஷாட்டை எடுக்க, அசிஸ்டண்ட், லேசர் பாயிண்டர் அல்லது உருப்பெருக்கி ஆகியவற்றைப் பயன்படுத்த, ஷெல்ஃப் மேலே உள்ள ஸ்டைலஸ் பொத்தானைத் தட்டவும்.</translation>
+<translation id="9181036778675416867">குறிப்பெடுக்க, ஸ்கிரீன்ஷாட்டை எடுக்க, அசிஸ்டண்ட், லேசர் பாயிண்டர் அல்லது உருப்பெருக்கி ஆகியவற்றைப் பயன்படுத்த, ஷெல்ஃபில் உள்ள ஸ்டைலஸ் பொத்தானைத் தட்டவும்.</translation>
 <translation id="9194617393863864469">வேறொருவராக உள்நுழை...</translation>
 <translation id="9201131092683066720">பேட்டரி <ph name="PERCENTAGE" />% நிரம்பியது.</translation>
 <translation id="9210037371811586452">ஒன்றிணைந்த டெஸ்க்டாப் பயன்முறையிலிருந்து வெளியேறுகிறது</translation>

@@ -4,6 +4,7 @@
 <translation id="100812568230599391">ഡിസ്‌പ്ലേ ശൈലിയെ ഇടകലർത്തിയുള്ള രീതിയിലേക്ക് മാറ്റുക.</translation>
 <translation id="1012173283529841972">ലിസ്റ്റ് ഇനം</translation>
 <translation id="1013742170491673792">srched</translation>
+<translation id="1022586497894531524">നിങ്ങൾ ആദ്യമായാണോ ChromeVox സംഭാഷണ ഫീഡ്‌ബാക്ക് ഉപയോഗിക്കുന്നത്? ChromeVox ആരംഭിക്കാൻ ആവശ്യമായ കാര്യങ്ങളെ കുറിച്ച് ഈ ട്യൂട്ടോറിയൽ വിവരിക്കുന്നു.</translation>
 <translation id="1023866615269196768">സ്‌പാൻ ചെയ്‌തു.</translation>
 <translation id="1025074108959230262">സ്റ്റിക്കി മോഡ് പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="1031961866430398710">തുടർന്ന്</translation>
@@ -29,6 +30,8 @@
 <translation id="1201402288615127009">അടുത്തത്</translation>
 <translation id="1206619573307042055">മാർക്യൂ</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome-ന് ശബ്‌ദം നൽകുന്നു</translation>
+<translation id="1225437811932752266">അഭിനന്ദനങ്ങൾ! ChromeVox ഉപയോഗിക്കുന്നതിന് ആവശ്യമായ കാര്യങ്ങളെ കുറിച്ച് നിങ്ങൾ മനസിലാക്കിയിരിക്കുന്നു. തിരയൽ+പീരിയഡ് അമർത്തുന്നതിലൂടെ നിങ്ങൾക്ക് എപ്പോൾ വേണമെങ്കിലും ChromeVox കമാൻഡ് മെനു തുറക്കാനാവുമെന്ന് ഓർമ്മിക്കുക. ChromeVox, Chrome OS എന്നിവയെ കുറിച്ച് ഇനിയും കൂടുതലറിയാൻ ഇനിപ്പറയുന്ന ലേഖനങ്ങൾ വായിക്കുക.
+ട്യൂട്ടോറിയൽ വായിച്ചുകഴിഞ്ഞെങ്കിൽ, ChromeVox ഉപയോഗിച്ച് അടയ്‌ക്കുക ബട്ടണിലേക്ക് പോയി, അതിൽ ക്ലിക്ക് ചെയ്യുക.</translation>
 <translation id="1229276918471378188">മുൻ ജമ്പ്</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">അടുത്ത നില 6 ശീർഷകം</translation>
@@ -40,6 +43,7 @@
 <translation id="1339428534620983148">മുൻ പട്ടിക നിര</translation>
 <translation id="1342835525016946179">ലേഖനം</translation>
 <translation id="1346748346194534595">ശരി</translation>
+<translation id="135978014023467274">നിങ്ങൾ ChromeVox 63-ലേക്ക് അപ്‌ഡേറ്റ് ചെയ്‌തിരിക്കുന്നു!</translation>
 <translation id="136718599399906424">അടുത്ത പട്ടിക നിര</translation>
 <translation id="1377925789329510816">ഇത് അവസാനത്തെ തലക്കെട്ടാണ്. ഈ പേജിലെ ആദ്യ തലക്കെട്ട് റാപ്പ് ചെയ്യാൻ തിരയൽ+H അമർത്തുക അല്ലെങ്കിൽ രണ്ടാമത്തെ തലക്കെട്ടിലേക്ക് പോകാൻ തിരയൽ+Shift+H അമർത്തുക.</translation>
 <translation id="1383876407941801731">തിരയൂ</translation>
@@ -166,6 +170,7 @@
 <translation id="2770781857296573485">ഗ്രൂപ്പ് പര്യവേക്ഷണം നൽകുക</translation>
 <translation id="2777845298774924149">പുറത്തുകടന്നു</translation>
 <translation id="2781264313200109999">ലിങ്ക് ആരംഭം</translation>
+<translation id="2784959586797362050">എപ്പോഴും എന്ന പോലെ, തിരയുക+a എന്നതും തുടർന്ന് i എന്നതും അമർത്തിക്കൊണ്ട് നിങ്ങൾക്ക് നേരിട്ട് ഫീഡ്‌ബാക്ക് അയയ്ക്കാവുന്നതാണ്. നിങ്ങളുടെ അഭിപ്രായമറിയാൻ ഞങ്ങൾ ജിജ്ഞാസയോടെ കാത്തിരിക്കുന്നു.</translation>
 <translation id="2800204403141299078">മറ്റ് വ്യത്യസ്‌ത ഘടകങ്ങൾ ഒന്നുമില്ല.</translation>
 <translation id="2800780099804980316">മുൻ നില 1 ശീർഷകം ഒന്നുമില്ല.</translation>
 <translation id="280499067616661124">ChromeVox പേജിൽ കണ്ടെത്തുക</translation>
@@ -231,6 +236,7 @@
 <translation id="3241638166094654466">ഓരോ വരിയിലെയും കളങ്ങൾ:</translation>
 <translation id="3286390186030710347">സ്ലൈഡർ</translation>
 <translation id="3299925995433437805">സന്ദർശിച്ച അടുത്ത ലിങ്കൊന്നുമില്ല.</translation>
+<translation id="3300348286427369683">റിച്ച് ടെക്‌സ്റ്റ് പിന്തുണ. ജംബ് കമാൻഡുകളും ബ്രെയിലി കഴ്‌സർ റൂട്ടിംഗും തിരഞ്ഞെടുപ്പും മറ്റും ഉൾപ്പെടെ, റിച്ച് ടെക്‌സ്റ്റ് ഫീൽഡുകളെ ChromeVox ഇപ്പോൾ പിന്തുണയ്ക്കുന്നു.</translation>
 <translation id="3307886118343381874">പട്ടികയുടെ അവസാനം പോകുക</translation>
 <translation id="3311969765485641742">അലേർട്ടുകൾ അവലോകനം ചെയ്യാൻ Alt+Shift+A അമർത്തുക</translation>
 <translation id="3312997241656799641">സന്ദർശിച്ച അടുത്ത ലിങ്ക്</translation>
@@ -334,6 +340,7 @@
 <translation id="3897092660631435901">മെനു</translation>
 <translation id="3909320334364316587">മുൻ നില 6 ശീർഷകം</translation>
 <translation id="3914173277599553213">ആവശ്യമായത്</translation>
+<translation id="3914732343065571127">ChromeVox കമാൻഡ് റഫറൻസ്</translation>
 <translation id="3962990492275676168">നിലവിലെ സ്ഥാനത്ത് നിന്ന് വായിക്കാൻ ആരംഭിക്കുക</translation>
 <translation id="4004802134384979325">ചെക്കുചെയ്‌തു</translation>
 <translation id="4006140876663370126">img</translation>
@@ -404,7 +411,9 @@
 <translation id="4601367666219428522">പട്ടിക <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">അടുത്ത കീ അമർത്തുന്നത് ഒഴിവാക്കുന്നു</translation>
 <translation id="461613135510474570">വാക്യം</translation>
+<translation id="463135993322337640">പുതിയതെന്തെന്ന് അറിയാൻ ChromeVox o, n അമർത്തുക</translation>
 <translation id="4647836961514597010">വർണ്ണ പിക്കർ</translation>
+<translation id="4660783501463101648">ക്ലാസ്സിക്ക് നീക്കം ചെയ്‌തു. ChromeVox ക്ലാസ്സിക്കിലേക്ക് തിരികെ മാറുന്നതിനുള്ള കീബോർഡ് ടോഗിൾ നീക്കം ചെയ്തിരിക്കുന്നു.</translation>
 <translation id="4661075872484491155">ട്രീ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
@@ -424,6 +433,7 @@
 <translation id="4827410568042294688">തിരഞ്ഞെടുത്തത് ഒഴിവാക്കി</translation>
 <translation id="4842108708071771135">അടുത്ത ബ്ലോക്ക്ക്വോട്ട് ഒന്നുമില്ല.</translation>
 <translation id="4844625982113518938">ഏതെങ്കിലും കീയുടെ പേര് അറിയുന്നതിന് അത് അമർത്തുക. Ctrl+W "അറിയുക" മോഡ് അടയ്‌ക്കും.</translation>
+<translation id="4846428657345567687">ChromeVox-ലേക്ക് സ്വാഗതം!</translation>
 <translation id="4846487886195635104">കുറുകെവെട്ടൽ അവസാനിക്കുന്നു</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">മുൻ സമാന ഘടകം.</translation>
@@ -461,6 +471,7 @@
 <translation id="5098541983634824365">ഗ്രിഡ് ഉപേക്ഷിക്കുന്നു.</translation>
 <translation id="5102981729317424850">ഉപകരണ ബാർ</translation>
 <translation id="5105050547967751155">rq</translation>
+<translation id="5106547198195128110">ഈ പുതിയ റിലീസിൽ ആവേശകരമായ ചില മാറ്റങ്ങൾ ഞങ്ങൾ ഉൾപ്പെടുത്തിയിരിക്കുന്നു; പുതിയത് എന്തൊക്കെയെന്ന് കാണുക:</translation>
 <translation id="5110983769041734144">മുൻ ഫോം ഫീൽഡ് ഒന്നുമില്ല.</translation>
 <translation id="5111640677200759579">നിര ശീർഷകം</translation>
 <translation id="5136967254288895616">മുൻ ലിങ്ക് ഒന്നുമില്ല.</translation>
@@ -577,6 +588,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="6065293622157674001">വ്യാകരണ പിശക് തുടങ്ങുന്നു</translation>
 <translation id="6082768461603900813">അടിസ്ഥാന നാവിഗേഷൻ</translation>
 <translation id="6092707270915298410">ലിങ്ക് അവസാനം</translation>
+<translation id="6118126368611144850">Chrome-നായുള്ള Android ആപ്പുകൾ. ഉപകരണത്തിൽ Play സ്റ്റോർ ഉണ്ടെങ്കിൽ, Android ആപ്പുകൾ ഉപയോഗിച്ച് ChromeVox-ന്‍റെ ആദ്യ അനുഭവം അറിയൂ. Play സ്റ്റോറിൽ നിന്ന് Google Chrome Canary ഡൗൺലോഡ് ചെയ്‌ത്, പരീക്ഷണാത്മക പിന്തുണ പരീക്ഷിച്ച് നോക്കുക.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">സെല്ലിന്റെ അവസാനം.</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -617,6 +629,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, Alt+F അമർ
 <translation id="6493991254603208962">തെളിച്ചം കുറയ്‌ക്കുക</translation>
 <translation id="6508059270146105198">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ പേജിന് ചുവടേക്ക് നീക്കുക</translation>
 <translation id="6536864053412760904">മാത്ത് ML ടോക്കൺ</translation>
+<translation id="6540201937398578274">ChromeVox-ൽ, മോഡിഫയർ കീ എന്നത് തിരയൽ കീയാണ്. മിക്ക ChromeVox കുറുക്കുവഴികളും ആരംഭിക്കുന്നത് തിരയൽ കീ ഉപയോഗിച്ചാണ്. നാവിഗേഷനുവേണ്ടി നിങ്ങൾക്ക് അമ്പടയാള കീകളും ഉപയോഗിക്കാം.</translation>
 <translation id="6550720799683018100">ചുവടെയുള്ള ലിസ്റ്റിൽ നിന്നും ഒരു ഓപ്‌ഷൻ തിരഞ്ഞെടുക്കുന്നതിലൂടെ നിലവിലെ കീമാപ്പ് മാറ്റുക.</translation>
 <translation id="6561818612645211875">നിലവിലെ വരിയുടെ തുടക്കത്തിലേക്ക് പോകുക</translation>
 <translation id="6587021927234520429">അടുത്ത നില 4 ശീർഷകം ഒന്നുമില്ല.</translation>

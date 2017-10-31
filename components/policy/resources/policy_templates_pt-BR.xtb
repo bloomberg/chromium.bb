@@ -94,6 +94,7 @@
 <translation id="1435659902881071157">Configuração de rede em nível de dispositivo</translation>
 <translation id="1438739959477268107">Configuração padrão de geração de chaves</translation>
 <translation id="1454846751303307294">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para executar JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
+<translation id="1456822151187621582">Windows (clientes do <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Controla o comportamento do usuário em uma sessão de diversos perfis nos dispositivos com <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política for configurada como "MultiProfileUserBehaviorUnrestricted", o usuário poderá ser primário ou secundário em uma sessão de diversos perfis.
@@ -281,6 +282,7 @@
 <translation id="2067011586099792101">Bloquear acesso a sites fora de pacotes de conteúdo</translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="2077273864382355561">Intervalo de desligamento da tela no funcionamento com energia da bateria</translation>
+<translation id="2082205219176343977">Configurar a versão mínima permitida do Chrome para o dispositivo.</translation>
 <translation id="209586405398070749">Canal Stable</translation>
 <translation id="2098658257603918882">Ativar relato de uso e dados relacionados a falhas</translation>
 <translation id="2113068765175018713">Limitar tempo de execução do dispositivo reiniciando automaticamente</translation>
@@ -365,6 +367,13 @@
 <translation id="2303795211377219696">Ativar o preenchimento automático para cartões de crédito</translation>
 <translation id="2309390639296060546">Configuração padrão de geolocalização</translation>
 <translation id="2312134445771258233">Permite configurar as páginas que são carregadas na inicialização. O conteúdo da lista "URLs que devem ser abertos na inicialização" é ignorado, a menos que você selecione "Abrir uma lista de URLs" em "Ação na inicialização".</translation>
+<translation id="2334591568684482454">Configura a disponibilidade e o comportamento da funcionalidade de atualização do firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Configurações individuais podem ser especificadas em propriedades JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: se for definida como <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, os usuários poderão acionar o fluxo de Powerwash para instalar uma atualização do firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Se a política não for definida, a funcionalidade de atualização do firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /> não será disponibilizada.</translation>
 <translation id="2337466621458842053">Permite que você defina uma lista de padrões URL para especificar os sites autorizados a exibir imagens. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultImagesSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="2372547058085956601">O período de espera para login automático na sessão pública.
 
@@ -535,6 +544,7 @@
           Se esta configuração for desativada e as conexões de saída UDP forem filtradas pelo firewall, esta máquina permitirá somente conexões a partir de máquinas clientes da rede local.
 
           Se esta política não for definida, a configuração será ativada.</translation>
+<translation id="2823870601012066791">Local de registro do Windows para clientes do <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Ativar o modo sem rastros</translation>
 <translation id="2838830882081735096">Bloquear migração de dados e ARC</translation>
 <translation id="2844404652289407061">Ativa a disponibilidade de "Tocar para pesquisar" na visualização de conteúdo do <ph name="PRODUCT_NAME" />.
@@ -868,6 +878,25 @@
 <translation id="4027608872760987929">Ativar o provedor de pesquisa padrão</translation>
 <translation id="4039085364173654945">Controla se o subconteúdo de terceiros em uma página pode acionar pop-up de uma caixa de diálogo básica de autorização HTTP. Normalmente, esta função é desativada como proteção contra phishing. Se esta política não estiver definida, a função é desativada e o subconteúdo de terceiros não terá permissão para acionar pop-up de uma caixa de diálogo básica de autorização HTTP.</translation>
 <translation id="4056910949759281379">Desativar o protocolo SPDY</translation>
+<translation id="4077363032873906037">Ativa o recurso de login restrito do <ph name="PRODUCT_NAME" /> em apps do Google e impede que os usuários alterem essa configuração.
+
+      Se você definir essa configuração, o usuário só poderá acessar apps 
+      do Google usando contas dos domínios especificados (note que isso não
+      funciona para gmail.com/googlemail.com).
+
+      Essa configuração NÃO impede que o usuário faça login em um dispositivo gerenciado
+      que exija autenticação do Google. O usuário ainda poderá fazer login
+      em contas de outros domínios, mas receberá um erro
+      ao tentar usar apps do Google com essas contas.
+
+      Se essa opção ficar vazia/sem configuração, o usuário poderá
+      acessar apps do Google com qualquer conta.
+
+      Esta política faz com que o cabeçalho X-GoogApps-Allowed-Domains seja anexado a
+      todas as solicitações de HTTP e HTTPS para todos os domínios google.com, conforme descrito em
+      https://support.google.com/a/answer/1668854.
+
+      Os usuários não podem alterar ou modificar essa configuração.</translation>
 <translation id="408029843066770167">Permitir consultas a um serviço de hora do Google</translation>
 <translation id="4088589230932595924">Modo sem rastros forçado</translation>
 <translation id="4088983553732356374">Permite que você configure se os websites têm ou não permissão para definir dados locais. É possível permitir a configuração dos dados locais para todos os websites ou negá-la a todos eles.
@@ -1048,6 +1077,7 @@
           Se você definir essa política, os usuários não poderão alterá-la ou substituí-la.
 
           Se essa política não for definida, o cursor grande ficará desativado inicialmente, mas o usuário poderá ativá-lo a qualquer momento.</translation>
+<translation id="4802905909524200151">Configurar o comportamento de atualização do firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4807950475297505572">Os usuários menos utilizados ​​recentemente serão removidos até que haja espaço livre suficiente</translation>
 <translation id="4815725774537609998">O uso desta política foi suspenso, use o ProxyMode.
 
@@ -1080,6 +1110,27 @@
 
           Se esta política estiver definida como falsa, as solicitações de bloqueio de ativação da tela são ignoradas.</translation>
 <translation id="4876805738539874299">Versão máxima de SSL ativada</translation>
+<translation id="4881315447528084360">Especifica uma lista de apps e extensões que são instalados silenciosamente,
+          sem interação do usuário e que não podem ser desinstalados ou 
+          desativados pelo usuário. Todas as permissões solicitadas pelos
+          apps/extensões são implicitamente concedidas, sem interação do usuário,
+          incluindo permissões adicionais solicitadas por futuras versões do
+          app/extensão. Além disso, são concedidas permissões para as APIs
+         de extensão enterprise.deviceAttributes e enterprise.platformKeys.
+          Essas duas APIs não estão disponíveis para apps/extensões que não
+          tenham sido instalados forçadamente.
+
+          Esta política tem precedência sobre uma política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potencialmente conflitante. Se um app ou extensão anteriormente instalado de modo forçado for removido dessa lista, será automaticamente desinstalado pelo <ph name="PRODUCT_NAME" />.
+
+          Em instâncias do Windows não vinculadas a um domínio do <ph name="MS_AD_NAME" />, a instalação forçada limita-se a apps e extensões listados na Chrome Web Store.
+
+          O código-fonte de qualquer extensão pode ser alterado pelos usuários por meio das Ferramentas de desenvolvedor, possivelmente tornando a extensão defeituosa. Se essa preocupação existir, será preciso definir a política <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+
+          Cada item da lista da política é uma string que contém um código de extensão e um URL de "atualização" separados por ponto e vírgula (<ph name="SEMICOLON" />). O código da extensão é a string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no modo de desenvolvedor. O URL de "atualização" deve apontar para um documento de atualização do Manifesto XML, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. O URL de "atualização" definido nesta política só é usado para a instalação inicial. As atualizações subsequentes da extensão empregam o URL de atualização indicado no manifesto da extensão.
+
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala o app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> a partir do URL padrão de "atualização" da Chrome Web Store. Para ver mais informações sobre extensões de hospedagem, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+
+          Se esta política não for definida, nenhum app ou extensão será instalado automaticamente, e o usuário poderá desinstalar apps ou extensões no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Define os domínios autorizados a acessar Google Apps</translation>
 <translation id="4897928009230106190">Especifica os parâmetros usados ao pesquisar sugestões com POST. Consiste em pares de nomes/valores separados por vírgula. Se um valor for um parâmetro de modelo, como {searchTerms} no exemplo acima, ele será substituído por dados de termos de pesquisa reais.
 
@@ -1102,6 +1153,7 @@
 <translation id="4980635395568992380">Tipo do dado:</translation>
 <translation id="4983201894483989687">Permitir a execução de plug-ins que estão desatualizados</translation>
 <translation id="4988291787868618635">Ação a ser realizada quando o intervalo de inatividade for atingido</translation>
+<translation id="4995548127349206948">Se a autenticação NTLMv2 está ativada.</translation>
 <translation id="5047604665028708335">Permitir acesso a sites fora de pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>
@@ -1427,6 +1479,7 @@
 <translation id="6076099373507468537">Define a lista de dispositivos USB que estão autorizados a serem removidos do driver de kernel deles para uso pela API chrome.usb diretamente dentro de um app da Web. As entradas são pares de um identificador de fornecedor e um identificador do produto USB para identificar um hardware específico.
 
       Se esta política não for configurada, a lista de dispositivos USB removíveis ficará vazia.</translation>
+<translation id="6083631234867522991">Windows (clientes do Windows):</translation>
 <translation id="6093156968240188330">Permitir que usuários remotos interajam com janelas elevadas em sessões de assistência remota</translation>
 <translation id="6095999036251797924">Especifica o período de tempo de inatividade após o qual a tela deve ser bloqueada, quando o dispositivo é executado em energia AC ou bateria.
 
@@ -1895,6 +1948,39 @@
 <translation id="7841880500990419427">Versão TLS mínima para substituição</translation>
 <translation id="7842869978353666042">Configurar opções do Google Drive</translation>
 <translation id="7843525027689416831">Especifica as sinalizações que devem ser aplicadas a <ph name="PRODUCT_NAME" /> quando ele é iniciado. As sinalizações especificadas são aplicadas apenas na tela de login. As sinalizações definidas por esta política não se propagam para as sessões do usuário.</translation>
+<translation id="7844537954833753199">Define as configurações de gerenciamento de extensões para o <ph name="PRODUCT_NAME" />.
+
+          Esta política controla diversas configurações, incluindo aquelas controladas por políticas relacionadas às extensões já existentes. Esta política substituirá quaisquer políticas legadas, caso ambas estejam definidas.
+
+          Esta política mapeia um código de extensão ou URL de atualização para sua configuração. Com um código de extensão, a configuração será aplicada apenas à extensão especificada. É possível definir uma configuração padrão para o código especial <ph name="DEFAULT_SCOPE" />, que será aplicada a todas as extensões que não possuem uma configuração personalizada definida nesta política. Com um URL de atualização, a configuração será aplicada a todas as extensões com o URL de atualização exato definido no manifesto desta extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          A configuração para cada extensão (ou extensões com o mesmo URL de atualização) é outro dicionário que pode conter os campos documentados abaixo.
+
+          <ph name="INSTALLATION_MODE" />: é mapeado para uma string que indica o modo de instalação para a extensão. As strings válidas são:
+          * <ph name="ALLOWED" />: permite que a extensão seja instalada pelo usurário. Este é o comportamento padrão.
+          * <ph name="BLOCKED" />: bloqueia a instalação da extensão.
+          * <ph name="FORCE_INSTALLED" />: a extensão é instalada automaticamente e não pode ser removida pelo usuário.
+          * <ph name="NORMAL_INSTALLED" />: a extensão é instalada automaticamente, mas pode ser desativada pelo usuário.
+
+          O <ph name="INSTALLTION_MODE" /> também pode ser configurado para várias extensões, incluindo a <ph name="DEFAULT_SCOPE" /> (como configuração padrão) e as extensões com o mesmo URL de atualização. Apenas os valores <ph name="ALLOWED" /> e <ph name="BLOCKED" /> podem ser usados nesse caso.
+
+          Se o modo estiver definido para <ph name="FORCE_INSTALLED" /> ou <ph name="NORMAL_INSTALLED" />, também será necessário um <ph name="UPDATE_URL" />. Observe que o URL de atualização definido nesta política é usado apenas para a instalação inicial; atualizações subsequentes da extensão usarão o URL de atualização indicado no manifesto dela. O URL de atualização acima deve apontar para um documento XML do Manifesto de atualização, conforme mencionado acima.
+
+          <ph name="BLOCKED_PERMISSIONS" />: é mapeado para uma lista de strings que indicam as permissões de API para a extensão. Os nomes das permissões são os mesmos que as strings de permissão declaradas no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC3" />. Também é possível definir esta configuração para a extensão <ph name="DEFAULT_SCOPE" />. Se a extensão exigir uma permissão incluída na lista de bloqueio, não será possível carregá-la. Se ela contiver uma permissão bloqueada como um requisito opcional, ela será tratada normalmente, porém a solicitação da permissão conflituosa será recusada automaticamente no tempo de execução.
+
+          <ph name="ALLOWED_PERMISSIONS" />: é semelhante a <ph name="BLOCKED_PERMISSIONS" />, porém permite explicitamente algumas permissões que podem ser bloqueadas pela lista de permissões bloqueadas global, não sendo possível, dessa forma, ser configurada para a extensão <ph name="DEFAULT_SCOPE" />. Observe que essa configuração não fornece permissões concedidas a extensões automaticamente.
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />: é mapeado para uma string de versão. O formato da string de versão é o mesmo usado no manifesto da extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC4" />. Uma extensão com uma versão mais antiga que a versão mínima especificada deve ser desativada. Isso também se aplica a extensões de instalação forçada.
+
+          A definição a seguir só pode ser usada para a configuração <ph name="DEFAULT_SCOPE" /> padrão:
+
+          <ph name="INSTALL_SOURCES" />: cada item desta lista é um padrão de correspondência no estilo de extensões (<ph name="LINK_TO_MATCH_PATTERNS" />). Os usuários poderão instalar os itens com facilidade a partir de qualquer URL que corresponda a um item desta lista. É necessário que tanto o local do arquivo <ph name="EXTENSION_SUFFIX_WILDCARD" /> quanto a página de onde o download foi iniciado (ou seja, o referenciador) tenham a permissão desses padrões.
+
+          <ph name="ALLOWED_TYPES" />: esta configuração coloca na lista de permissões os tipos de extensão/app que podem ser instalados no <ph name="PRODUCT_NAME" />. O valor é uma lista de strings, sendo que cada item da lista deve ser um dos seguintes: <ph name="VALID_ALLOWED_TYPES" />. Consulte a documentação das extensões do <ph name="PRODUCT_NAME" /> para ver mais informações sobre esses tipos.
+          <ph name="BLOCKED_INSTALL_MESSAGE" />: se um usuário tenta instalar uma extensão, mas é bloqueado por uma política, a Chrome Webstore exibe uma mensagem de erro genérica. Esta definição permite acrescentar texto a essa mensagem de erro. Isso poderia ser usado para direcionar os usuários para o suporte técnico, explicar por que uma extensão específica está bloqueada ou para outros fins. Essa mensagem de erro ficará truncada se tiver mais de 1.000 caracteres.
+          <ph name="RUNTIME_BLOCKED_HOSTS" />: aceita uma lista de hosts com os quais uma extensão será impedida de interagir. Isso inclui injeção de JavaScript, alteração e exibição de webRequests / webNavigation, exibição e alteração de cookies. O formato é similar aos Padrões de correspondência <ph name="LINK_TO_MATCH_PATTERNS" />, exceto que não é possível definir nenhum caminho, por exemplo "*://*.exemplo.com". Isso também é compatível com caracteres curingas TLD efetivos, como por exemplo "*://example.*".
+          <ph name="RUNTIME_ALLOWED_HOSTS" />: aceita uma lista de hosts com os quais uma extensão pode interagir, independentemente de eles estarem listados em <ph name="RUNTIME_BLOCKED_HOSTS" />. Possui o mesmo formato que <ph name="RUNTIME_BLOCKED_HOSTS" />.
+          </translation>
 <translation id="787125417158068494">Se ela for definida para SyncDisabled ou não for configurada, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficarão disponíveis para apps ARC.
 
       Se ela for definida para CopyCaCerts, todos os certificados CA instalados por ONC com <ph name="WEB_TRUSTED_BIT" /> ficarão disponíveis para apps ARC.</translation>
@@ -2050,6 +2136,11 @@
 <translation id="8451988835943702790">Usar a página "Nova guia" como página inicial</translation>
 <translation id="8465065632133292531">Parâmetros para URL de instantâneos que usa POST</translation>
 <translation id="847472800012384958">Não permite que nenhum site exiba pop-ups</translation>
+<translation id="8476127435468057643">Controla se NTLMv2 está ativada.
+
+          Todas as versões recentes dos servidores Samba e Windows são compatíveis com NTLMv2. Ela deve ser desativada apenas para compatibilidade reversa e reduz a segurança da autenticação.
+
+          O valor padrão quando esta política não está definida é atualmente Falso para compatibilidade reversa, mas será alterado para Verdadeiro no futuro.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Personaliza a lista de padrões de URL que deve sempre ser processada pelo navegador do host.
 
@@ -2065,6 +2156,12 @@
 
       Se esta política for usada, todas as impressoras serão fornecidas ao usuário, com exceção dos códigos listados.
       </translation>
+<translation id="8538235451413605457">Configura o requisito da versão mínima permitida de <ph name="PRODUCT_NAME" />. As versões abaixo são tratadas como obsoletas, e o dispositivo não permitiria o login do usuário antes que o SO fosse atualizado.
+      Se a versão atual se tornar obsoleta durante a sessão, o usuário será forçadamente desconectado.
+
+      Se esta política não estiver definida, nenhuma restrição será aplicada, e o usuário poderá fazer login independentemente da versão do <ph name="PRODUCT_NAME" />.
+
+      Aqui, "versão" pode ser uma versão exata como "61.0.3163.120" ou um prefixo de versão, como "61.0"  </translation>
 <translation id="8544375438507658205">Renderizador padrão de HTML para o <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Avisar ao visitar sites fora de pacotes de conteúdo</translation>
 <translation id="8566842294717252664">Ocultar a loja on-line da página "Nova guia" e do Acesso rápido aos apps</translation>
@@ -2077,6 +2174,7 @@
           Se essa configuração for falsa, o dispositivo não usará atestado remoto para proteção de conteúdo e o dispositivo pode ser incapaz de reproduzir conteúdo protegido.
 
           Se essa configuração for verdadeira ou se não for definida, o atestado remoto pode ser usado para proteção de conteúdo.</translation>
+<translation id="8650974590712548439">Local do registro do Windows para clientes do Windows:</translation>
 <translation id="8654286232573430130">Especifica quais servidores devem estar na lista de permissões para a autenticação integrada. A autenticação integrada só é ativada quando o <ph name="PRODUCT_NAME" /> recebe um desafio de autenticação a partir de um proxy ou de um servidor que está nesta lista de permissões.
 
           Separe vários nomes de servidores com vírgulas. Caracteres curinga (*) são permitidos.

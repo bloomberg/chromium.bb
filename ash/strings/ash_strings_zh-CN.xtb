@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">高反差模式</translation>
 <translation id="2597972630681408282">夜间模式：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">提交</translation>
+<translation id="2675319268637823299">管理员已禁止 <ph name="USER_EMAIL" /> 参与多帐号登录。
+    所有用户都必须先退出帐号才能继续。</translation>
 <translation id="2700058918926273959">会话将在<ph name="SESSION_TIME_REMAINING" />后结束，到时您将自动退出。</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME" />，<ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">已连接</translation>
 <translation id="3371140690572404006">USB-C 设备（右侧前端端口）</translation>
 <translation id="3400357268283240774">其他设置</translation>
+<translation id="3413817803639110246">目前尚无可查看的内容</translation>
 <translation id="3445925074670675829">USB-C 设备</translation>
 <translation id="3465566417615315331">点击您的照片</translation>
 <translation id="3473479545200714844">屏幕放大镜</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">键盘功能标注</translation>
 <translation id="639644700271529076">CAPS LOCK 已关闭</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">大功告成</translation>
 <translation id="6452181791372256707">拒绝</translation>
 <translation id="6453179446719226835">语言已更改</translation>
 <translation id="6459472438155181876">正在将屏幕扩展到<ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@
 <translation id="8825534185036233643">系统不支持镜像两个以上的显示屏。</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
+<translation id="8870509716567206129">应用不支持分屏。</translation>
 <translation id="8878886163241303700">正在扩展屏幕</translation>
 <translation id="8921624153894383499">Google 智能助理不支持此语言。</translation>
 <translation id="8938800817013097409">USB-C 设备（背面右侧端口）</translation>

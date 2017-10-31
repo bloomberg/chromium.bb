@@ -554,6 +554,7 @@
 <translation id="5094747076828555589">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="5095208057601539847">Province</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
+<translation id="5128122789703661928">The session with this name is not valid for deletion.</translation>
 <translation id="5141240743006678641">Encrypt synced passwords with your Google credentials</translation>
 <translation id="5145883236150621069">Error code present in the policy response</translation>
 <translation id="5159010409087891077">Open page in a new Incognito window (⇧⌘N)</translation>

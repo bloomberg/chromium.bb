@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Högkontrastläge</translation>
 <translation id="2597972630681408282">Nattljus: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Skicka</translation>
+<translation id="2675319268637823299">En administratör har förbjudit multiinloggning för <ph name="USER_EMAIL" />.
+    Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="2700058918926273959">Sessionen upphör om <ph name="SESSION_TIME_REMAINING" />. Du kommer att loggas ut.</translation>
 <translation id="2727977024730340865">Ansluten till en laddare med låg effekt. Batteriet kanske inte laddas ordentligt.</translation>
 <translation id="2761704814324807722">Statusfältet, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Ansluten</translation>
 <translation id="3371140690572404006">USB-C-enhet (främre porten på högra sidan)</translation>
 <translation id="3400357268283240774">Ytterligare inställningar</translation>
+<translation id="3413817803639110246">Det finns inget att se här ännu</translation>
 <translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3465566417615315331">Klicka på ditt foto</translation>
 <translation id="3473479545200714844">Skärmförstorare</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Tangentbordsöverlägg</translation>
 <translation id="639644700271529076">CAPS LOCK är av</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Klart</translation>
 <translation id="6452181791372256707">Avvisa</translation>
 <translation id="6453179446719226835">Språket har ändrats</translation>
 <translation id="6459472438155181876">Utökar skärmen till <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivb
 <translation id="8825534185036233643">Det finns inte stöd för spegling på fler än två skärmar.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Sök+Escape</translation>
+<translation id="8870509716567206129">Appen har inte stöd för delad skärm.</translation>
 <translation id="8878886163241303700">Utökad skärm</translation>
 <translation id="8921624153894383499">Google Assistent talar inte det här språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (högra porten på baksidan)</translation>

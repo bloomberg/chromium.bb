@@ -70,6 +70,8 @@
 <translation id="2532589005999780174">Modo de alto contraste</translation>
 <translation id="2597972630681408282">Modo noturno: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2653659639078652383">Enviar</translation>
+<translation id="2675319268637823299">Um administrador bloqueou o login múltiplo para <ph name="USER_EMAIL" />.
+Todos os usuários devem sair para continuar.</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING" />. Você será desconectado.</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -104,6 +106,7 @@
 <translation id="3368922792935385530">Conectado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal da direita)</translation>
 <translation id="3400357268283240774">Configurações adicionais</translation>
+<translation id="3413817803639110246">Nada para ver ainda</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3465566417615315331">Clique na sua foto</translation>
 <translation id="3473479545200714844">Lupa</translation>
@@ -206,6 +209,7 @@
 <translation id="632744581670418035">Sobreposição do teclado</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
 <translation id="6406704438230478924">altgr</translation>
+<translation id="643147933154517414">Pronto</translation>
 <translation id="6452181791372256707">Rejeitar</translation>
 <translation id="6453179446719226835">O idioma foi alterado</translation>
 <translation id="6459472438155181876">Estendendo tela para <ph name="DISPLAY_NAME" /></translation>
@@ -299,6 +303,7 @@ Notificações posteriores, janelas e caixas de diálogo podem ser divididas ent
 <translation id="8825534185036233643">Não há suporte para o espelhamento com mais de duas telas.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
+<translation id="8870509716567206129">O app não é compatível com a divisão de tela.</translation>
 <translation id="8878886163241303700">Tela ampla</translation>
 <translation id="8921624153894383499">O Google Assistente não fala esse idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira da direita)</translation>

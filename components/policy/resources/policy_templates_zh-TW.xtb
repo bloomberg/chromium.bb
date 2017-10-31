@@ -98,6 +98,7 @@
 <translation id="1435659902881071157">裝置層級網路設定</translation>
 <translation id="1438739959477268107">預設金鑰產生設定</translation>
 <translation id="1454846751303307294">允許你設定網址模式清單，指定不可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
+<translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" /> 用戶端)：</translation>
 <translation id="1464848559468748897">針對使用者在 <ph name="PRODUCT_OS_NAME" /> 裝置多重設定檔工作階段中的行為進行控制。
 
       如果將這項政策設為「MultiProfileUserBehaviorUnrestricted」，使用者就能成為多重設定檔工作階段的主要或次要使用者。 
@@ -285,6 +286,7 @@
 <translation id="2067011586099792101">禁止存取內容套件以外的網站</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2077273864382355561">在電池供電環境下執行時的螢幕關閉延遲時間</translation>
+<translation id="2082205219176343977">設定裝置的最低 Chrome 版本限制。</translation>
 <translation id="209586405398070749">穩定頻道</translation>
 <translation id="2098658257603918882">啟用使用量和當機相關資料的報告功能</translation>
 <translation id="2113068765175018713">透過自動重新啟動的方式限制裝置的正常運作時間</translation>
@@ -369,6 +371,13 @@
 <translation id="2303795211377219696">啟用信用卡的自動填入功能</translation>
 <translation id="2309390639296060546">預設地理位置設定</translation>
 <translation id="2312134445771258233">允許你設定起始時載入的網頁。系統會略過 [起始時開啟的網址] 網頁清單內容，除非你在 [起始動作] 中選取 [開啟網址清單]。</translation>
+<translation id="2334591568684482454">設定 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能的可用性和行為。
+
+      可在 JSON 屬性中指定個別設定： 
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />：如果設為 <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />，則使用者可觸發 Powerwash 流程來安裝 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新。
+
+      如果未設定這項政策，則不提供 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新功能。</translation>
 <translation id="2337466621458842053">允許你設定網址模式清單，指定可以顯示圖片的網站。如果未設定這項政策，系統會從「DefaultImagesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="2372547058085956601">公開工作階段自動登入延遲時間。
 
@@ -540,6 +549,7 @@
           如果停用這項設定，且防火牆會篩出外傳 UDP 連線，則這台電腦只會自動允許來自區域網路用戶端電腦的連線。
 
           如果未設定這項政策，系統會啟用這項設定。</translation>
+<translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" /> 用戶端的 Windows 登錄檔位置：</translation>
 <translation id="2824715612115726353">啟用無痕模式</translation>
 <translation id="2838830882081735096">不允許資料遷移和 ARC</translation>
 <translation id="2844404652289407061">在 <ph name="PRODUCT_NAME" /> 的內容畫面中啟用「輕觸搜尋」功能。
@@ -874,6 +884,25 @@
 <translation id="4027608872760987929">啟用預設搜尋引擎</translation>
 <translation id="4039085364173654945">控制是否允許網頁上的第三方附屬內容彈出「HTTP 基本驗證」對話方塊。為了防止網路釣魚，這項功能通常會停用。如果未設定這項政策，系統會停用這項功能，並且不允許第三方附屬內容彈出「HTTP 基本驗證」對話方塊。</translation>
 <translation id="4056910949759281379">停用 SPDY 通訊協定</translation>
+<translation id="4077363032873906037">啟用 <ph name="PRODUCT_NAME" /> 的 Google Apps 受限登入功能，並且禁止使用者變更這項設定。
+
+      定義這項設定後，使用者只能使用指定網域中的帳戶
+      存取 Google Apps 服務 (請注意，這項限制不適用於
+      gmail.com/googlemail.com)。
+
+      這項設定「不會」禁止使用者在需要通過 Google
+      驗證程序的受管理裝置上登入帳戶。使用者仍可
+      登入其他網域中的帳戶，但使用這類帳戶
+      存取 Google Apps 時會收到錯誤訊息。
+
+      如果將這項設定留空 (即不予設定)，使用者就可以
+      使用任何帳戶存取 Google Apps。
+
+      套用這項政策後，傳送給所有 google.com 網域的 HTTP 和 HTTPS 要求
+      都會加上 X-GoogApps-Allowed-Domains 標頭。詳情請參閱以下說明文章：
+      https://support.google.com/a/answer/1668854。
+
+      使用者無法變更或覆寫這項設定。</translation>
 <translation id="408029843066770167">允許向 Google 時間服務傳送查詢</translation>
 <translation id="4088589230932595924">強制使用無痕模式</translation>
 <translation id="4088983553732356374">可讓您設定是否允許網站設定本機資料。您可以允許所有網站都能設定本機資料，也可以禁止所有網站設定本機資料。
@@ -1054,6 +1083,7 @@
           只要你設定這項政策，使用者即無法予以變更或覆寫。
 
           如果你未設定這項政策，系統預設會停用大型游標，但使用者隨時均可予以啟用。</translation>
+<translation id="4802905909524200151">設定 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新行為</translation>
 <translation id="4807950475297505572">移除近期登入次數最少的使用者，直到有足夠的可用空間</translation>
 <translation id="4815725774537609998">這項政策已淘汰，請改用 ProxyMode。
 
@@ -1086,6 +1116,27 @@
 
           如果這項政策設為「False」，則螢幕喚醒鎖要求會受到忽略。</translation>
 <translation id="4876805738539874299">已啟用 SSL 最高版本</translation>
+<translation id="4881315447528084360">指定以無訊息方式安裝 (使用者無需操作) 的應用程式和
+          擴充功能清單 (使用者無法解除安裝或停用這些
+          應用程式和擴充功能)。系統會直接授予這些
+          應用程式/擴充功能要求的所有權限 (使用者無需操作)，
+          包括日後新版應用程式/擴充功能要求的任何其他權限。
+          此外，系統已將權限授予 enterprise.deviceAttributes
+          和 enterprise.platformKeys 擴充功能 API
+          (這兩個 API 不適用於非強制安裝的
+          應用程式/擴充功能)。
+
+          這項政策比可能發生衝突的 <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 政策具備更高的優先順序。如果從清單中移除先前強制安裝的應用程式或擴充功能，<ph name="PRODUCT_NAME" /> 會自動解除安裝該應用程式/擴充功能。
+
+          如果 Windows 執行個體未加入 <ph name="MS_AD_NAME" /> 網域，系統只能強制安裝 Chrome 線上應用程式商店中的應用程式和擴充功能。
+
+          請注意，所有擴充功能的原始碼都可以使用開發人員工具變更 (可能會造成擴充功能無法正常運作)。如果你對此有所顧慮，建議你設定 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 政策。
+
+          這項政策的每個清單項目都是一條字串，其中包含以分號 (<ph name="SEMICOLON" />) 分隔的一個擴充功能 ID 和一個「更新」網址。擴充功能 ID 為 32 個字母的字串。如需查看範例，請在開發人員模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。「更新」網址應指向更新資訊清單 XML 文件 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)。請注意，這項政策中設定的「更新」網址僅適用於初次安裝，後續的擴充功能更新將會使用擴充功能資訊清單中指定的更新網址。
+
+          舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE" /> 會透過標準 Chrome 線上應用程式商店「更新」網址安裝「<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />」應用程式。如需進一步瞭解如何代管擴充功能，請參閱 <ph name="LINK_TO_EXTENSION_DOC2" />。
+
+          如果未設定這項政策，則不會自動安裝任何應用程式或擴充功能，且使用者可以在 <ph name="PRODUCT_NAME" /> 中解除安裝任何應用程式或擴充功能。</translation>
 <translation id="4882546920824859909">定義允許存取 Google Apps 的網域</translation>
 <translation id="4897928009230106190">指定使用 POST 提供搜尋建議時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {searchTerms})，系統將會以實際的搜尋字詞資料替代這個數值。
 
@@ -1108,6 +1159,7 @@
 <translation id="4980635395568992380">資料類型：</translation>
 <translation id="4983201894483989687">允許執行過舊的外掛程式</translation>
 <translation id="4988291787868618635">在達到閒置延遲時間時要採取的動作</translation>
+<translation id="4995548127349206948">是否啟用 NTLMv2 驗證功能。</translation>
 <translation id="5047604665028708335">允許存取內容套件以外的網站</translation>
 <translation id="5052081091120171147">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入瀏覽紀錄 (也會影響匯入對話方塊的選項)。如果停用這項政策，則不會匯入瀏覽紀錄。如果未設定這項政策，系統會自動匯入瀏覽紀錄，或詢問使用者是否要匯入瀏覽紀錄。</translation>
 <translation id="5056708224511062314">已停用螢幕放大鏡</translation>
@@ -1439,6 +1491,7 @@
 <translation id="6076099373507468537">定義可從核心驅動程式卸離的 USB 裝置 (以便直接在網路應用程式中透過 chrome.usb API 使用) 清單。清單中的項目必須是一組 USB 供應商識別碼和產品識別碼，用於識別特定硬體。
 
       如果未設定這項政策，卸離式 USB 裝置清單就不會顯示任何項目。</translation>
+<translation id="6083631234867522991">Windows (Windows 用戶端)：</translation>
 <translation id="6093156968240188330">允許遠端使用者在遠端協助工作階段中操控權限較高的視窗</translation>
 <translation id="6095999036251797924">指定時間長度，如果系統在 AC 電源或電池供電環境下執行，且未偵測到使用者輸入行為，就會在這段時間過後鎖定螢幕。
 
@@ -1907,6 +1960,39 @@
 <translation id="7841880500990419427">備用的最低 TLS 版本</translation>
 <translation id="7842869978353666042">設定 Google 雲端硬碟選項</translation>
 <translation id="7843525027689416831">指定要在 <ph name="PRODUCT_NAME" /> 啟動時套用的設定。系統僅會在進入登入畫面時套用指定的設定。透過這個政策所指定的設定不會反映在使用者工作階段中。</translation>
+<translation id="7844537954833753199">配置 <ph name="PRODUCT_NAME" /> 的擴充功能管理設定。
+
+          這項政策可控制多項設定 (包括由任何現有的擴充功能相關政策控制的設定)，效力優先於任何先前設定的既有政策。
+
+          這項政策可為擴充功能 ID 或更新網址與其設定建立對應關係。有了擴充功能 ID，系統就只會將設定套用到指定的擴充功能。你可以針對特殊的 ID <ph name="DEFAULT_SCOPE" /> 指定預設設定，讓沒有透過這項政策指定自訂設定的擴充功能全部套用預設設定。此外，系統會比對這個擴充功能的資訊清單提供的更新網址，將設定套用到所有更新網址相符的擴充功能 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)。
+
+          每個擴充功能 (或更新網址相同的擴充功能) 的設定也會記錄以下列載的這些欄位。
+
+          <ph name="INSTALLATION_MODE" />：對應到指示擴充功能安裝模式的字串。有效的字串如下：
+          * <ph name="ALLOWED" />：允許使用者安裝這個擴充功能 (這是預設的行為)。
+          * <ph name="BLOCKED" />：禁止安裝這個擴充功能。
+          * <ph name="FORCE_INSTALLED" />：自動安裝這個擴充功能，且使用者無法移除。
+          * <ph name="NORMAL_INSTALLED" />：自動安裝這個擴充功能，但使用者可以停用。
+
+          你也可以為多個擴充功能設定 <ph name="INSTALLTION_MODE" />，包括 <ph name="DEFAULT_SCOPE" /> 擴充功能 (做為預設設定) 和更新網址相同的擴充功能。在這種情況下，只能使用 <ph name="ALLOWED" /> 和 <ph name="BLOCKED" /> 這兩個值。
+
+          如果將模式設為 <ph name="FORCE_INSTALLED" /> 或 <ph name="NORMAL_INSTALLED" />，則必須一併設定 <ph name="UPDATE_URL" />。請注意，系統只會在初次安裝擴充功能時使用你在這項政策中設定的更新網址，後續更新擴充功能時則會使用擴充功能的資訊清單指示的更新網址。更新網址應指向前述更新資訊清單 XML 檔案。
+
+          <ph name="BLOCKED_PERMISSIONS" />：對應到字串清單，指示擴充功能的封鎖 API 權限。權限名稱與擴充功能資訊清單宣告的權限字串相同 (如 <ph name="LINK_TO_EXTENSION_DOC3" /> 所述)。你也可以針對 <ph name="DEFAULT_SCOPE" /> 擴充功能配置這項設定。如果擴充功能要求封鎖清單中的權限，則無法載入。如果擴充功能含有封鎖的權限，但屬於選擇性要求，系統會以一般方式進行處理。不過，一旦要求的權限發生衝突，系統會自動在執行階段拒絕要求。 
+
+          <ph name="ALLOWED_PERMISSIONS" />：與 <ph name="BLOCKED_PERMISSIONS" /> 相似，但明確允許部分可能遭到全域封鎖權限清單封鎖的權限，因此無法針對 <ph name="DEFAULT_SCOPE" /> 擴充功能進行設定。請注意，這項設定不會自動將權限授予擴充功能。
+
+          <ph name="MINIMUM_VERSION_REQUIRED" />：對應到版本字串。版本字串的格式與擴充功能資訊清單中使用的格式相同 (如 <ph name="LINK_TO_EXTENSION_DOC4" /> 所述)。如果擴充功能的版本比指定的最低版本更舊，便會遭到停用。這項設定也適用於強制安裝的擴充功能。
+
+          下列設定僅適用於預設的 <ph name="DEFAULT_SCOPE" /> 設定：
+
+          <ph name="INSTALL_SOURCES" />：這份清單中的每個項目都是擴充功能樣式比對模式 (<ph name="LINK_TO_MATCH_PATTERNS" />)。使用者可以透過任何與這份清單中的項目相符的網址輕鬆安裝各種項目。<ph name="EXTENSION_SUFFIX_WILDCARD" /> 檔案的位置和下載來源網頁 (亦即參照網址) 都必須與這些模式相符。
+
+          <ph name="ALLOWED_TYPES" />：這項設定會將可以在 <ph name="PRODUCT_NAME" /> 中安裝的擴充功能/應用程式類型加入許可清單。設定值為字串清單，系統接受的字串如下：<ph name="VALID_ALLOWED_TYPES" />。如要進一步瞭解這些類型，請參閱 <ph name="PRODUCT_NAME" /> 擴充功能說明文件。
+          <ph name="BLOCKED_INSTALL_MESSAGE" />：如果使用者要安裝的擴充功能遭到政策封鎖，Chrome 線上應用程式商店會顯示一般錯誤訊息。這項設定可讓你在錯誤訊息中附加文字，藉此將使用者導向服務中心，說明特定擴充功能遭到封鎖的原因，或提供其他資訊。錯誤訊息的長度上限為 1000 個字元，多餘的字元會遭到截斷。
+          <ph name="RUNTIME_BLOCKED_HOSTS" />：接受擴充功能禁止進行互動的主機清單。互動行為包括植入 JavaScript、修改及查看 webRequests/webNavigation、查看及修改 Cookie。格式與比對模式 <ph name="LINK_TO_MATCH_PATTERNS" /> 類似，但不可定義路徑，例如「*://*.example.com」。這項設定也支援有效的 TLD 萬用字元，例如「*://example.*」。
+          <ph name="RUNTIME_ALLOWED_HOSTS" />：接受擴充功能可進行互動的主機清單 (無論是否為 <ph name="RUNTIME_BLOCKED_HOSTS" /> 列出的主機)。格式與 <ph name="RUNTIME_BLOCKED_HOSTS" /> 相同。
+          </translation>
 <translation id="787125417158068494">如果設為 SyncDisabled 或未設定，ARC 應用程式將無法使用「<ph name="PRODUCT_OS_NAME" />」憑證。
 
       如果設為 CopyCaCerts，ARC 應用程式將可使用所有 ONC 安裝的 CA 憑證 (需有「<ph name="WEB_TRUSTED_BIT" />」)。</translation>
@@ -2057,6 +2143,11 @@
 <translation id="8451988835943702790">將新分頁設為首頁</translation>
 <translation id="8465065632133292531">使用 POST 的互動智慧搜尋網址參數</translation>
 <translation id="847472800012384958">不允許任何網站顯示彈出式視窗</translation>
+<translation id="8476127435468057643">控制是否啟用 NTLMv2。
+
+          近期的所有 Samba 和 Windows 伺服器版本均支援 NTLMv2。除非是為了回溯相容性的緣故，否則請勿停用 NTLMv2 (驗證功能的安全性會因此下降)。
+
+          未定義這項政策時，預設值目前為 false (因應回溯相容性需求)，但日後將變更為 true。</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">自訂主機瀏覽器應一律轉譯的網址模式清單。
 
@@ -2072,6 +2163,12 @@
 
       一旦設定了這項政策，除了本政策中列出的 ID 外，其他所有印表機皆可供使用者使用。
       </translation>
+<translation id="8538235451413605457">設定最低 <ph name="PRODUCT_NAME" /> 版本限制。低於指定值的版本即為過舊版本，必須更新作業系統，使用者才能登入裝置。
+      如果目前的版本在使用者工作階段期間成為過舊版本，使用者會遭到強制登出。
+
+      如果未設定這項政策，則不會套用任何限制，所有 <ph name="PRODUCT_NAME" /> 版本的使用者皆可登入。
+
+      指定「版本」時，可以提供確切的版本號碼 (例如「61.0.3163.120」)，也可以提供版本的前置字串 (例如「61.0」)。  </translation>
 <translation id="8544375438507658205">預設 <ph name="PRODUCT_FRAME_NAME" /> 的 HTML 轉譯器</translation>
 <translation id="8549772397068118889">瀏覽內容套件以外的網站時顯示警告</translation>
 <translation id="8566842294717252664">在新分頁和應用程式啟動畫面中隱藏線上應用程式商店</translation>
@@ -2084,6 +2181,7 @@
           如果設定為 False，裝置將不會針對受保護內容使用遠端證明，並且無法播放受保護內容。
 
           如果設定為 True 或未設定，系統便會對受保護內容使用遠端證明。</translation>
+<translation id="8650974590712548439">Windows 用戶端的 Windows 登錄檔位置：</translation>
 <translation id="8654286232573430130">指定要將哪些伺服器加入整合驗證許可清單。只有在 <ph name="PRODUCT_NAME" /> 收到允許清單中的 Proxy 或伺服器傳來的驗證要求時，系統才會啟用整合驗證。
 
           請以逗號分隔多個伺服器名稱。可允許萬用字元 (*)。
