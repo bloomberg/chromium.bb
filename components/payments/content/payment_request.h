@@ -65,6 +65,7 @@ class PaymentRequest : public mojom::PaymentRequest,
             mojom::PaymentOptionsPtr options) override;
   void Show() override;
   void UpdateWith(mojom::PaymentDetailsPtr details) override;
+  void NoUpdatedPaymentDetails() override;
   void Abort() override;
   void Complete(mojom::PaymentComplete result) override;
   void CanMakePayment() override;

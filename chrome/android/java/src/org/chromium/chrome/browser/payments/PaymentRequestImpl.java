@@ -828,6 +828,28 @@ public class PaymentRequestImpl
             mShippingAddressesSection.setErrorMessage(details.error);
         }
 
+        enableUserInterfaceAfterShippingAddressOrOptionUpdateEvent();
+    }
+
+    /**
+     * Called when the merchant received a new shipping address or shipping option, but did not
+     * update the payment details in response.
+     */
+    @Override
+    public void noUpdatedPaymentDetails() {
+        if (mClient == null) return;
+
+        if (mUI == null) {
+            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
+            disconnectFromClientWithDebugMessage(
+                    "PaymentRequestUpdateEvent fired without PaymentRequest.show()");
+            return;
+        }
+
+        enableUserInterfaceAfterShippingAddressOrOptionUpdateEvent();
+    }
+
+    private void enableUserInterfaceAfterShippingAddressOrOptionUpdateEvent() {
         if (mPaymentInformationCallback != null) {
             providePaymentInformation();
         } else {
