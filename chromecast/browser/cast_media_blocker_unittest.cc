@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/test_renderer_host.h"
@@ -30,6 +31,8 @@ class MockMediaSession : public content::MediaSession {
   MOCK_METHOD1(Resume, void(content::MediaSession::SuspendType));
   MOCK_METHOD1(Suspend, void(content::MediaSession::SuspendType));
   MOCK_METHOD1(Stop, void(content::MediaSession::SuspendType));
+  MOCK_METHOD1(SeekForward, void(base::TimeDelta));
+  MOCK_METHOD1(SeekBackward, void(base::TimeDelta));
   MOCK_CONST_METHOD0(IsControllable, bool());
   MOCK_CONST_METHOD0(IsActuallyPaused, bool());
   MOCK_METHOD0(StartDucking, void());

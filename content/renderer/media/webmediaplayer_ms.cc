@@ -749,6 +749,14 @@ void WebMediaPlayerMS::OnPause() {
   // TODO(perkj, magjed): See TODO in OnPlay().
 }
 
+void WebMediaPlayerMS::OnSeekForward(double seconds) {
+  // TODO(perkj, magjed): See TODO in OnPlay().
+}
+
+void WebMediaPlayerMS::OnSeekBackward(double seconds) {
+  // TODO(perkj, magjed): See TODO in OnPlay().
+}
+
 void WebMediaPlayerMS::OnVolumeMultiplierUpdate(double multiplier) {
   // TODO(perkj, magjed): See TODO in OnPlay().
 }

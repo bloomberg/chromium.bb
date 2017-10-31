@@ -10402,6 +10402,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Media.Controls.RemoteSeekBackward">
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    User seeks the video backward using any controls apart from the media
+    element itself (aka remote controls: Android wear, headset, notification,
+    etc).
+  </description>
+</action>
+
+<action name="Media.Controls.RemoteSeekForward">
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    User seeks the video forward using any controls apart from the media element
+    itself (aka remote controls: Android wear, headset, notification, etc).
+  </description>
+</action>
+
 <action name="Media.Controls.ScrubbingBegin">
   <owner>mlamouri@chromium.org</owner>
   <description>

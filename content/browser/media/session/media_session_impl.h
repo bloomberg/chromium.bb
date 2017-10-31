@@ -127,6 +127,12 @@ class MediaSessionImpl : public MediaSession,
   // |type| represents the origin of the request.
   CONTENT_EXPORT void Stop(MediaSession::SuspendType suspend_type) override;
 
+  // Seek the media session forward.
+  CONTENT_EXPORT void SeekForward(base::TimeDelta seek_time) override;
+
+  // Seek the media session backward.
+  CONTENT_EXPORT void SeekBackward(base::TimeDelta seek_time) override;
+
   // Returns if the session can be controlled by Resume() and Suspend() calls
   // above.
   CONTENT_EXPORT bool IsControllable() const override;

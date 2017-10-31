@@ -26,6 +26,8 @@ class PepperPlayerDelegate : public MediaSessionPlayerObserver {
   // MediaSessionPlayerObserver implementation.
   void OnSuspend(int player_id) override;
   void OnResume(int player_id) override;
+  void OnSeekForward(int player_id, base::TimeDelta seek_time) override;
+  void OnSeekBackward(int player_id, base::TimeDelta seek_time) override;
   void OnSetVolumeMultiplier(int player_id,
                              double volume_multiplier) override;
   RenderFrameHost* render_frame_host() const override;

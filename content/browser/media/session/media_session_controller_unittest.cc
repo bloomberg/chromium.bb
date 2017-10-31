@@ -49,6 +49,16 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     controller_->OnResume(controller_->get_player_id_for_testing());
   }
 
+  void SeekForward(base::TimeDelta seek_time) {
+    controller_->OnSeekForward(controller_->get_player_id_for_testing(),
+                               seek_time);
+  }
+
+  void SeekBackward(base::TimeDelta seek_time) {
+    controller_->OnSeekBackward(controller_->get_player_id_for_testing(),
+                                seek_time);
+  }
+
   void SetVolumeMultiplier(double multiplier) {
     controller_->OnSetVolumeMultiplier(controller_->get_player_id_for_testing(),
                                        multiplier);
@@ -67,6 +77,25 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
     EXPECT_EQ(id_.second, std::get<0>(result));
     test_sink().ClearMessages();
     return id_.second == std::get<0>(result);
+  }
+
+  template <typename T>
+  bool ReceivedMessageSeek(base::TimeDelta expected_seek_time) {
+    const IPC::Message* msg = test_sink().GetUniqueMessageMatching(T::ID);
+    if (!msg)
+      return false;
+
+    std::tuple<int, base::TimeDelta> result;
+    if (!T::Read(msg, &result))
+      return false;
+
+    EXPECT_EQ(id_.second, std::get<0>(result));
+    if (id_.second != std::get<0>(result))
+      return false;
+
+    EXPECT_EQ(expected_seek_time, std::get<1>(result));
+    test_sink().ClearMessages();
+    return expected_seek_time == std::get<1>(result);
   }
 
   template <typename T>
@@ -126,6 +155,16 @@ TEST_F(MediaSessionControllerTest, BasicControls) {
   // Likewise verify the resume behavior.
   Resume();
   EXPECT_TRUE(ReceivedMessagePlayPause<MediaPlayerDelegateMsg_Play>());
+
+  // ...as well as the seek behavior.
+  const base::TimeDelta kTestSeekForwardTime = base::TimeDelta::FromSeconds(1);
+  SeekForward(kTestSeekForwardTime);
+  EXPECT_TRUE(ReceivedMessageSeek<MediaPlayerDelegateMsg_SeekForward>(
+      kTestSeekForwardTime));
+  const base::TimeDelta kTestSeekBackwardTime = base::TimeDelta::FromSeconds(2);
+  SeekBackward(kTestSeekBackwardTime);
+  EXPECT_TRUE(ReceivedMessageSeek<MediaPlayerDelegateMsg_SeekBackward>(
+      kTestSeekBackwardTime));
 
   // Verify destruction of the controller removes its session.
   controller_.reset();
