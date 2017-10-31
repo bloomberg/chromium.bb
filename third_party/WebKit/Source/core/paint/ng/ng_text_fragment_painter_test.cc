@@ -20,7 +20,14 @@
 
 namespace blink {
 
-using NGTextFragmentPainterTest = PaintControllerPaintTest;
+class NGTextFragmentPainterTest : public PaintControllerPaintTest,
+                                  private ScopedLayoutNGForTest {
+ public:
+  NGTextFragmentPainterTest(LocalFrameClient* local_frame_client = nullptr)
+      : PaintControllerPaintTest(local_frame_client),
+        ScopedLayoutNGForTest(true) {}
+};
+
 INSTANTIATE_TEST_CASE_P(All,
                         NGTextFragmentPainterTest,
                         ::testing::Values(0, kRootLayerScrolling));
@@ -28,18 +35,14 @@ INSTANTIATE_TEST_CASE_P(All,
 class EnableLayoutNGForScope {
  public:
   EnableLayoutNGForScope() {
-    layout_ng_ = RuntimeEnabledFeatures::LayoutNGEnabled();
     paint_fragments_ = RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled();
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
     RuntimeEnabledFeatures::SetLayoutNGPaintFragmentsEnabled(true);
   }
   ~EnableLayoutNGForScope() {
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(layout_ng_);
     RuntimeEnabledFeatures::SetLayoutNGPaintFragmentsEnabled(paint_fragments_);
   }
 
  private:
-  bool layout_ng_;
   bool paint_fragments_;
 };
 

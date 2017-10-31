@@ -10,6 +10,7 @@
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_layout_test.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/text/TextDirection.h"
@@ -24,11 +25,7 @@ class Element;
 typedef bool TestParamLayoutNG;
 class NGBaseLayoutAlgorithmTest
     : public ::testing::WithParamInterface<TestParamLayoutNG>,
-      public RenderingTest {
- public:
-  NGBaseLayoutAlgorithmTest();
-  ~NGBaseLayoutAlgorithmTest();
-
+      public NGLayoutTest {
  protected:
   void SetUp() override;
 

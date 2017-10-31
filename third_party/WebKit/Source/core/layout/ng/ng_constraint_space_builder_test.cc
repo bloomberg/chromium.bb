@@ -4,20 +4,12 @@
 
 #include "core/layout/ng/ng_constraint_space_builder.h"
 
-#include "core/layout/LayoutTestHelper.h"
+#include "core/layout/ng/ng_layout_test.h"
 
 namespace blink {
 namespace {
 
-class NGConstraintSpaceBuilderTest {
- public:
-  NGConstraintSpaceBuilderTest() {
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
-  };
-  ~NGConstraintSpaceBuilderTest() {
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
-  };
-};
+using NGConstraintSpaceBuilderTest = NGLayoutTest;
 
 // Asserts that indefinite inline length becomes initial containing
 // block width for horizontal-tb inside vertical document.

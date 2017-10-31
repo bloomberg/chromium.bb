@@ -4,18 +4,13 @@
 
 #include "core/layout/ng/ng_block_node.h"
 
-#include "core/layout/LayoutTestHelper.h"
 #include "core/layout/MinMaxSize.h"
+#include "core/layout/ng/ng_layout_test.h"
 
 namespace blink {
 namespace {
-class NGBlockNodeForTest : public RenderingTest {
- public:
-  NGBlockNodeForTest() { RuntimeEnabledFeatures::SetLayoutNGEnabled(true); }
-  ~NGBlockNodeForTest() override {
-    RuntimeEnabledFeatures::SetLayoutNGEnabled(false);
-  };
-};
+
+using NGBlockNodeForTest = NGLayoutTest;
 
 TEST_F(NGBlockNodeForTest, ChildInlineAndBlock) {
   SetBodyInnerHTML(R"HTML(
