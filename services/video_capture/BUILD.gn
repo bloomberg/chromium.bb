@@ -60,6 +60,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "test/device_factory_provider_connectortest.cc",
     "test/device_factory_provider_test.cc",
     "test/device_factory_provider_test.h",
     "test/device_factory_provider_unittest.cc",
@@ -85,6 +86,7 @@ source_set("tests") {
     "//media/capture/mojo:capture_types",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
+    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
