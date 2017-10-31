@@ -16,7 +16,6 @@ namespace {
 gfx::ColorSpace::PrimaryID GetPrimaryID(CanvasColorSpace color_space) {
   gfx::ColorSpace::PrimaryID primary_id = gfx::ColorSpace::PrimaryID::BT709;
   switch (color_space) {
-    case kLegacyCanvasColorSpace:
     case kSRGBCanvasColorSpace:
       primary_id = gfx::ColorSpace::PrimaryID::BT709;
       break;
@@ -42,7 +41,7 @@ CanvasColorParams::CanvasColorParams(CanvasColorSpace color_space,
       opacity_mode_(opacity_mode) {}
 
 CanvasColorParams::CanvasColorParams(const SkImageInfo& info) {
-  color_space_ = kLegacyCanvasColorSpace;
+  color_space_ = kSRGBCanvasColorSpace;
   pixel_format_ = kRGBA8CanvasPixelFormat;
   // When there is no color space information, the SkImage is in legacy mode and
   // the color type is kN32_SkColorType (which translates to kRGBA8 canvas pixel
@@ -80,9 +79,8 @@ void CanvasColorParams::SetOpacityMode(OpacityMode opacity_mode) {
 }
 
 bool CanvasColorParams::NeedsSkColorSpaceXformCanvas() const {
-  return color_space_ == kLegacyCanvasColorSpace ||
-         (color_space_ == kSRGBCanvasColorSpace &&
-          pixel_format_ == kRGBA8CanvasPixelFormat);
+  return color_space_ == kSRGBCanvasColorSpace &&
+         pixel_format_ == kRGBA8CanvasPixelFormat;
 }
 
 std::unique_ptr<cc::PaintCanvas> CanvasColorParams::WrapCanvas(
@@ -161,7 +159,6 @@ sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpace() const {
   SkColorSpace::Gamut gamut = SkColorSpace::kSRGB_Gamut;
   SkColorSpace::RenderTargetGamma gamma = SkColorSpace::kSRGB_RenderTargetGamma;
   switch (color_space_) {
-    case kLegacyCanvasColorSpace:
     case kSRGBCanvasColorSpace:
       if (pixel_format_ == kF16CanvasPixelFormat)
         gamma = SkColorSpace::kLinear_RenderTargetGamma;

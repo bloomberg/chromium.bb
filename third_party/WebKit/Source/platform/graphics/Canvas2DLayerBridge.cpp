@@ -813,9 +813,9 @@ void Canvas2DLayerBridge::FlushRecordingOnly() {
   if (have_recorded_draw_commands_ && GetOrCreateSurface()) {
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecordingOnly");
 
-    // For legacy canvases, transform all input colors and images to the target
-    // space using a SkCreateColorSpaceXformCanvas. This ensures blending will
-    // be done using target space pixel values.
+    // For legacy and sRGB canvases, transform all input colors and images to
+    // the target space using a SkCreateColorSpaceXformCanvas. This ensures
+    // blending will be done using target space pixel values.
     SkCanvas* canvas = GetOrCreateSurface()->getCanvas();
     std::unique_ptr<PaintCanvas> color_transform_canvas =
         color_params_.WrapCanvas(canvas);

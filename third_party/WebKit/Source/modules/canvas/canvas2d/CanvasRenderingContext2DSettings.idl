@@ -7,10 +7,7 @@
 [PermissiveDictionaryConversion]
 dictionary CanvasRenderingContext2DSettings {
     boolean alpha = true;
-
-    // TODO(crbug.com/637288): Do we keep "legacy-srgb" as the default?
-    // Must decide before shipping.
-    [RuntimeEnabled=ExperimentalCanvasFeatures] CanvasColorSpace colorSpace = "legacy-srgb";
+    [RuntimeEnabled=ExperimentalCanvasFeatures] CanvasColorSpace colorSpace = "srgb";
     [RuntimeEnabled=ExperimentalCanvasFeatures] CanvasPixelFormat pixelFormat = "8-8-8-8";
 };
 

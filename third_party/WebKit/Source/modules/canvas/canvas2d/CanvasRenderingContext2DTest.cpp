@@ -815,7 +815,7 @@ TEST_F(CanvasRenderingContext2DTest, OpaqueDisplayListFallsBackForText) {
   CreateContext(kOpaque);
   auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback,
-      CanvasColorParams(kLegacyCanvasColorSpace, kRGBA8CanvasPixelFormat,
+      CanvasColorParams(kSRGBCanvasColorSpace, kRGBA8CanvasPixelFormat,
                         kOpaque));
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
