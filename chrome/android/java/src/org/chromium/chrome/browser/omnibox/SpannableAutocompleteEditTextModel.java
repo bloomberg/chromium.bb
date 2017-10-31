@@ -344,7 +344,8 @@ public class SpannableAutocompleteEditTextModel implements AutocompleteEditTextM
 
     private boolean isKeyboardBlacklisted() {
         String pkgName = mDelegate.getKeyboardPackageName();
-        return pkgName.contains(".iqqi"); // crbug.com/767016
+        return pkgName.contains(".iqqi") // crbug.com/767016
+                || pkgName.contains("omronsoft") || pkgName.contains(".iwnn"); // crbug.com/758443
     }
 
     private boolean shouldFinishCompositionOnDeletion() {
