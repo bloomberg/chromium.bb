@@ -57,7 +57,6 @@ class InternalSettings final : public InternalSettingsGenerated,
     void RestoreTo(Settings*);
 
     bool original_csp_;
-    bool original_css_sticky_position_enabled_;
     bool original_overlay_scrollbars_enabled_;
     EditingBehaviorType original_editing_behavior_;
     bool original_text_autosizing_enabled_;
@@ -131,7 +130,6 @@ class InternalSettings final : public InternalSettingsGenerated,
   // FIXME: The following are RuntimeEnabledFeatures and likely
   // cannot be changed after process start. These setters should
   // be removed or moved onto internals.runtimeFlags:
-  void setCSSStickyPositionEnabled(bool);
   void setLangAttributeAwareFormControlUIEnabled(bool);
   void setOverlayScrollbarsEnabled(bool);
   void setExperimentalContentSecurityPolicyFeaturesEnabled(bool);
