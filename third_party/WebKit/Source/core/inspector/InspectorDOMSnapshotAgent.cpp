@@ -309,14 +309,11 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(Node* node, int node_index) {
   if (!layout_object)
     return -1;
 
-  auto layout_tree_node =
-      protocol::DOMSnapshot::LayoutTreeNode::create()
-          .setDomNodeIndex(node_index)
-          .setBoundingBox(BuildRectForFloatRect(
-              node->IsElementNode()
-                  ? FloatRect(ToElement(node)->BoundsInViewport())
-                  : layout_object->AbsoluteBoundingBoxRect()))
-          .build();
+  auto layout_tree_node = protocol::DOMSnapshot::LayoutTreeNode::create()
+                              .setDomNodeIndex(node_index)
+                              .setBoundingBox(BuildRectForFloatRect(
+                                  layout_object->AbsoluteBoundingBoxRect()))
+                              .build();
 
   int style_index = GetStyleIndexForNode(node);
   if (style_index != -1)
