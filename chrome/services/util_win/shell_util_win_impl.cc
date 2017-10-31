@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/shell_handler_impl_win.h"
+#include "chrome/services/util_win/shell_util_win_impl.h"
 
 #include <objbase.h>
 #include <shldisp.h>
@@ -20,9 +20,10 @@
 #include "base/win/shortcut.h"
 #include "base/win/win_util.h"
 #include "chrome/installer/util/install_util.h"
-#include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/base/win/open_file_name_win.h"
+
+namespace chrome {
 
 namespace {
 
@@ -205,6 +206,7 @@ bool IsPinnedToTaskbarHelper::GetResult() {
                                       base::FileEnumerator::DIRECTORIES);
   for (base::FilePath directory = directory_enum.Next(); !directory.empty();
        directory = directory_enum.Next()) {
+    current_exe.value();
     if (DirectoryContainsPinnedShortcutForProgram(directory,
                                                   current_exe_compare)) {
       return true;
@@ -215,31 +217,25 @@ bool IsPinnedToTaskbarHelper::GetResult() {
 
 }  // namespace
 
-ShellHandlerImpl::ShellHandlerImpl() = default;
+ShellUtilWinImpl::ShellUtilWinImpl(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
+    : service_ref_(std::move(service_ref)) {}
 
-ShellHandlerImpl::~ShellHandlerImpl() = default;
+ShellUtilWinImpl::~ShellUtilWinImpl() = default;
 
-// static
-void ShellHandlerImpl::Create(
-    chrome::mojom::ShellHandlerRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<ShellHandlerImpl>(),
-                          std::move(request));
-}
-
-void ShellHandlerImpl::IsPinnedToTaskbar(
-    const IsPinnedToTaskbarCallback& callback) {
+void ShellUtilWinImpl::IsPinnedToTaskbar(IsPinnedToTaskbarCallback callback) {
   IsPinnedToTaskbarHelper helper;
   bool is_pinned_to_taskbar = helper.GetResult();
-  callback.Run(!helper.error_occured(), is_pinned_to_taskbar);
+  std::move(callback).Run(!helper.error_occured(), is_pinned_to_taskbar);
 }
 
-void ShellHandlerImpl::CallGetOpenFileName(
+void ShellUtilWinImpl::CallGetOpenFileName(
     uint32_t owner,
     uint32_t flags,
     const std::vector<std::tuple<base::string16, base::string16>>& filters,
     const base::FilePath& initial_directory,
     const base::FilePath& initial_filename,
-    const CallGetOpenFileNameCallback& callback) {
+    CallGetOpenFileNameCallback callback) {
   ui::win::OpenFileName open_file_name(
       reinterpret_cast<HWND>(base::win::Uint32ToHandle(owner)), flags);
 
@@ -252,13 +248,13 @@ void ShellHandlerImpl::CallGetOpenFileName(
     open_file_name.GetResult(&directory, &files);
 
   if (!files.empty()) {
-    callback.Run(directory, files);
+    std::move(callback).Run(directory, files);
   } else {
-    callback.Run(base::FilePath(), std::vector<base::FilePath>());
+    std::move(callback).Run(base::FilePath(), std::vector<base::FilePath>());
   }
 }
 
-void ShellHandlerImpl::CallGetSaveFileName(
+void ShellUtilWinImpl::CallGetSaveFileName(
     uint32_t owner,
     uint32_t flags,
     const std::vector<std::tuple<base::string16, base::string16>>& filters,
@@ -266,7 +262,7 @@ void ShellHandlerImpl::CallGetSaveFileName(
     const base::FilePath& initial_directory,
     const base::FilePath& suggested_filename,
     const base::string16& default_extension,
-    const CallGetSaveFileNameCallback& callback) {
+    CallGetSaveFileNameCallback callback) {
   ui::win::OpenFileName open_file_name(
       reinterpret_cast<HWND>(base::win::Uint32ToHandle(owner)), flags);
 
@@ -276,8 +272,9 @@ void ShellHandlerImpl::CallGetSaveFileName(
   open_file_name.GetOPENFILENAME()->lpstrDefExt = default_extension.c_str();
 
   if (::GetSaveFileName(open_file_name.GetOPENFILENAME())) {
-    callback.Run(base::FilePath(open_file_name.GetOPENFILENAME()->lpstrFile),
-                 open_file_name.GetOPENFILENAME()->nFilterIndex);
+    std::move(callback).Run(
+        base::FilePath(open_file_name.GetOPENFILENAME()->lpstrFile),
+        open_file_name.GetOPENFILENAME()->nFilterIndex);
     return;
   }
 
@@ -285,5 +282,7 @@ void ShellHandlerImpl::CallGetSaveFileName(
   if (DWORD error_code = ::CommDlgExtendedError())
     NOTREACHED() << "::GetSaveFileName() failed: error code " << error_code;
 
-  callback.Run(base::FilePath(), 0);
+  std::move(callback).Run(base::FilePath(), 0);
 }
+
+}  // namespace chrome

@@ -681,10 +681,7 @@ mojom("mojo_bindings") {
   ]
 
   if (is_win) {
-    sources += [
-      "conflicts/module_event_sink_win.mojom",
-      "shell_handler_win.mojom",
-    ]
+    sources += [ "conflicts/module_event_sink_win.mojom" ]
   }
 
   if (is_chromeos) {

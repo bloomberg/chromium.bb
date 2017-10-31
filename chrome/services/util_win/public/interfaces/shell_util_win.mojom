@@ -10,7 +10,7 @@ module chrome.mojom;
 import "mojo/common/file_path.mojom";
 import "mojo/common/string16.mojom";
 
-interface ShellHandler {
+interface ShellUtilWin {
   // Returns the pinned state of the current executable.
   IsPinnedToTaskbar() => (bool succeeded, bool is_pinned_to_taskbar);
 
