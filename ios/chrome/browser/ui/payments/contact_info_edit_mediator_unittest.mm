@@ -52,6 +52,7 @@ TEST_F(PaymentRequestContactInfoEditMediatorTest, TestFieldsWhenCreate) {
         isEqualToString:l10n_util::GetNSString(
                             IDS_PAYMENTS_NAME_FIELD_IN_CONTACT_DETAILS)]);
     EXPECT_EQ(nil, editor_field.value);
+    EXPECT_TRUE(editor_field.isRequired);
 
     field = fields[1];
     EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
@@ -63,6 +64,7 @@ TEST_F(PaymentRequestContactInfoEditMediatorTest, TestFieldsWhenCreate) {
         isEqualToString:l10n_util::GetNSString(
                             IDS_PAYMENTS_PHONE_FIELD_IN_CONTACT_DETAILS)]);
     EXPECT_EQ(nil, editor_field.value);
+    EXPECT_TRUE(editor_field.isRequired);
 
     field = fields[2];
     EXPECT_TRUE([field isKindOfClass:[EditorField class]]);
@@ -73,6 +75,7 @@ TEST_F(PaymentRequestContactInfoEditMediatorTest, TestFieldsWhenCreate) {
         isEqualToString:l10n_util::GetNSString(
                             IDS_PAYMENTS_EMAIL_FIELD_IN_CONTACT_DETAILS)]);
     EXPECT_EQ(nil, editor_field.value);
+    EXPECT_TRUE(editor_field.isRequired);
 
     return YES;
   };

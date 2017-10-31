@@ -40,7 +40,7 @@
 @property(nonatomic, strong)
     PaymentRequestEditViewController* editViewController;
 
-@property(nonatomic, strong) CreditCardEditViewControllerMediator* mediator;
+@property(nonatomic, strong) CreditCardEditMediator* mediator;
 
 @end
 
@@ -62,9 +62,9 @@
 
   _editViewController = [[PaymentRequestEditViewController alloc] init];
   [_editViewController setDelegate:self];
-  _mediator = [[CreditCardEditViewControllerMediator alloc]
-      initWithPaymentRequest:_paymentRequest
-                  creditCard:_creditCard];
+  _mediator =
+      [[CreditCardEditMediator alloc] initWithPaymentRequest:_paymentRequest
+                                                  creditCard:_creditCard];
   [_mediator setConsumer:_editViewController];
   [_editViewController setDataSource:_mediator];
   [_editViewController setValidatorDelegate:_mediator];

@@ -216,6 +216,7 @@ source_set("unit_tests") {
     "//ios/web/public/test",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libaddressinput:strings_grit",
     "//third_party/ocmock",
     "//ui/base",
   ]
