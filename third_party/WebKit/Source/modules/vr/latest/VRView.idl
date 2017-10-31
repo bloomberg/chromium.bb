@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/webvr/spec/latest/#vrdevicepose-interface
+// https://w3c.github.io/webvr/spec/latest/#vrview-interface
 [
     SecureContext,
     RuntimeEnabled=WebVR2
-] interface VRDevicePose {
-  readonly attribute Float32Array poseModelMatrix;
-
-  Float32Array getViewMatrix(VRView view);
+] interface VRView {
+  readonly attribute VREye? eye;
+  readonly attribute Float32Array projectionMatrix;
 };

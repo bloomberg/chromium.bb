@@ -5,6 +5,7 @@
 #include "modules/vr/latest/VRDevicePose.h"
 
 #include "modules/vr/latest/VRSession.h"
+#include "modules/vr/latest/VRView.h"
 
 namespace blink {
 
@@ -36,6 +37,24 @@ DOMFloat32Array* VRDevicePose::poseModelMatrix() const {
   if (!pose_model_matrix_)
     return nullptr;
   return transformationMatrixToFloat32Array(*pose_model_matrix_);
+}
+
+DOMFloat32Array* VRDevicePose::getViewMatrix(VRView* view) {
+  if (view->session() != session_)
+    return nullptr;
+
+  if (!pose_model_matrix_->IsInvertible())
+    return nullptr;
+
+  TransformationMatrix view_matrix(pose_model_matrix_->Inverse());
+
+  // Transform by the negative offset, since we're operating on the inverted
+  // matrix
+  const FloatPoint3D& view_offset = view->offset();
+  view_matrix.PostTranslate3d(-view_offset.X(), -view_offset.Y(),
+                              -view_offset.Z());
+
+  return transformationMatrixToFloat32Array(view_matrix);
 }
 
 void VRDevicePose::Trace(blink::Visitor* visitor) {

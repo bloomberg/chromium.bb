@@ -1,22 +1,29 @@
 'use strict';
 
 function fakeVRDisplays(){
-  let generic_fov = {
+  let generic_left_fov = {
     upDegrees : 45,
     downDegrees : 45,
-    leftDegrees : 45,
-    rightDegrees : 45,
+    leftDegrees : 50,
+    rightDegrees : 40,
+  };
+
+  let generic_right_fov = {
+    upDegrees : 45,
+    downDegrees : 45,
+    leftDegrees : 40,
+    rightDegrees : 50,
   };
 
   let generic_left_eye = {
-    fieldOfView : generic_fov,
+    fieldOfView : generic_left_fov,
     offset : [-0.03, 0, 0],
     renderWidth : 1024,
     renderHeight : 1024
   };
 
   let generic_right_eye = {
-    fieldOfView :generic_fov,
+    fieldOfView :generic_right_fov,
     offset : [0.03, 0, 0],
     renderWidth : 1024,
     renderHeight : 1024
