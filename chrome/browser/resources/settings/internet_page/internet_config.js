@@ -4,10 +4,10 @@
 
 /**
  * @fileoverview
- * 'internet-config-dialog' is a Settings dialog wrapper for network-config.
+ * 'internet-config' is a Settings dialog wrapper for network-config.
  */
 Polymer({
-  is: 'internet-config-dialog',
+  is: 'internet-config',
 
   behaviors: [I18nBehavior],
 
@@ -94,9 +94,12 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTitle_: function() {
-    return this.networkProperties_.Name ||
-        this.i18n('OncType' + this.networkProperties_.Type);
+  getDialogTitle_: function() {
+    var name = this.networkProperties_.Name;
+    if (name)
+      return this.i18n('internetConfigName', name);
+    var type = this.i18n('OncType' + this.networkProperties_.Type);
+    return this.i18n('internetJoinType', type);
   },
 
   /**

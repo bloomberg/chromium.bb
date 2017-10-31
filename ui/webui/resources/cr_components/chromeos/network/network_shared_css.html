@@ -7,7 +7,7 @@
   <template>
     <style include="cr-shared-style md-select">
       :root {
-        --network-control-width: 250px;
+        --network-control-width: 350px;
         /* Margin for the show/hide password icon */
         --network-control-margin: 40px;
       }
@@ -62,10 +62,10 @@
 
       paper-input-container {
         --paper-input-container-input: {
-          color: var(--paper-grey-600);
           font-size: inherit;
           font-weight: 400;
         };
+        --paper-input-container-input-color: var(--secondary-text-color);
         margin-bottom: 0;
         margin-top: -9px;
         width: var(--network-control-width);

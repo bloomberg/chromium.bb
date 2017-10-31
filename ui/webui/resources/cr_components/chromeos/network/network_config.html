@@ -10,9 +10,10 @@
 <dom-module id="network-config">
   <template>
     <style include="network-shared">
-      paper-toggle-button {
-        -webkit-margin-end: calc(
-          var(--network-control-margin) - var(--cr-icon-ripple-padding));
+      .property-box {
+        /* Align the toggle controls with the show/hide password icon. */
+        width: calc(var(--network-control-width) +
+            var(--network-control-margin) + 4px);
       }
 
       #error {
@@ -20,18 +21,6 @@
         font-weight: 500;
       }
     </style>
-
-    <!-- Share (WiFi and WiMAX) -->
-    <template is="dom-if" if="[[shareIsVisible_(type)]]">
-      <div class="property-box hr">
-        <div id="shareLabel" class="start">[[i18n('networkConfigShare')]]</div>
-        <paper-toggle-button id="share" checked="{{shareNetwork_}}"
-            disabled="[[!shareIsEnabled_(guid, configProperties_.*,
-                security_, eapProperties_.*, shareAllowEnable)]]"
-            aria-label="[[i18n('networkConfigShare')]]">
-        </paper-toggle-button>
-      </div>
-    </template>
 
     <!-- SSID (WiFi) -->
     <template is="dom-if" if="[[isType_(NetworkType_.WI_FI, type)]]">
@@ -108,7 +97,7 @@
             cert-list>
         </network-config-select>
       </template>
-      <div class="property-box hr">
+      <div class="property-box">
         <div id="vpnSaveCredentialsLabel" class="start">
           [[i18n('networkConfigSaveCredentials')]]
         </div>
@@ -152,12 +141,24 @@
           value="{{eapProperties_.AnonymousIdentity}}"
           hidden="[[!showEap_.AnonymousIdentity]]">
       </network-config-input>
-      <div class="property-box hr">
+      <div class="property-box">
         <div id="eapSaveCredentialsLabel" class="start">
           [[i18n('networkConfigSaveCredentials')]]
         </div>
         <paper-toggle-button checked="{{eapProperties_.SaveCredentials}}"
             aria-labelledby="eapSaveCredentialsLabel">
+        </paper-toggle-button>
+      </div>
+    </template>
+
+    <!-- Share (WiFi and WiMAX) -->
+    <template is="dom-if" if="[[shareIsVisible_(type)]]">
+      <div class="property-box">
+        <div id="shareLabel" class="start">[[i18n('networkConfigShare')]]</div>
+        <paper-toggle-button id="share" checked="{{shareNetwork_}}"
+            disabled="[[!shareIsEnabled_(guid, configProperties_.*,
+                      security_, eapProperties_.*, shareAllowEnable)]]"
+            aria-label="[[i18n('networkConfigShare')]]">
         </paper-toggle-button>
       </div>
     </template>

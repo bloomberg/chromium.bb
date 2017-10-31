@@ -1288,8 +1288,14 @@
     <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
       Network
     </message>
-    <message name="IDS_SETTINGS_INTERNET_CONFIG" desc="Name of the settings page for configuring a network.">
+    <message name="IDS_SETTINGS_INTERNET_CONFIG" desc="Title for the network configuration dialog.">
       Configure network
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_CONFIG_NAME" desc="Title for the network configuration dialog for an existing network.">
+      Configure <ph name="NAME">$1<ex>My WiFi network</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_JOIN_TYPE" desc="Title for the network configuration dialog for a new network.">
+      Join <ph name="TYPE">$1<ex>WiFi</ex></ph> network
     </message>
     <message name="IDS_SETTINGS_INTERNET_DETAIL" desc="Name of the settings page which displays network details.">
       Network Details
