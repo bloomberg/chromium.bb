@@ -12,9 +12,9 @@ using base::DictionaryValue;
 using base::ListValue;
 
 TEST(PluginFinderTest, JsonSyntax) {
-  std::unique_ptr<base::DictionaryValue> plugin_list(
-      PluginFinder::LoadBuiltInPluginList());
-  ASSERT_TRUE(plugin_list.get());
+  std::unique_ptr<base::DictionaryValue> plugin_list =
+      PluginFinder::LoadBuiltInPluginList();
+  ASSERT_TRUE(plugin_list);
   std::unique_ptr<base::Value> version;
   ASSERT_TRUE(plugin_list->Remove("x-version", &version));
   EXPECT_EQ(base::Value::Type::INTEGER, version->type());
@@ -72,4 +72,22 @@ TEST(PluginFinderTest, JsonSyntax) {
           << "Invalid security status \"" << status_str << "\"";
     }
   }
+}
+
+TEST(PluginFinderTest, ReinitializePlugins) {
+  PluginFinder* plugin_finder = PluginFinder::GetInstance();
+
+  plugin_finder->Init();
+
+  std::unique_ptr<base::DictionaryValue> plugin_list =
+      PluginFinder::LoadBuiltInPluginList();
+
+  // Increment the version number by one.
+  const base::Value* version_value = plugin_list->FindKey("x-version");
+  ASSERT_TRUE(version_value);
+  int version = 0;
+  ASSERT_TRUE(version_value->GetAsInteger(&version));
+  plugin_list->SetKey("x-version", base::Value(version + 1));
+
+  plugin_finder->ReinitializePlugins(plugin_list.get());
 }
