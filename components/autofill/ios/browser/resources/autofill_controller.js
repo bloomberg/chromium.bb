@@ -566,7 +566,7 @@ __gCrWeb.autofill['extractForms'] = function(requiredFields) {
  */
 __gCrWeb.autofill['fillActiveFormField'] = function(data) {
   var activeElement = document.activeElement;
-  if (data['name'] !== __gCrWeb['common'].nameForAutofill(activeElement)) {
+  if (data['name'] !== __gCrWeb['common'].getFieldIdentifier(activeElement)) {
     return;
   }
   __gCrWeb.autofill.lastAutoFilledElement = activeElement;
@@ -610,7 +610,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
     if (!__gCrWeb.autofill.isAutofillableElement(element)) {
       continue;
     }
-    var fieldName = __gCrWeb['common'].nameForAutofill(element);
+    var fieldName = __gCrWeb['common'].getFieldIdentifier(element);
 
     // Skip non-empty fields unless this is the forceFillFieldName or it's a
     // 'select-one' element. 'select-one' elements are always autofilled even
@@ -2090,7 +2090,7 @@ __gCrWeb.autofill.webFormControlElementToFormField = function(
   // The label is not officially part of a form control element; however, the
   // labels for all form control elements are scraped from the DOM and set in
   // form data.
-  field['name'] = __gCrWeb['common'].nameForAutofill(element);
+  field['name'] = __gCrWeb['common'].getFieldIdentifier(element);
   field['form_control_type'] = element.type;
   var autocomplete_attribute = element.getAttribute('autocomplete');
   if (autocomplete_attribute) {
@@ -2186,7 +2186,7 @@ __gCrWeb.autofill['fillPredictionData'] = function(data) {
       if (!__gCrWeb.autofill.isAutofillableElement(element)) {
         continue;
       }
-      var elementName = __gCrWeb['common'].nameForAutofill(element);
+      var elementName = __gCrWeb['common'].getFieldIdentifier(element);
       var value = formData[elementName];
       if (value) {
         element.placeholder = value;
