@@ -418,6 +418,11 @@ bool Canvas2DLayerBridge::PrepareMailboxFromImage(
 
   sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
 
+  // This check should not be necessary, it is a speculative fix for
+  // crbug.com/759412
+  if (!skia_image || !skia_image->getTexture())
+    return false;
+
   if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
     if (PrepareGpuMemoryBufferMailboxFromImage(skia_image.get(), mailbox_info,
                                                out_mailbox))
@@ -975,6 +980,7 @@ bool Canvas2DLayerBridge::PrepareTextureMailbox(
 
   {
     sk_sp<SkImage> skImage = image->PaintImageForCurrentFrame().GetSkImage();
+    DCHECK(skImage->isTextureBacked());
     // Early exit if canvas was not drawn to since last prepareMailbox.
     GLenum filter = GetGLFilter();
     if (skImage->uniqueID() == last_image_id_ && filter == last_filter_)
