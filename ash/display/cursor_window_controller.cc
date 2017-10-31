@@ -150,13 +150,16 @@ void CursorWindowController::UpdateContainer() {
     if (display.is_valid())
       SetDisplay(display);
   } else {
-    aura::Window* mirror_window = Shell::Get()
-                                      ->window_tree_host_manager()
-                                      ->mirror_window_controller()
-                                      ->GetWindow();
-    if (mirror_window)
-      display_ = display::Screen::GetScreen()->GetPrimaryDisplay();
-    SetContainer(mirror_window);
+    aura::Window::Windows mirror_windows = Shell::Get()
+                                               ->window_tree_host_manager()
+                                               ->mirror_window_controller()
+                                               ->GetAllRootWindows();
+    if (mirror_windows.empty()) {
+      SetContainer(nullptr);
+      return;
+    }
+    display_ = display::Screen::GetScreen()->GetPrimaryDisplay();
+    SetContainer(mirror_windows[0]);
   }
   // Updates the hot point based on the current display.
   UpdateCursorImage();

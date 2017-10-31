@@ -289,12 +289,30 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // mirrored.
   size_t num_connected_displays() const { return num_connected_displays_; }
 
-  // Returns the mirroring status.
+  // Returns true if either software or hardware mirror mode is active.
   bool IsInMirrorMode() const;
-  int64_t mirroring_display_id() const { return mirroring_display_id_; }
+
+  // Returns true if software mirror mode is active. Note that when
+  // SoftwareMirroringEnabled() returns true, it only means software mirroring
+  // mode is requested, but it does not guarantee that the mode is active. The
+  // mode will be active after UpdateDisplaysWith() is called.
+  bool IsInSoftwareMirrorMode() const;
+
+  // Returns true if hardware mirror mode is active.
+  bool IsInHardwareMirrorMode() const;
+
+  int64_t mirroring_source_id() const { return mirroring_source_id_; }
+
+  // Returns a list of mirroring destination display ids.
+  DisplayIdList GetMirroringDstDisplayIdList() const;
+
   const Displays& software_mirroring_display_list() const {
     return software_mirroring_display_list_;
   }
+
+  // Remove mirroring source and destination displays, so that they will be
+  // updated when UpdateDisplaysWith() is called.
+  void ClearMirroringSourceAndDestination();
 
   // Sets/gets if the unified desktop feature is enabled.
   void SetUnifiedDesktopEnabled(bool enabled);
@@ -408,10 +426,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     DISALLOW_COPY_AND_ASSIGN(BeginEndNotifier);
   };
 
-  bool software_mirroring_enabled() const {
-    return multi_display_mode_ == MIRRORING;
-  }
-
   void set_change_display_upon_host_resize(bool value) {
     change_display_upon_host_resize_ = value;
   }
@@ -423,7 +437,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   Display* FindDisplayForId(int64_t id);
 
   // Add the mirror display's display info if the software based mirroring is in
-  // use.
+  // use. This should only be called before UpdateDisplaysWith().
   void AddMirrorDisplayInfoIfAny(DisplayInfoList* display_info_list);
 
   // Inserts and update the ManagedDisplayInfo according to the overscan state.
@@ -508,13 +522,24 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   MultiDisplayMode multi_display_mode_ = EXTENDED;
   MultiDisplayMode current_default_multi_display_mode_ = EXTENDED;
 
-  // When mirroring is enabled this is the id of the destination display.
-  int64_t mirroring_display_id_ = kInvalidDisplayId;
+  // This is used in two distinct ways:
+  // 1. The source display id when software mirroring is active.
+  // 2. There's no source and destination display in hardware mirroring, so we
+  // treat the first mirroring display id as source id when hardware mirroring
+  // is active.
+  int64_t mirroring_source_id_ = kInvalidDisplayId;
 
   // This is used in two distinct ways:
-  // 1. when mirroring is enabled this contains the destination display.
+  // 1. when software mirroring is active this contains the destination
+  // displays.
   // 2. when unified mode is enabled this is the set of physical displays.
   Displays software_mirroring_display_list_;
+
+  // There's no source and destination display in hardware mirroring, so we
+  // treat the first mirroring display as source and store its id in
+  // |mirroring_source_id_| and treat the rest of mirroring displays as
+  // destination and store their ids in this list.
+  DisplayIdList hardware_mirroring_display_id_list_;
 
   // Cached mirror mode for metrics changed notification.
   bool mirror_mode_for_metrics_ = false;

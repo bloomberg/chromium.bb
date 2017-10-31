@@ -5,6 +5,8 @@
 #ifndef ASH_DISPLAY_MIRROR_WINDOW_TEST_API_H_
 #define ASH_DISPLAY_MIRROR_WINDOW_TEST_API_H_
 
+#include <vector>
+
 #include "base/macros.h"
 
 namespace aura {
@@ -27,7 +29,7 @@ class MirrorWindowTestApi {
   MirrorWindowTestApi() {}
   ~MirrorWindowTestApi() {}
 
-  const aura::WindowTreeHost* GetHost() const;
+  std::vector<aura::WindowTreeHost*> GetHosts() const;
 
   ui::CursorType GetCurrentCursorType() const;
 
