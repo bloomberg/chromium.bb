@@ -46,7 +46,7 @@ static INLINE void cfl_pad(CFL_CTX *cfl, int width, int height) {
     const int min_height = height - diff_height;
     int16_t *pred_buf_q3 = cfl->pred_buf_q3 + (width - diff_width);
     for (int j = 0; j < min_height; j++) {
-      const int last_pixel = pred_buf_q3[-1];
+      const int16_t last_pixel = pred_buf_q3[-1];
       for (int i = 0; i < diff_width; i++) {
         pred_buf_q3[i] = last_pixel;
       }
