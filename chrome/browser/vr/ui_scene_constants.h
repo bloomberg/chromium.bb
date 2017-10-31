@@ -167,6 +167,14 @@ static constexpr float kScreenDimmerOpacity = 0.9f;
 
 static constexpr float kVoiceSearchButtonXOffset = 0.25f;
 
+static constexpr float kSuggestionGap = 0.01f;
+static constexpr float kSuggestionLineGap = 0.01f;
+static constexpr float kSuggestionIconGap = 0.01f;
+static constexpr float kSuggestionIconSize = 0.1f;
+static constexpr float kSuggestionTextFieldWidth = 0.3f;
+static constexpr float kSuggestionContentTextHeight = 0.02f;
+static constexpr float kSuggestionDescriptionTextHeight = 0.015f;
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_UI_SCENE_CONSTANTS_H_

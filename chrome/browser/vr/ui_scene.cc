@@ -38,8 +38,11 @@ void UiScene::AddUiElement(UiElementName parent,
   CHECK_GE(element->id(), 0);
   CHECK_EQ(GetUiElementById(element->id()), nullptr);
   CHECK_GE(element->draw_phase(), 0);
-  if (gl_initialized_)
-    element->Initialize();
+  if (gl_initialized_) {
+    for (auto& child : *element) {
+      child.Initialize();
+    }
+  }
   GetUiElementByName(parent)->AddChild(std::move(element));
   is_dirty_ = true;
 }

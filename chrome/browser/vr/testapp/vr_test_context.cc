@@ -8,7 +8,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/vr/model/model.h"
+#include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/toolbar_state.h"
 #include "chrome/browser/vr/ui.h"
@@ -18,6 +21,7 @@
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_manager.h"
 #include "chrome/browser/vr/vr_shell_renderer.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/vector_icons.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
@@ -118,6 +122,10 @@ void VrTestContext::HandleInput(ui::Event* event) {
         incognito_ = !incognito_;
         ui_->SetIncognito(incognito_);
         break;
+      case ui::DomCode::US_S: {
+        CreateFakeOmniboxSuggestions();
+        break;
+      }
       default:
         break;
     }
@@ -209,6 +217,21 @@ unsigned int VrTestContext::CreateFakeContentTexture() {
                format, GL_UNSIGNED_BYTE, pixmap.addr());
 
   return texture_id;
+}
+
+void VrTestContext::CreateFakeOmniboxSuggestions() {
+  // Every time this method is called, change the number of suggestions shown.
+  static int num_suggestions = 0;
+  num_suggestions = (num_suggestions + 1) % 4;
+
+  auto result = base::MakeUnique<OmniboxSuggestions>();
+  for (int i = 0; i < num_suggestions; i++) {
+    result->suggestions.emplace_back(OmniboxSuggestion(
+        base::UTF8ToUTF16("Suggestion ") + base::IntToString16(i + 1),
+        base::UTF8ToUTF16("Description text"),
+        AutocompleteMatch::Type::VOICE_SUGGEST));
+  }
+  ui_->SetOmniboxSuggestions(std::move(result));
 }
 
 void VrTestContext::OnContentEnter(const gfx::PointF& normalized_hit_point) {}

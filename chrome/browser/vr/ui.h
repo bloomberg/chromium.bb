@@ -26,6 +26,8 @@ struct Model;
 
 namespace vr {
 
+struct OmniboxSuggestions;
+
 struct UiInitialState {
   bool in_cct = false;
   bool in_web_vr = false;
@@ -79,6 +81,8 @@ class Ui : public BrowserUiInterface, public UiInterface {
   void OnWebVrFrameAvailable() override;
   void OnWebVrTimedOut() override;
   void OnWebVrTimeoutImminent() override;
+
+  void SetOmniboxSuggestions(std::unique_ptr<OmniboxSuggestions> suggestions);
 
  private:
   // This state may be further abstracted into a SkiaUi object.

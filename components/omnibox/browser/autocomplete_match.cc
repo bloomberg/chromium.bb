@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
+#include "components/omnibox/browser/features.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
@@ -28,7 +29,7 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "url/third_party/mozilla/url_parse.h"
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
 #include "components/vector_icons/vector_icons.h"     // nogncheck
 #endif
@@ -185,7 +186,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 
 // static
 const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type) {
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
   switch (type) {
     case Type::URL_WHAT_YOU_TYPED:
     case Type::HISTORY_URL:

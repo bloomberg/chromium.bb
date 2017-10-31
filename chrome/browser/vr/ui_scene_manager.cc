@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
 #include "chrome/browser/vr/databinding/binding.h"
+#include "chrome/browser/vr/databinding/vector_binding.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
@@ -72,6 +73,66 @@ void BindColor(UiSceneManager* model, Text* text, P p) {
                  base::Unretained(text))));
 }
 
+typedef LinearLayout SuggestionItem;
+typedef VectorBinding<OmniboxSuggestion, SuggestionItem> SuggestionSetBinding;
+typedef typename SuggestionSetBinding::ElementBinding SuggestionBinding;
+
+void OnSuggestionModelAdded(UiScene* scene,
+                            SuggestionBinding* element_binding) {
+  auto icon = base::MakeUnique<VectorIcon>(100);
+  icon->SetVisible(true);
+  icon->SetSize(kSuggestionIconSize, kSuggestionIconSize);
+  icon->set_draw_phase(kPhaseForeground);
+  VectorIcon* p_icon = icon.get();
+
+  auto content_text = base::MakeUnique<Text>(512, kSuggestionContentTextHeight,
+                                             kSuggestionTextFieldWidth);
+  content_text->set_draw_phase(kPhaseForeground);
+  content_text->SetVisible(true);
+  content_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
+  Text* p_content_text = content_text.get();
+
+  auto description_text = base::MakeUnique<Text>(
+      512, kSuggestionDescriptionTextHeight, kSuggestionTextFieldWidth);
+  description_text->set_draw_phase(kPhaseForeground);
+  description_text->SetVisible(true);
+  description_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
+  Text* p_description_text = description_text.get();
+
+  auto text_layout = base::MakeUnique<LinearLayout>(LinearLayout::kDown);
+  text_layout->set_hit_testable(false);
+  text_layout->set_margin(kSuggestionLineGap);
+  text_layout->AddChild(std::move(content_text));
+  text_layout->AddChild(std::move(description_text));
+  text_layout->SetVisible(true);
+
+  auto suggestion_layout = base::MakeUnique<LinearLayout>(LinearLayout::kRight);
+  suggestion_layout->set_hit_testable(false);
+  suggestion_layout->set_margin(kSuggestionIconGap);
+  suggestion_layout->SetVisible(true);
+  suggestion_layout->AddChild(std::move(icon));
+  suggestion_layout->AddChild(std::move(text_layout));
+
+  element_binding->set_view(suggestion_layout.get());
+
+  element_binding->bindings().push_back(
+      VR_BIND_FUNC(base::string16, SuggestionBinding, element_binding,
+                   model()->content, Text, p_content_text, SetText));
+  element_binding->bindings().push_back(
+      VR_BIND_FUNC(base::string16, SuggestionBinding, element_binding,
+                   model()->description, Text, p_description_text, SetText));
+  element_binding->bindings().push_back(
+      VR_BIND(AutocompleteMatch::Type, SuggestionBinding, element_binding,
+              model()->type, VectorIcon, p_icon,
+              SetIcon(AutocompleteMatch::TypeToVectorIcon(value))));
+
+  scene->AddUiElement(kSuggestionLayout, std::move(suggestion_layout));
+}
+
+void OnSuggestionModelRemoved(UiScene* scene, SuggestionBinding* binding) {
+  scene->RemoveUiElement(binding->view()->id());
+}
+
 }  // namespace
 
 UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
@@ -96,6 +157,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateWebVRExitWarning();
   CreateSystemIndicators();
   CreateUrlBar(model);
+  CreateSuggestionList(model);
   CreateWebVrUrlToast();
   CreateCloseButton();
   CreateScreenDimmer();
@@ -612,6 +674,27 @@ void UiSceneManager::CreateUrlBar(Model* model) {
           },
           base::Unretained(indicator_fg.get()))));
   scene_->AddUiElement(kLoadingIndicator, std::move(indicator_fg));
+}
+
+void UiSceneManager::CreateSuggestionList(Model* model) {
+  auto layout = base::MakeUnique<LinearLayout>(LinearLayout::kDown);
+
+  layout->set_name(kSuggestionLayout);
+  layout->set_hit_testable(false);
+  layout->set_y_anchoring(YAnchoring::YTOP);
+  layout->SetTranslate(0, 0.5, 0.2);
+  layout->set_margin(kSuggestionGap);
+  layout->SetVisible(true);
+
+  SuggestionSetBinding::ModelAddedCallback added_callback =
+      base::Bind(&OnSuggestionModelAdded, base::Unretained(scene_));
+  SuggestionSetBinding::ModelRemovedCallback removed_callback =
+      base::Bind(&OnSuggestionModelRemoved, base::Unretained(scene_));
+
+  auto binding = base::MakeUnique<SuggestionSetBinding>(
+      &model->omnibox_suggestions, added_callback, removed_callback);
+  layout->AddBinding(std::move(binding));
+  scene_->AddUiElement(kUrlBar, std::move(layout));
 }
 
 TransientElement* UiSceneManager::AddTransientParent(UiElementName name,
