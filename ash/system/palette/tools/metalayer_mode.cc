@@ -14,6 +14,7 @@
 #include "ash/system/toast/toast_manager.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -37,11 +38,11 @@ const int kMaxStrokeGapWhenWritingMs = 1000;
 MetalayerMode::MetalayerMode(Delegate* delegate)
     : CommonPaletteTool(delegate), weak_factory_(this) {
   Shell::Get()->AddPreTargetHandler(this);
-  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->voice_interaction_controller()->AddObserver(this);
 }
 
 MetalayerMode::~MetalayerMode() {
-  Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->voice_interaction_controller()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
 }
 
@@ -141,12 +142,12 @@ void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
 }
 
 void MetalayerMode::OnVoiceInteractionStatusChanged(
-    VoiceInteractionState state) {
+    mojom::VoiceInteractionState state) {
   voice_interaction_state_ = state;
   UpdateState();
 }
 
-void MetalayerMode::OnVoiceInteractionEnabled(bool enabled) {
+void MetalayerMode::OnVoiceInteractionSettingsEnabled(bool enabled) {
   voice_interaction_enabled_ = enabled;
   UpdateState();
 }

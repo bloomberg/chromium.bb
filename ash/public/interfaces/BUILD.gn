@@ -37,6 +37,7 @@ mojom("interfaces_internal") {
     "tray_action.mojom",
     "update.mojom",
     "user_info.mojom",
+    "voice_interaction_controller.mojom",
     "volume.mojom",
     "vpn_list.mojom",
     "wallpaper.mojom",
