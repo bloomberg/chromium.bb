@@ -1493,7 +1493,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   if (cm->delta_q_present_flag) {
     int super_block_upper_left =
         ((mi_row & MAX_MIB_MASK) == 0) && ((mi_col & MAX_MIB_MASK) == 0);
-    if ((bsize != BLOCK_LARGEST || skip == 0) && super_block_upper_left) {
+    if ((bsize != cm->sb_size || skip == 0) && super_block_upper_left) {
       assert(mbmi->current_q_index > 0);
       int reduced_delta_qindex =
           (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
@@ -1827,7 +1827,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (cm->delta_q_present_flag) {
     int super_block_upper_left =
         ((mi_row & MAX_MIB_MASK) == 0) && ((mi_col & MAX_MIB_MASK) == 0);
-    if ((bsize != BLOCK_LARGEST || skip == 0) && super_block_upper_left) {
+    if ((bsize != cm->sb_size || skip == 0) && super_block_upper_left) {
       assert(mbmi->current_q_index > 0);
       int reduced_delta_qindex =
           (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;

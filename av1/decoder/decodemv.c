@@ -50,7 +50,7 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
 
-  if ((bsize != BLOCK_LARGEST || mbmi->skip == 0) && read_delta_q_flag) {
+  if ((bsize != cm->sb_size || mbmi->skip == 0) && read_delta_q_flag) {
     abs = aom_read_symbol(r, ec_ctx->delta_q_cdf, DELTA_Q_PROBS + 1, ACCT_STR);
     smallval = (abs < DELTA_Q_SMALL);
     if (counts) {
