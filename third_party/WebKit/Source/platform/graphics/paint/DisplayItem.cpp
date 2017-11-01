@@ -90,6 +90,7 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(PrintedContentPDFURLRect);
     DEBUG_STRING_CASE(Resizer);
     DEBUG_STRING_CASE(SVGClip);
+    DEBUG_STRING_CASE(SVGClipBoundsHack);
     DEBUG_STRING_CASE(SVGFilter);
     DEBUG_STRING_CASE(SVGMask);
     DEBUG_STRING_CASE(ScrollbarBackButtonEnd);
