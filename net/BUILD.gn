@@ -6233,3 +6233,32 @@ fuzzer_test("net_hpack_decoder_fuzzer") {
     "//net",
   ]
 }
+
+proto_library("reporting_policy_proto") {
+  import_dirs = [ "//testing/libfuzzer/proto/" ]
+  sources = [
+    "reporting/reporting_policy.proto",
+  ]
+  deps = [
+    "//testing/libfuzzer/proto:json_proto",
+  ]
+}
+
+fuzzer_test("net_reporting_header_parser_fuzzer") {
+  sources = [
+    "reporting/reporting_header_parser_fuzzer.cc",
+    "reporting/reporting_test_util.h",
+    "reporting/reporting_test_util.cc",
+  ]
+
+  deps = [
+    ":net_fuzzer_test_support",
+    ":reporting_policy_proto",
+    ":test_support",
+    "//base",
+    "//net",
+    "//testing/libfuzzer/proto:json_proto",
+    "//testing/libfuzzer/proto:json_proto_converter",
+    "//third_party/libprotobuf-mutator",
+  ]
+}

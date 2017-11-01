@@ -5,7 +5,7 @@
 #ifndef TESTING_LIBFUZZER_PROTO_JSON_PROTO_CONVERTER_H
 #define TESTING_LIBFUZZER_PROTO_JSON_PROTO_CONVERTER_H
 
-#include "testing/libfuzzer/proto/json.pb.h"
+#include "json.pb.h"
 
 #include <sstream>
 #include <string>
