@@ -173,13 +173,26 @@ cr.define('offlineInternals', function() {
    * Downloads all the stored page and request queue information into a file.
    * TODO(chili): Create a CSV writer that can abstract out the line joining.
    */
-  function download() {
+  function dumpAsJson() {
     var json = JSON.stringify(
         {offlinePages: offlinePages, savePageRequests: savePageRequests}, null,
         2);
 
-    window.open(
-        'data:application/json,' + encodeURIComponent(json), 'dump.json');
+    $('dump-box').value = json;
+    $('dump-info').textContent = '';
+    $('dump').showModal();
+    $('dump-box').select();
+  }
+
+  function closeDump() {
+    $('dump').close();
+    $('dump-box').value = '';
+  }
+
+  function copyDump() {
+    $('dump-box').select();
+    document.execCommand('copy');
+    $('dump-info').textContent = 'Copied to clipboard!';
   }
 
   /**
@@ -260,22 +273,19 @@ cr.define('offlineInternals', function() {
     }
 
     var incognito = loadTimeData.getBoolean('isIncognito');
-    $('delete-all-pages').disabled = incognito;
-    $('delete-selected-pages').disabled = incognito;
-    $('delete-all-requests').disabled = incognito;
-    $('delete-selected-requests').disabled = incognito;
-    $('log-model-on').disabled = incognito;
-    $('log-model-off').disabled = incognito;
-    $('log-request-on').disabled = incognito;
-    $('log-request-off').disabled = incognito;
-    $('refresh').disabled = incognito;
+    ['delete-all-pages', 'delete-selected-pages', 'delete-all-requests',
+     'delete-selected-requests', 'log-model-on', 'log-model-off',
+     'log-request-on', 'log-request-off', 'refresh']
+        .forEach(el => $(el).disabled = incognito);
 
     $('delete-all-pages').onclick = deleteAllPages;
     $('delete-selected-pages').onclick = deleteSelectedPages;
     $('delete-all-requests').onclick = deleteAllRequests;
     $('delete-selected-requests').onclick = deleteSelectedRequests;
     $('refresh').onclick = refreshAll;
-    $('download').onclick = download;
+    $('dump').onclick = dumpAsJson;
+    $('close-dump').onclick = closeDump;
+    $('copy-to-clipboard').onclick = copyDump;
     $('log-model-on').onclick = togglePageModelLog.bind(this, true);
     $('log-model-off').onclick = togglePageModelLog.bind(this, false);
     $('log-request-on').onclick = toggleRequestQueueLog.bind(this, true);
