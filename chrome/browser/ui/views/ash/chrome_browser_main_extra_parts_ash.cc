@@ -9,6 +9,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -79,6 +80,10 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     converter->RegisterPrimitiveProperty(
         ash::kWindowPinTypeKey, ash::mojom::kWindowPinType_Property,
         base::Bind(&ash::IsValidWindowPinType));
+    converter->RegisterPrimitiveProperty(
+        ash::kWindowPositionManagedTypeKey,
+        ash::mojom::kWindowPositionManaged_Property,
+        aura::PropertyConverter::CreateAcceptAnyValueCallback());
     converter->RegisterStringProperty(
         ash::kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property);
 

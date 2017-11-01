@@ -226,7 +226,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // If the minimum visibility is true, ash will try to keep a
   // minimum amount of the window is always visible on the work area
   // when shown.
-  // TODO(oshima): Consolidate this and window_position_managed
+  // TODO(oshima): Consolidate this and GetWindowPositionManaged
   // into single parameter to control the window placement.
   bool minimum_visibility() const { return minimum_visibility_; }
   void set_minimum_visibility(bool minimum_visibility) {
@@ -256,10 +256,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Whether or not the window's position can be managed by the
   // auto management logic.
-  bool window_position_managed() const { return window_position_managed_; }
-  void set_window_position_managed(bool window_position_managed) {
-    window_position_managed_ = window_position_managed;
-  }
+  bool GetWindowPositionManaged() const;
+  void SetWindowPositionManaged(bool managed);
 
   // Whether or not the window's position or size was changed by a user.
   bool bounds_changed_by_user() const { return bounds_changed_by_user_; }
@@ -384,7 +382,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   aura::Window* window_;
   std::unique_ptr<WindowStateDelegate> delegate_;
 
-  bool window_position_managed_;
   bool bounds_changed_by_user_;
   bool ignored_by_shelf_;
   bool can_consume_system_keys_;

@@ -38,7 +38,7 @@ views::Widget* ToplevelWindow::CreateToplevelWindow(
       new ToplevelWindow(params), Shell::GetPrimaryRootWindow());
   widget->GetNativeView()->SetName("Examples:ToplevelWindow");
   wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeView());
-  window_state->set_window_position_managed(true);
+  window_state->SetWindowPositionManaged(true);
   widget->Show();
   return widget;
 }

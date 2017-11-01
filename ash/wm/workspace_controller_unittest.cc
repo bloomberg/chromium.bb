@@ -101,7 +101,7 @@ class WorkspaceControllerTest : public AshTestBase {
     aura::Window* window = CreateTestWindow();
     window->SetBounds(bounds);
     wm::WindowState* window_state = wm::GetWindowState(window);
-    window_state->set_window_position_managed(true);
+    window_state->SetWindowPositionManaged(true);
     window->Show();
     return window;
   }
@@ -764,7 +764,7 @@ TEST_F(WorkspaceControllerTest, AutoPlacingMovesTransientChild) {
   // Create an auto-positioned window.
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   gfx::Rect desktop_area = window1->parent()->bounds();
-  wm::GetWindowState(window1.get())->set_window_position_managed(true);
+  wm::GetWindowState(window1.get())->SetWindowPositionManaged(true);
   // Hide and then show |window1| to trigger auto-positioning logic.
   window1->Hide();
   window1->SetBounds(gfx::Rect(16, 32, 300, 300));
@@ -791,7 +791,7 @@ TEST_F(WorkspaceControllerTest, AutoPlacingMovesTransientChild) {
   // Create and show a second window forcing the first window and its child to
   // move.
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
-  wm::GetWindowState(window2.get())->set_window_position_managed(true);
+  wm::GetWindowState(window2.get())->SetWindowPositionManaged(true);
   // Hide and then show |window2| to trigger auto-positioning logic.
   window2->Hide();
   window2->SetBounds(gfx::Rect(32, 48, 250, 250));
@@ -833,10 +833,10 @@ TEST_F(WorkspaceControllerTest, BasicAutoPlacingOnShowHide) {
 
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
   // Test 2: Set up two managed windows and check their auto positioning.
-  window1_state->set_window_position_managed(true);
+  window1_state->SetWindowPositionManaged(true);
 
   std::unique_ptr<aura::Window> window3(CreateTestWindowInShellWithId(2));
-  wm::GetWindowState(window3.get())->set_window_position_managed(true);
+  wm::GetWindowState(window3.get())->SetWindowPositionManaged(true);
   // To avoid any auto window manager changes due to SetBounds, the window
   // gets first hidden and then shown again.
   window3->Hide();
@@ -897,8 +897,8 @@ TEST_F(WorkspaceControllerTest, TestUserMovedWindowRepositioning) {
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
   wm::WindowState* window2_state = wm::GetWindowState(window2.get());
 
-  window1_state->set_window_position_managed(true);
-  window2_state->set_window_position_managed(true);
+  window1_state->SetWindowPositionManaged(true);
+  window2_state->SetWindowPositionManaged(true);
   EXPECT_FALSE(window1_state->bounds_changed_by_user());
   EXPECT_FALSE(window2_state->bounds_changed_by_user());
 
@@ -943,9 +943,9 @@ TEST_F(WorkspaceControllerTest, TestSingleWindowsRestoredBounds) {
   window1->Hide();
   window2->Hide();
   window3->Hide();
-  wm::GetWindowState(window1.get())->set_window_position_managed(true);
-  wm::GetWindowState(window2.get())->set_window_position_managed(true);
-  wm::GetWindowState(window3.get())->set_window_position_managed(true);
+  wm::GetWindowState(window1.get())->SetWindowPositionManaged(true);
+  wm::GetWindowState(window2.get())->SetWindowPositionManaged(true);
+  wm::GetWindowState(window3.get())->SetWindowPositionManaged(true);
 
   window1->Show();
   wm::ActivateWindow(window1.get());
@@ -996,8 +996,8 @@ TEST_F(WorkspaceControllerTest, TestUserHandledWindowRestore) {
   window2->SetBounds(gfx::Rect(32, 48, 256, 512));
   window1->Hide();
   window2->Hide();
-  wm::GetWindowState(window1.get())->set_window_position_managed(true);
-  wm::GetWindowState(window2.get())->set_window_position_managed(true);
+  wm::GetWindowState(window1.get())->SetWindowPositionManaged(true);
+  wm::GetWindowState(window2.get())->SetWindowPositionManaged(true);
   window1->Show();
   EXPECT_EQ(user_pos.ToString(), window1->bounds().ToString());
   window2->Show();
@@ -1027,7 +1027,7 @@ TEST_F(WorkspaceControllerTest, TestRestoreToUserModifiedBounds) {
       CreateTestWindowInShellWithBounds(default_bounds));
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
   window1->Hide();
-  window1_state->set_window_position_managed(true);
+  window1_state->SetWindowPositionManaged(true);
   window1->Show();
   // First window is centered.
   EXPECT_EQ("150,0 100x100", window1->bounds().ToString());
@@ -1035,7 +1035,7 @@ TEST_F(WorkspaceControllerTest, TestRestoreToUserModifiedBounds) {
       CreateTestWindowInShellWithBounds(default_bounds));
   wm::WindowState* window2_state = wm::GetWindowState(window2.get());
   window2->Hide();
-  window2_state->set_window_position_managed(true);
+  window2_state->SetWindowPositionManaged(true);
   window2->Show();
 
   // Auto positioning pushes windows to each sides.
@@ -1072,13 +1072,13 @@ TEST_F(WorkspaceControllerTest, TestRestoreToUserModifiedBounds) {
 TEST_F(WorkspaceControllerTest, ToMinimizeRepositionsRemaining) {
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
-  window1_state->set_window_position_managed(true);
+  window1_state->SetWindowPositionManaged(true);
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
   gfx::Rect desktop_area = window1->parent()->bounds();
 
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   wm::WindowState* window2_state = wm::GetWindowState(window2.get());
-  window2_state->set_window_position_managed(true);
+  window2_state->SetWindowPositionManaged(true);
   window2->SetBounds(gfx::Rect(32, 48, 256, 512));
 
   window1_state->Minimize();
@@ -1104,12 +1104,12 @@ TEST_F(WorkspaceControllerTest, ToMinimizeRepositionsRemaining) {
 TEST_F(WorkspaceControllerTest, MaxToMinRepositionsRemaining) {
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
-  window1_state->set_window_position_managed(true);
+  window1_state->SetWindowPositionManaged(true);
   gfx::Rect desktop_area = window1->parent()->bounds();
 
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   wm::WindowState* window2_state = wm::GetWindowState(window2.get());
-  window2_state->set_window_position_managed(true);
+  window2_state->SetWindowPositionManaged(true);
   window2->SetBounds(gfx::Rect(32, 48, 256, 512));
 
   window1_state->Maximize();
@@ -1129,12 +1129,12 @@ TEST_F(WorkspaceControllerTest, NormToMaxToMinRepositionsRemaining) {
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
-  window1_state->set_window_position_managed(true);
+  window1_state->SetWindowPositionManaged(true);
   gfx::Rect desktop_area = window1->parent()->bounds();
 
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
   wm::WindowState* window2_state = wm::GetWindowState(window2.get());
-  window2_state->set_window_position_managed(true);
+  window2_state->SetWindowPositionManaged(true);
   window2->SetBounds(gfx::Rect(32, 40, 256, 512));
 
   // Trigger the auto window placement function by showing (and hiding) it.
@@ -1165,11 +1165,11 @@ TEST_F(WorkspaceControllerTest, NormToMaxToNormRepositionsRemaining) {
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0));
   window1->SetBounds(gfx::Rect(16, 32, 640, 320));
   wm::WindowState* window1_state = wm::GetWindowState(window1.get());
-  window1_state->set_window_position_managed(true);
+  window1_state->SetWindowPositionManaged(true);
   gfx::Rect desktop_area = window1->parent()->bounds();
 
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(1));
-  wm::GetWindowState(window2.get())->set_window_position_managed(true);
+  wm::GetWindowState(window2.get())->SetWindowPositionManaged(true);
   window2->SetBounds(gfx::Rect(32, 40, 256, 512));
 
   // Trigger the auto window placement function by showing (and hiding) it.
@@ -1206,8 +1206,8 @@ TEST_F(WorkspaceControllerTest, AnimatedNormToMaxToNormRepositionsRemaining) {
   window2->Hide();
   window2->SetBounds(gfx::Rect(32, 48, 256, 512));
 
-  wm::GetWindowState(window1.get())->set_window_position_managed(true);
-  wm::GetWindowState(window2.get())->set_window_position_managed(true);
+  wm::GetWindowState(window1.get())->SetWindowPositionManaged(true);
+  wm::GetWindowState(window2.get())->SetWindowPositionManaged(true);
   // Make sure nothing is animating.
   window1->layer()->GetAnimator()->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
@@ -1308,7 +1308,7 @@ TEST_F(WorkspaceControllerTest, RestoreMinimizedSnappedWindow) {
   // Create an auto-positioned window.
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
-  window_state->set_window_position_managed(true);
+  window_state->SetWindowPositionManaged(true);
   window->SetBounds(gfx::Rect(10, 20, 100, 200));
   window->Show();
 

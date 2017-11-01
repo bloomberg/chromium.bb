@@ -44,10 +44,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kShowInOverviewKey;
 
-// A property key to indicate ash's extended window state.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
-    mojom::WindowStateType>* const kWindowStateTypeKey;
-
 // A property key to store ash::WindowPinType for a window.
 // When setting this property to PINNED or TRUSTED_PINNED, the window manager
 // will try to fullscreen the window and pin it on the top of the screen. If the
@@ -55,6 +51,16 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
 // setting this property to NONE, the window manager will restore the window.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<mojom::WindowPinType>* const
     kWindowPinTypeKey;
+
+// A property key to indicate whether ash should perform auto management of
+// window positions; when you open a second browser, ash will move the two to
+// minimize overlap.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kWindowPositionManagedTypeKey;
+
+// A property key to indicate ash's extended window state.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    mojom::WindowStateType>* const kWindowStateTypeKey;
 
 // Alphabetical sort.
 

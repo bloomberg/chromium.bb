@@ -112,7 +112,7 @@ void ContinueAndCompleteDrag(ui::test::EventGenerator* generator,
                              wm::WindowState* window_state,
                              aura::Window* window) {
   ASSERT_TRUE(window->HasCapture());
-  ASSERT_FALSE(window_state->window_position_managed());
+  ASSERT_FALSE(window_state->GetWindowPositionManaged());
   generator->DragMouseBy(100, 100);
   generator->ReleaseLeftButton();
 }
@@ -129,7 +129,7 @@ TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
 
   // Explicitly enable window position auto management, and expect it to be
   // restored after drag completes.
-  window_state->set_window_position_managed(true);
+  window_state->SetWindowPositionManaged(true);
   generator.PressLeftButton();
   ::wm::WindowMoveClient* move_client =
       ::wm::GetWindowMoveClient(w1->GetRootWindow());
@@ -141,7 +141,7 @@ TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
             move_client->RunMoveLoop(w1.get(), gfx::Vector2d(100, 100),
                                      ::wm::WINDOW_MOVE_SOURCE_MOUSE));
   // Window position auto manage property should be restored to true.
-  EXPECT_TRUE(window_state->window_position_managed());
+  EXPECT_TRUE(window_state->GetWindowPositionManaged());
   // Position should have been offset by 100,100.
   EXPECT_EQ("100,100", w1->bounds().origin().ToString());
   // Size should remain the same.
@@ -149,7 +149,7 @@ TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
 
   // Explicitly disable window position auto management, and expect it to be
   // restored after drag completes.
-  window_state->set_window_position_managed(false);
+  window_state->SetWindowPositionManaged(false);
   generator.PressLeftButton();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -159,7 +159,7 @@ TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
             move_client->RunMoveLoop(w1.get(), gfx::Vector2d(100, 100),
                                      ::wm::WINDOW_MOVE_SOURCE_MOUSE));
   // Window position auto manage property should be restored to true.
-  EXPECT_FALSE(window_state->window_position_managed());
+  EXPECT_FALSE(window_state->GetWindowPositionManaged());
   // Position should have been offset by 100,100.
   EXPECT_EQ("200,200", w1->bounds().origin().ToString());
   // Size should remain the same.

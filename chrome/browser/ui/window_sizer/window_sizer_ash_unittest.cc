@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_resizer.h"
-#include "ash/wm/window_state.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -39,8 +39,8 @@ std::unique_ptr<Browser> CreateTestBrowser(aura::Window* window,
       chrome::CreateBrowserWithAuraTestWindowForParams(base::WrapUnique(window),
                                                        params);
   if (!browser->is_type_popup()) {
-    ash::wm::GetWindowState(browser->window()->GetNativeWindow())
-        ->set_window_position_managed(true);
+    browser->window()->GetNativeWindow()->SetProperty(
+        ash::kWindowPositionManagedTypeKey, true);
   }
   return browser;
 }
