@@ -72,4 +72,4 @@ if __name__ == '__main__':
   else:
     update_histogram_enum.UpdateHistogramFromDict(
         'MappedCSSProperties', ReadCssProperties(USE_COUNTER_CPP_PATH),
-        USE_COUNTER_CPP_PATH)
+        USE_COUNTER_CPP_PATH, os.path.basename(__file__))
