@@ -31,7 +31,7 @@ extern "C" {
 // TODO(jingning): Use unified inter predictor for encoder and
 // decoder during the development process. Revisit the frame border
 // to improve the decoder performance.
-#if CONFIG_EXT_PARTITION && CONFIG_FRAME_SUPERRES
+#if CONFIG_EXT_PARTITION
 #define AOM_BORDER_IN_PIXELS 288
 #else
 #define AOM_BORDER_IN_PIXELS 160
