@@ -454,9 +454,8 @@ class PageLoadMetricsObserver {
       const FailedProvisionalLoadInfo& failed_provisional_load_info,
       const PageLoadExtraInfo& extra_info) {}
 
-  // Called whenever a request is loaded for this page load. This comes
-  // unfiltered from the ResourceDispatcherHost and may include blob requests
-  // and data uris.
+  // Called whenever a request is loaded for this page load. This is restricted
+  // to requests with HTTP or HTTPS only schemes.
   virtual void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info) {}
 
