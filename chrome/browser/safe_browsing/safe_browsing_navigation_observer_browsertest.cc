@@ -75,6 +75,9 @@ const char kLandingURL[] =
 const char kLandingReferrerURL[] =
     "/safe_browsing/download_protection/navigation_observer/"
     "landing_referrer.html";
+const char kLandingReferrerURLWithQuery[] =
+    "/safe_browsing/download_protection/navigation_observer/"
+    "landing_referrer.html?bar=foo";
 const char kPageBeforeLandingReferrerURL[] =
     "/safe_browsing/download_protection/navigation_observer/"
     "page_before_landing_referrer.html";
@@ -383,6 +386,14 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
           2,  // kDownloadAttributionUserGestureLimit
           referrer_chain);
     }
+  }
+
+  void IdentifyReferrerChainForWebContents(content::WebContents* web_contents,
+                                           ReferrerChain* referrer_chain) {
+    observer_manager_->IdentifyReferrerChainByWebContents(
+        web_contents,
+        2,  // kDownloadAttributionUserGestureLimit
+        referrer_chain);
   }
 
   // Identify referrer chain of a PPAPI download and populate |referrer_chain|.
@@ -2022,6 +2033,56 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            false,                // is_retargeting
                            std::vector<GURL>(),  // server redirects
                            referrer_chain.Get(0));
+}
+
+// Verify referrer chain when there are URL fragments.
+IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
+                       DownloadAttributionWithURLFragment) {
+  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
+  // Clicks on link and navigates to ".../page_before_landing_referrer.html".
+  ClickTestLink("attribution_should_ignore_url_fragments", 1, initial_url);
+  GURL expected_page_before_landing_referrer_url =
+      embedded_test_server()->GetURL(kPageBeforeLandingReferrerURL);
+  // Clicks on link and navigates to ".../landing_referrer.html?bar=foo#baz".
+  ClickTestLink("link_to_landing_referrer_with_query_and_fragment", 1,
+                expected_page_before_landing_referrer_url);
+  GURL expected_landing_referrer_url_with_query =
+      embedded_test_server()->GetURL(kLandingReferrerURLWithQuery);
+  // Clicks on link and navigates to ".../landing.html#".
+  ClickTestLink("link_to_landing_with_empty_fragment", 1,
+                expected_landing_referrer_url_with_query);
+  GURL expected_landing_url = embedded_test_server()->GetURL(kLandingURL);
+
+  std::string test_server_ip(embedded_test_server()->host_port_pair().host());
+  auto* nav_list = navigation_event_list();
+  ASSERT_EQ(4U, nav_list->Size());
+
+  ReferrerChain referrer_chain;
+  SimulateUserGesture();
+  IdentifyReferrerChainForWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents(), &referrer_chain);
+  ASSERT_EQ(2, referrer_chain.size());
+
+  // Verify url fragment is cleared in referrer chain.
+  VerifyReferrerChainEntry(expected_landing_url,              // url
+                           GURL(),                            // main_frame_url
+                           ReferrerChainEntry::LANDING_PAGE,  // type
+                           test_server_ip,                    // ip_address
+                           expected_landing_referrer_url_with_query,
+                           GURL(),               // referrer_main_frame_url
+                           false,                // is_retargeting
+                           std::vector<GURL>(),  // server redirects
+                           referrer_chain.Get(0));
+  VerifyReferrerChainEntry(
+      expected_landing_referrer_url_with_query,  // url
+      GURL(),                                    // main_frame_url
+      ReferrerChainEntry::LANDING_REFERRER,      // type
+      test_server_ip,                            // ip_address
+      GURL(),  // referrer_url is empty since this beyonds 2 clicks.
+      GURL(),  // referrer_main_frame_url is empty for the same reason.
+      false,   // is_retargeting
+      std::vector<GURL>(),  // server redirects
+      referrer_chain.Get(1));
 }
 
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,

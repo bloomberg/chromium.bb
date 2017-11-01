@@ -160,12 +160,11 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
   // committed navigation.
   if (navigation_handle->IsRendererInitiated() && current_frame_host &&
       current_frame_host->GetLastCommittedURL().is_valid()) {
-    nav_event->source_url =
-        SafeBrowsingNavigationObserverManager::ClearEmptyRef(
-            current_frame_host->GetLastCommittedURL());
+    nav_event->source_url = SafeBrowsingNavigationObserverManager::ClearURLRef(
+        current_frame_host->GetLastCommittedURL());
   }
   nav_event->original_request_url =
-      SafeBrowsingNavigationObserverManager::ClearEmptyRef(
+      SafeBrowsingNavigationObserverManager::ClearURLRef(
           navigation_handle->GetURL());
 
   nav_event->source_tab_id =
@@ -175,7 +174,7 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
     nav_event->source_main_frame_url = nav_event->source_url;
   } else {
     nav_event->source_main_frame_url =
-        SafeBrowsingNavigationObserverManager::ClearEmptyRef(
+        SafeBrowsingNavigationObserverManager::ClearURLRef(
             navigation_handle->GetWebContents()->GetLastCommittedURL());
   }
   navigation_handle_map_[navigation_handle] = std::move(nav_event);
@@ -190,7 +189,7 @@ void SafeBrowsingNavigationObserver::DidRedirectNavigation(
   }
   NavigationEvent* nav_event = navigation_handle_map_[navigation_handle].get();
   nav_event->server_redirect_urls.push_back(
-      SafeBrowsingNavigationObserverManager::ClearEmptyRef(
+      SafeBrowsingNavigationObserverManager::ClearURLRef(
           navigation_handle->GetURL()));
   nav_event->last_updated = base::Time::Now();
 }
