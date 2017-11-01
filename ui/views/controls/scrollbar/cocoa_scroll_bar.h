@@ -51,6 +51,9 @@ class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
   // Returns the scroller style.
   NSScrollerStyle GetScrollerStyle() const { return scroller_style_; }
 
+  // Returns the thickness of the scrollbar.
+  int ScrollbarThickness() const;
+
   // Returns true if the opacity is 0.0.
   bool IsScrollbarFullyHidden() const;
 
@@ -84,9 +87,6 @@ class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
   // Resets the scrolltrack and the thickness if the scrollbar is not hidden
   // and is not in a hover/pressed state.
   void ResetOverlayScrollbar();
-
-  // Returns the thickness of the scrollbar.
-  int ScrollbarThickness() const;
 
   // Sets the scrolltrack's visibility and then repaints it.
   void SetScrolltrackVisible(bool visible);
