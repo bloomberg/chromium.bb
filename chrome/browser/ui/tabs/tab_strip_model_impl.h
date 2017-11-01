@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -152,11 +153,11 @@ class TabStripModelImpl : public TabStripModel {
   class WebContentsData;
 
   // Used when making selection notifications.
-  enum NotifyTypes {
-    NOTIFY_DEFAULT,
+  enum class Notify {
+    kDefault,
 
     // The selection is changing from a user gesture.
-    NOTIFY_USER_GESTURE,
+    kUserGesture,
   };
 
   int ConstrainInsertionIndex(int index, bool pinned_tab);
@@ -215,7 +216,7 @@ class TabStripModelImpl : public TabStripModel {
 
   // Notifies the observers if the active tab has changed.
   void NotifyIfActiveTabChanged(content::WebContents* old_contents,
-                                NotifyTypes notify_types);
+                                Notify notify_types);
 
   // Notifies the observers if the active tab or the tab selection has changed.
   // |old_model| is a snapshot of |selection_model_| before the change.
@@ -223,13 +224,13 @@ class TabStripModelImpl : public TabStripModel {
   // following order: ActiveTabChanged, TabSelectionChanged.
   void NotifyIfActiveOrSelectionChanged(
       content::WebContents* old_contents,
-      NotifyTypes notify_types,
+      Notify notify_types,
       const ui::ListSelectionModel& old_model);
 
   // Sets the selection to |new_model| and notifies any observers.
   // Note: This function might end up sending 0 to 3 notifications in the
   // following order: TabDeactivated, ActiveTabChanged, TabSelectionChanged.
-  void SetSelection(ui::ListSelectionModel new_model, NotifyTypes notify_types);
+  void SetSelection(ui::ListSelectionModel new_model, Notify notify_types);
 
   // Selects either the next tab (|forward| is true), or the previous tab
   // (|forward| is false).

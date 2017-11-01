@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_EXPERIMENTAL_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_EXPERIMENTAL_H_
 
+#include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -56,6 +58,8 @@ class TabStripModelExperimental : public TabStripModel {
   content::WebContents* GetOpenerOfWebContentsAt(int index) override;
   void SetOpenerOfWebContentsAt(int index,
                                 content::WebContents* opener) override;
+  int GetIndexOfLastWebContentsOpenedBy(const content::WebContents* opener,
+                                        int start_index) const override;
   void TabNavigating(content::WebContents* contents,
                      ui::PageTransition transition) override;
   void SetTabBlocked(int index, bool blocked) override;
@@ -91,12 +95,51 @@ class TabStripModelExperimental : public TabStripModel {
   bool WillContextMenuPin(int index) override;
 
  private:
+  // Used when making selection notifications.
+  enum class Notify {
+    kDefault,
+
+    // The selection is changing from a user gesture.
+    kUserGesture,
+  };
+
+  // Sets the selection to |new_model| and notifies any observers.
+  // Note: This function might end up sending 0 to 3 notifications in the
+  // following order: TabDeactivated, ActiveTabChanged, TabSelectionChanged.
+  void SetSelection(ui::ListSelectionModel new_model, Notify notify_types);
+
+  // Notifies the observers if the active tab is being deactivated.
+  void NotifyIfTabDeactivated(content::WebContents* contents);
+
+  // Notifies the observers if the active tab has changed.
+  void NotifyIfActiveTabChanged(content::WebContents* old_contents,
+                                Notify notify_types);
+
+  // Notifies the observers if the active tab or the tab selection has changed.
+  // |old_model| is a snapshot of |selection_model_| before the change.
+  // Note: This function might end up sending 0 to 2 notifications in the
+  // following order: ActiveTabChanged, TabSelectionChanged.
+  void NotifyIfActiveOrSelectionChanged(
+      content::WebContents* old_contents,
+      Notify notify_types,
+      const ui::ListSelectionModel& old_model);
+
+  void InternalCloseTabs(base::span<content::WebContents*> tabs_to_close);
+
   TabStripModelDelegate* delegate_;
   Profile* profile_;
 
   base::ObserverList<TabStripModelObserver> observers_;
 
   ui::ListSelectionModel selection_model_;
+  bool closing_all_ = false;
+
+  // Flag to check for reentrant notifications.
+  bool in_notify_ = false;
+
+  std::vector<content::WebContents*> tabs_;
+
+  base::WeakPtrFactory<TabStripModelExperimental> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStripModelExperimental);
 };
