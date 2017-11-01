@@ -157,16 +157,6 @@ ScriptPromise Permissions::query(ScriptState* script_state,
   if (exception_state.HadException())
     return exception_state.Reject(script_state);
 
-  // This must be called after `parsePermission` because the website might
-  // be able to run code.
-  PermissionService* service = GetService(ExecutionContext::From(script_state));
-  if (!service)
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        DOMException::Create(
-            kInvalidStateError,
-            "In its current state, the global scope can't query permissions."));
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -175,12 +165,13 @@ ScriptPromise Permissions::query(ScriptState* script_state,
   // permission prompt will be shown even if the returned permission will most
   // likely be "prompt".
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
-  service->HasPermission(
-      std::move(descriptor),
-      ExecutionContext::From(script_state)->GetSecurityOrigin(),
-      ConvertToBaseCallback(WTF::Bind(
-          &Permissions::TaskComplete, WrapPersistent(this),
-          WrapPersistent(resolver), WTF::Passed(std::move(descriptor_copy)))));
+  GetService(ExecutionContext::From(script_state))
+      .HasPermission(std::move(descriptor),
+                     ExecutionContext::From(script_state)->GetSecurityOrigin(),
+                     ConvertToBaseCallback(WTF::Bind(
+                         &Permissions::TaskComplete, WrapPersistent(this),
+                         WrapPersistent(resolver),
+                         WTF::Passed(std::move(descriptor_copy)))));
   return promise;
 }
 
@@ -196,27 +187,20 @@ ScriptPromise Permissions::request(ScriptState* script_state,
 
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  // This must be called after `parsePermission` because the website might
-  // be able to run code.
-  PermissionService* service = GetService(context);
-  if (!service)
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError,
-                                           "In its current state, the global "
-                                           "scope can't request permissions."));
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
   Document* doc = ToDocumentOrNull(context);
   Frame* frame = doc ? doc->GetFrame() : nullptr;
-  service->RequestPermission(
-      std::move(descriptor), context->GetSecurityOrigin(),
-      Frame::HasTransientUserActivation(frame, true /* checkIfMainThread */),
-      ConvertToBaseCallback(WTF::Bind(
-          &Permissions::TaskComplete, WrapPersistent(this),
-          WrapPersistent(resolver), WTF::Passed(std::move(descriptor_copy)))));
+  GetService(ExecutionContext::From(script_state))
+      .RequestPermission(std::move(descriptor), context->GetSecurityOrigin(),
+                         Frame::HasTransientUserActivation(
+                             frame, true /* checkIfMainThread */),
+                         ConvertToBaseCallback(WTF::Bind(
+                             &Permissions::TaskComplete, WrapPersistent(this),
+                             WrapPersistent(resolver),
+                             WTF::Passed(std::move(descriptor_copy)))));
   return promise;
 }
 
@@ -230,25 +214,18 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
   if (exception_state.HadException())
     return exception_state.Reject(script_state);
 
-  // This must be called after `parsePermission` because the website might
-  // be able to run code.
-  PermissionService* service = GetService(ExecutionContext::From(script_state));
-  if (!service)
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError,
-                                           "In its current state, the global "
-                                           "scope can't revoke permissions."));
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   PermissionDescriptorPtr descriptor_copy = descriptor->Clone();
-  service->RevokePermission(
-      std::move(descriptor),
-      ExecutionContext::From(script_state)->GetSecurityOrigin(),
-      ConvertToBaseCallback(WTF::Bind(
-          &Permissions::TaskComplete, WrapPersistent(this),
-          WrapPersistent(resolver), WTF::Passed(std::move(descriptor_copy)))));
+  GetService(ExecutionContext::From(script_state))
+      .RevokePermission(
+          std::move(descriptor),
+          ExecutionContext::From(script_state)->GetSecurityOrigin(),
+          ConvertToBaseCallback(
+              WTF::Bind(&Permissions::TaskComplete, WrapPersistent(this),
+                        WrapPersistent(resolver),
+                        WTF::Passed(std::move(descriptor_copy)))));
   return promise;
 }
 
@@ -286,15 +263,6 @@ ScriptPromise Permissions::requestAll(
 
   ExecutionContext* context = ExecutionContext::From(script_state);
 
-  // This must be called after `parsePermission` because the website might
-  // be able to run code.
-  PermissionService* service = GetService(context);
-  if (!service)
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError,
-                                           "In its current state, the global "
-                                           "scope can't request permissions."));
-
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
@@ -305,24 +273,27 @@ ScriptPromise Permissions::requestAll(
 
   Document* doc = ToDocumentOrNull(context);
   Frame* frame = doc ? doc->GetFrame() : nullptr;
-  service->RequestPermissions(
-      std::move(internal_permissions), context->GetSecurityOrigin(),
-      Frame::HasTransientUserActivation(frame, true /* checkIfMainThread */),
-      ConvertToBaseCallback(
-          WTF::Bind(&Permissions::BatchTaskComplete, WrapPersistent(this),
-                    WrapPersistent(resolver),
-                    WTF::Passed(std::move(internal_permissions_copy)),
-                    WTF::Passed(std::move(caller_index_to_internal_index)))));
+  GetService(ExecutionContext::From(script_state))
+      .RequestPermissions(
+          std::move(internal_permissions), context->GetSecurityOrigin(),
+          Frame::HasTransientUserActivation(frame,
+                                            true /* checkIfMainThread */),
+          ConvertToBaseCallback(WTF::Bind(
+              &Permissions::BatchTaskComplete, WrapPersistent(this),
+              WrapPersistent(resolver),
+              WTF::Passed(std::move(internal_permissions_copy)),
+              WTF::Passed(std::move(caller_index_to_internal_index)))));
   return promise;
 }
 
-PermissionService* Permissions::GetService(
+PermissionService& Permissions::GetService(
     ExecutionContext* execution_context) {
-  if (!service_ && ConnectToPermissionService(execution_context,
-                                              mojo::MakeRequest(&service_)))
+  if (!service_) {
+    ConnectToPermissionService(execution_context, mojo::MakeRequest(&service_));
     service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
         &Permissions::ServiceConnectionError, WrapWeakPersistent(this))));
-  return service_.get();
+  }
+  return *service_;
 }
 
 void Permissions::ServiceConnectionError() {

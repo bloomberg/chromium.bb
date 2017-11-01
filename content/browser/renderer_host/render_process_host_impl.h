@@ -388,6 +388,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // globally-used spare RenderProcessHost at any time.
   static RenderProcessHost* GetSpareRenderProcessHostForTesting();
 
+  PermissionServiceContext& permission_service_context() {
+    return *permission_service_context_;
+  };
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   std::unique_ptr<IPC::ChannelProxy> channel_;

@@ -26,7 +26,7 @@ class StorageManager final : public ScriptWrappable {
   ScriptPromise estimate(ScriptState*);
 
  private:
-  mojom::blink::PermissionService* GetPermissionService(ExecutionContext*);
+  mojom::blink::PermissionService& GetPermissionService(ExecutionContext*);
   void PermissionServiceConnectionError();
   void PermissionRequestComplete(ScriptPromiseResolver*,
                                  mojom::blink::PermissionStatus);

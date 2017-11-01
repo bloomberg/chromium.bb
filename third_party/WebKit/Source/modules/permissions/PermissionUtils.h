@@ -11,7 +11,7 @@ namespace blink {
 
 class ExecutionContext;
 
-bool ConnectToPermissionService(ExecutionContext*,
+void ConnectToPermissionService(ExecutionContext*,
                                 mojom::blink::PermissionServiceRequest);
 
 mojom::blink::PermissionDescriptorPtr CreatePermissionDescriptor(

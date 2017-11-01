@@ -1792,17 +1792,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::Bind(&PermissionServiceContext::CreateService,
-                 base::Unretained(permission_service_context_.get())));
-
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(
-          &PaymentAppContextImpl::CreatePaymentManager,
-          base::Unretained(storage_partition_impl_->GetPaymentAppContext())));
-
-  AddUIThreadInterface(
-      registry.get(),
       base::Bind(&RenderProcessHostImpl::CreateOffscreenCanvasProvider,
                  base::Unretained(this)));
 
@@ -1911,12 +1900,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(
       base::Bind(&CreateReportingServiceProxy, storage_partition_impl_));
-
-  // This is to support usage of WebSockets in cases in which there is no
-  // associated RenderFrame (e.g., Shared Workers).
-  AddUIThreadInterface(registry.get(),
-                       base::Bind(&WebSocketManager::CreateWebSocket, GetID(),
-                                  MSG_ROUTING_NONE));
 
   AddUIThreadInterface(registry.get(), base::Bind(&FieldTrialRecorder::Create));
 

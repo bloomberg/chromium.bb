@@ -12,8 +12,8 @@
 #include "modules/cookie_store/CookieStore.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/InterfaceProvider.h"
 #include "services/network/public/interfaces/restricted_cookie_manager.mojom-blink.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 

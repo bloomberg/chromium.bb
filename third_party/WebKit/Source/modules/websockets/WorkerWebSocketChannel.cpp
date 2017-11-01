@@ -46,8 +46,8 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/TaskType.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -414,7 +414,7 @@ bool Bridge::Connect(std::unique_ptr<SourceLocation> location,
   // SSL interstitial decision to WebSocket connections from the worker.
   mojom::blink::WebSocketPtrInfo socket_ptr_info;
   if (!worker_global_scope_->IsDedicatedWorkerGlobalScope()) {
-    worker_thread->GetInterfaceProvider().GetInterface(
+    worker_global_scope_->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&socket_ptr_info));
   }
 

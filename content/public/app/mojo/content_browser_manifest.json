@@ -26,10 +26,8 @@
           "blink::mojom::MimeRegistry",
           "blink::mojom::NotificationService",
           "blink::mojom::OffscreenCanvasProvider",
-          "blink::mojom::PermissionService",
           "blink::mojom::ReportingServiceProxy",
           "blink::mojom::WebDatabaseHost",
-          "blink::mojom::WebSocket",
           "content::mojom::FieldTrialRecorder",
           "content::mojom::FileUtilitiesHost",
           "content::mojom::FrameSinkProvider",
@@ -49,11 +47,7 @@
           "media::mojom::VideoDecodePerfHistory",
           "memory_coordinator::mojom::MemoryCoordinatorHandle",
           "metrics::mojom::SingleSampleMetricsProvider",
-          "payments::mojom::PaymentManager",
           "resource_coordinator::mojom::ProcessCoordinationUnit",
-          "shape_detection::mojom::BarcodeDetection",
-          "shape_detection::mojom::FaceDetectionProvider",
-          "shape_detection::mojom::TextDetection",
           "ui::mojom::Gpu",
           "viz::mojom::SharedBitmapAllocationNotifier",
           "viz::mojom::CompositingModeReporter"
@@ -177,6 +171,8 @@
     "navigation:dedicated_worker": {
       "provides": {
         "renderer": [
+          "blink::mojom::PermissionService",
+          "payments::mojom::PaymentManager",
           "shape_detection::mojom::BarcodeDetection",
           "shape_detection::mojom::FaceDetectionProvider",
           "shape_detection::mojom::TextDetection"
@@ -186,6 +182,9 @@
     "navigation:service_worker": {
       "provides": {
         "renderer": [
+          "blink::mojom::PermissionService",
+          "blink::mojom::WebSocket",
+          "payments::mojom::PaymentManager",
           "shape_detection::mojom::BarcodeDetection",
           "shape_detection::mojom::FaceDetectionProvider",
           "shape_detection::mojom::TextDetection"
@@ -195,6 +194,9 @@
     "navigation:shared_worker": {
       "provides": {
         "renderer": [
+          "blink::mojom::PermissionService",
+          "blink::mojom::WebSocket",
+          "payments::mojom::PaymentManager",
           "shape_detection::mojom::BarcodeDetection",
           "shape_detection::mojom::FaceDetectionProvider",
           "shape_detection::mojom::TextDetection"
