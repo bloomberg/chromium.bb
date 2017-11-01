@@ -922,6 +922,23 @@ TEST_F(AppListViewFocusTest, HittingEnterWhenFocusOnSearchBox) {
   EXPECT_EQ(2, GetTotalOpenSearchResultCount());
 }
 
+// Tests that search box becomes focused when it is activated.
+TEST_F(AppListViewFocusTest, SetFocusOnSearchboxWhenActivated) {
+  Show();
+
+  // Set focus to the first suggestion app.
+  suggestions_container_view()->tile_views()[0]->RequestFocus();
+  EXPECT_FALSE(search_box_view()->search_box()->HasFocus());
+
+  // Activate the search box.
+  search_box_view()->SetSearchBoxActive(true);
+  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
+
+  // Deactivate the search box won't move focus away.
+  search_box_view()->SetSearchBoxActive(false);
+  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
+}
+
 // Tests that opening the app list opens in peeking mode by default.
 TEST_F(AppListViewFullscreenTest, ShowPeekingByDefault) {
   Initialize(0, false, false);

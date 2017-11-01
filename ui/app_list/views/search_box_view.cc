@@ -563,6 +563,10 @@ void SearchBoxView::SetSearchBoxActive(bool active) {
   search_box_->set_placeholder_text_color(active ? kZeroQuerySearchboxColor
                                                  : search_box_color_);
   search_box_->SetCursorEnabled(active);
+
+  if (active && is_app_list_focus_enabled_)
+    search_box_->RequestFocus();
+
   search_box_right_space_->SetVisible(!active);
 
   UpdateKeyboardVisibility();
