@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/prefs/pref_service.h"
@@ -725,9 +726,9 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Wait so that the string is copied to clipboard.
-  testing::WaitUntilConditionOrTimeout(1, ^{
-    return false;
-  });
+  // TODO(crbug.com/780064): poll for pasteboard change instead.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
+
   // Verify general pasteboard has the URL copied.
   NSString* copiedString = [UIPasteboard generalPasteboard].string;
   GREYAssert([copiedString containsString:@"www.a.fr"],
