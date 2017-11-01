@@ -803,7 +803,7 @@
   },
   "webrtcLoggingPrivate": {
     "channel": "stable",
-    "extension_types": ["extension"],
+    "extension_types": ["extension", "platform_app"],
     "whitelist": [
       // Hangouts test extension
       "80B9DC58E5210749F052F5B4DB239C50CF72AEB6",
@@ -812,7 +812,11 @@
       // Media Router dev extension
       "63ED55E43214C211F82122ED56407FF1A807F2A3",
       // Media Router release extension
-      "226CF815E39A363090A1E547D53063472B8279FA"
+      "226CF815E39A363090A1E547D53063472B8279FA",
+      "4F25792AF1AA7483936DE29C07806F203C7170A0",  // http://crbug.com/777967
+      "BD8781D757D830FC2E85470A1B6E8A718B7EE0D9",  // http://crbug.com/777967
+      "4AC2B6C63C6480D150DFDA13E4A5956EB1D0DDBB",  // http://crbug.com/777967
+      "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/777967
     ]
   },
   "webstorePrivate": {
