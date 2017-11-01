@@ -862,21 +862,28 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
                                    const ui::KeyEvent& key_event) {
   if (is_app_list_focus_enabled_) {
     if (key_event.type() == ui::ET_KEY_PRESSED &&
-        key_event.key_code() == ui::VKEY_RETURN &&
-        !IsSearchBoxTrimmedQueryEmpty()) {
-      // Hitting Enter when focus is on search box opens the first result.
-      ui::KeyEvent event(key_event);
-      views::View* first_result_view =
-          static_cast<ContentsView*>(contents_view_)
-              ->search_results_page_view()
-              ->first_result_view();
-      if (first_result_view)
-        first_result_view->OnKeyEvent(&event);
+        key_event.key_code() == ui::VKEY_RETURN) {
+      if (!IsSearchBoxTrimmedQueryEmpty()) {
+        // Hitting Enter when focus is on search box opens the first result.
+        ui::KeyEvent event(key_event);
+        views::View* first_result_view =
+            static_cast<ContentsView*>(contents_view_)
+                ->search_results_page_view()
+                ->first_result_view();
+        if (first_result_view)
+          first_result_view->OnKeyEvent(&event);
+        return true;
+      }
+
+      if (!is_search_box_active()) {
+        SetSearchBoxActive(true);
+        return true;
+      }
     }
-    // TODO(weidongg/766807) Remove this function when the flag is enabled by
-    // default.
     return false;
   }
+  // TODO(weidongg/766807) Remove everything below when the flag is enabled by
+  // default.
   if (key_event.type() == ui::ET_KEY_PRESSED) {
     if (key_event.key_code() == ui::VKEY_TAB &&
         focused_view_ != FOCUS_CONTENTS_VIEW &&
