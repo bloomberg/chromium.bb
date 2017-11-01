@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/slow_download_http_response.h"
+#include "content/public/test/slow_download_http_response.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/download/test_download_http_response.h"
+#include "content/public/test/test_download_http_response.h"
 
 #include <inttypes.h>
 

@@ -103,6 +103,8 @@
 #include "content/public/common/quarantine.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/slow_download_http_response.h"
+#include "content/public/test/test_download_http_response.h"
 #include "content/public/test/test_download_request_handler.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -709,13 +711,22 @@ class DownloadTest : public InProcessBrowserTest {
                    SizeTestType type,
                    const std::string& partial_indication,
                    const std::string& total_indication) {
+    embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+    embedded_test_server()->RegisterRequestHandler(base::Bind(
+        &content::SlowDownloadHttpResponse::HandleSlowDownloadRequest));
+    EXPECT_TRUE(embedded_test_server()->Start());
+
     base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(type == SIZE_TEST_TYPE_UNKNOWN || type == SIZE_TEST_TYPE_KNOWN);
     if (type != SIZE_TEST_TYPE_KNOWN && type != SIZE_TEST_TYPE_UNKNOWN)
       return false;
-    GURL url(type == SIZE_TEST_TYPE_KNOWN ?
-             net::URLRequestSlowDownloadJob::kKnownSizeUrl :
-             net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
+    GURL url(type == SIZE_TEST_TYPE_KNOWN
+                 ? embedded_test_server()->GetURL(
+                       content::SlowDownloadHttpResponse::kKnownSizeUrl)
+                 : embedded_test_server()->GetURL(
+                       content::SlowDownloadHttpResponse::kUnknownSizeUrl));
+    GURL finish_url = embedded_test_server()->GetURL(
+        content::SlowDownloadHttpResponse::kFinishDownloadUrl);
 
     // TODO(ahendrickson) -- |expected_title_in_progress| and
     // |expected_title_finished| need to be checked.
@@ -744,7 +755,7 @@ class DownloadTest : public InProcessBrowserTest {
 
     // Allow the request to finish.  We do this by loading a second URL in a
     // separate tab.
-    GURL finish_url(net::URLRequestSlowDownloadJob::kFinishDownloadUrl);
+
     ui_test_utils::NavigateToURLWithDisposition(
         browser, finish_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
@@ -767,8 +778,8 @@ class DownloadTest : public InProcessBrowserTest {
       return false;
 
     // Check the file contents.
-    size_t file_size = net::URLRequestSlowDownloadJob::kFirstDownloadSize +
-                       net::URLRequestSlowDownloadJob::kSecondDownloadSize;
+    size_t file_size = content::SlowDownloadHttpResponse::kFirstDownloadSize +
+                       content::SlowDownloadHttpResponse::kSecondDownloadSize;
     std::string expected_contents(file_size, '*');
     EXPECT_TRUE(VerifyFile(download_path, expected_contents, file_size));
 
@@ -1029,8 +1040,7 @@ class DownloadTest : public InProcessBrowserTest {
   }
 
   // This method:
-  // * Starts a mock download by navigating browser() to a URLRequestMockHTTPJob
-  //   mock URL.
+  // * Starts a mock download by navigating to embedded test server URL.
   // * Injects |error| on the first write using |error_injector|.
   // * Waits for the download to be interrupted.
   // * Clears the errors on |error_injector|.
@@ -1048,7 +1058,13 @@ class DownloadTest : public InProcessBrowserTest {
         new DownloadTestObserverResumable(DownloadManagerForBrowser(browser()),
                                           1));
 
-    GURL url = URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path);
+    if (!embedded_test_server()->Started()) {
+      embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+      EXPECT_TRUE(embedded_test_server()->Start());
+    }
+
+    GURL url =
+        embedded_test_server()->GetURL("/" + std::string(kDownloadTest1Path));
     ui_test_utils::NavigateToURL(browser(), url);
     observer->WaitForFinished();
 
