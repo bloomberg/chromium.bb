@@ -28,7 +28,6 @@ class PLATFORM_EXPORT WebTaskRunnerImpl : public WebTaskRunner {
 
   // WebTaskRunner implementation:
   bool RunsTasksInCurrentSequence() override;
-  double VirtualTimeSeconds() const override;
   double MonotonicallyIncreasingVirtualTimeSeconds() const override;
   scoped_refptr<base::SingleThreadTaskRunner> ToSingleThreadTaskRunner()
       override;

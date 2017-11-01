@@ -88,10 +88,6 @@ bool FakeWebTaskRunner::RunsTasksInCurrentSequence() {
   return true;
 }
 
-double FakeWebTaskRunner::VirtualTimeSeconds() const {
-  return data_->time_;
-}
-
 double FakeWebTaskRunner::MonotonicallyIncreasingVirtualTimeSeconds() const {
   return data_->time_;
 }

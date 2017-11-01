@@ -26,10 +26,6 @@ bool WebTaskRunnerImpl::RunsTasksInCurrentSequence() {
   return task_queue_->RunsTasksInCurrentSequence();
 }
 
-double WebTaskRunnerImpl::VirtualTimeSeconds() const {
-  return (Now() - base::TimeTicks::UnixEpoch()).InSecondsF();
-}
-
 double WebTaskRunnerImpl::MonotonicallyIncreasingVirtualTimeSeconds() const {
   return Now().ToInternalValue() /
          static_cast<double>(base::Time::kMicrosecondsPerSecond);
