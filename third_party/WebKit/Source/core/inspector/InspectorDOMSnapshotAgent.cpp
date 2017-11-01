@@ -323,9 +323,9 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(Node* node, int node_index) {
     LayoutText* layout_text = ToLayoutText(layout_object);
     layout_tree_node->setLayoutText(layout_text->GetText());
     if (layout_text->HasTextBoxes()) {
-      std::unique_ptr<protocol::Array<protocol::CSS::InlineTextBox>>
+      std::unique_ptr<protocol::Array<protocol::DOMSnapshot::InlineTextBox>>
           inline_text_nodes =
-              protocol::Array<protocol::CSS::InlineTextBox>::create();
+              protocol::Array<protocol::DOMSnapshot::InlineTextBox>::create();
       for (const InlineTextBox* text_box = layout_text->FirstTextBox();
            text_box; text_box = text_box->NextTextBox()) {
         FloatRect local_coords_text_box_rect(text_box->FrameRect());
@@ -333,7 +333,7 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(Node* node, int node_index) {
             layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
                 .BoundingBox();
         inline_text_nodes->addItem(
-            protocol::CSS::InlineTextBox::create()
+            protocol::DOMSnapshot::InlineTextBox::create()
                 .setStartCharacterIndex(text_box->Start())
                 .setNumCharacters(text_box->Len())
                 .setBoundingBox(
