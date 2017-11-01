@@ -132,8 +132,6 @@ test("device_unittests") {
       "//device/hid",
       "//device/hid:mocks",
       "//device/serial",
-      "//device/u2f",
-      "//device/u2f:mocks",
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/interfaces",
     ]
@@ -220,6 +218,11 @@ test("device_unittests") {
     ]
 
     deps += [ "//dbus" ]
+  }
+
+  # BLE discovery: works on Linux.
+  if (is_linux) {
+    sources += [ "u2f/u2f_ble_discovery_unittest.cc" ]
   }
 
   if (is_mac) {

@@ -115,7 +115,7 @@ void BluetoothTestBlueZ::InitWithFakeAdapter() {
 
 BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
     int device_ordinal) {
-  if (device_ordinal > 6 || device_ordinal < 1)
+  if (device_ordinal > 7 || device_ordinal < 1)
     return nullptr;
 
   base::Optional<std::string> device_name = std::string(kTestDeviceName);
@@ -148,6 +148,11 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
     case 6:
       device_address = kTestDeviceAddress2;
       device_type = BLUETOOTH_TRANSPORT_DUAL;
+      break;
+    case 7:
+      device_name.emplace(kTestDeviceNameU2f);
+      service_uuids.push_back(kTestUUIDU2f);
+      service_data[kTestUUIDU2fControlPointLength] = {0x00, 0x14};
       break;
   }
 
