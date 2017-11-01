@@ -470,15 +470,8 @@ class TestImporter(object):
             description += 'Build: %s\n\n' % build_link
 
         description += (
-            'Note to sheriffs: This CL imports external tests and adds\n'
-            'expectations for those tests; if this CL is large and causes\n'
-            'a few new failures, please fix the failures by adding new\n'
-            'lines to TestExpectations rather than reverting. See:\n'
-            'https://chromium.googlesource.com'
-            '/chromium/src/+/master/docs/testing/web_platform_tests.md\n\n')
-
-        if directory_owners:
-            description += self._format_directory_owners(directory_owners) + '\n\n'
+            'Note to sheriffs: This is an automatically-generated CL. Please\n'
+            'contact ecosystem-infra@chromium.org in case of problems.\n\n')
 
         # Move any No-Export tag to the end of the description.
         description = description.replace('No-Export: true', '')
