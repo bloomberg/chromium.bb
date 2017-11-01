@@ -466,7 +466,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
     def test_multiple_builders_and_platform_specifiers(self):
         """Tests correct operation with platform specifiers."""
         test_expectations_before = (
-            """# Keep since it's failing on Mac results.
+            """# Keep since it's failing in the Mac10.10 results.
             Bug(test) [ Mac ] test/a.html [ Failure Pass ]
             # Keep since it's failing on the Windows builder.
             Bug(test) [ Linux Win ] test/b.html [ Failure Pass ]
@@ -476,10 +476,6 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             Bug(test) [ Mac ] test/d.html [ Failure Pass ]""")
 
         self._define_builders({
-            'WebKit Win7': {
-                'port_name': 'win-win7',
-                'specifiers': ['Win7', 'Release']
-            },
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
                 'specifiers': ['Trusty', 'Release']
@@ -488,11 +484,22 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'port_name': 'mac-mac10.10',
                 'specifiers': ['Mac10.10', 'Release']
             },
+            'WebKit Mac10.11': {
+                'port_name': 'mac-mac10.11',
+                'specifiers': ['Mac10.11', 'Release']
+            },
+            'WebKit Win7': {
+                'port_name': 'win-win7',
+                'specifiers': ['Win7', 'Release']
+            },
         })
         self._port.all_build_types = ('release',)
-        self._port.all_systems = (('mac10.10', 'x86'),
-                                  ('win7', 'x86'),
-                                  ('trusty', 'x86_64'))
+        self._port.all_systems = (
+            ('mac10.10', 'x86'),
+            ('mac10.11', 'x86'),
+            ('trusty', 'x86_64'),
+            ('win7', 'x86'),
+        )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
@@ -508,6 +515,12 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                 'test/c.html': ['PASS', 'IMAGE', 'PASS'],
                 'test/d.html': ['PASS', 'PASS', 'PASS'],
             },
+            'WebKit Mac10.11': {
+                'test/a.html': ['PASS', 'PASS', 'PASS'],
+                'test/b.html': ['PASS', 'PASS', 'PASS'],
+                'test/c.html': ['PASS', 'PASS', 'PASS'],
+                'test/d.html': ['PASS', 'PASS', 'PASS'],
+            },
             'WebKit Win7': {
                 'test/a.html': ['PASS', 'PASS', 'PASS'],
                 'test/b.html': ['IMAGE', 'PASS', 'PASS'],
@@ -518,7 +531,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         updated_expectations = (
             self._flake_remover.get_updated_test_expectations())
         self._assert_expectations_match(updated_expectations, (
-            """# Keep since it's failing on Mac results.
+            """# Keep since it's failing in the Mac10.10 results.
             Bug(test) [ Mac ] test/a.html [ Failure Pass ]
             # Keep since it's failing on the Windows builder.
             Bug(test) [ Linux Win ] test/b.html [ Failure Pass ]"""))
