@@ -185,10 +185,6 @@ class FindConfigsForBoardTest(cros_test_lib.TestCase):
     self.assertTrue(boards)
 
     for b in boards:
-      # TODO(akeshet): Figure out why we have both panther_embedded-minimal
-      # release and panther_embedded-release, and eliminate one of them.
-      if b == 'panther_embedded':
-        continue
       external, internal = self.config.FindFullConfigsForBoard(b)
       AtMostOneConfig(b, 'external', external)
       AtMostOneConfig(b, 'internal', internal)
@@ -354,11 +350,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
   def testConfigsHaveValidDisplayLabel(self):
     """Configs must have names set."""
     for build_name, config in self.site_config.iteritems():
-      # TODO: Remove 'if' after display_label is fully populated.
-      if config.display_label:
-        self.assertIn(config.display_label, config_lib.ALL_DISPLAY_LABEL,
-                      'Invalid display_label "%s" on "%s"' %
-                      (config.display_label, build_name))
+      self.assertIn(config.display_label, config_lib.ALL_DISPLAY_LABEL,
+                    'Invalid display_label "%s" on "%s"' %
+                    (config.display_label, build_name))
 
   def testMasterSlaveConfigsExist(self):
     """Configs listing slave configs, must list valid configs."""

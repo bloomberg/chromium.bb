@@ -385,8 +385,7 @@ class TryjobTestDisplayLabel(TryjobTest):
     return cros_tryjob.DisplayLabel(site_config, options, config_name)
 
   def testMasterTryjob(self):
-    # TODO: Update to lumpy-paladin-tryjob, when it exists.
-    label = self.FindLabel(['lumpy-paladin'])
+    label = self.FindLabel(['lumpy-paladin-tryjob'])
     self.assertEqual(label, 'tryjob')
 
   def testMasterPreCQ(self):
@@ -398,9 +397,8 @@ class TryjobTestDisplayLabel(TryjobTest):
     self.assertEqual(label, 'tryjob')
 
   def testMasterKnownProduction(self):
-    # TODO: Expect 'cq' when display_labels are fully populated.
     label = self.FindLabel(['--production', 'lumpy-paladin'])
-    self.assertEqual(label, 'production_tryjob')
+    self.assertEqual(label, 'cq')
 
   def testMasterUnknownProduction(self):
     label = self.FindLabel(['--production', 'bogus-config'])

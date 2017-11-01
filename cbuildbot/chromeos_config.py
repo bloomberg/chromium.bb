@@ -1058,7 +1058,7 @@ def GeneralTemplates(site_config, ge_build_config):
       # so use settings to build from scratch, and archive the results.
       usepkg_build_packages=False,
       chrome_sdk=True,
-
+      display_label=config_lib.DISPLAY_LABEL_FULL,
       build_type=constants.BUILD_FROM_SOURCE_TYPE,
       archive_build_debug=True,
       images=['base', 'recovery', 'test', 'factory_install'],
@@ -1077,6 +1077,7 @@ def GeneralTemplates(site_config, ge_build_config):
           file_bugs=False),
       chroot_replace=False,
       important=True,
+      display_label=config_lib.DISPLAY_LABEL_CQ,
       build_type=constants.PALADIN_TYPE,
       overlays=constants.PUBLIC_OVERLAYS,
       prebuilts=constants.PUBLIC,
@@ -1099,6 +1100,7 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'incremental',
       site_config.templates.default_hw_tests_override,
+      display_label=config_lib.DISPLAY_LABEL_INCREMENATAL,
       build_type=constants.INCREMENTAL_TYPE,
       chroot_replace=False,
       uprev=False,
@@ -1269,6 +1271,7 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'telemetry',
       site_config.templates.default_hw_tests_override,
+      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       build_type=constants.INCREMENTAL_TYPE,
       uprev=False,
       overlays=constants.PUBLIC_OVERLAYS,
@@ -1303,6 +1306,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'chromium_pfq',
       site_config.templates.internal,
       site_config.templates.external_chromium_pfq,
+      display_label=config_lib.DISPLAY_LABEL_CHROME_PFQ,
       description='Preflight Chromium Uprev & Build (internal)',
       overlays=constants.BOTH_OVERLAYS,
       prebuilts=constants.PUBLIC,
@@ -1332,6 +1336,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'chromium_pfq_informational',
       site_config.templates.external_chromium_pfq,
       site_config.templates.chrome_try,
+      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       chrome_sdk=False,
       unittests=False,
       description='Informational Chromium Uprev & Build (public)',
@@ -1357,6 +1362,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'tot_asan_informational',
       site_config.templates.chromium_pfq_informational,
       site_config.templates.asan,
+      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       unittests=True,
       description='Build TOT Chrome with Address Sanitizer (Clang)',
   )
@@ -1437,6 +1443,7 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.internal,
       site_config.templates.no_vmtest_builder,
       site_config.templates.default_hw_tests_override,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.INCREMENTAL_TYPE,
       description='WiFi AP images used in testing',
       profile='testbed-ap',
@@ -1447,6 +1454,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'unittest_stress',
       site_config.templates.no_vmtest_builder,
       site_config.templates.no_hwtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_TRYJOB,
       build_type=constants.TRYJOB_TYPE,
       description='Run Unittests repeatedly to look for flake.',
 
@@ -1463,6 +1471,7 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.official,
       site_config.templates.internal,
       site_config.templates.default_hw_tests_override,
+      display_label=config_lib.DISPLAY_LABEL_RELEASE,
       build_type=constants.CANARY_TYPE,
       suite_scheduling=True,
       build_timeout=12 * 60 * 60 if is_release_branch else (7 * 60 + 50) * 60,
@@ -1582,6 +1591,7 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.release,
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_FACTORY,
       afdo_use=False,
       chrome_sdk=False,
       chrome_sdk_build_chrome=False,
@@ -1602,6 +1612,7 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'firmware_base',
       site_config.templates.no_vmtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_FIRMWARE,
       images=[],
       hwqual=False,
       factory_toolkit=False,
@@ -1652,6 +1663,7 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.no_vmtest_builder,
       site_config.templates.no_unittest_builder,
       site_config.templates.no_hwtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_TRYJOB,
       build_type=constants.PAYLOADS_TYPE,
       builder_class_name='release_builders.GeneratePayloadsBuilder',
       description='Regenerate release payloads.',
@@ -1764,6 +1776,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal,
       site_config.templates.official_chrome,
       site_config.templates.no_vmtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       build_type=constants.TOOLCHAIN_TYPE,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       images=['base', 'test', 'recovery'],
@@ -1970,6 +1983,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       site_config.templates.no_hwtest_builder,
       boards=[],
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.PRE_CQ_LAUNCHER_TYPE,
       active_waterfall=waterfall.WATERFALL_INTERNAL,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
@@ -2130,6 +2144,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'android_pfq',
       site_config.templates.generic_android_pfq,
+      display_label=config_lib.DISPLAY_LABEL_MNC_ANDROID_PFQ,
       android_package='android-container',
       android_import_branch=constants.ANDROID_MNC_BUILD_BRANCH,
   )
@@ -2138,6 +2153,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'nyc_android_pfq',
       site_config.templates.generic_android_pfq,
+      display_label=config_lib.DISPLAY_LABEL_NYC_ANDROID_PFQ,
       android_package='android-container-nyc',
       android_import_branch=constants.ANDROID_NYC_BUILD_BRANCH,
       android_gts_build_branch='git_nyc-mr2-dev',
@@ -3657,6 +3673,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
       important=True,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
       description=('Updates alerts displayed on SoM website. go/som/chromeos'),
       build_type=constants.GENERIC_TYPE,
       boards=[],
@@ -3671,6 +3688,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
       important=True,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
       description=('Build Config Updater reads updated GE config files from'
                    ' GS, and commits them to chromite after running tests.'),
       build_type=constants.GENERIC_TYPE,
@@ -3687,6 +3705,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal_paladin,
       site_config.templates.no_vmtest_builder,
       site_config.templates.no_hwtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
       boards=[],
       # Disable postsync_patch to prevent conflicting patches from being applied
       # - e.g., patches from 'master' branch being applied to a branch.
@@ -3705,6 +3724,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       'sync-test-cbuildbot',
       site_config.templates.no_hwtest_builder,
       boards=[],
+      display_label=config_lib.DISPLAY_LABEL_TRYJOB,
       build_type=constants.INCREMENTAL_TYPE,
       builder_class_name='test_builders.ManifestVersionedSyncBuilder',
       chroot_replace=True,
@@ -3716,6 +3736,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       'betty-vmtest-informational',
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       description='VMTest Informational Builder for running deqp on betty.',
       build_type=constants.GENERIC_TYPE,
       boards=['betty'],
@@ -3756,6 +3777,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'samus-chrome-pre-flight-branch',
       site_config.templates.pre_flight_branch,
+      display_label=config_lib.DISPLAY_LABEL_CHROME_PFQ,
       boards=['samus'],
       afdo_generate=True,
       afdo_update_ebuild=True,
@@ -3771,6 +3793,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'veyron_tiger-android-mnc-pre-flight-branch',
       site_config.templates.pre_flight_branch,
+      display_label=config_lib.DISPLAY_LABEL_MNC_ANDROID_PFQ,
       boards=['veyron_tiger'],
       sync_chrome=True,
       android_rev=constants.ANDROID_REV_LATEST,
@@ -3782,6 +3805,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'reef-android-nyc-pre-flight-branch',
       site_config.templates.pre_flight_branch,
+      display_label=config_lib.DISPLAY_LABEL_NYC_ANDROID_PFQ,
       boards=['reef'],
       sync_chrome=True,
       android_rev=constants.ANDROID_REV_LATEST,
@@ -3796,6 +3820,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_unittest_builder,
       site_config.templates.no_vmtest_builder,
       boards=[],
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.GENERIC_TYPE,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       builder_class_name='infra_builders.InfraGoBuilder',
