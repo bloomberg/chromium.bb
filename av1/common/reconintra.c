@@ -1472,8 +1472,12 @@ static void highbd_filter_intra_predictors(FILTER_INTRA_MODE mode,
 
 #if CONFIG_INTRA_EDGE
 static int is_smooth(MB_MODE_INFO *mbmi) {
+#if CONFIG_SMOOTH_HV
   return (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_V_PRED ||
           mbmi->mode == SMOOTH_H_PRED);
+#else
+  return mbmi->mode == SMOOTH_PRED;
+#endif
 }
 
 static int get_filt_type(const MACROBLOCKD *xd) {
@@ -1589,7 +1593,7 @@ void av1_filter_intra_edge_c(uint8_t *p, int sz, int strength) {
 }
 
 #if CONFIG_EXT_INTRA_MOD
-void av1_filter_intra_edge_corner(uint8_t *p_above, uint8_t *p_left) {
+static void av1_filter_intra_edge_corner(uint8_t *p_above, uint8_t *p_left) {
   const int kernel[3] = { 5, 6, 5 };
 
   int s = (p_left[0] * kernel[0]) + (p_above[-1] * kernel[1]) +
@@ -1625,7 +1629,8 @@ void av1_filter_intra_edge_high_c(uint16_t *p, int sz, int strength) {
 }
 
 #if CONFIG_EXT_INTRA_MOD
-void av1_filter_intra_edge_corner_high(uint16_t *p_above, uint16_t *p_left) {
+static void av1_filter_intra_edge_corner_high(uint16_t *p_above,
+                                              uint16_t *p_left) {
   const int kernel[3] = { 5, 6, 5 };
 
   int s = (p_left[0] * kernel[0]) + (p_above[-1] * kernel[1]) +

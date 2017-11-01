@@ -527,6 +527,7 @@ post_process_cmdline() {
       soft_enable frame_marker
       soft_enable kf_ctx
       soft_enable striped_loop_restoration
+      soft_enable ext_intra_mod
     fi
 
     # Enable low-bitdepth pixel pipeline by default

@@ -5680,7 +5680,7 @@ static const aom_cdf_prob
 #endif  // CONFIG_LPF_SB
 
 #if CONFIG_EXT_INTRA_MOD
-const aom_cdf_prob default_angle_delta_cdf[DIRECTIONAL_MODES][CDF_SIZE(
+static const aom_cdf_prob default_angle_delta_cdf[DIRECTIONAL_MODES][CDF_SIZE(
     2 * MAX_ANGLE_DELTA + 1)] = {
   { AOM_ICDF(2340), AOM_ICDF(5327), AOM_ICDF(7611), AOM_ICDF(23102),
     AOM_ICDF(27196), AOM_ICDF(30546), AOM_ICDF(32768), 0 },
