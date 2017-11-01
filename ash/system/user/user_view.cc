@@ -45,6 +45,9 @@ namespace tray {
 
 namespace {
 
+// Vertical mergin for the top/bottom edges of the view.
+constexpr size_t kVerticalMargin = 2;
+
 // Switch to a user with the given |user_index|.
 void SwitchUser(UserIndex user_index) {
   // Do not switch users when the log screen is presented.
@@ -204,9 +207,9 @@ class ActiveUserBorder : public views::Border {
   }
 
   gfx::Insets GetInsets() const override {
-    return gfx::Insets(kMenuSeparatorVerticalPadding,
+    return gfx::Insets(kVerticalMargin + kMenuSeparatorVerticalPadding,
                        kMenuExtraMarginFromLeftEdge,
-                       kMenuSeparatorVerticalPadding * 2, 0);
+                       kVerticalMargin + kMenuSeparatorVerticalPadding, 0);
   }
 
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
