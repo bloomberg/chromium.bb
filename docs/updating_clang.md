@@ -36,7 +36,7 @@
       -b ios-device && \
     git cl try -m tryserver.chromium.linux -b linux_chromium_chromeos_dbg_ng \
       -b linux_chromium_chromeos_asan_rel_ng -b linux_chromium_msan_rel_ng \
-      -b fuchsia -b linux_chromium_cfi_rel_ng &&
+      -b linux_chromium_cfi_rel_ng &&
         git cl try -m tryserver.blink -b linux_trusty_blink_rel
     ```
 
