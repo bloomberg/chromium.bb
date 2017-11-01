@@ -98,12 +98,14 @@ class CreateVarThreadDelegate : public base::PlatformThread::Delegate {
   // |strings_in|, |vars|, and |strings_out| are arrays, and size is their size.
   // For each |strings_in[i]|, we will set |vars[i]| using that value. Then we
   // read the var back out to |strings_out[i]|.
-  CreateVarThreadDelegate(PP_Module pp_module, const std::string* strings_in,
-                          PP_Var* vars_out, std::string* strings_out,
+  CreateVarThreadDelegate(const std::string* strings_in,
+                          PP_Var* vars_out,
+                          std::string* strings_out,
                           size_t size)
-      : pp_module_(pp_module), strings_in_(strings_in), vars_out_(vars_out),
-        strings_out_(strings_out), size_(size) {
-  }
+      : strings_in_(strings_in),
+        vars_out_(vars_out),
+        strings_out_(strings_out),
+        size_(size) {}
   virtual ~CreateVarThreadDelegate() {}
   virtual void ThreadMain() {
     const PPB_Var* ppb_var = ppapi::PPB_Var_Shared::GetVarInterface1_2();
@@ -115,7 +117,6 @@ class CreateVarThreadDelegate : public base::PlatformThread::Delegate {
     }
   }
  private:
-  PP_Module pp_module_;
   const std::string* strings_in_;
   PP_Var* vars_out_;
   std::string* strings_out_;
@@ -181,13 +182,10 @@ TEST_F(PPB_VarTest, Threads) {
   // kNumThreads).
   for (size_t slice_start= 0; slice_start < kNumStrings;
        slice_start += strings_per_thread) {
-    create_var_delegates.push_back(
-        CreateVarThreadDelegate(pp_module(),
-                                &test_strings_[slice_start],
-                                &vars_[slice_start],
-                                &strings_out[slice_start],
-                                std::min(strings_per_thread,
-                                         kNumStrings - slice_start)));
+    create_var_delegates.push_back(CreateVarThreadDelegate(
+        &test_strings_[slice_start], &vars_[slice_start],
+        &strings_out[slice_start],
+        std::min(strings_per_thread, kNumStrings - slice_start)));
   }
   // Now run then join all the threads.
   for (size_t i = 0; i < kNumThreads; ++i)
