@@ -870,19 +870,15 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
   EXPECT_LE(1400, matches_[0].relevance);
   EXPECT_LT(matches_[0].relevance, 1410);
 
-  const UrlAndLegalDefault expected3[] = {
-    { "http://intra/one", true },
-    { "http://intra/three", true },
-    { "http://intra/two", true }
-  };
+  const UrlAndLegalDefault expected3[] = {{"http://intra/three", true},
+                                          {"http://intra/one", true},
+                                          {"http://intra/two", true}};
   RunTest(ASCIIToUTF16("intra"), std::string(), false, expected3,
           arraysize(expected3));
 
-  const UrlAndLegalDefault expected4[] = {
-    { "http://intra/one", true },
-    { "http://intra/three", true },
-    { "http://intra/two", true }
-  };
+  const UrlAndLegalDefault expected4[] = {{"http://intra/three", true},
+                                          {"http://intra/one", true},
+                                          {"http://intra/two", true}};
   RunTest(ASCIIToUTF16("intra/"), std::string(), false, expected4,
           arraysize(expected4));
 
@@ -1263,9 +1259,9 @@ TEST_F(HistoryURLProviderTest, MatchURLFormatting) {
   ExpectFormattedFullMatch("WWW.hij", L"www.hij.com/\x2026\x0000", 0, 7);
 
   // Verify that matching in the subdomain-only preserves the subdomain.
-  ExpectFormattedFullMatch("ww", L"www.abc.def.com/\x2026\x0000", 0, 2);
-  ExpectFormattedFullMatch("https://ww",
-                           L"https://www.abc.def.com/\x2026\x0000", 0, 10);
+  ExpectFormattedFullMatch("ww", L"www.hij.com/\x2026\x0000", 0, 2);
+  ExpectFormattedFullMatch("https://ww", L"https://www.hij.com/\x2026\x0000", 0,
+                           10);
 
   // Test individual feature flags as a sanity check.
   feature_list.reset(new base::test::ScopedFeatureList);
