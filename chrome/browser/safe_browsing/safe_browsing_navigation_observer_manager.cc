@@ -175,7 +175,7 @@ NavigationEvent* NavigationEventList::FindRetargetingNavigationEvent(
 
 void NavigationEventList::RecordNavigationEvent(
     std::unique_ptr<NavigationEvent> nav_event) {
-  // Skip page refresh.
+  // Skip page refresh and in-page navigation.
   if (nav_event->source_url == nav_event->GetDestinationUrl() &&
       nav_event->source_tab_id == nav_event->target_tab_id)
     return;
@@ -206,8 +206,8 @@ bool SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
 }
 
 // static
-GURL SafeBrowsingNavigationObserverManager::ClearEmptyRef(const GURL& url) {
-  if (url.has_ref() && url.ref().empty()) {
+GURL SafeBrowsingNavigationObserverManager::ClearURLRef(const GURL& url) {
+  if (url.has_ref()) {
     url::Replacements<char> replacements;
     replacements.ClearRef();
     return url.ReplaceComponents(replacements);
@@ -341,7 +341,7 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByEventURL(
     return INVALID_URL;
 
   NavigationEvent* nav_event = navigation_event_list_.FindNavigationEvent(
-      event_url, GURL(), event_tab_id);
+      ClearURLRef(event_url), GURL(), event_tab_id);
   if (!nav_event) {
     // We cannot find a single navigation event related to this event.
     return NAVIGATION_EVENT_NOT_FOUND;
@@ -364,12 +364,13 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByWebContents(
     content::WebContents* web_contents,
     int user_gesture_count_limit,
     ReferrerChain* out_referrer_chain) {
-  if (!web_contents || !web_contents->GetLastCommittedURL().is_valid())
+  GURL last_committed_url = web_contents->GetLastCommittedURL();
+  if (!web_contents || !last_committed_url.is_valid())
     return INVALID_URL;
   bool has_user_gesture = HasUserGesture(web_contents);
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   return IdentifyReferrerChainByHostingPage(
-      web_contents->GetLastCommittedURL(), GURL(), tab_id, has_user_gesture,
+      ClearURLRef(last_committed_url), GURL(), tab_id, has_user_gesture,
       user_gesture_count_limit, out_referrer_chain);
 }
 
@@ -385,7 +386,8 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByHostingPage(
     return INVALID_URL;
 
   NavigationEvent* nav_event = navigation_event_list_.FindNavigationEvent(
-      initiating_frame_url, initiating_main_frame_url, tab_id);
+      ClearURLRef(initiating_frame_url), ClearURLRef(initiating_main_frame_url),
+      tab_id);
   if (!nav_event) {
     // We cannot find a single navigation event related to this hosting page.
     return NAVIGATION_EVENT_NOT_FOUND;
@@ -434,18 +436,17 @@ void SafeBrowsingNavigationObserverManager::RecordNewWebContents(
   // Remove the "#" at the end of URL, since it does not point to any actual
   // page fragment ID.
   GURL cleaned_target_url =
-      SafeBrowsingNavigationObserverManager::ClearEmptyRef(target_url);
+      SafeBrowsingNavigationObserverManager::ClearURLRef(target_url);
 
   std::unique_ptr<NavigationEvent> nav_event =
       base::MakeUnique<NavigationEvent>();
   if (rfh) {
-    nav_event->source_url =
-        SafeBrowsingNavigationObserverManager::ClearEmptyRef(
-            rfh->GetLastCommittedURL());
+    nav_event->source_url = SafeBrowsingNavigationObserverManager::ClearURLRef(
+        rfh->GetLastCommittedURL());
   }
   nav_event->source_tab_id = SessionTabHelper::IdForTab(source_web_contents);
   nav_event->source_main_frame_url =
-      SafeBrowsingNavigationObserverManager::ClearEmptyRef(
+      SafeBrowsingNavigationObserverManager::ClearURLRef(
           source_web_contents->GetLastCommittedURL());
   nav_event->original_request_url = cleaned_target_url;
   nav_event->target_tab_id = SessionTabHelper::IdForTab(target_web_contents);

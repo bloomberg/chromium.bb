@@ -111,11 +111,12 @@ class SafeBrowsingNavigationObserverManager
   // kUserGestureTTLInSecond.
   static bool IsUserGestureExpired(const base::Time& timestamp);
 
-  // Helper function to strip empty ref fragment from a URL. Many pages
-  // end up with a "#" at the end of their URLs due to navigation triggered by
+  // Helper function to strip ref fragment from a URL. Many pages end up with a
+  // fragment (e.g. http://bar.com/index.html#foo) at the end due to in-page
+  // navigation or a single "#" at the end due to navigation triggered by
   // href="#" and javascript onclick function. We don't want to have separate
   // entries for these cases in the maps.
-  static GURL ClearEmptyRef(const GURL& url);
+  static GURL ClearURLRef(const GURL& url);
 
   // Checks if we should enable observing navigations for safe browsing purpose.
   // Return true if the safe browsing safe browsing service is enabled and
