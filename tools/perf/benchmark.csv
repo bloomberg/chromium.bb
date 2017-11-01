@@ -31,7 +31,6 @@ load_library_perf_tests,,
 loading.desktop,"kouhei@chormium.org, ksakamoto@chromium.org",
 loading.mobile,"kouhei@chromium.org, ksakamoto@chromium.org",
 media.desktop,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
-media.media_cns_cases,"crouleau@chromium.org, videostack-eng@google.com",Internals>Media
 media.mobile,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
 media.mse_cases,"crouleau@chromium.org, videostack-eng@google.com",Internals>Media>Source
 media_perftests,crouleau@chromium.org,

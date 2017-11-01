@@ -3,8 +3,11 @@
 # found in the LICENSE file.
 
 from telemetry.page import page as page_module
+from telemetry.page import traffic_setting as traffic_setting_module
 from telemetry import story
 
+# A complete list of page tags to check. This prevents misspellings and provides
+# documentation of scenarios for code readers.
 _PAGE_TAGS_LIST = [
     # Audio codecs.
     'pcm',
@@ -29,10 +32,26 @@ _PAGE_TAGS_LIST = [
     'background',
     # Add javascript load.
     'busyjs',
+    # Constrained network settings.
+    'cns',
     # VideoStack API.
     'src',
     'mse'
 ]
+
+# A list of traffic setting names to append to page names when used.
+# Traffic settings is a way to constrain the network to match real-world
+# scenarios.
+_TRAFFIC_SETTING_NAMES = {
+    traffic_setting_module.GPRS: 'GPRS',
+    traffic_setting_module.REGULAR_2G: 'Regular-2G',
+    traffic_setting_module.GOOD_2G: 'Good-2G',
+    traffic_setting_module.REGULAR_3G: 'Regular-3G',
+    traffic_setting_module.GOOD_3G: 'Good-3G',
+    traffic_setting_module.REGULAR_4G: 'Regular-4G',
+    traffic_setting_module.DSL: 'DSL',
+    traffic_setting_module.WIFI: 'WiFi',
+}
 
 #
 # The following section contains base classes for pages.
@@ -40,25 +59,33 @@ _PAGE_TAGS_LIST = [
 
 class MediaPage(page_module.Page):
 
-  def __init__(self, url, page_set, tags, extra_browser_args=None):
+  def __init__(self, url, page_set, tags, extra_browser_args=None,
+               traffic_setting=traffic_setting_module.NONE):
+    name = url.split('/')[-1]
+    if traffic_setting != traffic_setting_module.NONE:
+      name += '_' + _TRAFFIC_SETTING_NAMES[traffic_setting]
+      tags.append('cns')
     if tags:
       for t in tags:
         assert t in _PAGE_TAGS_LIST
     assert not ('src' in tags and 'mse' in tags)
     super(MediaPage, self).__init__(
-        url=url, page_set=page_set, tags=tags, name=url.split('/')[-1],
-        extra_browser_args=extra_browser_args)
+        url=url, page_set=page_set, tags=tags, name=name,
+        extra_browser_args=extra_browser_args,
+        traffic_setting=traffic_setting)
 
 
 class BeginningToEndPlayPage(MediaPage):
   """A normal play page simply plays the given media until the end."""
 
-  def __init__(self, url, page_set, tags, extra_browser_args=None):
+  def __init__(self, url, page_set, tags, extra_browser_args=None,
+               traffic_setting=traffic_setting_module.NONE):
     tags.append('beginning_to_end')
     tags.append('src')
     self.add_browser_metrics = True
     super(BeginningToEndPlayPage, self).__init__(
-        url, page_set, tags, extra_browser_args)
+        url, page_set, tags, extra_browser_args,
+        traffic_setting=traffic_setting)
 
   def RunPageInteractions(self, action_runner):
     # Play the media until it has finished or it times out.
@@ -72,12 +99,15 @@ class SeekPage(MediaPage):
   """A seek page seeks twice in the video and measures the seek time."""
 
   def __init__(self, url, page_set, tags, extra_browser_args=None,
-               action_timeout_in_seconds=60):
+               action_timeout_in_seconds=60,
+               traffic_setting=traffic_setting_module.NONE):
     tags.append('seek')
     tags.append('src')
     self.skip_basic_metrics = True
     self._action_timeout = action_timeout_in_seconds
-    super(SeekPage, self).__init__(url, page_set, tags, extra_browser_args)
+    super(SeekPage, self).__init__(
+        url, page_set, tags, extra_browser_args,
+        traffic_setting=traffic_setting)
 
   def RunPageInteractions(self, action_runner):
     timeout = self._action_timeout
@@ -103,7 +133,8 @@ class BackgroundPlaybackPage(MediaPage):
   """
 
   def __init__(self, url, page_set, tags, extra_browser_args=None,
-               background_time=10):
+               background_time=10,
+               traffic_setting=traffic_setting_module.NONE):
     self._background_time = background_time
     self.skip_basic_metrics = True
     tags.append('background')
@@ -417,6 +448,15 @@ class Page42(MSEPage):
       tags=['h264', 'video_only'])
 
 
+class Page43(BeginningToEndPlayPage):
+
+  def __init__(self, page_set):
+    super(Page43, self).__init__(
+      url='file://tough_video_cases/video.html?src=tulip2.vp9.webm',
+      page_set=page_set,
+      tags=['vp9', 'opus', 'audio_video'],
+      traffic_setting=traffic_setting_module.REGULAR_3G)
+
 
 class ToughVideoCasesPageSet(story.StorySet):
   """
@@ -472,6 +512,9 @@ class ToughVideoCasesPageSet(story.StorySet):
 
     # Tests with high JS load.
     self.AddStory(Page38(self))
+
+    # Tests with a simulated constrained network connection.
+    self.AddStory(Page43(self))
 
     # MSE tests.
     # TODO(crouleau): Figure out a way to make MSE pages provide consistent
