@@ -4,6 +4,7 @@
 
 import datetime
 import json
+import unittest
 
 from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.host_mock import MockHost
@@ -267,12 +268,8 @@ class TestImporterTest(LoggingTestCase):
         self.assertEqual(
             description,
             'Last commit message\n\n'
-            'Note to sheriffs: This CL imports external tests and adds\n'
-            'expectations for those tests; if this CL is large and causes\n'
-            'a few new failures, please fix the failures by adding new\n'
-            'lines to TestExpectations rather than reverting. See:\n'
-            'https://chromium.googlesource.com'
-            '/chromium/src/+/master/docs/testing/web_platform_tests.md\n\n'
+            'Note to sheriffs: This is an automatically-generated CL. Please\n'
+            'contact ecosystem-infra@chromium.org in case of problems.\n\n'
             'No-Export: true')
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
 
@@ -298,6 +295,7 @@ class TestImporterTest(LoggingTestCase):
             'No-Export: true',
             description)
 
+    @unittest.skip("http://crbug.com/780055")
     def test_cl_description_with_directory_owners(self):
         host = MockHost()
         host.executive = MockExecutive(output='Last commit message\n\n')
