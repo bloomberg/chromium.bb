@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/compiler_specific.h"
 #import "base/ios/block_types.h"
 
 namespace testing {
@@ -29,7 +30,7 @@ extern const NSTimeInterval kWaitForPageLoadTimeout;
 // Returns true when condition() becomes true, otherwise returns false after
 // |timeout|.
 bool WaitUntilConditionOrTimeout(NSTimeInterval timeout,
-                                 ConditionBlock condition);
+                                 ConditionBlock condition) WARN_UNUSED_RESULT;
 
 }  // namespace testing
 
