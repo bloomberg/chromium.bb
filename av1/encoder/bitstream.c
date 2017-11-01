@@ -3975,6 +3975,7 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #else
       write_frame_size(cm, wb);
 #endif
+      write_sb_size(cm, wb);
 
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
       assert(cpi->common.ans_window_size_log2 >= 8);
