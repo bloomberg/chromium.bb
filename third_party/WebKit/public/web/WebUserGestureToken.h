@@ -54,8 +54,8 @@ class WebUserGestureToken {
   bool IsNull() const { return token_.IsNull(); }
 
 #if INSIDE_BLINK
-  explicit WebUserGestureToken(RefPtr<UserGestureToken>);
-  operator RefPtr<UserGestureToken>() const;
+  explicit WebUserGestureToken(scoped_refptr<UserGestureToken>);
+  operator scoped_refptr<UserGestureToken>() const;
 #endif
 
  private:

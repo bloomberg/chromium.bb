@@ -95,7 +95,7 @@ class PtrStorageImpl<T,
                      strongOrWeak,
                      kRefCountedLifetime> {
  public:
-  typedef RefPtr<T> BlinkPtrType;
+  typedef scoped_refptr<T> BlinkPtrType;
 
   void Assign(BlinkPtrType&& val) {
     static_assert(
@@ -260,7 +260,7 @@ class PtrStorage : public PtrStorageImpl<T,
 //        // Methods that are used only by other Blink classes should only be
 //        // declared when INSIDE_BLINK is set.
 //    #if INSIDE_BLINK
-//        WebFoo(WTF::RefPtr<Foo>);
+//        WebFoo(scoped_refptr<Foo>);
 //    #endif
 //
 //    private:

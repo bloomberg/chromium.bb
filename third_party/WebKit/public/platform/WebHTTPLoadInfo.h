@@ -74,8 +74,8 @@ class WebHTTPLoadInfo {
   BLINK_PLATFORM_EXPORT void SetNPNNegotiatedProtocol(const WebString&);
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebHTTPLoadInfo(WTF::RefPtr<ResourceLoadInfo>);
-  BLINK_PLATFORM_EXPORT operator WTF::RefPtr<ResourceLoadInfo>() const;
+  BLINK_PLATFORM_EXPORT WebHTTPLoadInfo(scoped_refptr<ResourceLoadInfo>);
+  BLINK_PLATFORM_EXPORT operator scoped_refptr<ResourceLoadInfo>() const;
 #endif
 
  private:

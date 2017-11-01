@@ -99,9 +99,9 @@ class WebHTTPBody {
   BLINK_PLATFORM_EXPORT void SetContainsPasswordData(bool);
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebHTTPBody(WTF::RefPtr<EncodedFormData>);
-  BLINK_PLATFORM_EXPORT WebHTTPBody& operator=(WTF::RefPtr<EncodedFormData>);
-  BLINK_PLATFORM_EXPORT operator WTF::RefPtr<EncodedFormData>() const;
+  BLINK_PLATFORM_EXPORT WebHTTPBody(scoped_refptr<EncodedFormData>);
+  BLINK_PLATFORM_EXPORT WebHTTPBody& operator=(scoped_refptr<EncodedFormData>);
+  BLINK_PLATFORM_EXPORT operator scoped_refptr<EncodedFormData>() const;
 #endif
 
  private:

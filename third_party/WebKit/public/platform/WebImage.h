@@ -92,7 +92,7 @@ class WebImage {
   BLINK_PLATFORM_EXPORT WebSize Size() const;
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebImage(WTF::RefPtr<Image>);
+  BLINK_PLATFORM_EXPORT WebImage(scoped_refptr<Image>);
 #endif
 
   WebImage(const SkBitmap& bitmap) : bitmap_(bitmap) {}

@@ -98,9 +98,9 @@ class BLINK_PLATFORM_EXPORT WebData {
   bool IsNull() const { return private_.IsNull(); }
 
 #if INSIDE_BLINK
-  WebData(RefPtr<SharedBuffer>);
-  WebData& operator=(RefPtr<SharedBuffer>);
-  operator RefPtr<SharedBuffer>() const;
+  WebData(scoped_refptr<SharedBuffer>);
+  WebData& operator=(scoped_refptr<SharedBuffer>);
+  operator scoped_refptr<SharedBuffer>() const;
   operator const SharedBuffer&() const;
 #else
   template <class C>

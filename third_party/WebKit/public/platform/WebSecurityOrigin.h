@@ -111,10 +111,10 @@ class WebSecurityOrigin {
   BLINK_PLATFORM_EXPORT void GrantLoadLocalResources() const;
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebSecurityOrigin(WTF::RefPtr<SecurityOrigin>);
+  BLINK_PLATFORM_EXPORT WebSecurityOrigin(scoped_refptr<SecurityOrigin>);
   BLINK_PLATFORM_EXPORT WebSecurityOrigin& operator=(
-      WTF::RefPtr<SecurityOrigin>);
-  BLINK_PLATFORM_EXPORT operator WTF::RefPtr<SecurityOrigin>() const;
+      scoped_refptr<SecurityOrigin>);
+  BLINK_PLATFORM_EXPORT operator scoped_refptr<SecurityOrigin>() const;
   BLINK_PLATFORM_EXPORT SecurityOrigin* Get() const;
 #else
   // TODO(mkwst): A number of properties don't survive a round-trip
