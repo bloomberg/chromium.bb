@@ -2,31 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-window.chrome = {
-  commandLinePrivate: {
-    hasSwitch: function(name, callback) {
-      callback(false);
-    }
-  },
-  fileManagerPrivate: {
-    getFileTasks: function(entries, callback) {
-      setTimeout(callback.bind(null, [
-        {
-          taskId: 'handler-extension-id|app|any',
-          isDefault: false,
-          isGenericFileHandler: true
-        }
-      ]), 0);
-    },
-    executeTask: function(taskId, entries, onViewFiles) {
-      onViewFiles('failed');
-    }
-  },
-  runtime: {id: 'test-extension-id'}
-};
-
 window.metrics = {
   recordEnum: function() {}
+};
+
+var mockTaskHistory = {
+  getLastExecutedTime: function(id) {
+    return 0;
+  }
 };
 
 loadTimeData.data = {
@@ -35,8 +18,36 @@ loadTimeData.data = {
   NO_TASK_FOR_FILE: 'NO_TASK_FOR_FILE',
   NO_TASK_FOR_DMG: 'NO_TASK_FOR_DMG',
   NO_TASK_FOR_CRX: 'NO_TASK_FOR_CRX',
-  NO_TASK_FOR_CRX_TITLE: 'NO_TASK_FOR_CRX_TITLE'
+  NO_TASK_FOR_CRX_TITLE: 'NO_TASK_FOR_CRX_TITLE',
+  OPEN_WITH_BUTTON_LABEL: 'OPEN_WITH_BUTTON_LABEL',
+  TASK_OPEN: 'TASK_OPEN',
+  MORE_ACTIONS_BUTTON_LABEL: 'MORE_ACTIONS_BUTTON_LABEL'
 };
+
+function setUp() {
+  window.chrome = {
+    commandLinePrivate: {
+      hasSwitch: function(name, callback) {
+        callback(false);
+      }
+    },
+    fileManagerPrivate: {
+      getFileTasks: function(entries, callback) {
+        setTimeout(
+            callback.bind(null, [{
+                            taskId: 'handler-extension-id|app|any',
+                            isDefault: false,
+                            isGenericFileHandler: true
+                          }]),
+            0);
+      },
+      executeTask: function(taskId, entries, onViewFiles) {
+        onViewFiles('failed');
+      }
+    },
+    runtime: {id: 'test-extension-id'}
+  };
+}
 
 /**
  * Returns a mock file manager.
@@ -83,12 +94,14 @@ function showHtmlOfAlertDialogIsCalled(entries, expectedTitle, expectedText) {
           resolve();
         };
 
-    FileTasks.create(
-        fileManager.volumeManager, fileManager.metadataModel,
-        fileManager.directoryModel, fileManager.ui, entries, [null]).
-      then(function(tasks) {
-        tasks.executeDefault();
-      });
+    FileTasks
+        .create(
+            fileManager.volumeManager, fileManager.metadataModel,
+            fileManager.directoryModel, fileManager.ui, entries, [null],
+            mockTaskHistory)
+        .then(function(tasks) {
+          tasks.executeDefault();
+        });
   });
 }
 
@@ -108,9 +121,39 @@ function openSuggestAppsDialogIsCalled(entries, mimeTypes) {
       }
     };
 
-    FileTasks.create(
-        fileManager.volumeManager, fileManager.metadataModel,
-        fileManager.directoryModel, fileManager.ui, entries, mimeTypes)
+    FileTasks
+        .create(
+            fileManager.volumeManager, fileManager.metadataModel,
+            fileManager.directoryModel, fileManager.ui, entries, mimeTypes,
+            mockTaskHistory)
+        .then(function(tasks) {
+          tasks.executeDefault();
+        });
+  });
+}
+
+/**
+ * Returns a promise which is resolved when task picker is shown.
+ *
+ * @param {!Array<!Entry>} entries Entries.
+ * @param {!Array<?string>} mimeTypes Mime types.
+ * @return {!Promise}
+ */
+function showDefaultTaskDialogCalled(entries, mimeTypes) {
+  return new Promise(function(resolve, reject) {
+    var fileManager = getMockFileManager();
+    fileManager.ui.defaultTaskPicker = {
+      showDefaultTaskDialog: function(
+          title, message, items, defaultIdx, onSuccess) {
+        resolve();
+      }
+    };
+
+    FileTasks
+        .create(
+            fileManager.volumeManager, fileManager.metadataModel,
+            fileManager.directoryModel, fileManager.ui, entries, mimeTypes,
+            mockTaskHistory)
         .then(function(tasks) {
           tasks.executeDefault();
         });
@@ -200,25 +243,129 @@ function testOpenSuggestAppsDialogFailure(callback) {
     var fileSystem = new MockFileSystem('volumeId');
     var entry = new MockFileEntry(fileSystem, '/test');
 
-    FileTasks.create(
-        {
-          getDriveConnectionState: function() {
-            return VolumeManagerCommon.DriveConnectionType.ONLINE;
-          }
-        },
-        {},
-        {},
-        {
-          taskMenuButton: document.createElement('button'),
-          fileContextMenu: {
-            defaultActionMenuItem: document.createElement('div')
-          }
-        },
-        [entry],
-        [null]).then(function(tasks) {
+    FileTasks
+        .create(
+            {
+              getDriveConnectionState: function() {
+                return VolumeManagerCommon.DriveConnectionType.ONLINE;
+              }
+            },
+            {}, {}, {
+              taskMenuButton: document.createElement('button'),
+              fileContextMenu:
+                  {defaultActionMenuItem: document.createElement('div')}
+            },
+            [entry], [null], mockTaskHistory)
+        .then(function(tasks) {
           tasks.openSuggestAppsDialog(function() {}, function() {}, resolve);
         });
   });
 
   reportPromise(onFailureIsCalled, callback);
+}
+
+/**
+ * Test case for opening task picker with an entry which doesn't have default
+ * app but multiple apps that can open it.
+ */
+function testOpenTaskPicker(callback) {
+  window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
+    setTimeout(
+        callback.bind(
+            null,
+            [
+              {
+                taskId: 'handler-extension-id1|app|any',
+                isDefault: false,
+                isGenericFileHandler: false,
+                title: 'app 1',
+              },
+              {
+                taskId: 'handler-extension-id2|app|any',
+                isDefault: false,
+                isGenericFileHandler: false,
+                title: 'app 2',
+              }
+            ]),
+        0);
+  };
+
+  var mockFileSystem = new MockFileSystem('volumeId');
+  var mockEntry = new MockFileEntry(mockFileSystem, '/test.tiff');
+
+  reportPromise(
+      showDefaultTaskDialogCalled([mockEntry], ['image/tiff']), callback);
+}
+
+function testOpenWithMostRecentlyExecuted(callback) {
+  const latestTaskId = 'handler-extension-most-recently-executed|app|any';
+  const oldTaskId = 'handler-extension-executed-before|app|any'
+  window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
+    setTimeout(
+        callback.bind(
+            null,
+            // File tasks is sorted by last executed time, latest first.
+            [
+              {
+                taskId: latestTaskId,
+                isDefault: false,
+                isGenericFileHandler: false,
+                title: 'app 1',
+              },
+              {
+                taskId: oldTaskId,
+                isDefault: false,
+                isGenericFileHandler: false,
+                title: 'app 2',
+              },
+              {
+                taskId: 'handler-extension-never-executed|app|any',
+                isDefault: false,
+                isGenericFileHandler: false,
+                title: 'app 3',
+              },
+            ]),
+        0);
+  };
+  var taskHistory = {
+    getLastExecutedTime: function(id) {
+      if (id == oldTaskId)
+        return 10000;
+      else if (id == latestTaskId)
+        return 20000;
+      return 0;
+    },
+    recordTaskExecuted: function(taskId) {}
+  };
+  var executedTask = null;
+  window.chrome.fileManagerPrivate.executeTask = function(
+      taskId, entries, onViewFiles) {
+    executedTask = taskId;
+    onViewFiles('success');
+  };
+
+  var mockFileSystem = new MockFileSystem('volumeId');
+  var mockEntry = new MockFileEntry(mockFileSystem, '/test.tiff');
+  var entries = [mockEntry];
+  var promise = new Promise(function(resolve, reject) {
+    var fileManager = getMockFileManager();
+    fileManager.ui.defaultTaskPicker = {
+      showDefaultTaskDialog: function(
+          title, message, items, defaultIdx, onSuccess) {
+        failWithMessage('should not show task picker');
+      }
+    };
+
+    FileTasks
+        .create(
+            fileManager.volumeManager, fileManager.metadataModel,
+            fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
+            taskHistory)
+        .then(function(tasks) {
+          tasks.executeDefault();
+          assertEquals(latestTaskId, executedTask);
+          resolve();
+        });
+  });
+  reportPromise(promise, callback);
 }

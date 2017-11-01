@@ -223,8 +223,6 @@ testcase.defaultTaskDialogOnDownloads = function() {
 testcase.genericTaskIsNotExecuted = function() {
   var tasks = [
     new FakeTask(false, 'dummytaskid|open-with', 'DummyTask1',
-        true /* isGenericFileHandler */),
-    new FakeTask(false, 'dummytaskid-2|open-with', 'DummyTask2',
         true /* isGenericFileHandler */)
   ];
 
