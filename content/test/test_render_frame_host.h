@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -52,6 +53,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // RenderFrameHostImpl overrides (same values, but in Test*/Mock* types)
   TestRenderViewHost* GetRenderViewHost() override;
   MockRenderProcessHost* GetProcess() override;
+  void AddMessageToConsole(ConsoleMessageLevel level,
+                           const std::string& message) override;
 
   // RenderFrameHostTester implementation.
   void InitializeRenderFrameIfNeeded() override;
@@ -71,6 +74,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SimulateFeaturePolicyHeader(
       blink::WebFeaturePolicyFeature feature,
       const std::vector<url::Origin>& whitelist) override;
+  const std::vector<std::string>& GetConsoleMessages() override;
 
   void SendNavigateWithReplacement(int nav_entry_id,
                                    bool did_create_new_entry,
@@ -185,6 +189,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   mojom::FrameNavigationControl* GetNavigationControl() override;
 
   mojom::FrameNavigationControl* GetInternalNavigationControl();
+
+  // Keeps a running vector of messages sent to AddMessageToConsole.
+  std::vector<std::string> console_messages_;
 
   TestRenderFrameHostCreationObserver child_creation_observer_;
 

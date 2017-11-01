@@ -9,11 +9,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/ui/blocked_content/console_logger.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/console_message_level.h"
 #include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
@@ -47,8 +47,7 @@ SafeBrowsingTriggeredPopupBlocker::PageData::~PageData() {
 // static
 std::unique_ptr<SafeBrowsingTriggeredPopupBlocker>
 SafeBrowsingTriggeredPopupBlocker::MaybeCreate(
-    content::WebContents* web_contents,
-    std::unique_ptr<ConsoleLogger> logger) {
+    content::WebContents* web_contents) {
   if (!base::FeatureList::IsEnabled(kAbusiveExperienceEnforce))
     return nullptr;
 
@@ -57,8 +56,8 @@ SafeBrowsingTriggeredPopupBlocker::MaybeCreate(
           web_contents);
   if (!observer_manager)
     return nullptr;
-  return base::WrapUnique(new SafeBrowsingTriggeredPopupBlocker(
-      web_contents, observer_manager, std::move(logger)));
+  return base::WrapUnique(
+      new SafeBrowsingTriggeredPopupBlocker(web_contents, observer_manager));
 }
 
 SafeBrowsingTriggeredPopupBlocker::~SafeBrowsingTriggeredPopupBlocker() =
@@ -81,20 +80,17 @@ bool SafeBrowsingTriggeredPopupBlocker::ShouldApplyStrongPopupBlocker(
   if (should_block) {
     LogAction(Action::kBlocked);
     current_page_data_->inc_num_popups_blocked();
-    logger_->LogInFrame(web_contents()->GetMainFrame(),
-                        content::CONSOLE_MESSAGE_LEVEL_ERROR,
-                        kAbusiveEnforceMessage);
+    web_contents()->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_ERROR, kAbusiveEnforceMessage);
   }
   return should_block;
 }
 
 SafeBrowsingTriggeredPopupBlocker::SafeBrowsingTriggeredPopupBlocker(
     content::WebContents* web_contents,
-    subresource_filter::SubresourceFilterObserverManager* observer_manager,
-    std::unique_ptr<ConsoleLogger> logger)
+    subresource_filter::SubresourceFilterObserverManager* observer_manager)
     : content::WebContentsObserver(web_contents),
       scoped_observer_(this),
-      logger_(std::move(logger)),
       current_page_data_(base::MakeUnique<PageData>()),
       ignore_sublists_(
           base::GetFieldTrialParamByFeatureAsBool(kAbusiveExperienceEnforce,
@@ -128,9 +124,8 @@ void SafeBrowsingTriggeredPopupBlocker::DidFinishNavigation(
     current_page_data_->set_is_triggered(true);
     LogAction(Action::kEnforcedSite);
   } else if (level == SubresourceFilterLevel::WARN) {
-    logger_->LogInFrame(web_contents()->GetMainFrame(),
-                        content::CONSOLE_MESSAGE_LEVEL_WARNING,
-                        kAbusiveWarnMessage);
+    web_contents()->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_WARNING, kAbusiveWarnMessage);
     LogAction(Action::kWarningSite);
   }
   LogAction(Action::kNavigation);
