@@ -10,7 +10,7 @@
   Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI)
 ] interface CSSStyleValue {
   stringifier;
-  // TODO(meade): Should be (CSSStyleValue or sequence<CSSStyleValue>)? instead of object?. Fix when the code generator supports this.
   // Putting Exposed=Window in the next line makes |parse| not exposed to PaintWorklet.
-  [RaisesException, CallWith=ScriptState, Exposed=Window] static object? parse(DOMString property, DOMString cssText);
+  [RaisesException, Exposed=Window] static CSSStyleValue? parse(DOMString property, DOMString cssText);
+  [RaisesException, Exposed=Window] static sequence<CSSStyleValue>? parseAll(DOMString property, DOMString cssText);
 };

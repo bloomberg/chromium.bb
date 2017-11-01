@@ -13,25 +13,23 @@
 
 namespace blink {
 
-ScriptValue CSSStyleValue::parse(ScriptState* script_state,
-                                 const String& property_name,
-                                 const String& value,
-                                 ExceptionState& exception_state) {
-  if (property_name.IsEmpty()) {
-    exception_state.ThrowTypeError("Property name cannot be empty");
-    return ScriptValue::CreateNull(script_state);
-  }
+namespace {
 
-  CSSPropertyID property_id = cssPropertyID(property_name);
-  // TODO(timloh): Handle custom properties
+CSSStyleValueVector ParseCSSStyleValue(const String& property_name,
+                                       const String& value,
+                                       ExceptionState& exception_state) {
+  const CSSPropertyID property_id = cssPropertyID(property_name);
+
+  // TODO(775804): Handle custom properties
   if (property_id == CSSPropertyInvalid || property_id == CSSPropertyVariable) {
     exception_state.ThrowTypeError("Invalid property name");
-    return ScriptValue::CreateNull(script_state);
+    return CSSStyleValueVector();
   }
+
   if (isShorthandProperty(property_id)) {
     exception_state.ThrowTypeError(
         "Parsing shorthand properties is not supported");
-    return ScriptValue::CreateNull(script_state);
+    return CSSStyleValueVector();
   }
 
   const CSSValue* css_value =
@@ -41,17 +39,38 @@ ScriptValue CSSStyleValue::parse(ScriptState* script_state,
         kSyntaxError, "The value provided ('" + value +
                           "') could not be parsed as a '" + property_name +
                           "'.");
-    return ScriptValue::CreateNull(script_state);
+    return CSSStyleValueVector();
   }
 
   CSSStyleValueVector style_value_vector =
       StyleValueFactory::CssValueToStyleValueVector(property_id, *css_value);
   DCHECK(!style_value_vector.IsEmpty());
+  return style_value_vector;
+}
 
-  v8::Local<v8::Value> wrapped_value =
-      ToV8(style_value_vector[0], script_state->GetContext()->Global(),
-           script_state->GetIsolate());
-  return ScriptValue(script_state, wrapped_value);
+}  // namespace
+
+CSSStyleValue* CSSStyleValue::parse(const String& property_name,
+                                    const String& value,
+                                    ExceptionState& exception_state) {
+  CSSStyleValueVector style_value_vector =
+      ParseCSSStyleValue(property_name, value, exception_state);
+  if (style_value_vector.IsEmpty())
+    return nullptr;
+
+  return style_value_vector[0];
+}
+
+Nullable<CSSStyleValueVector> CSSStyleValue::parseAll(
+    const String& property_name,
+    const String& value,
+    ExceptionState& exception_state) {
+  CSSStyleValueVector style_value_vector =
+      ParseCSSStyleValue(property_name, value, exception_state);
+  if (style_value_vector.IsEmpty())
+    return nullptr;
+
+  return style_value_vector;
 }
 
 String CSSStyleValue::StyleValueTypeToString(StyleValueType type) {

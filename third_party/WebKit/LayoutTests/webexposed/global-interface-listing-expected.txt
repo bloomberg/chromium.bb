@@ -794,6 +794,7 @@ interface CSSStyleSheet : StyleSheet
     method removeRule
 interface CSSStyleValue
     static method parse
+    static method parseAll
     attribute @@toStringTag
     method constructor
     method toString
