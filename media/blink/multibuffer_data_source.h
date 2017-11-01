@@ -253,14 +253,6 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
 
   DownloadingCB downloading_cb_;
 
-  // The original URL of the first response. If the request is redirected to
-  // another URL it is the URL after redirected. If the response is generated in
-  // a Service Worker this URL is empty. MultibufferDataSource checks the
-  // original URL of each successive response. If the origin URL of it is
-  // different from the original URL of the first response, it is treated
-  // as an error.
-  GURL response_original_url_;
-
   // Disallow rebinding WeakReference ownership to a different thread by keeping
   // a persistent reference. This avoids problems with the thread-safety of
   // reaching into this class from multiple threads to attain a WeakPtr.
