@@ -14,4 +14,5 @@ include_rules = [
     "+cc",
     "+components/viz/test",
     "+mojo/edk/embedder",
+    '+testing',
 ]

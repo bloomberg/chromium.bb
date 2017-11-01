@@ -1683,6 +1683,7 @@ jumbo_static_library("test_support") {
     "//components/viz/test:test_support",
     "//testing/gmock",
     "//testing/gtest:gtest",
+    "//testing/perf",
   ]
 
   deps = [
@@ -1959,6 +1960,7 @@ test("blink_platform_perftests") {
     "testing/BlinkPerfTestSuite.cpp",
     "testing/BlinkPerfTestSuite.h",
     "testing/RunAllPerfTests.cpp",
+    "testing/ShapingLineBreakerPerfTest.cpp",
   ]
 
   configs += [
@@ -1975,6 +1977,7 @@ test("blink_platform_perftests") {
     "//base/test:test_support",
     "//testing/gtest",
     "//testing/perf",
+    "//third_party:freetype_harfbuzz",
     "//third_party/WebKit/Source/platform/scheduler:perf_tests",
   ]
 }
