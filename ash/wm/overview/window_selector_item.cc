@@ -27,6 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -232,7 +233,7 @@ WindowSelectorItem::OverviewCloseButton::~OverviewCloseButton() {}
 class WindowSelectorItem::RoundedContainerView
     : public views::View,
       public gfx::AnimationDelegate,
-      public ui::LayerAnimationObserver {
+      public ui::ImplicitAnimationObserver {
  public:
   RoundedContainerView(WindowSelectorItem* item,
                        aura::Window* item_window,
@@ -244,34 +245,16 @@ class WindowSelectorItem::RoundedContainerView
         initial_color_(background),
         target_color_(background),
         current_value_(0),
-        layer_(nullptr),
         animation_(new gfx::SlideAnimation(this)) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
   }
 
-  ~RoundedContainerView() override { StopObservingLayerAnimations(); }
+  ~RoundedContainerView() override { StopObservingImplicitAnimations(); }
 
   void OnItemRestored() {
     item_ = nullptr;
     item_window_ = nullptr;
-  }
-
-  // Starts observing layer animations so that actions can be taken when
-  // particular animations (opacity) complete. It should only be called once
-  // when the initial fade in animation is started.
-  void ObserveLayerAnimations(ui::Layer* layer) {
-    DCHECK(!layer_);
-    layer_ = layer;
-    layer_->GetAnimator()->AddObserver(this);
-  }
-
-  // Stops observing layer animations
-  void StopObservingLayerAnimations() {
-    if (!layer_)
-      return;
-    layer_->GetAnimator()->RemoveObserver(this);
-    layer_ = nullptr;
   }
 
   // Used by tests to set animation state.
@@ -288,7 +271,6 @@ class WindowSelectorItem::RoundedContainerView
   // and from |kLabelBackgroundColor| back to the original window header color
   // on exit from the overview mode.
   void AnimateColor(gfx::Tween::Type tween_type, int duration) {
-    DCHECK(!layer_);  // layer animations should be completed.
     animation_->SetSlideDuration(duration);
     animation_->SetTweenType(tween_type);
     animation_->Reset(0);
@@ -361,26 +343,21 @@ class WindowSelectorItem::RoundedContainerView
     SchedulePaint();
   }
 
-  // ui::LayerAnimationObserver:
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
-    if (0 != (sequence->properties() &
-              ui::LayerAnimationElement::AnimatableProperty::OPACITY)) {
-      if (item_)
-        item_->HideHeader();
-      StopObservingLayerAnimations();
-      AnimateColor(gfx::Tween::EASE_IN, kSelectorColorSlideMilliseconds);
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    // Return if the fade in animation of |item_->item_widget_| was aborted.
+    if (WasAnimationAbortedForProperty(
+            ui::LayerAnimationElement::AnimatableProperty::OPACITY)) {
+      return;
     }
-  }
+    DCHECK(WasAnimationCompletedForProperty(
+        ui::LayerAnimationElement::AnimatableProperty::OPACITY));
 
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
-    if (0 != (sequence->properties() &
-              ui::LayerAnimationElement::AnimatableProperty::OPACITY)) {
-      StopObservingLayerAnimations();
-    }
+    // Otherwise, hide the header and animate the color of this view.
+    if (item_)
+      item_->HideHeader();
+    AnimateColor(gfx::Tween::EASE_IN, kSelectorColorSlideMilliseconds);
   }
-
-  void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) override {}
 
   WindowSelectorItem* item_;
   aura::Window* item_window_;
@@ -388,7 +365,6 @@ class WindowSelectorItem::RoundedContainerView
   SkColor initial_color_;
   SkColor target_color_;
   int current_value_;
-  ui::Layer* layer_;
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundedContainerView);
@@ -748,27 +724,30 @@ void WindowSelectorItem::UpdateHeaderLayout(
       (mode != HeaderFadeInMode::ENTER || transform_window_.GetTopInset())
           ? -label_rect.height()
           : 0);
-  if (background_view_) {
-    if (mode == HeaderFadeInMode::ENTER) {
-      background_view_->ObserveLayerAnimations(item_widget_->GetLayer());
-      background_view_->set_color(kLabelBackgroundColor);
-      // The color will be animated only once the label widget is faded in.
-    } else if (mode == HeaderFadeInMode::EXIT) {
-      // Normally the observer is disconnected when the fade-in animations
-      // complete but some tests invoke animations with |NON_ZERO_DURATION|
-      // without waiting for completion so do it here.
-      background_view_->StopObservingLayerAnimations();
-      // Make the header visible above the window. It will be faded out when
-      // the Shutdown() is called.
-      background_view_->AnimateColor(gfx::Tween::EASE_OUT,
-                                     kExitFadeInMilliseconds);
-      background_view_->set_color(kLabelExitColor);
+
+  {
+    ui::ScopedLayerAnimationSettings layer_animation_settings(
+        item_widget_->GetLayer()->GetAnimator());
+    if (background_view_) {
+      if (mode == HeaderFadeInMode::ENTER) {
+        // Animate the color of |background_view_| once the fade in animation of
+        // |item_widget_| ends.
+        layer_animation_settings.AddObserver(background_view_);
+        background_view_->set_color(kLabelBackgroundColor);
+      } else if (mode == HeaderFadeInMode::EXIT) {
+        // Make the header visible above the window. It will be faded out when
+        // the Shutdown() is called.
+        background_view_->AnimateColor(gfx::Tween::EASE_OUT,
+                                       kExitFadeInMilliseconds);
+        background_view_->set_color(kLabelExitColor);
+      }
+    }
+    if (!label_view_->visible()) {
+      label_view_->SetVisible(true);
+      SetupFadeInAfterLayout(item_widget_.get());
     }
   }
-  if (!label_view_->visible()) {
-    label_view_->SetVisible(true);
-    SetupFadeInAfterLayout(item_widget_.get());
-  }
+
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   ScopedOverviewAnimationSettings animation_settings(animation_type,
                                                      widget_window);
