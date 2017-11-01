@@ -134,24 +134,14 @@ bool WASAPIAudioOutputStream::Open() {
   DCHECK(!audio_client_.Get());
   DCHECK(!audio_render_client_.Get());
 
-  // Will be set to true if we ended up opening the default communications
-  // device.
-  bool communications_device = false;
+  bool communications_device =
+      device_id_.empty() ? (device_role_ == eCommunications) : false;
 
   // Create an IAudioClient interface for the default rendering IMMDevice.
   Microsoft::WRL::ComPtr<IAudioClient> audio_client;
-  if (device_id_.empty()) {
-    audio_client = CoreAudioUtil::CreateDefaultClient(eRender, device_role_);
-    communications_device = (device_role_ == eCommunications);
-  } else {
-    Microsoft::WRL::ComPtr<IMMDevice> device =
-        CoreAudioUtil::CreateDevice(device_id_);
-    DLOG_IF(ERROR, !device.Get()) << "Failed to open device: " << device_id_;
-    if (device.Get())
-      audio_client = CoreAudioUtil::CreateClient(device.Get());
-  }
-
-  if (!audio_client.Get())
+  HRESULT hr = CoreAudioUtil::CreateClient(device_id_, eRender, device_role_,
+                                           audio_client.GetAddressOf());
+  if (FAILED(hr))
     return false;
 
   // Extra sanity to ensure that the provided device format is still valid.
@@ -161,7 +151,7 @@ bool WASAPIAudioOutputStream::Open() {
     return false;
   }
 
-  HRESULT hr = S_FALSE;
+  hr = S_FALSE;
   if (share_mode_ == AUDCLNT_SHAREMODE_SHARED) {
     // Initialize the audio stream between the client and the device in shared
     // mode and using event-driven buffer handling.
@@ -232,9 +222,10 @@ bool WASAPIAudioOutputStream::Open() {
   // Create an IAudioRenderClient client for an initialized IAudioClient.
   // The IAudioRenderClient interface enables us to write output data to
   // a rendering endpoint buffer.
-  Microsoft::WRL::ComPtr<IAudioRenderClient> audio_render_client =
-      CoreAudioUtil::CreateRenderClient(audio_client.Get());
-  if (!audio_render_client.Get())
+  Microsoft::WRL::ComPtr<IAudioRenderClient> audio_render_client;
+  hr = CoreAudioUtil::CreateRenderClient(audio_client.Get(),
+                                         audio_render_client.GetAddressOf());
+  if (FAILED(hr))
     return false;
 
   // Store valid COM interfaces.
