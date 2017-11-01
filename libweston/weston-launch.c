@@ -698,7 +698,7 @@ main(int argc, char *argv[])
 
 	memset(&wl, 0, sizeof wl);
 
-	while ((c = getopt_long(argc, argv, "u:t::vh", opts, &i)) != -1) {
+	while ((c = getopt_long(argc, argv, "u:t:vh", opts, &i)) != -1) {
 		switch (c) {
 		case 'u':
 			wl.new_user = optarg;
