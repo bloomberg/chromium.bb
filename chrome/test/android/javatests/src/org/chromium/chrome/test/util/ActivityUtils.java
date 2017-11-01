@@ -16,6 +16,9 @@ import android.support.v4.app.ActivityOptionsCompat;
 
 import org.junit.Assert;
 
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -23,10 +26,16 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.lang.ref.WeakReference;
+import java.util.List;
+import java.util.Locale;
+
 /**
  * Collection of activity utilities.
  */
 public class ActivityUtils {
+    private static final String TAG = "cr_ActivityUtils";
+
     private static final long ACTIVITY_START_TIMEOUT_MS = ScalableTimeout.scaleTimeout(3000);
     private static final long CONDITION_POLL_INTERVAL_MS = 100;
 
@@ -118,10 +127,26 @@ public class ActivityUtils {
         Activity activity = monitor.getLastActivity();
         if (activity == null) {
             activity = monitor.waitForActivityWithTimeout(timeOut);
+            if (activity == null) logRunningChromeActivities();
         }
         Assert.assertNotNull(activityType.getName() + " did not start in: " + timeOut, activity);
 
         return activityType.cast(activity);
+    }
+
+    private static void logRunningChromeActivities() {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
+            StringBuilder builder = new StringBuilder("Running Chrome Activities: ");
+            for (WeakReference<Activity> activityRef : activities) {
+                Activity activity = activityRef.get();
+                if (activity == null) continue;
+                builder.append(String.format(Locale.US, "\n   %s : %d",
+                        activity.getClass().getSimpleName(),
+                        ApplicationStatus.getStateForActivity(activity)));
+            }
+            Log.i(TAG, builder.toString());
+        });
     }
 
     /**
