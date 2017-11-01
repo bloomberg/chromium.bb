@@ -182,8 +182,11 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(switches::kDisallowNonExactResourceReuse);
 
-  settings.wait_for_all_pipeline_stages_before_draw =
-      command_line->HasSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw);
+  if (command_line->HasSwitch(
+          cc::switches::kRunAllCompositorStagesBeforeDraw)) {
+    settings.wait_for_all_pipeline_stages_before_draw = true;
+    settings.enable_latency_recovery = false;
+  }
 
   base::TimeTicks before_create = base::TimeTicks::Now();
 
