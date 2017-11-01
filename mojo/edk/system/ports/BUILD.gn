@@ -42,6 +42,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "name_unittest.cc",
     "ports_unittest.cc",
   ]
 
