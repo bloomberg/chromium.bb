@@ -1092,15 +1092,17 @@ void LayoutTableSection::DistributeRemainingExtraLogicalHeight(
   if (extra_logical_height <= 0 || !row_pos_[total_rows])
     return;
 
-  // FIXME: row_pos_[total_rows] - row_pos_[0] is the total rows' size.
-  int total_row_size = row_pos_[total_rows];
   int total_logical_height_added = 0;
   int previous_row_position = row_pos_[0];
+  float total_row_size = row_pos_[total_rows] - previous_row_position;
   for (unsigned r = 0; r < total_rows; r++) {
     // weight with the original height
-    total_logical_height_added += extra_logical_height *
-                                  (row_pos_[r + 1] - previous_row_position) /
-                                  total_row_size;
+    float height_to_add = extra_logical_height *
+                          (row_pos_[r + 1] - previous_row_position) /
+                          total_row_size;
+    total_logical_height_added =
+        std::min<int>(total_logical_height_added + std::ceil(height_to_add),
+                      extra_logical_height);
     previous_row_position = row_pos_[r + 1];
     row_pos_[r + 1] += total_logical_height_added;
   }
