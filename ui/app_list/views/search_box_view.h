@@ -224,7 +224,8 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
   // Overridden from AppListViewDelegateObserver:
   void OnWallpaperColorsChanged() override;
 
-  void SetDefaultBorder();
+  // Update search box border based on whether the search box is activated.
+  void UpdateSearchBoxBorder();
 
   SearchBoxViewDelegate* delegate_;     // Not owned.
   AppListViewDelegate* view_delegate_;  // Not owned.
