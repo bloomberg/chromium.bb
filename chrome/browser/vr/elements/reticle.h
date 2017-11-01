@@ -18,6 +18,8 @@ class Reticle : public UiElement {
   Reticle(UiScene* scene, Model* model);
   ~Reticle() override;
 
+  UiElement* TargetElement() const;
+
  private:
   void Render(UiElementRenderer* renderer,
               const gfx::Transform& model_view_proj_matrix) const final;

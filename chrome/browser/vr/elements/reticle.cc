@@ -20,6 +20,10 @@ Reticle::Reticle(UiScene* scene, Model* model) : scene_(scene), model_(model) {
 
 Reticle::~Reticle() = default;
 
+UiElement* Reticle::TargetElement() const {
+  return scene_->GetUiElementById(model_->reticle.target_element_id);
+}
+
 void Reticle::Render(UiElementRenderer* renderer,
                      const gfx::Transform& model_view_proj_matrix) const {
   // Scale the reticle to have a fixed FOV size at any distance.
@@ -31,9 +35,7 @@ void Reticle::Render(UiElementRenderer* renderer,
 
   gfx::Quaternion rotation;
 
-  UiElement* target =
-      scene_->GetUiElementById(model_->reticle.target_element_id);
-
+  UiElement* target = TargetElement();
   if (target) {
     // Make the reticle planar to the element it's hitting.
     rotation = gfx::Quaternion(gfx::Vector3dF(0.0f, 0.0f, -1.0f),

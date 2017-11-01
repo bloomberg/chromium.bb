@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/ui_scene_manager_test.h"
@@ -35,7 +36,34 @@ class UiRendererTest : public UiSceneManagerTest,
   }
 };
 
+TEST_F(UiRendererTest, ReticleStacking) {
+  UiElement* content = scene_->GetUiElementByName(kContentQuad);
+  EXPECT_TRUE(content);
+  model_->reticle.target_element_id = content->id();
+  auto unsorted = scene_->GetVisible2dBrowsingElements();
+  auto sorted = UiRenderer::GetElementsInDrawOrder(unsorted);
+  bool saw_target = false;
+  for (auto* e : sorted) {
+    if (e == content) {
+      saw_target = true;
+    } else if (saw_target) {
+      EXPECT_EQ(kReticle, e->name());
+      break;
+    }
+  }
+
+  auto controller_elements = scene_->GetVisibleControllerElements();
+  bool saw_reticle = false;
+  for (auto* e : controller_elements) {
+    if (e->name() == kReticle) {
+      saw_reticle = true;
+    }
+  }
+  EXPECT_FALSE(saw_reticle);
+}
+
 TEST_P(UiRendererTest, UiRendererSortingTest) {
+  model_->reticle.target_element_id = 0;
   auto unsorted = ((*scene_).*GetParam().f)();
   auto sorted = UiRenderer::GetElementsInDrawOrder(unsorted);
 
