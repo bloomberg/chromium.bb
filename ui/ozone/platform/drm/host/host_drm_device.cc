@@ -236,7 +236,7 @@ bool HostDrmDevice::GpuRelinquishDisplayControl() {
   auto callback =
       base::BindOnce(&HostDrmDevice::GpuRelinquishDisplayControlCallback,
                      weak_ptr_factory_.GetWeakPtr());
-  drm_device_ptr_->TakeDisplayControl(std::move(callback));
+  drm_device_ptr_->RelinquishDisplayControl(std::move(callback));
   return true;
 }
 

@@ -38,7 +38,7 @@ void ForwardingDisplayDelegate::TakeDisplayControl(
 
 void ForwardingDisplayDelegate::RelinquishDisplayControl(
     const DisplayControlCallback& callback) {
-  delegate_->TakeDisplayControl(callback);
+  delegate_->RelinquishDisplayControl(callback);
 }
 
 void ForwardingDisplayDelegate::GetDisplays(
