@@ -282,7 +282,7 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
     base::TimeTicks deadline_min,
     base::TimeTicks deadline_max,
     bool background_rendering) {
-  TRACE_EVENT0("media", "VideoRendererImpl::Render");
+  TRACE_EVENT1("media", "VideoRendererImpl::Render", "id", media_log_->id());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPlaying);
 
@@ -742,8 +742,9 @@ void VideoRendererImpl::UpdateStats_Locked() {
 
   if (frames_decoded_ || frames_dropped_) {
     if (frames_dropped_)
-      TRACE_EVENT_INSTANT1("media", "VideoFramesDropped",
-                           TRACE_EVENT_SCOPE_THREAD, "count", frames_dropped_);
+      TRACE_EVENT_INSTANT2("media", "VideoFramesDropped",
+                           TRACE_EVENT_SCOPE_THREAD, "count", frames_dropped_,
+                           "id", media_log_->id());
     PipelineStatistics statistics;
     statistics.video_frames_decoded = frames_decoded_;
     statistics.video_frames_dropped = frames_dropped_;

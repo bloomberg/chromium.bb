@@ -504,7 +504,7 @@ void WebMediaPlayerImpl::OnDisplayTypeChanged(
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
                                 const blink::WebURL& url,
                                 CORSMode cors_mode) {
-  TRACE_EVENT0("media", "WebMediaPlayerImpl::DoLoad");
+  TRACE_EVENT1("media", "WebMediaPlayerImpl::DoLoad", "id", media_log_->id());
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -647,8 +647,8 @@ void WebMediaPlayerImpl::Seek(double seconds) {
 
 void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT1("media", "WebMediaPlayerImpl::DoSeek", "target",
-               time.InSecondsF());
+  TRACE_EVENT2("media", "WebMediaPlayerImpl::DoSeek", "target",
+               time.InSecondsF(), "id", media_log_->id());
 
 #if defined(OS_ANDROID)  // WMPI_CAST
   if (IsRemote()) {
@@ -1298,8 +1298,8 @@ void WebMediaPlayerImpl::OnCdmAttached(bool success) {
 }
 
 void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
-  TRACE_EVENT1("media", "WebMediaPlayerImpl::OnPipelineSeeked", "target",
-               seek_time_.InSecondsF());
+  TRACE_EVENT2("media", "WebMediaPlayerImpl::OnPipelineSeeked", "target",
+               seek_time_.InSecondsF(), "id", media_log_->id());
   seeking_ = false;
   seek_time_ = base::TimeDelta();
 
@@ -1442,7 +1442,8 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
 }
 
 void WebMediaPlayerImpl::OnEnded() {
-  TRACE_EVENT1("media", "WebMediaPlayerImpl::OnEnded", "duration", Duration());
+  TRACE_EVENT2("media", "WebMediaPlayerImpl::OnEnded", "duration", Duration(),
+               "id", media_log_->id());
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -1588,7 +1589,8 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
       "pipeline_buffering_state", state));
 
   if (state == BUFFERING_HAVE_ENOUGH) {
-    TRACE_EVENT0("media", "WebMediaPlayerImpl::BufferingHaveEnough");
+    TRACE_EVENT1("media", "WebMediaPlayerImpl::BufferingHaveEnough", "id",
+                 media_log_->id());
     SetReadyState(CanPlayThrough() ? WebMediaPlayer::kReadyStateHaveEnoughData
                                    : WebMediaPlayer::kReadyStateHaveFutureData);
 
