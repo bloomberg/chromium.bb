@@ -71,10 +71,14 @@ enum NotAcceptingTransformReason {
 // This enum must remain synchronized with the enum of the same
 // name in metrics/histograms/histograms.xml.
 enum DataReductionProxyNetworkChangeEvent {
-  IP_CHANGED = 0,         // The client IP address changed.
-  DISABLED_ON_VPN = 1,    // [Deprecated] Proxy is disabled because a VPN is
-                          // running.
-  CHANGE_EVENT_COUNT = 2  // This must always be last.
+  // The client IP address changed.
+  IP_CHANGED = 0,
+  // [Deprecated] Proxy is disabled because a VPN is running.
+  DEPRECATED_DISABLED_ON_VPN = 1,
+  // There was a network change.
+  NETWORK_CHANGED = 2,
+  CHANGE_EVENT_COUNT = NETWORK_CHANGED + 1
+
 };
 
 // Key of the UMA DataReductionProxy.ProbeURL histogram.
@@ -423,6 +427,7 @@ void DataReductionProxyConfig::OnNetworkChanged(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   connection_type_ = type;
+  RecordNetworkChangeEvent(NETWORK_CHANGED);
 
   if (connection_type_ == net::NetworkChangeNotifier::CONNECTION_NONE)
     return;

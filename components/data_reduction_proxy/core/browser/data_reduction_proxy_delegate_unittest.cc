@@ -333,8 +333,15 @@ TEST(DataReductionProxyDelegate, AlternativeProxy) {
             histogram_tester, expect_alternative_proxy_server_to_first_proxy,
             test.proxy_supports_quic, false);
       } else {
-        histogram_tester.ExpectTotalCount("DataReductionProxy.Quic.ProxyStatus",
-                                          0);
+        if (!test.is_in_quic_field_trial &&
+            !test.gurl.SchemeIsCryptographic()) {
+          histogram_tester.ExpectUniqueSample(
+              "DataReductionProxy.Quic.ProxyStatus",
+              3 /* QUIC_PROXY_DISABLED_VIA_FIELD_TRIAL */, 1);
+        } else {
+          histogram_tester.ExpectTotalCount(
+              "DataReductionProxy.Quic.ProxyStatus", 0);
+        }
       }
       histogram_tester.ExpectTotalCount(
           "DataReductionProxy.Quic.OnAlternativeProxyBroken", 0);
@@ -358,8 +365,15 @@ TEST(DataReductionProxyDelegate, AlternativeProxy) {
             histogram_tester, expect_alternative_proxy_server_to_second_proxy,
             test.proxy_supports_quic, false);
       } else {
-        histogram_tester.ExpectTotalCount("DataReductionProxy.Quic.ProxyStatus",
-                                          0);
+        if (!test.is_in_quic_field_trial &&
+            !test.gurl.SchemeIsCryptographic()) {
+          histogram_tester.ExpectUniqueSample(
+              "DataReductionProxy.Quic.ProxyStatus",
+              3 /* QUIC_PROXY_DISABLED_VIA_FIELD_TRIAL */, 1);
+        } else {
+          histogram_tester.ExpectTotalCount(
+              "DataReductionProxy.Quic.ProxyStatus", 0);
+        }
       }
       histogram_tester.ExpectTotalCount(
           "DataReductionProxy.Quic.OnAlternativeProxyBroken", 0);
@@ -379,8 +393,15 @@ TEST(DataReductionProxyDelegate, AlternativeProxy) {
           alternative_proxy_server_to_non_data_reduction_proxy.is_valid());
 
       // Verify that the metrics are recorded correctly.
-      histogram_tester.ExpectTotalCount("DataReductionProxy.Quic.ProxyStatus",
-                                        0);
+      if (!test.is_in_quic_field_trial && !test.gurl.SchemeIsCryptographic()) {
+        histogram_tester.ExpectUniqueSample(
+            "DataReductionProxy.Quic.ProxyStatus",
+            3 /* QUIC_PROXY_DISABLED_VIA_FIELD_TRIAL */, 1);
+      } else {
+        histogram_tester.ExpectTotalCount("DataReductionProxy.Quic.ProxyStatus",
+                                          0);
+      }
+
       histogram_tester.ExpectTotalCount(
           "DataReductionProxy.Quic.OnAlternativeProxyBroken", 0);
     }

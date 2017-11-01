@@ -7771,6 +7771,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="DataReductionProxyNetworkChangeEvent">
   <int value="0" label="IP Address Change"/>
   <int value="1" label="Proxy disabled on VPN (deprecated)"/>
+  <int value="2" label="Network change event"/>
 </enum>
 
 <enum name="DataReductionProxyProbeURLFetchResult">
@@ -7849,6 +7850,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1"
       label="Resolved HTTPS data reduction proxy does not support QUIC"/>
   <int value="2" label="QUIC proxies have been marked as broken"/>
+  <int value="3" label="QUIC proxies have been disabled via field trial"/>
 </enum>
 
 <enum name="DataReductionProxyResourceContentType">

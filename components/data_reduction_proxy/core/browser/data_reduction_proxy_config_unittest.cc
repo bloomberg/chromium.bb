@@ -392,19 +392,12 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
 
   const struct {
     bool data_reduction_proxy_enabled;
-    bool enabled_via_field_trial;
   } tests[] = {
       {
-          false, false,
+          false,
       },
       {
-          false, true,
-      },
-      {
-          true, false,
-      },
-      {
-          true, true,
+          true,
       },
   };
   for (const auto& test : tests) {
@@ -417,8 +410,6 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
 
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
-    variation_params["enable_warmup"] =
-        test.enabled_via_field_trial ? "true" : "false";
     variation_params["warmup_url"] = warmup_url.spec();
 
     ASSERT_TRUE(variations::AssociateVariationParams(
@@ -441,11 +432,9 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     // the test device does not have connectivity.
     config.connection_type_ = net::NetworkChangeNotifier::CONNECTION_WIFI;
     config.SetProxyConfig(test.data_reduction_proxy_enabled, true);
-    bool warmup_url_enabled =
-        test.data_reduction_proxy_enabled && test.enabled_via_field_trial;
-    ASSERT_EQ(test.enabled_via_field_trial, params::FetchWarmupURLEnabled());
+    ASSERT_TRUE(params::FetchWarmupURLEnabled());
 
-    if (warmup_url_enabled) {
+    if (test.data_reduction_proxy_enabled) {
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.WarmupURL.FetchInitiated", 1, 1);
     }
@@ -456,7 +445,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
         net::NetworkChangeNotifier::CONNECTION_4G);
     RunUntilIdle();
 
-    if (warmup_url_enabled) {
+    if (test.data_reduction_proxy_enabled) {
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.WarmupURL.FetchInitiated", 1, 2);
     } else {
@@ -472,7 +461,7 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
         net::NetworkChangeNotifier::CONNECTION_NONE);
     RunUntilIdle();
 
-    if (warmup_url_enabled) {
+    if (test.data_reduction_proxy_enabled) {
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.WarmupURL.FetchInitiated", 1, 2);
     } else {

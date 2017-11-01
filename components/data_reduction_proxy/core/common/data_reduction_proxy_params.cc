@@ -148,17 +148,8 @@ bool IsIncludedInServerExperimentsFieldTrial() {
 }
 
 bool FetchWarmupURLEnabled() {
-  // Fetching of the warmup URL can be enabled only for Enabled* and Control*
-  // groups.
-  if (!IsIncludedInQuicFieldTrial())
-    return false;
-
-  std::map<std::string, std::string> params;
-  variations::GetVariationParams(GetQuicFieldTrialName(), &params);
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableDataReductionProxyWarmupURLFetch) &&
-         GetStringValueForVariationParamWithDefaultValue(
-             params, "enable_warmup", "true") != "false";
+      switches::kDisableDataReductionProxyWarmupURLFetch);
 }
 
 GURL GetWarmupURL() {

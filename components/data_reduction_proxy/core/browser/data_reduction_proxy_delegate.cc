@@ -175,8 +175,10 @@ void DataReductionProxyDelegate::GetAlternativeProxy(
     return;
   }
 
-  if (!params::IsIncludedInQuicFieldTrial())
+  if (!params::IsIncludedInQuicFieldTrial()) {
+    RecordQuicProxyStatus(QUIC_PROXY_DISABLED_VIA_FIELD_TRIAL);
     return;
+  }
 
   if (!resolved_proxy_server.is_valid() || !resolved_proxy_server.is_https())
     return;
