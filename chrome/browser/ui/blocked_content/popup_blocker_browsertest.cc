@@ -51,6 +51,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -608,6 +609,9 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, DenialOfService) {
 
 // Verify that an onunload popup does not show up for about:blank.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, Regress427477) {
+  // Flaky in this case: crbug.com/780371
+  if (!content::IsBrowserSideNavigationEnabled())
+    return;
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
