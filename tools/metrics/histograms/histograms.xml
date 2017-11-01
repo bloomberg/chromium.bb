@@ -68393,6 +68393,126 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RenderFrameObservers.DidChangeScrollOffset" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.DidChangeScrollOffset.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.DidClearWindowObject" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.DidClearWindowObject.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.DidCommitProvisionalLoad" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.DidCommitProvisionalLoad.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.DidCreateScriptContext" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.DidCreateScriptContext.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.DidFailProvisionalLoad" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.DidFailProvisionalLoad.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.DidFinishDocumentLoad" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.DidFinishDocumentLoad.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.DidFinishLoad" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.DidFinishLoad.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.DidMeaningfulLayout" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.DidMeaningfulLayout.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.DidStartProvisionalLoad" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.DidStartProvisionalLoad.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.FocusedNodeChanged" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.FocusedNodeChanged.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.OnMessageReceived" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.OnMessageReceived.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.ScriptedPrint" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.ScriptedPrint.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.WillCommitProvisionalLoad" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.WillCommitProvisionalLoad.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.WillSendSubmitEvent" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.WillSendSubmitEvent.
+  </summary>
+</histogram>
+
+<histogram name="RenderFrameObservers.WillSubmitForm" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    Cumulative time spent by all RenderFrameObservers in
+    RenderFrameImpl.WillSubmitForm.
+  </summary>
+</histogram>
+
 <histogram name="RenderViewContextMenu.OpenLinkAsUser" enum="OpenLinkAsUser">
   <owner>jochen@chromium.org</owner>
   <summary>
@@ -87631,6 +87751,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of times the never translate site was selected in the translate
     infobar.
+  </summary>
+</histogram>
+
+<histogram name="Translate.PageCaptured" units="ms">
+  <owner>joelhockey@chromium.org</owner>
+  <summary>
+    The time spent capturing plain text from the DOM. This is reported by
+    ChromeRenderViewObserver when a page is loaded completely.
   </summary>
 </histogram>
 
