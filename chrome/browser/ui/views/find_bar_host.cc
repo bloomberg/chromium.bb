@@ -12,11 +12,14 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/border.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -262,6 +265,10 @@ gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   if (widget_bounds.IsEmpty())
     return gfx::Rect();
 
+  gfx::Insets insets =
+      view()->border()->GetInsets() -
+      gfx::Insets(0, BackgroundWith1PxBorder::kLocationBarBorderThicknessDip);
+
   // Ask the view how large an area it needs to draw on.
   gfx::Size prefsize = view()->GetPreferredSize();
 
@@ -274,12 +281,13 @@ gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
     return gfx::Rect();
 
   // Place the view in the top right corner of the widget boundaries (top left
-  // for RTL languages).
+  // for RTL languages). Adjust for the view insets to ensure the border lines
+  // up with the location bar.
   gfx::Rect view_location;
-  int x = widget_bounds.x();
+  int x = widget_bounds.x() - insets.left();
   if (!base::i18n::IsRTL())
-    x += widget_bounds.width() - prefsize.width();
-  int y = widget_bounds.y();
+    x += widget_bounds.width() - prefsize.width() + insets.width();
+  int y = widget_bounds.y() - insets.top();
   view_location.SetRect(x, y, prefsize.width(), prefsize.height());
 
   // When we get Find results back, we specify a selection rect, which we
@@ -344,6 +352,8 @@ void FindBarHost::OnVisibilityChanged() {
     visible_bounds = host()->GetWindowBoundsInScreen();
   browser_view()->immersive_mode_controller()->OnFindBarVisibleBoundsChanged(
       visible_bounds);
+
+  find_bar_controller_->FindBarVisibilityChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -15,12 +15,15 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -201,48 +204,55 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
 }
 
 gfx::Rect BrowserViewLayout::GetFindBarBoundingBox() const {
-  // This function returns the area the Find Bar can be laid out within. This
-  // basically implies the "user-perceived content area" of the browser
-  // window excluding the vertical scrollbar. The "user-perceived content area"
-  // excludes the detached bookmark bar (in the New Tab case) and any infobars
-  // since they are not _visually_ connected to the Toolbar.
+  // This function returns the area the Find Bar can be laid out within. When
+  // the location bar/OmniBox is visible, the bounding box is the area extending
+  // from the bottom edge of the location bar/OmniBox to the bottom of the
+  // "user-perceived content area" of the browser window. The width matches the
+  // width of the location bar/OmniBox. If the location bar/OmniBox is not
+  // visible, the returned area is the full "user-perceived content area",
+  // excluding any vertical scrollbar.
+  // The "user-perceived content area" excludes the detached bookmark bar (in
+  // the New Tab case) and any infobars since they are not _visually_ connected
+  // to the Toolbar.
 
-  // First determine the bounding box of the content area in Widget
-  // coordinates.
-  gfx::Rect bounding_box = contents_container_->ConvertRectToWidget(
-      contents_container_->GetLocalBounds());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+  LocationBarView* location_bar_view = browser_view->GetLocationBarView();
 
-  gfx::Rect top_container_bounds = top_container_->ConvertRectToWidget(
-      top_container_->GetLocalBounds());
+  // Check for the presence of a visible OmniBox/location bar.
+  const bool has_location_bar =
+      browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR) &&
+      location_bar_view && location_bar_view->visible() &&
+      (!immersive_mode_controller_->IsEnabled() ||
+       immersive_mode_controller_->IsRevealed());
 
-  int find_bar_y = 0;
-  if (immersive_mode_controller_->IsEnabled() &&
-      !immersive_mode_controller_->IsRevealed()) {
-    // Position the find bar exactly below the top container. In immersive
-    // fullscreen, when the top-of-window views are not revealed, only the
-    // miniature immersive style tab strip is visible. Do not overlap the
-    // find bar and the tab strip.
-    find_bar_y = top_container_bounds.bottom();
-  } else {
-    // Overlap the find bar atop |top_container_|.
-    const int kTopOverlap = 6;
-    find_bar_y = top_container_bounds.bottom() - kTopOverlap;
+  gfx::Rect bounding_box;
+  // If the OmniBox/location bar is visible, anchor the find bar bounding box
+  // to its bottom edge.
+  if (has_location_bar) {
+    // The bounding box should be the area right below the OmniBox/location bar.
+    bounding_box = location_bar_view->ConvertRectToWidget(
+        location_bar_view->GetLocalBounds());
+    bounding_box.Inset(0, location_bar_view->height(), 0,
+                       -contents_container_->height());
+    return bounding_box;
   }
 
-  // Grow the height of |bounding_box| by the height of any elements between
-  // the top container and |contents_container_| such as the detached bookmark
-  // bar and any infobars.
-  int height_delta = bounding_box.y() - find_bar_y;
-  bounding_box.set_y(find_bar_y);
-  bounding_box.set_height(std::max(0, bounding_box.height() + height_delta));
-
-  // Finally decrease the width of the bounding box by the width of
-  // the vertical scroll bar.
-  int scrollbar_width = gfx::scrollbar_size();
-  bounding_box.set_width(std::max(0, bounding_box.width() - scrollbar_width));
+  // Otherwise, use the contents container minus any infobars and detached
+  // bookmark bar from the top and a scrollbar width from the appropriate edge.
+  bounding_box = contents_container_->ConvertRectToWidget(
+      contents_container_->GetLocalBounds());
+  // Under ChromeOS, the top_container_ may include the title bar for hosted
+  // apps. Just make sure something of consequence is visible before it's height
+  // is used.
+  const int top_container_height = (browser_view->tabstrip()->visible() ||
+                                    browser_view->toolbar()->visible() ||
+                                    browser_view->IsBookmarkBarVisible())
+                                       ? top_container_->height()
+                                       : 0;
   if (base::i18n::IsRTL())
-    bounding_box.set_x(bounding_box.x() + scrollbar_width);
-
+    bounding_box.Inset(gfx::scrollbar_size(), top_container_height, 0, 0);
+  else
+    bounding_box.Inset(0, top_container_height, gfx::scrollbar_size(), 0);
   return bounding_box;
 }
 

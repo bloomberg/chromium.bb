@@ -16,6 +16,7 @@ aggregate_vector_icons("toolbar_vector_icons") {
   icon_directory = "vector_icons"
 
   icons = [
+    "find_in_page.icon",
     "http.1x.icon",
     "http.icon",
     "https_invalid.1x.icon",

@@ -198,6 +198,11 @@ void LocationBarViewMac::UpdateSaveCreditCardIcon() {
   OnDecorationsChanged();
 }
 
+void LocationBarViewMac::UpdateFindBarIconVisibility() {
+  // TODO(crbug/651643): Implement for mac.
+  NOTIMPLEMENTED();
+}
+
 void LocationBarViewMac::UpdateBookmarkStarVisibility() {
   star_decoration_->SetVisible(IsStarEnabled());
 }
