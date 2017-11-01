@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 
-source_set("audio") {
+cast_source_set("audio") {
   sources = [
     "cast_audio_manager.cc",
     "cast_audio_manager.h",

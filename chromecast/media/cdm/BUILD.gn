@@ -5,7 +5,7 @@
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 
-source_set("cdm") {
+cast_source_set("cdm") {
   sources = [
     "chromecast_init_data.cc",
     "chromecast_init_data.h",

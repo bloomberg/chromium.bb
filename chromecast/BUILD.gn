@@ -44,6 +44,11 @@ group("all") {
   testonly = true
 }
 
+# This is a config which is applied on all cast_* targets (which should be all
+# code under chromecast/).
+config("cast_config") {
+}
+
 # A list of all public test() binaries. This is an organizational target that
 # cannot be depended upon or built directly. Build cast_test_lists instead.
 cast_test_group("cast_tests") {

@@ -4,7 +4,7 @@
 
 import("//chromecast/chromecast.gni")
 
-source_set("renderer") {
+cast_source_set("renderer") {
   sources = [
     "cast_content_renderer_client.cc",
     "cast_content_renderer_client.h",

@@ -5,7 +5,7 @@
 import("//chromecast/chromecast.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-source_set("media") {
+cast_source_set("media") {
   if (is_android) {
     sources = [
       "cast_media_drm_bridge_client.cc",

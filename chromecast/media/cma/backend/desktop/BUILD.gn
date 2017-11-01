@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromecast/chromecast.gni")
+
 # Default implementation of media backend used on desktop builds for tests.
-source_set("desktop") {
+cast_source_set("desktop") {
   sources = [
     "audio_decoder_desktop.cc",
     "audio_decoder_desktop.h",

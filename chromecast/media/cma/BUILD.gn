@@ -14,7 +14,7 @@ group("cma") {
   ]
 }
 
-source_set("test_support") {
+cast_source_set("test_support") {
   testonly = true
   sources = [
     "test/frame_generator_for_test.cc",
@@ -42,7 +42,7 @@ source_set("test_support") {
   ]
 }
 
-source_set("unittests") {
+cast_source_set("unittests") {
   testonly = true
   sources = [
     "backend/audio_video_pipeline_device_unittest.cc",

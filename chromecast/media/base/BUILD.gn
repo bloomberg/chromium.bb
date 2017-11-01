@@ -4,7 +4,7 @@
 
 import("//chromecast/chromecast.gni")
 
-source_set("key_systems") {
+cast_source_set("key_systems") {
   sources = [
     "key_systems_common.cc",
     "key_systems_common.h",
@@ -22,7 +22,7 @@ source_set("key_systems") {
   ]
 }
 
-source_set("base") {
+cast_source_set("base") {
   sources = [
     "audio_device_ids.cc",
     "audio_device_ids.h",
@@ -64,7 +64,7 @@ source_set("base") {
   ]
 }
 
-source_set("media_resource_tracker") {
+cast_source_set("media_resource_tracker") {
   sources = [
     "media_resource_tracker.cc",
     "media_resource_tracker.h",
@@ -77,7 +77,7 @@ source_set("media_resource_tracker") {
   ]
 }
 
-source_set("media_codec_support") {
+cast_source_set("media_codec_support") {
   sources = [
     "media_codec_support.cc",
     "media_codec_support.h",
@@ -93,7 +93,7 @@ source_set("media_codec_support") {
   ]
 }
 
-source_set("video_plane_controller") {
+cast_source_set("video_plane_controller") {
   sources = [
     "video_plane_controller.cc",
     "video_plane_controller.h",
