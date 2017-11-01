@@ -100,7 +100,6 @@ SmartClipData SmartClip::DataForRect(const IntRect& crop_rect_in_viewport) {
   }
 
   return SmartClipData(
-      best_node,
       frame_->GetDocument()->View()->ContentsToViewport(united_rects),
       collected_text.ToString());
 }
