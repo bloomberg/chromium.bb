@@ -20293,12 +20293,13 @@ error::Error GLES2DecoderImpl::HandleRasterCHROMIUM(
   SkCanvas* canvas = sk_surface_->getCanvas();
   SkMatrix original_ctm;
   cc::PlaybackParams playback_params(nullptr, original_ctm);
+  cc::PaintOp::DeserializeOptions options;
 
   int op_idx = 0;
   while (size > 4) {
     size_t skip = 0;
     cc::PaintOp* deserialized_op = cc::PaintOp::Deserialize(
-        buffer, size, &data[0], sizeof(cc::LargestPaintOp), &skip);
+        buffer, size, &data[0], sizeof(cc::LargestPaintOp), &skip, options);
     if (!deserialized_op) {
       LOG(ERROR) << "RasterCHROMIUM: bad op: " << op_idx;
       return error::kInvalidArguments;

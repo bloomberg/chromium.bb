@@ -1359,9 +1359,9 @@ class DeserializerIterator {
 
     if (!remaining_)
       return;
-    deserialized_op_ =
-        PaintOp::Deserialize(current_, remaining_, data_.get(),
-                             sizeof(LargestPaintOp), &last_bytes_read_);
+    deserialized_op_ = PaintOp::Deserialize(current_, remaining_, data_.get(),
+                                            sizeof(LargestPaintOp),
+                                            &last_bytes_read_, options);
   }
 
   const void* input_ = nullptr;
@@ -1369,6 +1369,7 @@ class DeserializerIterator {
   size_t input_size_ = 0u;
   size_t remaining_ = 0u;
   size_t last_bytes_read_ = 0u;
+  PaintOp::DeserializeOptions options;
   std::unique_ptr<char, base::AlignedFreeDeleter> data_;
   PaintOp* deserialized_op_ = nullptr;
 };
@@ -2153,6 +2154,7 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
   static constexpr size_t kOutputOpSize = kBufferBytesPerOp;
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialize_buffer_(
       static_cast<char*>(base::AlignedAlloc(kOutputOpSize, kAlign)));
+  PaintOp::DeserializeOptions deserialize_options;
 
   size_t op_idx = 0;
   for (PaintOpBuffer::Iterator iter(&buffer_); iter; ++iter, ++op_idx) {
@@ -2175,7 +2177,7 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
       size_t bytes_read = 0;
       PaintOp* written =
           PaintOp::Deserialize(current, read_size, deserialize_buffer_.get(),
-                               kOutputOpSize, &bytes_read);
+                               kOutputOpSize, &bytes_read, deserialize_options);
 
       // Skips are only valid if they are aligned.
       if (read_size >= skip && read_size % kAlign == 0) {
@@ -2203,6 +2205,7 @@ TEST(PaintOpBufferTest, PaintOpDeserialize) {
       static_cast<char*>(base::AlignedAlloc(kSize, kAlign)));
   std::unique_ptr<char, base::AlignedFreeDeleter> output_(
       static_cast<char*>(base::AlignedAlloc(kSize, kAlign)));
+  PaintOp::DeserializeOptions deserialize_options;
 
   PaintOpBuffer buffer;
   buffer.push<DrawColorOp>(SK_ColorMAGENTA, SkBlendMode::kSrc);
@@ -2211,14 +2214,15 @@ TEST(PaintOpBufferTest, PaintOpDeserialize) {
   PaintOp* op = *iter;
   ASSERT_TRUE(op);
 
-  PaintOp::SerializeOptions options;
-  size_t bytes_written = op->Serialize(input_.get(), kSize, options);
+  PaintOp::SerializeOptions serialize_options;
+  size_t bytes_written = op->Serialize(input_.get(), kSize, serialize_options);
   ASSERT_GT(bytes_written, 0u);
 
   // can deserialize from exactly the right size
   size_t bytes_read = 0;
-  PaintOp* success = PaintOp::Deserialize(input_.get(), bytes_written,
-                                          output_.get(), kSize, &bytes_read);
+  PaintOp* success =
+      PaintOp::Deserialize(input_.get(), bytes_written, output_.get(), kSize,
+                           &bytes_read, deserialize_options);
   ASSERT_TRUE(success);
   EXPECT_EQ(bytes_written, bytes_read);
   success->DestroyThis();
@@ -2227,20 +2231,20 @@ TEST(PaintOpBufferTest, PaintOpDeserialize) {
   // (the DeserializationFailures test above tests if the skip is lying)
   for (size_t i = 0; i < bytes_written - 1; ++i)
     EXPECT_FALSE(PaintOp::Deserialize(input_.get(), i, output_.get(), kSize,
-                                      &bytes_read));
+                                      &bytes_read, deserialize_options));
 
   // unaligned skips fail to deserialize
   PaintOp* serialized = reinterpret_cast<PaintOp*>(input_.get());
   EXPECT_EQ(0u, serialized->skip % kAlign);
   serialized->skip -= 1;
   EXPECT_FALSE(PaintOp::Deserialize(input_.get(), bytes_written, output_.get(),
-                                    kSize, &bytes_read));
+                                    kSize, &bytes_read, deserialize_options));
   serialized->skip += 1;
 
   // bogus types fail to deserialize
   serialized->type = static_cast<uint8_t>(PaintOpType::LastPaintOpType) + 1;
   EXPECT_FALSE(PaintOp::Deserialize(input_.get(), bytes_written, output_.get(),
-                                    kSize, &bytes_read));
+                                    kSize, &bytes_read, deserialize_options));
 }
 
 // Test that deserializing invalid SkClipOp enums fails silently.
@@ -2271,18 +2275,19 @@ TEST(PaintOpBufferTest, ValidateSkClip) {
   SkClipOp bad_clip_max = static_cast<SkClipOp>(~static_cast<uint32_t>(0));
   buffer.push<ClipRectOp>(test_rects[1], bad_clip_max, false);
 
-  PaintOp::SerializeOptions options;
+  PaintOp::SerializeOptions serialize_options;
+  PaintOp::DeserializeOptions deserialize_options;
 
   int op_idx = 0;
   for (PaintOpBuffer::Iterator iter(&buffer); iter; ++iter) {
     const PaintOp* op = *iter;
     size_t bytes_written =
-        op->Serialize(serialized.get(), buffer_size, options);
+        op->Serialize(serialized.get(), buffer_size, serialize_options);
     ASSERT_GT(bytes_written, 0u);
     size_t bytes_read = 0;
-    PaintOp* written =
-        PaintOp::Deserialize(serialized.get(), bytes_written,
-                             deserialized.get(), buffer_size, &bytes_read);
+    PaintOp* written = PaintOp::Deserialize(serialized.get(), bytes_written,
+                                            deserialized.get(), buffer_size,
+                                            &bytes_read, deserialize_options);
     // First op should succeed.  Other ops with bad enums should
     // serialize correctly but fail to deserialize due to the bad
     // SkClipOp enum.
@@ -2351,18 +2356,19 @@ TEST(PaintOpBufferTest, ValidateSkBlendMode) {
     buffer.push<DrawRectOp>(test_rects[i % test_rects.size()], flags);
   }
 
-  PaintOp::SerializeOptions options;
+  PaintOp::SerializeOptions serialize_options;
+  PaintOp::DeserializeOptions deserialize_options;
 
   int op_idx = 0;
   for (PaintOpBuffer::Iterator iter(&buffer); iter; ++iter) {
     const PaintOp* op = *iter;
     size_t bytes_written =
-        op->Serialize(serialized.get(), buffer_size, options);
+        op->Serialize(serialized.get(), buffer_size, serialize_options);
     ASSERT_GT(bytes_written, 0u);
     size_t bytes_read = 0;
-    PaintOp* written =
-        PaintOp::Deserialize(serialized.get(), bytes_written,
-                             deserialized.get(), buffer_size, &bytes_read);
+    PaintOp* written = PaintOp::Deserialize(serialized.get(), bytes_written,
+                                            deserialized.get(), buffer_size,
+                                            &bytes_read, deserialize_options);
     // First two ops should succeed.  Other ops with bad enums should
     // serialize correctly but fail to deserialize due to the bad
     // SkBlendMode enum.
@@ -2406,19 +2412,20 @@ TEST(PaintOpBufferTest, ValidateRects) {
   buffer.push<SaveLayerOp>(&bad_rect, &test_flags[0]);
   buffer.push<SaveLayerAlphaOp>(&bad_rect, test_uint8s[0], true);
 
-  PaintOp::SerializeOptions options;
+  PaintOp::SerializeOptions serialize_options;
+  PaintOp::DeserializeOptions deserialize_options;
 
   // Every op should serialize but fail to deserialize due to the bad rect.
   int op_idx = 0;
   for (PaintOpBuffer::Iterator iter(&buffer); iter; ++iter) {
     const PaintOp* op = *iter;
     size_t bytes_written =
-        op->Serialize(serialized.get(), buffer_size, options);
+        op->Serialize(serialized.get(), buffer_size, serialize_options);
     ASSERT_GT(bytes_written, 0u);
     size_t bytes_read = 0;
-    PaintOp* written =
-        PaintOp::Deserialize(serialized.get(), bytes_written,
-                             deserialized.get(), buffer_size, &bytes_read);
+    PaintOp* written = PaintOp::Deserialize(serialized.get(), bytes_written,
+                                            deserialized.get(), buffer_size,
+                                            &bytes_read, deserialize_options);
     EXPECT_FALSE(written) << "op: " << op_idx;
     ++op_idx;
   }
