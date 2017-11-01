@@ -55,6 +55,16 @@ void CloseTabIfNeeded(int render_process_host_id, int routing_id) {
     web_contents->Close();
 }
 
+// Tells whether or not Chrome is an app candidate for the current navigation.
+bool IsChromeAnAppCandidate(
+    const std::vector<mojom::IntentHandlerInfoPtr>& handlers) {
+  for (const auto& handle : handlers) {
+    if (ArcIntentHelperBridge::IsIntentHelperPackage(handle->package_name))
+      return true;
+  }
+  return false;
+}
+
 // Shows |url| in the current tab.
 void OpenUrlInChrome(int render_process_host_id,
                      int routing_id,
@@ -352,6 +362,7 @@ void OnAppIconsReceived(
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
   show_bubble_cb.Run(nullptr /* anchor_view */, web_contents, app_info,
+                     !IsChromeAnAppCandidate(handlers),
                      base::Bind(OnIntentPickerClosed, render_process_host_id,
                                 routing_id, url, base::Passed(&handlers)));
 }

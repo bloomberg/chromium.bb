@@ -275,7 +275,8 @@ void ToolbarView::ShowIntentPickerBubble(
     }
 
     views::Widget* bubble_widget = IntentPickerBubbleView::ShowBubble(
-        intent_picker_view, GetWebContents(), app_info, callback);
+        intent_picker_view, GetWebContents(), app_info,
+        false /* disable_stay_in_chrome */, callback);
     if (bubble_widget && intent_picker_view)
       bubble_widget->AddObserver(intent_picker_view);
   }

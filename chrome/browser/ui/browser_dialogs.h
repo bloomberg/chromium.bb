@@ -312,6 +312,7 @@ using BubbleShowPtr =
     views::Widget* (*)(views::View*,
                        content::WebContents*,
                        const std::vector<arc::ArcNavigationThrottle::AppInfo>&,
+                       bool disable_display_in_chrome,
                        const IntentPickerResponse&);
 
 BubbleShowPtr ShowIntentPickerBubble();
