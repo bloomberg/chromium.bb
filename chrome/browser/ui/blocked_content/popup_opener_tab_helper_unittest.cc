@@ -567,3 +567,21 @@ TEST_F(BlockTabUnderTest, LogsRappor) {
   EXPECT_EQ(first_url.host(), sample);
   EXPECT_EQ(rappor::UMA_RAPPOR_TYPE, type);
 }
+
+TEST_F(BlockTabUnderTest, LogsToConsole) {
+  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
+  SimulatePopup();
+  const GURL blocked_url("https://example.test/");
+
+  const auto& messages =
+      content::RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
+
+  EXPECT_EQ(0u, messages.size());
+  EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
+  ExpectUIShown(true);
+
+  EXPECT_EQ(1u, messages.size());
+  std::string expected_message = base::StringPrintf(kBlockTabUnderFormatMessage,
+                                                    blocked_url.spec().c_str());
+  EXPECT_EQ(expected_message, messages.front());
+}
