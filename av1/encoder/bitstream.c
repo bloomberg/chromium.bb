@@ -829,7 +829,6 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const COMP_REFERENCE_TYPE comp_ref_type = has_uni_comp_refs(mbmi)
                                                     ? UNIDIR_COMP_REFERENCE
                                                     : BIDIR_COMP_REFERENCE;
-#if USE_UNI_COMP_REFS
 #if CONFIG_VAR_REFS
       if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm))
         if (L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm) || BWD_AND_ALT(cm))
@@ -846,10 +845,6 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       else
         assert(comp_ref_type == UNIDIR_COMP_REFERENCE);
 #endif  // CONFIG_VAR_REFS
-#else   // !USE_UNI_COMP_REFS
-      // NOTE: uni-directional comp refs disabled
-      assert(comp_ref_type == BIDIR_COMP_REFERENCE);
-#endif  // USE_UNI_COMP_REFS
 
       if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
         const int bit = mbmi->ref_frame[0] == BWDREF_FRAME;

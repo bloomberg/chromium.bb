@@ -6526,11 +6526,7 @@ static void estimate_ref_frame_costs(
 
       ref_bicomp_costs[LAST_FRAME] = ref_bicomp_costs[LAST2_FRAME] =
           ref_bicomp_costs[LAST3_FRAME] = ref_bicomp_costs[GOLDEN_FRAME] =
-#if USE_UNI_COMP_REFS
               base_cost + av1_cost_bit(comp_ref_type_p, 1);
-#else
-              base_cost;
-#endif  // USE_UNI_COMP_REFS
       ref_bicomp_costs[BWDREF_FRAME] = ref_bicomp_costs[ALTREF2_FRAME] = 0;
       ref_bicomp_costs[ALTREF_FRAME] = 0;
 
@@ -9873,34 +9869,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     if ((ref_frame_skip_mask[0] & (1 << ref_frame)) &&
         (ref_frame_skip_mask[1] & (1 << AOMMAX(0, second_ref_frame))))
       continue;
-
-#if CONFIG_EXT_COMP_REFS
-// TODO(zoeliu): Following toggle between #if 0/1 and the bug will manifest
-// itself.
-#if 0
-    if (!(cpi->ref_frame_flags & flag_list[ref_frame]) ||
-        (second_ref_frame > INTRA_FRAME &&
-         (!(cpi->ref_frame_flags & flag_list[second_ref_frame]))))
-      printf("Frame=%d, bsize=%d, (mi_row,mi_col)=(%d,%d), ref_frame=%d, "
-             "second_ref_frame=%d\n", cm->current_video_frame, bsize, mi_row,
-             mi_col, ref_frame, second_ref_frame);
-
-    if (!(cpi->ref_frame_flags & flag_list[ref_frame])) continue;
-    if (second_ref_frame > INTRA_FRAME &&
-        (!(cpi->ref_frame_flags & flag_list[second_ref_frame])))
-      continue;
-#endif  // 0
-
-#if !USE_UNI_COMP_REFS
-    // NOTE(zoeliu): Temporarily disable uni-directional comp refs
-    if (second_ref_frame > INTRA_FRAME) {
-      if (!((ref_frame < BWDREF_FRAME) ^ (second_ref_frame < BWDREF_FRAME)))
-        continue;
-    }
-    assert(second_ref_frame <= INTRA_FRAME ||
-           ((ref_frame < BWDREF_FRAME) ^ (second_ref_frame < BWDREF_FRAME)));
-#endif  // !USE_UNI_COMP_REFS
-#endif  // CONFIG_EXT_COMP_REFS
 
     if (mode_skip_mask[ref_frame] & (1 << this_mode)) continue;
 

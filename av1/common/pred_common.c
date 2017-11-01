@@ -584,11 +584,6 @@ int av1_get_pred_context_comp_ref_p(const AV1_COMMON *cm,
         if ((CHECK_LAST_OR_LAST2(frfa) && CHECK_LAST_OR_LAST2(frfl))) {
           pred_context = 4;
         } else {
-// NOTE(zoeliu): Following assert may be removed once confirmed.
-#if !USE_UNI_COMP_REFS
-          // TODO(zoeliu): To further study the UNIDIR scenario
-          assert(CHECK_GOLDEN_OR_LAST3(frfa) || CHECK_GOLDEN_OR_LAST3(frfl));
-#endif  // !USE_UNI_COMP_REFS
           pred_context = 2;
         }
       }

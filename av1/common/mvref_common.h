@@ -287,10 +287,6 @@ static INLINE int8_t av1_ref_frame_type(const MV_REFERENCE_FRAME *const rf) {
   if (rf[1] > INTRA_FRAME) {
 #if CONFIG_EXT_COMP_REFS
     int8_t uni_comp_ref_idx = av1_uni_comp_ref_idx(rf);
-#if !USE_UNI_COMP_REFS
-    // NOTE: uni-directional comp refs disabled
-    assert(uni_comp_ref_idx < 0);
-#endif  // !USE_UNI_COMP_REFS
     if (uni_comp_ref_idx >= 0) {
       assert((TOTAL_REFS_PER_FRAME + FWD_REFS * BWD_REFS + uni_comp_ref_idx) <
              MODE_CTX_REF_FRAMES);

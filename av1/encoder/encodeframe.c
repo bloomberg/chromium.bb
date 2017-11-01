@@ -1087,10 +1087,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
           const COMP_REFERENCE_TYPE comp_ref_type = has_uni_comp_refs(mbmi)
                                                         ? UNIDIR_COMP_REFERENCE
                                                         : BIDIR_COMP_REFERENCE;
-#if !USE_UNI_COMP_REFS
-          // TODO(zoeliu): Temporarily turn off uni-directional comp refs
-          assert(comp_ref_type == BIDIR_COMP_REFERENCE);
-#endif  // !USE_UNI_COMP_REFS
           counts->comp_ref_type[av1_get_comp_reference_type_context(xd)]
                                [comp_ref_type]++;
 

@@ -1472,7 +1472,6 @@ static COMP_REFERENCE_TYPE read_comp_reference_type(AV1_COMMON *cm,
                                                     const MACROBLOCKD *xd,
                                                     aom_reader *r) {
   const int ctx = av1_get_comp_reference_type_context(xd);
-#if USE_UNI_COMP_REFS
   COMP_REFERENCE_TYPE comp_ref_type;
 #if CONFIG_VAR_REFS
   if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm)) {
@@ -1494,10 +1493,6 @@ static COMP_REFERENCE_TYPE read_comp_reference_type(AV1_COMMON *cm,
     comp_ref_type = UNIDIR_COMP_REFERENCE;
   }
 #endif  // CONFIG_VAR_REFS
-#else   // !USE_UNI_COMP_REFS
-  // TODO(zoeliu): Temporarily turn off uni-directional comp refs
-  const COMP_REFERENCE_TYPE comp_ref_type = BIDIR_COMP_REFERENCE;
-#endif  // USE_UNI_COMP_REFS
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->comp_ref_type[ctx][comp_ref_type];
   return comp_ref_type;  // UNIDIR_COMP_REFERENCE or BIDIR_COMP_REFERENCE
@@ -1512,11 +1507,9 @@ static void update_comp_reference_type(AV1_COMMON *cm, const MACROBLOCKD *xd,
          comp_ref_type == BIDIR_COMP_REFERENCE);
   (void)cm;
   const int ctx = av1_get_comp_reference_type_context(xd);
-#if USE_UNI_COMP_REFS
 #if CONFIG_NEW_MULTISYMBOL
   update_cdf(xd->tile_ctx->comp_ref_type_cdf[ctx], comp_ref_type, 2);
 #endif  // CONFIG_NEW_MULTISYMBOL
-#endif  // USE_UNI_COMP_REFS
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->comp_ref_type[ctx][comp_ref_type];
 }
@@ -1603,11 +1596,6 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #if CONFIG_EXT_COMP_REFS
       const COMP_REFERENCE_TYPE comp_ref_type =
           read_comp_reference_type(cm, xd, r);
-
-#if !USE_UNI_COMP_REFS
-      // TODO(zoeliu): Temporarily turn off uni-directional comp refs
-      assert(comp_ref_type == BIDIR_COMP_REFERENCE);
-#endif  // !USE_UNI_COMP_REFS
 
       if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
         const int ctx = av1_get_pred_context_uni_comp_ref_p(xd);
@@ -2359,15 +2347,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       ++xd->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
   }
 #endif  // CONFIG_JNT_COMP
-
-#if CONFIG_EXT_COMP_REFS
-#if !USE_UNI_COMP_REFS
-  // NOTE: uni-directional comp refs disabled
-  if (is_compound)
-    assert(mbmi->ref_frame[0] < BWDREF_FRAME &&
-           mbmi->ref_frame[1] >= BWDREF_FRAME);
-#endif  // !USE_UNI_COMP_REFS
-#endif  // CONFIG_EXT_COMP_REFS
 
 #if CONFIG_COMPOUND_SINGLEREF
   if (!is_compound)
