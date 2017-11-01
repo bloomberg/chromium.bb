@@ -19,8 +19,15 @@
     <div>
       <span id="current-status"></span>
       <button id="refresh">Refresh page</button>
-      <button id="download">Dump</button>
+      <button id="dump">Dump</button>
     </div>
+    <dialog id="dump">
+      <textarea id="dump-box" name="json-box" rows="10" cols="40" readonly>
+      </textarea>
+      <button id="copy-to-clipboard">Copy</button>
+      <button id="close-dump">Close</button>
+      <span id="dump-info"></span>
+    </dialog>
 
     <h2>Event Logs</h2>
     <div>
