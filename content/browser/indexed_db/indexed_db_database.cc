@@ -398,7 +398,7 @@ IndexedDBDatabase::IndexedDBDatabase(
       identifier_(unique_identifier),
       factory_(factory),
       metadata_coding_(std::move(metadata_coding)) {
-  DCHECK(factory != NULL);
+  DCHECK(factory != nullptr);
 }
 
 void IndexedDBDatabase::AddObjectStore(

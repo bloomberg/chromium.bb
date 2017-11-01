@@ -387,7 +387,7 @@ ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
   DCHECK(outstanding_requests_per_tab_map_.empty());
   DCHECK(g_resource_dispatcher_host);
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-  g_resource_dispatcher_host = NULL;
+  g_resource_dispatcher_host = nullptr;
 }
 
 // static
@@ -579,7 +579,7 @@ ResourceDispatcherHostImpl::CreateLoginDelegate(
     ResourceLoader* loader,
     net::AuthChallengeInfo* auth_info) {
   if (!delegate_)
-    return NULL;
+    return nullptr;
 
   return delegate_->CreateLoginDelegate(auth_info, loader->request());
 }
@@ -1091,8 +1091,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
     return;
   }
 
-  ResourceContext* resource_context = NULL;
-  net::URLRequestContext* request_context = NULL;
+  ResourceContext* resource_context = nullptr;
+  net::URLRequestContext* request_context = nullptr;
   requester_info->GetContexts(request_data.resource_type, &resource_context,
                               &request_context);
 
@@ -1208,8 +1208,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       IsBrowserSideNavigationEnabled() &&
       IsResourceTypeFrame(request_data.resource_type);
 
-  ResourceContext* resource_context = NULL;
-  net::URLRequestContext* request_context = NULL;
+  ResourceContext* resource_context = nullptr;
+  net::URLRequestContext* request_context = nullptr;
   requester_info->GetContexts(request_data.resource_type, &resource_context,
                               &request_context);
 
@@ -2412,7 +2412,7 @@ net::URLRequest* ResourceDispatcherHostImpl::GetURLRequest(
     const GlobalRequestID& id) {
   ResourceLoader* loader = GetLoader(id);
   if (!loader)
-    return NULL;
+    return nullptr;
 
   return loader->request();
 }
@@ -2618,7 +2618,7 @@ ResourceLoader* ResourceDispatcherHostImpl::GetLoader(
 
   LoaderMap::const_iterator i = pending_loaders_.find(id);
   if (i == pending_loaders_.end())
-    return NULL;
+    return nullptr;
 
   return i->second.get();
 }

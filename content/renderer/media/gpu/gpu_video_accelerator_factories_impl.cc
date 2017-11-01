@@ -215,7 +215,7 @@ bool GpuVideoAcceleratorFactoriesImpl::CreateTextures(
     gles2->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     if (texture_target == GL_TEXTURE_2D) {
       gles2->TexImage2D(texture_target, 0, GL_RGBA, size.width(), size.height(),
-                        0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+                        0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     }
     gles2->GenMailboxCHROMIUM(texture_mailboxes->at(i).name);
     gles2->ProduceTextureCHROMIUM(texture_target,

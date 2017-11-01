@@ -82,7 +82,7 @@ SpeechRecognitionManagerImpl::~SpeechRecognitionManagerImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(g_speech_recognition_manager_impl);
 
-  g_speech_recognition_manager_impl = NULL;
+  g_speech_recognition_manager_impl = nullptr;
 
   for (SessionsTable::iterator it = sessions_.begin(); it != sessions_.end();
        ++it) {
@@ -588,7 +588,8 @@ void SpeechRecognitionManagerImpl::ResetCapturingSessionId(
 }
 
 void SpeechRecognitionManagerImpl::SessionDelete(Session* session) {
-  DCHECK(session->recognizer.get() == NULL || !session->recognizer->IsActive());
+  DCHECK(session->recognizer.get() == nullptr ||
+         !session->recognizer->IsActive());
   if (primary_session_id_ == session->id)
     primary_session_id_ = kSessionIDInvalid;
   if (!session->context.label.empty())
@@ -629,12 +630,12 @@ SpeechRecognitionEventListener* SpeechRecognitionManagerImpl::GetListener(
   Session* session = GetSession(session_id);
   if (session->listener_is_active && session->config.event_listener)
     return session->config.event_listener.get();
-  return NULL;
+  return nullptr;
 }
 
 SpeechRecognitionEventListener*
 SpeechRecognitionManagerImpl::GetDelegateListener() const {
-  return delegate_.get() ? delegate_->GetEventListener() : NULL;
+  return delegate_.get() ? delegate_->GetEventListener() : nullptr;
 }
 
 const SpeechRecognitionSessionConfig&

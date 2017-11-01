@@ -85,7 +85,7 @@ void KillAndReap(pid_t pid, ZygoteForkDelegate* helper) {
   // Kill the child process in case it's not already dead, so we can safely
   // perform a blocking wait.
   PCHECK(0 == kill(pid, SIGKILL));
-  PCHECK(pid == HANDLE_EINTR(waitpid(pid, NULL, 0)));
+  PCHECK(pid == HANDLE_EINTR(waitpid(pid, nullptr, 0)));
 }
 
 }  // namespace
@@ -115,7 +115,7 @@ bool Zygote::ProcessRequests() {
   struct sigaction action;
   memset(&action, 0, sizeof(action));
   action.sa_handler = &SIGCHLDHandler;
-  PCHECK(sigaction(SIGCHLD, &action, NULL) == 0);
+  PCHECK(sigaction(SIGCHLD, &action, nullptr) == 0);
 
   // Block SIGCHLD until a child might be ready to reap.
   sigset_t sigset;
@@ -165,7 +165,7 @@ bool Zygote::ProcessRequests() {
     if (pfd.revents & POLLIN) {
       // This function call can return multiple times, once per fork().
       if (HandleRequestFromBrowser(kZygoteSocketPairFd)) {
-        PCHECK(sigprocmask(SIG_SETMASK, &orig_sigmask, NULL) == 0);
+        PCHECK(sigprocmask(SIG_SETMASK, &orig_sigmask, nullptr) == 0);
         return true;
       }
     }
@@ -177,7 +177,7 @@ bool Zygote::ProcessRequests() {
 
 bool Zygote::ReapChild(const base::TimeTicks& now, ZygoteProcessInfo* child) {
   pid_t pid = child->internal_pid;
-  pid_t r = HANDLE_EINTR(waitpid(pid, NULL, WNOHANG));
+  pid_t r = HANDLE_EINTR(waitpid(pid, nullptr, WNOHANG));
   if (r > 0) {
     if (r != pid) {
       DLOG(ERROR) << "While waiting for " << pid << " to terminate, "
@@ -250,7 +250,7 @@ bool Zygote::HandleRequestFromBrowser(int fd) {
     CHECK(extra_children_.empty());
 #endif
     for (base::ProcessHandle pid : extra_children_) {
-      PCHECK(pid == HANDLE_EINTR(waitpid(pid, NULL, 0)));
+      PCHECK(pid == HANDLE_EINTR(waitpid(pid, nullptr, 0)));
     }
     _exit(0);
     return false;
@@ -418,7 +418,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
                             std::string* uma_name,
                             int* uma_sample,
                             int* uma_boundary_value) {
-  ZygoteForkDelegate* helper = NULL;
+  ZygoteForkDelegate* helper = nullptr;
   for (auto i = helpers_.begin(); i != helpers_.end(); ++i) {
     if ((*i)->CanHelp(process_type, uma_name, uma_sample, uma_boundary_value)) {
       helper = i->get();
@@ -617,7 +617,7 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
 
     // Reset the process-wide command line to our new command line.
     base::CommandLine::Reset();
-    base::CommandLine::Init(0, NULL);
+    base::CommandLine::Init(0, nullptr);
     base::CommandLine::ForCurrentProcess()->InitFromArgv(args);
 
     // Update the process title. The argv was already cached by the call to

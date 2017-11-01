@@ -420,7 +420,7 @@ TEST_F(SpeechRecognitionEngineTest, SendPreamble) {
 
 void SpeechRecognitionEngineTest::SetUp() {
   engine_under_test_.reset(
-      new SpeechRecognitionEngine(NULL /*URLRequestContextGetter*/));
+      new SpeechRecognitionEngine(nullptr /*URLRequestContextGetter*/));
   engine_under_test_->set_delegate(this);
 }
 

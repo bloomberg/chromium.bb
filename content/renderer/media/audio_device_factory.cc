@@ -23,7 +23,7 @@
 namespace content {
 
 // static
-AudioDeviceFactory* AudioDeviceFactory::factory_ = NULL;
+AudioDeviceFactory* AudioDeviceFactory::factory_ = nullptr;
 
 namespace {
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
@@ -199,7 +199,7 @@ AudioDeviceFactory::AudioDeviceFactory() {
 }
 
 AudioDeviceFactory::~AudioDeviceFactory() {
-  factory_ = NULL;
+  factory_ = nullptr;
 }
 
 // static

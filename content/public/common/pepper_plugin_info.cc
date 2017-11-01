@@ -10,10 +10,9 @@
 namespace content {
 
 PepperPluginInfo::EntryPoints::EntryPoints()
-    : get_interface(NULL),
-      initialize_module(NULL),
-      shutdown_module(NULL) {
-}
+    : get_interface(nullptr),
+      initialize_module(nullptr),
+      shutdown_module(nullptr) {}
 
 PepperPluginInfo::PepperPluginInfo()
     : is_internal(false),

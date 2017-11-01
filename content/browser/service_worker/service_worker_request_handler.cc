@@ -50,7 +50,7 @@ class ServiceWorkerRequestInterceptor
     ServiceWorkerRequestHandler* handler =
         ServiceWorkerRequestHandler::GetHandler(request);
     if (!handler)
-      return NULL;
+      return nullptr;
     return handler->MaybeCreateJob(
         request, network_delegate, resource_context_);
   }

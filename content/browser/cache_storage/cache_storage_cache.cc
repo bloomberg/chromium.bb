@@ -1369,7 +1369,7 @@ void CacheStorageCache::PutDidWriteHeaders(
   DCHECK(put_context->blob_data_handle);
 
   disk_cache::ScopedEntryPtr entry(std::move(put_context->cache_entry));
-  put_context->cache_entry = NULL;
+  put_context->cache_entry = nullptr;
 
   auto blob_to_cache = std::make_unique<CacheStorageBlobToDiskCache>();
   CacheStorageBlobToDiskCache* blob_to_cache_raw = blob_to_cache.get();
@@ -1647,7 +1647,7 @@ void CacheStorageCache::CreateBackend(ErrorCallback callback) {
   int rv = disk_cache::CreateCacheBackend(
       cache_type, net::CACHE_BACKEND_SIMPLE, path_, kMaxCacheBytes,
       false, /* force */
-      NULL, backend,
+      nullptr, backend,
       base::BindOnce(&CacheStorageCache::DeleteBackendCompletedIO,
                      weak_ptr_factory_.GetWeakPtr()),
       create_cache_callback);

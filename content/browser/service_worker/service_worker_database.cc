@@ -445,7 +445,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
         break;
       }
 
-      if (!RemovePrefix(itr->key().ToString(), prefix, NULL))
+      if (!RemovePrefix(itr->key().ToString(), prefix, nullptr))
         break;
 
       RegistrationData registration;
@@ -496,7 +496,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
         break;
       }
 
-      if (!RemovePrefix(itr->key().ToString(), kRegKeyPrefix, NULL))
+      if (!RemovePrefix(itr->key().ToString(), kRegKeyPrefix, nullptr))
         break;
 
       RegistrationData registration;
@@ -1529,7 +1529,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
         break;
       }
 
-      if (!RemovePrefix(itr->key().ToString(), prefix, NULL))
+      if (!RemovePrefix(itr->key().ToString(), prefix, nullptr))
         break;
 
       ResourceRecord resource;
@@ -1843,7 +1843,7 @@ void ServiceWorkerDatabase::BumpNextVersionIdIfNeeded(
 }
 
 bool ServiceWorkerDatabase::IsOpen() {
-  return db_ != NULL;
+  return db_ != nullptr;
 }
 
 void ServiceWorkerDatabase::Disable(const base::Location& from_here,

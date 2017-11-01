@@ -36,7 +36,7 @@ class MessageThrottlingFilter : public IPC::MessageFilter {
       : pending_count_(0), sender_(sender) {}
 
   void SendThrottled(IPC::Message* message);
-  void Shutdown() { sender_ = NULL; }
+  void Shutdown() { sender_ = nullptr; }
 
  private:
   ~MessageThrottlingFilter() override {}
@@ -172,7 +172,7 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
   CachedAreaHolder* GetAreaHolder(const std::string& key) {
     CachedAreaMap::iterator found = cached_areas_.find(key);
     if (found == cached_areas_.end())
-      return NULL;
+      return nullptr;
     return &(found->second);
   }
 
@@ -220,7 +220,7 @@ DOMStorageCachedArea* DomStorageDispatcher::ProxyImpl::LookupCachedArea(
   std::string key = GetCachedAreaKey(namespace_id, origin);
   CachedAreaHolder* holder = GetAreaHolder(key);
   if (!holder)
-    return NULL;
+    return nullptr;
   return holder->area_.get();
 }
 
@@ -231,7 +231,7 @@ void DomStorageDispatcher::ProxyImpl::CompleteOnePendingCallback(bool success) {
 void DomStorageDispatcher::ProxyImpl::Shutdown() {
   throttling_filter_->Shutdown();
   sender_->RemoveFilter(throttling_filter_.get());
-  sender_ = NULL;
+  sender_ = nullptr;
   cached_areas_.clear();
   pending_callbacks_.clear();
 }
@@ -315,7 +315,7 @@ bool DomStorageDispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 void DomStorageDispatcher::OnStorageEvent(
     const DOMStorageMsg_Event_Params& params) {
-  WebStorageAreaImpl* originating_area = NULL;
+  WebStorageAreaImpl* originating_area = nullptr;
   if (params.connection_id) {
     originating_area = WebStorageAreaImpl::FromConnectionId(
         params.connection_id);

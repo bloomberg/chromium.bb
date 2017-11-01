@@ -327,7 +327,7 @@ void SaveFileManager::OnSaveURL(const GURL& url,
           policy_exception_justification: "Not implemented."
         })");
   std::unique_ptr<net::URLRequest> request(request_context->CreateRequest(
-      url, net::DEFAULT_PRIORITY, NULL, traffic_annotation));
+      url, net::DEFAULT_PRIORITY, nullptr, traffic_annotation));
   request->set_method("GET");
 
   // The URLRequest needs to be initialized with the referrer and other

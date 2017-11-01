@@ -607,7 +607,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_EQ(1u, intercepts.size());
   EXPECT_EQ(1u, fallbacks.size());
   EXPECT_EQ(1u, whitelists.size());
-  cache = NULL;
+  cache = nullptr;
 
   // Create a new AppCache and populate it with those records and verify.
   cache = new AppCache(service.storage(), kCacheId);

@@ -147,9 +147,7 @@ void ShellBrowserMainParts::InitializeBrowserContexts() {
 
 void ShellBrowserMainParts::InitializeMessageLoopContext() {
   ui::MaterialDesignController::Initialize();
-  Shell::CreateNewWindow(browser_context_.get(),
-                         GetStartupURL(),
-                         NULL,
+  Shell::CreateNewWindow(browser_context_.get(), GetStartupURL(), nullptr,
                          gfx::Size());
 }
 

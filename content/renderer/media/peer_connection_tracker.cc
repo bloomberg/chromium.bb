@@ -254,7 +254,7 @@ static const char* GetIceGatheringStateString(
 static std::unique_ptr<base::DictionaryValue> GetDictValueStats(
     const StatsReport& report) {
   if (report.values().empty())
-    return NULL;
+    return nullptr;
 
   auto values = std::make_unique<base::ListValue>();
 
@@ -299,7 +299,7 @@ static std::unique_ptr<base::DictionaryValue> GetDictValue(
     const StatsReport& report) {
   std::unique_ptr<base::DictionaryValue> stats = GetDictValueStats(report);
   if (!stats)
-    return NULL;
+    return nullptr;
 
   // Note:
   // The format must be consistent with what webrtc_internals.js expects.

@@ -123,7 +123,7 @@ void SpellCheckClient::FinishLastTextCheck() {
                                            &results);
   }
   last_requested_text_checking_completion_->DidFinishCheckingText(results);
-  last_requested_text_checking_completion_ = 0;
+  last_requested_text_checking_completion_ = nullptr;
   RequestResolved();
 
   if (test_runner_->shouldDumpSpellCheckCallbacks())

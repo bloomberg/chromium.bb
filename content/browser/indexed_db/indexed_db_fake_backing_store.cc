@@ -10,20 +10,20 @@
 namespace content {
 
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
-    : IndexedDBBackingStore(NULL /* indexed_db_factory */,
+    : IndexedDBBackingStore(nullptr /* indexed_db_factory */,
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             scoped_refptr<net::URLRequestContextGetter>(),
                             std::unique_ptr<LevelDBDatabase>(),
                             std::unique_ptr<LevelDBComparator>(),
-                            NULL /* task_runner */) {}
+                            nullptr /* task_runner */) {}
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     IndexedDBFactory* factory,
     base::SequencedTaskRunner* task_runner)
     : IndexedDBBackingStore(factory,
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
-                            NULL /* request_context */,
+                            nullptr /* request_context */,
                             std::unique_ptr<LevelDBDatabase>(),
                             std::unique_ptr<LevelDBComparator>(),
                             task_runner) {}
@@ -148,8 +148,7 @@ IndexedDBFakeBackingStore::OpenIndexCursor(
 
 IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(
     leveldb::Status result)
-    : IndexedDBBackingStore::Transaction(NULL), result_(result) {
-}
+    : IndexedDBBackingStore::Transaction(nullptr), result_(result) {}
 void IndexedDBFakeBackingStore::FakeTransaction::Begin() {}
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseOne(
     scoped_refptr<BlobWriteCallback> callback) {

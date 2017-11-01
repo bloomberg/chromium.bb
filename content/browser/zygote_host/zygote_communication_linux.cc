@@ -155,7 +155,7 @@ pid_t ZygoteCommunication::ForkRequest(
       base::Pickle pid_pickle;
       pid_pickle.WriteInt(kZygoteCommandForkRealPID);
       pid_pickle.WriteInt(real_pid);
-      if (!SendMessage(pid_pickle, NULL))
+      if (!SendMessage(pid_pickle, nullptr))
         return base::kNullProcessHandle;
     }
 
@@ -215,7 +215,7 @@ void ZygoteCommunication::EnsureProcessTerminated(pid_t process) {
 
   pickle.WriteInt(kZygoteCommandReap);
   pickle.WriteInt(process);
-  if (!SendMessage(pickle, NULL))
+  if (!SendMessage(pickle, nullptr))
     LOG(ERROR) << "Failed to send Reap message to zygote";
   ZygoteChildDied(process);
 }
@@ -276,7 +276,7 @@ void ZygoteCommunication::Init() {
 
   base::Pickle pickle;
   pickle.WriteInt(kZygoteCommandGetSandboxStatus);
-  if (!SendMessage(pickle, NULL))
+  if (!SendMessage(pickle, nullptr))
     LOG(FATAL) << "Cannot communicate with zygote";
 
   init_ = true;
@@ -297,7 +297,7 @@ base::TerminationStatus ZygoteCommunication::GetTerminationStatus(
   ssize_t len;
   {
     base::AutoLock lock(control_lock_);
-    if (!SendMessage(pickle, NULL))
+    if (!SendMessage(pickle, nullptr))
       LOG(ERROR) << "Failed to send GetTerminationStatus message to zygote";
     len = ReadReply(buf, sizeof(buf));
   }

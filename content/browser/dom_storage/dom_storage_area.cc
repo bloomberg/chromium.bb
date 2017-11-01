@@ -449,7 +449,7 @@ void DOMStorageArea::Shutdown() {
     PopulateCommitBatchValues();
   }
 
-  map_ = NULL;
+  map_ = nullptr;
   if (!backing_)
     return;
 
@@ -735,7 +735,7 @@ void DOMStorageArea::ShutdownInCommitSequence() {
   }
   commit_batches_.clear();
   backing_.reset();
-  session_storage_backing_ = NULL;
+  session_storage_backing_ = nullptr;
 }
 
 }  // namespace content

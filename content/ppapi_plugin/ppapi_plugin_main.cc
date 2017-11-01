@@ -57,7 +57,7 @@
 #if defined(OS_WIN)
 sandbox::TargetServices* g_target_services = NULL;
 #else
-void* g_target_services = 0;
+void* g_target_services = nullptr;
 #endif
 
 namespace content {

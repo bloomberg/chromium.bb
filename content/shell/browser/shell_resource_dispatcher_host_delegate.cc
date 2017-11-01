@@ -23,12 +23,12 @@ ShellResourceDispatcherHostDelegate::CreateLoginDelegate(
   if (!login_request_callback_.is_null()) {
     login_request_callback_.Run();
     login_request_callback_.Reset();
-    return NULL;
+    return nullptr;
   }
 
 #if !defined(OS_MACOSX)
 // TODO: implement ShellLoginDialog for other platforms, drop this #if
-  return NULL;
+  return nullptr;
 #else
   return new ShellLoginDialog(auth_info, request);
 #endif

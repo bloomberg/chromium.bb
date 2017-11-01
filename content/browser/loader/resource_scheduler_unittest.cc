@@ -163,8 +163,8 @@ class CancelingTestRequest : public TestRequest {
 
 class FakeResourceContext : public ResourceContext {
  private:
-  net::HostResolver* GetHostResolver() override { return NULL; }
-  net::URLRequestContext* GetRequestContext() override { return NULL; }
+  net::HostResolver* GetHostResolver() override { return nullptr; }
+  net::URLRequestContext* GetRequestContext() override { return nullptr; }
 };
 
 class ResourceSchedulerTest : public testing::Test {

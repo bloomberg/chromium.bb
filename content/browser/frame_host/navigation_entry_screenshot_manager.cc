@@ -183,7 +183,7 @@ bool NavigationEntryScreenshotManager::ClearScreenshot(
   if (!entry->screenshot().get())
     return false;
 
-  entry->SetScreenshotPNGData(NULL);
+  entry->SetScreenshotPNGData(nullptr);
   return true;
 }
 

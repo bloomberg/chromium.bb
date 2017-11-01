@@ -77,7 +77,7 @@ QuotaDispatcher::~QuotaDispatcher() {
     iter.Advance();
   }
 
-  g_quota_dispatcher_tls.Pointer()->Set(NULL);
+  g_quota_dispatcher_tls.Pointer()->Set(nullptr);
 }
 
 QuotaDispatcher* QuotaDispatcher::ThreadSpecificInstance(

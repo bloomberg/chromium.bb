@@ -48,7 +48,7 @@ WebUIController* WebUIControllerFactoryRegistry::CreateWebUIControllerForURL(
     if (controller)
       return controller;
   }
-  return NULL;
+  return nullptr;
 }
 
 WebUI::TypeID WebUIControllerFactoryRegistry::GetWebUIType(

@@ -170,7 +170,7 @@ PepperGraphics2DHost* PepperGraphics2DHost::Create(
                            PP_ToBool(is_always_opaque),
                            backing_store)) {
     delete resource_host;
-    return NULL;
+    return nullptr;
   }
   return resource_host;
 }
@@ -180,7 +180,7 @@ PepperGraphics2DHost::PepperGraphics2DHost(RendererPpapiHost* host,
                                            PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      bound_instance_(NULL),
+      bound_instance_(nullptr),
       need_flush_ack_(false),
       offscreen_flush_pending_(false),
       is_always_opaque_(false),
@@ -206,7 +206,7 @@ bool PepperGraphics2DHost::Init(
                          height,
                          true) ||
       !image_data_->Map()) {
-    image_data_ = NULL;
+    image_data_ = nullptr;
     return false;
   }
   is_always_opaque_ = is_always_opaque;
@@ -406,9 +406,8 @@ int32_t PepperGraphics2DHost::OnHostMsgPaintImageData(
 
   QueuedOperation operation(QueuedOperation::PAINT);
   operation.paint_image = image_resource;
-  if (!ValidateAndConvertRect(src_rect_specified ? &src_rect : NULL,
-                              image_resource->width(),
-                              image_resource->height(),
+  if (!ValidateAndConvertRect(src_rect_specified ? &src_rect : nullptr,
+                              image_resource->width(), image_resource->height(),
                               &operation.paint_src_rect))
     return PP_ERROR_BADARGUMENT;
 
@@ -437,9 +436,8 @@ int32_t PepperGraphics2DHost::OnHostMsgScroll(
     const PP_Rect& clip,
     const PP_Point& amount) {
   QueuedOperation operation(QueuedOperation::SCROLL);
-  if (!ValidateAndConvertRect(clip_specified ? &clip : NULL,
-                              image_data_->width(),
-                              image_data_->height(),
+  if (!ValidateAndConvertRect(clip_specified ? &clip : nullptr,
+                              image_data_->width(), image_data_->height(),
                               &operation.scroll_clip_rect))
     return PP_ERROR_BADARGUMENT;
 
@@ -490,7 +488,7 @@ int32_t PepperGraphics2DHost::OnHostMsgFlush(
   PP_Resource old_image_data = 0;
   flush_reply_context_ = context->MakeReplyMessageContext();
   if (is_running_in_process_)
-    return Flush(NULL);
+    return Flush(nullptr);
 
   // Reuse image data when running out of process.
   int32_t result = Flush(&old_image_data);
@@ -622,9 +620,9 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
         // reference, if there are more than one ReplaceContents calls queued
         // the first |old_image_data| will get overwritten and leaked. So we
         // only supply this for the first call.
-        ExecuteReplaceContents(operation.replace_image.get(),
-                               &op_rect,
-                               done_replace_contents ? NULL : old_image_data);
+        ExecuteReplaceContents(
+            operation.replace_image.get(), &op_rect,
+            done_replace_contents ? nullptr : old_image_data);
         done_replace_contents = true;
         break;
     }

@@ -74,7 +74,7 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
   web_stream.VideoTracks(video_tracks);
   if (video_tracks.IsEmpty() ||
       !MediaStreamVideoTrack::GetTrack(video_tracks[0])) {
-    return NULL;
+    return nullptr;
   }
 
   return new MediaStreamVideoRendererSink(video_tracks[0], error_cb, repaint_cb,

@@ -32,7 +32,7 @@ class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
   WebDevToolsAgent* Agent() override {
     DevToolsAgent* agent = DevToolsAgent::FromRoutingId(routing_id_);
     if (!agent)
-      return 0;
+      return nullptr;
     return agent->GetWebAgent();
   }
   WebString Message() override { return WebString::FromUTF8(msg_); }

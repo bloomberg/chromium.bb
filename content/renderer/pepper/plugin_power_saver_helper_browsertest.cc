@@ -26,7 +26,7 @@ namespace content {
 
 class PluginPowerSaverHelperTest : public RenderViewTest {
  public:
-  PluginPowerSaverHelperTest() : sink_(NULL) {}
+  PluginPowerSaverHelperTest() : sink_(nullptr) {}
 
   void SetUp() override {
     RenderViewTest::SetUp();

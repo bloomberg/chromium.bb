@@ -98,7 +98,7 @@ TEST_F(AppCacheStorageTest, DelegateReferences) {
             service.storage()->GetDelegateReference(&delegate)->delegate);
   EXPECT_EQ(service.storage()->GetDelegateReference(&delegate),
             service.storage()->GetOrCreateDelegateReference(&delegate));
-  delegate_reference1 = NULL;
+  delegate_reference1 = nullptr;
   EXPECT_FALSE(service.storage()->GetDelegateReference(&delegate));
 
   delegate_reference1 =
@@ -123,7 +123,7 @@ TEST_F(AppCacheStorageTest, UsageMap) {
 
   MockAppCacheService service;
   scoped_refptr<MockQuotaManagerProxy> mock_proxy(
-      new MockQuotaManagerProxy(NULL, NULL));
+      new MockQuotaManagerProxy(nullptr, nullptr));
   service.set_quota_manager_proxy(mock_proxy.get());
 
   service.storage()->UpdateUsageMapAndNotify(kOrigin, 0);

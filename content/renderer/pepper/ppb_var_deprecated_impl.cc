@@ -44,7 +44,7 @@ class ObjectAccessor {
  public:
   ObjectAccessor(PP_Var var)
       : object_var_(V8ObjectVar::FromPPVar(var).get()),
-        instance_(object_var_ ? object_var_->instance() : NULL) {
+        instance_(object_var_ ? object_var_->instance() : nullptr) {
     if (instance_) {
       converter_.reset(new V8VarConverter(instance_->pp_instance(),
                                           V8VarConverter::kAllowObjectVars));
@@ -151,7 +151,7 @@ void EnumerateProperties(PP_Var var,
   PepperTryCatchVar try_catch(accessor.instance(), accessor.converter(),
                               exception);
 
-  *properties = NULL;
+  *properties = nullptr;
   *property_count = 0;
 
   v8::Local<v8::Array> identifiers = accessor.GetObject()->GetPropertyNames();
@@ -261,7 +261,7 @@ PP_Var CallDeprecatedInternal(PP_Var var,
   }
 
   blink::WebPluginContainer* container = accessor.instance()->container();
-  blink::WebLocalFrame* frame = NULL;
+  blink::WebLocalFrame* frame = nullptr;
   if (container)
     frame = container->GetDocument().GetFrame();
 

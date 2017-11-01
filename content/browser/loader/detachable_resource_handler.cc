@@ -82,7 +82,7 @@ DetachableResourceHandler::DetachableResourceHandler(
 
 DetachableResourceHandler::~DetachableResourceHandler() {
   // Cleanup back-pointer stored on the request info.
-  GetRequestInfo()->set_detachable_handler(NULL);
+  GetRequestInfo()->set_detachable_handler(nullptr);
 }
 
 void DetachableResourceHandler::SetDelegate(Delegate* delegate) {

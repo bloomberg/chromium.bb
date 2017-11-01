@@ -105,7 +105,7 @@ INSTANTIATE_TEST_CASE_P(_, DOMStorageAreaParamTest, ::testing::Bool());
 
 TEST_P(DOMStorageAreaParamTest, DOMStorageAreaBasics) {
   scoped_refptr<DOMStorageArea> area(
-      new DOMStorageArea(1, std::string(), NULL, kOrigin, NULL, NULL));
+      new DOMStorageArea(1, std::string(), nullptr, kOrigin, nullptr, nullptr));
   const bool values_cached = GetParam();
   area->SetCacheOnlyKeys(!values_cached);
   base::string16 old_value;
@@ -175,8 +175,8 @@ TEST_F(DOMStorageAreaTest, BackingDatabaseOpened) {
   // No directory, backing should be null.
   {
     scoped_refptr<DOMStorageArea> area(
-        new DOMStorageArea(kOrigin, base::FilePath(), NULL));
-    EXPECT_EQ(NULL, area->backing_.get());
+        new DOMStorageArea(kOrigin, base::FilePath(), nullptr));
+    EXPECT_EQ(nullptr, area->backing_.get());
     EXPECT_EQ(DOMStorageArea::LOAD_STATE_KEYS_AND_VALUES, area->load_state_);
     EXPECT_FALSE(base::PathExists(kExpectedOriginFilePath));
   }
@@ -184,16 +184,17 @@ TEST_F(DOMStorageAreaTest, BackingDatabaseOpened) {
   // Valid directory and origin but no session storage backing. Backing should
   // be null.
   {
-    scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-        kSessionStorageNamespaceId, std::string(), NULL, kOrigin, NULL, NULL));
-    EXPECT_EQ(NULL, area->backing_.get());
+    scoped_refptr<DOMStorageArea> area(
+        new DOMStorageArea(kSessionStorageNamespaceId, std::string(), nullptr,
+                           kOrigin, nullptr, nullptr));
+    EXPECT_EQ(nullptr, area->backing_.get());
 
     base::NullableString16 old_value;
     EXPECT_TRUE(area->SetItem(kKey, kValue, old_value, &old_value));
     ASSERT_TRUE(old_value.is_null());
 
     // Check that saving a value has still left us without a backing database.
-    EXPECT_EQ(NULL, area->backing_.get());
+    EXPECT_EQ(nullptr, area->backing_.get());
     EXPECT_FALSE(base::PathExists(kExpectedOriginFilePath));
   }
 
@@ -243,7 +244,7 @@ TEST_P(DOMStorageAreaParamTest, ShallowCopyWithBacking) {
   scoped_refptr<SessionStorageDatabase> db =
       new SessionStorageDatabase(temp_dir.GetPath());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      1, kNamespaceId, NULL, kOrigin, db.get(),
+      1, kNamespaceId, nullptr, kOrigin, db.get(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
   EXPECT_TRUE(area->backing_.get());
   EXPECT_TRUE(area->session_storage_backing_);
@@ -306,7 +307,7 @@ TEST_P(DOMStorageAreaParamTest, ShallowCopyWithBacking) {
 
 TEST_F(DOMStorageAreaTest, SetCacheOnlyKeysWithoutBacking) {
   scoped_refptr<DOMStorageArea> area(
-      new DOMStorageArea(1, std::string(), NULL, kOrigin, NULL, NULL));
+      new DOMStorageArea(1, std::string(), nullptr, kOrigin, nullptr, nullptr));
   EXPECT_EQ(DOMStorageArea::LOAD_STATE_KEYS_AND_VALUES,
             area->desired_load_state_);
   EXPECT_FALSE(area->map_->has_only_keys());

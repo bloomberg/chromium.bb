@@ -17,7 +17,7 @@ TestNavigationURLLoaderFactory::TestNavigationURLLoaderFactory() {
 }
 
 TestNavigationURLLoaderFactory::~TestNavigationURLLoaderFactory() {
-  NavigationURLLoader::SetFactoryForTesting(NULL);
+  NavigationURLLoader::SetFactoryForTesting(nullptr);
 }
 
 std::unique_ptr<NavigationURLLoader>

@@ -76,7 +76,7 @@ PepperFileChooserHost::PepperFileChooserHost(RendererPpapiHost* host,
                                              PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      handler_(NULL),
+      handler_(nullptr),
       weak_factory_(this) {}
 
 PepperFileChooserHost::~PepperFileChooserHost() {}
@@ -116,7 +116,7 @@ void PepperFileChooserHost::StoreChosenFiles(
     host()->SendReply(reply_context_,
                       PpapiPluginMsg_FileChooser_ShowReply(chosen_files));
     reply_context_ = ppapi::host::ReplyMessageContext();
-    handler_ = NULL;  // Handler deletes itself.
+    handler_ = nullptr;  // Handler deletes itself.
   }
 }
 
@@ -157,7 +157,7 @@ int32_t PepperFileChooserHost::OnShow(
 
   if (!render_frame || !render_frame->ScheduleFileChooser(params, handler_)) {
     delete handler_;
-    handler_ = NULL;
+    handler_ = nullptr;
     return PP_ERROR_NOACCESS;
   }
 
@@ -188,7 +188,7 @@ void PepperFileChooserHost::DidCreateResourceHosts(
   host()->SendReply(reply_context_,
                     PpapiPluginMsg_FileChooser_ShowReply(chosen_files));
   reply_context_ = ppapi::host::ReplyMessageContext();
-  handler_ = NULL;  // Handler deletes itself.
+  handler_ = nullptr;  // Handler deletes itself.
 }
 
 }  // namespace content

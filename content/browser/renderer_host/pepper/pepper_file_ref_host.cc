@@ -45,7 +45,7 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
 
   ResourceHost* fs_resource_host =
       host->GetPpapiHost()->GetResourceHost(file_system);
-  if (fs_resource_host == NULL) {
+  if (fs_resource_host == nullptr) {
     DLOG(ERROR) << "Couldn't find FileSystem host: " << resource
                 << " path: " << path;
     return;
@@ -211,7 +211,7 @@ int32_t PepperFileRefHost::OnRename(ppapi::host::HostMessageContext* context,
   if (!resource_host)
     return PP_ERROR_BADRESOURCE;
 
-  PepperFileRefHost* file_ref_host = NULL;
+  PepperFileRefHost* file_ref_host = nullptr;
   if (resource_host->IsFileRefHost())
     file_ref_host = static_cast<PepperFileRefHost*>(resource_host);
   if (!file_ref_host)

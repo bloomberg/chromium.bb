@@ -15,7 +15,7 @@ namespace content {
 
 void GetFontFamilies_SlowBlocking(std::vector<std::string>* font_families) {
   PangoFontMap* font_map = ::pango_cairo_font_map_get_default();
-  PangoFontFamily** families = NULL;
+  PangoFontFamily** families = nullptr;
   int num_families = 0;
   ::pango_font_map_list_families(font_map, &families, &num_families);
 
@@ -28,14 +28,14 @@ void GetFontsInFamily_SlowBlocking(
     const std::string& family,
     std::vector<ppapi::proxy::SerializedTrueTypeFontDesc>* fonts_in_family) {
   PangoFontMap* font_map = ::pango_cairo_font_map_get_default();
-  PangoFontFamily** font_families = NULL;
+  PangoFontFamily** font_families = nullptr;
   int num_families = 0;
   ::pango_font_map_list_families(font_map, &font_families, &num_families);
 
   for (int i = 0; i < num_families; ++i) {
     PangoFontFamily* font_family = font_families[i];
     if (family.compare(::pango_font_family_get_name(font_family)) == 0) {
-      PangoFontFace** font_faces = NULL;
+      PangoFontFace** font_faces = nullptr;
       int num_faces = 0;
       ::pango_font_family_list_faces(font_family, &font_faces, &num_faces);
 

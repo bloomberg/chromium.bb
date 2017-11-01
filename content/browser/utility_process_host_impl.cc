@@ -124,7 +124,7 @@ class UtilitySandboxedProcessLauncherDelegate
   service_manager::SandboxType sandbox_type_;
 };
 
-UtilityMainThreadFactoryFunction g_utility_main_thread_factory = NULL;
+UtilityMainThreadFactoryFunction g_utility_main_thread_factory = nullptr;
 
 UtilityProcessHost* UtilityProcessHost::Create(
     const scoped_refptr<UtilityProcessHostClient>& client,

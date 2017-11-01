@@ -247,7 +247,7 @@ void ReadData(SerializeObject* obj, const void** data, int* length) {
     *data = tmp;
   } else {
     obj->parse_error = true;
-    *data = NULL;
+    *data = nullptr;
     *length = 0;
   }
 }
@@ -281,7 +281,7 @@ void WriteReal(double data, SerializeObject* obj) {
 }
 
 double ReadReal(SerializeObject* obj) {
-  const void* tmp = NULL;
+  const void* tmp = nullptr;
   int length = 0;
   double value = 0.0;
   ReadData(obj, &tmp, &length);
@@ -358,16 +358,16 @@ const base::char16* ReadStringNoCopy(SerializeObject* obj, int* num_chars) {
   int length_in_bytes;
   if (!obj->iter.ReadInt(&length_in_bytes)) {
     obj->parse_error = true;
-    return NULL;
+    return nullptr;
   }
 
   if (length_in_bytes < 0)
-    return NULL;
+    return nullptr;
 
   const char* data;
   if (!obj->iter.ReadBytes(&data, length_in_bytes)) {
     obj->parse_error = true;
-    return NULL;
+    return nullptr;
   }
 
   if (num_chars)

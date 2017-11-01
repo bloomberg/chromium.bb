@@ -137,8 +137,8 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
   }
 
   void TearDown() override {
-    version_ = NULL;
-    registration_ = NULL;
+    version_ = nullptr;
+    registration_ = nullptr;
     helper_.reset();
   }
 
@@ -277,8 +277,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
       version_.get(),
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
-  version_ = NULL;
-  registration_ = NULL;
+  version_ = nullptr;
+  registration_ = nullptr;
 
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(

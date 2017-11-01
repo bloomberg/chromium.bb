@@ -186,7 +186,7 @@ V8ValueConverterImpl::V8ValueConverterImpl()
       strip_null_from_objects_(false),
       convert_negative_zero_to_int_(false),
       avoid_identity_hash_for_testing_(false),
-      strategy_(NULL) {}
+      strategy_(nullptr) {}
 
 void V8ValueConverterImpl::SetDateAllowed(bool val) {
   date_allowed_ = val;
@@ -292,7 +292,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Array(
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   for (size_t i = 0; i < val->GetSize(); ++i) {
-    const base::Value* child = NULL;
+    const base::Value* child = nullptr;
     CHECK(val->Get(i, &child));
 
     v8::Local<v8::Value> child_v8 =

@@ -44,7 +44,7 @@ TEST(ChunkedByteBufferTest, BasicTest) {
   // Remove and check chunk 1.
   std::unique_ptr<ByteVector> chunk;
   chunk = buffer.PopChunk();
-  EXPECT_TRUE(chunk != NULL);
+  EXPECT_TRUE(chunk != nullptr);
   EXPECT_EQ(4U, chunk->size());
   EXPECT_EQ(0, std::char_traits<uint8_t>::compare(kChunks + 4, &(*chunk)[0],
                                                   chunk->size()));
@@ -53,7 +53,7 @@ TEST(ChunkedByteBufferTest, BasicTest) {
 
   // Read and check chunk 2.
   chunk = buffer.PopChunk();
-  EXPECT_TRUE(chunk != NULL);
+  EXPECT_TRUE(chunk != nullptr);
   EXPECT_EQ(2U, chunk->size());
   EXPECT_EQ(0, std::char_traits<uint8_t>::compare(kChunks + 12, &(*chunk)[0],
                                                   chunk->size()));
@@ -66,7 +66,7 @@ TEST(ChunkedByteBufferTest, BasicTest) {
 
   // Remove and check chunk 3.
   chunk = buffer.PopChunk();
-  EXPECT_TRUE(chunk != NULL);
+  EXPECT_TRUE(chunk != nullptr);
   EXPECT_EQ(1U, chunk->size());
   EXPECT_EQ((*chunk)[0], kChunks[18]);
   EXPECT_EQ(0U, buffer.GetTotalLength());

@@ -89,7 +89,7 @@ class AppCacheHostTest : public testing::Test {
 
   class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
    public:
-    MockQuotaManagerProxy() : QuotaManagerProxy(NULL, NULL) {}
+    MockQuotaManagerProxy() : QuotaManagerProxy(nullptr, nullptr) {}
 
     // Not needed for our tests.
     void RegisterClient(storage::QuotaClient* client) override {}
@@ -166,7 +166,7 @@ TEST_F(AppCacheHostTest, Basic) {
   EXPECT_EQ(1, host.host_id());
   EXPECT_EQ(&service_, host.service());
   EXPECT_EQ(&mock_frontend_, host.frontend());
-  EXPECT_EQ(NULL, host.associated_cache());
+  EXPECT_EQ(nullptr, host.associated_cache());
   EXPECT_FALSE(host.is_selection_pending());
 
   // See that the callbacks are delivered immediately
@@ -219,12 +219,12 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
     EXPECT_EQ(1, host.host_id());
     EXPECT_EQ(&service_, host.service());
     EXPECT_EQ(&mock_frontend_, host.frontend());
-    EXPECT_EQ(NULL, host.associated_cache());
+    EXPECT_EQ(nullptr, host.associated_cache());
     EXPECT_FALSE(host.is_selection_pending());
     EXPECT_TRUE(host.preferred_manifest_url().is_empty());
   }
   EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
-  service_.set_quota_manager_proxy(NULL);
+  service_.set_quota_manager_proxy(nullptr);
 }
 
 TEST_F(AppCacheHostTest, ForeignEntry) {
@@ -251,7 +251,7 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   EXPECT_EQ(1, host.host_id());
   EXPECT_EQ(&service_, host.service());
   EXPECT_EQ(&mock_frontend_, host.frontend());
-  EXPECT_EQ(NULL, host.associated_cache());
+  EXPECT_EQ(nullptr, host.associated_cache());
   EXPECT_FALSE(host.is_selection_pending());
 
   // See that the entry was marked as foreign.
@@ -308,7 +308,7 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
   // Satisfy the load with NULL, a failure.
-  host.OnCacheLoaded(NULL, kMockCacheId);
+  host.OnCacheLoaded(nullptr, kMockCacheId);
 
   // Cache selection should have finished
   EXPECT_FALSE(host.is_selection_pending());
@@ -340,7 +340,7 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
   EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
   // Satisfy the load will NULL, a failure.
-  host.OnGroupLoaded(NULL, kMockManifestUrl);
+  host.OnGroupLoaded(nullptr, kMockManifestUrl);
 
   // Cache selection should have finished
   EXPECT_FALSE(host.is_selection_pending());
@@ -355,7 +355,7 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
 
 TEST_F(AppCacheHostTest, SetSwappableCache) {
   AppCacheHost host(1, &mock_frontend_, &service_);
-  host.SetSwappableCache(NULL);
+  host.SetSwappableCache(nullptr);
   EXPECT_FALSE(host.swappable_cache_.get());
 
   scoped_refptr<AppCacheGroup> group1(new AppCacheGroup(
@@ -456,7 +456,7 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
     EXPECT_TRUE(host.is_selection_pending());
   }
   EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
-  service_.set_quota_manager_proxy(NULL);
+  service_.set_quota_manager_proxy(nullptr);
 }
 
 TEST_F(AppCacheHostTest, SelectCacheBlocked) {
@@ -495,12 +495,12 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
     EXPECT_EQ(1, host.host_id());
     EXPECT_EQ(&service_, host.service());
     EXPECT_EQ(&mock_frontend_, host.frontend());
-    EXPECT_EQ(NULL, host.associated_cache());
+    EXPECT_EQ(nullptr, host.associated_cache());
     EXPECT_FALSE(host.is_selection_pending());
     EXPECT_TRUE(host.preferred_manifest_url().is_empty());
   }
   EXPECT_EQ(0, mock_quota_proxy->GetInUseCount(kDocAndOriginUrl));
-  service_.set_quota_manager_proxy(NULL);
+  service_.set_quota_manager_proxy(nullptr);
 }
 
 TEST_F(AppCacheHostTest, SelectCacheTwice) {

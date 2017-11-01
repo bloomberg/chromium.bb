@@ -16,8 +16,9 @@ namespace content {
 namespace {
 
 FileSystemDispatcher* GetFileSystemDispatcher() {
-  return RenderThreadImpl::current() ?
-      RenderThreadImpl::current()->file_system_dispatcher() : NULL;
+  return RenderThreadImpl::current()
+             ? RenderThreadImpl::current()->file_system_dispatcher()
+             : nullptr;
 }
 
 }  // namespace

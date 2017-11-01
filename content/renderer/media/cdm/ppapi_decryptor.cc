@@ -269,7 +269,7 @@ void PpapiDecryptor::Decrypt(
   DVLOG(3) << __func__ << " - stream_type: " << stream_type;
   if (!CdmDelegate() ||
       !CdmDelegate()->Decrypt(stream_type, encrypted, decrypt_cb)) {
-    decrypt_cb.Run(kError, NULL);
+    decrypt_cb.Run(kError, nullptr);
   }
 }
 
@@ -366,7 +366,7 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
   DVLOG(3) << __func__;
   if (!CdmDelegate() ||
       !CdmDelegate()->DecryptAndDecodeVideo(encrypted, video_decode_cb)) {
-    video_decode_cb.Run(kError, NULL);
+    video_decode_cb.Run(kError, nullptr);
   }
 }
 
@@ -465,7 +465,8 @@ void PpapiDecryptor::OnFatalPluginError() {
 
 ContentDecryptorDelegate* PpapiDecryptor::CdmDelegate() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
-  return (pepper_cdm_wrapper_) ? pepper_cdm_wrapper_->GetCdmDelegate() : NULL;
+  return (pepper_cdm_wrapper_) ? pepper_cdm_wrapper_->GetCdmDelegate()
+                               : nullptr;
 }
 
 }  // namespace content

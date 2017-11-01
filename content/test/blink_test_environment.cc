@@ -95,7 +95,7 @@ void TearDownBlinkTestEnvironment() {
   if (RunningOnValgrind())
     blink::WebCache::Clear();
   delete test_environment;
-  test_environment = NULL;
+  test_environment = nullptr;
 }
 
 }  // namespace content

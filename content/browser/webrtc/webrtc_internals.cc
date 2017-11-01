@@ -45,7 +45,7 @@ base::LazyInstance<WebRTCInternals>::Leaky g_webrtc_internals =
 
 // Makes sure that |dict| has a ListValue under path "log".
 base::ListValue* EnsureLogList(base::DictionaryValue* dict) {
-  base::ListValue* log = NULL;
+  base::ListValue* log = nullptr;
   if (!dict->GetList("log", &log))
     log = dict->SetList("log", std::make_unique<base::ListValue>());
   return log;
@@ -165,7 +165,7 @@ void WebRTCInternals::OnRemovePeerConnection(ProcessId pid, int lid) {
   base::DictionaryValue* dict = FindRecord(pid, lid, &index);
   if (dict) {
     MaybeClosePeerConnection(dict);
-    peer_connection_data_.Remove(index, NULL);
+    peer_connection_data_.Remove(index, nullptr);
   }
 
   if (observers_.might_have_observers()) {
@@ -297,8 +297,9 @@ void WebRTCInternals::EnableAudioDebugRecordings(
   select_file_dialog_ = ui::SelectFileDialog::Create(this, nullptr);
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(),
-      audio_debug_recordings_file_path_, NULL, 0, base::FilePath::StringType(),
-      web_contents->GetTopLevelNativeWindow(), NULL);
+      audio_debug_recordings_file_path_, nullptr, 0,
+      base::FilePath::StringType(), web_contents->GetTopLevelNativeWindow(),
+      nullptr);
 #endif
 #endif
 }
@@ -441,7 +442,7 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
   // Iterates from the end of the list to remove the PeerConnections created
   // by the exitting renderer.
   for (int i = peer_connection_data_.GetSize() - 1; i >= 0; --i) {
-    base::DictionaryValue* record = NULL;
+    base::DictionaryValue* record = nullptr;
     peer_connection_data_.GetDictionary(i, &record);
 
     int this_rid = 0;
@@ -460,7 +461,7 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
         SendUpdate("removePeerConnection", std::move(update));
       }
       MaybeClosePeerConnection(record);
-      peer_connection_data_.Remove(i, NULL);
+      peer_connection_data_.Remove(i, nullptr);
     }
   }
   UpdateWakeLock();
@@ -469,14 +470,14 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
   // Iterates from the end of the list to remove the getUserMedia requests
   // created by the exiting renderer.
   for (int i = get_user_media_requests_.GetSize() - 1; i >= 0; --i) {
-    base::DictionaryValue* record = NULL;
+    base::DictionaryValue* record = nullptr;
     get_user_media_requests_.GetDictionary(i, &record);
 
     int this_rid = 0;
     record->GetInteger("rid", &this_rid);
 
     if (this_rid == render_process_id) {
-      get_user_media_requests_.Remove(i, NULL);
+      get_user_media_requests_.Remove(i, nullptr);
       found_any = true;
     }
   }

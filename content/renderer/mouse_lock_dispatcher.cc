@@ -9,11 +9,11 @@
 
 namespace content {
 
-MouseLockDispatcher::MouseLockDispatcher() : mouse_locked_(false),
-                                             pending_lock_request_(false),
-                                             pending_unlock_request_(false),
-                                             target_(NULL) {
-}
+MouseLockDispatcher::MouseLockDispatcher()
+    : mouse_locked_(false),
+      pending_lock_request_(false),
+      pending_unlock_request_(false),
+      target_(nullptr) {}
 
 MouseLockDispatcher::~MouseLockDispatcher() {
 }
@@ -40,7 +40,7 @@ void MouseLockDispatcher::UnlockMouse(LockTarget* target) {
 void MouseLockDispatcher::OnLockTargetDestroyed(LockTarget* target) {
   if (target == target_) {
     UnlockMouse(target);
-    target_ = NULL;
+    target_ = nullptr;
   }
 }
 
@@ -69,7 +69,7 @@ void MouseLockDispatcher::OnLockMouseACK(bool succeeded) {
 
   LockTarget* last_target = target_;
   if (!succeeded)
-    target_ = NULL;
+    target_ = nullptr;
 
   // Callbacks made after all state modification to prevent reentrant errors
   // such as OnLockMouseACK() synchronously calling LockMouse().
@@ -85,7 +85,7 @@ void MouseLockDispatcher::OnMouseLockLost() {
   pending_unlock_request_ = false;
 
   LockTarget* last_target = target_;
-  target_ = NULL;
+  target_ = nullptr;
 
   // Callbacks made after all state modification to prevent reentrant errors
   // such as OnMouseLockLost() synchronously calling LockMouse().

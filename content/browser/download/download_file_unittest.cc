@@ -165,7 +165,7 @@ class DownloadFileTest : public testing::Test {
   DownloadFileTest()
       : observer_(new StrictMock<MockDownloadDestinationObserver>),
         observer_factory_(observer_.get()),
-        input_stream_(NULL),
+        input_stream_(nullptr),
         additional_streams_(
             std::vector<StrictMock<MockByteStreamReader>*>{nullptr, nullptr}),
         bytes_(-1),
@@ -653,7 +653,7 @@ TEST_F(DownloadFileTest, RenameUniquifies) {
             base::WriteFile(path_1, file_data, sizeof(file_data)));
   ASSERT_TRUE(base::PathExists(path_1));
 
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, RenameAndUniquify(path_1, NULL));
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, RenameAndUniquify(path_1, nullptr));
   EXPECT_TRUE(base::PathExists(path_1_suffixed));
 
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);
@@ -704,7 +704,7 @@ TEST_P(DownloadFileTestWithRename, RenameError) {
 
     // Expect nulling out of further processing.
     EXPECT_CALL(*input_stream_, RegisterCallback(IsNullCallback()));
-    ExpectPermissionError(InvokeSelectedRenameMethod(target_path, NULL));
+    ExpectPermissionError(InvokeSelectedRenameMethod(target_path, nullptr));
     EXPECT_FALSE(base::PathExists(target_path_suffixed));
   }
 
@@ -814,7 +814,7 @@ TEST_F(DownloadFileTest, StreamEmptySuccess) {
 
   // Test that calling the sink_callback_ on an empty stream shouldn't
   // do anything.
-  AppendDataToFile(NULL, 0);
+  AppendDataToFile(nullptr, 0);
 
   // Finish the download this way and make sure we see it on the observer.
   FinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, true, kEmptyHash);

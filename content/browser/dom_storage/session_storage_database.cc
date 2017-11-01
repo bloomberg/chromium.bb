@@ -462,7 +462,7 @@ leveldb::Status SessionStorageDatabase::TryToOpen(
 }
 
 bool SessionStorageDatabase::IsOpen() const {
-  return db_.get() != NULL;
+  return db_.get() != nullptr;
 }
 
 bool SessionStorageDatabase::CallerErrorCheck(bool ok) const {

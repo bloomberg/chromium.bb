@@ -26,7 +26,7 @@ bool IdleUserDetector::OnMessageReceived(const IPC::Message& message) {
 void IdleUserDetector::ActivityDetected() {
   if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     RenderThreadImpl* render_thread = RenderThreadImpl::current();
-    if (render_thread != NULL) {
+    if (render_thread != nullptr) {
       render_thread->PostponeIdleNotification();
     }
   }

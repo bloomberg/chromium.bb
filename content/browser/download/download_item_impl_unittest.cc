@@ -1242,7 +1242,7 @@ TEST_F(DownloadItemTest, StartFailedDownload) {
           DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED),
       1);
   EXPECT_EQ(target_path, item->GetTargetFilePath());
-  CleanupItem(item, NULL, DownloadItem::INTERRUPTED);
+  CleanupItem(item, nullptr, DownloadItem::INTERRUPTED);
 }
 
 // Test that the delegate is invoked after the download file is renamed.

@@ -183,13 +183,13 @@ MockDownloadItemFactory::~MockDownloadItemFactory() {}
 
 MockDownloadItemImpl* MockDownloadItemFactory::GetItem(int id) {
   if (items_.find(id) == items_.end())
-    return NULL;
+    return nullptr;
   return items_[id];
 }
 
 MockDownloadItemImpl* MockDownloadItemFactory::PopItem() {
   if (items_.empty())
-    return NULL;
+    return nullptr;
 
   std::map<uint32_t, MockDownloadItemImpl*>::iterator first_item =
       items_.begin();

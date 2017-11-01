@@ -103,7 +103,7 @@ void LayoutTestMessageFilter::OnRegisterIsolatedFileSystem(
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
   for (size_t i = 0; i < absolute_filenames.size(); ++i) {
-    files.AddPath(absolute_filenames[i], NULL);
+    files.AddPath(absolute_filenames[i], nullptr);
     if (!policy->CanReadFile(render_process_id_, absolute_filenames[i]))
       policy->GrantReadFile(render_process_id_, absolute_filenames[i]);
   }

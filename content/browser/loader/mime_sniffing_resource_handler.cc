@@ -450,7 +450,7 @@ bool MimeSniffingResourceHandler::CheckForPluginHandler(
   bool has_plugin = plugin_service_->GetPluginInfo(
       info->GetChildID(), info->GetRenderFrameID(), info->GetContext(),
       request()->url(), url::Origin(), response_->head.mime_type,
-      allow_wildcard, &stale, &plugin, NULL);
+      allow_wildcard, &stale, &plugin, nullptr);
 
   if (stale) {
     // Refresh the plugins asynchronously.

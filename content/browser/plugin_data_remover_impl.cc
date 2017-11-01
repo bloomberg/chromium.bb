@@ -47,7 +47,7 @@ void PluginDataRemover::GetSupportedPlugins(
   bool allow_wildcard = false;
   std::vector<WebPluginInfo> plugins;
   PluginService::GetInstance()->GetPluginInfoArray(
-      GURL(), kFlashPluginSwfMimeType, allow_wildcard, &plugins, NULL);
+      GURL(), kFlashPluginSwfMimeType, allow_wildcard, &plugins, nullptr);
   base::Version min_version(kMinFlashVersion);
   for (std::vector<WebPluginInfo>::iterator it = plugins.begin();
        it != plugins.end(); ++it) {
@@ -88,8 +88,8 @@ class PluginDataRemoverImpl::Context
 
     // Get the plugin file path.
     std::vector<WebPluginInfo> plugins;
-    plugin_service->GetPluginInfoArray(
-        GURL(), mime_type, false, &plugins, NULL);
+    plugin_service->GetPluginInfoArray(GURL(), mime_type, false, &plugins,
+                                       nullptr);
 
     if (plugins.empty()) {
       // May be empty for some tests and on the CrOS login OOBE screen.

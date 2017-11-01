@@ -171,7 +171,7 @@ void* ImageDataPlatformBackend::Map() {
     const bool is_opaque = false;
     mapped_canvas_ = dib_->GetPlatformCanvas(width_, height_, is_opaque);
     if (!mapped_canvas_)
-      return NULL;
+      return nullptr;
   }
   SkPixmap pixmap;
   skia::GetWritablePixels(mapped_canvas_.get(), &pixmap);
@@ -234,7 +234,9 @@ bool ImageDataSimpleBackend::Init(PPB_ImageData_Impl* impl,
 
 bool ImageDataSimpleBackend::IsMapped() const { return map_count_ > 0; }
 
-TransportDIB* ImageDataSimpleBackend::GetTransportDIB() const { return NULL; }
+TransportDIB* ImageDataSimpleBackend::GetTransportDIB() const {
+  return nullptr;
+}
 
 void* ImageDataSimpleBackend::Map() {
   DCHECK(shared_memory_.get());
@@ -263,7 +265,7 @@ int32_t ImageDataSimpleBackend::GetSharedMemory(base::SharedMemory** shm,
 
 SkCanvas* ImageDataSimpleBackend::GetCanvas() {
   if (!IsMapped())
-    return NULL;
+    return nullptr;
   return skia_canvas_.get();
 }
 

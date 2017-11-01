@@ -202,7 +202,7 @@ void DOMStorageCachedArea::Prime(int connection_id) {
 }
 
 void DOMStorageCachedArea::Reset() {
-  map_ = NULL;
+  map_ = nullptr;
   weak_factory_.InvalidateWeakPtrs();
   ignore_key_mutations_.clear();
   ignore_all_mutations_ = false;

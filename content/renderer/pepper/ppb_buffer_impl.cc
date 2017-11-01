@@ -53,7 +53,7 @@ bool PPB_Buffer_Impl::Init(uint32_t size) {
   size_ = size;
   shared_memory_.reset(
       RenderThread::Get()->HostAllocateSharedMemoryBuffer(size).release());
-  return shared_memory_.get() != NULL;
+  return shared_memory_.get() != nullptr;
 }
 
 PP_Bool PPB_Buffer_Impl::Describe(uint32_t* size_in_bytes) {

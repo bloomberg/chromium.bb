@@ -14,7 +14,7 @@ NavigatorDelegate* Navigator::GetDelegate() {
 }
 
 NavigationController* Navigator::GetController() {
-  return NULL;
+  return nullptr;
 }
 
 bool Navigator::NavigateToPendingEntry(FrameTreeNode* frame_tree_node,

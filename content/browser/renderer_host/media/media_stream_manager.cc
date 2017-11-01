@@ -915,7 +915,7 @@ std::string MediaStreamManager::AddRequest(DeviceRequest* request) {
   std::string unique_label;
   do {
     unique_label = RandomLabel();
-  } while (FindRequest(unique_label) != NULL);
+  } while (FindRequest(unique_label) != nullptr);
 
   requests_.push_back(std::make_pair(unique_label, request));
 
@@ -928,7 +928,7 @@ MediaStreamManager::FindRequest(const std::string& label) const {
     if (labeled_request.first == label)
       return labeled_request.second;
   }
-  return NULL;
+  return nullptr;
 }
 
 void MediaStreamManager::DeleteRequest(const std::string& label) {

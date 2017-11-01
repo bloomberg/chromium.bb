@@ -193,7 +193,7 @@ RenderViewHost* RenderViewHostTestHarness::rvh() {
 }
 
 RenderViewHost* RenderViewHostTestHarness::pending_rvh() {
-  return pending_main_rfh() ? pending_main_rfh()->GetRenderViewHost() : NULL;
+  return pending_main_rfh() ? pending_main_rfh()->GetRenderViewHost() : nullptr;
 }
 
 RenderViewHost* RenderViewHostTestHarness::active_rvh() {
@@ -217,7 +217,7 @@ MockRenderProcessHost* RenderViewHostTestHarness::process() {
 }
 
 void RenderViewHostTestHarness::DeleteContents() {
-  SetContents(NULL);
+  SetContents(nullptr);
 }
 
 void RenderViewHostTestHarness::SetContents(WebContents* contents) {
@@ -230,7 +230,7 @@ WebContents* RenderViewHostTestHarness::CreateTestWebContents() {
   DCHECK(ole_initializer_ != NULL);
 #endif
 #if defined(USE_AURA)
-  DCHECK(aura_test_helper_ != NULL);
+  DCHECK(aura_test_helper_ != nullptr);
 #endif
 
   scoped_refptr<SiteInstance> instance =
@@ -283,7 +283,7 @@ void RenderViewHostTestHarness::TearDown() {
   if (IsBrowserSideNavigationEnabled())
     BrowserSideNavigationTearDown();
 
-  SetContents(NULL);
+  SetContents(nullptr);
 #if defined(USE_AURA)
   aura_test_helper_->TearDown();
   ui::TerminateContextFactoryForTests();

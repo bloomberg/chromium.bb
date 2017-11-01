@@ -98,8 +98,9 @@ class AppCacheServiceImplTest : public testing::Test {
   AppCacheServiceImplTest()
       : kOrigin("http://hello/"),
         kManifestUrl(kOrigin.Resolve("manifest")),
-        service_(new AppCacheServiceImpl(NULL)),
-        delete_result_(net::OK), delete_completion_count_(0),
+        service_(new AppCacheServiceImpl(nullptr)),
+        delete_result_(net::OK),
+        delete_completion_count_(0),
         deletion_callback_(
             base::Bind(&AppCacheServiceImplTest::OnDeleteAppCachesComplete,
                        base::Unretained(this))) {
@@ -149,9 +150,9 @@ class AppCacheServiceImplTest : public testing::Test {
 
   void SetupMockReader(
       bool valid_info, bool valid_data, bool valid_size) {
-    net::HttpResponseInfo* info = valid_info ? MakeMockResponseInfo() : NULL;
+    net::HttpResponseInfo* info = valid_info ? MakeMockResponseInfo() : nullptr;
     int info_size = info ? GetResponseInfoSize(info) : 0;
-    const char* data = valid_data ? kMockBody : NULL;
+    const char* data = valid_data ? kMockBody : nullptr;
     int data_size = valid_size ? kMockBodySize : 3;
     mock_storage()->SimulateResponseReader(
         new MockResponseReader(kMockResponseId, info, info_size,
@@ -336,7 +337,8 @@ TEST_F(AppCacheServiceImplTest, ScheduleReinitialize) {
   const base::TimeDelta kOneHour(base::TimeDelta::FromHours(1));
 
   // Do things get initialized as expected?
-  std::unique_ptr<AppCacheServiceImpl> service(new AppCacheServiceImpl(NULL));
+  std::unique_ptr<AppCacheServiceImpl> service(
+      new AppCacheServiceImpl(nullptr));
   EXPECT_TRUE(service->last_reinit_time_.is_null());
   EXPECT_FALSE(service->reinit_timer_.IsRunning());
   EXPECT_EQ(kNoDelay, service->next_reinit_delay_);
@@ -380,7 +382,7 @@ TEST_F(AppCacheServiceImplTest, ScheduleReinitialize) {
   EXPECT_EQ(kOneHour, service->next_reinit_delay_);
 
   // Fine to delete while pending.
-  service.reset(NULL);
+  service.reset(nullptr);
 }
 
 

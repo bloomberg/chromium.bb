@@ -136,7 +136,7 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
 
     // Runs until we get the OnSyntheticGestureCompleted callback
     runner_->Run();
-    runner_ = NULL;
+    runner_ = nullptr;
 
     return GetScrollTop();
   }

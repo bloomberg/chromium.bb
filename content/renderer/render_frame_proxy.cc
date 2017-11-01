@@ -182,7 +182,7 @@ RenderFrameProxy* RenderFrameProxy::FromWebFrame(
   // RenderFrameProxy is already deleted--in which case, it's not safe to touch
   // |web_frame|.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 RenderFrameProxy::RenderFrameProxy(int routing_id)

@@ -330,7 +330,7 @@ bool DownloadRequestCore::OnReadCompleted(int bytes_read, bool* defer) {
     last_stream_pause_time_ = base::TimeTicks::Now();
   }
 
-  read_buffer_ = NULL;  // Drop our reference.
+  read_buffer_ = nullptr;  // Drop our reference.
 
   if (pause_count_ > 0)
     *defer = was_deferred_ = true;

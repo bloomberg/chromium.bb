@@ -254,7 +254,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   void WindowClosing() override {
     if (shell_) {
       delete shell_;
-      shell_ = NULL;
+      shell_ = nullptr;
     }
   }
 

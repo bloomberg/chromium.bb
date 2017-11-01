@@ -185,7 +185,7 @@ ByteStreamWriterImpl::ByteStreamWriterImpl(
       my_lifetime_flag_(lifetime_flag),
       input_contents_size_(0),
       output_size_used_(0),
-      peer_(NULL) {
+      peer_(nullptr) {
   DCHECK(my_lifetime_flag_.get());
   my_lifetime_flag_->is_alive = true;
 }
@@ -313,7 +313,7 @@ ByteStreamReaderImpl::ByteStreamReaderImpl(
       received_status_(false),
       status_(0),
       unreported_consumed_bytes_(0),
-      peer_(NULL) {
+      peer_(nullptr) {
   DCHECK(my_lifetime_flag_.get());
   my_lifetime_flag_->is_alive = true;
 }

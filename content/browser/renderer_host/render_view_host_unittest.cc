@@ -47,7 +47,7 @@ class RenderViewHostTestBrowserClient : public TestContentBrowserClient {
 
 class RenderViewHostTest : public RenderViewHostImplTestHarness {
  public:
-  RenderViewHostTest() : old_browser_client_(NULL) {}
+  RenderViewHostTest() : old_browser_client_(nullptr) {}
   ~RenderViewHostTest() override {}
 
   void SetUp() override {

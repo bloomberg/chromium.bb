@@ -517,7 +517,7 @@ blink::WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
     default:
       NOTREACHED();
   }
-  return NULL;
+  return nullptr;
 }
 
 void RenderWidget::CloseForFrame() {
@@ -1080,7 +1080,7 @@ void RenderWidget::ObserveGestureEventAndResult(
 
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   InputHandlerManager* input_handler_manager =
-      render_thread ? render_thread->input_handler_manager() : NULL;
+      render_thread ? render_thread->input_handler_manager() : nullptr;
   if (input_handler_manager) {
     input_handler_manager->ObserveGestureEventAndResultOnMainThread(
         routing_id_, gesture_event, scroll_result);

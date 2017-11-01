@@ -35,14 +35,14 @@
 namespace content {
 
 ShellDownloadManagerDelegate::ShellDownloadManagerDelegate()
-    : download_manager_(NULL),
+    : download_manager_(nullptr),
       suppress_prompting_(false),
       weak_ptr_factory_(this) {}
 
 ShellDownloadManagerDelegate::~ShellDownloadManagerDelegate() {
   if (download_manager_) {
-    download_manager_->SetDelegate(NULL);
-    download_manager_ = NULL;
+    download_manager_->SetDelegate(nullptr);
+    download_manager_ = nullptr;
   }
 }
 
@@ -56,7 +56,7 @@ void ShellDownloadManagerDelegate::Shutdown() {
   // Revoke any pending callbacks. download_manager_ et. al. are no longer safe
   // to access after this point.
   weak_ptr_factory_.InvalidateWeakPtrs();
-  download_manager_ = NULL;
+  download_manager_ = nullptr;
 }
 
 bool ShellDownloadManagerDelegate::DetermineDownloadTarget(

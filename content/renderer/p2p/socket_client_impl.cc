@@ -33,7 +33,7 @@ P2PSocketClientImpl::P2PSocketClientImpl(P2PSocketDispatcher* dispatcher)
       ipc_task_runner_(dispatcher->task_runner()),
       delegate_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       socket_id_(0),
-      delegate_(NULL),
+      delegate_(nullptr),
       state_(STATE_UNINITIALIZED),
       random_socket_id_(0),
       next_packet_id_(0) {
@@ -122,7 +122,7 @@ void P2PSocketClientImpl::SetOption(P2PSocketOption option,
 void P2PSocketClientImpl::Close() {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
 
-  delegate_ = NULL;
+  delegate_ = nullptr;
 
   ipc_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&P2PSocketClientImpl::DoClose, this));
@@ -252,7 +252,7 @@ void P2PSocketClientImpl::DeliverOnDataReceived(
 
 void P2PSocketClientImpl::Detach() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  dispatcher_ = NULL;
+  dispatcher_ = nullptr;
   OnError();
 }
 

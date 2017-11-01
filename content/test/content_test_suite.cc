@@ -39,8 +39,7 @@ namespace {
 
 class TestInitializationListener : public testing::EmptyTestEventListener {
  public:
-  TestInitializationListener() : test_content_client_initializer_(NULL) {
-  }
+  TestInitializationListener() : test_content_client_initializer_(nullptr) {}
 
   void OnTestStart(const testing::TestInfo& test_info) override {
     test_content_client_initializer_ =

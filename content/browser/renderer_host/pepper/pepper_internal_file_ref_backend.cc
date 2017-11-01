@@ -80,7 +80,7 @@ base::FilePath PepperInternalFileRefBackend::GetExternalFilePath() const {
 scoped_refptr<storage::FileSystemContext>
 PepperInternalFileRefBackend::GetFileSystemContext() const {
   if (!fs_host_.get())
-    return NULL;
+    return nullptr;
   return fs_host_->GetFileSystemContext();
 }
 

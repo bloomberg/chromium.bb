@@ -194,7 +194,7 @@ DevToolsAgent* DevToolsAgent::FromRoutingId(int routing_id) {
   if (it != g_agent_for_routing_id.Get().end()) {
     return it->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 // static

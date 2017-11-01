@@ -30,7 +30,7 @@ std::unique_ptr<BackgroundTracingConfigImpl> ReadFromJSONString(
     const std::string& json_text) {
   std::unique_ptr<base::Value> json_value(base::JSONReader::Read(json_text));
 
-  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = nullptr;
   if (json_value)
     json_value->GetAsDictionary(&dict);
 

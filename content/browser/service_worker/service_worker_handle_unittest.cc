@@ -35,7 +35,7 @@ const int kRenderFrameId = 44;  // A dummy ID for testing.
 void VerifyStateChangedMessage(int expected_handle_id,
                                blink::mojom::ServiceWorkerState expected_state,
                                const IPC::Message* message) {
-  ASSERT_TRUE(message != NULL);
+  ASSERT_TRUE(message != nullptr);
   ServiceWorkerMsg_ServiceWorkerStateChanged::Param param;
   ASSERT_TRUE(ServiceWorkerMsg_ServiceWorkerStateChanged::Read(
       message, &param));
@@ -118,9 +118,9 @@ class ServiceWorkerHandleTest : public testing::Test {
   }
 
   void TearDown() override {
-    dispatcher_host_ = NULL;
-    registration_ = NULL;
-    version_ = NULL;
+    dispatcher_host_ = nullptr;
+    registration_ = nullptr;
+    version_ = nullptr;
     provider_host_.reset();
     helper_.reset();
   }

@@ -1046,7 +1046,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
   // TODO(creis): We must pass the valid browser_context to convert hosted apps
   // URLs. Currently, hosted apps cannot set cookies in this mode. See
   // http://crbug.com/160576.
-  GURL site_url = SiteInstanceImpl::GetSiteForURL(NULL, url);
+  GURL site_url = SiteInstanceImpl::GetSiteForURL(nullptr, url);
 
   base::AutoLock lock(lock_);
   SecurityStateMap::iterator state = security_state_.find(child_id);
@@ -1080,7 +1080,7 @@ bool ChildProcessSecurityPolicyImpl::HasSpecificPermissionForOrigin(
 void ChildProcessSecurityPolicyImpl::LockToOrigin(int child_id,
                                                   const GURL& gurl) {
   // "gurl" can be currently empty in some cases, such as file://blah.
-  DCHECK(SiteInstanceImpl::GetSiteForURL(NULL, gurl) == gurl);
+  DCHECK(SiteInstanceImpl::GetSiteForURL(nullptr, gurl) == gurl);
   base::AutoLock lock(lock_);
   SecurityStateMap::iterator state = security_state_.find(child_id);
   DCHECK(state != security_state_.end());

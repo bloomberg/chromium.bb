@@ -45,13 +45,13 @@ void V8ObjectVar::InstanceDeleted() {
   // This is called by the HostVarTracker which will take care of removing us
   // from its set.
   DCHECK(instance_);
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
 // static
 scoped_refptr<V8ObjectVar> V8ObjectVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_OBJECT)
-    return scoped_refptr<V8ObjectVar>(NULL);
+    return scoped_refptr<V8ObjectVar>(nullptr);
   scoped_refptr<Var> var_object(
       PpapiGlobals::Get()->GetVarTracker()->GetVar(var));
   if (!var_object.get())

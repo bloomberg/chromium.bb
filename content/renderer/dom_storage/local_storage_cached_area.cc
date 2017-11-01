@@ -425,7 +425,7 @@ void LocalStorageCachedArea::OnGetAllComplete(bool success) {
 }
 
 void LocalStorageCachedArea::Reset() {
-  map_ = NULL;
+  map_ = nullptr;
   ignore_key_mutations_.clear();
   ignore_all_mutations_ = false;
   weak_factory_.InvalidateWeakPtrs();

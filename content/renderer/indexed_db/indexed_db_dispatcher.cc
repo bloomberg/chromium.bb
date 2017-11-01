@@ -45,7 +45,7 @@ IndexedDBDispatcher::~IndexedDBDispatcher() {
 IndexedDBDispatcher* IndexedDBDispatcher::ThreadSpecificInstance() {
   if (g_idb_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {
     NOTREACHED() << "Re-instantiating TLS IndexedDBDispatcher.";
-    g_idb_dispatcher_tls.Pointer()->Set(NULL);
+    g_idb_dispatcher_tls.Pointer()->Set(nullptr);
   }
   if (g_idb_dispatcher_tls.Pointer()->Get())
     return g_idb_dispatcher_tls.Pointer()->Get();

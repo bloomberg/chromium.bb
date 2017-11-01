@@ -51,7 +51,7 @@ class MediaInternalsTestBase {
         utf8_update.substr(first_brace, last_brace - first_brace + 1));
     CHECK(output_value);
 
-    base::DictionaryValue* output_dict = NULL;
+    base::DictionaryValue* output_dict = nullptr;
     CHECK(output_value->GetAsDictionary(&output_dict));
     update_data_.MergeDictionary(output_dict);
   }

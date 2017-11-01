@@ -98,7 +98,7 @@ AppCacheResponseIO::AppCacheResponseIO(
     const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
     : response_id_(response_id),
       disk_cache_(disk_cache),
-      entry_(NULL),
+      entry_(nullptr),
       buffer_len_(0),
       weak_factory_(this) {}
 
@@ -116,8 +116,8 @@ void AppCacheResponseIO::ScheduleIOCompletionCallback(int result) {
 void AppCacheResponseIO::InvokeUserCompletionCallback(int result) {
   // Clear the user callback and buffers prior to invoking the callback
   // so the caller can schedule additional operations in the callback.
-  buffer_ = NULL;
-  info_buffer_ = NULL;
+  buffer_ = nullptr;
+  info_buffer_ = nullptr;
   OnceCompletionCallback cb = std::move(callback_);
   callback_.Reset();
   std::move(cb).Run(result);
@@ -152,7 +152,7 @@ void AppCacheResponseIO::OnRawIOComplete(int result) {
 
 void AppCacheResponseIO::OpenEntryIfNeeded() {
   int rv;
-  AppCacheDiskCacheInterface::Entry** entry_ptr = NULL;
+  AppCacheDiskCacheInterface::Entry** entry_ptr = nullptr;
   if (entry_) {
     rv = net::OK;
   } else if (!disk_cache_) {
@@ -398,7 +398,7 @@ void AppCacheResponseWriter::OnIOComplete(int result) {
 
 void AppCacheResponseWriter::CreateEntryIfNeededAndContinue() {
   int rv;
-  AppCacheDiskCacheInterface::Entry** entry_ptr = NULL;
+  AppCacheDiskCacheInterface::Entry** entry_ptr = nullptr;
   if (entry_) {
     creation_phase_ = NO_ATTEMPT;
     rv = net::OK;
@@ -430,7 +430,7 @@ void AppCacheResponseWriter::OnCreateEntryComplete(
       creation_phase_ = DOOM_EXISTING;
       rv = disk_cache_->DoomEntry(response_id_, create_callback_);
       if (rv != net::ERR_IO_PENDING)
-        OnCreateEntryComplete(NULL, rv);
+        OnCreateEntryComplete(nullptr, rv);
       return;
     }
   } else if (creation_phase_ == DOOM_EXISTING) {

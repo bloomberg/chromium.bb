@@ -29,7 +29,7 @@ class PepperGraphics2DHostTest : public testing::Test {
     return PepperGraphics2DHost::ConvertToLogicalPixels(scale, op_rect, delta);
   }
 
-  PepperGraphics2DHostTest() : renderer_ppapi_host_(NULL, 12345) {}
+  PepperGraphics2DHostTest() : renderer_ppapi_host_(nullptr, 12345) {}
 
   ~PepperGraphics2DHostTest() override {
     ppapi::ProxyAutoLock proxy_lock;
@@ -56,8 +56,8 @@ class PepperGraphics2DHostTest : public testing::Test {
     ppapi::HostResource image_data_resource;
     image_data_resource.SetHostResource(image_data->pp_instance(),
                                         image_data->pp_resource());
-    host_->OnHostMsgPaintImageData(
-        NULL, image_data_resource, PP_Point(), false, PP_Rect());
+    host_->OnHostMsgPaintImageData(nullptr, image_data_resource, PP_Point(),
+                                   false, PP_Rect());
   }
 
   void Flush() {
@@ -149,7 +149,7 @@ TEST_F(PepperGraphics2DHostTest, ConvertToLogicalPixels) {
     }
     // Reverse the scale and ensure all the original pixels are still inside
     // the result.
-    ConvertToLogicalPixels(1.0f / tests[i].scale, &r1, NULL);
+    ConvertToLogicalPixels(1.0f / tests[i].scale, &r1, nullptr);
     EXPECT_TRUE(r1.Contains(orig));
   }
 }

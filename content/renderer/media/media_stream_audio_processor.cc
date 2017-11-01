@@ -429,7 +429,7 @@ void MediaStreamAudioProcessor::Stop() {
 
   if (aec_dump_message_filter_.get()) {
     aec_dump_message_filter_->RemoveDelegate(this);
-    aec_dump_message_filter_ = NULL;
+    aec_dump_message_filter_ = nullptr;
   }
 
   if (!audio_processing_.get())
@@ -441,7 +441,7 @@ void MediaStreamAudioProcessor::Stop() {
 
   if (playout_data_source_) {
     playout_data_source_->RemovePlayoutSink(this);
-    playout_data_source_ = NULL;
+    playout_data_source_ = nullptr;
   }
 
   if (echo_information_)
@@ -513,7 +513,7 @@ void MediaStreamAudioProcessor::OnAec3Enable(bool enable) {
 
 void MediaStreamAudioProcessor::OnIpcClosing() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
-  aec_dump_message_filter_ = NULL;
+  aec_dump_message_filter_ = nullptr;
 }
 
 // static

@@ -63,7 +63,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
                                  const base::Closure& callback)
       : file_path_(trace_file_path),
         completion_callback_(callback),
-        file_(NULL) {}
+        file_(nullptr) {}
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     background_task_runner_->PostTask(
@@ -80,7 +80,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
   }
 
  private:
-  ~FileTraceDataEndpoint() override { DCHECK(file_ == NULL); }
+  ~FileTraceDataEndpoint() override { DCHECK(file_ == nullptr); }
 
   void ReceiveTraceChunkOnBlockingThread(std::unique_ptr<std::string> chunk) {
     if (!OpenFileIfNeededOnBlockingThread())
@@ -90,10 +90,10 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
 
   bool OpenFileIfNeededOnBlockingThread() {
     base::AssertBlockingAllowed();
-    if (file_ != NULL)
+    if (file_ != nullptr)
       return true;
     file_ = base::OpenFile(file_path_, "w");
-    if (file_ == NULL) {
+    if (file_ == nullptr) {
       LOG(ERROR) << "Failed to open " << file_path_.value();
       return false;
     }
@@ -103,7 +103,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
   void CloseOnBlockingThread() {
     if (OpenFileIfNeededOnBlockingThread()) {
       base::CloseFile(file_);
-      file_ = NULL;
+      file_ = nullptr;
     }
 
     BrowserThread::PostTask(
@@ -162,7 +162,7 @@ class CompressedTraceDataEndpoint
 
     already_tried_open_ = true;
     stream_.reset(new z_stream);
-    *stream_ = {0};
+    *stream_ = {nullptr};
     stream_->zalloc = Z_NULL;
     stream_->zfree = Z_NULL;
     stream_->opaque = Z_NULL;

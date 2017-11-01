@@ -125,7 +125,7 @@ bool GetSavableResourceLinksForFrame(WebLocalFrame* current_frame,
 }
 
 WebString GetSubResourceLinkFromElement(const WebElement& element) {
-  const char* attribute_name = NULL;
+  const char* attribute_name = nullptr;
   if (element.HasHTMLTagName("img") || element.HasHTMLTagName("frame") ||
       element.HasHTMLTagName("iframe") || element.HasHTMLTagName("script")) {
     attribute_name = "src";

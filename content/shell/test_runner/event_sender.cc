@@ -425,7 +425,7 @@ std::vector<std::string> MakeMenuItemStringsFor(
   static const char* kNonEditableMenuStrings[] = {
       "Back",        "Reload Page",     "Open in Dashbaord",
       "<separator>", "View Source",     "Save Page As",
-      "Print Page",  "Inspect Element", 0};
+      "Print Page",  "Inspect Element", nullptr};
   static const char* kEditableMenuStrings[] = {"Cut",
                                                "Copy",
                                                "<separator>",
@@ -436,7 +436,7 @@ std::vector<std::string> MakeMenuItemStringsFor(
                                                "Speech",
                                                "Paragraph Direction",
                                                "<separator>",
-                                               0};
+                                               nullptr};
 
   // This is possible because mouse events are cancelleable.
   if (!context_menu)

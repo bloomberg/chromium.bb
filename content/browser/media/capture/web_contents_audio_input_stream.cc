@@ -145,7 +145,7 @@ WebContentsAudioInputStream::Impl::Impl(
       mixer_stream_(mixer_stream),
       state_(CONSTRUCTED),
       is_target_lost_(false),
-      callback_(NULL),
+      callback_(nullptr),
       is_duplication_(is_duplication) {
   DCHECK(mirroring_manager_);
   DCHECK(tracker_);
@@ -195,7 +195,7 @@ void WebContentsAudioInputStream::Impl::Start(AudioInputCallback* callback) {
   callback_ = callback;
   if (is_target_lost_) {
     ReportError();
-    callback_ = NULL;
+    callback_ = nullptr;
     return;
   }
 
@@ -220,7 +220,7 @@ void WebContentsAudioInputStream::Impl::Stop() {
   state_ = OPENED;
 
   mixer_stream_->Stop();
-  callback_ = NULL;
+  callback_ = nullptr;
 
   StopMirroring();
 }
@@ -367,7 +367,7 @@ WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
     AudioMirroringManager* audio_mirroring_manager) {
   WebContentsMediaCaptureId media_id;
   if (!WebContentsMediaCaptureId::Parse(device_id, &media_id)) {
-    return NULL;
+    return nullptr;
   }
 
   return new WebContentsAudioInputStream(

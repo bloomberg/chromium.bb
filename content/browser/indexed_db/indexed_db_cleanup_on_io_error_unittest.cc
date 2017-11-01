@@ -52,7 +52,7 @@ class BustedLevelDBDatabase : public LevelDBDatabase {
   leveldb::Status Get(const base::StringPiece& key,
                       std::string* value,
                       bool* found,
-                      const LevelDBSnapshot* = 0) override {
+                      const LevelDBSnapshot* = nullptr) override {
     return leveldb::Status::IOError("It's busted!");
   }
 
@@ -65,7 +65,7 @@ class BustedLevelDBFactory : public LevelDBFactory {
   leveldb::Status OpenLevelDB(const base::FilePath& file_name,
                               const LevelDBComparator* comparator,
                               std::unique_ptr<LevelDBDatabase>* db,
-                              bool* is_disk_full = 0) override {
+                              bool* is_disk_full = nullptr) override {
     if (open_error_.ok())
       *db = BustedLevelDBDatabase::Open(file_name, comparator);
     return open_error_;
@@ -82,7 +82,7 @@ class BustedLevelDBFactory : public LevelDBFactory {
 };
 
 TEST(IndexedDBIOErrorTest, CleanUpTest) {
-  content::IndexedDBFactory* factory = NULL;
+  content::IndexedDBFactory* factory = nullptr;
   const url::Origin origin = url::Origin::Create(GURL("http://localhost:81"));
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
@@ -100,7 +100,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
   EXPECT_CALL(mock_leveldb_factory, DestroyLevelDB(_)).Times(Exactly(1));
   content::IndexedDBDataLossInfo data_loss_info;
   bool disk_full = false;
-  base::SequencedTaskRunner* task_runner = NULL;
+  base::SequencedTaskRunner* task_runner = nullptr;
   bool clean_journal = false;
   leveldb::Status s;
   scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -110,7 +110,7 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
 }
 
 TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
-  content::IndexedDBFactory* factory = NULL;
+  content::IndexedDBFactory* factory = nullptr;
   const url::Origin origin = url::Origin::Create(GURL("http://localhost:81"));
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
   base::ScopedTempDir temp_directory;
@@ -118,7 +118,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
   const base::FilePath path = temp_directory.GetPath();
   content::IndexedDBDataLossInfo data_loss_info;
   bool disk_full = false;
-  base::SequencedTaskRunner* task_runner = NULL;
+  base::SequencedTaskRunner* task_runner = nullptr;
   bool clean_journal = false;
   leveldb::Status s;
 

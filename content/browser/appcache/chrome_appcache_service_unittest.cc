@@ -94,7 +94,7 @@ ChromeAppCacheServiceTest::CreateAppCacheServiceImpl(
     const base::FilePath& appcache_path,
     bool init_storage) {
   scoped_refptr<ChromeAppCacheService> appcache_service =
-      new ChromeAppCacheService(NULL);
+      new ChromeAppCacheService(nullptr);
   scoped_refptr<MockSpecialStoragePolicy> mock_policy =
       new MockSpecialStoragePolicy;
   mock_policy->AddProtected(kProtectedManifestURL.GetOrigin());
@@ -152,7 +152,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
   InsertDataIntoAppCache(appcache_service.get());
 
   // Test: delete the ChromeAppCacheService
-  appcache_service = NULL;
+  appcache_service = nullptr;
   scoped_task_environment_.RunUntilIdle();
 
   // Recreate the appcache (for reading the data back)
@@ -172,7 +172,7 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
               origins.end());
 
   // Delete and let cleanup tasks run prior to returning.
-  appcache_service = NULL;
+  appcache_service = nullptr;
   scoped_task_environment_.RunUntilIdle();
 }
 
@@ -192,7 +192,7 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
   appcache_service->set_force_keep_session_state();
 
   // Test: delete the ChromeAppCacheService
-  appcache_service = NULL;
+  appcache_service = nullptr;
   scoped_task_environment_.RunUntilIdle();
 
   // Recreate the appcache (for reading the data back)
@@ -212,7 +212,7 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
               origins.end());
 
   // Delete and let cleanup tasks run prior to returning.
-  appcache_service = NULL;
+  appcache_service = nullptr;
   scoped_task_environment_.RunUntilIdle();
 }
 

@@ -107,7 +107,7 @@ DOMStorageContextImpl::~DOMStorageContextImpl() {
     // shouldn't happen on this thread.
     SessionStorageDatabase* to_release = session_storage_database_.get();
     to_release->AddRef();
-    session_storage_database_ = NULL;
+    session_storage_database_ = nullptr;
     task_runner_->PostShutdownBlockingTask(
         FROM_HERE, DOMStorageTaskRunner::COMMIT_SEQUENCE,
         base::BindOnce(&SessionStorageDatabase::Release,
@@ -118,7 +118,7 @@ DOMStorageContextImpl::~DOMStorageContextImpl() {
 DOMStorageNamespace* DOMStorageContextImpl::GetStorageNamespace(
     int64_t namespace_id) {
   if (is_shutdown_)
-    return NULL;
+    return nullptr;
   StorageNamespaceMap::iterator found = namespaces_.find(namespace_id);
   if (found == namespaces_.end()) {
     if (namespace_id == kLocalStorageNamespaceId) {
@@ -134,7 +134,7 @@ DOMStorageNamespace* DOMStorageContextImpl::GetStorageNamespace(
       namespaces_[kLocalStorageNamespaceId] = local;
       return local;
     }
-    return NULL;
+    return nullptr;
   }
   return found->second.get();
 }
@@ -243,7 +243,7 @@ void DOMStorageContextImpl::DeleteLocalStorage(const GURL& origin_url) {
 void DOMStorageContextImpl::DeleteSessionStorage(
     const SessionStorageUsageInfo& usage_info) {
   DCHECK(!is_shutdown_);
-  DOMStorageNamespace* dom_storage_namespace = NULL;
+  DOMStorageNamespace* dom_storage_namespace = nullptr;
   std::map<std::string, int64_t>::const_iterator it =
       persistent_namespace_id_to_namespace_id_.find(
           usage_info.persistent_namespace_id);

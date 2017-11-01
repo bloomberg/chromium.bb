@@ -46,13 +46,13 @@ TEST(ShareableFileReferenceTest, TestReferences) {
   EXPECT_EQ(reference1.get(), reference2.get());
 
   // Drop the first reference, the file and reference should still be there.
-  reference1 = NULL;
+  reference1 = nullptr;
   EXPECT_TRUE(ShareableFileReference::Get(file).get());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(base::PathExists(file));
 
   // Drop the second reference, the file and reference should get deleted.
-  reference2 = NULL;
+  reference2 = nullptr;
   EXPECT_FALSE(ShareableFileReference::Get(file).get());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(base::PathExists(file));

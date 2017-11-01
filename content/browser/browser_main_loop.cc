@@ -312,14 +312,12 @@ static void SetUpGLibLogHandler() {
   const char* const kLogDomains[] =
       { nullptr, "Gtk", "Gdk", "GLib", "GLib-GObject" };
   for (size_t i = 0; i < arraysize(kLogDomains); i++) {
-    g_log_set_handler(kLogDomains[i],
-                      static_cast<GLogLevelFlags>(G_LOG_FLAG_RECURSION |
-                                                  G_LOG_FLAG_FATAL |
-                                                  G_LOG_LEVEL_ERROR |
-                                                  G_LOG_LEVEL_CRITICAL |
-                                                  G_LOG_LEVEL_WARNING),
-                      GLibLogHandler,
-                      NULL);
+    g_log_set_handler(
+        kLogDomains[i],
+        static_cast<GLogLevelFlags>(G_LOG_FLAG_RECURSION | G_LOG_FLAG_FATAL |
+                                    G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL |
+                                    G_LOG_LEVEL_WARNING),
+        GLibLogHandler, nullptr);
   }
 }
 #endif  // defined(USE_GLIB)
@@ -568,7 +566,7 @@ class HDRProxy {
 #endif
 
 // The currently-running BrowserMainLoop.  There can be one or zero.
-BrowserMainLoop* g_current_browser_main_loop = NULL;
+BrowserMainLoop* g_current_browser_main_loop = nullptr;
 
 #if defined(OS_ANDROID)
 bool g_browser_main_loop_shutting_down = false;
@@ -603,7 +601,7 @@ BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
 BrowserMainLoop::~BrowserMainLoop() {
   DCHECK_EQ(this, g_current_browser_main_loop);
   ui::Clipboard::DestroyClipboardForCurrentThread();
-  g_current_browser_main_loop = NULL;
+  g_current_browser_main_loop = nullptr;
 }
 
 void BrowserMainLoop::Init() {
@@ -1627,7 +1625,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // When running the GPU thread in-process, avoid optimistically starting it
   // since creating the GPU thread races against creation of the one-and-only
   // ChildProcess instance which is created by the renderer thread.
-  if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL) &&
+  if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(nullptr) &&
       !established_gpu_channel && always_uses_gpu && !UsingInProcessGpu() &&
       !is_mus) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",

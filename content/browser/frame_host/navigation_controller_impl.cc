@@ -197,12 +197,9 @@ std::unique_ptr<NavigationEntry> NavigationController::CreateNavigationEntry(
       &loaded_url, browser_context, &reverse_on_redirect);
 
   NavigationEntryImpl* entry = new NavigationEntryImpl(
-      NULL,  // The site instance for tabs is sent on navigation
-             // (WebContents::GetSiteInstance).
-      loaded_url,
-      referrer,
-      base::string16(),
-      transition,
+      nullptr,  // The site instance for tabs is sent on navigation
+                // (WebContents::GetSiteInstance).
+      loaded_url, referrer, base::string16(), transition,
       is_renderer_initiated);
   entry->SetVirtualURL(dest_url);
   entry->set_user_typed_url(dest_url);
@@ -309,7 +306,7 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
     return;
   }
 
-  NavigationEntryImpl* entry = NULL;
+  NavigationEntryImpl* entry = nullptr;
   int current_index = -1;
 
   // If we are reloading the initial navigation, just use the current
@@ -516,7 +513,7 @@ int NavigationControllerImpl::GetCurrentEntryIndex() const {
 
 NavigationEntryImpl* NavigationControllerImpl::GetLastCommittedEntry() const {
   if (last_committed_entry_index_ == -1)
-    return NULL;
+    return nullptr;
   return entries_[last_committed_entry_index_].get();
 }
 
@@ -1805,7 +1802,7 @@ NavigationControllerImpl::GetSessionStorageNamespace(SiteInstance* instance) {
 SessionStorageNamespace*
 NavigationControllerImpl::GetDefaultSessionStorageNamespace() {
   // TODO(ajwong): Remove if statement in GetSessionStorageNamespace().
-  return GetSessionStorageNamespace(NULL);
+  return GetSessionStorageNamespace(nullptr);
 }
 
 const SessionStorageNamespaceMap&
@@ -2263,7 +2260,7 @@ int NavigationControllerImpl::GetEntryIndexWithUniqueID(
 
 NavigationEntryImpl* NavigationControllerImpl::GetTransientEntry() const {
   if (transient_entry_index_ == -1)
-    return NULL;
+    return nullptr;
   return entries_[transient_entry_index_].get();
 }
 

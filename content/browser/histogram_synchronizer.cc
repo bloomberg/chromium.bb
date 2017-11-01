@@ -97,7 +97,7 @@ class HistogramSynchronizer::RequestContext {
     RequestContextMap::iterator it =
         outstanding_requests_.Get().find(sequence_number);
     if (it == outstanding_requests_.Get().end())
-      return NULL;
+      return nullptr;
 
     RequestContext* request = it->second;
     DCHECK_EQ(sequence_number, request->sequence_number_);
@@ -198,7 +198,7 @@ void HistogramSynchronizer::FetchHistograms() {
 
   HistogramSynchronizer* current_synchronizer =
       HistogramSynchronizer::GetInstance();
-  if (current_synchronizer == NULL)
+  if (current_synchronizer == nullptr)
     return;
 
   current_synchronizer->RegisterAndNotifyAllProcesses(

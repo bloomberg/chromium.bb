@@ -176,7 +176,7 @@ void RunCallbacks(
     const base::Callback<void(WebFileSystemCallbacks*)>& callback,
     CallbacksUnregisterMode callbacks_unregister_mode) {
   WebFileSystemImpl* filesystem =
-      WebFileSystemImpl::ThreadSpecificInstance(NULL);
+      WebFileSystemImpl::ThreadSpecificInstance(nullptr);
   if (!filesystem)
     return;
   WebFileSystemCallbacks callbacks = filesystem->GetCallbacks(callbacks_id);
@@ -294,7 +294,7 @@ void DidCreateFileWriter(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const base::File::Info& file_info) {
   WebFileSystemImpl* filesystem =
-      WebFileSystemImpl::ThreadSpecificInstance(NULL);
+      WebFileSystemImpl::ThreadSpecificInstance(nullptr);
   if (!filesystem)
     return;
 
@@ -334,7 +334,7 @@ void DidCreateSnapshotFile(
     const base::FilePath& platform_path,
     int request_id) {
   WebFileSystemImpl* filesystem =
-      WebFileSystemImpl::ThreadSpecificInstance(NULL);
+      WebFileSystemImpl::ThreadSpecificInstance(nullptr);
   if (!filesystem)
     return;
 
@@ -398,7 +398,7 @@ WebFileSystemImpl::WebFileSystemImpl(
 
 WebFileSystemImpl::~WebFileSystemImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  g_webfilesystem_tls.Pointer()->Set(NULL);
+  g_webfilesystem_tls.Pointer()->Set(nullptr);
 }
 
 void WebFileSystemImpl::WillStopCurrentWorkerThread() {
@@ -680,7 +680,7 @@ void WebFileSystemImpl::UnregisterCallbacks(int callbacks_id) {
 WaitableCallbackResults* WebFileSystemImpl::MaybeCreateWaitableResults(
     const WebFileSystemCallbacks& callbacks, int callbacks_id) {
   if (!callbacks.ShouldBlockUntilCompletion())
-    return NULL;
+    return nullptr;
   WaitableCallbackResults* results = new WaitableCallbackResults();
   waitable_results_[callbacks_id] = results;
   return results;

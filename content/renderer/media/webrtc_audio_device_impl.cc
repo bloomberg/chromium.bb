@@ -24,7 +24,7 @@ using media::ChannelLayout;
 namespace content {
 
 WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
-    : audio_transport_callback_(NULL),
+    : audio_transport_callback_(nullptr),
       output_delay_ms_(0),
       initialized_(false),
       playing_(false),
@@ -115,7 +115,7 @@ void WebRtcAudioDeviceImpl::RemoveAudioRenderer(WebRtcAudioRenderer* renderer) {
     (*it)->OnPlayoutDataSourceChanged();
   }
 
-  renderer_ = NULL;
+  renderer_ = nullptr;
 }
 
 void WebRtcAudioDeviceImpl::AudioRendererThreadStopped() {
@@ -133,7 +133,7 @@ int32_t WebRtcAudioDeviceImpl::RegisterAudioCallback(
   DVLOG(1) << "WebRtcAudioDeviceImpl::RegisterAudioCallback()";
   DCHECK(signaling_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
-  DCHECK_EQ(audio_transport_callback_ == NULL, audio_callback != NULL);
+  DCHECK_EQ(audio_transport_callback_ == nullptr, audio_callback != nullptr);
   audio_transport_callback_ = audio_callback;
   return 0;
 }

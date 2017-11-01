@@ -105,7 +105,7 @@ typedef int32_t (*InitializeBrokerFunc)
 PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
     : is_broker_(is_broker),
       plugin_globals_(GetIOTaskRunner()),
-      connect_instance_func_(NULL),
+      connect_instance_func_(nullptr),
       local_pp_module_(base::RandInt(0, std::numeric_limits<PP_Module>::max())),
       next_plugin_dispatcher_id_(1) {
   plugin_globals_.SetPluginProxyDelegate(this);
@@ -118,7 +118,7 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
   if (!is_broker_) {
     scoped_refptr<ppapi::proxy::PluginMessageFilter> plugin_filter(
         new ppapi::proxy::PluginMessageFilter(
-            NULL, plugin_globals_.resource_reply_thread_registrar()));
+            nullptr, plugin_globals_.resource_reply_thread_registrar()));
     channel()->AddFilter(plugin_filter.get());
     plugin_globals_.RegisterResourceMessageFilters(plugin_filter.get());
   }
@@ -295,7 +295,7 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
 
   // If the plugin isn't internal then load it from |path|.
   base::ScopedNativeLibrary library;
-  if (plugin_entry_points_.initialize_module == NULL) {
+  if (plugin_entry_points_.initialize_module == nullptr) {
     // Load the plugin from the specified library.
     base::NativeLibraryLoadError error;
     base::TimeDelta load_time;
@@ -542,10 +542,10 @@ bool PpapiThread::SetupChannel(base::ProcessId renderer_pid,
                                int renderer_child_id,
                                bool incognito,
                                IPC::ChannelHandle* handle) {
-  DCHECK(is_broker_ == (connect_instance_func_ != NULL));
+  DCHECK(is_broker_ == (connect_instance_func_ != nullptr));
   mojo::MessagePipe pipe;
 
-  ppapi::proxy::ProxyChannel* dispatcher = NULL;
+  ppapi::proxy::ProxyChannel* dispatcher = nullptr;
   bool init_result = false;
   if (is_broker_) {
     bool peer_is_browser = renderer_pid == base::kNullProcessId;

@@ -195,7 +195,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
   void SetUpFileSystem() {
     // Prepare file system.
     file_system_context_ =
-        CreateFileSystemContextForTesting(NULL, temp_dir_.GetPath());
+        CreateFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
 
     file_system_context_->OpenFileSystem(
         GURL(kFileSystemURLOrigin), kFileSystemType,
@@ -480,7 +480,7 @@ TEST_P(BlobURLRequestJobTest, TestGetLargeFileSystemFileRequest) {
     large_data.append(1, static_cast<char>(i % 256));
 
   const char kFilename[] = "LargeBlob.dat";
-  WriteFileSystemFile(kFilename, large_data.data(), large_data.size(), NULL);
+  WriteFileSystemFile(kFilename, large_data.data(), large_data.size(), nullptr);
 
   blob_data_->AppendFileSystemFile(GetFileSystemURL(kFilename), 0,
                                    std::numeric_limits<uint64_t>::max(),

@@ -64,7 +64,7 @@ TEST_F(PepperToVideoTrackAdapterTest, Open) {
 }
 
 TEST_F(PepperToVideoTrackAdapterTest, PutFrame) {
-  FrameWriterInterface* frame_writer = NULL;
+  FrameWriterInterface* frame_writer = nullptr;
   EXPECT_TRUE(PepperToVideoTrackAdapter::Open(registry_.get(),
                                             kTestStreamUrl, &frame_writer));
   ASSERT_TRUE(frame_writer);
@@ -78,7 +78,7 @@ TEST_F(PepperToVideoTrackAdapterTest, PutFrame) {
   // Verify the native video track has been added.
   MediaStreamVideoTrack* native_track =
       MediaStreamVideoTrack::GetVideoTrack(video_tracks[0]);
-  ASSERT_TRUE(native_track != NULL);
+  ASSERT_TRUE(native_track != nullptr);
 
   MockMediaStreamVideoSink sink;
   native_track->AddSink(&sink, sink.GetDeliverFrameCB(), false);

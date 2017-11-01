@@ -77,7 +77,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       rcvbuf_size_(0),
       sndbuf_size_(0),
       address_index_(0),
-      socket_(new net::TCPSocket(NULL, NULL, net::NetLogSource())),
+      socket_(new net::TCPSocket(nullptr, nullptr, net::NetLogSource())),
       ssl_context_helper_(host->ssl_context_helper()),
       pending_accept_(false),
       pending_read_on_unthrottle_(false),
@@ -105,7 +105,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       render_process_id_(0),
       render_frame_id_(0),
       host_(host),
-      factory_(NULL),
+      factory_(nullptr),
       instance_(instance),
       state_(TCPSocketState::CONNECTED),
       end_of_file_reached_(false),
@@ -166,7 +166,7 @@ PepperTCPSocketMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_TCPSocket_SetOption::ID:
       return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   }
-  return NULL;
+  return nullptr;
 }
 
 int32_t PepperTCPSocketMessageFilter::OnResourceMessageReceived(
@@ -222,11 +222,9 @@ int32_t PepperTCPSocketMessageFilter::OnMsgBind(
     return PP_ERROR_NOACCESS;
   }
 
-  if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_,
-                                             false /* private_api */,
-                                             NULL,
-                                             render_process_id_,
-                                             render_frame_id_)) {
+  if (!pepper_socket_utils::CanUseSocketAPIs(
+          external_plugin_, false /* private_api */, nullptr,
+          render_process_id_, render_frame_id_)) {
     return PP_ERROR_NOACCESS;
   }
 
@@ -848,7 +846,7 @@ void PepperTCPSocketMessageFilter::OnConnectCompleted(
     // We have to recreate |socket_| because it doesn't allow a second connect
     // attempt. We won't lose any state such as bound address or set options,
     // because in the private or v1.0 API, connect must be the first operation.
-    socket_.reset(new net::TCPSocket(NULL, NULL, net::NetLogSource()));
+    socket_.reset(new net::TCPSocket(nullptr, nullptr, net::NetLogSource()));
 
     if (address_index_ + 1 < address_list_.size()) {
       DCHECK_EQ(version_, ppapi::TCP_SOCKET_VERSION_PRIVATE);
@@ -900,7 +898,7 @@ void PepperTCPSocketMessageFilter::OnReadCompleted(
   } else {
     SendReadError(context, NetErrorToPepperError(net_result));
   }
-  read_buffer_ = NULL;
+  read_buffer_ = nullptr;
 }
 
 void PepperTCPSocketMessageFilter::OnWriteCompleted(
@@ -925,8 +923,8 @@ void PepperTCPSocketMessageFilter::OnWriteCompleted(
   else
     SendWriteReply(context, NetErrorToPepperError(net_result));
 
-  write_buffer_ = NULL;
-  write_buffer_base_ = NULL;
+  write_buffer_ = nullptr;
+  write_buffer_base_ = nullptr;
 }
 
 void PepperTCPSocketMessageFilter::OnListenCompleted(

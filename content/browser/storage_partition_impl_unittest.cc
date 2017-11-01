@@ -177,7 +177,7 @@ class RemoveCookieTester {
 class RemoveLocalStorageTester {
  public:
   explicit RemoveLocalStorageTester(TestBrowserContext* profile)
-      : dom_storage_context_(NULL),
+      : dom_storage_context_(nullptr),
         mock_db_(&mock_data_),
         db_binding_(&mock_db_) {
     dom_storage_context_ =
@@ -664,7 +664,7 @@ class StoragePartitionShaderClearTest : public testing::Test {
   }
 
   ~StoragePartitionShaderClearTest() override {
-    cache_ = NULL;
+    cache_ = nullptr;
     GetShaderCacheFactorySingleton()->RemoveCacheInfo(kDefaultClientId);
   }
 

@@ -16,12 +16,12 @@ const int kInvalidDelegateId = -1;
 
 namespace content {
 
-AecDumpMessageFilter* AecDumpMessageFilter::g_filter = NULL;
+AecDumpMessageFilter* AecDumpMessageFilter::g_filter = nullptr;
 
 AecDumpMessageFilter::AecDumpMessageFilter(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
-    : sender_(NULL),
+    : sender_(nullptr),
       delegate_id_counter_(1),
       io_task_runner_(io_task_runner),
       main_task_runner_(main_task_runner) {
@@ -31,7 +31,7 @@ AecDumpMessageFilter::AecDumpMessageFilter(
 
 AecDumpMessageFilter::~AecDumpMessageFilter() {
   DCHECK_EQ(g_filter, this);
-  g_filter = NULL;
+  g_filter = nullptr;
 }
 
 // static
@@ -115,7 +115,7 @@ void AecDumpMessageFilter::OnFilterRemoved() {
 
 void AecDumpMessageFilter::OnChannelClosing() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  sender_ = NULL;
+  sender_ = nullptr;
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AecDumpMessageFilter::DoChannelClosingOnDelegates, this));

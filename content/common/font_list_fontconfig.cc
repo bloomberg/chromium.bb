@@ -41,7 +41,7 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking() {
   for (size_t i = 0; i < arraysize(allowed_formats); ++i) {
     auto format_pattern = CreateFormatPattern(allowed_formats[i]);
     std::unique_ptr<FcFontSet, decltype(&FcFontSetDestroy)> fontset(
-        FcFontList(0, format_pattern.get(), object_set.get()),
+        FcFontList(nullptr, format_pattern.get(), object_set.get()),
         FcFontSetDestroy);
     for (int j = 0; j < fontset->nfont; ++j) {
       char* family_string;

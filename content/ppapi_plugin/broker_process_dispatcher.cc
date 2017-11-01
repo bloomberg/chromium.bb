@@ -81,9 +81,9 @@ BrokerProcessDispatcher::BrokerProcessDispatcher(
     bool peer_is_browser)
     : ppapi::proxy::BrokerSideDispatcher(connect_instance),
       get_plugin_interface_(get_plugin_interface),
-      flash_browser_operations_1_3_(NULL),
-      flash_browser_operations_1_2_(NULL),
-      flash_browser_operations_1_0_(NULL),
+      flash_browser_operations_1_3_(nullptr),
+      flash_browser_operations_1_2_(nullptr),
+      flash_browser_operations_1_0_(nullptr),
       peer_is_browser_(peer_is_browser) {
   if (get_plugin_interface) {
     flash_browser_operations_1_0_ =
@@ -226,7 +226,7 @@ void BrokerProcessDispatcher::GetSitesWithData(
     std::vector<std::string>* site_vector) {
   std::string data_str = ConvertPluginDataPath(plugin_data_path);
   if (flash_browser_operations_1_3_) {
-    char** sites = NULL;
+    char** sites = nullptr;
     flash_browser_operations_1_3_->GetSitesWithData(data_str.c_str(), &sites);
     if (!sites)
       return;
@@ -246,7 +246,8 @@ bool BrokerProcessDispatcher::ClearSiteData(
   std::string data_str = ConvertPluginDataPath(plugin_data_path);
   if (flash_browser_operations_1_3_) {
     flash_browser_operations_1_3_->ClearSiteData(
-        data_str.c_str(), site.empty() ? NULL : site.c_str(), flags, max_age);
+        data_str.c_str(), site.empty() ? nullptr : site.c_str(), flags,
+        max_age);
     return true;
   }
 
@@ -254,13 +255,15 @@ bool BrokerProcessDispatcher::ClearSiteData(
   // goes to Stable.
   if (flash_browser_operations_1_2_) {
     flash_browser_operations_1_2_->ClearSiteData(
-        data_str.c_str(), site.empty() ? NULL : site.c_str(), flags, max_age);
+        data_str.c_str(), site.empty() ? nullptr : site.c_str(), flags,
+        max_age);
     return true;
   }
 
   if (flash_browser_operations_1_0_) {
     flash_browser_operations_1_0_->ClearSiteData(
-        data_str.c_str(), site.empty() ? NULL : site.c_str(), flags, max_age);
+        data_str.c_str(), site.empty() ? nullptr : site.c_str(), flags,
+        max_age);
     return true;
   }
 

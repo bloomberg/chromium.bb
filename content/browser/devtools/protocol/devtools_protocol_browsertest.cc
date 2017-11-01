@@ -252,7 +252,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   }
 
   bool HasValue(const std::string& path) {
-    base::Value* value = 0;
+    base::Value* value = nullptr;
     return result_->Get(path, &value);
   }
 
@@ -1880,7 +1880,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   EXPECT_TRUE(notifications_.empty());
 
   WebContents::CreateParams create_params(
-      ShellContentBrowserClient::Get()->browser_context(), NULL);
+      ShellContentBrowserClient::Get()->browser_context(), nullptr);
   std::unique_ptr<content::WebContents> web_contents(
       content::WebContents::Create(create_params));
   EXPECT_TRUE(notifications_.empty());

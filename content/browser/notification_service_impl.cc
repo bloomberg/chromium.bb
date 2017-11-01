@@ -40,7 +40,7 @@ bool NotificationServiceImpl::HasKey(const NotificationSourceMap& map,
 }
 
 NotificationServiceImpl::NotificationServiceImpl() {
-  DCHECK(current() == NULL);
+  DCHECK(current() == nullptr);
   lazy_tls_ptr.Pointer()->Set(this);
 }
 
@@ -131,7 +131,7 @@ void NotificationServiceImpl::Notify(int type,
 
 
 NotificationServiceImpl::~NotificationServiceImpl() {
-  lazy_tls_ptr.Pointer()->Set(NULL);
+  lazy_tls_ptr.Pointer()->Set(nullptr);
 
 #ifndef NDEBUG
   for (int i = 0; i < static_cast<int>(observer_counts_.size()); i++) {

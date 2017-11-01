@@ -545,7 +545,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       page_zoom_level_(params.page_zoom_level),
       main_render_frame_(nullptr),
       frame_widget_(nullptr),
-      speech_recognition_dispatcher_(NULL),
+      speech_recognition_dispatcher_(nullptr),
 #if defined(OS_ANDROID)
       was_created_by_renderer_(false),
 #endif
@@ -1117,7 +1117,7 @@ bool RenderViewImpl::RenderWidgetWillHandleMouseEvent(
 // IPC::Listener implementation ----------------------------------------------
 
 bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
-  WebFrame* main_frame = webview() ? webview()->MainFrame() : NULL;
+  WebFrame* main_frame = webview() ? webview()->MainFrame() : nullptr;
   if (main_frame && main_frame->IsWebLocalFrame())
     GetContentClient()->SetActiveURL(
         main_frame->ToWebLocalFrame()->GetDocument().Url());
@@ -1435,7 +1435,7 @@ WebWidget* RenderViewImpl::CreatePopupMenu(blink::WebPopupType popup_type) {
   RenderWidget* widget = RenderWidget::CreateForPopup(this, compositor_deps_,
                                                       popup_type, screen_info_);
   if (!widget)
-    return NULL;
+    return nullptr;
   if (screen_metrics_emulator_) {
     widget->SetPopupOriginAdjustmentsForEmulation(
         screen_metrics_emulator_.get());

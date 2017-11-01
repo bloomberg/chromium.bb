@@ -176,7 +176,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
         dispatcher->ShareSharedMemoryHandleWithRemote(local_shm->handle());
   } else {
     // We need to allocate new shared memory.
-    shared_image_ = NULL;  // Release any previous image.
+    shared_image_ = nullptr;  // Release any previous image.
 
     ppapi::ScopedPPResource resource(
         ppapi::ScopedPPResource::PassRef(),
@@ -209,7 +209,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
 
     DCHECK(!shared_image_->IsMapped());  // New memory should not be mapped.
     if (!shared_image_->Map() || shared_image_->GetMappedBitmap().empty()) {
-      shared_image_ = NULL;
+      shared_image_ = nullptr;
       SendGetFrameErrorReply(PP_ERROR_FAILED);
       return;
     }
@@ -236,7 +236,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
     frame = last_frame_;
     // Frame resolution doesn't change frequently, so don't keep any unnecessary
     // buffers around.
-    scaled_frame_ = NULL;
+    scaled_frame_ = nullptr;
   } else {
     // We need to create an intermediate scaled frame. Make sure we have
     // allocated one of correct size.
@@ -270,7 +270,7 @@ void PepperVideoSourceHost::SendGetFrameReply() {
                       libyuv::kFilterBilinear);
     frame = scaled_frame_;
   }
-  last_frame_ = NULL;
+  last_frame_ = nullptr;
 
   libyuv::I420ToARGB(frame->visible_data(media::VideoFrame::kYPlane),
                      frame->stride(media::VideoFrame::kYPlane),
@@ -313,10 +313,10 @@ void PepperVideoSourceHost::Close() {
   if (frame_source_.get() && !stream_url_.empty())
     frame_source_->Close(frame_receiver_.get());
 
-  frame_source_.reset(NULL);
+  frame_source_.reset(nullptr);
   stream_url_.clear();
 
-  shared_image_ = NULL;
+  shared_image_ = nullptr;
 }
 
 }  // namespace content

@@ -62,7 +62,7 @@ std::unique_ptr<StreamHandle> MakeEmptyStream() {
   GURL url(std::string(url::kBlobScheme) + "://" + base::GenerateGUID());
   StreamRegistry* stream_registry =
       browser_side_navigation_test_utils.Get()->stream_registry();
-  scoped_refptr<Stream> stream(new Stream(stream_registry, NULL, url));
+  scoped_refptr<Stream> stream(new Stream(stream_registry, nullptr, url));
   stream->Finalize(net::OK);
   return stream->CreateHandle();
 }

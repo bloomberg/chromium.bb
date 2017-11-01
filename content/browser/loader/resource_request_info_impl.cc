@@ -151,7 +151,7 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     PreviewsState previews_state,
     const scoped_refptr<ResourceRequestBody> body,
     bool initiated_in_secure_context)
-    : detachable_handler_(NULL),
+    : detachable_handler_(nullptr),
       requester_info_(std::move(requester_info)),
       route_id_(route_id),
       frame_tree_node_id_(frame_tree_node_id),

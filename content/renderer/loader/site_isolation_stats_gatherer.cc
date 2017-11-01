@@ -142,7 +142,7 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
   std::string access_control_origin;
 
   // We can use a case-insensitive header name for EnumerateHeader().
-  info.headers->EnumerateHeader(NULL, "access-control-allow-origin",
+  info.headers->EnumerateHeader(nullptr, "access-control-allow-origin",
                                 &access_control_origin);
   if (CrossSiteDocumentClassifier::IsValidCorsHeaderSet(
           frame_origin, response_url, access_control_origin)) {
@@ -151,7 +151,7 @@ SiteIsolationStatsGatherer::OnReceivedResponse(
 
   // Real XSD data collection starts from here.
   std::string no_sniff;
-  info.headers->EnumerateHeader(NULL, "x-content-type-options", &no_sniff);
+  info.headers->EnumerateHeader(nullptr, "x-content-type-options", &no_sniff);
 
   std::unique_ptr<SiteIsolationResponseMetaData> resp_data(
       new SiteIsolationResponseMetaData);

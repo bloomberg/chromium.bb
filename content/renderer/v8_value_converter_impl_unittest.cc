@@ -61,7 +61,7 @@ class V8ValueConverterImplTest : public testing::Test {
   void SetUp() override {
     v8::HandleScope handle_scope(isolate_);
     v8::Local<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate_);
-    context_.Reset(isolate_, v8::Context::New(isolate_, NULL, global));
+    context_.Reset(isolate_, v8::Context::New(isolate_, nullptr, global));
   }
 
   void TearDown() override { context_.Reset(); }
@@ -127,7 +127,7 @@ class V8ValueConverterImplTest : public testing::Test {
   }
 
   bool IsNull(base::DictionaryValue* value, const std::string& key) {
-    base::Value* child = NULL;
+    base::Value* child = nullptr;
     if (!value->Get(key, &child)) {
       ADD_FAILURE();
       return false;
@@ -146,7 +146,7 @@ class V8ValueConverterImplTest : public testing::Test {
   }
 
   bool IsNull(base::ListValue* value, uint32_t index) {
-    base::Value* child = NULL;
+    base::Value* child = nullptr;
     if (!value->Get(static_cast<size_t>(index), &child)) {
       ADD_FAILURE();
       return false;
@@ -186,7 +186,7 @@ class V8ValueConverterImplTest : public testing::Test {
     ASSERT_TRUE(dictionary.get());
 
     if (expected_value) {
-      base::Value* temp = NULL;
+      base::Value* temp = nullptr;
       ASSERT_TRUE(dictionary->Get("test", &temp));
       EXPECT_EQ(expected_type, temp->type());
       EXPECT_TRUE(expected_value->Equals(temp));
@@ -200,14 +200,14 @@ class V8ValueConverterImplTest : public testing::Test {
         base::ListValue::From(converter.FromV8Value(array, context)));
     ASSERT_TRUE(list.get());
     if (expected_value) {
-      base::Value* temp = NULL;
+      base::Value* temp = nullptr;
       ASSERT_TRUE(list->Get(0, &temp));
       EXPECT_EQ(expected_type, temp->type());
       EXPECT_TRUE(expected_value->Equals(temp));
     } else {
       // Arrays should preserve their length, and convert unconvertible
       // types into null.
-      base::Value* temp = NULL;
+      base::Value* temp = nullptr;
       ASSERT_TRUE(list->Get(0, &temp));
       EXPECT_EQ(base::Value::Type::NONE, temp->type());
     }
@@ -942,7 +942,7 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
 
   base::Value* current = value.get();
   for (int i = 1; i < kExpectedDepth; ++i) {
-    base::DictionaryValue* current_as_object = NULL;
+    base::DictionaryValue* current_as_object = nullptr;
     ASSERT_TRUE(current->GetAsDictionary(&current_as_object)) << i;
     ASSERT_TRUE(current_as_object->Get(kKey, &current)) << i;
   }

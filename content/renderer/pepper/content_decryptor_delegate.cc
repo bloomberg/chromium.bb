@@ -66,7 +66,7 @@ bool MakeBufferResource(PP_Instance instance,
   DCHECK(resource);
 
   if (data.empty()) {
-    resource = NULL;
+    resource = nullptr;
     return true;
   }
 
@@ -592,14 +592,14 @@ bool ContentDecryptorDelegate::CancelDecrypt(
       // Release the shared memory as it can still be in use by the plugin.
       // The next Decrypt() call will need to allocate a new shared memory
       // buffer.
-      audio_input_resource_ = NULL;
+      audio_input_resource_ = nullptr;
       decrypt_cb = audio_decrypt_cb_.ResetAndReturn();
       break;
     case Decryptor::kVideo:
       // Release the shared memory as it can still be in use by the plugin.
       // The next Decrypt() call will need to allocate a new shared memory
       // buffer.
-      video_input_resource_ = NULL;
+      video_input_resource_ = nullptr;
       decrypt_cb = video_decrypt_cb_.ResetAndReturn();
       break;
     default:
@@ -608,7 +608,7 @@ bool ContentDecryptorDelegate::CancelDecrypt(
   }
 
   if (!decrypt_cb.is_null())
-    decrypt_cb.Run(Decryptor::kSuccess, NULL);
+    decrypt_cb.Run(Decryptor::kSuccess, nullptr);
 
   return true;
 }
@@ -946,19 +946,19 @@ void ContentDecryptorDelegate::DeliverBlock(
   Decryptor::Status status =
       PpDecryptResultToMediaDecryptorStatus(block_info->result);
   if (status != Decryptor::kSuccess) {
-    decrypt_cb.Run(status, NULL);
+    decrypt_cb.Run(status, nullptr);
     return;
   }
 
   EnterResourceNoLock<PPB_Buffer_API> enter(decrypted_block, true);
   if (!enter.succeeded()) {
-    decrypt_cb.Run(Decryptor::kError, NULL);
+    decrypt_cb.Run(Decryptor::kError, nullptr);
     return;
   }
   BufferAutoMapper mapper(enter.object());
   if (!mapper.data() || !mapper.size() ||
       mapper.size() < block_info->data_size) {
-    decrypt_cb.Run(Decryptor::kError, NULL);
+    decrypt_cb.Run(Decryptor::kError, nullptr);
     return;
   }
 
@@ -988,16 +988,16 @@ static uint8_t* GetMappedBuffer(PP_Resource resource,
                                 scoped_refptr<PPB_Buffer_Impl>* ppb_buffer) {
   EnterResourceNoLock<PPB_Buffer_API> enter(resource, true);
   if (!enter.succeeded())
-    return NULL;
+    return nullptr;
 
   uint8_t* mapped_data = static_cast<uint8_t*>(enter.object()->Map());
   if (!enter.object()->IsMapped() || !mapped_data)
-    return NULL;
+    return nullptr;
 
   uint32_t mapped_size = 0;
   if (!enter.object()->Describe(&mapped_size) || !mapped_size) {
     enter.object()->Unmap();
-    return NULL;
+    return nullptr;
   }
 
   *ppb_buffer = static_cast<PPB_Buffer_Impl*>(enter.object());
@@ -1029,7 +1029,7 @@ void ContentDecryptorDelegate::DeliverFrame(
       PpDecryptResultToMediaDecryptorStatus(frame_info->result);
   if (status != Decryptor::kSuccess) {
     DCHECK(!frame_info->tracking_info.buffer_id);
-    video_decode_cb.Run(status, NULL);
+    video_decode_cb.Run(status, nullptr);
     return;
   }
 
@@ -1037,7 +1037,7 @@ void ContentDecryptorDelegate::DeliverFrame(
   uint8_t* frame_data = GetMappedBuffer(decrypted_frame, &ppb_buffer);
   if (!frame_data) {
     FreeBuffer(frame_info->tracking_info.buffer_id);
-    video_decode_cb.Run(Decryptor::kError, NULL);
+    video_decode_cb.Run(Decryptor::kError, nullptr);
     return;
   }
 
@@ -1047,7 +1047,7 @@ void ContentDecryptorDelegate::DeliverFrame(
       PpDecryptedFrameFormatToMediaVideoFormat(frame_info->format);
   if (video_pixel_format == media::PIXEL_FORMAT_UNKNOWN) {
     FreeBuffer(frame_info->tracking_info.buffer_id);
-    video_decode_cb.Run(Decryptor::kError, NULL);
+    video_decode_cb.Run(Decryptor::kError, nullptr);
     return;
   }
 
@@ -1064,7 +1064,7 @@ void ContentDecryptorDelegate::DeliverFrame(
               frame_info->tracking_info.timestamp));
   if (!decoded_frame) {
     FreeBuffer(frame_info->tracking_info.buffer_id);
-    video_decode_cb.Run(Decryptor::kError, NULL);
+    video_decode_cb.Run(Decryptor::kError, nullptr);
     return;
   }
   decoded_frame->AddDestructionObserver(
@@ -1128,7 +1128,7 @@ void ContentDecryptorDelegate::CancelDecode(Decryptor::StreamType stream_type) {
       // Release the shared memory as it can still be in use by the plugin.
       // The next DecryptAndDecode() call will need to allocate a new shared
       // memory buffer.
-      audio_input_resource_ = NULL;
+      audio_input_resource_ = nullptr;
       if (!audio_decode_cb_.is_null())
         audio_decode_cb_.ResetAndReturn().Run(Decryptor::kSuccess,
                                               Decryptor::AudioFrames());
@@ -1137,9 +1137,9 @@ void ContentDecryptorDelegate::CancelDecode(Decryptor::StreamType stream_type) {
       // Release the shared memory as it can still be in use by the plugin.
       // The next DecryptAndDecode() call will need to allocate a new shared
       // memory buffer.
-      video_input_resource_ = NULL;
+      video_input_resource_ = nullptr;
       if (!video_decode_cb_.is_null())
-        video_decode_cb_.ResetAndReturn().Run(Decryptor::kSuccess, NULL);
+        video_decode_cb_.ResetAndReturn().Run(Decryptor::kSuccess, nullptr);
       break;
     default:
       NOTREACHED();
@@ -1154,7 +1154,7 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
 
   // End of stream buffers are represented as null resources.
   if (buffer->end_of_stream()) {
-    *resource = NULL;
+    *resource = nullptr;
     return true;
   }
 
@@ -1191,7 +1191,7 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
 
   BufferAutoMapper mapper(media_resource.get());
   if (!mapper.data() || mapper.size() < data_size) {
-    media_resource = NULL;
+    media_resource = nullptr;
     return false;
   }
   memcpy(mapper.data(), buffer->data(), data_size);
@@ -1294,14 +1294,14 @@ void ContentDecryptorDelegate::SatisfyAllPendingCallbacksOnError() {
   if (!video_decoder_init_cb_.is_null())
     video_decoder_init_cb_.ResetAndReturn().Run(false);
 
-  audio_input_resource_ = NULL;
-  video_input_resource_ = NULL;
+  audio_input_resource_ = nullptr;
+  video_input_resource_ = nullptr;
 
   if (!audio_decrypt_cb_.is_null())
-    audio_decrypt_cb_.ResetAndReturn().Run(media::Decryptor::kError, NULL);
+    audio_decrypt_cb_.ResetAndReturn().Run(media::Decryptor::kError, nullptr);
 
   if (!video_decrypt_cb_.is_null())
-    video_decrypt_cb_.ResetAndReturn().Run(media::Decryptor::kError, NULL);
+    video_decrypt_cb_.ResetAndReturn().Run(media::Decryptor::kError, nullptr);
 
   if (!audio_decode_cb_.is_null()) {
     const media::Decryptor::AudioFrames empty_frames;
@@ -1310,7 +1310,7 @@ void ContentDecryptorDelegate::SatisfyAllPendingCallbacksOnError() {
   }
 
   if (!video_decode_cb_.is_null())
-    video_decode_cb_.ResetAndReturn().Run(media::Decryptor::kError, NULL);
+    video_decode_cb_.ResetAndReturn().Run(media::Decryptor::kError, nullptr);
 
   cdm_promise_adapter_.Clear();
 

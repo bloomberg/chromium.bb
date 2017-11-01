@@ -462,7 +462,7 @@ bool ServiceWorkerInternalsUI::GetServiceWorkerContext(
     scoped_refptr<ServiceWorkerContextWrapper>* context) const {
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
-  StoragePartition* result_partition(NULL);
+  StoragePartition* result_partition(nullptr);
   BrowserContext::StoragePartitionCallback find_context_cb =
       base::Bind(&ServiceWorkerInternalsUI::FindContext,
                  base::Unretained(this),
@@ -479,7 +479,7 @@ bool ServiceWorkerInternalsUI::GetServiceWorkerContext(
 void ServiceWorkerInternalsUI::StopWorker(const ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int callback_id;
-  const DictionaryValue* cmd_args = NULL;
+  const DictionaryValue* cmd_args = nullptr;
   int partition_id;
   scoped_refptr<ServiceWorkerContextWrapper> context;
   std::string version_id_string;
@@ -501,7 +501,7 @@ void ServiceWorkerInternalsUI::StopWorker(const ListValue* args) {
 void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int callback_id;
-  const DictionaryValue* cmd_args = NULL;
+  const DictionaryValue* cmd_args = nullptr;
   int process_host_id = 0;
   int devtools_agent_route_id = 0;
   if (!args->GetInteger(0, &callback_id) ||
@@ -530,7 +530,7 @@ void ServiceWorkerInternalsUI::Unregister(const ListValue* args) {
   int callback_id;
   int partition_id;
   std::string scope_string;
-  const DictionaryValue* cmd_args = NULL;
+  const DictionaryValue* cmd_args = nullptr;
   scoped_refptr<ServiceWorkerContextWrapper> context;
   if (!args->GetInteger(0, &callback_id) ||
       !args->GetDictionary(1, &cmd_args) ||
@@ -550,7 +550,7 @@ void ServiceWorkerInternalsUI::StartWorker(const ListValue* args) {
   int callback_id;
   int partition_id;
   std::string scope_string;
-  const DictionaryValue* cmd_args = NULL;
+  const DictionaryValue* cmd_args = nullptr;
   scoped_refptr<ServiceWorkerContextWrapper> context;
   if (!args->GetInteger(0, &callback_id) ||
       !args->GetDictionary(1, &cmd_args) ||

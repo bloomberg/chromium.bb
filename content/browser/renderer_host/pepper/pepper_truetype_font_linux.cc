@@ -138,7 +138,7 @@ int32_t PepperTrueTypeFontLinux::GetTable(uint32_t table_tag,
   size_t table_size = 0;
   // Tags are byte swapped on Linux.
   table_tag = base::ByteSwap(table_tag);
-  if (!GetFontTable(fd_.get(), table_tag, offset, NULL, &table_size))
+  if (!GetFontTable(fd_.get(), table_tag, offset, nullptr, &table_size))
     return PP_ERROR_FAILED;
   // Only retrieve as much as the caller requested.
   table_size = std::min(table_size, static_cast<size_t>(max_data_length));

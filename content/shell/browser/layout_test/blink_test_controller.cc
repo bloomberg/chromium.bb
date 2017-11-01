@@ -303,7 +303,7 @@ void BlinkTestResultPrinter::CloseStderr() {
 
 // BlinkTestController -------------------------------------------------------
 
-BlinkTestController* BlinkTestController::instance_ = NULL;
+BlinkTestController* BlinkTestController::instance_ = nullptr;
 
 // static
 BlinkTestController* BlinkTestController::Get() {
@@ -312,7 +312,7 @@ BlinkTestController* BlinkTestController::Get() {
 }
 
 BlinkTestController::BlinkTestController()
-    : main_window_(NULL),
+    : main_window_(nullptr),
       secondary_window_(nullptr),
       devtools_window_(nullptr),
       test_phase_(BETWEEN_TESTS),
@@ -348,7 +348,7 @@ BlinkTestController::~BlinkTestController() {
   CHECK(test_phase_ == BETWEEN_TESTS);
   GpuDataManager::GetInstance()->RemoveObserver(this);
   DiscardMainWindow();
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
 bool BlinkTestController::PrepareForLayoutTest(
@@ -381,11 +381,8 @@ bool BlinkTestController::PrepareForLayoutTest(
       test_url_.spec().find("compositing/") != std::string::npos;
   initial_size_ = Shell::GetShellDefaultSize();
   if (!main_window_) {
-    main_window_ = content::Shell::CreateNewWindow(
-        browser_context,
-        GURL(),
-        NULL,
-        initial_size_);
+    main_window_ = content::Shell::CreateNewWindow(browser_context, GURL(),
+                                                   nullptr, initial_size_);
     WebContentsObserver::Observe(main_window_->web_contents());
     if (is_devtools_protocol_test) {
       devtools_protocol_test_bindings_.reset(
@@ -692,7 +689,7 @@ void BlinkTestController::DiscardMainWindow() {
   // discard the main window.
   devtools_bindings_.reset();
   devtools_protocol_test_bindings_.reset();
-  WebContentsObserver::Observe(NULL);
+  WebContentsObserver::Observe(nullptr);
   if (test_phase_ != BETWEEN_TESTS) {
     Shell::CloseAllWindows();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -701,7 +698,7 @@ void BlinkTestController::DiscardMainWindow() {
   } else if (main_window_) {
     main_window_->Close();
   }
-  main_window_ = NULL;
+  main_window_ = nullptr;
   current_pid_ = base::kNullProcessId;
 }
 
@@ -951,7 +948,7 @@ void BlinkTestController::OnClearDevToolsLocalStorage() {
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   StoragePartition* storage_partition =
-      BrowserContext::GetStoragePartition(browser_context, NULL);
+      BrowserContext::GetStoragePartition(browser_context, nullptr);
   storage_partition->GetDOMStorageContext()->DeleteLocalStorage(
       content::LayoutTestDevToolsBindings::GetDevToolsPathAsURL("")
           .GetOrigin());

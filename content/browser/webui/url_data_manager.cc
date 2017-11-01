@@ -60,7 +60,7 @@ static void UpdateWebUIDataSourceOnIOThread(
 }  // namespace
 
 // static
-URLDataManager::URLDataSources* URLDataManager::data_sources_ = NULL;
+URLDataManager::URLDataSources* URLDataManager::data_sources_ = nullptr;
 
 URLDataManager::URLDataManager(BrowserContext* browser_context)
     : browser_context_(browser_context) {

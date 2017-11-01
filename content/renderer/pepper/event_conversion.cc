@@ -612,7 +612,7 @@ WebInputEvent* CreateWebInputEvent(const InputEventData& event) {
   std::unique_ptr<WebInputEvent> web_input_event;
   switch (event.event_type) {
     case PP_INPUTEVENT_TYPE_UNDEFINED:
-      return NULL;
+      return nullptr;
     case PP_INPUTEVENT_TYPE_MOUSEDOWN:
     case PP_INPUTEVENT_TYPE_MOUSEUP:
     case PP_INPUTEVENT_TYPE_MOUSEMOVE:

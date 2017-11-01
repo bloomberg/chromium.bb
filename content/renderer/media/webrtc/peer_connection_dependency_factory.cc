@@ -103,10 +103,10 @@ bool IsValidPortRange(uint16_t min_port, uint16_t max_port) {
 
 PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
     P2PSocketDispatcher* p2p_socket_dispatcher)
-    : network_manager_(NULL),
+    : network_manager_(nullptr),
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
-      signaling_thread_(NULL),
-      worker_thread_(NULL),
+      signaling_thread_(nullptr),
+      worker_thread_(nullptr),
       chrome_signaling_thread_("Chrome_libJingle_Signaling"),
       chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
   TryScheduleStunProbeTrial();
@@ -273,7 +273,7 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
 }
 
 bool PeerConnectionDependencyFactory::PeerConnectionFactoryCreated() {
-  return pc_factory_.get() != NULL;
+  return pc_factory_.get() != nullptr;
 }
 
 scoped_refptr<webrtc::PeerConnectionInterface>
@@ -284,7 +284,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   CHECK(web_frame);
   CHECK(observer);
   if (!GetPcFactory().get())
-    return NULL;
+    return nullptr;
 
   // Copy the flag from Preference associated with this WebLocalFrame.
   P2PPortAllocator::Config port_config;
@@ -513,12 +513,12 @@ void PeerConnectionDependencyFactory::CreateIpcNetworkManagerOnWorkerThread(
 void PeerConnectionDependencyFactory::DeleteIpcNetworkManager() {
   DCHECK(chrome_worker_thread_.task_runner()->BelongsToCurrentThread());
   delete network_manager_;
-  network_manager_ = NULL;
+  network_manager_ = nullptr;
 }
 
 void PeerConnectionDependencyFactory::CleanupPeerConnectionFactory() {
   DVLOG(1) << "PeerConnectionDependencyFactory::CleanupPeerConnectionFactory()";
-  pc_factory_ = NULL;
+  pc_factory_ = nullptr;
   if (network_manager_) {
     // The network manager needs to free its resources on the thread they were
     // created, which is the worked thread.

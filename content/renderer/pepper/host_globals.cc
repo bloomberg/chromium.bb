@@ -81,7 +81,7 @@ WebConsoleMessage MakeLogMessage(PP_LogLevel level,
 
 }  // namespace
 
-HostGlobals* HostGlobals::host_globals_ = NULL;
+HostGlobals* HostGlobals::host_globals_ = nullptr;
 
 HostGlobals::HostGlobals()
     : ppapi::PpapiGlobals(),
@@ -95,7 +95,7 @@ HostGlobals::HostGlobals()
 
 HostGlobals::~HostGlobals() {
   DCHECK(host_globals_ == this || !host_globals_);
-  host_globals_ = NULL;
+  host_globals_ = nullptr;
 }
 
 ppapi::ResourceTracker* HostGlobals::GetResourceTracker() {
@@ -108,7 +108,7 @@ ppapi::CallbackTracker* HostGlobals::GetCallbackTrackerForInstance(
     PP_Instance instance) {
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
-    return NULL;
+    return nullptr;
   return found->second->module()->GetCallbackTracker().get();
 }
 
@@ -122,7 +122,7 @@ ppapi::thunk::ResourceCreationAPI* HostGlobals::GetResourceCreationAPI(
     PP_Instance pp_instance) {
   PepperPluginInstanceImpl* instance = GetInstance(pp_instance);
   if (!instance)
-    return NULL;
+    return nullptr;
   return &instance->resource_creation();
 }
 
@@ -193,7 +193,9 @@ base::TaskRunner* HostGlobals::GetFileTaskRunner() {
   return RenderThreadImpl::current()->GetFileThreadTaskRunner().get();
 }
 
-ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() { return NULL; }
+ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() {
+  return nullptr;
+}
 
 PP_Module HostGlobals::AddModule(PluginModule* module) {
 #ifndef NDEBUG
@@ -230,7 +232,7 @@ PluginModule* HostGlobals::GetModule(PP_Module module) {
       << module << " is not a PP_Module.";
   ModuleMap::iterator found = module_map_.find(module);
   if (found == module_map_.end())
-    return NULL;
+    return nullptr;
   return found->second;
 }
 
@@ -271,7 +273,7 @@ PepperPluginInstanceImpl* HostGlobals::GetInstance(PP_Instance instance) {
       << instance << " is not a PP_Instance.";
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
-    return NULL;
+    return nullptr;
   return found->second;
 }
 

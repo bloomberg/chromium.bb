@@ -22,8 +22,7 @@ P2PSocketDispatcher::P2PSocketDispatcher(
       network_notifications_started_(false),
       network_list_observers_(
           new base::ObserverListThreadSafe<NetworkListObserver>()),
-      sender_(NULL) {
-}
+      sender_(nullptr) {}
 
 P2PSocketDispatcher::~P2PSocketDispatcher() {
   network_list_observers_->AssertEmpty();
@@ -77,7 +76,7 @@ void P2PSocketDispatcher::OnFilterAdded(IPC::Channel* channel) {
 }
 
 void P2PSocketDispatcher::OnFilterRemoved() {
-  sender_ = NULL;
+  sender_ = nullptr;
 }
 
 void P2PSocketDispatcher::OnChannelConnected(int32_t peer_id) {
@@ -85,7 +84,7 @@ void P2PSocketDispatcher::OnChannelConnected(int32_t peer_id) {
 }
 
 void P2PSocketDispatcher::OnChannelClosing() {
-  sender_ = NULL;
+  sender_ = nullptr;
   connected_ = false;
 }
 
@@ -190,12 +189,12 @@ void P2PSocketDispatcher::OnDataReceived(
 
 P2PSocketClientImpl* P2PSocketDispatcher::GetClient(int socket_id) {
   P2PSocketClientImpl* client = clients_.Lookup(socket_id);
-  if (client == NULL) {
+  if (client == nullptr) {
     // This may happen if the socket was closed, but the browser side
     // hasn't processed the close message by the time it sends the
     // message to the renderer.
     DVLOG(1) << "Received P2P message for socket that doesn't exist.";
-    return NULL;
+    return nullptr;
   }
 
   return client;

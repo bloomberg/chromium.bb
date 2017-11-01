@@ -72,7 +72,7 @@ DOMStorageArea* DOMStorageNamespace::GetOpenStorageArea(const GURL& origin) {
   AreaHolder* holder = GetAreaHolder(origin);
   if (holder && holder->open_count_)
     return holder->area_.get();
-  return NULL;
+  return nullptr;
 }
 
 DOMStorageNamespace* DOMStorageNamespace::Clone(
@@ -215,7 +215,7 @@ DOMStorageNamespace::AreaHolder*
 DOMStorageNamespace::GetAreaHolder(const GURL& origin) {
   AreaMap::iterator found = areas_.find(origin);
   if (found == areas_.end())
-    return NULL;
+    return nullptr;
   return &(found->second);
 }
 

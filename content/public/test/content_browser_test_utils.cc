@@ -141,7 +141,7 @@ void LookupAndLogNameAndIdOfFirstCamera() {
   run_loop.Run();
 }
 
-ShellAddedObserver::ShellAddedObserver() : shell_(NULL) {
+ShellAddedObserver::ShellAddedObserver() : shell_(nullptr) {
   Shell::SetShellCreatedCallback(
       base::Bind(&ShellAddedObserver::ShellCreated, base::Unretained(this)));
 }

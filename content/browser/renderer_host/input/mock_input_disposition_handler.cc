@@ -18,7 +18,7 @@ using blink::WebTouchPoint;
 namespace content {
 
 MockInputDispositionHandler::MockInputDispositionHandler()
-    : input_router_(NULL),
+    : input_router_(nullptr),
       ack_count_(0),
       unexpected_event_ack_called_(false),
       ack_event_type_(WebInputEvent::kUndefined),

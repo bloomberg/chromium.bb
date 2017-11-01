@@ -283,7 +283,7 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
                    std::move(widget_request)),
       active_url_(active_url),
       plugin_(plugin),
-      layer_(NULL),
+      layer_(nullptr),
       mouse_lock_dispatcher_(new FullscreenMouseLockDispatcher(this)) {}
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
@@ -304,12 +304,12 @@ void RenderWidgetFullscreenPepper::ScrollRect(
 void RenderWidgetFullscreenPepper::Destroy() {
   // This function is called by the plugin instance as it's going away, so reset
   // plugin_ to NULL to avoid calling into a dangling pointer e.g. on Close().
-  plugin_ = NULL;
+  plugin_ = nullptr;
 
   // After calling Destroy(), the plugin instance assumes that the layer is not
   // used by us anymore, so it may destroy the layer before this object goes
   // away.
-  SetLayer(NULL);
+  SetLayer(nullptr);
 
   Send(new ViewHostMsg_Close(routing_id_));
   Release();

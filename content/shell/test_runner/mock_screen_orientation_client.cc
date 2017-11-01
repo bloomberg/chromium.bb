@@ -15,7 +15,7 @@
 namespace test_runner {
 
 MockScreenOrientationClient::MockScreenOrientationClient()
-    : main_frame_(NULL),
+    : main_frame_(nullptr),
       current_lock_(blink::kWebScreenOrientationLockDefault),
       device_orientation_(blink::kWebScreenOrientationPortraitPrimary),
       current_orientation_(blink::kWebScreenOrientationPortraitPrimary),

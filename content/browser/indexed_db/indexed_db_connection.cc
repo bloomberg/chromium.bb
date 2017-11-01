@@ -68,7 +68,7 @@ void IndexedDBConnection::VersionChangeIgnored() {
 }
 
 bool IndexedDBConnection::IsConnected() {
-  return database_.get() != NULL;
+  return database_.get() != nullptr;
 }
 
 // The observers begin listening to changes only once they are activated.

@@ -109,7 +109,7 @@ PromiseFileFinalizer::~PromiseFileFinalizer() {}
 
 void PromiseFileFinalizer::Cleanup() {
   if (drag_file_downloader_.get())
-    drag_file_downloader_ = NULL;
+    drag_file_downloader_ = nullptr;
 }
 
 }  // namespace content

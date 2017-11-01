@@ -52,11 +52,11 @@ class QuotaDispatcherHost::RequestDispatcher {
     return dispatcher_host_.get();
   }
   storage::QuotaManager* quota_manager() const {
-    return dispatcher_host_ ? dispatcher_host_->quota_manager_ : NULL;
+    return dispatcher_host_ ? dispatcher_host_->quota_manager_ : nullptr;
   }
   QuotaPermissionContext* permission_context() const {
-    return dispatcher_host_ ?
-        dispatcher_host_->permission_context_.get() : NULL;
+    return dispatcher_host_ ? dispatcher_host_->permission_context_.get()
+                            : nullptr;
   }
   int render_process_id() const { return render_process_id_; }
   int request_id() const { return request_id_; }

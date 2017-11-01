@@ -259,8 +259,8 @@ bool SpeechRecognizerImpl::IsCapturingAudio() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);  // See IsActive().
   const bool is_capturing_audio = state_ >= STATE_STARTING &&
                                   state_ <= STATE_RECOGNIZING;
-  DCHECK((is_capturing_audio && (audio_controller_.get() != NULL)) ||
-         (!is_capturing_audio && audio_controller_.get() == NULL));
+  DCHECK((is_capturing_audio && (audio_controller_.get() != nullptr)) ||
+         (!is_capturing_audio && audio_controller_.get() == nullptr));
   return is_capturing_audio;
 }
 
@@ -364,7 +364,7 @@ void SpeechRecognizerImpl::DispatchEvent(const FSMEventArgs& event_args) {
   scoped_refptr<SpeechRecognizerImpl> me(this);
 
   if (event_args.event == EVENT_AUDIO_DATA) {
-    DCHECK(event_args.audio_data.get() != NULL);
+    DCHECK(event_args.audio_data.get() != nullptr);
     ProcessAudioPipeline(*event_args.audio_data.get());
   }
 
@@ -548,7 +548,7 @@ void SpeechRecognizerImpl::ProcessAudioPipeline(const AudioChunk& raw_audio) {
     UpdateSignalAndNoiseLevels(rms, clip_detected);
   }
   if (route_to_sr_engine) {
-    DCHECK(recognition_engine_.get() != NULL);
+    DCHECK(recognition_engine_.get() != nullptr);
     recognition_engine_->TakeAudioChunk(raw_audio);
   }
 }
@@ -564,7 +564,7 @@ void SpeechRecognizerImpl::OnDeviceInfo(
 SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::PrepareRecognition(
     const FSMEventArgs&) {
   DCHECK(state_ == STATE_IDLE);
-  DCHECK(recognition_engine_.get() != NULL);
+  DCHECK(recognition_engine_.get() != nullptr);
   DCHECK(!IsCapturingAudio());
   GetAudioSystem()->GetInputStreamParameters(
       device_id_, base::BindOnce(&SpeechRecognizerImpl::OnDeviceInfo,
@@ -577,7 +577,7 @@ SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::PrepareRecognition(
 SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
   DCHECK(state_ == STATE_PREPARING);
-  DCHECK(recognition_engine_.get() != NULL);
+  DCHECK(recognition_engine_.get() != nullptr);
   DCHECK(!IsCapturingAudio());
 
   DVLOG(1) << "SpeechRecognizerImpl starting audio capture.";
@@ -662,7 +662,7 @@ SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::StartRecognitionEngine(const FSMEventArgs& event_args) {
   // This is the first audio packet captured, so the recognition engine is
   // started and the delegate notified about the event.
-  DCHECK(recognition_engine_.get() != NULL);
+  DCHECK(recognition_engine_.get() != nullptr);
   recognition_engine_->StartRecognition();
   listener()->OnAudioStart(session_id());
 
@@ -752,7 +752,7 @@ SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::Abort(
 
   // The recognition engine is initialized only after STATE_STARTING.
   if (state_ > STATE_STARTING) {
-    DCHECK(recognition_engine_.get() != NULL);
+    DCHECK(recognition_engine_.get() != nullptr);
     recognition_engine_->EndRecognition();
   }
 
@@ -856,7 +856,7 @@ void SpeechRecognizerImpl::CloseAudioControllerAsynchronously() {
   audio_controller_->Close(
       base::BindOnce(&SpeechRecognizerImpl::OnAudioClosed, this,
                      base::RetainedRef(audio_controller_)));
-  audio_controller_ = NULL;  // The controller is still refcounted by Bind.
+  audio_controller_ = nullptr;  // The controller is still refcounted by Bind.
   audio_log_->OnClosed(0);
 }
 
@@ -903,9 +903,8 @@ media::AudioManager* SpeechRecognizerImpl::GetAudioManager() {
 
 SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(FSMEvent event_value)
     : event(event_value),
-      audio_data(NULL),
-      engine_error(SPEECH_RECOGNITION_ERROR_NONE) {
-}
+      audio_data(nullptr),
+      engine_error(SPEECH_RECOGNITION_ERROR_NONE) {}
 
 SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(const FSMEventArgs& other) =
     default;

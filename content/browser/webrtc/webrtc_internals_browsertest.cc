@@ -246,7 +246,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
     EXPECT_EQ(requests.size(), list_request->GetSize());
 
     for (size_t i = 0; i < requests.size(); ++i) {
-      base::DictionaryValue* dict = NULL;
+      base::DictionaryValue* dict = nullptr;
       ASSERT_TRUE(list_request->GetDictionary(i, &dict));
       int pid, rid;
       std::string origin, audio, video;
@@ -438,7 +438,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
                                int peer_connection_number,
                                int update_number,
                                int stats_number) {
-    EXPECT_NE((base::Value*)NULL, dump);
+    EXPECT_NE((base::Value*)nullptr, dump);
     EXPECT_EQ(base::Value::Type::DICTIONARY, dump->type());
 
     base::DictionaryValue* dict_dump =
@@ -447,7 +447,7 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
 
     base::DictionaryValue::Iterator it(*dict_dump);
     for (; !it.IsAtEnd(); it.Advance()) {
-      base::Value* value = NULL;
+      base::Value* value = nullptr;
       dict_dump->Get(it.key(), &value);
       EXPECT_EQ(base::Value::Type::DICTIONARY, value->type());
       base::DictionaryValue* pc_dump =
@@ -476,17 +476,17 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
                        const string& report_type,
                        const string& report_id,
                        const StatsUnit& stats) {
-    EXPECT_NE((base::Value*)NULL, dump);
+    EXPECT_NE((base::Value*)nullptr, dump);
     EXPECT_EQ(base::Value::Type::DICTIONARY, dump->type());
 
     base::DictionaryValue* dict_dump =
         static_cast<base::DictionaryValue*>(dump);
-    base::Value* value = NULL;
+    base::Value* value = nullptr;
     dict_dump->Get(pc.getIdString(), &value);
     base::DictionaryValue* pc_dump = static_cast<base::DictionaryValue*>(value);
 
     // Verifies there is one data series per stats name.
-    value = NULL;
+    value = nullptr;
     pc_dump->Get("stats", &value);
     EXPECT_EQ(base::Value::Type::DICTIONARY, value->type());
 

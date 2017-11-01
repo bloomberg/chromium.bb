@@ -46,7 +46,7 @@ RenderFrame* RenderFrameObserver::render_frame() const {
 }
 
 void RenderFrameObserver::RenderFrameGone() {
-  render_frame_ = NULL;
+  render_frame_ = nullptr;
 }
 
 }  // namespace content

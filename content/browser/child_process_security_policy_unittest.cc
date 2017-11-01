@@ -54,8 +54,7 @@ class ChildProcessSecurityPolicyTestBrowserClient
 
 class ChildProcessSecurityPolicyTest : public testing::Test {
  public:
-  ChildProcessSecurityPolicyTest() : old_browser_client_(NULL) {
-  }
+  ChildProcessSecurityPolicyTest() : old_browser_client_(nullptr) {}
 
   void SetUp() override {
     old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);

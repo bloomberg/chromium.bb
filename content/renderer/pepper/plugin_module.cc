@@ -172,7 +172,7 @@ namespace {
 // TODO(raymes): I'm not sure if it is completely necessary to leak the
 // HostGlobals. Figure out the shutdown sequence and find a way to do this
 // more elegantly.
-HostGlobals* host_globals = NULL;
+HostGlobals* host_globals = nullptr;
 
 // Maintains all currently loaded plugin libs for validating PP_Module
 // identifiers.
@@ -430,7 +430,7 @@ const void* InternalGetInterface(const char* name) {
     if (strcmp(name, PPB_TESTING_PRIVATE_INTERFACE) == 0)
       return &testing_interface;
   }
-  return NULL;
+  return nullptr;
 }
 
 const void* GetInterface(const char* name) {
@@ -499,13 +499,13 @@ PluginModule::PluginModule(const std::string& name,
     : callback_tracker_(new ppapi::CallbackTracker),
       is_in_destructor_(false),
       is_crashed_(false),
-      broker_(NULL),
-      library_(NULL),
+      broker_(nullptr),
+      library_(nullptr),
       name_(name),
       version_(version),
       path_(path),
       permissions_(ppapi::PpapiPermissions::GetForCommandLine(perms.GetBits())),
-      reserve_instance_id_(NULL) {
+      reserve_instance_id_(nullptr) {
   // Ensure the globals object is created.
   if (!host_globals)
     host_globals = new HostGlobals;
@@ -568,7 +568,7 @@ bool PluginModule::InitAsInternalPlugin(
 }
 
 bool PluginModule::InitAsLibrary(const base::FilePath& path) {
-  base::NativeLibrary library = base::LoadNativeLibrary(path, NULL);
+  base::NativeLibrary library = base::LoadNativeLibrary(path, nullptr);
   if (!library)
     return false;
 
@@ -643,7 +643,7 @@ PepperPluginInstanceImpl* PluginModule::CreateInstance(
       render_frame, this, container, plugin_url);
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
-    return NULL;
+    return nullptr;
   }
   if (host_dispatcher_wrapper_)
     host_dispatcher_wrapper_->AddInstance(instance->pp_instance());
@@ -663,7 +663,7 @@ const void* PluginModule::GetPluginInterface(const char* name) const {
 
   // In-process plugins.
   if (!entry_points_.get_interface)
-    return NULL;
+    return nullptr;
   return entry_points_.get_interface(name);
 }
 
@@ -756,13 +756,13 @@ RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
 // static
 void PluginModule::ResetHostGlobalsForTest() {
   delete host_globals;
-  host_globals = NULL;
+  host_globals = nullptr;
 }
 
 bool PluginModule::InitializeModule(
     const PepperPluginInfo::EntryPoints& entry_points) {
   DCHECK(!host_dispatcher_wrapper_.get()) << "Don't call for proxied modules.";
-  DCHECK(entry_points.initialize_module != NULL);
+  DCHECK(entry_points.initialize_module != nullptr);
   int retval = entry_points.initialize_module(pp_module(), &GetInterface);
   if (retval != 0) {
 #if BUILDFLAG(ENABLE_NACL)

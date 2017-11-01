@@ -143,7 +143,7 @@ TEST(AudioMessageFilterTest, Basic) {
   delegate.Reset();
 
   ipc->CloseStream();
-  EXPECT_EQ(static_cast<media::AudioOutputIPCDelegate*>(NULL),
+  EXPECT_EQ(static_cast<media::AudioOutputIPCDelegate*>(nullptr),
             filter->delegates_.Lookup(kStreamId));
 }
 
@@ -185,9 +185,9 @@ TEST(AudioMessageFilterTest, Delegates) {
 
   ipc1->CloseStream();
   ipc2->CloseStream();
-  EXPECT_EQ(static_cast<media::AudioOutputIPCDelegate*>(NULL),
+  EXPECT_EQ(static_cast<media::AudioOutputIPCDelegate*>(nullptr),
             filter->delegates_.Lookup(kStreamId1));
-  EXPECT_EQ(static_cast<media::AudioOutputIPCDelegate*>(NULL),
+  EXPECT_EQ(static_cast<media::AudioOutputIPCDelegate*>(nullptr),
             filter->delegates_.Lookup(kStreamId2));
 }
 

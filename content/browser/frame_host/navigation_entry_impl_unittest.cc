@@ -46,13 +46,12 @@ class TestSSLStatusData : public SSLStatus::UserData {
 
 class NavigationEntryTest : public testing::Test {
  public:
-  NavigationEntryTest() : instance_(NULL) {
-  }
+  NavigationEntryTest() : instance_(nullptr) {}
 
   void SetUp() override {
     entry1_.reset(new NavigationEntryImpl);
 
-    instance_ = SiteInstanceImpl::Create(NULL);
+    instance_ = SiteInstanceImpl::Create(nullptr);
     entry2_.reset(new NavigationEntryImpl(
         instance_, GURL("test:url"),
         Referrer(GURL("from"), blink::kWebReferrerPolicyDefault),
@@ -194,7 +193,7 @@ TEST_F(NavigationEntryTest, SSLStatusUserData) {
 // Test other basic accessors
 TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   // SiteInstance
-  EXPECT_TRUE(entry1_->site_instance() == NULL);
+  EXPECT_TRUE(entry1_->site_instance() == nullptr);
   EXPECT_EQ(instance_, entry2_->site_instance());
   entry1_->set_site_instance(instance_);
   EXPECT_EQ(instance_, entry1_->site_instance());

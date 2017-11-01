@@ -213,8 +213,8 @@ class ServiceWorkerVersionTest : public testing::Test {
   }
 
   void TearDown() override {
-    version_ = 0;
-    registration_ = 0;
+    version_ = nullptr;
+    registration_ = nullptr;
     helper_.reset();
   }
 

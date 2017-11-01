@@ -159,7 +159,7 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
 
   uint8_t reply_buf[512];
   const ssize_t r = base::UnixDomainSocket::SendRecvMsg(
-      GetSandboxFD(), reply_buf, sizeof(reply_buf), NULL, request);
+      GetSandboxFD(), reply_buf, sizeof(reply_buf), nullptr, request);
   if (r == -1) {
     return;
   }
@@ -310,7 +310,7 @@ struct tm* localtime_r_override(const time_t* timep,
 __attribute__ ((__visibility__("default")))
 struct tm* localtime_r_override(const time_t* timep, struct tm* result) {
   if (g_am_zygote_or_renderer && g_use_localtime_override) {
-    ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
+    ProxyLocaltimeCallToBrowser(*timep, result, nullptr, 0);
     return result;
   }
 
@@ -331,7 +331,7 @@ struct tm* localtime64_r_override(const time_t* timep,
 __attribute__ ((__visibility__("default")))
 struct tm* localtime64_r_override(const time_t* timep, struct tm* result) {
   if (g_am_zygote_or_renderer && g_use_localtime_override) {
-    ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
+    ProxyLocaltimeCallToBrowser(*timep, result, nullptr, 0);
     return result;
   }
 

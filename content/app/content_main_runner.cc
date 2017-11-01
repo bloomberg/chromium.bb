@@ -450,8 +450,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       : is_initialized_(false),
         is_shutdown_(false),
         completed_basic_startup_(false),
-        delegate_(NULL),
-        ui_task_(NULL) {
+        delegate_(nullptr),
+        ui_task_(nullptr) {
 #if defined(OS_WIN)
     memset(&sandbox_info_, 0, sizeof(sandbox_info_));
 #endif
@@ -724,9 +724,9 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif  // _CRTDBG_MAP_ALLOC
 #endif  // OS_WIN
 
-    exit_manager_.reset(NULL);
+    exit_manager_.reset(nullptr);
 
-    delegate_ = NULL;
+    delegate_ = nullptr;
     is_shutdown_ = true;
   }
 

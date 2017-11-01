@@ -33,7 +33,7 @@ InProcessGpuThread::InProcessGpuThread(
     const gpu::GpuPreferences& gpu_preferences)
     : base::Thread("Chrome_InProcGpuThread"),
       params_(params),
-      gpu_process_(NULL),
+      gpu_process_(nullptr),
       gpu_preferences_(gpu_preferences) {}
 
 InProcessGpuThread::~InProcessGpuThread() {

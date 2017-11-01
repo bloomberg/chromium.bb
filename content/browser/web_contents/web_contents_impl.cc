@@ -496,9 +496,9 @@ WebContentsImpl::WebContentsTreeNode::inner_web_contents() const {
 // WebContentsImpl -------------------------------------------------------------
 
 WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
-    : delegate_(NULL),
+    : delegate_(nullptr),
       controller_(this, browser_context),
-      render_view_host_delegate_view_(NULL),
+      render_view_host_delegate_view_(nullptr),
       created_with_opener_(false),
       frame_tree_(new NavigatorImpl(&controller_, this),
                   this,
@@ -526,7 +526,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_being_destroyed_(false),
       is_notifying_observers_(false),
       notify_disconnection_(false),
-      dialog_manager_(NULL),
+      dialog_manager_(nullptr),
       is_showing_before_unload_dialog_(false),
       last_active_time_(base::TimeTicks::Now()),
       closed_by_user_gesture_(false),
@@ -676,7 +676,7 @@ WebContentsImpl::~WebContentsImpl() {
   for (auto& observer : observers_)
     observer.ResetWebContents();
 
-  SetDelegate(NULL);
+  SetDelegate(nullptr);
 }
 
 WebContentsImpl* WebContentsImpl::CreateWithOpener(
@@ -1207,7 +1207,7 @@ void WebContentsImpl::SetUserAgentOverride(const std::string& override) {
   // Reload the page if a load is currently in progress to avoid having
   // different parts of the page loaded using different user agents.
   NavigationEntry* entry = controller_.GetVisibleEntry();
-  if (IsLoading() && entry != NULL && entry->GetIsOverridingUserAgent())
+  if (IsLoading() && entry != nullptr && entry->GetIsOverridingUserAgent())
     controller_.Reload(ReloadType::BYPASSING_CACHE, true);
 
   for (auto& observer : observers_)
@@ -2544,7 +2544,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
   if (!widget_host_view)
     return;
 
-  RenderWidgetHostView* view = NULL;
+  RenderWidgetHostView* view = nullptr;
   if (GetOuterWebContents()) {
     view = GetOuterWebContents()->GetRenderWidgetHostView();
   } else {
@@ -2907,7 +2907,7 @@ void WebContentsImpl::ResetAutoResizeSize() {
 
 WebContents* WebContentsImpl::OpenURL(const OpenURLParams& params) {
   if (!delegate_)
-    return NULL;
+    return nullptr;
 
   WebContents* new_contents = delegate_->OpenURLFromTab(this, params);
 
@@ -3501,7 +3501,7 @@ bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
 }
 
 bool WebContentsImpl::HasOpener() const {
-  return GetOpener() != NULL;
+  return GetOpener() != nullptr;
 }
 
 RenderFrameHostImpl* WebContentsImpl::GetOpener() const {
@@ -3510,7 +3510,7 @@ RenderFrameHostImpl* WebContentsImpl::GetOpener() const {
 }
 
 bool WebContentsImpl::HasOriginalOpener() const {
-  return GetOriginalOpener() != NULL;
+  return GetOriginalOpener() != nullptr;
 }
 
 RenderFrameHostImpl* WebContentsImpl::GetOriginalOpener() const {
@@ -4199,9 +4199,9 @@ void WebContentsImpl::OnOpenColorChooser(
     int color_chooser_id,
     SkColor color,
     const std::vector<ColorSuggestion>& suggestions) {
-  ColorChooser* new_color_chooser = delegate_ ?
-      delegate_->OpenColorChooser(this, color, suggestions) :
-      NULL;
+  ColorChooser* new_color_chooser =
+      delegate_ ? delegate_->OpenColorChooser(this, color, suggestions)
+                : nullptr;
   if (!new_color_chooser)
     return;
   if (color_chooser_info_.get())

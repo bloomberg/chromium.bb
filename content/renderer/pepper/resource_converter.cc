@@ -310,7 +310,7 @@ bool ResourceConverterImpl::ToV8Value(const PP_Var& var,
   ::ppapi::host::PpapiHost* ppapi_host = renderer_ppapi_host->GetPpapiHost();
   ::ppapi::host::ResourceHost* resource_host =
       ppapi_host->GetResourceHost(resource_id);
-  if (resource_host == NULL) {
+  if (resource_host == nullptr) {
     LOG(ERROR) << "No resource host for resource #" << resource_id;
     return false;
   }

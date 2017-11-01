@@ -16,7 +16,7 @@ namespace content {
 
 // static
 PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
-  static PepperPluginRegistry* registry = NULL;
+  static PepperPluginRegistry* registry = nullptr;
   // This object leaks.  It is a temporary hack to work around a crash.
   // http://code.google.com/p/chromium/issues/detail?id=63234
   if (!registry) {
@@ -48,7 +48,7 @@ const PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
 PluginModule* PepperPluginRegistry::GetLiveModule(const base::FilePath& path) {
   NonOwningModuleMap::iterator module_iter = live_modules_.find(path);
   if (module_iter == live_modules_.end())
-    return NULL;
+    return nullptr;
 
   // Check the instances for the module to see if they've all been Delete()d.
   // We don't want to return a PluginModule in that case, since the plugin may
@@ -68,7 +68,7 @@ PluginModule* PepperPluginRegistry::GetLiveModule(const base::FilePath& path) {
       return module_iter->second;
     ++instance_iter;
   }
-  return NULL;
+  return nullptr;
 }
 
 void PepperPluginRegistry::AddLiveModule(const base::FilePath& path,

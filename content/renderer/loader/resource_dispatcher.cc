@@ -94,7 +94,7 @@ ResourceDispatcher::ResourceDispatcher(
     IPC::Sender* sender,
     scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner)
     : message_sender_(sender),
-      delegate_(NULL),
+      delegate_(nullptr),
       io_timestamp_(base::TimeTicks()),
       thread_task_runner_(thread_task_runner),
       weak_factory_(this) {}
@@ -143,7 +143,7 @@ ResourceDispatcher::GetPendingRequestInfo(int request_id) {
   PendingRequestMap::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     // This might happen for kill()ed requests on the webkit end.
-    return NULL;
+    return nullptr;
   }
   return it->second.get();
 }

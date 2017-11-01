@@ -60,10 +60,7 @@ ContentClient::Schemes::Schemes() = default;
 ContentClient::Schemes::~Schemes() = default;
 
 ContentClient::ContentClient()
-    : browser_(NULL),
-      gpu_(NULL),
-      renderer_(NULL),
-      utility_(NULL) {}
+    : browser_(nullptr), gpu_(nullptr), renderer_(nullptr), utility_(nullptr) {}
 
 ContentClient::~ContentClient() {
 }

@@ -61,7 +61,7 @@ FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
           switches::kAllowFileAccessFromFiles)) {
     additional_allowed_schemes.push_back(url::kFileScheme);
   }
-  return FileSystemOptions(profile_mode, additional_allowed_schemes, NULL);
+  return FileSystemOptions(profile_mode, additional_allowed_schemes, nullptr);
 }
 
 }  // namespace
@@ -110,7 +110,7 @@ bool FileSystemURLIsValid(storage::FileSystemContext* context,
   if (!url.is_valid())
     return false;
 
-  return context->GetFileSystemBackend(url.type()) != NULL;
+  return context->GetFileSystemBackend(url.type()) != nullptr;
 }
 
 void SyncGetPlatformPath(storage::FileSystemContext* context,

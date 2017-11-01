@@ -239,7 +239,7 @@ void WebFrameTestClient::PostAccessibilityEvent(const blink::WebAXObject& obj,
   if (!test_runner()->TestIsRunning())
     return;
 
-  const char* event_name = NULL;
+  const char* event_name = nullptr;
   switch (event) {
     case blink::kWebAXEventActiveDescendantChanged:
       event_name = "ActiveDescendantChanged";

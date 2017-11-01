@@ -61,7 +61,7 @@ void ContentTestSuiteBase::RegisterContentSchemes(
     ContentClient* content_client) {
   SetContentClient(content_client);
   content::RegisterContentSchemes(false);
-  SetContentClient(NULL);
+  SetContentClient(nullptr);
 }
 
 void ContentTestSuiteBase::RegisterInProcessThreads() {

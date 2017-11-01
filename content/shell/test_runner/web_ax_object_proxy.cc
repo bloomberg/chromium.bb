@@ -1554,7 +1554,7 @@ bool WebAXObjectProxy::SetValue(const std::string& value) {
 }
 
 bool WebAXObjectProxy::IsEqual(v8::Local<v8::Object> proxy) {
-  WebAXObjectProxy* unwrapped_proxy = NULL;
+  WebAXObjectProxy* unwrapped_proxy = nullptr;
   if (!gin::ConvertFromV8(blink::MainThreadIsolate(), proxy, &unwrapped_proxy))
     return false;
   return unwrapped_proxy->IsEqualToObject(accessibility_object_);
@@ -1883,7 +1883,7 @@ void WebAXObjectProxyList::Clear() {
   v8::HandleScope handle_scope(isolate);
   size_t elementCount = elements_.Size();
   for (size_t i = 0; i < elementCount; i++) {
-    WebAXObjectProxy* unwrapped_object = NULL;
+    WebAXObjectProxy* unwrapped_object = nullptr;
     bool result =
         gin::ConvertFromV8(isolate, elements_.Get(i), &unwrapped_object);
     DCHECK(result);
@@ -1902,7 +1902,7 @@ v8::Local<v8::Object> WebAXObjectProxyList::GetOrCreate(
 
   size_t elementCount = elements_.Size();
   for (size_t i = 0; i < elementCount; i++) {
-    WebAXObjectProxy* unwrapped_object = NULL;
+    WebAXObjectProxy* unwrapped_object = nullptr;
     bool result =
         gin::ConvertFromV8(isolate, elements_.Get(i), &unwrapped_object);
     DCHECK(result);

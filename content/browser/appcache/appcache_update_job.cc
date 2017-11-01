@@ -178,12 +178,12 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
       doing_full_update_check_(false),
       master_entries_completed_(0),
       url_fetches_completed_(0),
-      manifest_fetcher_(NULL),
+      manifest_fetcher_(nullptr),
       manifest_has_valid_mime_type_(false),
       stored_state_(UNSTORED),
       storage_(service->storage()),
       weak_factory_(this) {
-    service_->AddObserver(this);
+  service_->AddObserver(this);
 }
 
 AppCacheUpdateJob::~AppCacheUpdateJob() {
@@ -323,7 +323,7 @@ void AppCacheUpdateJob::HandleCacheFailure(
     // DeleteAppCacheGroup, otherwise that method would delete |this|
     // and we need the stack to unwind prior to deletion.
     group_->SetUpdateAppCacheStatus(AppCacheGroup::IDLE);
-    group_ = NULL;
+    group_ = nullptr;
     service_->DeleteAppCacheGroup(manifest_url_,
                                   base::Bind(EmptyCompletionCallback));
   }
@@ -341,8 +341,10 @@ void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
 
   if (is_first_fetch) {
     // Maybe load the cached headers to make a condiditional request.
-    AppCacheEntry* entry = (update_type_ == UPGRADE_ATTEMPT) ?
-        group_->newest_complete_cache()->GetEntry(manifest_url_) : NULL;
+    AppCacheEntry* entry =
+        (update_type_ == UPGRADE_ATTEMPT)
+            ? group_->newest_complete_cache()->GetEntry(manifest_url_)
+            : nullptr;
     if (entry && !doing_full_update_check_) {
       // Asynchronously load response info for manifest from newest cache.
       storage_->LoadResponseInfo(manifest_url_, entry->response_id(), this);
@@ -364,7 +366,7 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* fetcher,
   DCHECK_EQ(internal_state_, FETCH_MANIFEST);
   DCHECK_EQ(manifest_fetcher_, fetcher);
 
-  manifest_fetcher_ = NULL;
+  manifest_fetcher_ = nullptr;
 
   UpdateRequestBase* request = fetcher->request();
   int response_code = -1;
@@ -694,7 +696,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* fetcher,
                                                        int net_error) {
   DCHECK(internal_state_ == REFETCH_MANIFEST);
   DCHECK(manifest_fetcher_ == fetcher);
-  manifest_fetcher_ = NULL;
+  manifest_fetcher_ = nullptr;
 
   int response_code =
       net_error == net::OK ? fetcher->request()->GetResponseCode() : -1;
@@ -911,7 +913,7 @@ void AppCacheUpdateJob::OnServiceReinitialized(
 
 void AppCacheUpdateJob::CheckIfManifestChanged() {
   DCHECK(update_type_ == UPGRADE_ATTEMPT);
-  AppCacheEntry* entry = NULL;
+  AppCacheEntry* entry = nullptr;
   if (group_->newest_complete_cache())
     entry = group_->newest_complete_cache()->GetEntry(manifest_url_);
   if (!entry) {
@@ -953,7 +955,7 @@ void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
         base::Bind(&AppCacheUpdateJob::OnManifestDataReadComplete,
                    base::Unretained(this)));  // read more
   } else {
-    read_manifest_buffer_ = NULL;
+    read_manifest_buffer_ = nullptr;
     manifest_response_reader_.reset();
     ContinueHandleManifestFetchCompleted(
         result < 0 || manifest_data_ != loaded_manifest_data_);
@@ -999,7 +1001,7 @@ void AppCacheUpdateJob::AddUrlToFileList(const GURL& url, int type) {
       AppCache::EntryMap::value_type(url, AppCacheEntry(type)));
 
   if (ret.second)
-    urls_to_fetch_.push_back(UrlToFetch(url, false, NULL));
+    urls_to_fetch_.push_back(UrlToFetch(url, false, nullptr));
   else
     ret.first->second.add_types(type);  // URL already exists. Merge types.
 }
@@ -1223,8 +1225,8 @@ bool AppCacheUpdateJob::MaybeLoadFromNewestCache(const GURL& url,
 void AppCacheUpdateJob::OnResponseInfoLoaded(
     AppCacheResponseInfo* response_info,
     int64_t response_id) {
-  const net::HttpResponseInfo* http_info = response_info ?
-      response_info->http_response_info() : NULL;
+  const net::HttpResponseInfo* http_info =
+      response_info ? response_info->http_response_info() : nullptr;
 
   // Needed response info for a manifest fetch request.
   if (internal_state_ == FETCH_MANIFEST) {
@@ -1240,7 +1242,7 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
   const GURL& url = found->second;
 
   if (!http_info) {
-    LoadFromNewestCacheFailed(url, NULL);  // no response found
+    LoadFromNewestCacheFailed(url, nullptr);  // no response found
   } else if (!CanUseExistingResource(http_info)) {
     LoadFromNewestCacheFailed(url, response_info);
   } else {
@@ -1356,7 +1358,7 @@ void AppCacheUpdateJob::Cancel() {
 
   if (manifest_fetcher_) {
     delete manifest_fetcher_;
-    manifest_fetcher_ = NULL;
+    manifest_fetcher_ = nullptr;
   }
 
   for (PendingUrlFetches::iterator it = pending_url_fetches_.begin();
@@ -1399,7 +1401,7 @@ void AppCacheUpdateJob::DiscardInprogressCache() {
     // We can make no assumptions about whether the StoreGroupAndCacheTask
     // actually completed or not. This condition should only be reachable
     // during shutdown. Free things up and return to do no harm.
-    inprogress_cache_ = NULL;
+    inprogress_cache_ = nullptr;
     added_master_entries_.clear();
     return;
   }
@@ -1422,7 +1424,7 @@ void AppCacheUpdateJob::DiscardInprogressCache() {
   while (!hosts.empty())
     (*hosts.begin())->AssociateNoCache(GURL());
 
-  inprogress_cache_ = NULL;
+  inprogress_cache_ = nullptr;
   added_master_entries_.clear();
 }
 
@@ -1466,13 +1468,13 @@ void AppCacheUpdateJob::DeleteSoon() {
   manifest_response_writer_.reset();
   storage_->CancelDelegateCallbacks(this);
   service_->RemoveObserver(this);
-  service_ = NULL;
+  service_ = nullptr;
 
   // Break the connection with the group so the group cannot call delete
   // on this object after we've posted a task to delete ourselves.
   if (group_) {
     group_->SetUpdateAppCacheStatus(AppCacheGroup::IDLE);
-    group_ = NULL;
+    group_ = nullptr;
   }
 
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);

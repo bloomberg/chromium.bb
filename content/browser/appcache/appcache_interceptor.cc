@@ -140,7 +140,7 @@ net::URLRequestJob* AppCacheInterceptor::MaybeInterceptRequest(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)
-    return NULL;
+    return nullptr;
 
   AppCacheJob* job = handler->MaybeLoadResource(network_delegate);
   return job ? job->AsURLRequestJob() : nullptr;
@@ -152,7 +152,7 @@ net::URLRequestJob* AppCacheInterceptor::MaybeInterceptRedirect(
     const GURL& location) const {
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)
-    return NULL;
+    return nullptr;
 
   AppCacheJob* job =
       handler->MaybeLoadFallbackForRedirect(network_delegate, location);
@@ -163,7 +163,7 @@ net::URLRequestJob* AppCacheInterceptor::MaybeInterceptResponse(
     net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
   AppCacheRequestHandler* handler = GetHandler(request);
   if (!handler)
-    return NULL;
+    return nullptr;
 
   AppCacheJob* job = handler->MaybeLoadFallbackForResponse(network_delegate);
   return job ? job->AsURLRequestJob() : nullptr;

@@ -53,8 +53,8 @@ class WaitForFileStream {
   }
 
   void Release() {
-    file_stream_.reset(NULL);
-    deletable_file_ = NULL;
+    file_stream_.reset(nullptr);
+    deletable_file_ = nullptr;
   }
  private:
   base::RunLoop loop_;

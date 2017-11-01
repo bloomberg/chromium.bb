@@ -135,7 +135,7 @@ base::Closure IndexedDBActiveBlobRegistry::GetAddBlobRefCallback(
 void IndexedDBActiveBlobRegistry::ForceShutdown() {
   weak_factory_.InvalidateWeakPtrs();
   use_tracker_.clear();
-  backing_store_ = NULL;
+  backing_store_ = nullptr;
 }
 
 }  // namespace content

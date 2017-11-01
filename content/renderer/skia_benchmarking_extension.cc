@@ -210,12 +210,12 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
     std::unique_ptr<base::Value> params_value =
         content::V8ValueConverter::Create()->FromV8Value(params, context);
 
-    const base::DictionaryValue* params_dict = NULL;
+    const base::DictionaryValue* params_dict = nullptr;
     if (params_value.get() && params_value->GetAsDictionary(&params_dict)) {
       params_dict->GetDouble("scale", &scale);
       params_dict->GetInteger("stop", &stop_index);
 
-      const base::Value* clip_value = NULL;
+      const base::Value* clip_value = nullptr;
       if (params_dict->Get("clip", &clip_value))
         cc::MathUtil::FromValue(clip_value, &clip_rect);
     }

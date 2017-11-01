@@ -231,7 +231,7 @@ void AppCacheQuotaClient::NotifyAppCacheReady() {
 }
 
 void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
-  service_ = NULL;
+  service_ = nullptr;
   while (!pending_batch_requests_.empty())
     RunFront(&pending_batch_requests_);
 

@@ -867,7 +867,7 @@ class SpareRenderProcessHostUnitTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     SetRenderProcessHostFactory(&rph_factory_);
     RenderViewHostImplTestHarness::SetUp();
-    SetContents(NULL);  // Start with no renderers.
+    SetContents(nullptr);  // Start with no renderers.
     while (!rph_factory_.GetProcesses()->empty()) {
       rph_factory_.Remove(rph_factory_.GetProcesses()->back().get());
     }

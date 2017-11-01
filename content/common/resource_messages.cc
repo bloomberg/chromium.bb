@@ -13,7 +13,7 @@ namespace IPC {
 void ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Write(
     base::Pickle* m,
     const param_type& p) {
-  WriteParam(m, p.get() != NULL);
+  WriteParam(m, p.get() != nullptr);
   if (p.get()) {
     // Do not disclose Set-Cookie headers over IPC.
     p->Persist(m, net::HttpResponseHeaders::PERSIST_SANS_COOKIES);
@@ -287,7 +287,7 @@ void ParamTraits<storage::DataElement>::Log(const param_type& p,
 void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo>>::Write(
     base::Pickle* m,
     const param_type& p) {
-  WriteParam(m, p.get() != NULL);
+  WriteParam(m, p.get() != nullptr);
   if (p.get()) {
     WriteParam(m, p->http_status_code);
     WriteParam(m, p->http_status_text);
@@ -424,7 +424,7 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
 void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Write(
     base::Pickle* m,
     const param_type& p) {
-  WriteParam(m, p.get() != NULL);
+  WriteParam(m, p.get() != nullptr);
   if (p.get()) {
     WriteParam(m, *p->elements());
     WriteParam(m, p->identifier());
@@ -466,7 +466,7 @@ void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Log(
 void ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>>::Write(
     base::Pickle* m,
     const param_type& p) {
-  WriteParam(m, p.get() != NULL);
+  WriteParam(m, p.get() != nullptr);
   if (p.get())
     p->Persist(m);
 }

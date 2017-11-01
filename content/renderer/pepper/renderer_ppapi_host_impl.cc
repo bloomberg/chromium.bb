@@ -59,7 +59,7 @@ RendererPpapiHostImpl::RendererPpapiHostImpl(
 RendererPpapiHostImpl::RendererPpapiHostImpl(
     PluginModule* module,
     const ppapi::PpapiPermissions& permissions)
-    : module_(module), dispatcher_(NULL), is_external_plugin_host_(false) {
+    : module_(module), dispatcher_(nullptr), is_external_plugin_host_(false) {
   // Hook the host up to the in-process router.
   in_process_router_.reset(new PepperInProcessRouter(this));
   ppapi_host_.reset(new ppapi::host::PpapiHost(
@@ -111,7 +111,7 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::GetForPPInstance(
   PepperPluginInstanceImpl* instance =
       HostGlobals::Get()->GetInstance(pp_instance);
   if (!instance)
-    return NULL;
+    return nullptr;
 
   // All modules created by content will have their embedder state be the
   // host impl.
@@ -142,7 +142,7 @@ RenderFrame* RendererPpapiHostImpl::GetRenderFrameForInstance(
     PP_Instance instance) const {
   PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
-    return NULL;
+    return nullptr;
 
   // Since we're the embedder, we can make assumptions about the helper on
   // the instance and get back to our RenderFrame.
@@ -153,7 +153,7 @@ RenderView* RendererPpapiHostImpl::GetRenderViewForInstance(
     PP_Instance instance) const {
   PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
-    return NULL;
+    return nullptr;
 
   // Since we're the embedder, we can make assumptions about the helper on
   // the instance and get back to our RenderView.
@@ -173,7 +173,7 @@ blink::WebPluginContainer* RendererPpapiHostImpl::GetContainerForInstance(
     PP_Instance instance) const {
   PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
   if (!instance_object)
-    return NULL;
+    return nullptr;
   return instance_object->container();
 }
 
@@ -292,9 +292,9 @@ PepperPluginInstanceImpl* RendererPpapiHostImpl::GetAndValidateInstance(
   PepperPluginInstanceImpl* instance =
       HostGlobals::Get()->GetInstance(pp_instance);
   if (!instance)
-    return NULL;
+    return nullptr;
   if (!instance->IsValidInstanceOf(module_))
-    return NULL;
+    return nullptr;
   return instance;
 }
 

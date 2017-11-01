@@ -58,7 +58,7 @@ bool ResourceBuffer::Initialize(int buffer_size,
 }
 
 bool ResourceBuffer::IsInitialized() const {
-  return shared_mem_.memory() != NULL;
+  return shared_mem_.memory() != nullptr;
 }
 
 base::SharedMemory& ResourceBuffer::GetSharedMemory() {

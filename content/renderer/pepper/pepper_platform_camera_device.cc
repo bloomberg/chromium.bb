@@ -53,7 +53,7 @@ void PepperPlatformCameraDevice::GetSupportedVideoCaptureFormats() {
 
 void PepperPlatformCameraDevice::DetachEventHandler() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  handler_ = NULL;
+  handler_ = nullptr;
   if (!release_device_cb_.is_null()) {
     base::ResetAndReturn(&release_device_cb_).Run();
   }
@@ -122,7 +122,7 @@ PepperMediaDeviceManager* PepperPlatformCameraDevice::GetMediaDeviceManager() {
       RenderFrameImpl::FromRoutingID(render_frame_id_);
   return render_frame
              ? PepperMediaDeviceManager::GetForRenderFrame(render_frame).get()
-             : NULL;
+             : nullptr;
 }
 
 }  // namespace content

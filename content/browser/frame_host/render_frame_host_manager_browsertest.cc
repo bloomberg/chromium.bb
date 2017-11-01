@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Open a same-site link in a new window.
   ShellAddedObserver new_shell_observer;
@@ -277,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a rel=noreferrer + target=blank link.
   ShellAddedObserver new_shell_observer;
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a rel=noreferrer + target=blank link.
   ShellAddedObserver new_shell_observer;
@@ -442,7 +442,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a same-site rel=noreferrer + target=foo link.
   ShellAddedObserver new_shell_observer;
@@ -490,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a same-site rel=noopener + target=foo link.
   ShellAddedObserver new_shell_observer;
@@ -541,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a target=blank link.
   ShellAddedObserver new_shell_observer;
@@ -580,7 +580,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a rel=noreferrer link.
   bool success = false;
@@ -617,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a rel=noreferrer link.
   bool success = false;
@@ -655,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
@@ -729,7 +729,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a target=_blank link.
   ShellAddedObserver new_shell_observer;
@@ -823,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Open a popup using window.open with a 'foo' window.name.
   Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
@@ -886,7 +886,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   WebContents* opener_contents = shell()->web_contents();
   scoped_refptr<SiteInstance> orig_site_instance(
       opener_contents->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
   RenderFrameHostManager* opener_manager = static_cast<WebContentsImpl*>(
       opener_contents)->GetRenderManagerForTesting();
 
@@ -1023,7 +1023,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   WebContents* opener_contents = shell()->web_contents();
   scoped_refptr<SiteInstance> orig_site_instance(
       opener_contents->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
   RenderFrameHostManager* opener_manager = static_cast<WebContentsImpl*>(
       opener_contents)->GetRenderManagerForTesting();
 
@@ -1106,7 +1106,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   WebContents* orig_contents = shell()->web_contents();
   scoped_refptr<SiteInstance> orig_site_instance(
       orig_contents->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
@@ -1206,7 +1206,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
@@ -1261,7 +1261,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
       shell()->web_contents()->GetSiteInstance());
-  EXPECT_TRUE(orig_site_instance.get() != NULL);
+  EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Load a cross-site page that fails with a 204 error.
   EXPECT_TRUE(
@@ -1831,8 +1831,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // Ensure that such URLs can still work as the initial navigation of a tab.
   // We postpone the initial navigation of the tab using an empty GURL, so that
   // we can add a watcher for crashes.
-  Shell* shell2 = Shell::CreateNewWindow(
-      shell()->web_contents()->GetBrowserContext(), GURL(), NULL, gfx::Size());
+  Shell* shell2 =
+      Shell::CreateNewWindow(shell()->web_contents()->GetBrowserContext(),
+                             GURL(), nullptr, gfx::Size());
   RenderProcessHostWatcher crash_observer2(
       shell2->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
@@ -1971,7 +1972,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
 
   // Open a new tab. Initially it gets a render view in the original tab's
   // current site instance.
-  TestNavigationObserver nav_observer(NULL);
+  TestNavigationObserver nav_observer(nullptr);
   nav_observer.StartWatchingNewWebContents();
   ShellAddedObserver shao;
   OpenUrlViaClickTarget(shell(), url2);

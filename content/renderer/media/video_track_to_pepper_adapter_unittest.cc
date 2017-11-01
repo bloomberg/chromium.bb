@@ -65,7 +65,7 @@ TEST_F(VideoTrackToPepperAdapterTest, OpenClose) {
   EXPECT_CALL(*this, GotFrame(captured_frame));
   DeliverFrameForTesting(captured_frame);
 
-  EXPECT_FALSE(handler_->Close(NULL));
+  EXPECT_FALSE(handler_->Close(nullptr));
   EXPECT_TRUE(handler_->Close(this));
 }
 

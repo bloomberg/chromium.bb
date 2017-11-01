@@ -28,7 +28,7 @@ PepperNetworkProxyHost::PepperNetworkProxyHost(BrowserPpapiHostImpl* host,
                                                PP_Instance instance,
                                                PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      proxy_service_(NULL),
+      proxy_service_(nullptr),
       is_allowed_(false),
       waiting_for_ui_thread_data_(true),
       weak_factory_(this) {
@@ -139,7 +139,7 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
     } else {
       // Everything looks valid, so try to resolve the proxy.
       net::ProxyInfo* proxy_info = new net::ProxyInfo;
-      net::ProxyService::PacRequest* pending_request = NULL;
+      net::ProxyService::PacRequest* pending_request = nullptr;
       base::Callback<void(int)> callback =
           base::Bind(&PepperNetworkProxyHost::OnResolveProxyCompleted,
                      weak_factory_.GetWeakPtr(),
@@ -147,7 +147,7 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
                      base::Owned(proxy_info));
       int result = proxy_service_->ResolveProxy(
           request.url, std::string(), proxy_info, callback, &pending_request,
-          NULL, net::NetLogWithSource());
+          nullptr, net::NetLogWithSource());
       pending_requests_.push(pending_request);
       // If it was handled synchronously, we must run the callback now;
       // proxy_service_ won't run it for us in this case.

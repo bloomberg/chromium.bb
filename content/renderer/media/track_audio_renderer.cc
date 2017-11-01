@@ -171,7 +171,7 @@ void TrackAudioRenderer::Stop() {
   // when the |sink_| is never started.
   if (sink_) {
     sink_->Stop();
-    sink_ = NULL;
+    sink_ = nullptr;
   }
 
   if (!sink_started_ && IsLocalRenderer()) {

@@ -1165,7 +1165,7 @@ ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,
   ClientId client_id = MakeClientId(child_id, route_id);
   ClientMap::iterator client_it = client_map_.find(client_id);
   if (client_it == client_map_.end()) {
-    return NULL;
+    return nullptr;
   }
   return client_it->second;
 }

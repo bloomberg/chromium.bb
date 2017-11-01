@@ -17,8 +17,7 @@ namespace content {
 
 ChromeAppCacheService::ChromeAppCacheService(
     storage::QuotaManagerProxy* quota_manager_proxy)
-    : AppCacheServiceImpl(quota_manager_proxy), resource_context_(NULL) {
-}
+    : AppCacheServiceImpl(quota_manager_proxy), resource_context_(nullptr) {}
 
 void ChromeAppCacheService::InitializeOnIOThread(
     const base::FilePath& cache_path,

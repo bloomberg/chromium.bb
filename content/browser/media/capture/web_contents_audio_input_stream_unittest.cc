@@ -188,9 +188,9 @@ class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
         audio_thread_("Audio thread"),
         mock_mirroring_manager_(new MockAudioMirroringManager()),
         mock_tracker_(new MockWebContentsTracker()),
-        mock_vais_(NULL),
-        wcais_(NULL),
-        destination_(NULL),
+        mock_vais_(nullptr),
+        wcais_(nullptr),
+        destination_(nullptr),
         current_render_process_id_(kRenderProcessId),
         current_render_frame_id_(kRenderFrameId),
         on_data_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -250,7 +250,7 @@ class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
     EXPECT_CALL(*mock_mirroring_manager_, StopMirroring(NotNull()))
         .WillOnce(Assign(
             &destination_,
-            static_cast<AudioMirroringManager::MirroringDestination*>(NULL)))
+            static_cast<AudioMirroringManager::MirroringDestination*>(nullptr)))
         .RetiresOnSaturation();
 
     EXPECT_CALL(mock_input_callback_, OnData(NotNull(), _, _))
@@ -377,8 +377,8 @@ class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
     // objects hang around until they are no longer referred to (e.g., as tasks
     // on other threads shut things down).
     wcais_->Close();
-    wcais_ = NULL;
-    mock_vais_ = NULL;
+    wcais_ = nullptr;
+    mock_vais_ = nullptr;
   }
 
   void RunOnAudioThread(const base::Closure& closure) {

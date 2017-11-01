@@ -14,10 +14,7 @@
 namespace content {
 
 AppCacheBackendImpl::AppCacheBackendImpl()
-    : service_(NULL),
-      frontend_(NULL),
-      process_id_(0) {
-}
+    : service_(nullptr), frontend_(nullptr), process_id_(0) {}
 
 AppCacheBackendImpl::~AppCacheBackendImpl() {
   hosts_.clear();

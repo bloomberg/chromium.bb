@@ -101,7 +101,7 @@ bool DelegatedFrameHost::HasSavedFrame() {
 
 void DelegatedFrameHost::WasHidden() {
   frame_evictor_->SetVisible(false);
-  released_front_lock_ = NULL;
+  released_front_lock_ = nullptr;
 }
 
 void DelegatedFrameHost::MaybeCreateResizeLock() {
@@ -590,7 +590,7 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
       surface_info.id());
   local_surface_id_ = surface_info.id().local_surface_id();
 
-  released_front_lock_ = NULL;
+  released_front_lock_ = nullptr;
   gfx::Size frame_size_in_dip = gfx::ConvertSizeToDIP(
       surface_info.device_scale_factor(), surface_info.size_in_pixels());
   current_frame_size_in_dip_ = frame_size_in_dip;

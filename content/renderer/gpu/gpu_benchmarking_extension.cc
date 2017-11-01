@@ -241,10 +241,10 @@ class CallbackAndContext : public base::RefCounted<CallbackAndContext> {
 class GpuBenchmarkingContext {
  public:
   GpuBenchmarkingContext()
-      : web_frame_(NULL),
-        web_view_(NULL),
-        render_view_impl_(NULL),
-        compositor_(NULL) {}
+      : web_frame_(nullptr),
+        web_view_(nullptr),
+        render_view_impl_(nullptr),
+        compositor_(nullptr) {}
 
   bool Init(bool init_compositor) {
     web_frame_ = WebLocalFrame::FrameForCurrentContext();
@@ -253,14 +253,14 @@ class GpuBenchmarkingContext {
 
     web_view_ = web_frame_->View();
     if (!web_view_) {
-      web_frame_ = NULL;
+      web_frame_ = nullptr;
       return false;
     }
 
     render_view_impl_ = RenderViewImpl::FromWebView(web_view_);
     if (!render_view_impl_) {
-      web_frame_ = NULL;
-      web_view_ = NULL;
+      web_frame_ = nullptr;
+      web_view_ = nullptr;
       return false;
     }
 
@@ -269,9 +269,9 @@ class GpuBenchmarkingContext {
 
     compositor_ = render_view_impl_->GetWidget()->compositor();
     if (!compositor_) {
-      web_frame_ = NULL;
-      web_view_ = NULL;
-      render_view_impl_ = NULL;
+      web_frame_ = nullptr;
+      web_view_ = nullptr;
+      render_view_impl_ = nullptr;
       return false;
     }
 
@@ -279,19 +279,19 @@ class GpuBenchmarkingContext {
   }
 
   WebLocalFrame* web_frame() const {
-    DCHECK(web_frame_ != NULL);
+    DCHECK(web_frame_ != nullptr);
     return web_frame_;
   }
   WebView* web_view() const {
-    DCHECK(web_view_ != NULL);
+    DCHECK(web_view_ != nullptr);
     return web_view_;
   }
   RenderViewImpl* render_view_impl() const {
-    DCHECK(render_view_impl_ != NULL);
+    DCHECK(render_view_impl_ != nullptr);
     return render_view_impl_;
   }
   RenderWidgetCompositor* compositor() const {
-    DCHECK(compositor_ != NULL);
+    DCHECK(compositor_ != nullptr);
     return compositor_;
   }
 
@@ -330,7 +330,7 @@ void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
   WebLocalFrame* frame = WebLocalFrame::FrameForContext(context);
   if (frame && !callback.IsEmpty()) {
     frame->CallFunctionEvenIfScriptDisabled(callback, v8::Object::New(isolate),
-                                            0, NULL);
+                                            0, nullptr);
   }
 }
 

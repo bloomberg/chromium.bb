@@ -17,7 +17,8 @@
 namespace content {
 
 float GetScaleFactorForView(const RenderWidgetHostView* view) {
-  return ui::GetScaleFactorForNativeView(view ? view->GetNativeView() : NULL);
+  return ui::GetScaleFactorForNativeView(view ? view->GetNativeView()
+                                              : nullptr);
 }
 
 gfx::Point ConvertViewPointToDIP(const RenderWidgetHostView* view,

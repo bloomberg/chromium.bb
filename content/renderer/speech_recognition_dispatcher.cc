@@ -36,7 +36,7 @@ namespace content {
 SpeechRecognitionDispatcher::SpeechRecognitionDispatcher(
     RenderViewImpl* render_view)
     : RenderViewObserver(render_view),
-      recognizer_client_(NULL),
+      recognizer_client_(nullptr),
       next_id_(1) {}
 
 SpeechRecognitionDispatcher::~SpeechRecognitionDispatcher() {}
