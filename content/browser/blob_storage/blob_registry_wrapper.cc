@@ -8,6 +8,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/common/content_features.h"
 #include "storage/browser/blob/blob_registry_impl.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
@@ -72,7 +73,8 @@ void BlobRegistryWrapper::InitializeOnIOThread(
     scoped_refptr<storage::FileSystemContext> file_system_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   blob_registry_ = std::make_unique<storage::BlobRegistryImpl>(
-      blob_storage_context->context(), std::move(file_system_context));
+      blob_storage_context->context()->AsWeakPtr(),
+      std::move(file_system_context));
 }
 
 }  // namespace content

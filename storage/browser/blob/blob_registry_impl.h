@@ -28,7 +28,7 @@ class STORAGE_EXPORT BlobRegistryImpl : public blink::mojom::BlobRegistry {
     virtual bool CanCommitURL(const GURL& url) = 0;
   };
 
-  BlobRegistryImpl(BlobStorageContext* context,
+  BlobRegistryImpl(base::WeakPtr<BlobStorageContext> context,
                    scoped_refptr<FileSystemContext> file_system_context);
   ~BlobRegistryImpl() override;
 
@@ -61,7 +61,7 @@ class STORAGE_EXPORT BlobRegistryImpl : public blink::mojom::BlobRegistry {
 
   class BlobUnderConstruction;
 
-  BlobStorageContext* context_;
+  base::WeakPtr<BlobStorageContext> context_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
   mojo::BindingSet<blink::mojom::BlobRegistry, std::unique_ptr<Delegate>>

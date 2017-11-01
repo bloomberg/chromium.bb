@@ -54,7 +54,7 @@ class BlobURLHandleImpl final : public blink::mojom::BlobURLHandle {
       const GURL& url) {
     blink::mojom::BlobURLHandlePtr ptr;
     mojo::MakeStrongBinding(
-        base::WrapUnique(new BlobURLHandleImpl(context, url)),
+        base::WrapUnique(new BlobURLHandleImpl(std::move(context), url)),
         mojo::MakeRequest(&ptr));
     return ptr;
   }
@@ -103,7 +103,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
   const std::string& uuid() const { return builder_.uuid(); }
 
  private:
-  BlobStorageContext* context() const { return blob_registry_->context_; }
+  BlobStorageContext* context() const { return blob_registry_->context_.get(); }
 
   // Marks this blob as broken. If an optional |bad_message_reason| is provided,
   // this will also report a BadMessage on the binding over which the initial
@@ -115,7 +115,7 @@ class BlobRegistryImpl::BlobUnderConstruction {
     DCHECK_EQ(bad_message_reason.empty(), !BlobStatusIsBadIPC(reason));
     // The blob might no longer have any references, in which case it may no
     // longer exist. If that happens just skip calling cancel.
-    if (context()->registry().HasEntry(uuid()))
+    if (context() && context()->registry().HasEntry(uuid()))
       context()->CancelBuildingBlob(uuid(), reason);
     if (!bad_message_reason.empty())
       std::move(bad_message_callback_).Run(bad_message_reason);
@@ -199,6 +199,11 @@ class BlobRegistryImpl::BlobUnderConstruction {
 };
 
 void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
+  if (!context()) {
+    MarkAsFinishedAndDeleteSelf();
+    return;
+  }
+
   size_t blob_count = 0;
   for (size_t i = 0; i < elements_.size(); ++i) {
     const auto& element = elements_[i];
@@ -282,6 +287,11 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobUUIDs() {
   }
 #endif
 
+  if (!context()) {
+    MarkAsFinishedAndDeleteSelf();
+    return;
+  }
+
   if (referenced_blob_uuids_.size() == 0) {
     ResolvedAllBlobDependencies();
     return;
@@ -320,6 +330,11 @@ void BlobRegistryImpl::BlobUnderConstruction::DependentBlobReady(
 void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
   DCHECK_EQ(resolved_blob_uuid_count_, referenced_blob_uuids_.size());
   DCHECK_EQ(ready_dependent_blob_count_, referenced_blob_uuids_.size());
+
+  if (!context()) {
+    MarkAsFinishedAndDeleteSelf();
+    return;
+  }
 
   auto blob_uuid_it = referenced_blob_uuids_.begin();
   for (const auto& element : elements_) {
@@ -378,6 +393,11 @@ void BlobRegistryImpl::BlobUnderConstruction::OnReadyForTransport(
 
 void BlobRegistryImpl::BlobUnderConstruction::TransportComplete(
     BlobStatus result) {
+  if (!context()) {
+    MarkAsFinishedAndDeleteSelf();
+    return;
+  }
+
   // The blob might no longer have any references, in which case it may no
   // longer exist. If that happens just skip calling Complete.
   // TODO(mek): Stop building sooner if a blob is no longer referenced.
@@ -417,9 +437,9 @@ bool BlobRegistryImpl::BlobUnderConstruction::ContainsCycles(
 #endif
 
 BlobRegistryImpl::BlobRegistryImpl(
-    BlobStorageContext* context,
+    base::WeakPtr<BlobStorageContext> context,
     scoped_refptr<FileSystemContext> file_system_context)
-    : context_(context),
+    : context_(std::move(context)),
       file_system_context_(std::move(file_system_context)),
       weak_ptr_factory_(this) {}
 
@@ -438,6 +458,11 @@ void BlobRegistryImpl::Register(
     const std::string& content_disposition,
     std::vector<blink::mojom::DataElementPtr> elements,
     RegisterCallback callback) {
+  if (!context_) {
+    std::move(callback).Run();
+    return;
+  }
+
   if (uuid.empty() || context_->registry().HasEntry(uuid) ||
       base::ContainsKey(blobs_under_construction_, uuid)) {
     bindings_.ReportBadMessage("Invalid UUID passed to BlobRegistry::Register");
@@ -496,6 +521,11 @@ void BlobRegistryImpl::Register(
 void BlobRegistryImpl::GetBlobFromUUID(blink::mojom::BlobRequest blob,
                                        const std::string& uuid,
                                        GetBlobFromUUIDCallback callback) {
+  if (!context_) {
+    std::move(callback).Run();
+    return;
+  }
+
   if (uuid.empty()) {
     bindings_.ReportBadMessage(
         "Invalid UUID passed to BlobRegistry::GetBlobFromUUID");
@@ -533,9 +563,9 @@ void BlobRegistryImpl::RegisterURLWithUUID(const GURL& url,
                                            const std::string& uuid) {
   // |blob| is unused, but is passed here to be kept alive until
   // RegisterBlobURL increments the refcount of it via the uuid.
-  context_->RegisterPublicBlobURL(url, uuid);
-  std::move(callback).Run(
-      BlobURLHandleImpl::Create(context_->AsWeakPtr(), url));
+  if (context_)
+    context_->RegisterPublicBlobURL(url, uuid);
+  std::move(callback).Run(BlobURLHandleImpl::Create(context_, url));
 }
 
 }  // namespace storage
