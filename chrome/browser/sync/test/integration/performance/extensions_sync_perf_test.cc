@@ -55,13 +55,11 @@ void ExtensionsSyncPerfTest::AddExtensions(int profile, int num_extensions) {
 
 void ExtensionsSyncPerfTest::UpdateExtensions(int profile) {
   std::vector<int> extensions = GetInstalledExtensions(GetProfile(profile));
-  for (std::vector<int>::iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    if (IsExtensionEnabled(GetProfile(profile), *it)) {
-      DisableExtension(GetProfile(profile), *it);
-    } else {
-      EnableExtension(GetProfile(profile), *it);
-    }
+  for (int extension : extensions) {
+    if (IsExtensionEnabled(GetProfile(profile), extension))
+      DisableExtension(GetProfile(profile), extension);
+    else
+      EnableExtension(GetProfile(profile), extension);
   }
 }
 
@@ -71,10 +69,8 @@ int ExtensionsSyncPerfTest::GetExtensionCount(int profile) {
 
 void ExtensionsSyncPerfTest::RemoveExtensions(int profile) {
   std::vector<int> extensions = GetInstalledExtensions(GetProfile(profile));
-  for (std::vector<int>::iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    UninstallExtension(GetProfile(profile), *it);
-  }
+  for (int extension : extensions)
+    UninstallExtension(GetProfile(profile), extension);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionsSyncPerfTest, P0) {

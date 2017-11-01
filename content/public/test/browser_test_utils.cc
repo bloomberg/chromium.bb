@@ -1145,11 +1145,9 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
   ids.insert(ids.end(), js_resource_ids.begin(), js_resource_ids.end());
 
   std::string script;
-  for (std::vector<int>::iterator iter = ids.begin();
-       iter != ids.end();
-       ++iter) {
+  for (int id : ids) {
     scoped_refptr<base::RefCountedMemory> bytes =
-        ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(*iter);
+        ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(id);
 
     if (HasGzipHeader(*bytes))
       AppendGzippedResource(*bytes, &script);

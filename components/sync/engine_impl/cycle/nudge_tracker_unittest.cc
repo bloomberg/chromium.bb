@@ -990,10 +990,8 @@ TEST_F(NudgeTrackerAckTrackingTest, OverflowAndRecover) {
     invalidation_ids.push_back(SendInvalidation(BOOKMARKS, i + 10, "hint"));
   }
 
-  for (std::vector<int>::iterator it = invalidation_ids.begin();
-       it != invalidation_ids.end(); ++it) {
-    EXPECT_TRUE(IsInvalidationUnacknowledged(*it));
-  }
+  for (int id : invalidation_ids)
+    EXPECT_TRUE(IsInvalidationUnacknowledged(id));
 
   // This invalidation, though arriving the most recently, has the oldest
   // version number so it should be dropped first.
@@ -1008,10 +1006,9 @@ TEST_F(NudgeTrackerAckTrackingTest, OverflowAndRecover) {
   // This should recover from the drop and bring us back into sync.
   RecordSuccessfulSyncCycle();
 
-  for (std::vector<int>::iterator it = invalidation_ids.begin();
-       it != invalidation_ids.end(); ++it) {
-    EXPECT_TRUE(IsInvalidationAcknowledged(*it));
-  }
+  for (int id : invalidation_ids)
+    EXPECT_TRUE(IsInvalidationAcknowledged(id));
+
   EXPECT_TRUE(IsInvalidationAcknowledged(inv100_id));
 
   EXPECT_TRUE(AllInvalidationsAccountedFor());

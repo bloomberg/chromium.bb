@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "build/build_config.h"
 
 // Include once to get the type definitions
@@ -102,9 +103,7 @@ static bool check_msgtable() {
       result = false;
     }
     while (class_id > previous_class_id + 1) {
-      std::vector<int>::iterator iter;
-      iter = find(exemptions.begin(), exemptions.end(), previous_class_id + 1);
-      if (iter == exemptions.end()) {
+      if (!base::ContainsValue(exemptions, previous_class_id + 1)) {
         std::cout << "Missing message file for enum "
                   << class_id - (previous_class_id + 1)
                   <<  " before enum used by " << file_name << "\n";
@@ -119,9 +118,7 @@ static bool check_msgtable() {
   }
 
   while (LastIPCMsgStart > highest_class_id + 1) {
-    std::vector<int>::iterator iter;
-    iter = find(exemptions.begin(), exemptions.end(), highest_class_id+1);
-    if (iter == exemptions.end()) {
+    if (!base::ContainsValue(exemptions, highest_class_id + 1)) {
       std::cout << "Missing message file for enum "
                 << LastIPCMsgStart - (highest_class_id + 1)
                 << " before enum LastIPCMsgStart\n";
@@ -164,7 +161,7 @@ int main(int argc, char **argv) {
   bool show_ids  = false;
   bool skip_check = false;
   bool show_comma = false;
-  const char *filter = NULL;
+  const char* filter = NULL;
 
   while (--argc > 0) {
     ++argv;
