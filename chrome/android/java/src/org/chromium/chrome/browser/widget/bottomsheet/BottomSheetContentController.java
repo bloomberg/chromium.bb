@@ -183,7 +183,8 @@ public class BottomSheetContentController
 
             // If the home content is showing and the sheet is closed, destroy sheet contents that
             // are no longer needed.
-            if (mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK
+            if ((mShouldClearContentsOnNextContentChange
+                        || mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK)
                     && (newContent == null
                                || newContent == mBottomSheetContents.get(getHomeContentId()))) {
                 clearBottomSheetContents(newContent == null);
@@ -197,6 +198,7 @@ public class BottomSheetContentController
     private int mSelectedItemId;
     private ChromeActivity mActivity;
     private boolean mShouldOpenSheetOnNextContentChange;
+    private boolean mShouldClearContentsOnNextContentChange;
     private PlaceholderSheetContent mPlaceholderContent;
     private boolean mOmniboxHasFocus;
     private TabModelSelectorObserver mTabModelSelectorObserver;
@@ -255,6 +257,12 @@ public class BottomSheetContentController
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                // Remove all bottom sheet contents except Home if switching between standard and
+                // incognito mode to prevent contents from being out of date.
+                if (newModel.isIncognito() != oldModel.isIncognito()) {
+                    mShouldClearContentsOnNextContentChange = true;
+                }
+
                 updateVisuals(newModel.isIncognito());
                 showBottomSheetContent(R.id.action_home);
                 mPlaceholderContent.setIsIncognito(newModel.isIncognito());

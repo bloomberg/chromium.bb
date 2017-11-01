@@ -17,11 +17,8 @@ using base::android::ConvertUTF8ToJavaString;
 
 PrefChangeRegistrarAndroid::PrefChangeRegistrarAndroid(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    bool is_incognito) {
-  Profile* last_profile = ProfileManager::GetLastUsedProfile();
-  profile_ = is_incognito ? last_profile->GetOffTheRecordProfile()
-                          : last_profile->GetOriginalProfile();
+    const JavaParamRef<jobject>& obj) {
+  profile_ = ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
 
   pref_change_registrar_.Init(profile_->GetPrefs());
 
@@ -50,9 +47,6 @@ void PrefChangeRegistrarAndroid::OnPreferenceChange(const int pref_index) {
       env, pref_change_registrar_jobject_, pref_index);
 }
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj,
-           jboolean is_incognito) {
-  return reinterpret_cast<intptr_t>(
-      new PrefChangeRegistrarAndroid(env, obj, is_incognito));
+jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  return reinterpret_cast<intptr_t>(new PrefChangeRegistrarAndroid(env, obj));
 }

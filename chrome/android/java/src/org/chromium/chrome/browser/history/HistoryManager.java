@@ -172,7 +172,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         SigninManager.get(mActivity).addSignInStateObserver(this);
 
         // 10. Create PrefChangeRegistrar to receive notifications on preference changes.
-        mPrefChangeRegistrar = new PrefChangeRegistrar(isIncognito);
+        mPrefChangeRegistrar = new PrefChangeRegistrar();
         mPrefChangeRegistrar.addObserver(Pref.ALLOW_DELETING_BROWSER_HISTORY, this);
         mPrefChangeRegistrar.addObserver(Pref.INCOGNITO_MODE_AVAILABILITY, this);
 

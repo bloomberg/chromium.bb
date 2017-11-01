@@ -18,9 +18,7 @@ class Profile;
 // for Android.
 class PrefChangeRegistrarAndroid {
  public:
-  PrefChangeRegistrarAndroid(JNIEnv* env,
-                             const JavaParamRef<jobject>& obj,
-                             const bool is_incognito);
+  PrefChangeRegistrarAndroid(JNIEnv* env, const JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv*, const JavaParamRef<jobject>&);
   void Add(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
