@@ -4,6 +4,7 @@
 
 #import "ios/chrome/test/app/history_test_util.h"
 
+#include "base/ios/callback_counter.h"
 #import "base/mac/bind_objc_block.h"
 #import "base/test/ios/wait_util.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
@@ -11,7 +12,6 @@
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
-#include "ios/chrome/browser/callback_counter.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -95,7 +95,6 @@ source_set("browsing_data_internal") {
     "//components/browsing_data/core",
     "//components/open_from_clipboard",
     "//components/signin/ios/browser",
-    "//ios/chrome/browser:browser_internal",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/signin",

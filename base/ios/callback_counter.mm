@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/callback_counter.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+#include "base/ios/callback_counter.h"
 
 CallbackCounter::CallbackCounter(const FinalCallback& final_callback)
     : callback_count_(0U), final_callback_(final_callback) {

@@ -85,7 +85,6 @@ source_set("main") {
     "//ios/chrome/app/startup",
     "//ios/chrome/app/startup:startup_basic",
     "//ios/chrome/browser",
-    "//ios/chrome/browser:browser_internal",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/common",
     "//ios/testing/perf:startup",

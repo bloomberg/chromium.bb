@@ -53,7 +53,6 @@ source_set("test_support") {
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/app/application_delegate:test_support",
     "//ios/chrome/browser",
-    "//ios/chrome/browser:browser_internal",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
