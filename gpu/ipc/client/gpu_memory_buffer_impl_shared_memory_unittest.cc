@@ -22,12 +22,13 @@ TEST(GpuMemoryBufferImplSharedMemoryTest, Create) {
   const gfx::GpuMemoryBufferId kBufferId(1);
 
   gfx::Size buffer_size(8, 8);
+  gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ;
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
     bool destroyed = false;
     std::unique_ptr<GpuMemoryBufferImplSharedMemory> buffer(
         GpuMemoryBufferImplSharedMemory::Create(
-            kBufferId, buffer_size, format,
+            kBufferId, buffer_size, format, usage,
             base::Bind(&BufferDestroyed, base::Unretained(&destroyed))));
     ASSERT_TRUE(buffer);
     EXPECT_EQ(buffer->GetFormat(), format);

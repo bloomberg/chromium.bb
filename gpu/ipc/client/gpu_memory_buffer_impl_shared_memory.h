@@ -24,12 +24,14 @@ class GPU_EXPORT GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       const DestructionCallback& callback);
 
   static gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
-      gfx::BufferFormat format);
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage);
 
   static std::unique_ptr<GpuMemoryBufferImplSharedMemory> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
@@ -63,6 +65,7 @@ class GPU_EXPORT GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       const DestructionCallback& callback,
       std::unique_ptr<base::SharedMemory> shared_memory,
       size_t offset,

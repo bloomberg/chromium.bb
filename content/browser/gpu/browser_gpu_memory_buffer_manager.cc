@@ -136,7 +136,7 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
   }
 
   auto handle = gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
-      id, size, format);
+      id, size, format, usage);
   buffers.find(id)->second.shared_memory_guid = handle.handle.GetGUID();
   callback.Run(handle);
 }
@@ -292,7 +292,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
   // Note: Unretained is safe as IO thread is stopped before manager is
   // destroyed.
   request->result = gpu::GpuMemoryBufferImplSharedMemory::Create(
-      new_id, request->size, request->format,
+      new_id, request->size, request->format, request->usage,
       base::Bind(
           &GpuMemoryBufferDeleted,
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
