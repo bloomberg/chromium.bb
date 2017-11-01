@@ -40,7 +40,7 @@ function test() {
     var scorer = new Sources.FilePathScoreFunction(query);
     var bestScore = -1;
     var bestIndex = -1;
-    var filter = QuickOpen.FilteredListWidget.filterRegex(query);
+    var filter = String.filterRegex(query);
     for (var i = 0; i < paths.length; ++i) {
       if (!filter.test(paths[i]))
         continue;
