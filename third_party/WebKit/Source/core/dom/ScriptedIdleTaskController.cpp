@@ -105,7 +105,7 @@ ScriptedIdleTaskController::ScriptedIdleTaskController(
       scheduler_(Platform::Current()->CurrentThread()->Scheduler()),
       next_callback_id_(0),
       suspended_(false) {
-  SuspendIfNeeded();
+  PauseIfNeeded();
 }
 
 ScriptedIdleTaskController::~ScriptedIdleTaskController() {}

@@ -201,7 +201,7 @@ class ScriptPromiseResolverKeepAlive : public ScriptPromiseResolver {
   static ScriptPromiseResolverKeepAlive* Create(ScriptState* script_state) {
     ScriptPromiseResolverKeepAlive* resolver =
         new ScriptPromiseResolverKeepAlive(script_state);
-    resolver->SuspendIfNeeded();
+    resolver->PauseIfNeeded();
     return resolver;
   }
 

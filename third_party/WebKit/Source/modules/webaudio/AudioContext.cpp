@@ -61,7 +61,7 @@ AudioContext* AudioContext::Create(Document& document,
   }
 
   AudioContext* audio_context = new AudioContext(document, latency_hint);
-  audio_context->SuspendIfNeeded();
+  audio_context->PauseIfNeeded();
 
   if (!AudioUtilities::IsValidAudioBufferSampleRate(
           audio_context->sampleRate())) {

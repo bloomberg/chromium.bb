@@ -99,7 +99,7 @@ IDBRequest* IDBRequest::Create(ScriptState* script_state,
                                IDBRequest::AsyncTraceState metrics) {
   IDBRequest* request =
       new IDBRequest(script_state, source, transaction, std::move(metrics));
-  request->SuspendIfNeeded();
+  request->PauseIfNeeded();
   // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames)
   // do not have an associated transaction.
   if (transaction)

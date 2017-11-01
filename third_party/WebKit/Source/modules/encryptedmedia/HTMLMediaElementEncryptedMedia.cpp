@@ -129,7 +129,7 @@ ScriptPromise SetMediaKeysHandler::Create(ScriptState* script_state,
                                           MediaKeys* media_keys) {
   SetMediaKeysHandler* handler =
       new SetMediaKeysHandler(script_state, element, media_keys);
-  handler->SuspendIfNeeded();
+  handler->PauseIfNeeded();
   handler->KeepAliveWhilePending();
   return handler->Promise();
 }

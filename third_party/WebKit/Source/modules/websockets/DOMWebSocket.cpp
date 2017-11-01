@@ -264,7 +264,7 @@ DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
   }
 
   DOMWebSocket* web_socket = new DOMWebSocket(context);
-  web_socket->SuspendIfNeeded();
+  web_socket->PauseIfNeeded();
 
   if (protocols.IsNull()) {
     Vector<String> protocols_vector;

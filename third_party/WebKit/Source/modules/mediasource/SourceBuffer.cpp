@@ -108,7 +108,7 @@ SourceBuffer* SourceBuffer::Create(
     MediaElementEventQueue* async_event_queue) {
   SourceBuffer* source_buffer =
       new SourceBuffer(std::move(web_source_buffer), source, async_event_queue);
-  source_buffer->SuspendIfNeeded();
+  source_buffer->PauseIfNeeded();
   return source_buffer;
 }
 

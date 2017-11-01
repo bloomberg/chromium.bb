@@ -15,7 +15,7 @@ namespace blink {
 
 BatteryManager* BatteryManager::Create(ExecutionContext* context) {
   BatteryManager* battery_manager = new BatteryManager(context);
-  battery_manager->SuspendIfNeeded();
+  battery_manager->PauseIfNeeded();
   return battery_manager;
 }
 

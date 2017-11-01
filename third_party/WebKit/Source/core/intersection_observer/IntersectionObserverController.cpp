@@ -15,7 +15,7 @@ IntersectionObserverController* IntersectionObserverController::Create(
     Document* document) {
   IntersectionObserverController* result =
       new IntersectionObserverController(document);
-  result->SuspendIfNeeded();
+  result->PauseIfNeeded();
   return result;
 }
 

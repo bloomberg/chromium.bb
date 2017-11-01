@@ -45,7 +45,7 @@ namespace blink {
 
 FontFaceSetDocument::FontFaceSetDocument(Document& document)
     : FontFaceSet(document), Supplement<Document>(document) {
-  SuspendIfNeeded();
+  PauseIfNeeded();
 }
 
 FontFaceSetDocument::~FontFaceSetDocument() {}

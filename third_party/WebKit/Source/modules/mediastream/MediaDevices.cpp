@@ -66,7 +66,7 @@ class PromiseErrorCallback final : public NavigatorUserMediaErrorCallback {
 
 MediaDevices* MediaDevices::Create(ExecutionContext* context) {
   MediaDevices* media_devices = new MediaDevices(context);
-  media_devices->SuspendIfNeeded();
+  media_devices->PauseIfNeeded();
   return media_devices;
 }
 

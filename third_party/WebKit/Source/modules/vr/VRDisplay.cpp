@@ -98,7 +98,7 @@ VRDisplay::VRDisplay(
       display_(std::move(display)),
       submit_frame_client_binding_(this),
       display_client_binding_(this, std::move(request)) {
-  SuspendIfNeeded();  // Initialize SuspendabaleObject.
+  PauseIfNeeded();  // Initialize SuspendabaleObject.
 }
 
 VRDisplay::~VRDisplay() {}

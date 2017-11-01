@@ -47,7 +47,7 @@ IDBOpenDBRequest* IDBOpenDBRequest::Create(
     IDBRequest::AsyncTraceState metrics) {
   IDBOpenDBRequest* request = new IDBOpenDBRequest(
       script_state, callbacks, transaction_id, version, std::move(metrics));
-  request->SuspendIfNeeded();
+  request->PauseIfNeeded();
   return request;
 }
 

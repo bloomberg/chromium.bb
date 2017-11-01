@@ -59,7 +59,7 @@ class CORE_EXPORT ContextLifecycleNotifier
   ContextLifecycleNotifier() {}
 
 #if DCHECK_IS_ON()
-  bool Contains(SuspendableObject*) const;
+  bool Contains(PausableObject*) const;
 #endif
 };
 

@@ -471,7 +471,7 @@ RTCPeerConnection* RTCPeerConnection::Create(
 
   RTCPeerConnection* peer_connection = new RTCPeerConnection(
       context, configuration, constraints, exception_state);
-  peer_connection->SuspendIfNeeded();
+  peer_connection->PauseIfNeeded();
   if (exception_state.HadException())
     return nullptr;
 

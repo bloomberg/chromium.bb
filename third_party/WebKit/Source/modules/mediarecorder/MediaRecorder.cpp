@@ -141,7 +141,7 @@ MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
                                      ExceptionState& exception_state) {
   MediaRecorder* recorder = new MediaRecorder(
       context, stream, MediaRecorderOptions(), exception_state);
-  recorder->SuspendIfNeeded();
+  recorder->PauseIfNeeded();
 
   return recorder;
 }
@@ -152,7 +152,7 @@ MediaRecorder* MediaRecorder::Create(ExecutionContext* context,
                                      ExceptionState& exception_state) {
   MediaRecorder* recorder =
       new MediaRecorder(context, stream, options, exception_state);
-  recorder->SuspendIfNeeded();
+  recorder->PauseIfNeeded();
 
   return recorder;
 }

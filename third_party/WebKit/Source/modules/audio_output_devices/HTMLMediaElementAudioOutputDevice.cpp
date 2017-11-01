@@ -45,7 +45,7 @@ SetSinkIdResolver* SetSinkIdResolver::Create(ScriptState* script_state,
                                              const String& sink_id) {
   SetSinkIdResolver* resolver =
       new SetSinkIdResolver(script_state, element, sink_id);
-  resolver->SuspendIfNeeded();
+  resolver->PauseIfNeeded();
   resolver->KeepAliveWhilePending();
   return resolver;
 }
