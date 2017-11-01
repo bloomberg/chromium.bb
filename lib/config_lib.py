@@ -113,6 +113,18 @@ ALL_DISPLAY_LABEL = TRYJOB_DISPLAY_LABEL | {
     DISPLAY_LABEL_UNKNOWN_PRODUCTION,
 }
 
+def isTryjobConfig(build_config):
+  """Is a given build config a tryjob config, or a production config?
+
+  Args:
+    build_config: A fully populated instance of BuildConfig.
+
+  Returns:
+    Boolean. True if it's a tryjob config.
+  """
+  return build_config.display_label in TRYJOB_DISPLAY_LABEL
+
+
 # In the Json, this special build config holds the default values for all
 # other configs.
 DEFAULT_BUILD_CONFIG = '_default'

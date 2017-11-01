@@ -37,6 +37,77 @@ class TryjobTest(cros_test_lib.MockTestCase):
     return self.cmd_mock.inst.options
 
 
+class TryjobTestPrintKnownConfigs(TryjobTest):
+  """Test the PrintKnownConfigs function."""
+
+  def setUp(self):
+    self.site_config = config_lib.GetConfig()
+
+  def testConfigsToPrintAllIncluded(self):
+    """Test we can generate results for --list."""
+    tryjob_configs = cros_tryjob.ConfigsToPrint(
+        self.site_config, production=False, build_config_fragments=[])
+
+    release_configs = cros_tryjob.ConfigsToPrint(
+        self.site_config, production=True, build_config_fragments=[])
+
+    self.assertEqual(len(self.site_config),
+                     len(tryjob_configs) + len(release_configs))
+
+  def testConfigsToPrintFiltered(self):
+    """Test ConfigsToPrint filters correctly."""
+    tryjob_configs = cros_tryjob.ConfigsToPrint(
+        self.site_config, production=False, build_config_fragments=[])
+
+    samus_tryjob_configs = cros_tryjob.ConfigsToPrint(
+        self.site_config, production=False, build_config_fragments=['samus'])
+
+    samus_release_tryjob_configs = cros_tryjob.ConfigsToPrint(
+        self.site_config, production=False,
+        build_config_fragments=['samus', 'release'])
+
+    # Prove expecting things are there.
+    self.assertIn(self.site_config['samus-release-tryjob'],
+                  tryjob_configs)
+    self.assertIn(self.site_config['samus-release-tryjob'],
+                  samus_tryjob_configs)
+    self.assertIn(self.site_config['samus-release-tryjob'],
+                  samus_release_tryjob_configs)
+
+    # Unexpecting things aren't.
+    self.assertNotIn(self.site_config['samus-release'],
+                     tryjob_configs)
+    self.assertNotIn(self.site_config['glados-release'],
+                     samus_tryjob_configs)
+    self.assertNotIn(self.site_config['samus-full'],
+                     samus_release_tryjob_configs)
+
+    # And that we really filtered something out in every case.
+    self.assertLess(len(samus_release_tryjob_configs),
+                    len(samus_tryjob_configs))
+
+    self.assertLess(len(samus_tryjob_configs), len(tryjob_configs))
+
+  def testListTryjobs(self):
+    """Test we can generate results for --list."""
+    with cros_build_lib.OutputCapturer() as output:
+      cros_tryjob.PrintKnownConfigs(
+          self.site_config, production=False, build_config_fragments=[])
+
+    # We have at least 100 lines of output, and no error out.
+    self.assertGreater(len(output.GetStdoutLines()), 100)
+    self.assertFalse(output.GetStderr())
+
+  def testListProduction(self):
+    """Test we can generate results for --production --list."""
+    with cros_build_lib.OutputCapturer() as output:
+      cros_tryjob.PrintKnownConfigs(
+          self.site_config, production=True, build_config_fragments=[])
+
+    # We have at least 100 lines of output, and no error out.
+    self.assertGreater(len(output.GetStdoutLines()), 100)
+    self.assertFalse(output.GetStderr())
+
 class TryjobTestParsing(TryjobTest):
   """Test cros try command line parsing."""
 
@@ -48,7 +119,6 @@ class TryjobTestParsing(TryjobTest):
         'production': False,
         'yes': False,
         'list': False,
-        'list_all': False,
         'gerrit_patches': [],
         'local_patches': [],
         'passthrough': None,
@@ -75,7 +145,7 @@ class TryjobTestParsing(TryjobTest):
         '--local-patches', 'chromiumos/chromite:tryjob', '-p', 'other:other',
         '--chrome_version', 'chrome_git_hash',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
-        '--list', '--all',
+        '--list',
         'lumpy-paladin', 'lumpy-release',
     ])
     options = self.cmd_mock.inst.options
@@ -86,7 +156,6 @@ class TryjobTestParsing(TryjobTest):
         'branch': 'master',
         'yes': True,
         'list': True,
-        'list_all': True,
         'gerrit_patches': ['123', '*123', '123..456'],
         'local_patches': ['chromiumos/chromite:tryjob', 'other:other'],
         'passthrough': [
@@ -114,7 +183,7 @@ class TryjobTestParsing(TryjobTest):
         '--local-patches', 'chromiumos/chromite:tryjob', '-p', 'other:other',
         '--chrome_version', 'chrome_git_hash',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
-        '--list', '--all',
+        '--list',
         'lumpy-paladin', 'lumpy-release',
     ])
     options = self.cmd_mock.inst.options
@@ -125,7 +194,6 @@ class TryjobTestParsing(TryjobTest):
         'branch': 'master',
         'yes': True,
         'list': True,
-        'list_all': True,
         'gerrit_patches': ['123', '*123', '123..456'],
         'local_patches': ['chromiumos/chromite:tryjob', 'other:other'],
         'passthrough': [
@@ -219,7 +287,19 @@ class TryjobTestVerifyOptions(TryjobTest):
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
-      self.cmd_mock.inst.VerifyOptions(self.site_config)
+      with cros_build_lib.OutputCapturer(quiet_fail=True):  # Hide list output.
+        self.cmd_mock.inst.VerifyOptions(self.site_config)
+    self.assertEqual(cm.exception.code, 0)
+
+  def testListProduction(self):
+    """Test option verification with config list behavior."""
+    self.SetupCommandMock([
+        '--list', '--production',
+    ])
+
+    with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
+      with cros_build_lib.OutputCapturer(quiet_fail=True):  # Hide list output.
+        self.cmd_mock.inst.VerifyOptions(self.site_config)
     self.assertEqual(cm.exception.code, 0)
 
   def testProduction(self):

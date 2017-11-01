@@ -18,29 +18,58 @@ from chromite.lib import remote_try
 from chromite.cbuildbot import trybot_patch_pool
 
 
-def PrintKnownConfigs(site_config, display_all=False):
+def ConfigsToPrint(site_config, production, build_config_fragments):
+  """Select a list of buildbot configs to print out.
+
+  Args:
+    site_config: config_lib.SiteConfig containing all config info.
+    production: Display tryjob or production configs?.
+    build_config_fragments: List of strings to filter config names with.
+
+  Returns:
+    List of config_lib.BuildConfig objects.
+  """
+  configs = site_config.values()
+
+  def optionsMatch(config):
+    # In this case, build_configs are config name fragments. If the config
+    # name doesn't contain any of the fragments, filter it out.
+    for build_config in build_config_fragments:
+      if build_config not in config.name:
+        return False
+
+    return config_lib.isTryjobConfig(config) != production
+
+  # All configs, filtered by optionsMatch.
+  configs = [config for config in configs if optionsMatch(config)]
+
+  # Sort build type, then board.
+  # 'daisy-paladin-tryjob' -> ['tryjob', 'paladin', 'daisy']
+  configs.sort(key=lambda c: list(reversed(c.name.split('-'))))
+
+  return configs
+
+def PrintKnownConfigs(site_config, production, build_config_fragments):
   """Print a list of known buildbot configs.
 
   Args:
     site_config: config_lib.SiteConfig containing all config info.
-    display_all: Print all configs.  Otherwise, prints only configs with
-                 trybot_list=True.
+    production: Display tryjob or production configs?.
+    build_config_fragments: List of strings to filter config names with.
   """
-  def _GetSortKey(config_name):
-    config_dict = site_config[config_name]
-    return (not config_dict.trybot_list, config_dict.description, config_name)
+  configs = ConfigsToPrint(site_config, production, build_config_fragments)
 
-  COLUMN_WIDTH = 45
-  if not display_all:
-    print('Note: This is the common list; for all configs, use --all.')
+  COLUMN_WIDTH = max(len(c.name) for c in configs) + 1
+  if production:
+    print('Production configs:')
+  else:
+    print('Tryjob configs:')
+
   print('config'.ljust(COLUMN_WIDTH), 'description')
   print('------'.ljust(COLUMN_WIDTH), '-----------')
-  config_names = site_config.keys()
-  config_names.sort(key=_GetSortKey)
-  for name in config_names:
-    if display_all or site_config[name].trybot_list:
-      desc = site_config[name].description or ''
-      print(name.ljust(COLUMN_WIDTH), desc)
+  for config in configs:
+    desc = config.description or ''
+    print(config.name.ljust(COLUMN_WIDTH), desc)
 
 
 def CbuildbotArgs(options):
@@ -192,6 +221,12 @@ Local Examples:
 Production Examples (danger, can break production if misused):
   cros tryjob --production --branch release-R61-9765.B asuka-release
   cros tryjob --production --version 9795.0.0 --channel canary  lumpy-payloads
+
+List Examples:
+  cros tryjob --list
+  cros tryjob --production --list
+  cros tryjob --list lumpy
+  cros tryjob --list lumpy vmtest
 """
 
   @classmethod
@@ -352,16 +387,15 @@ Production Examples (danger, can break production if misused):
         description='Options for displaying available build configs.')
     configs_group.add_argument(
         '-l', '--list', action='store_true', dest='list', default=False,
-        help='List the suggested trybot configs to use (see --all)')
-    configs_group.add_argument(
-        '-a', '--all', action='store_true', dest='list_all', default=False,
-        help='List all of the buildbot configs available w/--list')
+        help='List the trybot configs (adjusted by --production).')
 
   def VerifyOptions(self, site_config):
     """Verify that our command line options make sense."""
     # Handle --list before checking that everything else is valid.
     if self.options.list:
-      PrintKnownConfigs(site_config, self.options.list_all)
+      PrintKnownConfigs(site_config,
+                        self.options.production,
+                        self.options.build_configs)
       raise cros_build_lib.DieSystemExit(0)  # Exit with success code.
 
     # Validate specified build_configs.
