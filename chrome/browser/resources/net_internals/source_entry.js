@@ -335,7 +335,7 @@ var SourceEntry = (function() {
      */
     createTablePrinter: function() {
       return createLogEntryTablePrinter(
-          this.entries_, SourceTracker.getInstance().getPrivacyStripping(),
+          this.entries_,
           SourceTracker.getInstance().getUseRelativeTimes() ?
               timeutil.getBaseTime() :
               0,

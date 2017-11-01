@@ -34,8 +34,6 @@ CreateAndLoadLogTask.prototype = {
    * Starts creating the log dump.
    */
   start: function() {
-    this.initialPrivacyStripping_ =
-        SourceTracker.getInstance().getPrivacyStripping();
     log_util.createLogDumpAsync(this.userComments_,
                                 this.onLogDumpCreated.bind(this), true);
   },
@@ -46,10 +44,7 @@ CreateAndLoadLogTask.prototype = {
    * @param {string} logDumpText Log dump, as a string.
    */
   onLogDumpCreated: function(logDumpText) {
-    expectEquals(this.initialPrivacyStripping_,
-                 SourceTracker.getInstance().getPrivacyStripping());
     expectEquals('Log loaded.', log_util.loadLogFile(logDumpText, 'log.txt'));
-    expectFalse(SourceTracker.getInstance().getPrivacyStripping());
 
     NetInternalsTest.expectStatusViewNodeVisible(LoadedStatusView.MAIN_BOX_ID);
 
@@ -123,7 +118,6 @@ GetNetLogFileContentsAndLoadLogTask.prototype = {
    */
   onLogReceived_: function(logDumpText) {
     assertEquals('string', typeof logDumpText);
-    expectTrue(SourceTracker.getInstance().getPrivacyStripping());
 
     var expectedResult = 'Log loaded.';
 
@@ -134,7 +128,6 @@ GetNetLogFileContentsAndLoadLogTask.prototype = {
 
     logDumpText = logDumpText.substring(0, logDumpText.length - this.truncate_);
     expectEquals(expectedResult, log_util.loadLogFile(logDumpText, 'log.txt'));
-    expectFalse(SourceTracker.getInstance().getPrivacyStripping());
 
     NetInternalsTest.expectStatusViewNodeVisible(LoadedStatusView.MAIN_BOX_ID);
 
@@ -201,11 +194,6 @@ function checkViewsAfterNetLogFileLoaded() {
   NetInternalsTest.checkTabLinkVisibility(tabVisibilityState, false);
 }
 
-function checkPrivacyStripping(expectedValue) {
-  expectEquals(expectedValue,
-               SourceTracker.getInstance().getPrivacyStripping());
-}
-
 /**
  * Checks the currently active view.
  * @param {string} id ID of the view that should be active.
@@ -222,7 +210,6 @@ function checkActiveView(id) {
  */
 TEST_F('NetInternalsTest', 'netInternalsLogUtilExportImport', function() {
   expectFalse(g_browser.isDisabled());
-  expectTrue(SourceTracker.getInstance().getPrivacyStripping());
   NetInternalsTest.expectStatusViewNodeVisible(CaptureStatusView.MAIN_BOX_ID);
 
   var taskQueue = new NetInternalsTest.TaskQueue(true);
@@ -269,7 +256,6 @@ TEST_F('NetInternalsTest', 'netInternalsLogUtilStopCapturing', function() {
       NetInternalsTest.expectStatusViewNodeVisible.bind(
           null, HaltedStatusView.MAIN_BOX_ID));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
-  taskQueue.addFunctionTask(checkPrivacyStripping.bind(null, true));
   taskQueue.addFunctionTask(checkActiveView.bind(null, EventsView.TAB_ID));
   taskQueue.run();
 
