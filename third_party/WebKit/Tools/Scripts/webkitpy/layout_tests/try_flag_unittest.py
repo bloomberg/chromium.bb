@@ -9,6 +9,7 @@ from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.git_cl import TryJobStatus
 from webkitpy.common.net.git_cl_mock import MockGitCL
 from webkitpy.common.net.layout_test_results import LayoutTestResults
+from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.try_flag import TryFlag
 
 
@@ -19,6 +20,48 @@ class TryFlagTest(unittest.TestCase):
         self.mac_build = Build('mac_chromium_rel_ng', 101)
         self.win_build = Build('win7_chromium_rel_ng', 102)
         super(TryFlagTest, self).__init__(*args, **kwargs)
+
+    def _run_trigger_test(self, regenerate):
+        host = MockHost()
+        git = host.git()
+        git_cl = MockGitCL(host)
+        finder = PathFinder(host.filesystem)
+
+        flag_file = finder.path_from_layout_tests(
+            'additional-driver-flag.setting')
+        flag_expectations_file = finder.path_from_layout_tests(
+            'FlagExpectations', 'foo')
+
+        cmd = ['trigger', '--flag=--foo']
+        if regenerate:
+            cmd.append('--regenerate')
+        TryFlag(cmd, host, git_cl).run()
+
+        expected_added_paths = {flag_file}
+        expected_commits = [['Flag try job: force --foo for run-webkit-tests.']]
+
+        if regenerate:
+            expected_added_paths.add(flag_expectations_file)
+            expected_commits.append(
+                ['Flag try job: clear expectations for --foo.'])
+
+        self.assertEqual(git.added_paths, expected_added_paths)
+        self.assertEqual(git.local_commits(), expected_commits)
+
+        self.assertEqual(git_cl.calls, [
+            ['git', 'cl', 'upload', '--bypass-hooks', '-f',
+             '-m', 'Flag try job for --foo.'],
+            ['git', 'cl', 'try', '-m', 'tryserver.chromium.linux',
+             '-b', 'linux_chromium_rel_ng'],
+            ['git', 'cl', 'try', '-m', 'tryserver.chromium.mac',
+             '-b', 'mac_chromium_rel_ng'],
+            ['git', 'cl', 'try', '-m', 'tryserver.chromium.win',
+             '-b', 'win7_chromium_rel_ng']
+        ])
+
+    def test_trigger(self):
+        self._run_trigger_test(regenerate=False)
+        self._run_trigger_test(regenerate=True)
 
     def _setup_mock_results(self, buildbot):
         buildbot.set_results(self.linux_build, LayoutTestResults({
