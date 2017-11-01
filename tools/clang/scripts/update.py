@@ -42,6 +42,7 @@ PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 # Path constants. (All of these should be absolute paths.)
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 CHROMIUM_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..'))
+GCLIENT_CONFIG = os.path.join(os.path.dirname(CHROMIUM_DIR), '.gclient')
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
 LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
 LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
@@ -134,15 +135,23 @@ def EnsureDirExists(path):
     os.makedirs(path)
 
 
-def DownloadAndUnpack(url, output_dir):
+def DownloadAndUnpack(url, output_dir, path_prefix=None):
+  """Download an archive from url and extract into output_dir. If path_prefix is
+     not None, only extract files whose paths within the archive start with
+     path_prefix."""
   with tempfile.TemporaryFile() as f:
     DownloadUrl(url, f)
     f.seek(0)
     EnsureDirExists(output_dir)
     if url.endswith('.zip'):
+      assert path_prefix is None
       zipfile.ZipFile(f).extractall(path=output_dir)
     else:
-      tarfile.open(mode='r:gz', fileobj=f).extractall(path=output_dir)
+      t = tarfile.open(mode='r:gz', fileobj=f)
+      members = None
+      if path_prefix is not None:
+        members = [m for m in t.getmembers() if m.name.startswith(path_prefix)]
+      t.extractall(path=output_dir, members=members)
 
 
 def ReadStampFile(path=STAMP_FILE):
@@ -390,8 +399,42 @@ def VeryifyVersionOfBuiltClangMatchesVERSION():
     sys.exit(1)
 
 
+def DownloadAndUnpackClangPackage(platform, runtimes_only=False):
+  cds_file = "clang-%s.tgz" %  PACKAGE_VERSION
+  if platform == 'win32' or platform == 'cygwin':
+    cds_full_url = CDS_URL + '/Win/' + cds_file
+  elif platform == 'darwin':
+    cds_full_url = CDS_URL + '/Mac/' + cds_file
+  else:
+    assert platform.startswith('linux')
+    cds_full_url = CDS_URL + '/Linux_x64/' + cds_file
+
+  try:
+    path_prefix = None
+    if runtimes_only:
+      path_prefix = 'lib/clang/' + VERSION + '/lib/'
+    DownloadAndUnpack(cds_full_url, LLVM_BUILD_DIR, path_prefix)
+  except urllib2.URLError:
+    print 'Failed to download prebuilt clang %s' % cds_file
+    print 'Use --force-local-build if you want to build locally.'
+    print 'Exiting.'
+    sys.exit(1)
+
+
 def UpdateClang(args):
-  if ReadStampFile() == PACKAGE_VERSION and not args.force_local_build:
+  # Read target_os from .gclient so we know which non-native runtimes we need.
+  # TODO(pcc): See if we can download just the runtimes instead of the entire
+  # clang package, and do that from DEPS instead of here.
+  target_os = []
+  try:
+    env = {}
+    execfile(GCLIENT_CONFIG, env, env)
+    target_os = env.get('target_os', target_os)
+  except:
+    pass
+
+  expected_stamp = ','.join([PACKAGE_VERSION] + target_os)
+  if ReadStampFile() == expected_stamp and not args.force_local_build:
     return 0
 
   print 'Updating Clang to %s...' % PACKAGE_VERSION
@@ -400,30 +443,18 @@ def UpdateClang(args):
   WriteStampFile('')
 
   if not args.force_local_build:
-    cds_file = "clang-%s.tgz" %  PACKAGE_VERSION
-    if sys.platform == 'win32' or sys.platform == 'cygwin':
-      cds_full_url = CDS_URL + '/Win/' + cds_file
-    elif sys.platform == 'darwin':
-      cds_full_url = CDS_URL + '/Mac/' + cds_file
-    else:
-      assert sys.platform.startswith('linux')
-      cds_full_url = CDS_URL + '/Linux_x64/' + cds_file
-
     print 'Downloading prebuilt clang'
     if os.path.exists(LLVM_BUILD_DIR):
       RmTree(LLVM_BUILD_DIR)
-    try:
-      DownloadAndUnpack(cds_full_url, LLVM_BUILD_DIR)
-      print 'clang %s unpacked' % PACKAGE_VERSION
-      if sys.platform == 'win32':
-        CopyDiaDllTo(os.path.join(LLVM_BUILD_DIR, 'bin'))
-      WriteStampFile(PACKAGE_VERSION)
-      return 0
-    except urllib2.URLError:
-      print 'Failed to download prebuilt clang %s' % cds_file
-      print 'Use --force-local-build if you want to build locally.'
-      print 'Exiting.'
-      return 1
+
+    DownloadAndUnpackClangPackage(sys.platform)
+    if 'win' in target_os:
+      DownloadAndUnpackClangPackage('win32', runtimes_only=True)
+    print 'clang %s unpacked' % PACKAGE_VERSION
+    if sys.platform == 'win32':
+      CopyDiaDllTo(os.path.join(LLVM_BUILD_DIR, 'bin'))
+    WriteStampFile(expected_stamp)
+    return 0
 
   if args.with_android and not os.path.exists(ANDROID_NDK_DIR):
     print 'Android NDK not found at ' + ANDROID_NDK_DIR
