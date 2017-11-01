@@ -3422,6 +3422,22 @@ static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
     return LAST_FRAME;
 }
 
+#if CONFIG_SIMPLIFY_TX_MODE
+static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
+  if (cpi->common.all_lossless) return ONLY_4X4;
+#if CONFIG_VAR_TX_NO_TX_MODE
+  return TX_MODE_SELECT;
+#else
+  if (cpi->sf.tx_size_search_method == USE_LARGESTALL)
+    return TX_MODE_LARGEST;
+  else if (cpi->sf.tx_size_search_method == USE_FULL_RD ||
+           cpi->sf.tx_size_search_method == USE_FAST_RD)
+    return TX_MODE_SELECT;
+  else
+    return cpi->common.tx_mode;
+#endif  // CONFIG_VAR_TX_NO_TX_MODE
+}
+#else
 static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
   if (cpi->common.all_lossless) return ONLY_4X4;
 #if CONFIG_VAR_TX_NO_TX_MODE
@@ -3436,6 +3452,7 @@ static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
     return cpi->common.tx_mode;
 #endif  // CONFIG_VAR_TX_NO_TX_MODE
 }
+#endif  // CONFIG_SIMPLIFY_TX_MODE
 
 void av1_init_tile_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
@@ -4156,7 +4173,11 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #else
     if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
 #endif
+#if CONFIG_SIMPLIFY_TX_MODE
+      cm->tx_mode = TX_MODE_LARGEST;
+#else
       cm->tx_mode = ALLOW_32X32 + CONFIG_TX64X64;
+#endif  // CONFIG_SIMPLIFY_TX_MODE
   } else {
     make_consistent_compound_tools(cm);
     encode_frame_internal(cpi);

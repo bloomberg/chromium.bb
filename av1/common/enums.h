@@ -281,17 +281,28 @@ typedef enum ATTRIBUTE_PACKED {
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 
 // frame transform mode
+#if CONFIG_SIMPLIFY_TX_MODE
 typedef enum ATTRIBUTE_PACKED {
-  ONLY_4X4,     // only 4x4 transform used
-  ALLOW_8X8,    // allow block transform size up to 8x8
-  ALLOW_16X16,  // allow block transform size up to 16x16
-  ALLOW_32X32,  // allow block transform size up to 32x32
+  ONLY_4X4,         // use only 4x4 transform
+  TX_MODE_LARGEST,  // transform size is the largest possible for pu size
+  TX_MODE_SELECT,   // transform specified for each block
+  TX_MODES,
+} TX_MODE;
+
+#else
+
+typedef enum ATTRIBUTE_PACKED {
+  ONLY_4X4,        // only 4x4 transform used
+  ALLOW_8X8,       // allow block transform size up to 8x8
+  ALLOW_16X16,     // allow block transform size up to 16x16
+  ALLOW_32X32,     // allow block transform size up to 32x32
 #if CONFIG_TX64X64
-  ALLOW_64X64,  // allow block transform size up to 64x64
+  ALLOW_64X64,     // allow block transform size up to 64x64
 #endif
   TX_MODE_SELECT,  // transform specified for each block
   TX_MODES,
 } TX_MODE;
+#endif  // CONFIG_SIMPLIFY_TX_MODE
 
 // 1D tx types
 typedef enum ATTRIBUTE_PACKED {
