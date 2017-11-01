@@ -4,6 +4,8 @@
 
 #include "components/machine_intelligence/generic_logistic_regression_inference.h"
 
+#include <cmath>
+
 #include "base/logging.h"
 #include "components/machine_intelligence/ranker_example_util.h"
 
