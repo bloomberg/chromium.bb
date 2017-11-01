@@ -536,11 +536,7 @@ void LayoutTable::DistributeExtraLogicalHeight(int extra_logical_height) {
     extra_logical_height -=
         section->DistributeExtraLogicalHeightToRows(extra_logical_height);
 
-  // crbug.com/690087: We really would like to enable this ASSERT to ensure that
-  // all the extra space has been distributed.
-  // However our current distribution algorithm does not round properly and thus
-  // we can have some remaining height.
-  // DCHECK(!topSection() || !extraLogicalHeight);
+  DCHECK(!FirstBody() || !extra_logical_height);
 }
 
 void LayoutTable::SimplifiedNormalFlowLayout() {
