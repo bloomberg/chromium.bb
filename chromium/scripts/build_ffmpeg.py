@@ -89,7 +89,7 @@ Resulting binaries will be placed in:
 
 
 def PrintAndCheckCall(argv, *args, **kwargs):
-  print('Running %r' % argv)
+  print('Running %s' % '\n '.join(argv))
   subprocess.check_call(argv, *args, **kwargs)
 
 
@@ -236,16 +236,6 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
           os.path.join(config_dir, 'config.h'),
           r'(#define HAVE_SYSCTL [01])',
           (r'#define HAVE_SYSCTL 0 /* \1 -- forced to 0 for Fuchsia */'))
-
-  # We build all platforms except Windows with Clang, which has an integrated
-  # assembler which does not support .func/.endfunc. They are not required
-  # by Chromium, so disable them.
-  if 'win' not in target_os:
-    RewriteFile(
-        os.path.join(config_dir, 'config.h'),
-        r'(#define HAVE_AS_FUNC [01])',
-        (r'#define HAVE_AS_FUNC 0 /* \1 -- forced to 0 for Clang */'))
-
 
   # Windows linking resolves external symbols. Since generate_gn.py does not
   # need a functioning set of libraries, ignore unresolved symbols here.
@@ -498,7 +488,10 @@ def main(argv):
       configure_flags['Common'].extend([
           '--arch=aarch64',
           '--enable-armv8',
-          '--extra-cflags=-march=armv8-a',
+          '--extra-cflags=--target=aarch64-linux-gnu',
+          '--extra-ldflags=--target=aarch64-linux-gnu',
+          '--sysroot=' + os.path.join(CHROMIUM_ROOT_DIR,
+              'build/linux/debian_jessie_arm64-sysroot'),
       ])
     elif target_arch == 'mipsel':
       if target_os != 'android':
@@ -573,6 +566,21 @@ def main(argv):
   if 'win' not in target_os:
     configure_flags['Common'].append('--enable-pic')
 
+  # Chromium builds with Clang on all platforms, except Windows, so configure
+  # FFmpeg using Clang, for consistency.
+  if 'win' not in target_os:
+    configure_flags['Common'].extend([
+        '--cc=clang',
+        '--cxx=clang++',
+        '--ld=clang',
+    ])
+
+    # Clang Linux will use the first 'ld' it finds on the path, which will typically
+    # be the system one, so explicitly configure use of Clang's ld.lld, to ensure
+    # that things like cross-compilation and LTO work.
+    if target_os == 'linux':
+      configure_flags['Common'].append('--extra-ldflags=-fuse-ld=lld')
+
   # Should be run on Mac.
   if target_os == 'mac':
     if host_os != 'mac':
@@ -580,12 +588,6 @@ def main(argv):
             'try a merge of config files with new linux ia32 config.h\n'
             'by hand.\n', file=sys.stderr)
       return 1
-
-    configure_flags['Common'].extend([
-        '--enable-yasm',
-        '--cc=clang',
-        '--cxx=clang++',
-    ])
 
     # Mac dylib building resolves external symbols. We need to explicitly
     # include -lopus to point to the system libopus so we can build
