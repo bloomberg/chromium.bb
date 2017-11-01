@@ -1519,9 +1519,6 @@ crbug.com/747758 [ Mac Win ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-p
 crbug.com/567419 http/tests/devtools/elements/styles-2/metrics-box-sizing.js [ Skip ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-2/metrics-box-sizing.js [ Skip ]
 
-crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
-crbug.com/457273 [ Mac ] virtual/mojo-loading/http/tests/websocket/close.html [ Pass Timeout ]
-
 crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
@@ -1554,8 +1551,6 @@ crbug.com/453002 [ Win ] fast/text/international/text-combine-image-test.html [ 
 crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Failure Pass ]
 crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pass ]
 crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
-
-crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
 crbug.com/600248 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
 crbug.com/771977 external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure ]
@@ -1768,8 +1763,6 @@ crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.html [ Pas
 crbug.com/751952 virtual/mojo-loading/http/tests/devtools/console/console-uncaught-promise.html [ Pass Failure ]
 crbug.com/751952 virtual/mojo-loading/http/tests/devtools/unit/datagrid-editable-longtext.js [ Pass Failure ]
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
-
-crbug.com/771729 [ Win Debug ] external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/039.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/css/css-fonts-3/font-synthesis-01.html [ Failure ]
@@ -2863,9 +2856,6 @@ crbug.com/667560 [ Win Mac ] virtual/mojo-loading/http/tests/devtools/elements/s
 crbug.com/733448 http/tests/devtools/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733448 virtual/mojo-loading/http/tests/devtools/extensions/extensions-network.html [ Failure Pass ]
 
-# Sheriff failures 2017-06-23
-crbug.com/736548 [ Mac ] css2.1/t040304-c64-uri-00-a-g.html [ Failure Pass ]
-
 crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 crbug.com/737959 virtual/mojo-loading/http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 
@@ -3019,14 +3009,8 @@ crbug.com/626703 [ Win7 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout 
 crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 
-crbug.com/626703 [ Win7 ] external/wpt/html/semantics/embedded-content/the-img-element/decode/image-decode-path-changes.html [ Crash Pass ]
-
 # For Skia roll
 crbug.com/630695 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
-
-# Sheriff failures 2017-07-20
-crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Crash ]
-crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-getSettings.html [ Pass Crash ]
 
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-eval-scoped.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-functions.js [ NeedsManualRebaseline ]
@@ -3068,8 +3052,6 @@ crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console
 
 # Sheriff failure 2017-08-07
 crbug.com/708499 [ Linux ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Failure Pass ]
-crbug.com/752845 [ Win ] http/tests/devtools/sha1.js [ Pass Crash ]
-crbug.com/667560 [ Win ] virtual/mojo-loading/http/tests/devtools/sha1.js [ Pass Crash ]
 
 # Sheriff failure 2017-08-11
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/response/response-cancel-stream.html [ Pass Timeout ]
