@@ -102,10 +102,13 @@ class FakeDownloadItem : public DownloadItem {
   void ValidateDangerousDownload() override;
   void StealDangerousDownload(bool delete_file_afterward,
                               const AcquireFileCallback& callback) override;
+
+  void Remove() override;
+  bool removed() const { return removed_; }
+
   void Pause() override;
   void Resume() override;
   void Cancel(bool user_cancel) override;
-  void Remove() override;
   void OpenDownload() override;
   void ShowDownloadInShell() override;
   bool IsPaused() const override;
@@ -159,6 +162,7 @@ class FakeDownloadItem : public DownloadItem {
   std::vector<GURL> url_chain_;
   base::FilePath file_path_;
   bool is_file_externally_removed_ = false;
+  bool removed_ = false;
   base::Time start_time_;
   base::Time end_time_;
   base::Time last_access_time_;

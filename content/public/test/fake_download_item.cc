@@ -231,7 +231,7 @@ void FakeDownloadItem::Cancel(bool user_cancel) {
 }
 
 void FakeDownloadItem::Remove() {
-  NOTREACHED();
+  removed_ = true;
 }
 
 void FakeDownloadItem::OpenDownload() {
