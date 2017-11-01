@@ -104,10 +104,12 @@ TEST(ProcessInfo, Self) {
   std::vector<ProcessInfo::Module> modules;
   EXPECT_TRUE(process_info.Modules(&modules));
   ASSERT_GE(modules.size(), 2u);
-  static constexpr wchar_t kSelfName[] = L"\\crashpad_util_test.exe";
-  ASSERT_GE(modules[0].name.size(), wcslen(kSelfName));
-  EXPECT_EQ(modules[0].name.substr(modules[0].name.size() - wcslen(kSelfName)),
-            kSelfName);
+  std::wstring self_name =
+      std::wstring(1, '\\') +
+      TestPaths::ExpectedExecutableBasename(L"crashpad_util_test").value();
+  ASSERT_GE(modules[0].name.size(), self_name.size());
+  EXPECT_EQ(modules[0].name.substr(modules[0].name.size() - self_name.size()),
+            self_name);
   ASSERT_GE(modules[1].name.size(), wcslen(kNtdllName));
   EXPECT_EQ(modules[1].name.substr(modules[1].name.size() - wcslen(kNtdllName)),
             kNtdllName);
@@ -132,7 +134,7 @@ TEST(ProcessInfo, Self) {
                             FromPointerCast<WinVMAddress>(_ReturnAddress()));
 }
 
-void TestOtherProcess(const base::FilePath& directory) {
+void TestOtherProcess(TestPaths::Architecture architecture) {
   ProcessInfo process_info;
 
   UUID done_uuid;
@@ -142,15 +144,11 @@ void TestOtherProcess(const base::FilePath& directory) {
       CreateEvent(nullptr, true, false, done_uuid.ToString16().c_str()));
   ASSERT_TRUE(done.get()) << ErrorMessage("CreateEvent");
 
-  std::wstring child_test_executable =
-      directory
-          .Append(TestPaths::Executable()
-                      .BaseName()
-                      .RemoveFinalExtension()
-                      .value() +
-                  L"_process_info_test_child.exe")
-          .value();
-
+  base::FilePath child_test_executable =
+      TestPaths::BuildArtifact(L"util",
+                               L"process_info_test_child",
+                               TestPaths::FileType::kExecutable,
+                               architecture);
   std::wstring args;
   AppendCommandLineArgument(done_uuid.ToString16(), &args);
 
@@ -191,17 +189,16 @@ void TestOtherProcess(const base::FilePath& directory) {
 }
 
 TEST(ProcessInfo, OtherProcess) {
-  TestOtherProcess(TestPaths::Executable().DirName());
+  TestOtherProcess(TestPaths::Architecture::kDefault);
 }
 
 #if defined(ARCH_CPU_64_BITS)
 TEST(ProcessInfo, OtherProcessWOW64) {
-  base::FilePath output_32_bit_directory = TestPaths::Output32BitDirectory();
-  if (output_32_bit_directory.empty()) {
+  if (!TestPaths::Has32BitBuildArtifacts()) {
     DISABLED_TEST();
   }
 
-  TestOtherProcess(output_32_bit_directory);
+  TestOtherProcess(TestPaths::Architecture::k32Bit);
 }
 #endif  // ARCH_CPU_64_BITS
 

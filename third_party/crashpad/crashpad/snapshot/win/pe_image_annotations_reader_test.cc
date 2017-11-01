@@ -27,6 +27,7 @@
 #include "client/crashpad_info.h"
 #include "client/simple_string_dictionary.h"
 #include "gtest/gtest.h"
+#include "snapshot/annotation_snapshot.h"
 #include "snapshot/win/pe_image_reader.h"
 #include "snapshot/win/process_reader_win.h"
 #include "test/gtest_disabled.h"
@@ -47,15 +48,14 @@ enum TestType {
   kCrashDebugBreak,
 };
 
-void TestAnnotationsOnCrash(TestType type, const base::FilePath& directory) {
+void TestAnnotationsOnCrash(TestType type,
+                            TestPaths::Architecture architecture) {
   // Spawn a child process, passing it the pipe name to connect to.
-  std::wstring child_test_executable = directory
-                                           .Append(TestPaths::Executable()
-                                                       .BaseName()
-                                                       .RemoveFinalExtension()
-                                                       .value() +
-                                                   L"_simple_annotations.exe")
-                                           .value();
+  base::FilePath child_test_executable =
+      TestPaths::BuildArtifact(L"snapshot",
+                               L"annotations",
+                               TestPaths::FileType::kExecutable,
+                               architecture);
   ChildLauncher child(child_test_executable, L"");
   ASSERT_NO_FATAL_FAILURE(child.Start());
 
@@ -68,9 +68,11 @@ void TestAnnotationsOnCrash(TestType type, const base::FilePath& directory) {
   ASSERT_TRUE(process_reader.Initialize(child.process_handle(),
                                         ProcessSuspensionState::kRunning));
 
-  // Verify the "simple map" annotations set via the CrashpadInfo interface.
+  // Read all the kinds of annotations referenced from the CrashpadInfo
+  // structure.
   const std::vector<ProcessInfo::Module>& modules = process_reader.Modules();
   std::map<std::string, std::string> all_annotations_simple_map;
+  std::vector<AnnotationSnapshot> all_annotation_objects;
   for (const ProcessInfo::Module& module : modules) {
     PEImageReader pe_image_reader;
     pe_image_reader.Initialize(&process_reader,
@@ -79,18 +81,51 @@ void TestAnnotationsOnCrash(TestType type, const base::FilePath& directory) {
                                base::UTF16ToUTF8(module.name));
     PEImageAnnotationsReader module_annotations_reader(
         &process_reader, &pe_image_reader, module.name);
+
     std::map<std::string, std::string> module_annotations_simple_map =
         module_annotations_reader.SimpleMap();
     all_annotations_simple_map.insert(module_annotations_simple_map.begin(),
                                       module_annotations_simple_map.end());
+
+    auto module_annotations_list = module_annotations_reader.AnnotationsList();
+    all_annotation_objects.insert(all_annotation_objects.end(),
+                                  module_annotations_list.begin(),
+                                  module_annotations_list.end());
   }
 
+  // Verify the "simple map" annotations.
   EXPECT_GE(all_annotations_simple_map.size(), 5u);
   EXPECT_EQ(all_annotations_simple_map["#TEST# pad"], "crash");
   EXPECT_EQ(all_annotations_simple_map["#TEST# key"], "value");
   EXPECT_EQ(all_annotations_simple_map["#TEST# x"], "y");
   EXPECT_EQ(all_annotations_simple_map["#TEST# longer"], "shorter");
   EXPECT_EQ(all_annotations_simple_map["#TEST# empty_value"], "");
+
+  // Verify the typed annotation objects.
+  EXPECT_EQ(all_annotation_objects.size(), 3);
+  bool saw_same_name_3 = false, saw_same_name_4 = false;
+  for (const auto& annotation : all_annotation_objects) {
+    EXPECT_EQ(annotation.type,
+              static_cast<uint16_t>(Annotation::Type::kString));
+    std::string value(reinterpret_cast<const char*>(annotation.value.data()),
+                      annotation.value.size());
+
+    if (annotation.name == "#TEST# one") {
+      EXPECT_EQ(value, "moocow");
+    } else if (annotation.name == "#TEST# same-name") {
+      if (value == "same-name 3") {
+        EXPECT_FALSE(saw_same_name_3);
+        saw_same_name_3 = true;
+      } else if (value == "same-name 4") {
+        EXPECT_FALSE(saw_same_name_4);
+        saw_same_name_4 = true;
+      } else {
+        ADD_FAILURE() << "unexpected annotation value " << value;
+      }
+    } else {
+      ADD_FAILURE() << "unexpected annotation " << annotation.name;
+    }
+  }
 
   // Tell the child process to continue.
   DWORD expected_exit_code;
@@ -112,30 +147,28 @@ void TestAnnotationsOnCrash(TestType type, const base::FilePath& directory) {
 }
 
 TEST(PEImageAnnotationsReader, DontCrash) {
-  TestAnnotationsOnCrash(kDontCrash, TestPaths::Executable().DirName());
+  TestAnnotationsOnCrash(kDontCrash, TestPaths::Architecture::kDefault);
 }
 
 TEST(PEImageAnnotationsReader, CrashDebugBreak) {
-  TestAnnotationsOnCrash(kCrashDebugBreak, TestPaths::Executable().DirName());
+  TestAnnotationsOnCrash(kCrashDebugBreak, TestPaths::Architecture::kDefault);
 }
 
 #if defined(ARCH_CPU_64_BITS)
 TEST(PEImageAnnotationsReader, DontCrashWOW64) {
-  base::FilePath output_32_bit_directory = TestPaths::Output32BitDirectory();
-  if (output_32_bit_directory.empty()) {
+  if (!TestPaths::Has32BitBuildArtifacts()) {
     DISABLED_TEST();
   }
 
-  TestAnnotationsOnCrash(kDontCrash, output_32_bit_directory);
+  TestAnnotationsOnCrash(kDontCrash, TestPaths::Architecture::k32Bit);
 }
 
 TEST(PEImageAnnotationsReader, CrashDebugBreakWOW64) {
-  base::FilePath output_32_bit_directory = TestPaths::Output32BitDirectory();
-  if (output_32_bit_directory.empty()) {
+  if (!TestPaths::Has32BitBuildArtifacts()) {
     DISABLED_TEST();
   }
 
-  TestAnnotationsOnCrash(kCrashDebugBreak, output_32_bit_directory);
+  TestAnnotationsOnCrash(kCrashDebugBreak, TestPaths::Architecture::k32Bit);
 }
 #endif  // ARCH_CPU_64_BITS
 

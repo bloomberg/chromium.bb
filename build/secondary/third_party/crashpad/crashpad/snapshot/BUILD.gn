@@ -18,6 +18,8 @@ static_library("snapshot") {
   }
 
   sources = [
+    "annotation_snapshot.cc",
+    "annotation_snapshot.h",
     "capture_memory.cc",
     "capture_memory.h",
     "cpu_architecture.h",
@@ -51,6 +53,7 @@ static_library("snapshot") {
     "mac/process_types.cc",
     "mac/process_types.h",
     "mac/process_types/all.proctype",
+    "mac/process_types/annotation.proctype",
     "mac/process_types/crashpad_info.proctype",
     "mac/process_types/crashreporterclient.proctype",
     "mac/process_types/custom.cc",
@@ -79,6 +82,7 @@ static_library("snapshot") {
     "posix/timezone.cc",
     "posix/timezone.h",
     "process_snapshot.h",
+    "snapshot_constants.h",
     "system_snapshot.h",
     "thread_snapshot.h",
     "unloaded_module_snapshot.cc",
