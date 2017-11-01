@@ -887,10 +887,17 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
             contents_view()->search_results_page_view()->first_result_view());
 }
 
-// Tests that hitting Enter key when focus is on search box opens the first
-// result when it exists.
+// Tests hitting Enter key when focus is on search box.
+// There are two behaviors:
+// 1. Activate the search box when it is inactive.
+// 2. Open the first result when query exists.
 TEST_F(AppListViewFocusTest, HittingEnterWhenFocusOnSearchBox) {
   Show();
+
+  // Initially the search box is inactive, hitting Enter to activate it.
+  EXPECT_FALSE(search_box_view()->is_search_box_active());
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_TRUE(search_box_view()->is_search_box_active());
 
   // Type something in search box to transition to HALF state and populate
   // fake list results. Then hit Enter key.
