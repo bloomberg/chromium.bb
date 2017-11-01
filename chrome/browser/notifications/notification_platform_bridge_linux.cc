@@ -622,12 +622,10 @@ class NotificationPlatformBridgeLinuxImpl
         actions.push_back(id);
         actions.push_back(label);
       }
-      if (notification->clickable()) {
-        // Special case: the pair ("default", "") will not add a button,
-        // but instead makes the entire notification clickable.
-        actions.push_back(kDefaultButtonId);
-        actions.push_back("");
-      }
+      // Special case: the id "default" will not add a button, but
+      // instead makes the entire notification clickable.
+      actions.push_back(kDefaultButtonId);
+      actions.push_back("Activate");
       // Always add a settings button for web notifications.
       if (notification_type != NotificationCommon::EXTENSION) {
         actions.push_back(kSettingsButtonId);
