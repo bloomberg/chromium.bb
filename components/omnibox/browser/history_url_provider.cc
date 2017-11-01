@@ -71,7 +71,11 @@ bool CompareHistoryMatch(const history::HistoryMatch& a,
     return a.url_info.visit_count() > b.url_info.visit_count();
 
   // URLs that have been visited more recently are better.
-  return a.url_info.last_visit() > b.url_info.last_visit();
+  if (a.url_info.last_visit() != b.url_info.last_visit())
+    return a.url_info.last_visit() > b.url_info.last_visit();
+
+  // Use alphabetical order on the url spec as a tie-breaker.
+  return a.url_info.url().spec() > b.url_info.url().spec();
 }
 
 // Sorts and dedups the given list of matches.
