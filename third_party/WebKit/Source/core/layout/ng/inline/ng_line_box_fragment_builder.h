@@ -29,7 +29,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
                            TextDirection);
   ~NGLineBoxFragmentBuilder() override;
 
+  void Reset();
+
   NGLogicalSize Size() const final;
+  LayoutUnit ComputeBlockSize() const;
 
   void SetMetrics(const NGLineHeightMetrics&);
   const NGLineHeightMetrics& Metrics() const { return metrics_; }

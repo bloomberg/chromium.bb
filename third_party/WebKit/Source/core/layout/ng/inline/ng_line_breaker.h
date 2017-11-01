@@ -34,18 +34,18 @@ class CORE_EXPORT NGLineBreaker {
                 const NGConstraintSpace&,
                 Vector<NGPositionedFloat>*,
                 Vector<scoped_refptr<NGUnpositionedFloat>>*,
+                NGExclusionSpace*,
+                unsigned handled_float_index,
                 const NGInlineBreakToken* = nullptr);
   ~NGLineBreaker() {}
 
   // Compute the next line break point and produces NGInlineItemResults for
   // the line.
-  bool NextLine(const NGExclusionSpace&, NGLineInfo*);
+  bool NextLine(const NGLayoutOpportunity&, NGLineInfo*);
 
   // Create an NGInlineBreakToken for the last line returned by NextLine().
   scoped_refptr<NGInlineBreakToken> CreateBreakToken(
       std::unique_ptr<const NGInlineLayoutStateStack>) const;
-
-  NGExclusionSpace* ExclusionSpace() { return line_.exclusion_space.get(); }
 
  private:
   // This struct holds information for the current line.
@@ -59,7 +59,8 @@ class CORE_EXPORT NGLineBreaker {
     // The current opportunity.
     NGLayoutOpportunity opportunity;
 
-    std::unique_ptr<NGExclusionSpace> exclusion_space;
+    LayoutUnit line_left_bfc_offset;
+    LayoutUnit line_right_bfc_offset;
 
     // We don't create "certain zero-height line boxes".
     // https://drafts.csswg.org/css2/visuren.html#phantom-line-box
@@ -72,7 +73,10 @@ class CORE_EXPORT NGLineBreaker {
     // the next line.
     bool is_after_forced_break = false;
 
-    LayoutUnit AvailableWidth() const { return opportunity.InlineSize(); }
+    LayoutUnit AvailableWidth() const {
+      DCHECK_GE(line_right_bfc_offset, line_left_bfc_offset);
+      return line_right_bfc_offset - line_left_bfc_offset;
+    }
     bool CanFit() const { return position <= AvailableWidth(); }
     bool CanFit(LayoutUnit extra) const {
       return position + extra <= AvailableWidth();
@@ -81,11 +85,7 @@ class CORE_EXPORT NGLineBreaker {
 
   void BreakLine(NGLineInfo*);
 
-  void PrepareNextLine(const NGExclusionSpace&, NGLineInfo*);
-
-  bool HasFloatsAffectingCurrentLine() const;
-  void FindNextLayoutOpportunity();
-  void FindNextLayoutOpportunityWithMinimumInlineSize(LayoutUnit);
+  void PrepareNextLine(const NGLayoutOpportunity&, NGLineInfo*);
 
   void ComputeLineLocation(NGLineInfo*) const;
 
@@ -142,9 +142,12 @@ class CORE_EXPORT NGLineBreaker {
   const NGConstraintSpace& constraint_space_;
   Vector<NGPositionedFloat>* positioned_floats_;
   Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats_;
+  NGExclusionSpace* exclusion_space_;
+
   unsigned item_index_ = 0;
   unsigned offset_ = 0;
   bool previous_line_had_forced_break_ = false;
+  LayoutUnit bfc_line_offset_;
   LayoutUnit bfc_block_offset_;
   LazyLineBreakIterator break_iterator_;
   HarfBuzzShaper shaper_;
@@ -152,7 +155,7 @@ class CORE_EXPORT NGLineBreaker {
   const Hyphenation* hyphenation_ = nullptr;
 
   // Keep track of handled float items. See HandleFloat().
-  unsigned handled_floats_end_item_index_ = 0;
+  unsigned handled_floats_end_item_index_;
 
   // The current base direction for the bidi algorithm.
   // This is copied from NGInlineNode, then updated after each forced line break

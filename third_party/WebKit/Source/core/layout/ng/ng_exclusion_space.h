@@ -36,6 +36,10 @@ class CORE_EXPORT NGExclusionSpace {
       const NGLogicalSize& available_size,
       const NGLogicalSize& minimum_size) const;
 
+  Vector<NGLayoutOpportunity> AllLayoutOpportunities(
+      const NGBfcOffset& offset,
+      const NGLogicalSize& available_size) const;
+
   // Returns the clearance offset based on the provided {@code clear_type}.
   LayoutUnit ClearanceOffset(EClear clear_type) const;
 

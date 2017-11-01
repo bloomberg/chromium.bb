@@ -46,8 +46,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   scoped_refptr<NGLayoutResult> Layout() override;
 
  private:
-  scoped_refptr<NGLayoutResult> LayoutEmptyInline();
-
+  unsigned PositionLeadingItems(NGExclusionSpace*);
   void PositionPendingFloats(LayoutUnit content_size, NGExclusionSpace*);
 
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
@@ -96,7 +95,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   unsigned is_horizontal_writing_mode_ : 1;
   unsigned quirks_mode_ : 1;
 
-  std::unique_ptr<NGExclusionSpace> exclusion_space_;
   Vector<NGPositionedFloat> positioned_floats_;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
 };

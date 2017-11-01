@@ -48,9 +48,11 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node,
 }
 
 void NGLineInfo::SetLineBfcOffset(NGBfcOffset line_bfc_offset,
-                                  LayoutUnit available_width) {
+                                  LayoutUnit available_width,
+                                  LayoutUnit width) {
   line_bfc_offset_ = line_bfc_offset;
   available_width_ = available_width;
+  width_ = width;
 }
 
 void NGLineInfo::SetLineEndShapeResult(

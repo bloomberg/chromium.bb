@@ -9,6 +9,7 @@
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/ng_exclusion_space.h"
+#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_positioned_float.h"
 
@@ -24,8 +25,29 @@ NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(
 
 NGLineBoxFragmentBuilder::~NGLineBoxFragmentBuilder() {}
 
+void NGLineBoxFragmentBuilder::Reset() {
+  children_.clear();
+  offsets_.clear();
+  metrics_ = NGLineHeightMetrics();
+  inline_size_ = LayoutUnit();
+}
+
 NGLogicalSize NGLineBoxFragmentBuilder::Size() const {
   return {inline_size_, metrics_.LineHeight().ClampNegativeToZero()};
+}
+
+LayoutUnit NGLineBoxFragmentBuilder::ComputeBlockSize() const {
+  LayoutUnit block_size;
+  NGWritingMode writing_mode(
+      FromPlatformWritingMode(node_.Style().GetWritingMode()));
+
+  for (size_t i = 0; i < children_.size(); ++i) {
+    block_size = std::max(
+        block_size, offsets_[i].block_offset +
+                        NGFragment(writing_mode, *children_[i]).BlockSize());
+  }
+
+  return block_size;
 }
 
 const NGPhysicalFragment* NGLineBoxFragmentBuilder::Child::PhysicalFragment()

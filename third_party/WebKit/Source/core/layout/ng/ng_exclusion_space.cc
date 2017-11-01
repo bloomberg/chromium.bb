@@ -51,6 +51,22 @@ NGLayoutOpportunity NGExclusionSpace::FindLayoutOpportunity(
   return NGLayoutOpportunity();
 }
 
+Vector<NGLayoutOpportunity> NGExclusionSpace::AllLayoutOpportunities(
+    const NGBfcOffset& offset,
+    const NGLogicalSize& available_size) const {
+  Vector<NGLayoutOpportunity> opportunities;
+  NGLayoutOpportunityIterator opportunity_iter(*this, available_size, offset);
+
+  while (true) {
+    opportunities.push_back(opportunity_iter.Next());
+
+    if (opportunity_iter.IsAtEnd())
+      break;
+  }
+
+  return opportunities;
+}
+
 LayoutUnit NGExclusionSpace::ClearanceOffset(EClear clear_type) const {
   switch (clear_type) {
     case EClear::kNone:

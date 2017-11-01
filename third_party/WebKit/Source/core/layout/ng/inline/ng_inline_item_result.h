@@ -131,8 +131,10 @@ class CORE_EXPORT NGLineInfo {
 
   NGBfcOffset LineBfcOffset() const { return line_bfc_offset_; }
   LayoutUnit AvailableWidth() const { return available_width_; }
+  LayoutUnit Width() const { return width_; }
   void SetLineBfcOffset(NGBfcOffset line_bfc_offset,
-                        LayoutUnit available_width);
+                        LayoutUnit available_width,
+                        LayoutUnit width);
 
   // Start/end text offset of this line.
   unsigned StartOffset() const { return start_offset_; }
@@ -162,6 +164,7 @@ class CORE_EXPORT NGLineInfo {
 
   NGBfcOffset line_bfc_offset_;
   LayoutUnit available_width_;
+  LayoutUnit width_;
   LayoutUnit text_indent_;
 
   unsigned start_offset_;
