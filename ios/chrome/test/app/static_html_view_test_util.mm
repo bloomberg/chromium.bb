@@ -16,8 +16,12 @@
 #error "This file requires ARC support."
 #endif
 
+using testing::WaitUntilConditionOrTimeout;
+using testing::kWaitForJSCompletionTimeout;
+
 namespace chrome_test_util {
 
+namespace {
 // Synchronously returns the result of executed JavaScript.
 id ExecuteScriptInStaticController(
     StaticHtmlViewController* html_view_controller,
@@ -31,12 +35,13 @@ id ExecuteScriptInStaticController(
                         }];
 
   // If a timeout is reached, then return |result|, which should be nil;
-  testing::WaitUntilConditionOrTimeout(testing::kWaitForJSCompletionTimeout, ^{
+  bool completed = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return did_finish;
   });
 
-  return result;
+  return completed ? result : nil;
 }
+}  // namespace
 
 // Returns the StaticHtmlViewController for the given |web_state|. If none is
 // found, it returns nil.

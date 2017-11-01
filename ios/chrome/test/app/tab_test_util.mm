@@ -25,6 +25,8 @@
 #error "This file requires ARC support."
 #endif
 
+using testing::WaitUntilConditionOrTimeout;
+
 namespace chrome_test_util {
 
 namespace {
@@ -154,7 +156,7 @@ void EvictOtherTabModelTabs() {
   otherTabModel.webUsageEnabled = YES;
 }
 
-void CloseAllIncognitoTabs() {
+BOOL CloseAllIncognitoTabs() {
   MainController* main_controller = chrome_test_util::GetMainController();
   DCHECK(main_controller);
   TabModel* tabModel = [[main_controller browserViewInformation] otrTabModel];
@@ -163,10 +165,11 @@ void CloseAllIncognitoTabs() {
   if (!IsIPadIdiom()) {
     // If the OTR BVC is active, wait until it isn't (since all of the
     // tabs are now closed)
-    testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+    return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
       return !IsIncognitoMode();
     });
   }
+  return YES;
 }
 
 NSUInteger GetEvictedMainTabCount() {

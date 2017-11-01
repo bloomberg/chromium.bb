@@ -14,6 +14,7 @@
 #endif
 
 using testing::WaitUntilConditionOrTimeout;
+using testing::kWaitForJSCompletionTimeout;
 
 namespace ios_web_view {
 namespace test {
@@ -46,24 +47,24 @@ bool TapWebViewElementWithId(CWVWebView* web_view, NSString* element_id) {
 }
 
 id EvaluateJavaScript(CWVWebView* web_view, NSString* script, NSError** error) {
-  __block bool did_complete = false;
+  __block bool callback_called = false;
   __block id evaluation_result = nil;
   __block id evaluation_error = nil;
   [web_view evaluateJavaScript:script
              completionHandler:^(id local_result, NSError* local_error) {
-               did_complete = true;
+               callback_called = true;
                evaluation_result = [local_result copy];
                evaluation_error = [local_error copy];
              }];
 
-  WaitUntilConditionOrTimeout(testing::kWaitForJSCompletionTimeout, ^{
-    return did_complete;
+  bool completed = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return callback_called;
   });
 
   if (error)
     *error = evaluation_error;
 
-  return evaluation_result;
+  return completed ? evaluation_result : nil;
 }
 
 bool WaitForWebViewContainingTextOrTimeout(CWVWebView* web_view,
