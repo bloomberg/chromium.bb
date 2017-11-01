@@ -57,6 +57,9 @@ public class WebApkUpdateManagerUnitTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
 
+    @Rule
+    public MockWebappDataStorageClockRule mClockRule = new MockWebappDataStorageClockRule();
+
     private static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
     private static final String UNBOUND_WEBAPK_PACKAGE_NAME = "com.webapk.test_package";
 
@@ -78,21 +81,6 @@ public class WebApkUpdateManagerUnitTest {
 
     /** Different name than the one used in {@link defaultManifestData()}. */
     private static final String DIFFERENT_NAME = "Different Name";
-
-    /** {@link WebappDataStorage#Clock} subclass which enables time to be manually advanced. */
-    private static class MockClock extends WebappDataStorage.Clock {
-        // 0 has a special meaning: {@link WebappDataStorage#TIMESTAMP_INVALID}.
-        private long mTimeMillis = 1;
-
-        public void advance(long millis) {
-            mTimeMillis += millis;
-        }
-
-        @Override
-        public long currentTimeMillis() {
-            return mTimeMillis;
-        }
-    }
 
     /** Mock {@link WebApkUpdateDataFetcher}. */
     private static class TestWebApkUpdateDataFetcher extends WebApkUpdateDataFetcher {
@@ -202,8 +190,6 @@ public class WebApkUpdateManagerUnitTest {
         public long themeColor;
         public long backgroundColor;
     }
-
-    private MockClock mClock;
 
     private static String getWebApkId(String packageName) {
         return WebApkConstants.WEBAPK_ID_PREFIX + packageName;
@@ -370,7 +356,7 @@ public class WebApkUpdateManagerUnitTest {
     private boolean checkUpdateNeededForFetchedManifest(
             ManifestData androidManifestData, ManifestData fetchedManifestData) {
         registerWebApk(WEBAPK_PACKAGE_NAME, androidManifestData, CURRENT_SHELL_APK_VERSION);
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
@@ -388,8 +374,6 @@ public class WebApkUpdateManagerUnitTest {
         CommandLine.init(null);
 
         registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(), CURRENT_SHELL_APK_VERSION);
-        mClock = new MockClock();
-        WebappDataStorage.setClockForTests(mClock);
 
         WebappRegistry.getInstance().register(getWebApkId(WEBAPK_PACKAGE_NAME),
                 new WebappRegistry.FetchWebappDataStorageCallback() {
@@ -410,7 +394,7 @@ public class WebApkUpdateManagerUnitTest {
      */
     @Test
     public void testCheckOnNextLaunchIfClosePriorToFirstPageLoad() {
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
         {
             TestWebApkUpdateManager updateManager =
                     new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
@@ -446,8 +430,8 @@ public class WebApkUpdateManagerUnitTest {
      */
     @Test
     public void testUpdateNotNeeded() {
-        long initialTime = mClock.currentTimeMillis();
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        long initialTime = mClockRule.currentTimeMillis();
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
@@ -471,7 +455,7 @@ public class WebApkUpdateManagerUnitTest {
     public void testMarkUpdateAsSucceededIfUpdateNoLongerNeeded() {
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         storage.updateDidLastWebApkUpdateRequestSucceed(false);
-        mClock.advance(WebappDataStorage.RETRY_UPDATE_DURATION);
+        mClockRule.advance(WebappDataStorage.RETRY_UPDATE_DURATION);
 
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
@@ -482,7 +466,7 @@ public class WebApkUpdateManagerUnitTest {
 
         assertTrue(storage.getDidLastWebApkUpdateRequestSucceed());
         assertEquals(
-                mClock.currentTimeMillis(), storage.getLastWebApkUpdateRequestCompletionTime());
+                mClockRule.currentTimeMillis(), storage.getLastWebApkUpdateRequestCompletionTime());
     }
 
     /**
@@ -491,7 +475,7 @@ public class WebApkUpdateManagerUnitTest {
      */
     @Test
     public void testMarkUpdateAsFailedIfClosePriorToUpdateCompleting() {
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
@@ -506,7 +490,7 @@ public class WebApkUpdateManagerUnitTest {
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         assertFalse(storage.getDidLastWebApkUpdateRequestSucceed());
         assertEquals(
-                mClock.currentTimeMillis(), storage.getLastWebApkUpdateRequestCompletionTime());
+                mClockRule.currentTimeMillis(), storage.getLastWebApkUpdateRequestCompletionTime());
     }
 
     /**
@@ -515,7 +499,7 @@ public class WebApkUpdateManagerUnitTest {
      */
     @Test
     public void testPendingUpdateFileDeletedAfterUpdateCompletion() {
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(storage);
@@ -540,7 +524,7 @@ public class WebApkUpdateManagerUnitTest {
      */
     @Test
     public void testFileDeletedIfStoreWebApkUpdateRequestToFileFails() {
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(storage);
@@ -571,7 +555,7 @@ public class WebApkUpdateManagerUnitTest {
     @Test
     public void testShellApkOutOfDateNoWebManifest() {
         registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(), CURRENT_SHELL_APK_VERSION - 1);
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
@@ -594,7 +578,7 @@ public class WebApkUpdateManagerUnitTest {
     @Test
     public void testShellApkOutOfDateStillHasWebManifest() {
         registerWebApk(WEBAPK_PACKAGE_NAME, defaultManifestData(), CURRENT_SHELL_APK_VERSION - 1);
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
@@ -618,7 +602,7 @@ public class WebApkUpdateManagerUnitTest {
      */
     @Test
     public void testStartUrlRedirectsToPageWithUpdatedWebManifest() {
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
@@ -654,7 +638,7 @@ public class WebApkUpdateManagerUnitTest {
      */
     @Test
     public void testStartUrlRedirectsToPageWithUnchangedWebManifest() {
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(WEBAPK_PACKAGE_NAME));
@@ -684,7 +668,7 @@ public class WebApkUpdateManagerUnitTest {
         ManifestData androidManifestData = defaultManifestData();
 
         registerWebApk(UNBOUND_WEBAPK_PACKAGE_NAME, androidManifestData, CURRENT_SHELL_APK_VERSION);
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL);
 
         TestWebApkUpdateManager updateManager =
                 new TestWebApkUpdateManager(getStorage(UNBOUND_WEBAPK_PACKAGE_NAME));
@@ -856,13 +840,13 @@ public class WebApkUpdateManagerUnitTest {
         assertTrue(updateManager.updateRequested());
         tryCompletingUpdate(updateManager, WebApkInstallResult.FAILURE);
 
-        mClock.advance(1);
+        mClockRule.advance(1);
         updateIfNeeded(updateManager);
         assertFalse(updateManager.updateCheckStarted());
 
         // A previous update request was made for the current ShellAPK version. A WebAPK update
         // should be requested after the regular delay.
-        mClock.advance(WebappDataStorage.UPDATE_INTERVAL - 1);
+        mClockRule.advance(WebappDataStorage.UPDATE_INTERVAL - 1);
         updateIfNeeded(updateManager);
         assertTrue(updateManager.updateCheckStarted());
         onGotManifestData(updateManager, defaultManifestData());

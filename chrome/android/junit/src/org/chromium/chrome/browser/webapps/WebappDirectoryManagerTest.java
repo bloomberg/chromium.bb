@@ -12,15 +12,20 @@ import android.os.Build;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
+import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.CustomShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -29,13 +34,18 @@ import org.chromium.webapk.lib.common.WebApkConstants;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests that directories for WebappActivities are managed correctly.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
+@Config(manifest = Config.NONE,
+        shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
 public class WebappDirectoryManagerTest {
+    @Rule
+    public MockWebappDataStorageClockRule mClockRule = new MockWebappDataStorageClockRule();
+
     private static final String WEBAPP_ID_1 = "webapp_1";
     private static final String WEBAPP_ID_2 = "webapp_2";
     private static final String WEBAPP_ID_3 = "webapp_3";
@@ -52,30 +62,45 @@ public class WebappDirectoryManagerTest {
         }
     }
 
+    /** Deletes directory and all of its children. Recreates empty directory in its place. */
+    private void deleteDirectoryAndRecreate(File f) {
+        FileUtils.recursivelyDeleteFile(f);
+        Assert.assertTrue(f.mkdirs());
+    }
+
     private Context mContext;
     private TestWebappDirectoryManager mWebappDirectoryManager;
 
     @Before
     public void setUp() throws Exception {
-        ThreadUtils.setThreadAssertsDisabledForTesting(true);
-        RecordHistogram.setDisabledForTests(true);
         mContext = RuntimeEnvironment.application;
+        ContextUtils.initApplicationContextForTests(mContext);
+        ThreadUtils.setThreadAssertsDisabledForTesting(true);
+        PathUtils.setPrivateDataDirectorySuffix("chrome");
         mWebappDirectoryManager = new TestWebappDirectoryManager();
         mWebappDirectoryManager.resetForTesting();
 
         // Set up directories.
-        File baseDirectory = mContext.getDataDir();
-        FileUtils.recursivelyDeleteFile(baseDirectory);
-        Assert.assertTrue(baseDirectory.mkdirs());
+        deleteDirectoryAndRecreate(mContext.getDataDir());
         FileUtils.recursivelyDeleteFile(mWebappDirectoryManager.getBaseWebappDirectory(mContext));
+        deleteDirectoryAndRecreate(mContext.getCodeCacheDir());
     }
 
     @After
     public void tearDown() throws Exception {
         FileUtils.recursivelyDeleteFile(mContext.getDataDir());
+        FileUtils.recursivelyDeleteFile(mContext.getCodeCacheDir());
         FileUtils.recursivelyDeleteFile(mWebappDirectoryManager.getBaseWebappDirectory(mContext));
-        RecordHistogram.setDisabledForTests(false);
         ThreadUtils.setThreadAssertsDisabledForTesting(false);
+    }
+
+    public void registerWebapp(String webappId) {
+        WebappRegistry.getInstance().register(
+                webappId, new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
+                });
+        ShadowApplication.getInstance().runBackgroundTasks();
     }
 
     @Test
@@ -179,6 +204,68 @@ public class WebappDirectoryManagerTest {
         Assert.assertFalse(webappDirectory1.exists());
         Assert.assertFalse(webappDirectory6.exists());
         Assert.assertTrue(nonWebappDirectory.exists());
+    }
+
+    /**
+     * Test that WebApk.Update.NumStaleUpdateRequestFiles counts "update request" files for WebAPKs
+     * which have been uninstalled.
+     */
+    @Test
+    @Feature({"Webapps"})
+    public void testCountsUpdateFilesForUninstalledWebApks() throws Exception {
+        File directory1 = new File(WebappDirectoryManager.getWebApkUpdateDirectory(), WEBAPK_ID_1);
+        directory1.mkdirs();
+        File directory2 = new File(WebappDirectoryManager.getWebApkUpdateDirectory(), WEBAPK_ID_2);
+        directory2.mkdirs();
+
+        // No entry for WEBAPK_ID_1 and WEBAPK_ID_2 in WebappRegistry because the WebAPKs have been
+        // uninstalled.
+
+        runCleanup();
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "WebApk.Update.NumStaleUpdateRequestFiles", 2));
+    }
+
+    /**
+     * Test that WebApk.Update.NumStaleUpdateRequestFiles counts "update request" files for WebAPKs
+     * for which an update was requested a long time ago.
+     */
+    @Test
+    @Feature({"Webapps"})
+    public void testCountsOldWebApkUpdateFiles() throws Exception {
+        File directory = new File(mWebappDirectoryManager.getWebApkUpdateDirectory(), WEBAPK_ID_1);
+        directory.mkdirs();
+        registerWebapp(WEBAPK_ID_1);
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID_1);
+        storage.updateTimeOfLastCheckForUpdatedWebManifest();
+        mClockRule.advance(TimeUnit.DAYS.toMillis(30));
+
+        runCleanup();
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "WebApk.Update.NumStaleUpdateRequestFiles", 1));
+    }
+
+    /**
+     * Test that WebApk.Update.NumStaleUpdateRequestFiles does not count "update request" files for
+     * WebAPKs for which an update was recently requested. There is a 1-23 hour delay between
+     * a WebAPK update being scheduled to the WebAPK being updated.
+     */
+    @Test
+    @Feature({"Webapps"})
+    public void testDoesNotCountFilesForNewlyScheduledUpdates() throws Exception {
+        File directory = new File(mWebappDirectoryManager.getWebApkUpdateDirectory(), WEBAPK_ID_1);
+        directory.mkdirs();
+        registerWebapp(WEBAPK_ID_1);
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID_1);
+        storage.updateTimeOfLastCheckForUpdatedWebManifest();
+        mClockRule.advance(1);
+
+        runCleanup();
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "WebApk.Update.NumStaleUpdateRequestFiles", 1));
     }
 
     private void runCleanup() throws Exception {

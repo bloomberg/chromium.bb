@@ -14,7 +14,6 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.PathUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -33,9 +32,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class WebappDataStorage {
     private static final String TAG = "WebappDataStorage";
-
-    /** Path of subdirectory within cache directory which contains data for pending updates. */
-    static final String UPDATE_DIRECTORY_PATH = "webapk/update";
 
     static final String SHARED_PREFS_FILE_PREFIX = "webapp_";
     static final String KEY_SPLASH_ICON = "splash_icon";
@@ -501,9 +497,7 @@ public class WebappDataStorage {
      * SharedPreferences.
      */
     String createAndSetUpdateRequestFilePath(WebApkInfo info) {
-        String filePath =
-                new File(new File(PathUtils.getCacheDirectory(), UPDATE_DIRECTORY_PATH), info.id())
-                        .getPath();
+        String filePath = WebappDirectoryManager.getWebApkUpdateFilePathForStorage(this).getPath();
         mPreferences.edit().putString(KEY_PENDING_UPDATE_FILE_PATH, filePath).apply();
         return filePath;
     }
@@ -532,6 +526,14 @@ public class WebappDataStorage {
                 return null;
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Returns whether a check for whether the Web Manifest needs to be updated has occurred in the
+     * last {@link numMillis} milliseconds.
+     */
+    boolean wasCheckForUpdatesDoneInLastMs(long numMillis) {
+        return (sClock.currentTimeMillis() - getLastCheckForWebManifestUpdateTime()) < numMillis;
     }
 
     /** Returns whether we should check for update. */
