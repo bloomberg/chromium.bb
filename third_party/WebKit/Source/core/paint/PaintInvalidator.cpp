@@ -79,6 +79,20 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
       // TODO(wangxianzhu): Avoid containingBlock().
       object.ContainingBlock()->FlipForWritingMode(rect);
     }
+
+    // Unite visual rect with clip path bounding rect.
+    // It is because the clip path display items are owned by the layout object
+    // who has the clip path, and uses its visual rect as bounding rect too.
+    // Usually it is done at layout object level and included as a part of
+    // local visual overflow, but clip-path can be a reference to SVG, and we
+    // have to wait until pre-paint to ensure clean layout.
+    // Note: SVG children don't need this adjustment because their visual
+    // overflow rects are already adjusted by clip path.
+    if (Optional<FloatRect> clip_path_bounding_box =
+            object.LocalClipPathBoundingBox()) {
+      Rect box(EnclosingIntRect(*clip_path_bounding_box));
+      rect.Unite(box);
+    }
   }
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
