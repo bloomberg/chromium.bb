@@ -79,7 +79,6 @@ void InstantiatePersistentHistograms() {
   base::GlobalHistogramAllocator::ConstructFilePathsForUploadDir(
       metrics_dir, upload_dir, ChromeMetricsServiceClient::kBrowserMetricsName,
       &upload_file, &active_file, &spare_file);
-  DCHECK(!base::PathExists(active_file));
 
   // The "active" file isn't used any longer. Metics are stored directly into
   // the "upload" file and a run-time filter prevents its upload as long as the
