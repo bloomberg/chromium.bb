@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDel
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
+import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -54,6 +55,7 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests the {@link SearchActivity}.
@@ -192,15 +194,12 @@ public class SearchActivityTest {
 
         // Monitor for ChromeTabbedActivity.
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        ActivityMonitor browserMonitor =
-                new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
-        instrumentation.addMonitor(browserMonitor);
-
-        // Type in a URL that should get kicked to ChromeTabbedActivity.
-        setUrlBarText(searchActivity, url);
-        final UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
-        KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
-        waitForChromeTabbedActivityToStart(browserMonitor, url);
+        waitForChromeTabbedActivityToStart(() -> {
+            // Type in a URL that should get kicked to ChromeTabbedActivity.
+            setUrlBarText(searchActivity, url);
+            final UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+            KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
+        }, url);
     }
 
     @Test
@@ -235,15 +234,12 @@ public class SearchActivityTest {
                         R.id.search_location_bar);
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
 
-        // Hitting enter should submit the URL and kick the user to the browser.
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        ActivityMonitor browserMonitor =
-                new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
-        instrumentation.addMonitor(browserMonitor);
-        UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
-        KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
-        waitForChromeTabbedActivityToStart(
-                browserMonitor, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        waitForChromeTabbedActivityToStart(() -> {
+            // Hitting enter should submit the URL and kick the user to the browser.
+            UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+            KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
+        }, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 
     @Test
@@ -264,23 +260,21 @@ public class SearchActivityTest {
         Assert.assertEquals(searchActivity, ApplicationStatus.getLastTrackedFocusedActivity());
         Assert.assertFalse(searchActivity.isFinishing());
 
-        // Finish initialization.  It should notice the URL is queued up and start the browser.
-        ActivityMonitor browserMonitor =
-                new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
-        instrumentation.addMonitor(browserMonitor);
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                searchActivity.startDelayedNativeInitialization();
-            }
-        });
+        waitForChromeTabbedActivityToStart(() -> {
+            // Finish initialization.  It should notice the URL is queued up and start the
+            // browser.
+            ThreadUtils.runOnUiThreadBlocking(
+                    () -> { searchActivity.startDelayedNativeInitialization(); });
 
-        Assert.assertEquals(
-                1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
-        mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
-        mTestDelegate.onFinishDeferredInitializationCallback.waitForCallback(0);
-        waitForChromeTabbedActivityToStart(
-                browserMonitor, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+            Assert.assertEquals(
+                    1, mTestDelegate.shouldDelayNativeInitializationCallback.getCallCount());
+            try {
+                mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
+                mTestDelegate.onFinishDeferredInitializationCallback.waitForCallback(0);
+            } catch (InterruptedException | TimeoutException e) {
+                Assert.fail("Unexpected exception");
+            }
+        }, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 
     @Test
@@ -353,15 +347,12 @@ public class SearchActivityTest {
                         R.id.search_location_bar);
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar, OMNIBOX_SHOW_TIMEOUT_MS);
 
-        // Hitting enter should submit the URL and kick the user to the browser.
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        ActivityMonitor browserMonitor =
-                new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
-        instrumentation.addMonitor(browserMonitor);
-        UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
-        KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
-        waitForChromeTabbedActivityToStart(
-                browserMonitor, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        waitForChromeTabbedActivityToStart(() -> {
+            // Hitting enter should submit the URL and kick the user to the browser.
+            UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+            KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
+        }, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 
     @Test
@@ -392,15 +383,12 @@ public class SearchActivityTest {
                         R.id.search_location_bar);
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
 
-        // Hitting enter should submit the URL and kick the user to the browser.
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        ActivityMonitor browserMonitor =
-                new ActivityMonitor(ChromeTabbedActivity.class.getName(), null, false);
-        instrumentation.addMonitor(browserMonitor);
-        UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
-        KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
-        waitForChromeTabbedActivityToStart(
-                browserMonitor, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        waitForChromeTabbedActivityToStart(() -> {
+            // Hitting enter should submit the URL and kick the user to the browser.
+            UrlBar urlBar = (UrlBar) searchActivity.findViewById(R.id.url_bar);
+            KeyUtils.singleKeyEventView(instrumentation, urlBar, KeyEvent.KEYCODE_ENTER);
+        }, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
     }
 
     @Test
@@ -483,20 +471,15 @@ public class SearchActivityTest {
         return (SearchActivity) searchActivity;
     }
 
-    private void waitForChromeTabbedActivityToStart(
-            ActivityMonitor browserMonitor, String expectedUrl) throws Exception {
-        final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        final Activity browserActivity = instrumentation.waitForMonitorWithTimeout(
-                browserMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        Assert.assertNotNull("Activity didn't start", browserActivity);
-        Assert.assertTrue(
-                "Wrong activity started", browserActivity instanceof ChromeTabbedActivity);
+    private void waitForChromeTabbedActivityToStart(Runnable trigger, String expectedUrl)
+            throws Exception {
+        final ChromeTabbedActivity cta = ActivityUtils.waitForActivity(
+                InstrumentationRegistry.getInstrumentation(), ChromeTabbedActivity.class, trigger);
 
         CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, new Callable<String>() {
             @Override
             public String call() throws Exception {
-                ChromeTabbedActivity chromeActivity = (ChromeTabbedActivity) browserActivity;
-                Tab tab = chromeActivity.getActivityTab();
+                Tab tab = cta.getActivityTab();
                 if (tab == null) return null;
 
                 return tab.getUrl();
