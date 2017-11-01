@@ -980,7 +980,8 @@
       'filepath': 'ipc/ipc',
     },
     'libvpx': {
-      'filepath': 'third_party/libvpx'
+      'filepath': 'third_party/libaom/|'\
+                  'third_party/libvpx/',
     },
     'libwebp': {
       'filepath': 'third_party/libwebp'
