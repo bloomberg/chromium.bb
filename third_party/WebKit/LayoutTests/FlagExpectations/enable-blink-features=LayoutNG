@@ -7542,8 +7542,6 @@ crbug.com/591099 paint/invalidation/overflow-auto-in-overflow-auto-scrolled.html
 crbug.com/591099 paint/invalidation/overflow-changed-on-child-of-composited-layer.html [ Failure ]
 crbug.com/591099 paint/invalidation/overflow-clip-subtree-layout.html [ Failure Pass ]
 crbug.com/591099 paint/invalidation/overflow-delete-line.html [ Failure ]
-crbug.com/591099 paint/invalidation/overflow-flipped-writing-mode-block.html [ Failure Pass ]
-crbug.com/591099 paint/invalidation/overflow-flipped-writing-mode-table.html [ Failure Pass ]
 crbug.com/591099 paint/invalidation/overflow-hidden-in-overflow-hidden-scrolled.html [ Failure ]
 crbug.com/591099 paint/invalidation/overflow-hidden-to-visible.html [ Failure ]
 crbug.com/591099 paint/invalidation/overflow-hidden-yet-scrolled-with-custom-scrollbar.html [ Failure ]
