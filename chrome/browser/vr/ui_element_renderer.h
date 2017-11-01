@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_UI_ELEMENT_RENDERER_H_
 #define CHROME_BROWSER_VR_UI_ELEMENT_RENDERER_H_
 
+#include "chrome/browser/vr/controller_mesh.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
@@ -46,6 +47,17 @@ class UiElementRenderer {
                                     const SkColor grid_color,
                                     int gridline_count,
                                     float opacity) = 0;
+
+  // TODO(crbug/779108) This presumes a Daydream controller.
+  virtual void DrawController(ControllerMesh::State state,
+                              float opacity,
+                              const gfx::Transform& view_proj_matrix) = 0;
+
+  virtual void DrawLaser(float opacity,
+                         const gfx::Transform& view_proj_matrix) = 0;
+
+  virtual void DrawReticle(float opacity,
+                           const gfx::Transform& view_proj_matrix) = 0;
 };
 
 }  // namespace vr

@@ -58,6 +58,7 @@ class UiScene {
   Elements GetVisible2dBrowsingOverlayElements() const;
   Elements GetVisibleSplashScreenElements() const;
   Elements GetVisibleWebVrOverlayForegroundElements() const;
+  Elements GetVisibleControllerElements() const;
 
   float background_distance() const { return background_distance_; }
   void set_background_distance(float d) { background_distance_ = d; }
@@ -79,10 +80,6 @@ class UiScene {
   void set_dirty() { is_dirty_ = true; }
 
   void OnGlInitialized();
-
-  // TODO(vollick): this should be removed once the controller is in the scene
-  // graph. crbug.com/774501
-  bool ControllerWouldBeVisibleInTheSceneGraph() const;
 
  private:
   std::unique_ptr<UiElement> root_element_;

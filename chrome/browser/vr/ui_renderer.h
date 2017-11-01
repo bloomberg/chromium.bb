@@ -16,18 +16,6 @@ class UiScene;
 class UiElement;
 class VrShellRenderer;
 
-// Provides information needed to render the controller.
-struct ControllerInfo {
-  gfx::Point3F target_point;
-  gfx::Point3F laser_origin;
-  UiInputManager::ButtonState touchpad_button_state = UiInputManager::UP;
-  UiInputManager::ButtonState app_button_state = UiInputManager::UP;
-  UiInputManager::ButtonState home_button_state = UiInputManager::UP;
-  gfx::Transform transform;
-  float opacity = 1.0f;
-  UiElement* reticle_render_target = nullptr;
-};
-
 // Provides information for rendering such as the viewport and view/projection
 // matrix.
 struct RenderInfo {
@@ -52,45 +40,26 @@ class UiRenderer {
              VrShellRenderer* vr_shell_renderer);
   ~UiRenderer();
 
-  void Draw(const RenderInfo& render_info,
-            const ControllerInfo& controller_info);
+  void Draw(const RenderInfo& render_info);
 
   // This is exposed separately because we do a separate pass to render this
   // content into an optimized viewport.
-  void DrawWebVrOverlayForeground(const RenderInfo& render_info,
-                                  const ControllerInfo& controller_info);
+  void DrawWebVrOverlayForeground(const RenderInfo& render_info);
 
   static std::vector<const UiElement*> GetElementsInDrawOrder(
       const std::vector<const UiElement*>& elements);
 
  private:
-  enum ReticleMode { kReticleVisible, kReticleHidden };
-
-  void Draw2dBrowsing(const RenderInfo& render_info,
-                      const ControllerInfo& controller_info);
-  void DrawSplashScreen(const RenderInfo& render_info,
-                        const ControllerInfo& controller_info);
+  void Draw2dBrowsing(const RenderInfo& render_info);
+  void DrawSplashScreen(const RenderInfo& render_info);
 
   void DrawUiView(const RenderInfo& render_info,
-                  const ControllerInfo& controller_info,
-                  const std::vector<const UiElement*>& elements,
-                  ReticleMode reticle_mode);
+                  const std::vector<const UiElement*>& elements);
   void DrawElements(const gfx::Transform& view_proj_matrix,
                     const std::vector<const UiElement*>& elements,
-                    const RenderInfo& render_info,
-                    const ControllerInfo& controller_info,
-                    ReticleMode reticle_mode);
+                    const RenderInfo& render_info);
   void DrawElement(const gfx::Transform& view_proj_matrix,
                    const UiElement& element);
-  void DrawReticle(const gfx::Transform& render_matrix,
-                   const RenderInfo& render_info,
-                   const ControllerInfo& controller_info);
-  void DrawLaser(const gfx::Transform& render_matrix,
-                 const RenderInfo& render_info,
-                 const ControllerInfo& controller_info);
-  void DrawController(const gfx::Transform& view_proj_matrix,
-                      const RenderInfo& render_info,
-                      const ControllerInfo& controller_info);
 
   UiScene* scene_ = nullptr;
   VrShellRenderer* vr_shell_renderer_ = nullptr;

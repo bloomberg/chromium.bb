@@ -165,6 +165,23 @@ static constexpr float kContentAspectRatioPropagationThreshold = 0.01f;
 
 static constexpr float kScreenDimmerOpacity = 0.9f;
 
+static constexpr gfx::Point3F kOrigin = {0.0f, 0.0f, 0.0f};
+
+// Fraction of the distance to the object the reticle is drawn at to avoid
+// rounding errors drawing the reticle behind the object.
+// TODO(mthiesse): Find a better approach for drawing the reticle on an object.
+// Right now we have to wedge it very precisely between the content window and
+// backplane to avoid rendering artifacts. We should stop using the depth buffer
+// since the back-to-front order of our elements is well defined. This would,
+// among other things, prevent z-fighting when we draw content in the same
+// plane.
+static constexpr float kReticleOffset = 0.999f;
+
+static constexpr float kLaserWidth = 0.01f;
+
+static constexpr float kReticleWidth = 0.025f;
+static constexpr float kReticleHeight = 0.025f;
+
 static constexpr float kVoiceSearchButtonXOffset = 0.25f;
 
 static constexpr float kSuggestionGap = 0.01f;

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VR_ELEMENTS_UI_ELEMENT_NAME_H_
 #define CHROME_BROWSER_VR_ELEMENTS_UI_ELEMENT_NAME_H_
 
+#include <string>
+
 namespace vr {
 
 // These identifiers serve as stable, semantic identifiers for UI elements.
@@ -19,6 +21,10 @@ enum UiElementName {
   kWebVrRoot,
   kWebVrViewportAwareRoot,
   kContentQuad,
+  kControllerGroup,
+  kLaser,
+  kController,
+  kReticle,
   kBackplane,
   kCeiling,
   kFloor,
@@ -69,7 +75,12 @@ enum UiElementName {
   kSpeechRecognitionPromptMicrophoneIcon,
   kSpeechRecognitionPromptBackplane,
   kSuggestionLayout,
+
+  // This must be last.
+  kNumUiElementNames,
 };
+
+std::string UiElementNameToString(UiElementName name);
 
 }  // namespace vr
 

@@ -13,6 +13,9 @@ class Transform;
 
 namespace vr {
 
+struct ControllerModel;
+struct ReticleModel;
+
 // This is the platform-specific interface to the VR UI.
 class UiInterface {
  public:
@@ -34,6 +37,8 @@ class UiInterface {
   virtual void OnAppButtonClicked() = 0;
   virtual void OnAppButtonGesturePerformed(
       UiInterface::Direction direction) = 0;
+  virtual void OnControllerUpdated(const ControllerModel& controller_model,
+                                   const ReticleModel& reticle_model) = 0;
   virtual void OnProjMatrixChanged(const gfx::Transform& proj_matrix) = 0;
   virtual void OnWebVrFrameAvailable() = 0;
   virtual void OnWebVrTimedOut() = 0;

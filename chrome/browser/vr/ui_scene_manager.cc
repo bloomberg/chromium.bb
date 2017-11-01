@@ -13,6 +13,7 @@
 #include "chrome/browser/vr/databinding/vector_binding.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
+#include "chrome/browser/vr/elements/controller.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/exclusive_screen_toast.h"
 #include "chrome/browser/vr/elements/exit_prompt.h"
@@ -20,8 +21,10 @@
 #include "chrome/browser/vr/elements/full_screen_rect.h"
 #include "chrome/browser/vr/elements/grid.h"
 #include "chrome/browser/vr/elements/invisible_hit_target.h"
+#include "chrome/browser/vr/elements/laser.h"
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/rect.h"
+#include "chrome/browser/vr/elements/reticle.h"
 #include "chrome/browser/vr/elements/spinner.h"
 #include "chrome/browser/vr/elements/system_indicator.h"
 #include "chrome/browser/vr/elements/text.h"
@@ -166,6 +169,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateSplashScreen(model);
   CreateUnderDevelopmentNotice();
   CreateVoiceSearchUiGroup(model);
+  CreateController(model);
 
   ConfigureScene();
 }
@@ -621,6 +625,54 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   element->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
   element->SetTranslate(0.0, 0.0, -kTextureOffset);
   scene_->AddUiElement(kSpeechRecognitionPrompt, std::move(element));
+}
+
+void UiSceneManager::CreateController(Model* model) {
+  auto group = base::MakeUnique<UiElement>();
+  group->set_name(kControllerGroup);
+  group->SetVisible(true);
+  group->set_hit_testable(false);
+  group->AddBinding(base::MakeUnique<Binding<bool>>(
+      base::Bind(
+          [](Model* m, UiSceneManager* mgr) {
+            bool browsing_mode =
+                !mgr->web_vr_mode() && !mgr->showing_web_vr_splash_screen();
+            return browsing_mode || m->web_vr_timeout_state == kWebVrTimedOut;
+          },
+          base::Unretained(model), base::Unretained(this)),
+      base::Bind([](UiElement* v, const bool& b) { v->SetVisible(b); },
+                 base::Unretained(group.get()))));
+  scene_->AddUiElement(kRoot, std::move(group));
+
+  auto controller = base::MakeUnique<Controller>();
+  controller->set_draw_phase(kPhaseForeground);
+  controller->AddBinding(VR_BIND_FUNC(gfx::Transform, Model, model,
+                                      controller.transform, Controller,
+                                      controller.get(), set_local_transform));
+  controller->AddBinding(
+      VR_BIND_FUNC(bool, Model, model,
+                   controller.touchpad_button_state == UiInputManager::DOWN,
+                   Controller, controller.get(), set_touchpad_button_pressed));
+  controller->AddBinding(VR_BIND_FUNC(
+      bool, Model, model, controller.app_button_state == UiInputManager::DOWN,
+      Controller, controller.get(), set_app_button_pressed));
+  controller->AddBinding(VR_BIND_FUNC(
+      bool, Model, model, controller.home_button_state == UiInputManager::DOWN,
+      Controller, controller.get(), set_home_button_pressed));
+  controller->AddBinding(VR_BIND_FUNC(float, Model, model, controller.opacity,
+                                      Controller, controller.get(),
+                                      SetOpacity));
+  scene_->AddUiElement(kControllerGroup, std::move(controller));
+
+  auto laser = base::MakeUnique<Laser>(model);
+  laser->set_draw_phase(kPhaseForeground);
+  laser->AddBinding(VR_BIND_FUNC(float, Model, model, controller.opacity, Laser,
+                                 laser.get(), SetOpacity));
+  scene_->AddUiElement(kControllerGroup, std::move(laser));
+
+  auto reticle = base::MakeUnique<Reticle>(scene_, model);
+  reticle->set_draw_phase(kPhaseForeground);
+  scene_->AddUiElement(kControllerGroup, std::move(reticle));
 }
 
 void UiSceneManager::CreateUrlBar(Model* model) {

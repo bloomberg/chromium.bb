@@ -20,6 +20,8 @@ namespace vr {
 
 class UiScene;
 class UiElement;
+struct ControllerModel;
+struct ReticleModel;
 
 using GestureList = std::vector<std::unique_ptr<blink::WebGestureEvent>>;
 
@@ -36,12 +38,9 @@ class UiInputManager {
   explicit UiInputManager(UiScene* scene);
   ~UiInputManager();
   // TODO(tiborg): Use generic gesture type instead of blink::WebGestureEvent.
-  void HandleInput(const gfx::Vector3dF& laser_direction,
-                   const gfx::Point3F& laser_origin,
-                   ButtonState button_state,
-                   GestureList* gesture_list,
-                   gfx::Point3F* out_target_point,
-                   UiElement** out_reticle_render_target);
+  void HandleInput(const ControllerModel& controller_model,
+                   ReticleModel* reticle_model,
+                   GestureList* gesture_list);
 
  private:
   void SendFlingCancel(GestureList* gesture_list,
@@ -63,12 +62,9 @@ class UiInputManager {
   bool SendButtonUp(UiElement* target,
                     const gfx::PointF& target_point,
                     ButtonState button_state);
-  void GetVisualTargetElement(const gfx::Vector3dF& laser_direction,
-                              const gfx::Point3F& laser_origin,
-                              gfx::Vector3dF* out_eye_to_target,
-                              gfx::Point3F* out_target_point,
-                              UiElement** out_target_element,
-                              gfx::PointF* out_target_local_point) const;
+  void GetVisualTargetElement(const ControllerModel& controller_model,
+                              ReticleModel* reticle_model,
+                              gfx::Vector3dF* out_eye_to_target) const;
 
   UiScene* scene_;
   int hover_target_id_ = 0;

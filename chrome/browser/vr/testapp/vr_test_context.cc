@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/vr/controller_mesh.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -45,15 +46,12 @@ constexpr float kMaxViewScaleFactor = 5.0f;
 constexpr float kViewScaleAdjustmentFactor = 0.2f;
 
 constexpr gfx::Point3F kLaserOrigin = {0.5f, -0.5f, 0.f};
+constexpr gfx::Vector3dF kLaserLocalOffset = {0.f, -0.0075f, -0.05f};
+constexpr float kControllerScaleFactor = 1.5f;
 
 }  // namespace
 
-VrTestContext::VrTestContext()
-    : controller_info_(base::MakeUnique<ControllerInfo>()),
-      view_scale_factor_(kDefaultViewScaleFactor) {
-  controller_info_->reticle_render_target = nullptr;
-  controller_info_->laser_origin = kLaserOrigin;
-
+VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   base::FilePath pak_path;
   PathService::Get(base::DIR_MODULE, &pak_path);
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
@@ -97,7 +95,7 @@ void VrTestContext::DrawFrame() {
   // Update the render position of all UI elements (including desktop).
   ui_->scene()->OnBeginFrame(current_time, kForwardVector);
   ui_->OnProjMatrixChanged(render_info.left_eye_info.proj_matrix);
-  ui_->ui_renderer()->Draw(render_info, *controller_info_);
+  ui_->ui_renderer()->Draw(render_info);
 
   // TODO(cjgrant): Render viewport-aware elements.
 }
@@ -182,12 +180,27 @@ void VrTestContext::HandleInput(ui::Event* event) {
   gfx::Vector3dF controller_direction = {0, 0, -1.f};
   beam_transform.TransformVector(&controller_direction);
 
+  gfx::Vector3dF local_offset = kLaserLocalOffset;
+  beam_transform.TransformVector(&local_offset);
+  local_offset.Scale(kControllerScaleFactor);
+
+  ControllerModel controller_model;
+  controller_model.laser_direction = controller_direction;
+  controller_model.laser_origin = kLaserOrigin + local_offset;
+
+  controller_model.transform.Translate3d(kLaserOrigin.x(), kLaserOrigin.y(),
+                                         kLaserOrigin.z());
+
+  controller_model.transform.Scale3d(
+      kControllerScaleFactor, kControllerScaleFactor, kControllerScaleFactor);
+  controller_model.transform.RotateAboutYAxis(head_angle_y_degrees_ + delta_y);
+  controller_model.transform.RotateAboutXAxis(head_angle_x_degrees_ + delta_x);
+
   GestureList gesture_list;
-  ui_->input_manager()->HandleInput(
-      controller_direction, controller_info_->laser_origin,
-      controller_info_->touchpad_button_state, &gesture_list,
-      &controller_info_->target_point,
-      &controller_info_->reticle_render_target);
+  ReticleModel reticle_model;
+  ui_->input_manager()->HandleInput(controller_model, &reticle_model,
+                                    &gesture_list);
+  ui_->OnControllerUpdated(controller_model, reticle_model);
 }
 
 void VrTestContext::OnGlInitialized(const gfx::Size& window_size) {
@@ -196,6 +209,9 @@ void VrTestContext::OnGlInitialized(const gfx::Size& window_size) {
   window_size_ = window_size;
   ui_->OnGlInitialized(content_texture_id,
                        UiElementRenderer::kTextureLocationLocal);
+
+  ui_->vr_shell_renderer()->GetControllerRenderer()->SetUp(
+      ControllerMesh::LoadFromResources());
 }
 
 unsigned int VrTestContext::CreateFakeContentTexture() {

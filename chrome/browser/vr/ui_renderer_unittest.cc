@@ -94,6 +94,10 @@ TestParams params[] = {
      {
          kWebVrUrlToast, kExclusiveScreenToastViewportAware,
      }},
+    {&UiScene::GetVisibleControllerElements,
+     {
+         kController, kLaser, kReticle,
+     }},
 };
 
 INSTANTIATE_TEST_CASE_P(SortingTests,

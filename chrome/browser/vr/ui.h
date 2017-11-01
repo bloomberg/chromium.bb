@@ -77,6 +77,8 @@ class Ui : public BrowserUiInterface, public UiInterface {
       UiElementRenderer::TextureLocation content_location) override;
   void OnAppButtonClicked() override;
   void OnAppButtonGesturePerformed(UiInterface::Direction direction) override;
+  void OnControllerUpdated(const ControllerModel& controller_model,
+                           const ReticleModel& reticle_model) override;
   void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
   void OnWebVrFrameAvailable() override;
   void OnWebVrTimedOut() override;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_VR_CONTROLLER_MODEL_H_
-#define CHROME_BROWSER_VR_VR_CONTROLLER_MODEL_H_
+#ifndef CHROME_BROWSER_VR_CONTROLLER_MESH_H_
+#define CHROME_BROWSER_VR_CONTROLLER_MESH_H_
 
 #include <memory>
 
@@ -14,7 +14,7 @@
 
 namespace vr {
 
-class VrControllerModel {
+class ControllerMesh {
  public:
   enum State {
     IDLE = 0,
@@ -25,10 +25,10 @@ class VrControllerModel {
     STATE_COUNT,
   };
 
-  explicit VrControllerModel(
+  explicit ControllerMesh(
       std::unique_ptr<vr::gltf::Asset> gltf_asset,
       std::vector<std::unique_ptr<vr::gltf::Buffer>> buffers);
-  ~VrControllerModel();
+  ~ControllerMesh();
 
   const GLvoid* ElementsBuffer() const;
   GLsizeiptr ElementsBufferSize() const;
@@ -42,7 +42,7 @@ class VrControllerModel {
   void SetTexture(int state, sk_sp<SkImage> patch);
   sk_sp<SkImage> GetTexture(int state) const;
 
-  static std::unique_ptr<VrControllerModel> LoadFromResources();
+  static std::unique_ptr<ControllerMesh> LoadFromResources();
 
  private:
   std::unique_ptr<vr::gltf::Asset> gltf_asset_;
@@ -56,4 +56,4 @@ class VrControllerModel {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_VR_CONTROLLER_MODEL_H_
+#endif  // CHROME_BROWSER_VR_CONTROLLER_MESH_H_

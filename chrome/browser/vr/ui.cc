@@ -132,6 +132,12 @@ void Ui::OnAppButtonGesturePerformed(UiInterface::Direction direction) {
   scene_manager_->OnAppButtonGesturePerformed(direction);
 }
 
+void Ui::OnControllerUpdated(const ControllerModel& controller_model,
+                             const ReticleModel& reticle_model) {
+  model_->controller = controller_model;
+  model_->reticle = reticle_model;
+}
+
 void Ui::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
   scene_manager_->OnProjMatrixChanged(proj_matrix);
 }
