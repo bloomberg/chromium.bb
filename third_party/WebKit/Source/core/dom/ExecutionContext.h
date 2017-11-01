@@ -56,11 +56,14 @@ class ErrorEvent;
 class EventQueue;
 class EventTarget;
 class LocalDOMWindow;
-class SuspendableObject;
+class PausableObject;
 class PublicURLManager;
 class ResourceFetcher;
 class SecurityOrigin;
 class ScriptState;
+
+using SuspendableObject = PausableObject;
+
 enum class TaskType : unsigned;
 
 enum ReasonForCallingCanExecuteScripts {

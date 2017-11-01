@@ -28,27 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
-class MockSuspendableObject final
-    : public GarbageCollectedFinalized<MockSuspendableObject>,
-      public SuspendableObject {
-  USING_GARBAGE_COLLECTED_MIXIN(MockSuspendableObject);
+class MockPausableObject final
+    : public GarbageCollectedFinalized<MockPausableObject>,
+      public PausableObject {
+  USING_GARBAGE_COLLECTED_MIXIN(MockPausableObject);
 
  public:
-  explicit MockSuspendableObject(ExecutionContext* context)
-      : SuspendableObject(context) {}
+  explicit MockPausableObject(ExecutionContext* context)
+      : PausableObject(context) {}
 
   virtual void Trace(blink::Visitor* visitor) {
-    SuspendableObject::Trace(visitor);
+    PausableObject::Trace(visitor);
   }
 
   MOCK_METHOD0(Suspend, void());
@@ -56,56 +56,56 @@ class MockSuspendableObject final
   MOCK_METHOD1(ContextDestroyed, void(ExecutionContext*));
 };
 
-class SuspendableObjectTest : public ::testing::Test {
+class PausableObjectTest : public ::testing::Test {
  protected:
-  SuspendableObjectTest();
+  PausableObjectTest();
 
   Document& SrcDocument() const { return src_page_holder_->GetDocument(); }
   Document& DestDocument() const { return dest_page_holder_->GetDocument(); }
-  MockSuspendableObject& SuspendableObject() { return *suspendable_object_; }
+  MockPausableObject& PausableObject() { return *pausable_object_; }
 
  private:
   std::unique_ptr<DummyPageHolder> src_page_holder_;
   std::unique_ptr<DummyPageHolder> dest_page_holder_;
-  Persistent<MockSuspendableObject> suspendable_object_;
+  Persistent<MockPausableObject> pausable_object_;
 };
 
-SuspendableObjectTest::SuspendableObjectTest()
+PausableObjectTest::PausableObjectTest()
     : src_page_holder_(DummyPageHolder::Create(IntSize(800, 600))),
       dest_page_holder_(DummyPageHolder::Create(IntSize(800, 600))),
-      suspendable_object_(
-          new MockSuspendableObject(&src_page_holder_->GetDocument())) {
-  suspendable_object_->SuspendIfNeeded();
+      pausable_object_(
+          new MockPausableObject(&src_page_holder_->GetDocument())) {
+  pausable_object_->SuspendIfNeeded();
 }
 
-TEST_F(SuspendableObjectTest, NewContextObserved) {
+TEST_F(PausableObjectTest, NewContextObserved) {
   unsigned initial_src_count = SrcDocument().SuspendableObjectCount();
   unsigned initial_dest_count = DestDocument().SuspendableObjectCount();
 
-  EXPECT_CALL(SuspendableObject(), Resume());
-  SuspendableObject().DidMoveToNewExecutionContext(&DestDocument());
+  EXPECT_CALL(PausableObject(), Resume());
+  PausableObject().DidMoveToNewExecutionContext(&DestDocument());
 
   EXPECT_EQ(initial_src_count - 1, SrcDocument().SuspendableObjectCount());
   EXPECT_EQ(initial_dest_count + 1, DestDocument().SuspendableObjectCount());
 }
 
-TEST_F(SuspendableObjectTest, MoveToActiveDocument) {
-  EXPECT_CALL(SuspendableObject(), Resume());
-  SuspendableObject().DidMoveToNewExecutionContext(&DestDocument());
+TEST_F(PausableObjectTest, MoveToActiveDocument) {
+  EXPECT_CALL(PausableObject(), Resume());
+  PausableObject().DidMoveToNewExecutionContext(&DestDocument());
 }
 
-TEST_F(SuspendableObjectTest, MoveToSuspendedDocument) {
+TEST_F(PausableObjectTest, MoveToSuspendedDocument) {
   DestDocument().SuspendScheduledTasks();
 
-  EXPECT_CALL(SuspendableObject(), Suspend());
-  SuspendableObject().DidMoveToNewExecutionContext(&DestDocument());
+  EXPECT_CALL(PausableObject(), Suspend());
+  PausableObject().DidMoveToNewExecutionContext(&DestDocument());
 }
 
-TEST_F(SuspendableObjectTest, MoveToStoppedDocument) {
+TEST_F(PausableObjectTest, MoveToStoppedDocument) {
   DestDocument().Shutdown();
 
-  EXPECT_CALL(SuspendableObject(), ContextDestroyed(&DestDocument()));
-  SuspendableObject().DidMoveToNewExecutionContext(&DestDocument());
+  EXPECT_CALL(PausableObject(), ContextDestroyed(&DestDocument()));
+  PausableObject().DidMoveToNewExecutionContext(&DestDocument());
 }
 
 }  // namespace blink

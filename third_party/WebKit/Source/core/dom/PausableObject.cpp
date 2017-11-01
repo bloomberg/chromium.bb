@@ -24,14 +24,14 @@
  *
  */
 
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 
 #include "core/dom/ExecutionContext.h"
 #include "platform/InstanceCounters.h"
 
 namespace blink {
 
-SuspendableObject::SuspendableObject(ExecutionContext* execution_context)
+PausableObject::PausableObject(ExecutionContext* execution_context)
     : ContextLifecycleObserver(execution_context, kSuspendableObjectType)
 #if DCHECK_IS_ON()
       ,
@@ -43,7 +43,7 @@ SuspendableObject::SuspendableObject(ExecutionContext* execution_context)
       InstanceCounters::kSuspendableObjectCounter);
 }
 
-SuspendableObject::~SuspendableObject() {
+PausableObject::~PausableObject() {
   InstanceCounters::DecrementCounter(
       InstanceCounters::kSuspendableObjectCounter);
 
@@ -52,7 +52,7 @@ SuspendableObject::~SuspendableObject() {
 #endif
 }
 
-void SuspendableObject::SuspendIfNeeded() {
+void PausableObject::SuspendIfNeeded() {
 #if DCHECK_IS_ON()
   DCHECK(!suspend_if_needed_called_);
   suspend_if_needed_called_ = true;
@@ -61,12 +61,11 @@ void SuspendableObject::SuspendIfNeeded() {
     context->SuspendSuspendableObjectIfNeeded(this);
 }
 
-void SuspendableObject::Suspend() {}
+void PausableObject::Suspend() {}
 
-void SuspendableObject::Resume() {}
+void PausableObject::Resume() {}
 
-void SuspendableObject::DidMoveToNewExecutionContext(
-    ExecutionContext* context) {
+void PausableObject::DidMoveToNewExecutionContext(ExecutionContext* context) {
   SetContext(context);
 
   if (context->IsContextDestroyed()) {

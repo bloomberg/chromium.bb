@@ -27,38 +27,14 @@
 #ifndef SuspendableObject_h
 #define SuspendableObject_h
 
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "platform/wtf/Assertions.h"
+#include "core/dom/PausableObject.h"
 
 namespace blink {
 
-class CORE_EXPORT SuspendableObject : public ContextLifecycleObserver {
- public:
-  explicit SuspendableObject(ExecutionContext*);
-
-  // suspendIfNeeded() should be called exactly once after object construction
-  // to synchronize the suspend state with that in ExecutionContext.
-  void SuspendIfNeeded();
-#if DCHECK_IS_ON()
-  bool SuspendIfNeededCalled() const { return suspend_if_needed_called_; }
-#endif
-
-  // These methods have an empty default implementation so that subclasses
-  // which don't need special treatment can skip implementation.
-  virtual void Suspend();
-  virtual void Resume();
-
-  void DidMoveToNewExecutionContext(ExecutionContext*);
-
- protected:
-  virtual ~SuspendableObject();
-
- private:
-#if DCHECK_IS_ON()
-  bool suspend_if_needed_called_;
-#endif
-};
+// SuspendableObject is now just an alias to PausableObject, and all
+// SuspendableObject will be replaced with PausableObject in near future.
+// See crbug/780378.
+using SuspendableObject = PausableObject;
 
 }  // namespace blink
 
