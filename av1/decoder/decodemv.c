@@ -42,8 +42,8 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   FRAME_COUNTS *counts = xd->counts;
   int sign, abs, reduced_delta_qindex = 0;
   BLOCK_SIZE bsize = mbmi->sb_type;
-  const int b_col = mi_col & MAX_MIB_MASK;
-  const int b_row = mi_row & MAX_MIB_MASK;
+  const int b_col = mi_col & (cm->mib_size - 1);
+  const int b_row = mi_row & (cm->mib_size - 1);
   const int read_delta_q_flag = (b_col == 0 && b_row == 0);
   int rem_bits, thr;
   int i, smallval;
@@ -84,8 +84,8 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   FRAME_COUNTS *counts = xd->counts;
   int sign, abs, reduced_delta_lflevel = 0;
   BLOCK_SIZE bsize = mbmi->sb_type;
-  const int b_col = mi_col & MAX_MIB_MASK;
-  const int b_row = mi_row & MAX_MIB_MASK;
+  const int b_col = mi_col & (cm->mib_size - 1);
+  const int b_row = mi_row & (cm->mib_size - 1);
   const int read_delta_lf_flag = (b_col == 0 && b_row == 0);
   int rem_bits, thr;
   int i, smallval;
