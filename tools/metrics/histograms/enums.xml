@@ -16858,6 +16858,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2211" label="DocumentGetPreferredStylesheetSet"/>
   <int value="2212" label="DocumentGetSelectedStylesheetSet"/>
   <int value="2213" label="DocumentSetSelectedStylesheetSet"/>
+  <int value="2214" label="GeolocationGetCurrentPosition"/>
+  <int value="2215" label="GeolocationWatchPosition"/>
 </enum>
 
 <enum name="FeedbackSource">

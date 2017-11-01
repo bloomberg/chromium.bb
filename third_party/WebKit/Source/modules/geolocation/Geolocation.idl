@@ -27,12 +27,18 @@
 [
     NoInterfaceObject
 ] interface Geolocation {
-    [LogActivity] void getCurrentPosition(
+    [
+        LogActivity,
+        MeasureAs=GeolocationGetCurrentPosition
+    ] void getCurrentPosition(
         PositionCallback successCallback,
         optional PositionErrorCallback errorCallback,
         optional PositionOptions options);
 
-    [LogActivity] long watchPosition(
+    [
+        LogActivity,
+        MeasureAs=GeolocationWatchPosition
+    ] long watchPosition(
         PositionCallback successCallback,
         optional PositionErrorCallback errorCallback,
         optional PositionOptions options);
