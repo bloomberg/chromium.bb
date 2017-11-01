@@ -227,38 +227,35 @@ BoxPaintInvalidator::ComputeBackgroundInvalidation() {
 }
 
 void BoxPaintInvalidator::InvalidateScrollingContentsBackground(
-    BackgroundInvalidationType background_invalidation_type) {
+    BackgroundInvalidationType backgroundInvalidationType) {
   if (!BackgroundPaintsOntoScrollingContentsLayer())
     return;
-  if (background_invalidation_type == BackgroundInvalidationType::kNone)
+  if (backgroundInvalidationType == BackgroundInvalidationType::kNone)
     return;
 
-  PaintInvalidationReason reason;
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    reason = background_invalidation_type == BackgroundInvalidationType::kFull
-                 ? PaintInvalidationReason::kBackgroundOnScrollingContentsLayer
-                 : PaintInvalidationReason::kIncremental;
-  } else {
-    // For SPv1 we need this reason for both full and incremental invalidation
-    // to let ObjectPaintInvalidator::SetBackingNeedsPaintInvalidationInRect()
-    // know we are invalidating on the scrolling contents backing.
-    reason = PaintInvalidationReason::kBackgroundOnScrollingContentsLayer;
+  // TODO(crbug.com/732611): Implement raster invalidation of background on
+  // scrolling contents layer for SPv175.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     const LayoutRect& old_layout_overflow = box_.PreviousLayoutOverflowRect();
     LayoutRect new_layout_overflow = box_.LayoutOverflowRect();
-    if (background_invalidation_type == BackgroundInvalidationType::kFull) {
+    if (backgroundInvalidationType == BackgroundInvalidationType::kFull) {
       ObjectPaintInvalidatorWithContext(box_, context_)
-          .FullyInvalidatePaint(reason, old_layout_overflow,
-                                new_layout_overflow);
+          .FullyInvalidatePaint(
+              PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
+              old_layout_overflow, new_layout_overflow);
     } else {
-      IncrementallyInvalidatePaint(reason, old_layout_overflow,
-                                   new_layout_overflow);
+      IncrementallyInvalidatePaint(
+          PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
+          old_layout_overflow, new_layout_overflow);
     }
   }
 
   context_.painting_layer->SetNeedsRepaint();
+  // Currently we use CompositedLayerMapping as the DisplayItemClient to paint
+  // background on the scrolling contents layer.
   ObjectPaintInvalidator(box_).InvalidateDisplayItemClient(
       *box_.Layer()->GetCompositedLayerMapping()->ScrollingContentsLayer(),
-      reason);
+      PaintInvalidationReason::kBackgroundOnScrollingContentsLayer);
 }
 
 PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
