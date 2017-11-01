@@ -38,7 +38,7 @@ Polymer({
     switchModeLabel: String,
 
     /** True if video mode is enabled. */
-    videomodeEnabled: {
+    videoModeEnabled: {
       type: Boolean,
       value: false,
     },
