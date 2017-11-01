@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromecast_build.gni")
+
 group("webrtc_overrides") {
   public_deps = [
     ":webrtc",
@@ -59,11 +61,14 @@ static_library("webrtc") {
   }
 
   if (is_nacl) {
-    # For NACL, we have to add a default implementation for field_trail.
+    # For NACL, we have to add a default implementation for field_trial.
     deps += [
       "//native_client_sdk/src/libraries/nacl_io",
       "//third_party/webrtc/system_wrappers:field_trial_default",
     ]
+  } else if (is_chromecast) {
+    # Cast builds use the default implementation for field_trial.
+    deps += [ "//third_party/webrtc/system_wrappers:field_trial_default" ]
   } else {
     # Otherwise, we just add the field_trial which redirects to base.
     sources = [
