@@ -205,10 +205,10 @@ static int64_t finer_search_pixel_proj_error(
 }
 
 static void get_proj_subspace(const uint8_t *src8, int width, int height,
-                              int src_stride, uint8_t *dat8, int dat_stride,
-                              int use_highbitdepth, int32_t *flt1,
-                              int flt1_stride, int32_t *flt2, int flt2_stride,
-                              int *xq) {
+                              int src_stride, const uint8_t *dat8,
+                              int dat_stride, int use_highbitdepth,
+                              int32_t *flt1, int flt1_stride, int32_t *flt2,
+                              int flt2_stride, int *xq) {
   int i, j;
   double H[2][2] = { { 0, 0 }, { 0, 0 } };
   double C[2] = { 0, 0 };
@@ -277,82 +277,91 @@ void encode_xq(int *xq, int *xqd) {
   xqd[1] = clamp(xqd[1], SGRPROJ_PRJ_MIN1, SGRPROJ_PRJ_MAX1);
 }
 
+static void sgr_filter_block(const sgr_params_type *params, const uint8_t *dat8,
+                             int width, int height, int dat_stride,
+                             int use_highbd, int bit_depth, int32_t *flt1,
+                             int32_t *flt2, int flt_stride) {
+#if CONFIG_HIGHBITDEPTH
+  if (use_highbd) {
+    const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+#if USE_HIGHPASS_IN_SGRPROJ
+    av1_highpass_filter_highbd(dat, w, h, dat_stride, flt1, flt_stride,
+                               params->corner, params->edge);
+#else
+    av1_selfguided_restoration_highbd(dat, width, height, dat_stride, flt1,
+                                      flt_stride, bit_depth, params->r1,
+                                      params->e1);
+#endif  // USE_HIGHPASS_IN_SGRPROJ
+    av1_selfguided_restoration_highbd(dat, width, height, dat_stride, flt2,
+                                      flt_stride, bit_depth, params->r2,
+                                      params->e2);
+    return;
+  }
+#else
+  (void)use_highbd;
+  (void)bit_depth;
+#endif  // CONFIG_HIGHBITDEPTH
+
+#if USE_HIGHPASS_IN_SGRPROJ
+  av1_highpass_filter(dat8, width, height, dat_stride, flt1, flt_stride,
+                      params->corner, params->edge);
+#else
+  av1_selfguided_restoration(dat8, width, height, dat_stride, flt1, flt_stride,
+                             params->r1, params->e1);
+#endif  // USE_HIGHPASS_IN_SGRPROJ
+  av1_selfguided_restoration(dat8, width, height, dat_stride, flt2, flt_stride,
+                             params->r2, params->e2);
+}
+
+// Apply the self-guided filter across an entire restoration unit.
+static void apply_sgr(const sgr_params_type *params, const uint8_t *dat8,
+                      int width, int height, int dat_stride, int use_highbd,
+                      int bit_depth, int pu_width, int pu_height, int32_t *flt1,
+                      int32_t *flt2, int flt_stride) {
+  for (int i = 0; i < height; i += pu_height) {
+    const int h = AOMMIN(pu_height, height - i);
+    int32_t *flt1_row = flt1 + i * flt_stride;
+    int32_t *flt2_row = flt2 + i * flt_stride;
+    const uint8_t *dat8_row = dat8 + i * dat_stride;
+
+    // Iterate over the stripe in blocks of width pu_width
+    for (int j = 0; j < width; j += pu_width) {
+      const int w = AOMMIN(pu_width, width - j);
+      sgr_filter_block(params, dat8_row + j, w, h, dat_stride, use_highbd,
+                       bit_depth, flt1_row + j, flt2_row + j, flt_stride);
+    }
+  }
+}
+
 static SgrprojInfo search_selfguided_restoration(
-    uint8_t *dat8, int width, int height, int dat_stride, const uint8_t *src8,
-    int src_stride, int use_highbitdepth, int bit_depth, int pu_width,
-    int pu_height, int32_t *rstbuf) {
+    const uint8_t *dat8, int width, int height, int dat_stride,
+    const uint8_t *src8, int src_stride, int use_highbitdepth, int bit_depth,
+    int pu_width, int pu_height, int32_t *rstbuf) {
   int32_t *flt1 = rstbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   int ep, bestep = 0;
-  int64_t err, besterr = -1;
+  int64_t besterr = -1;
   int exqd[2], bestxqd[2] = { 0, 0 };
-  int flt1_stride = ((width + 7) & ~7) + 8;
-  int flt2_stride = ((width + 7) & ~7) + 8;
+  int flt_stride = ((width + 7) & ~7) + 8;
   assert(pu_width == (RESTORATION_PROC_UNIT_SIZE >> 1) ||
          pu_width == RESTORATION_PROC_UNIT_SIZE);
   assert(pu_height == (RESTORATION_PROC_UNIT_SIZE >> 1) ||
          pu_height == RESTORATION_PROC_UNIT_SIZE);
-#if !CONFIG_HIGHBITDEPTH
-  (void)bit_depth;
-#endif
 
   for (ep = 0; ep < SGRPROJ_PARAMS; ep++) {
     int exq[2];
-#if CONFIG_HIGHBITDEPTH
-    if (use_highbitdepth) {
-      uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
-      for (int i = 0; i < height; i += pu_height)
-        for (int j = 0; j < width; j += pu_width) {
-          const int w = AOMMIN(pu_width, width - j);
-          const int h = AOMMIN(pu_height, height - i);
-          uint16_t *dat_p = dat + i * dat_stride + j;
-          int32_t *flt1_p = flt1 + i * flt1_stride + j;
-          int32_t *flt2_p = flt2 + i * flt2_stride + j;
-#if USE_HIGHPASS_IN_SGRPROJ
-          av1_highpass_filter_highbd(dat_p, w, h, dat_stride, flt1_p,
-                                     flt1_stride, sgr_params[ep].corner,
-                                     sgr_params[ep].edge);
-#else
-          av1_selfguided_restoration_highbd(
-              dat_p, w, h, dat_stride, flt1_p, flt1_stride, bit_depth,
-              sgr_params[ep].r1, sgr_params[ep].e1);
-#endif  // USE_HIGHPASS_IN_SGRPROJ
-          av1_selfguided_restoration_highbd(
-              dat_p, w, h, dat_stride, flt2_p, flt2_stride, bit_depth,
-              sgr_params[ep].r2, sgr_params[ep].e2);
-        }
-    } else {
-#endif
-      for (int i = 0; i < height; i += pu_height)
-        for (int j = 0; j < width; j += pu_width) {
-          const int w = AOMMIN(pu_width, width - j);
-          const int h = AOMMIN(pu_height, height - i);
-          uint8_t *dat_p = dat8 + i * dat_stride + j;
-          int32_t *flt1_p = flt1 + i * flt1_stride + j;
-          int32_t *flt2_p = flt2 + i * flt2_stride + j;
-#if USE_HIGHPASS_IN_SGRPROJ
-          av1_highpass_filter(dat_p, w, h, dat_stride, flt1_p, flt1_stride,
-                              sgr_params[ep].corner, sgr_params[ep].edge);
-#else
-        av1_selfguided_restoration(dat_p, w, h, dat_stride, flt1_p, flt1_stride,
-                                   sgr_params[ep].r1, sgr_params[ep].e1);
-#endif  // USE_HIGHPASS_IN_SGRPROJ
-          av1_selfguided_restoration(dat_p, w, h, dat_stride, flt2_p,
-                                     flt2_stride, sgr_params[ep].r2,
-                                     sgr_params[ep].e2);
-        }
-#if CONFIG_HIGHBITDEPTH
-    }
-#endif
+    apply_sgr(&sgr_params[ep], dat8, width, height, dat_stride,
+              use_highbitdepth, bit_depth, pu_width, pu_height, flt1, flt2,
+              flt_stride);
     aom_clear_system_state();
     get_proj_subspace(src8, width, height, src_stride, dat8, dat_stride,
-                      use_highbitdepth, flt1, flt1_stride, flt2, flt2_stride,
+                      use_highbitdepth, flt1, flt_stride, flt2, flt_stride,
                       exq);
     aom_clear_system_state();
     encode_xq(exq, exqd);
-    err = finer_search_pixel_proj_error(
+    int64_t err = finer_search_pixel_proj_error(
         src8, width, height, src_stride, dat8, dat_stride, use_highbitdepth,
-        flt1, flt1_stride, flt2, flt2_stride, 2, exqd);
+        flt1, flt_stride, flt2, flt_stride, 2, exqd);
     if (besterr == -1 || err < besterr) {
       bestep = ep;
       besterr = err;
