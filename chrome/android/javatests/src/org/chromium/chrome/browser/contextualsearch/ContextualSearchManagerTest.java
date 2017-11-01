@@ -3346,7 +3346,7 @@ public class ContextualSearchManagerTest {
         waitForSelectActionBarVisible();
 
         // Second Tap closes the panel automatically when Smart Selection is active.
-        assertPanelClosedOrUndefined();
+        waitForPanelToClose();
 
         // Sometimes we get an additional Show notification on the second Tap, but not reliably in
         // tests.  See crbug.com/776541.
