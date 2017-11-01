@@ -12,11 +12,7 @@
 
 namespace blink {
 
-class Document;
-class ExecutionContext;
-class LocalFrame;
 class WebTaskRunner;
-class WorkerOrWorkletGlobalScope;
 class WorkerThread;
 
 // A set of helper functions to get a WebTaskRunner for TaskType and a context
@@ -26,12 +22,6 @@ class CORE_EXPORT TaskRunnerHelper final {
   STATIC_ONLY(TaskRunnerHelper);
 
  public:
-  static scoped_refptr<WebTaskRunner> Get(TaskType, LocalFrame*);
-  static scoped_refptr<WebTaskRunner> Get(TaskType, Document*);
-  static scoped_refptr<WebTaskRunner> Get(TaskType, ExecutionContext*);
-  static scoped_refptr<WebTaskRunner> Get(TaskType,
-                                          WorkerOrWorkletGlobalScope*);
-
   // Returns a WebTaskRunner that is associated to the worker / worklet global
   // scope that corresponds to the given WorkerThread. Note that WorkerThread is
   // a per-global-scope object while the naming might sound differently.
