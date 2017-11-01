@@ -190,14 +190,13 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   // blink::WebLeakDetectorClient implementation.
   void OnLeakDetectionComplete(const Result& result) override;
 
- protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<FakeCompositorDependencies> compositor_deps_;
   std::unique_ptr<MockRenderProcess> mock_process_;
   // We use a naked pointer because we don't want to expose RenderViewImpl in
   // the embedder's namespace.
-  RenderView* view_;
+  RenderView* view_ = nullptr;
   RendererBlinkPlatformImplTestOverride blink_platform_impl_;
   std::unique_ptr<ContentClient> content_client_;
   std::unique_ptr<ContentBrowserClient> content_browser_client_;
