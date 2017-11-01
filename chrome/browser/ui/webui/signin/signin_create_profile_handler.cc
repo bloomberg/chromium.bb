@@ -86,7 +86,7 @@ void SigninCreateProfileHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_PROFILES_CREATE_SUPERVISED_NO_SIGNED_IN_USER_TEXT));
   localized_strings->SetString("createProfileConfirm",
-                               l10n_util::GetStringUTF16(IDS_SAVE));
+                               l10n_util::GetStringUTF16(IDS_ADD));
   localized_strings->SetString("learnMore",
                                l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   localized_strings->SetString(
