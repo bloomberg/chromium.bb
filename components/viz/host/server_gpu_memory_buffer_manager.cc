@@ -75,7 +75,7 @@ void ServerGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
       gpu::GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size,
                                                                  format)) {
     buffer_handle = gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
-        id, size, format);
+        id, size, format, usage);
     BufferInfo buffer_info;
     DCHECK_EQ(gfx::SHARED_MEMORY_BUFFER, buffer_handle.type);
     buffer_info.type = gfx::SHARED_MEMORY_BUFFER;
