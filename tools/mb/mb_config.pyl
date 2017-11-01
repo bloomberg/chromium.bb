@@ -490,7 +490,11 @@
       'Win Builder (dbg)': 'debug_bot_x86_minimal_symbols',
       'Win x64 Builder': 'release_bot_minimal_symbols',
       'Win x64 Builder (dbg)': 'debug_bot_minimal_symbols',
+      # TODO(thakis): Remove this once WinMSVC64 bots are live (the bots with
+      # unqualified names now use clang).
       'WinClang64 (dbg)': 'win_clang_release_bot',
+      'WinMSVC64': 'win_msvc_release_bot',
+      'WinMSVC64 (dbg)': 'win_msvc_debug_bot',
     },
 
     'internal.client.kitchensync': {
@@ -716,6 +720,8 @@
       'win_chromium_syzyasan_rel': 'syzyasan_no_pch_release_x86',
       'win_chromium_x64_rel_ng': 'release_trybot_minimal_symbols',
       'win_clang': 'win_clang_release_bot',
+      'win_msvc': 'win_msvc_release_bot',
+      'win_msvc_dbg': 'win_msvc_debug_bot',
       'win_clang_dbg': 'clang_debug_trybot_x86',
       'win_clang_rel': 'clang_official_release_trybot_x86',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
@@ -1111,7 +1117,7 @@
     'clang_debug_bot_minimal_symbols_x86': [
       # Now that the default win bots use clang, use a "clang" bot to make sure
       # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
+      # check that is very confusing, so rename to "msvc", crbug.com/751220
       'no_clang', 'debug_bot', 'minimal_symbols', 'x86',
     ],
 
@@ -1122,21 +1128,21 @@
     'clang_minimal_symbols_shared_release_bot_x86_dcheck': [
       # Now that the default win bots use clang, use a "clang" bot to make sure
       # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
+      # check that is very confusing, so rename to "msvc", crbug.com/751220
       'no_clang', 'minimal_symbols', 'shared_release_bot', 'x86', 'dcheck_always_on',
     ],
 
     'clang_official_release_bot_minimal_symbols': [
       # Now that the default win bots use clang, use a "clang" bot to make sure
       # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
+      # check that is very confusing, so rename to "msvc", crbug.com/751220
       'no_clang', 'official', 'release_bot', 'minimal_symbols',
     ],
 
     'clang_official_release_bot_minimal_symbols_x86': [
       # Now that the default win bots use clang, use a "clang" bot to make sure
       # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
+      # check that is very confusing, so rename to "msvc", crbug.com/751220
       'no_clang', 'official', 'release_bot', 'minimal_symbols', 'x86',
     ],
 
@@ -1155,7 +1161,7 @@
     'clang_shared_release_bot_dcheck': [
       # Now that the default win bots use clang, use a "clang" bot to make sure
       # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
+      # check that is very confusing, so rename to "msvc", crbug.com/751220
       'no_clang', 'shared_release_bot', 'dcheck_always_on',
     ],
 
@@ -1675,6 +1681,14 @@
       # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
       # check that is very confusing, so rename the bot to "msvc".
       'no_clang', 'release_bot', 'minimal_symbols',
+    ],
+
+    'win_msvc_release_bot': [
+      'no_clang', 'release_bot', 'minimal_symbols',
+    ],
+
+    'win_msvc_debug_bot': [
+      'no_clang', 'debug_bot', 'minimal_symbols',
     ],
 
     # TODO(tikuta): Remove this once gcp goma backend supports all windows nacl compilers.
