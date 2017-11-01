@@ -25,7 +25,7 @@ TEST_F(PeerConnectionDependencyFactoryTest, CreateRTCPeerConnectionHandler) {
   MockWebRTCPeerConnectionHandlerClient client_jsep;
   std::unique_ptr<blink::WebRTCPeerConnectionHandler> pc_handler(
       dependency_factory_->CreateRTCPeerConnectionHandler(&client_jsep));
-  EXPECT_TRUE(pc_handler.get() != NULL);
+  EXPECT_TRUE(pc_handler.get() != nullptr);
 }
 
 }  // namespace content

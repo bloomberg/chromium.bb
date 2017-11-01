@@ -45,7 +45,7 @@ void AudioMirroringManager::AddDiverter(
   // the stream.
   std::set<SourceFrameRef> candidates;
   candidates.insert(routes_.back().source_render_frame);
-  InitiateQueriesToFindNewDestination(NULL, candidates);
+  InitiateQueriesToFindNewDestination(nullptr, candidates);
 }
 
 void AudioMirroringManager::RemoveDiverter(Diverter* diverter) {
@@ -56,7 +56,7 @@ void AudioMirroringManager::RemoveDiverter(Diverter* diverter) {
   for (StreamRoutes::iterator it = routes_.begin(); it != routes_.end(); ++it) {
     if (it->diverter == diverter) {
       // Stop the diverted flow.
-      RouteDivertedFlow(&(*it), NULL);
+      RouteDivertedFlow(&(*it), nullptr);
 
       // Stop duplication flows.
       for (auto& dup : it->duplications) {
@@ -107,7 +107,7 @@ void AudioMirroringManager::StopMirroring(MirroringDestination* destination) {
   std::set<SourceFrameRef> redivert_candidates;
   for (StreamRoutes::iterator it = routes_.begin(); it != routes_.end(); ++it) {
     if (it->destination == destination) {
-      RouteDivertedFlow(&(*it), NULL);
+      RouteDivertedFlow(&(*it), nullptr);
       redivert_candidates.insert(it->source_render_frame);
     }
     auto dup_it = it->duplications.find(destination);
@@ -182,7 +182,7 @@ void AudioMirroringManager::UpdateRoutesToDivertDestination(
     } else if (!add_only) {
       // Only stop diverting if the stream is currently routed to |destination|.
       if (it->destination == destination) {
-        RouteDivertedFlow(&(*it), NULL);
+        RouteDivertedFlow(&(*it), nullptr);
         redivert_candidates.insert(it->source_render_frame);
       }
     }
@@ -241,7 +241,7 @@ void AudioMirroringManager::RouteDivertedFlow(
              << route->source_render_frame.second
              << " --> MirroringDestination@" << route->destination;
     route->diverter->StopDiverting();
-    route->destination = NULL;
+    route->destination = nullptr;
   }
 
   if (new_destination) {
@@ -256,10 +256,11 @@ void AudioMirroringManager::RouteDivertedFlow(
 }
 
 AudioMirroringManager::StreamRoutingState::StreamRoutingState(
-    const SourceFrameRef& source_frame, Diverter* stream_diverter)
-  : source_render_frame(source_frame),
-    diverter(stream_diverter),
-    destination(NULL) {}
+    const SourceFrameRef& source_frame,
+    Diverter* stream_diverter)
+    : source_render_frame(source_frame),
+      diverter(stream_diverter),
+      destination(nullptr) {}
 
 AudioMirroringManager::StreamRoutingState::StreamRoutingState(
     const StreamRoutingState& other) = default;

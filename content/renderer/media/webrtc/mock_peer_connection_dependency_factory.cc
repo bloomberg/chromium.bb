@@ -89,13 +89,13 @@ VideoTrackVector MockMediaStream::GetVideoTracks() {
 rtc::scoped_refptr<AudioTrackInterface> MockMediaStream::FindAudioTrack(
     const std::string& track_id) {
   AudioTrackVector::iterator it = FindTrack(&audio_track_vector_, track_id);
-  return it == audio_track_vector_.end() ? NULL : *it;
+  return it == audio_track_vector_.end() ? nullptr : *it;
 }
 
 rtc::scoped_refptr<VideoTrackInterface> MockMediaStream::FindVideoTrack(
     const std::string& track_id) {
   VideoTrackVector::iterator it = FindTrack(&video_track_vector_, track_id);
-  return it == video_track_vector_.end() ? NULL : *it;
+  return it == video_track_vector_.end() ? nullptr : *it;
 }
 
 void MockMediaStream::RegisterObserver(ObserverInterface* observer) {
@@ -180,7 +180,7 @@ MockWebRtcVideoTrack::MockWebRtcVideoTrack(
       source_(source),
       enabled_(true),
       state_(webrtc::MediaStreamTrackInterface::kLive),
-      sink_(NULL) {}
+      sink_(nullptr) {}
 
 MockWebRtcVideoTrack::~MockWebRtcVideoTrack() {}
 
@@ -199,7 +199,7 @@ void MockWebRtcVideoTrack::AddOrUpdateSink(
 void MockWebRtcVideoTrack::RemoveSink(
     rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
   DCHECK(sink_ == sink);
-  sink_ = NULL;
+  sink_ = nullptr;
 }
 
 VideoTrackSourceInterface* MockWebRtcVideoTrack::GetSource() const {
@@ -250,11 +250,11 @@ class MockSessionDescription : public SessionDescriptionInterface {
   ~MockSessionDescription() override {}
   cricket::SessionDescription* description() override {
     NOTIMPLEMENTED();
-    return NULL;
+    return nullptr;
   }
   const cricket::SessionDescription* description() const override {
     NOTIMPLEMENTED();
-    return NULL;
+    return nullptr;
   }
   std::string session_id() const override {
     NOTIMPLEMENTED();
@@ -276,7 +276,7 @@ class MockSessionDescription : public SessionDescriptionInterface {
   const IceCandidateCollection* candidates(
       size_t mediasection_index) const override {
     NOTIMPLEMENTED();
-    return NULL;
+    return nullptr;
   }
 
   bool ToString(std::string* out) const override {
@@ -317,7 +317,7 @@ class MockIceCandidate : public IceCandidateInterface {
 };
 
 MockPeerConnectionDependencyFactory::MockPeerConnectionDependencyFactory()
-    : PeerConnectionDependencyFactory(NULL),
+    : PeerConnectionDependencyFactory(nullptr),
       signaling_thread_("MockPCFactory WebRtc Signaling Thread") {
   EnsureWebRtcAudioDeviceImpl();
   CHECK(signaling_thread_.Start());

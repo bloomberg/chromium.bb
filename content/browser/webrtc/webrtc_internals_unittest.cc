@@ -110,7 +110,7 @@ class WebRtcInternalsTest : public testing::Test {
   void VerifyList(const base::DictionaryValue* dict,
                   const std::string& key,
                   const base::ListValue& expected) {
-    const base::ListValue* actual = NULL;
+    const base::ListValue* actual = nullptr;
     EXPECT_TRUE(dict->GetList(key, &actual));
     EXPECT_TRUE(expected.Equals(actual));
   }
@@ -121,7 +121,7 @@ class WebRtcInternalsTest : public testing::Test {
                               const std::string& origin,
                               const std::string& audio,
                               const std::string& video) {
-    base::DictionaryValue* dict = NULL;
+    base::DictionaryValue* dict = nullptr;
     EXPECT_TRUE(actual_data->GetAsDictionary(&dict));
 
     VerifyInt(dict, "rid", rid);
@@ -227,7 +227,7 @@ TEST_F(WebRtcInternalsTest, SendAddPeerConnectionUpdate) {
 
   ASSERT_EQ("addPeerConnection", observer.command());
 
-  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = nullptr;
   EXPECT_TRUE(observer.value()->GetAsDictionary(&dict));
 
   VerifyInt(dict, "pid", 1);
@@ -253,7 +253,7 @@ TEST_F(WebRtcInternalsTest, SendRemovePeerConnectionUpdate) {
 
   ASSERT_EQ("removePeerConnection", observer.command());
 
-  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = nullptr;
   EXPECT_TRUE(observer.value()->GetAsDictionary(&dict));
 
   VerifyInt(dict, "pid", 1);
@@ -278,7 +278,7 @@ TEST_F(WebRtcInternalsTest, SendUpdatePeerConnectionUpdate) {
 
   ASSERT_EQ("updatePeerConnection", observer.command());
 
-  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = nullptr;
   EXPECT_TRUE(observer.value()->GetAsDictionary(&dict));
 
   VerifyInt(dict, "pid", 1);
@@ -358,11 +358,11 @@ TEST_F(WebRtcInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   EXPECT_EQ("updateAllPeerConnections", observer.command());
   ASSERT_TRUE(observer.value());
 
-  base::ListValue* list = NULL;
+  base::ListValue* list = nullptr;
   EXPECT_TRUE(observer.value()->GetAsList(&list));
   EXPECT_EQ(1U, list->GetSize());
 
-  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = nullptr;
   EXPECT_TRUE((*list->begin()).GetAsDictionary(&dict));
 
   VerifyInt(dict, "rid", rid);
@@ -372,7 +372,7 @@ TEST_F(WebRtcInternalsTest, SendAllUpdatesWithPeerConnectionUpdate) {
   VerifyString(dict, "rtcConfiguration", kRtcConfiguration);
   VerifyString(dict, "constraints", kContraints);
 
-  base::ListValue* log = NULL;
+  base::ListValue* log = nullptr;
   ASSERT_TRUE(dict->GetList("log", &log));
   EXPECT_EQ(1U, log->GetSize());
 
@@ -403,7 +403,7 @@ TEST_F(WebRtcInternalsTest, OnAddStats) {
   EXPECT_EQ("addStats", observer.command());
   ASSERT_TRUE(observer.value());
 
-  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = nullptr;
   EXPECT_TRUE(observer.value()->GetAsDictionary(&dict));
 
   VerifyInt(dict, "pid", pid);

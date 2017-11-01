@@ -23,7 +23,7 @@ const WebTouchPoint* FindTouchPoint(const WebTouchEvent& event, int id) {
     if (event.touches[i].id == id)
       return &event.touches[i];
   }
-  return NULL;
+  return nullptr;
 }
 
 std::string TouchPointIdsToString(const WebTouchEvent& event) {

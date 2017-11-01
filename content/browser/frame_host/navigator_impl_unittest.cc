@@ -882,7 +882,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
   // A NavigationRequest should have been generated.
   NavigationRequest* main_request = node->navigation_request();
-  ASSERT_TRUE(main_request != NULL);
+  ASSERT_TRUE(main_request != nullptr);
   EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD,
             main_request->common_params().navigation_type);
   main_test_rfh()->PrepareForCommit();
@@ -895,7 +895,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   controller().Reload(ReloadType::BYPASSING_CACHE, false);
   // A NavigationRequest should have been generated.
   main_request = node->navigation_request();
-  ASSERT_TRUE(main_request != NULL);
+  ASSERT_TRUE(main_request != nullptr);
   EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE,
             main_request->common_params().navigation_type);
   main_test_rfh()->PrepareForCommit();

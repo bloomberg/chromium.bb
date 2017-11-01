@@ -21,10 +21,7 @@ namespace content {
 
 BrowserShutdownProfileDumper::BrowserShutdownProfileDumper(
     const base::FilePath& dump_file_name)
-    : dump_file_name_(dump_file_name),
-      blocks_(0),
-      dump_file_(NULL) {
-}
+    : dump_file_name_(dump_file_name), blocks_(0), dump_file_(nullptr) {}
 
 BrowserShutdownProfileDumper::~BrowserShutdownProfileDumper() {
   WriteTracesToDisc();
@@ -144,7 +141,7 @@ void BrowserShutdownProfileDumper::CloseFile() {
   if (!dump_file_)
     return;
   base::CloseFile(dump_file_);
-  dump_file_ = NULL;
+  dump_file_ = nullptr;
 }
 
 }  // namespace content

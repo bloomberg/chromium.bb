@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   waiter.WaitForNotification();
 
   BrowserAccessibility* hit_node = HitTestAndWaitForResult(gfx::Point(-1, -1));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_EQ(ui::AX_ROLE_ROOT_WEB_AREA, hit_node->GetRole());
 }
 
@@ -126,30 +126,30 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   // (50, 50) -> "Button"
   BrowserAccessibility* hit_node;
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 50));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
   ASSERT_EQ("Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
 
   // (50, 305) -> div in first iframe
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 305));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
 
   // (50, 350) -> "Ordinary Button"
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 350));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
   ASSERT_EQ("Ordinary Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
 
   // (50, 455) -> "Scrolled Button"
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 455));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
   ASSERT_EQ("Scrolled Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
 
   // (50, 505) -> div in second iframe
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 505));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
 
   // (50, 505) -> div in second iframe
@@ -188,21 +188,21 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   // (50, 50) -> "Button"
   BrowserAccessibility* hit_node;
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_NE(ui::AX_ROLE_BUTTON, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
   ASSERT_EQ("Button", hit_node->GetStringAttribute(ui::AX_ATTR_NAME));
 
   // (50, 305) -> div in first iframe
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_NE(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
   ASSERT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
 
   // (50, 350) -> "Ordinary Button"
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_NE(ui::AX_ROLE_BUTTON, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
   ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
   // (50, 455) -> "Scrolled Button"
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_NE(ui::AX_ROLE_BUTTON, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
   ASSERT_EQ(ui::AX_ROLE_BUTTON, hit_node->GetRole());
@@ -218,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
 
   // (50, 505) -> div in second iframe
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
-  ASSERT_TRUE(hit_node != NULL);
+  ASSERT_TRUE(hit_node != nullptr);
   ASSERT_NE(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
   ASSERT_EQ(ui::AX_ROLE_GENERIC_CONTAINER, hit_node->GetRole());

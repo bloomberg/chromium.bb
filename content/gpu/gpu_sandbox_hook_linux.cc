@@ -111,7 +111,7 @@ void UpdateProcessTypeToGpuBroker() {
   base::CommandLine::StringVector exec =
       base::CommandLine::ForCurrentProcess()->GetArgs();
   base::CommandLine::Reset();
-  base::CommandLine::Init(0, NULL);
+  base::CommandLine::Init(0, nullptr);
   base::CommandLine::ForCurrentProcess()->InitFromArgv(exec);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kProcessType, "gpu-broker");
@@ -273,8 +273,8 @@ bool GpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
     // inside the sandbox, so preload them now.
     if (options.vaapi_accelerated_video_encode_enabled ||
         options.accelerated_video_decode_enabled) {
-      const char* I965DrvVideoPath = NULL;
-      const char* I965HybridDrvVideoPath = NULL;
+      const char* I965DrvVideoPath = nullptr;
+      const char* I965HybridDrvVideoPath = nullptr;
 
       if (IsArchitectureX86_64()) {
         I965DrvVideoPath = "/usr/lib64/va/drivers/i965_drv_video.so";
@@ -348,11 +348,11 @@ bool CrosAmdGpuPreSandboxHook(
 
   // Preload the amdgpu-dependent libraries.
   errno = 0;
-  if (NULL == dlopen("libglapi.so", dlopen_flag)) {
+  if (nullptr == dlopen("libglapi.so", dlopen_flag)) {
     LOG(ERROR) << "dlopen(libglapi.so) failed with error: " << dlerror();
     return false;
   }
-  if (NULL == dlopen("/usr/lib64/dri/radeonsi_dri.so", dlopen_flag)) {
+  if (nullptr == dlopen("/usr/lib64/dri/radeonsi_dri.so", dlopen_flag)) {
     LOG(ERROR) << "dlopen(radeonsi_dri.so) failed with error: " << dlerror();
     return false;
   }

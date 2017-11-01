@@ -288,13 +288,13 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
   }
 
   if (latency->FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                           latency_component_id_, NULL)) {
+                           latency_component_id_, nullptr)) {
     return;
   }
 
   if (event.TimeStampSeconds() &&
       !latency->FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
-                            NULL)) {
+                            nullptr)) {
     base::TimeTicks timestamp_now = base::TimeTicks::Now();
     base::TimeTicks timestamp_original =
         base::TimeTicks() +

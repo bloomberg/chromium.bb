@@ -559,7 +559,7 @@ class RenderWidgetHostTest : public testing::Test {
   RenderWidgetHostTest(
       UseMojoInputMessages input_messages_mode = UseMojoInputMessages::kEnabled,
       WheelScrollingMode wheel_scrolling_mode = kWheelScrollLatching)
-      : process_(NULL),
+      : process_(nullptr),
         handle_key_press_event_(false),
         handle_mouse_event_(false),
         simulated_event_time_delta_seconds_(0),
@@ -652,7 +652,7 @@ class RenderWidgetHostTest : public testing::Test {
     view_.reset();
     host_.reset();
     delegate_.reset();
-    process_ = NULL;
+    process_ = nullptr;
     browser_context_.reset();
 
 #if defined(USE_AURA)
@@ -834,7 +834,7 @@ class RenderWidgetHostTest : public testing::Test {
     const char* data;
     int data_length;
     if (!iter.ReadData(&data, &data_length))
-      return NULL;
+      return nullptr;
     return reinterpret_cast<const WebInputEvent*>(data);
   }
 
@@ -1097,7 +1097,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   // Simulate a renderer crash before the update message.  Ensure all the
   // resize ack logic is cleared.  Must clear the view first so it doesn't get
   // deleted.
-  host_->SetView(NULL);
+  host_->SetView(nullptr);
   host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->old_resize_params_->new_size);
@@ -1115,7 +1115,7 @@ TEST_F(RenderWidgetHostTest, Background) {
   view.reset(new RenderWidgetHostViewAura(
       host_.get(), false, false /* enable_surface_synchronization */));
   // TODO(derat): Call this on all platforms: http://crbug.com/102450.
-  view->InitAsChild(NULL);
+  view->InitAsChild(nullptr);
 #elif defined(OS_ANDROID)
   view.reset(new RenderWidgetHostViewAndroid(host_.get(), NULL));
 #endif
@@ -1135,7 +1135,7 @@ TEST_F(RenderWidgetHostTest, Background) {
   ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
   EXPECT_FALSE(std::get<0>(sent_background));
 
-  host_->SetView(NULL);
+  host_->SetView(nullptr);
   static_cast<RenderWidgetHostViewBase*>(view.release())->Destroy();
 }
 #endif
@@ -2360,7 +2360,7 @@ void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
 
   EXPECT_TRUE(event->GetType() == expected_type);
   EXPECT_TRUE(latency_info.FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, NULL));
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, nullptr));
 
   process->sink().ClearMessages();
 }
@@ -2388,7 +2388,7 @@ void CheckLatencyInfoComponentInGestureScrollUpdate(
 
   EXPECT_TRUE(event->GetType() == WebInputEvent::kGestureScrollUpdate);
   EXPECT_TRUE(latency_info.FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, NULL));
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, nullptr));
 
   process->sink().ClearMessages();
 }
@@ -2477,7 +2477,7 @@ void CheckLatencyInfoComponentInMessage(
               expected_type);
   EXPECT_TRUE(
       dispatched_events[0]->ToEvent()->Event()->latency_info.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, NULL));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, nullptr));
   dispatched_events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 }
 
@@ -2494,7 +2494,7 @@ void CheckLatencyInfoComponentInGestureScrollUpdate(
             dispatched_events[1]->ToEvent()->Event()->web_event->GetType());
   EXPECT_TRUE(
       dispatched_events[1]->ToEvent()->Event()->latency_info.FindLatency(
-          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, NULL));
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, component_id, nullptr));
   dispatched_events[1]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 }
 

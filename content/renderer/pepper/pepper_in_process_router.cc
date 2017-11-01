@@ -132,7 +132,7 @@ bool PepperInProcessRouter::SendToHost(IPC::Message* msg) {
   DCHECK(result) << "The message was not handled by the host.";
 
   pending_message_id_ = 0;
-  reply_deserializer_.reset(NULL);
+  reply_deserializer_.reset(nullptr);
   return reply_result_;
 }
 

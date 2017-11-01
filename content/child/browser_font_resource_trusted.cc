@@ -62,8 +62,7 @@ base::string16 GetFontFromMap(const ScriptFontFamilyMap& map,
 class TextRunCollection {
  public:
   explicit TextRunCollection(const PP_BrowserFont_Trusted_TextRun& run)
-      : bidi_(NULL),
-        num_runs_(0) {
+      : bidi_(nullptr), num_runs_(0) {
     StringVar* text_string = StringVar::FromPPVar(run.text);
     if (!text_string)
       return;  // Leave num_runs_ = 0 so we'll do nothing.
@@ -77,7 +76,8 @@ class TextRunCollection {
     } else {
       bidi_ = ubidi_open();
       UErrorCode uerror = U_ZERO_ERROR;
-      ubidi_setPara(bidi_, text_.data(), text_.size(), run.rtl, NULL, &uerror);
+      ubidi_setPara(bidi_, text_.data(), text_.size(), run.rtl, nullptr,
+                    &uerror);
       if (U_SUCCESS(uerror))
         num_runs_ = ubidi_countRuns(bidi_, &uerror);
     }

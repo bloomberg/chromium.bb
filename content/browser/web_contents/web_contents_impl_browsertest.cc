@@ -88,7 +88,7 @@ class LoadStopNotificationObserver : public WindowedNotificationObserver {
       : WindowedNotificationObserver(NOTIFICATION_LOAD_STOP,
                                      Source<NavigationController>(controller)),
         session_index_(-1),
-        controller_(NULL) {}
+        controller_(nullptr) {}
   void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) override {
@@ -420,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 class RenderFrameCreatedObserver : public WebContentsObserver {
  public:
   explicit RenderFrameCreatedObserver(Shell* shell)
-      : WebContentsObserver(shell->web_contents()), last_rfh_(NULL) {}
+      : WebContentsObserver(shell->web_contents()), last_rfh_(nullptr) {}
 
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
     last_rfh_ = render_frame_host;

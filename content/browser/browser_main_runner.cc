@@ -210,9 +210,9 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
       if (base::RunLoop::IsRunningOnCurrentThread())
         base::RunLoop::QuitCurrentDeprecated();
   #endif
-      main_loop_.reset(NULL);
+      main_loop_.reset(nullptr);
 
-      notification_service_.reset(NULL);
+      notification_service_.reset(nullptr);
 
       is_shutdown_ = true;
     }

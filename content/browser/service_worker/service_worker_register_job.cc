@@ -600,7 +600,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
       }
     }
     if (!is_promise_resolved_)
-      ResolvePromise(status, status_message, NULL);
+      ResolvePromise(status, status_message, nullptr);
   }
   DCHECK(callbacks_.empty());
   if (registration()) {

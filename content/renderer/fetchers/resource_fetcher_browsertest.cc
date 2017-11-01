@@ -100,7 +100,7 @@ class FetcherDelegate {
   base::Closure quit_task_;
 };
 
-FetcherDelegate* FetcherDelegate::instance_ = NULL;
+FetcherDelegate* FetcherDelegate::instance_ = nullptr;
 
 class EvilFetcherDelegate : public FetcherDelegate {
  public:

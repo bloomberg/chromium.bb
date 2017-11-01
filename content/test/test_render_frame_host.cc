@@ -37,8 +37,7 @@ namespace content {
 
 TestRenderFrameHostCreationObserver::TestRenderFrameHostCreationObserver(
     WebContents* web_contents)
-    : WebContentsObserver(web_contents), last_created_frame_(NULL) {
-}
+    : WebContentsObserver(web_contents), last_created_frame_(nullptr) {}
 
 TestRenderFrameHostCreationObserver::~TestRenderFrameHostCreationObserver() {
 }
@@ -94,7 +93,8 @@ TestRenderFrameHost::TestRenderFrameHost(SiteInstance* site_instance,
                           widget_routing_id,
                           flags,
                           false),
-      child_creation_observer_(delegate ? delegate->GetAsWebContents() : NULL),
+      child_creation_observer_(delegate ? delegate->GetAsWebContents()
+                                        : nullptr),
       contents_mime_type_("text/html"),
       simulate_history_list_was_cleared_(false),
       last_commit_was_error_page_(false) {}

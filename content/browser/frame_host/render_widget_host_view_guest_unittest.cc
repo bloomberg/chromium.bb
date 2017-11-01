@@ -58,7 +58,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, routing_id, std::move(widget), false);
     view_ = RenderWidgetHostViewGuest::Create(
-        widget_host_, NULL,
+        widget_host_, nullptr,
         (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());
   }
 

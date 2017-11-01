@@ -47,7 +47,7 @@ scoped_refptr<Stream> StreamRegistry::GetStream(const GURL& url) {
   if (stream != streams_.end())
     return stream->second;
 
-  return NULL;
+  return nullptr;
 }
 
 bool StreamRegistry::CloneStream(const GURL& url, const GURL& src_url) {

@@ -12,7 +12,7 @@
 namespace content {
 
 // static
-RenderFrameHostFactory* RenderFrameHostFactory::factory_ = NULL;
+RenderFrameHostFactory* RenderFrameHostFactory::factory_ = nullptr;
 
 // static
 std::unique_ptr<RenderFrameHostImpl> RenderFrameHostFactory::Create(
@@ -47,7 +47,7 @@ void RenderFrameHostFactory::RegisterFactory(RenderFrameHostFactory* factory) {
 // static
 void RenderFrameHostFactory::UnregisterFactory() {
   DCHECK(factory_) << "No factory to unregister.";
-  factory_ = NULL;
+  factory_ = nullptr;
 }
 
 }  // namespace content

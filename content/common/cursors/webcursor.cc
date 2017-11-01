@@ -121,7 +121,7 @@ void WebCursor::Serialize(base::Pickle* pickle) const {
   pickle->WriteInt(custom_size_.height());
   pickle->WriteFloat(custom_scale_);
 
-  const char* data = NULL;
+  const char* data = nullptr;
   if (!custom_data_.empty())
     data = &custom_data_[0];
   pickle->WriteData(data, custom_data_.size());

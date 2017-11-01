@@ -99,7 +99,7 @@ class MediaStreamTrackMetricsTest : public testing::Test {
   void TearDown() override {
     signaling_thread_.Stop();
     metrics_.reset();
-    stream_ = NULL;
+    stream_ = nullptr;
   }
 
   // Adds an audio track to |stream_| on the signaling thread to simulate how

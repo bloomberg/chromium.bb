@@ -60,7 +60,7 @@ class QuarantineLinuxTest : public testing::Test {
   }
 
   void GetExtendedAttributeNames(vector<string>* attr_names) const {
-    ssize_t len = listxattr(test_file().value().c_str(), NULL, 0);
+    ssize_t len = listxattr(test_file().value().c_str(), nullptr, 0);
     if (len <= static_cast<ssize_t>(0))
       return;
     char* buffer = new char[len];

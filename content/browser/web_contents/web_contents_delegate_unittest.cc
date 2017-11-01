@@ -26,8 +26,8 @@ TEST_F(WebContentsDelegateTest, UnregisterInDestructor) {
       WebContents::Create(WebContents::CreateParams(browser_context()))));
   std::unique_ptr<WebContentsImpl> contents_b(static_cast<WebContentsImpl*>(
       WebContents::Create(WebContents::CreateParams(browser_context()))));
-  EXPECT_EQ(NULL, contents_a->GetDelegate());
-  EXPECT_EQ(NULL, contents_b->GetDelegate());
+  EXPECT_EQ(nullptr, contents_a->GetDelegate());
+  EXPECT_EQ(nullptr, contents_b->GetDelegate());
 
   std::unique_ptr<MockWebContentsDelegate> delegate(
       new MockWebContentsDelegate());
@@ -35,7 +35,7 @@ TEST_F(WebContentsDelegateTest, UnregisterInDestructor) {
   // Setting a delegate should work correctly.
   contents_a->SetDelegate(delegate.get());
   EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
-  EXPECT_TRUE(contents_b->GetDelegate() == NULL);
+  EXPECT_TRUE(contents_b->GetDelegate() == nullptr);
 
   // A delegate can be a delegate to multiple WebContentsImpl.
   contents_b->SetDelegate(delegate.get());
@@ -48,18 +48,18 @@ TEST_F(WebContentsDelegateTest, UnregisterInDestructor) {
   EXPECT_EQ(delegate.get(), contents_b->GetDelegate());
 
   // Setting delegate to NULL should work correctly.
-  contents_b->SetDelegate(NULL);
+  contents_b->SetDelegate(nullptr);
   EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
-  EXPECT_TRUE(contents_b->GetDelegate() == NULL);
+  EXPECT_TRUE(contents_b->GetDelegate() == nullptr);
 
   // Destroying the delegate while it is still the delegate for a
   // WebContentsImpl should unregister it.
   contents_b->SetDelegate(delegate.get());
   EXPECT_EQ(delegate.get(), contents_a->GetDelegate());
   EXPECT_EQ(delegate.get(), contents_b->GetDelegate());
-  delegate.reset(NULL);
-  EXPECT_TRUE(contents_a->GetDelegate() == NULL);
-  EXPECT_TRUE(contents_b->GetDelegate() == NULL);
+  delegate.reset(nullptr);
+  EXPECT_TRUE(contents_a->GetDelegate() == nullptr);
+  EXPECT_TRUE(contents_b->GetDelegate() == nullptr);
 
   // Destroy the WebContentses and run the message loop to prevent leaks.
   contents_a.reset();

@@ -70,7 +70,7 @@ PP_Resource PPB_Graphics3D_Impl::CreateRaw(
     gpu::Capabilities* capabilities,
     base::SharedMemoryHandle* shared_state_handle,
     gpu::CommandBufferId* command_buffer_id) {
-  PPB_Graphics3D_API* share_api = NULL;
+  PPB_Graphics3D_API* share_api = nullptr;
   if (share_context) {
     EnterResourceNoLock<PPB_Graphics3D_API> enter(share_context, true);
     if (enter.failed())
@@ -256,7 +256,7 @@ bool PPB_Graphics3D_Impl::InitRaw(
   attrib_helper.should_use_native_gmb_for_backbuffer = use_image_chromium_;
   attrib_helper.context_type = gpu::gles2::CONTEXT_TYPE_OPENGLES2;
 
-  gpu::CommandBufferProxyImpl* share_buffer = NULL;
+  gpu::CommandBufferProxyImpl* share_buffer = nullptr;
   if (!plugin_instance->is_flash_plugin())
     UMA_HISTOGRAM_BOOLEAN("Pepper.Graphics3DHasShareGroup", !!share_context);
   if (share_context) {

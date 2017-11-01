@@ -84,7 +84,7 @@ class RedirectToFileResourceHandler::Writer {
   }
 
   void Close() {
-    handler_ = NULL;
+    handler_ = nullptr;
     if (!is_writing_)
       CloseAndDelete();
   }
@@ -139,7 +139,7 @@ RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
   // Orphan the writer to asynchronously close and release the temporary file.
   if (writer_) {
     writer_->Close();
-    writer_ = NULL;
+    writer_ = nullptr;
   }
 }
 

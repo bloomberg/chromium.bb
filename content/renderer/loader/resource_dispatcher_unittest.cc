@@ -266,7 +266,7 @@ TEST_F(ResourceDispatcherTest, RoundTrip) {
 
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
-  StartAsync(std::move(request), NULL, &peer_context);
+  StartAsync(std::move(request), nullptr, &peer_context);
 
   int id = ConsumeRequestResource();
   EXPECT_EQ(0u, queued_messages());
@@ -297,11 +297,11 @@ TEST_F(ResourceDispatcherTest, MultipleRequests) {
 
   std::unique_ptr<ResourceRequest> request1(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context1;
-  StartAsync(std::move(request1), NULL, &peer_context1);
+  StartAsync(std::move(request1), nullptr, &peer_context1);
 
   std::unique_ptr<ResourceRequest> request2(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context2;
-  StartAsync(std::move(request2), NULL, &peer_context2);
+  StartAsync(std::move(request2), nullptr, &peer_context2);
 
   int id1 = ConsumeRequestResource();
   int id2 = ConsumeRequestResource();
@@ -338,7 +338,7 @@ TEST_F(ResourceDispatcherTest, MultipleRequests) {
 TEST_F(ResourceDispatcherTest, Cancel) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
-  int request_id = StartAsync(std::move(request), NULL, &peer_context);
+  int request_id = StartAsync(std::move(request), nullptr, &peer_context);
 
   int id = ConsumeRequestResource();
   EXPECT_EQ(0u, queued_messages());
@@ -363,7 +363,7 @@ TEST_F(ResourceDispatcherTest, Cancel) {
 TEST_F(ResourceDispatcherTest, CancelDuringCallback) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
-  StartAsync(std::move(request), NULL, &peer_context);
+  StartAsync(std::move(request), nullptr, &peer_context);
   peer_context.cancel_on_receive_response = true;
 
   int id = ConsumeRequestResource();
@@ -538,7 +538,7 @@ TEST_F(ResourceDispatcherTest, CancelDuringCallbackWithWrapperPeer) {
 TEST_F(ResourceDispatcherTest, Redirect) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
-  StartAsync(std::move(request), NULL, &peer_context);
+  StartAsync(std::move(request), nullptr, &peer_context);
 
   int id = ConsumeRequestResource();
 
@@ -569,7 +569,7 @@ TEST_F(ResourceDispatcherTest, Redirect) {
 TEST_F(ResourceDispatcherTest, CancelDuringRedirect) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
-  StartAsync(std::move(request), NULL, &peer_context);
+  StartAsync(std::move(request), nullptr, &peer_context);
   peer_context.follow_redirects = false;
 
   int id = ConsumeRequestResource();
@@ -599,7 +599,7 @@ TEST_F(ResourceDispatcherTest, CancelDuringRedirect) {
 TEST_F(ResourceDispatcherTest, Defer) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
-  int request_id = StartAsync(std::move(request), NULL, &peer_context);
+  int request_id = StartAsync(std::move(request), nullptr, &peer_context);
 
   int id = ConsumeRequestResource();
   EXPECT_EQ(0u, queued_messages());
@@ -633,7 +633,7 @@ TEST_F(ResourceDispatcherTest, Defer) {
 TEST_F(ResourceDispatcherTest, DeferOnRedirect) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
-  int request_id = StartAsync(std::move(request), NULL, &peer_context);
+  int request_id = StartAsync(std::move(request), nullptr, &peer_context);
   peer_context.defer_on_redirect = true;
 
   int id = ConsumeRequestResource();
@@ -672,7 +672,7 @@ TEST_F(ResourceDispatcherTest, DeferOnRedirect) {
 TEST_F(ResourceDispatcherTest, CancelDeferredRequest) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
-  int request_id = StartAsync(std::move(request), NULL, &peer_context);
+  int request_id = StartAsync(std::move(request), nullptr, &peer_context);
 
   int id = ConsumeRequestResource();
   EXPECT_EQ(0u, queued_messages());
@@ -697,7 +697,7 @@ TEST_F(ResourceDispatcherTest, CancelDeferredRequest) {
 TEST_F(ResourceDispatcherTest, CancelWhileFlushingDeferredRequests) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
-  int request_id = StartAsync(std::move(request), NULL, &peer_context);
+  int request_id = StartAsync(std::move(request), nullptr, &peer_context);
 
   // Cancel the request when the data message is handled.
   peer_context.cancel_on_receive_data = true;
@@ -742,7 +742,7 @@ TEST_F(ResourceDispatcherTest,
        CancelWhileFlushingDeferredRequestsFromOnMessageReceived) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
-  int request_id = StartAsync(std::move(request), NULL, &peer_context);
+  int request_id = StartAsync(std::move(request), nullptr, &peer_context);
 
   // Cancel the request when the data message is handled.
   peer_context.cancel_on_receive_data = true;
@@ -802,7 +802,7 @@ TEST_F(ResourceDispatcherTest,
 TEST_F(ResourceDispatcherTest, DownloadToFile) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(true));
   TestRequestPeer::Context peer_context;
-  int request_id = StartAsync(std::move(request), NULL, &peer_context);
+  int request_id = StartAsync(std::move(request), nullptr, &peer_context);
   const int kDownloadedIncrement = 100;
   const int kEncodedIncrement = 50;
 
@@ -843,7 +843,7 @@ TEST_F(ResourceDispatcherTest, DownloadToFile) {
 TEST_F(ResourceDispatcherTest, CancelDownloadToFile) {
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(true));
   TestRequestPeer::Context peer_context;
-  int request_id = StartAsync(std::move(request), NULL, &peer_context);
+  int request_id = StartAsync(std::move(request), nullptr, &peer_context);
 
   int id = ConsumeRequestResource();
   EXPECT_EQ(0u, queued_messages());
@@ -876,7 +876,7 @@ class TimeConversionTest : public ResourceDispatcherTest {
   void PerformTest(const ResourceResponseHead& response_head) {
     std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
     TestRequestPeer::Context peer_context;
-    StartAsync(std::move(request), NULL, &peer_context);
+    StartAsync(std::move(request), nullptr, &peer_context);
 
     dispatcher()->OnMessageReceived(
         ResourceMsg_ReceivedResponse(0, response_head));

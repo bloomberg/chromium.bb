@@ -144,12 +144,12 @@ blink::WebThread* PpapiBlinkPlatformImpl::CurrentThread() {
 
 blink::WebClipboard* PpapiBlinkPlatformImpl::Clipboard() {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 blink::WebFileUtilities* PpapiBlinkPlatformImpl::GetFileUtilities() {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 blink::WebSandboxSupport* PpapiBlinkPlatformImpl::GetSandboxSupport() {
@@ -195,7 +195,7 @@ blink::WebString PpapiBlinkPlatformImpl::DefaultLocale() {
 
 blink::WebThemeEngine* PpapiBlinkPlatformImpl::ThemeEngine() {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 void PpapiBlinkPlatformImpl::GetPluginList(

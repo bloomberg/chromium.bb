@@ -113,11 +113,11 @@ DevToolsAgentHostImpl::~DevToolsAgentHostImpl() {
 // static
 scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForId(
     const std::string& id) {
-  if (g_devtools_instances == NULL)
-    return NULL;
+  if (g_devtools_instances == nullptr)
+    return nullptr;
   DevToolsMap::iterator it = g_devtools_instances.Get().find(id);
   if (it == g_devtools_instances.Get().end())
-    return NULL;
+    return nullptr;
   return it->second;
 }
 
@@ -264,7 +264,7 @@ BrowserContext* DevToolsAgentHostImpl::GetBrowserContext() {
 }
 
 WebContents* DevToolsAgentHostImpl::GetWebContents() {
-  return NULL;
+  return nullptr;
 }
 
 void DevToolsAgentHostImpl::DisconnectWebContents() {
@@ -305,7 +305,7 @@ void DevToolsAgentHostImpl::InspectElement(
 
 // static
 void DevToolsAgentHost::DetachAllClients() {
-  if (g_devtools_instances == NULL)
+  if (g_devtools_instances == nullptr)
     return;
 
   // Make a copy, since detaching may lead to agent destruction, which

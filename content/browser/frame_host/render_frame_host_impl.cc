@@ -694,7 +694,7 @@ const url::Origin& RenderFrameHostImpl::GetLastCommittedOrigin() {
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (!view)
-    return NULL;
+    return nullptr;
   return view->GetNativeView();
 }
 
@@ -1017,7 +1017,7 @@ void RenderFrameHostImpl::AccessibilityReset() {
 }
 
 void RenderFrameHostImpl::AccessibilityFatalError() {
-  browser_accessibility_manager_.reset(NULL);
+  browser_accessibility_manager_.reset(nullptr);
   if (accessibility_reset_token_)
     return;
 
@@ -1051,7 +1051,7 @@ gfx::NativeViewAccessible
       render_view_host_->GetWidget()->GetView());
   if (view)
     return view->AccessibilityGetNativeViewAccessible();
-  return NULL;
+  return nullptr;
 }
 
 void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {

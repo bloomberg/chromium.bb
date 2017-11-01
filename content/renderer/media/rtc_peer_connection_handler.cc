@@ -476,7 +476,7 @@ class SetSessionDescriptionRequest
           base::BindOnce(&SetSessionDescriptionRequest::OnSuccess, this));
       return;
     }
-    tracker_.TrackOnSuccess(NULL);
+    tracker_.TrackOnSuccess(nullptr);
     webkit_request_.RequestSucceeded();
     webkit_request_.Reset();
   }
@@ -1870,7 +1870,7 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::CreateDataChannel(
       native_peer_connection_->CreateDataChannel(label.Utf8(), &config));
   if (!webrtc_channel) {
     DLOG(ERROR) << "Could not create native data channel.";
-    return NULL;
+    return nullptr;
   }
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackCreateDataChannel(

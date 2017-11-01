@@ -31,12 +31,12 @@ bool RenderWidgetHostDelegate::PreHandleGestureEvent(
 
 BrowserAccessibilityManager*
     RenderWidgetHostDelegate::GetRootBrowserAccessibilityManager() {
-  return NULL;
+  return nullptr;
 }
 
 BrowserAccessibilityManager*
     RenderWidgetHostDelegate::GetOrCreateRootBrowserAccessibilityManager() {
-  return NULL;
+  return nullptr;
 }
 
 // If a delegate does not override this, the RenderWidgetHostView will

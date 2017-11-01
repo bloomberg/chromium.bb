@@ -149,14 +149,14 @@ class FileWriterTest : public testing::Test,
       received_did_write_complete_ = true;
 
     if (delete_in_client_callback_)
-      testable_writer_.reset(NULL);
+      testable_writer_.reset(nullptr);
   }
 
   void DidTruncate() override {
     EXPECT_FALSE(received_did_truncate_);
     received_did_truncate_ = true;
     if (delete_in_client_callback_)
-      testable_writer_.reset(NULL);
+      testable_writer_.reset(nullptr);
   }
 
   void DidFail(blink::WebFileError error) override {
@@ -164,7 +164,7 @@ class FileWriterTest : public testing::Test,
     received_did_fail_ = true;
     fail_error_received_ = error;
     if (delete_in_client_callback_)
-      testable_writer_.reset(NULL);
+      testable_writer_.reset(nullptr);
   }
 
  protected:

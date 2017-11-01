@@ -60,7 +60,7 @@ void CreateNativeAudioMediaStreamTrack(
 }
 
 void CreateNativeVideoMediaStreamTrack(blink::WebMediaStreamTrack track) {
-  DCHECK(track.GetTrackData() == NULL);
+  DCHECK(track.GetTrackData() == nullptr);
   blink::WebMediaStreamSource source = track.Source();
   DCHECK_EQ(source.GetType(), blink::WebMediaStreamSource::kTypeVideo);
   MediaStreamVideoSource* native_source =

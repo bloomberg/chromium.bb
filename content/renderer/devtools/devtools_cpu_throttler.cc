@@ -111,7 +111,7 @@ void CPUThrottlingThread::InstallSignalHandler() {
 void CPUThrottlingThread::RestoreSignalHandler() {
   if (!signal_handler_installed_)
     return;
-  sigaction(SIGUSR2, &old_signal_handler_, 0);
+  sigaction(SIGUSR2, &old_signal_handler_, nullptr);
   signal_handler_installed_ = false;
 }
 

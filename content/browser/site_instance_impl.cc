@@ -70,7 +70,7 @@ int32_t SiteInstanceImpl::GetId() {
 }
 
 bool SiteInstanceImpl::HasProcess() const {
-  if (process_ != NULL)
+  if (process_ != nullptr)
     return true;
 
   // If we would use process-per-site for this site, also check if there is an

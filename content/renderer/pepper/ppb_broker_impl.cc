@@ -28,7 +28,7 @@ namespace content {
 
 PPB_Broker_Impl::PPB_Broker_Impl(PP_Instance instance)
     : Resource(ppapi::OBJECT_IS_IMPL, instance),
-      broker_(NULL),
+      broker_(nullptr),
       connect_callback_(),
       pipe_handle_(PlatformFileToInt(base::SyncSocket::kInvalidHandle)),
       routing_id_(RenderThreadImpl::current()->GenerateRoutingID()) {
@@ -38,7 +38,7 @@ PPB_Broker_Impl::PPB_Broker_Impl(PP_Instance instance)
 PPB_Broker_Impl::~PPB_Broker_Impl() {
   if (broker_) {
     broker_->Disconnect(this);
-    broker_ = NULL;
+    broker_ = nullptr;
   }
 
   // The plugin owns the handle.

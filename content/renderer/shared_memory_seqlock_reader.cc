@@ -16,13 +16,13 @@ SharedMemorySeqLockReaderBase::InitializeSharedMemory(
     base::SharedMemoryHandle shared_memory_handle, size_t buffer_size) {
   renderer_shared_memory_handle_ = shared_memory_handle;
   if (!base::SharedMemory::IsHandleValid(renderer_shared_memory_handle_))
-    return 0;
+    return nullptr;
   renderer_shared_memory_.reset(new base::SharedMemory(
       renderer_shared_memory_handle_, true));
 
   return (renderer_shared_memory_->Map(buffer_size))
-      ? renderer_shared_memory_->memory()
-      : 0;
+             ? renderer_shared_memory_->memory()
+             : nullptr;
 }
 
 bool SharedMemorySeqLockReaderBase::FetchFromBuffer(

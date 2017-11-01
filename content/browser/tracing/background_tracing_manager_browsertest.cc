@@ -123,7 +123,7 @@ class BackgroundTracingManagerUploadConfigWrapper {
     const size_t kOutputBufferLength = 10 * 1024 * 1024;
     std::vector<char> output_str(kOutputBufferLength);
 
-    z_stream stream = {0};
+    z_stream stream = {nullptr};
     stream.avail_in = compressed_length;
     stream.avail_out = kOutputBufferLength;
     stream.next_in = (Bytef*)&file_contents->data()[0];
@@ -224,7 +224,7 @@ void SetupBackgroundTracingManager() {
 
 void DisableScenarioWhenIdle() {
   BackgroundTracingManager::GetInstance()->SetActiveScenario(
-      NULL, BackgroundTracingManager::ReceiveCallback(),
+      nullptr, BackgroundTracingManager::ReceiveCallback(),
       BackgroundTracingManager::NO_DATA_FILTERING);
 }
 

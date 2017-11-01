@@ -32,9 +32,7 @@ void AddWidgetHelper(int render_process_id,
 }  // namespace
 
 RenderWidgetHelper::RenderWidgetHelper()
-    : render_process_id_(-1),
-      resource_dispatcher_host_(NULL) {
-}
+    : render_process_id_(-1), resource_dispatcher_host_(nullptr) {}
 
 RenderWidgetHelper::~RenderWidgetHelper() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

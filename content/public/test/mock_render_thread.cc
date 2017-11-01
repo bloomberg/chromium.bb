@@ -125,7 +125,7 @@ bool MockRenderThread::Send(IPC::Message* msg) {
 }
 
 IPC::SyncChannel* MockRenderThread::GetChannel() {
-  return NULL;
+  return nullptr;
 }
 
 std::string MockRenderThread::GetLocale() {
@@ -133,7 +133,7 @@ std::string MockRenderThread::GetLocale() {
 }
 
 IPC::SyncMessageFilter* MockRenderThread::GetSyncMessageFilter() {
-  return NULL;
+  return nullptr;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -227,7 +227,7 @@ bool MockRenderThread::ResolveProxy(const GURL& url, std::string* proxy_list) {
 }
 
 base::WaitableEvent* MockRenderThread::GetShutdownEvent() {
-  return NULL;
+  return nullptr;
 }
 
 int32_t MockRenderThread::GetClientId() {

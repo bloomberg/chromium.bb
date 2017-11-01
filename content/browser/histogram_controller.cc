@@ -25,8 +25,7 @@ HistogramController* HistogramController::GetInstance() {
                                                   HistogramController>>::get();
 }
 
-HistogramController::HistogramController() : subscriber_(NULL) {
-}
+HistogramController::HistogramController() : subscriber_(nullptr) {}
 
 HistogramController::~HistogramController() {
 }
@@ -95,7 +94,7 @@ void HistogramController::Register(HistogramSubscriber* subscriber) {
 void HistogramController::Unregister(
     const HistogramSubscriber* subscriber) {
   DCHECK_EQ(subscriber_, subscriber);
-  subscriber_ = NULL;
+  subscriber_ = nullptr;
 }
 
 template <class T>

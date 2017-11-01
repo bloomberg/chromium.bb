@@ -70,7 +70,7 @@ void StreamURLRequestJob::OnDataAvailable(Stream* stream) {
 
   // Clear the buffers before notifying the read is complete, so that it is
   // safe for the observer to read.
-  pending_buffer_ = NULL;
+  pending_buffer_ = nullptr;
   pending_buffer_size_ = 0;
 
   if (result > 0)
@@ -221,7 +221,7 @@ void StreamURLRequestJob::HeadersCompleted(net::HttpStatusCode status_code) {
 void StreamURLRequestJob::ClearStream() {
   if (stream_.get()) {
     stream_->RemoveReadObserver(this);
-    stream_ = NULL;
+    stream_ = nullptr;
   }
 }
 

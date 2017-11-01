@@ -67,7 +67,7 @@ PluginObject* PluginObject::FromV8Object(v8::Isolate* isolate,
       gin::ConvertFromV8(isolate, v8_object, &plugin_object)) {
     return plugin_object;
   }
-  return NULL;
+  return nullptr;
 }
 
 // static
@@ -76,7 +76,7 @@ PP_Var PluginObject::Create(PepperPluginInstanceImpl* instance,
                             void* ppp_class_data) {
   V8VarConverter var_converter(instance->pp_instance(),
                                V8VarConverter::kAllowObjectVars);
-  PepperTryCatchVar try_catch(instance, &var_converter, NULL);
+  PepperTryCatchVar try_catch(instance, &var_converter, nullptr);
   // If the V8 context is empty, we may be in the process of tearing down the
   // frame and may not have a valid isolate (in particular due to re-entrancy).
   // We shouldn't try to call gin::CreateHandle.
@@ -183,7 +183,7 @@ std::vector<std::string> PluginObject::EnumerateNamedProperties(
 }
 
 void PluginObject::InstanceDeleted() {
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
 PluginObject::PluginObject(PepperPluginInstanceImpl* instance,

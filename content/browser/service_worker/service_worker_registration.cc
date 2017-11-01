@@ -178,15 +178,15 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
     ChangedVersionAttributesMask* mask) {
   DCHECK(version);
   if (installing_version_.get() == version) {
-    installing_version_ = NULL;
+    installing_version_ = nullptr;
     mask->add(ChangedVersionAttributesMask::INSTALLING_VERSION);
   } else if (waiting_version_.get() == version) {
-    waiting_version_ = NULL;
+    waiting_version_ = nullptr;
     should_activate_when_ready_ = false;
     mask->add(ChangedVersionAttributesMask::WAITING_VERSION);
   } else if (active_version_.get() == version) {
     active_version_->RemoveListener(this);
-    active_version_ = NULL;
+    active_version_ = nullptr;
     mask->add(ChangedVersionAttributesMask::ACTIVE_VERSION);
   }
 }

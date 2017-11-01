@@ -50,7 +50,7 @@ class AppCacheDiskCacheTest : public testing::Test {
 };
 
 TEST_F(AppCacheDiskCacheTest, DisablePriorToInitCompletion) {
-  AppCacheDiskCache::Entry* entry = NULL;
+  AppCacheDiskCache::Entry* entry = nullptr;
 
   // Create an instance and start it initializing, queue up
   // one of each kind of "entry" function.
@@ -69,7 +69,7 @@ TEST_F(AppCacheDiskCacheTest, DisablePriorToInitCompletion) {
 
   FlushCacheTasks();
 
-  EXPECT_EQ(NULL, entry);
+  EXPECT_EQ(nullptr, entry);
   EXPECT_EQ(4u, completion_results_.size());
   for (std::vector<int>::const_iterator iter = completion_results_.begin();
        iter < completion_results_.end(); ++iter) {
@@ -105,7 +105,7 @@ TEST_F(AppCacheDiskCacheTest, DisableAfterInitted) {
 
   // Methods should return immediately when disabled and not invoke
   // the callback at all.
-  AppCacheDiskCache::Entry* entry = NULL;
+  AppCacheDiskCache::Entry* entry = nullptr;
   completion_results_.clear();
   EXPECT_EQ(net::ERR_ABORTED,
             disk_cache->CreateEntry(1, &entry, completion_callback_));
@@ -137,8 +137,8 @@ TEST_F(AppCacheDiskCacheTest, DISABLED_DisableWithEntriesOpen) {
   // and we do have expectations about that.
 
   // Create/open some entries.
-  AppCacheDiskCache::Entry* entry1 = NULL;
-  AppCacheDiskCache::Entry* entry2 = NULL;
+  AppCacheDiskCache::Entry* entry1 = nullptr;
+  AppCacheDiskCache::Entry* entry2 = nullptr;
   disk_cache->CreateEntry(1, &entry1, completion_callback_);
   disk_cache->CreateEntry(2, &entry2, completion_callback_);
   FlushCacheTasks();
@@ -167,7 +167,7 @@ TEST_F(AppCacheDiskCacheTest, DISABLED_DisableWithEntriesOpen) {
   EXPECT_TRUE(base::DeleteFile(directory_.GetPath(), true));
   EXPECT_FALSE(base::DirectoryExists(directory_.GetPath()));
 
-  disk_cache.reset(NULL);
+  disk_cache.reset(nullptr);
 
   // Also, new IO operations should fail immediately.
   EXPECT_EQ(

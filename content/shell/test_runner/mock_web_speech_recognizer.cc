@@ -156,7 +156,7 @@ MockWebSpeechRecognizer::MockWebSpeechRecognizer()
     : client_(nullptr),
       was_aborted_(false),
       task_queue_running_(false),
-      delegate_(0),
+      delegate_(nullptr),
       weak_factory_(this) {}
 
 MockWebSpeechRecognizer::~MockWebSpeechRecognizer() {

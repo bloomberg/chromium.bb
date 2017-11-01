@@ -30,9 +30,7 @@ class AppCacheDiskCache::CreateBackendCallbackShim
       : appcache_diskcache_(object) {
   }
 
-  void Cancel() {
-    appcache_diskcache_ = NULL;
-  }
+  void Cancel() { appcache_diskcache_ = nullptr; }
 
   void Callback(int rv) {
     if (appcache_diskcache_)
@@ -101,9 +99,9 @@ class AppCacheDiskCache::EntryImpl : public Entry {
   }
 
   void Abandon() {
-    owner_ = NULL;
+    owner_ = nullptr;
     disk_cache_entry_->Close();
-    disk_cache_entry_ = NULL;
+    disk_cache_entry_ = nullptr;
   }
 
  private:
@@ -240,7 +238,7 @@ void AppCacheDiskCache::Disable() {
 
   if (create_backend_callback_.get()) {
     create_backend_callback_->Cancel();
-    create_backend_callback_ = NULL;
+    create_backend_callback_ = nullptr;
     OnCreateBackendComplete(net::ERR_ABORTED);
   }
 
@@ -302,7 +300,7 @@ int AppCacheDiskCache::DoomEntry(int64_t key,
     return net::ERR_ABORTED;
 
   if (is_initializing_or_waiting_to_initialize()) {
-    pending_calls_.push_back(PendingCall(DOOM, key, NULL, callback));
+    pending_calls_.push_back(PendingCall(DOOM, key, nullptr, callback));
     return net::ERR_IO_PENDING;
   }
 
@@ -320,10 +318,7 @@ AppCacheDiskCache::AppCacheDiskCache(bool use_simple_cache)
       weak_factory_(this) {}
 
 AppCacheDiskCache::PendingCall::PendingCall()
-    : call_type(CREATE),
-      key(0),
-      entry(NULL) {
-}
+    : call_type(CREATE), key(0), entry(nullptr) {}
 
 AppCacheDiskCache::PendingCall::PendingCall(
     PendingCallType call_type,
@@ -350,7 +345,7 @@ int AppCacheDiskCache::Init(net::CacheType cache_type,
       cache_type,
       use_simple_cache_ ? net::CACHE_BACKEND_SIMPLE
                         : net::CACHE_BACKEND_DEFAULT,
-      cache_directory, cache_size, force, NULL,
+      cache_directory, cache_size, force, nullptr,
       &(create_backend_callback_->backend_ptr_),
       std::move(post_cleanup_callback),
       base::Bind(&CreateBackendCallbackShim::Callback,
@@ -366,7 +361,7 @@ void AppCacheDiskCache::OnCreateBackendComplete(int rv) {
   if (rv == net::OK) {
     disk_cache_ = std::move(create_backend_callback_->backend_ptr_);
   }
-  create_backend_callback_ = NULL;
+  create_backend_callback_ = nullptr;
 
   // Invoke our clients callback function.
   if (!init_callback_.is_null()) {

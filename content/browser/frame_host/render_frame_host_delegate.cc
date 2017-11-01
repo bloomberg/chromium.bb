@@ -34,7 +34,7 @@ bool RenderFrameHostDelegate::DidAddMessageToConsole(
 }
 
 WebContents* RenderFrameHostDelegate::GetAsWebContents() {
-  return NULL;
+  return nullptr;
 }
 
 InterstitialPage* RenderFrameHostDelegate::GetAsInterstitialPage() {

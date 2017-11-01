@@ -160,7 +160,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     }
 
     void Reset() {
-      observed_registration_ = NULL;
+      observed_registration_ = nullptr;
       observed_changed_mask_ = ChangedVersionAttributesMask();
       observed_info_ = ServiceWorkerRegistrationInfo();
     }

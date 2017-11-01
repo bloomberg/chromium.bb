@@ -207,7 +207,7 @@ CacheStorageDispatcher* CacheStorageDispatcher::ThreadSpecificInstance(
     ThreadSafeSender* thread_safe_sender) {
   if (g_cache_storage_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {
     NOTREACHED() << "Re-instantiating TLS CacheStorageDispatcher.";
-    g_cache_storage_dispatcher_tls.Pointer()->Set(NULL);
+    g_cache_storage_dispatcher_tls.Pointer()->Set(nullptr);
   }
   if (g_cache_storage_dispatcher_tls.Pointer()->Get())
     return g_cache_storage_dispatcher_tls.Pointer()->Get();

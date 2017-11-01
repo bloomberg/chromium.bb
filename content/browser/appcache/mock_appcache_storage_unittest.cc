@@ -186,8 +186,8 @@ TEST_F(MockAppCacheStorageTest, LoadGroupAndCache_FarHit) {
   // these objects appear as "not currently in use".
   AppCache* cache_ptr = cache.get();
   AppCacheGroup* group_ptr = group.get();
-  cache = NULL;
-  group = NULL;
+  cache = nullptr;
+  group = nullptr;
 
   // Setup a delegate to receive completion callbacks.
   MockStorageDelegate delegate;
@@ -201,7 +201,7 @@ TEST_F(MockAppCacheStorageTest, LoadGroupAndCache_FarHit) {
   base::RunLoop().RunUntilIdle();  // Do async task execution.
   EXPECT_EQ(cache_id, delegate.loaded_cache_id_);
   EXPECT_EQ(cache_ptr, delegate.loaded_cache_.get());
-  delegate.loaded_cache_ = NULL;
+  delegate.loaded_cache_ = nullptr;
 
   // Conduct the group load test.
   EXPECT_NE(manifest_url, delegate.loaded_manifest_url_);
@@ -373,8 +373,8 @@ TEST_F(MockAppCacheStorageTest, MakeGroupObsolete) {
   EXPECT_TRUE(storage->stored_groups_.empty());
   EXPECT_TRUE(cache->HasOneRef());
   EXPECT_FALSE(group->HasOneRef());
-  delegate.obsoleted_group_ = NULL;
-  cache = NULL;
+  delegate.obsoleted_group_ = nullptr;
+  cache = nullptr;
   EXPECT_TRUE(group->HasOneRef());
 }
 
@@ -543,8 +543,8 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseWithMultipleCandidates) {
   storage->AddStoredGroup(group.get());
   storage->AddStoredCache(cache.get());
   // Drop our references to cache1 so it appears as "not in use".
-  cache = NULL;
-  group = NULL;
+  cache = nullptr;
+  group = nullptr;
 
   // The second cache.
   cache = new AppCache(service.storage(), kCacheId2);

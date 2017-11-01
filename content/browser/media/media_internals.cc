@@ -793,7 +793,7 @@ void MediaInternals::UpdateAudioLog(AudioLogUpdateType type,
       std::unique_ptr<base::Value> out_value;
       CHECK(audio_streams_cached_data_.Remove(cache_key, &out_value));
     } else {
-      base::DictionaryValue* existing_dict = NULL;
+      base::DictionaryValue* existing_dict = nullptr;
       CHECK(
           audio_streams_cached_data_.GetDictionary(cache_key, &existing_dict));
       existing_dict->MergeDictionary(value);

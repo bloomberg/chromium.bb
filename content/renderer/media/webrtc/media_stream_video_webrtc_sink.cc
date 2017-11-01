@@ -213,8 +213,8 @@ void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::
   // thread, it should be released on the render thread.
   base::AutoLock auto_lock(capture_adapter_stop_lock_);
   // |video_source| owns |capture_adapter_|.
-  capture_adapter_ = NULL;
-  video_source_ = NULL;
+  capture_adapter_ = nullptr;
+  video_source_ = nullptr;
 }
 
 void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::SetContentHint(

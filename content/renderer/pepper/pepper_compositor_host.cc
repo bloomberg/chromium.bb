@@ -149,12 +149,11 @@ PepperCompositorHost::LayerData::LayerData(const LayerData& other) = default;
 
 PepperCompositorHost::LayerData::~LayerData() {}
 
-PepperCompositorHost::PepperCompositorHost(
-    RendererPpapiHost* host,
-    PP_Instance instance,
-    PP_Resource resource)
+PepperCompositorHost::PepperCompositorHost(RendererPpapiHost* host,
+                                           PP_Instance instance,
+                                           PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      bound_instance_(NULL),
+      bound_instance_(nullptr),
       weak_factory_(this) {
   layer_ = cc::Layer::Create();
   // TODO(penghuang): SetMasksToBounds() can be expensive if the layer is
@@ -369,7 +368,7 @@ int32_t PepperCompositorHost::OnHostMsgCommitLayers(
     // plugin and keep current layers set by the previous CommitLayers()
     // unchanged.
     for (size_t i = 0; i < layers.size(); ++i) {
-      const ppapi::CompositorLayerData* old_layer = NULL;
+      const ppapi::CompositorLayerData* old_layer = nullptr;
       if (!reset && i < layers_.size())
         old_layer = &layers_[i].pp_layer;
       int32_t rv = VerifyCommittedLayer(old_layer, &layers[i], &image_shms[i]);
@@ -386,16 +385,16 @@ int32_t PepperCompositorHost::OnHostMsgCommitLayers(
 
   for (size_t i = 0; i < layers.size(); ++i) {
     const ppapi::CompositorLayerData* pp_layer = &layers[i];
-    LayerData* data = i >= layers_.size() ? NULL : &layers_[i];
+    LayerData* data = i >= layers_.size() ? nullptr : &layers_[i];
     DCHECK(!data || data->cc_layer.get());
-    scoped_refptr<cc::Layer> cc_layer = data ? data->cc_layer : NULL;
-    ppapi::CompositorLayerData* old_layer = data ? &data->pp_layer : NULL;
+    scoped_refptr<cc::Layer> cc_layer = data ? data->cc_layer : nullptr;
+    ppapi::CompositorLayerData* old_layer = data ? &data->pp_layer : nullptr;
 
     if (!cc_layer.get()) {
       if (pp_layer->color)
         cc_layer = cc::SolidColorLayer::Create();
       else if (pp_layer->texture || pp_layer->image)
-        cc_layer = cc::TextureLayer::CreateForMailbox(NULL);
+        cc_layer = cc::TextureLayer::CreateForMailbox(nullptr);
       layer_->AddChild(cc_layer);
     }
 

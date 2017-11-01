@@ -276,7 +276,7 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   // the lifetime of the underlying memory.
   buffer3.reset();
   ASSERT_EQ(2.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
-  pool_ = NULL;
+  pool_ = nullptr;
 
   // Touch the memory.
   if (buffer2->data() != nullptr)

@@ -399,7 +399,7 @@ class CacheStorage::SimpleCacheLoader : public CacheStorage::CacheLoader {
     }
 
     // Atomically rename the temporary index file to become the real one.
-    return base::ReplaceFile(tmp_path, index_path, NULL);
+    return base::ReplaceFile(tmp_path, index_path, nullptr);
   }
 
   void LoadIndex(CacheStorageIndexLoadCallback callback) override {

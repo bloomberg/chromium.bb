@@ -48,11 +48,11 @@ bool ChildMessageFilter::Send(IPC::Message* message) {
 
 base::TaskRunner* ChildMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& msg) {
-  return NULL;
+  return nullptr;
 }
 
 ChildMessageFilter::ChildMessageFilter()
-    : internal_(NULL),
+    : internal_(nullptr),
       thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {}
 
 ChildMessageFilter::~ChildMessageFilter() {}

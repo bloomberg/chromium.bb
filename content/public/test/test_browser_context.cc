@@ -91,7 +91,7 @@ bool TestBrowserContext::IsOffTheRecord() const {
 }
 
 DownloadManagerDelegate* TestBrowserContext::GetDownloadManagerDelegate() {
-  return NULL;
+  return nullptr;
 }
 
 ResourceContext* TestBrowserContext::GetResourceContext() {
@@ -102,7 +102,7 @@ ResourceContext* TestBrowserContext::GetResourceContext() {
 }
 
 BrowserPluginGuestManager* TestBrowserContext::GetGuestManager() {
-  return NULL;
+  return nullptr;
 }
 
 storage::SpecialStoragePolicy* TestBrowserContext::GetSpecialStoragePolicy() {
@@ -110,7 +110,7 @@ storage::SpecialStoragePolicy* TestBrowserContext::GetSpecialStoragePolicy() {
 }
 
 PushMessagingService* TestBrowserContext::GetPushMessagingService() {
-  return NULL;
+  return nullptr;
 }
 
 SSLHostStateDelegate* TestBrowserContext::GetSSLHostStateDelegate() {
@@ -159,14 +159,14 @@ TestBrowserContext::CreateRequestContextForStoragePartition(
 }
 
 net::URLRequestContextGetter* TestBrowserContext::CreateMediaRequestContext() {
-  return NULL;
+  return nullptr;
 }
 
 net::URLRequestContextGetter*
 TestBrowserContext::CreateMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace content

@@ -8,9 +8,7 @@
 
 namespace content {
 
-MockResourceContext::MockResourceContext()
-  : test_request_context_(NULL) {
-}
+MockResourceContext::MockResourceContext() : test_request_context_(nullptr) {}
 
 MockResourceContext::MockResourceContext(
     net::URLRequestContext* test_request_context)
@@ -20,7 +18,7 @@ MockResourceContext::MockResourceContext(
 MockResourceContext::~MockResourceContext() {}
 
 net::HostResolver* MockResourceContext::GetHostResolver()  {
-  return NULL;
+  return nullptr;
 }
 
 net::URLRequestContext* MockResourceContext::GetRequestContext()  {

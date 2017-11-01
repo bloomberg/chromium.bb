@@ -16,10 +16,7 @@
 namespace content {
 
 AppCacheTestHelper::AppCacheTestHelper()
-    : group_id_(0),
-      appcache_id_(0),
-      response_id_(0),
-      origins_(NULL) {}
+    : group_id_(0), appcache_id_(0), response_id_(0), origins_(nullptr) {}
 
 AppCacheTestHelper::~AppCacheTestHelper() {}
 

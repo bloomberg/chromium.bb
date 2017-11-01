@@ -36,7 +36,7 @@ PepperAudioOutputHost::PepperAudioOutputHost(RendererPpapiHostImpl* host,
                                              PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      audio_output_(NULL),
+      audio_output_(nullptr),
       playback_throttled_(false),
       enumeration_helper_(this,
                           PepperMediaDeviceManager::GetForRenderFrame(
@@ -224,7 +224,7 @@ void PepperAudioOutputHost::Close() {
     return;
 
   audio_output_->ShutDown();
-  audio_output_ = NULL;
+  audio_output_ = nullptr;
 
   if (open_context_.is_valid())
     SendOpenReply(PP_ERROR_ABORTED);

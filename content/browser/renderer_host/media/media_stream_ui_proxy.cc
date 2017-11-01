@@ -45,13 +45,13 @@ void SetAndCheckAncestorFlag(MediaStreamRequest* request) {
       RenderFrameHostImpl::FromID(request->render_process_id,
                                   request->render_frame_id);
 
-  if (rfh == NULL) {
+  if (rfh == nullptr) {
     // RenderFrame destroyed before the request is handled?
     return;
   }
   FrameTreeNode* node = rfh->frame_tree_node();
 
-  while (node->parent() != NULL) {
+  while (node->parent() != nullptr) {
     if (!node->HasSameOrigin(*node->parent())) {
       request->all_ancestors_have_same_origin =  false;
       return;
@@ -189,12 +189,12 @@ RenderFrameHostDelegate* MediaStreamUIProxy::Core::GetRenderFrameHostDelegate(
     return test_render_delegate_;
   RenderFrameHostImpl* host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
-  return host ? host->delegate() : NULL;
+  return host ? host->delegate() : nullptr;
 }
 
 // static
 std::unique_ptr<MediaStreamUIProxy> MediaStreamUIProxy::Create() {
-  return std::unique_ptr<MediaStreamUIProxy>(new MediaStreamUIProxy(NULL));
+  return std::unique_ptr<MediaStreamUIProxy>(new MediaStreamUIProxy(nullptr));
 }
 
 // static

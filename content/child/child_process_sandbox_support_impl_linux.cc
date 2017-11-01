@@ -37,7 +37,7 @@ void GetFallbackFontForCharacter(int32_t character,
 
   uint8_t buf[512];
   const ssize_t n = base::UnixDomainSocket::SendRecvMsg(
-      GetSandboxFD(), buf, sizeof(buf), NULL, request);
+      GetSandboxFD(), buf, sizeof(buf), nullptr, request);
 
   std::string family_name;
   std::string filename;
@@ -88,7 +88,7 @@ void GetRenderStyleForStrike(const char* family,
 
   uint8_t buf[512];
   const ssize_t n = base::UnixDomainSocket::SendRecvMsg(
-      GetSandboxFD(), buf, sizeof(buf), NULL, request);
+      GetSandboxFD(), buf, sizeof(buf), nullptr, request);
   if (n == -1)
     return;
 

@@ -23,7 +23,7 @@ UtilityThread::UtilityThread() {
 }
 
 UtilityThread::~UtilityThread() {
-  lazy_tls.Pointer()->Set(NULL);
+  lazy_tls.Pointer()->Set(nullptr);
 }
 
 }  // namespace content

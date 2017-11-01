@@ -65,7 +65,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
         service_(
             new net::ProxyService(base::WrapUnique(new MockProxyConfigService),
                                   base::WrapUnique(resolver_factory_),
-                                  NULL)),
+                                  nullptr)),
         helper_(new TestResolveProxyMsgHelper(service_.get(), this)) {
     test_sink_.AddFilter(this);
   }
@@ -251,13 +251,13 @@ TEST_F(ResolveProxyMsgHelperTest, CancelPendingRequests) {
 
   // Delete the underlying ResolveProxyMsgHelper -- this should cancel all
   // the requests which are outstanding.
-  helper_ = NULL;
+  helper_ = nullptr;
 
   // The pending requests sent to the proxy resolver should have been cancelled.
 
   EXPECT_EQ(0u, resolver_.pending_jobs().size());
 
-  EXPECT_TRUE(pending_result() == NULL);
+  EXPECT_TRUE(pending_result() == nullptr);
 
   // It should also be the case that msg1, msg2, msg3 were deleted by the
   // cancellation. (Else will show up as a leak in Valgrind).

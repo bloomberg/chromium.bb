@@ -57,7 +57,7 @@ void DownloadUpdatedObserver::OnDownloadUpdated(DownloadItem* item) {
 void DownloadUpdatedObserver::OnDownloadDestroyed(DownloadItem* item) {
   DCHECK_EQ(item_, item);
   item_->RemoveObserver(this);
-  item_ = NULL;
+  item_ = nullptr;
   if (waiting_)
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
@@ -97,7 +97,7 @@ void DownloadTestObserver::Init() {
 
 void DownloadTestObserver::ManagerGoingDown(DownloadManager* manager) {
   CHECK_EQ(manager, download_manager_);
-  download_manager_ = NULL;
+  download_manager_ = nullptr;
   SignalIfFinished();
 }
 
@@ -111,7 +111,8 @@ void DownloadTestObserver::WaitForFinished() {
 
 bool DownloadTestObserver::IsFinished() const {
   return (finished_downloads_.size() - finished_downloads_at_construction_ >=
-          wait_count_) || (download_manager_ == NULL);
+          wait_count_) ||
+         (download_manager_ == nullptr);
 }
 
 void DownloadTestObserver::OnDownloadCreated(
@@ -476,7 +477,7 @@ void SavePackageFinishedObserver::OnDownloadUpdated(DownloadItem* download) {
 
 void SavePackageFinishedObserver::OnDownloadDestroyed(DownloadItem* download) {
   download_->RemoveObserver(this);
-  download_ = NULL;
+  download_ = nullptr;
 }
 
 void SavePackageFinishedObserver::OnDownloadCreated(DownloadManager* manager,
@@ -487,9 +488,9 @@ void SavePackageFinishedObserver::OnDownloadCreated(DownloadManager* manager,
 
 void SavePackageFinishedObserver::ManagerGoingDown(DownloadManager* manager) {
   download_->RemoveObserver(this);
-  download_ = NULL;
+  download_ = nullptr;
   download_manager_->RemoveObserver(this);
-  download_manager_ = NULL;
+  download_manager_ = nullptr;
 }
 
 }  // namespace content

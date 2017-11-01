@@ -136,7 +136,7 @@ std::string StatsCollectionController::GetBrowserHistogram(
 }
 
 std::string StatsCollectionController::GetTabLoadTiming() {
-  RenderViewImpl *render_view_impl = NULL;
+  RenderViewImpl* render_view_impl = nullptr;
   bool result = CurrentRenderViewImpl(&render_view_impl);
   DCHECK(result);
 

@@ -79,8 +79,7 @@ PluginServiceImpl* PluginServiceImpl::GetInstance() {
   return base::Singleton<PluginServiceImpl>::get();
 }
 
-PluginServiceImpl::PluginServiceImpl()
-    : filter_(NULL) {
+PluginServiceImpl::PluginServiceImpl() : filter_(nullptr) {
   plugin_list_sequence_checker_.DetachFromSequence();
 
   // Collect the total number of browser processes (which create
@@ -116,7 +115,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
       return *iter;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 PpapiPluginProcessHost* PluginServiceImpl::FindPpapiBrokerProcess(
@@ -126,7 +125,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindPpapiBrokerProcess(
       return *iter;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
@@ -137,7 +136,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
 
   if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path)) {
     VLOG(1) << "Unable to load ppapi plugin: " << plugin_path.MaybeAsASCII();
-    return NULL;
+    return nullptr;
   }
 
   PpapiPluginProcessHost* plugin_host =
@@ -150,7 +149,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
   if (!info) {
     VLOG(1) << "Unable to find ppapi plugin registration for: "
             << plugin_path.MaybeAsASCII();
-    return NULL;
+    return nullptr;
   }
 
   // Record when PPAPI Flash process is started for the first time.
@@ -179,7 +178,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path))
-    return NULL;
+    return nullptr;
 
   PpapiPluginProcessHost* plugin_host = FindPpapiBrokerProcess(plugin_path);
   if (plugin_host)
@@ -188,7 +187,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiBrokerProcess(
   // Validate that the plugin is actually registered.
   PepperPluginInfo* info = GetRegisteredPpapiPluginInfo(plugin_path);
   if (!info)
-    return NULL;
+    return nullptr;
 
   // TODO(ddorwin): Uncomment once out of process is supported.
   // DCHECK(info->is_out_of_process);

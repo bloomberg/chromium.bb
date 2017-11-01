@@ -52,9 +52,9 @@ int32_t PepperVideoDestinationHost::OnHostMsgOpen(
   if (!gurl.is_valid())
     return PP_ERROR_BADARGUMENT;
 
-  FrameWriterInterface* frame_writer = NULL;
-  if (!PepperToVideoTrackAdapter::Open(
-          NULL /* registry */, gurl.spec(), &frame_writer))
+  FrameWriterInterface* frame_writer = nullptr;
+  if (!PepperToVideoTrackAdapter::Open(nullptr /* registry */, gurl.spec(),
+                                       &frame_writer))
     return PP_ERROR_FAILED;
   frame_writer_.reset(frame_writer);
 
@@ -101,7 +101,7 @@ int32_t PepperVideoDestinationHost::OnHostMsgPutFrame(
 
 int32_t PepperVideoDestinationHost::OnHostMsgClose(
     HostMessageContext* context) {
-  frame_writer_.reset(NULL);
+  frame_writer_.reset(nullptr);
   return PP_OK;
 }
 

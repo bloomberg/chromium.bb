@@ -168,7 +168,7 @@ const std::vector<WebViewTestProxyBase*>& TestInterfaces::GetWindowList() {
 
 blink::WebThemeEngine* TestInterfaces::GetThemeEngine() {
   if (!test_runner_->UseMockTheme())
-    return 0;
+    return nullptr;
   if (!theme_engine_.get())
     theme_engine_.reset(new MockWebThemeEngine());
   return theme_engine_.get();

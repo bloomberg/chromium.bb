@@ -447,7 +447,7 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
   void TearDownOnMainThread() override {
     RunOnIOThread(
         base::Bind(&self::TearDownOnIOThread, base::Unretained(this)));
-    wrapper_ = NULL;
+    wrapper_ = nullptr;
   }
 
   // Starts the test server and navigates the renderer to an empty page. Call
@@ -577,8 +577,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   ~ServiceWorkerVersionBrowserTest() override {}
 
   void TearDownOnIOThread() override {
-    registration_ = NULL;
-    version_ = NULL;
+    registration_ = nullptr;
+    version_ = nullptr;
     remote_endpoints_.clear();
   }
 

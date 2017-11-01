@@ -173,7 +173,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       session_id_(session_id),
       signaling_thread_(signaling_thread),
       media_stream_(media_stream),
-      source_(NULL),
+      source_(nullptr),
       play_ref_count_(0),
       start_ref_count_(0),
       sink_params_(kFormat, kChannelLayout, 0, kBitsPerSample, 0),
@@ -324,7 +324,7 @@ void WebRtcAudioRenderer::Stop() {
     DVLOG(1) << "Calling RemoveAudioRenderer and Stop().";
 
     source_->RemoveAudioRenderer(this);
-    source_ = NULL;
+    source_ = nullptr;
     state_ = UNINITIALIZED;
   }
 

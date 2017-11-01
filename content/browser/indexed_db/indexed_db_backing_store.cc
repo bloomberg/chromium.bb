@@ -395,8 +395,8 @@ Status DeleteBlobsInRange(IndexedDBBackingStore::Transaction* transaction,
       INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
       return InternalInconsistencyStatus();
     }
-    transaction->PutBlobInfo(database_id, object_store_id, user_key, NULL,
-                             NULL);
+    transaction->PutBlobInfo(database_id, object_store_id, user_key, nullptr,
+                             nullptr);
   }
   return s;
 }
@@ -967,7 +967,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 
     LOG(ERROR) << "IndexedDB backing store cleanup succeeded, reopening";
     *status =
-        leveldb_factory->OpenLevelDB(file_path, comparator.get(), &db, NULL);
+        leveldb_factory->OpenLevelDB(file_path, comparator.get(), &db, nullptr);
     if (!status->ok()) {
       DCHECK(!db);
       LOG(ERROR) << "IndexedDB backing store reopen after recovery failed";
@@ -1037,8 +1037,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
           db.get(), "IndexedDBBackingStore", task_runner,
           base::trace_event::MemoryDumpProvider::Options());
 
-  return Create(NULL /* indexed_db_factory */, origin, FilePath(),
-                NULL /* request_context */, std::move(db),
+  return Create(nullptr /* indexed_db_factory */, origin, FilePath(),
+                nullptr /* request_context */, std::move(db),
                 std::move(comparator), task_runner, status);
 }
 
@@ -1260,7 +1260,7 @@ Status IndexedDBBackingStore::DeleteRecord(
       database_id, object_store_id, record_identifier.primary_key());
   leveldb_transaction->Remove(object_store_data_key);
   Status s = transaction->PutBlobInfoIfNeeded(
-      database_id, object_store_id, object_store_data_key, NULL, NULL);
+      database_id, object_store_id, object_store_data_key, nullptr, nullptr);
   if (!s.ok())
     return s;
 
@@ -1490,7 +1490,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       content::BrowserThread::DeleteSoon(
           content::BrowserThread::IO, FROM_HERE, delegate_.release());
     if (aborted_) {
-      self_ref_ = NULL;
+      self_ref_ = nullptr;
       return;
     }
     if (iter_->size() != -1 && iter_->size() != bytes_written)
@@ -1653,7 +1653,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     IndexedDBBackingStore::Transaction::ChainedBlobWriter* raw_tmp =
         chained_blob_writer_.get();
     raw_tmp->AddRef();
-    chained_blob_writer_ = NULL;
+    chained_blob_writer_ = nullptr;
     task_runner_->ReleaseSoon(FROM_HERE, raw_tmp);
   }
   friend class base::RefCountedThreadSafe<LocalWriteClosure>;
@@ -2211,7 +2211,7 @@ bool IndexedDBBackingStore::Cursor::FirstSeek(Status* s) {
     if (!s->ok())
       return false;
   }
-  return Continue(0, READY, s);
+  return Continue(nullptr, READY, s);
 }
 
 bool IndexedDBBackingStore::Cursor::Advance(uint32_t count, Status* s) {
@@ -2467,7 +2467,7 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   // IndexedDBBackingStore::Cursor
   IndexedDBValue* value() override {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
   bool LoadCurrentRow(Status* s) override;
 
@@ -2618,7 +2618,7 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   // IndexedDBBackingStore::Cursor
   IndexedDBValue* value() override {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
   const IndexedDBKey& primary_key() const override { return *primary_key_; }
   const IndexedDBBackingStore::RecordIdentifier& record_identifier()
@@ -3059,7 +3059,7 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
     if (!BlobEntryKey::FromObjectStoreDataKey(&key_piece, &blob_entry_key)) {
       NOTREACHED();
       INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
-      transaction_ = NULL;
+      transaction_ = nullptr;
       return false;
     }
     if (database_id_ < 0)
@@ -3075,7 +3075,7 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
       std::vector<IndexedDBBlobInfo> blob_info;
       if (!DecodeBlobData(blob_entry_value_bytes, &blob_info)) {
         INTERNAL_READ_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
-        transaction_ = NULL;
+        transaction_ = nullptr;
         return false;
       }
       for (const auto& blob : blob_info) {
@@ -3113,7 +3113,7 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
   s = HandleBlobPreTransaction(&new_blob_entries, &new_files_to_write);
   if (!s.ok()) {
     INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
-    transaction_ = NULL;
+    transaction_ = nullptr;
     return s;
   }
 
@@ -3121,7 +3121,7 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
          KeyPrefix::IsValidDatabaseId(database_id_));
   if (!CollectBlobFilesToRemove()) {
     INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
-    transaction_ = NULL;
+    transaction_ = nullptr;
     return InternalInconsistencyStatus();
   }
 
@@ -3191,7 +3191,7 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
   // reflect pending blob work - dead files that should be deleted
   // immediately, and live files to monitor.
   s = transaction_->Commit();
-  transaction_ = NULL;
+  transaction_ = nullptr;
 
   if (!s.ok()) {
     INTERNAL_WRITE_ERROR(TRANSACTION_COMMIT_METHOD);
@@ -3306,12 +3306,12 @@ void IndexedDBBackingStore::Transaction::Rollback() {
 
   if (chained_blob_writer_.get()) {
     chained_blob_writer_->Abort();
-    chained_blob_writer_ = NULL;
+    chained_blob_writer_ = nullptr;
   }
   if (!transaction_)
     return;
   transaction_->Rollback();
-  transaction_ = NULL;
+  transaction_ = nullptr;
 }
 
 uint64_t IndexedDBBackingStore::Transaction::GetTransactionSize() {

@@ -83,7 +83,7 @@ TEST_F(MouseLockDispatcherTest, BasicMockLockTarget) {
   EXPECT_CALL(*target_, OnLockMouseACK(false));
 
   // Start unlocked.
-  EXPECT_FALSE(dispatcher()->IsMouseLockedTo(NULL));
+  EXPECT_FALSE(dispatcher()->IsMouseLockedTo(nullptr));
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
 
   // Lock.
@@ -121,7 +121,7 @@ TEST_F(MouseLockDispatcherTest, DeleteAndUnlock) {
   // Don't receive mouse events or lock lost.
   dispatcher()->OnLockTargetDestroyed(target_);
   delete target_;
-  target_ = NULL;
+  target_ = nullptr;
   dispatcher()->WillHandleMouseEvent(blink::WebMouseEvent());
   widget()->OnMessageReceived(ViewMsg_MouseLockLost(route_id_));
   EXPECT_FALSE(dispatcher()->IsMouseLockedTo(target_));
@@ -139,7 +139,7 @@ TEST_F(MouseLockDispatcherTest, DeleteWithPendingLockSuccess) {
   // Before receiving response delete the target.
   dispatcher()->OnLockTargetDestroyed(target_);
   delete target_;
-  target_ = NULL;
+  target_ = nullptr;
 
   // Lock response.
   widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, true));
@@ -157,7 +157,7 @@ TEST_F(MouseLockDispatcherTest, DeleteWithPendingLockFail) {
   // Before receiving response delete the target.
   dispatcher()->OnLockTargetDestroyed(target_);
   delete target_;
-  target_ = NULL;
+  target_ = nullptr;
 
   // Lock response.
   widget()->OnMessageReceived(ViewMsg_LockMouse_ACK(route_id_, false));

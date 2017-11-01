@@ -158,7 +158,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
 
   // Copy one frame using the CopyFromSurface API.
   void RunBasicCopyFromSurfaceTest() {
-    SET_UP_SURFACE_OR_PASS_TEST(NULL);
+    SET_UP_SURFACE_OR_PASS_TEST(nullptr);
 
     // Repeatedly call CopyFromBackingStore() since, on some platforms (e.g.,
     // Windows), the operation will fail until the first "present" has been
@@ -303,7 +303,7 @@ class CompositingRenderWidgetHostViewBrowserTest
   bool SetUpSourceSurface(const char* wait_message) override {
     content::DOMMessageQueue message_queue;
     NavigateToURL(shell(), TestUrl());
-    if (wait_message != NULL) {
+    if (wait_message != nullptr) {
       std::string result(wait_message);
       if (!message_queue.WaitForMessage(&result)) {
         EXPECT_TRUE(false) << "WaitForMessage " << result << " failed.";
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 // when the RenderWidgetHostView is deleting in the middle of an async copy.
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
                        CopyFromSurface_CallbackDespiteDelete) {
-  SET_UP_SURFACE_OR_PASS_TEST(NULL);
+  SET_UP_SURFACE_OR_PASS_TEST(nullptr);
 
   base::RunLoop run_loop;
   GetRenderWidgetHostView()->CopyFromSurface(
@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 // async copy.
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
                        CopyFromSurfaceToVideoFrame_CallbackDespiteDelete) {
-  SET_UP_SURFACE_OR_PASS_TEST(NULL);
+  SET_UP_SURFACE_OR_PASS_TEST(nullptr);
 
   base::RunLoop run_loop;
   scoped_refptr<media::VideoFrame> dest =
@@ -406,7 +406,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 // until at least one DeliverFrameCallback has been invoked.
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
                        FrameSubscriberTest) {
-  SET_UP_SURFACE_OR_PASS_TEST(NULL);
+  SET_UP_SURFACE_OR_PASS_TEST(nullptr);
   RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
 
   base::RunLoop run_loop;
@@ -424,7 +424,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest, CopyTwice) {
-  SET_UP_SURFACE_OR_PASS_TEST(NULL);
+  SET_UP_SURFACE_OR_PASS_TEST(nullptr);
   RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
 
   base::RunLoop run_loop;

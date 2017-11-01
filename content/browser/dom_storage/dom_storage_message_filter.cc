@@ -61,7 +61,7 @@ base::TaskRunner* DOMStorageMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   if (IPC_MESSAGE_CLASS(message) == DOMStorageMsgStart)
     return context_->task_runner();
-  return NULL;
+  return nullptr;
 }
 
 bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message) {

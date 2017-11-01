@@ -74,7 +74,7 @@ class OpenedByDOMTest : public ContentBrowserTest {
   Shell* OpenWindowFromJavaScript(Shell* shell, const GURL& url) {
     // Wait for the popup to be created and for it to have navigated.
     ShellAddedObserver new_shell_observer;
-    TestNavigationObserver nav_observer(NULL);
+    TestNavigationObserver nav_observer(nullptr);
     nav_observer.StartWatchingNewWebContents();
     CHECK(ExecuteScript(
         shell, base::StringPrintf("window.open('%s')", url.spec().c_str())));

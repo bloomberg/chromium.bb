@@ -20,7 +20,7 @@ TestRenderViewHostFactory::TestRenderViewHostFactory(
 
 TestRenderViewHostFactory::~TestRenderViewHostFactory() {
   RenderViewHostFactory::UnregisterFactory();
-  RenderProcessHostImpl::set_render_process_host_factory(NULL);
+  RenderProcessHostImpl::set_render_process_host_factory(nullptr);
 }
 
 void TestRenderViewHostFactory::set_render_process_host_factory(

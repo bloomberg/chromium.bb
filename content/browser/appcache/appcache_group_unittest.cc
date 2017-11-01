@@ -222,15 +222,15 @@ TEST_F(AppCacheGroupTest, StartUpdate) {
   group->update_status_ = AppCacheGroup::CHECKING;
   group->StartUpdate();
   AppCacheUpdateJob* update = group->update_job_;
-  EXPECT_TRUE(update != NULL);
+  EXPECT_TRUE(update != nullptr);
 
   // Start another update, check that same update job is in use.
-  group->StartUpdateWithHost(NULL);
+  group->StartUpdateWithHost(nullptr);
   EXPECT_EQ(update, group->update_job_);
 
   // Deleting the update should restore the group to APPCACHE_STATUS_IDLE.
   delete update;
-  EXPECT_TRUE(group->update_job_ == NULL);
+  EXPECT_TRUE(group->update_job_ == nullptr);
   EXPECT_EQ(AppCacheGroup::IDLE, group->update_status());
 }
 
@@ -243,12 +243,12 @@ TEST_F(AppCacheGroupTest, CancelUpdate) {
   group->update_status_ = AppCacheGroup::CHECKING;
   group->StartUpdate();
   AppCacheUpdateJob* update = group->update_job_;
-  EXPECT_TRUE(update != NULL);
+  EXPECT_TRUE(update != nullptr);
 
   // Deleting the group should cancel the update.
   TestUpdateObserver observer;
   group->AddUpdateObserver(&observer);
-  group = NULL;  // causes group to be deleted
+  group = nullptr;  // causes group to be deleted
   EXPECT_TRUE(observer.update_completed_);
   EXPECT_FALSE(observer.group_has_cache_);
 }

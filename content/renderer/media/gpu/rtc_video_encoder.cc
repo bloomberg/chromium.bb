@@ -606,7 +606,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   // input_next_frame_* state before we hand off the VideoFrame to the VEA.
   const webrtc::VideoFrame* next_frame = input_next_frame_;
   const bool next_frame_keyframe = input_next_frame_keyframe_;
-  input_next_frame_ = NULL;
+  input_next_frame_ = nullptr;
   input_next_frame_keyframe_ = false;
 
   if (!video_encoder_) {
@@ -705,8 +705,8 @@ void RTCVideoEncoder::Impl::SignalAsyncWaiter(int32_t retval) {
   DCHECK(thread_checker_.CalledOnValidThread());
   *async_retval_ = retval;
   async_waiter_->Signal();
-  async_retval_ = NULL;
-  async_waiter_ = NULL;
+  async_retval_ = nullptr;
+  async_waiter_ = nullptr;
 }
 
 bool RTCVideoEncoder::Impl::IsBitrateTooHigh(uint32_t bitrate) {
@@ -910,7 +910,7 @@ int32_t RTCVideoEncoder::Release() {
       FROM_HERE,
       base::BindOnce(&RTCVideoEncoder::Impl::Destroy, impl_, &release_waiter));
   release_waiter.Wait();
-  impl_ = NULL;
+  impl_ = nullptr;
   return WEBRTC_VIDEO_CODEC_OK;
 }
 

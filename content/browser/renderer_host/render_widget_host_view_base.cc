@@ -134,7 +134,7 @@ gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() const {
 
 ui::TextInputClient* RenderWidgetHostViewBase::GetTextInputClient() {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 void RenderWidgetHostViewBase::SetIsInVR(bool is_in_vr) {
@@ -210,11 +210,11 @@ BrowserAccessibilityManager*
 RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 void RenderWidgetHostViewBase::AccessibilityShowMenu(const gfx::Point& point) {
-  RenderWidgetHostImpl* impl = NULL;
+  RenderWidgetHostImpl* impl = nullptr;
   if (GetRenderWidgetHost())
     impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
 
@@ -234,11 +234,11 @@ gfx::AcceleratedWidget
 
 gfx::NativeViewAccessible
     RenderWidgetHostViewBase::AccessibilityGetNativeViewAccessible() {
-  return NULL;
+  return nullptr;
 }
 
 void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {
-  RenderWidgetHostImpl* impl = NULL;
+  RenderWidgetHostImpl* impl = nullptr;
   if (GetRenderWidgetHost())
     impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
 

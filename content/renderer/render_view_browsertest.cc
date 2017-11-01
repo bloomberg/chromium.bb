@@ -155,7 +155,7 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
  public:
   WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
                                                const GURL& url) const override {
-    return NULL;
+    return nullptr;
   }
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
                              const GURL& url) const override {
@@ -1146,7 +1146,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     // to activate IMEs.
     view()->UpdateTextInputState();
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
-    EXPECT_TRUE(msg != NULL);
+    EXPECT_TRUE(msg != nullptr);
     EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
     ViewHostMsg_TextInputStateChanged::Param params;
     ViewHostMsg_TextInputStateChanged::Read(msg, &params);
@@ -1167,7 +1167,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     // to de-activate IMEs.
     view()->UpdateTextInputState();
     msg = render_thread_->sink().GetMessageAt(0);
-    EXPECT_TRUE(msg != NULL);
+    EXPECT_TRUE(msg != nullptr);
     EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
     ViewHostMsg_TextInputStateChanged::Read(msg, &params);
     p = std::get<0>(params);
@@ -1182,7 +1182,8 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
                              test_case->input_id);
       // Move the input focus to the target <input> element, where we should
       // activate IMEs.
-      ExecuteJavaScriptAndReturnIntValue(base::ASCIIToUTF16(javascript), NULL);
+      ExecuteJavaScriptAndReturnIntValue(base::ASCIIToUTF16(javascript),
+                                         nullptr);
       base::RunLoop().RunUntilIdle();
       render_thread_->sink().ClearMessages();
 
@@ -1191,7 +1192,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       view()->UpdateTextInputState();
       base::RunLoop().RunUntilIdle();
       const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
-      EXPECT_TRUE(msg != NULL);
+      EXPECT_TRUE(msg != nullptr);
       EXPECT_EQ(ViewHostMsg_TextInputStateChanged::ID, msg->type());
       ViewHostMsg_TextInputStateChanged::Read(msg, &params);
       p = std::get<0>(params);
@@ -1233,9 +1234,9 @@ TEST_F(RenderViewImplTest, ImeComposition) {
   };
   static const ImeMessage kImeMessages[] = {
       // Scenario 1: input a Chinese word with Microsoft IME.
-      {IME_INITIALIZE, true, 0, 0, NULL, NULL},
-      {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
-      {IME_SETFOCUS, true, 0, 0, NULL, NULL},
+      {IME_INITIALIZE, true, 0, 0, nullptr, nullptr},
+      {IME_SETINPUTMODE, true, 0, 0, nullptr, nullptr},
+      {IME_SETFOCUS, true, 0, 0, nullptr, nullptr},
       {IME_SETCOMPOSITION, false, 1, 1, L"n", L"n"},
       {IME_SETCOMPOSITION, false, 2, 2, L"ni", L"ni"},
       {IME_SETCOMPOSITION, false, 3, 3, L"nih", L"nih"},
@@ -1243,9 +1244,9 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       {IME_SETCOMPOSITION, false, 5, 5, L"nihao", L"nihao"},
       {IME_COMMITTEXT, false, -1, -1, L"\x4F60\x597D", L"\x4F60\x597D"},
       // Scenario 2: input a Japanese word with Microsoft IME.
-      {IME_INITIALIZE, true, 0, 0, NULL, NULL},
-      {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
-      {IME_SETFOCUS, true, 0, 0, NULL, NULL},
+      {IME_INITIALIZE, true, 0, 0, nullptr, nullptr},
+      {IME_SETINPUTMODE, true, 0, 0, nullptr, nullptr},
+      {IME_SETFOCUS, true, 0, 0, nullptr, nullptr},
       {IME_SETCOMPOSITION, false, 0, 1, L"\xFF4B", L"\xFF4B"},
       {IME_SETCOMPOSITION, false, 0, 1, L"\x304B", L"\x304B"},
       {IME_SETCOMPOSITION, false, 0, 2, L"\x304B\xFF4E", L"\x304B\xFF4E"},
@@ -1258,9 +1259,9 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       {IME_FINISHCOMPOSINGTEXT, false, -1, -1, L"", L"\x6F22\x5B57"},
       {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\x6F22\x5B57"},
       // Scenario 3: input a Korean word with Microsot IME.
-      {IME_INITIALIZE, true, 0, 0, NULL, NULL},
-      {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
-      {IME_SETFOCUS, true, 0, 0, NULL, NULL},
+      {IME_INITIALIZE, true, 0, 0, nullptr, nullptr},
+      {IME_SETINPUTMODE, true, 0, 0, nullptr, nullptr},
+      {IME_SETFOCUS, true, 0, 0, nullptr, nullptr},
       {IME_SETCOMPOSITION, false, 0, 1, L"\x3147", L"\x3147"},
       {IME_SETCOMPOSITION, false, 0, 1, L"\xC544", L"\xC544"},
       {IME_SETCOMPOSITION, false, 0, 1, L"\xC548", L"\xC548"},

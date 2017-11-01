@@ -1632,7 +1632,7 @@ void RenderProcessHostWatcher::RenderProcessExited(
 
 void RenderProcessHostWatcher::RenderProcessHostDestroyed(
     RenderProcessHost* host) {
-  render_process_host_ = NULL;
+  render_process_host_ = nullptr;
   if (type_ == WATCH_FOR_HOST_DESTRUCTION)
     message_loop_runner_->Quit();
 }
@@ -1723,7 +1723,7 @@ WebContentsAddedObserver::WebContentsAddedObserver()
     : web_contents_created_callback_(
           base::Bind(&WebContentsAddedObserver::WebContentsCreated,
                      base::Unretained(this))),
-      web_contents_(NULL) {
+      web_contents_(nullptr) {
   WebContentsImpl::FriendWrapper::AddCreatedCallbackForTesting(
       web_contents_created_callback_);
 }

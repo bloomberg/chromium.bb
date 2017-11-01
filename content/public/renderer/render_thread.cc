@@ -24,7 +24,7 @@ RenderThread::RenderThread() {
 }
 
 RenderThread::~RenderThread() {
-  lazy_tls.Pointer()->Set(NULL);
+  lazy_tls.Pointer()->Set(nullptr);
 }
 
 }  // namespace content

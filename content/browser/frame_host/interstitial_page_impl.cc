@@ -131,7 +131,7 @@ InterstitialPage* InterstitialPage::GetInterstitialPage(
   InterstitialPageMap::const_iterator iter =
       g_web_contents_to_interstitial_page->find(web_contents);
   if (iter == g_web_contents_to_interstitial_page->end())
-    return NULL;
+    return nullptr;
 
   return iter->second;
 }
@@ -160,7 +160,7 @@ InterstitialPageImpl::InterstitialPageImpl(
       should_discard_pending_nav_entry_(new_navigation),
       enabled_(true),
       action_taken_(NO_ACTION),
-      render_view_host_(NULL),
+      render_view_host_(nullptr),
       // TODO(nasko): The InterstitialPageImpl will need to provide its own
       // NavigationControllerImpl to the Navigator, which is separate from
       // the WebContents one, so we can enforce no navigation policy here.
@@ -297,7 +297,7 @@ void InterstitialPageImpl::Hide() {
                                 weak_ptr_factory_.GetWeakPtr()));
   bool has_focus = render_view_host_->GetWidget()->GetView() &&
                    render_view_host_->GetWidget()->GetView()->HasFocus();
-  render_view_host_ = NULL;
+  render_view_host_ = nullptr;
   frame_tree_->root()->ResetForNewProcess();
   controller_->delegate()->DetachInterstitialPage(has_focus);
   // Let's revert to the original title if necessary.
@@ -315,7 +315,7 @@ void InterstitialPageImpl::Hide() {
 
   // Clear the WebContents pointer, because it may now be deleted.
   // This signifies that we are in the process of shutting down.
-  web_contents_ = NULL;
+  web_contents_ = nullptr;
 }
 
 void InterstitialPageImpl::Observe(
@@ -583,7 +583,7 @@ WebContents* InterstitialPageImpl::web_contents() const {
 
 RenderViewHostImpl* InterstitialPageImpl::CreateRenderViewHost() {
   if (!enabled())
-    return NULL;
+    return nullptr;
 
   // Interstitial pages don't want to share the session storage so we mint a
   // new one.
@@ -609,7 +609,7 @@ RenderViewHostImpl* InterstitialPageImpl::CreateRenderViewHost() {
 
 WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
   if (!enabled() || !create_view_)
-    return NULL;
+    return nullptr;
   WebContentsView* wcv =
       static_cast<WebContentsImpl*>(web_contents())->GetView();
   RenderWidgetHostViewBase* view =

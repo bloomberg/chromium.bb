@@ -19,7 +19,7 @@ using blink::WebTouchPoint;
 namespace content {
 
 MockInputRouterClient::MockInputRouterClient()
-    : input_router_(NULL),
+    : input_router_(nullptr),
       in_flight_event_count_(0),
       has_touch_handler_(false),
       filter_state_(INPUT_EVENT_ACK_STATE_NOT_CONSUMED),

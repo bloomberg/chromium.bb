@@ -70,16 +70,15 @@ class ScreenshotTracker : public NavigationEntryScreenshotManager {
  public:
   explicit ScreenshotTracker(NavigationControllerImpl* controller)
       : NavigationEntryScreenshotManager(controller),
-        screenshot_taken_for_(NULL),
-        waiting_for_screenshots_(0) {
-  }
+        screenshot_taken_for_(nullptr),
+        waiting_for_screenshots_(0) {}
 
   ~ScreenshotTracker() override {}
 
   RenderViewHost* screenshot_taken_for() { return screenshot_taken_for_; }
 
   void Reset() {
-    screenshot_taken_for_ = NULL;
+    screenshot_taken_for_ = nullptr;
     screenshot_set_.clear();
   }
 
@@ -173,9 +172,7 @@ class InputEventMessageFilterWaitsForAcks : public BrowserMessageFilter {
 
 class WebContentsViewAuraTest : public ContentBrowserTest {
  public:
-  WebContentsViewAuraTest()
-      : screenshot_manager_(NULL) {
-  }
+  WebContentsViewAuraTest() : screenshot_manager_(nullptr) {}
 
   // Executes the javascript synchronously and makes sure the returned value is
   // freed properly.
@@ -751,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   WaitForLoadStop(web_contents);
   screenshot_manager()->WaitUntilScreenshotIsReady();
 
-  EXPECT_EQ(NULL, screenshot_manager()->screenshot_taken_for());
+  EXPECT_EQ(nullptr, screenshot_manager()->screenshot_taken_for());
 }
 
 // Tests that navigations resulting from reloads, history.replaceState,
@@ -797,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        DISABLED_ContentWindowReparent) {
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
-  std::unique_ptr<aura::Window> window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
   window->Init(ui::LAYER_NOT_DRAWN);
 
   WebContentsImpl* web_contents =
@@ -922,7 +919,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, HideContentOnParenHide) {
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, WebContentsViewReparent) {
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
 
-  std::unique_ptr<aura::Window> window(new aura::Window(NULL));
+  std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
   window->Init(ui::LAYER_NOT_DRAWN);
 
   RenderWidgetHostViewAura* rwhva =

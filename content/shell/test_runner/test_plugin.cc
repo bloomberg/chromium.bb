@@ -203,9 +203,9 @@ void TestPlugin::Destroy() {
   if (layer_.get())
     layer_->ClearTexture();
   if (container_)
-    container_->SetWebLayer(0);
+    container_->SetWebLayer(nullptr);
   web_layer_.reset();
-  layer_ = NULL;
+  layer_ = nullptr;
   DestroyScene();
 
   gl_ = nullptr;
@@ -251,7 +251,7 @@ void TestPlugin::UpdateGeometry(
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rect_.width, rect_.height, 0,
-                    GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                    GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     gl_->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
     gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               GL_TEXTURE_2D, color_texture_, 0);
@@ -468,7 +468,7 @@ bool TestPlugin::InitPrimitive() {
   const float vertices[] = {0.0f, 0.8f, 0.0f,  -0.8f, -0.8f,
                             0.0f, 0.8f, -0.8f, 0.0f};
   gl_->BindBuffer(GL_ARRAY_BUFFER, scene_.vbo);
-  gl_->BufferData(GL_ARRAY_BUFFER, sizeof(vertices), 0, GL_STATIC_DRAW);
+  gl_->BufferData(GL_ARRAY_BUFFER, sizeof(vertices), nullptr, GL_STATIC_DRAW);
   gl_->BufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
   return true;
 }
@@ -564,7 +564,7 @@ bool TestPlugin::HandleDragStatusUpdate(
     blink::WebDragOperationsMask mask,
     const blink::WebPoint& position,
     const blink::WebPoint& screen_position) {
-  const char* drag_status_name = 0;
+  const char* drag_status_name = nullptr;
   switch (drag_status) {
     case blink::kWebDragStatusEnter:
       drag_status_name = "DragEnter";

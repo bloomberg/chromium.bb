@@ -70,7 +70,7 @@ class IndexedDBDatabaseTest : public ::testing::Test {
 
 TEST_F(IndexedDBDatabaseTest, BackingStoreRetention) {
   EXPECT_FALSE(backing_store_->HasOneRef());  // local and db
-  db_ = NULL;
+  db_ = nullptr;
   EXPECT_TRUE(backing_store_->HasOneRef());  // local
 }
 
@@ -110,7 +110,7 @@ TEST_F(IndexedDBDatabaseTest, ConnectionLifecycle) {
   EXPECT_TRUE(backing_store_->HasOneRef());
   EXPECT_FALSE(db_->backing_store());
 
-  db_ = NULL;
+  db_ = nullptr;
 }
 
 TEST_F(IndexedDBDatabaseTest, ForcedClose) {

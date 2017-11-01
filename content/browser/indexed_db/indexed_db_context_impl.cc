@@ -591,7 +591,7 @@ void IndexedDBContextImpl::QueryDiskAndUpdateQuotaUsage(const Origin& origin) {
 std::set<Origin>* IndexedDBContextImpl::GetOriginSet() {
   if (!origin_set_) {
     std::vector<Origin> origins;
-    GetAllOriginsAndPaths(data_path_, &origins, NULL);
+    GetAllOriginsAndPaths(data_path_, &origins, nullptr);
     origin_set_ =
         std::make_unique<std::set<Origin>>(origins.begin(), origins.end());
   }

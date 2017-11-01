@@ -55,7 +55,7 @@ gfx::NativeView WebContentsViewGuest::GetNativeView() const {
 gfx::NativeView WebContentsViewGuest::GetContentNativeView() const {
   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (!rwhv)
-    return NULL;
+    return nullptr;
   return rwhv->GetNativeView();
 }
 
@@ -200,7 +200,7 @@ void WebContentsViewGuest::StoreFocus() {
 
 DropData* WebContentsViewGuest::GetDropData() const {
   NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 void WebContentsViewGuest::UpdateDragCursor(WebDragOperation operation) {

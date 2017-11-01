@@ -394,7 +394,7 @@ void RenderFrameDeletedObserver::WaitUntilDeleted() {
 WebContentsDestroyedWatcher::WebContentsDestroyedWatcher(
     WebContents* web_contents)
     : WebContentsObserver(web_contents) {
-  EXPECT_TRUE(web_contents != NULL);
+  EXPECT_TRUE(web_contents != nullptr);
 }
 
 WebContentsDestroyedWatcher::~WebContentsDestroyedWatcher() {

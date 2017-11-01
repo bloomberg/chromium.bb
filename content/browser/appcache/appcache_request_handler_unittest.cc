@@ -217,7 +217,7 @@ class AppCacheRequestHandlerTest
   // Test harness --------------------------------------------------
 
   AppCacheRequestHandlerTest()
-      : host_(NULL), request_(nullptr), request_handler_type_(GetParam()) {
+      : host_(nullptr), request_(nullptr), request_handler_type_(GetParam()) {
     AppCacheRequestHandler::SetRunningInTests(true);
     if (request_handler_type_ == URLLOADER)
       feature_list_.InitAndEnableFeature(features::kNetworkService);
@@ -271,7 +271,7 @@ class AppCacheRequestHandlerTest
     mock_policy_.reset();
     job_factory_.reset();
     empty_context_.reset();
-    host_ = NULL;
+    host_ = nullptr;
   }
 
   void TestFinished() {
@@ -620,7 +620,7 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(job());
     EXPECT_TRUE(job()->IsWaiting());
 
-    host_->FinishCacheSelection(cache.get(), NULL);
+    host_->FinishCacheSelection(cache.get(), nullptr);
     EXPECT_FALSE(job()->IsWaiting());
     EXPECT_TRUE(job()->IsDeliveringErrorResponse());
 
@@ -750,7 +750,7 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(handler_.get());
 
     backend_impl_->UnregisterHost(1);
-    host_ = NULL;
+    host_ = nullptr;
 
     EXPECT_FALSE(handler_->MaybeLoadResource(nullptr));
     EXPECT_FALSE(handler_->MaybeLoadFallbackForRedirect(
@@ -775,7 +775,7 @@ class AppCacheRequestHandlerTest
     EXPECT_TRUE(job()->IsWaiting());
 
     backend_impl_->UnregisterHost(1);
-    host_ = NULL;
+    host_ = nullptr;
 
     if (request_handler_type_ == URLREQUEST) {
       EXPECT_TRUE(appcache_url_request_job_->has_been_killed());
@@ -806,7 +806,7 @@ class AppCacheRequestHandlerTest
     mock_frontend_.reset();
     mock_service_.reset();
     mock_policy_.reset();
-    host_ = NULL;
+    host_ = nullptr;
 
     if (request_handler_type_ == URLREQUEST) {
       EXPECT_TRUE(appcache_url_request_job_->has_been_killed());
@@ -830,7 +830,7 @@ class AppCacheRequestHandlerTest
     mock_frontend_.reset();
     mock_service_.reset();
     mock_policy_.reset();
-    host_ = NULL;
+    host_ = nullptr;
 
     EXPECT_FALSE(handler_->host_for_cross_site_transfer_.get());
     EXPECT_FALSE(handler_->MaybeLoadResource(nullptr));

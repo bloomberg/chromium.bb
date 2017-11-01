@@ -133,7 +133,7 @@ class RendererBlinkPlatformImplTestOverrideImpl
 
   // Get rid of the dependency to the sandbox, which is not available in
   // RenderViewTest.
-  blink::WebSandboxSupport* GetSandboxSupport() override { return NULL; }
+  blink::WebSandboxSupport* GetSandboxSupport() override { return nullptr; }
 };
 
 RenderViewTest::RendererBlinkPlatformImplTestOverride::
@@ -161,8 +161,7 @@ void RenderViewTest::RendererBlinkPlatformImplTestOverride::Shutdown() {
   blink_platform_impl_->Shutdown();
 }
 
-RenderViewTest::RenderViewTest()
-    : view_(NULL) {
+RenderViewTest::RenderViewTest() : view_(nullptr) {
   RenderFrameImpl::InstallCreateHook(&TestRenderFrame::CreateTestRenderFrame);
 }
 
@@ -304,7 +303,7 @@ void RenderViewTest::SetUp() {
   // is already initialized.
   if (!ui::ResourceBundle::HasSharedInstance())
     ui::ResourceBundle::InitSharedInstanceWithLocale(
-        "en-US", NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+        "en-US", nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
   compositor_deps_.reset(new FakeCompositorDependencies);
   mock_process_.reset(new MockRenderProcess);
@@ -347,7 +346,7 @@ void RenderViewTest::TearDown() {
 
   leak_detector->PrepareForLeakDetection(view_->GetWebView()->MainFrame());
 
-  view_ = NULL;
+  view_ = nullptr;
   mock_process_.reset();
 
   RenderThreadImpl::SetRendererBlinkPlatformImplForTesting(nullptr);
@@ -437,7 +436,7 @@ gfx::Rect RenderViewTest::GetElementBounds(const std::string& element_id) {
   std::vector<std::string> params;
   params.push_back(element_id);
   std::string script =
-      base::ReplaceStringPlaceholders(kGetCoordinatesScript, params, NULL);
+      base::ReplaceStringPlaceholders(kGetCoordinatesScript, params, nullptr);
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);

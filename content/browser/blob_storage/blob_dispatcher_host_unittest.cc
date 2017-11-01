@@ -97,7 +97,7 @@ class BlobDispatcherHostTest : public testing::Test {
       : chrome_blob_storage_context_(
             ChromeBlobStorageContext::GetFor(&browser_context_)) {
     file_system_context_ =
-        CreateFileSystemContextForTesting(NULL, base::FilePath());
+        CreateFileSystemContextForTesting(nullptr, base::FilePath());
     host_ = new TestableBlobDispatcherHost(chrome_blob_storage_context_,
                                            file_system_context_.get(), &sink_);
   }

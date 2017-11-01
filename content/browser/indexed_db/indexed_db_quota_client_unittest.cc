@@ -69,7 +69,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
 
   ~IndexedDBQuotaClientTest() override {
     RunAllTasksUntilIdle();
-    idb_context_ = NULL;
+    idb_context_ = nullptr;
     browser_context_.reset();
     base::RunLoop().RunUntilIdle();
   }

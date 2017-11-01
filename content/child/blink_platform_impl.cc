@@ -575,7 +575,8 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
   if (message_id < 0)
     return WebString();
   return WebString::FromUTF16(base::ReplaceStringPlaceholders(
-      GetContentClient()->GetLocalizedString(message_id), value.Utf16(), NULL));
+      GetContentClient()->GetLocalizedString(message_id), value.Utf16(),
+      nullptr));
 }
 
 WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
@@ -589,7 +590,7 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
   values.push_back(value1.Utf16());
   values.push_back(value2.Utf16());
   return WebString::FromUTF16(base::ReplaceStringPlaceholders(
-      GetContentClient()->GetLocalizedString(message_id), values, NULL));
+      GetContentClient()->GetLocalizedString(message_id), values, nullptr));
 }
 
 std::unique_ptr<blink::WebGestureCurve>

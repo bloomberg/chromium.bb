@@ -85,7 +85,7 @@ ChildProcess::~ChildProcess() {
     }
   }
 
-  g_lazy_tls.Pointer()->Set(NULL);
+  g_lazy_tls.Pointer()->Set(nullptr);
   io_thread_.Stop();
 
   if (initialized_task_scheduler_) {

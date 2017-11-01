@@ -867,7 +867,8 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage_DifferentMethod) {
   params.transition = ui::PAGE_TRANSITION_TYPED;
   params.method = "POST";
   params.post_id = 123;
-  params.page_state = PageState::CreateForTesting(url1, false, 0, 0);
+  params.page_state =
+      PageState::CreateForTesting(url1, false, nullptr, nullptr);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigateWithParams(&params);
 
@@ -1196,7 +1197,7 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(2, delegate->navigation_state_change_count());
 
-  contents()->SetDelegate(NULL);
+  contents()->SetDelegate(nullptr);
 }
 
 // Tests that the pending entry state is correct after an abort.
@@ -1249,7 +1250,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   EXPECT_EQ(pending_entry, controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
 
-  contents()->SetDelegate(NULL);
+  contents()->SetDelegate(nullptr);
 }
 
 // Tests that the pending URL is not visible during a renderer-initiated
@@ -1316,7 +1317,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   // so that no spoof is possible.
   EXPECT_EQ(kExistingURL, controller.GetVisibleEntry()->GetURL());
 
-  contents()->SetDelegate(NULL);
+  contents()->SetDelegate(nullptr);
 }
 
 // Ensure that NavigationEntries track which bindings their RenderViewHost had

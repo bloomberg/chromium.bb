@@ -11,7 +11,7 @@
 namespace content {
 
 // Shall only be set once and never go back to NULL.
-WebRtcLogMessageDelegate* g_webrtc_logging_delegate = NULL;
+WebRtcLogMessageDelegate* g_webrtc_logging_delegate = nullptr;
 
 void InitWebRtcLoggingDelegate(WebRtcLogMessageDelegate* delegate) {
   CHECK(!g_webrtc_logging_delegate);

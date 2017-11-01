@@ -176,11 +176,10 @@ class UnpackedDesktopFrame : public webrtc::DesktopFrame {
 class FakeScreenCapturer : public webrtc::DesktopCapturer {
  public:
   FakeScreenCapturer()
-      : callback_(NULL),
+      : callback_(nullptr),
         frame_index_(0),
         generate_inverted_frames_(false),
-        generate_cropped_frames_(false) {
-  }
+        generate_cropped_frames_(false) {}
   ~FakeScreenCapturer() override {}
 
   void set_generate_inverted_frames(bool generate_inverted_frames) {

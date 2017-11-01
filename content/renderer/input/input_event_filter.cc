@@ -60,9 +60,9 @@ InputEventFilter::InputEventFilter(
     const scoped_refptr<base::SingleThreadTaskRunner>& target_task_runner)
     : main_task_runner_(main_task_runner),
       main_listener_(main_listener),
-      sender_(NULL),
+      sender_(nullptr),
       target_task_runner_(target_task_runner),
-      input_handler_manager_(NULL) {
+      input_handler_manager_(nullptr) {
   DCHECK(target_task_runner_.get());
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 }
@@ -149,11 +149,11 @@ void InputEventFilter::OnFilterAdded(IPC::Channel* channel) {
 }
 
 void InputEventFilter::OnFilterRemoved() {
-  sender_ = NULL;
+  sender_ = nullptr;
 }
 
 void InputEventFilter::OnChannelClosing() {
-  sender_ = NULL;
+  sender_ = nullptr;
 }
 
 // This function returns true if the IPC message is one that the compositor

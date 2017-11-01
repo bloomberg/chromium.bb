@@ -104,7 +104,7 @@ PepperHostResolverMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   if (message.type() == PpapiHostMsg_HostResolver_Resolve::ID)
     return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
-  return NULL;
+  return nullptr;
 }
 
 int32_t PepperHostResolverMessageFilter::OnResourceMessageReceived(

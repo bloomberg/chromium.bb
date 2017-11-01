@@ -40,10 +40,10 @@ scoped_refptr<storage::FileSystemContext> GetFileSystemContextFromRenderId(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
   if (!host)
-    return NULL;
+    return nullptr;
   StoragePartition* storage_partition = host->GetStoragePartition();
   if (!storage_partition)
-    return NULL;
+    return nullptr;
   return storage_partition->GetFileSystemContext();
 }
 
@@ -58,7 +58,7 @@ PepperFileSystemBrowserHost::PepperFileSystemBrowserHost(BrowserPpapiHost* host,
       type_(type),
       called_open_(false),
       opened_(false),
-      file_system_context_(NULL),
+      file_system_context_(nullptr),
       reserved_quota_(0),
       reserving_quota_(false),
       weak_factory_(this) {}

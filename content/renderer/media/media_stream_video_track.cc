@@ -155,7 +155,7 @@ void MediaStreamVideoTrack::FrameDeliverer::SetEnabledOnIO(bool enabled) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   enabled_ = enabled;
   if (enabled_)
-    black_frame_ = NULL;
+    black_frame_ = nullptr;
 }
 
 void MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO(
@@ -352,7 +352,7 @@ void MediaStreamVideoTrack::Stop() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (source_) {
     source_->RemoveTrack(this);
-    source_ = NULL;
+    source_ = nullptr;
   }
   OnReadyStateChanged(blink::WebMediaStreamSource::kReadyStateEnded);
 }

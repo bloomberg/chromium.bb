@@ -134,7 +134,7 @@ class MockRTCStatsRequest : public LocalRTCStatsRequest {
     if (request_succeeded_called_) {
       return response_.get();
     } else {
-      return NULL;
+      return nullptr;
     }
   }
 
@@ -260,8 +260,7 @@ class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
 
 class RTCPeerConnectionHandlerTest : public ::testing::Test {
  public:
-  RTCPeerConnectionHandlerTest() : mock_peer_connection_(NULL) {
-  }
+  RTCPeerConnectionHandlerTest() : mock_peer_connection_(nullptr) {}
 
   void SetUp() override {
     mock_client_.reset(new NiceMock<MockWebRTCPeerConnectionHandlerClient>());
@@ -516,7 +515,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
 TEST_F(RTCPeerConnectionHandlerTest, Destruct) {
   EXPECT_CALL(*mock_tracker_.get(), UnregisterPeerConnection(pc_handler_.get()))
       .Times(1);
-  pc_handler_.reset(NULL);
+  pc_handler_.reset(nullptr);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, NoCallbacksToClientAfterStop) {
@@ -572,9 +571,9 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateOffer) {
   // TODO(perkj): Can blink::WebRTCSessionDescriptionRequest be changed so
   // the |reqest| requestSucceeded can be tested? Currently the |request| object
   // can not be initialized from a unit test.
-  EXPECT_FALSE(mock_peer_connection_->created_session_description() != NULL);
+  EXPECT_FALSE(mock_peer_connection_->created_session_description() != nullptr);
   pc_handler_->CreateOffer(request, options);
-  EXPECT_TRUE(mock_peer_connection_->created_session_description() != NULL);
+  EXPECT_TRUE(mock_peer_connection_->created_session_description() != nullptr);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
@@ -584,9 +583,9 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
   // TODO(perkj): Can blink::WebRTCSessionDescriptionRequest be changed so
   // the |reqest| requestSucceeded can be tested? Currently the |request| object
   // can not be initialized from a unit test.
-  EXPECT_FALSE(mock_peer_connection_->created_session_description() != NULL);
+  EXPECT_FALSE(mock_peer_connection_->created_session_description() != nullptr);
   pc_handler_->CreateAnswer(request, options);
-  EXPECT_TRUE(mock_peer_connection_->created_session_description() != NULL);
+  EXPECT_TRUE(mock_peer_connection_->created_session_description() != nullptr);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
@@ -608,7 +607,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
   EXPECT_EQ(description.Sdp(), pc_handler_->LocalDescription().Sdp());
 
   std::string sdp_string;
-  ASSERT_TRUE(mock_peer_connection_->local_description() != NULL);
+  ASSERT_TRUE(mock_peer_connection_->local_description() != nullptr);
   EXPECT_EQ(kDummySdpType, mock_peer_connection_->local_description()->type());
   mock_peer_connection_->local_description()->ToString(&sdp_string);
   EXPECT_EQ(kDummySdp, sdp_string);
@@ -664,7 +663,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
   EXPECT_EQ(description.Sdp(), pc_handler_->RemoteDescription().Sdp());
 
   std::string sdp_string;
-  ASSERT_TRUE(mock_peer_connection_->remote_description() != NULL);
+  ASSERT_TRUE(mock_peer_connection_->remote_description() != nullptr);
   EXPECT_EQ(kDummySdpType, mock_peer_connection_->remote_description()->type());
   mock_peer_connection_->remote_description()->ToString(&sdp_string);
   EXPECT_EQ(kDummySdp, sdp_string);
@@ -1481,7 +1480,7 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateDataChannel) {
                                      PeerConnectionTracker::SOURCE_LOCAL));
   std::unique_ptr<blink::WebRTCDataChannelHandler> channel(
       pc_handler_->CreateDataChannel("d1", blink::WebRTCDataChannelInit()));
-  EXPECT_TRUE(channel.get() != NULL);
+  EXPECT_TRUE(channel.get() != nullptr);
   EXPECT_EQ(label, channel->Label());
   channel->SetClient(nullptr);
 }

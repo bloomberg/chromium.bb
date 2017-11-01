@@ -36,7 +36,7 @@ void ChunkedByteBuffer::Append(const uint8_t* start, size_t length) {
   const uint8_t* next_data = start;
 
   while (remaining_bytes > 0) {
-    DCHECK(partial_chunk_ != NULL);
+    DCHECK(partial_chunk_ != nullptr);
     size_t insert_length = 0;
     bool header_completed = false;
     bool content_completed = false;

@@ -3712,7 +3712,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
 
-  EXPECT_TRUE(root->child_at(1) != NULL);
+  EXPECT_TRUE(root->child_at(1) != nullptr);
   EXPECT_EQ(2U, root->child_at(1)->child_count());
 
   {
@@ -3743,7 +3743,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // navigating frame to still be present. The reason is that we don't run the
   // message loop, so no IPCs that alter the frame tree can be processed.
   FrameTreeNode* child = root->child_at(1);
-  SiteInstance* site = NULL;
+  SiteInstance* site = nullptr;
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
   std::string cross_site_rfh_type =
       browser_side_navigation ? "speculative" : "pending";

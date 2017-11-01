@@ -37,7 +37,7 @@
 namespace content {
 
 AuraWindowCaptureMachine::AuraWindowCaptureMachine()
-    : desktop_window_(NULL),
+    : desktop_window_(nullptr),
       screen_capture_(false),
       frame_capture_active_(true),
       weak_factory_(this) {}
@@ -165,7 +165,7 @@ void AuraWindowCaptureMachine::InternalStop(const base::Closure& callback) {
       }
     }
     desktop_window_->RemoveObserver(this);
-    desktop_window_ = NULL;
+    desktop_window_ = nullptr;
     cursor_renderer_.reset();
   }
 

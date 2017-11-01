@@ -28,7 +28,7 @@ bool ParamTraits<ui::WebScopedInputEvent>::Read(const base::Pickle* m,
                                                 base::PickleIterator* iter,
                                                 param_type* p) {
   bool valid_web_event = false;
-  WebInputEventPointer web_event_pointer = NULL;
+  WebInputEventPointer web_event_pointer = nullptr;
   if (!ReadParam(m, iter, &valid_web_event) ||
       !valid_web_event ||
       !ReadParam(m, iter, &web_event_pointer) ||

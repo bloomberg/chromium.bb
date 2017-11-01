@@ -190,7 +190,7 @@ void WaitForDebugger(const std::string& label) {
   struct sigaction sa;
   memset(&sa, 0, sizeof(sa));
   sa.sa_handler = SigUSR1Handler;
-  sigaction(SIGUSR1, &sa, NULL);
+  sigaction(SIGUSR1, &sa, nullptr);
 
   pause();
 #endif  // defined(OS_ANDROID)

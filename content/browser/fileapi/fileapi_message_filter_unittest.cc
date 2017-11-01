@@ -43,7 +43,7 @@ class FileAPIMessageFilterTest : public testing::Test {
  protected:
   void SetUp() override {
     file_system_context_ =
-        CreateFileSystemContextForTesting(NULL, base::FilePath());
+        CreateFileSystemContextForTesting(nullptr, base::FilePath());
 
     std::vector<storage::FileSystemType> types;
     file_system_context_->GetFileSystemTypes(&types);

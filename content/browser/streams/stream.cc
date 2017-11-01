@@ -32,9 +32,9 @@ Stream::Stream(StreamRegistry* registry,
       data_bytes_read_(0),
       last_total_buffered_bytes_(0),
       registry_(registry),
-      read_observer_(NULL),
+      read_observer_(nullptr),
       write_observer_(write_observer),
-      stream_handle_(NULL),
+      stream_handle_(nullptr),
       weak_ptr_factory_(this) {
   CreateByteStream(base::ThreadTaskRunnerHandle::Get(),
                    base::ThreadTaskRunnerHandle::Get(), kDeferSizeThreshold,
@@ -61,12 +61,12 @@ bool Stream::SetReadObserver(StreamReadObserver* observer) {
 
 void Stream::RemoveReadObserver(StreamReadObserver* observer) {
   DCHECK(observer == read_observer_);
-  read_observer_ = NULL;
+  read_observer_ = nullptr;
 }
 
 void Stream::RemoveWriteObserver(StreamWriteObserver* observer) {
   DCHECK(observer == write_observer_);
-  write_observer_ = NULL;
+  write_observer_ = nullptr;
 }
 
 void Stream::Abort() {
@@ -181,7 +181,7 @@ void Stream::CloseHandle() {
   scoped_refptr<Stream> ref(this);
 
   CHECK(stream_handle_);
-  stream_handle_ = NULL;
+  stream_handle_ = nullptr;
   registry_->UnregisterStream(url());
   if (write_observer_)
     write_observer_->OnClose(this);
@@ -203,7 +203,7 @@ void Stream::OnDataAvailable() {
 }
 
 void Stream::ClearBuffer() {
-  data_ = NULL;
+  data_ = nullptr;
   data_length_ = 0;
   data_bytes_read_ = 0;
 }

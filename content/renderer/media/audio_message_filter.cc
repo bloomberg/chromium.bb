@@ -43,18 +43,18 @@ class AudioMessageFilter::AudioOutputIPCImpl : public media::AudioOutputIPC {
   bool stream_created_;
 };
 
-AudioMessageFilter* AudioMessageFilter::g_filter = NULL;
+AudioMessageFilter* AudioMessageFilter::g_filter = nullptr;
 
 AudioMessageFilter::AudioMessageFilter(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : sender_(NULL), io_task_runner_(io_task_runner) {
+    : sender_(nullptr), io_task_runner_(io_task_runner) {
   DCHECK(!g_filter);
   g_filter = this;
 }
 
 AudioMessageFilter::~AudioMessageFilter() {
   DCHECK_EQ(g_filter, this);
-  g_filter = NULL;
+  g_filter = nullptr;
 }
 
 // static
@@ -168,7 +168,7 @@ void AudioMessageFilter::OnFilterRemoved() {
 
 void AudioMessageFilter::OnChannelClosing() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  sender_ = NULL;
+  sender_ = nullptr;
 
   DLOG_IF(WARNING, !delegates_.IsEmpty())
       << "Not all audio devices have been closed.";

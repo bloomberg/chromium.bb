@@ -6668,7 +6668,7 @@ class WebContentsLoadFinishedWaiter : public WebContentsObserver {
       : WebContentsObserver(web_contents),
         expected_url_(expected_url),
         message_loop_runner_(new MessageLoopRunner) {
-    EXPECT_TRUE(web_contents != NULL);
+    EXPECT_TRUE(web_contents != nullptr);
   }
 
   void Wait() { message_loop_runner_->Run(); }

@@ -507,7 +507,7 @@ class WebContentsVideoCaptureDeviceTest : public testing::Test {
 
     base::RunLoop().RunUntilIdle();
 
-    RenderProcessHostImpl::set_render_process_host_factory(NULL);
+    RenderProcessHostImpl::set_render_process_host_factory(nullptr);
     render_frame_host_factory_.reset();
     render_view_host_factory_.reset();
     render_process_host_factory_.reset();

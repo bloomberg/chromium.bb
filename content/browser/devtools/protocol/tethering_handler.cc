@@ -167,9 +167,8 @@ class BoundSocket {
               const CreateServerSocketCallback& socket_callback)
       : accepted_callback_(accepted_callback),
         socket_callback_(socket_callback),
-        socket_(new net::TCPServerSocket(NULL, net::NetLogSource())),
-        port_(0) {
-  }
+        socket_(new net::TCPServerSocket(nullptr, net::NetLogSource())),
+        port_(0) {}
 
   virtual ~BoundSocket() {
   }

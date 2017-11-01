@@ -290,7 +290,7 @@ void WebRtcVideoCapturerAdapter::Stop() {
   DVLOG(3) << __func__;
   DCHECK(running_);
   running_ = false;
-  SetCaptureFormat(NULL);
+  SetCaptureFormat(nullptr);
   SignalStateChange(this, cricket::CS_STOPPED);
 }
 

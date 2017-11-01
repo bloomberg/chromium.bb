@@ -46,8 +46,8 @@ AppCacheGroup::AppCacheGroup(AppCacheStorage* storage,
       update_status_(IDLE),
       is_obsolete_(false),
       is_being_deleted_(false),
-      newest_complete_cache_(NULL),
-      update_job_(NULL),
+      newest_complete_cache_(nullptr),
+      update_job_(nullptr),
       storage_(storage),
       is_in_dtor_(false) {
   storage_->working_set()->AddGroup(this);
@@ -116,8 +116,8 @@ void AppCacheGroup::RemoveCache(AppCache* cache) {
   if (cache == newest_complete_cache_) {
     CancelUpdate();
     AppCache* tmp_cache = newest_complete_cache_;
-    newest_complete_cache_ = NULL;
-    tmp_cache->set_owning_group(NULL);  // may cause this group to be deleted
+    newest_complete_cache_ = nullptr;
+    tmp_cache->set_owning_group(nullptr);  // may cause this group to be deleted
   } else {
     scoped_refptr<AppCacheGroup> protect(this);
 
@@ -126,7 +126,7 @@ void AppCacheGroup::RemoveCache(AppCache* cache) {
     if (it != old_caches_.end()) {
       AppCache* tmp_cache = *it;
       old_caches_.erase(it);
-      tmp_cache->set_owning_group(NULL);  // may cause group to be released
+      tmp_cache->set_owning_group(nullptr);  // may cause group to be released
     }
 
     if (!is_obsolete() && old_caches_.empty() &&
@@ -256,12 +256,12 @@ void AppCacheGroup::SetUpdateAppCacheStatus(UpdateAppCacheStatus status) {
   if (status != IDLE) {
     DCHECK(update_job_);
   } else {
-    update_job_ = NULL;
+    update_job_ = nullptr;
 
     // Observers may release us in these callbacks, so we protect against
     // deletion by adding an extra ref in this scope (but only if we're not
     // in our destructor).
-    scoped_refptr<AppCacheGroup> protect(is_in_dtor_ ? NULL : this);
+    scoped_refptr<AppCacheGroup> protect(is_in_dtor_ ? nullptr : this);
     for (auto& observer : observers_)
       observer.OnUpdateComplete(this);
     if (!queued_updates_.empty())

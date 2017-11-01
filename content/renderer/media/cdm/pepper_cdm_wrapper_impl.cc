@@ -85,7 +85,7 @@ PepperCdmWrapperImpl::PepperCdmWrapperImpl(
 
 PepperCdmWrapperImpl::~PepperCdmWrapperImpl() {
   // Destroy the nested objects in reverse order.
-  plugin_instance_ = NULL;
+  plugin_instance_ = nullptr;
   helper_plugin_.reset();
 }
 

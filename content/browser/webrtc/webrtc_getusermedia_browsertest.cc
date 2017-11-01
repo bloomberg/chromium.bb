@@ -106,14 +106,14 @@ namespace content {
 
 class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
  public:
-  WebRtcGetUserMediaBrowserTest() : trace_log_(NULL) {
+  WebRtcGetUserMediaBrowserTest() : trace_log_(nullptr) {
     // Automatically grant device permission.
     AppendUseFakeUIForMediaStreamFlag();
   }
   ~WebRtcGetUserMediaBrowserTest() override {}
 
   void StartTracing() {
-    CHECK(trace_log_ == NULL) << "Can only can start tracing once";
+    CHECK(trace_log_ == nullptr) << "Can only can start tracing once";
     trace_log_ = base::trace_event::TraceLog::GetInstance();
     base::trace_event::TraceConfig trace_config(
         "video", base::trace_event::RECORD_UNTIL_FULL);
@@ -124,7 +124,7 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
   }
 
   void StopTracing() {
-    CHECK(message_loop_runner_.get() == NULL)
+    CHECK(message_loop_runner_.get() == nullptr)
         << "Calling StopTracing more than once";
 
     {
@@ -238,7 +238,7 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
         devices_as_json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code,
         &error_message);
 
-    ASSERT_TRUE(value.get() != NULL) << error_message;
+    ASSERT_TRUE(value.get() != nullptr) << error_message;
     EXPECT_EQ(value->type(), base::Value::Type::LIST);
 
     base::ListValue* values;

@@ -22,7 +22,7 @@ namespace {
 // lookup result.
 class LocalHostResolverProc : public net::HostResolverProc {
  public:
-  LocalHostResolverProc() : HostResolverProc(NULL) {}
+  LocalHostResolverProc() : HostResolverProc(nullptr) {}
 
   int Resolve(const std::string& host,
               net::AddressFamily address_family,

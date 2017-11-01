@@ -155,14 +155,14 @@ bool DOMStorageHost::HasAreaOpen(
 DOMStorageArea* DOMStorageHost::GetOpenArea(int connection_id) const {
   const auto found = connections_.find(connection_id);
   if (found == connections_.end())
-    return NULL;
+    return nullptr;
   return found->second.area_.get();
 }
 
 DOMStorageNamespace* DOMStorageHost::GetNamespace(int connection_id) const {
   const auto found = connections_.find(connection_id);
   if (found == connections_.end())
-    return NULL;
+    return nullptr;
   return found->second.namespace_.get();
 }
 

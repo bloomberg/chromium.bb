@@ -193,7 +193,7 @@ int32_t PepperDeviceEnumerationHostHelper::OnMonitorDeviceChange(
 
 int32_t PepperDeviceEnumerationHostHelper::OnStopMonitoringDeviceChange(
     HostMessageContext* /* context */) {
-  monitor_.reset(NULL);
+  monitor_.reset(nullptr);
   return PP_OK;
 }
 
@@ -201,7 +201,7 @@ void PepperDeviceEnumerationHostHelper::OnEnumerateDevicesComplete(
     const std::vector<ppapi::DeviceRefData>& devices) {
   DCHECK(enumerate_devices_context_.is_valid());
 
-  enumerate_.reset(NULL);
+  enumerate_.reset(nullptr);
 
   enumerate_devices_context_.params.set_result(PP_OK);
   resource_host_->host()->SendReply(

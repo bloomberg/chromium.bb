@@ -134,7 +134,7 @@ RtcDataChannelHandler::RtcDataChannelHandler(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     webrtc::DataChannelInterface* channel)
     : observer_(new Observer(this, main_thread, channel)),
-      webkit_client_(NULL) {
+      webkit_client_(nullptr) {
   DVLOG(1) << "RtcDataChannelHandler " << channel->label();
 
   // Detach from the ctor thread since we can be constructed on either the main

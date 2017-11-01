@@ -86,7 +86,7 @@ TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
 
   // Make a second instance (the test harness already creates & manages one).
   scoped_refptr<PepperPluginInstanceImpl> instance2(
-      PepperPluginInstanceImpl::Create(NULL, module(), NULL, GURL()));
+      PepperPluginInstanceImpl::Create(nullptr, module(), nullptr, GURL()));
   PP_Instance pp_instance2 = instance2->pp_instance();
 
   {
@@ -102,7 +102,7 @@ TEST_F(HostVarTrackerTest, DeleteObjectVarWithInstance) {
   }
 
   // Free the instance, this should release the ObjectVar.
-  instance2 = NULL;
+  instance2 = nullptr;
   EXPECT_EQ(0, tracker().GetLiveV8ObjectVarsForTest(pp_instance2));
 }
 

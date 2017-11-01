@@ -127,7 +127,7 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
     MockManagerGoingDown(manager);
 
     manager_->RemoveObserver(this);
-    manager_ = NULL;
+    manager_ = nullptr;
   }
 
   MOCK_METHOD1(MockManagerGoingDown, void(DownloadManager*));
@@ -515,20 +515,20 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
 class DownloadCreateObserver : DownloadManager::Observer {
  public:
   DownloadCreateObserver(DownloadManager* manager)
-      : manager_(manager), item_(NULL) {
+      : manager_(manager), item_(nullptr) {
     manager_->AddObserver(this);
   }
 
   ~DownloadCreateObserver() override {
     if (manager_)
       manager_->RemoveObserver(this);
-    manager_ = NULL;
+    manager_ = nullptr;
   }
 
   void ManagerGoingDown(DownloadManager* manager) override {
     DCHECK_EQ(manager_, manager);
     manager_->RemoveObserver(this);
-    manager_ = NULL;
+    manager_ = nullptr;
   }
 
   void OnDownloadCreated(DownloadManager* manager,

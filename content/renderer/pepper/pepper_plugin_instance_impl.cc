@@ -377,7 +377,7 @@ PepperPluginInstanceImpl* PepperPluginInstanceImpl::Create(
   PPP_Instance_Combined* ppp_instance_combined =
       PPP_Instance_Combined::Create(get_plugin_interface_func);
   if (!ppp_instance_combined)
-    return NULL;
+    return nullptr;
 
   return new PepperPluginInstanceImpl(render_frame,
                                       module,
@@ -488,29 +488,29 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       full_frame_(false),
       viewport_to_dip_scale_(1.0f),
       sent_initial_did_change_view_(false),
-      bound_graphics_2d_platform_(NULL),
-      bound_compositor_(NULL),
+      bound_graphics_2d_platform_(nullptr),
+      bound_compositor_(nullptr),
       has_webkit_focus_(false),
       has_content_area_focus_(false),
       find_identifier_(-1),
-      plugin_find_interface_(NULL),
-      plugin_input_event_interface_(NULL),
-      plugin_mouse_lock_interface_(NULL),
-      plugin_pdf_interface_(NULL),
-      plugin_private_interface_(NULL),
-      plugin_textinput_interface_(NULL),
+      plugin_find_interface_(nullptr),
+      plugin_input_event_interface_(nullptr),
+      plugin_mouse_lock_interface_(nullptr),
+      plugin_pdf_interface_(nullptr),
+      plugin_private_interface_(nullptr),
+      plugin_textinput_interface_(nullptr),
       checked_for_plugin_input_event_interface_(false),
       checked_for_plugin_pdf_interface_(false),
       metafile_(nullptr),
       gamepad_impl_(new GamepadImpl()),
-      uma_private_impl_(NULL),
-      plugin_print_interface_(NULL),
+      uma_private_impl_(nullptr),
+      plugin_print_interface_(nullptr),
       always_on_top_(false),
-      fullscreen_container_(NULL),
+      fullscreen_container_(nullptr),
       flash_fullscreen_(false),
       desired_fullscreen_state_(false),
-      message_channel_(NULL),
-      sad_plugin_(NULL),
+      message_channel_(nullptr),
+      sad_plugin_(nullptr),
       input_event_mask_(0),
       filtered_input_event_mask_(0),
       text_input_type_(kPluginDefaultTextInputType),
@@ -520,7 +520,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       selection_caret_(0),
       selection_anchor_(0),
       pending_user_gesture_(0.0),
-      document_loader_(NULL),
+      document_loader_(nullptr),
       external_document_load_(false),
       isolate_(v8::Isolate::GetCurrent()),
       is_deleted_(false),
@@ -618,7 +618,7 @@ v8::Local<v8::Object> PepperPluginInstanceImpl::GetMessageChannelObject() {
 }
 
 void PepperPluginInstanceImpl::MessageChannelDestroyed() {
-  message_channel_ = NULL;
+  message_channel_ = nullptr;
   message_channel_object_.Reset();
 }
 
@@ -678,14 +678,14 @@ void PepperPluginInstanceImpl::Delete() {
 
   if (fullscreen_container_) {
     fullscreen_container_->Destroy();
-    fullscreen_container_ = NULL;
+    fullscreen_container_ = nullptr;
   }
 
   // Force-unbind any Graphics. In the case of Graphics2D, if the plugin
   // leaks the graphics 2D, it may actually get cleaned up after our
   // destruction, so we need its pointers to be up to date.
   BindGraphics(pp_instance(), 0);
-  container_ = NULL;
+  container_ = nullptr;
 }
 
 bool PepperPluginInstanceImpl::is_deleted() const { return is_deleted_; }
@@ -1327,7 +1327,7 @@ void PepperPluginInstanceImpl::ViewChanged(
     }
   }
 
-  UpdateFlashFullscreenState(fullscreen_container_ != NULL);
+  UpdateFlashFullscreenState(fullscreen_container_ != nullptr);
 
   // During plugin initialization, there are often re-layouts. Avoid sending
   // intermediate sizes the plugin and throttler.
@@ -1902,7 +1902,7 @@ void PepperPluginInstanceImpl::PrintPage(int page_number,
   // The canvas only has a metafile on it for print preview.
   printing::PdfMetafileSkia* metafile =
       printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
-  bool save_for_later = (metafile != NULL);
+  bool save_for_later = (metafile != nullptr);
 #if defined(OS_MACOSX)
   save_for_later = save_for_later && cc::IsPreviewMetafile(canvas);
 #endif  // defined(OS_MACOSX)
@@ -2011,7 +2011,7 @@ void PepperPluginInstanceImpl::RotateView(WebPlugin::RotationType type) {
 }
 
 bool PepperPluginInstanceImpl::FlashIsFullscreenOrPending() {
-  return fullscreen_container_ != NULL;
+  return fullscreen_container_ != nullptr;
 }
 
 bool PepperPluginInstanceImpl::IsFullscreenOrPending() {
@@ -2150,22 +2150,22 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
 
   if (texture_layer_ || compositor_layer_) {
     if (!layer_bound_to_fullscreen_)
-      container_->SetWebLayer(NULL);
+      container_->SetWebLayer(nullptr);
     else if (fullscreen_container_)
-      fullscreen_container_->SetLayer(NULL);
+      fullscreen_container_->SetLayer(nullptr);
     web_layer_.reset();
     if (texture_layer_) {
       texture_layer_->ClearClient();
-      texture_layer_ = NULL;
+      texture_layer_ = nullptr;
     }
-    compositor_layer_ = NULL;
+    compositor_layer_ = nullptr;
   }
 
   if (want_texture_layer) {
     bool opaque = false;
     if (want_3d_layer) {
       DCHECK(bound_graphics_3d_.get());
-      texture_layer_ = cc::TextureLayer::CreateForMailbox(NULL);
+      texture_layer_ = cc::TextureLayer::CreateForMailbox(nullptr);
       opaque = bound_graphics_3d_->IsOpaque();
 
       PassCommittedTextureToTextureLayer();
@@ -2385,15 +2385,15 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
   scoped_refptr<ppapi::Resource> old_graphics = bound_graphics_3d_.get();
   if (bound_graphics_3d_.get()) {
     bound_graphics_3d_->BindToInstance(false);
-    bound_graphics_3d_ = NULL;
+    bound_graphics_3d_ = nullptr;
   }
   if (bound_graphics_2d_platform_) {
-    bound_graphics_2d_platform_->BindToInstance(NULL);
-    bound_graphics_2d_platform_ = NULL;
+    bound_graphics_2d_platform_->BindToInstance(nullptr);
+    bound_graphics_2d_platform_ = nullptr;
   }
   if (bound_compositor_) {
-    bound_compositor_->BindToInstance(NULL);
-    bound_compositor_ = NULL;
+    bound_compositor_->BindToInstance(nullptr);
+    bound_compositor_ = nullptr;
   }
 
   // Special-case clearing the current device.
@@ -2412,8 +2412,8 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
   const ppapi::host::PpapiHost* ppapi_host =
       RendererPpapiHost::GetForPPInstance(instance)->GetPpapiHost();
   ppapi::host::ResourceHost* host = ppapi_host->GetResourceHost(device);
-  PepperGraphics2DHost* graphics_2d = NULL;
-  PepperCompositorHost* compositor = NULL;
+  PepperGraphics2DHost* graphics_2d = nullptr;
+  PepperCompositorHost* compositor = nullptr;
   if (host) {
     if (host->IsGraphics2DHost()) {
       graphics_2d = static_cast<PepperGraphics2DHost*>(host);
@@ -2429,7 +2429,7 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
   PPB_Graphics3D_Impl* graphics_3d =
       enter_3d.succeeded()
           ? static_cast<PPB_Graphics3D_Impl*>(enter_3d.object())
-          : NULL;
+          : nullptr;
 
   if (compositor) {
     if (compositor->BindToInstance(this)) {
@@ -2477,7 +2477,7 @@ PP_Var PepperPluginInstanceImpl::GetWindowObject(PP_Instance instance) {
   if (!container_)
     return PP_MakeUndefined();
   V8VarConverter converter(pp_instance_, V8VarConverter::kAllowObjectVars);
-  PepperTryCatchVar try_catch(this, &converter, NULL);
+  PepperTryCatchVar try_catch(this, &converter, nullptr);
   WebLocalFrame* frame = container_->GetDocument().GetFrame();
   if (!frame) {
     try_catch.SetException("No frame exists for window object.");
@@ -2494,7 +2494,7 @@ PP_Var PepperPluginInstanceImpl::GetOwnerElementObject(PP_Instance instance) {
   if (!container_)
     return PP_MakeUndefined();
   V8VarConverter converter(pp_instance_, V8VarConverter::kAllowObjectVars);
-  PepperTryCatchVar try_catch(this, &converter, NULL);
+  PepperTryCatchVar try_catch(this, &converter, nullptr);
   ScopedPPVar result = try_catch.FromV8(container_->V8ObjectForElement());
   DCHECK(!try_catch.HasException());
   return result.Release();
@@ -2803,7 +2803,7 @@ ppapi::Resource* PepperPluginInstanceImpl::GetSingletonResource(
     case ppapi::PDF_SINGLETON_ID:
     case ppapi::TRUETYPE_FONT_SINGLETON_ID:
       NOTIMPLEMENTED();
-      return NULL;
+      return nullptr;
     case ppapi::GAMEPAD_SINGLETON_ID:
       return gamepad_impl_.get();
     case ppapi::UMA_SINGLETON_ID: {
@@ -2820,7 +2820,7 @@ ppapi::Resource* PepperPluginInstanceImpl::GetSingletonResource(
   }
 
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 int32_t PepperPluginInstanceImpl::RequestInputEvents(PP_Instance instance,
@@ -3083,14 +3083,14 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
 
   instance_interface_.reset(ppp_instance_combined);
   // Clear all PPP interfaces we may have cached.
-  plugin_find_interface_ = NULL;
-  plugin_input_event_interface_ = NULL;
+  plugin_find_interface_ = nullptr;
+  plugin_input_event_interface_ = nullptr;
   checked_for_plugin_input_event_interface_ = false;
-  plugin_mouse_lock_interface_ = NULL;
-  plugin_pdf_interface_ = NULL;
+  plugin_mouse_lock_interface_ = nullptr;
+  plugin_pdf_interface_ = nullptr;
   checked_for_plugin_pdf_interface_ = false;
-  plugin_private_interface_ = NULL;
-  plugin_textinput_interface_ = NULL;
+  plugin_private_interface_ = nullptr;
+  plugin_textinput_interface_ = nullptr;
 
   // Re-send the DidCreate event via the proxy.
   std::unique_ptr<const char* []> argn_array(StringVectorToArgArray(argn_));
@@ -3111,7 +3111,7 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
   DCHECK(external_document_load_);
   external_document_load_ = false;
   if (!external_document_response_.IsNull()) {
-    document_loader_ = NULL;
+    document_loader_ = nullptr;
     // Pass the response to the new proxy.
     HandleDocumentLoad(external_document_response_);
     external_document_response_ = blink::WebURLResponse();
@@ -3254,7 +3254,7 @@ bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
   } else {
     DCHECK(fullscreen_container_);
     fullscreen_container_->Destroy();
-    fullscreen_container_ = NULL;
+    fullscreen_container_ = nullptr;
     UpdateFlashFullscreenState(false);
     if (!delay_report) {
       ReportGeometry();

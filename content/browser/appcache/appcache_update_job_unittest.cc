@@ -245,10 +245,12 @@ inline bool operator==(const AppCacheNamespace& lhs,
 class MockFrontend : public AppCacheFrontend {
  public:
   MockFrontend()
-      : ignore_progress_events_(false), verify_progress_events_(false),
-        last_progress_total_(-1), last_progress_complete_(-1),
-        start_update_trigger_(APPCACHE_CHECKING_EVENT), update_(NULL) {
-  }
+      : ignore_progress_events_(false),
+        verify_progress_events_(false),
+        last_progress_total_(-1),
+        last_progress_complete_(-1),
+        start_update_trigger_(APPCACHE_CHECKING_EVENT),
+        update_(nullptr) {}
 
   void OnCacheSelected(int host_id, const AppCacheInfo& info) override {}
 
@@ -709,11 +711,11 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         expect_group_is_being_deleted_(false),
         expect_evictable_error_(false),
         expect_eviction_(false),
-        expect_old_cache_(NULL),
-        expect_newest_cache_(NULL),
+        expect_old_cache_(nullptr),
+        expect_newest_cache_(nullptr),
         expect_non_null_update_time_(false),
         tested_manifest_(NONE),
-        tested_manifest_path_override_(NULL),
+        tested_manifest_path_override_(nullptr),
         request_handler_type_(GetParam()),
         thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
     BrowserThread::PostTask(
@@ -912,7 +914,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     group_->set_last_full_update_check_time(
         base::Time::Now() - kFullUpdateInterval - kOneHour);
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
     EXPECT_TRUE(update->doing_full_update_check_);
 
     // Set up checks for when update job finishes.
@@ -983,7 +985,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     frontend->SetVerifyProgressEvents(true);
 
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1020,7 +1022,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host1->AssociateCompleteCache(cache);
     host2->AssociateCompleteCache(cache);
 
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1109,7 +1111,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     group_->set_last_full_update_check_time(
         base::Time::Now() - kFullUpdateInterval - kOneHour);
     group_->set_first_evictable_error_time(base::Time::Now());
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
     EXPECT_TRUE(update->doing_full_update_check_);
 
     // Set up checks for when update job finishes.
@@ -1197,7 +1199,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     AppCacheHost* host = MakeHost(1, frontend);
     host->AssociateCompleteCache(cache);
 
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1217,7 +1219,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     response_writer_.reset();
 
     AppCacheUpdateJob* update = group_->update_job_;
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     WaitForUpdateToFinish();
   }
@@ -1613,7 +1615,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     cache->AddEntry(MockHttpServer::GetMockUrl("files/explicit1"),
                     AppCacheEntry(AppCacheEntry::MASTER, 111));
 
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1687,7 +1689,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host1->AssociateCompleteCache(cache);
     host2->AssociateCompleteCache(cache);
 
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1755,7 +1757,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     MakeAppCacheResponseInfo(kManifestUrl, 444, kRawHeaders);
     MakeAppCacheResponseInfo(kManifestUrl, 555, kRawHeaders);
 
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -1823,7 +1825,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     frontend1->SetVerifyProgressEvents(true);
 
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2117,7 +2119,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host1->AssociateCompleteCache(cache);
     host2->AssociateCompleteCache(cache);
 
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2213,7 +2215,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     host1->AssociateCompleteCache(cache);
     host2->AssociateCompleteCache(cache);
 
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -2640,7 +2642,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     frontend1->AdditionalUpdateHost(host2);  // fetch will fail
     frontend1->AdditionalUpdateHost(host3);  // same as an explicit entry
     frontend1->AdditionalUpdateHost(host4);  // same as another master entry
-    frontend1->AdditionalUpdateHost(NULL);   // no host
+    frontend1->AdditionalUpdateHost(nullptr);  // no host
     frontend1->AdditionalUpdateHost(host5);  // no master entry url
 
     // Set up checks for when update job finishes.
@@ -2734,7 +2736,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     frontend2->TriggerAdditionalUpdates(APPCACHE_ERROR_EVENT, update);
     frontend2->AdditionalUpdateHost(host3);
-    frontend2->AdditionalUpdateHost(NULL);   // no host
+    frontend2->AdditionalUpdateHost(nullptr);  // no host
     frontend2->AdditionalUpdateHost(host4);  // no master entry url
     frontend2->AdditionalUpdateHost(host5);  // same as existing cache entry
     frontend2->AdditionalUpdateHost(host6);  // same as another master entry
@@ -2782,7 +2784,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     AppCacheHost* host1 = MakeHost(1, frontend1);
     host1->AssociateCompleteCache(cache);
 
-    update->StartUpdate(NULL, GURL());
+    update->StartUpdate(nullptr, GURL());
 
     // Set up additional updates to be started while update is in progress.
     MockFrontend* frontend2 = MakeMockFrontend();
@@ -2805,7 +2807,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     frontend1->TriggerAdditionalUpdates(APPCACHE_PROGRESS_EVENT, update);
     frontend1->AdditionalUpdateHost(host2);  // same as entry in manifest
-    frontend1->AdditionalUpdateHost(NULL);   // no host
+    frontend1->AdditionalUpdateHost(nullptr);  // no host
     frontend1->AdditionalUpdateHost(host3);  // new master entry
     frontend1->AdditionalUpdateHost(host4);  // no master entry url
     frontend1->AdditionalUpdateHost(host5);  // same as another master entry
@@ -3369,17 +3371,17 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
   void UpdateFinishedUnwound() {
     EXPECT_EQ(AppCacheGroup::IDLE, group_->update_status());
-    EXPECT_TRUE(group_->update_job() == NULL);
+    EXPECT_TRUE(group_->update_job() == nullptr);
     if (do_checks_after_update_finished_)
       VerifyExpectations();
 
     // Clean up everything that was created on the IO thread.
-    protect_newest_cache_ = NULL;
-    group_ = NULL;
+    protect_newest_cache_ = nullptr;
+    group_ = nullptr;
     hosts_.clear();
     frontends_.clear();
     response_infos_.clear();
-    service_.reset(NULL);
+    service_.reset(nullptr);
 
     event_->Signal();
   }
@@ -3470,7 +3472,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     }
 
     if (expect_group_has_cache_) {
-      EXPECT_TRUE(group_->newest_complete_cache() != NULL);
+      EXPECT_TRUE(group_->newest_complete_cache() != nullptr);
 
       if (expect_non_null_update_time_)
         EXPECT_TRUE(!group_->newest_complete_cache()->update_time().is_null());
@@ -3517,7 +3519,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         }
       }
     } else {
-      EXPECT_TRUE(group_->newest_complete_cache() == NULL);
+      EXPECT_TRUE(group_->newest_complete_cache() == nullptr);
     }
 
     // Check expected events.
@@ -3554,7 +3556,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // and will abort the test if they fail.
     if (tested_manifest_) {
       AppCache* cache = group_->newest_complete_cache();
-      ASSERT_TRUE(cache != NULL);
+      ASSERT_TRUE(cache != nullptr);
       EXPECT_EQ(group_.get(), cache->owning_group());
       EXPECT_TRUE(cache->is_complete());
 
@@ -3803,7 +3805,7 @@ TEST_P(AppCacheUpdateJobTest, AlreadyChecking) {
   group->update_job_ = &update;
   group->update_status_ = AppCacheGroup::CHECKING;
 
-  update.StartUpdate(NULL, GURL());
+  update.StartUpdate(nullptr, GURL());
   EXPECT_EQ(AppCacheGroup::CHECKING, group->update_status());
 
   MockFrontend mock_frontend;
@@ -3831,7 +3833,7 @@ TEST_P(AppCacheUpdateJobTest, AlreadyDownloading) {
   group->update_job_ = &update;
   group->update_status_ = AppCacheGroup::DOWNLOADING;
 
-  update.StartUpdate(NULL, GURL());
+  update.StartUpdate(nullptr, GURL());
   EXPECT_EQ(AppCacheGroup::DOWNLOADING, group->update_status());
 
   MockFrontend mock_frontend;

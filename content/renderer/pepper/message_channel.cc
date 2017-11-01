@@ -98,7 +98,7 @@ MessageChannel::~MessageChannel() {
 
 void MessageChannel::InstanceDeleted() {
   UnregisterSyncMessageStatusObserver();
-  instance_ = NULL;
+  instance_ = nullptr;
 }
 
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {

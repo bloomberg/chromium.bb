@@ -174,9 +174,9 @@ void VpxEncoder::DoEncode(vpx_codec_ctx_t* const encoder,
       << " -" << vpx_codec_error_detail(encoder);
 
   *keyframe = false;
-  vpx_codec_iter_t iter = NULL;
-  const vpx_codec_cx_pkt_t* pkt = NULL;
-  while ((pkt = vpx_codec_get_cx_data(encoder, &iter)) != NULL) {
+  vpx_codec_iter_t iter = nullptr;
+  const vpx_codec_cx_pkt_t* pkt = nullptr;
+  while ((pkt = vpx_codec_get_cx_data(encoder, &iter)) != nullptr) {
     if (pkt->kind != VPX_CODEC_CX_FRAME_PKT)
       continue;
     output_data->assign(static_cast<char*>(pkt->data.frame.buf),

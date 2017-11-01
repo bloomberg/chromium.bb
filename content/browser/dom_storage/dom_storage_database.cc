@@ -304,7 +304,7 @@ bool DOMStorageDatabase::UpgradeVersion1To2() {
 }
 
 void DOMStorageDatabase::Close() {
-  db_.reset(NULL);
+  db_.reset(nullptr);
 }
 
 }  // namespace content

@@ -99,14 +99,14 @@ RenderWidgetHostViewAura* ToRenderWidgetHostViewAura(
     RenderWidgetHostView* view) {
   if (!view || (RenderViewHostFactory::has_factory() &&
       !RenderViewHostFactory::is_real_render_view_host())) {
-    return NULL;  // Can't cast to RenderWidgetHostViewAura in unit tests.
+    return nullptr;  // Can't cast to RenderWidgetHostViewAura in unit tests.
   }
 
   RenderViewHost* rvh = RenderViewHost::From(view->GetRenderWidgetHost());
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      rvh ? WebContents::FromRenderViewHost(rvh) : NULL);
+      rvh ? WebContents::FromRenderViewHost(rvh) : nullptr);
   if (BrowserPluginGuest::IsGuest(web_contents))
-    return NULL;
+    return nullptr;
   return static_cast<RenderWidgetHostViewAura*>(view);
 }
 
@@ -137,8 +137,8 @@ class WebDragSourceAura : public NotificationObserver {
     if (dnd_client && dnd_client->IsDragDropInProgress())
       dnd_client->DragCancel();
 
-    window_ = NULL;
-    contents_ = NULL;
+    window_ = nullptr;
+    contents_ = nullptr;
   }
 
   aura::Window* window() const { return window_; }
@@ -415,8 +415,7 @@ class WebContentsViewAura::WindowObserver
     : public aura::WindowObserver, public aura::WindowTreeHostObserver {
  public:
   explicit WindowObserver(WebContentsViewAura* view)
-      : view_(view),
-        host_window_(NULL) {
+      : view_(view), host_window_(nullptr) {
     view_->window_->AddObserver(this);
   }
 
@@ -463,7 +462,7 @@ class WebContentsViewAura::WindowObserver
   void OnWindowDestroying(aura::Window* window) override {
     if (window == host_window_) {
       host_window_->RemoveObserver(this);
-      host_window_ = NULL;
+      host_window_ = nullptr;
     }
   }
 
@@ -687,7 +686,7 @@ gfx::NativeView WebContentsViewAura::GetNativeView() const {
 
 gfx::NativeView WebContentsViewAura::GetContentNativeView() const {
   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  return rwhv ? rwhv->GetNativeView() : NULL;
+  return rwhv ? rwhv->GetNativeView() : nullptr;
 }
 
 gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
@@ -730,7 +729,7 @@ void GetScreenInfoForWindow(ScreenInfo* results,
 
 // Static.
 void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
-  GetScreenInfoForWindow(results, NULL);
+  GetScreenInfoForWindow(results, nullptr);
 }
 
 void WebContentsViewAura::GetScreenInfo(ScreenInfo* screen_info) const {
@@ -1115,7 +1114,7 @@ bool WebContentsViewAura::CanFocus() {
   // this window can handle key events.
   RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
       web_contents_->GetRenderWidgetHostView());
-  if (view != NULL && !view->IsClosing())
+  if (view != nullptr && !view->IsClosing())
     return true;
 
   return false;
@@ -1203,7 +1202,7 @@ void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
   if (web_contents_->GetDelegate() &&
       !web_contents_->GetDelegate()->CanDragEnter(
           web_contents_, *current_drop_data_.get(), op)) {
-    current_drop_data_.reset(NULL);
+    current_drop_data_.reset(nullptr);
     return;
   }
 

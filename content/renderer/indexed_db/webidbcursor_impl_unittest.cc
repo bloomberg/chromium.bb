@@ -97,8 +97,8 @@ class MockCursorImpl : public Cursor {
 
 class MockContinueCallbacks : public StrictMock<MockWebIDBCallbacks> {
  public:
-  MockContinueCallbacks(IndexedDBKey* key = 0,
-                        WebVector<WebBlobInfo>* webBlobInfo = 0)
+  MockContinueCallbacks(IndexedDBKey* key = nullptr,
+                        WebVector<WebBlobInfo>* webBlobInfo = nullptr)
       : key_(key), web_blob_info_(webBlobInfo) {}
 
   void OnSuccess(const WebIDBKey& key,

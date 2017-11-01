@@ -110,8 +110,8 @@ PepperBroker::PepperBroker(PluginModule* plugin_module)
 
 PepperBroker::~PepperBroker() {
   ReportFailureToClients(PP_ERROR_ABORTED);
-  plugin_module_->SetBroker(NULL);
-  plugin_module_ = NULL;
+  plugin_module_->SetBroker(nullptr);
+  plugin_module_ = nullptr;
 }
 
 // If the channel is not ready, queue the connection.

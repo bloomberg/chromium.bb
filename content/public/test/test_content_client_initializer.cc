@@ -29,7 +29,7 @@ TestContentClientInitializer::~TestContentClientInitializer() {
   rph_factory_.reset();
   notification_service_.reset();
 
-  SetContentClient(NULL);
+  SetContentClient(nullptr);
   content_client_.reset();
 
   content_browser_client_.reset();

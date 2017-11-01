@@ -140,7 +140,7 @@ TEST_F(SoftwareBrowserCompositorOutputSurfaceTest, NoVSyncProvider) {
   output_surface_->BindToClient(&output_surface_client);
 
   output_surface_->SwapBuffers(viz::OutputSurfaceFrame());
-  EXPECT_EQ(NULL, output_surface_->software_device()->GetVSyncProvider());
+  EXPECT_EQ(nullptr, output_surface_->software_device()->GetVSyncProvider());
   EXPECT_EQ(0, update_vsync_parameters_call_count_);
 }
 

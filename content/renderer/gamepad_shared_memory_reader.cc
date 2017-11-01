@@ -18,7 +18,7 @@ namespace content {
 
 GamepadSharedMemoryReader::GamepadSharedMemoryReader(RenderThread* thread)
     : RendererGamepadProvider(thread),
-      gamepad_hardware_buffer_(NULL),
+      gamepad_hardware_buffer_(nullptr),
       ever_interacted_with_(false),
       binding_(this) {
   if (thread) {

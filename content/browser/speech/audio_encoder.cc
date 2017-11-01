@@ -55,8 +55,9 @@ void AudioEncoder::Encode(const AudioChunk& raw_audio) {
   DCHECK_EQ(raw_audio.bytes_per_sample(), 2);
   if (!is_encoder_initialized_) {
     const FLAC__StreamEncoderInitStatus encoder_status =
-        FLAC__stream_encoder_init_stream(encoder_, WriteCallback, NULL, NULL,
-                                         NULL, &encoded_audio_buffer_);
+        FLAC__stream_encoder_init_stream(encoder_, WriteCallback, nullptr,
+                                         nullptr, nullptr,
+                                         &encoded_audio_buffer_);
     DCHECK_EQ(encoder_status, FLAC__STREAM_ENCODER_INIT_STATUS_OK);
     is_encoder_initialized_ = true;
   }

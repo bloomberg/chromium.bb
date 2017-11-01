@@ -50,7 +50,7 @@ PepperTrueTypeFontHost::~PepperTrueTypeFontHost() {
     // long blocking operations.
     font_->AddRef();
     PepperTrueTypeFont* raw_font = font_.get();
-    font_ = NULL;
+    font_ = nullptr;
     task_runner_->ReleaseSoon(FROM_HERE, raw_font);
   }
 }
@@ -124,7 +124,7 @@ void PepperTrueTypeFontHost::OnInitializeComplete(
   initialize_completed_ = true;
   // Release the font if there was an error, so future calls will fail.
   if (result != PP_OK)
-    font_ = NULL;
+    font_ = nullptr;
   host()->SendUnsolicitedReply(
       pp_resource(), PpapiPluginMsg_TrueTypeFont_CreateReply(*desc, result));
 }

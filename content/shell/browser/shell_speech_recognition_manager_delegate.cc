@@ -23,7 +23,7 @@ void ShellSpeechRecognitionManagerDelegate::CheckRecognitionIsAllowed(
 
 SpeechRecognitionEventListener*
     ShellSpeechRecognitionManagerDelegate::GetEventListener() {
-  return NULL;
+  return nullptr;
 }
 
 bool ShellSpeechRecognitionManagerDelegate::FilterProfanities(

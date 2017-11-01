@@ -352,8 +352,8 @@ class ResourceLoaderTest : public testing::Test,
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         test_url_request_context_(true),
         resource_context_(&test_url_request_context_),
-        raw_ptr_resource_handler_(NULL),
-        raw_ptr_to_request_(NULL) {
+        raw_ptr_resource_handler_(nullptr),
+        raw_ptr_to_request_(nullptr) {
     test_url_request_context_.set_job_factory(&job_factory_);
     test_url_request_context_.set_network_quality_estimator(
         &network_quality_estimator_);
@@ -460,7 +460,7 @@ class ResourceLoaderTest : public testing::Test,
   ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       ResourceLoader* loader,
       net::AuthChallengeInfo* auth_info) override {
-    return NULL;
+    return nullptr;
   }
   bool HandleExternalProtocol(ResourceLoader* loader,
                               const GURL& url) override {

@@ -295,7 +295,7 @@ int GpuMain(const MainFunctionParams& parameters) {
       const_cast<base::CommandLine*>(&command_line), gpu_preferences);
   const bool dead_on_arrival = !init_success;
 
-  logging::SetLogMessageHandler(NULL);
+  logging::SetLogMessageHandler(nullptr);
   GetContentClient()->SetGpuInfo(gpu_init->gpu_info());
 
   base::ThreadPriority io_thread_priority = base::ThreadPriority::NORMAL;

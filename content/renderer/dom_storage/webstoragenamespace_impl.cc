@@ -39,7 +39,7 @@ WebStorageNamespace* WebStorageNamespaceImpl::copy() {
   // session storage is used.  In the WebViewClient::createView, we do the
   // book-keeping necessary to make it a true copy-on-write despite not doing
   // anything here, now.
-  return NULL;
+  return nullptr;
 }
 
 bool WebStorageNamespaceImpl::IsSameNamespace(

@@ -311,7 +311,7 @@ ResourceRequestInfoImpl* ResourceLoader::GetRequestInfo() {
 }
 
 void ResourceLoader::ClearLoginDelegate() {
-  login_delegate_ = NULL;
+  login_delegate_ = nullptr;
 }
 
 void ResourceLoader::OutOfBandCancel(int error_code, bool tell_renderer) {
@@ -615,7 +615,7 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
 
   if (login_delegate_.get()) {
     login_delegate_->OnRequestCancelled();
-    login_delegate_ = NULL;
+    login_delegate_ = nullptr;
   }
   ssl_client_auth_handler_.reset();
 

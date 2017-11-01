@@ -35,7 +35,7 @@ InternalDocumentStateData* InternalDocumentStateData::FromDocumentLoader(
 InternalDocumentStateData* InternalDocumentStateData::FromDocumentState(
     DocumentState* ds) {
   if (!ds)
-    return NULL;
+    return nullptr;
   InternalDocumentStateData* data = static_cast<InternalDocumentStateData*>(
       ds->GetUserData(&kUserDataKey));
   if (!data) {

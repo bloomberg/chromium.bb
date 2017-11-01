@@ -92,7 +92,7 @@ PepperURLLoaderHost::~PepperURLLoaderHost() {
         renderer_ppapi_host_->GetPluginInstanceImpl(pp_instance());
     if (instance_object) {
       DCHECK(instance_object->document_loader() == this);
-      instance_object->set_document_loader(NULL);
+      instance_object->set_document_loader(nullptr);
     }
   }
 
@@ -383,7 +383,7 @@ WebLocalFrame* PepperURLLoaderHost::GetFrame() {
       static_cast<PepperPluginInstanceImpl*>(
           renderer_ppapi_host_->GetPluginInstance(pp_instance()));
   if (!instance_object || instance_object->is_deleted())
-    return NULL;
+    return nullptr;
   return instance_object->GetContainer()->GetDocument().GetFrame();
 }
 

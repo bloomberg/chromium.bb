@@ -36,10 +36,9 @@ namespace content {
 
 TestWebContents::TestWebContents(BrowserContext* browser_context)
     : WebContentsImpl(browser_context),
-      delegate_view_override_(NULL),
+      delegate_view_override_(nullptr),
       expect_set_history_offset_and_length_(false),
-      expect_set_history_offset_and_length_history_length_(0) {
-}
+      expect_set_history_offset_and_length_history_length_(0) {}
 
 TestWebContents* TestWebContents::Create(BrowserContext* browser_context,
                                          scoped_refptr<SiteInstance> instance) {

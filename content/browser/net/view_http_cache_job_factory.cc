@@ -110,7 +110,7 @@ void ViewHttpCacheJob::Kill() {
   weak_factory_.InvalidateWeakPtrs();
   if (core_.get()) {
     core_->Orphan();
-    core_ = NULL;
+    core_ = nullptr;
   }
   net::URLRequestJob::Kill();
 }

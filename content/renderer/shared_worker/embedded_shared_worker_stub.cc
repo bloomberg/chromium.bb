@@ -222,7 +222,7 @@ blink::WebNotificationPresenter*
 EmbeddedSharedWorkerStub::NotificationPresenter() {
   // TODO(horo): delete this method if we have no plan to implement this.
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 std::unique_ptr<blink::WebApplicationCacheHost>

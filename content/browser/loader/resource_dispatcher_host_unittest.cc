@@ -262,10 +262,10 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
                                      int process_id)
       : ResourceMessageFilter(
             process_id,
-            NULL,
-            NULL,
-            NULL,
-            NULL,
+            nullptr,
+            nullptr,
+            nullptr,
+            nullptr,
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
                        base::Unretained(this)),
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
@@ -395,7 +395,7 @@ class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
       LOG(ERROR)
           << "Unreleased entries on URLRequestTestDelayedStartJob delay queue"
           << "; may result in leaks.";
-      list_head_ = NULL;
+      list_head_ = nullptr;
     }
   }
 
@@ -421,8 +421,8 @@ class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
   URLRequestTestDelayedStartJob* next_;
 };
 
-URLRequestTestDelayedStartJob*
-URLRequestTestDelayedStartJob::list_head_ = NULL;
+URLRequestTestDelayedStartJob* URLRequestTestDelayedStartJob::list_head_ =
+    nullptr;
 
 // This class is a variation on URLRequestTestJob in that it
 // returns IO_pending errors before every read, not just the first one.
@@ -659,12 +659,12 @@ class GenericResourceThrottle : public ResourceThrottle {
 
   ~GenericResourceThrottle() override {
     if (active_throttle_ == this)
-      active_throttle_ = NULL;
+      active_throttle_ = nullptr;
   }
 
   // ResourceThrottle implementation:
   void WillStartRequest(bool* defer) override {
-    ASSERT_EQ(NULL, active_throttle_);
+    ASSERT_EQ(nullptr, active_throttle_);
     if (flags_ & DEFER_STARTING_REQUEST) {
       active_throttle_ = this;
       *defer = true;
@@ -680,7 +680,7 @@ class GenericResourceThrottle : public ResourceThrottle {
   }
 
   void WillProcessResponse(bool* defer) override {
-    ASSERT_EQ(NULL, active_throttle_);
+    ASSERT_EQ(nullptr, active_throttle_);
     if (flags_ & DEFER_PROCESSING_RESPONSE) {
       active_throttle_ = this;
       *defer = true;
@@ -701,7 +701,7 @@ class GenericResourceThrottle : public ResourceThrottle {
 
   void AssertAndResume() {
     ASSERT_TRUE(this == active_throttle_);
-    active_throttle_ = NULL;
+    active_throttle_ = nullptr;
     ResourceThrottle::Resume();
   }
 
@@ -721,7 +721,7 @@ class GenericResourceThrottle : public ResourceThrottle {
   static GenericResourceThrottle* active_throttle_;
 };
 // static
-GenericResourceThrottle* GenericResourceThrottle::active_throttle_ = NULL;
+GenericResourceThrottle* GenericResourceThrottle::active_throttle_ = nullptr;
 
 class TestResourceDispatcherHostDelegate
     : public ResourceDispatcherHostDelegate {
@@ -1244,7 +1244,7 @@ void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
   net::URLRequestContext* request_context =
       browser_context_->GetResourceContext()->GetRequestContext();
   std::unique_ptr<net::URLRequest> request(request_context->CreateRequest(
-      url, net::DEFAULT_PRIORITY, NULL, TRAFFIC_ANNOTATION_FOR_TESTS));
+      url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
   DownloadManagerImpl::BeginDownloadRequest(
       std::move(request), Referrer(), browser_context_->GetResourceContext(),
       false,  // is_content_initiated
@@ -2310,7 +2310,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> req(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, NULL,
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr,
       TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(4425, ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
                       req.get()));
@@ -3485,7 +3485,7 @@ TEST_F(ResourceDispatcherHostTest, ReleaseTemporiesOnProcessExit) {
 
   // Register it for a resource request.
   host_.RegisterDownloadedTempFile(filter_->child_id(), kRequestID, file_path);
-  deletable_file = NULL;
+  deletable_file = nullptr;
 
   // Should be readable now.
   EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(

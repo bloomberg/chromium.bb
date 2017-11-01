@@ -80,7 +80,7 @@ class EnergyEndpointerFrameProcessor : public FrameProcessor {
   EpStatus ProcessFrame(int64_t time,
                         int16_t* samples,
                         int frame_size) override {
-    endpointer_->ProcessAudioFrame(time, samples, kFrameSize, NULL);
+    endpointer_->ProcessAudioFrame(time, samples, kFrameSize, nullptr);
     int64_t ep_time;
     return endpointer_->Status(&ep_time);
   }
@@ -127,7 +127,7 @@ class EndpointerFrameProcessor : public FrameProcessor {
                         int frame_size) override {
     scoped_refptr<AudioChunk> frame(
         new AudioChunk(reinterpret_cast<uint8_t*>(samples), kFrameSize * 2, 2));
-    endpointer_->ProcessAudio(*frame.get(), NULL);
+    endpointer_->ProcessAudio(*frame.get(), nullptr);
     int64_t ep_time;
     return endpointer_->Status(&ep_time);
   }

@@ -46,7 +46,7 @@ HostArrayBufferVar::~HostArrayBufferVar() {}
 
 void* HostArrayBufferVar::Map() {
   if (!valid_)
-    return NULL;
+    return nullptr;
   return buffer_.Data();
 }
 

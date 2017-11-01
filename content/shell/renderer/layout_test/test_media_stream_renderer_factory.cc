@@ -49,7 +49,7 @@ TestMediaStreamRendererFactory::GetVideoRenderer(
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   if (!IsMockMediaStreamWithVideo(web_stream))
-    return NULL;
+    return nullptr;
 
   return new TestMediaStreamVideoRenderer(
       io_task_runner, gfx::Size(kVideoCaptureWidth, kVideoCaptureHeight),
@@ -63,7 +63,7 @@ TestMediaStreamRendererFactory::GetAudioRenderer(
     int render_frame_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace content

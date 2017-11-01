@@ -768,7 +768,7 @@ rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
     int opts) {
   // TODO(sergeyu): Implement SSL support.
   if (opts & rtc::PacketSocketFactory::OPT_SSLTCP)
-    return NULL;
+    return nullptr;
 
   P2PSocketType type = (opts & rtc::PacketSocketFactory::OPT_STUN) ?
       P2P_SOCKET_STUN_TCP_SERVER : P2P_SOCKET_TCP_SERVER;
@@ -777,7 +777,7 @@ rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
   std::unique_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
   if (!socket->Init(type, socket_client, local_address, min_port, max_port,
                     rtc::SocketAddress())) {
-    return NULL;
+    return nullptr;
   }
   return socket.release();
 }
@@ -802,7 +802,7 @@ rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
       new P2PSocketClientImpl(socket_dispatcher_);
   std::unique_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
   if (!socket->Init(type, socket_client, local_address, 0, 0, remote_address))
-    return NULL;
+    return nullptr;
   return socket.release();
 }
 

@@ -68,7 +68,7 @@ bool MockWebMediaStreamCenter::DidStopMediaStreamTrack(
 blink::WebAudioSourceProvider*
 MockWebMediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace test_runner

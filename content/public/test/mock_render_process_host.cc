@@ -43,7 +43,7 @@ namespace content {
 
 MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
     : bad_msg_count_(0),
-      factory_(NULL),
+      factory_(nullptr),
       id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       has_connection_(false),
       browser_context_(browser_context),
@@ -127,7 +127,7 @@ void MockRenderProcessHost::AddRoute(int32_t routing_id,
 }
 
 void MockRenderProcessHost::RemoveRoute(int32_t routing_id) {
-  DCHECK(listeners_.Lookup(routing_id) != NULL);
+  DCHECK(listeners_.Lookup(routing_id) != nullptr);
   listeners_.Remove(routing_id);
   Cleanup();
 }
@@ -287,7 +287,7 @@ bool MockRenderProcessHost::InSameStoragePartition(
 }
 
 IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
-  return NULL;
+  return nullptr;
 }
 
 void MockRenderProcessHost::AddFilter(BrowserMessageFilter* filter) {

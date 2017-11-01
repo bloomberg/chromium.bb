@@ -496,7 +496,7 @@ WebURLLoaderImpl::Context::Context(
     : loader_(loader),
       use_stream_on_response_(false),
       report_raw_headers_(false),
-      client_(NULL),
+      client_(nullptr),
       resource_dispatcher_(resource_dispatcher),
       task_runner_(std::move(task_runner)),
       keep_alive_handle_(
@@ -532,8 +532,8 @@ void WebURLLoaderImpl::Context::Cancel() {
     ftp_listing_delegate_->Cancel();
 
   // Do not make any further calls to the client.
-  client_ = NULL;
-  loader_ = NULL;
+  client_ = nullptr;
+  loader_ = nullptr;
 }
 
 void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
@@ -788,7 +788,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   }
   if (info.headers.get() && info.mime_type == "multipart/x-mixed-replace") {
     std::string content_type;
-    info.headers->EnumerateHeader(NULL, "content-type", &content_type);
+    info.headers->EnumerateHeader(nullptr, "content-type", &content_type);
 
     std::string mime_type;
     std::string charset;
@@ -908,7 +908,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
 
   if (ftp_listing_delegate_) {
     ftp_listing_delegate_->OnCompletedRequest();
-    ftp_listing_delegate_.reset(NULL);
+    ftp_listing_delegate_.reset(nullptr);
   }
 
   if (body_stream_writer_ && error_code != net::OK)
@@ -949,7 +949,7 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   // Notify renderer clients that the request is canceled.
   if (ftp_listing_delegate_) {
     ftp_listing_delegate_->OnCompletedRequest();
-    ftp_listing_delegate_.reset(NULL);
+    ftp_listing_delegate_.reset(nullptr);
   }
 
   if (body_stream_writer_) {
@@ -1005,7 +1005,8 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally(
     return true;
 
   std::string mime_type, unused_charset;
-  if (net::DataURL::Parse(request.Url(), &mime_type, &unused_charset, NULL) &&
+  if (net::DataURL::Parse(request.Url(), &mime_type, &unused_charset,
+                          nullptr) &&
       blink::IsSupportedMimeType(mime_type))
     return true;
 
@@ -1397,7 +1398,7 @@ void WebURLLoaderImpl::LoadAsynchronously(const WebURLRequest& request,
   DCHECK(!context_->client());
 
   context_->set_client(client);
-  context_->Start(request, NULL);
+  context_->Start(request, nullptr);
 }
 
 void WebURLLoaderImpl::Cancel() {

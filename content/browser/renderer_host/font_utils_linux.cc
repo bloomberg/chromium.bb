@@ -160,11 +160,11 @@ int MatchFontFaceWithFallback(const std::string& face,
     FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_ITALIC);
   FcPatternAddLangSet(pattern, FC_LANG, langset);
   FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);
-  FcConfigSubstitute(NULL, pattern, FcMatchPattern);
+  FcConfigSubstitute(nullptr, pattern, FcMatchPattern);
   FcDefaultSubstitute(pattern);
 
   FcResult result;
-  FcFontSet* font_set = FcFontSort(0, pattern, 0, 0, &result);
+  FcFontSet* font_set = FcFontSort(nullptr, pattern, 0, nullptr, &result);
   int font_fd = -1;
   int good_enough_index = -1;
   bool good_enough_index_set = false;

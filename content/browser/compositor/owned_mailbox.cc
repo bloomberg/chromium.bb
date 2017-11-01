@@ -34,7 +34,7 @@ void OwnedMailbox::Destroy() {
   gl_helper_->DeleteTexture(texture_id_);
   texture_id_ = 0;
   mailbox_holder_ = gpu::MailboxHolder();
-  gl_helper_ = NULL;
+  gl_helper_ = nullptr;
 }
 
 void OwnedMailbox::OnLostResources() {

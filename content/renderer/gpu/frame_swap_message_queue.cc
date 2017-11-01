@@ -139,7 +139,7 @@ FrameSwapMessageSubQueue* FrameSwapMessageQueue::GetSubQueue(
       break;
   }
   NOTREACHED();
-  return NULL;
+  return nullptr;
 }
 
 void FrameSwapMessageQueue::QueueMessageForFrame(

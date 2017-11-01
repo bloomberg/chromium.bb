@@ -34,7 +34,7 @@ PepperPlatformAudioOutput* PepperPlatformAudioOutput::Create(
     audio_output->AddRef();
     return audio_output.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 bool PepperPlatformAudioOutput::StartPlayback() {
@@ -73,7 +73,7 @@ bool PepperPlatformAudioOutput::SetVolume(double volume) {
 void PepperPlatformAudioOutput::ShutDown() {
   // Called on the main thread to stop all audio callbacks. We must only change
   // the client on the main thread, and the delegates from the I/O thread.
-  client_ = NULL;
+  client_ = nullptr;
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&PepperPlatformAudioOutput::ShutDownOnIOThread, this));
@@ -121,10 +121,9 @@ PepperPlatformAudioOutput::~PepperPlatformAudioOutput() {
 }
 
 PepperPlatformAudioOutput::PepperPlatformAudioOutput()
-    : client_(NULL),
+    : client_(nullptr),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      io_task_runner_(ChildProcess::current()->io_task_runner()) {
-}
+      io_task_runner_(ChildProcess::current()->io_task_runner()) {}
 
 bool PepperPlatformAudioOutput::Initialize(int sample_rate,
                                            int frames_per_buffer,

@@ -71,7 +71,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
   }
 
   void TearDown() override {
-    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(NULL);
+    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(nullptr);
     ContentBrowserTest::TearDown();
   }
 
@@ -837,7 +837,7 @@ IN_PROC_BROWSER_TEST_F(
 // Verify that a "close" event is fired at database connections when
 // the backing store is deleted.
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
-  NavigateAndWaitForTitle(shell(), "force_close_event.html", NULL,
+  NavigateAndWaitForTitle(shell(), "force_close_event.html", nullptr,
                           "connection ready");
   // TODO(jsbell): Remove static_cast<> when overloads are eliminated.
   GetContext()->TaskRunner()->PostTask(

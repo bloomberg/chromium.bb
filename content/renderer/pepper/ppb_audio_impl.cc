@@ -31,7 +31,7 @@ namespace content {
 
 PPB_Audio_Impl::PPB_Audio_Impl(PP_Instance instance)
     : Resource(ppapi::OBJECT_IS_IMPL, instance),
-      audio_(NULL),
+      audio_(nullptr),
       playback_throttled_(false) {
   PepperPluginInstanceImpl* plugin_instance =
       static_cast<PepperPluginInstanceImpl*>(
@@ -58,7 +58,7 @@ PPB_Audio_Impl::~PPB_Audio_Impl() {
   // destructor.
   if (audio_) {
     audio_->ShutDown();
-    audio_ = NULL;
+    audio_ = nullptr;
   }
 }
 

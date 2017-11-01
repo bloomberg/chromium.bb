@@ -28,10 +28,7 @@ namespace content {
 class PpFrameReceiver : public MediaStreamVideoSink {
  public:
   PpFrameReceiver(blink::WebMediaStreamTrack track)
-    : track_(track),
-      reader_(NULL),
-      weak_factory_(this) {
-  }
+      : track_(track), reader_(nullptr), weak_factory_(this) {}
 
   ~PpFrameReceiver() override {}
 
@@ -137,7 +134,7 @@ VideoTrackToPepperAdapter::SourceInfo::SourceInfo(
 }
 
 VideoTrackToPepperAdapter::SourceInfo::~SourceInfo() {
-  receiver_->SetReader(NULL);
+  receiver_->SetReader(nullptr);
 }
 
 }  // namespace content

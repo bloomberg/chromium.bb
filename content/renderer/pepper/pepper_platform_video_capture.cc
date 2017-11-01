@@ -67,7 +67,7 @@ void PepperPlatformVideoCapture::StopCapture() {
 }
 
 void PepperPlatformVideoCapture::DetachEventHandler() {
-  handler_ = NULL;
+  handler_ = nullptr;
   StopCapture();
   if (!release_device_cb_.is_null()) {
     release_device_cb_.Run();
@@ -147,8 +147,9 @@ void PepperPlatformVideoCapture::OnFrameReady(
 PepperMediaDeviceManager* PepperPlatformVideoCapture::GetMediaDeviceManager() {
   RenderFrameImpl* const render_frame =
       RenderFrameImpl::FromRoutingID(render_frame_id_);
-  return render_frame ?
-      PepperMediaDeviceManager::GetForRenderFrame(render_frame).get() : NULL;
+  return render_frame
+             ? PepperMediaDeviceManager::GetForRenderFrame(render_frame).get()
+             : nullptr;
 }
 
 }  // namespace content
