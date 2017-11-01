@@ -50,6 +50,8 @@ class UiSceneManagerTest : public testing::Test {
 
   bool IsVisible(UiElementName name) const;
 
+  void SetIncognito(bool incognito);
+
   // Verify that only the elements in the set are visible.
   void VerifyElementsVisible(const std::string& debug_name,
                              const std::set<UiElementName>& names) const;
