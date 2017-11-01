@@ -74,7 +74,8 @@
   _shareButton = [self newButtonForImageIds:share
                                   commandID:TOOLS_SHARE_ITEM
                        accessibilityLabelID:IDS_IOS_TOOLS_MENU_SHARE
-                             automationName:@"Stop"];
+                             automationName:@"Share"];
+
   int tools[2][3] = TOOLBAR_IDR_ONE_STATE(TOOLS_PRESSED);
   _toolsButton =
       [self newButtonForImageIds:tools
