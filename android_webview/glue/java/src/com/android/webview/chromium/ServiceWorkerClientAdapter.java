@@ -82,8 +82,7 @@ public class ServiceWorkerClientAdapter extends AwServiceWorkerClient {
             return mRequest.requestHeaders;
         }
 
-        // TODO(mnaganov): Uncomment when we completely switch builds to the next API level.
-        //@Override
+        @Override
         public boolean isRedirect() {
             return mRequest.isRedirect;
         }

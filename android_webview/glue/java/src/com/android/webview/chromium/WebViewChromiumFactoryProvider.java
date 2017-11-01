@@ -687,6 +687,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         return (ServiceWorkerController) mServiceWorkerController;
     }
 
+    @Override
     public TokenBindingService getTokenBindingService() {
         synchronized (mLock) {
             if (mTokenBindingManager == null) {

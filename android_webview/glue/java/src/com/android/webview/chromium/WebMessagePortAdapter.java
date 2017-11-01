@@ -25,18 +25,22 @@ public class WebMessagePortAdapter extends WebMessagePort {
         mPort = port;
     }
 
+    @Override
     public void postMessage(WebMessage message) {
         mPort.postMessage(message.getData(), toMessagePorts(message.getPorts()));
     }
 
+    @Override
     public void close() {
         mPort.close();
     }
 
+    @Override
     public void setWebMessageCallback(WebMessageCallback callback) {
         setWebMessageCallback(callback, null);
     }
 
+    @Override
     public void setWebMessageCallback(final WebMessageCallback callback, final Handler handler) {
         mPort.setMessageCallback(new MessagePort.MessageCallback() {
             @Override

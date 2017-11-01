@@ -611,10 +611,12 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
         return mAwSettings.getOffscreenPreRaster();
     }
 
+    @Override
     public void setDisabledActionModeMenuItems(int menuItems) {
         mAwSettings.setDisabledActionModeMenuItems(menuItems);
     }
 
+    @Override
     public int getDisabledActionModeMenuItems() {
         return mAwSettings.getDisabledActionModeMenuItems();
     }
