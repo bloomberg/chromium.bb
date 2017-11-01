@@ -3112,10 +3112,18 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       if (cm->cur_frame_force_integer_mv) {
         cm->allow_high_precision_mv = 0;
       } else {
+#if CONFIG_EIGHTH_PEL_MV_ONLY
+        cm->allow_high_precision_mv = 1;
+#else
         cm->allow_high_precision_mv = aom_rb_read_bit(rb);
+#endif  // CONFIG_EIGHTH_PEL_MV_ONLY
       }
 #else
+#if CONFIG_EIGHTH_PEL_MV_ONLY
+      cm->allow_high_precision_mv = 1;
+#else
       cm->allow_high_precision_mv = aom_rb_read_bit(rb);
+#endif  // CONFIG_EIGHTH_PEL_MV_ONLY
 #endif
       cm->interp_filter = read_frame_interp_filter(rb);
 #if CONFIG_TEMPMV_SIGNALING

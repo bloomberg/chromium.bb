@@ -342,6 +342,7 @@ EXPERIMENT_LIST="
     horzonly_frame_superres
     simple_bwd_adapt
     eob_first
+    eighth_pel_mv_only
 "
 CONFIG_LIST="
     dependency_tracking
