@@ -550,9 +550,8 @@ EventHandler::OptionalCursor EventHandler::SelectAutoCursor(
 }
 
 WebInputEventResult EventHandler::HandlePointerEvent(
-    const WebPointerEvent& web_pointer_event,
-    Node* target) {
-  return pointer_event_manager_->HandlePointerEvent(web_pointer_event, target);
+    const WebPointerEvent& web_pointer_event) {
+  return pointer_event_manager_->HandlePointerEvent(web_pointer_event);
 }
 
 WebInputEventResult EventHandler::HandleMousePressEvent(

@@ -148,7 +148,7 @@ class CORE_EXPORT EventHandler final
       const Vector<WebMouseEvent>& coalesced_events);
   void HandleMouseLeaveEvent(const WebMouseEvent&);
 
-  WebInputEventResult HandlePointerEvent(const WebPointerEvent&, Node* target);
+  WebInputEventResult HandlePointerEvent(const WebPointerEvent&);
 
   WebInputEventResult HandleMousePressEvent(const WebMouseEvent&);
   WebInputEventResult HandleMouseReleaseEvent(const WebMouseEvent&);

@@ -374,18 +374,7 @@ PointerEvent* PointerEventFactory::Create(
 }
 
 PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
-    const WebPointerEvent& event) {
-  DCHECK_EQ(event.GetType(), WebInputEvent::Type::kPointerCancel);
-  int pointer_id = GetPointerEventId(event);
-
-  return CreatePointerCancelEvent(
-      pointer_id, event.pointer_type,
-      TimeTicks::FromSeconds(event.TimeStampSeconds()));
-}
-
-PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
     const int pointer_id,
-    const WebPointerProperties::PointerType pointer_type,
     TimeTicks platfrom_time_stamp) {
   DCHECK(pointer_id_mapping_.Contains(pointer_id));
   pointer_id_mapping_.Set(
@@ -396,8 +385,8 @@ PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
   PointerEventInit pointer_event_init;
 
   pointer_event_init.setPointerId(pointer_id);
-  pointer_event_init.setPointerType(
-      PointerTypeNameForWebPointPointerType(pointer_type));
+  pointer_event_init.setPointerType(PointerTypeNameForWebPointPointerType(
+      pointer_id_mapping_.at(pointer_id).incoming_id.GetPointerType()));
   pointer_event_init.setIsPrimary(IsPrimary(pointer_id));
 
   SetEventSpecificFields(pointer_event_init, EventTypeNames::pointercancel);
