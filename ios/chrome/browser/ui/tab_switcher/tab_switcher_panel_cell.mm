@@ -324,7 +324,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
           initWithName:l10n_util::GetNSString(IDS_IOS_TAB_SWITCHER_CLOSE_TAB)
                 target:self
               selector:@selector(closeButtonPressed)];
-  [customActions addObject:customAction = nil];
+  [customActions addObject:customAction];
   return customActions;
 }
 
