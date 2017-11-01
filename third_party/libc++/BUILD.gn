@@ -70,6 +70,7 @@ target(link_target_type, "libc++") {
     "trunk/src/utility.cpp",
     "trunk/src/valarray.cpp",
     "trunk/src/variant.cpp",
+    "trunk/src/vector.cpp",
   ]
   configs -= [
     "//build/config/compiler:chromium_code",
