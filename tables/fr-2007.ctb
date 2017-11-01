@@ -65,6 +65,7 @@ punctuation $ 357		DOLLAR SIGN
 punctuation % 3468		PERCENT SIGN
 punctuation & 1234568		AMPERSAND
 punctuation ' 3		APOSTROPHE
+punctuation \x2019 37		APOSTROPHE
 punctuation ( 236		LEFT PARENTHESIS
 punctuation ) 356		RIGHT PARENTHESIS
 punctuation * 35		ASTERISK
