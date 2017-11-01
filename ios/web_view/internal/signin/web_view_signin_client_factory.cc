@@ -18,9 +18,9 @@
 namespace ios_web_view {
 
 // static
-SigninClient* WebViewSigninClientFactory::GetForBrowserState(
+IOSWebViewSigninClient* WebViewSigninClientFactory::GetForBrowserState(
     ios_web_view::WebViewBrowserState* browser_state) {
-  return static_cast<SigninClient*>(
+  return static_cast<IOSWebViewSigninClient*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
