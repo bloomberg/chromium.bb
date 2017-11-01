@@ -504,7 +504,6 @@ class TryServerMasterTest(unittest.TestCase):
             'android_clang_dbg_recipe',
             'android_compile_dbg',
             'android_compile_mips_dbg',
-            'android_compile_rel',
             'android_compile_x64_dbg',
             'android_compile_x86_dbg',
             'android_coverage',
