@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/test/histogram_tester.h"
@@ -234,10 +236,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
       ->PostTask(FROM_HERE, base::BindOnce(
                                 [](RenderFrameHost* frame) {
                                   GetFilterForProcess(frame->GetProcess())
-                                      ->SetCookie(frame->GetRoutingID(),
-                                                  GURL("https://baz.com/"),
-                                                  GURL("https://baz.com/"),
-                                                  "pwn=ed");
+                                      ->SetCookie(
+                                          frame->GetRoutingID(),
+                                          GURL("https://baz.com/"),
+                                          GURL("https://baz.com/"), "pwn=ed",
+                                          base::BindOnce(&base::DoNothing));
                                 },
                                 main_frame));
 
