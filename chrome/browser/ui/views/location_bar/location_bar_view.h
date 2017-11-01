@@ -32,6 +32,7 @@
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class ContentSettingImageView;
+class FindBarIcon;
 class GURL;
 class IntentPickerView;
 class KeywordHintView;
@@ -277,6 +278,9 @@ class LocationBarView : public LocationBar,
   // Updates |save_credit_card_icon_view_|. Returns true if visibility changed.
   bool RefreshSaveCreditCardIconView();
 
+  // Updates |find_bar_icon_|. Returns true if visibility changed.
+  bool RefreshFindBarIcon();
+
   // Updates the Translate icon based on the current tab's Translate status.
   void RefreshTranslateIcon();
 
@@ -312,6 +316,7 @@ class LocationBarView : public LocationBar,
   void UpdateContentSettingsIcons() override;
   void UpdateManagePasswordsIconAndBubble() override;
   void UpdateSaveCreditCardIcon() override;
+  void UpdateFindBarIconVisibility() override;
   void UpdateBookmarkStarVisibility() override;
   void UpdateZoomViewVisibility() override;
   void UpdateLocationBarVisibility(bool visible, bool animation) override;
@@ -401,6 +406,9 @@ class LocationBarView : public LocationBar,
   // The intent picker for accessing ARC's apps.
   IntentPickerView* intent_picker_view_ = nullptr;
 #endif  // defined(OS_CHROMEOS)
+
+  // The icon displayed when the find bar is visible.
+  FindBarIcon* find_bar_icon_ = nullptr;
 
   // The star for bookmarking.
   StarView* star_view_ = nullptr;

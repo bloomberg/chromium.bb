@@ -2952,6 +2952,8 @@ split_static_library("ui") {
         "views/location_bar/bubble_icon_view.h",
         "views/location_bar/content_setting_image_view.cc",
         "views/location_bar/content_setting_image_view.h",
+        "views/location_bar/find_bar_icon.cc",
+        "views/location_bar/find_bar_icon.h",
         "views/location_bar/icon_label_bubble_view.cc",
         "views/location_bar/icon_label_bubble_view.h",
         "views/location_bar/keyword_hint_view.cc",

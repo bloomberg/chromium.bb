@@ -242,8 +242,8 @@ TEST_F(BrowserViewHostedAppTest, Layout) {
   // The web contents should be flush with the bottom of the header.
   EXPECT_EQ(bottom_of_header, contents_container->y());
 
-  // The find bar should overlap the 1px header/web-contents separator at the
-  // bottom of the header.
-  EXPECT_LT(browser_view()->GetFindBarBoundingBox().y(),
+  // The find bar should butt against the 1px header/web-contents separator at
+  // the bottom of the header.
+  EXPECT_EQ(browser_view()->GetFindBarBoundingBox().y(),
             browser_view()->frame()->GetTopInset(false));
 }

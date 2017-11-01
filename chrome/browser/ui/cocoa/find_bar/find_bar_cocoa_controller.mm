@@ -502,6 +502,10 @@ const int kUndefinedResultCount = -1;
   // If the find bar is not visible, make it actually hidden, so it'll no longer
   // respond to key events.
   [[self view] setHidden:![self isFindBarVisible]];
+  // Notify the FindBarController that the visibility animation has completed in
+  // order to show or hide a decoration in the location bar.
+  if (findBarBridge_)
+    findBarBridge_->GetFindBarController()->FindBarVisibilityChanged();
 }
 
 - (gfx::Point)findBarWindowPosition {
