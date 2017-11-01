@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/first_run_dialog.h"
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/mac/bundle_locations.h"
 #import "base/mac/scoped_nsobject.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/cocoa/first_run_dialog_controller.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/search_engines/template_url_service.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -94,17 +96,23 @@ bool StatsCheckboxDefault() {
   return !first_run::IsMetricsReportingOptIn();
 }
 
+bool IsFirstRunEnabledForBuildType() {
+#if defined(GOOGLE_CHROME_BUILD)
+  return true;
+#else
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceUnofficialFirstRun);
+#endif
+}
+
 }  // namespace
 
 namespace first_run {
 
 bool ShowFirstRunDialog(Profile* profile) {
   bool dialog_shown = false;
-#if defined(GOOGLE_CHROME_BUILD)
-  dialog_shown = ShowFirstRunModal(profile);
-#else
-  (void)ShowFirstRunModal;  // Placate compiler.
-#endif
+  if (IsFirstRunEnabledForBuildType())
+    dialog_shown = ShowFirstRunModal(profile);
   // Set preference to show first run bubble and welcome page.
   // Only display the bubble if there is a default search provider.
   TemplateURLService* search_engines_model =

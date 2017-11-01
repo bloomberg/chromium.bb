@@ -273,6 +273,7 @@ extern const char kEnableHostedAppsInWindows[];
 extern const char kEnableMacViewsNativeAppWindows[];
 extern const char kEnableTranslateNewUX[];
 extern const char kEnableUserMetrics[];
+extern const char kForceUnofficialFirstRun[];
 extern const char kHostedAppQuitNotification[];
 extern const char kMetricsClientID[];
 extern const char kRelauncherProcess[];
