@@ -250,7 +250,7 @@ void DownloadItemView::OnExtractIconComplete(gfx::Image* icon_bitmap) {
 void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
     DownloadCommands::Command download_command) {
   PrefService* prefs = shelf_->browser()->profile()->GetPrefs();
-  if (model_.MightBeMalicious() && model_.ShouldAllowDownloadFeedback() &&
+  if (model_.ShouldAllowDownloadFeedback() &&
       !shelf_->browser()->profile()->IsOffTheRecord()) {
     if (safe_browsing::ExtendedReportingPrefExists(*prefs)) {
       SubmitDownloadWhenFeedbackServiceEnabled(
@@ -601,8 +601,9 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
           ExperienceSamplingEvent::kProceed);
       sampling_event_.reset();
     }
-    // This will change the state and notify us.
-    download()->ValidateDangerousDownload();
+    // This will call ValidateDangerousDownload(), change download state and
+    // notify us.
+    MaybeSubmitDownloadToFeedbackService(DownloadCommands::KEEP);
     return;
   }
 
