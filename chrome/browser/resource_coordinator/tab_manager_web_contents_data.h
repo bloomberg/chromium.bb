@@ -169,6 +169,9 @@ class TabManager::WebContentsData
     int discard_count;
     // Is the tab playing audio?
     bool is_recently_audible;
+    // The navigation time associated with this tab. Useful as a reference time
+    // from which to measure UKM event timings.
+    base::TimeTicks navigation_time;
     // Last time the tab started or stopped playing audio (we record the
     // transition time).
     base::TimeTicks last_audio_change_time;
@@ -195,6 +198,7 @@ class TabManager::WebContentsData
   // for more details.
   base::TimeTicks NowTicks() const;
 
+  void ReportUKMWhenTabIsClosed();
   void ReportUKMWhenBackgroundTabIsClosedOrForegrounded(bool is_foregrounded);
 
   // Contains all the needed data for the tab.

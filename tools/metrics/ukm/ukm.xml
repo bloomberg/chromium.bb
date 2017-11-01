@@ -1587,4 +1587,18 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="TabManager.TabLifetime" singular="True">
+  <owner>chrisha@chromium.org</owner>
+  <summary>
+    Collected when a tab is closed, at most once per source.
+  </summary>
+  <metric name="TimeSinceNavigation">
+    <summary>
+      The time when the tab was closed, expressed as the amount of time in MS
+      that has elapsed since the main frame navigation providing the content of
+      the tab.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>
