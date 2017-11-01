@@ -46,6 +46,7 @@ using base::IntToString;
 using content::BrowserThread;
 
 namespace {
+
 std::string FormatMetaDataAsLogMessage(const MetaDataMap& meta_data) {
   std::string message;
   for (auto& kv : meta_data) {
@@ -90,6 +91,14 @@ std::string IPAddressToSensitiveString(const net::IPAddress& address) {
   return address.ToString();
 #endif
 }
+
+net::NetworkInterfaceList GetNetworkInterfaceList() {
+  net::NetworkInterfaceList network_list;
+  net::GetNetworkList(&network_list,
+                      net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
+  return network_list;
+}
+
 }  // namespace
 
 WebRtcLogBuffer::WebRtcLogBuffer()
@@ -197,9 +206,10 @@ bool WebRtcTextLogHandler::StartLogging(WebRtcLogUploader* log_uploader,
   if (!meta_data_)
     meta_data_.reset(new MetaDataMap());
 
-  base::PostTaskWithTraits(
+  base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindOnce(&WebRtcTextLogHandler::LogInitialInfoOnFileThread, this,
+      base::BindOnce(&GetNetworkInterfaceList),
+      base::BindOnce(&WebRtcTextLogHandler::LogInitialInfoOnIOThread, this,
                      callback));
   return true;
 }
@@ -377,21 +387,9 @@ void WebRtcTextLogHandler::FireGenericDoneCallback(
       base::BindOnce(callback, success, error_message_with_state));
 }
 
-void WebRtcTextLogHandler::LogInitialInfoOnFileThread(
-    const GenericDoneCallback& callback) {
-  net::NetworkInterfaceList network_list;
-  net::GetNetworkList(&network_list,
-                      net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&WebRtcTextLogHandler::LogInitialInfoOnIOThread, this,
-                     network_list, callback));
-}
-
 void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
-    const net::NetworkInterfaceList& network_list,
-    const GenericDoneCallback& callback) {
+    const GenericDoneCallback& callback,
+    const net::NetworkInterfaceList& network_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (logging_state_ != STARTING) {
     FireGenericDoneCallback(callback, false, "Logging cancelled.");
