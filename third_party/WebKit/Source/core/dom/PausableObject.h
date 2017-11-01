@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2008 Apple Inc. All Rights Reserved.
- * Copyright (C) 2013 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,44 +24,43 @@
  *
  */
 
-#ifndef ContextLifecycleNotifier_h
-#define ContextLifecycleNotifier_h
+#ifndef PausableObject_h
+#define PausableObject_h
 
 #include "core/CoreExport.h"
-#include "platform/LifecycleNotifier.h"
-#include "platform/wtf/Noncopyable.h"
+#include "core/dom/ContextLifecycleObserver.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 
-class ContextLifecycleObserver;
-class ExecutionContext;
-class PausableObject;
-
-using SuspendableObject = PausableObject;
-
-class CORE_EXPORT ContextLifecycleNotifier
-    : public LifecycleNotifier<ExecutionContext, ContextLifecycleObserver> {
-  WTF_MAKE_NONCOPYABLE(ContextLifecycleNotifier);
-
+class CORE_EXPORT PausableObject : public ContextLifecycleObserver {
  public:
-  void NotifyResumingSuspendableObjects();
-  void NotifySuspendingSuspendableObjects();
+  explicit PausableObject(ExecutionContext*);
 
-  unsigned SuspendableObjectCount() const;
+  // suspendIfNeeded() should be called exactly once after object construction
+  // to synchronize the suspend state with that in ExecutionContext.
+  void SuspendIfNeeded();
+#if DCHECK_IS_ON()
+  bool SuspendIfNeededCalled() const { return suspend_if_needed_called_; }
+#endif
+
+  // These methods have an empty default implementation so that subclasses
+  // which don't need special treatment can skip implementation.
+  // TODO(hajimehoshi): Rename Suspend to Pause (crbug/780378)
+  virtual void Suspend();
+  virtual void Resume();
+
+  void DidMoveToNewExecutionContext(ExecutionContext*);
 
  protected:
-  // Need a default constructor to link core and modules separately.
-  // If no default constructor, we will see an error: "constructor for
-  // 'blink::ExecutionContext' must explicitly initialize the base class
-  // 'blink::ContextLifecycleNotifier' which does not have a default
-  // constructor ExecutionContext::ExecutionContext()".
-  ContextLifecycleNotifier() {}
+  virtual ~PausableObject();
 
+ private:
 #if DCHECK_IS_ON()
-  bool Contains(SuspendableObject*) const;
+  bool suspend_if_needed_called_;
 #endif
 };
 
 }  // namespace blink
 
-#endif  // ContextLifecycleNotifier_h
+#endif  // PausableObject_h
