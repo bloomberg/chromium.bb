@@ -371,6 +371,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
   update_eob = eob - 1;
 #else
+  uint8_t level_counts[MAX_TX_SQUARE];
   for (int i = 1; i < eob; ++i) {
     c = eob - 1 - i;
     int coeff_ctx = get_nz_map_ctx(levels, c, scan, bwl, height, tx_type);
@@ -383,13 +384,14 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
 
   for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
+    av1_get_base_level_counts(levels, i, width, height, level_counts);
     for (c = eob - 1; c >= 0; --c) {
       const tran_low_t level = abs(tcoeff[scan[c]]);
       int ctx;
 
       if (level <= i) continue;
 
-      ctx = get_base_ctx(levels, scan[c], bwl, i);
+      ctx = get_base_ctx(levels, scan[c], bwl, i, level_counts[scan[c]]);
 
       if (level == i + 1) {
         aom_write_bin(w, 1, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx],
@@ -2096,14 +2098,16 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
 #if !USE_CAUSAL_BASE_CTX
   // Reverse process order to handle coefficient level and sign.
+  uint8_t level_counts[MAX_TX_SQUARE];
   for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
+    av1_get_base_level_counts(levels, i, width, height, level_counts);
     for (c = eob - 1; c >= 0; --c) {
       const tran_low_t level = abs(tcoeff[scan[c]]);
       int ctx;
 
       if (level <= i) continue;
 
-      ctx = get_base_ctx(levels, scan[c], bwl, i);
+      ctx = get_base_ctx(levels, scan[c], bwl, i, level_counts[scan[c]]);
 
       if (level == i + 1) {
         ++td->counts->coeff_base[txsize_ctx][plane_type][i][ctx][1];

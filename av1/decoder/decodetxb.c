@@ -205,15 +205,17 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if USE_CAUSAL_BASE_CTX
   update_eob = *eob - 1;
 #else
+  uint8_t level_counts[MAX_TX_SQUARE];
   int i;
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {
+    av1_get_base_level_counts(levels, i, width, height, level_counts);
     for (c = *eob - 1; c >= 0; --c) {
       uint8_t *const level = &levels[get_paded_idx(scan[c], bwl)];
       int ctx;
 
       if (*level <= i) continue;
 
-      ctx = get_base_ctx(levels, scan[c], bwl, i);
+      ctx = get_base_ctx(levels, scan[c], bwl, i, level_counts[scan[c]]);
 
       if (av1_read_record_bin(
               counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx], 2,
