@@ -35,8 +35,8 @@ class U2fPacket {
  protected:
   U2fPacket();
 
-  // Packet size of 64 bytes + 1 byte report ID
-  static constexpr size_t kPacketSize = 65;
+  // Packet size of 64 bytes.
+  static constexpr size_t kPacketSize = 64;
   std::vector<uint8_t> data_;
   uint32_t channel_id_;
 
