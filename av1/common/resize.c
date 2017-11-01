@@ -27,20 +27,8 @@
 
 #include "./aom_scale_rtcd.h"
 
-#define FILTER_BITS 7
-
-#define INTERP_TAPS 8
-#define SUBPEL_BITS_RS 6
-#define SUBPEL_MASK_RS ((1 << SUBPEL_BITS_RS) - 1)
-#define INTERP_PRECISION_BITS 16
-#define INTERP_PRECISION_MASK ((1 << INTERP_PRECISION_BITS) - 1)
-#define SUBPEL_INTERP_EXTRA_BITS (INTERP_PRECISION_BITS - SUBPEL_BITS_RS)
-#define SUBPEL_INTERP_EXTRA_OFF (1 << (SUBPEL_INTERP_EXTRA_BITS - 1))
-
-typedef int16_t interp_kernel[INTERP_TAPS];
-
 // Filters for interpolation (0.5-band) - note this also filters integer pels.
-static const interp_kernel filteredinterp_filters500[(1 << SUBPEL_BITS_RS)] = {
+static const InterpKernel filteredinterp_filters500[(1 << RS_SUBPEL_BITS)] = {
   { -3, 0, 35, 64, 35, 0, -3, 0 },    { -3, 0, 34, 64, 36, 0, -3, 0 },
   { -3, -1, 34, 64, 36, 1, -3, 0 },   { -3, -1, 33, 64, 37, 1, -3, 0 },
   { -3, -1, 32, 64, 38, 1, -3, 0 },   { -3, -1, 31, 64, 39, 1, -3, 0 },
@@ -76,7 +64,7 @@ static const interp_kernel filteredinterp_filters500[(1 << SUBPEL_BITS_RS)] = {
 };
 
 // Filters for interpolation (0.625-band) - note this also filters integer pels.
-static const interp_kernel filteredinterp_filters625[(1 << SUBPEL_BITS_RS)] = {
+static const InterpKernel filteredinterp_filters625[(1 << RS_SUBPEL_BITS)] = {
   { -1, -8, 33, 80, 33, -8, -1, 0 }, { -1, -8, 31, 80, 34, -8, -1, 1 },
   { -1, -8, 30, 80, 35, -8, -1, 1 }, { -1, -8, 29, 80, 36, -7, -2, 1 },
   { -1, -8, 28, 80, 37, -7, -2, 1 }, { -1, -8, 27, 80, 38, -7, -2, 1 },
@@ -112,7 +100,7 @@ static const interp_kernel filteredinterp_filters625[(1 << SUBPEL_BITS_RS)] = {
 };
 
 // Filters for interpolation (0.75-band) - note this also filters integer pels.
-static const interp_kernel filteredinterp_filters750[(1 << SUBPEL_BITS_RS)] = {
+static const InterpKernel filteredinterp_filters750[(1 << RS_SUBPEL_BITS)] = {
   { 2, -11, 25, 96, 25, -11, 2, 0 }, { 2, -11, 24, 96, 26, -11, 2, 0 },
   { 2, -11, 22, 96, 28, -11, 2, 0 }, { 2, -10, 21, 96, 29, -12, 2, 0 },
   { 2, -10, 19, 96, 31, -12, 2, 0 }, { 2, -10, 18, 95, 32, -11, 2, 0 },
@@ -148,7 +136,7 @@ static const interp_kernel filteredinterp_filters750[(1 << SUBPEL_BITS_RS)] = {
 };
 
 // Filters for interpolation (0.875-band) - note this also filters integer pels.
-static const interp_kernel filteredinterp_filters875[(1 << SUBPEL_BITS_RS)] = {
+static const InterpKernel filteredinterp_filters875[(1 << RS_SUBPEL_BITS)] = {
   { 3, -8, 13, 112, 13, -8, 3, 0 },   { 2, -7, 12, 112, 15, -8, 3, -1 },
   { 3, -7, 10, 112, 17, -9, 3, -1 },  { 2, -6, 8, 112, 19, -9, 3, -1 },
   { 2, -6, 7, 112, 21, -10, 3, -1 },  { 2, -5, 6, 111, 22, -10, 3, -1 },
@@ -184,7 +172,7 @@ static const interp_kernel filteredinterp_filters875[(1 << SUBPEL_BITS_RS)] = {
 };
 
 // Filters for interpolation (full-band) - no filtering for integer pixels
-static const interp_kernel filteredinterp_filters1000[(1 << SUBPEL_BITS_RS)] = {
+static const InterpKernel filteredinterp_filters1000[(1 << RS_SUBPEL_BITS)] = {
   { 0, 0, 0, 128, 0, 0, 0, 0 },        { 0, 0, -1, 128, 2, -1, 0, 0 },
   { 0, 1, -3, 127, 4, -2, 1, 0 },      { 0, 1, -4, 127, 6, -3, 1, 0 },
   { 0, 2, -6, 126, 8, -3, 1, 0 },      { 0, 2, -7, 125, 11, -4, 1, 0 },
@@ -228,7 +216,7 @@ static const interp_kernel filteredinterp_filters1000[(1 << SUBPEL_BITS_RS)] = {
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
 static const int16_t filter_normative[(
-    1 << SUBPEL_BITS_RS)][UPSCALE_NORMATIVE_TAPS] = {
+    1 << RS_SUBPEL_BITS)][UPSCALE_NORMATIVE_TAPS] = {
 #if UPSCALE_NORMATIVE_TAPS == 2
   { 128, 0 },  { 126, 2 },  { 124, 4 },  { 122, 6 },  { 120, 8 },  { 118, 10 },
   { 116, 12 }, { 114, 14 }, { 112, 16 }, { 110, 18 }, { 108, 20 }, { 106, 22 },
@@ -340,8 +328,7 @@ static const int16_t filter_normative[(
 static const int16_t av1_down2_symeven_half_filter[] = { 56, 12, -3, -1 };
 static const int16_t av1_down2_symodd_half_filter[] = { 64, 35, 0, -3 };
 
-static const interp_kernel *choose_interp_filter(int in_length,
-                                                 int out_length) {
+static const InterpKernel *choose_interp_filter(int in_length, int out_length) {
   int out_length16 = out_length * 16;
   if (out_length16 >= in_length * 16)
     return filteredinterp_filters1000;
@@ -359,41 +346,41 @@ static void interpolate_core(const uint8_t *const input, int in_length,
                              uint8_t *output, int out_length,
                              const int16_t *interp_filters, int interp_taps) {
   const int32_t delta =
-      (((uint32_t)in_length << INTERP_PRECISION_BITS) + out_length / 2) /
+      (((uint32_t)in_length << RS_SCALE_SUBPEL_BITS) + out_length / 2) /
       out_length;
-  const int32_t offset = in_length > out_length
-                             ? (((int32_t)(in_length - out_length)
-                                 << (INTERP_PRECISION_BITS - 1)) +
-                                out_length / 2) /
-                                   out_length
-                             : -(((int32_t)(out_length - in_length)
-                                  << (INTERP_PRECISION_BITS - 1)) +
-                                 out_length / 2) /
-                                   out_length;
+  const int32_t offset =
+      in_length > out_length
+          ? (((int32_t)(in_length - out_length) << (RS_SCALE_SUBPEL_BITS - 1)) +
+             out_length / 2) /
+                out_length
+          : -(((int32_t)(out_length - in_length)
+               << (RS_SCALE_SUBPEL_BITS - 1)) +
+              out_length / 2) /
+                out_length;
   uint8_t *optr = output;
   int x, x1, x2, sum, k, int_pel, sub_pel;
   int32_t y;
 
   x = 0;
-  y = offset + SUBPEL_INTERP_EXTRA_OFF;
-  while ((y >> INTERP_PRECISION_BITS) < (interp_taps / 2 - 1)) {
+  y = offset + RS_SCALE_EXTRA_OFF;
+  while ((y >> RS_SCALE_SUBPEL_BITS) < (interp_taps / 2 - 1)) {
     x++;
     y += delta;
   }
   x1 = x;
   x = out_length - 1;
-  y = delta * x + offset + SUBPEL_INTERP_EXTRA_OFF;
-  while ((y >> INTERP_PRECISION_BITS) + (int32_t)(interp_taps / 2) >=
+  y = delta * x + offset + RS_SCALE_EXTRA_OFF;
+  while ((y >> RS_SCALE_SUBPEL_BITS) + (int32_t)(interp_taps / 2) >=
          in_length) {
     x--;
     y -= delta;
   }
   x2 = x;
   if (x1 > x2) {
-    for (x = 0, y = offset + SUBPEL_INTERP_EXTRA_OFF; x < out_length;
+    for (x = 0, y = offset + RS_SCALE_EXTRA_OFF; x < out_length;
          ++x, y += delta) {
-      int_pel = y >> INTERP_PRECISION_BITS;
-      sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
+      int_pel = y >> RS_SCALE_SUBPEL_BITS;
+      sub_pel = (y >> RS_SCALE_EXTRA_BITS) & RS_SUBPEL_MASK;
       const int16_t *filter = &interp_filters[sub_pel * interp_taps];
       sum = 0;
       for (k = 0; k < interp_taps; ++k) {
@@ -404,9 +391,9 @@ static void interpolate_core(const uint8_t *const input, int in_length,
     }
   } else {
     // Initial part.
-    for (x = 0, y = offset + SUBPEL_INTERP_EXTRA_OFF; x < x1; ++x, y += delta) {
-      int_pel = y >> INTERP_PRECISION_BITS;
-      sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
+    for (x = 0, y = offset + RS_SCALE_EXTRA_OFF; x < x1; ++x, y += delta) {
+      int_pel = y >> RS_SCALE_SUBPEL_BITS;
+      sub_pel = (y >> RS_SCALE_EXTRA_BITS) & RS_SUBPEL_MASK;
       const int16_t *filter = &interp_filters[sub_pel * interp_taps];
       sum = 0;
       for (k = 0; k < interp_taps; ++k)
@@ -415,8 +402,8 @@ static void interpolate_core(const uint8_t *const input, int in_length,
     }
     // Middle part.
     for (; x <= x2; ++x, y += delta) {
-      int_pel = y >> INTERP_PRECISION_BITS;
-      sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
+      int_pel = y >> RS_SCALE_SUBPEL_BITS;
+      sub_pel = (y >> RS_SCALE_EXTRA_BITS) & RS_SUBPEL_MASK;
       const int16_t *filter = &interp_filters[sub_pel * interp_taps];
       sum = 0;
       for (k = 0; k < interp_taps; ++k)
@@ -425,8 +412,8 @@ static void interpolate_core(const uint8_t *const input, int in_length,
     }
     // End part.
     for (; x < out_length; ++x, y += delta) {
-      int_pel = y >> INTERP_PRECISION_BITS;
-      sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
+      int_pel = y >> RS_SCALE_SUBPEL_BITS;
+      sub_pel = (y >> RS_SCALE_EXTRA_BITS) & RS_SUBPEL_MASK;
       const int16_t *filter = &interp_filters[sub_pel * interp_taps];
       sum = 0;
       for (k = 0; k < interp_taps; ++k)
@@ -439,11 +426,11 @@ static void interpolate_core(const uint8_t *const input, int in_length,
 
 static void interpolate(const uint8_t *const input, int in_length,
                         uint8_t *output, int out_length) {
-  const interp_kernel *interp_filters =
+  const InterpKernel *interp_filters =
       choose_interp_filter(in_length, out_length);
 
   interpolate_core(input, in_length, output, out_length, &interp_filters[0][0],
-                   INTERP_TAPS);
+                   SUBPEL_TAPS);
 }
 
 #if CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
@@ -452,18 +439,18 @@ static void interpolate(const uint8_t *const input, int in_length,
 #define UPSCALE_PROC_UNIT_SCALE (UPSCALE_PROC_UNIT / SCALE_NUMERATOR)
 
 static int32_t get_upscale_convolve_step(int in_length, int out_length) {
-  return ((in_length << INTERP_PRECISION_BITS) + out_length / 2) / out_length;
+  return ((in_length << RS_SCALE_SUBPEL_BITS) + out_length / 2) / out_length;
 }
 
 static int32_t get_upscale_convolve_x0(int in_length, int out_length,
                                        int32_t x_step_qn) {
-  const int err = out_length * x_step_qn - (in_length << INTERP_PRECISION_BITS);
+  const int err = out_length * x_step_qn - (in_length << RS_SCALE_SUBPEL_BITS);
   const int32_t x0 =
-      (-((out_length - in_length) << (INTERP_PRECISION_BITS - 1)) +
+      (-((out_length - in_length) << (RS_SCALE_SUBPEL_BITS - 1)) +
        out_length / 2) /
           out_length +
-      SUBPEL_INTERP_EXTRA_OFF - err / 2;
-  return (int32_t)((uint32_t)x0 & INTERP_PRECISION_MASK);
+      RS_SCALE_EXTRA_OFF - err / 2;
+  return (int32_t)((uint32_t)x0 & RS_SCALE_SUBPEL_MASK);
 }
 
 static void convolve_horiz_superres_c(const uint8_t *src, uint8_t *dst,
@@ -473,10 +460,10 @@ static void convolve_horiz_superres_c(const uint8_t *src, uint8_t *dst,
   src -= interp_taps / 2 - 1;
   int x_qn = x0_qn;
   for (x = 0; x < w; ++x) {
-    const uint8_t *const src_x = &src[x_qn >> INTERP_PRECISION_BITS];
+    const uint8_t *const src_x = &src[x_qn >> RS_SCALE_SUBPEL_BITS];
     const int x_filter_idx =
-        (x_qn & INTERP_PRECISION_MASK) >> SUBPEL_INTERP_EXTRA_BITS;
-    assert(x_filter_idx <= SUBPEL_MASK_RS);
+        (x_qn & RS_SCALE_SUBPEL_MASK) >> RS_SCALE_EXTRA_BITS;
+    assert(x_filter_idx <= RS_SUBPEL_MASK);
     const int16_t *const x_filter = &x_filters[x_filter_idx * interp_taps];
     int k, sum = 0;
     for (k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
@@ -506,8 +493,8 @@ static void interpolate_normative_core(const uint8_t *const src, int in_length,
                               x_step_qn, olen);
     x0 += olen * x_step_qn;
     // Note srcp may advance by UPSCALE_PROC_UNIT +/- 1
-    srcp += (x0 >> INTERP_PRECISION_BITS);
-    x0 &= INTERP_PRECISION_MASK;
+    srcp += (x0 >> RS_SCALE_SUBPEL_BITS);
+    x0 &= RS_SCALE_SUBPEL_MASK;
   }
 }
 
@@ -797,41 +784,41 @@ static void highbd_interpolate_core(const uint16_t *const input, int in_length,
                                     const int16_t *interp_filters,
                                     int interp_taps) {
   const int32_t delta =
-      (((uint32_t)in_length << INTERP_PRECISION_BITS) + out_length / 2) /
+      (((uint32_t)in_length << RS_SCALE_SUBPEL_BITS) + out_length / 2) /
       out_length;
-  const int32_t offset = in_length > out_length
-                             ? (((int32_t)(in_length - out_length)
-                                 << (INTERP_PRECISION_BITS - 1)) +
-                                out_length / 2) /
-                                   out_length
-                             : -(((int32_t)(out_length - in_length)
-                                  << (INTERP_PRECISION_BITS - 1)) +
-                                 out_length / 2) /
-                                   out_length;
+  const int32_t offset =
+      in_length > out_length
+          ? (((int32_t)(in_length - out_length) << (RS_SCALE_SUBPEL_BITS - 1)) +
+             out_length / 2) /
+                out_length
+          : -(((int32_t)(out_length - in_length)
+               << (RS_SCALE_SUBPEL_BITS - 1)) +
+              out_length / 2) /
+                out_length;
   uint16_t *optr = output;
   int x, x1, x2, sum, k, int_pel, sub_pel;
   int32_t y;
 
   x = 0;
-  y = offset + SUBPEL_INTERP_EXTRA_OFF;
-  while ((y >> INTERP_PRECISION_BITS) < (interp_taps / 2 - 1)) {
+  y = offset + RS_SCALE_EXTRA_OFF;
+  while ((y >> RS_SCALE_SUBPEL_BITS) < (interp_taps / 2 - 1)) {
     x++;
     y += delta;
   }
   x1 = x;
   x = out_length - 1;
-  y = delta * x + offset + SUBPEL_INTERP_EXTRA_OFF;
-  while ((y >> INTERP_PRECISION_BITS) + (int32_t)(interp_taps / 2) >=
+  y = delta * x + offset + RS_SCALE_EXTRA_OFF;
+  while ((y >> RS_SCALE_SUBPEL_BITS) + (int32_t)(interp_taps / 2) >=
          in_length) {
     x--;
     y -= delta;
   }
   x2 = x;
   if (x1 > x2) {
-    for (x = 0, y = offset + SUBPEL_INTERP_EXTRA_OFF; x < out_length;
+    for (x = 0, y = offset + RS_SCALE_EXTRA_OFF; x < out_length;
          ++x, y += delta) {
-      int_pel = y >> INTERP_PRECISION_BITS;
-      sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
+      int_pel = y >> RS_SCALE_SUBPEL_BITS;
+      sub_pel = (y >> RS_SCALE_EXTRA_BITS) & RS_SUBPEL_MASK;
       const int16_t *filter = &interp_filters[sub_pel * interp_taps];
       sum = 0;
       for (k = 0; k < interp_taps; ++k) {
@@ -842,9 +829,9 @@ static void highbd_interpolate_core(const uint16_t *const input, int in_length,
     }
   } else {
     // Initial part.
-    for (x = 0, y = offset + SUBPEL_INTERP_EXTRA_OFF; x < x1; ++x, y += delta) {
-      int_pel = y >> INTERP_PRECISION_BITS;
-      sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
+    for (x = 0, y = offset + RS_SCALE_EXTRA_OFF; x < x1; ++x, y += delta) {
+      int_pel = y >> RS_SCALE_SUBPEL_BITS;
+      sub_pel = (y >> RS_SCALE_EXTRA_BITS) & RS_SUBPEL_MASK;
       const int16_t *filter = &interp_filters[sub_pel * interp_taps];
       sum = 0;
       for (k = 0; k < interp_taps; ++k)
@@ -853,8 +840,8 @@ static void highbd_interpolate_core(const uint16_t *const input, int in_length,
     }
     // Middle part.
     for (; x <= x2; ++x, y += delta) {
-      int_pel = y >> INTERP_PRECISION_BITS;
-      sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
+      int_pel = y >> RS_SCALE_SUBPEL_BITS;
+      sub_pel = (y >> RS_SCALE_EXTRA_BITS) & RS_SUBPEL_MASK;
       const int16_t *filter = &interp_filters[sub_pel * interp_taps];
       sum = 0;
       for (k = 0; k < interp_taps; ++k)
@@ -863,8 +850,8 @@ static void highbd_interpolate_core(const uint16_t *const input, int in_length,
     }
     // End part.
     for (; x < out_length; ++x, y += delta) {
-      int_pel = y >> INTERP_PRECISION_BITS;
-      sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
+      int_pel = y >> RS_SCALE_SUBPEL_BITS;
+      sub_pel = (y >> RS_SCALE_EXTRA_BITS) & RS_SUBPEL_MASK;
       const int16_t *filter = &interp_filters[sub_pel * interp_taps];
       sum = 0;
       for (k = 0; k < interp_taps; ++k)
@@ -877,11 +864,11 @@ static void highbd_interpolate_core(const uint16_t *const input, int in_length,
 
 static void highbd_interpolate(const uint16_t *const input, int in_length,
                                uint16_t *output, int out_length, int bd) {
-  const interp_kernel *interp_filters =
+  const InterpKernel *interp_filters =
       choose_interp_filter(in_length, out_length);
 
   highbd_interpolate_core(input, in_length, output, out_length, bd,
-                          &interp_filters[0][0], INTERP_TAPS);
+                          &interp_filters[0][0], SUBPEL_TAPS);
 }
 
 #if CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
@@ -893,10 +880,10 @@ static void highbd_convolve_horiz_superres_c(const uint16_t *src, uint16_t *dst,
   src -= interp_taps / 2 - 1;
   int x_qn = x0_qn;
   for (x = 0; x < w; ++x) {
-    const uint16_t *const src_x = &src[x_qn >> INTERP_PRECISION_BITS];
+    const uint16_t *const src_x = &src[x_qn >> RS_SCALE_SUBPEL_BITS];
     const int x_filter_idx =
-        (x_qn & INTERP_PRECISION_MASK) >> SUBPEL_INTERP_EXTRA_BITS;
-    assert(x_filter_idx <= SUBPEL_MASK_RS);
+        (x_qn & RS_SCALE_SUBPEL_MASK) >> RS_SCALE_EXTRA_BITS;
+    assert(x_filter_idx <= RS_SUBPEL_MASK);
     const int16_t *const x_filter = &x_filters[x_filter_idx * interp_taps];
     int k, sum = 0;
     for (k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
@@ -927,8 +914,8 @@ static void highbd_interpolate_normative_core(const uint16_t *const src,
                                      interp_taps, x0, x_step_qn, olen, bd);
     x0 += olen * x_step_qn;
     // Note srcp may advance by UPSCALE_PROC_UNIT +/- 1
-    srcp += (x0 >> INTERP_PRECISION_BITS);
-    x0 &= INTERP_PRECISION_MASK;
+    srcp += (x0 >> RS_SCALE_SUBPEL_BITS);
+    x0 &= RS_SCALE_SUBPEL_MASK;
   }
 }
 
