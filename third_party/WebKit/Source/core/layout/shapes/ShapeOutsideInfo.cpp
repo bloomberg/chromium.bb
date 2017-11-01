@@ -172,9 +172,16 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
       layout_box_, layout_box_.GetDocument(), layout_box_.StyleRef(),
       FlooredIntSize(image_size), nullptr);
 
-  return Shape::CreateRasterShape(image.get(), shape_image_threshold,
-                                  image_rect, margin_rect, writing_mode,
-                                  margin);
+  std::unique_ptr<Shape> new_shape =
+      Shape::CreateRasterShape(image.get(), shape_image_threshold, image_rect,
+                               margin_rect, writing_mode, margin);
+  if (!new_shape) {
+    layout_box_.GetDocument().AddConsoleMessage(
+        ConsoleMessage::Create(kRenderingMessageSource, kErrorMessageLevel,
+                               "The shape-outside image is too large."));
+    return Shape::CreateEmptyRasterShape(writing_mode, margin);
+  }
+  return new_shape;
 }
 
 const Shape& ShapeOutsideInfo::ComputedShape() const {
