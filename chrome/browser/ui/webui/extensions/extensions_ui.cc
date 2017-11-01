@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -257,6 +258,14 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_IN_CHROME);
   source->AddLocalizedString("shortcutTypeAShortcut",
                              IDS_MD_EXTENSIONS_TYPE_A_SHORTCUT);
+  source->AddLocalizedString("shortcutInstructions",
+                             IDS_MD_EXTENSIONS_SHORTCUT_INSTRUCTIONS);
+  source->AddLocalizedString("shortcutIncludeStartModifier",
+                             IDS_MD_EXTENSIONS_INCLUDE_START_MODIFIER);
+  source->AddLocalizedString("shortcutTooManyModifiers",
+                             IDS_MD_EXTENSIONS_TOO_MANY_MODIFIERS);
+  source->AddLocalizedString("shortcutNeedCharacter",
+                             IDS_MD_EXTENSIONS_NEED_CHARACTER);
   source->AddString(
       "suspiciousInstallHelpUrl",
       base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
