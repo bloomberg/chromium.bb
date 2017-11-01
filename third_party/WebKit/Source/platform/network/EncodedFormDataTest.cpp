@@ -29,7 +29,6 @@ class EncodedFormDataTest : public ::testing::Test {
     EXPECT_EQ(a, b);
     CheckDeepCopied(a.filename_, b.filename_);
     CheckDeepCopied(a.blob_uuid_, b.blob_uuid_);
-    CheckDeepCopied(a.file_system_url_, b.file_system_url_);
   }
 };
 
@@ -38,8 +37,6 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
   original->AppendData("Foo", 3);
   original->AppendFileRange("example.txt", 12345, 56789, 9999.0);
   original->AppendBlob("originalUUID", nullptr);
-  original->AppendFileSystemURLRange(KURL(NullURL(), "ws://localhost/"), 23456,
-                                     34567, 1111.0);
 
   Vector<char> boundary_vector;
   boundary_vector.Append("----boundaryForTest", 19);
@@ -52,7 +49,7 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
   // Check that contents are copied (compare the copy with expected values).
   const Vector<FormDataElement>& original_elements = original->Elements();
   const Vector<FormDataElement>& copy_elements = copy->Elements();
-  ASSERT_EQ(4ul, copy_elements.size());
+  ASSERT_EQ(3ul, copy_elements.size());
 
   Vector<char> foo_vector;
   foo_vector.Append("Foo", 3);
@@ -69,13 +66,6 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
   EXPECT_EQ(FormDataElement::kEncodedBlob, copy_elements[2].type_);
   EXPECT_EQ(String("originalUUID"), copy_elements[2].blob_uuid_);
 
-  EXPECT_EQ(FormDataElement::kEncodedFileSystemURL, copy_elements[3].type_);
-  EXPECT_EQ(KURL(NullURL(), String("ws://localhost/")),
-            copy_elements[3].file_system_url_);
-  EXPECT_EQ(23456ll, copy_elements[3].file_start_);
-  EXPECT_EQ(34567ll, copy_elements[3].file_length_);
-  EXPECT_EQ(1111.0, copy_elements[3].expected_file_modification_time_);
-
   EXPECT_EQ(45678, copy->Identifier());
   EXPECT_EQ(boundary_vector, copy->Boundary());
   EXPECT_EQ(true, copy->ContainsPasswordData());
@@ -86,7 +76,7 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
   // Check pointers are different, i.e. deep-copied.
   ASSERT_NE(original.get(), copy.get());
 
-  for (size_t i = 0; i < 4; ++i) {
+  for (size_t i = 0; i < 3; ++i) {
     if (copy_elements[i].filename_.Impl()) {
       EXPECT_NE(original_elements[i].filename_.Impl(),
                 copy_elements[i].filename_.Impl());
@@ -98,15 +88,6 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
                 copy_elements[i].blob_uuid_.Impl());
       EXPECT_TRUE(copy_elements[i].blob_uuid_.Impl()->HasOneRef());
     }
-
-    if (copy_elements[i].file_system_url_.GetString().Impl()) {
-      EXPECT_NE(original_elements[i].file_system_url_.GetString().Impl(),
-                copy_elements[i].file_system_url_.GetString().Impl());
-      EXPECT_TRUE(
-          copy_elements[i].file_system_url_.GetString().Impl()->HasOneRef());
-    }
-
-    EXPECT_EQ(nullptr, copy_elements[i].file_system_url_.InnerURL());
 
     // m_optionalBlobDataHandle is not checked, because BlobDataHandle is
     // ThreadSafeRefCounted.
