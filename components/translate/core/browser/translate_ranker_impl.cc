@@ -65,7 +65,7 @@ RankerModelStatus ValidateModel(const RankerModel& model) {
     return RankerModelStatus::VALIDATION_FAILED;
 
   if (model.proto().translate().model_revision_case() !=
-      TranslateRankerModel::kLogisticRegressionModel) {
+      TranslateRankerModel::kTranslateLogisticRegressionModel) {
     return RankerModelStatus::INCOMPATIBLE;
   }
 
@@ -276,8 +276,8 @@ bool TranslateRankerImpl::GetModelDecision(
   // logic here.
   const TranslateRankerFeatures features(translate_event);
 
-  const TranslateRankerModel::LogisticRegressionModel& lr_model =
-      model_->proto().translate().logistic_regression_model();
+  const TranslateRankerModel::TranslateLogisticRegressionModel& lr_model =
+      model_->proto().translate().translate_logistic_regression_model();
 
   double dot_product =
       (features.accepted_count * lr_model.accept_count_weight()) +

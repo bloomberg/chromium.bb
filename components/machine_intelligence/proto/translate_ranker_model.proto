@@ -17,7 +17,7 @@ message TranslateRankerModel {
   optional uint32 version = 1;
 
   // Defines the weights and bias of a Logistic Regression Model.
-  message LogisticRegressionModel {
+  message TranslateLogisticRegressionModel {
     // Decision threshold. If not defined, use 0.5.
     optional float threshold = 12;
 
@@ -41,6 +41,6 @@ message TranslateRankerModel {
   }
 
   oneof model_revision {
-    LogisticRegressionModel logistic_regression_model = 2;
+    TranslateLogisticRegressionModel translate_logistic_regression_model = 2;
   }
 }
