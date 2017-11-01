@@ -879,7 +879,7 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
                               base::TimeTicks delay_timestamp,
                               int prior_frames_skipped,
                               AudioBus* audio_bus) {
-  TRACE_EVENT0("media", "AudioRendererImpl::Render");
+  TRACE_EVENT1("media", "AudioRendererImpl::Render", "id", media_log_->id());
   int frames_requested = audio_bus->frames();
   DVLOG(4) << __func__ << " delay:" << delay
            << " prior_frames_skipped:" << prior_frames_skipped
