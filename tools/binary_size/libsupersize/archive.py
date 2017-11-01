@@ -388,7 +388,10 @@ def _CreateMergeStringsReplacements(merge_string_syms,
   logging.debug('Created %d string literal symbols', sum(len(x) for x in ret))
   logging.debug('Sorting string literals')
   for symbols in ret:
-    symbols.sort(key=lambda x: (x.address, -x.size))
+    # In order to achieve a total ordering in the presense of aliases, need to
+    # include both |address| and |object_path|.
+    # In order to achieve consistent deduping, need to include |size|.
+    symbols.sort(key=lambda x: (x.address, -x.size, x.object_path))
 
   logging.debug('Deduping string literals')
   num_removed = 0

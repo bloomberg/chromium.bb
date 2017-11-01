@@ -113,19 +113,25 @@ class IntegrationTest(unittest.TestCase):
               output_directory)
     return copy.deepcopy(IntegrationTest.cached_size_info[i])
 
+  def _DoArchive(self, archive_path, use_output_directory=True, use_elf=True,
+                 debug_measures=False):
+    args = [archive_path, '--map-file', _TEST_MAP_PATH]
+    if use_output_directory:
+      # Let autodetection find output_directory when --elf-file is used.
+      if not use_elf:
+        args += ['--output-directory', _TEST_OUTPUT_DIR]
+    else:
+      args += ['--no-source-paths']
+    if use_elf:
+      args += ['--elf-file', _TEST_ELF_PATH]
+    _RunApp('archive', args, debug_measures=debug_measures)
+
   def _DoArchiveTest(self, use_output_directory=True, use_elf=True,
                      debug_measures=False):
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
-      args = [temp_file.name, '--map-file', _TEST_MAP_PATH]
-      if use_output_directory:
-        # Let autodetection find output_directory when --elf-file is used.
-        if not use_elf:
-          args += ['--output-directory', _TEST_OUTPUT_DIR]
-      else:
-        args += ['--no-source-paths']
-      if use_elf:
-        args += ['--elf-file', _TEST_ELF_PATH]
-      _RunApp('archive', args, debug_measures=debug_measures)
+      self._DoArchive(
+          temp_file.name, use_output_directory=use_output_directory,
+          use_elf=use_elf, debug_measures=debug_measures)
       size_info = archive.LoadAndPostProcessSizeInfo(temp_file.name)
     # Check that saving & loading is the same as directly parsing the .map.
     expected_size_info = self._CloneSizeInfo(
@@ -199,6 +205,16 @@ class IntegrationTest(unittest.TestCase):
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
       file_format.SaveSizeInfo(self._CloneSizeInfo(), temp_file.name)
       return _RunApp('diff', [temp_file.name, temp_file.name])
+
+  # Runs archive 3 times, and asserts the contents are the same each time.
+  def test_Idempotent(self):
+    prev_contents = None
+    for _ in xrange(3):
+      with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
+        self._DoArchive(temp_file.name)
+        contents = temp_file.read()
+        self.assertTrue(prev_contents is None or contents == prev_contents)
+        prev_contents = contents
 
   @_CompareWithGolden()
   def test_Diff_Basic(self):
