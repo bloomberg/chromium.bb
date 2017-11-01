@@ -400,6 +400,7 @@ junit_binary("chrome_junit_tests") {
     "$google_play_services_package:google_play_services_cast_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:base_junit_test_support",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/test:junit_test_support",

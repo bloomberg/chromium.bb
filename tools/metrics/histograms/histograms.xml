@@ -91633,6 +91633,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebApk.Update.NumStaleUpdateRequestFiles" units="files">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the number of zombie &quot;WebAPK update request&quot; files that
+    the update process failed to cleanup. Recorded for all WebAPKs whenever a
+    WebAPK or webapp is launched.
+  </summary>
+</histogram>
+
 <histogram name="WebApk.Update.RequestQueued" enum="WebApkUpdateRequestQueued">
   <owner>hanxi@chromium.org</owner>
   <owner>pkotwicz@chromium.org</owner>

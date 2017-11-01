@@ -162,6 +162,11 @@ public class WebApkUma {
                 TimeUnit.HOURS.toMillis(1), TimeUnit.DAYS.toMillis(30), TimeUnit.MILLISECONDS, 50);
     }
 
+    /** Records to UMA the count of old "WebAPK update request" files. */
+    public static void recordNumberOfStaleWebApkUpdateRequestFiles(int count) {
+        RecordHistogram.recordCountHistogram("WebApk.Update.NumStaleUpdateRequestFiles", count);
+    }
+
     /**
      * Log necessary disk usage and cache size UMAs when WebAPK installation fails.
      */
