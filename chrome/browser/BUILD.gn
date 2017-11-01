@@ -460,8 +460,6 @@ split_static_library("browser") {
     "font_pref_change_notifier.h",
     "font_pref_change_notifier_factory.cc",
     "font_pref_change_notifier_factory.h",
-    "fullscreen.h",
-    "fullscreen_chromeos.cc",
     "fullscreen_mac.mm",
     "fullscreen_win.cc",
     "gcm/gcm_product_util.cc",
@@ -2766,6 +2764,7 @@ split_static_library("browser") {
     }
   } else {  # Non-ChromeOS.
     sources += [
+      "fullscreen.h",
       "policy/cloud/user_cloud_policy_manager_factory.cc",
       "policy/cloud/user_cloud_policy_manager_factory.h",
       "policy/cloud/user_policy_signin_service_base.cc",

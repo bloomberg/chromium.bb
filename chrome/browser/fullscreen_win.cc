@@ -6,6 +6,6 @@
 
 #include "ui/base/fullscreen_win.h"
 
-bool IsFullScreenMode(int64_t display_id) {
+bool IsFullScreenMode() {
   return ui::IsFullScreenMode();
 }

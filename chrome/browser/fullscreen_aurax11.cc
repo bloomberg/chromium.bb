@@ -10,7 +10,7 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #include "ui/views/widget/widget.h"
 
-bool IsFullScreenMode(int64_t display_id) {
+bool IsFullScreenMode() {
   std::vector<aura::Window*> all_windows =
       views::DesktopWindowTreeHostX11::GetAllOpenWindows();
   // Only the topmost window is checked. This works fine in the most cases, but
