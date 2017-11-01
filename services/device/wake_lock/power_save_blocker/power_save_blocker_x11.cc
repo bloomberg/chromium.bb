@@ -276,6 +276,7 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
         uint32_t flags = 0;
         switch (type_) {
           case kPowerSaveBlockPreventDisplaySleep:
+          case kPowerSaveBlockPreventDisplaySleepAllowDimming:
             flags |= INHIBIT_MARK_SESSION_IDLE;
             flags |= INHIBIT_SUSPEND_SESSION;
             break;
@@ -289,6 +290,7 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
     case FREEDESKTOP_API:
       switch (type_) {
         case kPowerSaveBlockPreventDisplaySleep:
+        case kPowerSaveBlockPreventDisplaySleepAllowDimming:
           object_proxy = bus_->GetObjectProxy(
               kFreeDesktopAPIScreenServiceName,
               dbus::ObjectPath(kFreeDesktopAPIScreenObjectPath));
@@ -374,6 +376,7 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
     case FREEDESKTOP_API:
       switch (type_) {
         case kPowerSaveBlockPreventDisplaySleep:
+        case kPowerSaveBlockPreventDisplaySleepAllowDimming:
           object_proxy = bus_->GetObjectProxy(
               kFreeDesktopAPIScreenServiceName,
               dbus::ObjectPath(kFreeDesktopAPIScreenObjectPath));
@@ -497,7 +500,8 @@ PowerSaveBlocker::PowerSaveBlocker(
       blocking_task_runner_(blocking_task_runner) {
   delegate_->Init();
 
-  if (type == kPowerSaveBlockPreventDisplaySleep) {
+  if (type == kPowerSaveBlockPreventDisplaySleep ||
+      type == kPowerSaveBlockPreventDisplaySleepAllowDimming) {
     freedesktop_suspend_delegate_ = new Delegate(
         kPowerSaveBlockPreventAppSuspension, description,
         true /* freedesktop_only */, ui_task_runner, blocking_task_runner);

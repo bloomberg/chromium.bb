@@ -63,6 +63,10 @@ class PowerSaveBlocker::Delegate
         block_id_ = controller->AddScreenWakeLock(GetWakeLockReason(reason_),
                                                   description_);
         break;
+      case kPowerSaveBlockPreventDisplaySleepAllowDimming:
+        block_id_ = controller->AddDimWakeLock(GetWakeLockReason(reason_),
+                                               description_);
+        break;
       default:
         NOTREACHED() << "Unhandled block type " << type_;
     }

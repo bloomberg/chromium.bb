@@ -73,6 +73,7 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
       level = kIOPMAssertionTypeNoIdleSleep;
       break;
     case PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep:
+    case PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleepAllowDimming:
       level = kIOPMAssertionTypeNoDisplaySleep;
       break;
     default:

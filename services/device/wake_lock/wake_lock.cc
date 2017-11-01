@@ -21,6 +21,9 @@ PowerSaveBlocker::PowerSaveBlockerType ToPowerSaveBlockerType(
     case mojom::WakeLockType::PreventDisplaySleep:
       return PowerSaveBlocker::PowerSaveBlockerType::
           kPowerSaveBlockPreventDisplaySleep;
+    case mojom::WakeLockType::PreventDisplaySleepAllowDimming:
+      return PowerSaveBlocker::PowerSaveBlockerType::
+          kPowerSaveBlockPreventDisplaySleepAllowDimming;
   }
 
   NOTREACHED();
