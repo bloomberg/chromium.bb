@@ -32,7 +32,7 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
 
   // Step 1. ... "script", ... [spec text]
   ResourceLoaderOptions resource_loader_options;
-  resource_loader_options.initiator_info.name = element->InitiatorName();
+  resource_loader_options.initiator_info.name = "script";
   FetchParameters params(resource_request, resource_loader_options);
 
   // Step 1. ... and CORS setting. [spec text]

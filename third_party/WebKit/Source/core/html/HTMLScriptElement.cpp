@@ -205,10 +205,6 @@ bool HTMLScriptElement::AllowInlineScriptForCSP(
       inline_type);
 }
 
-AtomicString HTMLScriptElement::InitiatorName() const {
-  return Element::localName();
-}
-
 Document& HTMLScriptElement::GetDocument() const {
   return Node::GetDocument();
 }
