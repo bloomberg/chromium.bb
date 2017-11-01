@@ -510,7 +510,7 @@ source_set("common") {
   }
 
   if (!use_seccomp_bpf) {
-    if (is_linux) {
+    if (is_linux && current_cpu != "s390x" && current_cpu != "ppc64") {
       sources -= [
         "sandbox_linux/bpf_cros_amd_gpu_policy_linux.cc",
         "sandbox_linux/bpf_cros_amd_gpu_policy_linux.h",
