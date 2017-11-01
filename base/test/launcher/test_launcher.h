@@ -86,6 +86,11 @@ class ProcessLifetimeObserver {
   // caller owns the ProcessHandle.
   virtual void OnLaunched(ProcessHandle handle, ProcessId id) {}
 
+  // Invoked when a test process exceeds its runtime, immediately before it is
+  // terminated. |command_line| is the command line used to launch the process.
+  // NOTE: this method is invoked on the thread the process is launched on.
+  virtual void OnTimedOut(const CommandLine& command_line) {}
+
   // Invoked after a child process finishes, reporting the process |exit_code|,
   // child process |elapsed_time|, whether or not the process was terminated as
   // a result of a timeout, and the output of the child (stdout and stderr

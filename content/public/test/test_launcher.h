@@ -62,6 +62,10 @@ class TestLauncherDelegate {
   // jobs.
   virtual void PreSharding() {}
 
+  // Invoked when a child process times out immediately before it is terminated.
+  // |command_line| is the command line of the child process.
+  virtual void OnTestTimedOut(const base::CommandLine& command_line) {}
+
   // Called prior to returning from LaunchTests(). Gives the delegate a chance
   // to do cleanup before state created by TestLauncher has been destroyed (such
   // as the AtExitManager).

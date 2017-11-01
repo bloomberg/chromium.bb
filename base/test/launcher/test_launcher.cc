@@ -350,6 +350,9 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 
   int exit_code = 0;
   if (!process.WaitForExitWithTimeout(timeout, &exit_code)) {
+    if (observer)
+      observer->OnTimedOut(command_line);
+
     *was_timeout = true;
     exit_code = -1;  // Set a non-zero exit code to signal a failure.
 
