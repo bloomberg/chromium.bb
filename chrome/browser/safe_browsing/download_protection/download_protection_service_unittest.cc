@@ -1169,14 +1169,17 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   }
   {
     // If the response is UNKNOWN the result should also be marked as
-    // UNKNOWN
+    // UNKNOWN. And if the server requests an upload, we should upload.
     PrepareResponse(&factory, ClientDownloadResponse::UNKNOWN, net::HTTP_OK,
-                    net::URLRequestStatus::SUCCESS);
+                    net::URLRequestStatus::SUCCESS,
+                    true /* upload_requested */);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                           base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
+    EXPECT_TRUE(DownloadFeedbackService::GetPingsForDownloadForTesting(
+        item, &feedback_ping, &feedback_response));
     EXPECT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
     EXPECT_TRUE(HasClientDownloadRequest());
     ClearClientDownloadRequest();
