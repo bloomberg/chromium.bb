@@ -84,6 +84,8 @@ class PreferenceCheckbox {
     if (learnMoreLink) {
       learnMoreLink.addEventListener(
           'click', (event) => this.onLearnMoreLinkClicked(event));
+      learnMoreLink.addEventListener(
+          'keydown', (event) => this.suppressKeyDown(event));
     }
 
     // Create controlled indicator for policy if necessary.
@@ -129,6 +131,15 @@ class PreferenceCheckbox {
    */
   onLearnMoreLinkClicked(event) {
     showTextOverlay(this.learnMoreContent_);
+    event.stopPropagation();
+  }
+
+  /**
+   * Called when a key is pressed down on the "Learn More" or "Settings" links.
+   * This prevent propagation of the current event in order to prevent parent
+   * check box toggles its state.
+   */
+  suppressKeyDown(event) {
     event.stopPropagation();
   }
 }
@@ -181,9 +192,13 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
     var learnMoreLink = label.querySelector(this.learnMoreLinkId_);
     learnMoreLink.addEventListener(
         'click', (event) => this.onLearnMoreLinkClicked(event));
+    learnMoreLink.addEventListener(
+        'keydown', (event) => this.suppressKeyDown(event));
     var settingsLink = label.querySelector('#settings-link');
     settingsLink.addEventListener(
         'click', (event) => this.onSettingsLinkClicked(event));
+    settingsLink.addEventListener(
+        'keydown', (event) => this.suppressKeyDown(event));
   }
 
   /** Called when "settings" link is clicked. */
