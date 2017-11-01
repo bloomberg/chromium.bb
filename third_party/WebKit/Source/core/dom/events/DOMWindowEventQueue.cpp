@@ -70,7 +70,7 @@ DOMWindowEventQueue* DOMWindowEventQueue::Create(ExecutionContext* context) {
 DOMWindowEventQueue::DOMWindowEventQueue(ExecutionContext* context)
     : pending_event_timer_(new DOMWindowEventQueueTimer(this, context)),
       is_closed_(false) {
-  pending_event_timer_->SuspendIfNeeded();
+  pending_event_timer_->PauseIfNeeded();
 }
 
 DOMWindowEventQueue::~DOMWindowEventQueue() {}

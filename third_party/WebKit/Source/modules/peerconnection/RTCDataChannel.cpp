@@ -59,7 +59,7 @@ RTCDataChannel* RTCDataChannel::Create(
     std::unique_ptr<WebRTCDataChannelHandler> handler) {
   DCHECK(handler);
   RTCDataChannel* channel = new RTCDataChannel(context, std::move(handler));
-  channel->SuspendIfNeeded();
+  channel->PauseIfNeeded();
 
   return channel;
 }
@@ -78,7 +78,7 @@ RTCDataChannel* RTCDataChannel::Create(
     return nullptr;
   }
   RTCDataChannel* channel = new RTCDataChannel(context, std::move(handler));
-  channel->SuspendIfNeeded();
+  channel->PauseIfNeeded();
 
   return channel;
 }

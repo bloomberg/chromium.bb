@@ -53,7 +53,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
     MIDIAccessInitializer* resolver =
         new MIDIAccessInitializer(script_state, options);
     resolver->KeepAliveWhilePending();
-    resolver->SuspendIfNeeded();
+    resolver->PauseIfNeeded();
     return resolver->Start();
   }
 

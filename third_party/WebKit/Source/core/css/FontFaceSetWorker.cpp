@@ -23,7 +23,7 @@ namespace blink {
 
 FontFaceSetWorker::FontFaceSetWorker(WorkerGlobalScope& worker)
     : FontFaceSet(worker), Supplement<WorkerGlobalScope>(worker) {
-  SuspendIfNeeded();
+  PauseIfNeeded();
 }
 
 FontFaceSetWorker::~FontFaceSetWorker() {}

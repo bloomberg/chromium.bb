@@ -105,7 +105,7 @@ DOMTimer::DOMTimer(ExecutionContext* context,
   else
     StartRepeating(interval_milliseconds, BLINK_FROM_HERE);
 
-  SuspendIfNeeded();
+  PauseIfNeeded();
   TRACE_EVENT_INSTANT1("devtools.timeline", "TimerInstall",
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorTimerInstallEvent::Data(context, timeout_id,

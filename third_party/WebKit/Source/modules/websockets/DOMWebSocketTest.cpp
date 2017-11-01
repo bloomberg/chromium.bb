@@ -78,7 +78,7 @@ class DOMWebSocketWithMockChannel final : public DOMWebSocket {
   static DOMWebSocketWithMockChannel* Create(ExecutionContext* context) {
     DOMWebSocketWithMockChannel* websocket =
         new DOMWebSocketWithMockChannel(context);
-    websocket->SuspendIfNeeded();
+    websocket->PauseIfNeeded();
     return websocket;
   }
 

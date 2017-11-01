@@ -35,7 +35,7 @@ PausableObject::PausableObject(ExecutionContext* execution_context)
     : ContextLifecycleObserver(execution_context, kSuspendableObjectType)
 #if DCHECK_IS_ON()
       ,
-      suspend_if_needed_called_(false)
+      pause_if_needed_called_(false)
 #endif
 {
   DCHECK(!execution_context || execution_context->IsContextThread());
@@ -48,14 +48,14 @@ PausableObject::~PausableObject() {
       InstanceCounters::kSuspendableObjectCounter);
 
 #if DCHECK_IS_ON()
-  DCHECK(suspend_if_needed_called_);
+  DCHECK(pause_if_needed_called_);
 #endif
 }
 
-void PausableObject::SuspendIfNeeded() {
+void PausableObject::PauseIfNeeded() {
 #if DCHECK_IS_ON()
-  DCHECK(!suspend_if_needed_called_);
-  suspend_if_needed_called_ = true;
+  DCHECK(!pause_if_needed_called_);
+  pause_if_needed_called_ = true;
 #endif
   if (ExecutionContext* context = GetExecutionContext())
     context->SuspendSuspendableObjectIfNeeded(this);

@@ -28,7 +28,7 @@ PermissionStatus* PermissionStatus::CreateAndListen(
     MojoPermissionDescriptor descriptor) {
   PermissionStatus* permission_status =
       new PermissionStatus(execution_context, status, std::move(descriptor));
-  permission_status->SuspendIfNeeded();
+  permission_status->PauseIfNeeded();
   permission_status->StartListening();
   return permission_status;
 }

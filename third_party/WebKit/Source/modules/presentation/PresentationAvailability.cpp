@@ -24,7 +24,7 @@ PresentationAvailability* PresentationAvailability::Take(
   PresentationAvailability* presentation_availability =
       new PresentationAvailability(resolver->GetExecutionContext(), urls,
                                    value);
-  presentation_availability->SuspendIfNeeded();
+  presentation_availability->PauseIfNeeded();
   presentation_availability->UpdateListening();
   return presentation_availability;
 }

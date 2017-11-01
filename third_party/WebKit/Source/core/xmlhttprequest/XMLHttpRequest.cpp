@@ -274,7 +274,7 @@ XMLHttpRequest* XMLHttpRequest::Create(ScriptState* script_state) {
           ? new XMLHttpRequest(context, isolate, true,
                                world.IsolatedWorldSecurityOrigin())
           : new XMLHttpRequest(context, isolate, false, nullptr);
-  xml_http_request->SuspendIfNeeded();
+  xml_http_request->PauseIfNeeded();
   return xml_http_request;
 }
 
@@ -284,7 +284,7 @@ XMLHttpRequest* XMLHttpRequest::Create(ExecutionContext* context) {
 
   XMLHttpRequest* xml_http_request =
       new XMLHttpRequest(context, isolate, false, nullptr);
-  xml_http_request->SuspendIfNeeded();
+  xml_http_request->PauseIfNeeded();
   return xml_http_request;
 }
 

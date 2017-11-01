@@ -81,7 +81,7 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document)
 HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
   HTMLVideoElement* video = new HTMLVideoElement(document);
   video->EnsureUserAgentShadowRoot();
-  video->SuspendIfNeeded();
+  video->PauseIfNeeded();
   return video;
 }
 

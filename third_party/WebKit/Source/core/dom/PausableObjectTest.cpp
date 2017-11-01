@@ -75,7 +75,7 @@ PausableObjectTest::PausableObjectTest()
       dest_page_holder_(DummyPageHolder::Create(IntSize(800, 600))),
       pausable_object_(
           new MockPausableObject(&src_page_holder_->GetDocument())) {
-  pausable_object_->SuspendIfNeeded();
+  pausable_object_->PauseIfNeeded();
 }
 
 TEST_F(PausableObjectTest, NewContextObserved) {

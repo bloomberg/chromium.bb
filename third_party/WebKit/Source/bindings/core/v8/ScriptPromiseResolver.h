@@ -37,7 +37,7 @@ class CORE_EXPORT ScriptPromiseResolver
  public:
   static ScriptPromiseResolver* Create(ScriptState* script_state) {
     ScriptPromiseResolver* resolver = new ScriptPromiseResolver(script_state);
-    resolver->SuspendIfNeeded();
+    resolver->PauseIfNeeded();
     return resolver;
   }
 
