@@ -385,7 +385,7 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
       break;
     }
     case media::MediaLogEvent::PIPELINE_ERROR: {
-      int status;
+      int status = static_cast<media::PipelineStatus>(media::PIPELINE_OK);
       event.params.GetInteger("pipeline_error", &status);
       player_info.last_pipeline_status =
           static_cast<media::PipelineStatus>(status);

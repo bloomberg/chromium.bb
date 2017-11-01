@@ -16,6 +16,7 @@ namespace media {
 
 // Status states for pipeline.  All codes except PIPELINE_OK indicate errors.
 // Logged to UMA, so never reuse a value, always add new/greater ones!
+// When adding a new one, also update enums.xml.
 enum PipelineStatus {
   PIPELINE_OK = 0,
   // Deprecated: PIPELINE_ERROR_URL_NOT_FOUND = 1,
@@ -28,15 +29,11 @@ enum PipelineStatus {
   PIPELINE_ERROR_READ = 9,
   // Deprecated: PIPELINE_ERROR_OPERATION_PENDING = 10,
   PIPELINE_ERROR_INVALID_STATE = 11,
-  PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED = 21,
 
   // Demuxer related errors.
   DEMUXER_ERROR_COULD_NOT_OPEN = 12,
   DEMUXER_ERROR_COULD_NOT_PARSE = 13,
   DEMUXER_ERROR_NO_SUPPORTED_STREAMS = 14,
-  // Android only. Used as a signal to fallback MediaPlayerRenderer, and thus
-  // not exactly an 'error' per say.
-  DEMUXER_ERROR_DETECTED_HLS = 22,
 
   // Decoder related errors.
   DECODER_ERROR_NOT_SUPPORTED = 15,
@@ -48,7 +45,13 @@ enum PipelineStatus {
 
   // Audio rendering errors.
   AUDIO_RENDERER_ERROR = 19,
+
   // Deprecated: AUDIO_RENDERER_ERROR_SPLICE_FAILED = 20,
+  PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED = 21,
+
+  // Android only. Used as a signal to fallback MediaPlayerRenderer, and thus
+  // not exactly an 'error' per say.
+  DEMUXER_ERROR_DETECTED_HLS = 22,
 
   // Must be equal to the largest value ever logged.
   PIPELINE_STATUS_MAX = DEMUXER_ERROR_DETECTED_HLS,

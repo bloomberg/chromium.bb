@@ -53,7 +53,7 @@ struct MediaLogEvent {
     PIPELINE_STATE_CHANGED,
 
     // An error has occurred in the pipeline.
-    // params: "pipeline_error": <string name of the error>.
+    // params: "pipeline_error": <integral PipelineStatus error code>.
     PIPELINE_ERROR,
 
     // The size of the video has been determined.
