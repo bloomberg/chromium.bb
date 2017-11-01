@@ -42,11 +42,8 @@ class CORE_EXPORT PointerEventFactory {
                        LocalFrame*,
                        DOMWindow*);
 
-  PointerEvent* CreatePointerCancelEvent(const WebPointerEvent&);
-
   PointerEvent* CreatePointerCancelEvent(
       const int pointer_id,
-      const WebPointerProperties::PointerType,
       TimeTicks platfrom_time_stamp);
 
   // For creating capture events (i.e got/lostpointercapture)
