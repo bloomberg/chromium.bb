@@ -52,6 +52,7 @@ COMMIT_ORIGINAL_POSITION_FOOTER_KEY = 'Cr-Original-Commit-Position'
 # Regular expression to parse gclient's revinfo entries.
 REVINFO_RE = re.compile(r'^([^:]+):\s+([^@]+)@(.+)$')
 
+
 # Copied from scripts/recipes/chromium.py.
 GOT_REVISION_MAPPINGS = {
     CHROMIUM_SRC_URL: {
@@ -363,32 +364,7 @@ def gclient_revinfo():
   return call_gclient('revinfo', '-a') or ''
 
 
-def normalize_git_url(url):
-  """Normalize a git url to be consistent.
-
-  This recognizes urls to the googlesoruce.com domain.  It ensures that
-  the url:
-  * Do not end in .git
-  * Do not contain /a/ in their path.
-  """
-  try:
-    p = urlparse.urlparse(url)
-  except Exception:
-    # Not a url, just return it back.
-    return url
-  if not p.netloc.endswith('.googlesource.com'):
-    # Not a googlesource.com URL, can't normalize this, just return as is.
-    return url
-  path = p.path
-  if path.startswith('/a'):
-    path = path[len('/a'):]
-  if path.endswith('.git'):
-    path = path[:-len('.git')]
-  return 'https://%s%s' % (p.netloc, path)
-
-
-# TODO(hinoka): Remove this once all downstream recipes stop using this format.
-def create_manifest_old():
+def create_manifest():
   manifest = {}
   output = gclient_revinfo()
   for line in output.strip().splitlines():
@@ -400,53 +376,6 @@ def create_manifest_old():
       }
     else:
       print "WARNING: Couldn't match revinfo line:\n%s" % line
-
-
-# TODO(hinoka): Include patch revision.
-def create_manifest(gclient_output, patch_root, gerrit_ref):
-  """Return the JSONPB equivilent of the source manifest proto.
-
-  The source manifest proto is defined here:
-  https://chromium.googlesource.com/infra/luci/recipes-py/+/master/recipe_engine/source_manifest.proto
-
-  This is based off of:
-  * The gclient_output (from calling gclient.py --output-json) which contains
-    the directory -> repo:revision mapping.
-  * Gerrit Patch info which contains info about patched revisions.
-
-  We normalize the URLs such that if they are googlesource.com urls, they:
-  """
-  manifest = {
-      'version': 0,  # Currently the only valid version is 0.
-  }
-  dirs = {}
-  if patch_root:
-    patch_root = patch_root.strip('/')  # Normalize directory names.
-  for directory, info in gclient_output.get('solutions', {}).iteritems():
-    directory = directory.strip('/')  # Normalize the directory name.
-    # There are two places to the the revision from, we do it in this order:
-    # 1. In the "revision" field
-    # 2. At the end of the URL, after @
-    repo = ''
-    revision = info.get('revision', '')
-    # The format of the url is "https://repo.url/blah.git@abcdefabcdef" or
-    # just "https://repo.url/blah.git"
-    url_split = info.get('url', '').split('@')
-    if not revision and len(url_split) == 2:
-      revision = url_split[1]
-    if url_split:
-      repo = normalize_git_url(url_split[0])
-    if repo:
-      dirs[directory] = {
-        'git_checkout': {
-          'repo_url': repo,
-          'revision': revision,
-        }
-      }
-      if patch_root == directory:
-        dirs[directory]['git_checkout']['patch_fetch_ref'] = gerrit_ref
-
-  manifest['directories'] = dirs
   return manifest
 
 
@@ -1181,9 +1110,7 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
               step_text=step_text,
               fixed_revisions=revisions,
               properties=got_revisions,
-              manifest=create_manifest_old(),
-              source_manifest=create_manifest(
-                  gclient_output, options.patch_root, options.gerrit_ref))
+              manifest=create_manifest())
 
 
 def print_debug_info():

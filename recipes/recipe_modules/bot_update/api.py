@@ -77,8 +77,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       root_solution_revision=None, rietveld=None, issue=None,
                       patchset=None, gerrit_no_reset=False,
                       gerrit_no_rebase_patch_ref=False,
-                      disable_syntax_validation=False, manifest_name=None,
-                      **kwargs):
+                      disable_syntax_validation=False, **kwargs):
     """
     Args:
       use_site_config_creds: If the oauth2 credentials are in the buildbot
@@ -94,8 +93,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
       disable_syntax_validation: (legacy) Disables syntax validation for DEPS.
         Needed as migration paths for recipes dealing with older revisions,
         such as bisect.
-      manifest_name: The name of the manifest to upload to LogDog.  This must
-        be unique for the whole build.
     """
     refs = refs or []
     # We can re-use the gclient spec from the gclient module, since all the
@@ -264,6 +261,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         root, first_sln, reverse_rev_map, self._fail_patch,
         fixed_revisions=fixed_revisions)
 
+    # Add suffixes to the step name, if specified.
     name = 'bot_update'
     if not patch:
       name += ' (without patch)'
@@ -297,15 +295,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
         if 'step_text' in result:
           step_text = result['step_text']
           step_result.presentation.step_text = step_text
-
-        # Export the step results as a Source Manifest to LogDog.
-        if manifest_name:
-          if not patch:
-            # The param "patched" is purely cosmetic to mean "if false, this
-            # bot_update run exists purely to unpatch an existing patch".
-            manifest_name += '_unpatched'
-          self.m.source_manifest.set_json_manifest(
-              manifest_name, result.get('source_manifest', {}))
 
         # Set the "checkout" path for the main solution.
         # This is used by the Chromium module to figure out where to look for
