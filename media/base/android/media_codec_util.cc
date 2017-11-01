@@ -184,6 +184,11 @@ bool MediaCodecUtil::IsMediaCodecAvailableFor(int sdk, const char* model) {
       {"GT-N5110", SDK_VERSION_JELLY_BEAN_MR2},
       {"e-tab4", SDK_VERSION_JELLY_BEAN_MR2},
       {"GT-I8200Q", SDK_VERSION_JELLY_BEAN_MR2},
+
+      // crbug.com/693216
+      {"GT-I8552B", SDK_VERSION_JELLY_BEAN_MR2},
+      {"GT-I8262", SDK_VERSION_JELLY_BEAN_MR2},
+      {"GT-I8262B", SDK_VERSION_JELLY_BEAN_MR2},
   };
 
   const auto iter =
