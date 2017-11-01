@@ -363,26 +363,12 @@ void AudioParam::setValue(float value) {
 
 // TODO(crbug.com/764396): Remove this when fixed.
 void AudioParam::WarnIfSetterOverlapsEvent() {
-  // Find if there's an event at the current time.
-  bool has_overlap;
-  size_t current_event_index;
+  DCHECK(IsMainThread());
 
-  std::tie(has_overlap, current_event_index) =
-      Handler().Timeline().EventAtFrame(Context()->CurrentSampleFrame(),
-                                        Context()->sampleRate());
-
-  Context()->CountValueSetterConflict(has_overlap);
-
-  // Print a depecation message once, and also a more detailed message
-  // about the conflict so the developer knows.
-  if (!s_value_setter_warning_done_) {
-    Deprecation::CountDeprecation(Context()->GetExecutionContext(),
-                                  WebFeature::kWebAudioValueSetterIsSetValue);
-    if (has_overlap) {
-      Handler().Timeline().WarnSetterOverlapsEvent(
-          Handler().GetParamName(), current_event_index, *Context());
-    }
-  }
+  // Check for overlap and print a warning only if we haven't already
+  // printed a warning.
+  Handler().Timeline().WarnIfSetterOverlapsEvent(
+      Context(), Handler().GetParamName(), !s_value_setter_warning_done_);
 }
 
 float AudioParam::defaultValue() const {

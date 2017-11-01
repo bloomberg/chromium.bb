@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "build/build_config.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/wtf/CPU.h"
@@ -1784,10 +1785,39 @@ unsigned AudioParamTimeline::FillWithDefault(float* values,
 }
 
 // TODO(crbug.com/764396): Remove this when fixed.
+bool AudioParamTimeline::WarnIfSetterOverlapsEvent(BaseAudioContext* context,
+                                                   String param_name,
+                                                   bool print_warning) {
+  DCHECK(IsMainThread());
+
+  // Don't let the audio thread mutate the event list while we're
+  // examining the event list.
+  MutexLocker locker(events_lock_);
+
+  // Find if there's an event at the current time.
+  bool has_overlap;
+  size_t current_event_index;
+
+  std::tie(has_overlap, current_event_index) =
+      EventAtFrame(context->CurrentSampleFrame(), context->sampleRate());
+
+  context->CountValueSetterConflict(has_overlap);
+
+  // Print a depecation message once, and also a more detailed message
+  // about the conflict so the developer knows.
+  Deprecation::CountDeprecation(context->GetExecutionContext(),
+                                WebFeature::kWebAudioValueSetterIsSetValue);
+  if (print_warning && has_overlap) {
+    WarnSetterOverlapsEvent(param_name, current_event_index, *context);
+    return true;
+  }
+
+  return false;
+}
+
 std::tuple<bool, size_t> AudioParamTimeline::EventAtFrame(
     size_t current_frame,
     float sample_rate) const {
-  MutexLocker locker(events_lock_);
 
   size_t number_of_events = events_.size();
   ParamEvent* event = nullptr;
@@ -1867,7 +1897,6 @@ void AudioParamTimeline::WarnSetterOverlapsEvent(
     String param_name,
     size_t event_index,
     BaseAudioContext& context) const {
-  MutexLocker locker(events_lock_);
 
   DCHECK_LT(event_index, events_.size());
 
