@@ -92,7 +92,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'can_use_on_swarming_builders': True,
           'expiration': 36000,
           'io_timeout': 600,
-          'upload_test_results': False,
+          'upload_test_results': True,
         },
         'name': 'speedometer',
         'isolate_name': 'telemetry_perf_tests',
@@ -116,7 +116,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
           'can_use_on_swarming_builders': True,
           'expiration': 36000,
           'io_timeout': 600,
-          'upload_test_results': False,
+          'upload_test_results': True,
         },
         'name': 'speedometer.reference',
         'isolate_name': 'telemetry_perf_tests',
@@ -149,28 +149,6 @@ class PerfDataGeneratorTest(unittest.TestCase):
         '--browser=android-webview', '--output-format=chartjson',
         '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk'])
     self.assertEquals(test['isolate_name'], 'telemetry_perf_webview_tests')
-
-  def testGenerateTelemetryTestsWithUploadToFlakinessDashboard(self):
-    swarming_dimensions = [{'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP'}]
-    test = perf_data_generator.generate_telemetry_test(
-        swarming_dimensions, 'system_health.common_desktop', 'release')
-    expected_generated_test = {
-        'override_compile_targets': ['telemetry_perf_tests'],
-        'args': ['system_health.common_desktop', '-v', '--upload-results',
-                 '--browser=release', '--output-format=chartjson'],
-        'swarming': {
-          'ignore_task_failure': False,
-          'dimension_sets': [{'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP'}],
-          'hard_timeout': 10800,
-          'can_use_on_swarming_builders': True,
-          'expiration': 36000,
-          'io_timeout': 600,
-          'upload_test_results': True,
-        },
-        'name': 'system_health.common_desktop',
-        'isolate_name': 'telemetry_perf_tests',
-      }
-    self.assertEquals(test, expected_generated_test)
 
   def testGenerateTelemetryTestsBlacklistedReferenceBuildTest(self):
     class BlacklistedBenchmark(benchmark.Benchmark):
@@ -337,7 +315,6 @@ class PerfDataGeneratorTest(unittest.TestCase):
 
   def testListsAlphabetical(self):
     keys = [
-        'BENCHMARKS_TO_UPLOAD_TO_FLAKINESS_DASHBOARD',
         'BENCHMARK_REF_BUILD_BLACKLIST',
         'SVELTE_DEVICE_LIST'
     ]
