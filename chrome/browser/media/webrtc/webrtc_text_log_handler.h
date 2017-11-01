@@ -138,9 +138,8 @@ class WebRtcTextLogHandler
 
   void LogToCircularBuffer(const std::string& message);
 
-  void LogInitialInfoOnFileThread(const GenericDoneCallback& callback);
-  void LogInitialInfoOnIOThread(const net::NetworkInterfaceList& network_list,
-                                const GenericDoneCallback& callback);
+  void LogInitialInfoOnIOThread(const GenericDoneCallback& callback,
+                                const net::NetworkInterfaceList& network_list);
   void EnableBrowserProcessLoggingOnUIThread();
   void DisableBrowserProcessLoggingOnUIThread();
 
