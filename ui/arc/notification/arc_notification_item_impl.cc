@@ -85,6 +85,10 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
         base::ASCIIToUTF16("\n"));
   }
   rich_data.accessible_name = accessible_name_;
+  if (IsOpeningSettingsSupported()) {
+    rich_data.settings_button_handler =
+        message_center::SettingsButtonHandler::DELEGATE;
+  }
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);

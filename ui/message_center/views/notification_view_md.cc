@@ -501,8 +501,7 @@ void NotificationViewMD::UpdateWithNotification(
 void NotificationViewMD::UpdateControlButtonsVisibilityWithNotification(
     const Notification& notification) {
   control_buttons_view_->ShowSettingsButton(
-      notification.delegate() &&
-      notification.delegate()->ShouldDisplaySettingsButton());
+      notification.should_show_settings_button());
   control_buttons_view_->ShowCloseButton(!GetPinned());
   UpdateControlButtonsVisibility();
 }

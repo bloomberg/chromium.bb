@@ -23,13 +23,7 @@ void NotificationDelegate::ButtonClickWithReply(int button_index,
   NOTIMPLEMENTED();
 }
 
-bool NotificationDelegate::SettingsClick() {
-  return false;
-}
-
-bool NotificationDelegate::ShouldDisplaySettingsButton() {
-  return false;
-}
+void NotificationDelegate::SettingsClick() {}
 
 void NotificationDelegate::DisableNotification() {}
 

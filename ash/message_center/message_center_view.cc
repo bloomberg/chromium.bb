@@ -533,11 +533,10 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
   MessageView* view = message_center::MessageViewFactory::Create(
       this, notification, false);  // Not top-level.
 
-  // TODO(yoshiki): Temporary disable context menu on custom notifications.
-  // See crbug.com/750307 for detail.
+  // TODO(yoshiki): Temporarily disable context menu on custom (arc)
+  // notifications. See crbug.com/750307 for details.
   if (notification.type() != message_center::NOTIFICATION_TYPE_CUSTOM &&
-      notification.delegate() &&
-      notification.delegate()->ShouldDisplaySettingsButton()) {
+      notification.should_show_settings_button()) {
     view->set_context_menu_controller(&context_menu_controller_);
   }
 

@@ -340,8 +340,7 @@
   [rootView addSubview:[self createSmallImageInFrame:rootFrame]];
 
   // Create the settings button.
-  if (notification_->delegate() &&
-      notification_->delegate()->ShouldDisplaySettingsButton()) {
+  if (notification_->should_show_settings_button()) {
     [self configureSettingsButtonInFrame:rootFrame];
     [rootView addSubview:settingsButton_];
   }

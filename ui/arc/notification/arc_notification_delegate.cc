@@ -45,15 +45,9 @@ void ArcNotificationDelegate::Click() {
   item_->Click();
 }
 
-bool ArcNotificationDelegate::SettingsClick() {
+void ArcNotificationDelegate::SettingsClick() {
   DCHECK(item_);
   item_->OpenSettings();
-  return true;
-}
-
-bool ArcNotificationDelegate::ShouldDisplaySettingsButton() {
-  DCHECK(item_);
-  return item_->IsOpeningSettingsSupported();
 }
 
 }  // namespace arc

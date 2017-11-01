@@ -423,6 +423,15 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   DCHECK_EQ(notification_data.actions.size(),
             notification_resources.action_icons.size());
 
+  message_center::RichNotificationData optional_fields;
+#if defined(OS_CHROMEOS)
+  optional_fields.settings_button_handler =
+      message_center::SettingsButtonHandler::TRAY;
+#else
+  optional_fields.settings_button_handler =
+      message_center::SettingsButtonHandler::DELEGATE;
+#endif
+
   // TODO(peter): Handle different screen densities instead of always using the
   // 1x bitmap - crbug.com/585815.
   // TODO(estade): The RichNotificationData should set |clickable| if there's a
@@ -432,7 +441,7 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
       notification_data.title, notification_data.body,
       gfx::Image::CreateFrom1xBitmap(notification_resources.notification_icon),
       base::UTF8ToUTF16(origin.host()), origin, NotifierId(origin),
-      message_center::RichNotificationData(), delegate);
+      optional_fields, delegate);
 
   notification.set_context_message(
       DisplayNameForContextMessage(profile, origin));
