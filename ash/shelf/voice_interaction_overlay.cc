@@ -114,7 +114,8 @@ constexpr int kMoleculeOrder[] = {0, 2, 3, 1};
 
 }  // namespace
 
-class VoiceInteractionIcon : public ui::Layer {
+class VoiceInteractionIcon : public ui::Layer,
+                             public ui::CompositorAnimationObserver {
  public:
   VoiceInteractionIcon() : Layer(ui::LAYER_NOT_DRAWN) {
     set_name("VoiceInteractionOverlay:ICON_LAYER");
@@ -126,14 +127,32 @@ class VoiceInteractionIcon : public ui::Layer {
   }
 
   void StartAnimation() {
-    animation_timer_.Start(FROM_HERE,
-                           base::TimeDelta::FromMilliseconds(
-                               base::TimeTicks::kMillisecondsPerSecond /
-                               gfx::LinearAnimation::kDefaultFrameRate),
-                           this, &VoiceInteractionIcon::AnimationProgressed);
+    if (!GetCompositor()->HasAnimationObserver(this))
+      GetCompositor()->AddAnimationObserver(this);
   }
 
-  void StopAnimation() { animation_timer_.Stop(); }
+  void StopAnimation() {
+    if (GetCompositor()->HasAnimationObserver(this))
+      GetCompositor()->RemoveAnimationObserver(this);
+  }
+
+  // ui::CompositorAnimationObserver
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
+  void OnAnimationStep(base::TimeTicks timestamp) override {
+    uint64_t elapsed = (timestamp - base::TimeTicks()).InMilliseconds();
+    for (int i = 0; i < DOT_COUNT; ++i) {
+      float normalizedTime =
+          ((elapsed - kMoleculeAnimationOffset * kMoleculeOrder[i]) %
+           kMoleculeAnimationDurationMs) /
+          static_cast<float>(kMoleculeAnimationDurationMs);
+
+      gfx::Transform transform;
+      transform.Translate(0,
+                          kMoleculeAmplitude * sin(normalizedTime * 2 * M_PI));
+
+      dot_layers_[i]->SetTransform(transform);
+    }
+  }
 
  private:
   enum Dot {
@@ -160,25 +179,6 @@ class VoiceInteractionIcon : public ui::Layer {
         return "DOT_COUNT";
     }
     return "UNKNOWN";
-  }
-
-  void AnimationProgressed() {
-    gfx::Transform transform;
-
-    uint64_t now =
-        (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds();
-    for (int i = 0; i < DOT_COUNT; ++i) {
-      float normalizedTime =
-          ((now - kMoleculeAnimationOffset * kMoleculeOrder[i]) %
-           kMoleculeAnimationDurationMs) /
-          static_cast<float>(kMoleculeAnimationDurationMs);
-
-      transform.MakeIdentity();
-      transform.Translate(0,
-                          kMoleculeAmplitude * sin(normalizedTime * 2 * M_PI));
-
-      dot_layers_[i]->SetTransform(transform);
-    }
   }
 
   /**
@@ -208,8 +208,6 @@ class VoiceInteractionIcon : public ui::Layer {
 
   std::unique_ptr<ui::Layer> dot_layers_[DOT_COUNT];
   std::unique_ptr<views::CircleLayerDelegate> dot_layer_delegates_[DOT_COUNT];
-
-  base::RepeatingTimer animation_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionIcon);
 };
