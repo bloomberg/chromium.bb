@@ -247,6 +247,29 @@ static INLINE unsigned int highbd_sadb(const uint8_t *a8, int a_stride,
   return sad;
 }
 
+#if CONFIG_JNT_COMP
+#define highbd_sadMxN(m, n)                                                    \
+  unsigned int aom_highbd_sad##m##x##n##_c(const uint8_t *src, int src_stride, \
+                                           const uint8_t *ref,                 \
+                                           int ref_stride) {                   \
+    return highbd_sad(src, src_stride, ref, ref_stride, m, n);                 \
+  }                                                                            \
+  unsigned int aom_highbd_sad##m##x##n##_avg_c(                                \
+      const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride,  \
+      const uint8_t *second_pred) {                                            \
+    uint16_t comp_pred[m * n];                                                 \
+    aom_highbd_comp_avg_pred(comp_pred, second_pred, m, n, ref, ref_stride);   \
+    return highbd_sadb(src, src_stride, comp_pred, m, m, n);                   \
+  }                                                                            \
+  unsigned int aom_highbd_jnt_sad##m##x##n##_avg_c(                            \
+      const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride,  \
+      const uint8_t *second_pred, const JNT_COMP_PARAMS *jcp_param) {          \
+    uint16_t comp_pred[m * n];                                                 \
+    aom_highbd_jnt_comp_avg_pred(comp_pred, second_pred, m, n, ref,            \
+                                 ref_stride, jcp_param);                       \
+    return highbd_sadb(src, src_stride, comp_pred, m, m, n);                   \
+  }
+#else
 #define highbd_sadMxN(m, n)                                                    \
   unsigned int aom_highbd_sad##m##x##n##_c(const uint8_t *src, int src_stride, \
                                            const uint8_t *ref,                 \
@@ -260,6 +283,7 @@ static INLINE unsigned int highbd_sadb(const uint8_t *a8, int a_stride,
     aom_highbd_comp_avg_pred_c(comp_pred, second_pred, m, n, ref, ref_stride); \
     return highbd_sadb(src, src_stride, comp_pred, m, m, n);                   \
   }
+#endif  // CONFIG_JNT_COMP
 
 #define highbd_sadMxNxK(m, n, k)                                             \
   void aom_highbd_sad##m##x##n##x##k##_c(                                    \

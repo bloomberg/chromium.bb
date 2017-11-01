@@ -15,6 +15,8 @@
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
 
+#include "aom_dsp/x86/synonyms.h"
+
 #include "aom_ports/mem.h"
 
 #include "./av1_rtcd.h"
@@ -707,3 +709,98 @@ void aom_highbd_comp_avg_upsampled_pred_sse2(uint16_t *comp_pred,
     pred += 8;
   }
 }
+
+#if CONFIG_JNT_COMP
+static void highbd_compute_jnt_comp_avg(__m128i *p0, __m128i *p1,
+                                        const __m128i *w0, const __m128i *w1,
+                                        const __m128i *r, void *const result) {
+  __m128i mult0 = _mm_mullo_epi16(*p0, *w0);
+  __m128i mult1 = _mm_mullo_epi16(*p1, *w1);
+  __m128i sum = _mm_add_epi16(mult0, mult1);
+  __m128i round = _mm_add_epi16(sum, *r);
+  __m128i shift = _mm_srai_epi16(round, DIST_PRECISION_BITS);
+
+  xx_storeu_128(result, shift);
+}
+
+void aom_highbd_jnt_comp_avg_pred_sse2(uint16_t *comp_pred,
+                                       const uint8_t *pred8, int width,
+                                       int height, const uint8_t *ref8,
+                                       int ref_stride,
+                                       const JNT_COMP_PARAMS *jcp_param) {
+  int i;
+  const uint16_t wt0 = (uint16_t)jcp_param->fwd_offset;
+  const uint16_t wt1 = (uint16_t)jcp_param->bck_offset;
+  const __m128i w0 = _mm_set_epi16(wt0, wt0, wt0, wt0, wt0, wt0, wt0, wt0);
+  const __m128i w1 = _mm_set_epi16(wt1, wt1, wt1, wt1, wt1, wt1, wt1, wt1);
+  const uint16_t round = ((1 << DIST_PRECISION_BITS) >> 1);
+  const __m128i r =
+      _mm_set_epi16(round, round, round, round, round, round, round, round);
+  uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
+  uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
+
+  if (width >= 8) {
+    // Read 8 pixels one row at a time
+    assert(!(width & 7));
+    for (i = 0; i < height; ++i) {
+      int j;
+      for (j = 0; j < width; j += 8) {
+        __m128i p0 = xx_loadu_128(ref);
+        __m128i p1 = xx_loadu_128(pred);
+
+        highbd_compute_jnt_comp_avg(&p0, &p1, &w0, &w1, &r, comp_pred);
+
+        comp_pred += 8;
+        pred += 8;
+      }
+      ref += ref_stride - width;
+    }
+  } else {
+    // Read 4 pixels two rows at a time
+    assert(!(width & 3));
+    for (i = 0; i < height; i += 2) {
+      __m128i p0_0 = xx_loadl_64(ref + 0 * ref_stride);
+      __m128i p0_1 = xx_loadl_64(ref + 1 * ref_stride);
+      __m128i p0 = _mm_unpacklo_epi64(p0_0, p0_1);
+      __m128i p1 = xx_loadu_128(pred);
+
+      highbd_compute_jnt_comp_avg(&p0, &p1, &w0, &w1, &r, comp_pred);
+
+      comp_pred += 8;
+      pred += 8;
+      ref += 2 * ref_stride;
+    }
+  }
+}
+
+void aom_highbd_jnt_comp_avg_upsampled_pred_sse2(
+    uint16_t *comp_pred, const uint8_t *pred8, int width, int height,
+    int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8, int ref_stride,
+    int bd, const JNT_COMP_PARAMS *jcp_param) {
+  uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
+  int n;
+  int i;
+  aom_highbd_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3,
+                            ref8, ref_stride, bd);
+  assert(!(width * height & 7));
+  n = width * height >> 3;
+
+  const uint16_t wt0 = (uint16_t)jcp_param->fwd_offset;
+  const uint16_t wt1 = (uint16_t)jcp_param->bck_offset;
+  const __m128i w0 = _mm_set_epi16(wt0, wt0, wt0, wt0, wt0, wt0, wt0, wt0);
+  const __m128i w1 = _mm_set_epi16(wt1, wt1, wt1, wt1, wt1, wt1, wt1, wt1);
+  const uint16_t round = ((1 << DIST_PRECISION_BITS) >> 1);
+  const __m128i r =
+      _mm_set_epi16(round, round, round, round, round, round, round, round);
+
+  for (i = 0; i < n; i++) {
+    __m128i p0 = xx_loadu_128(comp_pred);
+    __m128i p1 = xx_loadu_128(pred);
+
+    highbd_compute_jnt_comp_avg(&p0, &p1, &w0, &w1, &r, comp_pred);
+
+    comp_pred += 8;
+    pred += 8;
+  }
+}
+#endif  // CONFIG_JNT_COMP

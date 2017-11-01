@@ -369,12 +369,19 @@ static unsigned int setup_center_error(
   if (second_pred != NULL) {
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       DECLARE_ALIGNED(16, uint16_t, comp_pred16[MAX_SB_SQUARE]);
-      if (mask)
+      if (mask) {
         aom_highbd_comp_mask_pred(comp_pred16, second_pred, w, h, y + offset,
                                   y_stride, mask, mask_stride, invert_mask);
-      else
-        aom_highbd_comp_avg_pred(comp_pred16, second_pred, w, h, y + offset,
-                                 y_stride);
+      } else {
+#if CONFIG_JNT_COMP
+        if (xd->jcp_param.use_jnt_comp_avg)
+          aom_highbd_jnt_comp_avg_pred(comp_pred16, second_pred, w, h,
+                                       y + offset, y_stride, &xd->jcp_param);
+        else
+#endif  // CONFIG_JNT_COMP
+          aom_highbd_comp_avg_pred(comp_pred16, second_pred, w, h, y + offset,
+                                   y_stride);
+      }
       besterr =
           vfp->vf(CONVERT_TO_BYTEPTR(comp_pred16), w, src, src_stride, sse1);
     } else {
@@ -685,14 +692,22 @@ static int upsampled_pref_error(const MACROBLOCKD *xd,
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     DECLARE_ALIGNED(16, uint16_t, pred16[MAX_SB_SQUARE]);
     if (second_pred != NULL) {
-      if (mask)
+      if (mask) {
         aom_highbd_comp_mask_upsampled_pred(
             pred16, second_pred, w, h, subpel_x_q3, subpel_y_q3, y, y_stride,
             mask, mask_stride, invert_mask, xd->bd);
-      else
-        aom_highbd_comp_avg_upsampled_pred(pred16, second_pred, w, h,
-                                           subpel_x_q3, subpel_y_q3, y,
-                                           y_stride, xd->bd);
+      } else {
+#if CONFIG_JNT_COMP
+        if (xd->jcp_param.use_jnt_comp_avg)
+          aom_highbd_jnt_comp_avg_upsampled_pred(
+              pred16, second_pred, w, h, subpel_x_q3, subpel_y_q3, y, y_stride,
+              xd->bd, &xd->jcp_param);
+        else
+#endif  // CONFIG_JNT_COMP
+          aom_highbd_comp_avg_upsampled_pred(pred16, second_pred, w, h,
+                                             subpel_x_q3, subpel_y_q3, y,
+                                             y_stride, xd->bd);
+      }
     } else {
       aom_highbd_upsampled_pred(pred16, w, h, subpel_x_q3, subpel_y_q3, y,
                                 y_stride, xd->bd);
