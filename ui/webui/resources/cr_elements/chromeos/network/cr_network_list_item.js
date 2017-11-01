@@ -50,6 +50,12 @@ Polymer({
       reflectToAttribute: true,
       computed: 'getItemName_(item)',
     },
+
+    /**
+     * The cached ConnectionState for the network.
+     * @type {!CrOnc.ConnectionState|undefined}
+     */
+    connectionState_: String,
   },
 
   behaviors: [CrPolicyNetworkBehavior],
@@ -66,10 +72,14 @@ Polymer({
 
   /** @private */
   networkStateChanged_: function() {
-    if (this.networkState &&
-        this.networkState.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+    if (!this.networkState)
+      return;
+    var connectionState = this.networkState.ConnectionState;
+    if (connectionState == this.connectionState_)
+      return;
+    this.connectionState_ = connectionState;
+    if (connectionState == CrOnc.ConnectionState.CONNECTED)
       this.fire('network-connected', this.networkState);
-    }
   },
 
   /**
