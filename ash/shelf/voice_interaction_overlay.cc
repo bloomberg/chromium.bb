@@ -849,9 +849,8 @@ void VoiceInteractionOverlay::WaitingAnimation() {
 }
 
 void VoiceInteractionOverlay::EndAnimation() {
-  if (IsBursting() || IsHidden()) {
+  if (IsBursting()) {
     // Too late, user action already fired, we have to finish what's started.
-    // Or the widget has already been hidden, no need to play the end animation.
     return;
   }
 
