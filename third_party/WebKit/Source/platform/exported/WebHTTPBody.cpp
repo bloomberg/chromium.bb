@@ -84,13 +84,6 @@ bool WebHTTPBody::ElementAt(size_t index, Element& result) const {
       result.type = Element::kTypeBlob;
       result.blob_uuid = element.blob_uuid_;
       break;
-    case FormDataElement::kEncodedFileSystemURL:
-      result.type = Element::kTypeFileSystemURL;
-      result.file_system_url = element.file_system_url_;
-      result.file_start = element.file_start_;
-      result.file_length = element.file_length_;
-      result.modification_time = element.expected_file_modification_time_;
-      break;
     default:
       NOTREACHED();
       return false;
@@ -122,16 +115,6 @@ void WebHTTPBody::AppendFileRange(const WebString& file_path,
   EnsureMutable();
   private_->AppendFileRange(file_path, file_start, file_length,
                             modification_time);
-}
-
-void WebHTTPBody::AppendFileSystemURLRange(const WebURL& url,
-                                           long long start,
-                                           long long length,
-                                           double modification_time) {
-  // Currently we only support filesystem URL.
-  DCHECK(KURL(url).ProtocolIs("filesystem"));
-  EnsureMutable();
-  private_->AppendFileSystemURLRange(url, start, length, modification_time);
 }
 
 void WebHTTPBody::AppendBlob(const WebString& uuid) {

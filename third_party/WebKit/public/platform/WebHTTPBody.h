@@ -90,12 +90,6 @@ class WebHTTPBody {
                                              double modification_time);
   BLINK_PLATFORM_EXPORT void AppendBlob(const WebString& uuid);
 
-  // Append a resource which is identified by the FileSystem URL.
-  BLINK_PLATFORM_EXPORT void AppendFileSystemURLRange(const WebURL&,
-                                                      long long start,
-                                                      long long length,
-                                                      double modification_time);
-
   // Identifies a particular form submission instance. A value of 0 is
   // used to indicate an unspecified identifier.
   BLINK_PLATFORM_EXPORT long long Identifier() const;

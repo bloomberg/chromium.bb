@@ -54,24 +54,14 @@ class PLATFORM_EXPORT FormDataElement final {
       : type_(kEncodedBlob),
         blob_uuid_(blob_uuid),
         optional_blob_data_handle_(std::move(optional_handle)) {}
-  FormDataElement(const KURL& file_system_url,
-                  long long start,
-                  long long length,
-                  double expected_file_modification_time)
-      : type_(kEncodedFileSystemURL),
-        file_system_url_(file_system_url),
-        file_start_(start),
-        file_length_(length),
-        expected_file_modification_time_(expected_file_modification_time) {}
 
   bool IsSafeToSendToAnotherThread() const;
 
-  enum Type { kData, kEncodedFile, kEncodedBlob, kEncodedFileSystemURL } type_;
+  enum Type { kData, kEncodedFile, kEncodedBlob } type_;
   Vector<char> data_;
   String filename_;
   String blob_uuid_;
   scoped_refptr<BlobDataHandle> optional_blob_data_handle_;
-  KURL file_system_url_;
   long long file_start_;
   long long file_length_;
   double expected_file_modification_time_;
@@ -92,8 +82,6 @@ inline bool operator==(const FormDataElement& a, const FormDataElement& b) {
                b.expected_file_modification_time_;
   if (a.type_ == FormDataElement::kEncodedBlob)
     return a.blob_uuid_ == b.blob_uuid_;
-  if (a.type_ == FormDataElement::kEncodedFileSystemURL)
-    return a.file_system_url_ == b.file_system_url_;
 
   return true;
 }
@@ -126,11 +114,6 @@ class PLATFORM_EXPORT EncodedFormData : public RefCounted<EncodedFormData> {
                        double expected_modification_time);
   void AppendBlob(const String& blob_uuid,
                   scoped_refptr<BlobDataHandle> optional_handle);
-  void AppendFileSystemURL(const KURL&);
-  void AppendFileSystemURLRange(const KURL&,
-                                long long start,
-                                long long length,
-                                double expected_modification_time);
 
   void Flatten(Vector<char>&) const;  // omits files
   String FlattenToString() const;     // omits files
