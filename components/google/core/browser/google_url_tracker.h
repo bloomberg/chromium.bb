@@ -81,7 +81,7 @@ class GoogleURLTracker
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // NetworkChangeNotifier::IPAddressObserver:
+  // NetworkChangeNotifier::NetworkChangeObserver:
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
