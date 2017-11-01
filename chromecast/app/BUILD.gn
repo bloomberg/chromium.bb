@@ -6,7 +6,7 @@ import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
-source_set("app") {
+cast_source_set("app") {
   sources = [
     "cast_main_delegate.cc",
     "cast_main_delegate.h",
@@ -32,7 +32,7 @@ source_set("app") {
   }
 }
 
-source_set("cast_crash_client") {
+cast_source_set("cast_crash_client") {
   sources = [
     "android/cast_crash_reporter_client_android.cc",
     "android/cast_crash_reporter_client_android.h",
@@ -67,7 +67,7 @@ source_set("cast_crash_client") {
   }
 }
 
-source_set("test_support") {
+cast_source_set("test_support") {
   testonly = true
   sources = [
     "cast_test_launcher.cc",
@@ -84,7 +84,7 @@ source_set("test_support") {
   ]
 }
 
-source_set("unittests") {
+cast_source_set("unittests") {
   testonly = true
   sources = [
     "linux/cast_crash_reporter_client_unittest.cc",

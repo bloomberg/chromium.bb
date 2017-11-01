@@ -26,7 +26,7 @@ cast_shared_library("libcast_media_1.0_audio") {
   ]
 }
 
-source_set("alsa_cma_backend") {
+cast_source_set("alsa_cma_backend") {
   sources = [
     "alsa_volume_control.cc",
     "alsa_volume_control.h",
@@ -51,7 +51,7 @@ source_set("alsa_cma_backend") {
   ]
 }
 
-source_set("unit_tests") {
+cast_source_set("unit_tests") {
   testonly = true
   sources = [
     # TODO(sergeyu): Remove ALSA dependency from these tests and move them
@@ -71,7 +71,7 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("test_support") {
+cast_source_set("test_support") {
   testonly = true
 
   sources = [

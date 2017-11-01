@@ -16,7 +16,7 @@ declare_args() {
       use_alsa && !enable_assistant && chromecast_branding != "google"
 }
 
-source_set("backend") {
+cast_source_set("backend") {
   sources = [
     "audio_decoder_wrapper.cc",
     "audio_decoder_wrapper.h",
@@ -42,7 +42,7 @@ source_set("backend") {
   ]
 }
 
-source_set("cast_media_android_dummy") {
+cast_source_set("cast_media_android_dummy") {
   sources = [
     "cast_media_android_dummy.cc",
   ]
@@ -71,7 +71,7 @@ cast_shared_library("libcast_media_1.0") {
 
 # Dummy implementation of media backend used on chromecast devices.
 # Must not depend on anything outside //chromecast/public.
-source_set("dummy") {
+cast_source_set("dummy") {
   sources = [
     "cast_media_dummy.cc",
   ]
@@ -92,7 +92,7 @@ buildflag_header("audio_features") {
 
 # Implementation of video decoder that discards decoder buffers.
 # Used on audio platforms for media streams containing video.
-source_set("null") {
+cast_source_set("null") {
   sources = [
     "video_decoder_null.cc",
     "video_decoder_null.h",
@@ -104,7 +104,7 @@ source_set("null") {
   ]
 }
 
-source_set("audio") {
+cast_source_set("audio") {
   sources = [
     "audio_decoder_for_mixer.cc",
     "audio_decoder_for_mixer.h",
@@ -191,7 +191,7 @@ cast_shared_library("libcast_governor_1.0") {
   ]
 }
 
-source_set("governor") {
+cast_source_set("governor") {
   sources = [
     "post_processors/governor.cc",
     "post_processors/governor.h",
@@ -215,7 +215,7 @@ cast_shared_library("libcast_saturated_gain_1.0") {
   ]
 }
 
-source_set("saturated_gain") {
+cast_source_set("saturated_gain") {
   sources = [
     "post_processors/saturated_gain.cc",
     "post_processors/saturated_gain.h",

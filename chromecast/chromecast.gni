@@ -84,14 +84,21 @@ foreach(target_type,
           "executable",
           "shared_library",
           "loadable_module",
+          "source_set",
         ]) {
   template("cast_${target_type}") {
     target(target_type, target_name) {
       forward_variables_from(invoker, "*")
+
+      configs += [ "//chromecast:cast_config" ]
+
       if (!defined(deps)) {
         deps = []
       }
-      deps += [ "//build/config:exe_and_shlib_deps" ]
+
+      if (target_type != "source_set") {
+        deps += [ "//build/config:exe_and_shlib_deps" ]
+      }
     }
   }
 }
@@ -115,4 +122,8 @@ set_defaults("cast_loadable_module") {
   if (is_android) {
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
   }
+}
+
+set_defaults("cast_source_set") {
+  configs = default_compiler_configs
 }

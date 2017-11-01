@@ -4,7 +4,7 @@
 
 import("//chromecast/chromecast.gni")
 
-source_set("utility") {
+cast_source_set("utility") {
   sources = [
     "cast_content_utility_client.h",
   ]

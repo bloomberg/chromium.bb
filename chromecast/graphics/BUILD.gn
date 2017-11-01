@@ -6,7 +6,7 @@ import("//chromecast/chromecast.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-source_set("graphics") {
+cast_source_set("graphics") {
   sources = [
     "cast_window_manager.h",
   ]

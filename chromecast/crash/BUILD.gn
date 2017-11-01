@@ -9,7 +9,7 @@ import("//testing/test.gni")
 # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
 assert(!is_fuchsia)
 
-source_set("crash") {
+cast_source_set("crash") {
   sources = [
     "app_state_tracker.cc",
     "app_state_tracker.h",
@@ -71,7 +71,7 @@ cast_executable("crash_uploader") {
   }
 }
 
-source_set("test_support") {
+cast_source_set("test_support") {
   sources = [
     "linux/crash_testing_utils.cc",
     "linux/crash_testing_utils.h",

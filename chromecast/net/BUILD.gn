@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
-source_set("net") {
+cast_source_set("net") {
   sources = [
     "connectivity_checker.cc",
     "connectivity_checker.h",
@@ -36,7 +37,7 @@ source_set("net") {
   ]
 }
 
-source_set("test_support") {
+cast_source_set("test_support") {
   testonly = true
 
   sources = [

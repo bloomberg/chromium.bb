@@ -5,7 +5,7 @@
 import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
-source_set("reboot_util") {
+cast_source_set("reboot_util") {
   sources = [
     "reboot_util.h",
     "reboot_util_core.cc",

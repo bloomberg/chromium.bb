@@ -36,7 +36,7 @@ if (is_android_arc) {
          cast_product_type != 7)
 }
 
-source_set("base") {
+cast_source_set("base") {
   sources = [
     "alarm_manager.cc",
     "alarm_manager.h",
@@ -95,7 +95,7 @@ source_set("base") {
 # b/30398176 components that depend on switch values should depend on
 # this target directly instead of depend on //chromecast/base to avoid
 # unnecessary size increase.
-source_set("chromecast_switches") {
+cast_source_set("chromecast_switches") {
   sources = [
     "chromecast_switches.cc",
     "chromecast_switches.h",
@@ -109,7 +109,7 @@ source_set("chromecast_switches") {
 # command line initialization code for shared libs
 # b/30398176 shared libs that depend on InitCommandLineShlib() only should
 # use this target instead of //chromecast/base
-source_set("init_shlib") {
+cast_source_set("init_shlib") {
   sources = [
     "init_command_line_shlib.cc",
     "init_command_line_shlib.h",
@@ -120,7 +120,7 @@ source_set("init_shlib") {
   ]
 }
 
-source_set("test_support") {
+cast_source_set("test_support") {
   sources = [
     "scoped_temp_file.cc",
     "scoped_temp_file.h",
@@ -157,7 +157,7 @@ test("cast_base_unittests") {
   ]
 }
 
-source_set("cast_sys_info") {
+cast_source_set("cast_sys_info") {
   sources = [
     "cast_sys_info_android.cc",
     "cast_sys_info_android.h",
@@ -196,7 +196,7 @@ cast_shared_library("libcast_sys_info_1.0") {
 }
 
 # Note: Android links //chromecast/base:cast_sys_info statically.
-source_set("cast_sys_info_shlib") {
+cast_source_set("cast_sys_info_shlib") {
   if (!is_android) {
     sources = [
       "cast_sys_info_util_shlib.cc",
@@ -211,7 +211,7 @@ source_set("cast_sys_info_shlib") {
   }
 }
 
-source_set("thread_health_checker") {
+cast_source_set("thread_health_checker") {
   sources = [
     "thread_health_checker.cc",
     "thread_health_checker.h",

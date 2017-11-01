@@ -5,7 +5,7 @@
 import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
-source_set("component") {
+cast_source_set("component") {
   sources = [
     "component.cc",
     "component.h",
