@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/pickle.h"
@@ -249,6 +250,16 @@ void HistogramSamples::IncreaseSumAndCount(int64_t sum,
   meta_->sum += sum;
 #endif
   subtle::NoBarrier_AtomicIncrement(&meta_->redundant_count, count);
+}
+
+void HistogramSamples::RecordNegativeSample(NegativeSampleReason reason,
+                                            HistogramBase::Count increment) {
+  UMA_HISTOGRAM_ENUMERATION("UMA.NegativeSamples.Reason", reason,
+                            MAX_NEGATIVE_SAMPLE_REASONS);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("UMA.NegativeSamples.Increment", increment, 1,
+                              1 << 30, 100);
+  UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.NegativeSamples.Histogram",
+                              static_cast<int32_t>(id()));
 }
 
 SampleCountIterator::~SampleCountIterator() {}

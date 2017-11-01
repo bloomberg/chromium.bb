@@ -55,8 +55,14 @@ void SampleVectorBase::Accumulate(Sample value, Count count) {
   }
 
   // Handle the multi-sample case.
-  subtle::NoBarrier_AtomicIncrement(&counts()[bucket_index], count);
+  Count new_value =
+      subtle::NoBarrier_AtomicIncrement(&counts()[bucket_index], count);
   IncreaseSumAndCount(strict_cast<int64_t>(count) * value, count);
+
+  // TODO(bcwhite) Remove after crbug.com/682680.
+  Count old_value = new_value - count;
+  if ((new_value >= 0) != (old_value >= 0) && count > 0)
+    RecordNegativeSample(SAMPLES_ACCUMULATE_OVERFLOW, count);
 }
 
 Count SampleVectorBase::GetCount(Sample value) const {

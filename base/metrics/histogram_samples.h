@@ -160,6 +160,19 @@ class BASE_EXPORT HistogramSamples {
   }
 
  protected:
+  enum NegativeSampleReason {
+    SAMPLES_HAVE_LOGGED_BUT_NOT_SAMPLE,
+    SAMPLES_SAMPLE_LESS_THAN_LOGGED,
+    SAMPLES_ADDED_NEGATIVE_COUNT,
+    SAMPLES_ADD_WENT_NEGATIVE,
+    SAMPLES_ADD_OVERFLOW,
+    SAMPLES_ACCUMULATE_NEGATIVE_COUNT,
+    SAMPLES_ACCUMULATE_WENT_NEGATIVE,
+    DEPRECATED_SAMPLES_ACCUMULATE_OVERFLOW,
+    SAMPLES_ACCUMULATE_OVERFLOW,
+    MAX_NEGATIVE_SAMPLE_REASONS
+  };
+
   // Based on |op| type, add or subtract sample counts data from the iterator.
   enum Operator { ADD, SUBTRACT };
   virtual bool AddSubtractImpl(SampleCountIterator* iter, Operator op) = 0;
@@ -173,6 +186,10 @@ class BASE_EXPORT HistogramSamples {
 
   // Atomically adjust the sum and redundant-count.
   void IncreaseSumAndCount(int64_t sum, HistogramBase::Count count);
+
+  // Record a negative-sample observation and the reason why.
+  void RecordNegativeSample(NegativeSampleReason reason,
+                            HistogramBase::Count increment);
 
   AtomicSingleSample& single_sample() { return meta_->single_sample; }
   const AtomicSingleSample& single_sample() const {
