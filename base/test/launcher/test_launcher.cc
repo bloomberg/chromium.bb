@@ -44,7 +44,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -251,13 +250,12 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
 // Launches a child process using |command_line|. If the child process is still
 // running after |timeout|, it is terminated and |*was_timeout| is set to true.
 // Returns exit code of the process.
-int LaunchChildTestProcessWithOptions(
-    const CommandLine& command_line,
-    const LaunchOptions& options,
-    int flags,
-    TimeDelta timeout,
-    const TestLauncher::GTestProcessLaunchedCallback& launched_callback,
-    bool* was_timeout) {
+int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
+                                      const LaunchOptions& options,
+                                      int flags,
+                                      TimeDelta timeout,
+                                      ProcessLifetimeObserver* observer,
+                                      bool* was_timeout) {
   TimeTicks start_time(TimeTicks::Now());
 #if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
   const bool kOnBot = getenv("CHROME_HEADLESS") != nullptr;
@@ -347,8 +345,8 @@ int LaunchChildTestProcessWithOptions(
     GetLiveProcesses()->insert(std::make_pair(process.Handle(), command_line));
   }
 
-  if (!launched_callback.is_null())
-    launched_callback.Run(process.Handle(), process.Pid());
+  if (observer)
+    observer->OnLaunched(process.Handle(), process.Pid());
 
   int exit_code = 0;
   if (!process.WaitForExitWithTimeout(timeout, &exit_code)) {
@@ -402,22 +400,13 @@ int LaunchChildTestProcessWithOptions(
   return exit_code;
 }
 
-void RunCallback(const TestLauncher::GTestProcessCompletedCallback& callback,
-                 int exit_code,
-                 const TimeDelta& elapsed_time,
-                 bool was_timeout,
-                 const std::string& output) {
-  callback.Run(exit_code, elapsed_time, was_timeout, output);
-}
-
 void DoLaunchChildTestProcess(
     const CommandLine& command_line,
     TimeDelta timeout,
     const TestLauncher::LaunchOptions& test_launch_options,
     bool redirect_stdio,
     SingleThreadTaskRunner* task_runner,
-    const TestLauncher::GTestProcessCompletedCallback& completed_callback,
-    const TestLauncher::GTestProcessLaunchedCallback& launched_callback) {
+    std::unique_ptr<ProcessLifetimeObserver> observer) {
   TimeTicks start_time = TimeTicks::Now();
 
   ScopedFILE output_file;
@@ -466,8 +455,8 @@ void DoLaunchChildTestProcess(
 
   bool was_timeout = false;
   int exit_code = LaunchChildTestProcessWithOptions(
-      command_line, options, test_launch_options.flags, timeout,
-      launched_callback, &was_timeout);
+      command_line, options, test_launch_options.flags, timeout, observer.get(),
+      &was_timeout);
 
   std::string output_file_contents;
   if (redirect_stdio) {
@@ -481,12 +470,13 @@ void DoLaunchChildTestProcess(
     }
   }
 
-  // Run target callback on the thread it was originating from, not on
-  // a worker pool thread.
-  task_runner->PostTask(FROM_HERE,
-                        BindOnce(&RunCallback, completed_callback, exit_code,
-                                 TimeTicks::Now() - start_time, was_timeout,
-                                 output_file_contents));
+  // Invoke OnCompleted on the thread it was originating from, not on a worker
+  // pool thread.
+  task_runner->PostTask(
+      FROM_HERE,
+      BindOnce(&ProcessLifetimeObserver::OnCompleted, std::move(observer),
+               exit_code, TimeTicks::Now() - start_time, was_timeout,
+               output_file_contents));
 }
 
 }  // namespace
@@ -578,8 +568,7 @@ void TestLauncher::LaunchChildGTestProcess(
     const std::string& wrapper,
     TimeDelta timeout,
     const LaunchOptions& options,
-    const GTestProcessCompletedCallback& completed_callback,
-    const GTestProcessLaunchedCallback& launched_callback) {
+    std::unique_ptr<ProcessLifetimeObserver> observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Record the exact command line used to launch the child.
@@ -595,9 +584,7 @@ void TestLauncher::LaunchChildGTestProcess(
       FROM_HERE,
       BindOnce(&DoLaunchChildTestProcess, new_command_line, timeout, options,
                redirect_stdio, RetainedRef(ThreadTaskRunnerHandle::Get()),
-               Bind(&TestLauncher::OnLaunchTestProcessFinished,
-                    Unretained(this), completed_callback),
-               launched_callback));
+               base::Passed(std::move(observer))));
 }
 
 void TestLauncher::OnTestFinished(const TestResult& original_result) {
@@ -1172,17 +1159,6 @@ void TestLauncher::MaybeSaveSummaryAsJSON(
       LOG(ERROR) << "Failed to save test launcher trace.";
     }
   }
-}
-
-void TestLauncher::OnLaunchTestProcessFinished(
-    const GTestProcessCompletedCallback& callback,
-    int exit_code,
-    const TimeDelta& elapsed_time,
-    bool was_timeout,
-    const std::string& output) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  callback.Run(exit_code, elapsed_time, was_timeout, output);
 }
 
 void TestLauncher::OnTestIterationFinished() {

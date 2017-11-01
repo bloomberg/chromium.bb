@@ -65,10 +65,10 @@ class TestLauncherDelegate {
   // Called prior to returning from LaunchTests(). Gives the delegate a chance
   // to do cleanup before state created by TestLauncher has been destroyed (such
   // as the AtExitManager).
-  virtual void OnDoneRunningTests();
+  virtual void OnDoneRunningTests() {}
 
  protected:
-  virtual ~TestLauncherDelegate();
+  virtual ~TestLauncherDelegate() = default;
 };
 
 // Launches tests using |launcher_delegate|. |parallel_jobs| is the number

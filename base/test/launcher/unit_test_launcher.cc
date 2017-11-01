@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -402,49 +403,128 @@ bool ProcessTestResults(
   return called_any_callback;
 }
 
-// TODO(phajdan.jr): Pass parameters directly with C++11 variadic templates.
-struct GTestCallbackState {
-  TestLauncher* test_launcher;
-  UnitTestPlatformDelegate* platform_delegate;
-  std::vector<std::string> test_names;
-  int launch_flags;
-  FilePath output_file;
+class UnitTestProcessLifetimeObserver : public ProcessLifetimeObserver {
+ public:
+  ~UnitTestProcessLifetimeObserver() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
+
+  TestLauncher* test_launcher() { return test_launcher_; }
+  UnitTestPlatformDelegate* platform_delegate() { return platform_delegate_; }
+  const std::vector<std::string>& test_names() { return test_names_; }
+  int launch_flags() { return launch_flags_; }
+  const FilePath& output_file() { return output_file_; }
+
+ protected:
+  UnitTestProcessLifetimeObserver(TestLauncher* test_launcher,
+                                  UnitTestPlatformDelegate* platform_delegate,
+                                  const std::vector<std::string>& test_names,
+                                  int launch_flags,
+                                  const FilePath& output_file)
+      : ProcessLifetimeObserver(),
+        test_launcher_(test_launcher),
+        platform_delegate_(platform_delegate),
+        test_names_(test_names),
+        launch_flags_(launch_flags),
+        output_file_(output_file) {}
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+ private:
+  TestLauncher* const test_launcher_;
+  UnitTestPlatformDelegate* const platform_delegate_;
+  const std::vector<std::string> test_names_;
+  const int launch_flags_;
+  const FilePath output_file_;
+
+  DISALLOW_COPY_AND_ASSIGN(UnitTestProcessLifetimeObserver);
 };
 
-void GTestCallback(
-    const GTestCallbackState& callback_state,
+class ParallelUnitTestProcessLifetimeObserver
+    : public UnitTestProcessLifetimeObserver {
+ public:
+  ParallelUnitTestProcessLifetimeObserver(
+      TestLauncher* test_launcher,
+      UnitTestPlatformDelegate* platform_delegate,
+      const std::vector<std::string>& test_names,
+      int launch_flags,
+      const FilePath& output_file)
+      : UnitTestProcessLifetimeObserver(test_launcher,
+                                        platform_delegate,
+                                        test_names,
+                                        launch_flags,
+                                        output_file) {}
+  ~ParallelUnitTestProcessLifetimeObserver() override = default;
+
+ private:
+  // ProcessLifetimeObserver:
+  void OnCompleted(int exit_code,
+                   TimeDelta elapsed_time,
+                   bool was_timeout,
+                   const std::string& output) override;
+
+  DISALLOW_COPY_AND_ASSIGN(ParallelUnitTestProcessLifetimeObserver);
+};
+
+void ParallelUnitTestProcessLifetimeObserver::OnCompleted(
     int exit_code,
-    const TimeDelta& elapsed_time,
+    TimeDelta elapsed_time,
     bool was_timeout,
     const std::string& output) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<std::string> tests_to_relaunch;
-  ProcessTestResults(callback_state.test_launcher, callback_state.test_names,
-                     callback_state.output_file, output, exit_code, was_timeout,
-                     &tests_to_relaunch);
+  ProcessTestResults(test_launcher(), test_names(), output_file(), output,
+                     exit_code, was_timeout, &tests_to_relaunch);
 
   if (!tests_to_relaunch.empty()) {
-    callback_state.platform_delegate->RelaunchTests(
-        callback_state.test_launcher,
-        tests_to_relaunch,
-        callback_state.launch_flags);
+    platform_delegate()->RelaunchTests(test_launcher(), tests_to_relaunch,
+                                       launch_flags());
   }
 
   // The temporary file's directory is also temporary.
-  DeleteFile(callback_state.output_file.DirName(), true);
+  DeleteFile(output_file().DirName(), true);
 }
 
-void SerialGTestCallback(
-    const GTestCallbackState& callback_state,
-    const std::vector<std::string>& test_names,
+class SerialUnitTestProcessLifetimeObserver
+    : public UnitTestProcessLifetimeObserver {
+ public:
+  SerialUnitTestProcessLifetimeObserver(
+      TestLauncher* test_launcher,
+      UnitTestPlatformDelegate* platform_delegate,
+      const std::vector<std::string>& test_names,
+      int launch_flags,
+      const FilePath& output_file,
+      std::vector<std::string>&& next_test_names)
+      : UnitTestProcessLifetimeObserver(test_launcher,
+                                        platform_delegate,
+                                        test_names,
+                                        launch_flags,
+                                        output_file),
+        next_test_names_(std::move(next_test_names)) {}
+  ~SerialUnitTestProcessLifetimeObserver() override = default;
+
+ private:
+  // ProcessLifetimeObserver:
+  void OnCompleted(int exit_code,
+                   TimeDelta elapsed_time,
+                   bool was_timeout,
+                   const std::string& output) override;
+
+  std::vector<std::string> next_test_names_;
+
+  DISALLOW_COPY_AND_ASSIGN(SerialUnitTestProcessLifetimeObserver);
+};
+
+void SerialUnitTestProcessLifetimeObserver::OnCompleted(
     int exit_code,
-    const TimeDelta& elapsed_time,
+    TimeDelta elapsed_time,
     bool was_timeout,
     const std::string& output) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<std::string> tests_to_relaunch;
   bool called_any_callbacks =
-      ProcessTestResults(callback_state.test_launcher,
-                         callback_state.test_names, callback_state.output_file,
-                         output, exit_code, was_timeout, &tests_to_relaunch);
+      ProcessTestResults(test_launcher(), test_names(), output_file(), output,
+                         exit_code, was_timeout, &tests_to_relaunch);
 
   // There is only one test, there cannot be other tests to relaunch
   // due to a crash.
@@ -454,12 +534,12 @@ void SerialGTestCallback(
   DCHECK(called_any_callbacks);
 
   // The temporary file's directory is also temporary.
-  DeleteFile(callback_state.output_file.DirName(), true);
+  DeleteFile(output_file().DirName(), true);
 
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&RunUnitTestsSerially, callback_state.test_launcher,
-                          callback_state.platform_delegate, test_names,
-                          callback_state.launch_flags));
+      FROM_HERE,
+      BindOnce(&RunUnitTestsSerially, test_launcher(), platform_delegate(),
+               std::move(next_test_names_), launch_flags()));
 }
 
 }  // namespace
@@ -522,35 +602,26 @@ void RunUnitTestsSerially(
   if (test_names.empty())
     return;
 
-  std::vector<std::string> new_test_names(test_names);
-  std::string test_name(new_test_names.back());
-  new_test_names.pop_back();
-
   // Create a dedicated temporary directory to store the xml result data
   // per run to ensure clean state and make it possible to launch multiple
   // processes in parallel.
   base::FilePath output_file;
   CHECK(platform_delegate->CreateTemporaryFile(&output_file));
 
-  std::vector<std::string> current_test_names;
-  current_test_names.push_back(test_name);
-  CommandLine cmd_line(platform_delegate->GetCommandLineForChildGTestProcess(
-      current_test_names, output_file));
+  auto observer = std::make_unique<SerialUnitTestProcessLifetimeObserver>(
+      test_launcher, platform_delegate,
+      std::vector<std::string>(1, test_names.back()), launch_flags, output_file,
+      std::vector<std::string>(test_names.begin(), test_names.end() - 1));
 
-  GTestCallbackState callback_state;
-  callback_state.test_launcher = test_launcher;
-  callback_state.platform_delegate = platform_delegate;
-  callback_state.test_names = current_test_names;
-  callback_state.launch_flags = launch_flags;
-  callback_state.output_file = output_file;
+  CommandLine cmd_line(platform_delegate->GetCommandLineForChildGTestProcess(
+      observer->test_names(), output_file));
 
   TestLauncher::LaunchOptions launch_options;
   launch_options.flags = launch_flags;
   test_launcher->LaunchChildGTestProcess(
       cmd_line, platform_delegate->GetWrapperForChildGTestProcess(),
       TestTimeouts::test_launcher_timeout(), launch_options,
-      Bind(&SerialGTestCallback, callback_state, new_test_names),
-      TestLauncher::GTestProcessLaunchedCallback());
+      std::move(observer));
 }
 
 void RunUnitTestsBatch(
@@ -567,6 +638,9 @@ void RunUnitTestsBatch(
   base::FilePath output_file;
   CHECK(platform_delegate->CreateTemporaryFile(&output_file));
 
+  auto observer = std::make_unique<ParallelUnitTestProcessLifetimeObserver>(
+      test_launcher, platform_delegate, test_names, launch_flags, output_file);
+
   CommandLine cmd_line(platform_delegate->GetCommandLineForChildGTestProcess(
       test_names, output_file));
 
@@ -579,19 +653,11 @@ void RunUnitTestsBatch(
   base::TimeDelta timeout =
       test_names.size() * TestTimeouts::test_launcher_timeout();
 
-  GTestCallbackState callback_state;
-  callback_state.test_launcher = test_launcher;
-  callback_state.platform_delegate = platform_delegate;
-  callback_state.test_names = test_names;
-  callback_state.launch_flags = launch_flags;
-  callback_state.output_file = output_file;
-
   TestLauncher::LaunchOptions options;
   options.flags = launch_flags;
   test_launcher->LaunchChildGTestProcess(
       cmd_line, platform_delegate->GetWrapperForChildGTestProcess(), timeout,
-      options, Bind(&GTestCallback, callback_state),
-      TestLauncher::GTestProcessLaunchedCallback());
+      options, std::move(observer));
 }
 
 UnitTestLauncherDelegate::UnitTestLauncherDelegate(
