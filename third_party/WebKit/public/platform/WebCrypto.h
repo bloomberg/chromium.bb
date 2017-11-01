@@ -96,7 +96,7 @@ class WebCryptoResult {
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebCryptoResult(CryptoResult*,
-                                        RefPtr<CryptoResultCancel>);
+                                        scoped_refptr<CryptoResultCancel>);
 #endif
 
  private:

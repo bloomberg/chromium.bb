@@ -75,23 +75,23 @@ class WebBlobInfo {
   BLINK_EXPORT mojo::ScopedMessagePipeHandle CloneBlobHandle() const;
 
 #if INSIDE_BLINK
-  BLINK_EXPORT WebBlobInfo(RefPtr<BlobDataHandle>);
-  BLINK_EXPORT WebBlobInfo(RefPtr<BlobDataHandle>,
+  BLINK_EXPORT WebBlobInfo(scoped_refptr<BlobDataHandle>);
+  BLINK_EXPORT WebBlobInfo(scoped_refptr<BlobDataHandle>,
                            const WebString& file_path,
                            const WebString& file_name,
                            double last_modified);
   // TODO(mek): Get rid of these constructors after ensuring that the
   // BlobDataHandle always has the correct type and size.
-  BLINK_EXPORT WebBlobInfo(RefPtr<BlobDataHandle>,
+  BLINK_EXPORT WebBlobInfo(scoped_refptr<BlobDataHandle>,
                            const WebString& type,
                            long long size);
-  BLINK_EXPORT WebBlobInfo(RefPtr<BlobDataHandle>,
+  BLINK_EXPORT WebBlobInfo(scoped_refptr<BlobDataHandle>,
                            const WebString& file_path,
                            const WebString& file_name,
                            const WebString& type,
                            double last_modified,
                            long long size);
-  BLINK_EXPORT RefPtr<BlobDataHandle> GetBlobHandle() const;
+  BLINK_EXPORT scoped_refptr<BlobDataHandle> GetBlobHandle() const;
 #endif
 
  private:

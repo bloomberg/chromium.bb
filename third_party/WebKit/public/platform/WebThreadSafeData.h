@@ -65,9 +65,9 @@ class WebThreadSafeData {
   BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(const WebThreadSafeData&);
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebThreadSafeData(WTF::RefPtr<RawData>);
-  BLINK_PLATFORM_EXPORT WebThreadSafeData(WTF::RefPtr<RawData>&&);
-  BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(WTF::RefPtr<RawData>);
+  BLINK_PLATFORM_EXPORT WebThreadSafeData(scoped_refptr<RawData>);
+  BLINK_PLATFORM_EXPORT WebThreadSafeData(scoped_refptr<RawData>&&);
+  BLINK_PLATFORM_EXPORT WebThreadSafeData& operator=(scoped_refptr<RawData>);
 #else
   operator std::string() const {
     size_t len = size();

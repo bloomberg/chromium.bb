@@ -108,10 +108,10 @@ class WebURLLoadTiming {
   BLINK_PLATFORM_EXPORT void SetPushEnd(double);
 
 #if INSIDE_BLINK
-  BLINK_PLATFORM_EXPORT WebURLLoadTiming(WTF::RefPtr<ResourceLoadTiming>);
+  BLINK_PLATFORM_EXPORT WebURLLoadTiming(scoped_refptr<ResourceLoadTiming>);
   BLINK_PLATFORM_EXPORT WebURLLoadTiming& operator=(
-      WTF::RefPtr<ResourceLoadTiming>);
-  BLINK_PLATFORM_EXPORT operator WTF::RefPtr<ResourceLoadTiming>() const;
+      scoped_refptr<ResourceLoadTiming>);
+  BLINK_PLATFORM_EXPORT operator scoped_refptr<ResourceLoadTiming>() const;
 #endif
 
  private:

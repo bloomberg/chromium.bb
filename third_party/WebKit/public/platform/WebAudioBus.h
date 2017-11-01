@@ -71,7 +71,7 @@ class BLINK_PLATFORM_EXPORT WebAudioBus {
   float* ChannelData(unsigned channel_index);
 
 #if INSIDE_BLINK
-  WTF::RefPtr<AudioBus> Release();
+  scoped_refptr<AudioBus> Release();
 #endif
 
  private:

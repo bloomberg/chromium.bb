@@ -95,13 +95,11 @@ class CppFunctionsTest(unittest.TestCase):
         self.assertEqual(cpp_style._convert_to_lower_with_underscores('aB'), 'a_b')
         self.assertEqual(cpp_style._convert_to_lower_with_underscores('isAName'), 'is_a_name')
         self.assertEqual(cpp_style._convert_to_lower_with_underscores('AnotherTest'), 'another_test')
-        self.assertEqual(cpp_style._convert_to_lower_with_underscores('PassRefPtr<MyClass>'), 'pass_ref_ptr<my_class>')
         self.assertEqual(cpp_style._convert_to_lower_with_underscores('_ABC'), '_abc')
 
     def test_create_acronym(self):
         self.assertEqual(cpp_style._create_acronym('ABC'), 'ABC')
         self.assertEqual(cpp_style._create_acronym('IsAName'), 'IAN')
-        self.assertEqual(cpp_style._create_acronym('PassRefPtr<MyClass>'), 'PRP<MC>')
 
     def test_is_c_or_objective_c(self):
         clean_lines = cpp_style.CleansedLines([''])
@@ -121,8 +119,8 @@ class CppFunctionsTest(unittest.TestCase):
         self.assertEqual(parameter.row, 1)
 
         # Test type and name.
-        parameter = cpp_style.Parameter('PassRefPtr<MyClass> parent', 19, 1)
-        self.assertEqual(parameter.type, 'PassRefPtr<MyClass>')
+        parameter = cpp_style.Parameter('scoped_refptr<MyClass> parent', 22, 1)
+        self.assertEqual(parameter.type, 'scoped_refptr<MyClass>')
         self.assertEqual(parameter.name, 'parent')
         self.assertEqual(parameter.row, 1)
 
@@ -166,7 +164,7 @@ class CppFunctionsTest(unittest.TestCase):
         self.assertEqual(cpp_style.create_skeleton_parameters('long'), 'long,')
         self.assertEqual(cpp_style.create_skeleton_parameters('const unsigned long int'), '                    int,')
         self.assertEqual(cpp_style.create_skeleton_parameters('long int*'), '     int ,')
-        self.assertEqual(cpp_style.create_skeleton_parameters('PassRefPtr<Foo> a'), 'PassRefPtr      a,')
+        self.assertEqual(cpp_style.create_skeleton_parameters('scoped_refptr<Foo> a'), 'scoped_refptr      a,')
         self.assertEqual(cpp_style.create_skeleton_parameters(
             'ComplexTemplate<NestedTemplate1<MyClass1, MyClass2>, NestedTemplate1<MyClass1, MyClass2> > param, int second'),
             'ComplexTemplate                                                                            param, int second,')
@@ -181,11 +179,11 @@ class CppFunctionsTest(unittest.TestCase):
 
     def test_find_parameter_name_index(self):
         self.assertEqual(cpp_style.find_parameter_name_index(' int a '), 5)
-        self.assertEqual(cpp_style.find_parameter_name_index(' PassRefPtr     '), 16)
+        self.assertEqual(cpp_style.find_parameter_name_index(' scoped_refptr     '), 19)
         self.assertEqual(cpp_style.find_parameter_name_index('double'), 6)
 
     def test_parameter_list(self):
-        elided_lines = ['int blah(PassRefPtr<MyClass> paramName,',
+        elided_lines = ['int blah(scoped_refptr<MyClass> paramName,',
                         'const Other1Class& foo,',
                         ('const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const * param = '
                          'new ComplexTemplate<Class1, NestedTemplate<P1, P2> >(34, 42),'),
@@ -193,7 +191,7 @@ class CppFunctionsTest(unittest.TestCase):
         start_position = cpp_style.Position(row=0, column=8)
         end_position = cpp_style.Position(row=3, column=16)
 
-        expected_parameters = ({'type': 'PassRefPtr<MyClass>', 'name': 'paramName', 'row': 0},
+        expected_parameters = ({'type': 'scoped_refptr<MyClass>', 'name': 'paramName', 'row': 0},
                                {'type': 'const Other1Class&', 'name': 'foo', 'row': 1},
                                {'type': 'const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const *',
                                 'name': 'param',
@@ -568,7 +566,7 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['#define MyMacro(a) a',
              'virtual',
-             'AnotherTemplate<Class1, Class2> aFunctionName(PassRefPtr<MyClass> paramName,',
+             'AnotherTemplate<Class1, Class2> aFunctionName(scoped_refptr<MyClass> paramName,',
              'const Other1Class& foo,',
              ('const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const * param = '
               'new ComplexTemplate<Class1, NestedTemplate<P1, P2> >(34, 42),'),
@@ -582,7 +580,7 @@ class FunctionDetectionTest(CppStyleTestBase):
              'is_pure': False,
              'is_declaration': True,
              'parameter_list':
-                 ({'type': 'PassRefPtr<MyClass>', 'name': 'paramName', 'row': 2},
+                 ({'type': 'scoped_refptr<MyClass>', 'name': 'paramName', 'row': 2},
                   {'type': 'const Other1Class&', 'name': 'foo', 'row': 3},
                   {'type': 'const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const *', 'name': 'param', 'row': 4},
                   {'type': 'int*', 'name': 'myCount', 'row': 5})},
@@ -2356,85 +2354,58 @@ class PassPtrTest(CppStyleTestBase):
         self.assertEqual(expected_message,
                          self.perform_pass_ptr_check(code))
 
-    def test_pass_ref_ptr_in_function(self):
-        self.assert_pass_ptr_check(
-            'int myFunction()\n'
-            '{\n'
-            '  PassRefPtr<Type1> variable = variable2;\n'
-            '}',
-            'Local variables should never be PassRefPtr (see '
-            'http://webkit.org/coding/RefPtr.html).  [readability/pass_ptr] [5]')
-
-    def test_pass_own_ptr_in_function(self):
-        self.assert_pass_ptr_check(
-            'int myFunction()\n'
-            '{\n'
-            '  PassOwnPtr<Type1> variable = variable2;\n'
-            '}',
-            'Local variables should never be PassOwnPtr (see '
-            'http://webkit.org/coding/RefPtr.html).  [readability/pass_ptr] [5]')
-
-    def test_pass_other_type_ptr_in_function(self):
-        self.assert_pass_ptr_check(
-            'int myFunction()\n'
-            '{\n'
-            '  PassOtherTypePtr<Type1> variable;\n'
-            '}',
-            'Local variables should never be PassOtherTypePtr (see '
-            'http://webkit.org/coding/RefPtr.html).  [readability/pass_ptr] [5]')
-
     def test_pass_ref_ptr_return_value(self):
         self.assert_pass_ptr_check(
-            'PassRefPtr<Type1>\n'
+            'scoped_refptr<Type1>\n'
             'myFunction(int)\n'
             '{\n'
             '}',
             '')
         self.assert_pass_ptr_check(
-            'PassRefPtr<Type1> myFunction(int)\n'
+            'scoped_refptr<Type1> myFunction(int)\n'
             '{\n'
             '}',
             '')
         self.assert_pass_ptr_check(
-            'PassRefPtr<Type1> myFunction();\n',
+            'scoped_refptr<Type1> myFunction();\n',
             '')
         self.assert_pass_ptr_check(
-            'OwnRefPtr<Type1> myFunction();\n',
+            'Ownscoped_refptr<Type1> myFunction();\n',
             '')
 
     def test_ref_ptr_parameter_value(self):
         self.assert_pass_ptr_check(
-            'int myFunction(PassRefPtr<Type1>)\n'
+            'int myFunction(scoped_refptr<Type1>)\n'
             '{\n'
             '}',
             '')
         self.assert_pass_ptr_check(
-            'int myFunction(RefPtr<Type1>&)\n'
+            'int myFunction(scoped_refptr<Type1>&)\n'
             '{\n'
             '}',
             '')
         self.assert_pass_ptr_check(
-            'int myFunction(RefPtr<Type1>*)\n'
+            'int myFunction(scoped_refptr<Type1>*)\n'
             '{\n'
             '}',
             '')
         self.assert_pass_ptr_check(
-            'int myFunction(RefPtr<Type1>* = 0)\n'
+            'int myFunction(scoped_refptr<Type1>* = 0)\n'
             '{\n'
             '}',
             '')
         self.assert_pass_ptr_check(
-            'int myFunction(RefPtr<Type1>*    =  0)\n'
+            'int myFunction(scoped_refptr<Type1>*    =  0)\n'
             '{\n'
             '}',
             '')
         self.assert_pass_ptr_check(
-            'int myFunction(RefPtr<Type1>* = nullptr)\n'
+            'int myFunction(scoped_refptr<Type1>* = nullptr)\n'
             '{\n'
             '}',
             '')
         self.assert_pass_ptr_check(
-            'int myFunction(RefPtr<Type1>*    =  nullptr)\n'
+            'int myFunction(scoped_refptr<Type1>*    =  nullptr)\n'
             '{\n'
             '}',
             '')
@@ -2454,7 +2425,7 @@ class PassPtrTest(CppStyleTestBase):
     def test_ref_ptr_member_variable(self):
         self.assert_pass_ptr_check(
             'class Foo {'
-            '  RefPtr<Type1> m_other;\n'
+            '  scoped_refptr<Type1> m_other;\n'
             '};\n',
             '')
 
@@ -2954,7 +2925,7 @@ class WebKitStyleTest(CppStyleTestBase):
         # Verify that copying a type name will trigger the warning (even if the type is a template parameter).
         self.assertEqual(
             meaningless_variable_name_error_message % 'context',
-            self.perform_lint('void funct(PassRefPtr<ScriptExecutionContext> context);', 'test.cpp', parameter_error_rules))
+            self.perform_lint('void funct(scoped_refptr<ScriptExecutionContext> context);', 'test.cpp', parameter_error_rules))
 
         # Verify that acronyms as variable names trigger the error (for both set functions and type names).
         self.assertEqual(
@@ -2991,7 +2962,8 @@ class WebKitStyleTest(CppStyleTestBase):
         # Don't have generate warnings for functions (only declarations).
         self.assertEqual(
             '',
-            self.perform_lint('void funct(PassRefPtr<ScriptExecutionContext> context)\n{\n}\n', 'test.cpp', parameter_error_rules))
+            self.perform_lint(
+                'void funct(scoped_refptr<ScriptExecutionContext> context)\n{\n}\n', 'test.cpp', parameter_error_rules))
 
     def test_redundant_virtual(self):
         self.assert_lint('virtual void fooMethod() override;',
