@@ -86,7 +86,7 @@ Press any key to continue exploring.
     Zip Archiver - Open and pack ZIP files in Files app.
   </message>
   <message desc="Title of the password input dialog." name="IDS_ZIP_ARCHIVER_PASSPHRASE_TITLE">
-    Enter your password to gain access
+    Enter your password
   </message>
   <message desc="Label of the password input field." name="IDS_ZIP_ARCHIVER_PASSPHRASE_INPUT_LABEL">
     Password
