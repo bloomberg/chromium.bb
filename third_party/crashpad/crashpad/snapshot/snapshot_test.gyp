@@ -67,9 +67,9 @@
         '..',
       ],
       'sources': [
+        'api/module_annotations_win_test.cc',
         'cpu_context_test.cc',
         'crashpad_info_client_options_test.cc',
-        'api/module_annotations_win_test.cc',
         'elf/elf_image_reader_test.cc',
         'linux/debug_rendezvous_test.cc',
         'linux/exception_snapshot_linux_test.cc',
@@ -107,8 +107,10 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            'crashpad_snapshot_test_annotations',
             'crashpad_snapshot_test_crashing_child',
             'crashpad_snapshot_test_dump_without_crashing',
+            'crashpad_snapshot_test_extra_memory_ranges',
             'crashpad_snapshot_test_image_reader',
             'crashpad_snapshot_test_image_reader_module',
           ],
@@ -247,7 +249,7 @@
           },
         },
         {
-          'target_name': 'crashpad_snapshot_test_simple_annotations',
+          'target_name': 'crashpad_snapshot_test_annotations',
           'type': 'executable',
           'dependencies': [
             '../client/client.gyp:crashpad_client',
@@ -255,7 +257,7 @@
             '../third_party/mini_chromium/mini_chromium.gyp:base',
           ],
           'sources': [
-            'win/crashpad_snapshot_test_simple_annotations.cc',
+            'win/crashpad_snapshot_test_annotations.cc',
           ],
         },
       ],

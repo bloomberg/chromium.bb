@@ -1,4 +1,4 @@
-// Copyright 2014 The Crashpad Authors. All rights reserved.
+// Copyright 2017 The Crashpad Authors. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,26 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "util/misc/paths.h"
+#include "minidump/test/minidump_byte_array_writer_test_util.h"
 
-#include "base/files/file_path.h"
-#include "gtest/gtest.h"
-#include "test/test_paths.h"
+#include "minidump/test/minidump_writable_test_util.h"
 
 namespace crashpad {
 namespace test {
-namespace {
 
-TEST(Paths, Executable) {
-  base::FilePath executable_path;
-  ASSERT_TRUE(Paths::Executable(&executable_path));
-  const base::FilePath executable_name(executable_path.BaseName());
-  const base::FilePath expected_name(TestPaths::ExpectedExecutableBasename(
-      FILE_PATH_LITERAL("crashpad_util_test")));
-
-  EXPECT_EQ(executable_name.value(), expected_name.value());
+std::vector<uint8_t> MinidumpByteArrayAtRVA(const std::string& file_contents,
+                                            RVA rva) {
+  auto* minidump_byte_array =
+      MinidumpWritableAtRVA<MinidumpByteArray>(file_contents, rva);
+  if (!minidump_byte_array) {
+    return {};
+  }
+  auto* data = static_cast<const uint8_t*>(minidump_byte_array->data);
+  const uint8_t* data_end = data + minidump_byte_array->length;
+  return std::vector<uint8_t>(data, data_end);
 }
 
-}  // namespace
+
 }  // namespace test
 }  // namespace crashpad
