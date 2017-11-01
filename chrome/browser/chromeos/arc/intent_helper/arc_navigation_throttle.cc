@@ -432,26 +432,6 @@ size_t ArcNavigationThrottle::FindPreferredAppForTesting(
 }
 
 // static
-bool ArcNavigationThrottle::IsSwapElementsNeeded(
-    const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
-    std::pair<size_t, size_t>* out_indices) {
-  size_t chrome_app_index = 0;
-  for (size_t i = 0; i < handlers.size(); ++i) {
-    if (ArcIntentHelperBridge::IsIntentHelperPackage(
-            handlers[i]->package_name)) {
-      chrome_app_index = i;
-      break;
-    }
-  }
-  if (chrome_app_index < ArcNavigationThrottle::kMaxAppResults)
-    return false;
-
-  *out_indices = std::make_pair(ArcNavigationThrottle::kMaxAppResults - 1,
-                                chrome_app_index);
-  return true;
-}
-
-// static
 void ArcNavigationThrottle::AsyncShowIntentPickerBubble(const Browser* browser,
                                                         const GURL& url) {
   arc::ArcServiceManager* arc_service_manager = arc::ArcServiceManager::Get();
