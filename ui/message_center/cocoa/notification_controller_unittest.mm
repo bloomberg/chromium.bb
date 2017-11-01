@@ -24,16 +24,6 @@ using base::UTF8ToUTF16;
 
 namespace {
 
-// A test delegate used for tests that deal with the notification settings
-// button.
-class NotificationSettingsDelegate
-    : public message_center::NotificationDelegate {
-  bool ShouldDisplaySettingsButton() override { return true; }
-
- private:
-  ~NotificationSettingsDelegate() override {}
-};
-
 class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
   MockMessageCenter()
@@ -157,14 +147,14 @@ TEST_F(NotificationControllerTest, BasicLayout) {
 }
 
 TEST_F(NotificationControllerTest, NotificationSetttingsButtonLayout) {
+  message_center::RichNotificationData data;
+  data.settings_button_handler = SettingsButtonHandler::TRAY;
   std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, "",
           ASCIIToUTF16("Added to circles"),
           ASCIIToUTF16("Jonathan and 5 others"), gfx::Image(), base::string16(),
-          GURL("https://plus.com"), DummyNotifierId(),
-          message_center::RichNotificationData(),
-          new NotificationSettingsDelegate()));
+          GURL("https://plus.com"), DummyNotifierId(), data, NULL));
 
   base::scoped_nsobject<MCNotificationController> controller(
       [[MCNotificationController alloc] initWithNotification:notification.get()

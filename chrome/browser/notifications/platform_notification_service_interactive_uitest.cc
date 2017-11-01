@@ -329,6 +329,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_EQ(kIconHeight, all_options_notification.buttons()[0].icon.Height());
 }
 
+// Chrome OS shows the notification settings inline.
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        WebNotificationSiteSettingsButton) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
@@ -361,12 +363,10 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   // No engagement should be granted for clicking on the settings link.
   EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(origin));
 
-// Chrome OS shows the notification settings inline.
-#if !defined(OS_CHROMEOS)
   std::string url = web_contents->GetLastCommittedURL().spec();
   ASSERT_EQ("chrome://settings/content/notifications", url);
-#endif
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        WebNotificationOptionsVibrationPattern) {

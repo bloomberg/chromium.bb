@@ -25,17 +25,12 @@ WebNotificationDelegate::WebNotificationDelegate(
 
 WebNotificationDelegate::~WebNotificationDelegate() {}
 
-bool WebNotificationDelegate::SettingsClick() {
-#if !defined(OS_CHROMEOS)
-  NotificationCommon::OpenNotificationSettings(profile_);
-  return true;
+void WebNotificationDelegate::SettingsClick() {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
 #else
-  return false;
+  NotificationCommon::OpenNotificationSettings(profile_);
 #endif
-}
-
-bool WebNotificationDelegate::ShouldDisplaySettingsButton() {
-  return notification_type_ != NotificationCommon::EXTENSION;
 }
 
 void WebNotificationDelegate::DisableNotification() {

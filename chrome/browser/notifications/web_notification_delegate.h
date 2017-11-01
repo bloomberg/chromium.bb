@@ -30,8 +30,7 @@ class WebNotificationDelegate : public message_center::NotificationDelegate {
                           const GURL& origin);
 
   // NotificationDelegate implementation.
-  bool SettingsClick() override;
-  bool ShouldDisplaySettingsButton() override;
+  void SettingsClick() override;
   void DisableNotification() override;
   bool ShouldDisplayOverFullscreen() const override;
   void Close(bool by_user) override;

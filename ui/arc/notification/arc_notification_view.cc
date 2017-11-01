@@ -205,8 +205,7 @@ void ArcNotificationView::UpdateControlButtonsVisibilityWithNotification(
     return;
 
   GetControlButtonsView()->ShowSettingsButton(
-      notification.delegate() &&
-      notification.delegate()->ShouldDisplaySettingsButton());
+      notification.should_show_settings_button());
   GetControlButtonsView()->ShowCloseButton(!GetPinned());
   UpdateControlButtonsVisibility();
 }

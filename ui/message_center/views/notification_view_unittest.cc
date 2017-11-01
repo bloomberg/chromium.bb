@@ -45,15 +45,6 @@
 
 namespace message_center {
 
-// A test delegate used for tests that deal with the notification settings
-// button.
-class NotificationSettingsDelegate : public NotificationDelegate {
-  bool ShouldDisplaySettingsButton() override { return true; }
-
- private:
-  ~NotificationSettingsDelegate() override {}
-};
-
 /* Test fixture ***************************************************************/
 
 class NotificationViewTest : public views::ViewsTestBase,
@@ -339,15 +330,13 @@ TEST_F(NotificationViewTest, CreateOrUpdateTest) {
 }
 
 TEST_F(NotificationViewTest, CreateOrUpdateTestSettingsButton) {
-  scoped_refptr<NotificationSettingsDelegate> delegate =
-      new NotificationSettingsDelegate();
-  Notification notf(NOTIFICATION_TYPE_BASE_FORMAT,
-                    std::string("notification id"), base::UTF8ToUTF16("title"),
-                    base::UTF8ToUTF16("message"), CreateTestImage(80, 80),
-                    base::UTF8ToUTF16("display source"),
-                    GURL("https://hello.com"),
-                    NotifierId(NotifierId::APPLICATION, "extension_id"),
-                    *data(), delegate.get());
+  data()->settings_button_handler = SettingsButtonHandler::TRAY;
+  Notification notf(
+      NOTIFICATION_TYPE_BASE_FORMAT, std::string("notification id"),
+      base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
+      CreateTestImage(80, 80), base::UTF8ToUTF16("display source"),
+      GURL("https://hello.com"),
+      NotifierId(NotifierId::APPLICATION, "extension_id"), *data(), nullptr);
 
   notification_view()->UpdateWithNotification(notf);
   EXPECT_TRUE(NULL != notification_view()->title_view_);
@@ -549,15 +538,13 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
 }
 
 TEST_F(NotificationViewTest, SettingsButtonTest) {
-  scoped_refptr<NotificationSettingsDelegate> delegate =
-      new NotificationSettingsDelegate();
-  Notification notf(NOTIFICATION_TYPE_BASE_FORMAT,
-                    std::string("notification id"), base::UTF8ToUTF16("title"),
-                    base::UTF8ToUTF16("message"), CreateTestImage(80, 80),
-                    base::UTF8ToUTF16("display source"),
-                    GURL("https://hello.com"),
-                    NotifierId(NotifierId::APPLICATION, "extension_id"),
-                    *data(), delegate.get());
+  data()->settings_button_handler = SettingsButtonHandler::TRAY;
+  Notification notf(
+      NOTIFICATION_TYPE_BASE_FORMAT, std::string("notification id"),
+      base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
+      CreateTestImage(80, 80), base::UTF8ToUTF16("display source"),
+      GURL("https://hello.com"),
+      NotifierId(NotifierId::APPLICATION, "extension_id"), *data(), nullptr);
   notification_view()->UpdateWithNotification(notf);
   widget()->Show();
 
