@@ -418,6 +418,10 @@ void WebServiceWorkerRegistrationImpl::SetVersionAttributes(
                        std::move(active)));
     return;
   }
+
+  if (state_ == LifecycleState::kDetached)
+    return;
+  DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);
