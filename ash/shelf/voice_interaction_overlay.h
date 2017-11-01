@@ -33,7 +33,6 @@ class ASH_EXPORT VoiceInteractionOverlay : public views::View {
     return AnimationState::BURSTING == animation_state_;
   }
   bool IsWaiting() const { return AnimationState::WAITING == animation_state_; }
-  bool IsHidden() const { return AnimationState::HIDDEN == animation_state_; }
 
  private:
   enum class AnimationState {
