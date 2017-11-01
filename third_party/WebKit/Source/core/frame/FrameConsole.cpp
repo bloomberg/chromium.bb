@@ -108,13 +108,6 @@ void FrameConsole::ReportMessageToClient(MessageSource source,
       frame_, source, level, message, location->LineNumber(), url, stack_trace);
 }
 
-void FrameConsole::AddSingletonMessage(ConsoleMessage* console_message) {
-  if (singleton_messages_.Contains(console_message->Message()))
-    return;
-  singleton_messages_.insert(console_message->Message());
-  AddMessage(console_message);
-}
-
 void FrameConsole::ReportResourceResponseReceived(
     DocumentLoader* loader,
     unsigned long request_identifier,
