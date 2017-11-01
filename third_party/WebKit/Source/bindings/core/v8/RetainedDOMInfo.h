@@ -63,10 +63,10 @@ class RetainedDOMInfo final : public RetainedObjectInfo {
   UntracedMember<Node> root_;
 };
 
-class SuspendableObjectsInfo final : public RetainedObjectInfo {
+class PausableObjectsInfo final : public RetainedObjectInfo {
  public:
-  explicit SuspendableObjectsInfo(int number_of_objects_with_pending_activity);
-  ~SuspendableObjectsInfo() override;
+  explicit PausableObjectsInfo(int number_of_objects_with_pending_activity);
+  ~PausableObjectsInfo() override;
   void Dispose() override;
   bool IsEquivalent(v8::RetainedObjectInfo* other) override;
   intptr_t GetHash() override;

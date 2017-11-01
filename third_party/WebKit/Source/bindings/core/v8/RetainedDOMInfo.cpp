@@ -92,38 +92,38 @@ intptr_t RetainedDOMInfo::GetEquivalenceClass() {
   return reinterpret_cast<intptr_t>(root_.Get());
 }
 
-SuspendableObjectsInfo::SuspendableObjectsInfo(
+PausableObjectsInfo::PausableObjectsInfo(
     int number_of_objects_with_pending_activity)
     : number_of_objects_with_pending_activity_(
           number_of_objects_with_pending_activity) {}
 
-SuspendableObjectsInfo::~SuspendableObjectsInfo() {}
+PausableObjectsInfo::~PausableObjectsInfo() {}
 
-void SuspendableObjectsInfo::Dispose() {
+void PausableObjectsInfo::Dispose() {
   delete this;
 }
 
-bool SuspendableObjectsInfo::IsEquivalent(v8::RetainedObjectInfo* other) {
+bool PausableObjectsInfo::IsEquivalent(v8::RetainedObjectInfo* other) {
   return this == other;
 }
 
-intptr_t SuspendableObjectsInfo::GetHash() {
+intptr_t PausableObjectsInfo::GetHash() {
   return PtrHash<void>::GetHash(this);
 }
 
-const char* SuspendableObjectsInfo::GetGroupLabel() {
+const char* PausableObjectsInfo::GetGroupLabel() {
   return "(Pending activities group)";
 }
 
-const char* SuspendableObjectsInfo::GetLabel() {
+const char* PausableObjectsInfo::GetLabel() {
   return "Pending activities";
 }
 
-intptr_t SuspendableObjectsInfo::GetElementCount() {
+intptr_t PausableObjectsInfo::GetElementCount() {
   return number_of_objects_with_pending_activity_;
 }
 
-intptr_t SuspendableObjectsInfo::GetEquivalenceClass() {
+intptr_t PausableObjectsInfo::GetEquivalenceClass() {
   return reinterpret_cast<intptr_t>(this);
 }
 
