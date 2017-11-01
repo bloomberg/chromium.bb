@@ -145,7 +145,7 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
   friend class ClientCertResolverTest;
   friend class NetworkHandler;
   friend class NetworkConfigurationHandlerTest;
-  friend class NetworkConfigurationHandlerStubTest;
+  friend class NetworkConfigurationHandlerMockTest;
   class ProfileEntryDeleter;
 
   NetworkConfigurationHandler();
