@@ -52,10 +52,6 @@ class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
                       [expectations.ALL], 'crbug.com/769809')
     self.DisableStory('browse:tools:maps', [expectations.ALL_MAC],
                       'crbug.com/773084')
-    self.DisableStory('load:news:wikipedia',
-                      [expectations.ALL_WIN], 'crbug.com/777931')
-    self.DisableStory('load_accessibility:media:wikipedia',
-                      [expectations.ALL_WIN], 'crbug.com/777931')
 
 
 class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
