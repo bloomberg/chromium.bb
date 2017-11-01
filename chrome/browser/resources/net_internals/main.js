@@ -125,10 +125,8 @@ var MainView = (function() {
       this.stopCapturing();
       if (opt_fileName != undefined) {
         // If there's a file name, a log file was loaded, so swap out the status
-        // bar to indicate we're no longer capturing events.  Also disable
-        // hiding cookies, so if the log dump has them, they'll be displayed.
+        // bar to indicate we're no longer capturing events.
         this.topBarView_.switchToSubView('loaded').setFileName(opt_fileName);
-        SourceTracker.getInstance().setPrivacyStripping(false);
       } else {
         // Otherwise, the "Stop Capturing" button was presumably pressed.
         // Don't disable hiding cookies, so created log dumps won't have them,
