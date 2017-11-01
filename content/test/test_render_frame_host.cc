@@ -111,6 +111,12 @@ MockRenderProcessHost* TestRenderFrameHost::GetProcess() {
   return static_cast<MockRenderProcessHost*>(RenderFrameHostImpl::GetProcess());
 }
 
+void TestRenderFrameHost::AddMessageToConsole(ConsoleMessageLevel level,
+                                              const std::string& message) {
+  console_messages_.push_back(message);
+  RenderFrameHostImpl::AddMessageToConsole(level, message);
+}
+
 void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
   if (!render_view_host()->IsRenderViewLive()) {
     render_view_host()->GetProcess()->Init();
@@ -303,6 +309,10 @@ void TestRenderFrameHost::SimulateFeaturePolicyHeader(
   header[0].matches_all_origins = false;
   header[0].origins = whitelist;
   OnDidSetFeaturePolicyHeader(header);
+}
+
+const std::vector<std::string>& TestRenderFrameHost::GetConsoleMessages() {
+  return console_messages_;
 }
 
 void TestRenderFrameHost::SendNavigate(int nav_entry_id,

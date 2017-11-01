@@ -21,7 +21,6 @@ struct OpenURLParams;
 class WebContents;
 }  // namespace content
 
-class ConsoleLogger;
 
 extern const base::Feature kAbusiveExperienceEnforce;
 
@@ -68,20 +67,18 @@ class SafeBrowsingTriggeredPopupBlocker
   };
 
   static std::unique_ptr<SafeBrowsingTriggeredPopupBlocker> MaybeCreate(
-      content::WebContents* web_contents,
-      std::unique_ptr<ConsoleLogger> logger);
+      content::WebContents* web_contents);
   ~SafeBrowsingTriggeredPopupBlocker() override;
 
   bool ShouldApplyStrongPopupBlocker(
       const content::OpenURLParams* open_url_params);
 
  private:
-  // The |web_contents|, |observer_manager|, and |logger| are expected to be
+  // The |web_contents| and |observer_manager| are expected to be
   // non-nullptr.
   SafeBrowsingTriggeredPopupBlocker(
       content::WebContents* web_contents,
-      subresource_filter::SubresourceFilterObserverManager* observer_manager,
-      std::unique_ptr<ConsoleLogger> logger);
+      subresource_filter::SubresourceFilterObserverManager* observer_manager);
 
   // content::WebContentsObserver:
   void DidFinishNavigation(
@@ -126,9 +123,6 @@ class SafeBrowsingTriggeredPopupBlocker
   // stronger popup blocker in enforce or warn mode.
   base::Optional<safe_browsing::SubresourceFilterLevel>
       level_for_next_committed_navigation_;
-
-  // Should never be nullptr.
-  std::unique_ptr<ConsoleLogger> logger_;
 
   // Should never be nullptr.
   std::unique_ptr<PageData> current_page_data_;

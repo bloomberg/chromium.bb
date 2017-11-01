@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -121,6 +123,10 @@ class RenderFrameHostTester {
   virtual void SimulateFeaturePolicyHeader(
       blink::WebFeaturePolicyFeature feature,
       const std::vector<url::Origin>& whitelist) = 0;
+
+  // Gets all the console messages requested via
+  // RenderFrameHost::AddMessageToConsole in this frame.
+  virtual const std::vector<std::string>& GetConsoleMessages() = 0;
 };
 
 // An interface and utility for driving tests of RenderViewHost.

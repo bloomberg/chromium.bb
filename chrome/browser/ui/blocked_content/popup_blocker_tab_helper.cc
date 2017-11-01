@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
-#include "chrome/browser/ui/blocked_content/console_logger.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -55,9 +54,7 @@ struct PopupBlockerTabHelper::BlockedRequest {
 PopupBlockerTabHelper::PopupBlockerTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       safe_browsing_triggered_popup_blocker_(
-          SafeBrowsingTriggeredPopupBlocker::MaybeCreate(
-              web_contents,
-              base::MakeUnique<ConsoleLogger>())) {}
+          SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents)) {}
 
 PopupBlockerTabHelper::~PopupBlockerTabHelper() {
 }
