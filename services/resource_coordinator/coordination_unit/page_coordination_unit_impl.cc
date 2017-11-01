@@ -63,25 +63,6 @@ void PageCoordinationUnitImpl::OnMainFrameNavigationCommitted() {
   SendEvent(mojom::Event::kNavigationCommitted);
 }
 
-void PageCoordinationUnitImpl::RecalculateProperty(
-    const mojom::PropertyType property_type) {
-  switch (property_type) {
-    case mojom::PropertyType::kCPUUsage: {
-      double cpu_usage = CalculateCPUUsage();
-      SetProperty(mojom::PropertyType::kCPUUsage, cpu_usage);
-      break;
-    }
-    case mojom::PropertyType::kExpectedTaskQueueingDuration: {
-      int64_t eqt;
-      if (CalculateExpectedTaskQueueingDuration(&eqt))
-        SetProperty(property_type, eqt);
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-}
-
 std::set<ProcessCoordinationUnitImpl*>
 PageCoordinationUnitImpl::GetAssociatedProcessCoordinationUnits() const {
   std::set<ProcessCoordinationUnitImpl*> process_cus;
@@ -99,6 +80,38 @@ bool PageCoordinationUnitImpl::IsVisible() const {
   bool has_property = GetProperty(mojom::PropertyType::kVisible, &is_visible);
   DCHECK(has_property && (is_visible == 0 || is_visible == 1));
   return is_visible;
+}
+
+double PageCoordinationUnitImpl::GetCPUUsage() const {
+  double cpu_usage = 0.0;
+
+  for (auto* process_cu : GetAssociatedProcessCoordinationUnits()) {
+    size_t pages_in_process =
+        process_cu->GetAssociatedPageCoordinationUnits().size();
+    DCHECK_LE(1u, pages_in_process);
+
+    int64_t process_cpu_usage;
+    if (process_cu->GetProperty(mojom::PropertyType::kCPUUsage,
+                                &process_cpu_usage)) {
+      cpu_usage += static_cast<double>(process_cpu_usage) / pages_in_process;
+    }
+  }
+
+  return cpu_usage / 1000;
+}
+
+bool PageCoordinationUnitImpl::GetExpectedTaskQueueingDuration(
+    int64_t* output) {
+  // Calculate the EQT for the process of the main frame only because
+  // the smoothness of the main frame may affect the users the most.
+  FrameCoordinationUnitImpl* main_frame_cu = GetMainFrameCoordinationUnit();
+  if (!main_frame_cu)
+    return false;
+  auto* process_cu = main_frame_cu->GetProcessCoordinationUnit();
+  if (!process_cu)
+    return false;
+  return process_cu->GetProperty(
+      mojom::PropertyType::kExpectedTaskQueueingDuration, output);
 }
 
 base::TimeDelta PageCoordinationUnitImpl::TimeSinceLastNavigation() const {
@@ -151,38 +164,6 @@ PageCoordinationUnitImpl::GetMainFrameCoordinationUnit() {
       return frame_cu;
   }
   return nullptr;
-}
-
-bool PageCoordinationUnitImpl::CalculateExpectedTaskQueueingDuration(
-    int64_t* output) {
-  // Calculate the EQT for the process of the main frame only because
-  // the smoothness of the main frame may affect the users the most.
-  FrameCoordinationUnitImpl* main_frame_cu = GetMainFrameCoordinationUnit();
-  if (!main_frame_cu)
-    return false;
-  auto* associated_process = main_frame_cu->GetProcessCoordinationUnit();
-  if (!associated_process)
-    return false;
-  return associated_process->GetProperty(
-      mojom::PropertyType::kExpectedTaskQueueingDuration, output);
-}
-
-double PageCoordinationUnitImpl::CalculateCPUUsage() {
-  double cpu_usage = 0.0;
-
-  for (auto* process_cu : GetAssociatedProcessCoordinationUnits()) {
-    size_t pages_in_process =
-        process_cu->GetAssociatedPageCoordinationUnits().size();
-    DCHECK_LE(1u, pages_in_process);
-
-    int64_t process_cpu_usage;
-    if (process_cu->GetProperty(mojom::PropertyType::kCPUUsage,
-                                &process_cpu_usage)) {
-      cpu_usage += static_cast<double>(process_cpu_usage) / pages_in_process;
-    }
-  }
-
-  return cpu_usage;
 }
 
 }  // namespace resource_coordinator

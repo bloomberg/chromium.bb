@@ -120,7 +120,6 @@ void CoordinationUnitBase::SetProperty(mojom::PropertyType property_type,
   // and propagated to the appropriate associated |CoordianationUnitBase|
   // before |OnPropertyChanged| is invoked on all of the registered observers.
   properties_[property_type] = value;
-  PropagateProperty(property_type, value);
   OnPropertyChanged(property_type, value);
 }
 

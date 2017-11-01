@@ -35,6 +35,7 @@ class ProcessCoordinationUnitImpl
   void SetLaunchTime(base::Time launch_time) override;
   void SetPID(int64_t pid) override;
 
+  std::set<FrameCoordinationUnitImpl*> GetFrameCoordinationUnits() const;
   std::set<PageCoordinationUnitImpl*> GetAssociatedPageCoordinationUnits()
       const;
 
@@ -42,7 +43,7 @@ class ProcessCoordinationUnitImpl
   friend class FrameCoordinationUnitImpl;
 
   // CoordinationUnitInterface implementation.
-  void PropagateProperty(mojom::PropertyType property_type,
+  void OnPropertyChanged(mojom::PropertyType property_type,
                          int64_t value) override;
 
   bool AddFrame(FrameCoordinationUnitImpl* frame_cu);

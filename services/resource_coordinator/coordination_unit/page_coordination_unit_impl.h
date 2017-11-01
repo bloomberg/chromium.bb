@@ -36,15 +36,16 @@ class PageCoordinationUnitImpl
   void OnTitleUpdated() override;
   void OnMainFrameNavigationCommitted() override;
 
-  // CoordinationUnitBase implementation.
-  void RecalculateProperty(const mojom::PropertyType property_type) override;
-
   // There is no direct relationship between processes and pages. However,
   // frames are accessible by both processes and frames, so we find all of the
   // processes that are reachable from the pages's accessible frames.
   std::set<ProcessCoordinationUnitImpl*> GetAssociatedProcessCoordinationUnits()
       const;
   bool IsVisible() const;
+  double GetCPUUsage() const;
+
+  // Returns false if can't get an expected task queueing duration successfully.
+  bool GetExpectedTaskQueueingDuration(int64_t* duration);
 
   // Returns 0 if no navigation has happened, otherwise returns the time since
   // the last navigation commit.
@@ -72,10 +73,6 @@ class PageCoordinationUnitImpl
 
   bool AddFrame(FrameCoordinationUnitImpl* frame_cu);
   bool RemoveFrame(FrameCoordinationUnitImpl* frame_cu);
-
-  // Returns true for a valid value. Returns false otherwise.
-  bool CalculateExpectedTaskQueueingDuration(int64_t* output);
-  double CalculateCPUUsage();
 
   // Returns the main frame CU or nullptr if this page has no main frame.
   FrameCoordinationUnitImpl* GetMainFrameCoordinationUnit();
