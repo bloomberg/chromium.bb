@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.support.annotation.AnyRes;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -59,6 +61,19 @@ public class TabbedModeFirstRunActivity extends FirstRunActivity {
             fetchConstraints();
         }
 
+        /**
+         * Wrapper around Resources.getValue() that translates Resources.NotFoundException
+         * into false return value. Otherwise the function returns true.
+         */
+        private boolean safeGetResourceValue(@AnyRes int id, TypedValue value) {
+            try {
+                getContext().getResources().getValue(id, value, true);
+                return true;
+            } catch (Resources.NotFoundException e) {
+                return false;
+            }
+        }
+
         private void fetchConstraints() {
             // Fetch size constraints. These are copies of corresponding abc_* AppCompat values,
             // because abc_* values are private, and even though corresponding theme attributes
@@ -67,14 +82,10 @@ public class TabbedModeFirstRunActivity extends FirstRunActivity {
             // system DialogWhenLarge theme.
             // Note that we don't care about the return values, because onMeasure() handles null
             // constraints (and they will be null when the device is not considered "large").
-            getContext().getResources().getValue(
-                    R.dimen.dialog_fixed_width_minor, mFixedWidthMinor, true);
-            getContext().getResources().getValue(
-                    R.dimen.dialog_fixed_width_major, mFixedWidthMajor, true);
-            getContext().getResources().getValue(
-                    R.dimen.dialog_fixed_height_minor, mFixedHeightMinor, true);
-            getContext().getResources().getValue(
-                    R.dimen.dialog_fixed_height_major, mFixedHeightMajor, true);
+            safeGetResourceValue(R.dimen.dialog_fixed_width_minor, mFixedWidthMinor);
+            safeGetResourceValue(R.dimen.dialog_fixed_width_major, mFixedWidthMajor);
+            safeGetResourceValue(R.dimen.dialog_fixed_height_minor, mFixedHeightMinor);
+            safeGetResourceValue(R.dimen.dialog_fixed_height_major, mFixedHeightMajor);
         }
 
         @Override
