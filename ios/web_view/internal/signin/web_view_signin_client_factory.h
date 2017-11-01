@@ -15,7 +15,7 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-class SigninClient;
+class IOSWebViewSigninClient;
 
 namespace ios_web_view {
 class WebViewBrowserState;
@@ -24,7 +24,7 @@ class WebViewBrowserState;
 // a browser state.
 class WebViewSigninClientFactory : public BrowserStateKeyedServiceFactory {
  public:
-  static SigninClient* GetForBrowserState(
+  static IOSWebViewSigninClient* GetForBrowserState(
       ios_web_view::WebViewBrowserState* browser_state);
   static WebViewSigninClientFactory* GetInstance();
 

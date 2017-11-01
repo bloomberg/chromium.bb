@@ -11,6 +11,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
+#include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_profile_oauth2_token_service_ios_provider_impl.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"

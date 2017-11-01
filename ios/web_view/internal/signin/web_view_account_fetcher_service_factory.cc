@@ -11,6 +11,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"

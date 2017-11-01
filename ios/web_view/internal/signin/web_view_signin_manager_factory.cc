@@ -14,6 +14,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "ios/web_view/internal/app/application_context.h"
+#include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_gaia_cookie_manager_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_oauth2_token_service_factory.h"
