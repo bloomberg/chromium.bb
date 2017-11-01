@@ -92262,11 +92262,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebCore.FeatureObserver" enum="FeatureObserver">
+  <obsolete>
+    As of M57 this has been superseded by Blink.UseCounter.Features which fixes
+    a number of issues.  See https://crbug.com/676837.
+  </obsolete>
   <owner>rbyers@chromium.org</owner>
   <summary>
-    NOTE: As of M57 this has been superseded by Blink.UseCounter.Features which
-    fixes a number of issues.  See https://crbug.com/676837.
-
     Count of how many page loads use various features. The PageVisits bucket is
     incremented for each page load, and the other buckets incremented at most
     once per PageVisit via the WebCore::UseCounter class.
@@ -92275,37 +92276,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebCore.FeatureObserver.CSSProperties"
     enum="MappedCSSProperties">
+  <obsolete>
+    As of M57 this has been superseded by Blink.UseCounter.CSSProperties which
+    fixes a number of issues.  See https://crbug.com/676837.
+  </obsolete>
   <owner>mikelawther@chromium.org</owner>
   <summary>
-    NOTE: As of M57 this has been superseded by Blink.UseCounter.Features which
-    fixes a number of issues.  See https://crbug.com/676837.
-
     Records usage of CSS properties used on a page, either statically or
     dynamically, from the time the page is initialised to when it is closed or
     navigated away from. Each property is counted at most once per page per
     view.
   </summary>
-  <details>
-    Every time a CSS property is parsed on a page, that property is recorded as
-    having been used. The histogram is updated with this data whenever a page is
-    closed, or a page navigation happens. Each histogram bucket corresponds to a
-    CSS property (eg width, border-radius). The exception is the bucket numbered
-    '1' - this counts the number of pages that CSS properties were counted on.
-
-    These numbers give the percentage of pages that use a CSS property. For
-    example, if the 'border-radius' histogram bucket has a count of 250, and the
-    page count bucket (i.e. bucket number 1) has a count of 1000 - this means
-    that 1000 pages were recorded, and border-radius was used on 25% of those
-    pages.
-
-    Internally, each WebCore::Page has a WebCore::UseCounter instance, with
-    booleans recording use of each CSS property - one boolean per property. Upon
-    destruction of the WebCore::Page (e.g. by the user closing the tab), or a
-    page navigation happening, the histogram is updated. For each boolean that
-    is set to True, the corresponding histogram bucket for that CSS property is
-    incremented by 1. The page count bucket (i.e. bucket number 1) is always
-    incremented by 1 on each histogram update.
-  </details>
 </histogram>
 
 <histogram name="WebCore.Framebust" enum="FramebustPermissions">
