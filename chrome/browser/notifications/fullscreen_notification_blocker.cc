@@ -9,7 +9,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/fullscreen.h"
 #include "content/public/browser/notification_service.h"
-#include "ui/display/types/display_constants.h"
 #include "ui/message_center/notifier_settings.h"
 
 using message_center::NotifierId;
@@ -27,7 +26,7 @@ FullscreenNotificationBlocker::~FullscreenNotificationBlocker() {
 
 void FullscreenNotificationBlocker::CheckState() {
   bool was_fullscreen_mode = is_fullscreen_mode_;
-  is_fullscreen_mode_ = IsFullScreenMode(display::kInvalidDisplayId);
+  is_fullscreen_mode_ = IsFullScreenMode();
   if (is_fullscreen_mode_ != was_fullscreen_mode)
     NotifyBlockingStateChanged();
 }
