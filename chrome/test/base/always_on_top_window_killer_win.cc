@@ -11,180 +11,57 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/process/process.h"
-#include "base/run_loop.h"
-#include "base/strings/stringprintf.h"
-#include "base/time/time.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "chrome/test/base/process_inspector_win.h"
+#include "chrome/test/base/save_desktop_snapshot_win.h"
 #include "ui/display/win/screen_win.h"
-#include "ui/gfx/codec/png_codec.h"
 
 namespace {
 
 constexpr char kDialogFoundBeforeTest[] =
     "There is an always on top dialog on the desktop. This was most likely "
     "caused by a previous test and may cause this test to fail. Trying to "
-    "close it.";
+    "close it;";
 
 constexpr char kDialogFoundPostTest[] =
-    "There is an always on top dialog on the desktop after running this test. "
-    "This was most likely caused by this test and may cause future tests to "
-    "fail, trying to close it.";
+    "There is an always on top dialog on the desktop after this test timed "
+    "out. This was most likely caused by this test and may cause future tests "
+    "to fail, trying to close it;";
 
 constexpr char kWindowFoundBeforeTest[] =
-    "There is an always on top window on the desktop before running the test. "
-    "This may have been caused by a previous test and may cause this test to "
-    "fail, class-name=";
+    "There is an always on top window on the desktop. This may have been "
+    "caused by a previous test and may cause this test to fail;";
 
 constexpr char kWindowFoundPostTest[] =
-    "There is an always on top window on the desktop after running the test. "
-    "This may have been caused by this test or a previous test and may cause "
-    "flake, class-name=";
+    "There is an always on top window on the desktop after this test timed "
+    "out. This may have been caused by this test or a previous test and may "
+    "cause flakes;";
 
 // A command line switch to specify the output directory into which snapshots
 // are to be saved in case an always-on-top window is found.
 constexpr char kSnapshotOutputDir[] = "snapshot-output-dir";
 
-// A worker that captures a single frame from a webrtc::DesktopCapturer and then
-// runs a callback when done.
-class CaptureWorker : public webrtc::DesktopCapturer::Callback {
- public:
-  CaptureWorker(std::unique_ptr<webrtc::DesktopCapturer> capturer,
-                base::Closure on_done)
-      : capturer_(std::move(capturer)), on_done_(std::move(on_done)) {
-    capturer_->Start(this);
-    capturer_->CaptureFrame();
-  }
-
-  // Returns the frame that was captured or null in case of failure.
-  std::unique_ptr<webrtc::DesktopFrame> TakeFrame() {
-    return std::move(frame_);
-  }
-
- private:
-  // webrtc::DesktopCapturer::Callback:
-  void OnCaptureResult(webrtc::DesktopCapturer::Result result,
-                       std::unique_ptr<webrtc::DesktopFrame> frame) override {
-    if (result == webrtc::DesktopCapturer::Result::SUCCESS)
-      frame_ = std::move(frame);
-    on_done_.Run();
-  }
-
-  std::unique_ptr<webrtc::DesktopCapturer> capturer_;
-  base::Closure on_done_;
-  std::unique_ptr<webrtc::DesktopFrame> frame_;
-  DISALLOW_COPY_AND_ASSIGN(CaptureWorker);
-};
-
-// Captures and returns a snapshot of the screen, or an empty bitmap in case of
-// error.
-SkBitmap CaptureScreen() {
-  auto options = webrtc::DesktopCaptureOptions::CreateDefault();
-  options.set_disable_effects(false);
-  options.set_allow_directx_capturer(true);
-  options.set_allow_use_magnification_api(false);
-  std::unique_ptr<webrtc::DesktopCapturer> capturer(
-      webrtc::DesktopCapturer::CreateScreenCapturer(options));
-
-  // Grab a single frame.
-  std::unique_ptr<webrtc::DesktopFrame> frame;
-  {
-    // While webrtc::DesktopCapturer seems to be synchronous, comments in its
-    // implementation seem to indicate that it may require a UI message loop on
-    // its thread.
-    base::MessageLoopForUI message_loop;
-    base::RunLoop run_loop;
-    CaptureWorker worker(std::move(capturer), run_loop.QuitClosure());
-    run_loop.Run();
-    frame = worker.TakeFrame();
-  }
-
-  if (!frame)
-    return SkBitmap();
-
-  // Create an image from the frame.
-  SkBitmap result;
-  result.allocN32Pixels(frame->size().width(), frame->size().height(), true);
-  memcpy(result.getAddr32(0, 0), frame->data(),
-         frame->size().width() * frame->size().height() *
-             webrtc::DesktopFrame::kBytesPerPixel);
-  return result;
-}
-
-// Saves a snapshot of the screen to a file in |output_dir|, returning the path
-// to the file if created. An empty path is returned if no new snapshot is
-// created.
-base::FilePath SaveSnapshot(const base::FilePath& output_dir) {
-  // Create the output file.
-  base::Time::Exploded exploded;
-  base::Time::Now().LocalExplode(&exploded);
-  base::FilePath output_path(
-      output_dir.Append(base::FilePath(base::StringPrintf(
-          L"ss_%4d%02d%02d%02d%02d%02d_%03d.png", exploded.year, exploded.month,
-          exploded.day_of_month, exploded.hour, exploded.minute,
-          exploded.second, exploded.millisecond))));
-  base::File file(output_path, base::File::FLAG_CREATE |
-                                   base::File::FLAG_WRITE |
-                                   base::File::FLAG_SHARE_DELETE |
-                                   base::File::FLAG_CAN_DELETE_ON_CLOSE);
-  if (!file.IsValid()) {
-    if (file.error_details() == base::File::FILE_ERROR_EXISTS) {
-      LOG(INFO) << "Skipping screen snapshot since it is already present: "
-                << output_path.BaseName();
-    } else {
-      LOG(ERROR) << "Failed to create snapshot output file \"" << output_path
-                 << "\" with error " << file.error_details();
-    }
-    return base::FilePath();
-  }
-
-  // Delete the output file in case of any error.
-  file.DeleteOnClose(true);
-
-  // Take the snapshot and encode it.
-  SkBitmap screen = CaptureScreen();
-  if (screen.drawsNothing()) {
-    LOG(ERROR) << "Failed to capture a frame of the screen for a snapshot.";
-    return base::FilePath();
-  }
-
-  std::vector<unsigned char> encoded;
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(CaptureScreen(), false, &encoded)) {
-    LOG(ERROR) << "Failed to PNG encode screen snapshot.";
-    return base::FilePath();
-  }
-
-  // Write it to disk.
-  const int to_write = base::checked_cast<int>(encoded.size());
-  int written =
-      file.WriteAtCurrentPos(reinterpret_cast<char*>(encoded.data()), to_write);
-  if (written != to_write) {
-    LOG(ERROR) << "Failed to write entire snapshot to file";
-    return base::FilePath();
-  }
-
-  // Keep the output file.
-  file.DeleteOnClose(false);
-  return output_path;
-}
-
 // A window enumerator that searches for always-on-top windows. A snapshot of
 // the screen is saved if any unexpected on-top windows are found.
 class WindowEnumerator {
  public:
-  explicit WindowEnumerator(RunType run_type);
+  // |run_type| influences which log message is used. |child_command_line|, only
+  // specified when |run_type| is AFTER_TEST_TIMEOUT, is the command line of the
+  // child process that timed out.
+  WindowEnumerator(RunType run_type,
+                   const base::CommandLine* child_command_line);
   void Run();
 
  private:
+  // Properies of a running process.
+  struct ProcessProperties {
+    DWORD process_id;
+    base::string16 command_line;
+  };
+
   // An EnumWindowsProc invoked by EnumWindows once for each window.
   static BOOL CALLBACK OnWindowProc(HWND hwnd, LPARAM l_param);
 
@@ -201,19 +78,31 @@ class WindowEnumerator {
   // shell.
   static bool IsShellWindowClass(const base::string16& class_name);
 
+  // Returns the lineage of |process_id|; specifically, the pid and command line
+  // of |process_id| and each of its ancestors that are still running. Due to
+  // aggressive pid reuse on Windows, it's possible that the returned collection
+  // may contain misleading information. Since the goal of this method is to get
+  // useful data in the aggregate, some misleading info here and there is
+  // tolerable. If it proves to be intolerable, additional checks can be added
+  // to be sure that each ancestor is older that its child.
+  static std::vector<ProcessProperties> GetProcessLineage(DWORD process_id);
+
   // Main processing function run for each window.
   BOOL OnWindow(HWND hwnd);
 
   const base::FilePath output_dir_;
   const RunType run_type_;
+  const base::CommandLine* const child_command_line_;
   bool saved_snapshot_;
   DISALLOW_COPY_AND_ASSIGN(WindowEnumerator);
 };
 
-WindowEnumerator::WindowEnumerator(RunType run_type)
+WindowEnumerator::WindowEnumerator(RunType run_type,
+                                   const base::CommandLine* child_command_line)
     : output_dir_(base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           kSnapshotOutputDir)),
       run_type_(run_type),
+      child_command_line_(child_command_line),
       saved_snapshot_(false) {}
 
 void WindowEnumerator::Run() {
@@ -254,6 +143,34 @@ bool WindowEnumerator::IsShellWindowClass(const base::string16& class_name) {
          class_name == L"Shell_SecondaryTrayWnd";
 }
 
+// static
+std::vector<WindowEnumerator::ProcessProperties>
+WindowEnumerator::GetProcessLineage(DWORD process_id) {
+  std::vector<ProcessProperties> properties;
+
+  while (true) {
+    base::Process process = base::Process::OpenWithAccess(
+        process_id, PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_VM_READ);
+    if (!process.IsValid())
+      break;
+
+    auto inspector = ProcessInspector::Create(process);
+    if (!inspector)
+      break;
+
+    // If PID reuse proves to be a problem, this would be a good point to add
+    // extra checks that |process| is older than the previously inspected
+    // process.
+
+    properties.push_back({process_id, inspector->command_line()});
+    DWORD parent_pid = inspector->GetParentPid();
+    if (process_id == parent_pid)
+      break;
+    process_id = parent_pid;
+  }
+  return properties;
+}
+
 BOOL WindowEnumerator::OnWindow(HWND hwnd) {
   const BOOL kContinueIterating = TRUE;
 
@@ -268,62 +185,80 @@ BOOL WindowEnumerator::OnWindow(HWND hwnd) {
   if (IsShellWindowClass(class_name))
     return kContinueIterating;
 
-  // Something unexpected was found. Save a snapshot of the screen if one hasn't
-  // already been saved and an output directory was specified.
-  if (!saved_snapshot_ && !output_dir_.empty()) {
-    base::FilePath snapshot_file = SaveSnapshot(output_dir_);
-    if (!snapshot_file.empty()) {
-      saved_snapshot_ = true;
-      LOG(ERROR) << "Wrote snapshot to file " << snapshot_file;
+  // All other always-on-top windows may be problematic, but in theory tests
+  // should not be creating an always on top window that outlives the test.
+  // Prepare details of the command line of the test that timed out (if
+  // provided), the process owning the window, and the location of a snapshot
+  // taken of the screen.
+  base::string16 details;
+  if (LOG_IS_ON(ERROR)) {
+    std::wostringstream sstream;
+
+    if (!IsSystemDialogClass(class_name))
+      sstream << " window class name: " << class_name << ";";
+
+    if (child_command_line_) {
+      sstream << " subprocess command line: \""
+              << child_command_line_->GetCommandLineString() << "\";";
     }
+
+    // Save a snapshot of the screen if one hasn't already been saved and an
+    // output directory was specified.
+    base::FilePath snapshot_file;
+    if (!saved_snapshot_ && !output_dir_.empty()) {
+      snapshot_file = SaveDesktopSnapshot(output_dir_);
+      if (!snapshot_file.empty())
+        saved_snapshot_ = true;
+    }
+
+    DWORD process_id = 0;
+    GetWindowThreadProcessId(hwnd, &process_id);
+    std::vector<ProcessProperties> process_properties =
+        GetProcessLineage(process_id);
+    if (!process_properties.empty()) {
+      sstream << " owning process lineage: ";
+      base::string16 sep;
+      for (const auto& prop : process_properties) {
+        sstream << sep << L"(process_id: " << prop.process_id
+                << L", command_line: \"" << prop.command_line << "\")";
+        if (sep.empty())
+          sep = L", ";
+      }
+      sstream << ";";
+    }
+
+    if (!snapshot_file.empty()) {
+      sstream << " screen snapshot saved to file: \"" << snapshot_file.value()
+              << "\";";
+    }
+
+    details = sstream.str();
   }
 
   // System dialogs may be present if a child process triggers an assert(), for
   // example.
   if (IsSystemDialogClass(class_name)) {
-    LOG(ERROR) << (run_type_ == RunType::BEFORE_TEST ? kDialogFoundBeforeTest
-                                                     : kDialogFoundPostTest);
+    LOG(ERROR) << (run_type_ == RunType::BEFORE_SHARD ? kDialogFoundBeforeTest
+                                                      : kDialogFoundPostTest)
+               << details;
     // We don't own the dialog, so we can't destroy it. CloseWindow()
     // results in iconifying the window. An alternative may be to focus it,
     // then send return and wait for close. As we reboot machines running
     // interactive ui tests at least every 12 hours we're going with the
     // simple for now.
     CloseWindow(hwnd);
-    return kContinueIterating;
+  } else {
+    LOG(ERROR) << (run_type_ == RunType::BEFORE_SHARD ? kWindowFoundBeforeTest
+                                                      : kWindowFoundPostTest)
+               << details;
   }
-
-  // All other always-on-top windows may be problematic, but in theory tests
-  // should not be creating an always on top window that outlives the test. Log
-  // attributes of the window in case there are problems.
-  DWORD process_id = 0;
-  DWORD thread_id = GetWindowThreadProcessId(hwnd, &process_id);
-
-  base::Process process = base::Process::Open(process_id);
-  base::string16 process_path(MAX_PATH, L'\0');
-  if (process.IsValid()) {
-    // It's possible that the actual process owning |hwnd| has gone away and
-    // that a new process using the same PID has appeared. If this turns out to
-    // be an issue, we could fetch the process start time here and compare it
-    // with the time just before getting |thread_id| above. This is likely
-    // overkill for diagnostic purposes.
-    DWORD str_len = process_path.size();
-    if (!::QueryFullProcessImageName(process.Handle(), 0, &process_path[0],
-                                     &str_len) ||
-        str_len >= MAX_PATH) {
-      str_len = 0;
-    }
-    process_path.resize(str_len);
-  }
-  LOG(ERROR) << (run_type_ == RunType::BEFORE_TEST ? kWindowFoundBeforeTest
-                                                   : kWindowFoundPostTest)
-             << class_name << " process_id=" << process_id
-             << " thread_id=" << thread_id << " process_path=" << process_path;
 
   return kContinueIterating;
 }
 
 }  // namespace
 
-void KillAlwaysOnTopWindows(RunType run_type) {
-  WindowEnumerator(run_type).Run();
+void KillAlwaysOnTopWindows(RunType run_type,
+                            const base::CommandLine* child_command_line) {
+  WindowEnumerator(run_type, child_command_line).Run();
 }
