@@ -90,7 +90,6 @@ class SVGScriptElement final : public SVGElement,
                                const WTF::OrdinalNumber&,
                                const String& script_content,
                                ContentSecurityPolicy::InlineType) override;
-  AtomicString InitiatorName() const override;
   Document& GetDocument() const override;
   void DispatchLoadEvent() override;
   void DispatchErrorEvent() override;

@@ -143,10 +143,6 @@ bool SVGScriptElement::AllowInlineScriptForCSP(
       inline_type);
 }
 
-AtomicString SVGScriptElement::InitiatorName() const {
-  return Element::localName();
-}
-
 Document& SVGScriptElement::GetDocument() const {
   return Node::GetDocument();
 }
