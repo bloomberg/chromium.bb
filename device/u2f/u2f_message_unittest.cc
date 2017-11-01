@@ -19,11 +19,11 @@ TEST_F(U2fMessageTest, TestPacketSize) {
 
   auto init_packet =
       std::make_unique<U2fInitPacket>(channel_id, 0, data, data.size());
-  EXPECT_EQ(65, init_packet->GetSerializedData()->size());
+  EXPECT_EQ(64, init_packet->GetSerializedData()->size());
 
   auto continuation_packet =
       std::make_unique<U2fContinuationPacket>(channel_id, 0, data);
-  EXPECT_EQ(65, continuation_packet->GetSerializedData()->size());
+  EXPECT_EQ(64, continuation_packet->GetSerializedData()->size());
 }
 
 /*
@@ -46,7 +46,6 @@ TEST_F(U2fMessageTest, TestPacketData) {
 
   scoped_refptr<net::IOBufferWithSize> serialized =
       init_packet->GetSerializedData();
-  EXPECT_EQ(0, serialized->data()[index++]);
   EXPECT_EQ((channel_id >> 24) & 0xff,
             static_cast<uint8_t>(serialized->data()[index++]));
   EXPECT_EQ((channel_id >> 16) & 0xff,
