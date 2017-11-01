@@ -616,6 +616,10 @@ Google Chrome is unable to recover your settings.
         Customize and control Google Chrome
       </message>
 
+      <message name="IDS_OPEN_IN_CHROME" desc="The text label of the Open in Chrome menu item for the Hosted App app menu">
+        &amp;Open in Chrome
+      </message>
+
       <if expr="use_titlecase and not chromeos">
         <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
           About &amp;Google Chrome

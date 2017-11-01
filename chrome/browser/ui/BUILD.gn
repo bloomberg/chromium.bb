@@ -3421,6 +3421,8 @@ split_static_library("ui") {
       "extensions/extension_message_bubble_factory.h",
       "extensions/hosted_app_browser_controller.cc",
       "extensions/hosted_app_browser_controller.h",
+      "extensions/hosted_app_menu_model.cc",
+      "extensions/hosted_app_menu_model.h",
       "extensions/icon_with_badge_image_source.cc",
       "extensions/icon_with_badge_image_source.h",
       "extensions/settings_api_bubble_helpers.cc",

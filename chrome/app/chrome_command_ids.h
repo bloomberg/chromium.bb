@@ -71,6 +71,11 @@
 #define IDC_USE_SYSTEM_TITLE_BAR        34051
 #endif
 
+// Hosted app commands
+#define IDC_COPY_URL                    34060
+#define IDC_OPEN_IN_CHROME              34061
+#define IDC_SITE_SETTINGS               34062
+
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000
 #define IDC_BOOKMARK_ALL_TABS           35001

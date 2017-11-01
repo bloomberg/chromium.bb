@@ -867,6 +867,12 @@ are declared in build/common.gypi.
           <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
             &#8722;
           </message>
+          <message name="IDS_COPY_URL" desc="The text label of the Copy URL menu item for the Hosted App app menu">
+            Copy &amp;URL
+          </message>
+          <message name="IDS_SITE_SETTINGS" desc="The text label of the Site Settings menu item for the Hosted App app menu">
+            &amp;Site settings
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_NEW_TAB" desc="In Title Case: The text label of a menu item for opening a new tab">
@@ -931,6 +937,12 @@ are declared in build/common.gypi.
           </message>
           <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
             &#8722;
+          </message>
+          <message name="IDS_COPY_URL" desc="In Title Case: The text label of the Copy URL menu item for the Hosted App app menu">
+            Copy &amp;URL
+          </message>
+          <message name="IDS_SITE_SETTINGS" desc="In Title Case: The text label of the Site Settings menu item for the Hosted App app menu">
+            &amp;Site Settings
           </message>
         </if>
       </if>

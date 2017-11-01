@@ -13,7 +13,7 @@
 #include "ui/views/view.h"
 
 class AppMenu;
-class AppMenuModel;
+class HostedAppMenuModel;
 class BrowserView;
 
 // A container for hosted app buttons in the title bar.
@@ -48,7 +48,7 @@ class HostedAppButtonContainer : public views::View {
     // App model and menu.
     // Note that the menu should be destroyed before the model it uses, so the
     // menu should be listed later.
-    std::unique_ptr<AppMenuModel> menu_model_;
+    std::unique_ptr<HostedAppMenuModel> menu_model_;
     std::unique_ptr<AppMenu> menu_;
 
     DISALLOW_COPY_AND_ASSIGN(AppMenuButton);

@@ -116,6 +116,7 @@ class TestAppMenuModel : public AppMenuModel {
 
 TEST_F(AppMenuModelTest, Basics) {
   TestAppMenuModel model(this, browser());
+  model.Init();
   int itemCount = model.GetItemCount();
 
   // Verify it has items. The number varies by platform, so we don't check
@@ -182,6 +183,7 @@ TEST_F(AppMenuModelTest, GlobalError) {
   service->AddGlobalError(base::WrapUnique(error2));
 
   AppMenuModel model(this, browser());
+  model.Init();
   int index1 = model.GetIndexOfCommandId(command1);
   EXPECT_GT(index1, -1);
   int index2 = model.GetIndexOfCommandId(command2);
