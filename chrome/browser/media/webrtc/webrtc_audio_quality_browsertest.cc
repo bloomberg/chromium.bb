@@ -835,8 +835,11 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
                        MANUAL_TestAutoGainControlOnLowAudio) {
   base::ScopedAllowBlockingForTesting allow_blocking;
+  // Disables AEC, but leaves AGC on.
+  const char* kAudioCallWithoutEchoCancellation =
+      "{audio: { mandatory: { googEchoCancellation: false } } }";
   ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
-      kReferenceFile, kAudioOnlyCallConstraints, "_with_agc"));
+      kReferenceFile, kAudioCallWithoutEchoCancellation, "_with_agc"));
 }
 
 // Since the AGC is off here there should be no gain at all.
