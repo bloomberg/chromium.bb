@@ -110,6 +110,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void DeleteLineBoxTree();
 
+  bool CanContainFirstFormattedLine() const;
+
   LayoutUnit AvailableLogicalWidthForLine(
       LayoutUnit position,
       IndentTextOrNot indent_text,

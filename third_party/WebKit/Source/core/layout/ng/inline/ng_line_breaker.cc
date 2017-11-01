@@ -45,17 +45,7 @@ NGLineBreaker::NGLineBreaker(
 bool NGLineBreaker::IsFirstFormattedLine() const {
   if (item_index_ || offset_)
     return false;
-  // The first line of an anonymous block box is only affected if it is the
-  // first child of its parent element.
-  // https://drafts.csswg.org/css-text-3/#text-indent-property
-  LayoutBlockFlow* block = node_.GetLayoutBlockFlow();
-  if (block->IsAnonymousBlock() && block->PreviousSibling()) {
-    // TODO(kojii): In NG, leading OOF creates a block box.
-    // text-indent-first-line-002.html fails for this reason.
-    // crbug.com/734554
-    return false;
-  }
-  return true;
+  return node_.GetLayoutBlockFlow()->CanContainFirstFormattedLine();
 }
 
 // Compute the base direction for bidi algorithm for this line.
