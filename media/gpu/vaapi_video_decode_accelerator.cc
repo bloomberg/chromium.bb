@@ -23,6 +23,7 @@
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/gpu/accelerated_video_decoder.h"
+#include "media/gpu/format_utils.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/vaapi_picture.h"
 #include "media/gpu/vp8_decoder.h"
@@ -706,24 +707,6 @@ void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(size_t num_pics,
   TryFinishSurfaceSetChange();
 }
 
-static VideoPixelFormat BufferFormatToVideoPixelFormat(
-    gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::BGRX_8888:
-      return PIXEL_FORMAT_XRGB;
-
-    case gfx::BufferFormat::BGRA_8888:
-      return PIXEL_FORMAT_ARGB;
-
-    case gfx::BufferFormat::YVU_420:
-      return PIXEL_FORMAT_YV12;
-
-    default:
-      LOG(FATAL) << "Add more cases as needed";
-      return PIXEL_FORMAT_UNKNOWN;
-  }
-}
-
 void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -763,7 +746,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   VLOGF(2) << "Requesting " << requested_num_pics_
            << " pictures of size: " << requested_pic_size_.ToString();
 
-  VideoPixelFormat format = BufferFormatToVideoPixelFormat(output_format_);
+  VideoPixelFormat format = GfxBufferFormatToVideoPixelFormat(output_format_);
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::ProvidePictureBuffers, client_,
                             requested_num_pics_, format, 1, requested_pic_size_,

@@ -52,4 +52,17 @@ SurfaceFactoryOzone::CreateNativePixmapFromHandle(
   return nullptr;
 }
 
+scoped_refptr<gfx::NativePixmap>
+SurfaceFactoryOzone::CreateNativePixmapForProtectedBufferHandle(
+    gfx::AcceleratedWidget widget,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    const gfx::NativePixmapHandle& handle) {
+  return nullptr;
+}
+
+void SurfaceFactoryOzone::SetGetProtectedNativePixmapDelegate(
+    const GetProtectedNativePixmapCallback&
+        get_protected_native_pixmap_callback) {}
+
 }  // namespace ui

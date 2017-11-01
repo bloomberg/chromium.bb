@@ -149,7 +149,7 @@ void ArcOemCryptoBridge::ConnectToDaemon(
     mojom::OemCryptoServiceRequest request) {
   // Get the Mojo interface from the GPU for dealing with secure buffers and
   // pass that to the daemon as well in our Connect call.
-  media::mojom::ProtectedBufferManagerPtr gpu_buffer_manager;
+  mojom::ProtectedBufferManagerPtr gpu_buffer_manager;
   content::BindInterfaceInGpuProcess(mojo::MakeRequest(&gpu_buffer_manager));
   oemcrypto_host_daemon_ptr_->Connect(std::move(request),
                                       std::move(gpu_buffer_manager));

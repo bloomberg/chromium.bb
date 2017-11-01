@@ -34,6 +34,14 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
   virtual gfx::BufferFormat GetBufferFormat() const = 0;
   virtual gfx::Size GetBufferSize() const = 0;
 
+  // Return an id that is guaranteed to be unique and equal for all instances
+  // of this NativePixmap backed by the same buffer, for the duration of its
+  // lifetime. If such id cannot be generated, 0 (an invalid id) is returned.
+  //
+  // TODO(posciak): crbug.com/771863, remove this once a different mechanism
+  // for protected shared memory buffers is implemented.
+  virtual uint32_t GetUniqueId() const = 0;
+
   // Sets the overlay plane to switch to at the next page flip.
   // |widget| specifies the screen to display this overlay plane on.
   // |plane_z_order| specifies the stacking order of the plane relative to the
