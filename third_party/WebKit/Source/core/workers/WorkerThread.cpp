@@ -58,7 +58,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -69,12 +68,6 @@ namespace {
 
 // TODO(nhiroki): Adjust the delay based on UMA.
 constexpr TimeDelta kForcibleTerminationDelay = TimeDelta::FromSeconds(2);
-
-void ForwardInterfaceRequest(const std::string& name,
-                             mojo::ScopedMessagePipeHandle handle) {
-  Platform::Current()->GetInterfaceProvider()->GetInterface(name.c_str(),
-                                                            std::move(handle));
-}
 
 }  // namespace
 
@@ -307,13 +300,6 @@ ExitCode WorkerThread::GetExitCodeForTesting() {
   return exit_code_;
 }
 
-service_manager::InterfaceProvider& WorkerThread::GetInterfaceProvider() {
-  // TODO(https://crbug.com/734210): Instead of forwarding to the process-wide
-  // interface provider a worker-specific interface provider pipe should be
-  // passed in as part of the WorkerThreadStartupData.
-  return interface_provider_;
-}
-
 WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
                            WorkerReportingProxy& worker_reporting_proxy)
     : time_origin_(MonotonicallyIncreasingTime()),
@@ -329,8 +315,6 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
   DCHECK(IsMainThread());
   MutexLocker lock(ThreadSetMutex());
   WorkerThreads().insert(this);
-  interface_provider_.Forward(
-      ConvertToBaseCallback(WTF::Bind(&ForwardInterfaceRequest)));
 }
 
 void WorkerThread::ScheduleToTerminateScriptExecution() {

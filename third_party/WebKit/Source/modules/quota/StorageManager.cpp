@@ -77,23 +77,15 @@ ScriptPromise StorageManager::persist(ScriptState* script_state) {
   }
 
   DCHECK(execution_context->IsDocument());
-  PermissionService* permission_service =
-      GetPermissionService(ExecutionContext::From(script_state));
-  if (!permission_service) {
-    resolver->Reject(DOMException::Create(
-        kInvalidStateError,
-        "In its current state, the global scope can't request permissions."));
-    return promise;
-  }
-
   Document* doc = ToDocumentOrNull(execution_context);
-  permission_service->RequestPermission(
-      CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
-      ExecutionContext::From(script_state)->GetSecurityOrigin(),
-      Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
-      ConvertToBaseCallback(
-          WTF::Bind(&StorageManager::PermissionRequestComplete,
-                    WrapPersistent(this), WrapPersistent(resolver))));
+  GetPermissionService(ExecutionContext::From(script_state))
+      .RequestPermission(
+          CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
+          ExecutionContext::From(script_state)->GetSecurityOrigin(),
+          Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr),
+          ConvertToBaseCallback(
+              WTF::Bind(&StorageManager::PermissionRequestComplete,
+                        WrapPersistent(this), WrapPersistent(resolver))));
 
   return promise;
 }
@@ -110,20 +102,13 @@ ScriptPromise StorageManager::persisted(ScriptState* script_state) {
     return promise;
   }
 
-  PermissionService* permission_service =
-      GetPermissionService(ExecutionContext::From(script_state));
-  if (!permission_service) {
-    resolver->Reject(DOMException::Create(
-        kInvalidStateError,
-        "In its current state, the global scope can't query permissions."));
-    return promise;
-  }
-  permission_service->HasPermission(
-      CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
-      ExecutionContext::From(script_state)->GetSecurityOrigin(),
-      ConvertToBaseCallback(
-          WTF::Bind(&StorageManager::PermissionRequestComplete,
-                    WrapPersistent(this), WrapPersistent(resolver))));
+  GetPermissionService(ExecutionContext::From(script_state))
+      .HasPermission(
+          CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE),
+          ExecutionContext::From(script_state)->GetSecurityOrigin(),
+          ConvertToBaseCallback(
+              WTF::Bind(&StorageManager::PermissionRequestComplete,
+                        WrapPersistent(this), WrapPersistent(resolver))));
   return promise;
 }
 
@@ -146,15 +131,16 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   return promise;
 }
 
-PermissionService* StorageManager::GetPermissionService(
+PermissionService& StorageManager::GetPermissionService(
     ExecutionContext* execution_context) {
-  if (!permission_service_ &&
-      ConnectToPermissionService(execution_context,
-                                 mojo::MakeRequest(&permission_service_)))
+  if (!permission_service_) {
+    ConnectToPermissionService(execution_context,
+                               mojo::MakeRequest(&permission_service_));
     permission_service_.set_connection_error_handler(ConvertToBaseCallback(
         WTF::Bind(&StorageManager::PermissionServiceConnectionError,
                   WrapWeakPersistent(this))));
-  return permission_service_.get();
+  }
+  return *permission_service_;
 }
 
 void StorageManager::PermissionServiceConnectionError() {

@@ -27,7 +27,7 @@ class Permissions final : public ScriptWrappable {
   ScriptPromise requestAll(ScriptState*, const Vector<Dictionary>&);
 
  private:
-  mojom::blink::PermissionService* GetService(ExecutionContext*);
+  mojom::blink::PermissionService& GetService(ExecutionContext*);
   void ServiceConnectionError();
   void TaskComplete(ScriptPromiseResolver*,
                     mojom::blink::PermissionDescriptorPtr,
