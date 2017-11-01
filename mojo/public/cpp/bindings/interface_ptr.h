@@ -39,6 +39,7 @@ class InterfacePtr {
  public:
   using InterfaceType = Interface;
   using PtrInfoType = InterfacePtrInfo<Interface>;
+  using Proxy = typename Interface::Proxy_;
 
   // Constructs an unbound InterfacePtr.
   InterfacePtr() {}
@@ -89,11 +90,11 @@ class InterfacePtr {
 
   // Returns a raw pointer to the local proxy. Caller does not take ownership.
   // Note that the local proxy is thread hostile, as stated above.
-  Interface* get() const { return internal_state_.instance(); }
+  Proxy* get() const { return internal_state_.instance(); }
 
   // Functions like a pointer to Interface. Must already be bound.
-  Interface* operator->() const { return get(); }
-  Interface& operator*() const { return *get(); }
+  Proxy* operator->() const { return get(); }
+  Proxy& operator*() const { return *get(); }
 
   // Returns the version number of the interface that the remote side supports.
   uint32_t version() const { return internal_state_.version(); }
