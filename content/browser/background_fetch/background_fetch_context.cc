@@ -13,9 +13,9 @@
 #include "content/browser/background_fetch/background_fetch_registration_notifier.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_delegate.h"
-#include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/blob/blob_data_handle.h"
 
 namespace content {
 
@@ -172,7 +172,7 @@ void BackgroundFetchContext::DidGetSettledFetches(
     blink::mojom::BackgroundFetchError error,
     bool background_fetch_succeeded,
     std::vector<BackgroundFetchSettledFetch> settled_fetches,
-    std::vector<std::unique_ptr<BlobHandle>> blob_handles) {
+    std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
@@ -189,24 +189,24 @@ void BackgroundFetchContext::DidGetSettledFetches(
         base::Bind(&BackgroundFetchContext::CleanupRegistration,
                    weak_factory_.GetWeakPtr(), registration_id,
                    // The blob uuid is sent as part of |settled_fetches|. Bind
-                   // |blob_handles| to the callback to keep them alive until
-                   // the waitUntil event is resolved.
-                   std::move(blob_handles)));
+                   // |blob_data_handles| to the callback to keep them alive
+                   // until the waitUntil event is resolved.
+                   std::move(blob_data_handles)));
   } else {
     event_dispatcher_.DispatchBackgroundFetchFailEvent(
         registration_id, std::move(settled_fetches),
         base::Bind(&BackgroundFetchContext::CleanupRegistration,
                    weak_factory_.GetWeakPtr(), registration_id,
                    // The blob uuid is sent as part of |settled_fetches|. Bind
-                   // |blob_handles| to the callback to keep them alive until
-                   // the waitUntil event is resolved.
-                   std::move(blob_handles)));
+                   // |blob_data_handles| to the callback to keep them alive
+                   // until the waitUntil event is resolved.
+                   std::move(blob_data_handles)));
   }
 }
 
 void BackgroundFetchContext::CleanupRegistration(
     const BackgroundFetchRegistrationId& registration_id,
-    const std::vector<std::unique_ptr<BlobHandle>>& blob_handles) {
+    const std::vector<std::unique_ptr<storage::BlobDataHandle>>& blob_handles) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // If we had an active JobController, it is no longer necessary, as the

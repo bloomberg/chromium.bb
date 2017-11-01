@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,13 +22,17 @@
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
+#include "storage/browser/blob/blob_data_builder.h"
+#include "storage/browser/blob/blob_impl.h"
+#include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/WebKit/common/blob/blob.mojom.h"
 
 // Service Worker DB UserData schema
 // =================================
@@ -1039,7 +1044,7 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
   std::vector<BackgroundFetchSettledFetch> settled_fetches;
   settled_fetches.reserve(requests.size());
 
-  std::vector<std::unique_ptr<BlobHandle>> blob_handles;
+  std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles;
 
   for (const auto& request : requests) {
     BackgroundFetchSettledFetch settled_fetch;
@@ -1063,17 +1068,32 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
 
       if (request->GetFileSize() > 0) {
         DCHECK(!request->GetFilePath().empty());
-        std::unique_ptr<BlobHandle> blob_handle =
-            blob_storage_context_->CreateFileBackedBlob(
-                request->GetFilePath(), 0 /* offset */, request->GetFileSize(),
-                base::Time() /* expected_modification_time */);
+        DCHECK(blob_storage_context_);
 
-        // TODO(peter): Appropriately handle !blob_handle
-        if (blob_handle) {
-          settled_fetch.response.blob_uuid = blob_handle->GetUUID();
-          settled_fetch.response.blob_size = request->GetFileSize();
+        storage::BlobDataBuilder blob_builder(base::GenerateGUID());
+        blob_builder.AppendFile(request->GetFilePath(), 0 /* offset */,
+                                request->GetFileSize(),
+                                base::Time() /* expected_modification_time */);
 
-          blob_handles.push_back(std::move(blob_handle));
+        auto blob_data_handle =
+            GetBlobStorageContext(blob_storage_context_.get())
+                ->AddFinishedBlob(&blob_builder);
+
+        // TODO(peter): Appropriately handle !blob_data_handle
+        if (blob_data_handle) {
+          settled_fetch.response.blob_uuid = blob_data_handle->uuid();
+          settled_fetch.response.blob_size = blob_data_handle->size();
+          if (features::IsMojoBlobsEnabled()) {
+            blink::mojom::BlobPtr blob_ptr;
+            storage::BlobImpl::Create(
+                std::make_unique<storage::BlobDataHandle>(*blob_data_handle),
+                MakeRequest(&blob_ptr));
+
+            settled_fetch.response.blob =
+                base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
+          }
+
+          blob_data_handles.push_back(std::move(blob_data_handle));
         }
       }
     } else {
@@ -1091,9 +1111,9 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
     settled_fetches.push_back(settled_fetch);
   }
 
-  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
-                          background_fetch_succeeded,
-                          std::move(settled_fetches), std::move(blob_handles));
+  std::move(callback).Run(
+      blink::mojom::BackgroundFetchError::NONE, background_fetch_succeeded,
+      std::move(settled_fetches), std::move(blob_data_handles));
 }
 
 void BackgroundFetchDataManager::MarkRegistrationForDeletion(
