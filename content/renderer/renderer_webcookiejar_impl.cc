@@ -4,6 +4,8 @@
 
 #include "content/renderer/renderer_webcookiejar_impl.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/frame_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -21,7 +23,8 @@ void RendererWebCookieJarImpl::SetCookie(const WebURL& url,
   std::string value_utf8 =
       value.Utf8(WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
   RenderThreadImpl::current()->render_frame_message_filter()->SetCookie(
-      sender_->GetRoutingID(), url, site_for_cookies, value_utf8);
+      sender_->GetRoutingID(), url, site_for_cookies, value_utf8,
+      base::BindOnce(&base::DoNothing));
 }
 
 WebString RendererWebCookieJarImpl::Cookies(const WebURL& url,
