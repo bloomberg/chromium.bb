@@ -42,6 +42,10 @@ class LineLayoutBlockFlow : public LineLayoutBox {
     return ToBlockFlow()->StartAlignedOffsetForLine(position, indent_text);
   }
 
+  bool CanContainFirstFormattedLine() const {
+    return ToBlockFlow()->CanContainFirstFormattedLine();
+  }
+
   LayoutUnit TextIndentOffset() const {
     return ToBlockFlow()->TextIndentOffset();
   }
