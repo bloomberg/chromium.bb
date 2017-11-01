@@ -133,7 +133,8 @@ class TaskSchedulerWorkerPoolTest
         scheduler_worker_pool_impl->Start(
             SchedulerWorkerPoolParams(kNumWorkersInWorkerPool,
                                       TimeDelta::Max()),
-            service_thread_.task_runner());
+            service_thread_.task_runner(),
+            SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
         break;
       }
 #if defined(OS_WIN)

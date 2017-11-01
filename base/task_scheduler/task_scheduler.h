@@ -51,19 +51,31 @@ class Location;
 class BASE_EXPORT TaskScheduler {
  public:
   struct BASE_EXPORT InitParams {
+    enum class SharedWorkerPoolEnvironment {
+      // Use the default environment (no environment).
+      DEFAULT,
+#if defined(OS_WIN)
+      // Place the worker in a COM MTA.
+      COM_MTA,
+#endif  // defined(OS_WIN)
+    };
+
     InitParams(
         const SchedulerWorkerPoolParams& background_worker_pool_params_in,
         const SchedulerWorkerPoolParams&
             background_blocking_worker_pool_params_in,
         const SchedulerWorkerPoolParams& foreground_worker_pool_params_in,
         const SchedulerWorkerPoolParams&
-            foreground_blocking_worker_pool_params_in);
+            foreground_blocking_worker_pool_params_in,
+        SharedWorkerPoolEnvironment shared_worker_pool_environment_in =
+            SharedWorkerPoolEnvironment::DEFAULT);
     ~InitParams();
 
     SchedulerWorkerPoolParams background_worker_pool_params;
     SchedulerWorkerPoolParams background_blocking_worker_pool_params;
     SchedulerWorkerPoolParams foreground_worker_pool_params;
     SchedulerWorkerPoolParams foreground_blocking_worker_pool_params;
+    SharedWorkerPoolEnvironment shared_worker_pool_environment;
   };
 
   // Destroying a TaskScheduler is not allowed in production; it is always
