@@ -14,43 +14,71 @@
   padding: 12px;
 }
 
+.tab-select {
+  left:0;
+  right:0;
+}
+
 .tab-select input[type=radio] {
-   display: none;
+  display: none;
 }
 
 .tab-select label {
   background: #ddd;
   border: outset 1px silver;
   cursor: pointer;
-  margin-right: -5px;
+  display: table-cell;
   padding: 5px 5px;
+  text-align: center;
+  vertical-align: middle;
+  width: 20%;
 }
 
 .tab-select input:checked + span {
   background: #aaa;
   border: inset 1px silver;
+  display: table-cell;
+  height: 2em;
+  text-align: center;
+  vertical-align: middle;
+  width: 30em;
 }
 
 .table-name {
   font-size: 100%;
   font-weight: bold;
+  margin-top: 10px;
 }
 
 table {
   border: 1px solid black;
+  border: 0;
   border-collapse: collapse;
+  margin-top: 10px;
+  max-height: 100px;
+  table-layout: fixed;
+  width: 100%;
+}
+
+td {
+  border: 1px solid black;
+  padding: 10px;
+  text-align: left;
+}
+
+td.log-time {
+  word-wrap: break-word;
+}
+
+td.log-url {
+  overflow: scroll;
+  text-overflow: scroll;
 }
 
 th {
   border: 1px solid black;
   padding: 15px;
-  text-align: left;
-}
-
-td {
-  border: 1px solid black;
-  padding: 15px;
-  text-align: left;
+  text-align: center;
 }
 
 .error-header {
