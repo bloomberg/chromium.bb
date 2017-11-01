@@ -5,6 +5,7 @@
 #ifndef CSSStyleValue_h
 #define CSSStyleValue_h
 
+#include "bindings/core/v8/Nullable.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
@@ -14,8 +15,9 @@
 namespace blink {
 
 class ExceptionState;
-class ScriptState;
-class ScriptValue;
+
+class CSSStyleValue;
+using CSSStyleValueVector = HeapVector<Member<CSSStyleValue>>;
 
 // The base class for all CSS values returned by the Typed OM.
 // See CSSStyleValue.idl for additional documentation about this class.
@@ -48,10 +50,12 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
     kInvalidType,
   };
 
-  static ScriptValue parse(ScriptState*,
-                           const String& property_name,
-                           const String& value,
-                           ExceptionState&);
+  static CSSStyleValue* parse(const String& property_name,
+                              const String& value,
+                              ExceptionState&);
+  static Nullable<CSSStyleValueVector> parseAll(const String& property_name,
+                                                const String& value,
+                                                ExceptionState&);
 
   virtual ~CSSStyleValue() {}
 
@@ -74,8 +78,6 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
 
   CSSStyleValue() {}
 };
-
-typedef HeapVector<Member<CSSStyleValue>> CSSStyleValueVector;
 
 }  // namespace blink
 
