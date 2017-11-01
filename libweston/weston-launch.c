@@ -676,8 +676,10 @@ static void
 help(const char *name)
 {
 	fprintf(stderr, "Usage: %s [args...] [-- [weston args..]]\n", name);
-	fprintf(stderr, "  -u, --user      Start session as specified username\n");
-	fprintf(stderr, "  -t, --tty       Start session on alternative tty\n");
+	fprintf(stderr, "  -u, --user      Start session as specified username,\n"
+			"                  e.g. -u joe, requires root.\n");
+	fprintf(stderr, "  -t, --tty       Start session on alternative tty,\n"
+			"                  e.g. -t /dev/tty4, requires -u option.\n");
 	fprintf(stderr, "  -v, --verbose   Be verbose\n");
 	fprintf(stderr, "  -h, --help      Display this help message\n");
 }
