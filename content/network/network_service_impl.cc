@@ -95,7 +95,7 @@ NetworkServiceImpl::NetworkServiceImpl(
         base::WrapUnique(net::NetworkChangeNotifier::Create());
 #endif
   }
-  network_change_manager_ = std::make_unique<NetworkChangeManagerImpl>(
+  network_change_manager_ = std::make_unique<NetworkChangeManager>(
       std::move(network_change_notifier));
 
   if (net_log) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/network_change_manager_impl.h"
+#include "content/network/network_change_manager.h"
 
 #include <algorithm>
 #include <utility>
@@ -33,7 +33,7 @@ class TestNetworkChangeManagerClient
     : public mojom::NetworkChangeManagerClient {
  public:
   explicit TestNetworkChangeManagerClient(
-      content::NetworkChangeManagerImpl* network_change_manager)
+      content::NetworkChangeManager* network_change_manager)
       : num_network_changed_(0),
         run_loop_(std::make_unique<base::RunLoop>()),
         notification_type_to_wait_(NONE),
@@ -89,23 +89,23 @@ class TestNetworkChangeManagerClient
 
 }  // namespace
 
-class NetworkChangeManagerImplTest : public testing::Test {
+class NetworkChangeManagerTest : public testing::Test {
  public:
-  NetworkChangeManagerImplTest()
-      : network_change_manager_(new NetworkChangeManagerImpl(
+  NetworkChangeManagerTest()
+      : network_change_manager_(new NetworkChangeManager(
             base::WrapUnique(net::NetworkChangeNotifier::CreateMock()))) {
     network_change_manager_client_ =
         std::make_unique<TestNetworkChangeManagerClient>(
             network_change_manager_.get());
   }
 
-  ~NetworkChangeManagerImplTest() override {}
+  ~NetworkChangeManagerTest() override {}
 
   TestNetworkChangeManagerClient* network_change_manager_client() {
     return network_change_manager_client_.get();
   }
 
-  NetworkChangeManagerImpl* network_change_manager() const {
+  NetworkChangeManager* network_change_manager() const {
     return network_change_manager_.get();
   }
 
@@ -115,14 +115,14 @@ class NetworkChangeManagerImplTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<NetworkChangeManagerImpl> network_change_manager_;
+  std::unique_ptr<NetworkChangeManager> network_change_manager_;
   std::unique_ptr<TestNetworkChangeManagerClient>
       network_change_manager_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkChangeManagerImplTest);
+  DISALLOW_COPY_AND_ASSIGN(NetworkChangeManagerTest);
 };
 
-TEST_F(NetworkChangeManagerImplTest, ClientNotified) {
+TEST_F(NetworkChangeManagerTest, ClientNotified) {
   // Simulate a new network change.
   SimulateNetworkChange(net::NetworkChangeNotifier::CONNECTION_3G);
   network_change_manager_client()->WaitForNotification(NETWORK_CHANGED);
@@ -132,7 +132,7 @@ TEST_F(NetworkChangeManagerImplTest, ClientNotified) {
   EXPECT_EQ(1u, network_change_manager_client()->num_network_changed());
 }
 
-TEST_F(NetworkChangeManagerImplTest, OneClientPipeBroken) {
+TEST_F(NetworkChangeManagerTest, OneClientPipeBroken) {
   auto network_change_manager_client2 =
       std::make_unique<TestNetworkChangeManagerClient>(
           network_change_manager());
@@ -165,7 +165,7 @@ TEST_F(NetworkChangeManagerImplTest, OneClientPipeBroken) {
   EXPECT_EQ(2u, network_change_manager_client()->num_network_changed());
 }
 
-TEST_F(NetworkChangeManagerImplTest, NewClientReceivesCurrentType) {
+TEST_F(NetworkChangeManagerTest, NewClientReceivesCurrentType) {
   // Simulate a network change.
   SimulateNetworkChange(net::NetworkChangeNotifier::CONNECTION_BLUETOOTH);
 

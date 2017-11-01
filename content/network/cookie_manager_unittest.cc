@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/cookie_manager_impl.h"
+#include "content/network/cookie_manager.h"
 
 #include <algorithm>
 
@@ -22,10 +22,10 @@
 //      * SynchronousMojoCookieWrapper: Takes a network::mojom::CookieManager at
 //        construction; exposes synchronous interfaces that wrap the
 //        network::mojom::CookieManager async interfaces to make testing easier.
-//      * CookieChangeNotificationImpl: Test class implementing
+//      * CookieChangeNotification: Test class implementing
 //        the CookieChangeNotification interface and recording
 //        incoming messages on it.
-//      * CookieManagerImplTest: Test base class.  Automatically sets up
+//      * CookieManagerTest: Test base class.  Automatically sets up
 //        a cookie store, a cookie service wrapping it, a mojo pipe
 //        connected to the server, and the cookie service implemented
 //        by the other end of the pipe.
@@ -134,19 +134,19 @@ class SynchronousCookieManager {
   DISALLOW_COPY_AND_ASSIGN(SynchronousCookieManager);
 };
 
-class CookieManagerImplTest : public testing::Test {
+class CookieManagerTest : public testing::Test {
  public:
-  CookieManagerImplTest()
+  CookieManagerTest()
       : connection_error_seen_(false),
         cookie_monster_(nullptr, nullptr),
-        cookie_service_(std::make_unique<CookieManagerImpl>(&cookie_monster_)) {
+        cookie_service_(std::make_unique<CookieManager>(&cookie_monster_)) {
     cookie_service_->AddRequest(mojo::MakeRequest(&cookie_service_ptr_));
     service_wrapper_ =
         std::make_unique<SynchronousCookieManager>(cookie_service_ptr_.get());
     cookie_service_ptr_.set_connection_error_handler(base::BindOnce(
-        &CookieManagerImplTest::OnConnectionError, base::Unretained(this)));
+        &CookieManagerTest::OnConnectionError, base::Unretained(this)));
   }
-  ~CookieManagerImplTest() override {}
+  ~CookieManagerTest() override {}
 
   // Tear down the remote service.
   void NukeService() { cookie_service_.reset(); }
@@ -167,7 +167,7 @@ class CookieManagerImplTest : public testing::Test {
 
   net::CookieStore* cookie_store() { return &cookie_monster_; }
 
-  CookieManagerImpl* service_impl() const { return cookie_service_.get(); }
+  CookieManager* service() const { return cookie_service_.get(); }
 
   // Return the cookie service at the client end of the mojo pipe.
   network::mojom::CookieManager* cookie_service_client() {
@@ -186,11 +186,11 @@ class CookieManagerImplTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;
   net::CookieMonster cookie_monster_;
-  std::unique_ptr<content::CookieManagerImpl> cookie_service_;
+  std::unique_ptr<content::CookieManager> cookie_service_;
   network::mojom::CookieManagerPtr cookie_service_ptr_;
   std::unique_ptr<SynchronousCookieManager> service_wrapper_;
 
-  DISALLOW_COPY_AND_ASSIGN(CookieManagerImplTest);
+  DISALLOW_COPY_AND_ASSIGN(CookieManagerTest);
 };
 
 namespace {
@@ -204,7 +204,7 @@ bool CompareCanonicalCookies(const net::CanonicalCookie& c1,
 
 // Test the GetAllCookies accessor.  Also tests that canonical
 // cookies come out of the store unchanged.
-TEST_F(CookieManagerImplTest, GetAllCookies) {
+TEST_F(CookieManagerTest, GetAllCookies) {
   base::Time before_creation(base::Time::Now());
 
   // Set some cookies for the test to play with.
@@ -300,7 +300,7 @@ TEST_F(CookieManagerImplTest, GetAllCookies) {
   EXPECT_EQ(net::COOKIE_PRIORITY_MEDIUM, cookies[3].Priority());
 }
 
-TEST_F(CookieManagerImplTest, GetCookieList) {
+TEST_F(CookieManagerTest, GetCookieList) {
   // Set some cookies for the test to play with.
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
@@ -342,7 +342,7 @@ TEST_F(CookieManagerImplTest, GetCookieList) {
   EXPECT_EQ("E", cookies[1].Value());
 }
 
-TEST_F(CookieManagerImplTest, GetCookieListHttpOnly) {
+TEST_F(CookieManagerTest, GetCookieListHttpOnly) {
   // Create an httponly and a non-httponly cookie.
   bool result;
   result = SetCanonicalCookie(
@@ -379,7 +379,7 @@ TEST_F(CookieManagerImplTest, GetCookieListHttpOnly) {
   EXPECT_EQ("C", cookies[1].Name());
 }
 
-TEST_F(CookieManagerImplTest, GetCookieListSameSite) {
+TEST_F(CookieManagerTest, GetCookieListSameSite) {
   // Create an unrestricted, a lax, and a strict cookie.
   bool result;
   result = SetCanonicalCookie(
@@ -435,7 +435,7 @@ TEST_F(CookieManagerImplTest, GetCookieListSameSite) {
   EXPECT_EQ("E", cookies[2].Name());
 }
 
-TEST_F(CookieManagerImplTest, GetCookieListAccessTime) {
+TEST_F(CookieManagerTest, GetCookieListAccessTime) {
   bool result = SetCanonicalCookie(
       net::CanonicalCookie(
           "A", "B", "foo_host", "/", base::Time(), base::Time(), base::Time(),
@@ -467,7 +467,7 @@ TEST_F(CookieManagerImplTest, GetCookieListAccessTime) {
   EXPECT_LE(cookies[0].LastAccessDate(), base::Time::Now());
 }
 
-TEST_F(CookieManagerImplTest, DeleteThroughSet) {
+TEST_F(CookieManagerTest, DeleteThroughSet) {
   // Set some cookies for the test to play with.
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
@@ -520,7 +520,7 @@ TEST_F(CookieManagerImplTest, DeleteThroughSet) {
   EXPECT_EQ("E", cookies[2].Value());
 }
 
-TEST_F(CookieManagerImplTest, ConfirmSecureSetFails) {
+TEST_F(CookieManagerTest, ConfirmSecureSetFails) {
   EXPECT_FALSE(service_wrapper()->SetCanonicalCookie(
       net::CanonicalCookie(
           "N", "O", "foo_host", "/", base::Time(), base::Time(), base::Time(),
@@ -533,7 +533,7 @@ TEST_F(CookieManagerImplTest, ConfirmSecureSetFails) {
   ASSERT_EQ(0u, cookies.size());
 }
 
-TEST_F(CookieManagerImplTest, ConfirmHttpOnlySetFails) {
+TEST_F(CookieManagerTest, ConfirmHttpOnlySetFails) {
   EXPECT_FALSE(service_wrapper()->SetCanonicalCookie(
       net::CanonicalCookie(
           "N", "O", "foo_host", "/", base::Time(), base::Time(), base::Time(),
@@ -546,7 +546,7 @@ TEST_F(CookieManagerImplTest, ConfirmHttpOnlySetFails) {
   ASSERT_EQ(0u, cookies.size());
 }
 
-TEST_F(CookieManagerImplTest, ConfirmHttpOnlyOverwriteFails) {
+TEST_F(CookieManagerTest, ConfirmHttpOnlyOverwriteFails) {
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
           "HttpOnly", "F", "foo_host", "/with/path", base::Time(), base::Time(),
@@ -571,7 +571,7 @@ TEST_F(CookieManagerImplTest, ConfirmHttpOnlyOverwriteFails) {
   EXPECT_EQ("F", cookies[0].Value());
 }
 
-TEST_F(CookieManagerImplTest, DeleteEverything) {
+TEST_F(CookieManagerTest, DeleteEverything) {
   // Set some cookies for the test to play with.
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
@@ -608,7 +608,7 @@ TEST_F(CookieManagerImplTest, DeleteEverything) {
   ASSERT_EQ(0u, cookies.size());
 }
 
-TEST_F(CookieManagerImplTest, DeleteByTime) {
+TEST_F(CookieManagerTest, DeleteByTime) {
   base::Time now(base::Time::Now());
 
   // Create three cookies and delete the middle one.
@@ -645,7 +645,7 @@ TEST_F(CookieManagerImplTest, DeleteByTime) {
   EXPECT_EQ("A3", cookies[1].Name());
 }
 
-TEST_F(CookieManagerImplTest, DeleteByExcludingDomains) {
+TEST_F(CookieManagerTest, DeleteByExcludingDomains) {
   // Create three cookies and delete the middle one.
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
@@ -678,7 +678,7 @@ TEST_F(CookieManagerImplTest, DeleteByExcludingDomains) {
   EXPECT_EQ("A2", cookies[0].Name());
 }
 
-TEST_F(CookieManagerImplTest, DeleteByIncludingDomains) {
+TEST_F(CookieManagerTest, DeleteByIncludingDomains) {
   // Create three cookies and delete the middle one.
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
@@ -713,7 +713,7 @@ TEST_F(CookieManagerImplTest, DeleteByIncludingDomains) {
 }
 
 // Confirm deletion is based on eTLD+1
-TEST_F(CookieManagerImplTest, DeleteDetails_eTLD) {
+TEST_F(CookieManagerTest, DeleteDetails_eTLD) {
   // Two domains on diferent levels of the same eTLD both get deleted.
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
@@ -804,7 +804,7 @@ TEST_F(CookieManagerImplTest, DeleteDetails_eTLD) {
 }
 
 // Confirm deletion ignores host/domain distinction.
-TEST_F(CookieManagerImplTest, DeleteDetails_HostDomain) {
+TEST_F(CookieManagerTest, DeleteDetails_HostDomain) {
   // Create four cookies: A host (no leading .) and domain cookie
   // (leading .) for each of two separate domains.  Confirm that the
   // filter deletes both of one domain and leaves the other alone.
@@ -845,7 +845,7 @@ TEST_F(CookieManagerImplTest, DeleteDetails_HostDomain) {
   EXPECT_EQ("A4", cookies[1].Name());
 }
 
-TEST_F(CookieManagerImplTest, DeleteDetails_eTLDvsPrivateRegistry) {
+TEST_F(CookieManagerTest, DeleteDetails_eTLDvsPrivateRegistry) {
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
           "A1", "val", "random.co.uk", "/", base::Time(), base::Time(),
@@ -890,7 +890,7 @@ TEST_F(CookieManagerImplTest, DeleteDetails_eTLDvsPrivateRegistry) {
   EXPECT_EQ("A5", cookies[2].Name());
 }
 
-TEST_F(CookieManagerImplTest, DeleteDetails_PrivateRegistry) {
+TEST_F(CookieManagerTest, DeleteDetails_PrivateRegistry) {
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
           "A1", "val", "privatedomain", "/", base::Time(), base::Time(),
@@ -930,7 +930,7 @@ TEST_F(CookieManagerImplTest, DeleteDetails_PrivateRegistry) {
 
 // Test to probe and make sure the attributes that deletion should ignore
 // don't affect the results.
-TEST_F(CookieManagerImplTest, DeleteDetails_IgnoredFields) {
+TEST_F(CookieManagerTest, DeleteDetails_IgnoredFields) {
   // Simple deletion filter
   network::mojom::CookieDeletionFilter filter;
   filter.including_domains = std::vector<std::string>();
@@ -1031,7 +1031,7 @@ TEST_F(CookieManagerImplTest, DeleteDetails_IgnoredFields) {
 
 // A set of tests specified by the only consumer of this interface
 // (BrowsingDataFilterBuilderImpl).
-TEST_F(CookieManagerImplTest, DeleteDetails_Consumer) {
+TEST_F(CookieManagerTest, DeleteDetails_Consumer) {
   const char* filter_domains[] = {
       "google.com",
 
@@ -1149,7 +1149,7 @@ TEST_F(CookieManagerImplTest, DeleteDetails_Consumer) {
   }
 }
 
-TEST_F(CookieManagerImplTest, DeleteBySessionStatus) {
+TEST_F(CookieManagerTest, DeleteBySessionStatus) {
   base::Time now(base::Time::Now());
 
   // Create three cookies and delete the middle one.
@@ -1187,7 +1187,7 @@ TEST_F(CookieManagerImplTest, DeleteBySessionStatus) {
   EXPECT_EQ("A3", cookies[1].Name());
 }
 
-TEST_F(CookieManagerImplTest, DeleteByAll) {
+TEST_F(CookieManagerTest, DeleteByAll) {
   base::Time now(base::Time::Now());
 
   // Add a lot of cookies, only one of which will be deleted by the filter.
@@ -1280,7 +1280,7 @@ TEST_F(CookieManagerImplTest, DeleteByAll) {
 }
 
 // Receives and records notifications from the network::mojom::CookieManager.
-class CookieChangeNotificationImpl
+class CookieChangeNotification
     : public network::mojom::CookieChangeNotification {
  public:
   struct Notification {
@@ -1294,7 +1294,7 @@ class CookieChangeNotificationImpl
     network::mojom::CookieChangeCause cause;
   };
 
-  CookieChangeNotificationImpl(
+  CookieChangeNotification(
       network::mojom::CookieChangeNotificationRequest request)
       : run_loop_(nullptr), binding_(this, std::move(request)) {}
 
@@ -1331,7 +1331,7 @@ class CookieChangeNotificationImpl
   mojo::Binding<network::mojom::CookieChangeNotification> binding_;
 };
 
-TEST_F(CookieManagerImplTest, Notification) {
+TEST_F(CookieManagerTest, Notification) {
   GURL notification_url("http://www.testing.com/pathele");
   std::string notification_domain("testing.com");
   std::string notification_name("Cookie_Name");
@@ -1339,13 +1339,13 @@ TEST_F(CookieManagerImplTest, Notification) {
   network::mojom::CookieChangeNotificationRequest request(
       mojo::MakeRequest(&ptr));
 
-  CookieChangeNotificationImpl notification_impl(std::move(request));
+  CookieChangeNotification notification(std::move(request));
 
   cookie_service_client()->RequestNotification(
       notification_url, notification_name, std::move(ptr));
 
-  std::vector<CookieChangeNotificationImpl::Notification> notifications;
-  notification_impl.GetCurrentNotifications(&notifications);
+  std::vector<CookieChangeNotification::Notification> notifications;
+  notification.GetCurrentNotifications(&notifications);
   EXPECT_EQ(0u, notifications.size());
   notifications.clear();
 
@@ -1359,7 +1359,7 @@ TEST_F(CookieManagerImplTest, Notification) {
           net::COOKIE_PRIORITY_MEDIUM),
       true, true);
   base::RunLoop().RunUntilIdle();
-  notification_impl.GetCurrentNotifications(&notifications);
+  notification.GetCurrentNotifications(&notifications);
   EXPECT_EQ(0u, notifications.size());
   notifications.clear();
 
@@ -1374,7 +1374,7 @@ TEST_F(CookieManagerImplTest, Notification) {
       true, true);
 
   base::RunLoop().RunUntilIdle();
-  notification_impl.GetCurrentNotifications(&notifications);
+  notification.GetCurrentNotifications(&notifications);
   EXPECT_EQ(0u, notifications.size());
   notifications.clear();
 
@@ -1388,13 +1388,13 @@ TEST_F(CookieManagerImplTest, Notification) {
       true, true);
 
   // Expect asynchrony
-  notification_impl.GetCurrentNotifications(&notifications);
+  notification.GetCurrentNotifications(&notifications);
   EXPECT_EQ(0u, notifications.size());
   notifications.clear();
 
   // Expect notification
-  notification_impl.WaitForSomeNotification();
-  notification_impl.GetCurrentNotifications(&notifications);
+  notification.WaitForSomeNotification();
+  notification.GetCurrentNotifications(&notifications);
   EXPECT_EQ(1u, notifications.size());
   EXPECT_EQ(notification_name, notifications[0].cookie.Name());
   EXPECT_EQ(notification_url.host(), notifications[0].cookie.Domain());
@@ -1413,8 +1413,8 @@ TEST_F(CookieManagerImplTest, Notification) {
   ASSERT_EQ(2u, service_wrapper()->DeleteCookies(filter));
 
   // The notification may already have arrived, or it may arrive in the future.
-  notification_impl.WaitForSomeNotification();
-  notification_impl.GetCurrentNotifications(&notifications);
+  notification.WaitForSomeNotification();
+  notification.GetCurrentNotifications(&notifications);
   ASSERT_EQ(1u, notifications.size());
   EXPECT_EQ(notification_name, notifications[0].cookie.Name());
   EXPECT_EQ(notification_url.host(), notifications[0].cookie.Domain());
@@ -1424,7 +1424,7 @@ TEST_F(CookieManagerImplTest, Notification) {
 
 // Confirm the service operates properly if a returned notification interface
 // is destroyed.
-TEST_F(CookieManagerImplTest, NotificationRequestDestroyed) {
+TEST_F(CookieManagerTest, NotificationRequestDestroyed) {
   // Create two identical notification interfaces.
   GURL notification_url("http://www.testing.com/pathele");
   std::string notification_name("Cookie_Name");
@@ -1432,16 +1432,16 @@ TEST_F(CookieManagerImplTest, NotificationRequestDestroyed) {
   network::mojom::CookieChangeNotificationPtr ptr1;
   network::mojom::CookieChangeNotificationRequest request1(
       mojo::MakeRequest(&ptr1));
-  std::unique_ptr<CookieChangeNotificationImpl> notification_impl1(
-      std::make_unique<CookieChangeNotificationImpl>(std::move(request1)));
+  std::unique_ptr<CookieChangeNotification> notification1(
+      std::make_unique<CookieChangeNotification>(std::move(request1)));
   cookie_service_client()->RequestNotification(
       notification_url, notification_name, std::move(ptr1));
 
   network::mojom::CookieChangeNotificationPtr ptr2;
   network::mojom::CookieChangeNotificationRequest request2(
       mojo::MakeRequest(&ptr2));
-  std::unique_ptr<CookieChangeNotificationImpl> notification_impl2(
-      std::make_unique<CookieChangeNotificationImpl>(std::move(request2)));
+  std::unique_ptr<CookieChangeNotification> notification2(
+      std::make_unique<CookieChangeNotification>(std::move(request2)));
   cookie_service_client()->RequestNotification(
       notification_url, notification_name, std::move(ptr2));
 
@@ -1454,42 +1454,42 @@ TEST_F(CookieManagerImplTest, NotificationRequestDestroyed) {
           net::COOKIE_PRIORITY_MEDIUM),
       true, true);
 
-  std::vector<CookieChangeNotificationImpl::Notification> notifications;
-  notification_impl1->GetCurrentNotifications(&notifications);
+  std::vector<CookieChangeNotification::Notification> notifications;
+  notification1->GetCurrentNotifications(&notifications);
   EXPECT_EQ(0u, notifications.size());
   notifications.clear();
 
-  notification_impl2->GetCurrentNotifications(&notifications);
+  notification2->GetCurrentNotifications(&notifications);
   EXPECT_EQ(0u, notifications.size());
   notifications.clear();
 
-  notification_impl1->WaitForSomeNotification();
-  notification_impl1->GetCurrentNotifications(&notifications);
+  notification1->WaitForSomeNotification();
+  notification1->GetCurrentNotifications(&notifications);
   EXPECT_EQ(1u, notifications.size());
   notifications.clear();
 
-  notification_impl2->WaitForSomeNotification();
-  notification_impl2->GetCurrentNotifications(&notifications);
+  notification2->WaitForSomeNotification();
+  notification2->GetCurrentNotifications(&notifications);
   EXPECT_EQ(1u, notifications.size());
   notifications.clear();
-  EXPECT_EQ(2u, service_impl()->GetNotificationsBoundForTesting());
+  EXPECT_EQ(2u, service()->GetNotificationsBoundForTesting());
 
   // Destroy the first interface
-  notification_impl1.reset();
+  notification1.reset();
 
   // Confirm the second interface can still receive notifications.
   network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(1u, service_wrapper()->DeleteCookies(filter));
 
-  notification_impl2->WaitForSomeNotification();
-  notification_impl2->GetCurrentNotifications(&notifications);
+  notification2->WaitForSomeNotification();
+  notification2->GetCurrentNotifications(&notifications);
   EXPECT_EQ(1u, notifications.size());
   notifications.clear();
-  EXPECT_EQ(1u, service_impl()->GetNotificationsBoundForTesting());
+  EXPECT_EQ(1u, service()->GetNotificationsBoundForTesting());
 }
 
 // Confirm we get a connection error notification if the service dies.
-TEST_F(CookieManagerImplTest, ServiceDestructVisible) {
+TEST_F(CookieManagerTest, ServiceDestructVisible) {
   EXPECT_FALSE(connection_error_seen());
   NukeService();
   base::RunLoop().RunUntilIdle();
@@ -1498,8 +1498,8 @@ TEST_F(CookieManagerImplTest, ServiceDestructVisible) {
 
 // Test service cloning.  Also confirm that the service notices if a client
 // dies.
-TEST_F(CookieManagerImplTest, CloningAndClientDestructVisible) {
-  EXPECT_EQ(1u, service_impl()->GetClientsBoundForTesting());
+TEST_F(CookieManagerTest, CloningAndClientDestructVisible) {
+  EXPECT_EQ(1u, service()->GetClientsBoundForTesting());
 
   // Clone the interface.
   network::mojom::CookieManagerPtr new_ptr;
@@ -1524,11 +1524,11 @@ TEST_F(CookieManagerImplTest, CloningAndClientDestructVisible) {
 
   // After a synchronous round trip through the new client pointer, it
   // should be reflected in the bindings seen on the server.
-  EXPECT_EQ(2u, service_impl()->GetClientsBoundForTesting());
+  EXPECT_EQ(2u, service()->GetClientsBoundForTesting());
 
   new_ptr.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, service_impl()->GetClientsBoundForTesting());
+  EXPECT_EQ(1u, service()->GetClientsBoundForTesting());
 }
 
 }  // namespace content

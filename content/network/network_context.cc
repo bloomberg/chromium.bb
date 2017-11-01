@@ -23,12 +23,12 @@
 #include "content/network/cache_url_loader.h"
 #include "content/network/http_server_properties_pref_delegate.h"
 #include "content/network/network_service_impl.h"
-#include "content/network/network_service_url_loader_factory_impl.h"
-#include "content/network/restricted_cookie_manager_impl.h"
+#include "content/network/network_service_url_loader_factory.h"
+#include "content/network/restricted_cookie_manager.h"
 #include "content/network/throttling/network_conditions.h"
 #include "content/network/throttling/throttling_controller.h"
 #include "content/network/throttling/throttling_network_transaction_factory.h"
-#include "content/network/url_loader_impl.h"
+#include "content/network/url_loader.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/network/ignore_errors_cert_verifier.h"
@@ -55,7 +55,7 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
   owned_url_request_context_ = MakeURLRequestContext(params_.get());
   url_request_context_ = owned_url_request_context_.get();
   cookie_manager_ =
-      std::make_unique<CookieManagerImpl>(url_request_context_->cookie_store());
+      std::make_unique<CookieManager>(url_request_context_->cookie_store());
   network_service_->RegisterNetworkContext(this);
   binding_.set_connection_error_handler(base::BindOnce(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
@@ -82,20 +82,20 @@ NetworkContext::NetworkContext(
   owned_url_request_context_ = builder->Build();
   url_request_context_ = owned_url_request_context_.get();
   cookie_manager_ =
-      std::make_unique<CookieManagerImpl>(url_request_context_->cookie_store());
+      std::make_unique<CookieManager>(url_request_context_->cookie_store());
 }
 
 NetworkContext::NetworkContext(mojom::NetworkContextRequest request,
                                net::URLRequestContext* url_request_context)
     : network_service_(nullptr),
       binding_(this, std::move(request)),
-      cookie_manager_(std::make_unique<CookieManagerImpl>(
+      cookie_manager_(std::make_unique<CookieManager>(
           url_request_context->cookie_store())) {
   url_request_context_ = url_request_context;
 }
 
 NetworkContext::~NetworkContext() {
-  // Call each URLLoaderImpl and ask it to release its net::URLRequest, as the
+  // Call each URLLoader and ask it to release its net::URLRequest, as the
   // corresponding net::URLRequestContext is going away with this
   // NetworkContext. The loaders can be deregistering themselves in Cleanup(),
   // so have to be careful.
@@ -111,12 +111,12 @@ std::unique_ptr<NetworkContext> NetworkContext::CreateForTesting() {
   return base::WrapUnique(new NetworkContext);
 }
 
-void NetworkContext::RegisterURLLoader(URLLoaderImpl* url_loader) {
+void NetworkContext::RegisterURLLoader(URLLoader* url_loader) {
   DCHECK(url_loaders_.count(url_loader) == 0);
   url_loaders_.insert(url_loader);
 }
 
-void NetworkContext::DeregisterURLLoader(URLLoaderImpl* url_loader) {
+void NetworkContext::DeregisterURLLoader(URLLoader* url_loader) {
   size_t removed_count = url_loaders_.erase(url_loader);
   DCHECK(removed_count);
 }
@@ -125,7 +125,7 @@ void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     uint32_t process_id) {
   loader_factory_bindings_.AddBinding(
-      std::make_unique<NetworkServiceURLLoaderFactoryImpl>(this, process_id),
+      std::make_unique<NetworkServiceURLLoaderFactory>(this, process_id),
       std::move(request));
 }
 
@@ -143,10 +143,10 @@ void NetworkContext::GetRestrictedCookieManager(
     network::mojom::RestrictedCookieManagerRequest request,
     int32_t render_process_id,
     int32_t render_frame_id) {
-  // TODO(crbug.com/729800): RestrictedCookieManagerImpl should own its bindings
-  //     and NetworkContext should own the RestrictedCookieManagerImpl
+  // TODO(crbug.com/729800): RestrictedCookieManager should own its bindings
+  //     and NetworkContext should own the RestrictedCookieManager
   //     instances.
-  mojo::MakeStrongBinding(std::make_unique<RestrictedCookieManagerImpl>(
+  mojo::MakeStrongBinding(std::make_unique<RestrictedCookieManager>(
                               url_request_context_->cookie_store(),
                               render_process_id, render_frame_id),
                           std::move(request));

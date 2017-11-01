@@ -13,7 +13,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/network/network_context.h"
-#include "content/network/url_loader_impl.h"
+#include "content/network/url_loader.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/controllable_http_response.h"
@@ -147,15 +147,15 @@ class MultipleWritesInterceptor : public net::URLRequestInterceptor {
 
 }  // namespace
 
-class URLLoaderImplTest : public testing::Test {
+class URLLoaderTest : public testing::Test {
  public:
-  URLLoaderImplTest()
+  URLLoaderTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::IO),
         context_(NetworkContext::CreateForTesting()) {
     net::URLRequestFailedJob::AddUrlHandler();
   }
-  ~URLLoaderImplTest() override {
+  ~URLLoaderTest() override {
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
 
@@ -164,7 +164,7 @@ class URLLoaderImplTest : public testing::Test {
         base::FilePath(FILE_PATH_LITERAL("content/test/data")));
     // This Unretained is safe because test_server_ is owned by |this|.
     test_server_.RegisterRequestMonitor(
-        base::Bind(&URLLoaderImplTest::Monitor, base::Unretained(this)));
+        base::Bind(&URLLoaderTest::Monitor, base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
   }
 
@@ -186,9 +186,9 @@ class URLLoaderImplTest : public testing::Test {
     if (add_custom_accept_header_)
       request.headers.SetHeader("accept", "custom/*");
 
-    URLLoaderImpl loader_impl(context(), mojo::MakeRequest(&loader), options,
-                              request, false, client_.CreateInterfacePtr(),
-                              TRAFFIC_ANNOTATION_FOR_TESTS);
+    URLLoader loader_impl(context(), mojo::MakeRequest(&loader), options,
+                          request, false, client_.CreateInterfacePtr(),
+                          TRAFFIC_ANNOTATION_FOR_TESTS);
 
     ran_ = true;
 
@@ -389,15 +389,15 @@ class URLLoaderImplTest : public testing::Test {
   TestURLLoaderClient client_;
 };
 
-TEST_F(URLLoaderImplTest, Basic) {
+TEST_F(URLLoaderTest, Basic) {
   LoadAndCompareFile("simple_page.html");
 }
 
-TEST_F(URLLoaderImplTest, Empty) {
+TEST_F(URLLoaderTest, Empty) {
   LoadAndCompareFile("empty.html");
 }
 
-TEST_F(URLLoaderImplTest, BasicSSL) {
+TEST_F(URLLoaderTest, BasicSSL) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
@@ -412,7 +412,7 @@ TEST_F(URLLoaderImplTest, BasicSSL) {
   ASSERT_TRUE(https_server.GetCertificate()->Equals(ssl_info()->cert.get()));
 }
 
-TEST_F(URLLoaderImplTest, SSLSentOnlyWhenRequested) {
+TEST_F(URLLoaderTest, SSLSentOnlyWhenRequested) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
@@ -424,7 +424,7 @@ TEST_F(URLLoaderImplTest, SSLSentOnlyWhenRequested) {
 }
 
 // Test decoded_body_length / encoded_body_length when they're different.
-TEST_F(URLLoaderImplTest, GzipTest) {
+TEST_F(URLLoaderTest, GzipTest) {
   std::string body;
   EXPECT_EQ(net::OK, Load(test_server()->GetURL("/gzip-body?Body"), &body));
   EXPECT_EQ("Body", body);
@@ -437,13 +437,13 @@ TEST_F(URLLoaderImplTest, GzipTest) {
             client()->completion_status().encoded_data_length);
 }
 
-TEST_F(URLLoaderImplTest, ErrorBeforeHeaders) {
+TEST_F(URLLoaderTest, ErrorBeforeHeaders) {
   EXPECT_EQ(net::ERR_EMPTY_RESPONSE,
             Load(test_server()->GetURL("/close-socket"), nullptr));
   EXPECT_FALSE(client()->response_body().is_valid());
 }
 
-TEST_F(URLLoaderImplTest, SyncErrorWhileReadingBody) {
+TEST_F(URLLoaderTest, SyncErrorWhileReadingBody) {
   std::string body;
   EXPECT_EQ(net::ERR_FAILED,
             Load(net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
@@ -452,7 +452,7 @@ TEST_F(URLLoaderImplTest, SyncErrorWhileReadingBody) {
   EXPECT_EQ("", body);
 }
 
-TEST_F(URLLoaderImplTest, AsyncErrorWhileReadingBody) {
+TEST_F(URLLoaderTest, AsyncErrorWhileReadingBody) {
   std::string body;
   EXPECT_EQ(net::ERR_FAILED,
             Load(net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
@@ -461,7 +461,7 @@ TEST_F(URLLoaderImplTest, AsyncErrorWhileReadingBody) {
   EXPECT_EQ("", body);
 }
 
-TEST_F(URLLoaderImplTest, SyncErrorWhileReadingBodyAfterBytesReceived) {
+TEST_F(URLLoaderTest, SyncErrorWhileReadingBodyAfterBytesReceived) {
   const std::string kBody("Foo.");
 
   std::list<std::string> packets;
@@ -474,7 +474,7 @@ TEST_F(URLLoaderImplTest, SyncErrorWhileReadingBodyAfterBytesReceived) {
   EXPECT_EQ(kBody, body);
 }
 
-TEST_F(URLLoaderImplTest, AsyncErrorWhileReadingBodyAfterBytesReceived) {
+TEST_F(URLLoaderTest, AsyncErrorWhileReadingBodyAfterBytesReceived) {
   const std::string kBody("Foo.");
 
   std::list<std::string> packets;
@@ -487,7 +487,7 @@ TEST_F(URLLoaderImplTest, AsyncErrorWhileReadingBodyAfterBytesReceived) {
   EXPECT_EQ(kBody, body);
 }
 
-TEST_F(URLLoaderImplTest, DestroyContextWithLiveRequest) {
+TEST_F(URLLoaderTest, DestroyContextWithLiveRequest) {
   GURL url = test_server()->GetURL("/hung-after-headers");
   ResourceRequest request =
       CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME, url);
@@ -495,10 +495,10 @@ TEST_F(URLLoaderImplTest, DestroyContextWithLiveRequest) {
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext, so
   // don't hold on to a pointer to it.
-  base::WeakPtr<URLLoaderImpl> loader_impl =
-      (new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request,
-                         false, client()->CreateInterfacePtr(),
-                         TRAFFIC_ANNOTATION_FOR_TESTS))
+  base::WeakPtr<URLLoader> loader_impl =
+      (new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
+                     client()->CreateInterfacePtr(),
+                     TRAFFIC_ANNOTATION_FOR_TESTS))
           ->GetWeakPtrForTests();
 
   client()->RunUntilResponseReceived();
@@ -518,47 +518,47 @@ TEST_F(URLLoaderImplTest, DestroyContextWithLiveRequest) {
   EXPECT_EQ(0u, client()->download_data_length());
 }
 
-TEST_F(URLLoaderImplTest, DoNotSniffUnlessSpecified) {
+TEST_F(URLLoaderTest, DoNotSniffUnlessSpecified) {
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test0.html")));
   ASSERT_TRUE(mime_type().empty());
 }
 
-TEST_F(URLLoaderImplTest, SniffMimeType) {
+TEST_F(URLLoaderTest, SniffMimeType) {
   set_sniff();
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test0.html")));
   ASSERT_EQ(std::string("text/html"), mime_type());
 }
 
-TEST_F(URLLoaderImplTest, RespectNoSniff) {
+TEST_F(URLLoaderTest, RespectNoSniff) {
   set_sniff();
   EXPECT_EQ(net::OK, Load(test_server()->GetURL("/nosniff-test.html")));
   ASSERT_TRUE(mime_type().empty());
 }
 
-TEST_F(URLLoaderImplTest, DoNotSniffHTMLFromTextPlain) {
+TEST_F(URLLoaderTest, DoNotSniffHTMLFromTextPlain) {
   set_sniff();
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test1.html")));
   ASSERT_EQ(std::string("text/plain"), mime_type());
 }
 
-TEST_F(URLLoaderImplTest, DoNotSniffHTMLFromImageGIF) {
+TEST_F(URLLoaderTest, DoNotSniffHTMLFromImageGIF) {
   set_sniff();
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test2.html")));
   ASSERT_EQ(std::string("image/gif"), mime_type());
 }
 
-TEST_F(URLLoaderImplTest, EmptyHtmlIsTextPlain) {
+TEST_F(URLLoaderTest, EmptyHtmlIsTextPlain) {
   set_sniff();
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test4.html")));
   ASSERT_EQ(std::string("text/plain"), mime_type());
 }
 
-TEST_F(URLLoaderImplTest, EmptyHtmlIsTextPlainWithAsyncResponse) {
+TEST_F(URLLoaderTest, EmptyHtmlIsTextPlainWithAsyncResponse) {
   set_sniff();
 
   const std::string kBody;
@@ -576,7 +576,7 @@ TEST_F(URLLoaderImplTest, EmptyHtmlIsTextPlainWithAsyncResponse) {
 // Tests the case where the first read doesn't have enough data to figure out
 // the right mime type. The second read would have enough data even though the
 // total bytes is still smaller than net::kMaxBytesToSniff.
-TEST_F(URLLoaderImplTest, FirstReadNotEnoughToSniff1) {
+TEST_F(URLLoaderTest, FirstReadNotEnoughToSniff1) {
   set_sniff();
   std::string first(500, 'a');
   std::string second(std::string(100, 'b'));
@@ -588,7 +588,7 @@ TEST_F(URLLoaderImplTest, FirstReadNotEnoughToSniff1) {
 }
 
 // Like above, except that the total byte count is > kMaxBytesToSniff.
-TEST_F(URLLoaderImplTest, FirstReadNotEnoughToSniff2) {
+TEST_F(URLLoaderTest, FirstReadNotEnoughToSniff2) {
   set_sniff();
   std::string first(500, 'a');
   std::string second(std::string(1000, 'b'));
@@ -601,7 +601,7 @@ TEST_F(URLLoaderImplTest, FirstReadNotEnoughToSniff2) {
 
 // Tests that even if the first and only read is smaller than the minimum number
 // of bytes needed to sniff, the loader works correctly and returns the data.
-TEST_F(URLLoaderImplTest, LoneReadNotEnoughToSniff) {
+TEST_F(URLLoaderTest, LoneReadNotEnoughToSniff) {
   set_sniff();
   std::string first(net::kMaxBytesToSniff - 100, 'a');
   LoadPacketsAndVerifyContents(first, std::string());
@@ -609,7 +609,7 @@ TEST_F(URLLoaderImplTest, LoneReadNotEnoughToSniff) {
 }
 
 // Tests the simple case where the first read is enough to sniff.
-TEST_F(URLLoaderImplTest, FirstReadIsEnoughToSniff) {
+TEST_F(URLLoaderTest, FirstReadIsEnoughToSniff) {
   set_sniff();
   std::string first(net::kMaxBytesToSniff + 100, 'a');
   LoadPacketsAndVerifyContents(first, std::string());
@@ -638,7 +638,7 @@ class NeverFinishedBodyHttpResponse : public net::test_server::HttpResponse {
   }
 };
 
-TEST_F(URLLoaderImplTest, CloseResponseBodyConsumerBeforeProducer) {
+TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
   net::EmbeddedTestServer server;
   server.RegisterRequestHandler(
       base::Bind([](const net::test_server::HttpRequest& request) {
@@ -653,9 +653,8 @@ TEST_F(URLLoaderImplTest, CloseResponseBodyConsumerBeforeProducer) {
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
-  new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request, false,
-                    client()->CreateInterfacePtr(),
-                    TRAFFIC_ANNOTATION_FOR_TESTS);
+  new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
+                client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
   client()->RunUntilResponseBodyArrived();
   EXPECT_TRUE(client()->has_received_response());
@@ -681,7 +680,7 @@ TEST_F(URLLoaderImplTest, CloseResponseBodyConsumerBeforeProducer) {
   EXPECT_FALSE(client()->has_received_completion());
 }
 
-TEST_F(URLLoaderImplTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
+TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
   const char* const kPath = "/hello.html";
   const char* const kBodyContents = "This is the data as you requested.";
 
@@ -694,9 +693,8 @@ TEST_F(URLLoaderImplTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
-  new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request, false,
-                    client()->CreateInterfacePtr(),
-                    TRAFFIC_ANNOTATION_FOR_TESTS);
+  new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
+                client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Pausing reading response body from network stops future reads from the
   // underlying URLRequest. So no data should be sent using the response body
@@ -737,7 +735,7 @@ TEST_F(URLLoaderImplTest, PauseReadingBodyFromNetBeforeRespnoseHeaders) {
   EXPECT_EQ(kBodyContents, available_data);
 }
 
-TEST_F(URLLoaderImplTest, PauseReadingBodyFromNetWhenReadIsPending) {
+TEST_F(URLLoaderTest, PauseReadingBodyFromNetWhenReadIsPending) {
   const char* const kPath = "/hello.html";
   const char* const kBodyContentsFirstHalf = "This is the first half.";
   const char* const kBodyContentsSecondHalf = "This is the second half.";
@@ -751,9 +749,8 @@ TEST_F(URLLoaderImplTest, PauseReadingBodyFromNetWhenReadIsPending) {
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
-  new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request, false,
-                    client()->CreateInterfacePtr(),
-                    TRAFFIC_ANNOTATION_FOR_TESTS);
+  new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
+                client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
   response_controller.WaitForRequest();
   response_controller.Send(
@@ -784,7 +781,7 @@ TEST_F(URLLoaderImplTest, PauseReadingBodyFromNetWhenReadIsPending) {
             ReadBody());
 }
 
-TEST_F(URLLoaderImplTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
+TEST_F(URLLoaderTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
   const char* const kPath = "/hello.html";
   const char* const kBodyContentsFirstHalf = "This is the first half.";
 
@@ -797,9 +794,8 @@ TEST_F(URLLoaderImplTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
-  new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request, false,
-                    client()->CreateInterfacePtr(),
-                    TRAFFIC_ANNOTATION_FOR_TESTS);
+  new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
+                client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
   loader->PauseReadingBodyFromNet();
   loader.FlushForTesting();
@@ -823,7 +819,7 @@ TEST_F(URLLoaderImplTest, ResumeReadingBodyFromNetAfterClosingConsumer) {
   loader.FlushForTesting();
 }
 
-TEST_F(URLLoaderImplTest, MultiplePauseResumeReadingBodyFromNet) {
+TEST_F(URLLoaderTest, MultiplePauseResumeReadingBodyFromNet) {
   const char* const kPath = "/hello.html";
   const char* const kBodyContentsFirstHalf = "This is the first half.";
   const char* const kBodyContentsSecondHalf = "This is the second half.";
@@ -837,9 +833,8 @@ TEST_F(URLLoaderImplTest, MultiplePauseResumeReadingBodyFromNet) {
 
   mojom::URLLoaderPtr loader;
   // The loader is implicitly owned by the client and the NetworkContext.
-  new URLLoaderImpl(context(), mojo::MakeRequest(&loader), 0, request, false,
-                    client()->CreateInterfacePtr(),
-                    TRAFFIC_ANNOTATION_FOR_TESTS);
+  new URLLoader(context(), mojo::MakeRequest(&loader), 0, request, false,
+                client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // It is okay to call ResumeReadingBodyFromNet() even if there is no prior
   // PauseReadingBodyFromNet().
@@ -876,7 +871,7 @@ TEST_F(URLLoaderImplTest, MultiplePauseResumeReadingBodyFromNet) {
             ReadBody());
 }
 
-TEST_F(URLLoaderImplTest, AttachAcceptHeaderForStyleSheet) {
+TEST_F(URLLoaderTest, AttachAcceptHeaderForStyleSheet) {
   set_resource_type(RESOURCE_TYPE_STYLESHEET);
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test0.html")));
@@ -886,7 +881,7 @@ TEST_F(URLLoaderImplTest, AttachAcceptHeaderForStyleSheet) {
   EXPECT_EQ(it->second, "text/css,*/*;q=0.1");
 }
 
-TEST_F(URLLoaderImplTest, AttachAcceptHeaderForXHR) {
+TEST_F(URLLoaderTest, AttachAcceptHeaderForXHR) {
   set_resource_type(RESOURCE_TYPE_XHR);
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test0.html")));
@@ -896,7 +891,7 @@ TEST_F(URLLoaderImplTest, AttachAcceptHeaderForXHR) {
   EXPECT_EQ(it->second, "*/*");
 }
 
-TEST_F(URLLoaderImplTest, DoNotOverrideAcceptHeader) {
+TEST_F(URLLoaderTest, DoNotOverrideAcceptHeader) {
   set_resource_type(RESOURCE_TYPE_XHR);
   set_add_custom_accept_header();
   EXPECT_EQ(net::OK,

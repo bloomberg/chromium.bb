@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/restricted_cookie_manager_impl.h"
+#include "content/network/restricted_cookie_manager.h"
 
 #include <memory>
 #include <utility>
@@ -20,18 +20,17 @@
 
 namespace content {
 
-RestrictedCookieManagerImpl::RestrictedCookieManagerImpl(
-    net::CookieStore* cookie_store,
-    int render_process_id,
-    int render_frame_id)
+RestrictedCookieManager::RestrictedCookieManager(net::CookieStore* cookie_store,
+                                                 int render_process_id,
+                                                 int render_frame_id)
     : cookie_store_(cookie_store),
       render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
       weak_ptr_factory_(this) {}
 
-RestrictedCookieManagerImpl::~RestrictedCookieManagerImpl() = default;
+RestrictedCookieManager::~RestrictedCookieManager() = default;
 
-void RestrictedCookieManagerImpl::GetAllForUrl(
+void RestrictedCookieManager::GetAllForUrl(
     const GURL& url,
     const GURL& site_for_cookies,
     network::mojom::CookieManagerGetOptionsPtr options,
@@ -55,13 +54,12 @@ void RestrictedCookieManagerImpl::GetAllForUrl(
 
   cookie_store_->GetCookieListWithOptionsAsync(
       url, net_options,
-      base::BindOnce(
-          &RestrictedCookieManagerImpl::CookieListToGetAllForUrlCallback,
-          weak_ptr_factory_.GetWeakPtr(), url, site_for_cookies,
-          std::move(options), std::move(callback)));
+      base::BindOnce(&RestrictedCookieManager::CookieListToGetAllForUrlCallback,
+                     weak_ptr_factory_.GetWeakPtr(), url, site_for_cookies,
+                     std::move(options), std::move(callback)));
 }
 
-void RestrictedCookieManagerImpl::CookieListToGetAllForUrlCallback(
+void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     const GURL& url,
     const GURL& site_for_cookies,
     network::mojom::CookieManagerGetOptionsPtr options,
@@ -85,7 +83,7 @@ void RestrictedCookieManagerImpl::CookieListToGetAllForUrlCallback(
   std::move(callback).Run(std::move(result));
 }
 
-void RestrictedCookieManagerImpl::SetCanonicalCookie(
+void RestrictedCookieManager::SetCanonicalCookie(
     const net::CanonicalCookie& cookie,
     const GURL& url,
     const GURL& site_for_cookies,

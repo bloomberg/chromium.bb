@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/url_loader_impl.h"
+#include "content/network/url_loader.h"
 
 #include <string>
 
@@ -262,14 +262,13 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
 
 }  // namespace
 
-URLLoaderImpl::URLLoaderImpl(
-    NetworkContext* context,
-    mojom::URLLoaderRequest url_loader_request,
-    int32_t options,
-    const ResourceRequest& request,
-    bool report_raw_headers,
-    mojom::URLLoaderClientPtr url_loader_client,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation)
+URLLoader::URLLoader(NetworkContext* context,
+                     mojom::URLLoaderRequest url_loader_request,
+                     int32_t options,
+                     const ResourceRequest& request,
+                     bool report_raw_headers,
+                     mojom::URLLoaderClientPtr url_loader_client,
+                     const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : context_(context),
       options_(options),
       connected_(true),
@@ -282,8 +281,8 @@ URLLoaderImpl::URLLoaderImpl(
       report_raw_headers_(report_raw_headers),
       weak_ptr_factory_(this) {
   context_->RegisterURLLoader(this);
-  binding_.set_connection_error_handler(base::BindOnce(
-      &URLLoaderImpl::OnConnectionError, base::Unretained(this)));
+  binding_.set_connection_error_handler(
+      base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
 
   url_request_ = context_->url_request_context()->CreateRequest(
       GURL(request.url), net::DEFAULT_PRIORITY, this, traffic_annotation);
@@ -307,7 +306,7 @@ URLLoaderImpl::URLLoaderImpl(
     if (request.enable_upload_progress) {
       upload_progress_tracker_ = std::make_unique<UploadProgressTracker>(
           FROM_HERE,
-          base::BindRepeating(&URLLoaderImpl::SendUploadProgress,
+          base::BindRepeating(&URLLoader::SendUploadProgress,
                               base::Unretained(this)),
           url_request_.get());
     }
@@ -319,8 +318,8 @@ URLLoaderImpl::URLLoaderImpl(
     url_request_->SetRequestHeadersCallback(
         base::Bind(&net::HttpRawRequestHeaders::Assign,
                    base::Unretained(&raw_request_headers_)));
-    url_request_->SetResponseHeadersCallback(base::Bind(
-        &URLLoaderImpl::SetRawResponseHeaders, base::Unretained(this)));
+    url_request_->SetResponseHeadersCallback(
+        base::Bind(&URLLoader::SetRawResponseHeaders, base::Unretained(this)));
   }
 
   AttachAcceptHeader(request.resource_type, url_request_.get());
@@ -328,7 +327,7 @@ URLLoaderImpl::URLLoaderImpl(
   url_request_->Start();
 }
 
-URLLoaderImpl::~URLLoaderImpl() {
+URLLoader::~URLLoader() {
   context_->DeregisterURLLoader(this);
 
   if (update_body_read_before_paused_)
@@ -346,13 +345,13 @@ URLLoaderImpl::~URLLoaderImpl() {
   }
 }
 
-void URLLoaderImpl::Cleanup() {
+void URLLoader::Cleanup() {
   // The associated network context is going away and we have to destroy
   // net::URLRequest held by this loader.
   delete this;
 }
 
-void URLLoaderImpl::FollowRedirect() {
+void URLLoader::FollowRedirect() {
   if (!url_request_) {
     NotifyCompleted(net::ERR_UNEXPECTED);
     // |this| may have been deleted.
@@ -362,13 +361,13 @@ void URLLoaderImpl::FollowRedirect() {
   url_request_->FollowDeferredRedirect();
 }
 
-void URLLoaderImpl::SetPriority(net::RequestPriority priority,
-                                int32_t intra_priority_value) {
+void URLLoader::SetPriority(net::RequestPriority priority,
+                            int32_t intra_priority_value) {
   NOTIMPLEMENTED();
 }
 
-void URLLoaderImpl::PauseReadingBodyFromNet() {
-  DVLOG(1) << "URLLoaderImpl pauses fetching response body for "
+void URLLoader::PauseReadingBodyFromNet() {
+  DVLOG(1) << "URLLoader pauses fetching response body for "
            << (url_request_ ? url_request_->original_url().spec()
                             : "a URL that has completed loading or failed.");
   // Please note that we pause reading body in all cases. Even if the URL
@@ -388,8 +387,8 @@ void URLLoaderImpl::PauseReadingBodyFromNet() {
   }
 }
 
-void URLLoaderImpl::ResumeReadingBodyFromNet() {
-  DVLOG(1) << "URLLoaderImpl resumes fetching response body for "
+void URLLoader::ResumeReadingBodyFromNet() {
+  DVLOG(1) << "URLLoader resumes fetching response body for "
            << (url_request_ ? url_request_->original_url().spec()
                             : "a URL that has completed loading or failed.");
   should_pause_reading_body_ = false;
@@ -400,9 +399,9 @@ void URLLoaderImpl::ResumeReadingBodyFromNet() {
   }
 }
 
-void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
-                                       const net::RedirectInfo& redirect_info,
-                                       bool* defer_redirect) {
+void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
+                                   const net::RedirectInfo& redirect_info,
+                                   bool* defer_redirect) {
   DCHECK(url_request == url_request_.get());
   DCHECK(url_request->status().is_success());
 
@@ -421,8 +420,7 @@ void URLLoaderImpl::OnReceivedRedirect(net::URLRequest* url_request,
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
 }
 
-void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
-                                      int net_error) {
+void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   DCHECK(url_request == url_request_.get());
 
   if (net_error != net::OK) {
@@ -452,13 +450,13 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
   consumer_handle_ = std::move(data_pipe.consumer_handle);
   peer_closed_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-      base::Bind(&URLLoaderImpl::OnResponseBodyStreamConsumerClosed,
+      base::Bind(&URLLoader::OnResponseBodyStreamConsumerClosed,
                  base::Unretained(this)));
   peer_closed_handle_watcher_.ArmOrNotify();
 
   writable_handle_watcher_.Watch(
       response_body_stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-      base::Bind(&URLLoaderImpl::OnResponseBodyStreamReady,
+      base::Bind(&URLLoader::OnResponseBodyStreamReady,
                  base::Unretained(this)));
 
   if (!(options_ & mojom::kURLLoadOptionSniffMimeType) ||
@@ -469,7 +467,7 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
   ReadMore();
 }
 
-void URLLoaderImpl::ReadMore() {
+void URLLoader::ReadMore() {
   // Once the MIME type is sniffed, all data is sent as soon as it is read from
   // the network.
   DCHECK(consumer_handle_.is_valid() || !pending_write_);
@@ -519,7 +517,7 @@ void URLLoaderImpl::ReadMore() {
   }
 }
 
-void URLLoaderImpl::DidRead(int num_bytes, bool completed_synchronously) {
+void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
   if (num_bytes > 0)
     pending_write_buffer_offset_ += num_bytes;
   if (update_body_read_before_paused_) {
@@ -560,26 +558,25 @@ void URLLoaderImpl::DidRead(int num_bytes, bool completed_synchronously) {
   }
   if (completed_synchronously) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&URLLoaderImpl::ReadMore,
-                                  weak_ptr_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&URLLoader::ReadMore, weak_ptr_factory_.GetWeakPtr()));
   } else {
     ReadMore();
   }
 }
 
-void URLLoaderImpl::OnReadCompleted(net::URLRequest* url_request,
-                                    int bytes_read) {
+void URLLoader::OnReadCompleted(net::URLRequest* url_request, int bytes_read) {
   DCHECK(url_request == url_request_.get());
 
   DidRead(bytes_read, false);
   // |this| may have been deleted.
 }
 
-base::WeakPtr<URLLoaderImpl> URLLoaderImpl::GetWeakPtrForTests() {
+base::WeakPtr<URLLoader> URLLoader::GetWeakPtrForTests() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void URLLoaderImpl::NotifyCompleted(int error_code) {
+void URLLoader::NotifyCompleted(int error_code) {
   // Ensure sending the final upload progress message here, since
   // OnResponseCompleted can be called without OnResponseStarted on cancellation
   // or error cases.
@@ -605,16 +602,16 @@ void URLLoaderImpl::NotifyCompleted(int error_code) {
   DeleteIfNeeded();
 }
 
-void URLLoaderImpl::OnConnectionError() {
+void URLLoader::OnConnectionError() {
   connected_ = false;
   DeleteIfNeeded();
 }
 
-void URLLoaderImpl::OnResponseBodyStreamConsumerClosed(MojoResult result) {
+void URLLoader::OnResponseBodyStreamConsumerClosed(MojoResult result) {
   CloseResponseBodyStreamProducer();
 }
 
-void URLLoaderImpl::OnResponseBodyStreamReady(MojoResult result) {
+void URLLoader::OnResponseBodyStreamReady(MojoResult result) {
   if (result != MOJO_RESULT_OK) {
     CloseResponseBodyStreamProducer();
     return;
@@ -623,7 +620,7 @@ void URLLoaderImpl::OnResponseBodyStreamReady(MojoResult result) {
   ReadMore();
 }
 
-void URLLoaderImpl::CloseResponseBodyStreamProducer() {
+void URLLoader::CloseResponseBodyStreamProducer() {
   url_request_.reset();
   peer_closed_handle_watcher_.Cancel();
   writable_handle_watcher_.Cancel();
@@ -641,13 +638,13 @@ void URLLoaderImpl::CloseResponseBodyStreamProducer() {
   DeleteIfNeeded();
 }
 
-void URLLoaderImpl::DeleteIfNeeded() {
+void URLLoader::DeleteIfNeeded() {
   bool has_data_pipe = pending_write_.get() || response_body_stream_.is_valid();
   if (!connected_ && !has_data_pipe)
     delete this;
 }
 
-void URLLoaderImpl::SendResponseToClient() {
+void URLLoader::SendResponseToClient() {
   base::Optional<net::SSLInfo> ssl_info;
   if (options_ & mojom::kURLLoadOptionSendSSLInfo)
     ssl_info = url_request_->ssl_info();
@@ -668,7 +665,7 @@ void URLLoaderImpl::SendResponseToClient() {
   response_ = nullptr;
 }
 
-void URLLoaderImpl::CompletePendingWrite() {
+void URLLoader::CompletePendingWrite() {
   response_body_stream_ =
       pending_write_->Complete(pending_write_buffer_offset_);
   total_written_bytes_ += pending_write_buffer_offset_;
@@ -676,26 +673,26 @@ void URLLoaderImpl::CompletePendingWrite() {
   pending_write_buffer_offset_ = 0;
 }
 
-void URLLoaderImpl::SetRawResponseHeaders(
+void URLLoader::SetRawResponseHeaders(
     scoped_refptr<const net::HttpResponseHeaders> headers) {
   raw_response_headers_ = headers;
 }
 
-void URLLoaderImpl::UpdateBodyReadBeforePaused() {
+void URLLoader::UpdateBodyReadBeforePaused() {
   DCHECK_GE(pending_write_buffer_offset_ + total_written_bytes_,
             body_read_before_paused_);
   body_read_before_paused_ =
       pending_write_buffer_offset_ + total_written_bytes_;
 }
 
-void URLLoaderImpl::SendUploadProgress(const net::UploadProgress& progress) {
+void URLLoader::SendUploadProgress(const net::UploadProgress& progress) {
   url_loader_client_->OnUploadProgress(
       progress.position(), progress.size(),
-      base::BindOnce(&URLLoaderImpl::OnUploadProgressACK,
+      base::BindOnce(&URLLoader::OnUploadProgressACK,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void URLLoaderImpl::OnUploadProgressACK() {
+void URLLoader::OnUploadProgressACK() {
   if (upload_progress_tracker_)
     upload_progress_tracker_->OnAckReceived();
 }

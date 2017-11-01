@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/network_change_manager_impl.h"
+#include "content/network/network_change_manager.h"
 
 #include <algorithm>
 #include <utility>
@@ -12,7 +12,7 @@
 
 namespace content {
 
-NetworkChangeManagerImpl::NetworkChangeManagerImpl(
+NetworkChangeManager::NetworkChangeManager(
     std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier)
     : network_change_notifier_(std::move(network_change_notifier)) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
@@ -20,21 +20,21 @@ NetworkChangeManagerImpl::NetworkChangeManagerImpl(
       mojom::ConnectionType(net::NetworkChangeNotifier::GetConnectionType());
 }
 
-NetworkChangeManagerImpl::~NetworkChangeManagerImpl() {
+NetworkChangeManager::~NetworkChangeManager() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
-void NetworkChangeManagerImpl::AddRequest(
+void NetworkChangeManager::AddRequest(
     mojom::NetworkChangeManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void NetworkChangeManagerImpl::RequestNotifications(
+void NetworkChangeManager::RequestNotifications(
     mojom::NetworkChangeManagerClientPtr client_ptr) {
   client_ptr.set_connection_error_handler(
-      base::Bind(&NetworkChangeManagerImpl::NotificationPipeBroken,
+      base::Bind(&NetworkChangeManager::NotificationPipeBroken,
                  // base::Unretained is safe as destruction of the
-                 // NetworkChangeManagerImpl will also destroy the
+                 // NetworkChangeManager will also destroy the
                  // |clients_| list (which this object will be
                  // inserted into, below), which will destroy the
                  // client_ptr, rendering this callback moot.
@@ -43,11 +43,11 @@ void NetworkChangeManagerImpl::RequestNotifications(
   clients_.push_back(std::move(client_ptr));
 }
 
-size_t NetworkChangeManagerImpl::GetNumClientsForTesting() const {
+size_t NetworkChangeManager::GetNumClientsForTesting() const {
   return clients_.size();
 }
 
-void NetworkChangeManagerImpl::NotificationPipeBroken(
+void NetworkChangeManager::NotificationPipeBroken(
     mojom::NetworkChangeManagerClient* client) {
   clients_.erase(
       std::find_if(clients_.begin(), clients_.end(),
@@ -56,7 +56,7 @@ void NetworkChangeManagerImpl::NotificationPipeBroken(
                    }));
 }
 
-void NetworkChangeManagerImpl::OnNetworkChanged(
+void NetworkChangeManager::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   connection_type_ = mojom::ConnectionType(type);
   for (const auto& client : clients_) {

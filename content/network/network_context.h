@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
-#include "content/network/cookie_manager_impl.h"
+#include "content/network/cookie_manager.h"
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -31,7 +31,7 @@ class HttpServerPropertiesManager;
 
 namespace content {
 class NetworkServiceImpl;
-class URLLoaderImpl;
+class URLLoader;
 
 // A NetworkContext creates and manages access to a URLRequestContext.
 //
@@ -76,8 +76,8 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
 
   // These are called by individual url loaders as they are being created and
   // destroyed.
-  void RegisterURLLoader(URLLoaderImpl* url_loader);
-  void DeregisterURLLoader(URLLoaderImpl* url_loader);
+  void RegisterURLLoader(URLLoader* url_loader);
+  void DeregisterURLLoader(URLLoader* url_loader);
 
   // mojom::NetworkContext implementation:
   void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
@@ -129,20 +129,20 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
   net::URLRequestContext* url_request_context_ = nullptr;
 
   // Put it below |url_request_context_| so that it outlives all the
-  // NetworkServiceURLLoaderFactoryImpl instances.
+  // NetworkServiceURLLoaderFactory instances.
   mojo::StrongBindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
 
-  // URLLoaderImpls register themselves with the NetworkContext so that they can
+  // URLLoaders register themselves with the NetworkContext so that they can
   // be cleaned up when the NetworkContext goes away. This is needed as
-  // net::URLRequests held by URLLoaderImpls have to be gone when
+  // net::URLRequests held by URLLoaders have to be gone when
   // net::URLRequestContext (held by NetworkContext) is destroyed.
-  std::set<URLLoaderImpl*> url_loaders_;
+  std::set<URLLoader*> url_loaders_;
 
   mojom::NetworkContextParamsPtr params_;
 
   mojo::Binding<mojom::NetworkContext> binding_;
 
-  std::unique_ptr<CookieManagerImpl> cookie_manager_;
+  std::unique_ptr<CookieManager> cookie_manager_;
 
   // Temporary class to help diagnose the impact of https://crbug.com/711579.
   // Every 24-hours, measures the size of the network cache and emits an UMA
