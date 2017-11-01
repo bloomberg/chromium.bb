@@ -352,7 +352,6 @@
       'TSAN Release': 'tsan_disable_nacl_release_bot',
       'UBSan Release': 'ubsan_release_bot',
       'UBSan vptr Release': 'ubsan_vptr_edge_release_bot',
-      'Win ASan Release Coverage': 'asan_edge_fuzzer_v8_heap_release_bot_x86',
       'Win ASan Release Media': 'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86',
       'Win ASan Release': 'asan_fuzzer_v8_heap_release_bot_x86',
       'Win SyzyASAN LKGR': 'syzyasan_no_pch_release_x86',
@@ -1011,10 +1010,6 @@
 
     'asan_edge_fuzzer_v8_heap_release_bot_hybrid': [
       'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'hybrid',
-    ],
-
-    'asan_edge_fuzzer_v8_heap_release_bot_x86': [
-      'clang', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'x86',
     ],
 
     'asan_edge_v8_heap_debug_bot_hybrid': [
