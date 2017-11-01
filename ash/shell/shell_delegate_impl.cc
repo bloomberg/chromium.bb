@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
+#include "ash/test_screenshot_delegate.h"
 #include "ash/wm/window_state.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/user_info_impl.h"
@@ -58,6 +59,11 @@ void ShellDelegateImpl::OpenUrlFromArc(const GURL& url) {}
 
 NetworkingConfigDelegate* ShellDelegateImpl::GetNetworkingConfigDelegate() {
   return nullptr;
+}
+
+std::unique_ptr<ash::ScreenshotDelegate>
+ShellDelegateImpl::CreateScreenshotDelegate() {
+  return std::make_unique<TestScreenshotDelegate>();
 }
 
 std::unique_ptr<WallpaperDelegate>

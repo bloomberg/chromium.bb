@@ -37,20 +37,16 @@ class ScreenshotControllerTest : public AshTestBase {
   }
 
   void StartPartialScreenshotSession() {
-    screenshot_controller()->StartPartialScreenshotSession(
-        GetScreenshotDelegate(), true);
+    screenshot_controller()->StartPartialScreenshotSession(true);
   }
 
   void StartWindowScreenshotSession() {
-    screenshot_controller()->StartWindowScreenshotSession(
-        GetScreenshotDelegate());
+    screenshot_controller()->StartWindowScreenshotSession();
   }
 
   void Cancel() { screenshot_controller()->CancelScreenshotSession(); }
 
-  bool IsActive() {
-    return screenshot_controller()->screenshot_delegate_ != nullptr;
-  }
+  bool IsActive() { return screenshot_controller()->in_screenshot_session_; }
 
   const gfx::Point& GetStartPosition() const {
     return Shell::Get()->screenshot_controller()->start_position_;
@@ -272,7 +268,7 @@ TEST_F(PartialScreenshotControllerTest, MouseWarpTest) {
             aura::Env::GetInstance()->last_mouse_location());
 }
 
-TEST_F(PartialScreenshotControllerTest, VisibilityTest) {
+TEST_F(PartialScreenshotControllerTest, CursorVisibilityTest) {
   aura::client::CursorClient* client = Shell::Get()->cursor_manager();
 
   GetEventGenerator().PressKey(ui::VKEY_A, 0);

@@ -18,17 +18,13 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/system_notifier.h"
 #include "ash/touch/touch_hud_debug.h"
-#include "ash/utility/screenshot_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
 #include "base/sys_info.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -38,8 +34,6 @@
 
 namespace ash {
 namespace {
-
-using base::UserMetricsAction;
 
 bool CanHandleMagnifyScreen() {
   return Shell::Get()->magnification_controller()->IsEnabled();
@@ -59,27 +53,6 @@ void HandleMagnifyScreen(int delta_index) {
     Shell::Get()->magnification_controller()->SetScale(
         std::pow(kMagnificationScaleFactor, new_scale_index), true);
   }
-}
-
-void HandleTakeWindowScreenshot(ScreenshotDelegate* screenshot_delegate) {
-  base::RecordAction(UserMetricsAction("Accel_Take_Window_Screenshot"));
-  DCHECK(screenshot_delegate);
-  Shell::Get()->screenshot_controller()->StartWindowScreenshotSession(
-      screenshot_delegate);
-}
-
-void HandleTakePartialScreenshot(ScreenshotDelegate* screenshot_delegate) {
-  base::RecordAction(UserMetricsAction("Accel_Take_Partial_Screenshot"));
-  DCHECK(screenshot_delegate);
-  Shell::Get()->screenshot_controller()->StartPartialScreenshotSession(
-      screenshot_delegate, true /* draw_overlay_immediately */);
-}
-
-void HandleTakeScreenshot(ScreenshotDelegate* screenshot_delegate) {
-  base::RecordAction(UserMetricsAction("Accel_Take_Screenshot"));
-  DCHECK(screenshot_delegate);
-  if (screenshot_delegate->CanTakeScreenshot())
-    screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
 }
 
 bool CanHandleUnpin() {
@@ -110,11 +83,6 @@ AcceleratorControllerDelegateClassic::AcceleratorControllerDelegateClassic() {}
 
 AcceleratorControllerDelegateClassic::~AcceleratorControllerDelegateClassic() {}
 
-void AcceleratorControllerDelegateClassic::SetScreenshotDelegate(
-    std::unique_ptr<ScreenshotDelegate> screenshot_delegate) {
-  screenshot_delegate_ = std::move(screenshot_delegate);
-}
-
 bool AcceleratorControllerDelegateClassic::HandlesAction(
     AcceleratorAction action) {
   // NOTE: When adding a new accelerator that only depends on //ash/common code,
@@ -129,9 +97,6 @@ bool AcceleratorControllerDelegateClassic::HandlesAction(
     case MAGNIFY_SCREEN_ZOOM_OUT:
     case POWER_PRESSED:
     case POWER_RELEASED:
-    case TAKE_PARTIAL_SCREENSHOT:
-    case TAKE_SCREENSHOT:
-    case TAKE_WINDOW_SCREENSHOT:
     case TOGGLE_MESSAGE_CENTER_BUBBLE:
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
@@ -165,9 +130,6 @@ bool AcceleratorControllerDelegateClassic::CanPerformAction(
     case LOCK_RELEASED:
     case POWER_PRESSED:
     case POWER_RELEASED:
-    case TAKE_PARTIAL_SCREENSHOT:
-    case TAKE_SCREENSHOT:
-    case TAKE_WINDOW_SCREENSHOT:
     case TOUCH_HUD_PROJECTION_TOGGLE:
       return true;
 
@@ -218,15 +180,6 @@ void AcceleratorControllerDelegateClassic::PerformAction(
       // (power button events are reported to us from powerm via
       // D-BUS), but we consume them to prevent them from getting
       // passed to apps -- see http://crbug.com/146609.
-      break;
-    case TAKE_PARTIAL_SCREENSHOT:
-      HandleTakePartialScreenshot(screenshot_delegate_.get());
-      break;
-    case TAKE_SCREENSHOT:
-      HandleTakeScreenshot(screenshot_delegate_.get());
-      break;
-    case TAKE_WINDOW_SCREENSHOT:
-      HandleTakeWindowScreenshot(screenshot_delegate_.get());
       break;
     case TOUCH_HUD_CLEAR:
       HandleTouchHudClear();

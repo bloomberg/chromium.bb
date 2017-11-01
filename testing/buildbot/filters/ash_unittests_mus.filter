@@ -1,7 +1,3 @@
-# TODO: Needs partial screenshot support.
--ScreenshotToolTest.EnablingCaptureRegionCallsDelegateAndDisablesTool
--ScreenshotToolTest.EnablingCaptureScreenCallsDelegateAndDisablesTool
-
 # TODO: Fails because DeviceDataManager isn't created and TouchDeviceTransform
 # is not supported by InputDeviceManager. http://crbug.com/734812.
 -TouchCalibratorControllerTest.CustomCalibration

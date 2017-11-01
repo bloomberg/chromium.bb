@@ -39,9 +39,6 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case MAGNIFY_SCREEN_ZOOM_OUT:
     case POWER_PRESSED:
     case POWER_RELEASED:
-    case TAKE_PARTIAL_SCREENSHOT:
-    case TAKE_SCREENSHOT:
-    case TAKE_WINDOW_SCREENSHOT:
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
     case UNPIN:

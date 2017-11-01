@@ -4,34 +4,15 @@
 
 #include "chrome/browser/ui/browser_commands_chromeos.h"
 
-#include "ash/accelerators/accelerator_controller_delegate_classic.h"  // mash-ok
-#include "ash/mus/shell_port_mus.h"  // mash-ok
-#include "ash/public/cpp/config.h"
-#include "ash/screenshot_delegate.h"
-#include "ash/shell_port_classic.h"  // mash-ok
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "chrome/browser/chromeos/ash_config.h"
+#include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 
 using base::UserMetricsAction;
 
 void TakeScreenshot() {
   base::RecordAction(UserMetricsAction("Menu_Take_Screenshot"));
-  ash::AcceleratorControllerDelegateClassic* accelerator_controller_delegate =
-      nullptr;
-  if (chromeos::GetAshConfig() == ash::Config::CLASSIC) {
-    accelerator_controller_delegate =
-        ash::ShellPortClassic::Get()->accelerator_controller_delegate();
-  } else if (chromeos::GetAshConfig() == ash::Config::MUS) {
-    accelerator_controller_delegate =
-        ash::mus::ShellPortMus::Get()->accelerator_controller_delegate();
-  } else {
-    // TODO(mash): Screenshot support. http://crbug.com/557397
-    NOTIMPLEMENTED();
-    return;
-  }
-  ash::ScreenshotDelegate* screenshot_delegate =
-      accelerator_controller_delegate->screenshot_delegate();
-  if (screenshot_delegate && screenshot_delegate->CanTakeScreenshot())
-    screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
+  ChromeScreenshotGrabber* grabber = ChromeScreenshotGrabber::Get();
+  if (grabber->CanTakeScreenshot())
+    grabber->HandleTakeScreenshotForAllRootWindows();
 }

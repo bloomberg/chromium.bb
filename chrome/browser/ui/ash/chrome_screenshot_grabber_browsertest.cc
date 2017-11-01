@@ -48,8 +48,8 @@ class ChromeScreenshotGrabberBrowserTest
 IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
   message_center::MessageCenter::Get()->AddObserver(this);
 
-  std::unique_ptr<ChromeScreenshotGrabber> chrome_screenshot_grabber =
-      base::MakeUnique<ChromeScreenshotGrabber>();
+  ChromeScreenshotGrabber* chrome_screenshot_grabber =
+      ChromeScreenshotGrabber::Get();
   chrome_screenshot_grabber->screenshot_grabber()->AddObserver(this);
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
@@ -64,6 +64,7 @@ IN_PROC_BROWSER_TEST_F(ChromeScreenshotGrabberBrowserTest, TakeScreenshot) {
 
   message_loop_runner_ = new content::MessageLoopRunner;
   message_loop_runner_->Run();
+  chrome_screenshot_grabber->screenshot_grabber()->RemoveObserver(this);
 
   EXPECT_TRUE(notification_added_);
   EXPECT_NE(nullptr,

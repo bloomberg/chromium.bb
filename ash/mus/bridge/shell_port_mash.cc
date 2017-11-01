@@ -177,7 +177,7 @@ ShellPortMash::CreateAcceleratorController() {
   mash_state_->accelerator_controller_delegate =
       std::make_unique<AcceleratorControllerDelegateMus>(window_manager_);
   mash_state_->accelerator_controller_registrar =
-      base ::MakeUnique<AcceleratorControllerRegistrar>(
+      std::make_unique<AcceleratorControllerRegistrar>(
           window_manager_, accelerator_namespace_id);
   return std::make_unique<AcceleratorController>(
       mash_state_->accelerator_controller_delegate.get(),

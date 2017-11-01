@@ -4,12 +4,8 @@
 
 #include "ash/system/palette/tools/capture_region_mode.h"
 
-#include "ash/accelerators/accelerator_controller_delegate_classic.h"
-#include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_port_classic.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_ids.h"
 #include "ash/system/toast/toast_data.h"
@@ -51,18 +47,9 @@ void CaptureRegionMode::OnEnable() {
                   kToastDurationMs, base::Optional<base::string16>());
   Shell::Get()->toast_manager()->Show(toast);
 
-  if (Shell::GetAshConfig() != Config::CLASSIC) {
-    // TODO(kaznacheev): Support MASH once http://crbug.com/557397 is fixed.
-    NOTIMPLEMENTED();
-    return;
-  }
-
   auto* screenshot_controller = Shell::Get()->screenshot_controller();
   screenshot_controller->set_pen_events_only(true);
   screenshot_controller->StartPartialScreenshotSession(
-      ShellPortClassic::Get()
-          ->accelerator_controller_delegate()
-          ->screenshot_delegate(),
       false /* draw_overlay_immediately */);
   screenshot_controller->set_on_screenshot_session_done(base::BindOnce(
       &CaptureRegionMode::OnScreenshotDone, weak_factory_.GetWeakPtr()));

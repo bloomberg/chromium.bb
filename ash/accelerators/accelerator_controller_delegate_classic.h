@@ -12,8 +12,6 @@
 
 namespace ash {
 
-class ScreenshotDelegate;
-
 // Support for accelerators that only work in classic ash and not in mash,
 // for example accelerators related to display management. These sorts of
 // accelerators should be rare. Most new accelerators should be added to
@@ -24,12 +22,6 @@ class ASH_EXPORT AcceleratorControllerDelegateClassic
   AcceleratorControllerDelegateClassic();
   ~AcceleratorControllerDelegateClassic() override;
 
-  void SetScreenshotDelegate(
-      std::unique_ptr<ScreenshotDelegate> screenshot_delegate);
-  ScreenshotDelegate* screenshot_delegate() {
-    return screenshot_delegate_.get();
-  }
-
   // AcceleratorControllerDelegate:
   bool HandlesAction(AcceleratorAction action) override;
   bool CanPerformAction(AcceleratorAction action,
@@ -39,8 +31,6 @@ class ASH_EXPORT AcceleratorControllerDelegateClassic
                      const ui::Accelerator& accelerator) override;
 
  private:
-  std::unique_ptr<ScreenshotDelegate> screenshot_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerDelegateClassic);
 };
 

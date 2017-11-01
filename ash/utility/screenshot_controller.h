@@ -32,16 +32,17 @@ namespace ash {
 class ScreenshotDelegate;
 
 // This class controls a session of taking partial/window screenshot, i.e.:
-// drawing
-// region rectangles during selection, and changing the mouse cursor to indicate
-// the current mode.
-// This class does not use aura::Window / views::Widget intentionally to avoid
+// drawing region rectangles during selection, and changing the mouse cursor to
+// indicate the current mode.
 class ASH_EXPORT ScreenshotController : public ui::EventHandler,
                                         public display::DisplayObserver,
                                         public aura::WindowObserver {
  public:
-  ScreenshotController();
+  explicit ScreenshotController(std::unique_ptr<ScreenshotDelegate> delegate);
   ~ScreenshotController() override;
+
+  // Takes a default "whole screen" screenshot.
+  void TakeScreenshotForAllRootWindows();
 
   // Starts the UI for taking partial screenshot; dragging to select a region.
   // ScreenshotController manage their own lifetime so caller must not
@@ -49,11 +50,10 @@ class ASH_EXPORT ScreenshotController : public ui::EventHandler,
   // overlay will be drawn immediately. If false, then the overlay will be drawn
   // only after the user has started creating the clipping rect for the
   // screenshot.
-  void StartPartialScreenshotSession(ScreenshotDelegate* screenshot_delegate,
-                                     bool draw_overlay_immediately);
+  void StartPartialScreenshotSession(bool draw_overlay_immediately);
 
   // Starts the UI for taking a window screenshot;
-  void StartWindowScreenshotSession(ScreenshotDelegate* screenshot_delegate);
+  void StartWindowScreenshotSession();
 
   // Cancels any active screenshot session.
   void CancelScreenshotSession();
@@ -80,6 +80,7 @@ class ASH_EXPORT ScreenshotController : public ui::EventHandler,
     WINDOW,
   };
 
+  friend class AshTestBase;
   friend class ScreenshotControllerTest;
   friend class ScreenshotToolTest;
 
@@ -132,8 +133,11 @@ class ASH_EXPORT ScreenshotController : public ui::EventHandler,
   // The object to specify the crosshair cursor.
   std::unique_ptr<ScopedCursorSetter> cursor_setter_;
 
-  // ScreenshotDelegate to take the actual screenshot. No ownership.
-  ScreenshotDelegate* screenshot_delegate_;
+  // True while taking a partial or window screen.
+  bool in_screenshot_session_ = false;
+
+  // TODO(jamescook): Replace with a mojo-compatible interface.
+  std::unique_ptr<ScreenshotDelegate> screenshot_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotController);
 };
