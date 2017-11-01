@@ -104,10 +104,12 @@ class MOJO_CPP_BINDINGS_EXPORT InterfacePtrStateBase {
 template <typename Interface>
 class InterfacePtrState : public InterfacePtrStateBase {
  public:
+  using Proxy = typename Interface::Proxy_;
+
   InterfacePtrState() = default;
   ~InterfacePtrState() = default;
 
-  Interface* instance() {
+  Proxy* instance() {
     ConfigureProxyIfNecessary();
 
     // This will be null if the object is not bound.
@@ -192,8 +194,6 @@ class InterfacePtrState : public InterfacePtrStateBase {
   }
 
  private:
-  using Proxy = typename Interface::Proxy_;
-
   void ConfigureProxyIfNecessary() {
     // The proxy has been configured.
     if (proxy_) {
