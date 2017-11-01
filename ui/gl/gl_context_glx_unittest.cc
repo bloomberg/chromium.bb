@@ -16,7 +16,7 @@
 
 namespace gl {
 
-TEST(GLContextGLXTest, DoNotDesrtroyOnFailedMakeCurrent) {
+TEST(GLContextGLXTest, DISABLED_DoNotDesrtroyOnFailedMakeCurrent) {
   auto* xdisplay = gfx::GetXDisplay();
   ASSERT_TRUE(xdisplay);
 
