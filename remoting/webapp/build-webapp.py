@@ -38,7 +38,7 @@ def findAndReplace(filepath, findString, replaceString):
   """Does a search and replace on the contents of a file."""
   oldFilename = os.path.basename(filepath) + '.old'
   oldFilepath = os.path.join(os.path.dirname(filepath), oldFilename)
-  os.rename(filepath, oldFilepath)
+  shutil.move(filepath, oldFilepath)
   with open(oldFilepath) as input:
     with open(filepath, 'w') as output:
       for s in input:
