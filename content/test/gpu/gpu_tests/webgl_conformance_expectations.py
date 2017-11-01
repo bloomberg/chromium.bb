@@ -300,11 +300,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # WIN / OpenGL / NVIDIA failures
     self.Fail('conformance/textures/misc/texture-size.html',
-        ['win10', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
+        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
     self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',
-        ['win10', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
+        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
     self.Fail('conformance/textures/misc/texture-size-limit.html',
-        ['win10', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
+        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
 
     # Mark ANGLE's OpenGL as flaky on Windows Nvidia
     self.Flaky('conformance/*', ['win', 'nvidia', 'opengl'], bug=582083)
