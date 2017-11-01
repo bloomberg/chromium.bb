@@ -275,7 +275,7 @@ void StyleEngine::WatchedSelectorsChanged() {
 }
 
 bool StyleEngine::ShouldUpdateDocumentStyleSheetCollection() const {
-  return all_tree_scopes_dirty_ || document_scope_dirty_;
+  return all_tree_scopes_dirty_ || document_scope_dirty_ || font_cache_dirty_;
 }
 
 bool StyleEngine::ShouldUpdateShadowTreeStyleSheetCollection() const {
@@ -521,6 +521,20 @@ void StyleEngine::ClearFontCache() {
     font_selector_->GetFontFaceCache()->ClearCSSConnected();
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
+}
+
+void StyleEngine::RefreshFontCache() {
+  DCHECK(IsFontCacheDirty());
+
+  ClearFontCache();
+
+  // Rebuild the font cache with @font-face rules from user style sheets.
+  for (unsigned i = 0; i < active_user_style_sheets_.size(); ++i) {
+    DCHECK(active_user_style_sheets_[i].second);
+    AddFontFaceRules(*active_user_style_sheets_[i].second);
+  }
+
+  font_cache_dirty_ = false;
 }
 
 void StyleEngine::UpdateGenericFontFamilySettings() {
@@ -1148,6 +1162,13 @@ void StyleEngine::ApplyRuleSetChanges(
             tree_scope.GetScopedStyleResolver())
       append_all_sheets = scoped_resolver->NeedsAppendAllSheets();
 
+    // When the font cache is dirty we have to rebuild it and then add all the
+    // @font-face rules in the document scope.
+    if (IsFontCacheDirty()) {
+      DCHECK(tree_scope.RootNode().IsDocumentNode());
+      append_all_sheets = true;
+    }
+
     if (change == kNoActiveSheetsChanged && !append_all_sheets)
       return;
   }
@@ -1158,13 +1179,35 @@ void StyleEngine::ApplyRuleSetChanges(
   unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
   bool fonts_changed = tree_scope.RootNode().IsDocumentNode() &&
                        (changed_rule_flags & kFontFaceRules);
+  bool keyframes_changed = changed_rule_flags & kKeyframesRules;
   unsigned append_start_index = 0;
 
-  // We don't need to clear the font cache if new sheets are appended.
-  if (fonts_changed && change == kActiveSheetsChanged)
-    ClearFontCache();
+  // We don't need to mark the font cache dirty if new sheets are appended.
+  if (fonts_changed && (invalidation_scope == kInvalidateAllScopes ||
+                        change == kActiveSheetsChanged)) {
+    MarkFontCacheDirty();
+  }
+
+  if (invalidation_scope == kInvalidateAllScopes) {
+    if (keyframes_changed) {
+      if (change == kActiveSheetsChanged)
+        ClearKeyframeRules();
+
+      for (auto it = new_style_sheets.begin();
+           it != new_style_sheets.end(); it++) {
+        DCHECK(it->second);
+        AddKeyframeRules(*it->second);
+      }
+    }
+  }
 
   if (invalidation_scope == kInvalidateCurrentScope) {
+    if (IsFontCacheDirty()) {
+      DCHECK(tree_scope.RootNode().IsDocumentNode());
+      DCHECK(change != kActiveSheetsAppended || append_all_sheets);
+      RefreshFontCache();
+    }
+
     // - If all sheets were removed, we remove the ScopedStyleResolver.
     // - If new sheets were appended to existing ones, start appending after the
     //   common prefix.
@@ -1199,20 +1242,8 @@ void StyleEngine::ApplyRuleSetChanges(
   if (changed_rule_sets.IsEmpty())
     return;
 
-  if (changed_rule_flags & kKeyframesRules) {
-    if (invalidation_scope == kInvalidateAllScopes) {
-      if (change == kActiveSheetsChanged)
-        ClearKeyframeRules();
-
-      for (auto it = new_style_sheets.begin();
-           it != new_style_sheets.end(); it++) {
-        DCHECK(it->second);
-        AddKeyframeRules(*it->second);
-      }
-    }
-
+  if (keyframes_changed)
     ScopedStyleResolver::KeyframesRulesAdded(tree_scope);
-  }
 
   Node& invalidation_root =
       ScopedStyleResolver::InvalidationRootForTreeScope(tree_scope);
@@ -1338,6 +1369,20 @@ void StyleEngine::CollectMatchingUserRules(
         MatchRequest(active_user_style_sheets_[i].second, nullptr,
                      active_user_style_sheets_[i].first, i));
   }
+}
+
+void StyleEngine::AddFontFaceRules(const RuleSet& rule_set) {
+  if (!font_selector_)
+    return;
+
+  const HeapVector<Member<StyleRuleFontFace>> font_face_rules =
+      rule_set.FontFaceRules();
+  for (auto& font_face_rule : font_face_rules) {
+    if (FontFace* font_face = FontFace::Create(document_, font_face_rule))
+      font_selector_->GetFontFaceCache()->Add(font_face_rule, font_face);
+  }
+  if (resolver_ && font_face_rules.size())
+    resolver_->InvalidateMatchedPropertiesCache();
 }
 
 void StyleEngine::AddKeyframeRules(const RuleSet& rule_set) {

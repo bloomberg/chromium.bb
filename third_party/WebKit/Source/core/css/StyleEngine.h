@@ -215,7 +215,6 @@ class CORE_EXPORT StyleEngine final
   void SetFontSelector(CSSFontSelector*);
 
   void RemoveFontFaceRules(const HeapVector<Member<const StyleRuleFontFace>>&);
-  void ClearFontCache();
   // updateGenericFontFamilySettings is used from WebSettingsImpl.
   void UpdateGenericFontFamilySettings();
 
@@ -364,8 +363,14 @@ class CORE_EXPORT StyleEngine final
   const MediaQueryEvaluator& EnsureMediaQueryEvaluator();
   void UpdateStyleSheetList(TreeScope&);
 
+  void ClearFontCache();
+  void RefreshFontCache();
+  void MarkFontCacheDirty() { font_cache_dirty_ = true; }
+  bool IsFontCacheDirty() const { return font_cache_dirty_; }
+
   void ClearKeyframeRules() { keyframes_rule_map_.clear(); }
 
+  void AddFontFaceRules(const RuleSet&);
   void AddKeyframeRules(const RuleSet&);
   void AddKeyframeStyle(StyleRuleKeyframes*);
 
@@ -419,6 +424,7 @@ class CORE_EXPORT StyleEngine final
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   Member<CSSFontSelector> font_selector_;
+  bool font_cache_dirty_ = false;
 
   HeapHashMap<AtomicString, WeakMember<StyleSheetContents>>
       text_to_sheet_cache_;
