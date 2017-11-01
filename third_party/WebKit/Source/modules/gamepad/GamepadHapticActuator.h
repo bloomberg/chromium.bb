@@ -6,7 +6,9 @@
 #define GamepadHapticActuator_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "device/gamepad/public/cpp/gamepad.h"
+#include "device/gamepad/public/interfaces/gamepad.mojom-blink.h"
 #include "modules/gamepad/GamepadEffectParameters.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -36,6 +38,12 @@ class GamepadHapticActuator final : public ScriptWrappable {
  private:
   GamepadHapticActuator(int pad_index, device::GamepadHapticActuatorType);
 
+  void OnPlayEffectCompleted(ScriptPromiseResolver*,
+                             device::mojom::GamepadHapticsResult);
+  void OnResetCompleted(ScriptPromiseResolver*,
+                        device::mojom::GamepadHapticsResult);
+
+  int pad_index_;
   String type_;
 };
 
