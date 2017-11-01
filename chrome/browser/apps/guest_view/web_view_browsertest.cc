@@ -1779,13 +1779,13 @@ IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestResizeWebviewResizesContent) {
 
 // Test makes sure that interstitial pages renders in <webview>.
 // Flaky on Win dbg: crbug.com/779973
-#if defined(OS_WIN) && defined(NDEBUG)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_InterstitialPage DISABLED_InterstitialPage
 #else
 #define MAYBE_InterstitialPage InterstitialPage
 #endif
 
-IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPage) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialPage) {
   // This test tests that a inner WebContents' InterstitialPage is properly
   // connected to an outer WebContents through a CrossProcessFrameConnector, it
   // doesn't make sense for BrowserPlugin based guests.
@@ -1809,13 +1809,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPage) {
 // Test makes sure that interstitial pages are registered in the
 // RenderWidgetHostInputEventRouter when inside a <webview>.
 // Flaky on Win dbg: crbug.com/779973
-#if defined(OS_WIN) && defined(NDEBUG)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_InterstitialPageRouteEvents DISABLED_InterstitialPageRouteEvents
 #else
 #define MAYBE_InterstitialPageRouteEvents InterstitialPageRouteEvents
 #endif
 
-IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageRouteEvents) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialPageRouteEvents) {
   // This test tests that a inner WebContents' InterstitialPage is properly
   // connected to an outer WebContents through a CrossProcessFrameConnector, it
   // doesn't make sense for BrowserPlugin based guests.
@@ -1846,7 +1846,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageRouteEvents) {
 #define MAYBE_InterstitialPageFocusedWidget InterstitialPageFocusedWidget
 #endif
 
-IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageFocusedWidget) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialPageFocusedWidget) {
   // This test tests that a inner WebContents' InterstitialPage is properly
   // connected to an outer WebContents through a CrossProcessFrameConnector, it
   // doesn't make sense for BrowserPlugin based guests.
@@ -1906,7 +1906,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageFocusedWidget) {
 #define MAYBE_InterstitialPageDetach InterstitialPageDetach
 #endif
 
-IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageDetach) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialPageDetach) {
   InterstitialTestHelper();
 
   content::WebContents* guest_web_contents =
@@ -1930,7 +1930,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialPageDetach) {
 #define MAYBE_InterstitialTeardown InterstitialTeardown
 #endif
 
-IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialTeardown) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialTeardown) {
   InterstitialTestHelper();
 
   // Now close the app while interstitial page being shown in guest.
