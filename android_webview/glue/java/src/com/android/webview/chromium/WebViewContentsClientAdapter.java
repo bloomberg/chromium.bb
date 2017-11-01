@@ -295,8 +295,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
             return mRequest.requestHeaders;
         }
 
-        // TODO(mnaganov): Uncomment when we completely switch builds to the next API level.
-        //@Override
+        @Override
         public boolean isRedirect() {
             return mRequest.isRedirect;
         }
@@ -310,10 +309,12 @@ class WebViewContentsClientAdapter extends AwContentsClient {
             mError = error;
         }
 
+        @Override
         public int getErrorCode() {
             return mError.errorCode;
         }
 
+        @Override
         public CharSequence getDescription() {
             return mError.description;
         }
