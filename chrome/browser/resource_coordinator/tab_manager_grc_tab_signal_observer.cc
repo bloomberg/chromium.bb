@@ -55,33 +55,25 @@ TabManager::GRCTabSignalObserver::GRCTabSignalObserver() : binding_(this) {
 
 TabManager::GRCTabSignalObserver::~GRCTabSignalObserver() = default;
 
-void TabManager::GRCTabSignalObserver::OnEventReceived(
-    const CoordinationUnitID& cu_id,
-    mojom::TabEvent event) {
-  if (event == mojom::TabEvent::kDoneLoading) {
-    auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
-    if (web_contents_iter == cu_id_web_contents_map_.end())
-      return;
-    auto* web_contents_data =
-        TabManager::WebContentsData::FromWebContents(web_contents_iter->second);
-    web_contents_data->DoneLoading();
-  }
+void TabManager::GRCTabSignalObserver::NotifyPageAlmostIdle(
+    const CoordinationUnitID& cu_id) {
+  auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
+  if (web_contents_iter == cu_id_web_contents_map_.end())
+    return;
+  auto* web_contents_data =
+      TabManager::WebContentsData::FromWebContents(web_contents_iter->second);
+  web_contents_data->NotifyAlmostIdle();
 }
 
-void TabManager::GRCTabSignalObserver::OnPropertyChanged(
+void TabManager::GRCTabSignalObserver::SetExpectedTaskQueueingDuration(
     const CoordinationUnitID& cu_id,
-    mojom::PropertyType property_type,
-    int64_t value) {
-  if (property_type == mojom::PropertyType::kExpectedTaskQueueingDuration) {
-    auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
-    if (web_contents_iter == cu_id_web_contents_map_.end())
-      return;
-    g_browser_process->GetTabManager()
-        ->stats_collector()
-        ->RecordExpectedTaskQueueingDuration(
-            web_contents_iter->second,
-            base::TimeDelta::FromMilliseconds(value));
-  }
+    base::TimeDelta duration) {
+  auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
+  if (web_contents_iter == cu_id_web_contents_map_.end())
+    return;
+  g_browser_process->GetTabManager()
+      ->stats_collector()
+      ->RecordExpectedTaskQueueingDuration(web_contents_iter->second, duration);
 }
 
 void TabManager::GRCTabSignalObserver::

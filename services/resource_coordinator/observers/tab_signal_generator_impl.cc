@@ -6,16 +6,15 @@
 
 #include <utility>
 
-#include "base/values.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace resource_coordinator {
 
-#define DISPATCH_TAB_SIGNAL(observers, METHOD, cu, ...)          \
+#define DISPATCH_TAB_SIGNAL(observers, METHOD, ...)              \
   observers.ForAllPtrs([&](mojom::TabSignalObserver* observer) { \
-    observer->METHOD(cu->id(), __VA_ARGS__);                     \
+    observer->METHOD(__VA_ARGS__);                               \
   });
 
 TabSignalGeneratorImpl::TabSignalGeneratorImpl() = default;
@@ -43,8 +42,7 @@ void TabSignalGeneratorImpl::OnFramePropertyChanged(
       return;
     // TODO(lpy) Combine CPU usage or long task idleness signal.
     if (auto* page_cu = frame_cu->GetPageCoordinationUnit()) {
-      DISPATCH_TAB_SIGNAL(observers_, OnEventReceived, page_cu,
-                          mojom::TabEvent::kDoneLoading);
+      DISPATCH_TAB_SIGNAL(observers_, NotifyPageAlmostIdle, page_cu->id());
     }
   }
 }
@@ -54,8 +52,9 @@ void TabSignalGeneratorImpl::OnPagePropertyChanged(
     const mojom::PropertyType property_type,
     int64_t value) {
   if (property_type == mojom::PropertyType::kExpectedTaskQueueingDuration) {
-    DISPATCH_TAB_SIGNAL(observers_, OnPropertyChanged, page_cu, property_type,
-                        value);
+    DISPATCH_TAB_SIGNAL(observers_, SetExpectedTaskQueueingDuration,
+                        page_cu->id(),
+                        base::TimeDelta::FromMilliseconds(value));
   }
 }
 
