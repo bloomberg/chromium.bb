@@ -111,14 +111,6 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   static bool IsAppAvailable(
       const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
 
-  // Swaps Chrome app with any app in row |kMaxAppResults-1| iff its index is
-  // bigger, thus ensuring the user can always see Chrome without scrolling.
-  // When swap is needed, fills |out_indices| and returns true. If |handlers|
-  // do not have Chrome, returns false.
-  static bool IsSwapElementsNeeded(
-      const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
-      std::pair<size_t, size_t>* out_indices);
-
   static bool IsAppAvailableForTesting(
       const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
   static size_t FindPreferredAppForTesting(
