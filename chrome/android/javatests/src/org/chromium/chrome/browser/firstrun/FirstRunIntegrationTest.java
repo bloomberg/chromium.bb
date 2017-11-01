@@ -140,10 +140,13 @@ public class FirstRunIntegrationTest {
         final ActivityMonitor activityMonitor = new ActivityMonitor(asyncClassName, null, false);
         final ActivityMonitor freMonitor =
                 new ActivityMonitor(FirstRunActivity.class.getName(), null, false);
+        final ActivityMonitor tabbedFREMonitor =
+                new ActivityMonitor(TabbedModeFirstRunActivity.class.getName(), null, false);
 
         Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         instrumentation.addMonitor(activityMonitor);
         instrumentation.addMonitor(freMonitor);
+        instrumentation.addMonitor(tabbedFREMonitor);
         runnable.run();
 
         // The original activity should be started because it was directly specified.
@@ -163,7 +166,7 @@ public class FirstRunIntegrationTest {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return freMonitor.getHits() == 1;
+                return freMonitor.getHits() == 1 || tabbedFREMonitor.getHits() == 1;
             }
         });
     }
