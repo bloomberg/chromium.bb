@@ -297,6 +297,21 @@ TEST_F(QuicStreamSequencerBufferTest, OnStreamDataBeyondCapacity) {
                                   clock_.ApproximateNow(), &written,
                                   &error_details_));
   EXPECT_TRUE(helper_->CheckBufferInvariants());
+
+  // Disallow current_gap != gaps_.end()
+  EXPECT_EQ(QUIC_INTERNAL_ERROR,
+            buffer_->OnStreamData(static_cast<QuicStreamOffset>(-1), source,
+                                  clock_.ApproximateNow(), &written,
+                                  &error_details_));
+  EXPECT_TRUE(helper_->CheckBufferInvariants());
+
+  // Disallow offset + size overflow
+  source = "bbb";
+  EXPECT_EQ(QUIC_INTERNAL_ERROR,
+            buffer_->OnStreamData(static_cast<QuicStreamOffset>(-2), source,
+                                  clock_.ApproximateNow(), &written,
+                                  &error_details_));
+  EXPECT_TRUE(helper_->CheckBufferInvariants());
   EXPECT_EQ(0u, buffer_->BytesBuffered());
 }
 
