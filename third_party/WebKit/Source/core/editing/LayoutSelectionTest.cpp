@@ -266,10 +266,10 @@ TEST_F(LayoutSelectionTest,
           .Build());
   // This commit should not crash.
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, NotInvalidate);
   TEST_NEXT(IsLayoutBlockFlow, kStartAndEnd, NotInvalidate);
   TEST_NEXT("div1", kStartAndEnd, ShouldInvalidate);
-  TEST_NEXT(IsLayoutBlockFlow, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kStartAndEnd, NotInvalidate);
   TEST_NEXT("foo", kNone, NotInvalidate);
   TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
   TEST_NEXT("bar", kNone, ShouldInvalidate);
@@ -364,8 +364,8 @@ TEST_F(LayoutSelectionTest, FirstLetterUpdateSeletion) {
                                .SetBaseAndExtent({baz, 2}, {baz, 3})
                                .Build());
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
-  TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, NotInvalidate);
+  TEST_NEXT(IsLayoutBlock, kStart, NotInvalidate);
   TEST_NEXT("foo", kNone, ShouldInvalidate);
   // TODO(yoichio): Invalidating next LayoutBlock is flaky but it doesn't
   // matter in wild because we don't paint selection gap. I will update
