@@ -37,43 +37,10 @@ namespace translate {
 
 class LanguageDetectionController : public web::WebStateObserver {
  public:
-  // Language detection details, passed to language detection callbacks.
-  // TODO(crbug.com/715447): Investigate if we can use the existing
-  // detection_details under
-  // components/translate/core/common/language_detection_details.h.
-  struct DetectionDetails {
-    DetectionDetails();
-    DetectionDetails(const DetectionDetails& other);
-    ~DetectionDetails();
-
-    // The language detected by the content (Content-Language).
-    std::string content_language;
-
-    // The language written in the lang attribute of the html element.
-    std::string html_root_language;
-
-    // The adopted language.
-    std::string adopted_language;
-
-    // The language detected by CLD.
-    std::string cld_language;
-
-    // Whether the CLD detection is reliable or not.
-    bool is_cld_reliable;
-  };
-
   LanguageDetectionController(web::WebState* web_state,
                               JsLanguageDetectionManager* manager,
                               PrefService* prefs);
   ~LanguageDetectionController() override;
-
-  // Callback types for language detection events.
-  typedef base::Callback<void(const DetectionDetails&)> Callback;
-  typedef base::CallbackList<void(const DetectionDetails&)> CallbackList;
-
-  // Registers a callback for language detection events.
-  std::unique_ptr<CallbackList::Subscription> RegisterLanguageDetectionCallback(
-      const Callback& callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LanguageDetectionControllerTest, OnTextCaptured);
@@ -93,6 +60,7 @@ class LanguageDetectionController : public web::WebStateObserver {
   // JsLanguageDetectionManager.
   void OnTextRetrieved(const std::string& http_content_language,
                        const std::string& html_lang,
+                       const GURL& url,
                        const base::string16& text);
 
   // Extracts "content-language" header into content_language_header_ variable.
@@ -106,7 +74,6 @@ class LanguageDetectionController : public web::WebStateObserver {
                            web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
-  CallbackList language_detection_callbacks_;
   JsLanguageDetectionManager* js_manager_;
   BooleanPrefMember translate_enabled_;
   std::string content_language_header_;

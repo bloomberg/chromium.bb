@@ -49,7 +49,7 @@ class ChromeIOSTranslateClient
   translate::TranslateManager* GetTranslateManager();
 
   // TranslateClient implementation.
-  translate::TranslateDriver* GetTranslateDriver() override;
+  translate::IOSTranslateDriver* GetTranslateDriver() override;
   PrefService* GetPrefs() override;
   std::unique_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
   translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
