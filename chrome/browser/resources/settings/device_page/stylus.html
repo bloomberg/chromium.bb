@@ -29,13 +29,15 @@
       }
     </style>
 
-    <settings-toggle-button class="continuation"
+    <settings-toggle-button id="enableStylusToolsToggle"
+        class="continuation"
         pref="{{prefs.settings.enable_stylus_tools}}"
         label="$i18n{stylusEnableStylusTools}">
     </settings-toggle-button>
 
     <template is="dom-if" if="[[hasInternalStylus_]]">
       <settings-toggle-button
+          id ="launchPaletteOnEjectEventToggle"
           pref="{{prefs.settings.launch_palette_on_eject_event}}"
           label="$i18n{stylusAutoOpenStylusTools}"
           disabled="[[!prefs.settings.enable_stylus_tools.value]]">

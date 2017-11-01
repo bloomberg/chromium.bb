@@ -247,6 +247,16 @@ cr.define('device_page_tests', function() {
             value: false,
           },
         },
+        enable_stylus_tools: {
+          key: 'settings.enable_stylus_tools',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: false,
+        },
+        launch_palette_on_eject_event: {
+          key: 'settings.launch_palette_on_eject_event',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: false,
+        },
         restore_last_lock_screen_note: {
           key: 'settings.restore_last_lock_screen_note',
           type: chrome.settingsPrivate.PrefType.BOOLEAN,
@@ -1096,7 +1106,7 @@ cr.define('device_page_tests', function() {
       suiteSetup(function() {
         // Always show stylus settings.
         loadTimeData.overrideValues({
-          stylusAllowed: true,
+          hasInternalStylus: true,
         });
       });
 
@@ -1158,6 +1168,35 @@ cr.define('device_page_tests', function() {
       function isVisible(element) {
         return !!element && element.offsetWidth > 0 && element.offsetHeight > 0;
       }
+
+      test('stylus tools prefs', function() {
+        // Both stylus tools prefs are intially false.
+        assertFalse(devicePage.prefs.settings.enable_stylus_tools.value);
+        assertFalse(
+            devicePage.prefs.settings.launch_palette_on_eject_event.value);
+
+        // Since both prefs are intially false, the launch palette on eject pref
+        // toggle is disabled.
+        expectTrue(isVisible(stylusPage.$$('#enableStylusToolsToggle')));
+        expectTrue(
+            isVisible(stylusPage.$$('#launchPaletteOnEjectEventToggle')));
+        expectTrue(
+            stylusPage.$$('#launchPaletteOnEjectEventToggle').disabled);
+        expectFalse(devicePage.prefs.settings.enable_stylus_tools.value);
+        expectFalse(
+            devicePage.prefs.settings.launch_palette_on_eject_event.value);
+
+        // Tapping the enable stylus tools pref causes the launch palette on
+        // eject pref toggle to not be disabled anymore.
+        MockInteractions.tap(stylusPage.$$('#enableStylusToolsToggle'));
+        expectTrue(devicePage.prefs.settings.enable_stylus_tools.value);
+        expectFalse(
+            stylusPage.$$('#launchPaletteOnEjectEventToggle').disabled);
+        MockInteractions.tap(
+            stylusPage.$$('#launchPaletteOnEjectEventToggle'));
+        expectTrue(
+            devicePage.prefs.settings.launch_palette_on_eject_event.value);
+      });
 
       test('choose first app if no preferred ones', function() {
         // Selector chooses the first value in list if there is no preferred
