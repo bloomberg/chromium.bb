@@ -63,6 +63,7 @@ punctuation ( 236		parenthèse ouvrante
 sign * 35						astérisque
 punctuation ) 356		parenthèse fermante
 punctuation ' 3			apostrophe
+punctuation \x2019 3		apostrophe
 math / 34						barre oblique
 sign @ 345					arobas
 sign % 346					pour cent
