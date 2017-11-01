@@ -2401,11 +2401,15 @@ test("browser_tests") {
       }
       if (is_win || is_linux) {
         sources += [
-          "../browser/feature_engagement/incognito_window/incognito_window_tracker_browsertest.cc",
-          "../browser/feature_engagement/new_tab/new_tab_tracker_browsertest.cc",
           "../browser/ui/views/ime/input_ime_apitest_nonchromeos.cc",
         ]
       }
+    }
+    if (enable_desktop_in_product_help) {
+      sources += [
+        "../browser/feature_engagement/incognito_window/incognito_window_tracker_browsertest.cc",
+        "../browser/feature_engagement/new_tab/new_tab_tracker_browsertest.cc",
+      ]
     }
     if (safe_browsing_mode == 1) {
       sources += [
