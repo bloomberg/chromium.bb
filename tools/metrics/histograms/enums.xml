@@ -25786,7 +25786,8 @@ from previous Chrome versions.
 </enum>
 
 <enum name="MappedCSSProperties">
-<!-- Generated from third_party/WebKit/Source/core/frame/UseCounter.cpp -->
+<!-- Generated from third_party/WebKit/Source/core/frame/UseCounter.cpp.
+Called by update_use_counter_css.py.-->
 
   <int value="1" label="Total Pages Measured"/>
   <int value="2" label="color"/>
@@ -26343,7 +26344,7 @@ from previous Chrome versions.
   <int value="553" label="min-block-size"/>
   <int value="554" label="max-inline-size"/>
   <int value="555" label="max-block-size"/>
-  <int value="556" label="alias-line-break"/>
+  <int value="556" label="line-break"/>
   <int value="557" label="place-content"/>
   <int value="558" label="place-items"/>
   <int value="559" label="transform-box"/>
@@ -26372,9 +26373,10 @@ from previous Chrome versions.
   <int value="582" label="scroll-snap-margin-inline-start"/>
   <int value="583" label="scroll-snap-margin-inline-end"/>
   <int value="584" label="scroll-snap-stop"/>
-  <int value="585" label="scroll-boundary-behavior"/>
-  <int value="586" label="scroll-boundary-behavior-x"/>
-  <int value="587" label="scroll-boundary-behavior-y"/>
+  <int value="585" label="overscroll-behavior"/>
+  <int value="586" label="overscroll-behavior-x"/>
+  <int value="587" label="overscroll-behavior-y"/>
+  <int value="588" label="font-variant-east-asian"/>
 </enum>
 
 <enum name="MappedEditingCommands">
