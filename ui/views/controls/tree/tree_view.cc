@@ -711,9 +711,10 @@ void TreeView::UpdatePreferredSize() {
   if (!model_)
     return;
 
-  preferred_size_.SetSize(root_.GetMaxWidth(text_offset_, root_shown_ ? 1 : 0) +
-                              kTextHorizontalPadding * 2,
-                          row_height_ * GetRowCount());
+  preferred_size_.SetSize(
+      root_.GetMaxWidth(this, text_offset_, root_shown_ ? 1 : 0) +
+          kTextHorizontalPadding * 2,
+      row_height_ * GetRowCount());
 }
 
 void TreeView::LayoutEditor() {
@@ -780,24 +781,8 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
   if (model_->GetChildCount(node->model_node()))
     PaintExpandControl(canvas, bounds, node->is_expanded());
 
-  // Paint the icon.
-  gfx::ImageSkia icon;
-  int icon_index = model_->GetIconIndex(node->model_node());
-  if (icon_index != -1)
-    icon = icons_[icon_index];
-  else if (node == selected_node_)
-    icon = open_icon_;
-  else
-    icon = closed_icon_;
-  int icon_x = kArrowRegionSize + kImagePadding +
-               (open_icon_.width() - icon.width()) / 2;
-  if (base::i18n::IsRTL())
-    icon_x = bounds.right() - icon_x - open_icon_.width();
-  else
-    icon_x += bounds.x();
-  canvas->DrawImageInt(
-      icon, icon_x,
-      bounds.y() + (bounds.height() - icon.height()) / 2);
+  if (drawing_provider()->ShouldDrawIconForNode(this, node->model_node()))
+    PaintNodeIcon(canvas, node, bounds);
 
   // Paint the text background and text. In edit mode, the selected node is a
   // separate editing control, so it does not need to be painted here.
@@ -863,6 +848,27 @@ void TreeView::PaintExpandControl(gfx::Canvas* canvas,
                        arrow_bounds.y());
 }
 
+void TreeView::PaintNodeIcon(gfx::Canvas* canvas,
+                             InternalNode* node,
+                             const gfx::Rect& bounds) {
+  gfx::ImageSkia icon;
+  int icon_index = model_->GetIconIndex(node->model_node());
+  if (icon_index != -1)
+    icon = icons_[icon_index];
+  else if (node == selected_node_)
+    icon = open_icon_;
+  else
+    icon = closed_icon_;
+  int icon_x = kArrowRegionSize + kImagePadding +
+               (open_icon_.width() - icon.width()) / 2;
+  if (base::i18n::IsRTL())
+    icon_x = bounds.right() - icon_x - open_icon_.width();
+  else
+    icon_x += bounds.x();
+  canvas->DrawImageInt(icon, icon_x,
+                       bounds.y() + (bounds.height() - icon.height()) / 2);
+}
+
 TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(
     ui::TreeModelNode* model_node,
     GetInternalNodeCreateType create_type) {
@@ -902,7 +908,10 @@ gfx::Rect TreeView::GetForegroundBoundsForNode(InternalNode* node) {
 
 gfx::Rect TreeView::GetTextBoundsForNode(InternalNode* node) {
   gfx::Rect bounds(GetForegroundBoundsForNode(node));
-  bounds.Inset(text_offset_, 0, 0, 0);
+  if (drawing_provider()->ShouldDrawIconForNode(this, node->model_node()))
+    bounds.Inset(text_offset_, 0, 0, 0);
+  else
+    bounds.Inset(kArrowRegionSize, 0, 0, 0);
   return bounds;
 }
 
@@ -1129,13 +1138,14 @@ int TreeView::InternalNode::NumExpandedNodes() const {
   return result;
 }
 
-int TreeView::InternalNode::GetMaxWidth(int indent, int depth) {
-  int max_width = text_width_ + indent * depth;
+int TreeView::InternalNode::GetMaxWidth(TreeView* tree, int indent, int depth) {
+  bool has_icon = tree->drawing_provider()->ShouldDrawIconForNode(tree, this);
+  int max_width = (has_icon ? text_width_ : kArrowRegionSize) + indent * depth;
   if (!is_expanded_)
     return max_width;
   for (int i = 0; i < child_count(); ++i) {
-    max_width = std::max(max_width,
-                         GetChild(i)->GetMaxWidth(indent, depth + 1));
+    max_width =
+        std::max(max_width, GetChild(i)->GetMaxWidth(tree, indent, depth + 1));
   }
   return max_width;
 }
