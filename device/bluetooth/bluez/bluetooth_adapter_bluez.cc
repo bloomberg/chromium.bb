@@ -1602,10 +1602,6 @@ void BluetoothAdapterBlueZ::OnStopDiscoveryError(
     const DiscoverySessionErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  BLUETOOTH_LOG(ERROR) << object_path_.value()
-                       << ": Failed to stop discovery: " << error_name << ": "
-                       << error_message;
-
   // Failed to stop discovery. This can only happen if the count is at 1.
   DCHECK(discovery_request_pending_);
   DCHECK_EQ(num_discovery_sessions_, 1);
@@ -1616,6 +1612,15 @@ void BluetoothAdapterBlueZ::OnStopDiscoveryError(
     force_deactivate_discovery_ = false;
     num_discovery_sessions_ = 0;
     MarkDiscoverySessionsAsInactive();
+    // Do not consider this situation as error as the error from Stop()
+    // discovery session was expected. So log with DEBUG instead of ERROR.
+    BLUETOOTH_LOG(DEBUG) << object_path_.value()
+                         << ": Failed to stop discovery: " << error_name << ": "
+                         << error_message;
+  } else {
+    BLUETOOTH_LOG(ERROR) << object_path_.value()
+                         << ": Failed to stop discovery: " << error_name << ": "
+                         << error_message;
   }
 
   error_callback.Run(TranslateDiscoveryErrorToUMA(error_name));
