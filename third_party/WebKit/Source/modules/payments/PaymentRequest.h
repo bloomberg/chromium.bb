@@ -89,6 +89,15 @@ class MODULES_EXPORT PaymentRequest final
 
   void OnCompleteTimeoutForTesting();
 
+  enum {
+    // Implementation defined constants controlling the allowed list length
+    kMaxListSize = 1024,
+    // ... and string length
+    kMaxStringLength = 1024,
+    // ... and JSON length.
+    kMaxJSONStringLength = 1048576
+  };
+
  private:
   PaymentRequest(ExecutionContext*,
                  const HeapVector<PaymentMethodData>&,
