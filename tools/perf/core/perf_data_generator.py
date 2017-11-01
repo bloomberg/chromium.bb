@@ -642,7 +642,10 @@ BENCHMARKS_TO_UPLOAD_TO_FLAKINESS_DASHBOARD = [
 ]
 
 
-BENCHMARKS_TO_OUTPUT_HISTOGRAMS = []
+BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
+    'dummy_benchmark.noisy_benchmark_1',
+    'dummy_benchmark.stable_benchmark_1',
+]
 
 
 def generate_telemetry_test(swarming_dimensions, benchmark_name, browser):
