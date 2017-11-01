@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_shill_service_client.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_profile_client.h"
 #include "chromeos/dbus/mock_shill_service_client.h"
@@ -48,6 +49,17 @@ MATCHER_P(IsEqualTo, value, "") {
 namespace chromeos {
 
 namespace {
+
+// Copies the result of GetProperties().
+void CopyProperties(bool* called,
+                    std::string* service_path_out,
+                    base::Value* result_out,
+                    const std::string& service_path,
+                    const base::DictionaryValue& result) {
+  *called = true;
+  *service_path_out = service_path;
+  *result_out = result.Clone();
+}
 
 static std::string PrettyJson(const base::DictionaryValue& value) {
   std::string pretty;
@@ -82,12 +94,6 @@ void ServiceResultCallback(const std::string& expected_result,
                            const std::string& service_path,
                            const std::string& guid) {
   EXPECT_EQ(expected_result, service_path);
-}
-
-void DBusErrorCallback(const std::string& error_name,
-                       const std::string& error_message) {
-  EXPECT_TRUE(false) << "DBus Error: " << error_name << "(" << error_message
-                     << ")";
 }
 
 class TestCallback {
@@ -299,6 +305,11 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     return true;
   }
 
+  FakeShillServiceClient* GetShillServiceClient() {
+    return static_cast<FakeShillServiceClient*>(
+        DBusThreadManager::Get()->GetShillServiceClient());
+  }
+
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   std::unique_ptr<TestNetworkStateHandlerObserver>
@@ -469,33 +480,28 @@ class NetworkConfigurationHandlerMockTest : public testing::Test {
       property_changed_observers_;
 };
 
-TEST_F(NetworkConfigurationHandlerMockTest, GetProperties) {
-  std::string service_path = "/service/1";
-  std::string expected_json = "{\n   \"SSID\": \"MyNetwork\"\n}\n";
-  std::string networkName = "MyNetwork";
-  std::string key = "SSID";
-  std::unique_ptr<base::Value> networkNameValue(new base::Value(networkName));
+TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
+  constexpr char kServicePath[] = "/service/1";
+  constexpr char kNetworkName[] = "MyName";
+  GetShillServiceClient()->AddService(
+      kServicePath, std::string() /* guid */, kNetworkName, shill::kTypeWifi,
+      std::string() /* state */, true /* visible */);
 
-  base::DictionaryValue value;
-  value.SetString(key, networkName);
-  dictionary_value_result_ = &value;
-  EXPECT_CALL(*mock_service_client_,
-              SetProperty(dbus::ObjectPath(service_path), key,
-                          IsEqualTo(networkNameValue.get()), _, _)).Times(1);
-  mock_service_client_->SetProperty(
-      dbus::ObjectPath(service_path), key, *networkNameValue,
-      base::Bind(&base::DoNothing), base::Bind(&DBusErrorCallback));
-  base::RunLoop().RunUntilIdle();
-
-  ShillServiceClient::DictionaryValueCallback get_properties_callback;
-  EXPECT_CALL(*mock_service_client_, GetProperties(_, _))
-      .WillOnce(
-          Invoke(this, &NetworkConfigurationHandlerMockTest::OnGetProperties));
+  bool success = false;
+  std::string service_path;
+  base::DictionaryValue result;
   network_configuration_handler_->GetShillProperties(
-      service_path,
-      base::Bind(&DictionaryValueCallback, service_path, expected_json),
+      kServicePath,
+      base::Bind(&CopyProperties, &success, &service_path, &result),
       base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(success);
+  EXPECT_EQ(kServicePath, service_path);
+  const base::Value* ssid =
+      result.FindKeyOfType(shill::kSSIDProperty, base::Value::Type::STRING);
+  ASSERT_TRUE(ssid);
+  EXPECT_EQ(kNetworkName, ssid->GetString());
 }
 
 TEST_F(NetworkConfigurationHandlerMockTest, GetProperties_TetherNetwork) {
