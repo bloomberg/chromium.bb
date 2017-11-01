@@ -43,7 +43,11 @@ void QuicClientPromisedInfo::OnPromiseHeaders(const SpdyHeaderBlock& headers) {
   // RFC7540, Section 8.2, requests MUST be safe [RFC7231], Section
   // 4.2.1.  GET and HEAD are the methods that are safe and required.
   SpdyHeaderBlock::const_iterator it = headers.find(kHttp2MethodHeader);
-  DCHECK(it != headers.end());
+  if (it == headers.end()) {
+    QUIC_DVLOG(1) << "Promise for stream " << id_ << " has no method";
+    Reset(QUIC_INVALID_PROMISE_METHOD);
+    return;
+  }
   if (!(it->second == "GET" || it->second == "HEAD")) {
     QUIC_DVLOG(1) << "Promise for stream " << id_ << " has invalid method "
                   << it->second;

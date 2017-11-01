@@ -154,6 +154,19 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseInvalidMethod) {
   EXPECT_EQ(session_.GetPromisedByUrl(promise_url_), nullptr);
 }
 
+TEST_F(QuicClientPromisedInfoTest, PushPromiseMissingMethod) {
+  // Promise with a missing method
+  push_promise_.erase(":method");
+
+  EXPECT_CALL(*connection_,
+              SendRstStream(promise_id_, QUIC_INVALID_PROMISE_METHOD, 0));
+  ReceivePromise(promise_id_);
+
+  // Verify that the promise headers were ignored
+  EXPECT_EQ(session_.GetPromisedById(promise_id_), nullptr);
+  EXPECT_EQ(session_.GetPromisedByUrl(promise_url_), nullptr);
+}
+
 TEST_F(QuicClientPromisedInfoTest, PushPromiseInvalidUrl) {
   // Remove required header field to make URL invalid
   push_promise_.erase(":authority");
