@@ -35,6 +35,11 @@ static void DoRunLoopOnce(JNIEnv* env,
   base::MessagePumpForUI* pump =
       reinterpret_cast<base::MessagePumpForUI*>(native_message_pump);
   DCHECK(pump);
+  // If the pump has been aborted, tasks may continue to be queued up, but
+  // shouldn't run.
+  if (pump->ShouldAbort())
+    return;
+
   // This is based on MessagePumpForUI::DoRunLoop() from desktop.
   // Note however that our system queue is handled in the java side.
   // In desktop we inspect and process a single system message and then

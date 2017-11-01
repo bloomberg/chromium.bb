@@ -264,6 +264,10 @@ void AbortMessagePump() {
   static_cast<base::MessageLoopForUI*>(base::MessageLoop::current())->Abort();
 }
 
+void DoNotRun() {
+  ASSERT_TRUE(false);
+}
+
 void RunTest_AbortDontRunMoreTasks(bool delayed, bool init_java_first) {
   WaitableEvent test_done_event(WaitableEvent::ResetPolicy::MANUAL,
                                 WaitableEvent::InitialState::NOT_SIGNALED);
@@ -286,6 +290,8 @@ void RunTest_AbortDontRunMoreTasks(bool delayed, bool init_java_first) {
   } else {
     java_thread->message_loop()->task_runner()->PostTask(
         FROM_HERE, BindOnce(&AbortMessagePump));
+    java_thread->message_loop()->task_runner()->PostTask(FROM_HERE,
+                                                         BindOnce(&DoNotRun));
   }
 
   // Wait to ensure we catch the correct exception (and don't crash)
