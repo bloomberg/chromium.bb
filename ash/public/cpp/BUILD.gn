@@ -49,7 +49,6 @@ component("ash_public_cpp") {
     "shell_window_ids.h",
     "stylus_utils.cc",
     "stylus_utils.h",
-    "voice_interaction_state.h",
     "window_pin_type.cc",
     "window_pin_type.h",
     "window_properties.cc",

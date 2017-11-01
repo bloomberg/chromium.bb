@@ -12,7 +12,6 @@
 #include "ash/ash_export.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/voice_interaction_state.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
@@ -163,6 +162,7 @@ class TrayBluetoothHelper;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
+class VoiceInteractionController;
 class VpnList;
 class WallpaperController;
 class WallpaperDelegate;
@@ -174,7 +174,6 @@ class WindowTreeHostManager;
 
 enum class Config;
 enum class LoginStatus;
-enum class VoiceInteractionState;
 
 // Shell is a singleton object that presents the Shell API and implements the
 // RootWindow's delegate interface.
@@ -455,6 +454,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   VirtualKeyboardController* virtual_keyboard_controller() {
     return virtual_keyboard_controller_.get();
   }
+  VoiceInteractionController* voice_interaction_controller() {
+    return voice_interaction_controller_.get();
+  }
   VpnList* vpn_list() { return vpn_list_.get(); }
   WallpaperController* wallpaper_controller() {
     return wallpaper_controller_.get();
@@ -572,28 +574,6 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   void NotifyAppListVisibilityChanged(bool visible, aura::Window* root_window);
 
-  // TODO(kaznacheev) Move voice interaction related methods to a separate
-  // controller (crbug.com/758650)
-  void NotifyVoiceInteractionStatusChanged(VoiceInteractionState state);
-
-  void NotifyVoiceInteractionEnabled(bool enabled);
-
-  void NotifyVoiceInteractionContextEnabled(bool enabled);
-
-  void NotifyVoiceInteractionSetupCompleted(bool completed);
-
-  VoiceInteractionState voice_interaction_state() const {
-    return voice_interaction_state_;
-  }
-
-  bool voice_interaction_settings_enabled() const {
-    return voice_interaction_settings_enabled_;
-  }
-
-  bool voice_interaction_setup_completed() const {
-    return voice_interaction_setup_completed_;
-  }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
@@ -695,6 +675,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ToastManager> toast_manager_;
   std::unique_ptr<TouchDevicesController> touch_devices_controller_;
   std::unique_ptr<TrayAction> tray_action_;
+  std::unique_ptr<VoiceInteractionController> voice_interaction_controller_;
   std::unique_ptr<VpnList> vpn_list_;
   std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;
@@ -798,21 +779,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Cursor may be hidden on certain key events in Chrome OS, whereas we never
   // hide the cursor on Windows.
   std::unique_ptr<::wm::CursorManager> cursor_manager_;
-
-  // Cached state and flags related to voice interaction.
-  // TODO(updowndota) Move the cached voice interaction flags into a separate
-  // controller after the controller is added (crbug.com/758650).
-
-  // Voice interaction state. The intial value should be set to STOPPED to make
-  // sure the burst animation could be correctly shown.
-  VoiceInteractionState voice_interaction_state_ =
-      VoiceInteractionState::STOPPED;
-
-  // Whether voice interaction is enabled in system settings.
-  bool voice_interaction_settings_enabled_ = false;
-
-  // Whether voice intearction setup flow has completed.
-  bool voice_interaction_setup_completed_ = false;
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_testing_;

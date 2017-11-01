@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -33,6 +34,7 @@ namespace arc {
 
 class ArcBridgeService;
 class HighlighterControllerClient;
+class VoiceInteractionControllerClient;
 
 // This provides voice interaction context (currently screenshots)
 // to ARC to be used by VoiceInteractionSession. This class lives on the UI
@@ -67,7 +69,8 @@ class ArcVoiceInteractionFrameworkService
   void OnMetalayerClosed() override;
   void SetMetalayerEnabled(bool enabled) override;
   void SetVoiceInteractionRunning(bool running) override;
-  void SetVoiceInteractionState(ash::VoiceInteractionState state) override;
+  void SetVoiceInteractionState(
+      arc::mojom::VoiceInteractionState state) override;
 
   void ShowMetalayer();
   void HideMetalayer();
@@ -127,7 +130,14 @@ class ArcVoiceInteractionFrameworkService
     return highlighter_client_.get();
   }
 
-  ash::VoiceInteractionState GetStateForTesting() const { return state_; }
+  ash::mojom::VoiceInteractionState GetStateForTesting() const {
+    return state_;
+  }
+
+  VoiceInteractionControllerClient*
+  GetVoiceInteractionControllerClientForTesting() const {
+    return voice_interaction_controller_client_.get();
+  }
 
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
@@ -160,7 +170,8 @@ class ArcVoiceInteractionFrameworkService
   // delay after boot before the service is ready. We wait for the container
   // to tell us if it is ready to quickly serve voice interaction requests.
   // We also give user proper feedback based on the state.
-  ash::VoiceInteractionState state_ = ash::VoiceInteractionState::NOT_READY;
+  ash::mojom::VoiceInteractionState state_ =
+      ash::mojom::VoiceInteractionState::NOT_READY;
 
   // The time when a user initated an interaction.
   base::TimeTicks user_interaction_start_time_;
@@ -173,6 +184,9 @@ class ArcVoiceInteractionFrameworkService
   int32_t context_request_remaining_count_ = 0;
 
   std::unique_ptr<HighlighterControllerClient> highlighter_client_;
+
+  std::unique_ptr<VoiceInteractionControllerClient>
+      voice_interaction_controller_client_;
 
   base::WeakPtrFactory<ArcVoiceInteractionFrameworkService> weak_ptr_factory_;
 

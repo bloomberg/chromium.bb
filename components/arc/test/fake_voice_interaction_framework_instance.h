@@ -67,7 +67,8 @@ class FakeVoiceInteractionFrameworkInstance
   size_t start_session_for_region_count_ = 0u;
   gfx::Rect selected_region_;
   mojom::VoiceInteractionFrameworkHostPtr host_;
-  ash::VoiceInteractionState state_ = ash::VoiceInteractionState::STOPPED;
+  arc::mojom::VoiceInteractionState state_ =
+      arc::mojom::VoiceInteractionState::STOPPED;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVoiceInteractionFrameworkInstance);
 };

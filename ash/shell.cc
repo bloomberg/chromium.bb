@@ -101,6 +101,7 @@
 #include "ash/tray_action/tray_action.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/virtual_keyboard_controller.h"
+#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
 #include "ash/wm/ash_focus_rules.h"
@@ -577,32 +578,6 @@ void Shell::NotifyAppListVisibilityChanged(bool visible,
     observer.OnAppListVisibilityChanged(visible, root_window);
 }
 
-void Shell::NotifyVoiceInteractionStatusChanged(VoiceInteractionState state) {
-  voice_interaction_state_ = state;
-  for (auto& observer : shell_observers_)
-    observer.OnVoiceInteractionStatusChanged(state);
-}
-
-void Shell::NotifyVoiceInteractionEnabled(bool enabled) {
-  // TODO(updowndota) Rename the methods name to be consist with the flag name
-  // after the methods are refactored into the voice interaction related
-  // cotroller (crbug.com/758650).
-  voice_interaction_settings_enabled_ = enabled;
-  for (auto& observer : shell_observers_)
-    observer.OnVoiceInteractionEnabled(enabled);
-}
-
-void Shell::NotifyVoiceInteractionContextEnabled(bool enabled) {
-  for (auto& observer : shell_observers_)
-    observer.OnVoiceInteractionContextEnabled(enabled);
-}
-
-void Shell::NotifyVoiceInteractionSetupCompleted(bool completed) {
-  voice_interaction_setup_completed_ = completed;
-  for (auto& observer : shell_observers_)
-    observer.OnVoiceInteractionSetupCompleted();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, private:
 
@@ -773,6 +748,7 @@ Shell::~Shell() {
   laser_pointer_controller_.reset();
   partial_magnification_controller_.reset();
   highlighter_controller_.reset();
+  voice_interaction_controller_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // WindowTreeHostManager before resetting |window_tree_host_manager_|, since
@@ -1082,6 +1058,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   laser_pointer_controller_.reset(new LaserPointerController());
   partial_magnification_controller_.reset(new PartialMagnificationController());
   highlighter_controller_.reset(new HighlighterController());
+  voice_interaction_controller_ =
+      std::make_unique<VoiceInteractionController>();
 
   magnification_controller_.reset(MagnificationController::CreateInstance());
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();

@@ -19,6 +19,7 @@
           "ash::mojom::ShutdownController",
           "ash::mojom::SystemTray",
           "ash::mojom::TabletModeController",
+	  "ash::mojom::VoiceInteractionController",
           "ash::mojom::VpnList",
           "ash::mojom::WallpaperController"
         ],

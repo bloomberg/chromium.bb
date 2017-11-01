@@ -433,6 +433,8 @@ source_set("chromeos") {
     "arc/voice_interaction/arc_voice_interaction_framework_service.h",
     "arc/voice_interaction/highlighter_controller_client.cc",
     "arc/voice_interaction/highlighter_controller_client.h",
+    "arc/voice_interaction/voice_interaction_controller_client.cc",
+    "arc/voice_interaction/voice_interaction_controller_client.h",
     "arc/wallpaper/arc_wallpaper_service.cc",
     "arc/wallpaper/arc_wallpaper_service.h",
     "ash_config.cc",
