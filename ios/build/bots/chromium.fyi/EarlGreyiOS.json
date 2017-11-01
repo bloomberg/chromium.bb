@@ -226,6 +226,56 @@
       "os": "11.0",
       "xcode version": "9.0",
       "xctest": true
+    },
+    {
+      "app": "ios_chrome_integration_egtests",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_smoke_egtests",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_web_egtests",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_web_shell_egtests",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_ui_egtests",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
     }
   ]
 }
