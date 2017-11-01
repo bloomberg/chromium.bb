@@ -27,6 +27,7 @@
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -46,6 +47,15 @@ class TaskTracker;
 // This class is thread-safe.
 class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
  public:
+  enum class WorkerEnvironment {
+    // No special worker environment required.
+    NONE,
+#if defined(OS_WIN)
+    // Initialize a COM MTA on the worker.
+    COM_MTA,
+#endif  // defined(OS_WIN)
+  };
+
   // Constructs a pool without workers.
   //
   // |name| is used to label the pool's threads ("TaskScheduler" + |name| +
@@ -62,9 +72,11 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Creates workers following the |params| specification, allowing existing and
   // future tasks to run. Uses |service_thread_task_runner| to monitor for
-  // blocked threads in the pool. Can only be called once. CHECKs on failure.
+  // blocked threads in the pool. |thread_environment| Can only be called once.
+  // CHECKs on failure.
   void Start(const SchedulerWorkerPoolParams& params,
-             scoped_refptr<TaskRunner> service_thread_task_runner);
+             scoped_refptr<TaskRunner> service_thread_task_runner,
+             WorkerEnvironment worker_environment);
 
   // Destroying a SchedulerWorkerPoolImpl returned by Create() is not allowed in
   // production; it is always leaked. In tests, it can only be destroyed after
@@ -228,6 +240,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Number workers that are within the scope of a MAY_BLOCK ScopedBlockingCall
   // but haven't caused a worker capacity increase yet.
   int num_pending_may_block_workers_ = 0;
+
+  // Environment to be initialized per worker.
+  WorkerEnvironment worker_environment_ = WorkerEnvironment::NONE;
 
   // Stack of idle workers. Initially, all workers are on this stack. A worker
   // is removed from the stack before its WakeUp() function is called and when

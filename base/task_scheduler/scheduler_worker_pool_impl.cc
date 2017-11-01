@@ -24,6 +24,13 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_windows_thread_environment.h"
+#include "base/win/scoped_winrt_initializer.h"
+#include "base/win/windows_version.h"
+#endif  // defined(OS_WIN)
+
 namespace base {
 namespace internal {
 
@@ -138,6 +145,10 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // returned a non-empty sequence and DidRunTask() hasn't been called yet).
   bool is_running_task_ = false;
 
+#if defined(OS_WIN)
+  std::unique_ptr<win::ScopedWindowsThreadEnvironment> win_thread_environment_;
+#endif  // defined(OS_WIN)
+
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerDelegateImpl);
 };
 
@@ -182,7 +193,8 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
 
 void SchedulerWorkerPoolImpl::Start(
     const SchedulerWorkerPoolParams& params,
-    scoped_refptr<TaskRunner> service_thread_task_runner) {
+    scoped_refptr<TaskRunner> service_thread_task_runner,
+    WorkerEnvironment worker_environment) {
   AutoSchedulerLock auto_lock(lock_);
 
   DCHECK(workers_.empty());
@@ -191,6 +203,7 @@ void SchedulerWorkerPoolImpl::Start(
   initial_worker_capacity_ = worker_capacity_;
   suggested_reclaim_time_ = params.suggested_reclaim_time();
   backward_compatibility_ = params.backward_compatibility();
+  worker_environment_ = worker_environment;
 
   service_thread_task_runner_ = std::move(service_thread_task_runner);
 
@@ -337,6 +350,18 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
     DCHECK(ContainsWorker(outer_->workers_, worker));
 #endif
   }
+
+#if defined(OS_WIN)
+  if (outer_->worker_environment_ == WorkerEnvironment::COM_MTA) {
+    if (win::GetVersion() >= win::VERSION_WIN8) {
+      win_thread_environment_ = std::make_unique<win::ScopedWinrtInitializer>();
+    } else {
+      win_thread_environment_ = std::make_unique<win::ScopedCOMInitializer>(
+          win::ScopedCOMInitializer::kMTA);
+    }
+    DCHECK(win_thread_environment_->Succeeded());
+  }
+#endif  // defined(OS_WIN)
 
   DCHECK_EQ(num_tasks_since_last_wait_, 0U);
 
@@ -498,6 +523,10 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainExit(
     DCHECK(!ContainsWorker(outer_->workers_, worker));
   }
 #endif
+
+#if defined(OS_WIN)
+  win_thread_environment_.reset();
+#endif  // defined(OS_WIN)
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::

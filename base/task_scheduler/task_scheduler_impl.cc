@@ -86,16 +86,28 @@ void TaskSchedulerImpl::Start(const TaskScheduler::InitParams& init_params) {
 
   single_thread_task_runner_manager_.Start();
 
+  const SchedulerWorkerPoolImpl::WorkerEnvironment worker_environment =
+#if defined(OS_WIN)
+      init_params.shared_worker_pool_environment ==
+              InitParams::SharedWorkerPoolEnvironment::COM_MTA
+          ? SchedulerWorkerPoolImpl::WorkerEnvironment::COM_MTA
+          : SchedulerWorkerPoolImpl::WorkerEnvironment::NONE;
+#else
+      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE;
+#endif
+
   worker_pools_[BACKGROUND]->Start(init_params.background_worker_pool_params,
-                                   service_thread_task_runner);
+                                   service_thread_task_runner,
+                                   worker_environment);
   worker_pools_[BACKGROUND_BLOCKING]->Start(
       init_params.background_blocking_worker_pool_params,
-      service_thread_task_runner);
+      service_thread_task_runner, worker_environment);
   worker_pools_[FOREGROUND]->Start(init_params.foreground_worker_pool_params,
-                                   service_thread_task_runner);
+                                   service_thread_task_runner,
+                                   worker_environment);
   worker_pools_[FOREGROUND_BLOCKING]->Start(
       init_params.foreground_blocking_worker_pool_params,
-      service_thread_task_runner);
+      service_thread_task_runner, worker_environment);
 }
 
 void TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,
