@@ -31,20 +31,14 @@ namespace ash {
 
 namespace {
 
-// Five fixed position ratios of the divider.
-constexpr float kFixedPositionRatios[] = {0.0f, 0.33f, 0.5f, 0.67f, 1.0f};
+// Three fixed position ratios of the divider, which means the divider can
+// always be moved to these three positions.
+constexpr float kFixedPositionRatios[] = {0.f, 0.5f, 1.0f};
 
-float FindClosestFixedPositionRatio(float distance, float length) {
-  float current_ratio = distance / length;
-  float closest_ratio = 0.f;
-  for (float ratio : kFixedPositionRatios) {
-    if (std::abs(current_ratio - ratio) <
-        std::abs(current_ratio - closest_ratio)) {
-      closest_ratio = ratio;
-    }
-  }
-  return closest_ratio;
-}
+// Two optional position ratios of the divider. Whether the divider can be moved
+// to these two positions depends on the minimum size of the snapped windows.
+constexpr float kOneThirdPositionRatio = 0.33f;
+constexpr float kTwoThirdPositionRatio = 0.67f;
 
 gfx::Point GetBoundedPosition(const gfx::Point& location_in_screen,
                               const gfx::Rect& bounds_in_screen) {
@@ -608,41 +602,53 @@ void SplitViewController::UpdateSnappedWindowsAndDividerBounds() {
 
 SplitViewController::SnapPosition SplitViewController::GetBlackScrimPosition(
     const gfx::Point& location_in_screen) {
-  SnapPosition position = SplitViewController::NONE;
   const gfx::Rect work_area_bounds =
       GetDisplayWorkAreaBoundsInScreen(GetDefaultSnappedWindow());
   if (!work_area_bounds.Contains(location_in_screen))
-    return position;
+    return NONE;
 
-  switch (screen_orientation_) {
-    case blink::kWebScreenOrientationLockLandscapePrimary:
-    case blink::kWebScreenOrientationLockLandscapeSecondary:
-      if (location_in_screen.x() <
-          work_area_bounds.x() +
-              work_area_bounds.width() * kFixedPositionRatios[1]) {
-        position = IsCurrentScreenOrientationPrimary() ? LEFT : RIGHT;
-      } else if (location_in_screen.x() >
-                 work_area_bounds.x() +
-                     work_area_bounds.width() * kFixedPositionRatios[3]) {
-        position = IsCurrentScreenOrientationPrimary() ? RIGHT : LEFT;
-      }
-      break;
-    case blink::kWebScreenOrientationLockPortraitPrimary:
-    case blink::kWebScreenOrientationLockPortraitSecondary:
-      if (location_in_screen.y() >
-          work_area_bounds.y() +
-              work_area_bounds.height() * kFixedPositionRatios[3]) {
-        position = IsCurrentScreenOrientationPrimary() ? LEFT : RIGHT;
-      } else if (location_in_screen.y() <
-                 work_area_bounds.y() +
-                     work_area_bounds.height() * kFixedPositionRatios[1]) {
-        position = IsCurrentScreenOrientationPrimary() ? RIGHT : LEFT;
-      }
-      break;
-    default:
-      break;
+  gfx::Size left_window_min_size, right_window_min_size;
+  if (left_window_ && left_window_->delegate())
+    left_window_min_size = left_window_->delegate()->GetMinimumSize();
+  if (right_window_ && right_window_->delegate())
+    right_window_min_size = right_window_->delegate()->GetMinimumSize();
+
+  bool is_primary = IsCurrentScreenOrientationPrimary();
+  int long_length = GetDividerEndPosition();
+  // The distance from the current resizing position to the left or right side
+  // of the screen. Note: left or right side here means the side of the
+  // |left_window_| or |right_window_|.
+  int left_window_distance = 0, right_window_distance = 0;
+  int min_left_length = 0, min_right_length = 0;
+
+  if (IsCurrentScreenOrientationLandscape()) {
+    int left_distance = location_in_screen.x() - work_area_bounds.x();
+    int right_distance = work_area_bounds.right() - location_in_screen.x();
+    left_window_distance = is_primary ? left_distance : right_distance;
+    right_window_distance = is_primary ? right_distance : left_distance;
+
+    min_left_length = left_window_min_size.width();
+    min_right_length = right_window_min_size.width();
+  } else {
+    int top_distance = location_in_screen.y() - work_area_bounds.y();
+    int bottom_distance = work_area_bounds.bottom() - location_in_screen.y();
+    left_window_distance = is_primary ? bottom_distance : top_distance;
+    right_window_distance = is_primary ? top_distance : bottom_distance;
+
+    min_left_length = left_window_min_size.height();
+    min_right_length = right_window_min_size.height();
   }
-  return position;
+
+  if (left_window_distance < long_length * kOneThirdPositionRatio ||
+      left_window_distance < min_left_length) {
+    return LEFT;
+  }
+  if (right_window_distance < long_length * kOneThirdPositionRatio ||
+      right_window_distance < min_right_length) {
+    return RIGHT;
+  }
+
+  return NONE;
 }
 
 void SplitViewController::UpdateDividerPosition(
@@ -699,11 +705,25 @@ void SplitViewController::MoveDividerToClosestFixedPosition() {
   // extract the center from |divider_position_|. The result will also be the
   // center of the divider, so extract the origin, unless the result is on of
   // the endpoints.
-  float ratio = FindClosestFixedPositionRatio(
-      divider_position_ + std::floor(divider_thickness / 2.f),
-      GetDividerEndPosition());
-  divider_position_ = std::floor(GetDividerEndPosition() * ratio);
-  if (ratio > 0.f && ratio < 1.f)
+  float divider_distance =
+      divider_position_ + std::floor(divider_thickness / 2.f);
+
+  int work_area_long_length = GetDividerEndPosition();
+  float current_ratio = divider_distance / work_area_long_length;
+  float closest_ratio = 0.f;
+  std::vector<float> position_ratios(
+      kFixedPositionRatios,
+      kFixedPositionRatios + sizeof(kFixedPositionRatios) / sizeof(float));
+  GetDividerOptionalPositionRatios(position_ratios);
+  for (float ratio : position_ratios) {
+    if (std::abs(current_ratio - ratio) <
+        std::abs(current_ratio - closest_ratio)) {
+      closest_ratio = ratio;
+    }
+  }
+
+  divider_position_ = std::floor(work_area_long_length * closest_ratio);
+  if (closest_ratio > 0.f && closest_ratio < 1.f)
     divider_position_ -= std::floor(divider_thickness / 2.f);
 }
 
@@ -788,6 +808,36 @@ void SplitViewController::AdjustLeftOrTopSnappedWindowBoundsDuringResizing(
 
   if (!is_landscape)
     TransposeRect(left_or_top_rect);
+}
+
+void SplitViewController::GetDividerOptionalPositionRatios(
+    std::vector<float>& position_ratios) {
+  bool is_left_or_top = IsLeftWindowOnTopOrLeftOfScreen(screen_orientation_);
+  aura::Window* left_or_top_window =
+      is_left_or_top ? left_window_ : right_window_;
+  aura::Window* right_or_bottom_window =
+      is_left_or_top ? right_window_ : left_window_;
+  bool is_landscape = IsCurrentScreenOrientationLandscape();
+
+  int long_length = GetDividerEndPosition();
+  float min_size_left_ratio = 0.f, min_size_right_ratio = 0.f;
+  int min_left_size = 0, min_right_size = 0;
+  if (left_or_top_window && left_or_top_window->delegate()) {
+    gfx::Size min_size = left_or_top_window->delegate()->GetMinimumSize();
+    min_left_size = is_landscape ? min_size.width() : min_size.height();
+  }
+  if (right_or_bottom_window && right_or_bottom_window->delegate()) {
+    gfx::Size min_size = right_or_bottom_window->delegate()->GetMinimumSize();
+    min_right_size = is_landscape ? min_size.width() : min_size.height();
+  }
+
+  min_size_left_ratio = static_cast<float>(min_left_size) / long_length;
+  min_size_right_ratio = static_cast<float>(min_right_size) / long_length;
+  if (min_size_left_ratio <= kOneThirdPositionRatio)
+    position_ratios.push_back(kOneThirdPositionRatio);
+
+  if (min_size_right_ratio <= kOneThirdPositionRatio)
+    position_ratios.push_back(kTwoThirdPositionRatio);
 }
 
 }  // namespace ash
