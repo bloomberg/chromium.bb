@@ -482,6 +482,16 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
   var callback = opt_callback || function(arg1, arg2) {};
 
   if (this.defaultTask_ !== null) {
+    var nonGenericTasks = this.tasks_.filter(t => !t.isGenericFileHandler);
+    if (!this.defaultTask_.isDefault && nonGenericTasks.length >= 2 &&
+        !this.taskHistory_.getLastExecutedTime(this.defaultTask_.taskId)) {
+      this.showTaskPicker(
+          this.ui_.defaultTaskPicker, str('OPEN_WITH_BUTTON_LABEL'),
+          '', function(task) {
+            this.execute(task.taskId);
+          }.bind(this), FileTasks.TaskPickerType.OpenWith);
+      return;
+    }
     this.executeInternal_(this.defaultTask_.taskId);
     callback(true, this.entries_);
     return;
