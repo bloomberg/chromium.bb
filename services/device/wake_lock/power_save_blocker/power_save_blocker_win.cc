@@ -99,7 +99,8 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
 }
 
 POWER_REQUEST_TYPE PowerSaveBlocker::Delegate::RequestType() {
-  if (type_ == kPowerSaveBlockPreventDisplaySleep)
+  if (type_ == kPowerSaveBlockPreventDisplaySleep ||
+      type_ == kPowerSaveBlockPreventDisplaySleepAllowDimming)
     return PowerRequestDisplayRequired;
 
   if (base::win::GetVersion() == base::win::VERSION_WIN7)

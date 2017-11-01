@@ -121,6 +121,8 @@ TEST_F(WakeLockTest, ChangeType) {
   // Call ChangeType() on a wake lock that is in inactive status.
   EXPECT_TRUE(ChangeType(device::mojom::WakeLockType::PreventAppSuspension));
   EXPECT_TRUE(ChangeType(device::mojom::WakeLockType::PreventDisplaySleep));
+  EXPECT_TRUE(
+      ChangeType(device::mojom::WakeLockType::PreventDisplaySleepAllowDimming));
   EXPECT_FALSE(HasWakeLock());  // still inactive.
 
   wake_lock_->RequestWakeLock();
@@ -128,6 +130,8 @@ TEST_F(WakeLockTest, ChangeType) {
   // Call ChangeType() on a wake lock that is in active status.
   EXPECT_TRUE(ChangeType(device::mojom::WakeLockType::PreventAppSuspension));
   EXPECT_TRUE(ChangeType(device::mojom::WakeLockType::PreventDisplaySleep));
+  EXPECT_TRUE(
+      ChangeType(device::mojom::WakeLockType::PreventDisplaySleepAllowDimming));
   EXPECT_TRUE(HasWakeLock());  // still active.
 
   // Send multiple requests, should be coalesced as usual.
@@ -145,6 +149,8 @@ TEST_F(WakeLockTest, ChangeType) {
 #else  // OS_ANDROID:
   EXPECT_FALSE(ChangeType(device::mojom::WakeLockType::PreventAppSuspension));
   EXPECT_FALSE(ChangeType(device::mojom::WakeLockType::PreventDisplaySleep));
+  EXPECT_FALSE(
+      ChangeType(device::mojom::WakeLockType::PreventDisplaySleepAllowDimming));
 #endif
 }
 
