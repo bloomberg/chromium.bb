@@ -35,10 +35,8 @@ class MachPortsTest : public InProcessBrowserTest {
 
   void TearDown() override {
     std::string ports;
-    for (std::vector<int>::iterator it = port_counts_.begin();
-         it != port_counts_.end(); ++it) {
-      base::StringAppendF(&ports, "%d,", *it);
-    }
+    for (int port : port_counts_)
+      base::StringAppendF(&ports, "%d,", port);
     perf_test::PrintResultList("mach_ports", "", "", ports, "ports", true);
 
     InProcessBrowserTest::TearDown();

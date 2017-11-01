@@ -147,10 +147,8 @@ bool HandleRemoteCommand(const BrokerPolicy& policy,
       reply_ipc, write_pickle.data(), write_pickle.size(), opened_files);
 
   // Close anything we have opened in this process.
-  for (std::vector<int>::iterator it = opened_files.begin();
-       it != opened_files.end();
-       ++it) {
-    int ret = IGNORE_EINTR(close(*it));
+  for (int fd : opened_files) {
+    int ret = IGNORE_EINTR(close(fd));
     DCHECK(!ret) << "Could not close file descriptor";
   }
 

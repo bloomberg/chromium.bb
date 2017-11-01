@@ -3128,9 +3128,8 @@ void RenderProcessHostImpl::EnableAudioDebugRecordings(
 
   // Enable AEC dump for each registered consumer.
   base::FilePath file_with_extensions = GetAecDumpFilePathWithExtensions(file);
-  for (std::vector<int>::iterator it = aec_dump_consumers_.begin();
-       it != aec_dump_consumers_.end(); ++it) {
-    EnableAecDumpForId(file_with_extensions, *it);
+  for (int id : aec_dump_consumers_) {
+    EnableAecDumpForId(file_with_extensions, id);
   }
 }
 
@@ -3165,26 +3164,21 @@ void RenderProcessHostImpl::SetEchoCanceller3(bool enable) {
   // Piggybacking on AEC dumps.
   // TODO(hlundin): Change name for aec_dump_consumers_;
   // http://crbug.com/709919.
-  for (std::vector<int>::iterator it = aec_dump_consumers_.begin();
-       it != aec_dump_consumers_.end(); ++it) {
-    Send(new AudioProcessingMsg_EnableAec3(*it, enable));
+  for (int id : aec_dump_consumers_) {
+    Send(new AudioProcessingMsg_EnableAec3(id, enable));
   }
 }
 
 void RenderProcessHostImpl::SetWebRtcLogMessageCallback(
     base::Callback<void(const std::string&)> callback) {
-#if BUILDFLAG(ENABLE_WEBRTC)
   BrowserMainLoop::GetInstance()->media_stream_manager()->
       RegisterNativeLogCallback(GetID(), callback);
-#endif
 }
 
 void RenderProcessHostImpl::ClearWebRtcLogMessageCallback() {
-#if BUILDFLAG(ENABLE_WEBRTC)
   BrowserMainLoop::GetInstance()
       ->media_stream_manager()
       ->UnregisterNativeLogCallback(GetID());
-#endif
 }
 
 RenderProcessHostImpl::WebRtcStopRtpDumpCallback
@@ -3207,7 +3201,7 @@ RenderProcessHostImpl::StartRtpDump(
   }
   return stop_rtp_dump_callback_;
 }
-#endif
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
   return channel_.get();
@@ -4045,13 +4039,10 @@ void RenderProcessHostImpl::RegisterAecDumpConsumerOnUIThread(int id) {
 
 void RenderProcessHostImpl::UnregisterAecDumpConsumerOnUIThread(int id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (std::vector<int>::iterator it = aec_dump_consumers_.begin();
-       it != aec_dump_consumers_.end(); ++it) {
-    if (*it == id) {
-      aec_dump_consumers_.erase(it);
-      break;
-    }
-  }
+  auto it =
+      std::find(aec_dump_consumers_.begin(), aec_dump_consumers_.end(), id);
+  if (it != aec_dump_consumers_.end())
+    aec_dump_consumers_.erase(it);
 }
 
 void RenderProcessHostImpl::EnableAecDumpForId(const base::FilePath& file,
