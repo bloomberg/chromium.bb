@@ -55,7 +55,8 @@ bool UseAutoWindowManager(const aura::Window* window) {
   if (disable_auto_positioning)
     return false;
   const wm::WindowState* window_state = wm::GetWindowState(window);
-  return !window_state->is_dragged() && window_state->window_position_managed();
+  return !window_state->is_dragged() &&
+         window_state->GetWindowPositionManaged();
 }
 
 // Check if a given |window| can be managed. This includes that its
@@ -66,7 +67,7 @@ bool WindowPositionCanBeManaged(const aura::Window* window) {
   if (disable_auto_positioning)
     return false;
   const wm::WindowState* window_state = wm::GetWindowState(window);
-  return window_state->window_position_managed() &&
+  return window_state->GetWindowPositionManaged() &&
          !window_state->IsMinimized() && !window_state->IsMaximized() &&
          !window_state->IsFullscreen() && !window_state->IsPinned() &&
          !window_state->bounds_changed_by_user();
@@ -196,7 +197,7 @@ aura::Window* GetReferenceWindow(const aura::Window* root_window,
     if (window != exclude &&
         window->type() == aura::client::WINDOW_TYPE_NORMAL &&
         window->GetRootWindow() == root_window && window->TargetVisibility() &&
-        wm::GetWindowState(window)->window_position_managed()) {
+        wm::GetWindowState(window)->GetWindowPositionManaged()) {
       if (found && found != window) {
         // no need to check !single_window because the function must have
         // been already returned in the "if (!single_window)" below.

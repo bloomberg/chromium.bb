@@ -253,7 +253,7 @@ TEST_F(WindowStateTest, RestoreBounds) {
 TEST_F(WindowStateTest, AutoManaged) {
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   WindowState* window_state = GetWindowState(window.get());
-  window_state->set_window_position_managed(true);
+  window_state->SetWindowPositionManaged(true);
   window->Hide();
   window->SetBounds(gfx::Rect(100, 100, 100, 100));
   window->Show();
@@ -271,7 +271,7 @@ TEST_F(WindowStateTest, AutoManaged) {
             window->GetBoundsInScreen().ToString());
 
   // The window should still be auto managed despite being right maximized.
-  EXPECT_TRUE(window_state->window_position_managed());
+  EXPECT_TRUE(window_state->GetWindowPositionManaged());
 }
 
 // Test that the replacement of a State object works as expected.

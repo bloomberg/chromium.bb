@@ -328,6 +328,14 @@ void WindowState::RemoveObserver(WindowStateObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+bool WindowState::GetWindowPositionManaged() const {
+  return window_->GetProperty(kWindowPositionManagedTypeKey);
+}
+
+void WindowState::SetWindowPositionManaged(bool managed) {
+  window_->SetProperty(kWindowPositionManagedTypeKey, managed);
+}
+
 void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
   bounds_changed_by_user_ = bounds_changed_by_user;
   if (bounds_changed_by_user)
@@ -353,7 +361,6 @@ void WindowState::SetAndClearRestoreBounds() {
 
 WindowState::WindowState(aura::Window* window)
     : window_(window),
-      window_position_managed_(false),
       bounds_changed_by_user_(false),
       ignored_by_shelf_(false),
       can_consume_system_keys_(false),

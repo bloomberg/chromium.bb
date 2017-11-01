@@ -192,7 +192,7 @@ TEST_F(WindowPositionerTest, IgnoreFullscreenInAutoRearrange) {
   views::Widget* widget1 = shell::ToplevelWindow::CreateToplevelWindow(params);
   wm::WindowState* managed_state =
       wm::GetWindowState(widget1->GetNativeWindow());
-  EXPECT_TRUE(managed_state->window_position_managed());
+  EXPECT_TRUE(managed_state->GetWindowPositionManaged());
   EXPECT_EQ("300x300", widget1->GetWindowBoundsInScreen().size().ToString());
   widget1->SetFullscreen(true);
   ASSERT_EQ("1400x800", widget1->GetWindowBoundsInScreen().size().ToString());
@@ -201,7 +201,7 @@ TEST_F(WindowPositionerTest, IgnoreFullscreenInAutoRearrange) {
   params.use_saved_placement = false;
   views::Widget* widget2 = shell::ToplevelWindow::CreateToplevelWindow(params);
   wm::WindowState* state_2 = wm::GetWindowState(widget2->GetNativeWindow());
-  EXPECT_TRUE(state_2->window_position_managed());
+  EXPECT_TRUE(state_2->GetWindowPositionManaged());
   EXPECT_EQ("300x300", widget2->GetWindowBoundsInScreen().size().ToString());
 
   // Restores to the original size.

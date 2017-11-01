@@ -64,6 +64,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/cursor_manager_test_api.h"
 #include "ash/wm/root_window_finder.h"
@@ -766,7 +767,7 @@ void DetachToOwnWindowStep2(DetachToBrowserTabDragControllerTest* test) {
 
 #if defined(OS_CHROMEOS)
 bool IsWindowPositionManaged(aura::Window* window) {
-  return ash::wm::GetWindowState(window)->window_position_managed();
+  return window->GetProperty(ash::kWindowPositionManagedTypeKey);
 }
 bool HasUserChangedWindowPositionOrSize(aura::Window* window) {
   return ash::wm::GetWindowState(window)->bounds_changed_by_user();

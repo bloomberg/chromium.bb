@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
@@ -153,8 +154,6 @@ int BrowserFrameAsh::GetMinimizeButtonOffset() const {
 void BrowserFrameAsh::SetWindowAutoManaged() {
   // For browser window in Chrome OS, we should only enable the auto window
   // management logic for tabbed browser.
-  if (!browser_view_->browser()->is_type_popup()) {
-    ash::wm::GetWindowState(GetNativeWindow())
-        ->set_window_position_managed(true);
-  }
+  if (!browser_view_->browser()->is_type_popup())
+    GetNativeWindow()->SetProperty(ash::kWindowPositionManagedTypeKey, true);
 }
