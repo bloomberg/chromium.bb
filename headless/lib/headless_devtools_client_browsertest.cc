@@ -1333,8 +1333,8 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
         if (layout_node->HasInlineTextNodes()) {
           std::unique_ptr<base::ListValue> inline_text_nodes(
               new base::ListValue());
-          for (const std::unique_ptr<css::InlineTextBox>& inline_text_box :
-               *layout_node->GetInlineTextNodes()) {
+          for (const std::unique_ptr<dom_snapshot::InlineTextBox>&
+                   inline_text_box : *layout_node->GetInlineTextNodes()) {
             size_t index = inline_text_nodes->GetSize();
             inline_text_nodes->Set(index, inline_text_box->Serialize());
           }
