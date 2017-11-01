@@ -20,6 +20,7 @@ const char BluetoothTestBase::kTestAdapterAddress[] = "A1:B2:C3:D4:E5:F6";
 
 const char BluetoothTestBase::kTestDeviceName[] = "FakeBluetoothDevice";
 const char BluetoothTestBase::kTestDeviceNameEmpty[] = "";
+const char BluetoothTestBase::kTestDeviceNameU2f[] = "U2F FakeDevice";
 
 const char BluetoothTestBase::kTestDeviceAddress1[] = "01:00:00:90:1E:BE";
 const char BluetoothTestBase::kTestDeviceAddress2[] = "02:00:00:8B:74:63";
@@ -36,6 +37,8 @@ const char BluetoothTestBase::kTestUUIDLinkLoss[] =
     "00001803-0000-1000-8000-00805f9b34fb";
 const char BluetoothTestBase::kTestUUIDHeartRate[] =
     "0000180d-0000-1000-8000-00805f9b34fb";
+const char BluetoothTestBase::kTestUUIDU2f[] =
+    "0000fffd-0000-1000-8000-00805f9b34fb";
 // Characteristic UUIDs
 const char BluetoothTestBase::kTestUUIDDeviceName[] =
     "00002a00-0000-1000-8000-00805f9b34fb";
@@ -45,6 +48,8 @@ const char BluetoothTestBase::kTestUUIDReconnectionAddress[] =
     "00002a03-0000-1000-8000-00805f9b34fb";
 const char BluetoothTestBase::kTestUUIDHeartRateMeasurement[] =
     "00002a37-0000-1000-8000-00805f9b34fb";
+const char BluetoothTestBase::kTestUUIDU2fControlPointLength[] =
+    "f1d0fff3-deaa-ecee-b42f-c9ba7ed623bb";
 // Descriptor UUIDs
 const char BluetoothTestBase::kTestUUIDCharacteristicUserDescription[] =
     "00002901-0000-1000-8000-00805f9b34fb";
