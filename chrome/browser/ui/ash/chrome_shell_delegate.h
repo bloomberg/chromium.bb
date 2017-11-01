@@ -38,6 +38,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;
+  std::unique_ptr<ash::ScreenshotDelegate> CreateScreenshotDelegate() override;
   std::unique_ptr<ash::WallpaperDelegate> CreateWallpaperDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   ash::GPUSupport* CreateGPUSupport() override;

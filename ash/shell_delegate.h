@@ -39,6 +39,7 @@ namespace ash {
 class AccessibilityDelegate;
 class GPUSupport;
 class NetworkingConfigDelegate;
+class ScreenshotDelegate;
 class WallpaperDelegate;
 
 // Delegate of the Shell.
@@ -78,6 +79,9 @@ class ASH_EXPORT ShellDelegate {
 
   // Returns the delegate. May be null in tests.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() = 0;
+
+  // TODO(jamescook): Replace with a mojo-compatible interface.
+  virtual std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() = 0;
 
   // Creates a wallpaper delegate. Shell takes ownership of the delegate.
   virtual std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() = 0;

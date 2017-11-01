@@ -41,6 +41,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/utility/screenshot_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -379,6 +380,22 @@ void HandleRotateActiveWindow() {
 void HandleShowKeyboardOverlay() {
   base::RecordAction(UserMetricsAction("Accel_Show_Keyboard_Overlay"));
   Shell::Get()->new_window_controller()->ShowKeyboardOverlay();
+}
+
+void HandleTakeWindowScreenshot() {
+  base::RecordAction(UserMetricsAction("Accel_Take_Window_Screenshot"));
+  Shell::Get()->screenshot_controller()->StartWindowScreenshotSession();
+}
+
+void HandleTakePartialScreenshot() {
+  base::RecordAction(UserMetricsAction("Accel_Take_Partial_Screenshot"));
+  Shell::Get()->screenshot_controller()->StartPartialScreenshotSession(
+      true /* draw_overlay_immediately */);
+}
+
+void HandleTakeScreenshot() {
+  base::RecordAction(UserMetricsAction("Accel_Take_Screenshot"));
+  Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
 }
 
 bool CanHandleToggleMessageCenterBubble() {
@@ -1127,6 +1144,9 @@ bool AcceleratorController::CanPerformAction(
     case SHOW_KEYBOARD_OVERLAY:
     case SHOW_TASK_MANAGER:
     case SUSPEND:
+    case TAKE_PARTIAL_SCREENSHOT:
+    case TAKE_SCREENSHOT:
+    case TAKE_WINDOW_SCREENSHOT:
     case TOGGLE_FULLSCREEN:
     case TOGGLE_HIGH_CONTRAST:
     case TOGGLE_MAXIMIZED:
@@ -1344,6 +1364,15 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case SWITCH_TO_PREVIOUS_USER:
       HandleCycleUser(CycleUserDirection::PREVIOUS);
+      break;
+    case TAKE_PARTIAL_SCREENSHOT:
+      HandleTakePartialScreenshot();
+      break;
+    case TAKE_SCREENSHOT:
+      HandleTakeScreenshot();
+      break;
+    case TAKE_WINDOW_SCREENSHOT:
+      HandleTakeWindowScreenshot();
       break;
     case TOGGLE_APP_LIST:
       HandleToggleAppList(accelerator);

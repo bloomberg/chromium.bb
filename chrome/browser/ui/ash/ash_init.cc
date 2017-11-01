@@ -4,17 +4,13 @@
 
 #include "chrome/browser/ui/ash/ash_init.h"
 
-#include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_controller_delegate_classic.h"
 #include "ash/accessibility_types.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/mus/shell_port_mus.h"  // mash-ok
 #include "ash/mus/window_manager.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
-#include "ash/shell_port_classic.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -27,7 +23,6 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/common/chrome_switches.h"
@@ -97,24 +92,6 @@ AshInit::AshInit() {
   else
     CreateClassicShell();
 
-  ash::AcceleratorControllerDelegateClassic* accelerator_controller_delegate =
-      nullptr;
-  if (chromeos::GetAshConfig() == ash::Config::CLASSIC) {
-    accelerator_controller_delegate =
-        ash::ShellPortClassic::Get()->accelerator_controller_delegate();
-  } else if (chromeos::GetAshConfig() == ash::Config::MUS) {
-    accelerator_controller_delegate =
-        ash::mus::ShellPortMus::Get()->accelerator_controller_delegate();
-  } else {
-    // TODO(mash): Screenshot accelerator support. http://crbug.com/557397
-    NOTIMPLEMENTED();
-  }
-  if (accelerator_controller_delegate) {
-    std::unique_ptr<ChromeScreenshotGrabber> screenshot_delegate =
-        base::MakeUnique<ChromeScreenshotGrabber>();
-    accelerator_controller_delegate->SetScreenshotDelegate(
-        std::move(screenshot_delegate));
-  }
   // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.
   chromeos::AccelerometerReader::GetInstance()->Initialize(
       base::CreateSequencedTaskRunnerWithTraits(

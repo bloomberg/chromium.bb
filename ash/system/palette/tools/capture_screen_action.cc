@@ -4,14 +4,11 @@
 
 #include "ash/system/palette/tools/capture_screen_action.h"
 
-#include "ash/accelerators/accelerator_controller_delegate_classic.h"
-#include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_port_classic.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_ids.h"
+#include "ash/utility/screenshot_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -35,16 +32,7 @@ void CaptureScreenAction::OnEnable() {
   delegate()->DisableTool(GetToolId());
   delegate()->HidePaletteImmediately();
 
-  if (Shell::GetAshConfig() != Config::CLASSIC) {
-    // TODO(kaznacheev): Support MASH once http://crbug.com/557397 is fixed.
-    NOTIMPLEMENTED();
-    return;
-  }
-
-  ShellPortClassic::Get()
-      ->accelerator_controller_delegate()
-      ->screenshot_delegate()
-      ->HandleTakeScreenshotForAllRootWindows();
+  Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
 }
 
 views::View* CaptureScreenAction::CreateView() {

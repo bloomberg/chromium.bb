@@ -47,7 +47,6 @@ namespace ash {
 class AshTestEnvironment;
 class AshTestViewsDelegate;
 class RootWindowController;
-class TestScreenshotDelegate;
 class TestShellDelegate;
 class TestSessionControllerClient;
 
@@ -87,9 +86,6 @@ class AshTestHelper {
   TestShellDelegate* test_shell_delegate() { return test_shell_delegate_; }
   void set_test_shell_delegate(TestShellDelegate* test_shell_delegate) {
     test_shell_delegate_ = test_shell_delegate;
-  }
-  TestScreenshotDelegate* test_screenshot_delegate() {
-    return test_screenshot_delegate_;
   }
   AshTestViewsDelegate* test_views_delegate() {
     return test_views_delegate_.get();
@@ -139,9 +135,6 @@ class AshTestHelper {
   AshTestEnvironment* ash_test_environment_;  // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
-
-  // Owned by ash::AcceleratorController.
-  TestScreenshotDelegate* test_screenshot_delegate_;
 
   std::unique_ptr<::wm::WMState> wm_state_;
   std::unique_ptr<AshTestViewsDelegate> test_views_delegate_;

@@ -65,6 +65,8 @@ constexpr base::TaskTraits kBlockingTaskTraits = {
     base::MayBlock(), base::TaskPriority::USER_VISIBLE,
     base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
 
+ChromeScreenshotGrabber* g_instance = nullptr;
+
 void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -302,10 +304,19 @@ ChromeScreenshotGrabber::ChromeScreenshotGrabber()
     : screenshot_grabber_(new ui::ScreenshotGrabber(this)),
       weak_factory_(this) {
   screenshot_grabber_->AddObserver(this);
+  DCHECK(!g_instance);
+  g_instance = this;
 }
 
 ChromeScreenshotGrabber::~ChromeScreenshotGrabber() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
   screenshot_grabber_->RemoveObserver(this);
+}
+
+// static
+ChromeScreenshotGrabber* ChromeScreenshotGrabber::Get() {
+  return g_instance;
 }
 
 void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {

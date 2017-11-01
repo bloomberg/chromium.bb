@@ -24,7 +24,9 @@
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test_screenshot_delegate.h"
 #include "ash/test_shell_delegate.h"
+#include "ash/utility/screenshot_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "base/memory/ptr_util.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -374,7 +376,8 @@ void AshTestBase::RunAllPendingInMessageLoop() {
 }
 
 TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
-  return ash_test_helper_->test_screenshot_delegate();
+  return static_cast<TestScreenshotDelegate*>(
+      Shell::Get()->screenshot_controller()->screenshot_delegate_.get());
 }
 
 TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {

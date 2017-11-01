@@ -30,6 +30,8 @@ class ChromeScreenshotGrabber : public ash::ScreenshotDelegate,
   ChromeScreenshotGrabber();
   ~ChromeScreenshotGrabber() override;
 
+  static ChromeScreenshotGrabber* Get();
+
   ui::ScreenshotGrabber* screenshot_grabber() {
     return screenshot_grabber_.get();
   }

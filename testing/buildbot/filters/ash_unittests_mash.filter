@@ -2,8 +2,6 @@
 # include a link. If a test should never run on mash, add an early exit to the
 # code instead of listing here. See Shell::GetAshConfig().
 
-# TODO: fails because of no screenshot in mash. http://crbug.com/698033.
--ClamshellPowerButtonScreenshotControllerTest.PowerButtonPressedFirst_StopClamshellPowerButtonTimer
 -CursorWindowControllerTest.DSF
 -CursorWindowControllerTest.MoveToDifferentDisplay
 -CursorWindowControllerTest.ShouldEnableCursorCompositing
@@ -96,32 +94,17 @@
 -OverviewGestureHandlerTest.HorizontalScrollInOverview
 -OverviewGestureHandlerTest.ScrollUpDownWithoutReleasing
 -OverviewGestureHandlerTest.VerticalScrolls
-# TODO: Screenshots. http://crbug.com/698033
--PartialScreenshotControllerTest.BasicMouse
--PartialScreenshotControllerTest.BasicTouch
--PartialScreenshotControllerTest.JustClick
+# TODO: Needs cursor manager support. http://crbug.com/698033
+-PartialScreenshotControllerTest.CursorVisibilityTest
 -PartialScreenshotControllerTest.LargeCursor
--PartialScreenshotControllerTest.PointerEventsWorkWhenPointerOnlyActive
--PartialScreenshotControllerTest.StartSessionWhileMousePressed
--PartialScreenshotControllerTest.TouchMousePointerHoverIgnoredWithPointerEvents
--PartialScreenshotControllerTest.TwoFingerTouch
--PartialScreenshotControllerTest.VisibilityTest
-# TODO: Screenshots. http://crbug.com/698033
--PowerButtonScreenshotControllerTest.PowerButtonPressedFirst_NoScreenshotChord
--PowerButtonScreenshotControllerTest.PowerButtonPressedFirst_ScreenshotChord
--PowerButtonScreenshotControllerTest.ReleaseBeforeAnotherPressed
--PowerButtonScreenshotControllerTest.TabletMode
--PowerButtonScreenshotControllerTest.VolumeDownPressedFirst_NoScreenshotChord
--PowerButtonScreenshotControllerTest.VolumeDownPressedFirst_ScreenshotChord
+# TODO: Needs LockStateController. http://crbug.com/632189.
+-PreferredReservedAcceleratorsTest.AcceleratorsWithFullscreen
+-PreferredReservedAcceleratorsTest.AcceleratorsWithPinned
 -ResizeShadowAndCursorTest.MaximizeRestore
 -ResizeShadowAndCursorTest.Minimize
 -ResizeShadowAndCursorTest.MouseDrag
 -ResizeShadowAndCursorTest.MouseHover
 -ResizeShadowAndCursorTest.Touch
-# TODO: Screenshots. http://crbug.com/698033
--ScreenshotControllerTest.MultipleDisplays
--ScreenshotToolTest.EnablingCaptureRegionCallsDelegateAndDisablesTool
--ScreenshotToolTest.EnablingCaptureScreenCallsDelegateAndDisablesTool
 -ShelfLayoutManagerTest.SwipingUpOnShelfInLaptopModeForFullscreenAppList
 -ShelfLayoutManagerTest.SwipingUpOnShelfInTabletModeForFullscreenAppList
 -ShelfLayoutManagerTest.AutoHide
@@ -160,10 +143,6 @@
 -VirtualKeyboardControllerAutoTest.SuppressedIfExternalKeyboardPresent
 -VirtualKeyboardControllerAutoTest.SuppressedInMaximizedMode
 -VirtualKeyboardControllerTest.RestoreKeyboardDevices
-# TODO: Screenshots. http://crbug.com/698033
--WindowScreenshotControllerTest.KeyboardOperation
--WindowScreenshotControllerTest.MouseOperation
--WindowScreenshotControllerTest.MultiDisplays
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_SwapPrimary
 # TODO: fix this. It might fail because GL_OES_texture_npot is not supported.

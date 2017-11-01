@@ -41,6 +41,7 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
+#include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
@@ -477,6 +478,11 @@ ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
 ash::NetworkingConfigDelegate*
 ChromeShellDelegate::GetNetworkingConfigDelegate() {
   return networking_config_delegate_.get();
+}
+
+std::unique_ptr<ash::ScreenshotDelegate>
+ChromeShellDelegate::CreateScreenshotDelegate() {
+  return std::make_unique<ChromeScreenshotGrabber>();
 }
 
 std::unique_ptr<ash::WallpaperDelegate>

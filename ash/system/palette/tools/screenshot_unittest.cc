@@ -13,7 +13,6 @@
 #include "ash/system/palette/tools/capture_region_mode.h"
 #include "ash/system/palette/tools/capture_screen_action.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/utility/screenshot_controller.h"
 #include "base/macros.h"
@@ -31,10 +30,6 @@ class ScreenshotToolTest : public AshTestBase {
     AshTestBase::SetUp();
 
     palette_tool_delegate_ = std::make_unique<MockPaletteToolDelegate>();
-  }
-
-  TestScreenshotDelegate* test_screenshot_delegate() {
-    return ash_test_helper()->test_screenshot_delegate();
   }
 
  protected:
@@ -75,10 +70,9 @@ TEST_F(ScreenshotToolTest, EnablingCaptureRegionCallsDelegateAndDisablesTool) {
   GetEventGenerator().ReleaseTouch();
 
   EXPECT_FALSE(IsPartialScreenshotActive());
-  EXPECT_EQ(1,
-            test_screenshot_delegate()->handle_take_partial_screenshot_count());
+  EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_partial_screenshot_count());
   EXPECT_EQ(selection.ToString(),
-            test_screenshot_delegate()->last_rect().ToString());
+            GetScreenshotDelegate()->last_rect().ToString());
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
 
   // Enable the tool again
@@ -101,7 +95,7 @@ TEST_F(ScreenshotToolTest, EnablingCaptureScreenCallsDelegateAndDisablesTool) {
               DisableTool(PaletteToolId::CAPTURE_SCREEN));
   EXPECT_CALL(*palette_tool_delegate_.get(), HidePaletteImmediately());
   tool->OnEnable();
-  EXPECT_EQ(1, test_screenshot_delegate()->handle_take_screenshot_count());
+  EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_screenshot_count());
 }
 
 }  // namespace ash

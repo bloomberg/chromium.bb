@@ -10,6 +10,7 @@
 #include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
+#include "ash/screenshot_delegate.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "components/user_manager/user_info_impl.h"
@@ -18,6 +19,30 @@
 #include "ui/keyboard/keyboard_ui.h"
 
 namespace ash {
+namespace {
+
+// TODO(jamescook): Replace with a mojo-compatible ScreenshotClient.
+class ScreenshotDelegateMash : public ScreenshotDelegate {
+ public:
+  ScreenshotDelegateMash() = default;
+  ~ScreenshotDelegateMash() override = default;
+
+  // ScreenshotDelegate:
+  void HandleTakeScreenshotForAllRootWindows() override { NOTIMPLEMENTED(); }
+  void HandleTakePartialScreenshot(aura::Window* window,
+                                   const gfx::Rect& rect) override {
+    NOTIMPLEMENTED();
+  }
+  void HandleTakeWindowScreenshot(aura::Window* window) override {
+    NOTIMPLEMENTED();
+  }
+  bool CanTakeScreenshot() override { return true; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenshotDelegateMash);
+};
+
+}  // namespace
 
 ShellDelegateMus::ShellDelegateMus(service_manager::Connector* connector)
     : connector_(connector) {}
@@ -65,6 +90,11 @@ NetworkingConfigDelegate* ShellDelegateMus::GetNetworkingConfigDelegate() {
   // into an ash-side network information cache. http://crbug.com/651157
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+std::unique_ptr<ScreenshotDelegate>
+ShellDelegateMus::CreateScreenshotDelegate() {
+  return std::make_unique<ScreenshotDelegateMash>();
 }
 
 std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
