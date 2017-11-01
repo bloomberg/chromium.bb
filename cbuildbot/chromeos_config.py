@@ -729,11 +729,12 @@ _termina_boards = frozenset([
     'tael',
 ])
 
-_nofactory_boards = _lakitu_boards | _termina_boards | frozenset([
-    'smaug',
-    'x30evb',
-    'lassen',
-])
+_nofactory_boards = (
+    _lakitu_boards | _termina_boards | _lassen_boards | frozenset([
+        'smaug',
+        'x30evb',
+    ])
+)
 
 _toolchains_from_source = frozenset([
     'x32-generic',
@@ -1156,6 +1157,21 @@ def GeneralTemplates(site_config, ge_build_config):
       'lassen',
       sync_chrome=False,
       chrome_sdk=False,
+  )
+
+  site_config.AddTemplate(
+      'x30evb',
+      site_config.templates.no_hwtest_builder,
+      sync_chrome=False,
+      chrome_sdk=False,
+      signer_tests=False,
+      paygen=False,
+      upload_hw_test_artifacts=False,
+      image_test=False,
+      images=['base', 'test'],
+      packages=['virtual/target-os',
+                'virtual/target-os-dev',
+                'virtual/target-os-test'],
   )
 
   site_config.AddTemplate(
@@ -1713,6 +1729,8 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(site_config.templates.lakitu)
     if board in _lassen_boards:
       board_config.apply(site_config.templates.lassen)
+    if board in ['x30evb']:
+      board_config.apply(site_config.templates.x30evb)
     if board in _loonix_boards:
       board_config.apply(site_config.templates.loonix)
     if board in _moblab_boards:

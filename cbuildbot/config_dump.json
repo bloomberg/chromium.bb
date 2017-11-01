@@ -62836,46 +62836,6 @@
             "chrome_internal"
         ]
     },
-    "x30evb-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "x30evb"
-        ],
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "x30evb-chromium-pfq-tryjob": {
-        "_template": "chromium_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "x30evb"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "hw_tests_override": null,
-        "important": false,
-        "uprev": true,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "x30evb-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -62884,23 +62844,39 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "image_test": false,
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "x30evb-full": {
         "_template": "full",
         "boards": [
             "x30evb"
         ],
+        "chrome_sdk": false,
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "hw_tests_override": null,
+        "image_test": false,
         "images": [
             "base",
-            "recovery",
             "test"
         ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
         "prebuilts": "public",
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -62911,9 +62887,24 @@
         "boards": [
             "x30evb"
         ],
+        "chrome_sdk": false,
         "factory": false,
         "factory_install_netboot": false,
-        "factory_toolkit": false
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "x30evb-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
@@ -62921,21 +62912,50 @@
         "boards": [
             "x30evb"
         ],
+        "chrome_sdk": false,
         "debug": true,
         "display_label": "tryjob",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "hw_tests_override": null
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "x30evb-llvm-toolchain": {
         "_template": "llvm_toolchain",
         "boards": [
             "x30evb"
         ],
+        "chrome_sdk": false,
         "factory": false,
         "factory_install_netboot": false,
-        "factory_toolkit": false
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "x30evb-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
@@ -62943,12 +62963,26 @@
         "boards": [
             "x30evb"
         ],
+        "chrome_sdk": false,
         "debug": true,
         "display_label": "tryjob",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "hw_tests_override": null
+        "hw_tests": [],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "x30evb-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -62958,17 +62992,35 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "image_test": false,
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "x30evb-paladin": {
         "_template": "paladin",
         "boards": [
             "x30evb"
         ],
+        "chrome_sdk": false,
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests_override": [],
+        "image_test": false,
         "important": false,
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -62978,19 +63030,23 @@
         "boards": [
             "x30evb"
         ],
+        "chrome_sdk": false,
         "chroot_replace": true,
         "debug": true,
         "display_label": "tryjob",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
         "hw_tests_override": null,
+        "image_test": false,
         "important": false,
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -63003,6 +63059,14 @@
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "hw_tests_override": null,
+        "image_test": false,
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
     "x30evb-release": {
@@ -63011,15 +63075,27 @@
         "boards": [
             "x30evb"
         ],
+        "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
         "images": [
             "base",
-            "recovery",
             "test"
         ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "paygen": false,
+        "signer_tests": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -63029,43 +63105,32 @@
         "boards": [
             "x30evb"
         ],
+        "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "debug": true,
         "display_label": "tryjob",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
+        "hw_tests": [],
         "hw_tests_override": null,
+        "image_test": false,
         "images": [
             "base",
-            "recovery",
             "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
         ],
         "paygen": false,
         "push_image": false,
+        "signer_tests": false,
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false,
         "vm_tests": [],
         "vm_tests_override": null
-    },
-    "x30evb-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "x30evb"
-        ],
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "hw_tests_override": null,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "x30evb-unittest-stress": {
         "_template": "unittest_stress",
@@ -63075,7 +63140,18 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "images": [
+            "base",
+            "test"
+        ],
+        "packages": [
+            "virtual/target-os",
+            "virtual/target-os-dev",
+            "virtual/target-os-test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "x32-generic-chromium-pfq": {
         "_template": "chromium_pfq",
