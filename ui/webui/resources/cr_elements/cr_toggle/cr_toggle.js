@@ -106,8 +106,7 @@ Polymer({
   /** @private */
   onFocus_: function() {
     this.ensureRipple();
-    this.$$('paper-ripple').holdDown =
-        cr.ui.FocusOutlineManager.forDocument(document).visible;
+    this.$$('paper-ripple').holdDown = true;
   },
 
   /** @private */
