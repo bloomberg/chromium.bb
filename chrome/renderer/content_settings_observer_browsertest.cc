@@ -110,7 +110,9 @@ class CommitTimeConditionChecker : public content::RenderFrameObserver {
 
 }  // namespace
 
-TEST_F(ChromeRenderViewTest, DidBlockContentType) {
+using ContentSettingsObserverBrowserTest = ChromeRenderViewTest;
+
+TEST_F(ContentSettingsObserverBrowserTest, DidBlockContentType) {
   MockContentSettingsObserver observer(view_->GetMainRenderFrame(),
                                        registry_.get());
   EXPECT_CALL(observer, OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES,
@@ -124,7 +126,7 @@ TEST_F(ChromeRenderViewTest, DidBlockContentType) {
 
 // Tests that multiple invokations of AllowDOMStorage result in a single IPC.
 // Fails due to http://crbug.com/104300
-TEST_F(ChromeRenderViewTest, DISABLED_AllowDOMStorage) {
+TEST_F(ContentSettingsObserverBrowserTest, DISABLED_AllowDOMStorage) {
   // Load some HTML, so we have a valid security origin.
   LoadHTML("<html></html>");
   MockContentSettingsObserver observer(view_->GetMainRenderFrame(),
@@ -142,7 +144,7 @@ TEST_F(ChromeRenderViewTest, DISABLED_AllowDOMStorage) {
 }
 
 // Regression test for http://crbug.com/35011
-TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
+TEST_F(ContentSettingsObserverBrowserTest, JSBlockSentAfterPageLoad) {
   // 1. Load page with JS.
   const char kHtml[] =
       "<html>"
@@ -194,7 +196,7 @@ TEST_F(ChromeRenderViewTest, JSBlockSentAfterPageLoad) {
   EXPECT_TRUE(HasSentChromeViewHostMsgContentBlocked(render_thread_.get()));
 }
 
-TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
+TEST_F(ContentSettingsObserverBrowserTest, PluginsTemporarilyAllowed) {
   // Load some HTML.
   LoadHTML("<html>Foo</html>");
 
@@ -226,7 +228,7 @@ TEST_F(ChromeRenderViewTest, PluginsTemporarilyAllowed) {
   EXPECT_TRUE(observer->IsPluginTemporarilyAllowed(bar_plugin));
 }
 
-TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
+TEST_F(ContentSettingsObserverBrowserTest, ImagesBlockedByDefault) {
   MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame(),
                                             registry_.get());
 
@@ -265,7 +267,7 @@ TEST_F(ChromeRenderViewTest, ImagesBlockedByDefault) {
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
-TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
+TEST_F(ContentSettingsObserverBrowserTest, ImagesAllowedByDefault) {
   MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame(),
                                             registry_.get());
 
@@ -303,7 +305,7 @@ TEST_F(ChromeRenderViewTest, ImagesAllowedByDefault) {
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
-TEST_F(ChromeRenderViewTest, ContentSettingsBlockScripts) {
+TEST_F(ContentSettingsObserverBrowserTest, ContentSettingsBlockScripts) {
   // Set the content settings for scripts.
   RendererContentSettingRules content_setting_rules;
   ContentSettingsForOneType& script_setting_rules =
@@ -325,7 +327,7 @@ TEST_F(ChromeRenderViewTest, ContentSettingsBlockScripts) {
       ChromeViewHostMsg_ContentBlocked::ID));
 }
 
-TEST_F(ChromeRenderViewTest, ContentSettingsAllowScripts) {
+TEST_F(ContentSettingsObserverBrowserTest, ContentSettingsAllowScripts) {
   // Set the content settings for scripts.
   RendererContentSettingRules content_setting_rules;
   ContentSettingsForOneType& script_setting_rules =
@@ -350,7 +352,7 @@ TEST_F(ChromeRenderViewTest, ContentSettingsAllowScripts) {
 // Regression test for crbug.com/232410: Load a page with JS blocked. Then,
 // allow JS and reload the page. In each case, only one of noscript or script
 // tags should be enabled, but never both.
-TEST_F(ChromeRenderViewTest, ContentSettingsNoscriptTag) {
+TEST_F(ContentSettingsObserverBrowserTest, ContentSettingsNoscriptTag) {
   // 1. Block JavaScript.
   RendererContentSettingRules content_setting_rules;
   ContentSettingsForOneType& script_setting_rules =
@@ -414,7 +416,8 @@ TEST_F(ChromeRenderViewTest, ContentSettingsNoscriptTag) {
 
 // Checks that same document navigations don't update content settings for the
 // page.
-TEST_F(ChromeRenderViewTest, ContentSettingsSameDocumentNavigation) {
+TEST_F(ContentSettingsObserverBrowserTest,
+       ContentSettingsSameDocumentNavigation) {
   MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame(),
                                             registry_.get());
   // Load a page which contains a script.
@@ -443,7 +446,7 @@ TEST_F(ChromeRenderViewTest, ContentSettingsSameDocumentNavigation) {
   EXPECT_TRUE(observer->AllowScript(true));
 }
 
-TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
+TEST_F(ContentSettingsObserverBrowserTest, ContentSettingsInterstitialPages) {
   MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame(),
                                             registry_.get());
   // Block scripts.
@@ -481,7 +484,7 @@ TEST_F(ChromeRenderViewTest, ContentSettingsInterstitialPages) {
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 }
 
-TEST_F(ChromeRenderViewTest, AutoplayContentSettings) {
+TEST_F(ContentSettingsObserverBrowserTest, AutoplayContentSettings) {
   MockContentSettingsObserver mock_observer(view_->GetMainRenderFrame(),
                                             registry_.get());
 

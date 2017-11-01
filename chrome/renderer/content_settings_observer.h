@@ -104,9 +104,10 @@ class ContentSettingsObserver
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverTest, WhitelistedSchemes);
-  FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest,
+  FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverBrowserTest,
                            ContentSettingsInterstitialPages);
-  FRIEND_TEST_ALL_PREFIXES(ChromeRenderViewTest, PluginsTemporarilyAllowed);
+  FRIEND_TEST_ALL_PREFIXES(ContentSettingsObserverBrowserTest,
+                           PluginsTemporarilyAllowed);
 
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
