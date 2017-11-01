@@ -51,7 +51,7 @@ namespace {
 
 class MockAppMenuModel : public AppMenuModel {
  public:
-  MockAppMenuModel() : AppMenuModel() {}
+  MockAppMenuModel() : AppMenuModel(nullptr, nullptr) {}
   ~MockAppMenuModel() {}
   MOCK_METHOD2(ExecuteCommand, void(int command_id, int event_flags));
 };

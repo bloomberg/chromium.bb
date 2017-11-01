@@ -94,6 +94,7 @@ void AppMenuButton::ShowMenu(bool for_drop) {
 
   menu_.reset(new AppMenu(browser, for_drop ? AppMenu::FOR_DROP : 0));
   menu_model_.reset(new AppMenuModel(toolbar_view_, browser));
+  menu_model_->Init();
   menu_->Init(menu_model_.get());
 
   for (views::MenuListener& observer : menu_listeners_)

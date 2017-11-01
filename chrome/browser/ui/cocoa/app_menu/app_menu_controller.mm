@@ -481,6 +481,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   DCHECK(browser_);
   recentTabsMenuModelDelegate_.reset();
   appMenuModel_.reset(new AppMenuModel(acceleratorDelegate_.get(), browser_));
+  appMenuModel_->Init();
   [self setModel:appMenuModel_.get()];
 
   buttonViewController_.reset(

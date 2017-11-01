@@ -216,12 +216,19 @@ AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider, Browser* browser)
     : ui::SimpleMenuModel(this),
       uma_action_recorded_(false),
       provider_(provider),
-      browser_(browser) {
+      browser_(browser) {}
+
+AppMenuModel::~AppMenuModel() {
+  if (browser_)  // Null in Cocoa tests.
+    browser_->tab_strip_model()->RemoveObserver(this);
+}
+
+void AppMenuModel::Init() {
   Build();
   UpdateZoomControls();
 
   browser_zoom_subscription_ =
-      zoom::ZoomEventManager::GetForBrowserContext(browser->profile())
+      zoom::ZoomEventManager::GetForBrowserContext(browser_->profile())
           ->AddZoomLevelChangedCallback(base::Bind(
               &AppMenuModel::OnZoomLevelChanged, base::Unretained(this)));
 
@@ -229,11 +236,6 @@ AppMenuModel::AppMenuModel(ui::AcceleratorProvider* provider, Browser* browser)
 
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::NotificationService::AllSources());
-}
-
-AppMenuModel::~AppMenuModel() {
-  if (browser_)  // Null in tests.
-    browser_->tab_strip_model()->RemoveObserver(this);
 }
 
 bool AppMenuModel::DoesCommandIdDismissMenu(int command_id) const {
@@ -661,21 +663,6 @@ void AppMenuModel::Observe(int type,
   UpdateZoomControls();
 }
 
-// For testing.
-AppMenuModel::AppMenuModel()
-    : ui::SimpleMenuModel(this),
-      uma_action_recorded_(false),
-      provider_(nullptr),
-      browser_(nullptr) {}
-
-bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
-  if (browser_->profile()->IsGuestSession())
-    return false;
-
-  return IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
-      IncognitoModePrefs::DISABLED;
-}
-
 // Note: When adding new menu items please place under an appropriate section.
 // Menu is organised as follows:
 // - Extension toolbar overflow.
@@ -766,32 +753,6 @@ void AppMenuModel::Build() {
   uma_action_recorded_ = false;
 }
 
-bool AppMenuModel::AddGlobalErrorMenuItems() {
-  // TODO(sail): Currently we only build the app menu once per browser
-  // window. This means that if a new error is added after the menu is built
-  // it won't show in the existing app menu. To fix this we need to some
-  // how update the menu if new errors are added.
-  const GlobalErrorService::GlobalErrorList& errors =
-      GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
-  bool menu_items_added = false;
-  for (GlobalErrorService::GlobalErrorList::const_iterator
-       it = errors.begin(); it != errors.end(); ++it) {
-    GlobalError* error = *it;
-    DCHECK(error);
-    if (error->HasMenuItem()) {
-      AddItem(error->MenuItemCommandID(), error->MenuItemLabel());
-      SetIcon(GetIndexOfCommandId(error->MenuItemCommandID()),
-              error->MenuItemIcon());
-      menu_items_added = true;
-      if (IDC_SHOW_SIGNIN_ERROR == error->MenuItemCommandID()) {
-        base::RecordAction(
-            base::UserMetricsAction("Signin_Impression_FromMenu"));
-      }
-    }
-  }
-  return menu_items_added;
-}
-
 void AppMenuModel::CreateActionToolbarOverflowMenu() {
   // We only add the extensions overflow container if there are any icons that
   // aren't shown in the main container.
@@ -856,6 +817,40 @@ void AppMenuModel::UpdateZoomControls() {
                        ->GetZoomPercent();
   }
   zoom_label_ = base::FormatPercent(zoom_percent);
+}
+
+bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
+  if (browser_->profile()->IsGuestSession())
+    return false;
+
+  return IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
+         IncognitoModePrefs::DISABLED;
+}
+
+bool AppMenuModel::AddGlobalErrorMenuItems() {
+  // TODO(sail): Currently we only build the app menu once per browser
+  // window. This means that if a new error is added after the menu is built
+  // it won't show in the existing app menu. To fix this we need to some
+  // how update the menu if new errors are added.
+  const GlobalErrorService::GlobalErrorList& errors =
+      GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
+  bool menu_items_added = false;
+  for (GlobalErrorService::GlobalErrorList::const_iterator it = errors.begin();
+       it != errors.end(); ++it) {
+    GlobalError* error = *it;
+    DCHECK(error);
+    if (error->HasMenuItem()) {
+      AddItem(error->MenuItemCommandID(), error->MenuItemLabel());
+      SetIcon(GetIndexOfCommandId(error->MenuItemCommandID()),
+              error->MenuItemIcon());
+      menu_items_added = true;
+      if (IDC_SHOW_SIGNIN_ERROR == error->MenuItemCommandID()) {
+        base::RecordAction(
+            base::UserMetricsAction("Signin_Impression_FromMenu"));
+      }
+    }
+  }
+  return menu_items_added;
 }
 
 void AppMenuModel::OnZoomLevelChanged(

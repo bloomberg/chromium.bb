@@ -225,6 +225,7 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, GuestAppMenuLacksBookmarks) {
   EmptyAcceleratorHandler accelerator_handler;
   // Verify the normal browser has a bookmark menu.
   AppMenuModel model_normal_profile(&accelerator_handler, browser());
+  model_normal_profile.Init();
   EXPECT_NE(-1, model_normal_profile.GetIndexOfCommandId(IDC_BOOKMARKS_MENU));
 
   // Guest browser has no bookmark menu.
