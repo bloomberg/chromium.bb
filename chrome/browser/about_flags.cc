@@ -3607,6 +3607,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(kExperimentalTabControllerFeature)},
 #endif  // defined(OS_WIN)
 
+#if defined(OS_CHROMEOS)
+    {"ash-enable-keyboard-shortcut-viewer",
+     flag_descriptions::kAshEnableKeyboardShortcutViewerName,
+     flag_descriptions::kAshEnableKeyboardShortcutViewerDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnableKeyboardShortcutViewer)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

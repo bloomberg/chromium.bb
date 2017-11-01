@@ -1729,6 +1729,9 @@ extern const char kWebrtcH264WithOpenh264FfmpegDescription[];
 extern const char kAshDisableSmoothScreenRotationName[];
 extern const char kAshDisableSmoothScreenRotationDescription[];
 
+extern const char kAshEnableKeyboardShortcutViewerName[];
+extern const char kAshEnableKeyboardShortcutViewerDescription[];
+
 extern const char kAshEnableMirroredScreenName[];
 extern const char kAshEnableMirroredScreenDescription[];
 
