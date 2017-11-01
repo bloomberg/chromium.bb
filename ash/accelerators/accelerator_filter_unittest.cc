@@ -8,12 +8,9 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_delegate.h"
-#include "ash/public/cpp/config.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -21,7 +18,6 @@
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator_history.h"
@@ -35,10 +31,6 @@ using AcceleratorFilterTest = AshTestBase;
 
 // Tests if AcceleratorFilter works without a focused window.
 TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
-  // TODO: mash doesn't support ScreenshotDelgate yet. http://crbug.com/632111.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   const TestScreenshotDelegate* delegate = GetScreenshotDelegate();
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
@@ -53,10 +45,6 @@ TEST_F(AcceleratorFilterTest, TestFilterWithoutFocus) {
 
 // Tests if AcceleratorFilter works as expected with a focused window.
 TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
-  // TODO: mash doesn't support ScreenshotDelgate yet. http://crbug.com/632111.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   aura::test::TestWindowDelegate test_delegate;
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithDelegate(&test_delegate, -1, gfx::Rect()));
@@ -79,10 +67,6 @@ TEST_F(AcceleratorFilterTest, TestFilterWithFocus) {
 
 // Tests if AcceleratorFilter ignores the flag for Caps Lock.
 TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
-  // TODO: mash doesn't support ScreenshotDelgate yet. http://crbug.com/632111.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   const TestScreenshotDelegate* delegate = GetScreenshotDelegate();
   EXPECT_EQ(0, delegate->handle_take_screenshot_count());
 
