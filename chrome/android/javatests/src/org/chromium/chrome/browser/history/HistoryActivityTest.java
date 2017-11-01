@@ -670,7 +670,7 @@ public class HistoryActivityTest {
     private void signInToSupervisedAccount() throws Exception {
         // Initialize PrefChangeRegistrar for test.
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mPrefChangeRegistrar = new PrefChangeRegistrar(false);
+            mPrefChangeRegistrar = new PrefChangeRegistrar();
             mPrefChangeRegistrar.addObserver(Pref.ALLOW_DELETING_BROWSER_HISTORY, mTestObserver);
             mPrefChangeRegistrar.addObserver(Pref.INCOGNITO_MODE_AVAILABILITY, mTestObserver);
         });

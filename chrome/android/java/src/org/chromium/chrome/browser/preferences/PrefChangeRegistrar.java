@@ -28,10 +28,9 @@ public class PrefChangeRegistrar {
 
     /**
      * Initialize native PrefChangeRegistrar.
-     * @param isIncognito Whether incognito mode is being used.
      */
-    public PrefChangeRegistrar(boolean isIncognito) {
-        mNativeRegistrar = nativeInit(isIncognito);
+    public PrefChangeRegistrar() {
+        mNativeRegistrar = nativeInit();
     }
 
     /**
@@ -63,7 +62,7 @@ public class PrefChangeRegistrar {
         mObservers.get(preference).onPreferenceChange();
     }
 
-    private native long nativeInit(boolean isIncognito);
+    private native long nativeInit();
     private native void nativeAdd(long nativePrefChangeRegistrarAndroid, int preference);
     private native void nativeDestroy(long nativePrefChangeRegistrarAndroid);
 }
