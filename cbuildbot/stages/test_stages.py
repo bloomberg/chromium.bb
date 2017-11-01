@@ -76,7 +76,14 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
   PERF_RESULTS_EXTENSION = 'results'
 
   def __init__(
-      self, builder_run, board, model, suite_config, suffix=None, **kwargs):
+      self,
+      builder_run,
+      board,
+      model,
+      suite_config,
+      suffix=None,
+      lab_board_name=None,
+      **kwargs):
 
     if suffix is None:
       suffix = ''
@@ -98,6 +105,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     self.wait_for_results = True
 
     self._model = model
+    self._board_name = lab_board_name or board
 
   # Disable complaint about calling _HandleStageException.
   # pylint: disable=W0212
@@ -266,16 +274,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     build_id, db = self._run.GetCIDBHandle()
 
-    # This is a hack because boards in the lab for reef-uni aren't actually
-    # provisioned under reef-uni.
-    # This will be a problem for any boards that are migrated going forward.
-    # TODO(shapiroc): Add this config to GE and remove this hack
-    board = self._current_board
-    if self._model and board.endswith('-uni'):
-      board = self._model
-
     cmd_result = commands.RunHWTestSuite(
-        build, self.suite_config.suite, board,
+        build, self.suite_config.suite, self._board_name,
         model=self._model,
         pool=self.suite_config.pool,
         num=self.suite_config.num,

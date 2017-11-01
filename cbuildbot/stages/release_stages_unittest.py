@@ -461,8 +461,9 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         skip_duts_check=False)
 
   def testRunPaygenInProcessWithUnifiedBuild(self):
-    self._run.config.models = [config_lib.ModelTestConfig('model1'),
-                               config_lib.ModelTestConfig('model2', ['au'])]
+    self._run.config.models = [config_lib.ModelTestConfig('model1', 'model1'),
+                               config_lib.ModelTestConfig(
+                                   'model2', 'board', ['au'])]
 
     # Have to patch and verify that the PaygenTestStage is created.
     stage = self.ConstructStage()
@@ -474,12 +475,13 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       # Ensure that the first model from the unified build was selected
       # as the platform to be tested
       sched_tests.assert_called_once_with(
-          'foo-suite-name', 'foo-archive-board', 'model2', 'foo-archive-build',
+          'foo-suite-name', 'board', 'model2', 'foo-archive-build',
           False, True, job_keyvals=mock.ANY)
 
   def testRunPaygenInParallelWithUnifiedBuild(self):
-    self._run.config.models = [config_lib.ModelTestConfig('model1', ['au']),
-                               config_lib.ModelTestConfig('model2', ['au'])]
+    self._run.config.models = [
+        config_lib.ModelTestConfig('model1', 'model1', ['au']),
+        config_lib.ModelTestConfig('model2', 'model1', ['au'])]
 
     # Have to patch and verify that the PaygenTestStage is created.
     stage = self.ConstructStage()
@@ -536,6 +538,7 @@ class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         suite_name='foo-test-suite',
         board=self._current_board,
         model=self._current_board,
+        lab_board_name=self._current_board,
         # The PaygenBuild stage will add the '-channel' suffix to the channel
         # when converting to release tools naming.
         channel='foochan-channel',

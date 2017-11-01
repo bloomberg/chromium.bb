@@ -94,7 +94,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         self._run, self._current_board, self._model, self.suite_config)
 
   def _RunHWTestSuite(self, debug=False, fails=False, warns=False,
-                      cmd_fail_mode=None, expected_board=None):
+                      cmd_fail_mode=None):
     """Verify the stage behavior in various circumstances.
 
     Args:
@@ -103,7 +103,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
       warns: Whether the stage should warn.
       cmd_fail_mode: How commands.RunHWTestSuite() should fail.
         If None, don't fail.
-      expected_board: Expected board that is passed to the generated command.
     """
     # We choose to define these mocks in setUp() because they are
     # useful for tests that do not call this method. However, this
@@ -148,8 +147,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.run_suite_mock.assert_called_once()
     self.assertEqual(self.run_suite_mock.call_args[1].get('debug'), debug)
     self.assertEqual(self.run_suite_mock.call_args[1].get('model'), self._model)
-    if expected_board:
-      self.assertEqual(self.run_suite_mock.call_args[0][2], expected_board)
 
     # Make sure we print the buildbot failure/warning messages correctly.
     if fails:
@@ -180,12 +177,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testWithSuite(self):
     """Test if run correctly with a test suite."""
     self._RunHWTestSuite()
-
-  def testHandleUnifiedBuildBoardCase(self):
-    """Verify the model names is used as the board name for -uni cases"""
-    self._Prepare('reef-uni-release')
-    self._model = 'pyro'
-    self._RunHWTestSuite(expected_board='pyro')
 
   def testHandleTestWarning(self):
     """Tests that we pass the build on test warning."""

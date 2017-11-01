@@ -103,7 +103,7 @@ class SimpleBuilder(generic_builders.Builder):
       return
 
     # For non-uni builds, we don't pass a model (just board)
-    models = [config_lib.ModelTestConfig(None)]
+    models = [config_lib.ModelTestConfig(None, board)]
 
     if builder_run.config.models:
       models = builder_run.config.models
@@ -132,7 +132,7 @@ class SimpleBuilder(generic_builders.Builder):
 
     Args:
       builder_run: BuilderRun object for these background stages.
-      board: Board name.
+      board: board overlay name
       model: ModelTestConfig object to test against.
       suite_config: HWTestConfig object that defines the test suite.
 
@@ -155,6 +155,7 @@ class SimpleBuilder(generic_builders.Builder):
                                       board,
                                       model.name,
                                       suite_config,
+                                      lab_board_name=model.lab_board_name,
                                       builder_run=builder_run)
     return result
 

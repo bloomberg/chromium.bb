@@ -159,8 +159,9 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     unified_build = self._initConfig(
         'lumpy-release',
         extra_argv=extra_argv,
-        models=[config_lib.ModelTestConfig('model1'),
-                config_lib.ModelTestConfig('model2', ['sanity', 'bvt-inline'])])
+        models=[config_lib.ModelTestConfig('model1', 'model1'),
+                config_lib.ModelTestConfig(
+                    'model2', 'model2', ['sanity', 'bvt-inline'])])
     unified_build.attrs.chrome_version = 'TheChromeVersion'
     simple_builders.SimpleBuilder(unified_build).RunStages()
 
@@ -175,8 +176,8 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     test_phase1 = unified_build.config.hw_tests[0]
     test_phase2 = unified_build.config.hw_tests[1]
 
-    model1 = config_lib.ModelTestConfig('model1')
-    model2 = config_lib.ModelTestConfig('model2', [test_phase2.suite])
+    model1 = config_lib.ModelTestConfig('model1', 'some_lab_board')
+    model2 = config_lib.ModelTestConfig('model2', 'mode11', [test_phase2.suite])
 
     hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
         unified_build,
@@ -184,6 +185,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
         model1,
         test_phase1)
     self.assertIsNotNone(hw_stage)
+    self.assertEqual(hw_stage._board_name, 'some_lab_board')
 
     hw_stage = simple_builders.SimpleBuilder(unified_build)._GetHWTestStage(
         unified_build,

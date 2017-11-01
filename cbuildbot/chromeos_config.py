@@ -2473,9 +2473,10 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           models = []
           for model in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]:
             name = model[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
+            lab_board_name = model[config_lib.CONFIG_TEMPLATE_MODEL_BOARD_NAME]
             if (config_lib.CONFIG_TEMPLATE_MODEL_CQ_TEST_ENABLED in model
                 and model[config_lib.CONFIG_TEMPLATE_MODEL_CQ_TEST_ENABLED]):
-              models.append(config_lib.ModelTestConfig(name))
+              models.append(config_lib.ModelTestConfig(name, lab_board_name))
 
           customizations.update(models=models)
 
@@ -3268,12 +3269,16 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
     models = []
     for model in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]:
       name = model[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
+      lab_board_name = model[config_lib.CONFIG_TEMPLATE_MODEL_BOARD_NAME]
       if config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES in model:
         models.append(config_lib.ModelTestConfig(
-            name, model[config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES]))
+            name,
+            lab_board_name,
+            model[config_lib.CONFIG_TEMPLATE_MODEL_TEST_SUITES]))
       else:
         no_model_test_suites = []
-        models.append(config_lib.ModelTestConfig(name, no_model_test_suites))
+        models.append(config_lib.ModelTestConfig(
+            name, lab_board_name, no_model_test_suites))
 
     reference_board_name = unibuild[
         config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]

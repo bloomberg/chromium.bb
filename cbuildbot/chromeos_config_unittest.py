@@ -209,10 +209,12 @@ class UnifiedBuildConfigTestCase(object):
       "arch": "X86_INTERNAL",
       "models" : [
         {
-          "name": "reef"
+          "name": "reef",
+          "board_name": "reef"
         },
         {
           "name": "pyro",
+          "board_name": "pyro",
           "test_suites": ["sanity"],
           "cq_test_enabled": true
         }
@@ -263,8 +265,9 @@ class UnifiedBuildReleaseBuilders(
     reef_uni_release = self._site_config['reef-uni-release']
     self.assertIsNotNone(reef_uni_release)
     models = reef_uni_release['models']
-    self.assertIn(config_lib.ModelTestConfig('reef', []), models)
-    self.assertIn(config_lib.ModelTestConfig('pyro', ['sanity']), models)
+    self.assertIn(config_lib.ModelTestConfig('reef', 'reef', []), models)
+    self.assertIn(
+        config_lib.ModelTestConfig('pyro', 'pyro', ['sanity']), models)
 
     master_release = self._site_config['master-release']
     self.assertIn('reef-uni-release', master_release['slave_configs'])
@@ -281,7 +284,7 @@ class UnifiedBuildCqBuilders(
     self.assertIsNotNone(reef_uni_paladin)
     models = reef_uni_paladin['models']
     self.assertEquals(len(models), 1)
-    self.assertIn(config_lib.ModelTestConfig('pyro'), models)
+    self.assertIn(config_lib.ModelTestConfig('pyro', 'pyro'), models)
 
     master_paladin = self._site_config['master-paladin']
     self.assertIn('reef-uni-paladin', master_paladin['slave_configs'])

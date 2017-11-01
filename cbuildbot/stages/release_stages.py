@@ -472,26 +472,41 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
             for model in self._run.config.models:
               # 'au' is a test suite generated in ge_build_config.json
               if model.test_suites and 'au' in model.test_suites:
-                models.append(model.name)
+                models.append(model)
 
             if len(models) > 1:
               parallel.RunParallelSteps(
                   [lambda: self._RunPaygenTestStage(
                       suite_name,
                       archive_board,
-                      model,
+                      model.name,
+                      model.lab_board_name,
                       archive_build,
                       finished_uri)
                    for model in models])
             elif len(models) == 1:
               PaygenTestStage(
-                  self._run, suite_name, archive_board, models[0], self.channel,
-                  archive_build, finished_uri, self.skip_duts_check,
+                  self._run,
+                  suite_name,
+                  archive_board,
+                  models[0].name,
+                  models[0].lab_board_name,
+                  self.channel,
+                  archive_build,
+                  finished_uri,
+                  self.skip_duts_check,
                   self.debug).Run()
           else:
             PaygenTestStage(
-                self._run, suite_name, archive_board, None, self.channel,
-                archive_build, finished_uri, self.skip_duts_check,
+                self._run,
+                suite_name,
+                archive_board,
+                None,
+                archive_board,
+                self.channel,
+                archive_build,
+                finished_uri,
+                self.skip_duts_check,
                 self.debug).Run()
 
 
@@ -507,13 +522,14 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         logging.info('PaygenBuild for %s skipped because: %s', self.channel, e)
 
   def _RunPaygenTestStage(
-      self, suite_name, board, model, build, finished_uri):
+      self, suite_name, board, model, lab_board_name, build, finished_uri):
     """Runs the PaygenTest stage"""
     PaygenTestStage(
         self._run,
         suite_name,
         board,
         model,
+        lab_board_name,
         self.channel,
         build,
         finished_uri,
@@ -523,15 +539,27 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
 
 class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that schedules the payload tests."""
-  def __init__(self, builder_run, suite_name, board, model, channel, build,
-               finished_uri, skip_duts_check, debug, **kwargs):
+  def __init__(
+      self,
+      builder_run,
+      suite_name,
+      board,
+      model,
+      lab_board_name,
+      channel,
+      build,
+      finished_uri,
+      skip_duts_check,
+      debug,
+      **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
       builder_run: See builder_run on ArchiveStage
       suite_name: See builder_run on ArchiveStage
-      board: Board that will be tested.
+      board: Board overlay name.
       model: Model that will be tested. ('reef', 'pyro', etc)
+      lab_board_name: The actual board label tested against in Autotest
       channel: Channel of payloads to generate ('stable', 'beta', etc)
       build: Version of payloads to generate.
       finished_uri: GS URI of the finished flag to create on success.
@@ -541,13 +569,7 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
     self.suite_name = suite_name
     self.board = board
     self.model = model
-
-    # This is a hack because boards in the lab for reef-uni aren't actually
-    # provisioned under reef-uni.
-    # This will be a problem for any boards that are migrated going forward.
-    # TODO(shapiroc): Add this config to GE and remove this hack
-    if model and board.endswith('-uni'):
-      self.board = model
+    self.lab_board_name = lab_board_name
 
     self.build = build
     self.finished_uri = finished_uri
@@ -568,7 +590,7 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
     """Schedule the tests to run."""
     # Schedule the tests to run and wait for the results.
     paygen_build_lib.ScheduleAutotestTests(self.suite_name,
-                                           self.board,
+                                           self.lab_board_name,
                                            self.model,
                                            self.build,
                                            self.skip_duts_check,

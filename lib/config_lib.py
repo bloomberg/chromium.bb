@@ -133,6 +133,7 @@ CONFIG_TEMPLATE_RELEASE_BRANCH = 'release_branch'
 CONFIG_TEMPLATE_REFERENCE_BOARD_NAME = 'reference_board_name'
 CONFIG_TEMPLATE_MODELS = 'models'
 CONFIG_TEMPLATE_MODEL_NAME = 'name'
+CONFIG_TEMPLATE_MODEL_BOARD_NAME = 'board_name'
 CONFIG_TEMPLATE_MODEL_TEST_SUITES = 'test_suites'
 CONFIG_TEMPLATE_MODEL_CQ_TEST_ENABLED = 'cq_test_enabled'
 
@@ -474,12 +475,14 @@ class ModelTestConfig(object):
   """Model specific config that controls which test suites are executed.
 
   Members:
-    name: The name of the model that will be tested (matches autotest platform)
+    name: The name of the model that will be tested (matches model label)
+    lab_board_name: The name of the board in the lab (matches board label)
     test_suites: List of hardware test suites that will be executed.
   """
-  def __init__(self, name, test_suites=None):
+  def __init__(self, name, lab_board_name, test_suites=None):
     """Constructor -- see members above."""
     self.name = name
+    self.lab_board_name = lab_board_name
     self.test_suites = test_suites
 
   def __eq__(self, other):
