@@ -5,13 +5,48 @@
 #include "modules/gamepad/GamepadHapticActuator.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "modules/gamepad/GamepadDispatcher.h"
 
 namespace {
+
+using device::mojom::GamepadHapticsResult;
+using device::mojom::GamepadHapticEffectType;
 
 const char kGamepadHapticActuatorTypeVibration[] = "vibration";
 const char kGamepadHapticActuatorTypeDualRumble[] = "dual-rumble";
 
+const char kGamepadHapticEffectTypeDualRumble[] = "dual-rumble";
+
+const char kGamepadHapticsResultComplete[] = "complete";
+const char kGamepadHapticsResultPreempted[] = "preempted";
+const char kGamepadHapticsResultInvalidParameter[] = "invalid-parameter";
 const char kGamepadHapticsResultNotSupported[] = "not-supported";
+
+const double kMaxEffectDurationMillis = 5000.0;  // 5 seconds
+
+GamepadHapticEffectType EffectTypeFromString(const String& type) {
+  if (type == kGamepadHapticEffectTypeDualRumble)
+    return GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble;
+
+  NOTREACHED();
+  return GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble;
+}
+
+String ResultToString(GamepadHapticsResult result) {
+  switch (result) {
+    case GamepadHapticsResult::GamepadHapticsResultComplete:
+      return kGamepadHapticsResultComplete;
+    case GamepadHapticsResult::GamepadHapticsResultPreempted:
+      return kGamepadHapticsResultPreempted;
+    case GamepadHapticsResult::GamepadHapticsResultInvalidParameter:
+      return kGamepadHapticsResultInvalidParameter;
+    case GamepadHapticsResult::GamepadHapticsResultNotSupported:
+      return kGamepadHapticsResultNotSupported;
+    default:
+      NOTREACHED();
+  }
+  return kGamepadHapticsResultNotSupported;
+}
 
 }  // namespace
 
@@ -25,7 +60,8 @@ GamepadHapticActuator* GamepadHapticActuator::Create(int pad_index) {
 
 GamepadHapticActuator::GamepadHapticActuator(
     int pad_index,
-    device::GamepadHapticActuatorType type) {
+    device::GamepadHapticActuatorType type)
+    : pad_index_(pad_index) {
   SetType(type);
 }
 
@@ -49,20 +85,68 @@ ScriptPromise GamepadHapticActuator::playEffect(
     const String& type,
     const GamepadEffectParameters& params) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-  resolver->Resolve(kGamepadHapticsResultNotSupported);
 
-  NOTIMPLEMENTED();
-  return promise;
+  if (params.duration() < 0.0 || params.startDelay() < 0.0 ||
+      params.strongMagnitude() < 0.0 || params.strongMagnitude() > 1.0 ||
+      params.weakMagnitude() < 0.0 || params.weakMagnitude() > 1.0) {
+    ScriptPromise promise = resolver->Promise();
+    resolver->Resolve(kGamepadHapticsResultInvalidParameter);
+    return promise;
+  }
+
+  // Limit the total effect duration.
+  double effect_duration = params.duration() + params.startDelay();
+  if (effect_duration > kMaxEffectDurationMillis) {
+    ScriptPromise promise = resolver->Promise();
+    resolver->Resolve(kGamepadHapticsResultInvalidParameter);
+    return promise;
+  }
+
+  auto callback = ConvertToBaseCallback(
+      WTF::Bind(&GamepadHapticActuator::OnPlayEffectCompleted,
+                WrapPersistent(this), WrapPersistent(resolver)));
+
+  GamepadDispatcher::Instance().PlayVibrationEffectOnce(
+      pad_index_, EffectTypeFromString(type),
+      device::mojom::blink::GamepadEffectParameters::New(
+          params.duration(), params.startDelay(), params.strongMagnitude(),
+          params.weakMagnitude()),
+      std::move(callback));
+
+  return resolver->Promise();
+}
+
+void GamepadHapticActuator::OnPlayEffectCompleted(
+    ScriptPromiseResolver* resolver,
+    device::mojom::GamepadHapticsResult result) {
+  if (result == GamepadHapticsResult::GamepadHapticsResultError) {
+    resolver->Reject();
+    return;
+  }
+  resolver->Resolve(ResultToString(result));
 }
 
 ScriptPromise GamepadHapticActuator::reset(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
-  resolver->Resolve(kGamepadHapticsResultNotSupported);
 
-  NOTIMPLEMENTED();
-  return promise;
+  auto callback = ConvertToBaseCallback(
+      WTF::Bind(&GamepadHapticActuator::OnResetCompleted, WrapPersistent(this),
+                WrapPersistent(resolver)));
+
+  GamepadDispatcher::Instance().ResetVibrationActuator(pad_index_,
+                                                       std::move(callback));
+
+  return resolver->Promise();
+}
+
+void GamepadHapticActuator::OnResetCompleted(
+    ScriptPromiseResolver* resolver,
+    device::mojom::GamepadHapticsResult result) {
+  if (result == GamepadHapticsResult::GamepadHapticsResultError) {
+    resolver->Reject();
+    return;
+  }
+  resolver->Resolve(ResultToString(result));
 }
 
 void GamepadHapticActuator::Trace(blink::Visitor* visitor) {
