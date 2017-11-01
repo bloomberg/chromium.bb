@@ -367,25 +367,47 @@ static void od_enc_rc_reset(od_rc_state *rc) {
   /*All of these initial scale/exp values are from Theora, and have not yet
      been adapted to Daala, so they're certainly wrong.
     The B-frame values especially are simply copies of the P-frame values.*/
+
+  /*XXXXX: This constant initialization, apart from tuning, is very
+    likely also scaled incorrectly.
+
+    In Theora, where these constants come from, (bits/pixel) ==
+    scale*((q_Q2/4)^-(exp/64))
+
+    This can be derived from looking at the update formula in
+    od_enc_rc_update_state().
+
+    I.e., we have a quantizer normalized to Q0 for 8-bit pixel values,
+    which we exponentiate. To get the same behavior here, we need to
+    continue normalizing the quantizer the same way. Otherwise we'll have
+    to exponentiate any scaling baked into the quantizer as well (which
+    seems complicated and unnecessary).
+
+    If we have normalized the quantizer before exponentiation, then
+    the initializers for log_scale[] should not depend on bit depth or
+    coefficient depth in any way.
+
+    This is now restored to the initialization as is was in Theora,
+    and should be revistited/rederived/corrected for AV1.*/
   if (ibpp < 1) {
     rc->exp[OD_I_FRAME] = 59;
-    rc->log_scale[OD_I_FRAME] = od_blog64(1997) - OD_Q57(OD_COEFF_SHIFT);
+    rc->log_scale[OD_I_FRAME] = od_blog64(1997) - OD_Q57(8);
   } else if (ibpp < 2) {
     rc->exp[OD_I_FRAME] = 55;
-    rc->log_scale[OD_I_FRAME] = od_blog64(1604) - OD_Q57(OD_COEFF_SHIFT);
+    rc->log_scale[OD_I_FRAME] = od_blog64(1604) - OD_Q57(8);
   } else {
     rc->exp[OD_I_FRAME] = 48;
-    rc->log_scale[OD_I_FRAME] = od_blog64(834) - OD_Q57(OD_COEFF_SHIFT);
+    rc->log_scale[OD_I_FRAME] = od_blog64(834) - OD_Q57(8);
   }
   if (ibpp < 4) {
     rc->exp[OD_P_FRAME] = 100;
-    rc->log_scale[OD_P_FRAME] = od_blog64(2249) - OD_Q57(OD_COEFF_SHIFT);
+    rc->log_scale[OD_P_FRAME] = od_blog64(2249) - OD_Q57(8);
   } else if (ibpp < 8) {
     rc->exp[OD_P_FRAME] = 95;
-    rc->log_scale[OD_P_FRAME] = od_blog64(1751) - OD_Q57(OD_COEFF_SHIFT);
+    rc->log_scale[OD_P_FRAME] = od_blog64(1751) - OD_Q57(8);
   } else {
     rc->exp[OD_P_FRAME] = 73;
-    rc->log_scale[OD_P_FRAME] = od_blog64(1260) - OD_Q57(OD_COEFF_SHIFT);
+    rc->log_scale[OD_P_FRAME] = od_blog64(1260) - OD_Q57(8);
   }
   /*Golden P-frames both use the same log_scale and exp modeling
      values as regular P-frames and the same scale follower.
@@ -810,7 +832,11 @@ int od_enc_rc_select_quantizers_and_lambdas(od_rc_state *rc,
         calculation, that needs to be modulated as well.
         Calculate what is, effectively, a fractional coded quantizer. */
       /*Get the log2 quantizer in Q57 (normalized for coefficient shift).*/
-      log_quantizer = od_blog64(rc->base_quantizer) - OD_Q57(OD_COEFF_SHIFT);
+      /*XXXXX: See the above XXXX comment in rate control
+        initialization; the scaling on the log-quantizer calculation
+        should be the same as in quantizer scale initialization, but
+        OD_Q57(8) is possibly the incorrect value. */
+      log_quantizer = od_blog64(rc->base_quantizer) - OD_Q57(8);
       /*log_quantizer to Q21.*/
       log_quantizer >>= 36;
       /*scale log quantizer, result is Q33.*/
@@ -824,7 +850,7 @@ int od_enc_rc_select_quantizers_and_lambdas(od_rc_state *rc,
       /*Back to log2 quantizer in Q57.*/
       log_quantizer = (log_quantizer - OD_LOG_QUANTIZER_OFFSET_Q45) *
                           OD_LOG_QUANTIZER_EXP_Q12 +
-                      OD_Q57(OD_COEFF_SHIFT);
+                      OD_Q57(8);
       /*Convert Q57 log2 quantizer to unclamped linear target quantizer value.*/
       rc->target_quantizer = od_bexp64(log_quantizer);
     }
@@ -881,7 +907,11 @@ int od_enc_rc_select_quantizers_and_lambdas(od_rc_state *rc,
       for (i = 0; i < OD_FRAME_NSUBTYPES; i++) {
         /*Modulate base quantizer by frame type.*/
         /*Get the log2 quantizer in Q57 (normalized for coefficient shift).*/
-        log_quantizer = log_base_quantizer - OD_Q57(OD_COEFF_SHIFT);
+        /*XXXXX: See the above XXXX comment in rate control
+          initialization; the scaling on the log-quantizer calculation
+          should be the same as in quantizer scale initialization, but
+          OD_Q57(8) is possibly the incorrect value. */
+        log_quantizer = log_base_quantizer - OD_Q57(8);
         /*log_quantizer to Q21.*/
         log_quantizer >>= 36;
         /*scale log quantizer, result is Q33.*/
@@ -895,7 +925,7 @@ int od_enc_rc_select_quantizers_and_lambdas(od_rc_state *rc,
         /*Back to log2 quantizer in Q57.*/
         log_quantizer = (log_quantizer - OD_LOG_QUANTIZER_OFFSET_Q45) *
                             OD_LOG_QUANTIZER_EXP_Q12 +
-                        OD_Q57(OD_COEFF_SHIFT);
+                        OD_Q57(8);
         /*Clamp modulated quantizer values.*/
         log_quantizer = OD_CLAMPI(od_blog64(lossy_quantizer_min), log_quantizer,
                                   od_blog64(lossy_quantizer_max));
@@ -924,7 +954,11 @@ int od_enc_rc_select_quantizers_and_lambdas(od_rc_state *rc,
     /*Modulate chosen base quantizer to produce target quantizer.*/
     log_quantizer = od_blog64(base_quantizer);
     /*Get the log2 quantizer in Q57 (normalized for coefficient shift).*/
-    log_quantizer -= OD_Q57(OD_COEFF_SHIFT);
+    /*XXXXX: See the above XXXX comment in rate control
+      initialization; the scaling on the log-quantizer calculation
+      should be the same as in quantizer scale initialization, but
+      OD_Q57(8) is possibly the incorrect value. */
+    log_quantizer -= OD_Q57(8);
     /*log_quantizer to Q21.*/
     log_quantizer >>= 36;
     /*scale log quantizer, result is Q33.*/
@@ -938,7 +972,7 @@ int od_enc_rc_select_quantizers_and_lambdas(od_rc_state *rc,
     /*Back to log2 quantizer in Q57.*/
     log_quantizer = (log_quantizer - OD_LOG_QUANTIZER_OFFSET_Q45) *
                         OD_LOG_QUANTIZER_EXP_Q12 +
-                    OD_Q57(OD_COEFF_SHIFT);
+                    OD_Q57(8);
     /*Clamp modulated quantizer values.*/
     log_quantizer = OD_CLAMPI(od_blog64(lossy_quantizer_min), log_quantizer,
                               od_blog64(lossy_quantizer_max));
@@ -1023,7 +1057,18 @@ int od_enc_rc_select_quantizers_and_lambdas(od_rc_state *rc,
   }
   *bottom_idx = lossy_quantizer_min;
   *top_idx = lossy_quantizer_max;
-  rc->target_quantizer = av1_qindex_from_ac(
+  /*XXXXXX: the store back to rc->target_quantizer just seems
+    wrong. target_quantizer is used as an actual linear quantizer
+    (like base_quantizer, I think it should be scaled the same way as
+    a Q0 quantizer for 8-bit inputs). But av1_qindex_from_ac*()
+    returns a quantizer index, which is completely incomparable.
+
+    Passing rc->target_quantizer directly to av1_qindex_from_ac_Q3 is
+    also probably incorrect. If we move to storing a value scaled the
+    same way as a Q0 quantizer for 8-bit inputs, then it should just
+    be rc->target_quantizer << (TX_COEFF_DEPTH - 8) for DAALA_TX, and
+    something depending on the bit depth for !DAALA_TX. */
+  rc->target_quantizer = av1_qindex_from_ac_Q3(
       OD_CLAMPI(lossy_quantizer_min, rc->target_quantizer, lossy_quantizer_max),
       rc->bit_depth);
   return rc->target_quantizer;

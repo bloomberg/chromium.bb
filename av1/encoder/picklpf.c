@@ -414,7 +414,7 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   } else if (method >= LPF_PICK_FROM_Q) {
     const int min_filter_level = 0;
     const int max_filter_level = av1_get_max_filter_level(cpi);
-    const int q = av1_ac_quant(cm->base_qindex, 0, cm->bit_depth);
+    const int q = av1_ac_quant_Q3(cm->base_qindex, 0, cm->bit_depth);
 // These values were determined by linear fitting the result of the
 // searched level for 8 bit depth:
 // Keyframes: filt_guess = q * 0.06699 - 1.60817

@@ -65,7 +65,11 @@ extern "C" {
 /**The maximum number of color planes allowed in a single frame.*/
 # define OD_NPLANES_MAX (3)
 
-# define OD_COEFF_SHIFT (4)
+/* Native coefficient 'bitdepth'; TX is scaled up by (TX_COEFF_DEPTH-bitdepth)
+   such that the real coefficient depth precision is always TX_CEOFF_DEPTH
+   regardless of bitdepth or transform size.
+*/
+# define TX_COEFF_DEPTH (11)
 
 # define OD_DISABLE_CFL (1)
 # define OD_DISABLE_FILTER (1)

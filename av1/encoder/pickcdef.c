@@ -329,7 +329,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int chroma_cdef = xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
                     xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
   quantizer =
-      av1_ac_quant(cm->base_qindex, 0, cm->bit_depth) >> (cm->bit_depth - 8);
+      av1_ac_quant_Q3(cm->base_qindex, 0, cm->bit_depth) >> (cm->bit_depth - 8);
   lambda = .12 * quantizer * quantizer / 256.;
 
   av1_setup_dst_planes(xd->plane, cm->sb_size, frame, 0, 0);

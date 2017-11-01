@@ -1516,7 +1516,7 @@ static void invert_quant(int16_t *quant, int16_t *shift, int d) {
 }
 
 static int get_qzbin_factor(int q, aom_bit_depth_t bit_depth) {
-  const int quant = av1_dc_quant(q, 0, bit_depth);
+  const int quant = av1_dc_quant_Q3(q, 0, bit_depth);
 #if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
     case AOM_BITS_8: return q == 0 ? 64 : (quant < 148 ? 84 : 80);
@@ -1545,10 +1545,11 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
     for (i = 0; i < 2; ++i) {
       int qrounding_factor_fp = 64;
       // y quantizer setup with original coeff shift of Q3
-      quant_Q3 = i == 0 ? av1_dc_quant(q, y_dc_delta_q, bit_depth)
-                        : av1_ac_quant(q, 0, bit_depth);
-      // y quantizer with TX scale; right now, it's still Q3 as above;
-      quant_QTX = quant_Q3;
+      quant_Q3 = i == 0 ? av1_dc_quant_Q3(q, y_dc_delta_q, bit_depth)
+                        : av1_ac_quant_Q3(q, 0, bit_depth);
+      // y quantizer with TX scale
+      quant_QTX = i == 0 ? av1_dc_quant_QTX(q, y_dc_delta_q, bit_depth)
+                         : av1_ac_quant_QTX(q, 0, bit_depth);
       invert_quant(&quants->y_quant[q][i], &quants->y_quant_shift[q][i],
                    quant_QTX);
       quants->y_quant_fp[q][i] = (1 << 16) / quant_QTX;
@@ -1559,10 +1560,11 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
       deq->y_dequant_Q3[q][i] = quant_Q3;
 
       // u quantizer setup with original coeff shift of Q3
-      quant_Q3 = i == 0 ? av1_dc_quant(q, u_dc_delta_q, bit_depth)
-                        : av1_ac_quant(q, u_ac_delta_q, bit_depth);
-      // u quantizer with TX scale; right now, it's still Q3 as above;
-      quant_QTX = quant_Q3;
+      quant_Q3 = i == 0 ? av1_dc_quant_Q3(q, u_dc_delta_q, bit_depth)
+                        : av1_ac_quant_Q3(q, u_ac_delta_q, bit_depth);
+      // u quantizer with TX scale
+      quant_QTX = i == 0 ? av1_dc_quant_QTX(q, u_dc_delta_q, bit_depth)
+                         : av1_ac_quant_QTX(q, u_ac_delta_q, bit_depth);
       invert_quant(&quants->u_quant[q][i], &quants->u_quant_shift[q][i],
                    quant_QTX);
       quants->u_quant_fp[q][i] = (1 << 16) / quant_QTX;
@@ -1573,10 +1575,11 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
       deq->u_dequant_Q3[q][i] = quant_Q3;
 
       // v quantizer setup with original coeff shift of Q3
-      quant_Q3 = i == 0 ? av1_dc_quant(q, v_dc_delta_q, bit_depth)
-                        : av1_ac_quant(q, v_ac_delta_q, bit_depth);
-      // v quantizer with TX scale; right now, it's still Q3 as above;
-      quant_QTX = quant_Q3;
+      quant_Q3 = i == 0 ? av1_dc_quant_Q3(q, v_dc_delta_q, bit_depth)
+                        : av1_ac_quant_Q3(q, v_ac_delta_q, bit_depth);
+      // v quantizer with TX scale
+      quant_QTX = i == 0 ? av1_dc_quant_QTX(q, v_dc_delta_q, bit_depth)
+                         : av1_ac_quant_QTX(q, v_ac_delta_q, bit_depth);
       invert_quant(&quants->v_quant[q][i], &quants->v_quant_shift[q][i],
                    quant_QTX);
       quants->v_quant_fp[q][i] = (1 << 16) / quant_QTX;

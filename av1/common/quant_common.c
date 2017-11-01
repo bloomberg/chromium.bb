@@ -120,7 +120,7 @@ tran_low_t av1_dequant_coeff_nuq(int v, int q, const tran_low_t *dq) {
 }
 #endif  // CONFIG_NEW_QUANT
 
-static const int16_t dc_qlookup[QINDEX_RANGE] = {
+static const int16_t dc_qlookup_Q3[QINDEX_RANGE] = {
   4,    8,    8,    9,    10,  11,  12,  12,  13,  14,  15,   16,   17,   18,
   19,   19,   20,   21,   22,  23,  24,  25,  26,  26,  27,   28,   29,   30,
   31,   32,   32,   33,   34,  35,  36,  37,  38,  38,  39,   40,   41,   42,
@@ -143,7 +143,7 @@ static const int16_t dc_qlookup[QINDEX_RANGE] = {
 };
 
 #if CONFIG_HIGHBITDEPTH
-static const int16_t dc_qlookup_10[QINDEX_RANGE] = {
+static const int16_t dc_qlookup_10_Q3[QINDEX_RANGE] = {
   4,    9,    10,   13,   15,   17,   20,   22,   25,   28,   31,   34,   37,
   40,   43,   47,   50,   53,   57,   60,   64,   68,   71,   75,   78,   82,
   86,   90,   93,   97,   101,  105,  109,  113,  116,  120,  124,  128,  132,
@@ -166,7 +166,7 @@ static const int16_t dc_qlookup_10[QINDEX_RANGE] = {
   3953, 4089, 4236, 4394, 4559, 4737, 4929, 5130, 5347,
 };
 
-static const int16_t dc_qlookup_12[QINDEX_RANGE] = {
+static const int16_t dc_qlookup_12_Q3[QINDEX_RANGE] = {
   4,     12,    18,    25,    33,    41,    50,    60,    70,    80,    91,
   103,   115,   127,   140,   153,   166,   180,   194,   208,   222,   237,
   251,   266,   281,   296,   312,   327,   343,   358,   374,   390,   405,
@@ -194,7 +194,7 @@ static const int16_t dc_qlookup_12[QINDEX_RANGE] = {
 };
 #endif
 
-static const int16_t ac_qlookup[QINDEX_RANGE] = {
+static const int16_t ac_qlookup_Q3[QINDEX_RANGE] = {
   4,    8,    9,    10,   11,   12,   13,   14,   15,   16,   17,   18,   19,
   20,   21,   22,   23,   24,   25,   26,   27,   28,   29,   30,   31,   32,
   33,   34,   35,   36,   37,   38,   39,   40,   41,   42,   43,   44,   45,
@@ -218,7 +218,7 @@ static const int16_t ac_qlookup[QINDEX_RANGE] = {
 };
 
 #if CONFIG_HIGHBITDEPTH
-static const int16_t ac_qlookup_10[QINDEX_RANGE] = {
+static const int16_t ac_qlookup_10_Q3[QINDEX_RANGE] = {
   4,    9,    11,   13,   16,   18,   21,   24,   27,   30,   33,   37,   40,
   44,   48,   51,   55,   59,   63,   67,   71,   75,   79,   83,   88,   92,
   96,   100,  105,  109,  114,  118,  122,  127,  131,  136,  140,  145,  149,
@@ -241,7 +241,7 @@ static const int16_t ac_qlookup_10[QINDEX_RANGE] = {
   6268, 6388, 6512, 6640, 6768, 6900, 7036, 7172, 7312,
 };
 
-static const int16_t ac_qlookup_12[QINDEX_RANGE] = {
+static const int16_t ac_qlookup_12_Q3[QINDEX_RANGE] = {
   4,     13,    19,    27,    35,    44,    54,    64,    75,    87,    99,
   112,   126,   139,   154,   168,   183,   199,   214,   230,   247,   263,
   280,   297,   314,   331,   349,   366,   384,   402,   420,   438,   456,
@@ -269,52 +269,90 @@ static const int16_t ac_qlookup_12[QINDEX_RANGE] = {
 };
 #endif
 
-int16_t av1_dc_quant(int qindex, int delta, aom_bit_depth_t bit_depth) {
+#if !CONFIG_DAALA_TX
+
+// Coefficient scaling and quantization with AV1 TX are tailored to
+// the AV1 TX transforms.  Regardless of the bit-depth of the input,
+// the transform stages scale the coefficient values up by a factor of
+// 8 (3 bits) over the scale of the pixel values.  Thus, for 8-bit
+// input, the coefficients have effectively 11 bits of scale depth
+// (8+3), 10-bit input pixels result in 13-bit coefficient depth
+// (10+3) and 12-bit pixels yield 15-bit (12+3) coefficient depth.
+// All quantizers are built using this invariant of x8, 3-bit scaling,
+// thus the Q3 suffix.
+
+// A partial exception to this rule is large transforms; to avoid
+// overflow, TX blocks with > 256 pels (>16x16) are scaled only
+// 4-times unity (2 bits) over the pixel depth, and TX blocks with
+// over 1024 pixels (>32x32) are scaled up only 2x unity (1 bit).
+// This descaling is found via av1_tx_get_scale().  Thus, 16x32, 32x16
+// and 32x32 transforms actually return Q2 coefficients, and 32x64,
+// 64x32 and 64x64 transforms return Q1 coefficients.  However, the
+// quantizers are de-scaled down on-the-fly by the same amount
+// (av1_tx_get_scale()) during quantization, and as such the
+// quantized/coded coefficients, even for large TX blocks, are always
+// effectively Q3.
+
+// Note that encoder decision making (which uses the quantizer to
+// generate several bespoke lamdas for RDO and other heuristics)
+// expects quantizers to be larger for higher-bitdepth input.  In
+// addition, the minimum allowable quantizer is 4; smaller values will
+// underflow to 0 in the actual quantization routines.
+
+int16_t av1_dc_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
 #if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
-    case AOM_BITS_8: return dc_qlookup[clamp(qindex + delta, 0, MAXQ)];
-    case AOM_BITS_10: return dc_qlookup_10[clamp(qindex + delta, 0, MAXQ)];
-    case AOM_BITS_12: return dc_qlookup_12[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_8: return dc_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_10: return dc_qlookup_10_Q3[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_12: return dc_qlookup_12_Q3[clamp(qindex + delta, 0, MAXQ)];
     default:
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
 #else
   (void)bit_depth;
-  return dc_qlookup[clamp(qindex + delta, 0, MAXQ)];
+  return dc_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)];
 #endif
 }
 
-int16_t av1_ac_quant(int qindex, int delta, aom_bit_depth_t bit_depth) {
+int16_t av1_ac_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
 #if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
-    case AOM_BITS_8: return ac_qlookup[clamp(qindex + delta, 0, MAXQ)];
-    case AOM_BITS_10: return ac_qlookup_10[clamp(qindex + delta, 0, MAXQ)];
-    case AOM_BITS_12: return ac_qlookup_12[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_8: return ac_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_10: return ac_qlookup_10_Q3[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_12: return ac_qlookup_12_Q3[clamp(qindex + delta, 0, MAXQ)];
     default:
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
 #else
   (void)bit_depth;
-  return ac_qlookup[clamp(qindex + delta, 0, MAXQ)];
+  return ac_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)];
 #endif
 }
 
-int16_t av1_qindex_from_ac(int ac, aom_bit_depth_t bit_depth) {
+// In AV1 TX, the coefficients are always scaled up a factor of 8 (3
+// bits), so QTX == Q3.
+
+int16_t av1_dc_quant_QTX(int qindex, int delta, aom_bit_depth_t bit_depth) {
+  return av1_dc_quant_Q3(qindex, delta, bit_depth);
+}
+
+int16_t av1_ac_quant_QTX(int qindex, int delta, aom_bit_depth_t bit_depth) {
+  return av1_ac_quant_Q3(qindex, delta, bit_depth);
+}
+
+int16_t av1_qindex_from_ac_Q3(int ac_Q3, aom_bit_depth_t bit_depth) {
   int i;
-  const int16_t *tab = ac_qlookup;
-  ac *= 4;
+  const int16_t *tab = ac_qlookup_Q3;
 #if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
     case AOM_BITS_10: {
-      tab = ac_qlookup_10;
-      ac *= 4;
+      tab = ac_qlookup_10_Q3;
       break;
     }
     case AOM_BITS_12: {
-      tab = ac_qlookup_12;
-      ac *= 16;
+      tab = ac_qlookup_12_Q3;
       break;
     }
     default:
@@ -324,10 +362,87 @@ int16_t av1_qindex_from_ac(int ac, aom_bit_depth_t bit_depth) {
 #endif
   (void)bit_depth;
   for (i = 0; i < QINDEX_RANGE; i++) {
-    if (ac <= tab[i]) return i;
+    if (ac_Q3 <= tab[i]) return i;
   }
   return QINDEX_RANGE - 1;
 }
+
+#else   // CONFIG_DAALA_TX
+
+// Daala TX uses a constant effective coefficient depth
+// (TX_COEFF_DEPTH) regardless of input pixel bitdepth or transform
+// size. This means that coefficient scale and range is identical
+// regardless of the bit depth of the pixel input.  However, the
+// existing encoder heuristics and RDO loop were built expecting a
+// quantizer that scales with bitdepth, treating it more as a
+// proto-lambda than a quantizer.  The assumption that quantizer scale
+// increases with bitdepth is spread throughout the encoder.
+
+// For this reason, we need to be able to find an old-style 'Q3'
+// quantizer that scales with pixel depth (to be used in encoder
+// decision making) as well as the literal quantizer that is used in
+// actual quantization/dequantization.  That is centralized here.
+
+// Right now, the existing quantization code and setup are not
+// particularly well suited to Daala TX.  The scale range used by, eg,
+// the 12 bit lookups is intentionally larger in order to provide more
+// fine control at the top end of the quality range, as 12-bit input
+// would be assumed to offer a lower noise floor than an 8-bit input.
+// However, the 12-bit lookups assume an effective 15-bit TX depth,
+// while we intend to run Daala TX somewhere between 12 and 14.  We
+// can't simply scale it down, because this would violate the minimum
+// allowable quantizer in the current code (4).
+
+// As such, we do the simplest thing for the time being: Always use
+// the 8-bit scale range for all inputs and scale the QTX and Q3
+// returns accordingly, which will always be no-ops or upshifts.  This
+// might well work well enough; if not, we'll need to patch quantizer
+// scaling to extend the high-bitdepth quality range upward at some
+// later date.
+
+int16_t av1_dc_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
+  assert(bit_depth >= 8);
+  return qindex == 0 ? dc_qlookup_Q3[0]
+                     :  // Do not scale lossless
+             dc_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)] *
+                 (1 << (bit_depth - 8));
+}
+
+int16_t av1_ac_quant_Q3(int qindex, int delta, aom_bit_depth_t bit_depth) {
+  assert(bit_depth >= 8);
+  return qindex == 0 ? ac_qlookup_Q3[0]
+                     :  // Do not scale lossless
+             ac_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)] *
+                 (1 << (bit_depth - 8));
+}
+
+int16_t av1_dc_quant_QTX(int qindex, int delta, aom_bit_depth_t bit_depth) {
+  (void)bit_depth;
+  return qindex == 0 ? dc_qlookup_Q3[0]
+                     :  // Do not scale lossless
+             dc_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)] *
+                 (1 << (TX_COEFF_DEPTH - 11));
+}
+
+int16_t av1_ac_quant_QTX(int qindex, int delta, aom_bit_depth_t bit_depth) {
+  (void)bit_depth;
+  return qindex == 0 ? ac_qlookup_Q3[0]
+                     :  // Do not scale lossless
+             ac_qlookup_Q3[clamp(qindex + delta, 0, MAXQ)] *
+                 (1 << (TX_COEFF_DEPTH - 11));
+}
+
+int16_t av1_qindex_from_ac_Q3(int ac_QTX, aom_bit_depth_t bit_depth) {
+  int i;
+  const int16_t *tab = ac_qlookup_Q3;
+  int scale = (1 << (TX_COEFF_DEPTH - 11));
+  (void)bit_depth;
+  for (i = 0; i < QINDEX_RANGE; i++) {
+    if (ac_QTX <= tab[i] * scale) return i;
+  }
+  return QINDEX_RANGE - 1;
+}
+#endif  // !CONFIG_DAALA_TX
 
 int av1_get_qindex(const struct segmentation *seg, int segment_id,
 #if CONFIG_Q_SEGMENTATION

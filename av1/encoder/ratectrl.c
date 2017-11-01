@@ -157,15 +157,15 @@ double av1_convert_qindex_to_q(int qindex, aom_bit_depth_t bit_depth) {
 // Convert the index to a real Q value (scaled down to match old Q values)
 #if CONFIG_HIGHBITDEPTH
   switch (bit_depth) {
-    case AOM_BITS_8: return av1_ac_quant(qindex, 0, bit_depth) / 4.0;
-    case AOM_BITS_10: return av1_ac_quant(qindex, 0, bit_depth) / 16.0;
-    case AOM_BITS_12: return av1_ac_quant(qindex, 0, bit_depth) / 64.0;
+    case AOM_BITS_8: return av1_ac_quant_Q3(qindex, 0, bit_depth) / 4.0;
+    case AOM_BITS_10: return av1_ac_quant_Q3(qindex, 0, bit_depth) / 16.0;
+    case AOM_BITS_12: return av1_ac_quant_Q3(qindex, 0, bit_depth) / 64.0;
     default:
       assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1.0;
   }
 #else
-  return av1_ac_quant(qindex, 0, bit_depth) / 4.0;
+  return av1_ac_quant_Q3(qindex, 0, bit_depth) / 4.0;
 #endif
 }
 
