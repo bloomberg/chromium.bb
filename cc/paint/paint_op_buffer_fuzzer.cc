@@ -27,6 +27,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   SkCanvas* canvas = surface->getCanvas();
 
   cc::PlaybackParams params(nullptr, canvas->getTotalMatrix());
+  cc::PaintOp::DeserializeOptions deserialize_options;
 
   // Need 4 bytes to be able to read the type/skip.
   while (size >= 4) {
@@ -38,9 +39,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
         static_cast<char*>(base::AlignedAlloc(
             sizeof(cc::LargestPaintOp), cc::PaintOpBuffer::PaintOpAlign)));
     size_t bytes_read = 0;
-    cc::PaintOp* deserialized_op =
-        cc::PaintOp::Deserialize(data, size, deserialized.get(),
-                                 sizeof(cc::LargestPaintOp), &bytes_read);
+    cc::PaintOp* deserialized_op = cc::PaintOp::Deserialize(
+        data, size, deserialized.get(), sizeof(cc::LargestPaintOp), &bytes_read,
+        deserialize_options);
 
     if (!deserialized_op)
       break;

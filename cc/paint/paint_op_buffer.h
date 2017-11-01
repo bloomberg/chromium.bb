@@ -54,7 +54,8 @@ class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
   static size_t Serialize(const PaintOp* op, void* memory, size_t size,      \
                           const SerializeOptions& options);                  \
   static PaintOp* Deserialize(const volatile void* input, size_t input_size, \
-                              void* output, size_t output_size);
+                              void* output, size_t output_size,              \
+                              const DeserializeOptions& options);
 
 enum class PaintOpType : uint8_t {
   Annotate,
@@ -114,6 +115,8 @@ class CC_PAINT_EXPORT PaintOp {
     ImageDecodeCache* decode_cache = nullptr;
   };
 
+  struct DeserializeOptions {};
+
   // Subclasses should provide a static Serialize() method called from here.
   // If the op can be serialized to |memory| in no more than |size| bytes,
   // then return the number of bytes written.  If it won't fit, return 0.
@@ -132,7 +135,8 @@ class CC_PAINT_EXPORT PaintOp {
                               size_t input_size,
                               void* output,
                               size_t output_size,
-                              size_t* read_bytes);
+                              size_t* read_bytes,
+                              const DeserializeOptions& options);
 
   // For draw ops, returns true if a conservative bounding rect can be provided
   // for the op.
