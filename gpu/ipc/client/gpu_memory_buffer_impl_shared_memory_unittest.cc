@@ -14,30 +14,9 @@ INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferImplSharedMemory,
                               GpuMemoryBufferImplTest,
                               GpuMemoryBufferImplSharedMemory);
 
-void BufferDestroyed(bool* destroyed, const gpu::SyncToken& sync_token) {
-  *destroyed = true;
-}
-
-TEST(GpuMemoryBufferImplSharedMemoryTest, Create) {
-  const gfx::GpuMemoryBufferId kBufferId(1);
-
-  gfx::Size buffer_size(8, 8);
-  gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ;
-
-  for (auto format : gfx::GetBufferFormatsForTesting()) {
-    bool destroyed = false;
-    std::unique_ptr<GpuMemoryBufferImplSharedMemory> buffer(
-        GpuMemoryBufferImplSharedMemory::Create(
-            kBufferId, buffer_size, format, usage,
-            base::Bind(&BufferDestroyed, base::Unretained(&destroyed))));
-    ASSERT_TRUE(buffer);
-    EXPECT_EQ(buffer->GetFormat(), format);
-
-    // Check if destruction callback is executed when deleting the buffer.
-    buffer.reset();
-    ASSERT_TRUE(destroyed);
-  }
-}
+INSTANTIATE_TYPED_TEST_CASE_P(GpuMemoryBufferImplSharedMemory,
+                              GpuMemoryBufferImplCreateTest,
+                              GpuMemoryBufferImplSharedMemory);
 
 }  // namespace
 }  // namespace gpu

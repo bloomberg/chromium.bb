@@ -57,6 +57,11 @@ class GpuMemoryBufferImplTest : public testing::Test {
   }
 };
 
+// Subclass test case for tests that require a Create() method,
+// not all implementations have that.
+template <typename GpuMemoryBufferImplType>
+class GpuMemoryBufferImplCreateTest : public testing::Test {};
+
 TYPED_TEST_CASE_P(GpuMemoryBufferImplTest);
 
 TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
@@ -220,6 +225,36 @@ REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferImplTest,
                            CreateFromHandle,
                            Map,
                            PersistentMap);
+
+TYPED_TEST_CASE_P(GpuMemoryBufferImplCreateTest);
+
+TYPED_TEST_P(GpuMemoryBufferImplCreateTest, Create) {
+  const gfx::GpuMemoryBufferId kBufferId(1);
+  const gfx::Size kBufferSize(8, 8);
+  gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ;
+
+  for (auto format : gfx::GetBufferFormatsForTesting()) {
+    if (!TypeParam::IsConfigurationSupported(format, usage))
+      continue;
+    bool destroyed = false;
+    gfx::GpuMemoryBufferHandle handle;
+    std::unique_ptr<TypeParam> buffer(TypeParam::Create(
+        kBufferId, kBufferSize, format, usage,
+        base::Bind(
+            [](bool* destroyed, const gpu::SyncToken&) { *destroyed = true; },
+            base::Unretained(&destroyed))));
+    ASSERT_TRUE(buffer);
+    EXPECT_EQ(buffer->GetFormat(), format);
+
+    // Check if destruction callback is executed when deleting the buffer.
+    buffer.reset();
+    ASSERT_TRUE(destroyed);
+  }
+}
+// The GpuMemoryBufferImplCreateTest test case verifies behavior that is
+// expected from a GpuMemoryBuffer Create() implementation in order to be
+// conformant.
+REGISTER_TYPED_TEST_CASE_P(GpuMemoryBufferImplCreateTest, Create);
 
 }  // namespace gpu
 
