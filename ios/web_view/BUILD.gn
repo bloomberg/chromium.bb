@@ -24,6 +24,7 @@ config("config") {
 # and CrNetChromeWebView frameworks.
 ios_web_view_public_headers = [
   "public/ChromeWebView.h",
+  "public/cwv_autofill_suggestion.h",
   "public/cwv_export.h",
   "public/cwv_html_element.h",
   "public/cwv_navigation_action.h",
@@ -58,6 +59,8 @@ ios_web_view_sources = [
   "internal/app/application_context.h",
   "internal/app/web_view_io_thread.h",
   "internal/app/web_view_io_thread.mm",
+  "internal/autofill/cwv_autofill_suggestion.mm",
+  "internal/autofill/cwv_autofill_suggestion_internal.h",
   "internal/autofill/web_view_personal_data_manager_factory.cc",
   "internal/autofill/web_view_personal_data_manager_factory.h",
   "internal/content_settings/web_view_cookie_settings_factory.cc",
@@ -154,6 +157,7 @@ ios_web_view_deps = [
   "//base",
   "//components/autofill/core/browser",
   "//components/autofill/core/common",
+  "//components/autofill/ios/browser",
   "//components/content_settings/core/browser",
   "//components/flags_ui",
   "//components/infobars/core",
@@ -226,6 +230,7 @@ ios_framework_bundle("web_view") {
 test("ios_web_view_unittests") {
   testonly = true
   sources = [
+    "internal/autofill/cwv_autofill_suggestion_unittest.mm",
     "internal/cwv_html_element_unittest.mm",
     "internal/cwv_preferences_unittest.mm",
     "internal/cwv_preview_element_info_unittest.mm",
