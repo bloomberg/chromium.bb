@@ -42,16 +42,15 @@ class CORE_EXPORT SmartClipData {
   STACK_ALLOCATED();
 
  public:
-  SmartClipData() : is_empty_(true) {}
+  SmartClipData() {}
 
-  SmartClipData(Node* node, IntRect rect, String string)
-      : is_empty_(!node), rect_in_viewport_(rect), string_(string) {}
+  SmartClipData(IntRect rect, String string)
+      : rect_in_viewport_(rect), string_(string) {}
 
   IntRect RectInViewport() const;
   const String& ClipData() const;
 
  private:
-  bool is_empty_;
   IntRect rect_in_viewport_;
   String string_;
 };
