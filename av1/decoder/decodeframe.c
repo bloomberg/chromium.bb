@@ -2685,60 +2685,58 @@ static int read_global_motion_params(WarpedMotionParams *params,
 #endif  // GLOBAL_TRANS_TYPES > 4
   }
 
-  int trans_bits;
-  int trans_dec_factor;
-  int trans_prec_diff;
   *params = default_warp_params;
   params->wmtype = type;
-  switch (type) {
-    case AFFINE:
-    case ROTZOOM:
-      params->wmmat[2] = aom_rb_read_signed_primitive_refsubexpfin(
-                             rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-                             (ref_params->wmmat[2] >> GM_ALPHA_PREC_DIFF) -
-                                 (1 << GM_ALPHA_PREC_BITS)) *
-                             GM_ALPHA_DECODE_FACTOR +
-                         (1 << WARPEDMODEL_PREC_BITS);
-      params->wmmat[3] = aom_rb_read_signed_primitive_refsubexpfin(
-                             rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-                             (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF)) *
-                         GM_ALPHA_DECODE_FACTOR;
-      if (type >= AFFINE) {
-        params->wmmat[4] = aom_rb_read_signed_primitive_refsubexpfin(
-                               rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-                               (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF)) *
-                           GM_ALPHA_DECODE_FACTOR;
-        params->wmmat[5] = aom_rb_read_signed_primitive_refsubexpfin(
-                               rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-                               (ref_params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
-                                   (1 << GM_ALPHA_PREC_BITS)) *
-                               GM_ALPHA_DECODE_FACTOR +
-                           (1 << WARPEDMODEL_PREC_BITS);
-      } else {
-        params->wmmat[4] = -params->wmmat[3];
-        params->wmmat[5] = params->wmmat[2];
-      }
-    // fallthrough intended
-    case TRANSLATION:
-      trans_bits = (type == TRANSLATION) ? GM_ABS_TRANS_ONLY_BITS - !allow_hp
-                                         : GM_ABS_TRANS_BITS;
-      trans_dec_factor = (type == TRANSLATION)
-                             ? GM_TRANS_ONLY_DECODE_FACTOR * (1 << !allow_hp)
-                             : GM_TRANS_DECODE_FACTOR;
-      trans_prec_diff = (type == TRANSLATION)
-                            ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
-                            : GM_TRANS_PREC_DIFF;
-      params->wmmat[0] = aom_rb_read_signed_primitive_refsubexpfin(
-                             rb, (1 << trans_bits) + 1, SUBEXPFIN_K,
-                             (ref_params->wmmat[0] >> trans_prec_diff)) *
-                         trans_dec_factor;
-      params->wmmat[1] = aom_rb_read_signed_primitive_refsubexpfin(
-                             rb, (1 << trans_bits) + 1, SUBEXPFIN_K,
-                             (ref_params->wmmat[1] >> trans_prec_diff)) *
-                         trans_dec_factor;
-    case IDENTITY: break;
-    default: assert(0);
+
+  if (type >= ROTZOOM) {
+    params->wmmat[2] = aom_rb_read_signed_primitive_refsubexpfin(
+                           rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                           (ref_params->wmmat[2] >> GM_ALPHA_PREC_DIFF) -
+                               (1 << GM_ALPHA_PREC_BITS)) *
+                           GM_ALPHA_DECODE_FACTOR +
+                       (1 << WARPEDMODEL_PREC_BITS);
+    params->wmmat[3] = aom_rb_read_signed_primitive_refsubexpfin(
+                           rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                           (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF)) *
+                       GM_ALPHA_DECODE_FACTOR;
   }
+
+  if (type >= AFFINE) {
+    params->wmmat[4] = aom_rb_read_signed_primitive_refsubexpfin(
+                           rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                           (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF)) *
+                       GM_ALPHA_DECODE_FACTOR;
+    params->wmmat[5] = aom_rb_read_signed_primitive_refsubexpfin(
+                           rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                           (ref_params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
+                               (1 << GM_ALPHA_PREC_BITS)) *
+                           GM_ALPHA_DECODE_FACTOR +
+                       (1 << WARPEDMODEL_PREC_BITS);
+  } else {
+    params->wmmat[4] = -params->wmmat[3];
+    params->wmmat[5] = params->wmmat[2];
+  }
+
+  if (type >= TRANSLATION) {
+    const int trans_bits = (type == TRANSLATION)
+                               ? GM_ABS_TRANS_ONLY_BITS - !allow_hp
+                               : GM_ABS_TRANS_BITS;
+    const int trans_dec_factor =
+        (type == TRANSLATION) ? GM_TRANS_ONLY_DECODE_FACTOR * (1 << !allow_hp)
+                              : GM_TRANS_DECODE_FACTOR;
+    const int trans_prec_diff = (type == TRANSLATION)
+                                    ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
+                                    : GM_TRANS_PREC_DIFF;
+    params->wmmat[0] = aom_rb_read_signed_primitive_refsubexpfin(
+                           rb, (1 << trans_bits) + 1, SUBEXPFIN_K,
+                           (ref_params->wmmat[0] >> trans_prec_diff)) *
+                       trans_dec_factor;
+    params->wmmat[1] = aom_rb_read_signed_primitive_refsubexpfin(
+                           rb, (1 << trans_bits) + 1, SUBEXPFIN_K,
+                           (ref_params->wmmat[1] >> trans_prec_diff)) *
+                       trans_dec_factor;
+  }
+
   if (params->wmtype <= AFFINE) {
     int good_shear_params = get_shear_params(params);
     if (!good_shear_params) return 0;
