@@ -226,7 +226,7 @@ void RankerModelLoaderTest::InitModel(const GURL& model_url,
   auto* translate = model->mutable_proto()->mutable_translate();
   translate->set_version(1);
 
-  auto* logit = translate->mutable_logistic_regression_model();
+  auto* logit = translate->mutable_translate_logistic_regression_model();
   logit->set_bias(0.1f);
   logit->set_accept_ratio_weight(0.2f);
   logit->set_decline_ratio_weight(0.3f);

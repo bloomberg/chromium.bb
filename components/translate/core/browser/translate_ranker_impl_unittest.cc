@@ -99,7 +99,7 @@ std::unique_ptr<TranslateRankerImpl> TranslateRankerImplTest::GetRankerForTest(
   model->mutable_proto()->mutable_translate()->set_version(kModelVersion);
   auto* details = model->mutable_proto()
                       ->mutable_translate()
-                      ->mutable_logistic_regression_model();
+                      ->mutable_translate_logistic_regression_model();
   if (threshold > 0.0) {
     details->set_threshold(threshold);
   }
