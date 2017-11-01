@@ -783,6 +783,26 @@ TEST_F(PageInfoTest, ShowInfoBar) {
 
   infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
 }
+
+TEST_F(PageInfoTest, NoInfoBarWhenSoundSettingChanged) {
+  EXPECT_EQ(0u, infobar_service()->infobar_count());
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_SOUND,
+                                       CONTENT_SETTING_BLOCK);
+  page_info()->OnUIClosing();
+  EXPECT_EQ(0u, infobar_service()->infobar_count());
+}
+
+TEST_F(PageInfoTest, ShowInfoBarWhenSoundSettingAndAnotherSettingChanged) {
+  EXPECT_EQ(0u, infobar_service()->infobar_count());
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                                       CONTENT_SETTING_BLOCK);
+  page_info()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_SOUND,
+                                       CONTENT_SETTING_BLOCK);
+  page_info()->OnUIClosing();
+  EXPECT_EQ(1u, infobar_service()->infobar_count());
+
+  infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
+}
 #endif
 
 TEST_F(PageInfoTest, AboutBlankPage) {

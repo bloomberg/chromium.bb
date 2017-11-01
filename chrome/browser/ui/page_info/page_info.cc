@@ -431,7 +431,9 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
   content_settings_->SetNarrowestContentSetting(site_url_, site_url_, type,
                                                 setting);
 
-  show_info_bar_ = true;
+  // When the sound setting is changed, no reload is necessary.
+  if (type != CONTENT_SETTINGS_TYPE_SOUND)
+    show_info_bar_ = true;
 
   // Refresh the UI to reflect the new setting.
   PresentSitePermissions();
