@@ -22,9 +22,9 @@ std::unique_ptr<TabStripModel> CreateTabStripModel(
     Profile* profile) {
   // The experimental controller currently just crashes so don't inflict it on
   // people yet who may have accidentally triggered this feature.
-  // #if defined(OS_WIN)
-  // if (base::FeatureList::IsEnabled(kExperimentalTabControllerFeature))
-  //  return base::MakeUnique<TabStripModelExperimental>(delegate, profile);
-  // #endif
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(kExperimentalTabControllerFeature))
+    return base::MakeUnique<TabStripModelExperimental>(delegate, profile);
+#endif
   return base::MakeUnique<TabStripModelImpl>(delegate, profile);
 }
