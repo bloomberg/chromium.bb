@@ -45,6 +45,9 @@ Polymer({
     takePhotoLabel: String,
     switchModeLabel: String,
 
+    /** Whether camera video mode is enabled */
+    cameraVideoModeEnabled: Boolean,
+
     /** Whether the camera should be shown and active (started). */
     cameraActive_: {
       type: Boolean,

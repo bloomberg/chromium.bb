@@ -53,6 +53,15 @@ Polymer({
      * @private
      */
     firstDefaultImageIndex_: Number,
+
+    /**
+     * True when camera video mode is enabled.
+     * @private {boolean}
+     */
+    cameraVideoModeEnabled_: {
+      type: Boolean,
+      value: true,
+    },
   },
 
   listeners: {
