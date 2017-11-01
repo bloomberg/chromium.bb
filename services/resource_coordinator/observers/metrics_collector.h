@@ -48,6 +48,9 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   void OnPagePropertyChanged(const PageCoordinationUnitImpl* page_cu,
                              const mojom::PropertyType property_type,
                              int64_t value) override;
+  void OnProcessPropertyChanged(const ProcessCoordinationUnitImpl* process_cu,
+                                const mojom::PropertyType property_type,
+                                int64_t value) override;
   void OnFrameEventReceived(const FrameCoordinationUnitImpl* frame_cu,
                             const mojom::Event event) override;
   void OnPageEventReceived(const PageCoordinationUnitImpl* page_cu,

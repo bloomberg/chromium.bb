@@ -38,15 +38,12 @@ const char kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[] =
 
 // Gets the number of tabs that are co-resident in all of the render processes
 // associated with a |CoordinationUnitType::kPage| coordination unit.
-size_t GetNumCoresidentTabs(const CoordinationUnitBase* coordination_unit) {
-  DCHECK_EQ(CoordinationUnitType::kPage, coordination_unit->id().type);
-  auto* page_cu =
-      PageCoordinationUnitImpl::FromCoordinationUnitBase(coordination_unit);
+size_t GetNumCoresidentTabs(const PageCoordinationUnitImpl* page_cu) {
   std::set<CoordinationUnitBase*> coresident_tabs;
   for (auto* process_cu : page_cu->GetAssociatedProcessCoordinationUnits()) {
-    for (auto* tab_coordination_unit :
+    for (auto* associated_page_cu :
          process_cu->GetAssociatedPageCoordinationUnits()) {
-      coresident_tabs.insert(tab_coordination_unit);
+      coresident_tabs.insert(associated_page_cu);
     }
   }
   // A tab cannot be co-resident with itself.
@@ -64,7 +61,8 @@ MetricsCollector::~MetricsCollector() = default;
 bool MetricsCollector::ShouldObserve(
     const CoordinationUnitBase* coordination_unit) {
   return coordination_unit->id().type == CoordinationUnitType::kFrame ||
-         coordination_unit->id().type == CoordinationUnitType::kPage;
+         coordination_unit->id().type == CoordinationUnitType::kPage ||
+         coordination_unit->id().type == CoordinationUnitType::kProcess;
 }
 
 void MetricsCollector::OnCoordinationUnitCreated(
@@ -126,17 +124,26 @@ void MetricsCollector::OnPagePropertyChanged(
       ResetMetricsReportRecord(page_cu_id);
       return;
     }
-  } else if (property_type == mojom::PropertyType::kCPUUsage) {
-    if (IsCollectingCPUUsageForUkm(page_cu_id)) {
-      RecordCPUUsageForUkm(page_cu_id, static_cast<double>(value) / 1000,
-                           GetNumCoresidentTabs(page_cu));
-    }
   } else if (property_type == mojom::PropertyType::kUKMSourceId) {
     ukm::SourceId ukm_source_id = value;
     UpdateUkmSourceIdForPage(page_cu_id, ukm_source_id);
     MetricsReportRecord& record =
         metrics_report_record_map_.find(page_cu_id)->second;
     record.UpdateUKMSourceID(ukm_source_id);
+  }
+}
+
+void MetricsCollector::OnProcessPropertyChanged(
+    const ProcessCoordinationUnitImpl* process_cu,
+    const mojom::PropertyType property_type,
+    int64_t value) {
+  if (property_type == mojom::PropertyType::kCPUUsage) {
+    for (auto* page_cu : process_cu->GetAssociatedPageCoordinationUnits()) {
+      if (IsCollectingCPUUsageForUkm(page_cu->id())) {
+        RecordCPUUsageForUkm(page_cu->id(), page_cu->GetCPUUsage(),
+                             GetNumCoresidentTabs(page_cu));
+      }
+    }
   }
 }
 

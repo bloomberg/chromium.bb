@@ -71,57 +71,33 @@ TEST_F(PageCoordinationUnitImplTest, RemoveFrame) {
 TEST_F(PageCoordinationUnitImplTest,
        CalculatePageCPUUsageForSinglePageInSingleProcess) {
   MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
-
   cu_graph.process->SetCPUUsage(40);
-
-  int64_t cpu_usage;
-  EXPECT_TRUE(
-      cu_graph.page->GetProperty(mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(40, cpu_usage / 1000);
+  EXPECT_EQ(40, cu_graph.page->GetCPUUsage());
 }
 
 TEST_F(PageCoordinationUnitImplTest,
        CalculatePageCPUUsageForMultiplePagesInSingleProcess) {
   MockMultiplePagesInSingleProcessCoordinationUnitGraph cu_graph;
-
   cu_graph.process->SetCPUUsage(40);
-
-  int64_t cpu_usage;
-  EXPECT_TRUE(
-      cu_graph.page->GetProperty(mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(20, cpu_usage / 1000);
-  EXPECT_TRUE(cu_graph.other_page->GetProperty(mojom::PropertyType::kCPUUsage,
-                                               &cpu_usage));
-  EXPECT_EQ(20, cpu_usage / 1000);
+  EXPECT_EQ(20, cu_graph.page->GetCPUUsage());
+  EXPECT_EQ(20, cu_graph.other_page->GetCPUUsage());
 }
 
 TEST_F(PageCoordinationUnitImplTest,
        CalculatePageCPUUsageForSinglePageWithMultipleProcesses) {
   MockSinglePageWithMultipleProcessesCoordinationUnitGraph cu_graph;
-
   cu_graph.process->SetCPUUsage(40);
   cu_graph.other_process->SetCPUUsage(30);
-
-  int64_t cpu_usage;
-  EXPECT_TRUE(
-      cu_graph.page->GetProperty(mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(70, cpu_usage / 1000);
+  EXPECT_EQ(70, cu_graph.page->GetCPUUsage());
 }
 
 TEST_F(PageCoordinationUnitImplTest,
        CalculatePageCPUUsageForMultiplePagesWithMultipleProcesses) {
   MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph cu_graph;
-
   cu_graph.process->SetCPUUsage(40);
   cu_graph.other_process->SetCPUUsage(30);
-
-  int64_t cpu_usage;
-  EXPECT_TRUE(
-      cu_graph.page->GetProperty(mojom::PropertyType::kCPUUsage, &cpu_usage));
-  EXPECT_EQ(20, cpu_usage / 1000);
-  EXPECT_TRUE(cu_graph.other_page->GetProperty(mojom::PropertyType::kCPUUsage,
-                                               &cpu_usage));
-  EXPECT_EQ(50, cpu_usage / 1000);
+  EXPECT_EQ(20, cu_graph.page->GetCPUUsage());
+  EXPECT_EQ(50, cu_graph.other_page->GetCPUUsage());
 }
 
 TEST_F(PageCoordinationUnitImplTest,
@@ -132,8 +108,7 @@ TEST_F(PageCoordinationUnitImplTest,
       base::TimeDelta::FromMilliseconds(1));
 
   int64_t eqt;
-  ASSERT_TRUE(cu_graph.page->GetProperty(
-      mojom::PropertyType::kExpectedTaskQueueingDuration, &eqt));
+  EXPECT_TRUE(cu_graph.page->GetExpectedTaskQueueingDuration(&eqt));
   EXPECT_EQ(1, eqt);
 }
 
@@ -145,11 +120,10 @@ TEST_F(PageCoordinationUnitImplTest,
       base::TimeDelta::FromMilliseconds(1));
 
   int64_t eqt;
-  ASSERT_TRUE(cu_graph.page->GetProperty(
-      mojom::PropertyType::kExpectedTaskQueueingDuration, &eqt));
+  EXPECT_TRUE(cu_graph.page->GetExpectedTaskQueueingDuration(&eqt));
   EXPECT_EQ(1, eqt);
-  ASSERT_TRUE(cu_graph.other_page->GetProperty(
-      mojom::PropertyType::kExpectedTaskQueueingDuration, &eqt));
+  eqt = 0;
+  EXPECT_TRUE(cu_graph.other_page->GetExpectedTaskQueueingDuration(&eqt));
   EXPECT_EQ(1, eqt);
 }
 

@@ -15,9 +15,9 @@ namespace resource_coordinator {
 class MockTabSignalGeneratorImpl : public TabSignalGeneratorImpl {
  public:
   // Overridden from TabSignalGeneratorImpl.
-  void OnPagePropertyChanged(const PageCoordinationUnitImpl* coordination_unit,
-                             const mojom::PropertyType property_type,
-                             int64_t value) override {
+  void OnProcessPropertyChanged(const ProcessCoordinationUnitImpl* process_cu,
+                                const mojom::PropertyType property_type,
+                                int64_t value) override {
     if (property_type == mojom::PropertyType::kExpectedTaskQueueingDuration)
       ++eqt_change_count_;
   }
@@ -41,7 +41,7 @@ class TabSignalGeneratorImplTest : public CoordinationUnitTestHarness {
 TEST_F(TabSignalGeneratorImplTest,
        CalculateTabEQTForSingleTabWithMultipleProcesses) {
   MockSinglePageWithMultipleProcessesCoordinationUnitGraph cu_graph;
-  cu_graph.page->AddObserver(tab_signal_generator());
+  cu_graph.process->AddObserver(tab_signal_generator());
 
   cu_graph.process->SetExpectedTaskQueueingDuration(
       base::TimeDelta::FromMilliseconds(1));
@@ -52,8 +52,7 @@ TEST_F(TabSignalGeneratorImplTest,
   // propagate to the page.
   EXPECT_EQ(1u, tab_signal_generator()->eqt_change_count());
   int64_t eqt;
-  ASSERT_TRUE(cu_graph.page->GetProperty(
-      mojom::PropertyType::kExpectedTaskQueueingDuration, &eqt));
+  EXPECT_TRUE(cu_graph.page->GetExpectedTaskQueueingDuration(&eqt));
   EXPECT_EQ(1, eqt);
 }
 

@@ -72,6 +72,11 @@ void ProcessCoordinationUnitImpl::SetPID(int64_t pid) {
   SetProperty(mojom::PropertyType::kPID, pid);
 }
 
+std::set<FrameCoordinationUnitImpl*>
+ProcessCoordinationUnitImpl::GetFrameCoordinationUnits() const {
+  return frame_coordination_units_;
+}
+
 // There is currently not a direct relationship between processes and
 // pages. However, frames are children of both processes and frames, so we
 // find all of the pages that are reachable from the process's child
@@ -86,33 +91,11 @@ ProcessCoordinationUnitImpl::GetAssociatedPageCoordinationUnits() const {
   return page_cus;
 }
 
-void ProcessCoordinationUnitImpl::PropagateProperty(
-    mojom::PropertyType property_type,
+void ProcessCoordinationUnitImpl::OnPropertyChanged(
+    const mojom::PropertyType property_type,
     int64_t value) {
-  switch (property_type) {
-    // Trigger Page CU to recalculate their CPU usage.
-    case mojom::PropertyType::kCPUUsage: {
-      for (auto* page_cu : GetAssociatedPageCoordinationUnits()) {
-        page_cu->RecalculateProperty(mojom::PropertyType::kCPUUsage);
-      }
-      break;
-    }
-    case mojom::PropertyType::kExpectedTaskQueueingDuration: {
-      // Do not propagate if the associated frame is not the main frame.
-      for (auto* frame_cu : frame_coordination_units_) {
-        if (!frame_cu->IsMainFrame())
-          continue;
-        auto* page_cu = frame_cu->GetPageCoordinationUnit();
-        if (page_cu) {
-          page_cu->RecalculateProperty(
-              mojom::PropertyType::kExpectedTaskQueueingDuration);
-        }
-      }
-      break;
-    }
-    default:
-      break;
-  }
+  for (auto& observer : observers())
+    observer.OnProcessPropertyChanged(this, property_type, value);
 }
 
 bool ProcessCoordinationUnitImpl::AddFrame(
