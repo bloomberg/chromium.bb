@@ -84,9 +84,13 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   // NGOutOfFlowLayoutPart(container_style, builder).Run();
   //
   // See layout part for builder interaction.
+  //
+  // @param direction: default candidate direction is builder's direction.
+  // Pass in direction if candidates direction does not match.
   NGContainerFragmentBuilder& AddOutOfFlowChildCandidate(
       NGBlockNode,
-      const NGLogicalOffset&);
+      const NGLogicalOffset& child_offset,
+      Optional<TextDirection> direction = WTF::nullopt);
 
   NGContainerFragmentBuilder& AddOutOfFlowDescendant(
       NGOutOfFlowPositionedDescendant);
@@ -112,7 +116,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   // physical size the fragment builder.
   struct NGOutOfFlowPositionedCandidate {
     NGOutOfFlowPositionedDescendant descendant;
-    NGLogicalOffset child_offset;
+    NGLogicalOffset child_offset;  // Logical offset of child's top left vertex.
   };
 
   NGContainerFragmentBuilder(scoped_refptr<const ComputedStyle>,

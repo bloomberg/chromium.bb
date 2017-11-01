@@ -794,7 +794,8 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
 
   if (!positioned_object->NormalChildNeedsLayout() &&
       (relayout_children || height_available_to_children_changed_ ||
-       NeedsLayoutDueToStaticPosition(positioned_object)))
+       (!IsLayoutNGBlockFlow() &&
+        NeedsLayoutDueToStaticPosition(positioned_object))))
     layout_scope.SetChildNeedsLayout(positioned_object);
 
   LayoutUnit logical_top_estimate;
