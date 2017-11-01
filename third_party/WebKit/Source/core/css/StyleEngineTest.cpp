@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "core/css/CSSFontSelector.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
@@ -82,14 +83,21 @@ TEST_F(StyleEngineTest, DocumentDirtyAfterInject) {
 TEST_F(StyleEngineTest, AnalyzedInject) {
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
+     @font-face {
+      font-family: 'Cool Font';
+      src: local(monospace);
+      font-weight: bold;
+     }
      #t1 { color: red !important }
      #t2 { color: black }
-     #t4 { animation-name: dummy-animation }
+     #t4 { font-family: 'Cool Font'; font-weight: bold; font-style: italic }
+     #t5 { animation-name: dummy-animation }
     </style>
     <div id='t1'>Green</div>
     <div id='t2'>White</div>
     <div id='t3' style='color: black !important'>White</div>
-    <div id='t4'>I animate!</div>
+    <div id='t4'>I look cool.</div>
+    <div id='t5'>I animate!</div>
     <div></div>
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -191,14 +199,108 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   EXPECT_EQ(MakeRGB(0, 0, 0),
             t3->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 
-  // @keyframes rules
+  // @font-face rules
 
   Element* t4 = GetDocument().getElementById("t4");
   ASSERT_TRUE(t4);
+  ASSERT_TRUE(t4->GetComputedStyle());
+
+  // There's only one font and it's bold and normal.
+  EXPECT_EQ(1u, GetStyleEngine().GetFontSelector()->GetFontFaceCache()
+                ->GetNumSegmentedFacesForTesting());
+  CSSSegmentedFontFace* font_face =
+      GetStyleEngine().GetFontSelector()->GetFontFaceCache()
+      ->Get(t4->GetComputedStyle()->GetFontDescription(),
+            AtomicString("Cool Font"));
+  EXPECT_TRUE(font_face);
+  FontSelectionCapabilities capabilities =
+      font_face->GetFontSelectionCapabilities();
+  ASSERT_EQ(capabilities.weight,
+            FontSelectionRange({BoldWeightValue(), BoldWeightValue()}));
+  ASSERT_EQ(capabilities.slope,
+            FontSelectionRange({NormalSlopeValue(), NormalSlopeValue()}));
+
+  StyleSheetContents* font_face_parsed_sheet =
+      StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
+  font_face_parsed_sheet->ParseString(
+      "@font-face {"
+      " font-family: 'Cool Font';"
+      " src: local(monospace);"
+      " font-weight: bold;"
+      " font-style: italic;"
+      "}"
+    );
+  WebStyleSheetId font_face_id =
+      GetStyleEngine().AddUserSheet(font_face_parsed_sheet);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // After injecting a more specific font, now there are two and the
+  // bold-italic one is selected.
+  EXPECT_EQ(2u, GetStyleEngine().GetFontSelector()->GetFontFaceCache()
+                ->GetNumSegmentedFacesForTesting());
+  font_face = GetStyleEngine().GetFontSelector()->GetFontFaceCache()
+              ->Get(t4->GetComputedStyle()->GetFontDescription(),
+                    AtomicString("Cool Font"));
+  EXPECT_TRUE(font_face);
+  capabilities = font_face->GetFontSelectionCapabilities();
+  ASSERT_EQ(capabilities.weight,
+            FontSelectionRange({BoldWeightValue(), BoldWeightValue()}));
+  ASSERT_EQ(capabilities.slope,
+            FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
+
+  HTMLStyleElement* style_element = HTMLStyleElement::Create(
+      GetDocument(), false);
+  style_element->SetInnerHTMLFromString(
+      "@font-face {"
+      " font-family: 'Cool Font';"
+      " src: local(monospace);"
+      " font-weight: normal;"
+      " font-style: italic;"
+      "}"
+    );
+  GetDocument().body()->AppendChild(style_element);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Now there are three fonts, but the newest one does not override the older,
+  // better matching one.
+  EXPECT_EQ(3u, GetStyleEngine().GetFontSelector()->GetFontFaceCache()
+                ->GetNumSegmentedFacesForTesting());
+  font_face = GetStyleEngine().GetFontSelector()->GetFontFaceCache()
+              ->Get(t4->GetComputedStyle()->GetFontDescription(),
+                    AtomicString("Cool Font"));
+  EXPECT_TRUE(font_face);
+  capabilities = font_face->GetFontSelectionCapabilities();
+  ASSERT_EQ(capabilities.weight,
+            FontSelectionRange({BoldWeightValue(), BoldWeightValue()}));
+  ASSERT_EQ(capabilities.slope,
+            FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
+
+  GetStyleEngine().RemoveUserSheet(font_face_id);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // After removing the injected style sheet we're left with a bold-normal and
+  // a normal-italic font, and the latter is selected by the matching algorithm
+  // as font-style trumps font-weight.
+  EXPECT_EQ(2u, GetStyleEngine().GetFontSelector()->GetFontFaceCache()
+                ->GetNumSegmentedFacesForTesting());
+  font_face = GetStyleEngine().GetFontSelector()->GetFontFaceCache()
+              ->Get(t4->GetComputedStyle()->GetFontDescription(),
+                    AtomicString("Cool Font"));
+  EXPECT_TRUE(font_face);
+  capabilities = font_face->GetFontSelectionCapabilities();
+  ASSERT_EQ(capabilities.weight,
+            FontSelectionRange({NormalWeightValue(), NormalWeightValue()}));
+  ASSERT_EQ(capabilities.slope,
+            FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
+
+  // @keyframes rules
+
+  Element* t5 = GetDocument().getElementById("t5");
+  ASSERT_TRUE(t5);
 
   // There's no @keyframes rule named dummy-animation
   ASSERT_FALSE(GetStyleEngine().Resolver()->FindKeyframesRule(
-      t4, AtomicString("dummy-animation")));
+      t5, AtomicString("dummy-animation")));
 
   StyleSheetContents* keyframes_parsed_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
@@ -211,12 +313,11 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   // is found with one keyframe.
   StyleRuleKeyframes* keyframes =
       GetStyleEngine().Resolver()->FindKeyframesRule(
-          t4, AtomicString("dummy-animation"));
+          t5, AtomicString("dummy-animation"));
   ASSERT_TRUE(keyframes);
   EXPECT_EQ(1u, keyframes->Keyframes().size());
 
-  HTMLStyleElement* style_element = HTMLStyleElement::Create(
-      GetDocument(), false);
+  style_element = HTMLStyleElement::Create(GetDocument(), false);
   style_element->SetInnerHTMLFromString(
       "@keyframes dummy-animation { from {} to {} }");
   GetDocument().body()->AppendChild(style_element);
@@ -225,7 +326,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   // Author @keyframes rules take precedence; now there are two keyframes (from
   // and to).
   keyframes = GetStyleEngine().Resolver()->FindKeyframesRule(
-      t4, AtomicString("dummy-animation"));
+      t5, AtomicString("dummy-animation"));
   ASSERT_TRUE(keyframes);
   EXPECT_EQ(2u, keyframes->Keyframes().size());
 
@@ -233,7 +334,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   keyframes = GetStyleEngine().Resolver()->FindKeyframesRule(
-      t4, AtomicString("dummy-animation"));
+      t5, AtomicString("dummy-animation"));
   ASSERT_TRUE(keyframes);
   EXPECT_EQ(1u, keyframes->Keyframes().size());
 
@@ -242,7 +343,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
 
   // Injected @keyframes rules are no longer available once removed.
   ASSERT_FALSE(GetStyleEngine().Resolver()->FindKeyframesRule(
-      t4, AtomicString("dummy-animation")));
+      t5, AtomicString("dummy-animation")));
 }
 
 TEST_F(StyleEngineTest, TextToSheetCache) {
