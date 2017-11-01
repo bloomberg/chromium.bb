@@ -583,7 +583,7 @@ be describing additional metrics about the same event.
       Source of the autoplay attempt: 0 for attribute; 1 for play().
     </summary>
   </metric>
-  <metric name="UserGestureRequirement">
+  <metric name="UserGestureRequired">
     <summary>
       Whether a user gesture was required per autoplay rules at the time of
       attempt. By definition there is no user gesture on the stack when the
