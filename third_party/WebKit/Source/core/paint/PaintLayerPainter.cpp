@@ -858,6 +858,7 @@ PaintResult PaintLayerPainter::PaintFragmentByApplyingTransform(
     paint_flags &= ~kPaintLayerPaintingSkipRootBackground;
     // When painting a new root we are no longer painting overflow contents.
     paint_flags &= ~kPaintLayerPaintingOverflowContents;
+    paint_flags &= ~kPaintLayerPaintingCompositingScrollingPhase;
   }
 
   return PaintLayerContentsCompositingAllPhases(
