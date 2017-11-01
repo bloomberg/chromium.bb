@@ -25,7 +25,6 @@ class FakeWebTaskRunner : public WebTaskRunner {
 
   // WebTaskRunner implementation:
   bool RunsTasksInCurrentSequence() override;
-  double VirtualTimeSeconds() const override;
   double MonotonicallyIncreasingVirtualTimeSeconds() const override;
   SingleThreadTaskRunnerRefPtr ToSingleThreadTaskRunner() override;
 
