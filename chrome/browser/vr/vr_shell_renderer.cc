@@ -318,7 +318,10 @@ static constexpr char const* kGradientQuadFragmentShader = SHADER(
     float mask = 1.0 - step(1.0, length(v_CornerPosition));
     // Add some noise to prevent banding artifacts in the gradient.
     float n = (fract(dot(v_Position.xy, vec2(12345.67, 456.7))) - 0.5) / 255.0;
-    gl_FragColor = (color + n) * u_Opacity * mask;
+
+    color = color + n;
+    color = vec4(color.rgb * color.a, color.a);
+    gl_FragColor = color * u_Opacity * mask;
   }
 );
 
