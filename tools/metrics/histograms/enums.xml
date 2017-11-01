@@ -27793,32 +27793,22 @@ from previous Chrome versions.
 </enum>
 
 <enum name="NegativeSampleReason">
-  <int value="0"
-      label="Persistent sparse histogram had logged value but no active
-             sample."/>
-  <int value="1"
-      label="Persistent sparse histogram active sample less than logged
-             value."/>
-  <int value="2"
-      label="Persistent sparse histogram added a negative count during
-             iteration."/>
+  <int value="0" label="Histogram had logged value but no active sample."/>
+  <int value="1" label="Histogram active sample less than logged value."/>
+  <int value="2" label="Histogram added a negative count during iteration."/>
   <int value="3"
-      label="Persistent sparse histogram added negative count that caused
-             negative value."/>
+      label="Histogram added negative count that caused negative value."/>
   <int value="4"
-      label="Persistent sparse histogram active sample overflowed and became
-             negative."/>
-  <int value="5"
-      label="Persistent sparse histogram accumulated a negative count."/>
+      label="Histogram active sample overflowed and became negative."/>
+  <int value="5" label="Histogram accumulated a negative count."/>
   <int value="6"
-      label="Persistent sparse histogram accumulated a negative count that
-             caused a negative value."/>
+      label="Histogram accumulated a negative count that caused a negative
+             value."/>
   <int value="7"
-      label="Persistent sparse histogram active sample was negative after
-             accumulation (deprecated)."/>
+      label="Histogram active sample was negative after accumulation
+             (deprecated)."/>
   <int value="8"
-      label="Persistent sparse histogram active sample wrapped 2^31 during
-             accumulation."/>
+      label="Histogram active sample wrapped 2^31 during accumulation."/>
 </enum>
 
 <enum name="NetCacheState">
