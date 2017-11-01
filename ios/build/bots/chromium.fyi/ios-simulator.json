@@ -116,6 +116,15 @@
       "device type": "iPhone X",
       "os": "11.0",
       "xcode version": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0"
     }
   ]
 }
