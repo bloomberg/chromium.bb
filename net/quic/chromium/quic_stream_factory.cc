@@ -120,16 +120,6 @@ std::unique_ptr<base::Value> NetLogQuicConnectionMigrationTriggerCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogQuicConnectionMigrationFailureCallback(
-    QuicConnectionId connection_id,
-    std::string reason,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("connection_id", base::Uint64ToString(connection_id));
-  dict->SetString("reason", reason);
-  return std::move(dict);
-}
-
 // Helper class that is used to log a connection migration event.
 class ScopedConnectionMigrationEventLog {
  public:
@@ -155,17 +145,6 @@ class ScopedConnectionMigrationEventLog {
 void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.CreationError", error,
                             CREATION_ERROR_MAX);
-}
-
-void HistogramAndLogMigrationFailure(const NetLogWithSource& net_log,
-                                     enum QuicConnectionMigrationStatus status,
-                                     QuicConnectionId connection_id,
-                                     std::string reason) {
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionMigration", status,
-                            MIGRATION_STATUS_MAX);
-  net_log.AddEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE,
-                   base::Bind(&NetLogQuicConnectionMigrationFailureCallback,
-                              connection_id, reason));
 }
 
 void LogPlatformNotificationInHistogram(
@@ -1294,49 +1273,14 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
   }
 }
 
-MigrationResult QuicStreamFactory::MaybeMigrateSingleSessionOnWriteError(
-    QuicChromiumClientSession* session,
-    int error_code) {
+void QuicStreamFactory::CollectDataOnWriteError(int error_code) {
   most_recent_write_error_timestamp_ = base::TimeTicks::Now();
   most_recent_write_error_ = error_code;
-
-  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
-      net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
-  migration_net_log.BeginEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
-      base::Bind(&NetLogQuicConnectionMigrationTriggerCallback, "WriteError"));
-
-  MigrationResult result = session->MigrateToAlternateNetwork(
-      /*close_session_on_error*/ false, migration_net_log);
-  migration_net_log.EndEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
-  return result;
 }
 
-MigrationResult QuicStreamFactory::MaybeMigrateSingleSessionOnPathDegrading(
-    QuicChromiumClientSession* session) {
+void QuicStreamFactory::CollectDataOnPathDegrading() {
   if (most_recent_path_degrading_timestamp_ == base::TimeTicks())
     most_recent_path_degrading_timestamp_ = base::TimeTicks::Now();
-
-  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
-      net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
-  migration_net_log.BeginEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
-      base::Bind(&NetLogQuicConnectionMigrationTriggerCallback,
-                 "PathDegrading"));
-
-  MigrationResult result = MigrationResult::FAILURE;
-  if (migrate_sessions_early_) {
-    result = session->MigrateToAlternateNetwork(
-        /*close_session_on_error*/ true, migration_net_log);
-  } else {
-    HistogramAndLogMigrationFailure(
-        migration_net_log, MIGRATION_STATUS_DISABLED, session->connection_id(),
-        "Migration disabled");
-  }
-  migration_net_log.EndEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
-  return result;
 }
 
 void QuicStreamFactory::MigrateSessionToNewPeerAddress(

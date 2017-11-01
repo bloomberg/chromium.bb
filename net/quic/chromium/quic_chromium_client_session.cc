@@ -95,6 +95,14 @@ void RecordUnexpectedNotGoingAway(Location location) {
                             NUM_LOCATIONS);
 }
 
+std::unique_ptr<base::Value> NetLogQuicConnectionMigrationTriggerCallback(
+    std::string trigger,
+    NetLogCaptureMode capture_mode) {
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("trigger", trigger);
+  return std::move(dict);
+}
+
 std::unique_ptr<base::Value> NetLogQuicConnectionMigrationFailureCallback(
     QuicConnectionId connection_id,
     std::string reason,
@@ -1467,9 +1475,21 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
     return;
 
   MigrationResult result = MigrationResult::FAILURE;
-  if (stream_factory_ != nullptr)
-    result = stream_factory_->MaybeMigrateSingleSessionOnWriteError(this,
-                                                                    error_code);
+  if (stream_factory_ != nullptr) {
+    stream_factory_->CollectDataOnWriteError(error_code);
+
+    const NetLogWithSource migration_net_log = NetLogWithSource::Make(
+        net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+    migration_net_log.BeginEvent(
+        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
+        base::Bind(&NetLogQuicConnectionMigrationTriggerCallback,
+                   "WriteError"));
+
+    result = MigrateToAlternateNetwork(/*close_session_on_error*/ false,
+                                       migration_net_log);
+    migration_net_log.EndEvent(
+        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+  }
 
   if (result == MigrationResult::SUCCESS)
     return;
@@ -1572,7 +1592,24 @@ void QuicChromiumClientSession::OnWriteUnblocked() {
 
 void QuicChromiumClientSession::OnPathDegrading() {
   if (stream_factory_) {
-    stream_factory_->MaybeMigrateSingleSessionOnPathDegrading(this);
+    stream_factory_->CollectDataOnPathDegrading();
+
+    const NetLogWithSource migration_net_log = NetLogWithSource::Make(
+        net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+    migration_net_log.BeginEvent(
+        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
+        base::Bind(&NetLogQuicConnectionMigrationTriggerCallback,
+                   "PathDegrading"));
+    if (migrate_session_early_) {
+      MigrateToAlternateNetwork(/*close_session_on_error*/ true,
+                                migration_net_log);
+    } else {
+      HistogramAndLogMigrationFailure(migration_net_log,
+                                      MIGRATION_STATUS_DISABLED,
+                                      connection_id(), "Migration disabled");
+    }
+    migration_net_log.EndEvent(
+        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
   }
 }
 
