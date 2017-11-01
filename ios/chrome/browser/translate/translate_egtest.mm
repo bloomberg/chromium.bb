@@ -10,10 +10,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
+#include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/translate/ios/browser/ios_translate_driver.h"
@@ -301,9 +303,7 @@ using translate::LanguageDetectionController;
 
 // Tests for translate.
 @interface TranslateTestCase : ChromeTestCase {
-  std::unique_ptr<LanguageDetectionController::CallbackList::Subscription>
-      _subscription;
-  std::unique_ptr<LanguageDetectionController::DetectionDetails>
+  std::unique_ptr<translate::LanguageDetectionDetails>
       _language_detection_details;
 }
 @end
@@ -312,26 +312,22 @@ using translate::LanguageDetectionController;
 
 - (void)setUp {
   [super setUp];
-  // Creates a LanguageDetectionController::Callback. The callback is deleted in
-  // tearDown.
-  LanguageDetectionController::Callback copyDetailsCallback =
-      base::BindBlockArc(^(
-          const LanguageDetectionController::DetectionDetails& details) {
-        _language_detection_details.reset(
-            new LanguageDetectionController::DetectionDetails(details));
+  language::IOSLanguageDetectionTabHelper::Callback copyDetailsCallback =
+      base::BindBlockArc(^(const translate::LanguageDetectionDetails& details) {
+        _language_detection_details =
+            base::MakeUnique<translate::LanguageDetectionDetails>(details);
       });
 
-  ChromeIOSTranslateClient* client = ChromeIOSTranslateClient::FromWebState(
-      chrome_test_util::GetCurrentWebState());
-  translate::IOSTranslateDriver* driver =
-      static_cast<translate::IOSTranslateDriver*>(client->GetTranslateDriver());
-  _subscription = driver->language_detection_controller()
-                      ->RegisterLanguageDetectionCallback(copyDetailsCallback);
+  language::IOSLanguageDetectionTabHelper::FromWebState(
+      chrome_test_util::GetCurrentWebState())
+      ->SetExtraCallbackForTesting(copyDetailsCallback);
 }
 
 - (void)tearDown {
-  DCHECK(_subscription);
-  _subscription.reset();
+  language::IOSLanguageDetectionTabHelper::FromWebState(
+      chrome_test_util::GetCurrentWebState())
+      ->SetExtraCallbackForTesting(
+          language::IOSLanguageDetectionTabHelper::Callback());
   _language_detection_details.reset();
   // TODO(crbug.com/642892): Investigate moving into test-specific teardown.
   // Re-enable translate.
@@ -360,7 +356,7 @@ using translate::LanguageDetectionController;
       GetFrenchPageHtml(kHtmlAttributeWithDeLang, kMetaItContentLanguage);
   web::test::SetUpSimpleHttpServer(responses);
 
-  LanguageDetectionController::DetectionDetails expectedLanguageDetails;
+  translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.content_language = "it";
   expectedLanguageDetails.html_root_language = "de";
   expectedLanguageDetails.adopted_language = translate::kUnknownLanguageCode;
@@ -381,7 +377,7 @@ using translate::LanguageDetectionController;
 
   [ChromeEarlGrey loadURL:URL];
   // Check for no language detected.
-  LanguageDetectionController::DetectionDetails expectedLanguageDetails;
+  translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.adopted_language = translate::kUnknownLanguageCode;
   [self assertLanguageDetails:expectedLanguageDetails];
 }
@@ -428,7 +424,7 @@ using translate::LanguageDetectionController;
 
   [ChromeEarlGrey loadURL:URL];
   // Check for no language detected.
-  LanguageDetectionController::DetectionDetails expectedLanguageDetails;
+  translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.adopted_language = "und";
   [self assertLanguageDetails:expectedLanguageDetails];
   // Change the text of the page.
@@ -467,7 +463,7 @@ using translate::LanguageDetectionController;
 
   [ChromeEarlGrey loadURL:URL];
   // Check that language has been detected.
-  LanguageDetectionController::DetectionDetails expectedLanguageDetails;
+  translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.adopted_language = "fr";
   [self assertLanguageDetails:expectedLanguageDetails];
   // Trigger the hash change.
@@ -482,7 +478,7 @@ using translate::LanguageDetectionController;
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
-  LanguageDetectionController::DetectionDetails expectedLanguageDetails;
+  translate::LanguageDetectionDetails expectedLanguageDetails;
 
   // The HTTP header is detected.
   GURL URL = web::test::HttpServer::MakeUrl(std::string("http://") +
@@ -522,7 +518,7 @@ using translate::LanguageDetectionController;
   // Start the HTTP server.
   std::unique_ptr<web::DataResponseProvider> provider(new TestResponseProvider);
   web::test::SetUpHttpServer(std::move(provider));
-  LanguageDetectionController::DetectionDetails expectedLanguageDetails;
+  translate::LanguageDetectionDetails expectedLanguageDetails;
 
   // Detection works when clicking on a link.
   GURL URL = web::test::HttpServer::MakeUrl(std::string("http://") + kLinkPath);
@@ -557,7 +553,7 @@ using translate::LanguageDetectionController;
   [ChromeEarlGrey loadURL:URL];
 
   // Check that language has been detected.
-  LanguageDetectionController::DetectionDetails expectedLanguageDetails;
+  translate::LanguageDetectionDetails expectedLanguageDetails;
   expectedLanguageDetails.html_root_language = "fr";
   expectedLanguageDetails.adopted_language = "fr";
   [self assertLanguageDetails:expectedLanguageDetails];
@@ -815,7 +811,7 @@ using translate::LanguageDetectionController;
 
 // Waits until a language has been detected and checks the language details.
 - (void)assertLanguageDetails:
-    (const LanguageDetectionController::DetectionDetails&)expectedDetails {
+    (const translate::LanguageDetectionDetails&)expectedDetails {
   GREYAssert(testing::WaitUntilConditionOrTimeout(
                  2.0,
                  ^{
@@ -823,7 +819,7 @@ using translate::LanguageDetectionController;
                  }),
              @"Language not detected");
 
-  LanguageDetectionController::DetectionDetails details =
+  translate::LanguageDetectionDetails details =
       *_language_detection_details.get();
   _language_detection_details.reset();
 

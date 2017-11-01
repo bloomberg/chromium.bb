@@ -4,12 +4,15 @@
 
 #import "components/translate/ios/browser/language_detection_controller.h"
 
+#include "base/callback.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/translate/core/browser/translate_pref_names.h"
+#include "components/translate/core/common/language_detection_details.h"
 #import "components/translate/ios/browser/js_language_detection_manager.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -37,8 +40,14 @@ namespace {
 
 class LanguageDetectionControllerTest : public PlatformTest {
  protected:
-  LanguageDetectionControllerTest() {
+  LanguageDetectionControllerTest() : details_(nullptr) {
     prefs_.registry()->RegisterBooleanPref(prefs::kEnableTranslate, true);
+
+    language::IOSLanguageDetectionTabHelper::CreateForWebState(
+        &web_state_,
+        base::Bind(&LanguageDetectionControllerTest::OnLanguageDetermined,
+                   base::Unretained(this)),
+        nullptr);
 
     MockJsLanguageDetectionManager* js_manager =
         [[MockJsLanguageDetectionManager alloc] init];
@@ -46,13 +55,19 @@ class LanguageDetectionControllerTest : public PlatformTest {
         &web_state_, js_manager, &prefs_);
   }
 
-  LanguageDetectionController* controller() { return controller_.get(); }
   web::TestWebState& web_state() { return web_state_; }
+  LanguageDetectionController* controller() { return controller_.get(); }
+  LanguageDetectionDetails* details() { return details_.get(); }
 
  private:
   TestingPrefServiceSimple prefs_;
   web::TestWebState web_state_;
   std::unique_ptr<LanguageDetectionController> controller_;
+  std::unique_ptr<LanguageDetectionDetails> details_;
+
+  void OnLanguageDetermined(const LanguageDetectionDetails& details) {
+    details_ = base::MakeUnique<LanguageDetectionDetails>(details);
+  }
 };
 
 }  // namespace
@@ -64,17 +79,6 @@ TEST_F(LanguageDetectionControllerTest, OnTextCaptured) {
   const std::string kContentLanguage("fr");
   const std::string kUndefined("und");
 
-  __block bool block_was_called = false;
-  auto subscription =
-      controller()->RegisterLanguageDetectionCallback(base::BindBlockArc(
-          ^(const LanguageDetectionController::DetectionDetails& details) {
-            block_was_called = true;
-            EXPECT_EQ(kRootLanguage, details.html_root_language);
-            EXPECT_EQ(kContentLanguage, details.content_language);
-            EXPECT_FALSE(details.is_cld_reliable);
-            EXPECT_EQ(kUndefined, details.cld_language);
-          }));
-
   base::DictionaryValue command;
   command.SetString("command", "languageDetection.textCaptured");
   command.SetBoolean("translationAllowed", true);
@@ -83,7 +87,12 @@ TEST_F(LanguageDetectionControllerTest, OnTextCaptured) {
   command.SetString("httpContentLanguage", kContentLanguage);
   controller()->OnTextCaptured(command, GURL("http://google.com"), false);
 
-  EXPECT_TRUE(block_was_called);
+  const LanguageDetectionDetails* const details = this->details();
+  EXPECT_NE(nullptr, details);
+  EXPECT_EQ(kRootLanguage, details->html_root_language);
+  EXPECT_EQ(kContentLanguage, details->content_language);
+  EXPECT_FALSE(details->is_cld_reliable);
+  EXPECT_EQ(kUndefined, details->cld_language);
 }
 
 // Tests that Content-Language response header is used if httpContentLanguage
@@ -97,14 +106,6 @@ TEST_F(LanguageDetectionControllerTest, MissingHttpContentLanguage) {
   context.SetResponseHeaders(headers);
   web_state().OnNavigationFinished(&context);
 
-  __block bool block_was_called = false;
-  auto subscription =
-      controller()->RegisterLanguageDetectionCallback(base::BindBlockArc(
-          ^(const LanguageDetectionController::DetectionDetails& details) {
-            block_was_called = true;
-            EXPECT_EQ("fr", details.content_language);
-          }));
-
   base::DictionaryValue command;
   command.SetString("command", "languageDetection.textCaptured");
   command.SetBoolean("translationAllowed", true);
@@ -113,7 +114,9 @@ TEST_F(LanguageDetectionControllerTest, MissingHttpContentLanguage) {
   command.SetString("httpContentLanguage", "");
   controller()->OnTextCaptured(command, GURL("http://google.com"), false);
 
-  EXPECT_TRUE(block_was_called);
+  const LanguageDetectionDetails* const details = this->details();
+  EXPECT_NE(nullptr, details);
+  EXPECT_EQ("fr", details->content_language);
 }
 
 }  // namespace translate
