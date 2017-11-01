@@ -139,10 +139,6 @@ namespace {
 // resolved, then behave as if the website called complete("fail").
 static const int kCompleteTimeoutSeconds = 60;
 
-static const size_t kMaxStringLength = 1024;
-static const size_t kMaxJSONStringLength = 1048576;
-static const size_t kMaxListSize = 1024;
-
 // Validates ShippingOption or PaymentItem, which happen to have identical
 // fields, except for "id", which is present only in ShippingOption.
 template <typename T>
@@ -155,25 +151,26 @@ void ValidateShippingOptionOrPaymentItem(const T& item,
   DCHECK(item.amount().hasValue());
   DCHECK(item.amount().hasCurrency());
 
-  if (item.label().length() > kMaxStringLength) {
+  if (item.label().length() > PaymentRequest::kMaxStringLength) {
     exception_state.ThrowTypeError("The label for " + item_name +
                                    " cannot be longer than 1024 characters");
     return;
   }
 
-  if (item.amount().currency().length() > kMaxStringLength) {
+  if (item.amount().currency().length() > PaymentRequest::kMaxStringLength) {
     exception_state.ThrowTypeError("The currency code for " + item_name +
                                    " cannot be longer than 1024 characters");
     return;
   }
 
-  if (item.amount().currencySystem().length() > kMaxStringLength) {
+  if (item.amount().currencySystem().length() >
+      PaymentRequest::kMaxStringLength) {
     exception_state.ThrowTypeError("The currency system for " + item_name +
                                    " cannot be longer than 1024 characters");
     return;
   }
 
-  if (item.amount().value().length() > kMaxStringLength) {
+  if (item.amount().value().length() > PaymentRequest::kMaxStringLength) {
     exception_state.ThrowTypeError("The amount value for " + item_name +
                                    " cannot be longer than 1024 characters");
     return;
@@ -206,7 +203,7 @@ void ValidateAndConvertDisplayItems(const HeapVector<PaymentItem>& input,
                                     Vector<PaymentItemPtr>& output,
                                     ExecutionContext& execution_context,
                                     ExceptionState& exception_state) {
-  if (input.size() > kMaxListSize) {
+  if (input.size() > PaymentRequest::kMaxListSize) {
     exception_state.ThrowTypeError("At most 1024 " + item_names + " allowed");
     return;
   }
@@ -231,7 +228,7 @@ void ValidateAndConvertShippingOptions(
     String& shipping_option_output,
     ExecutionContext& execution_context,
     ExceptionState& exception_state) {
-  if (input.size() > kMaxListSize) {
+  if (input.size() > PaymentRequest::kMaxListSize) {
     exception_state.ThrowTypeError("At most 1024 shipping options allowed");
     return;
   }
@@ -244,7 +241,7 @@ void ValidateAndConvertShippingOptions(
       return;
 
     DCHECK(option.hasId());
-    if (option.id().length() > kMaxStringLength) {
+    if (option.id().length() > PaymentRequest::kMaxStringLength) {
       exception_state.ThrowTypeError(
           "Shipping option ID cannot be longer than 1024 characters");
       return;
@@ -305,7 +302,7 @@ void SetAndroidPayMethodData(const ScriptValue& input,
     output->environment = payments::mojom::blink::AndroidPayEnvironment::TEST;
 
   if (android_pay.hasMerchantName() &&
-      android_pay.merchantName().length() > kMaxStringLength) {
+      android_pay.merchantName().length() > PaymentRequest::kMaxStringLength) {
     exception_state.ThrowTypeError(
         "Android Pay merchant name cannot be longer than 1024 characters");
     return;
@@ -313,7 +310,7 @@ void SetAndroidPayMethodData(const ScriptValue& input,
   output->merchant_name = android_pay.merchantName();
 
   if (android_pay.hasMerchantId() &&
-      android_pay.merchantId().length() > kMaxStringLength) {
+      android_pay.merchantId().length() > PaymentRequest::kMaxStringLength) {
     exception_state.ThrowTypeError(
         "Android Pay merchant id cannot be longer than 1024 characters");
     return;
@@ -388,7 +385,7 @@ void SetAndroidPayMethodData(const ScriptValue& input,
           tokenization.parameters().GetPropertyNames(exception_state);
       if (exception_state.HadException())
         return;
-      if (keys.size() > kMaxListSize) {
+      if (keys.size() > PaymentRequest::kMaxListSize) {
         exception_state.ThrowTypeError(
             "At most 1024 tokenization parameters allowed for Android Pay");
         return;
@@ -397,13 +394,13 @@ void SetAndroidPayMethodData(const ScriptValue& input,
       for (const String& key : keys) {
         if (!DictionaryHelper::Get(tokenization.parameters(), key, value))
           continue;
-        if (key.length() > kMaxStringLength) {
+        if (key.length() > PaymentRequest::kMaxStringLength) {
           exception_state.ThrowTypeError(
               "Android Pay tokenization parameter key cannot be longer than "
               "1024 characters");
           return;
         }
-        if (value.length() > kMaxStringLength) {
+        if (value.length() > PaymentRequest::kMaxStringLength) {
           exception_state.ThrowTypeError(
               "Android Pay tokenization parameter value cannot be longer than "
               "1024 characters");
@@ -444,7 +441,8 @@ void StringifyAndParseMethodSpecificData(
   output->stringified_data =
       V8StringToWebCoreString<String>(value, kDoNotExternalize);
 
-  if (output->stringified_data.length() > kMaxJSONStringLength) {
+  if (output->stringified_data.length() >
+      PaymentRequest::kMaxJSONStringLength) {
     exception_state.ThrowTypeError(
         "JSON serialization of payment method data should be no longer than "
         "1048576 characters");
@@ -501,7 +499,7 @@ void ValidateAndConvertPaymentDetailsModifiers(
     Vector<PaymentDetailsModifierPtr>& output,
     ExecutionContext& execution_context,
     ExceptionState& exception_state) {
-  if (input.size() > kMaxListSize) {
+  if (input.size() > PaymentRequest::kMaxListSize) {
     exception_state.ThrowTypeError("At most 1024 modifiers allowed");
     return;
   }
@@ -543,14 +541,14 @@ void ValidateAndConvertPaymentDetailsModifiers(
       return;
     }
 
-    if (supported_methods.size() > kMaxListSize) {
+    if (supported_methods.size() > PaymentRequest::kMaxListSize) {
       exception_state.ThrowTypeError(
           "At most 1024 supportedMethods allowed for modifier");
       return;
     }
 
     for (const String& method : supported_methods) {
-      if (method.length() > kMaxStringLength) {
+      if (method.length() > PaymentRequest::kMaxStringLength) {
         exception_state.ThrowTypeError(
             "Supported method name for identifier cannot be longer than 1024 "
             "characters");
@@ -671,7 +669,7 @@ void ValidateAndConvertPaymentMethodData(
     return;
   }
 
-  if (input.size() > kMaxListSize) {
+  if (input.size() > PaymentRequest::kMaxListSize) {
     exception_state.ThrowTypeError(
         "At most 1024 payment methods are supported");
     return;
@@ -699,14 +697,14 @@ void ValidateAndConvertPaymentMethodData(
       return;
     }
 
-    if (supported_methods.size() > kMaxListSize) {
+    if (supported_methods.size() > PaymentRequest::kMaxListSize) {
       exception_state.ThrowTypeError(
           "At most 1024 payment method identifiers are supported");
       return;
     }
 
     for (const String identifier : supported_methods) {
-      if (identifier.length() > kMaxStringLength) {
+      if (identifier.length() > PaymentRequest::kMaxStringLength) {
         exception_state.ThrowTypeError(
             "A payment method identifier cannot be longer than 1024 "
             "characters");
@@ -1005,7 +1003,8 @@ PaymentRequest::PaymentRequest(ExecutionContext* execution_context,
     return;
   }
 
-  if (details.hasId() && details.id().length() > kMaxStringLength) {
+  if (details.hasId() &&
+      details.id().length() > PaymentRequest::kMaxStringLength) {
     exception_state.ThrowTypeError("ID cannot be longer than 1024 characters");
     return;
   }

@@ -6,6 +6,7 @@
 
 #include "bindings/modules/v8/V8BasicCardRequest.h"
 #include "modules/payments/BasicCardRequest.h"
+#include "modules/payments/PaymentRequest.h"
 
 namespace blink {
 
@@ -13,8 +14,6 @@ namespace {
 
 using ::payments::mojom::blink::BasicCardNetwork;
 using ::payments::mojom::blink::BasicCardType;
-
-static const size_t kMaxListSize = 1024;
 
 const struct {
   const payments::mojom::BasicCardNetwork code;
@@ -51,7 +50,7 @@ void BasicCardHelper::parseBasiccardData(
     return;
 
   if (basic_card.hasSupportedNetworks()) {
-    if (basic_card.supportedNetworks().size() > kMaxListSize) {
+    if (basic_card.supportedNetworks().size() > PaymentRequest::kMaxListSize) {
       exception_state.ThrowTypeError(
           "basic-card supportedNetworks cannot be longer than 1024 elements");
       return;
@@ -68,7 +67,7 @@ void BasicCardHelper::parseBasiccardData(
   }
 
   if (basic_card.hasSupportedTypes()) {
-    if (basic_card.supportedTypes().size() > kMaxListSize) {
+    if (basic_card.supportedTypes().size() > PaymentRequest::kMaxListSize) {
       exception_state.ThrowTypeError(
           "basic-card supportedTypes cannot be longer than 1024 elements");
       return;
