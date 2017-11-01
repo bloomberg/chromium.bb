@@ -32,11 +32,12 @@ import org.chromium.content_public.browser.WebContentsObserver;
  * Class that controls if and when to show surveys related to the Chrome Home experiment.
  */
 public class ChromeHomeSurveyController {
-    static final String SURVEY_INFO_BAR_DISPLAYED = "chrome_home_survey_info_bar_displayed";
-    static final long ONE_WEEK_IN_MILLIS = 604800000L;
+    public static final String SURVEY_INFO_BAR_DISPLAYED = "chrome_home_survey_info_bar_displayed";
+    public static final String PARAM_NAME = "survey_override_site_id";
 
-    private static final String PARAM_NAME = "survey_override_site_id";
     private static final String TRIAL_NAME = "ChromeHome";
+
+    static final long ONE_WEEK_IN_MILLIS = 604800000L;
 
     private TabModelSelector mTabModelSelector;
 
@@ -80,10 +81,10 @@ public class ChromeHomeSurveyController {
     }
 
     private boolean doesUserQualifyForSurvey() {
-        if (!isUMAEnabled()) return false;
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.CHROME_HOME_FORCE_ENABLE_SURVEY)) {
             return true;
         }
+        if (!isUMAEnabled()) return false;
         if (AccessibilityUtil.isAccessibilityEnabled()) return false;
         if (hasInfoBarBeenDisplayed()) return false;
         if (!FeatureUtilities.isChromeHomeEnabled()) return true;
