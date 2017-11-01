@@ -96,7 +96,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/widget.mojom.h"
-#include "content/network/restricted_cookie_manager_impl.h"
+#include "content/network/restricted_cookie_manager.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"

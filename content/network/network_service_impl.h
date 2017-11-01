@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/network/network_change_manager_impl.h"
+#include "content/network/network_change_manager.h"
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/network/network_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -98,7 +98,7 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   std::unique_ptr<net::NetworkChangeNotifierFactoryAndroid>
       network_change_notifier_factory_;
 #endif
-  std::unique_ptr<NetworkChangeManagerImpl> network_change_manager_;
+  std::unique_ptr<NetworkChangeManager> network_change_manager_;
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
 

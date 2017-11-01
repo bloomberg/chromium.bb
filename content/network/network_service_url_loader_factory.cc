@@ -2,27 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/network_service_url_loader_factory_impl.h"
+#include "content/network/network_service_url_loader_factory.h"
 
 #include "base/logging.h"
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
-#include "content/network/url_loader_impl.h"
+#include "content/network/url_loader.h"
 #include "content/public/common/resource_request.h"
 
 namespace content {
 
-NetworkServiceURLLoaderFactoryImpl::NetworkServiceURLLoaderFactoryImpl(
+NetworkServiceURLLoaderFactory::NetworkServiceURLLoaderFactory(
     NetworkContext* context,
     uint32_t process_id)
     : context_(context), process_id_(process_id) {
   ignore_result(process_id_);
 }
 
-NetworkServiceURLLoaderFactoryImpl::~NetworkServiceURLLoaderFactoryImpl() =
-    default;
+NetworkServiceURLLoaderFactory::~NetworkServiceURLLoaderFactory() = default;
 
-void NetworkServiceURLLoaderFactoryImpl::CreateLoaderAndStart(
+void NetworkServiceURLLoaderFactory::CreateLoaderAndStart(
     mojom::URLLoaderRequest request,
     int32_t routing_id,
     int32_t request_id,
@@ -37,13 +36,13 @@ void NetworkServiceURLLoaderFactoryImpl::CreateLoaderAndStart(
     if (!report_raw_headers)
       DLOG(ERROR) << "Denying raw headers request by process " << process_id_;
   }
-  new URLLoaderImpl(
+  new URLLoader(
       context_, std::move(request), options, url_request, report_raw_headers,
       std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation));
 }
 
-void NetworkServiceURLLoaderFactoryImpl::Clone(
+void NetworkServiceURLLoaderFactory::Clone(
     mojom::URLLoaderFactoryRequest request) {
   context_->CreateURLLoaderFactory(std::move(request), process_id_);
 }

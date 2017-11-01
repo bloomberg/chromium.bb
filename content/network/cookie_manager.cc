@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/cookie_manager_impl.h"
+#include "content/network/cookie_manager.h"
 
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -117,42 +117,40 @@ network::mojom::CookieChangeCause ChangeCauseTranslation(
 
 }  // namespace
 
-CookieManagerImpl::NotificationRegistration::NotificationRegistration() {}
+CookieManager::NotificationRegistration::NotificationRegistration() {}
 
-CookieManagerImpl::NotificationRegistration::~NotificationRegistration() {}
+CookieManager::NotificationRegistration::~NotificationRegistration() {}
 
-CookieManagerImpl::CookieManagerImpl(net::CookieStore* cookie_store)
+CookieManager::CookieManager(net::CookieStore* cookie_store)
     : cookie_store_(cookie_store) {}
 
-CookieManagerImpl::~CookieManagerImpl() {}
+CookieManager::~CookieManager() {}
 
-void CookieManagerImpl::AddRequest(
-    network::mojom::CookieManagerRequest request) {
+void CookieManager::AddRequest(network::mojom::CookieManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void CookieManagerImpl::GetAllCookies(GetAllCookiesCallback callback) {
+void CookieManager::GetAllCookies(GetAllCookiesCallback callback) {
   cookie_store_->GetAllCookiesAsync(std::move(callback));
 }
 
-void CookieManagerImpl::GetCookieList(const GURL& url,
-                                      const net::CookieOptions& cookie_options,
-                                      GetCookieListCallback callback) {
+void CookieManager::GetCookieList(const GURL& url,
+                                  const net::CookieOptions& cookie_options,
+                                  GetCookieListCallback callback) {
   cookie_store_->GetCookieListWithOptionsAsync(url, cookie_options,
                                                std::move(callback));
 }
 
-void CookieManagerImpl::SetCanonicalCookie(
-    const net::CanonicalCookie& cookie,
-    bool secure_source,
-    bool modify_http_only,
-    SetCanonicalCookieCallback callback) {
+void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
+                                       bool secure_source,
+                                       bool modify_http_only,
+                                       SetCanonicalCookieCallback callback) {
   cookie_store_->SetCanonicalCookieAsync(
       std::make_unique<net::CanonicalCookie>(cookie), secure_source,
       modify_http_only, std::move(callback));
 }
 
-void CookieManagerImpl::DeleteCookies(
+void CookieManager::DeleteCookies(
     network::mojom::CookieDeletionFilterPtr filter,
     DeleteCookiesCallback callback) {
   base::Time start_time;
@@ -171,7 +169,7 @@ void CookieManagerImpl::DeleteCookies(
       std::move(callback));
 }
 
-void CookieManagerImpl::RequestNotification(
+void CookieManager::RequestNotification(
     const GURL& url,
     const std::string& name,
     network::mojom::CookieChangeNotificationPtr notification_pointer) {
@@ -182,9 +180,9 @@ void CookieManagerImpl::RequestNotification(
 
   notification_registration->subscription = cookie_store_->AddCallbackForCookie(
       url, name,
-      base::Bind(&CookieManagerImpl::CookieChanged,
+      base::Bind(&CookieManager::CookieChanged,
                  // base::Unretained is safe as destruction of the
-                 // CookieManagerImpl will also destroy the
+                 // CookieManager will also destroy the
                  // notifications_registered list (which this object will be
                  // inserted into, below), which will destroy the
                  // CookieChangedSubscription, unregistering the callback.
@@ -195,9 +193,9 @@ void CookieManagerImpl::RequestNotification(
                  base::Unretained(notification_registration.get())));
 
   notification_registration->notification_pointer.set_connection_error_handler(
-      base::BindOnce(&CookieManagerImpl::NotificationPipeBroken,
+      base::BindOnce(&CookieManager::NotificationPipeBroken,
                      // base::Unretained is safe as destruction of the
-                     // CookieManagerImpl will also destroy the
+                     // CookieManager will also destroy the
                      // notifications_registered list (which this object will be
                      // inserted into, below), which will destroy the
                      // notification_pointer, rendering this callback moot.
@@ -210,14 +208,14 @@ void CookieManagerImpl::RequestNotification(
   notifications_registered_.push_back(std::move(notification_registration));
 }
 
-void CookieManagerImpl::CookieChanged(NotificationRegistration* registration,
-                                      const net::CanonicalCookie& cookie,
-                                      net::CookieStore::ChangeCause cause) {
+void CookieManager::CookieChanged(NotificationRegistration* registration,
+                                  const net::CanonicalCookie& cookie,
+                                  net::CookieStore::ChangeCause cause) {
   registration->notification_pointer->OnCookieChanged(
       cookie, ChangeCauseTranslation(cause));
 }
 
-void CookieManagerImpl::NotificationPipeBroken(
+void CookieManager::NotificationPipeBroken(
     NotificationRegistration* registration) {
   for (auto it = notifications_registered_.begin();
        it != notifications_registered_.end(); ++it) {
@@ -232,7 +230,7 @@ void CookieManagerImpl::NotificationPipeBroken(
   NOTREACHED();
 }
 
-void CookieManagerImpl::CloneInterface(
+void CookieManager::CloneInterface(
     network::mojom::CookieManagerRequest new_interface) {
   AddRequest(std::move(new_interface));
 }

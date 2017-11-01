@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_NETWORK_NETWORK_CHANGE_MANAGER_IMPL_H_
-#define CONTENT_NETWORK_NETWORK_CHANGE_MANAGER_IMPL_H_
+#ifndef CONTENT_NETWORK_NETWORK_CHANGE_MANAGER_H_
+#define CONTENT_NETWORK_NETWORK_CHANGE_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -22,16 +22,16 @@ namespace content {
 // done through mojo on the main thread. This registers itself to receive
 // broadcasts from net::NetworkChangeNotifier and rebroadcasts the notifications
 // to mojom::NetworkChangeManagerClients through mojo pipes.
-class CONTENT_EXPORT NetworkChangeManagerImpl
+class CONTENT_EXPORT NetworkChangeManager
     : public mojom::NetworkChangeManager,
       public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // If |network_change_notifier| is not null, |this| will take ownership of it.
   // Otherwise, the global net::NetworkChangeNotifier will be used.
-  explicit NetworkChangeManagerImpl(
+  explicit NetworkChangeManager(
       std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier);
 
-  ~NetworkChangeManagerImpl() override;
+  ~NetworkChangeManager() override;
 
   // Binds a NetworkChangeManager request to this object. Mojo messages
   // coming through the associated pipe will be served by this object.
@@ -56,9 +56,9 @@ class CONTENT_EXPORT NetworkChangeManagerImpl
   std::vector<mojom::NetworkChangeManagerClientPtr> clients_;
   mojom::ConnectionType connection_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkChangeManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(NetworkChangeManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_NETWORK_NETWORK_CHANGE_MANAGER_IMPL_H_
+#endif  // CONTENT_NETWORK_NETWORK_CHANGE_MANAGER_H_

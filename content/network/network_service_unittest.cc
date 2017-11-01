@@ -399,7 +399,7 @@ class NetworkServiceNetworkChangeTest
       if (name == mojom::kNetworkServiceName) {
         service_context_.reset(new service_manager::ServiceContext(
             NetworkServiceImpl::CreateForTesting(), std::move(request)));
-        // Send a broadcast after NetworkServiceImpl is actually created.
+        // Send a broadcast after NetworkService is actually created.
         // Otherwise, this NotifyObservers is a no-op.
         net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
             net::NetworkChangeNotifier::CONNECTION_3G);

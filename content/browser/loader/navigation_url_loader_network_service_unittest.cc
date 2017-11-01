@@ -12,7 +12,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/network/network_context.h"
-#include "content/network/url_loader_impl.h"
+#include "content/network/url_loader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -51,10 +51,10 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
                    mojom::URLLoaderRequest request,
                    mojom::URLLoaderClientPtr client) {
     *most_recent_resource_request_ = resource_request;
-    // The URLLoaderImpl will delete itself upon completion.
-    new URLLoaderImpl(context_.get(), std::move(request), 0 /* options */,
-                      resource_request, false /* report_raw_headers */,
-                      std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS);
+    // The URLLoader will delete itself upon completion.
+    new URLLoader(context_.get(), std::move(request), 0 /* options */,
+                  resource_request, false /* report_raw_headers */,
+                  std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   bool MaybeCreateLoaderForResponse(

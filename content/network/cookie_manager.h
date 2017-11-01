@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_NETWORK_COOKIE_MANAGER_IMPL_H_
-#define CONTENT_NETWORK_COOKIE_MANAGER_IMPL_H_
+#ifndef CONTENT_NETWORK_COOKIE_MANAGER_H_
+#define CONTENT_NETWORK_COOKIE_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -24,13 +24,13 @@ namespace content {
 // This is an IO thread object; all methods on this object must be called on
 // the IO thread.  Note that this does not restrict the locations from which
 // mojo messages may be sent to the object.
-class CONTENT_EXPORT CookieManagerImpl : public network::mojom::CookieManager {
+class CONTENT_EXPORT CookieManager : public network::mojom::CookieManager {
  public:
   // Construct a CookieService that can serve mojo requests for the underlying
   // cookie store.  |*cookie_store| must outlive this object.
-  explicit CookieManagerImpl(net::CookieStore* cookie_store);
+  explicit CookieManager(net::CookieStore* cookie_store);
 
-  ~CookieManagerImpl() override;
+  ~CookieManager() override;
 
   // Bind a cookie request to this object.  Mojo messages
   // coming through the associated pipe will be served by this object.
@@ -89,9 +89,9 @@ class CONTENT_EXPORT CookieManagerImpl : public network::mojom::CookieManager {
   std::vector<std::unique_ptr<NotificationRegistration>>
       notifications_registered_;
 
-  DISALLOW_COPY_AND_ASSIGN(CookieManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_NETWORK_COOKIE_MANAGER_IMPL_H_
+#endif  // CONTENT_NETWORK_COOKIE_MANAGER_H_

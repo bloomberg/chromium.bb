@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/restricted_cookie_manager_impl.h"
+#include "content/network/restricted_cookie_manager.h"
 
 #include <algorithm>
 
@@ -76,19 +76,18 @@ class RestrictedCookieManagerSync {
   DISALLOW_COPY_AND_ASSIGN(RestrictedCookieManagerSync);
 };
 
-class RestrictedCookieManagerImplTest : public testing::Test {
+class RestrictedCookieManagerTest : public testing::Test {
  public:
-  RestrictedCookieManagerImplTest()
+  RestrictedCookieManagerTest()
       : cookie_monster_(nullptr, nullptr),
-        service_(
-            std::make_unique<RestrictedCookieManagerImpl>(&cookie_monster_,
-                                                          MSG_ROUTING_NONE,
-                                                          MSG_ROUTING_NONE)),
+        service_(std::make_unique<RestrictedCookieManager>(&cookie_monster_,
+                                                           MSG_ROUTING_NONE,
+                                                           MSG_ROUTING_NONE)),
         binding_(service_.get(), mojo::MakeRequest(&service_ptr_)) {
     sync_service_ =
         std::make_unique<RestrictedCookieManagerSync>(service_ptr_.get());
   }
-  ~RestrictedCookieManagerImplTest() override {}
+  ~RestrictedCookieManagerTest() override {}
 
   void SetUp() override {
     CHECK(SetCanonicalCookie(
@@ -116,7 +115,7 @@ class RestrictedCookieManagerImplTest : public testing::Test {
  protected:
   base::MessageLoopForIO message_loop_;
   net::CookieMonster cookie_monster_;
-  std::unique_ptr<content::RestrictedCookieManagerImpl> service_;
+  std::unique_ptr<content::RestrictedCookieManager> service_;
   network::mojom::RestrictedCookieManagerPtr service_ptr_;
   mojo::Binding<network::mojom::RestrictedCookieManager> binding_;
   std::unique_ptr<RestrictedCookieManagerSync> sync_service_;
@@ -131,7 +130,7 @@ bool CompareCanonicalCookies(const net::CanonicalCookie& c1,
 
 }  // anonymous namespace
 
-TEST_F(RestrictedCookieManagerImplTest, GetAllForUrl) {
+TEST_F(RestrictedCookieManagerTest, GetAllForUrl) {
   auto options = network::mojom::CookieManagerGetOptions::New();
   options->name = "";
   options->match_type = network::mojom::CookieMatchType::STARTS_WITH;
@@ -145,7 +144,7 @@ TEST_F(RestrictedCookieManagerImplTest, GetAllForUrl) {
   EXPECT_EQ("42", cookies[0].Value());
 }
 
-TEST_F(RestrictedCookieManagerImplTest, SetCanonicalCookie) {
+TEST_F(RestrictedCookieManagerTest, SetCanonicalCookie) {
   EXPECT_TRUE(sync_service_->SetCanonicalCookie(
       net::CanonicalCookie(
           "foo", "bar", "example.com", "/", base::Time(), base::Time(),

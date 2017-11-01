@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_NETWORK_RESTRICTED_COOKIE_MANAGER_IMPL_H_
-#define CONTENT_NETWORK_RESTRICTED_COOKIE_MANAGER_IMPL_H_
+#ifndef CONTENT_NETWORK_RESTRICTED_COOKIE_MANAGER_H_
+#define CONTENT_NETWORK_RESTRICTED_COOKIE_MANAGER_H_
 
 #include <string>
 
@@ -28,13 +28,13 @@ namespace content {
 // Instances of this class must be created and used on the I/O thread. Instances
 // are created by CreateMojoService() and are bound to the lifetimes of the
 // mojo connections that they serve, via mojo::StrongBinding.
-class CONTENT_EXPORT RestrictedCookieManagerImpl
+class CONTENT_EXPORT RestrictedCookieManager
     : public network::mojom::RestrictedCookieManager {
  public:
-  RestrictedCookieManagerImpl(net::CookieStore* cookie_store,
-                              int render_process_id,
-                              int render_frame_id);
-  ~RestrictedCookieManagerImpl() override;
+  RestrictedCookieManager(net::CookieStore* cookie_store,
+                          int render_process_id,
+                          int render_frame_id);
+  ~RestrictedCookieManager() override;
 
   // Implements CookieStore.getAll() in the Async Cookies API.
   //
@@ -63,11 +63,11 @@ class CONTENT_EXPORT RestrictedCookieManagerImpl
   const int render_process_id_;
   const int render_frame_id_;
 
-  base::WeakPtrFactory<RestrictedCookieManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<RestrictedCookieManager> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RestrictedCookieManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(RestrictedCookieManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_NETWORK_RESTRICTED_COOKIE_MANAGER_IMPL_H_
+#endif  // CONTENT_NETWORK_RESTRICTED_COOKIE_MANAGER_H_
