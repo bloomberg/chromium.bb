@@ -413,11 +413,37 @@ List Examples:
       if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
         cros_build_lib.Die('No confirmation.')
 
-    patches_given = self.options.gerrit_patches or self.options.local_patches
+    # Ensure that production configs are only run with --production.
+    if not self.options.production:
+      # We can't know if branched configs are tryjob safe.
+      # It should always be safe to run a tryjob config with --production.
+      prod_configs = []
+      for b in self.options.build_configs:
+        if b in site_config and not config_lib.isTryjobConfig(site_config[b]):
+          prod_configs.append(b)
 
-    # Make sure production builds don't have patches.
+      if prod_configs:
+        # Die, and explain why.
+        alternative_configs = ['%s-tryjob' % b for b in prod_configs]
+        msg = ('These configs are not tryjob safe:\n'
+               '  %s\n'
+               'Consider these configs instead:\n'
+               '  %s\n' %
+               (', '.join(prod_configs), ', '.join(alternative_configs)))
+
+        if self.options.branch == 'master':
+          # On master branch, we know the status of configs for sure.
+          cros_build_lib.Die(msg)
+        elif not self.options.yes:
+          # On branches, we are just guessing. Let people override.
+          prompt = '%s\nAre you sure you want to continue?' % msg
+          if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
+            cros_build_lib.Die('No confirmation.')
+
+    patches_given = self.options.gerrit_patches or self.options.local_patches
     if self.options.production:
-      if patches_given:
+      # Make sure production builds don't have patches.
+      if patches_given and not self.options.debug:
         cros_build_lib.Die('Patches cannot be included in production builds.')
     else:
       # Ask for confirmation if there are no patches to test.

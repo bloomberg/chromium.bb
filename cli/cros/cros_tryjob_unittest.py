@@ -123,12 +123,12 @@ class TryjobTestParsing(TryjobTest):
         'local_patches': [],
         'passthrough': None,
         'passthrough_raw': None,
-        'build_configs': ['lumpy-paladin'],
+        'build_configs': ['lumpy-pre-cq'],
     }
 
   def testMinimalParsingLocal(self):
     """Tests flow for an interactive session."""
-    self.SetupCommandMock(['lumpy-paladin'])
+    self.SetupCommandMock(['lumpy-pre-cq'])
     options = self.cmd_mock.inst.options
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -146,7 +146,7 @@ class TryjobTestParsing(TryjobTest):
         '--chrome_version', 'chrome_git_hash',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         '--list',
-        'lumpy-paladin', 'lumpy-release',
+        'lumpy-pre-cq', 'lumpy-release',
     ])
     options = self.cmd_mock.inst.options
 
@@ -165,7 +165,7 @@ class TryjobTestParsing(TryjobTest):
             '--chrome_version', 'chrome_git_hash',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['lumpy-paladin', 'lumpy-release'],
+        'build_configs': ['lumpy-pre-cq', 'lumpy-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -184,7 +184,7 @@ class TryjobTestParsing(TryjobTest):
         '--chrome_version', 'chrome_git_hash',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
         '--list',
-        'lumpy-paladin', 'lumpy-release',
+        'lumpy-pre-cq', 'lumpy-release',
     ])
     options = self.cmd_mock.inst.options
 
@@ -203,7 +203,7 @@ class TryjobTestParsing(TryjobTest):
             '--chrome_version', 'chrome_git_hash',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['lumpy-paladin', 'lumpy-release'],
+        'build_configs': ['lumpy-pre-cq', 'lumpy-release'],
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
@@ -241,11 +241,11 @@ class TryjobTestVerifyOptions(TryjobTest):
     """Test option verification with simplest normal options."""
     self.SetupCommandMock([
         '-g', '123',
-        'amd64-generic-paladin',
+        'amd64-generic-pre-cq',
     ])
     self.cmd_mock.inst.VerifyOptions(self.site_config)
 
-  def testComplexLocal(self):
+  def testComplexLocalTryjob(self):
     """Test option verification with complex mix of options."""
     self.SetupCommandMock([
         '--yes',
@@ -258,11 +258,11 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'lumpy-paladin', 'lumpy-release',
+        'lumpy-pre-cq', 'lumpy-release-tryjob',
     ])
     self.cmd_mock.inst.VerifyOptions(self.site_config)
 
-  def testComplexRemote(self):
+  def testComplexRemoteTryjob(self):
     """Test option verification with complex mix of options."""
     self.SetupCommandMock([
         '--remote', '--swarming',
@@ -276,7 +276,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'lumpy-paladin', 'lumpy-release',
+        'lumpy-pre-cq', 'lumpy-release-tryjob',
     ])
     self.cmd_mock.inst.VerifyOptions(self.site_config)
 
@@ -306,7 +306,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     """Test option verification with production/no patches."""
     self.SetupCommandMock([
         '--production',
-        'lumpy-paladin', 'lumpy-release'
+        'lumpy-pre-cq', 'lumpy-release'
     ])
     self.cmd_mock.inst.VerifyOptions(self.site_config)
 
@@ -315,12 +315,48 @@ class TryjobTestVerifyOptions(TryjobTest):
     self.SetupCommandMock([
         '--production',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
-        'lumpy-paladin', 'lumpy-release'
+        'lumpy-pre-cq', 'lumpy-release'
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
       self.cmd_mock.inst.VerifyOptions(self.site_config)
     self.assertEqual(cm.exception.code, 1)
+
+  def testRemoteTryjobProductionConfig(self):
+    """Test option verification remote tryjob w/production config."""
+    self.SetupCommandMock([
+        'lumpy-pre-cq', 'lumpy-release'
+    ])
+
+    with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
+      self.cmd_mock.inst.VerifyOptions(self.site_config)
+    self.assertEqual(cm.exception.code, 1)
+
+  def testLocalTryjobProductionConfig(self):
+    """Test option verification local tryjob w/production config."""
+    self.SetupCommandMock([
+        '--local', 'lumpy-pre-cq', 'lumpy-release'
+    ])
+
+    with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
+      self.cmd_mock.inst.VerifyOptions(self.site_config)
+    self.assertEqual(cm.exception.code, 1)
+
+  def testRemoteTryjobBranchProductionConfig(self):
+    """Test a tryjob on a branch for a production config w/confirm."""
+    self.SetupCommandMock([
+        '--yes', '--branch', 'foo', 'lumpy-pre-cq', 'lumpy-release'
+    ])
+
+    self.cmd_mock.inst.VerifyOptions(self.site_config)
+
+  def testRemoteProductionBranchProductionConfig(self):
+    """Test a production job on a branch for a production config wo/confirm."""
+    self.SetupCommandMock([
+        '--production', '--branch', 'foo', 'lumpy-pre-cq', 'lumpy-release'
+    ])
+
+    self.cmd_mock.inst.VerifyOptions(self.site_config)
 
   def testUnknownBuildYes(self):
     """Test option using yes to force accepting an unknown config."""
@@ -403,7 +439,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--branch-name', 'test_branch', '--rename-to', 'new_branch',
         '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'lumpy-paladin', 'lumpy-release',
+        'lumpy-pre-cq', 'lumpy-release',
     ])
     self.assertEqual(result, [
         '--remote-trybot', '-b', 'source_branch',
@@ -433,7 +469,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--branch-name', 'test_branch', '--rename-to', 'new_branch',
         '--delete-branch', '--force-create', '--skip-remote-push',
         '--pass-through=--cbuild-arg', '--pass-through=bar',
-        'lumpy-paladin', 'lumpy-release',
+        'lumpy-pre-cq', 'lumpy-release',
     ])
     self.assertEqual(result, [
         '--buildroot', '/buildroot', '--no-buildbot-tags', '--debug',
