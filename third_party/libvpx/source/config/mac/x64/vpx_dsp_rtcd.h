@@ -972,24 +972,29 @@ void vpx_h_predictor_8x8_sse2(uint8_t* dst,
 #define vpx_h_predictor_8x8 vpx_h_predictor_8x8_sse2
 
 void vpx_hadamard_16x16_c(const int16_t* src_diff,
-                          int src_stride,
+                          ptrdiff_t src_stride,
                           tran_low_t* coeff);
 void vpx_hadamard_16x16_sse2(const int16_t* src_diff,
-                             int src_stride,
+                             ptrdiff_t src_stride,
                              tran_low_t* coeff);
-#define vpx_hadamard_16x16 vpx_hadamard_16x16_sse2
+void vpx_hadamard_16x16_avx2(const int16_t* src_diff,
+                             ptrdiff_t src_stride,
+                             tran_low_t* coeff);
+RTCD_EXTERN void (*vpx_hadamard_16x16)(const int16_t* src_diff,
+                                       ptrdiff_t src_stride,
+                                       tran_low_t* coeff);
 
 void vpx_hadamard_8x8_c(const int16_t* src_diff,
-                        int src_stride,
+                        ptrdiff_t src_stride,
                         tran_low_t* coeff);
 void vpx_hadamard_8x8_sse2(const int16_t* src_diff,
-                           int src_stride,
+                           ptrdiff_t src_stride,
                            tran_low_t* coeff);
 void vpx_hadamard_8x8_ssse3(const int16_t* src_diff,
-                            int src_stride,
+                            ptrdiff_t src_stride,
                             tran_low_t* coeff);
 RTCD_EXTERN void (*vpx_hadamard_8x8)(const int16_t* src_diff,
-                                     int src_stride,
+                                     ptrdiff_t src_stride,
                                      tran_low_t* coeff);
 
 void vpx_he_predictor_4x4_c(uint8_t* dst,
@@ -7604,6 +7609,9 @@ static void setup_rtcd_internal(void) {
   vpx_get16x16var = vpx_get16x16var_sse2;
   if (flags & HAS_AVX2)
     vpx_get16x16var = vpx_get16x16var_avx2;
+  vpx_hadamard_16x16 = vpx_hadamard_16x16_sse2;
+  if (flags & HAS_AVX2)
+    vpx_hadamard_16x16 = vpx_hadamard_16x16_avx2;
   vpx_hadamard_8x8 = vpx_hadamard_8x8_sse2;
   if (flags & HAS_SSSE3)
     vpx_hadamard_8x8 = vpx_hadamard_8x8_ssse3;

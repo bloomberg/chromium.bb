@@ -460,6 +460,7 @@ libvpx_srcs_x86_avx = [
 ]
 libvpx_srcs_x86_avx2 = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_avx2.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/avg_intrin_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_convolve_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/loopfilter_avx2.c",
@@ -930,6 +931,7 @@ libvpx_srcs_x86_64_avx = [
 ]
 libvpx_srcs_x86_64_avx2 = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_avx2.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/avg_intrin_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_convolve_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/loopfilter_avx2.c",
