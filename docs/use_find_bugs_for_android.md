@@ -41,5 +41,5 @@ to enforce chromium specific Java rules. It currently detects:
 
 *   [android_clang_dbg_recipe](https://build.chromium.org/p/tryserver.chromium.linux/builders/android_clang_dbg_recipe)
     on the commit queue
-*   [Android Clang Builder (dbg)](https://build.chromium.org/p/chromium.linux/builders/Android%20Clang%20Builder%20\(dbg\))
+*   [Android ASAN (dbg)](https://build.chromium.org/p/chromium.android/builders/Android%20ASAN%20%28dbg%29)
     on the main waterfall
