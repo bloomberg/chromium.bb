@@ -35402,7 +35402,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each chrome:// renderer process.  Each
-    process provides one sample.  Recorded once per UMA ping.
+    process provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -35807,7 +35807,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each extension process.  Each process
-    provides one sample.  Recorded once per UMA ping.
+    provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -35815,7 +35815,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>erikchen@chromium.org</owner>
   <summary>
     A rough estimate of the private memory footprint of the extension process.
-    Recorded once per UMA ping.
+    Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -35893,7 +35893,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each Native Client loader process.  Each
-    process provides one sample.  Recorded once per UMA ping.
+    process provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -35903,7 +35903,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each Native Client broker process.  Each
-    process provides one sample.  Recorded once per UMA ping.
+    process provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36017,7 +36017,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>thestig@chromium.org</owner>
   <summary>
     The private working set used by each Pepper Flash plugin process. Each
-    plugin process provides one sample.  Recorded once per UMA ping.
+    plugin process provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36027,7 +36027,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each Pepper plugin process.  Each plugin
-    process provides one sample.  Recorded once per UMA ping.
+    process provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36037,7 +36037,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each Pepper plugin broker process.  Each
-    process provides one sample.  Recorded once per UMA ping.
+    process provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36069,7 +36069,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each plugin process.  Each plugin process
-    provides one sample.  Recorded once per UMA ping.
+    provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36137,7 +36137,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The total committed memory used by each renderer process.  Each renderer
-    process provides one sample.  Recorded once per UMA ping.
+    process provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36156,7 +36156,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each renderer process.  Each renderer
-    process provides one sample.  Recorded once per UMA ping.
+    process provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36164,7 +36164,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>erikchen@chromium.org</owner>
   <summary>
     A rough estimate of the private memory footprint of the renderer process.
-    Recorded once per UMA ping.
+    Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36176,7 +36176,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The private working set used by each renderer process, including all
     renderer types, i.e. this includes Chrome renderer, extensions renderer, as
     well as regular renderer processes.  Each renderer process provides one
-    sample.  Recorded once per UMA ping.
+    sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36188,7 +36188,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The total committed memory used by each renderer process, including all
     renderer types, i.e. this includes Chrome renderer, extensions renderer, as
     well as regular renderer processes.  Each renderer process provides one
-    sample.  Recorded once per UMA ping.
+    sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36241,7 +36241,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each sandbox helper process.  Each sandbox
-    helper process provides one sample.  Recorded once per UMA ping.
+    helper process provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36408,7 +36408,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each chrome:// renderer process.  Each process provides one
-    sample.  Recorded once per UMA ping if the system has swapped.
+    sample.  Recorded once per process per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
@@ -36438,7 +36438,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each extension process.  Each process provides one sample.
-    Recorded once per UMA ping if the system has swapped.
+    Recorded once per process per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
@@ -36478,7 +36478,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each Native Client loader process.  Each process provides
-    one sample.  Recorded once per UMA ping if the system has swapped.
+    one sample.  Recorded once per process per UMA ping if the system has
+    swapped.
   </summary>
 </histogram>
 
@@ -36488,7 +36489,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each Native Client broker process.  Each process provides
-    one sample.  Recorded once per UMA ping if the system has swapped.
+    one sample.  Recorded once per process per UMA ping if the system has
+    swapped.
   </summary>
 </histogram>
 
@@ -36497,8 +36499,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
   <summary>
-    The number of reads from swap.  Recorded once per UMA ping  if the system
-    has swapped.
+    The number of reads from swap.  Recorded once per UMA ping if the system has
+    swapped.
   </summary>
 </histogram>
 
@@ -36528,7 +36530,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each Pepper plugin process.  Each plugin process provides
-    one sample.  Recorded once per UMA ping if the system has swapped.
+    one sample.  Recorded once per process per UMA ping if the system has
+    swapped.
   </summary>
 </histogram>
 
@@ -36538,7 +36541,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each Pepper plugin broker process.  Each process provides
-    one sample.  Recorded once per UMA ping if the system has swapped.
+    one sample.  Recorded once per process per UMA ping if the system has
+    swapped.
   </summary>
 </histogram>
 
@@ -36551,7 +36555,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each plugin process.  Each plugin process provides one
-    sample.  Recorded once per UMA ping if the system has swapped.
+    sample.  Recorded once per process per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
@@ -36561,7 +36565,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each renderer process.  Each renderer process provides one
-    sample.  Recorded once per UMA ping if the system has swapped.
+    sample.  Recorded once per process per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
@@ -36571,7 +36575,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each sandbox helper process.  Each sandbox helper process
-    provides one sample.  Recorded once per UMA ping if the system has swapped.
+    provides one sample.  Recorded once per process per UMA ping if the system
+    has swapped.
   </summary>
 </histogram>
 
@@ -36603,7 +36608,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each utility process.  Each utility process provides one
-    sample.  Recorded once per UMA ping if the system has swapped.
+    sample.  Recorded once per process per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
@@ -36613,7 +36618,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The swap used by each worker process.  Each worker process provides one
-    sample.  Recorded once per UMA ping if the system has swapped.
+    sample.  Recorded once per process per UMA ping if the system has swapped.
   </summary>
 </histogram>
 
@@ -36666,7 +36671,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each utility process.  Each utility process
-    provides one sample.  Recorded once per UMA ping.
+    provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36676,7 +36681,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by each worker process.  Each worker process
-    provides one sample.  Recorded once per UMA ping.
+    provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
@@ -36695,7 +36700,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by the zygote process.  Each zygote process
-    provides one sample.  Recorded once per UMA ping.
+    provides one sample.  Recorded once per process per UMA ping.
   </summary>
 </histogram>
 
