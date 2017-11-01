@@ -14,24 +14,34 @@
   <template>
     <style include="md-select cr-shared-style">
       :host {
+        --card-max-width: 928px;
+        --card-min-width: 600px;
         height: 100%;
+      }
+
+      #instructions,
+      .shortcut-card {
+        margin: 0 auto 16px auto;
+        max-width: var(--card-max-width);
+        min-width: var(--card-min-width);
+        width: 90%;
+      }
+
+      #instructions {
+        @apply --cr-title-text;
+      }
+
+      .shortcut-card {
+        @apply --cr-primary-text;
+        @apply --shadow-elevation-2dp;
+        background-color: white;
+        padding-bottom: 8px;
       }
 
       #container {
         height: 100%;
         overflow: overlay;
         padding-top: 24px;
-      }
-
-      .shortcut-card {
-        @apply(--cr-primary-text);
-        @apply(--shadow-elevation-2dp);
-        background-color: white;
-        margin: 0 auto 16px auto;
-        max-width: 928px;
-        min-width: 600px;
-        padding-bottom: 8px;
-        width: 90%;
       }
 
       .command-entry {
@@ -65,7 +75,7 @@
         display: flex;
         margin-bottom: 9px;
         padding: 16px var(--cr-section-padding);
-        @apply(--cr-title-text);
+        @apply --cr-title-text;
       }
 
       .icon {
@@ -82,6 +92,7 @@
       }
     </style>
     <div id="container">
+      <div id="instructions">$i18n{shortcutInstructions}</div>
       <template is="dom-repeat" items="[[calculateShownItems_(items.*)]]">
         <div class="shortcut-card">
           <div class="card-title">

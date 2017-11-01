@@ -26,7 +26,7 @@ cr.define('extension_shortcut_input_tests', function() {
   }
 
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     Basic: 'basic',
   };
 
@@ -44,12 +44,9 @@ cr.define('extension_shortcut_input_tests', function() {
     });
 
     test(assert(TestNames.Basic), function() {
-      var field = input.$['input'];
-      var fieldText = function() {
-        return field.value;
-      };
-      expectEquals('', fieldText());
-      var isClearVisible =
+      const field = input.$['input'];
+      expectEquals('', field.value);
+      const isClearVisible =
           extension_test_util.isVisible.bind(null, input, '#clear', false);
       expectFalse(isClearVisible());
 
@@ -60,24 +57,36 @@ cr.define('extension_shortcut_input_tests', function() {
             assertTrue(arg);
             input.delegate.reset();
 
-            expectEquals('', fieldText());
+            expectEquals('', field.value);
             expectFalse(isClearVisible());
 
+            // Press character.
+            MockInteractions.keyDownOn(field, 'A', []);
+            expectEquals('', field.value);
+            expectTrue(field.errorMessage.startsWith('Include'));
+            // Add shift to character.
+            MockInteractions.keyDownOn(field, 'A', ['shift']);
+            expectEquals('', field.value);
+            expectTrue(field.errorMessage.startsWith('Include'));
             // Press ctrl.
             MockInteractions.keyDownOn(field, 17, ['ctrl']);
-            expectEquals('Ctrl', fieldText());
+            expectEquals('Ctrl', field.value);
+            expectEquals('Need a character', field.errorMessage);
             // Add shift.
             MockInteractions.keyDownOn(field, 16, ['ctrl', 'shift']);
-            expectEquals('Ctrl + Shift', fieldText());
+            expectEquals('Ctrl + Shift', field.value);
+            expectEquals('Need a character', field.errorMessage);
             // Remove shift.
             MockInteractions.keyUpOn(field, 16, ['ctrl']);
-            expectEquals('Ctrl', fieldText());
+            expectEquals('Ctrl', field.value);
+            expectEquals('Need a character', field.errorMessage);
             // Add alt (ctrl + alt is invalid).
             MockInteractions.keyDownOn(field, 18, ['ctrl', 'alt']);
-            expectEquals('invalid', fieldText());
+            expectEquals('Ctrl', field.value);
             // Remove alt.
             MockInteractions.keyUpOn(field, 18, ['ctrl']);
-            expectEquals('Ctrl', fieldText());
+            expectEquals('Ctrl', field.value);
+            expectEquals('Need a character', field.errorMessage);
 
             // Add 'A'. Once a valid shortcut is typed (like Ctrl + A), it is
             // committed.
@@ -87,7 +96,7 @@ cr.define('extension_shortcut_input_tests', function() {
           .then((arg) => {
             input.delegate.reset();
             expectDeepEquals(['itemid', 'Command', 'Ctrl+A'], arg);
-            expectEquals('Ctrl + A', fieldText());
+            expectEquals('Ctrl + A', field.value);
             expectEquals('Ctrl+A', input.shortcut);
             expectTrue(isClearVisible());
 
