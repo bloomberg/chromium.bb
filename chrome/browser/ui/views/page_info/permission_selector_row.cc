@@ -213,11 +213,21 @@ class PermissionCombobox : public views::Combobox,
 
   void UpdateSelectedIndex(bool use_default);
 
+  void set_min_width(int width) { min_width_ = width; }
+
+  // views::Combobox:
+  gfx::Size CalculatePreferredSize() const override;
+
  private:
   // views::ComboboxListener:
   void OnPerformAction(Combobox* combobox) override;
 
   ComboboxModelAdapter* model_;
+
+  // Minimum width for |PermissionCombobox|.
+  int min_width_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionCombobox);
 };
 
 PermissionCombobox::PermissionCombobox(ComboboxModelAdapter* model,
@@ -241,6 +251,12 @@ void PermissionCombobox::UpdateSelectedIndex(bool use_default) {
     index = 0;
   }
   SetSelectedIndex(index);
+}
+
+gfx::Size PermissionCombobox::CalculatePreferredSize() const {
+  gfx::Size preferred_size = Combobox::CalculatePreferredSize();
+  preferred_size.SetToMax(gfx::Size(min_width_, 0));
+  return preferred_size;
 }
 
 void PermissionCombobox::OnPerformAction(Combobox* combobox) {
@@ -402,6 +418,16 @@ void PermissionSelectorRow::PermissionChanged(
   for (PermissionSelectorRowObserver& observer : observer_list_) {
     observer.OnPermissionChanged(permission);
   }
+}
+
+int PermissionSelectorRow::GetComboboxWidth() const {
+  DCHECK(combobox_);
+  return combobox_->Combobox::GetPreferredSize().width();
+}
+
+void PermissionSelectorRow::SetMinComboboxWidth(int width) {
+  DCHECK(combobox_);
+  combobox_->set_min_width(width);
 }
 
 views::View* PermissionSelectorRow::button() {

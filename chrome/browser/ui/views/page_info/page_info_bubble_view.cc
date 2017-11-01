@@ -770,6 +770,25 @@ void PageInfoBubbleView::SetPermissionInfo(
     selector_rows_.push_back(std::move(selector));
   }
 
+  // In Harmony, ensure most comboboxes are the same width by setting them all
+  // to the widest combobox size, provided it does not exceed a maximum width.
+  // For selected options that are over the maximum width, allow them to assume
+  // their full width. If the combobox selection is changed, this may make the
+  // widths inconsistent again, but that is OK since the widths will be updated
+  // on the next time the bubble is opened.
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    const int maximum_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+        views::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH);
+    int combobox_width = 0;
+    for (const auto& selector : selector_rows_) {
+      int curr_width = selector->GetComboboxWidth();
+      if (maximum_width >= curr_width)
+        combobox_width = std::max(combobox_width, curr_width);
+    }
+    for (const auto& selector : selector_rows_)
+      selector->SetMinComboboxWidth(combobox_width);
+  }
+
   for (auto& object : chosen_object_info_list) {
     // Since chosen objects are presented after permissions in the same list,
     // make sure its height is the same as the permissions row's minimum height
