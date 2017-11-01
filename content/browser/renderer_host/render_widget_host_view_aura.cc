@@ -787,8 +787,9 @@ void RenderWidgetHostViewAura::FocusedNodeTouched(
   if (editable && host_->GetView() && host_->delegate()) {
     keyboard_observer_.reset(new WinScreenKeyboardObserver(
         this, location_dips_screen, device_scale_factor_, window_));
-    virtual_keyboard_requested_ =
-        osk_display_manager->DisplayVirtualKeyboard(keyboard_observer_.get());
+    if (!osk_display_manager->DisplayVirtualKeyboard(keyboard_observer_.get()))
+      keyboard_observer_.reset(nullptr);
+    virtual_keyboard_requested_ = keyboard_observer_.get();
   } else {
     virtual_keyboard_requested_ = false;
     osk_display_manager->DismissVirtualKeyboard();
