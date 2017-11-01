@@ -181,6 +181,14 @@ require an input device for launch
 sets Weston's pageflip timeout in milliseconds.  This sets a timer to exit
 gracefully with a log message and an exit code of 1 in case the DRM driver is
 non-responsive.  Setting it to 0 disables this feature.
+.TP 7
+.BI "wait-for-debugger=" true
+Raises SIGSTOP before initializing the compositor. This allows the user to
+attach with a debugger and continue execution by sending SIGCONT. This is
+useful for debugging a crash on start-up when it would be inconvenient to
+launch weston directly from a debugger. Boolean, defaults to
+.BR false .
+There is also a command line option to do the same.
 
 .SH "LIBINPUT SECTION"
 The

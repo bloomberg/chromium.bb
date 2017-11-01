@@ -557,6 +557,7 @@ usage(int error_code)
 		"  --log=FILE\t\tLog to the given file\n"
 		"  -c, --config=FILE\tConfig file to load, defaults to weston.ini\n"
 		"  --no-config\t\tDo not read weston.ini\n"
+		"  --wait-for-debugger\tRaise SIGSTOP on start-up\n"
 		"  -h, --help\t\tThis help message\n\n");
 
 #if defined(BUILD_DRM_COMPOSITOR)
@@ -1787,6 +1788,7 @@ int main(int argc, char *argv[])
 	struct weston_seat *seat;
 	struct wet_compositor user_data;
 	int require_input;
+	int32_t wait_for_debugger = 0;
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
@@ -1800,6 +1802,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_BOOLEAN, "version", 0, &version },
 		{ WESTON_OPTION_BOOLEAN, "no-config", 0, &noconfig },
 		{ WESTON_OPTION_STRING, "config", 'c', &config_file },
+		{ WESTON_OPTION_BOOLEAN, "wait-for-debugger", 0, &wait_for_debugger },
 	};
 
 	if (os_fd_set_cloexec(fileno(stdin))) {
@@ -1862,6 +1865,16 @@ int main(int argc, char *argv[])
 	user_data.parsed_options = NULL;
 
 	section = weston_config_get_section(config, "core", NULL, NULL);
+
+	if (!wait_for_debugger)
+		weston_config_section_get_bool(section, "wait-for-debugger",
+					       &wait_for_debugger, 0);
+	if (wait_for_debugger) {
+		weston_log("Weston PID is %ld - "
+			   "waiting for debugger, send SIGCONT to continue...\n",
+			   (long)getpid());
+		raise(SIGSTOP);
+	}
 
 	if (!backend) {
 		weston_config_section_get_string(section, "backend", &backend,

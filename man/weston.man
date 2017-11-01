@@ -165,6 +165,14 @@ Weston will export
 .B WAYLAND_DISPLAY
 with this value in the environment for all child processes to allow them to
 connect to the right server automatically.
+.TP
+\fB\-\-wait-for-debugger\fR
+Raises SIGSTOP before initializing the compositor. This allows the user to
+attach with a debugger and continue execution by sending SIGCONT. This is
+useful for debugging a crash on start-up when it would be inconvenient to
+launch weston directly from a debugger. There is also a
+.IR weston.ini " option to do the same."
+.
 .SS DRM backend options:
 See
 .BR weston-drm (7).
