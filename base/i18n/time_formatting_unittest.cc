@@ -21,8 +21,8 @@ namespace base {
 namespace {
 
 const Time::Exploded kTestDateTimeExploded = {
-  2011, 4, 6, 30, // Sat, Apr 30, 2011
-  15, 42, 7, 0    // 15:42:07.000
+    2011, 4,  6, 30,  // Sat, Apr 30, 2011
+    22,   42, 7, 0    // 22:42:07.000 in UTC = 15:42:07 in US PDT.
 };
 
 // Returns difference between the local time and GMT formatted as string.
@@ -64,20 +64,33 @@ string16 TimeDurationFormatWithSecondsString(const TimeDelta& delta,
   return str;
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_TimeFormatTimeOfDayDefault12h \
-  DISABLED_TimeFormatTimeOfDayDefault12h
-#else
-#define MAYBE_TimeFormatTimeOfDayDefault12h TimeFormatTimeOfDayDefault12h
-#endif
-TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayDefault12h) {
+class ScopedRestoreDefaultTimezone {
+ public:
+  ScopedRestoreDefaultTimezone(const char* zoneid) {
+    original_zone_.reset(icu::TimeZone::createDefault());
+    icu::TimeZone::adoptDefault(icu::TimeZone::createTimeZone(zoneid));
+  }
+  ~ScopedRestoreDefaultTimezone() {
+    icu::TimeZone::adoptDefault(original_zone_.release());
+  }
+
+  ScopedRestoreDefaultTimezone(const ScopedRestoreDefaultTimezone&) = delete;
+  ScopedRestoreDefaultTimezone& operator=(const ScopedRestoreDefaultTimezone&) =
+      delete;
+
+ private:
+  std::unique_ptr<icu::TimeZone> original_zone_;
+};
+
+TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault12h) {
   // Test for a locale defaulted to 12h clock.
   // As an instance, we use third_party/icu/source/data/locales/en.txt.
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
+  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
-  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
+  EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
   string16 clock24h(ASCIIToUTF16("15:42"));
   string16 clock12h_pm(ASCIIToUTF16("3:42 PM"));
   string16 clock12h(ASCIIToUTF16("3:42"));
@@ -107,20 +120,15 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayDefault12h) {
                                                  kDropAmPm));
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_TimeFormatTimeOfDayDefault24h \
-  DISABLED_TimeFormatTimeOfDayDefault24h
-#else
-#define MAYBE_TimeFormatTimeOfDayDefault24h TimeFormatTimeOfDayDefault24h
-#endif
-TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayDefault24h) {
+TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault24h) {
   // Test for a locale defaulted to 24h clock.
   // As an instance, we use third_party/icu/source/data/locales/en_GB.txt.
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_GB");
+  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
-  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
+  EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
   string16 clock24h(ASCIIToUTF16("15:42"));
   string16 clock12h_pm(ASCIIToUTF16("3:42 pm"));
   string16 clock12h(ASCIIToUTF16("3:42"));
@@ -150,21 +158,17 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayDefault24h) {
                                                  kDropAmPm));
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_TimeFormatTimeOfDayJP DISABLED_TimeFormatTimeOfDayJP
-#else
-#define MAYBE_TimeFormatTimeOfDayJP TimeFormatTimeOfDayJP
-#endif
-TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayJP) {
+TEST(TimeFormattingTest, TimeFormatTimeOfDayJP) {
   // Test for a locale that uses different mark than "AM" and "PM".
   // As an instance, we use third_party/icu/source/data/locales/ja.txt.
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("ja_JP");
+  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
-  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
+  EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
   string16 clock24h(ASCIIToUTF16("15:42"));
-  string16 clock12h_pm(WideToUTF16(L"\x5348\x5f8c" L"3:42"));
+  string16 clock12h_pm(UTF8ToUTF16(u8"午後3:42"));
   string16 clock12h(ASCIIToUTF16("3:42"));
 
   // The default is 24h clock.
@@ -190,19 +194,15 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayJP) {
                                                  kDropAmPm));
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_TimeFormatDateUS DISABLED_TimeFormatDateUS
-#else
-#define MAYBE_TimeFormatDateUS TimeFormatDateUS
-#endif
-TEST(TimeFormattingTest, MAYBE_TimeFormatDateUS) {
+TEST(TimeFormattingTest, TimeFormatDateUS) {
   // See third_party/icu/source/data/locales/en.txt.
   // The date patterns are "EEEE, MMMM d, y", "MMM d, y", and "M/d/yy".
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
+  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
-  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
+  EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
 
   EXPECT_EQ(ASCIIToUTF16("Apr 30, 2011"), TimeFormatShortDate(time));
   EXPECT_EQ(ASCIIToUTF16("4/30/11"), TimeFormatShortDateNumeric(time));
@@ -221,19 +221,15 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatDateUS) {
             TimeFormatFriendlyDate(time));
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_TimeFormatDateGB DISABLED_TimeFormatDateGB
-#else
-#define MAYBE_TimeFormatDateGB TimeFormatDateGB
-#endif
-TEST(TimeFormattingTest, MAYBE_TimeFormatDateGB) {
+TEST(TimeFormattingTest, TimeFormatDateGB) {
   // See third_party/icu/source/data/locales/en_GB.txt.
   // The date patterns are "EEEE, d MMMM y", "d MMM y", and "dd/MM/yyyy".
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_GB");
+  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
-  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
+  EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
 
   EXPECT_EQ(ASCIIToUTF16("30 Apr 2011"), TimeFormatShortDate(time));
   EXPECT_EQ(ASCIIToUTF16("30/04/2011"), TimeFormatShortDateNumeric(time));
@@ -250,9 +246,10 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatDateGB) {
 
 TEST(TimeFormattingTest, TimeFormatWithPattern) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
+  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   Time time;
-  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &time));
+  EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &time));
 
   i18n::SetICUDefaultLocale("en_US");
   EXPECT_EQ(ASCIIToUTF16("Apr 30, 2011"), TimeFormatWithPattern(time, "yMMMd"));
@@ -265,9 +262,9 @@ TEST(TimeFormattingTest, TimeFormatWithPattern) {
             TimeFormatWithPattern(time, "MMMMdjmmss"));
 
   i18n::SetICUDefaultLocale("ja_JP");
-  EXPECT_EQ(WideToUTF16(L"2011年4月30日"),
+  EXPECT_EQ(UTF8ToUTF16(u8"2011年4月30日"),
             TimeFormatWithPattern(time, "yMMMd"));
-  EXPECT_EQ(WideToUTF16(L"4月30日") + ASCIIToUTF16(" 15:42:07"),
+  EXPECT_EQ(UTF8ToUTF16(u8"4月30日 15:42:07"),
             TimeFormatWithPattern(time, "MMMMdjmmss"));
 }
 
@@ -299,16 +296,16 @@ TEST(TimeFormattingTest, TimeDurationFormat) {
 
   // Persian, with non-Arabic numbers.
   i18n::SetICUDefaultLocale("fa");
-  string16 fa_wide = WideToUTF16(
-      L"\x6f1\x6f5\x20\x633\x627\x639\x62a\x20\x648\x20\x6f4\x6f2\x20\x62f\x642"
-      L"\x6cc\x642\x647");
-  string16 fa_short = WideToUTF16(
-      L"\x6f1\x6f5\x20\x633\x627\x639\x62a\x60c\x200f\x20\x6f4\x6f2\x20\x62f"
-      L"\x642\x6cc\x642\x647");
-  string16 fa_narrow = WideToUTF16(
-      L"\x6f1\x6f5\x20\x633\x627\x639\x62a\x20\x6f4\x6f2\x20\x62f\x642\x6cc"
-      L"\x642\x647");
-  string16 fa_numeric = WideToUTF16(L"\x6f1\x6f5\x3a\x6f4\x6f2");
+  string16 fa_wide = UTF8ToUTF16(
+      u8"\u06f1\u06f5 \u0633\u0627\u0639\u062a \u0648 \u06f4\u06f2 \u062f\u0642"
+      u8"\u06cc\u0642\u0647");
+  string16 fa_short = UTF8ToUTF16(
+      u8"\u06f1\u06f5 \u0633\u0627\u0639\u062a\u060c\u200f \u06f4\u06f2 \u062f"
+      u8"\u0642\u06cc\u0642\u0647");
+  string16 fa_narrow = UTF8ToUTF16(
+      u8"\u06f1\u06f5 \u0633\u0627\u0639\u062a \u06f4\u06f2 \u062f\u0642\u06cc"
+      u8"\u0642\u0647");
+  string16 fa_numeric = UTF8ToUTF16(u8"\u06f1\u06f5:\u06f4\u06f2");
   EXPECT_EQ(fa_wide, TimeDurationFormatString(delta, DURATION_WIDTH_WIDE));
   EXPECT_EQ(fa_short, TimeDurationFormatString(delta, DURATION_WIDTH_SHORT));
   EXPECT_EQ(fa_narrow, TimeDurationFormatString(delta, DURATION_WIDTH_NARROW));
@@ -368,19 +365,40 @@ TEST(TimeFormattingTest, TimeDurationFormatWithSeconds) {
 TEST(TimeFormattingTest, TimeIntervalFormat) {
   test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
+  ScopedRestoreDefaultTimezone la_time("America/Los_Angeles");
 
   const Time::Exploded kTestIntervalEndTimeExploded = {
-      2011, 5,  6, 28,  // Sat, Apr 30, 2012
-      15,   42, 7, 0    // 15:42:07.000
+      2011, 5,  6, 28,  // Sat, May 28, 2012
+      22,   42, 7, 0    // 22:42:07.000
   };
 
   Time begin_time;
-  EXPECT_TRUE(Time::FromLocalExploded(kTestDateTimeExploded, &begin_time));
+  EXPECT_TRUE(Time::FromUTCExploded(kTestDateTimeExploded, &begin_time));
   Time end_time;
-  EXPECT_TRUE(Time::FromLocalExploded(kTestIntervalEndTimeExploded, &end_time));
+  EXPECT_TRUE(Time::FromUTCExploded(kTestIntervalEndTimeExploded, &end_time));
 
   EXPECT_EQ(
-      WideToUTF16(L"Saturday, April 30 – Saturday, May 28"),
+      UTF8ToUTF16(u8"Saturday, April 30 – Saturday, May 28"),
+      DateIntervalFormat(begin_time, end_time, DATE_FORMAT_MONTH_WEEKDAY_DAY));
+
+  const Time::Exploded kTestIntervalBeginTimeExploded = {
+      2011, 5,  1, 16,  // Mon, May 16, 2012
+      22,   42, 7, 0    // 22:42:07.000
+  };
+  EXPECT_TRUE(
+      Time::FromUTCExploded(kTestIntervalBeginTimeExploded, &begin_time));
+  EXPECT_EQ(
+      UTF8ToUTF16(u8"Monday, May 16 – Saturday, May 28"),
+      DateIntervalFormat(begin_time, end_time, DATE_FORMAT_MONTH_WEEKDAY_DAY));
+
+  i18n::SetICUDefaultLocale("en_GB");
+  EXPECT_EQ(
+      UTF8ToUTF16(u8"Monday 16 – Saturday 28 May"),
+      DateIntervalFormat(begin_time, end_time, DATE_FORMAT_MONTH_WEEKDAY_DAY));
+
+  i18n::SetICUDefaultLocale("ja");
+  EXPECT_EQ(
+      UTF8ToUTF16(u8"5月16日(月曜日)～28日(土曜日)"),
       DateIntervalFormat(begin_time, end_time, DATE_FORMAT_MONTH_WEEKDAY_DAY));
 }
 
