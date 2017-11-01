@@ -345,9 +345,7 @@ PermissionSelectorRow::~PermissionSelectorRow() {
   //
   // Technically, the MenuButton has the same problem, but MenuButton doesn't
   // use its model in its destructor.
-  if (combobox_) {
-    combobox_->parent()->RemoveChildView(combobox_);
-  }
+  delete combobox_;
 }
 
 // static
