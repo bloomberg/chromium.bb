@@ -215,7 +215,6 @@ public abstract class ChromeFeatureList {
     public static final String PWA_PERSISTENT_NOTIFICATION = "PwaPersistentNotification";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
-    public static final String SITE_EXPLORATION_UI = "SiteExplorationUi";
     public static final String SITE_NOTIFICATION_CHANNELS = "SiteNotificationChannels";
     public static final String SOUND_CONTENT_SETTING = "SoundContentSetting";
     public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
