@@ -287,6 +287,7 @@ jumbo_source_set("unit_tests") {
     "media_controls/MediaControlsRotateToFullscreenDelegateTest.cpp",
     "media_controls/elements/MediaControlInputElementTest.cpp",
     "mediastream/MediaConstraintsTest.cpp",
+    "mediastream/MediaDevicesTest.cpp",
     "notifications/NotificationDataTest.cpp",
     "notifications/NotificationImageLoaderTest.cpp",
     "notifications/NotificationResourcesLoaderTest.cpp",
