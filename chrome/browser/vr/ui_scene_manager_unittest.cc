@@ -196,7 +196,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
   GetBackgroundColor(&fullscreen_background);
   EXPECT_NE(initial_background, fullscreen_background);
 
-  manager_->SetIncognito(true);
+  SetIncognito(true);
 
   // Make sure background has changed for incognito.
   SkColor incognito_background = SK_ColorBLACK;
@@ -204,7 +204,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
   EXPECT_NE(fullscreen_background, incognito_background);
   EXPECT_NE(initial_background, incognito_background);
 
-  manager_->SetIncognito(false);
+  SetIncognito(false);
   SkColor no_longer_incognito_background = SK_ColorBLACK;
   GetBackgroundColor(&no_longer_incognito_background);
   EXPECT_EQ(fullscreen_background, no_longer_incognito_background);
@@ -214,15 +214,38 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
   GetBackgroundColor(&no_longer_fullscreen_background);
   EXPECT_EQ(initial_background, no_longer_fullscreen_background);
 
-  manager_->SetIncognito(true);
+  SetIncognito(true);
   SkColor incognito_again_background = SK_ColorBLACK;
   GetBackgroundColor(&incognito_again_background);
   EXPECT_EQ(incognito_background, incognito_again_background);
 
-  manager_->SetIncognito(false);
+  SetIncognito(false);
   SkColor no_longer_incognito_again_background = SK_ColorBLACK;
   GetBackgroundColor(&no_longer_incognito_again_background);
   EXPECT_EQ(initial_background, no_longer_incognito_again_background);
+}
+
+TEST_F(UiSceneManagerTest, VoiceSearchHiddenInIncognito) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  model_->experimental_features_enabled = true;
+  EXPECT_TRUE(OnBeginFrame());
+  EXPECT_TRUE(IsVisible(kVoiceSearchButton));
+
+  SetIncognito(true);
+  EXPECT_TRUE(OnBeginFrame());
+  EXPECT_FALSE(IsVisible(kVoiceSearchButton));
+
+  // If experimental VR features are disabled, then we should never show the
+  // button, regardless of whether or not we're in incognito mode.
+  model_->experimental_features_enabled = false;
+  SetIncognito(false);
+  EXPECT_TRUE(OnBeginFrame());
+  EXPECT_FALSE(IsVisible(kVoiceSearchButton));
+
+  SetIncognito(true);
+  EXPECT_TRUE(OnBeginFrame());
+  EXPECT_FALSE(IsVisible(kVoiceSearchButton));
 }
 
 TEST_F(UiSceneManagerTest, WebVrAutopresented) {

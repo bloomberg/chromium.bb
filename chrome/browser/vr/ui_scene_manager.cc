@@ -48,7 +48,6 @@
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/vector_icons/vector_icons.h"
 #include "chrome/browser/vr/vr_gl_util.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -556,20 +555,23 @@ void UiSceneManager::CreateViewportAwareRoot() {
 }
 
 void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
-  std::unique_ptr<UiElement> element;
-
-  auto voice_search_button = base::MakeUnique<Button>(
+  std::unique_ptr<UiElement> element = base::MakeUnique<Button>(
       base::Bind(&UiSceneManager::OnVoiceSearchButtonClicked,
                  base::Unretained(this)),
       base::MakeUnique<VectorIconButtonTexture>(vector_icons::kMicrophoneIcon));
-  voice_search_button_ = voice_search_button.get();
-  element = std::move(voice_search_button);
   element->set_name(kVoiceSearchButton);
   element->set_draw_phase(kPhaseForeground);
   element->SetTranslate(kVoiceSearchButtonXOffset, 0.f, 0.f);
   element->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   element->set_x_anchoring(XAnchoring::XRIGHT);
-  control_elements_.push_back(element.get());
+  element->AddBinding(base::MakeUnique<Binding<bool>>(
+      base::Bind(
+          [](Model* m) {
+            return !m->incognito && m->experimental_features_enabled;
+          },
+          base::Unretained(model)),
+      base::Bind([](UiElement* e, const bool& v) { e->SetVisible(v); },
+                 element.get())));
   scene_->AddUiElement(kUrlBar, std::move(element));
 
   auto speech_recognition_prompt = base::MakeUnique<UiElement>();
@@ -1001,10 +1003,6 @@ void UiSceneManager::ConfigureScene() {
   bool controls_visible = browsing_mode && !fullscreen_ && !prompting_to_exit_;
   for (UiElement* element : control_elements_) {
     element->SetVisible(controls_visible);
-  }
-
-  if (!base::FeatureList::IsEnabled(features::kExperimentalVRFeatures)) {
-    voice_search_button_->SetVisible(false);
   }
 
   // Close button is a special control element that needs to be hidden when in

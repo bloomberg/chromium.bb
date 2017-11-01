@@ -85,6 +85,11 @@ bool UiSceneManagerTest::IsVisible(UiElementName name) const {
   return IsElementFacingCamera(element);
 }
 
+void UiSceneManagerTest::SetIncognito(bool incognito) {
+  model_->incognito = incognito;
+  manager_->SetIncognito(incognito);
+}
+
 void UiSceneManagerTest::VerifyElementsVisible(
     const std::string& trace_context,
     const std::set<UiElementName>& names) const {

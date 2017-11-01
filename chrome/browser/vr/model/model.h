@@ -28,6 +28,9 @@ struct Model {
   ControllerModel controller;
   ReticleModel reticle;
 
+  bool experimental_features_enabled = false;
+  bool incognito = false;
+
   std::vector<OmniboxSuggestion> omnibox_suggestions;
 };
 
