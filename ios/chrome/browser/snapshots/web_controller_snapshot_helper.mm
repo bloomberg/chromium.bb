@@ -194,7 +194,7 @@
   UIImage* snapshotToCache = nil;
   // TODO(crbug.com/370994): Remove all code that references a Tab's delegates
   // from this file.
-  if (visibleFrameOnly || ![_tab fullScreenControllerDelegate]) {
+  if (visibleFrameOnly || ![_tab legacyFullscreenControllerDelegate]) {
     snapshotToCache = snapshot;
   } else {
     // Crops the bottom of the fullscreen snapshot.
