@@ -1823,8 +1823,6 @@ source_set("unit_tests") {
     "login/users/affiliation_unittest.cc",
     "login/users/multi_profile_user_controller_unittest.cc",
     "login/users/user_manager_unittest.cc",
-    "login/users/wallpaper/wallpaper_manager_test_utils.cc",
-    "login/users/wallpaper/wallpaper_manager_test_utils.h",
     "login/users/wallpaper/wallpaper_manager_unittest.cc",
     "mobile/mobile_activator_unittest.cc",
     "mobile_config_unittest.cc",

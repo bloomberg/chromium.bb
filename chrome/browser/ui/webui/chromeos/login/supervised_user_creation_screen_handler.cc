@@ -300,7 +300,7 @@ void SupervisedUserCreationScreenHandler::HandleManagerSelected(
     const AccountId& manager_id) {
   if (!delegate_)
     return;
-  WallpaperManager::Get()->SetUserWallpaper(manager_id);
+  WallpaperManager::Get()->SetUserWallpaperNow(manager_id);
 }
 
 void SupervisedUserCreationScreenHandler::HandleImportUserSelected(
