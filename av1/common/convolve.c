@@ -25,6 +25,62 @@
 #define MAX_BLOCK_HEIGHT (MAX_SB_SIZE)
 #define MAX_STEP (32)
 
+#if CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
+
+#define UPSCALE_PROC_UNIT 64  // Source step (roughly)
+#define UPSCALE_PROC_UNIT_SCALE (UPSCALE_PROC_UNIT / SCALE_NUMERATOR)
+
+void av1_convolve_horiz_rs_c(const uint8_t *src, int src_stride, uint8_t *dst,
+                             int dst_stride, int w, int h,
+                             const int16_t *x_filters, int interp_taps,
+                             const int x0_qn, const int x_step_qn) {
+  int x, y;
+  src -= interp_taps / 2 - 1;
+  for (y = 0; y < h; ++y) {
+    int x_qn = x0_qn;
+    for (x = 0; x < w; ++x) {
+      const uint8_t *const src_x = &src[x_qn >> RS_SCALE_SUBPEL_BITS];
+      const int x_filter_idx =
+          (x_qn & RS_SCALE_SUBPEL_MASK) >> RS_SCALE_EXTRA_BITS;
+      assert(x_filter_idx <= RS_SUBPEL_MASK);
+      const int16_t *const x_filter = &x_filters[x_filter_idx * interp_taps];
+      int k, sum = 0;
+      for (k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
+      dst[x] = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
+      x_qn += x_step_qn;
+    }
+    src += src_stride;
+    dst += dst_stride;
+  }
+}
+
+#if CONFIG_HIGHBITDEPTH
+void av1_highbd_convolve_horiz_rs_c(const uint16_t *src, int src_stride,
+                                    uint16_t *dst, int dst_stride, int w, int h,
+                                    const int16_t *x_filters, int interp_taps,
+                                    int x0_qn, int x_step_qn, int bd) {
+  int x, y;
+  src -= interp_taps / 2 - 1;
+  for (y = 0; y < h; ++y) {
+    int x_qn = x0_qn;
+    for (x = 0; x < w; ++x) {
+      const uint16_t *const src_x = &src[x_qn >> RS_SCALE_SUBPEL_BITS];
+      const int x_filter_idx =
+          (x_qn & RS_SCALE_SUBPEL_MASK) >> RS_SCALE_EXTRA_BITS;
+      assert(x_filter_idx <= RS_SUBPEL_MASK);
+      const int16_t *const x_filter = &x_filters[x_filter_idx * interp_taps];
+      int k, sum = 0;
+      for (k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
+      dst[x] = clip_pixel_highbd(ROUND_POWER_OF_TWO(sum, FILTER_BITS), bd);
+      x_qn += x_step_qn;
+    }
+    src += src_stride;
+    dst += dst_stride;
+  }
+}
+#endif  // CONFIG_HIGHBITDEPTH
+#endif  // CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
+
 void av1_convolve_horiz_c(const uint8_t *src, int src_stride, uint8_t *dst,
                           int dst_stride, int w, int h,
                           const InterpFilterParams filter_params,
