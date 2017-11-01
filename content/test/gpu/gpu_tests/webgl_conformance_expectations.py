@@ -235,8 +235,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
-    self.Fail('conformance/limits/gl-max-texture-dimensions.html',
-        ['win10', ('nvidia', 0x1cb3)], bug=715001)
     self.Fail('conformance/ogles/GL/atan/atan_001_to_008.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=737018)
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
@@ -299,6 +297,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'intel', 'd3d9'], bug=540538)
 
     # WIN / OpenGL / NVIDIA failures
+    self.Fail('conformance/limits/gl-max-texture-dimensions.html',
+        ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=715001)
     self.Fail('conformance/textures/misc/texture-size.html',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
     self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',

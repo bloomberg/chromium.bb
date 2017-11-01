@@ -101,6 +101,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'd3d11'], bug=735464)
 
     # Win / NVIDIA Quadro P400 / D3D11 flaky failures
+    self.Fail('deqp/data/gles3/shaders/functions.html',
+        ['win', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'basic_types_interleaved_lines.html',
         ['win', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
@@ -734,7 +736,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
     self.Fail('conformance/textures/misc/texture-size-limit.html',
         ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
-
+    self.Fail('deqp/functional/gles3/fbocompleteness.html',
+        ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
