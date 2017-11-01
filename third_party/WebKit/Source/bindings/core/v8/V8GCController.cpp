@@ -168,7 +168,7 @@ class HeapSnaphotWrapperVisitor : public ScriptWrappableVisitor,
     AbortTracing();
 
     groups_.push_back(
-        std::make_pair(new SuspendableObjectsInfo(found_v8_wrappers_.size()),
+        std::make_pair(new PausableObjectsInfo(found_v8_wrappers_.size()),
                        std::move(found_v8_wrappers_)));
   }
 
