@@ -39,7 +39,7 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  void CreateBubbleView(bool use_icons) {
+  void CreateBubbleView(bool use_icons, bool disable_stay_in_chrome) {
     // Pushing a couple of fake apps just to check they are created on the UI.
     app_info_.emplace_back(gfx::Image(), "package_1", "dank app 1");
     app_info_.emplace_back(gfx::Image(), "package_2", "dank_app_2");
@@ -60,8 +60,9 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
                       ui::PAGE_TRANSITION_TYPED, false));
 
     bubble_ = IntentPickerBubbleView::CreateBubbleView(
-        app_info_, base::Bind(&IntentPickerBubbleViewTest::OnBubbleClosed,
-                              base::Unretained(this)),
+        app_info_, disable_stay_in_chrome,
+        base::Bind(&IntentPickerBubbleViewTest::OnBubbleClosed,
+                   base::Unretained(this)),
         web_contents);
   }
 
@@ -85,7 +86,7 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
 
 // Verifies that we didn't set up an image for any LabelButton.
 TEST_F(IntentPickerBubbleViewTest, NullIcons) {
-  CreateBubbleView(false);
+  CreateBubbleView(false, false);
   size_t size = bubble_->GetScrollViewSizeForTesting();
   for (size_t i = 0; i < size; ++i) {
     gfx::ImageSkia image = bubble_->GetAppImageForTesting(i);
@@ -95,7 +96,7 @@ TEST_F(IntentPickerBubbleViewTest, NullIcons) {
 
 // Verifies that all the icons contain a non-null icon.
 TEST_F(IntentPickerBubbleViewTest, NonNullIcons) {
-  CreateBubbleView(true);
+  CreateBubbleView(true, false);
   size_t size = bubble_->GetScrollViewSizeForTesting();
   for (size_t i = 0; i < size; ++i) {
     gfx::ImageSkia image = bubble_->GetAppImageForTesting(i);
@@ -108,7 +109,7 @@ TEST_F(IntentPickerBubbleViewTest, NonNullIcons) {
 // shown to the user on the picker UI, so there could be a difference
 // represented by |chrome_package_repetitions|.
 TEST_F(IntentPickerBubbleViewTest, LabelsPtrVectorSize) {
-  CreateBubbleView(true);
+  CreateBubbleView(true, false);
   size_t size = app_info_.size();
   size_t chrome_package_repetitions = 0;
   for (AppInfo app_info : app_info_) {
@@ -123,7 +124,7 @@ TEST_F(IntentPickerBubbleViewTest, LabelsPtrVectorSize) {
 
 // Verifies the InkDrop state when creating a new bubble.
 TEST_F(IntentPickerBubbleViewTest, VerifyStartingInkDrop) {
-  CreateBubbleView(true);
+  CreateBubbleView(true, false);
   size_t size = bubble_->GetScrollViewSizeForTesting();
   for (size_t i = 0; i < size; ++i) {
     EXPECT_EQ(bubble_->GetInkDropStateForTesting(i),
@@ -134,7 +135,7 @@ TEST_F(IntentPickerBubbleViewTest, VerifyStartingInkDrop) {
 // Press each button at a time and make sure it goes to ACTIVATED state,
 // followed by HIDDEN state after selecting other button.
 TEST_F(IntentPickerBubbleViewTest, InkDropStateTransition) {
-  CreateBubbleView(true);
+  CreateBubbleView(true, false);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
   size_t size = bubble_->GetScrollViewSizeForTesting();
@@ -150,7 +151,7 @@ TEST_F(IntentPickerBubbleViewTest, InkDropStateTransition) {
 // Arbitrary press the first button twice, check that the InkDropState remains
 // the same.
 TEST_F(IntentPickerBubbleViewTest, PressButtonTwice) {
-  CreateBubbleView(true);
+  CreateBubbleView(true, false);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
   EXPECT_EQ(bubble_->GetInkDropStateForTesting(0), views::InkDropState::HIDDEN);
@@ -165,10 +166,19 @@ TEST_F(IntentPickerBubbleViewTest, PressButtonTwice) {
 // Check that none of the app candidates within the picker corresponds to the
 // Chrome browser.
 TEST_F(IntentPickerBubbleViewTest, ChromeNotInCandidates) {
-  CreateBubbleView(false);
+  CreateBubbleView(false, false);
   size_t size = bubble_->GetScrollViewSizeForTesting();
   for (size_t i = 0; i < size; ++i) {
     EXPECT_FALSE(arc::ArcIntentHelperBridge::IsIntentHelperPackage(
         bubble_->GetPackageNameForTesting(i)));
   }
+}
+
+// Check that 'Stay in Chrome' remains enabled/disabled accordingly.
+TEST_F(IntentPickerBubbleViewTest, StayInChromeTest) {
+  CreateBubbleView(false, true);
+  EXPECT_EQ(bubble_->GetStayInChromeEnabledForTesting(), false);
+
+  CreateBubbleView(false, false);
+  EXPECT_EQ(bubble_->GetStayInChromeEnabledForTesting(), true);
 }
