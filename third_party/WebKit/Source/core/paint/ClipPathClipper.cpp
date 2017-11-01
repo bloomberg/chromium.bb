@@ -170,7 +170,14 @@ bool ClipPathClipper::PrepareEffect(const FloatRect& target_bounding_box,
   // Masked content layer start.
   mask_content_recorder_.emplace(context_, layout_object_, SkBlendMode::kSrcIn,
                                  1, &visual_rect);
-
+  // This is a hack to make sure masked content layer's visual rect at least
+  // as big as the clip mask layer, so it won't get culled out inadvertently.
+  if (!DrawingRecorder::UseCachedDrawingIfPossible(
+          context_, layout_object_, DisplayItem::kSVGClipBoundsHack)) {
+    DrawingRecorder recorder(context_, layout_object_,
+                             DisplayItem::kSVGClipBoundsHack);
+    context_.FillRect(FloatRect());
+  }
   return true;
 }
 

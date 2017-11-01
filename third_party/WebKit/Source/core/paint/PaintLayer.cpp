@@ -2477,21 +2477,6 @@ FloatRect PaintLayer::BoxForFilterOrMask() const {
                          kIncludeTransformsAndCompositedChildLayers));
 }
 
-LayoutRect PaintLayer::BoxForClipPath() const {
-  if (!GetLayoutObject().IsBox()) {
-    SECURITY_DCHECK(GetLayoutObject().IsLayoutInline());
-    const LayoutInline& layout_inline = ToLayoutInline(GetLayoutObject());
-    // This somewhat convoluted computation matches what Gecko does.
-    // See crbug.com/641907.
-    LayoutRect inline_b_box = layout_inline.LinesBoundingBox();
-    const InlineFlowBox* flow_box = layout_inline.FirstLineBox();
-    inline_b_box.SetHeight(flow_box ? flow_box->FrameRect().Height()
-                                    : LayoutUnit(0));
-    return inline_b_box;
-  }
-  return ToLayoutBox(GetLayoutObject()).BorderBoxRect();
-}
-
 bool PaintLayer::HitTestClippedOutByClipPath(
     PaintLayer* root_layer,
     const HitTestLocation& hit_test_location) const {
@@ -2500,7 +2485,7 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   DCHECK(IsSelfPaintingLayer());
   DCHECK(root_layer);
 
-  LayoutRect reference_box(BoxForClipPath());
+  LayoutRect reference_box(GetLayoutObject().LocalReferenceBoxForClipPath());
   if (EnclosingPaginationLayer())
     ConvertFromFlowThreadToVisualBoundingBoxInAncestor(root_layer,
                                                        reference_box);

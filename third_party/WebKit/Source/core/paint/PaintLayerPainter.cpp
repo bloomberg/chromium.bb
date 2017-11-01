@@ -395,7 +395,8 @@ PaintResult PaintLayerPainter::PaintLayerContents(
                        kPaintLayerPaintingAncestorClippingMaskPhase)))) {
     painting_info.ancestor_has_clip_path_clipping = true;
 
-    LayoutRect reference_box(paint_layer_.BoxForClipPath());
+    LayoutRect reference_box(
+        paint_layer_.GetLayoutObject().LocalReferenceBoxForClipPath());
     // Note that this isn't going to work correctly if crossing a column
     // boundary. The reference box should be determined per-fragment, and hence
     // this ought to be performed after fragmentation.

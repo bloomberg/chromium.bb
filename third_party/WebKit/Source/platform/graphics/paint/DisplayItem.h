@@ -89,6 +89,7 @@ class PLATFORM_EXPORT DisplayItem {
     kPrintedContentPDFURLRect,
     kResizer,
     kSVGClip,
+    kSVGClipBoundsHack,
     kSVGFilter,
     kSVGMask,
     kScrollbarBackButtonEnd,

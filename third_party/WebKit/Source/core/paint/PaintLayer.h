@@ -439,7 +439,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   LayoutRect FragmentsBoundingBox(const PaintLayer* ancestor_layer) const;
 
   FloatRect BoxForFilterOrMask() const;
-  LayoutRect BoxForClipPath() const;
 
   LayoutRect BoundingBoxForCompositingOverlapTest() const;
   LayoutRect BoundingBoxForCompositing() const;
