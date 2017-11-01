@@ -241,9 +241,6 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           Chromium is unresponsive. Relaunch now?
         </message>
       </if>
-      <message name="IDS_IMPORTER_LOCK_TEXT" desc="The message to be displayed on dialog">
-        To finish importing, close all Firefox windows.
-      </message>
       <!-- Uninstall messages -->
       <if expr="is_win">
         <message name="IDS_UNINSTALL_CLOSE_APP" desc="Message to user when uninstall detects other app instance running">
