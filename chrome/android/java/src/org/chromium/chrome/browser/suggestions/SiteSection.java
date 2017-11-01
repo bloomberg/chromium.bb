@@ -49,9 +49,7 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
     }
 
     public static SiteSectionViewHolder createViewHolder(ViewGroup view, UiConfig uiConfig) {
-        return SuggestionsConfig.useSitesExplorationUi()
-                ? new SiteExploreViewHolder(view, MAX_TILE_COLUMNS)
-                : new TileGridViewHolder(view, getMaxTileRows(), MAX_TILE_COLUMNS, uiConfig);
+        return new TileGridViewHolder(view, getMaxTileRows(), MAX_TILE_COLUMNS, uiConfig);
     }
 
     public SiteSection(SuggestionsUiDelegate uiDelegate, ContextMenuManager contextMenuManager,
@@ -127,9 +125,6 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
 
     @LayoutRes
     private static int getLayout() {
-        if (SuggestionsConfig.useSitesExplorationUi()) {
-            return R.layout.suggestions_site_explore;
-        }
         if (FeatureUtilities.isChromeHomeEnabled()) {
             return R.layout.suggestions_site_tile_grid_modern;
         }
