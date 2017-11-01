@@ -1642,6 +1642,7 @@ MediaStreamDispatcher* RenderFrameImpl::GetMediaStreamDispatcher() {
 }
 
 void RenderFrameImpl::ScriptedPrint(bool user_initiated) {
+  SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.ScriptedPrint");
   for (auto& observer : observers_)
     observer.ScriptedPrint(user_initiated);
 }
@@ -1676,9 +1677,12 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 
   GetContentClient()->SetActiveURL(frame_->GetDocument().Url());
 
-  for (auto& observer : observers_) {
-    if (observer.OnMessageReceived(msg))
-      return true;
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.OnMessageReceived");
+    for (auto& observer : observers_) {
+      if (observer.OnMessageReceived(msg))
+        return true;
+    }
   }
 
   bool handled = true;
@@ -2655,6 +2659,7 @@ void RenderFrameImpl::LoadNavigationErrorPageInternal(
 
 void RenderFrameImpl::DidMeaningfulLayout(
     blink::WebMeaningfulLayout layout_type) {
+  SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidMeaningfulLayout");
   for (auto& observer : observers_)
     observer.DidMeaningfulLayout(layout_type);
 }
@@ -3203,8 +3208,12 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       provider->IsControlledByServiceWorker());
   worker_fetch_context->set_origin_url(
       GURL(frame_->GetDocument().Url()).GetOrigin());
-  for (auto& observer : observers_)
-    observer.WillCreateWorkerFetchContext(worker_fetch_context.get());
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "RenderFrameObservers.WillCreateWorkerFetchContext");
+    for (auto& observer : observers_)
+      observer.WillCreateWorkerFetchContext(worker_fetch_context.get());
+  }
   return std::move(worker_fetch_context);
 }
 
@@ -3435,6 +3444,7 @@ void RenderFrameImpl::FrameFocused() {
 }
 
 void RenderFrameImpl::WillCommitProvisionalLoad() {
+  SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.WillCommitProvisionalLoad");
   for (auto& observer : observers_)
     observer.WillCommitProvisionalLoad();
 }
@@ -3564,6 +3574,7 @@ void RenderFrameImpl::DownloadURL(const blink::WebURLRequest& request,
 }
 
 void RenderFrameImpl::WillSendSubmitEvent(const blink::WebFormElement& form) {
+  SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.WillSendSubmitEvent");
   for (auto& observer : observers_)
     observer.WillSendSubmitEvent(form);
 }
@@ -3587,8 +3598,11 @@ void RenderFrameImpl::WillSubmitForm(const blink::WebFormElement& form) {
   internal_data->set_searchable_form_encoding(
       web_searchable_form_data.Encoding().Utf8());
 
-  for (auto& observer : observers_)
-    observer.WillSubmitForm(form);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.WillSubmitForm");
+    for (auto& observer : observers_)
+      observer.WillSubmitForm(form);
+  }
 }
 
 void RenderFrameImpl::DidCreateDocumentLoader(
@@ -3745,8 +3759,11 @@ void RenderFrameImpl::DidStartProvisionalLoad(
       navigation_state->common_params().navigation_start;
   DCHECK(!navigation_start.is_null());
 
-  for (auto& observer : observers_)
-    observer.DidStartProvisionalLoad(document_loader);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidStartProvisionalLoad");
+    for (auto& observer : observers_)
+      observer.DidStartProvisionalLoad(document_loader);
+  }
 
   std::vector<GURL> redirect_chain;
   GetRedirectChain(document_loader, &redirect_chain);
@@ -3772,8 +3789,11 @@ void RenderFrameImpl::DidFailProvisionalLoad(
   //
   for (auto& observer : render_view_->observers())
     observer.DidFailProvisionalLoad(frame_, error);
-  for (auto& observer : observers_)
-    observer.DidFailProvisionalLoad(error);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidFailProvisionalLoad");
+    for (auto& observer : observers_)
+      observer.DidFailProvisionalLoad(error);
+  }
 
   WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
   if (!document_loader)
@@ -3948,9 +3968,12 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
 
   for (auto& observer : render_view_->observers_)
     observer.DidCommitProvisionalLoad(frame_, is_new_navigation);
-  for (auto& observer : observers_) {
-    observer.DidCommitProvisionalLoad(
-        is_new_navigation, navigation_state->WasWithinSameDocument());
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidCommitProvisionalLoad");
+    for (auto& observer : observers_) {
+      observer.DidCommitProvisionalLoad(
+          is_new_navigation, navigation_state->WasWithinSameDocument());
+    }
   }
 
   // Notify the MediaPermissionDispatcher that its connection will be closed
@@ -4008,8 +4031,11 @@ void RenderFrameImpl::DidClearWindowObject() {
 
   for (auto& observer : render_view_->observers())
     observer.DidClearWindowObject(frame_);
-  for (auto& observer : observers_)
-    observer.DidClearWindowObject();
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidClearWindowObject");
+    for (auto& observer : observers_)
+      observer.DidClearWindowObject();
+  }
 }
 
 void RenderFrameImpl::DidCreateDocumentElement() {
@@ -4085,8 +4111,11 @@ void RenderFrameImpl::DidFinishDocumentLoad() {
                "RenderFrameImpl::didFinishDocumentLoad", "id", routing_id_);
   Send(new FrameHostMsg_DidFinishDocumentLoad(routing_id_));
 
-  for (auto& observer : observers_)
-    observer.DidFinishDocumentLoad();
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidFinishDocumentLoad");
+    for (auto& observer : observers_)
+      observer.DidFinishDocumentLoad();
+  }
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
@@ -4176,8 +4205,11 @@ void RenderFrameImpl::DidFinishLoad() {
                          TRACE_EVENT_SCOPE_PROCESS);
   }
 
-  for (auto& observer : observers_)
-    observer.DidFinishLoad();
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidFinishLoad");
+    for (auto& observer : observers_)
+      observer.DidFinishLoad();
+  }
 
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
   Send(new FrameHostMsg_DidFinishLoad(routing_id_,
@@ -4785,8 +4817,11 @@ void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
     blink::WebContextFeatures::EnableMojoJS(context, true);
   }
 
-  for (auto& observer : observers_)
-    observer.DidCreateScriptContext(context, world_id);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidCreateScriptContext");
+    for (auto& observer : observers_)
+      observer.DidCreateScriptContext(context, world_id);
+  }
 }
 
 void RenderFrameImpl::WillReleaseScriptContext(v8::Local<v8::Context> context,
@@ -4798,8 +4833,11 @@ void RenderFrameImpl::WillReleaseScriptContext(v8::Local<v8::Context> context,
 void RenderFrameImpl::DidChangeScrollOffset() {
   render_view_->StartNavStateSyncTimerIfNecessary(this);
 
-  for (auto& observer : observers_)
-    observer.DidChangeScrollOffset();
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidChangeScrollOffset");
+    for (auto& observer : observers_)
+      observer.DidChangeScrollOffset();
+  }
 }
 
 void RenderFrameImpl::WillInsertBody() {
@@ -5399,8 +5437,11 @@ void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
   // focused input and the newly focused input share the exact same state.
   GetRenderWidget()->ClearTextInputState();
 
-  for (auto& observer : observers_)
-    observer.FocusedNodeChanged(node);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.FocusedNodeChanged");
+    for (auto& observer : observers_)
+      observer.FocusedNodeChanged(node);
+  }
 }
 
 void RenderFrameImpl::FocusedNodeChangedForAccessibility(const WebNode& node) {

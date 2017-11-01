@@ -73,6 +73,7 @@ static const size_t kMaxIndexChars = 65535;
 
 // Constants for UMA statistic collection.
 static const char kTranslateCaptureText[] = "Translate.CaptureText";
+static const char kTranslatePageCaptured[] = "Translate.PageCaptured";
 
 // For a page that auto-refreshes, we still show the bubble, if
 // the refresh delay is less than this value (in seconds).
@@ -412,8 +413,10 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
 
   // We should run language detection only once. Parsing finishes before
   // the page loads, so let's pick that timing.
-  if (translate_helper_ && capture_type == PRELIMINARY_CAPTURE)
+  if (translate_helper_ && capture_type == PRELIMINARY_CAPTURE) {
+    SCOPED_UMA_HISTOGRAM_TIMER(kTranslatePageCaptured);
     translate_helper_->PageCaptured(contents);
+  }
 
   TRACE_EVENT0("renderer", "ChromeRenderFrameObserver::CapturePageText");
 
