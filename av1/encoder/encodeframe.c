@@ -3520,9 +3520,6 @@ static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
 #if CONFIG_SIMPLIFY_TX_MODE
 static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
   if (cpi->common.all_lossless) return ONLY_4X4;
-#if CONFIG_VAR_TX_NO_TX_MODE
-  return TX_MODE_SELECT;
-#else
   if (cpi->sf.tx_size_search_method == USE_LARGESTALL)
     return TX_MODE_LARGEST;
   else if (cpi->sf.tx_size_search_method == USE_FULL_RD ||
@@ -3530,14 +3527,10 @@ static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
     return TX_MODE_SELECT;
   else
     return cpi->common.tx_mode;
-#endif  // CONFIG_VAR_TX_NO_TX_MODE
 }
 #else
 static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
   if (cpi->common.all_lossless) return ONLY_4X4;
-#if CONFIG_VAR_TX_NO_TX_MODE
-  return TX_MODE_SELECT;
-#else
   if (cpi->sf.tx_size_search_method == USE_LARGESTALL)
     return ALLOW_32X32 + CONFIG_TX64X64;
   else if (cpi->sf.tx_size_search_method == USE_FULL_RD ||
@@ -3545,7 +3538,6 @@ static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
     return TX_MODE_SELECT;
   else
     return cpi->common.tx_mode;
-#endif  // CONFIG_VAR_TX_NO_TX_MODE
 }
 #endif  // CONFIG_SIMPLIFY_TX_MODE
 

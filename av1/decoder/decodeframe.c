@@ -120,20 +120,11 @@ static int decode_unsigned_max(struct aom_read_bit_buffer *rb, int max) {
 #if CONFIG_SIMPLIFY_TX_MODE
 static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (cm->all_lossless) return ONLY_4X4;
-#if CONFIG_VAR_TX_NO_TX_MODE
-  (void)rb;
-  return TX_MODE_SELECT;
-#else
   return aom_rb_read_bit(rb) ? TX_MODE_SELECT : TX_MODE_LARGEST;
-#endif  // CONFIG_VAR_TX_NO_TX_MODE
 }
 #else
 static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (cm->all_lossless) return ONLY_4X4;
-#if CONFIG_VAR_TX_NO_TX_MODE
-  (void)rb;
-  return TX_MODE_SELECT;
-#else
 #if CONFIG_TX64X64
   TX_MODE tx_mode =
       aom_rb_read_bit(rb) ? TX_MODE_SELECT : aom_rb_read_literal(rb, 2);
@@ -142,7 +133,6 @@ static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #else
   return aom_rb_read_bit(rb) ? TX_MODE_SELECT : aom_rb_read_literal(rb, 2);
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_VAR_TX_NO_TX_MODE
 }
 #endif  // CONFIG_SIMPLIFY_TX_MODE
 
