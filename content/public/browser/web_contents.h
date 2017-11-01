@@ -738,6 +738,10 @@ class WebContents : public PageNavigator,
   // Returns true if audio has recently been audible from the WebContents.
   virtual bool WasRecentlyAudible() = 0;
 
+  // Returns true if audio has been audible from the WebContents since the last
+  // navigation.
+  virtual bool WasEverAudible() = 0;
+
   // The callback invoked when the renderer responds to a request for the main
   // frame document's manifest. The url will be empty if the document specifies
   // no manifest, and the manifest will be empty if any other failures occurred.

@@ -448,6 +448,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
             const blink::WebFindOptions& options) override;
   void StopFinding(StopFindAction action) override;
   bool WasRecentlyAudible() override;
+  bool WasEverAudible() override;
   void GetManifest(const GetManifestCallback& callback) override;
   bool IsFullscreenForCurrentTab() const override;
   void ExitFullscreen(bool will_cause_resize) override;
@@ -1668,6 +1669,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   VideoSizeMap cached_video_sizes_;
 
   bool has_persistent_video_ = false;
+
+  bool was_ever_audible_ = false;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

@@ -157,9 +157,9 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
     if (!base::FeatureList::IsEnabled(features::kSoundContentSetting))
       return false;
 
-    // The sound content setting should show always show up when the tab is
-    // playing audio or has recently played audio.
-    if (web_contents && web_contents->WasRecentlyAudible())
+    // The sound content setting should always show up when the tab has played
+    // audio.
+    if (web_contents && web_contents->WasEverAudible())
       return true;
   }
 
