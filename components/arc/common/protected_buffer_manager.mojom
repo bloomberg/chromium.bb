@@ -5,7 +5,7 @@
 // The original version of this file lives in the Chromium repository at:
 // src/components/arc/common/protected_buffer_manager.mojom
 
-module media.mojom;
+module arc.mojom;
 
 // This interface is exposed by the GPU process for translating dummy handles
 // for secure buffers into a usable shared memory handle. The output of a

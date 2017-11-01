@@ -57,7 +57,8 @@ struct GFX_EXPORT NativePixmapHandle {
 // Returns an instance of |handle| which can be sent over IPC. This duplicates
 // the file-handles, so that the IPC code take ownership of them, without
 // invalidating |handle|.
-NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle);
+GFX_EXPORT NativePixmapHandle
+CloneHandleForIPC(const NativePixmapHandle& handle);
 #endif
 
 }  // namespace gfx

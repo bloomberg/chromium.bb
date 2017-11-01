@@ -98,6 +98,7 @@ struct TypeConverter<chromeos::arc::ArcVideoDecodeAccelerator::Config,
     chromeos::arc::ArcVideoDecodeAccelerator::Config result;
     result.num_input_buffers = input->num_input_buffers;
     result.input_pixel_format = input->input_pixel_format;
+    result.secure_mode = input->secure_mode;
     return result;
   }
 };
@@ -108,9 +109,12 @@ namespace chromeos {
 namespace arc {
 
 GpuArcVideoDecodeAccelerator::GpuArcVideoDecodeAccelerator(
-    const gpu::GpuPreferences& gpu_preferences)
+    const gpu::GpuPreferences& gpu_preferences,
+    ProtectedBufferManager* protected_buffer_manager)
     : gpu_preferences_(gpu_preferences),
-      accelerator_(new ChromeArcVideoDecodeAccelerator(gpu_preferences_)) {}
+      accelerator_(std::make_unique<ChromeArcVideoDecodeAccelerator>(
+          gpu_preferences_,
+          protected_buffer_manager)) {}
 
 GpuArcVideoDecodeAccelerator::~GpuArcVideoDecodeAccelerator() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -166,7 +170,9 @@ void GpuArcVideoDecodeAccelerator::Initialize(
     LOG(ERROR) << "only decoder is supported";
     std::move(callback).Run(
         ::arc::mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
+    return;
   }
+
   client_ = std::move(client);
   ArcVideoDecodeAccelerator::Result result = accelerator_->Initialize(
       config.To<ArcVideoDecodeAccelerator::Config>(), this);
@@ -195,6 +201,26 @@ base::ScopedFD GpuArcVideoDecodeAccelerator::UnwrapFdFromMojoHandle(
   }
 
   return base::ScopedFD(platform_file);
+}
+
+void GpuArcVideoDecodeAccelerator::AllocateProtectedBuffer(
+    ::arc::mojom::PortType port,
+    uint32_t index,
+    mojo::ScopedHandle handle,
+    uint64_t size,
+    AllocateProtectedBufferCallback callback) {
+  DVLOG(2) << "port=" << port << ", index=" << index << ", size=" << size;
+
+  base::ScopedFD fd = UnwrapFdFromMojoHandle(std::move(handle));
+  if (!fd.is_valid()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  bool result = accelerator_->AllocateProtectedBuffer(
+      static_cast<PortType>(port), index, std::move(fd), size);
+
+  std::move(callback).Run(result);
 }
 
 void GpuArcVideoDecodeAccelerator::BindSharedMemory(

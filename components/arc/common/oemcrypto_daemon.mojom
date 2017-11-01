@@ -21,5 +21,5 @@ import "protected_buffer_manager.mojom";
 // Next Method ID: 1
 interface OemCryptoHostDaemon {
   Connect@0(arc.mojom.OemCryptoService& oemcryptor,
-            media.mojom.ProtectedBufferManager protected_buffer_manager);
+            arc.mojom.ProtectedBufferManager protected_buffer_manager);
 };
