@@ -212,8 +212,9 @@ class VIEWS_EXPORT TreeView : public View,
 
     // Returns the max width of all descendants (including this node). |indent|
     // is how many pixels each child is indented and |depth| is the depth of
-    // this node from its parent.
-    int GetMaxWidth(int indent, int depth);
+    // this node from its parent. The tree this node is being placed inside is
+    // |tree|.
+    int GetMaxWidth(TreeView* tree, int indent, int depth);
 
    private:
     // The node from the model.
@@ -296,6 +297,11 @@ class VIEWS_EXPORT TreeView : public View,
   void PaintExpandControl(gfx::Canvas* canvas,
                           const gfx::Rect& node_bounds,
                           bool expanded);
+
+  // Paints the icon for the specified |node| in |bounds| to |canvas|.
+  void PaintNodeIcon(gfx::Canvas* canvas,
+                     InternalNode* node,
+                     const gfx::Rect& bounds);
 
   // Returns the InternalNode for a model node. |create_type| indicates wheter
   // this should load InternalNode or not.

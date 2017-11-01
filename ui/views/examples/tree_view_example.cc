@@ -29,6 +29,11 @@ class ExampleTreeViewDrawingProvider : public views::TreeViewDrawingProvider {
     return views::TreeViewDrawingProvider::GetAuxiliaryTextForNode(tree_view,
                                                                    node);
   }
+
+  bool ShouldDrawIconForNode(views::TreeView* tree_view,
+                             ui::TreeModelNode* node) override {
+    return tree_view->GetSelectedNode() != node;
+  }
 };
 
 }  // namespace

@@ -36,6 +36,10 @@ class VIEWS_EXPORT TreeViewDrawingProvider {
   // of the node's row in the treeview.
   virtual base::string16 GetAuxiliaryTextForNode(TreeView* tree_view,
                                                  ui::TreeModelNode* node);
+
+  // This method returns whether the icon for |node| should be drawn.
+  virtual bool ShouldDrawIconForNode(TreeView* tree_view,
+                                     ui::TreeModelNode* node);
 };
 
 }  // namespace views

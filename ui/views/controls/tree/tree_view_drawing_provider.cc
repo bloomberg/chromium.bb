@@ -40,4 +40,9 @@ base::string16 TreeViewDrawingProvider::GetAuxiliaryTextForNode(
   return base::string16();
 }
 
+bool TreeViewDrawingProvider::ShouldDrawIconForNode(TreeView* tree_view,
+                                                    ui::TreeModelNode* node) {
+  return true;
+}
+
 }  // namespace views
