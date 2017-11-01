@@ -45,7 +45,8 @@ class MEDIA_EXPORT BufferReader {
   bool HasBytes(size_t count) {
     // As the size of a box is implementation limited to 2^31, fail if
     // attempting to check for too many bytes.
-    const size_t impl_limit = 1 << 31;
+    const size_t impl_limit =
+        static_cast<size_t>(std::numeric_limits<int32_t>::max());
     return pos_ <= buf_size_ && count <= impl_limit &&
            count <= buf_size_ - pos_;
   }
