@@ -5512,6 +5512,9 @@ the Bookmarks menu.">
       </if>
 
       <!-- Importer Lock Dialog -->
+      <message name="IDS_IMPORTER_LOCK_TEXT" desc="The message to be displayed in the importer-lock dialog">
+        To finish importing, close all Firefox windows.
+      </message>
       <if expr="use_titlecase">
         <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
           Close Firefox
