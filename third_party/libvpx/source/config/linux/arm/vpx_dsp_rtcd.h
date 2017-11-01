@@ -466,12 +466,12 @@ void vpx_h_predictor_8x8_c(uint8_t* dst,
 #define vpx_h_predictor_8x8 vpx_h_predictor_8x8_c
 
 void vpx_hadamard_16x16_c(const int16_t* src_diff,
-                          int src_stride,
+                          ptrdiff_t src_stride,
                           int16_t* coeff);
 #define vpx_hadamard_16x16 vpx_hadamard_16x16_c
 
 void vpx_hadamard_8x8_c(const int16_t* src_diff,
-                        int src_stride,
+                        ptrdiff_t src_stride,
                         int16_t* coeff);
 #define vpx_hadamard_8x8 vpx_hadamard_8x8_c
 
