@@ -4128,10 +4128,7 @@
       "gl_unittests",
       "headless_shell",
       "media_unittests",
-      "net_unittests",
-      "skia_unittests",
-      "service_manager_unittests",
-      "ui_base_unittests"
+      "net_unittests"
     ],
     "gtest_tests": [
       {
@@ -4193,6 +4190,30 @@
           "can_use_on_swarming_builders": true
         },
         "test": "mojo_system_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.service_manager_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "service_manager_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "skia_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ui_base_unittests"
       }
     ]
   },
