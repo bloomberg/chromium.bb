@@ -251,7 +251,7 @@ TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
       EXPECT_EQ(GURL("http://check.googlezip.net/generate_204"),
                 params::GetWarmupURL());
     }
-    EXPECT_EQ(test.expect_warmup_url_enabled, params::FetchWarmupURLEnabled());
+    EXPECT_TRUE(params::FetchWarmupURLEnabled());
   }
 }
 
