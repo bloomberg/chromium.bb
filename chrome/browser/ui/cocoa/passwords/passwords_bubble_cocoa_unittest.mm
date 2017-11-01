@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/mac/foundation_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -30,14 +31,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "ui/base/ui_base_features.h"
 
 using testing::Return;
 using testing::ReturnRef;
 
 class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
  public:
+  ManagePasswordsBubbleCocoaTest() {}
+
+  // CocoaProfileTest:
   void SetUp() override {
     CocoaProfileTest::SetUp();
+
+    // This file only tests Cocoa UI and can be deleted when kSecondaryUiMd is
+    // default.
+    scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
 
     // Create the WebContents.
     siteInstance_ = content::SiteInstance::Create(profile());
@@ -109,8 +118,11 @@ class ManagePasswordsBubbleCocoaTest : public CocoaProfileTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<content::SiteInstance> siteInstance_;
   content::WebContents* test_web_contents_;  // weak
+
+  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleCocoaTest);
 };
 
 TEST_F(ManagePasswordsBubbleCocoaTest, ShowShouldCreateAndShowBubble) {
