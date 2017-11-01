@@ -24493,6 +24493,7 @@ from previous Chrome versions.
   <int value="-723224470" label="enable-password-force-saving:enabled"/>
   <int value="-722474177" label="browser-side-navigation:disabled"/>
   <int value="-718626298" label="SysInternals:enabled"/>
+  <int value="-717281513" label="ash-enable-keyboard-shortcut-viewer"/>
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
   <int value="-715733307" label="force-effective-connection-type"/>
   <int value="-714712077" label="ClickToOpenPDFPlaceholder:disabled"/>

@@ -24,6 +24,10 @@ const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 const char kAshDisableShelfModelSynchronization[] =
     "ash-disable-shelf-model-synchronization";
 
+// Disables a smoother animation for screen rotation.
+const char kAshDisableSmoothScreenRotation[] =
+    "ash-disable-smooth-screen-rotation";
+
 // Disables autohide titlebars feature. With this flag disabled, apps in tablet
 // mode will have visible titlebars instead of autohidden titlebars.
 // TODO(crbug.com/764393): Remove this flag in M66/M67.
@@ -39,6 +43,11 @@ const char kAshDisableTouchExplorationMode[] =
 // Enables Backbutton on frame for v1 apps.
 // TODO(oshima): Remove this once the feature is launched. crbug.com/749713.
 const char kAshEnableV1AppBackButton[] = "ash-enable-v1-app-back-button";
+
+// Enables keyboard shortcut viewer.
+// TODO(wutao): Remove this once the feature is launched. crbug.com/768932.
+const char kAshEnableKeyboardShortcutViewer[] =
+    "ash-enable-keyboard-shortcut-viewer";
 
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =
@@ -68,10 +77,6 @@ const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
 // Enables display scale tray settings. This uses force-device-scale-factor flag
 // to modify the dsf of the device to any non discrete value.
 const char kAshEnableScaleSettingsTray[] = "ash-enable-scale-settings-tray";
-
-// Disables a smoother animation for screen rotation.
-const char kAshDisableSmoothScreenRotation[] =
-    "ash-disable-smooth-screen-rotation";
 
 // Specifies the estimated time (in milliseconds) from VSYNC event until when
 // visible light can be noticed by the user.
