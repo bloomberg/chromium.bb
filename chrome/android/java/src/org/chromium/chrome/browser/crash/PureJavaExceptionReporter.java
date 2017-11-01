@@ -27,7 +27,7 @@ import java.util.UUID;
 @MainDex
 public class PureJavaExceptionReporter {
     // report fields, please keep the name sync with MIME blocks in breakpad_linux.cc
-    public static final String CHANNEL = "Channel";
+    public static final String CHANNEL = "channel";
     public static final String VERSION = "ver";
     public static final String PRODUCT = "prod";
     public static final String ANDROID_BUILD_ID = "android_build_id";
