@@ -8,7 +8,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,12 +28,12 @@ void ChromeWebTest::SetUp() {
       chrome_browser_state_.get(),
       &password_manager::BuildPasswordStore<
           web::BrowserState, password_manager::MockPasswordStore>);
-  [FullScreenController setEnabledForTests:NO];
+  [LegacyFullscreenController setEnabledForTests:NO];
 }
 
 void ChromeWebTest::TearDown() {
   WaitForBackgroundTasks();
-  [FullScreenController setEnabledForTests:YES];
+  [LegacyFullscreenController setEnabledForTests:YES];
   web::WebTestWithWebState::TearDown();
 }
 
