@@ -168,6 +168,10 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
         test_state_->ChildProcessLaunched(handle, id);
     }
 
+    void OnTimedOut(const base::CommandLine& command_line) override {
+      test_launcher_delegate_->OnTestTimedOut(command_line);
+    }
+
     void OnCompleted(int exit_code,
                      base::TimeDelta elapsed_time,
                      bool was_timeout,
@@ -197,6 +201,10 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   void RunDependentTest(base::TestLauncher* test_launcher,
                         const std::string test_name,
                         const base::TestResult& pre_test_result);
+
+  // Relays timeout notification from the TestLauncher (by way of a
+  // ProcessLifetimeObserver) to the caller's content::TestLauncherDelegate.
+  void OnTestTimedOut(const base::CommandLine& command_line);
 
   // Callback to receive result of a test.
   // |output_file| is a path to xml file written by test-launcher
@@ -471,6 +479,11 @@ void WrapperTestLauncherDelegate::RunDependentTest(
                        test_result);
     }
   }
+}
+
+void WrapperTestLauncherDelegate::OnTestTimedOut(
+    const base::CommandLine& command_line) {
+  launcher_delegate_->OnTestTimedOut(command_line);
 }
 
 void WrapperTestLauncherDelegate::GTestCallback(
