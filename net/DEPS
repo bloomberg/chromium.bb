@@ -64,6 +64,11 @@ specific_include_rules = {
   "fuzzer_test_support.cc": [
     "+base/i18n",
   ],
+
+  # Needed for fuzz targets written using libprotobuf-mutator library.
+  ".*fuzz.*": [
+    "+third_party/libprotobuf-mutator",
+  ]
 }
 
 skip_child_includes = [
