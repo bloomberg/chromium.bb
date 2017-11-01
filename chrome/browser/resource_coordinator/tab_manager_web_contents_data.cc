@@ -79,6 +79,7 @@ void TabManager::WebContentsData::DidFinishNavigation(
     return;
   }
 
+  tab_data_.navigation_time = navigation_handle->NavigationStart();
   ukm_source_id_ = ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
                                           ukm::SourceIdType::NAVIGATION_ID);
 }
@@ -104,6 +105,8 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
                                base::TimeDelta::FromSeconds(1),
                                base::TimeDelta::FromDays(1), 100);
   }
+
+  ReportUKMWhenTabIsClosed();
 
   if (!web_contents()->IsVisible() &&
       tab_data_.last_inactive_time != base::TimeTicks::UnixEpoch()) {
@@ -228,6 +231,15 @@ TimeTicks TabManager::WebContentsData::NowTicks() const {
   return test_tick_clock_->NowTicks();
 }
 
+void TabManager::WebContentsData::ReportUKMWhenTabIsClosed() {
+  if (!ukm_source_id_)
+    return;
+  auto duration = NowTicks() - tab_data_.navigation_time;
+  ukm::builders::TabManager_TabLifetime(ukm_source_id_)
+      .SetTimeSinceNavigation(duration.InMilliseconds())
+      .Record(ukm::UkmRecorder::Get());
+}
+
 void TabManager::WebContentsData::
     ReportUKMWhenBackgroundTabIsClosedOrForegrounded(bool is_foregrounded) {
   if (!ukm_source_id_)
@@ -243,6 +255,7 @@ TabManager::WebContentsData::Data::Data()
     : is_discarded(false),
       discard_count(0),
       is_recently_audible(false),
+      navigation_time(TimeTicks::UnixEpoch()),
       last_audio_change_time(TimeTicks::UnixEpoch()),
       last_discard_time(TimeTicks::UnixEpoch()),
       last_reload_time(TimeTicks::UnixEpoch()),
