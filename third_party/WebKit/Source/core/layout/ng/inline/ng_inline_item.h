@@ -65,6 +65,9 @@ class CORE_EXPORT NGInlineItem {
     return static_cast<NGLayoutInlineShapeOptions>(shape_options_);
   }
 
+  // If this item is "empty" for the purpose of empty block calculation.
+  bool IsEmptyItem() const { return is_empty_item_; }
+
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
   unsigned Length() const { return end_offset_ - start_offset_; }
@@ -111,6 +114,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned type_ : 4;
   unsigned bidi_level_ : 8;  // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;
+  unsigned is_empty_item_ : 1;
 
   friend class NGInlineNode;
 };

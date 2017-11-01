@@ -106,33 +106,6 @@ static bool ShouldRemoveNewline(const StringBuilder& before,
                                  after_style);
 }
 
-// Returns true if this item is "empty", i.e. if the node contains only empty
-// items it will produce a single zero block-size line box.
-static bool IsItemEmpty(NGInlineItem::NGInlineItemType type,
-                        const ComputedStyle* style) {
-  if (type == NGInlineItem::kAtomicInline || type == NGInlineItem::kControl ||
-      type == NGInlineItem::kText)
-    return false;
-
-  if (type == NGInlineItem::kOpenTag) {
-    DCHECK(style);
-
-    if (!style->MarginStart().IsZero() || style->BorderStart().NonZero() ||
-        !style->PaddingStart().IsZero())
-      return false;
-  }
-
-  if (type == NGInlineItem::kCloseTag) {
-    DCHECK(style);
-
-    if (!style->MarginEnd().IsZero() || style->BorderEnd().NonZero() ||
-        !style->PaddingEnd().IsZero())
-      return false;
-  }
-
-  return true;
-}
-
 static void AppendItem(Vector<NGInlineItem>* items,
                        NGInlineItem::NGInlineItemType type,
                        unsigned start,
@@ -250,7 +223,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     if (last_collapsible_space_ == CollapsibleSpace::kSpace &&
         !style->AutoWrap())
       last_collapsible_space_ = CollapsibleSpace::kSpaceNoWrap;
-    is_empty_inline_ &= IsItemEmpty(NGInlineItem::kText, style);
+    is_empty_inline_ &= items_->back().IsEmptyItem();
   }
 }
 
@@ -278,7 +251,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     AppendItem(items_, NGInlineItem::kText, start_offset, text_.length(), style,
                layout_object);
 
-    is_empty_inline_ &= IsItemEmpty(NGInlineItem::kText, style);
+    is_empty_inline_ &= items_->back().IsEmptyItem();
     start = end;
   }
 
@@ -339,7 +312,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset - 1, end_offset, style, layout_object);
 
-  is_empty_inline_ &= IsItemEmpty(type, style);
+  is_empty_inline_ &= items_->back().IsEmptyItem();
   last_collapsible_space_ = CollapsibleSpace::kNone;
 }
 
@@ -363,7 +336,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset - 1, end_offset, style, layout_object);
 
-  is_empty_inline_ &= IsItemEmpty(type, nullptr);
+  is_empty_inline_ &= items_->back().IsEmptyItem();
 }
 
 template <typename OffsetMappingBuilder>
@@ -374,7 +347,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
   unsigned end_offset = text_.length();
   AppendItem(items_, type, end_offset, end_offset, style, layout_object);
 
-  is_empty_inline_ &= IsItemEmpty(type, style);
+  is_empty_inline_ &= items_->back().IsEmptyItem();
 }
 
 // Removes the collapsible newline at the end of |text_| if exists and the

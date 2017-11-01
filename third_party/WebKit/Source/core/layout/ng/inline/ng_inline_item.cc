@@ -17,6 +17,33 @@ const char* kNGInlineItemTypeStrings[] = {
     "Text",     "Control",  "AtomicInline",        "OpenTag",
     "CloseTag", "Floating", "OutOfFlowPositioned", "BidiControl"};
 
+// Returns true if this item is "empty", i.e. if the node contains only empty
+// items it will produce a single zero block-size line box.
+static bool IsEmptyItem(NGInlineItem::NGInlineItemType type,
+                        const ComputedStyle* style) {
+  if (type == NGInlineItem::kAtomicInline || type == NGInlineItem::kControl ||
+      type == NGInlineItem::kText)
+    return false;
+
+  if (type == NGInlineItem::kOpenTag) {
+    DCHECK(style);
+
+    if (!style->MarginStart().IsZero() || style->BorderStart().NonZero() ||
+        !style->PaddingStart().IsZero())
+      return false;
+  }
+
+  if (type == NGInlineItem::kCloseTag) {
+    DCHECK(style);
+
+    if (!style->MarginEnd().IsZero() || style->BorderEnd().NonZero() ||
+        !style->PaddingEnd().IsZero())
+      return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 NGInlineItem::NGInlineItem(NGInlineItemType type,
@@ -31,7 +58,8 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       layout_object_(layout_object),
       type_(type),
       bidi_level_(UBIDI_LTR),
-      shape_options_(kPreContext | kPostContext) {
+      shape_options_(kPreContext | kPostContext),
+      is_empty_item_(::blink::IsEmptyItem(type, style)) {
   DCHECK_GE(end, start);
 }
 
