@@ -92,6 +92,10 @@ class MediaEngagementService : public KeyedService,
   // The name of the histogram that scores are logged to on startup.
   static const char kHistogramScoreAtStartupName[];
 
+  // The name of the histogram that records the reduction in score when history
+  // is cleared.
+  static const char kHistogramURLsDeletedScoreReductionName[];
+
  private:
   friend class MediaEngagementBrowserTest;
   friend class MediaEngagementServiceTest;

@@ -456,6 +456,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
          (!(remove_mask & DATA_TYPE_HISTORY) &&
           !(remove_mask & content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS)));
 
+  HostContentSettingsMap* host_content_settings_map_ =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_HISTORY
   if ((remove_mask & DATA_TYPE_HISTORY) && may_delete_history) {
@@ -696,10 +699,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
 
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->ClearSettingsForOneTypeWithPredicate(
-            CONTENT_SETTINGS_TYPE_CLIENT_HINTS, base::Time(),
-            base::Bind(&WebsiteSettingsFilterAdapter, filter));
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        CONTENT_SETTINGS_TYPE_CLIENT_HINTS, base::Time(),
+        base::Bind(&WebsiteSettingsFilterAdapter, filter));
 
     // Clear the safebrowsing cookies only if time period is for "all time".  It
     // doesn't make sense to apply the time period of deleting in the last X
@@ -744,9 +746,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ContentSettings"));
     const auto* registry =
         content_settings::ContentSettingsRegistry::GetInstance();
-    auto* map = HostContentSettingsMapFactory::GetForProfile(profile_);
     for (const content_settings::ContentSettingsInfo* info : *registry) {
-      map->ClearSettingsForOneTypeWithPredicate(
+      host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
           info->website_settings_info()->type(), delete_begin_,
           HostContentSettingsMap::PatternSourcePredicate());
     }
@@ -760,35 +761,31 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_DURABLE_PERMISSION
   if (remove_mask & DATA_TYPE_DURABLE_PERMISSION) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->ClearSettingsForOneTypeWithPredicate(
-            CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, base::Time(),
-            base::Bind(&WebsiteSettingsFilterAdapter, filter));
-  }
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Media Engagement
-  if (remove_mask & DATA_TYPE_SITE_USAGE_DATA &&
-      MediaEngagementService::IsEnabled()) {
-    MediaEngagementService::Get(profile_)->ClearDataBetweenTime(delete_begin_,
-                                                                delete_end_);
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, base::Time(),
+        base::Bind(&WebsiteSettingsFilterAdapter, filter));
   }
 
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_SITE_USAGE_DATA
   if (remove_mask & DATA_TYPE_SITE_USAGE_DATA) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->ClearSettingsForOneTypeWithPredicate(
-            CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, base::Time(),
-            base::Bind(&WebsiteSettingsFilterAdapter, filter));
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_SiteUsageData"));
+
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, base::Time(),
+        base::Bind(&WebsiteSettingsFilterAdapter, filter));
+
+    if (MediaEngagementService::IsEnabled()) {
+      MediaEngagementService::Get(profile_)->ClearDataBetweenTime(delete_begin_,
+                                                                  delete_end_);
+    }
   }
 
   if ((remove_mask & DATA_TYPE_SITE_USAGE_DATA) ||
       (remove_mask & DATA_TYPE_HISTORY)) {
-    HostContentSettingsMapFactory::GetForProfile(profile_)
-        ->ClearSettingsForOneTypeWithPredicate(
-            CONTENT_SETTINGS_TYPE_APP_BANNER, base::Time(),
-            base::Bind(&WebsiteSettingsFilterAdapter, filter));
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        CONTENT_SETTINGS_TYPE_APP_BANNER, base::Time(),
+        base::Bind(&WebsiteSettingsFilterAdapter, filter));
 
     PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveCountsByUrl(
         filter);
