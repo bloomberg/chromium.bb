@@ -22,11 +22,14 @@
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "url/origin.h"
 
+namespace storage {
+class BlobDataHandle;
+}
+
 namespace content {
 
 class BackgroundFetchRequestInfo;
 struct BackgroundFetchSettledFetch;
-class BlobHandle;
 class BrowserContext;
 class ChromeBlobStorageContext;
 class ServiceWorkerContextWrapper;
@@ -48,11 +51,11 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
   using MarkedCompleteCallback =
       base::OnceCallback<void(bool /* has_pending_or_active_requests */)>;
-  using SettledFetchesCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              bool /* background_fetch_succeeded */,
-                              std::vector<BackgroundFetchSettledFetch>,
-                              std::vector<std::unique_ptr<BlobHandle>>)>;
+  using SettledFetchesCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      bool /* background_fetch_succeeded */,
+      std::vector<BackgroundFetchSettledFetch>,
+      std::vector<std::unique_ptr<storage::BlobDataHandle>>)>;
   // Note that this also handles non-error cases where the NONE is NONE.
   using HandleBackgroundFetchErrorCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;

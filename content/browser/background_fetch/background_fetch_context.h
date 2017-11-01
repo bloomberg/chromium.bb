@@ -20,13 +20,16 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
+namespace storage {
+class BlobDataHandle;
+}
+
 namespace content {
 
 class BackgroundFetchJobController;
 struct BackgroundFetchOptions;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRegistrationNotifier;
-class BlobHandle;
 class BrowserContext;
 class ServiceWorkerContextWrapper;
 struct ServiceWorkerFetchRequest;
@@ -111,14 +114,15 @@ class CONTENT_EXPORT BackgroundFetchContext
       blink::mojom::BackgroundFetchError error,
       bool background_fetch_succeeded,
       std::vector<BackgroundFetchSettledFetch> settled_fetches,
-      std::vector<std::unique_ptr<BlobHandle>> blob_handles);
+      std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles);
 
   // Called when all processing for the |registration_id| has been finished and
   // the job is ready to be deleted. |blob_handles| are unused, but some callers
   // use it to keep blobs alive for the right duration.
   void CleanupRegistration(
       const BackgroundFetchRegistrationId& registration_id,
-      const std::vector<std::unique_ptr<BlobHandle>>& blob_handles);
+      const std::vector<std::unique_ptr<storage::BlobDataHandle>>&
+          blob_data_handles);
 
   // Called when the last JavaScript BackgroundFetchRegistration object has been
   // garbage collected for a registration marked for deletion, and so it is now
