@@ -23,10 +23,10 @@ NSString* NSStringWithProductName(int message_id) {
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }
 
-void MoveViewsDown(NSArray* views, CGFloat distance) {
+void MoveViewsVertically(NSArray* views, CGFloat distance) {
   for (NSView* view : views) {
     NSRect frame = view.frame;
-    frame.origin.y -= distance;
+    frame.origin.y += distance;
     [view setFrame:frame];
   }
 }
@@ -124,18 +124,35 @@ void CenterVertically(NSView* view) {
   [self.view addSubview:bottomSeparator];
   [self.view addSubview:startChromeButton];
 
-  // Now that the content view is constructed, fix the layout: since this view
-  // isn't using autolayout, if the widths of some of the subviews change
-  // because of localization, they need to be resized and perhaps repositioned,
-  // which is done here by |VerticallyReflowGroup()|.
-  CGFloat oldWidth = NSWidth([startChromeButton frame]);
-  cocoa_l10n_util::VerticallyReflowGroup(
-      @[ defaultBrowserCheckbox_, statsCheckbox_ ]);
+  // Now that the content view is constructed, fix the layout. The first step is
+  // to reflow the browser and stats checkbox texts, which can be quite lengthy
+  // in some locales. They may wrap onto additional lines, and in doing so cause
+  // the rest of the dialog to need to be rearranged.
+  {
+    CGFloat delta = cocoa_l10n_util::VerticallyReflowGroup(
+        @[ defaultBrowserCheckbox_, statsCheckbox_ ]);
+    if (delta) {
+      // If reflowing the checkboxes produced a height delta, move the
+      // checkboxes and the items above them in the content view upward, then
+      // grow the content view to match. This has the effect of moving
+      // everything visually-below the checkboxes downwards and expanding the
+      // window, leaving the vertical space the checkboxes need for their text.
+      MoveViewsVertically(
+          @[ defaultBrowserCheckbox_, statsCheckbox_, topSeparator, topBox ],
+          delta);
+      NSRect frame = [self.view frame];
+      frame.size.height += delta;
+      [self.view setAutoresizesSubviews:NO];
+      [self.view setFrame:frame];
+      [self.view setAutoresizesSubviews:YES];
+    }
+  }
 
   // The "Start Chrome" button needs to be sized to fit the localized string
   // inside it, but it should still be at the right-most edge of the dialog, so
   // any width added or subtracted by |sizeToFit| is added to its x coord, which
   // keeps its right edge where it was.
+  CGFloat oldWidth = NSWidth([startChromeButton frame]);
   [startChromeButton sizeToFit];
   NSRect frame = [startChromeButton frame];
   frame.origin.x += oldWidth - NSWidth([startChromeButton frame]);
@@ -146,7 +163,7 @@ void CenterVertically(NSView* view) {
   // view, and resize the content view itself so there isn't extra space.
   if (!defaultBrowserCheckboxVisible_) {
     CGFloat delta = NSHeight([defaultBrowserCheckbox_ frame]);
-    MoveViewsDown(@[ topBox, topSeparator ], delta);
+    MoveViewsVertically(@[ topBox, topSeparator ], -delta);
     NSRect frame = [self.view frame];
     frame.size.height -= delta;
     [self.view setAutoresizesSubviews:NO];

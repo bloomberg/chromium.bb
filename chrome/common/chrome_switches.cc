@@ -899,6 +899,10 @@ const char kEnableMacViewsNativeAppWindows[] =
 // Enables Translate experimental new UX which replaces the infobar.
 const char kEnableTranslateNewUX[] = "enable-translate-new-ux";
 
+// Forces the first-run flow even on unofficial builds. Note that this still
+// requires a fresh user-data-dir.
+const char kForceUnofficialFirstRun[] = "force-unofficial-first-run";
+
 // Shows a notification when quitting Chrome with hosted apps running. Default
 // behavior is to also quit all hosted apps.
 const char kHostedAppQuitNotification[] = "enable-hosted-app-quit-notification";
