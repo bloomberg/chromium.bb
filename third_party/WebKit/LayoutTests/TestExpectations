@@ -291,6 +291,9 @@ crbug.com/763494 [ Mac ] virtual/layout_ng/fast/block/float/editable-text-overla
 
 ### virtual/layout_ng Mac 1px glyph difference.
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/015.html [ Failure ]
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/026.html [ Failure ]
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/028.html [ Failure ]
+crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/shrink-to-avoid-float-complexity.html [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/floats
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
@@ -319,7 +322,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-appl
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-applies-to-008.xht [ Failure ]
 crbug.com/635619 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/floats-clear/clear-applies-to-012.xht [ Failure ]
 crbug.com/635619 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-applies-to-012.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/float-replaced-width-002.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floating-replaced-height-008.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-028.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-036.xht [ Failure ]
@@ -349,10 +351,6 @@ crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatti
 crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/inline-formatting-context-023.xht [ Failure ]
 crbug.com/636993 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-sub-001.xht [ Failure ]
 crbug.com/636993 [ Linux ] virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-super-001.xht [ Failure ]
-
-# Inline: abspos inline static positions.
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-004a.xht [ Failure ]
-crbug.com/636993 virtual/layout_ng/external/wpt/css/CSS2/linebox/vertical-align-baseline-005a.xht [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/normal-flow
 
@@ -438,7 +436,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-re
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-relative-034.xht [ Skip ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-relative-035.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-relative-036.xht [ Skip ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-static-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/positioning-float-001.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/positioning-float-002.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/relpos-calcs-004.xht [ Failure ]
@@ -466,7 +463,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/basic/011.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/014.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/018.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/020.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/basic/fieldset-stretch-to-legend.html [ Failure Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/quirk-height.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/quirk-percent-height-grandchild.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/text-indent-rtl.html [ Failure ]
@@ -480,8 +476,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/015.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/018.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/020.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/022.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/026.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/028.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/031.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/035.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/assert-when-moving-float.html [ Failure ]
@@ -500,9 +494,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-in-float-hit-testing.h
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-in-float-painting.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-inserted-into-clean-line.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-list-changed-before-layout-crash.html [ Crash Pass ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-first-letter.html [ Crash Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling4.html [ Crash Pass ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-zero-height-line.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-overflow-hidden-containing-block-width.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-reparent-during-detach-crash.html [ Crash Pass ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-and-text-indent-rl.html [ Failure ]
@@ -523,10 +515,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/independent-align-positionin
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/intruding-painted-twice.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space-crash.html [ Pass Crash Timeout ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/logical-bottom-exceeds-layoutunit-max.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/negative-margin-on-element-avoiding-floats-with-margin-on-parent.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/negative-margin-on-element-avoiding-floats.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/nested-clearance.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/nopaint-after-layer-destruction.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/nopaint-after-layer-destruction2.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block.html [ Failure ]
@@ -536,7 +526,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/overlapping-floats-paint-hit
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-tall-block.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/rubybase-children-moved-crash-2.html [ Failure Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/rubybase-children-moved-crash.html [ Crash Pass ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/shrink-to-avoid-float-complexity.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-with-columns.html [ Crash Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse
@@ -544,7 +533,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/032.html [ Failure
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/033.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/057.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/103.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/self-collapsing-cols-creates-block-formatting-context.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse/block-inside-inline
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/006.html [ Failure ]
