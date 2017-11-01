@@ -52,3 +52,6 @@
 
 # Flaky: https://crbug.com/777917.
 -LevelDBTransactionRangeTests/LevelDBTransactionRangeTest.*
+
+# Flaky: https://crbug.com/780508.
+-ServiceWorkerProviderHostTest.*
