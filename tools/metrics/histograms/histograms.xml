@@ -33099,6 +33099,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Engagement.URLsDeletedScoreReduction" units="%">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Recorded when the history is cleared and the media engagement data are
+    similarly cleared. It records the reduction in score for each affected
+    origin. The algorithm is made to reduce the score by 0.0 as much as possible
+    and if it fails, the score will actually become 0.0 so every reduction also
+    represent the value of the previous score.
+  </summary>
+</histogram>
+
 <histogram name="Media.FallbackHardwareAudioBitsPerChannel">
   <owner>dalecurtis@chromium.org</owner>
   <summary>

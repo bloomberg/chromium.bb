@@ -3339,6 +3339,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ClearBrowsingData_SiteUsageData">
+  <owner>mlamouri@chromium.org</owner>
+  <description>Recorded when the user clears site usage data.</description>
+</action>
+
 <action name="ClearBrowsingData_SwitchTo_AdvancedTab">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
