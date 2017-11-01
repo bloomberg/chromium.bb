@@ -7,6 +7,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
+import("//build/config/host_byteorder.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
@@ -889,6 +890,25 @@ config("compiler_cpu_abi") {
           "arm-nonsfi",
           "--target=armv7-unknown-nacl-gnueabihf",
         ]
+      }
+    } else if (current_cpu == "ppc64") {
+      if (v8_current_cpu == "ppc") {
+        cflags += [ "-m32" ]
+        ldflags += [ "-m32" ]
+      } else if (v8_current_cpu == "ppc64") {
+        cflags += [ "-m64" ]
+        ldflags += [ "-m64" ]
+      }
+    } else if (current_cpu == "s390x") {
+      if (v8_current_cpu == "s390" && host_byteorder == "little") {
+        cflags += [ "-m32" ]
+        ldflags += [ "-m32" ]
+      } else if (v8_current_cpu == "s390") {
+        cflags += [ "-m31" ]
+        ldflags += [ "-m31" ]
+      } else if (v8_current_cpu == "s390x") {
+        cflags += [ "-m64" ]
+        ldflags += [ "-m64" ]
       }
     }
   }
