@@ -10,8 +10,8 @@
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
+#include "chrome/browser/vr/controller_mesh.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
-#include "chrome/browser/vr/vr_controller_model.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -56,6 +56,15 @@ class VrShellRenderer : public vr::UiElementRenderer {
                             const SkColor grid_color,
                             int gridline_count,
                             float opacity) override;
+  void DrawController(ControllerMesh::State state,
+                      float opacity,
+                      const gfx::Transform& view_proj_matrix) override;
+
+  void DrawLaser(float opacity,
+                 const gfx::Transform& view_proj_matrix) override;
+
+  void DrawReticle(float opacity,
+                   const gfx::Transform& view_proj_matrix) override;
 
   // VrShell's internal GL rendering API.
   ExternalTexturedQuadRenderer* GetExternalTexturedQuadRenderer();
@@ -201,7 +210,7 @@ class ReticleRenderer : public BaseQuadRenderer {
   ReticleRenderer();
   ~ReticleRenderer() override;
 
-  void Draw(const gfx::Transform& view_proj_matrix);
+  void Draw(float opacity, const gfx::Transform& view_proj_matrix);
 
  private:
   GLuint model_view_proj_matrix_handle_;
@@ -212,6 +221,7 @@ class ReticleRenderer : public BaseQuadRenderer {
   GLuint inner_ring_thickness_handle_;
   GLuint mid_ring_end_handle_;
   GLuint mid_ring_opacity_handle_;
+  GLuint opacity_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ReticleRenderer);
 };
@@ -240,8 +250,8 @@ class ControllerRenderer : public BaseRenderer {
   ControllerRenderer();
   ~ControllerRenderer() override;
 
-  void SetUp(std::unique_ptr<VrControllerModel> model);
-  void Draw(VrControllerModel::State state,
+  void SetUp(std::unique_ptr<ControllerMesh> model);
+  void Draw(ControllerMesh::State state,
             float opacity,
             const gfx::Transform& view_proj_matrix);
   bool IsSetUp() const { return setup_; }

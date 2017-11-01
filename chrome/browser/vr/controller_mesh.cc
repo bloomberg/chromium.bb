@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/vr_controller_model.h"
+#include "chrome/browser/vr/controller_mesh.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/core/SkSwizzle.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -35,25 +36,31 @@ const gfx::Point kPatchesLocations[] = {{}, {5, 5}, {47, 165}, {47, 234}};
 sk_sp<SkImage> LoadPng(int resource_id) {
   base::StringPiece data =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
+
   SkBitmap bitmap;
   bool decoded =
       gfx::PNGCodec::Decode(reinterpret_cast<const unsigned char*>(data.data()),
                             data.size(), &bitmap);
   DCHECK(decoded);
-  DCHECK(bitmap.colorType() == kRGBA_8888_SkColorType);
+  if (bitmap.colorType() == kBGRA_8888_SkColorType) {
+    SkSwapRB(bitmap.getAddr32(0, 0), bitmap.getAddr32(0, 0),
+             bitmap.width() * bitmap.height());
+  } else {
+    DCHECK(bitmap.colorType() == kRGBA_8888_SkColorType);
+  }
   return SkImage::MakeFromBitmap(bitmap);
 }
 
 }  // namespace
 
-VrControllerModel::VrControllerModel(
+ControllerMesh::ControllerMesh(
     std::unique_ptr<vr::gltf::Asset> gltf_asset,
     std::vector<std::unique_ptr<vr::gltf::Buffer>> buffers)
     : gltf_asset_(std::move(gltf_asset)), buffers_(std::move(buffers)) {}
 
-VrControllerModel::~VrControllerModel() = default;
+ControllerMesh::~ControllerMesh() = default;
 
-const GLvoid* VrControllerModel::ElementsBuffer() const {
+const GLvoid* ControllerMesh::ElementsBuffer() const {
   const vr::gltf::BufferView* buffer_view =
       gltf_asset_->GetBufferView(ELEMENTS_BUFFER_ID);
   DCHECK(buffer_view && buffer_view->target == GL_ARRAY_BUFFER);
@@ -61,14 +68,14 @@ const GLvoid* VrControllerModel::ElementsBuffer() const {
   return buffer ? buffer + buffer_view->byte_offset : nullptr;
 }
 
-GLsizeiptr VrControllerModel::ElementsBufferSize() const {
+GLsizeiptr ControllerMesh::ElementsBufferSize() const {
   const vr::gltf::BufferView* buffer_view =
       gltf_asset_->GetBufferView(ELEMENTS_BUFFER_ID);
   DCHECK(buffer_view && buffer_view->target == GL_ARRAY_BUFFER);
   return buffer_view->byte_length;
 }
 
-const GLvoid* VrControllerModel::IndicesBuffer() const {
+const GLvoid* ControllerMesh::IndicesBuffer() const {
   const vr::gltf::BufferView* buffer_view =
       gltf_asset_->GetBufferView(INDICES_BUFFER_ID);
   DCHECK(buffer_view && buffer_view->target == GL_ELEMENT_ARRAY_BUFFER);
@@ -76,38 +83,38 @@ const GLvoid* VrControllerModel::IndicesBuffer() const {
   return buffer ? buffer + buffer_view->byte_offset : nullptr;
 }
 
-GLsizeiptr VrControllerModel::IndicesBufferSize() const {
+GLsizeiptr ControllerMesh::IndicesBufferSize() const {
   const vr::gltf::BufferView* buffer_view =
       gltf_asset_->GetBufferView(INDICES_BUFFER_ID);
   DCHECK(buffer_view && buffer_view->target == GL_ELEMENT_ARRAY_BUFFER);
   return buffer_view->byte_length;
 }
 
-GLenum VrControllerModel::DrawMode() const {
+GLenum ControllerMesh::DrawMode() const {
   const vr::gltf::Mesh* mesh = gltf_asset_->GetMesh(0);
   DCHECK(mesh && mesh->primitives.size());
   return mesh->primitives[0]->mode;
 }
 
-const vr::gltf::Accessor* VrControllerModel::IndicesAccessor() const {
+const vr::gltf::Accessor* ControllerMesh::IndicesAccessor() const {
   const vr::gltf::Mesh* mesh = gltf_asset_->GetMesh(0);
   DCHECK(mesh && mesh->primitives.size());
   return mesh->primitives[0]->indices;
 }
 
-const vr::gltf::Accessor* VrControllerModel::PositionAccessor() const {
+const vr::gltf::Accessor* ControllerMesh::PositionAccessor() const {
   return Accessor(kPosition);
 }
 
-const vr::gltf::Accessor* VrControllerModel::TextureCoordinateAccessor() const {
+const vr::gltf::Accessor* ControllerMesh::TextureCoordinateAccessor() const {
   return Accessor(kTexCoord);
 }
 
-void VrControllerModel::SetBaseTexture(sk_sp<SkImage> image) {
+void ControllerMesh::SetBaseTexture(sk_sp<SkImage> image) {
   base_texture_ = image;
 }
 
-void VrControllerModel::SetTexture(int state, sk_sp<SkImage> patch) {
+void ControllerMesh::SetTexture(int state, sk_sp<SkImage> patch) {
   DCHECK(state >= 0 && state < STATE_COUNT);
   if (!patch) {
     textures_[state] = base_texture_;
@@ -124,18 +131,18 @@ void VrControllerModel::SetTexture(int state, sk_sp<SkImage> patch) {
   textures_[state] = sk_sp<SkImage>(surface->makeImageSnapshot());
 }
 
-sk_sp<SkImage> VrControllerModel::GetTexture(int state) const {
+sk_sp<SkImage> ControllerMesh::GetTexture(int state) const {
   DCHECK(state >= 0 && state < STATE_COUNT);
   return textures_[state];
 }
 
-const char* VrControllerModel::Buffer() const {
+const char* ControllerMesh::Buffer() const {
   if (buffers_.empty())
     return nullptr;
   return buffers_[0]->data();
 }
 
-const vr::gltf::Accessor* VrControllerModel::Accessor(
+const vr::gltf::Accessor* ControllerMesh::Accessor(
     const std::string& key) const {
   const vr::gltf::Mesh* mesh = gltf_asset_->GetMesh(0);
   DCHECK(mesh && mesh->primitives.size());
@@ -144,8 +151,8 @@ const vr::gltf::Accessor* VrControllerModel::Accessor(
   return it->second;
 }
 
-std::unique_ptr<VrControllerModel> VrControllerModel::LoadFromResources() {
-  TRACE_EVENT0("gpu", "VrControllerModel::LoadFromResources");
+std::unique_ptr<ControllerMesh> ControllerMesh::LoadFromResources() {
+  TRACE_EVENT0("gpu", "ControllerMesh::LoadFromResources");
   std::vector<std::unique_ptr<vr::gltf::Buffer>> buffers;
   auto model_data = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_VR_SHELL_DDCONTROLLER_MODEL);
@@ -154,11 +161,11 @@ std::unique_ptr<VrControllerModel> VrControllerModel::LoadFromResources() {
   DCHECK(asset);
 
   auto controller_model =
-      base::MakeUnique<VrControllerModel>(std::move(asset), std::move(buffers));
+      base::MakeUnique<ControllerMesh>(std::move(asset), std::move(buffers));
   sk_sp<SkImage> base_texture = LoadPng(IDR_VR_SHELL_DDCONTROLLER_IDLE_TEXTURE);
   controller_model->SetBaseTexture(std::move(base_texture));
 
-  for (int i = 0; i < VrControllerModel::STATE_COUNT; i++) {
+  for (int i = 0; i < ControllerMesh::STATE_COUNT; i++) {
     if (kTexturePatchesResources[i] == -1) {
       controller_model->SetTexture(i, nullptr);
     } else {

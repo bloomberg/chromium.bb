@@ -25,6 +25,7 @@
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/fps_meter.h"
+#include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -169,14 +170,14 @@ gfx::RectF GfxRectFromUV(gvr::Rectf rect) {
                     rect.top - rect.bottom);
 }
 
-void LoadControllerModelTask(
+void LoadControllerMeshTask(
     base::WeakPtr<VrShellGl> weak_vr_shell_gl,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  auto controller_model = vr::VrControllerModel::LoadFromResources();
-  if (controller_model) {
+  auto controller_mesh = vr::ControllerMesh::LoadFromResources();
+  if (controller_mesh) {
     task_runner->PostTask(
-        FROM_HERE, base::Bind(&VrShellGl::SetControllerModel, weak_vr_shell_gl,
-                              base::Passed(&controller_model)));
+        FROM_HERE, base::Bind(&VrShellGl::SetControllerMesh, weak_vr_shell_gl,
+                              base::Passed(&controller_mesh)));
   }
 }
 
@@ -279,7 +280,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   if (daydream_support_ && !reinitializing) {
     base::PostTaskWithTraits(
         FROM_HERE, {base::TaskPriority::BACKGROUND},
-        base::Bind(LoadControllerModelTask, weak_ptr_factory_.GetWeakPtr(),
+        base::Bind(LoadControllerMeshTask, weak_ptr_factory_.GetWeakPtr(),
                    task_runner_));
   }
 
@@ -544,17 +545,18 @@ void VrShellGl::UpdateController(const gfx::Transform& head_pose) {
   gvr::Mat4f gvr_head_pose;
   TransformToGvrMat(head_pose, &gvr_head_pose);
   controller_->UpdateState(gvr_head_pose);
-  controller_info_.laser_origin = controller_->GetPointerStart();
+  gfx::Point3F laser_origin = controller_->GetPointerStart();
 
   device::GvrGamepadData controller_data = controller_->GetGamepadData();
   if (!ShouldDrawWebVr())
     controller_data.connected = false;
   browser_->UpdateGamepadData(controller_data);
 
-  HandleControllerInput(GetForwardVector(head_pose));
+  HandleControllerInput(laser_origin, GetForwardVector(head_pose));
 }
 
-void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
+void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
+                                      const gfx::Vector3dF& head_direction) {
   if (is_exiting_) {
     // When we're exiting, we don't show the reticle and the only input
     // processing we do is to handle immediate exits.
@@ -583,30 +585,34 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
   if (ShouldDrawWebVr())
     return;
 
-  controller_->GetTransform(&controller_info_.transform);
+  vr::ControllerModel controller_model;
+  controller_->GetTransform(&controller_model.transform);
   std::unique_ptr<GestureList> gesture_list_ptr = controller_->DetectGestures();
   GestureList& gesture_list = *gesture_list_ptr;
-  controller_info_.touchpad_button_state = vr::UiInputManager::ButtonState::UP;
+  controller_model.touchpad_button_state = vr::UiInputManager::ButtonState::UP;
   DCHECK(!(controller_->ButtonUpHappened(gvr::kControllerButtonClick) &&
            controller_->ButtonDownHappened(gvr::kControllerButtonClick)))
       << "Cannot handle a button down and up event within one frame.";
   if (controller_->ButtonState(gvr::kControllerButtonClick)) {
-    controller_info_.touchpad_button_state =
+    controller_model.touchpad_button_state =
         vr::UiInputManager::ButtonState::DOWN;
   }
-  controller_info_.app_button_state =
+  controller_model.app_button_state =
       controller_->ButtonState(gvr::kControllerButtonApp)
           ? vr::UiInputManager::ButtonState::DOWN
           : vr::UiInputManager::ButtonState::UP;
-  controller_info_.home_button_state =
+  controller_model.home_button_state =
       controller_->ButtonState(gvr::kControllerButtonHome)
           ? vr::UiInputManager::ButtonState::DOWN
           : vr::UiInputManager::ButtonState::UP;
-  controller_info_.opacity = controller_->GetOpacity();
-  ui_->input_manager()->HandleInput(
-      controller_direction, controller_info_.laser_origin,
-      controller_info_.touchpad_button_state, &gesture_list,
-      &controller_info_.target_point, &controller_info_.reticle_render_target);
+  controller_model.opacity = controller_->GetOpacity();
+  controller_model.laser_direction = controller_direction;
+  controller_model.laser_origin = laser_origin;
+
+  vr::ReticleModel reticle_model;
+  ui_->input_manager()->HandleInput(controller_model, &reticle_model,
+                                    &gesture_list);
+  ui_->OnControllerUpdated(controller_model, reticle_model);
 }
 
 std::unique_ptr<blink::WebMouseEvent> VrShellGl::MakeMouseEvent(
@@ -1006,7 +1012,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index) {
   // At this point, we draw non-WebVR content that could, potentially, fill the
   // viewport.  NB: this is not just 2d browsing stuff, we may have a splash
   // screen showing in WebVR mode that must also fill the screen.
-  ui_->ui_renderer()->Draw(render_info_primary_, controller_info_);
+  ui_->ui_renderer()->Draw(render_info_primary_);
 
   content_frame_available_ = false;
   acquired_frame_.Unbind();
@@ -1064,8 +1070,8 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index) {
                    kViewportListWebVrBrowserUiOffset, render_size_webvr_ui_,
                    &render_info_webvr_browser_ui);
 
-    ui_->ui_renderer()->DrawWebVrOverlayForeground(render_info_webvr_browser_ui,
-                                                   controller_info_);
+    ui_->ui_renderer()->DrawWebVrOverlayForeground(
+        render_info_webvr_browser_ui);
 
     acquired_frame_.Unbind();
   }
@@ -1231,9 +1237,8 @@ base::WeakPtr<vr::BrowserUiInterface> VrShellGl::GetBrowserUiWeakPtr() {
   return ui_->GetBrowserUiWeakPtr();
 }
 
-void VrShellGl::SetControllerModel(
-    std::unique_ptr<vr::VrControllerModel> model) {
-  ui_->vr_shell_renderer()->GetControllerRenderer()->SetUp(std::move(model));
+void VrShellGl::SetControllerMesh(std::unique_ptr<vr::ControllerMesh> mesh) {
+  ui_->vr_shell_renderer()->GetControllerRenderer()->SetUp(std::move(mesh));
 }
 
 void VrShellGl::OnVSync(base::TimeTicks frame_time) {

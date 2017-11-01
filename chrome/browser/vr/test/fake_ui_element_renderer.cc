@@ -45,4 +45,25 @@ void FakeUiElementRenderer::DrawGradientGridQuad(
   called_ = true;
 }
 
+void FakeUiElementRenderer::DrawController(
+    ControllerMesh::State state,
+    float opacity,
+    const gfx::Transform& view_proj_matrix) {
+  opacity_ = opacity;
+  called_ = true;
+}
+
+void FakeUiElementRenderer::DrawLaser(float opacity,
+                                      const gfx::Transform& view_proj_matrix) {
+  opacity_ = opacity;
+  called_ = true;
+}
+
+void FakeUiElementRenderer::DrawReticle(
+    float opacity,
+    const gfx::Transform& view_proj_matrix) {
+  opacity_ = opacity;
+  called_ = true;
+}
+
 }  // namespace vr

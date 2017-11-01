@@ -212,6 +212,13 @@ UiScene::Elements UiScene::GetVisibleWebVrOverlayForegroundElements() const {
       });
 }
 
+UiScene::Elements UiScene::GetVisibleControllerElements() const {
+  return GetVisibleElements(GetUiElementByName(kControllerGroup),
+                            [](UiElement* element) {
+                              return element->draw_phase() == kPhaseForeground;
+                            });
+}
+
 UiScene::UiScene() {
   root_element_ = base::MakeUnique<UiElement>();
   root_element_->set_name(kRoot);
@@ -228,20 +235,6 @@ void UiScene::OnGlInitialized() {
   gl_initialized_ = true;
   for (auto& element : *root_element_)
     element.Initialize();
-}
-
-bool UiScene::ControllerWouldBeVisibleInTheSceneGraph() const {
-  UiElement* button = GetUiElementByName(kWebVrTimeoutMessageButton);
-  if (button && button->IsVisible())
-    return true;
-
-  UiElement* browsing_root = GetUiElementByName(k2dBrowsingRoot);
-  bool browsing_mode = browsing_root && browsing_root->IsVisible();
-
-  UiElement* spinner_bg = GetUiElementByName(kWebVrTimeoutSpinnerBackground);
-  bool transitioning_to_webvr = spinner_bg && spinner_bg->IsVisible();
-
-  return browsing_mode && !transitioning_to_webvr;
 }
 
 }  // namespace vr

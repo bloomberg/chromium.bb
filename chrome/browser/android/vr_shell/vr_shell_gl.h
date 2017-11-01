@@ -18,9 +18,9 @@
 #include "chrome/browser/android/vr_shell/android_vsync_helper.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/vr/content_input_delegate.h"
+#include "chrome/browser/vr/controller_mesh.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
-#include "chrome/browser/vr/vr_controller_model.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -108,7 +108,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   void UIPhysicalBoundsChanged(int width, int height);
   base::WeakPtr<VrShellGl> GetWeakPtr();
 
-  void SetControllerModel(std::unique_ptr<vr::VrControllerModel> model);
+  void SetControllerMesh(std::unique_ptr<vr::ControllerMesh> mesh);
 
   void ConnectPresentingService(
       device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,
@@ -165,7 +165,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
                           const gfx::PointF& normalized_hit_point) override;
 
   void SendImmediateExitRequestIfNecessary();
-  void HandleControllerInput(const gfx::Vector3dF& head_direction);
+  void HandleControllerInput(const gfx::Point3F& laser_origin,
+                             const gfx::Vector3dF& head_direction);
   void HandleControllerAppButtonActivity(
       const gfx::Vector3dF& controller_direction);
   void SendGestureToContent(std::unique_ptr<blink::WebInputEvent> event);
@@ -280,7 +281,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   gfx::Point3F pointer_start_;
 
-  vr::ControllerInfo controller_info_;
   vr::RenderInfo render_info_primary_;
 
   AndroidVSyncHelper vsync_helper_;

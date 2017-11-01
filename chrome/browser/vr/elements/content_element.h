@@ -46,6 +46,8 @@ class ContentElement : public UiElement {
   unsigned int texture_id_ = 0;
   UiElementRenderer::TextureLocation texture_location_ =
       UiElementRenderer::kTextureLocationExternal;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentElement);
 };
 
 }  // namespace vr
