@@ -619,7 +619,7 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
 
   return coll_blk_count;
 }
-#endif
+#endif  // CONFIG_MFMV
 
 static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                               MV_REFERENCE_FRAME ref_frame,
@@ -826,7 +826,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   } else {
     mode_context[ref_frame] |= (1 << ZEROMV_OFFSET);
   }
-#endif
+#endif  // CONFIG_MFMV
 
   // Scan the second outer area.
   scan_blk_mbmi(cm, xd, mi_row, mi_col, block, rf, -1, -1, ref_mv_stack,
@@ -960,7 +960,11 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int different_ref_found = 0;
   int context_counter = 0;
 
-#if CONFIG_TMV || CONFIG_MFMV
+#if CONFIG_MFMV
+  (void)sync;
+  (void)data;
+#else
+#if CONFIG_TMV
   int tmi_row = mi_row & 0xfffe;
   int tmi_col = mi_col & 0xfffe;
   POSITION mi_pos = { 0, 0 };
@@ -989,8 +993,9 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       cm->use_prev_frame_mvs
           ? cm->prev_frame->mvs + mi_row * cm->mi_cols + mi_col
           : NULL;
-#endif
+#endif  // CONFIG_MV_COMPRESS
 #endif  // CONFIG_TMV
+#endif  // CONFIG_MFMV
 
 #if CONFIG_INTRABC
   assert(IMPLIES(ref_frame == INTRA_FRAME, cm->use_prev_frame_mvs == 0));
@@ -1097,6 +1102,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 #endif
 
+#if !CONFIG_MFMV
   // Check the last frame's mode and mv info.
   if (cm->use_prev_frame_mvs) {
     // Synchronize here for frame parallel decode if sync function is provided.
@@ -1112,6 +1118,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       xd, Done);
     }
   }
+#endif  // !CONFIG_MFMV
 
   // Since we couldn't find 2 mvs from the same reference frame
   // go back through the neighbors and find motion vectors from
@@ -1136,6 +1143,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
   }
 
+#if !CONFIG_MFMV
   // Since we still don't have a candidate we'll try the last frame.
   if (cm->use_prev_frame_mvs) {
     if (prev_frame_mvs->ref_frame[0] != ref_frame &&
@@ -1160,6 +1168,7 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       ADD_MV_REF_LIST(mv, refmv_count, mv_ref_list, bw, bh, xd, Done);
     }
   }
+#endif  // !CONFIG_MFMV
 
 Done:
   if (mode_context)
