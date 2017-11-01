@@ -443,9 +443,9 @@ void ScreenRotationAnimator::AnimateRotation(
       new ui::CallbackLayerAnimationObserver(
           base::Bind(&AnimationEndedCallback, weak_factory_.GetWeakPtr()));
   if (new_layer_tree_owner_)
-    new_layer_animator->AddObserver(observer);
+    new_layer_animation_sequence->AddObserver(observer);
   new_layer_animator->StartAnimation(new_layer_animation_sequence.release());
-  old_layer_animator->AddObserver(observer);
+  old_layer_animation_sequence->AddObserver(observer);
   old_layer_animator->StartAnimation(old_layer_animation_sequence.release());
   observer->SetActive();
 }

@@ -29,7 +29,7 @@ class StickyKeysOverlayView;
 // use of modifier keys without holding them down. This overlay will appear as
 // a transparent window on the top left of the screen, showing the state of
 // each sticky key modifier.
-class ASH_EXPORT StickyKeysOverlay : public ui::LayerAnimationObserver {
+class ASH_EXPORT StickyKeysOverlay : public ui::ImplicitAnimationObserver {
  public:
   StickyKeysOverlay();
   ~StickyKeysOverlay() override;
@@ -59,10 +59,8 @@ class ASH_EXPORT StickyKeysOverlay : public ui::LayerAnimationObserver {
   // Returns the current bounds of the overlay, which is based on visibility.
   gfx::Rect CalculateOverlayBounds();
 
-  // gfx::LayerAnimationObserver overrides:
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
-  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) override;
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
 
   bool is_visible_;
   std::unique_ptr<views::Widget> overlay_widget_;

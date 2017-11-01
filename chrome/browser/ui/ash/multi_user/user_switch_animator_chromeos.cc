@@ -16,6 +16,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -49,32 +50,16 @@ class UserChangeActionDisabler {
 // window we encounter while looping through the old user's windows. This is
 // to observe the end of the animation so that we can destruct the old detached
 // layer of the window.
-class MaximizedWindowAnimationWatcher : public ui::LayerAnimationObserver {
+class MaximizedWindowAnimationWatcher : public ui::ImplicitAnimationObserver {
  public:
-  MaximizedWindowAnimationWatcher(ui::LayerAnimator* animator_to_watch,
-                                  ui::LayerTreeOwner* old_layer)
-      : animator_(animator_to_watch), old_layer_(old_layer) {
-    animator_->AddObserver(this);
-  }
+  explicit MaximizedWindowAnimationWatcher(
+      std::unique_ptr<ui::LayerTreeOwner> old_layer)
+      : old_layer_(std::move(old_layer)) {}
 
-  ~MaximizedWindowAnimationWatcher() override {
-    animator_->RemoveObserver(this);
-  }
-
-  // ui::LayerAnimationObserver:
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
-    delete this;
-  }
-
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
-    delete this;
-  }
-
-  void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) override {}
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override { delete this; }
 
  private:
-  ui::LayerAnimator* animator_;
   std::unique_ptr<ui::LayerTreeOwner> old_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizedWindowAnimationWatcher);
@@ -271,14 +256,20 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
             // We only want to do this for the first (foreground) maximized
             // window we encounter.
             found_foreground_maximized_window = true;
-            ui::LayerTreeOwner* old_layer =
-                wm::RecreateLayers(window).release();
+            std::unique_ptr<ui::LayerTreeOwner> old_layer =
+                wm::RecreateLayers(window);
             window->layer()->parent()->StackAtBottom(old_layer->root());
-            new MaximizedWindowAnimationWatcher(window->layer()->GetAnimator(),
-                                                old_layer);
+            ui::ScopedLayerAnimationSettings settings(
+                window->layer()->GetAnimator());
+            settings.AddObserver(
+                new MaximizedWindowAnimationWatcher(std::move(old_layer)));
+            // Call SetWindowVisibility() within the scope of |settings| so that
+            // MaximizedWindowAnimationWatcher is notified when the animation
+            // completes.
+            owner_->SetWindowVisibility(window, false, duration);
+          } else {
+            owner_->SetWindowVisibility(window, false, duration);
           }
-
-          owner_->SetWindowVisibility(window, false, duration);
         }
       }
 
