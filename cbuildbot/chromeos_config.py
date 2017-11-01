@@ -3259,6 +3259,11 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
     reference_board_name = unibuild[
         config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]
+
+    # TODO(shapiroc): Make the pool config driven via GE config
+    pool = constants.HWTEST_MACH_POOL
+    if reference_board_name.endswith('-uni'):
+      pool = constants.HWTEST_MACH_POOL_UNI
     config_name = '%s-release' % reference_board_name
     site_config.AddForBoards(
         config_lib.CONFIG_TYPE_RELEASE,
@@ -3268,8 +3273,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         models=models,
         important=not unibuild[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL],
         active_waterfall=active_waterfall,
-        hw_tests=hw_test_list.SharedPoolCanary(
-            pool=constants.HWTEST_MACH_POOL_UNI),
+        hw_tests=hw_test_list.SharedPoolCanary(pool=pool),
     )
 
     master_config.AddSlave(site_config[config_name])
