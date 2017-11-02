@@ -907,7 +907,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
     ChromeContentUtilityClient::PreSandboxStartup();
   }
 
-  chrome::InitializePDF();
+  InitializePDF();
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
