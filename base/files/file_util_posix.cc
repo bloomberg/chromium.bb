@@ -266,18 +266,18 @@ bool DeleteFile(const FilePath& path, bool recursive) {
   FileEnumerator traversal(path, true,
       FileEnumerator::FILES | FileEnumerator::DIRECTORIES |
       FileEnumerator::SHOW_SYM_LINKS);
-  for (FilePath current = traversal.Next(); success && !current.empty();
+  for (FilePath current = traversal.Next(); !current.empty();
        current = traversal.Next()) {
     if (traversal.GetInfo().IsDirectory())
       directories.push(current.value());
     else
-      success = (unlink(current.value().c_str()) == 0);
+      success &= (unlink(current.value().c_str()) == 0);
   }
 
-  while (success && !directories.empty()) {
+  while (!directories.empty()) {
     FilePath dir = FilePath(directories.top());
     directories.pop();
-    success = (rmdir(dir.value().c_str()) == 0);
+    success &= (rmdir(dir.value().c_str()) == 0);
   }
   return success;
 }
