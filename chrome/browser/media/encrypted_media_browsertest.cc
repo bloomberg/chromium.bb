@@ -834,13 +834,6 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, VerifyCdmHostTest) {
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, StorageIdTest) {
-  // TODO(jrummell): Support Storage ID in mojo CDM. See
-  // http://crbug.com/478960
-  if (IsUsingMojoCdm()) {
-    DVLOG(0) << "Skipping test; Not working with mojo CDM yet.";
-    return;
-  }
-
   TestNonPlaybackCases(kExternalClearKeyStorageIdTestKeySystem,
                        kUnitTestSuccess);
 }

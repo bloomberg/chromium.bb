@@ -63,8 +63,8 @@ void MojoCdmHelper::ChallengePlatform(const std::string& service_id,
 void MojoCdmHelper::GetStorageId(uint32_t version, StorageIdCB callback) {
   StorageIdCB scoped_callback = ScopedCallbackRunner(
       std::move(callback), version, std::vector<uint8_t>());
-  // TODO(jrummell): Hook up GetStorageId() once added to the mojo interface.
-  // http://crbug.com/478960.
+  ConnectToPlatformVerification();
+  platform_verification_ptr_->GetStorageId(version, std::move(scoped_callback));
 }
 
 void MojoCdmHelper::ConnectToCdmStorage() {
