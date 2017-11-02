@@ -3381,9 +3381,9 @@ class DisableSafeBrowsingOnInProgressDownload
 };
 
 #if defined(OS_WIN)
-const char kDangerousMockFilePath[] = "downloads/dangerous/dangerous.exe";
+const char kDangerousMockFilePath[] = "/downloads/dangerous/dangerous.exe";
 #elif defined(OS_POSIX)
-const char kDangerousMockFilePath[] = "downloads/dangerous/dangerous.sh";
+const char kDangerousMockFilePath[] = "/downloads/dangerous/dangerous.sh";
 #endif
 
 }  // namespace
@@ -3392,8 +3392,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
                        DangerousFileWithSBDisabledBeforeCompletion) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                true);
-  GURL download_url =
-      net::URLRequestMockHTTPJob::GetMockUrl(kDangerousMockFilePath);
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL download_url = embedded_test_server()->GetURL(kDangerousMockFilePath);
+
   std::unique_ptr<content::DownloadTestObserver> dangerous_observer(
       DangerousDownloadWaiter(
           browser(), 1,
@@ -3427,8 +3429,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DangerousFileWithSBDisabledBeforeStart) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                false);
 
-  GURL download_url =
-      net::URLRequestMockHTTPJob::GetMockUrl(kDangerousMockFilePath);
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL download_url = embedded_test_server()->GetURL(kDangerousMockFilePath);
+
   std::unique_ptr<content::DownloadTestObserver> dangerous_observer(
       DangerousDownloadWaiter(
           browser(), 1,
@@ -3473,14 +3477,16 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceDiscardDownload) {
   safe_browsing::SetExtendedReportingPref(prefs, true);
 
   // Make a dangerous file.
-  GURL download_url(net::URLRequestMockHTTPJob::GetMockUrl(
-      "downloads/dangerous/dangerous.swf"));
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL download_url =
+      embedded_test_server()->GetURL("/downloads/dangerous/dangerous.swf");
   std::unique_ptr<content::DownloadTestObserverInterrupted> observer(
       new content::DownloadTestObserverInterrupted(
           DownloadManagerForBrowser(browser()), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT));
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(download_url), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      browser(), download_url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
   observer->WaitForFinished();
 
@@ -3525,8 +3531,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceKeepDownload) {
   safe_browsing::SetExtendedReportingPref(prefs, true);
 
   // Make a dangerous file.
-  GURL download_url(net::URLRequestMockHTTPJob::GetMockUrl(
-      "downloads/dangerous/dangerous.swf"));
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL download_url =
+      embedded_test_server()->GetURL("/downloads/dangerous/dangerous.swf");
+
   std::unique_ptr<content::DownloadTestObserverInterrupted>
       interruption_observer(new content::DownloadTestObserverInterrupted(
           DownloadManagerForBrowser(browser()), 1,
@@ -3536,7 +3545,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceKeepDownload) {
           DownloadManagerForBrowser(browser()), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE));
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(download_url), WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      browser(), download_url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
   interruption_observer->WaitForFinished();
 
@@ -3586,8 +3595,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithFakeSafeBrowsing,
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                true);
   // Make a dangerous file.
-  GURL download_url(
-      net::URLRequestMockHTTPJob::GetMockUrl(kDangerousMockFilePath));
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL download_url = embedded_test_server()->GetURL(kDangerousMockFilePath);
+
   std::unique_ptr<content::DownloadTestObserver> dangerous_observer(
       DangerousDownloadWaiter(
           browser(), 1,
@@ -3622,8 +3633,9 @@ IN_PROC_BROWSER_TEST_F(
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                true);
   // Make a dangerous file.
-  GURL download_url(
-      net::URLRequestMockHTTPJob::GetMockUrl(kDangerousMockFilePath));
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL download_url = embedded_test_server()->GetURL(kDangerousMockFilePath);
   std::unique_ptr<content::DownloadTestObserver> dangerous_observer(
       DangerousDownloadWaiter(
           browser(), 1,
