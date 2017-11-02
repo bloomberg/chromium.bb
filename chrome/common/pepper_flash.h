@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "base/version.h"
 
-namespace chrome {
 // Permission bits for Pepper Flash.
 extern const int32_t kPepperFlashPermissions;
 
@@ -22,7 +21,5 @@ bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
 // Returns true if the version of Flash installed on the system is the Flash
 // Script debugger.
 bool IsSystemFlashScriptDebuggerPresent();
-
-}  // namespace chrome
 
 #endif  // CHROME_COMMON_PEPPER_FLASH_H_

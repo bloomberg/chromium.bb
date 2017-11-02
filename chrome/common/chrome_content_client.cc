@@ -281,7 +281,7 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
   plugin.is_out_of_process = true;
   plugin.name = content::kFlashPluginName;
   plugin.path = path;
-  plugin.permissions = chrome::kPepperFlashPermissions;
+  plugin.permissions = kPepperFlashPermissions;
   plugin.is_external = is_external;
 
   std::vector<std::string> flash_version_numbers = base::SplitString(
@@ -349,7 +349,7 @@ bool TryCreatePepperFlashInfo(const base::FilePath& flash_filename,
     return false;
 
   base::Version version;
-  if (!chrome::CheckPepperFlashManifest(*manifest, &version)) {
+  if (!CheckPepperFlashManifest(*manifest, &version)) {
     LOG(ERROR) << "Browser not compatible with given flash manifest.";
     return false;
   }

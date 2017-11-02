@@ -89,7 +89,7 @@ TEST(ComponentInstallerTest, PepperFlashCheck) {
 
   // This checks that the whole manifest is compatible.
   base::Version version;
-  EXPECT_TRUE(chrome::CheckPepperFlashManifest(*root, &version));
+  EXPECT_TRUE(CheckPepperFlashManifest(*root, &version));
   EXPECT_TRUE(version.IsValid());
 }
 
