@@ -5720,6 +5720,59 @@ weston_output_release(struct weston_output *output)
 	free(output->name);
 }
 
+/** Find an output by its given name
+ *
+ * \param compositor The compositor to search in.
+ * \param name The output name to search for.
+ * \return An existing output with the given name, or NULL if not found.
+ *
+ * \memberof weston_compositor
+ */
+WL_EXPORT struct weston_output *
+weston_compositor_find_output_by_name(struct weston_compositor *compositor,
+				      const char *name)
+{
+	struct weston_output *output;
+
+	wl_list_for_each(output, &compositor->output_list, link)
+		if (strcmp(output->name, name) == 0)
+			return output;
+
+	wl_list_for_each(output, &compositor->pending_output_list, link)
+		if (strcmp(output->name, name) == 0)
+			return output;
+
+	return NULL;
+}
+
+/** Create a named output
+ *
+ * \param compositor The compositor.
+ * \param name The name for the output.
+ * \return A new \c weston_output, or NULL on failure.
+ *
+ * This creates a new weston_output that starts with no heads attached.
+ *
+ * An output must be configured and it must have at least one head before
+ * it can be enabled.
+ *
+ * \memberof weston_compositor
+ */
+WL_EXPORT struct weston_output *
+weston_compositor_create_output(struct weston_compositor *compositor,
+				const char *name)
+{
+	assert(compositor->backend->create_output);
+
+	if (weston_compositor_find_output_by_name(compositor, name)) {
+		weston_log("Warning: attempted to create an output with a "
+			   "duplicate name '%s'.\n", name);
+		return NULL;
+	}
+
+	return compositor->backend->create_output(compositor, name);
+}
+
 /** Create an output for an unused head
  *
  * \param compositor The compositor.
@@ -5740,8 +5793,7 @@ weston_compositor_create_output_with_head(struct weston_compositor *compositor,
 {
 	struct weston_output *output;
 
-	assert(compositor->backend->create_output);
-	output = compositor->backend->create_output(compositor, head->name);
+	output = weston_compositor_create_output(compositor, head->name);
 	if (!output)
 		return NULL;
 

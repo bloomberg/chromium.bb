@@ -2076,6 +2076,14 @@ weston_compositor_add_heads_changed_listener(struct weston_compositor *composito
 					     struct wl_listener *listener);
 
 struct weston_output *
+weston_compositor_find_output_by_name(struct weston_compositor *compositor,
+				      const char *name);
+
+struct weston_output *
+weston_compositor_create_output(struct weston_compositor *compositor,
+				const char *name);
+
+struct weston_output *
 weston_compositor_create_output_with_head(struct weston_compositor *compositor,
 					  struct weston_head *head);
 
