@@ -37,7 +37,6 @@ void WebTestWithWebState::SetUp() {
   WebTest::SetUp();
   web::WebState::CreateParams params(GetBrowserState());
   web_state_ = web::WebState::Create(params);
-  web_state_->SetWebUsageEnabled(true);
 
   // Force generation of child views; necessary for some tests.
   web_state_->GetView();

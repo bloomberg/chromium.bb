@@ -41,7 +41,6 @@ std::unique_ptr<web::WebState> CreateWebStateWithNavigationEntries(
   web_state->GetNavigationManager()->Restore(
       last_committed_item_index,
       sessions::IOSSerializedNavigationBuilder::ToNavigationItems(navigations));
-  web_state->SetWebUsageEnabled(true);
   return web_state;
 }
 

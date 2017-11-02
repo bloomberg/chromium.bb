@@ -29,7 +29,7 @@ void TestWebState::RemoveObserver(WebStateObserver* observer) {
 
 TestWebState::TestWebState()
     : browser_state_(nullptr),
-      web_usage_enabled_(false),
+      web_usage_enabled_(true),
       is_loading_(false),
       is_visible_(false),
       is_crashed_(false),

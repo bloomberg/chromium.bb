@@ -932,6 +932,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   self = [super init];
   if (self) {
     _webStateImpl = webState;
+    _webUsageEnabled = YES;
     DCHECK(_webStateImpl);
     // Load phase when no WebView present is 'loaded' because this represents
     // the idle state.

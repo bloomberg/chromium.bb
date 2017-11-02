@@ -144,5 +144,5 @@ TEST_F(WebStateListSerializationTest, SerializationRoundTrip) {
 
   // Verify that the WebUsageEnabled bit is left to default value.
   for (int i = 0; i < restored_web_state_list.count(); ++i)
-    EXPECT_FALSE(restored_web_state_list.GetWebStateAt(i)->IsWebUsageEnabled());
+    EXPECT_TRUE(restored_web_state_list.GetWebStateAt(i)->IsWebUsageEnabled());
 }

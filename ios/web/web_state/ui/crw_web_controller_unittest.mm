@@ -987,7 +987,6 @@ class LoadIfNecessaryTest : public WebTest {
     WebTest::SetUp();
     web_state_ = base::MakeUnique<WebStateImpl>(
         WebState::CreateParams(GetBrowserState()), GetTestSessionStorage());
-    web_state_->SetWebUsageEnabled(true);
   }
 
   void TearDown() override {

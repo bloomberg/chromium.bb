@@ -118,7 +118,6 @@ using web::NavigationManager;
 
   web::WebState::CreateParams webStateCreateParams(_browserState);
   _webState = web::WebState::Create(webStateCreateParams);
-  _webState->SetWebUsageEnabled(true);
 
   _webStateObserver.reset(
       new web::WebStateObserverBridge(_webState.get(), self));
