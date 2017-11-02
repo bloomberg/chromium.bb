@@ -144,7 +144,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   bool IsThreadedCompositingEnabled() override;
   bool IsThreadedAnimationEnabled() override;
-  bool IsGPUCompositingEnabled() override;
+  bool IsGpuCompositingDisabled() override;
   double AudioHardwareSampleRate() override;
   size_t AudioHardwareBufferSize() override;
   unsigned AudioHardwareOutputChannels() override;
@@ -349,6 +349,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   mojom::FileUtilitiesHostPtrInfo file_utilities_host_info_;
 
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
+
+  THREAD_CHECKER(main_thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };

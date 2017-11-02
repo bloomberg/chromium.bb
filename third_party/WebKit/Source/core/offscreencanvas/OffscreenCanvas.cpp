@@ -285,7 +285,6 @@ ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
 
 ScriptPromise OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> image,
                                       const SkIRect& damage_rect,
-                                      bool is_web_gl_software_rendering,
                                       ScriptState* script_state,
                                       ExceptionState& exception_state) {
   TRACE_EVENT0("blink", "OffscreenCanvas::Commit");
@@ -310,8 +309,6 @@ ScriptPromise OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> image,
       current_frame_ = std::move(image);
       // union of rects is necessary in case some frames are skipped.
       current_frame_damage_rect_.join(damage_rect);
-      current_frame_is_web_gl_software_rendering_ =
-          is_web_gl_software_rendering;
       context_->NeedsFinalizeFrame();
     }
   } else if (image) {
@@ -322,7 +319,6 @@ ScriptPromise OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> image,
     // resolved yet. (m_currentFrame==nullptr)
     current_frame_ = std::move(image);
     current_frame_damage_rect_.join(damage_rect);
-    current_frame_is_web_gl_software_rendering_ = is_web_gl_software_rendering;
   }
 
   return commit_promise_resolver_->Promise();
@@ -341,8 +337,7 @@ void OffscreenCanvas::DoCommit() {
   double commit_start_time = WTF::MonotonicallyIncreasingTime();
   DCHECK(current_frame_);
   GetOrCreateFrameDispatcher()->DispatchFrame(
-      std::move(current_frame_), commit_start_time, current_frame_damage_rect_,
-      current_frame_is_web_gl_software_rendering_);
+      std::move(current_frame_), commit_start_time, current_frame_damage_rect_);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
 }
 

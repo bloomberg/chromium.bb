@@ -7,42 +7,57 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
+#include "platform/wtf/Functional.h"
 #include "platform/wtf/ThreadSpecific.h"
 
 #include <memory>
 
 namespace blink {
 
-class WaitableEvent;
 class WebGraphicsContext3DProvider;
 
 // SharedGpuContext provides access to a thread-specific GPU context
 // that is shared by many callsites throughout the thread.
 // When on the main thread, provides access to the same context as
-// Platform::createSharedOffscreenGraphicsContext3DProvider
+// Platform::CreateSharedOffscreenGraphicsContext3DProvider, and the
+// same query as Platform::IsGPUCompositingEnabled().
 class PLATFORM_EXPORT SharedGpuContext {
  public:
+  // Thread-safe query if gpu compositing is enabled. This should be done before
+  // calling ContextProviderWrapper() if the context will be used to make
+  // resources meant for the compositor. When it is false, no context will be
+  // needed and software-based resources should be given to the compositor
+  // instead.
+  static bool IsGpuCompositingEnabled();
   // May re-create context if context was lost
   static WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper();
   static bool AllowSoftwareToAcceleratedCanvasUpgrade();
   static bool IsValidWithoutRestoring();
-  typedef std::function<std::unique_ptr<WebGraphicsContext3DProvider>()>
-      ContextProviderFactory;
+
+  using ContextProviderFactory =
+      WTF::Function<std::unique_ptr<WebGraphicsContext3DProvider>(
+          bool* is_gpu_compositing_disabled)>;
   static void SetContextProviderFactoryForTesting(ContextProviderFactory);
+  // Resets the global instance including the |context_provider_factory_| and
+  // dropping the context. Should be called at the end of a test that uses this
+  // to not interfere with the next test.
+  static void ResetForTesting();
 
  private:
+  friend class WTF::ThreadSpecific<SharedGpuContext>;
+
   static SharedGpuContext* GetInstanceForCurrentThread();
 
   SharedGpuContext();
-  void CreateContextProviderOnMainThread(WaitableEvent*);
-  void CreateContextProviderIfNeeded();
-  void SetContextProvider(std::unique_ptr<WebGraphicsContext3DProvider>&&);
+  void CreateContextProviderIfNeeded(bool only_if_gpu_compositing);
 
-  ContextProviderFactory context_provider_factory_ = nullptr;
+  // Can be overridden for tests.
+  ContextProviderFactory context_provider_factory_;
+
+  // This is sticky once true, we never need to ask again.
+  bool is_gpu_compositing_disabled_ = false;
   std::unique_ptr<WebGraphicsContext3DProviderWrapper>
       context_provider_wrapper_;
-  friend class WTF::ThreadSpecific<SharedGpuContext>;
-  bool context_provider_creation_failed_ = false;
 };
 
 }  // blink

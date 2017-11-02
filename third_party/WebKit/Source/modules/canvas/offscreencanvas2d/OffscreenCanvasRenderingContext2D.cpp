@@ -54,12 +54,10 @@ ScriptPromise OffscreenCanvasRenderingContext2D::commit(
     ExceptionState& exception_state) {
   WebFeature feature = WebFeature::kOffscreenCanvasCommit2D;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
-  bool is_web_gl_software_rendering = false;
   SkIRect damage_rect(dirty_rect_for_commit_);
   dirty_rect_for_commit_.setEmpty();
   return Host()->Commit(TransferToStaticBitmapImage(), damage_rect,
-                        is_web_gl_software_rendering, script_state,
-                        exception_state);
+                        script_state, exception_state);
 }
 
 // BaseRenderingContext2D implementation

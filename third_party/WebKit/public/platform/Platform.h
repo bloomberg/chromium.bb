@@ -556,11 +556,11 @@ class BLINK_PLATFORM_EXPORT Platform {
       const WebFloatPoint& velocity,
       const WebSize& cumulative_scroll);
 
-  // Whether the command line flag: --disable-gpu-compositing or --disable-gpu
-  // exists or not
+  // Whether the compositor is using gpu and expects gpu resources as inputs,
+  // or software based resources.
   // NOTE: This function should not be called from core/ and modules/, but
   // called by platform/graphics/ is fine.
-  virtual bool IsGPUCompositingEnabled() { return true; }
+  virtual bool IsGpuCompositingDisabled() { return true; }
 
   // WebRTC ----------------------------------------------------------
 

@@ -142,14 +142,15 @@ class Canvas2DLayerBridgeTest : public Test {
     return bridge;
   }
   void SetUp() override {
-    SharedGpuContext::SetContextProviderFactoryForTesting([this] {
-      return std::unique_ptr<WebGraphicsContext3DProvider>(
-          new FakeWebGraphicsContext3DProvider(&gl_));
-    });
+    auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
+        -> std::unique_ptr<WebGraphicsContext3DProvider> {
+      *gpu_compositing_disabled = false;
+      return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
+    };
+    SharedGpuContext::SetContextProviderFactoryForTesting(
+        WTF::Bind(factory, WTF::Unretained(&gl_)));
   }
-  void TearDown() override {
-    SharedGpuContext::SetContextProviderFactoryForTesting(nullptr);
-  }
+  void TearDown() override { SharedGpuContext::ResetForTesting(); }
   bool IsUnitTest() { return true; }
 
  protected:

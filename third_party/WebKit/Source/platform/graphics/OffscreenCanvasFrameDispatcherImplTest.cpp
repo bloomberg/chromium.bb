@@ -61,7 +61,7 @@ void OffscreenCanvasFrameDispatcherImplTest::DispatchOneFrame() {
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
   dispatcher_->DispatchFrame(
       StaticBitmapImage::Create(surface->makeImageSnapshot()), 0.0,
-      SkIRect::MakeEmpty(), false);
+      SkIRect::MakeEmpty());
 }
 
 TEST_F(OffscreenCanvasFrameDispatcherImplTest, PlaceholderRunsNormally) {

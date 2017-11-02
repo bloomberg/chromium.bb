@@ -96,13 +96,12 @@ class CORE_EXPORT OffscreenCanvas final
   uint32_t ClientId() const { return client_id_; }
   uint32_t SinkId() const { return sink_id_; }
 
+  // CanvasRenderingContextHost implementation.
   ScriptPromise Commit(scoped_refptr<StaticBitmapImage>,
                        const SkIRect& damage_rect,
-                       bool is_web_gl_software_rendering,
                        ScriptState*,
                        ExceptionState&) override;
   void FinalizeFrame() override;
-
   void DetachContext() override { context_ = nullptr; }
 
   // OffscreenCanvasFrameDispatcherClient implementation
@@ -182,7 +181,6 @@ class CORE_EXPORT OffscreenCanvas final
 
   Member<ScriptPromiseResolver> commit_promise_resolver_;
   scoped_refptr<StaticBitmapImage> current_frame_;
-  bool current_frame_is_web_gl_software_rendering_ = false;
   SkIRect current_frame_damage_rect_;
 
   std::unique_ptr<ImageBuffer> image_buffer_;

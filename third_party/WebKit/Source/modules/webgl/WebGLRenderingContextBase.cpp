@@ -727,9 +727,7 @@ ScriptPromise WebGLRenderingContextBase::commit(
   int width = GetDrawingBuffer()->Size().Width();
   int height = GetDrawingBuffer()->Size().Height();
   if (!GetDrawingBuffer()) {
-    bool is_web_gl_software_rendering = false;
-    return Host()->Commit(nullptr, SkIRect::MakeWH(width, height),
-                          is_web_gl_software_rendering, script_state,
+    return Host()->Commit(nullptr, SkIRect::MakeWH(width, height), script_state,
                           exception_state);
   }
 
@@ -737,7 +735,6 @@ ScriptPromise WebGLRenderingContextBase::commit(
 
   return Host()->Commit(
       std::move(image), SkIRect::MakeWH(width, height),
-      GetDrawingBuffer()->ContextProvider()->IsSoftwareRendering(),
       script_state, exception_state);
 }
 
