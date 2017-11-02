@@ -20,11 +20,6 @@ struct ThumbnailingContext : base::RefCountedThreadSafe<ThumbnailingContext> {
                       ThumbnailService* receiving_service,
                       bool load_interrupted);
 
-  // Create an instance for use with unit tests.
-  static ThumbnailingContext* CreateThumbnailingContextForTest() {
-    return new ThumbnailingContext();
-  }
-
   scoped_refptr<ThumbnailService> service;
   GURL url;
   ClipResult clip_result;
@@ -32,7 +27,6 @@ struct ThumbnailingContext : base::RefCountedThreadSafe<ThumbnailingContext> {
   ThumbnailScore score;
 
  private:
-  ThumbnailingContext();
   ~ThumbnailingContext();
 
   friend class base::RefCountedThreadSafe<ThumbnailingContext>;
