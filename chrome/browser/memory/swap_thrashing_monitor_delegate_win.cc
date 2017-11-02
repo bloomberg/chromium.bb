@@ -16,12 +16,6 @@ namespace memory {
 
 namespace {
 
-// The signature of the NtQuerySystemInformation function.
-typedef NTSTATUS(WINAPI* NtQuerySystemInformationPtr)(SYSTEM_INFORMATION_CLASS,
-                                                      PVOID,
-                                                      ULONG,
-                                                      PULONG);
-
 // The threshold that we use to consider that an hard page-fault delta sample is
 // high, in hard page-fault / [sampling frequency].
 //
