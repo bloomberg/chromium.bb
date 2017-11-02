@@ -196,11 +196,15 @@ public class EarlyTraceEvent {
     }
 
     private static void maybeFinishLocked() {
-        if (!sPendingEvents.isEmpty()) return;
-        sState = STATE_FINISHED;
-        dumpEvents(sCompletedEvents);
-        sCompletedEvents = null;
-        sPendingEvents = null;
+        if (!sCompletedEvents.isEmpty()) {
+            dumpEvents(sCompletedEvents);
+            sCompletedEvents.clear();
+        }
+        if (sPendingEvents.isEmpty()) {
+            sState = STATE_FINISHED;
+            sPendingEvents = null;
+            sCompletedEvents = null;
+        }
     }
 
     private static void dumpEvents(List<Event> events) {
