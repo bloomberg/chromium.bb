@@ -40,16 +40,12 @@ class Animation;
 class UiElementRenderer;
 class UiElementTransformOperations;
 
-enum XAnchoring {
-  XNONE = 0,
-  XLEFT,
-  XRIGHT,
-};
-
-enum YAnchoring {
-  YNONE = 0,
-  YTOP,
-  YBOTTOM,
+enum LayoutAlignment {
+  NONE = 0,
+  LEFT,
+  RIGHT,
+  TOP,
+  BOTTOM,
 };
 
 class UiElement : public cc::AnimationTarget {
@@ -174,11 +170,25 @@ class UiElement : public cc::AnimationTarget {
     computed_opacity_ = computed_opacity;
   }
 
-  XAnchoring x_anchoring() const { return x_anchoring_; }
-  void set_x_anchoring(XAnchoring x_anchoring) { x_anchoring_ = x_anchoring; }
+  LayoutAlignment x_anchoring() const { return x_anchoring_; }
+  void set_x_anchoring(LayoutAlignment x_anchoring) {
+    x_anchoring_ = x_anchoring;
+  }
 
-  YAnchoring y_anchoring() const { return y_anchoring_; }
-  void set_y_anchoring(YAnchoring y_anchoring) { y_anchoring_ = y_anchoring; }
+  LayoutAlignment y_anchoring() const { return y_anchoring_; }
+  void set_y_anchoring(LayoutAlignment y_anchoring) {
+    y_anchoring_ = y_anchoring;
+  }
+
+  LayoutAlignment x_centering() const { return x_centering_; }
+  void set_x_centering(LayoutAlignment x_centering) {
+    x_centering_ = x_centering;
+  }
+
+  LayoutAlignment y_centering() const { return y_centering_; }
+  void set_y_centering(LayoutAlignment y_centering) {
+    y_centering_ = y_centering;
+  }
 
   int draw_phase() const { return draw_phase_; }
   void set_draw_phase(int draw_phase) { draw_phase_ = draw_phase; }
@@ -341,8 +351,13 @@ class UiElement : public cc::AnimationTarget {
   // If anchoring is specified, the translation will be relative to the
   // specified edge(s) of the parent, rather than the center.  A parent object
   // must be specified when using anchoring.
-  XAnchoring x_anchoring_ = XAnchoring::XNONE;
-  YAnchoring y_anchoring_ = YAnchoring::YNONE;
+  LayoutAlignment x_anchoring_ = LayoutAlignment::NONE;
+  LayoutAlignment y_anchoring_ = LayoutAlignment::NONE;
+
+  // If centering is specified, the elements layout offset is adjusted such that
+  // it is positioned relative to its own edge or corner, rather than center.
+  LayoutAlignment x_centering_ = LayoutAlignment::NONE;
+  LayoutAlignment y_centering_ = LayoutAlignment::NONE;
 
   AnimationPlayer animation_player_;
 
