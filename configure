@@ -312,7 +312,6 @@ EXPERIMENT_LIST="
     one_sided_compound
     ext_comp_refs
     smooth_hv
-    var_refs
     lgt
     lgt_from_pred
     ncobmc_adapt_weight

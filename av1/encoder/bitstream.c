@@ -828,51 +828,26 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const COMP_REFERENCE_TYPE comp_ref_type = has_uni_comp_refs(mbmi)
                                                     ? UNIDIR_COMP_REFERENCE
                                                     : BIDIR_COMP_REFERENCE;
-#if CONFIG_VAR_REFS
-      if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm))
-        if (L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm) || BWD_AND_ALT(cm))
-#endif  // CONFIG_VAR_REFS
 #if CONFIG_NEW_MULTISYMBOL
-          aom_write_symbol(w, comp_ref_type,
-                           av1_get_comp_reference_type_cdf(xd), 2);
+      aom_write_symbol(w, comp_ref_type, av1_get_comp_reference_type_cdf(xd),
+                       2);
 #else
       aom_write(w, comp_ref_type, av1_get_comp_reference_type_prob(cm, xd));
 #endif
-#if CONFIG_VAR_REFS
-        else
-          assert(comp_ref_type == BIDIR_COMP_REFERENCE);
-      else
-        assert(comp_ref_type == UNIDIR_COMP_REFERENCE);
-#endif  // CONFIG_VAR_REFS
 
       if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
         const int bit = mbmi->ref_frame[0] == BWDREF_FRAME;
-#if CONFIG_VAR_REFS
-        if ((L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm)) && BWD_AND_ALT(cm))
-#endif  // CONFIG_VAR_REFS
-          WRITE_REF_BIT2(bit, uni_comp_ref_p);
+        WRITE_REF_BIT2(bit, uni_comp_ref_p);
 
         if (!bit) {
           assert(mbmi->ref_frame[0] == LAST_FRAME);
-#if CONFIG_VAR_REFS
-          if (L_AND_L2(cm) && (L_AND_L3(cm) || L_AND_G(cm))) {
-#endif  // CONFIG_VAR_REFS
-            const int bit1 = mbmi->ref_frame[1] == LAST3_FRAME ||
-                             mbmi->ref_frame[1] == GOLDEN_FRAME;
-            WRITE_REF_BIT2(bit1, uni_comp_ref_p1);
-            if (bit1) {
-#if CONFIG_VAR_REFS
-              if (L_AND_L3(cm) && L_AND_G(cm)) {
-#endif  // CONFIG_VAR_REFS
-                const int bit2 = mbmi->ref_frame[1] == GOLDEN_FRAME;
-                WRITE_REF_BIT2(bit2, uni_comp_ref_p2);
-#if CONFIG_VAR_REFS
-              }
-#endif  // CONFIG_VAR_REFS
-            }
-#if CONFIG_VAR_REFS
+          const int bit1 = mbmi->ref_frame[1] == LAST3_FRAME ||
+                           mbmi->ref_frame[1] == GOLDEN_FRAME;
+          WRITE_REF_BIT2(bit1, uni_comp_ref_p1);
+          if (bit1) {
+            const int bit2 = mbmi->ref_frame[1] == GOLDEN_FRAME;
+            WRITE_REF_BIT2(bit2, uni_comp_ref_p2);
           }
-#endif  // CONFIG_VAR_REFS
         } else {
           assert(mbmi->ref_frame[1] == ALTREF_FRAME);
         }
@@ -885,111 +860,46 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
       const int bit = (mbmi->ref_frame[0] == GOLDEN_FRAME ||
                        mbmi->ref_frame[0] == LAST3_FRAME);
-#if CONFIG_VAR_REFS
-      // Test need to explicitly code (L,L2) vs (L3,G) branch node in tree
-      if (L_OR_L2(cm) && L3_OR_G(cm))
-#endif  // CONFIG_VAR_REFS
-        WRITE_REF_BIT(bit, comp_ref_p);
+      WRITE_REF_BIT(bit, comp_ref_p);
 
       if (!bit) {
-#if CONFIG_VAR_REFS
-        // Test need to explicitly code (L) vs (L2) branch node in tree
-        if (L_AND_L2(cm)) {
-#endif  // CONFIG_VAR_REFS
-          const int bit1 = mbmi->ref_frame[0] == LAST_FRAME;
-          WRITE_REF_BIT(bit1, comp_ref_p1);
-#if CONFIG_VAR_REFS
-        }
-#endif  // CONFIG_VAR_REFS
+        const int bit1 = mbmi->ref_frame[0] == LAST_FRAME;
+        WRITE_REF_BIT(bit1, comp_ref_p1);
       } else {
-#if CONFIG_VAR_REFS
-        // Test need to explicitly code (L3) vs (G) branch node in tree
-        if (L3_AND_G(cm)) {
-#endif  // CONFIG_VAR_REFS
-          const int bit2 = mbmi->ref_frame[0] == GOLDEN_FRAME;
-          WRITE_REF_BIT(bit2, comp_ref_p2);
-#if CONFIG_VAR_REFS
-        }
-#endif  // CONFIG_VAR_REFS
+        const int bit2 = mbmi->ref_frame[0] == GOLDEN_FRAME;
+        WRITE_REF_BIT(bit2, comp_ref_p2);
       }
 
-#if CONFIG_VAR_REFS
-      // Test need to explicitly code (BWD,ALT2) vs (ALT) branch node in tree
-      if (BWD_OR_ALT2(cm) && ALTREF_IS_VALID(cm)) {
-#endif  // CONFIG_VAR_REFS
-        const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
-        WRITE_REF_BIT(bit_bwd, comp_bwdref_p);
+      const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
+      WRITE_REF_BIT(bit_bwd, comp_bwdref_p);
 
-        if (!bit_bwd) {
-#if CONFIG_VAR_REFS
-          // Test need to explicitly code (BWD,ALT2) vs (ALT) branch node in
-          // tree
-          if (BWD_AND_ALT2(cm))
-#endif  // CONFIG_VAR_REFS
-            WRITE_REF_BIT(mbmi->ref_frame[1] == ALTREF2_FRAME, comp_bwdref_p1);
-        }
-#if CONFIG_VAR_REFS
+      if (!bit_bwd) {
+        WRITE_REF_BIT(mbmi->ref_frame[1] == ALTREF2_FRAME, comp_bwdref_p1);
       }
-#endif  // CONFIG_VAR_REFS
 
     } else {
       const int bit0 = (mbmi->ref_frame[0] <= ALTREF_FRAME &&
                         mbmi->ref_frame[0] >= BWDREF_FRAME);
-#if CONFIG_VAR_REFS
-      // Test need to explicitly code (L,L2,L3,G) vs (BWD,ALT2,ALT) branch node
-      // in tree
-      if ((L_OR_L2(cm) || L3_OR_G(cm)) &&
-          (BWD_OR_ALT2(cm) || ALTREF_IS_VALID(cm)))
-#endif  // CONFIG_VAR_REFS
-        WRITE_REF_BIT(bit0, single_ref_p1);
+      WRITE_REF_BIT(bit0, single_ref_p1);
 
       if (bit0) {
-#if CONFIG_VAR_REFS
-        // Test need to explicitly code (BWD,ALT2) vs (ALT) branch node in tree
-        if (BWD_OR_ALT2(cm) && ALTREF_IS_VALID(cm)) {
-#endif  // CONFIG_VAR_REFS
-          const int bit1 = mbmi->ref_frame[0] == ALTREF_FRAME;
-          WRITE_REF_BIT(bit1, single_ref_p2);
+        const int bit1 = mbmi->ref_frame[0] == ALTREF_FRAME;
+        WRITE_REF_BIT(bit1, single_ref_p2);
 
-          if (!bit1) {
-#if CONFIG_VAR_REFS
-            // Test need to explicitly code (BWD) vs (ALT2) branch node in tree
-            if (BWD_AND_ALT2(cm))
-#endif  // CONFIG_VAR_REFS
-              WRITE_REF_BIT(mbmi->ref_frame[0] == ALTREF2_FRAME, single_ref_p6);
-          }
-#if CONFIG_VAR_REFS
+        if (!bit1) {
+          WRITE_REF_BIT(mbmi->ref_frame[0] == ALTREF2_FRAME, single_ref_p6);
         }
-#endif  // CONFIG_VAR_REFS
       } else {
         const int bit2 = (mbmi->ref_frame[0] == LAST3_FRAME ||
                           mbmi->ref_frame[0] == GOLDEN_FRAME);
-#if CONFIG_VAR_REFS
-        // Test need to explicitly code (L,L2) vs (L3,G) branch node in tree
-        if (L_OR_L2(cm) && L3_OR_G(cm))
-#endif  // CONFIG_VAR_REFS
-          WRITE_REF_BIT(bit2, single_ref_p3);
+        WRITE_REF_BIT(bit2, single_ref_p3);
 
         if (!bit2) {
-#if CONFIG_VAR_REFS
-          // Test need to explicitly code (L) vs (L2) branch node in tree
-          if (L_AND_L2(cm)) {
-#endif  // CONFIG_VAR_REFS
-            const int bit3 = mbmi->ref_frame[0] != LAST_FRAME;
-            WRITE_REF_BIT(bit3, single_ref_p4);
-#if CONFIG_VAR_REFS
-          }
-#endif  // CONFIG_VAR_REFS
+          const int bit3 = mbmi->ref_frame[0] != LAST_FRAME;
+          WRITE_REF_BIT(bit3, single_ref_p4);
         } else {
-#if CONFIG_VAR_REFS
-          // Test need to explicitly code (L3) vs (G) branch node in tree
-          if (L3_AND_G(cm)) {
-#endif  // CONFIG_VAR_REFS
-            const int bit4 = mbmi->ref_frame[0] != LAST3_FRAME;
-            WRITE_REF_BIT(bit4, single_ref_p5);
-#if CONFIG_VAR_REFS
-          }
-#endif  // CONFIG_VAR_REFS
+          const int bit4 = mbmi->ref_frame[0] != LAST3_FRAME;
+          WRITE_REF_BIT(bit4, single_ref_p5);
         }
       }
     }

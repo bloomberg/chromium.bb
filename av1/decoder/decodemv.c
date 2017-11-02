@@ -1437,26 +1437,14 @@ static COMP_REFERENCE_TYPE read_comp_reference_type(AV1_COMMON *cm,
                                                     aom_reader *r) {
   const int ctx = av1_get_comp_reference_type_context(xd);
   COMP_REFERENCE_TYPE comp_ref_type;
-#if CONFIG_VAR_REFS
-  if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm)) {
-    if (L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm) || BWD_AND_ALT(cm)) {
-#endif  // CONFIG_VAR_REFS
 #if CONFIG_NEW_MULTISYMBOL
-      (void)cm;
-      comp_ref_type = (COMP_REFERENCE_TYPE)aom_read_symbol(
-          r, xd->tile_ctx->comp_ref_type_cdf[ctx], 2, ACCT_STR);
+  (void)cm;
+  comp_ref_type = (COMP_REFERENCE_TYPE)aom_read_symbol(
+      r, xd->tile_ctx->comp_ref_type_cdf[ctx], 2, ACCT_STR);
 #else
   comp_ref_type = (COMP_REFERENCE_TYPE)aom_read(
       r, cm->fc->comp_ref_type_prob[ctx], ACCT_STR);
 #endif
-#if CONFIG_VAR_REFS
-    } else {
-      comp_ref_type = BIDIR_COMP_REFERENCE;
-    }
-  } else {
-    comp_ref_type = UNIDIR_COMP_REFERENCE;
-  }
-#endif  // CONFIG_VAR_REFS
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->comp_ref_type[ctx][comp_ref_type];
   return comp_ref_type;  // UNIDIR_COMP_REFERENCE or BIDIR_COMP_REFERENCE
@@ -1564,14 +1552,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
         const int ctx = av1_get_pred_context_uni_comp_ref_p(xd);
         int bit;
-#if CONFIG_VAR_REFS
-        if ((L_AND_L2(cm) || L_AND_L3(cm) || L_AND_G(cm)) && BWD_AND_ALT(cm))
-#endif  // CONFIG_VAR_REFS
-          bit = READ_REF_BIT2(uni_comp_ref_p);
-#if CONFIG_VAR_REFS
-        else
-          bit = BWD_AND_ALT(cm);
-#endif  // CONFIG_VAR_REFS
+        bit = READ_REF_BIT2(uni_comp_ref_p);
         if (counts) ++counts->uni_comp_ref[ctx][0][bit];
 
         if (bit) {
@@ -1580,27 +1561,13 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
         } else {
           const int ctx1 = av1_get_pred_context_uni_comp_ref_p1(xd);
           int bit1;
-#if CONFIG_VAR_REFS
-          if (L_AND_L2(cm) && (L_AND_L3(cm) || L_AND_G(cm)))
-#endif  // CONFIG_VAR_REFS
-            bit1 = READ_REF_BIT2(uni_comp_ref_p1);
-#if CONFIG_VAR_REFS
-          else
-            bit1 = L_AND_L3(cm) || L_AND_G(cm);
-#endif  // CONFIG_VAR_REFS
+          bit1 = READ_REF_BIT2(uni_comp_ref_p1);
           if (counts) ++counts->uni_comp_ref[ctx1][1][bit1];
 
           if (bit1) {
             const int ctx2 = av1_get_pred_context_uni_comp_ref_p2(xd);
             int bit2;
-#if CONFIG_VAR_REFS
-            if (L_AND_L3(cm) && L_AND_G(cm))
-#endif  // CONFIG_VAR_REFS
-              bit2 = READ_REF_BIT2(uni_comp_ref_p2);
-#if CONFIG_VAR_REFS
-            else
-              bit2 = L_AND_G(cm);
-#endif  // CONFIG_VAR_REFS
+            bit2 = READ_REF_BIT2(uni_comp_ref_p2);
             if (counts) ++counts->uni_comp_ref[ctx2][2][bit2];
 
             if (bit2) {
@@ -1630,74 +1597,29 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS)
 
       const int ctx = av1_get_pred_context_comp_ref_p(cm, xd);
-#if CONFIG_VAR_REFS
-      int bit;
-      // Test need to explicitly code (L,L2) vs (L3,G) branch node in tree
-      if (L_OR_L2(cm) && L3_OR_G(cm))
-        bit = READ_REF_BIT(comp_ref_p);
-      else
-        bit = L3_OR_G(cm);
-#else   // !CONFIG_VAR_REFS
       const int bit = READ_REF_BIT(comp_ref_p);
-#endif  // CONFIG_VAR_REFS
       if (counts) ++counts->comp_ref[ctx][0][bit];
 
       // Decode forward references.
       if (!bit) {
         const int ctx1 = av1_get_pred_context_comp_ref_p1(cm, xd);
-#if CONFIG_VAR_REFS
-        int bit1;
-        // Test need to explicitly code (L) vs (L2) branch node in tree
-        if (L_AND_L2(cm))
-          bit1 = READ_REF_BIT(comp_ref_p1);
-        else
-          bit1 = LAST_IS_VALID(cm);
-#else   // !CONFIG_VAR_REFS
         const int bit1 = READ_REF_BIT(comp_ref_p1);
-#endif  // CONFIG_VAR_REFS
         if (counts) ++counts->comp_ref[ctx1][1][bit1];
         ref_frame[!idx] = cm->comp_fwd_ref[bit1 ? 0 : 1];
       } else {
         const int ctx2 = av1_get_pred_context_comp_ref_p2(cm, xd);
-#if CONFIG_VAR_REFS
-        int bit2;
-        // Test need to explicitly code (L3) vs (G) branch node in tree
-        if (L3_AND_G(cm))
-          bit2 = READ_REF_BIT(comp_ref_p2);
-        else
-          bit2 = GOLDEN_IS_VALID(cm);
-#else   // !CONFIG_VAR_REFS
         const int bit2 = READ_REF_BIT(comp_ref_p2);
-#endif  // CONFIG_VAR_REFS
         if (counts) ++counts->comp_ref[ctx2][2][bit2];
         ref_frame[!idx] = cm->comp_fwd_ref[bit2 ? 3 : 2];
       }
 
       // Decode backward references.
       const int ctx_bwd = av1_get_pred_context_comp_bwdref_p(cm, xd);
-#if CONFIG_VAR_REFS
-      int bit_bwd;
-      // Test need to explicitly code (BWD/ALT2) vs (ALT) branch node in tree
-      const int bit_bwd_uncertain = BWD_OR_ALT2(cm) && ALTREF_IS_VALID(cm);
-      if (bit_bwd_uncertain)
-        bit_bwd = READ_REF_BIT(comp_bwdref_p);
-      else
-        bit_bwd = ALTREF_IS_VALID(cm);
-#else  // !CONFIG_VAR_REFS
       const int bit_bwd = READ_REF_BIT(comp_bwdref_p);
-#endif  // CONFIG_VAR_REFS
       if (counts) ++counts->comp_bwdref[ctx_bwd][0][bit_bwd];
       if (!bit_bwd) {
         const int ctx1_bwd = av1_get_pred_context_comp_bwdref_p1(cm, xd);
-#if CONFIG_VAR_REFS
-        int bit1_bwd;
-        if (BWD_AND_ALT2(cm))
-          bit1_bwd = READ_REF_BIT(comp_bwdref_p1);
-        else
-          bit1_bwd = ALTREF2_IS_VALID(cm);
-#else  // !CONFIG_VAR_REFS
         const int bit1_bwd = READ_REF_BIT(comp_bwdref_p1);
-#endif  // CONFIG_VAR_REFS
         if (counts) ++counts->comp_bwdref[ctx1_bwd][1][bit1_bwd];
         ref_frame[idx] = cm->comp_bwd_ref[bit1_bwd];
       } else {
@@ -1705,45 +1627,16 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       }
     } else if (mode == SINGLE_REFERENCE) {
       const int ctx0 = av1_get_pred_context_single_ref_p1(xd);
-#if CONFIG_VAR_REFS
-      int bit0;
-      // Test need to explicitly code (L,L2,L3,G) vs (BWD,ALT2,ALT) branch node
-      // in tree
-      if ((L_OR_L2(cm) || L3_OR_G(cm)) &&
-          (BWD_OR_ALT2(cm) || ALTREF_IS_VALID(cm)))
-        bit0 = READ_REF_BIT(single_ref_p1);
-      else
-        bit0 = (BWD_OR_ALT2(cm) || ALTREF_IS_VALID(cm));
-#else   // !CONFIG_VAR_REFS
       const int bit0 = READ_REF_BIT(single_ref_p1);
-#endif  // CONFIG_VAR_REFS
       if (counts) ++counts->single_ref[ctx0][0][bit0];
 
       if (bit0) {
         const int ctx1 = av1_get_pred_context_single_ref_p2(xd);
-#if CONFIG_VAR_REFS
-        int bit1;
-        // Test need to explicitly code (BWD/ALT2) vs (ALT) branch node in tree
-        const int bit1_uncertain = BWD_OR_ALT2(cm) && ALTREF_IS_VALID(cm);
-        if (bit1_uncertain)
-          bit1 = READ_REF_BIT(single_ref_p2);
-        else
-          bit1 = ALTREF_IS_VALID(cm);
-#else  // !CONFIG_VAR_REFS
         const int bit1 = READ_REF_BIT(single_ref_p2);
-#endif  // CONFIG_VAR_REFS
         if (counts) ++counts->single_ref[ctx1][1][bit1];
         if (!bit1) {
           const int ctx5 = av1_get_pred_context_single_ref_p6(xd);
-#if CONFIG_VAR_REFS
-          int bit5;
-          if (BWD_AND_ALT2(cm))
-            bit5 = READ_REF_BIT(single_ref_p6);
-          else
-            bit5 = ALTREF2_IS_VALID(cm);
-#else  // !CONFIG_VAR_REFS
           const int bit5 = READ_REF_BIT(single_ref_p6);
-#endif  // CONFIG_VAR_REFS
           if (counts) ++counts->single_ref[ctx5][5][bit5];
           ref_frame[0] = bit5 ? ALTREF2_FRAME : BWDREF_FRAME;
         } else {
@@ -1751,43 +1644,16 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
         }
       } else {
         const int ctx2 = av1_get_pred_context_single_ref_p3(xd);
-#if CONFIG_VAR_REFS
-        int bit2;
-        // Test need to explicitly code (L,L2) vs (L3,G) branch node in tree
-        if (L_OR_L2(cm) && L3_OR_G(cm))
-          bit2 = READ_REF_BIT(single_ref_p3);
-        else
-          bit2 = L3_OR_G(cm);
-#else  // !CONFIG_VAR_REFS
         const int bit2 = READ_REF_BIT(single_ref_p3);
-#endif  // CONFIG_VAR_REFS
         if (counts) ++counts->single_ref[ctx2][2][bit2];
         if (bit2) {
           const int ctx4 = av1_get_pred_context_single_ref_p5(xd);
-#if CONFIG_VAR_REFS
-          int bit4;
-          // Test need to explicitly code (L3) vs (G) branch node in tree
-          if (L3_AND_G(cm))
-            bit4 = READ_REF_BIT(single_ref_p5);
-          else
-            bit4 = GOLDEN_IS_VALID(cm);
-#else  // !CONFIG_VAR_REFS
           const int bit4 = READ_REF_BIT(single_ref_p5);
-#endif  // CONFIG_VAR_REFS
           if (counts) ++counts->single_ref[ctx4][4][bit4];
           ref_frame[0] = bit4 ? GOLDEN_FRAME : LAST3_FRAME;
         } else {
           const int ctx3 = av1_get_pred_context_single_ref_p4(xd);
-#if CONFIG_VAR_REFS
-          int bit3;
-          // Test need to explicitly code (L) vs (L2) branch node in tree
-          if (L_AND_L2(cm))
-            bit3 = READ_REF_BIT(single_ref_p4);
-          else
-            bit3 = LAST2_IS_VALID(cm);
-#else  // !CONFIG_VAR_REFS
           const int bit3 = READ_REF_BIT(single_ref_p4);
-#endif  // CONFIG_VAR_REFS
           if (counts) ++counts->single_ref[ctx3][3][bit3];
           ref_frame[0] = bit3 ? LAST2_FRAME : LAST_FRAME;
         }

@@ -558,9 +558,6 @@ typedef struct RefBuffer {
   int idx;
   YV12_BUFFER_CONFIG *buf;
   struct scale_factors sf;
-#if CONFIG_VAR_REFS
-  int is_valid;
-#endif  // CONFIG_VAR_REFS
 } RefBuffer;
 
 #if CONFIG_ADAPT_SCAN
