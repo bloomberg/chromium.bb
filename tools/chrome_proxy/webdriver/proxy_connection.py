@@ -10,7 +10,7 @@ from emulation_server import InvalidTLSHandler
 
 class ProxyConnection(IntegrationTest):
 
-  @ChromeVersionEqualOrAfterM(64)
+  @ChromeVersionEqualOrAfterM(63)
   def testTLSInjectionAfterHandshake(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
