@@ -49,6 +49,7 @@ bool DeleteFileRecursive(const FilePath& path,
   FileEnumerator traversal(path, false,
                            FileEnumerator::FILES | FileEnumerator::DIRECTORIES,
                            pattern);
+  bool success = true;
   for (FilePath current = traversal.Next(); !current.empty();
        current = traversal.Next()) {
     // Try to clear the read-only bit if we find it.
@@ -63,12 +64,12 @@ bool DeleteFileRecursive(const FilePath& path,
     if (info.IsDirectory()) {
       if (recursive && (!DeleteFileRecursive(current, pattern, true) ||
                         !RemoveDirectory(current.value().c_str())))
-        return false;
+        success = false;
     } else if (!::DeleteFile(current.value().c_str())) {
-      return false;
+      success = false;
     }
   }
-  return true;
+  return success;
 }
 
 // Appends |mode_char| to |mode| before the optional character set encoding; see
