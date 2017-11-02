@@ -15,8 +15,6 @@ source_set("main") {
     "viz_main_impl.h",
   ]
 
-  defines = [ "NOTIMPLEMENTED_POLICY=5" ]
-
   deps = [
     "//cc",
     "//components/viz/service",

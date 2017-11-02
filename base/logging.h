@@ -1130,25 +1130,9 @@ inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
 }
 }  // namespace std
 
-// The NOTIMPLEMENTED() macro annotates codepaths which have
-// not been implemented yet.
-//
-// The implementation of this macro is controlled by NOTIMPLEMENTED_POLICY:
-//   0 -- Do nothing (stripped by compiler)
-//   1 -- Warn at compile time
-//   2 -- Fail at compile time
-//   3 -- Fail at runtime (DCHECK)
-//   4 -- [default] LOG(ERROR) at runtime
-//   5 -- LOG(ERROR) at runtime, only once per call-site
-
-#ifndef NOTIMPLEMENTED_POLICY
-#if defined(OS_ANDROID) && defined(OFFICIAL_BUILD)
-#define NOTIMPLEMENTED_POLICY 0
-#else
-// Select default policy: LOG(ERROR)
-#define NOTIMPLEMENTED_POLICY 4
-#endif
-#endif
+// The NOTIMPLEMENTED() macro annotates codepaths which have not been
+// implemented yet. If output spam is a serious concern,
+// NOTIMPLEMENTED_LOG_ONCE can be used.
 
 #if defined(COMPILER_GCC)
 // On Linux, with GCC, we can use __PRETTY_FUNCTION__ to get the demangled name
@@ -1158,24 +1142,18 @@ inline std::ostream& operator<<(std::ostream& out, const std::wstring& wstr) {
 #define NOTIMPLEMENTED_MSG "NOT IMPLEMENTED"
 #endif
 
-#if NOTIMPLEMENTED_POLICY == 0
+#if defined(OS_ANDROID) && defined(OFFICIAL_BUILD)
 #define NOTIMPLEMENTED() EAT_STREAM_PARAMETERS
-#elif NOTIMPLEMENTED_POLICY == 1
-// TODO, figure out how to generate a warning
-#define NOTIMPLEMENTED() static_assert(false, "NOT_IMPLEMENTED")
-#elif NOTIMPLEMENTED_POLICY == 2
-#define NOTIMPLEMENTED() static_assert(false, "NOT_IMPLEMENTED")
-#elif NOTIMPLEMENTED_POLICY == 3
-#define NOTIMPLEMENTED() NOTREACHED()
-#elif NOTIMPLEMENTED_POLICY == 4
+#define NOTIMPLEMENTED_LOG_ONCE() EAT_STREAM_PARAMETERS
+#else
 #define NOTIMPLEMENTED() LOG(ERROR) << NOTIMPLEMENTED_MSG
-#elif NOTIMPLEMENTED_POLICY == 5
-#define NOTIMPLEMENTED() do {\
-  static bool logged_once = false;\
-  LOG_IF(ERROR, !logged_once) << NOTIMPLEMENTED_MSG;\
-  logged_once = true;\
-} while(0);\
-EAT_STREAM_PARAMETERS
+#define NOTIMPLEMENTED_LOG_ONCE()                      \
+  do {                                                 \
+    static bool logged_once = false;                   \
+    LOG_IF(ERROR, !logged_once) << NOTIMPLEMENTED_MSG; \
+    logged_once = true;                                \
+  } while (0);                                         \
+  EAT_STREAM_PARAMETERS
 #endif
 
 #endif  // BASE_LOGGING_H_

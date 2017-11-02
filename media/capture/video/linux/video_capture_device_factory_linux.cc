@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Reduce number of log messages by logging each NOTIMPLEMENTED() only once.
-// // This has to be before any other includes, else default is picked up.
-// // See base/logging.h for details on this.
-// #define NOTIMPLEMENTED_POLICY 5
-
 #include "media/capture/video/linux/video_capture_device_factory_linux.h"
 
 #include <errno.h>
@@ -104,7 +99,7 @@ std::list<float> GetFrameRateList(int fd,
     } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_CONTINUOUS ||
                frame_interval.type == V4L2_FRMIVAL_TYPE_STEPWISE) {
       // TODO(mcasas): see http://crbug.com/249953, support these devices.
-      NOTIMPLEMENTED();
+      NOTIMPLEMENTED_LOG_ONCE();
       break;
     }
   }
@@ -140,7 +135,7 @@ void GetSupportedFormatsForV4L2BufferType(
       } else if (frame_size.type == V4L2_FRMSIZE_TYPE_STEPWISE ||
                  frame_size.type == V4L2_FRMSIZE_TYPE_CONTINUOUS) {
         // TODO(mcasas): see http://crbug.com/249953, support these devices.
-        NOTIMPLEMENTED();
+        NOTIMPLEMENTED_LOG_ONCE();
       }
 
       const std::list<float> frame_rates = GetFrameRateList(

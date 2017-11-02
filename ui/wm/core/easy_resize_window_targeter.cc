@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Only log once.
-#define NOTIMPLEMENTED_POLICY 5
-
 #include "ui/wm/core/easy_resize_window_targeter.h"
 
 #include <algorithm>
@@ -29,7 +26,7 @@ gfx::Insets InsetsWithOnlyNegativeValues(const gfx::Insets& insets) {
   if (insets.top() > 0 || insets.left() > 0 || insets.right() > 0 ||
       insets.bottom() > 0) {
     // See TODO at call site.
-    NOTIMPLEMENTED();
+    NOTIMPLEMENTED_LOG_ONCE();
   }
   return gfx::Insets(std::min(0, insets.top()), std::min(0, insets.left()),
                      std::min(0, insets.bottom()), std::min(0, insets.right()));

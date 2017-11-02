@@ -28,14 +28,14 @@ void NetworkConnectDelegateMus::ShowNetworkSettings(
 bool NetworkConnectDelegateMus::ShowEnrollNetwork(
     const std::string& network_id) {
   // TODO(mash): http://crbug.com/644355
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void NetworkConnectDelegateMus::ShowMobileSetupDialog(
     const std::string& network_id) {
   // TODO(mash): http://crbug.com/644355
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void NetworkConnectDelegateMus::ShowNetworkConnectError(

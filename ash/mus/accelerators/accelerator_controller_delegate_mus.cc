@@ -42,7 +42,7 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
     case UNPIN:
-      NOTIMPLEMENTED();
+      NOTIMPLEMENTED_LOG_ONCE();
       return false;
     default:
       break;

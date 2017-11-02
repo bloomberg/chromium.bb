@@ -21,19 +21,19 @@ DragWindowResizer::~DragWindowResizer() {
 void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   next_window_resizer_->Drag(location, event_flags);
   // http://crbug.com/613199.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DragWindowResizer::CompleteDrag() {
   next_window_resizer_->CompleteDrag();
   // http://crbug.com/613199.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DragWindowResizer::RevertDrag() {
   next_window_resizer_->RevertDrag();
   // http://crbug.com/613199.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 }  // namespace mus

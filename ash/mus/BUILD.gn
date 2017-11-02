@@ -64,8 +64,6 @@ source_set("lib") {
     "window_properties.h",
   ]
 
-  defines = [ "NOTIMPLEMENTED_POLICY=5" ]
-
   deps = [
     "//chromeos",
     "//chromeos:power_manager_proto",
@@ -241,6 +239,4 @@ source_set("unittests") {
     ":mus",
     "//mash/quick_launch",
   ]
-
-  defines = [ "NOTIMPLEMENTED_POLICY=5" ]
 }

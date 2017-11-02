@@ -116,7 +116,7 @@ std::unique_ptr<wm::TabletModeEventHandler>
 ShellPortMash::CreateTabletModeEventHandler() {
   // TODO: need support for window manager to get events before client:
   // http://crbug.com/624157.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 
@@ -138,7 +138,7 @@ std::unique_ptr<KeyboardUI> ShellPortMash::CreateKeyboardUI() {
 void ShellPortMash::AddPointerWatcher(views::PointerWatcher* watcher,
                                       views::PointerWatcherEventTypes events) {
   // TODO: implement drags for mus pointer watcher, http://crbug.com/641164.
-  // NOTIMPLEMENTED drags for mus pointer watcher.
+  // NOTIMPLEMENTED_LOG_ONCE drags for mus pointer watcher.
   mash_state_->pointer_watcher_event_router->AddPointerWatcher(
       watcher, events == views::PointerWatcherEventTypes::MOVES);
 }
@@ -149,12 +149,11 @@ void ShellPortMash::RemovePointerWatcher(views::PointerWatcher* watcher) {
 
 bool ShellPortMash::IsTouchDown() {
   // TODO: implement me, http://crbug.com/634967.
-  // NOTIMPLEMENTED is too spammy here.
   return false;
 }
 
 void ShellPortMash::ToggleIgnoreExternalKeyboard() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ShellPortMash::CreatePointerWatcherAdapter() {
