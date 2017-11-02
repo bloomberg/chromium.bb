@@ -86,6 +86,7 @@ class TrayUpdate::UpdateView : public ActionableView {
     base::string16 label_text;
     update_label_ = TrayPopupUtils::CreateDefaultLabel();
     update_label_->set_id(VIEW_ID_TRAY_UPDATE_MENU_LABEL);
+    update_label_->SetMultiLine(true);
     if (owner->factory_reset_required_) {
       label_text = bundle.GetLocalizedString(
           IDS_ASH_STATUS_TRAY_RESTART_AND_POWERWASH_TO_UPDATE);
