@@ -60,6 +60,9 @@ static uint8_t add_ref_mv_candidate(
 #endif
     BLOCK_SIZE bsize, int mi_row, int mi_col, int subsampling_x,
     int subsampling_y) {
+#if CONFIG_INTRABC
+  if (!is_inter_block(candidate)) return 0;
+#endif  // CONFIG_INTRABC
   int index = 0, ref;
   int newmv_count = 0;
   assert(weight % 2 == 0);
@@ -1054,6 +1057,9 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const MODE_INFO *const candidate_mi =
           xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride];
       const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
+#if CONFIG_INTRABC
+      if (ref_frame == INTRA_FRAME && !is_intrabc_block(candidate)) continue;
+#endif  // CONFIG_INTRABC
       // Keep counts for entropy encoding.
       context_counter += mode_2_counter[candidate->mode];
       different_ref_found = 1;
@@ -1078,6 +1084,9 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
               ? NULL
               : &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
       if (candidate == NULL) continue;
+#if CONFIG_INTRABC
+      if (ref_frame == INTRA_FRAME && !is_intrabc_block(candidate)) continue;
+#endif  // CONFIG_INTRABC
       if ((mi_row & (sb_mi_size - 1)) + mv_ref->row >= sb_mi_size ||
           (mi_col & (sb_mi_size - 1)) + mv_ref->col >= sb_mi_size)
         continue;
@@ -1123,7 +1132,11 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // Since we couldn't find 2 mvs from the same reference frame
   // go back through the neighbors and find motion vectors from
   // different reference frames.
-  if (different_ref_found) {
+  if (different_ref_found
+#if CONFIG_INTRABC
+      && ref_frame != INTRA_FRAME
+#endif  // CONFIG_INTRABC
+      ) {
     for (i = 0; i < MVREF_NEIGHBOURS; ++i) {
       const POSITION *mv_ref = &mv_ref_search[i];
       if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, mv_ref)) {
@@ -1207,7 +1220,9 @@ void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const MODE_INFO *const candidate_mi =
           xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride];
       const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
-
+#if CONFIG_INTRABC
+      if (ref_frame == INTRA_FRAME && !is_intrabc_block(candidate)) continue;
+#endif  // CONFIG_INTRABC
       // Keep counts for entropy encoding.
       context_counter += mode_2_counter[candidate->mode];
 
