@@ -307,7 +307,8 @@ Response PageHandler::Reload(Maybe<bool> bypassCache,
 Response PageHandler::Navigate(const std::string& url,
                                Maybe<std::string> referrer,
                                Maybe<std::string> maybe_transition_type,
-                               Page::FrameId* frame_id) {
+                               Page::FrameId* frame_id,
+                               Network::LoaderId* loader_id) {
   GURL gurl(url);
   if (!gurl.is_valid())
     return Response::Error("Cannot navigate to invalid URL");

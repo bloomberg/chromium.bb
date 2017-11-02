@@ -3,27 +3,20 @@
       `Tests that Page.lifecycleEvent is issued for important events.`);
 
   await dp.Page.enable();
-
-  var [lifecycleEvent] = await Promise.all([
-    dp.Page.onceLifecycleEvent(),
-    dp.Page.setLifecycleEventsEnabled({ enabled: true })
-  ]);
-  var loaderId = lifecycleEvent.params.loaderId;
+  await dp.Page.setLifecycleEventsEnabled({ enabled: true });
 
   var events = [];
-  dp.Page.onLifecycleEvent(result => {
-    // Navigation results in lifecycle events with a new loaderId.
-    if (result.params.loaderId === loaderId)
-      return;
-    events.push(result.params.name);
-    if (events.includes('networkIdle')) {
-      // 'load' can come before 'DOMContentLoaded'
-      events.sort();
-      testRunner.log(events);
+  var navigationLoaderId = null;
+  dp.Page.onLifecycleEvent(event => {
+    events.push(event);
+    if (event.params.name === 'networkIdle' && navigationLoaderId && event.params.loaderId === navigationLoaderId) {
+      var names = events.filter(event => event.params.loaderId === navigationLoaderId).map(event => event.params.name);
+      names.sort();
+      testRunner.log(names);
       testRunner.completeTest();
     }
   });
 
-  dp.Page.navigate({url: "data:text/html,Hello!"});
-
+  var response = await dp.Page.navigate({url: "data:text/html,Hello!"});
+  navigationLoaderId = response.result.loaderId;
 })
