@@ -8,6 +8,7 @@
 #define HELPERS_H
 
 #include "drv.h"
+#include "helpers_array.h"
 
 uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane);
 uint32_t drv_size_from_format(uint32_t format, uint32_t stride, uint32_t height, size_t plane);
@@ -35,5 +36,4 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items);
 int drv_modify_linear_combinations(struct driver *drv);
 uint64_t drv_pick_modifier(const uint64_t *modifiers, uint32_t count,
 			   const uint64_t *modifier_order, uint32_t order_count);
-
 #endif
