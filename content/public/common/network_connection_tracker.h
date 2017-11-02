@@ -28,7 +28,8 @@ namespace content {
 class CONTENT_EXPORT NetworkConnectionTracker
     : public mojom::NetworkChangeManagerClient {
  public:
-  typedef base::Callback<void(mojom::ConnectionType)> ConnectionTypeCallback;
+  typedef base::OnceCallback<void(mojom::ConnectionType)>
+      ConnectionTypeCallback;
 
   class CONTENT_EXPORT NetworkConnectionObserver {
    public:
