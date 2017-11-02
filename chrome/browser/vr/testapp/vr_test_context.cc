@@ -145,6 +145,16 @@ void VrTestContext::HandleInput(ui::Event* event) {
 
   const ui::MouseEvent* mouse_event = event->AsMouseEvent();
 
+  // TODO(cjgrant): Figure out why, quite regularly, mouse click events do not
+  // make it into this method and are missed.
+  if (mouse_event->IsLeftMouseButton()) {
+    if (mouse_event->type() == ui::ET_MOUSE_PRESSED) {
+      controller_info_->touchpad_button_state = UiInputManager::DOWN;
+    } else if (mouse_event->type() == ui::ET_MOUSE_RELEASED) {
+      controller_info_->touchpad_button_state = UiInputManager::UP;
+    }
+  }
+
   // Move the head pose if needed.
   if (mouse_event->IsRightMouseButton()) {
     if (last_drag_x_pixels_ != 0 || last_drag_y_pixels_ != 0) {
