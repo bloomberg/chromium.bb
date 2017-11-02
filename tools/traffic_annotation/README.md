@@ -63,4 +63,4 @@ and cc the people listed in OWNERS; they'll be on the hook to rebuild and
 re-enable the test.
 
 CLANG_REVISION = '308728'
-LASTCHANGE=d12359d46a29b8a357d84dc0a1e8c6dbba56a671-refs/heads/master@{#512110}
+LASTCHANGE=7f600d602309799c09356d1cf4545a293448f18f-refs/heads/master@{#512119}
