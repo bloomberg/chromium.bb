@@ -88,7 +88,7 @@ static void amdgpu_vmid_reserve_test(void)
 	CU_ASSERT_EQUAL(r, 0);
 
 	flags = 0;
-	r = amdgpu_vm_reserve_vmid(context_handle, flags);
+	r = amdgpu_vm_reserve_vmid(device_handle, flags);
 	CU_ASSERT_EQUAL(r, 0);
 
 
@@ -142,7 +142,7 @@ static void amdgpu_vmid_reserve_test(void)
 	CU_ASSERT_EQUAL(r, 0);
 
 	flags = 0;
-	r = amdgpu_vm_unreserve_vmid(context_handle, flags);
+	r = amdgpu_vm_unreserve_vmid(device_handle, flags);
 	CU_ASSERT_EQUAL(r, 0);
 
 

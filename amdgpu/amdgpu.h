@@ -1496,7 +1496,7 @@ void amdgpu_cs_chunk_fence_info_to_data(struct amdgpu_cs_fence_info *fence_info,
  *
  * \return  0 on success otherwise POSIX Error code
 */
-int amdgpu_vm_reserve_vmid(amdgpu_context_handle context, uint32_t flags);
+int amdgpu_vm_reserve_vmid(amdgpu_device_handle dev, uint32_t flags);
 
 /**
  * Free reserved VMID
@@ -1505,7 +1505,7 @@ int amdgpu_vm_reserve_vmid(amdgpu_context_handle context, uint32_t flags);
  *
  * \return  0 on success otherwise POSIX Error code
 */
-int amdgpu_vm_unreserve_vmid(amdgpu_context_handle context, uint32_t flags);
+int amdgpu_vm_unreserve_vmid(amdgpu_device_handle dev, uint32_t flags);
 
 #ifdef __cplusplus
 }
