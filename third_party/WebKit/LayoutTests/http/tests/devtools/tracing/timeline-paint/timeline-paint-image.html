@@ -31,6 +31,7 @@ function addCSSImage(url, width, height)
 function display()
 {
     addImage("../resources/test.png", "40px", "30px");
+    addCSSImage("//:0", "30px", "20px"); // should be ignored, see https://crbug.com/776940
     addCSSImage("../resources/test.png", "30px", "20px");
     return waitForFrame();
 }

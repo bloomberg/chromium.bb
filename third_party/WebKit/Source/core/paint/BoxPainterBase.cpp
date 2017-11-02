@@ -472,7 +472,9 @@ void BoxPainterBase::PaintFillLayerBackground(
   }
 
   // No progressive loading of the background image.
-  if (info.should_paint_image && !geometry.DestRect().IsEmpty()) {
+  // NOTE: This method can be called with no image in situations when a bad
+  // resource locator is given such as "//:0", so still check for image.
+  if (info.should_paint_image && !geometry.DestRect().IsEmpty() && image) {
     TRACE_EVENT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data",
         InspectorPaintImageEvent::Data(node_, *info.image, image->Rect(),
