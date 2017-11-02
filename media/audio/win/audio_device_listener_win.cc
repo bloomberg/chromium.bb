@@ -35,13 +35,12 @@ AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
     : listener_cb_(listener_cb), tick_clock_(new base::DefaultTickClock()) {
   // CreateDeviceEnumerator can fail on some installations of Windows such
   // as "Windows Server 2008 R2" where the desktop experience isn't available.
-  Microsoft::WRL::ComPtr<IMMDeviceEnumerator> device_enumerator;
-  HRESULT hr =
-      CoreAudioUtil::CreateDeviceEnumerator(device_enumerator.GetAddressOf());
-  if (FAILED(hr))
+  Microsoft::WRL::ComPtr<IMMDeviceEnumerator> device_enumerator(
+      CoreAudioUtil::CreateDeviceEnumerator());
+  if (!device_enumerator.Get())
     return;
 
-  hr = device_enumerator->RegisterEndpointNotificationCallback(this);
+  HRESULT hr = device_enumerator->RegisterEndpointNotificationCallback(this);
   if (FAILED(hr)) {
     LOG(ERROR)  << "RegisterEndpointNotificationCallback failed: "
                 << std::hex << hr;
