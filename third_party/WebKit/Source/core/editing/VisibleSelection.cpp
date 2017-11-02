@@ -282,6 +282,16 @@ static SelectionTemplate<Strategy> CanonicalizeSelection(
 }
 
 template <typename Strategy>
+static EWordSide ChooseWordSide(
+    const VisiblePositionTemplate<Strategy>& position) {
+  return IsEndOfEditableOrNonEditableContent(position) ||
+                 (IsEndOfLine(position) && !IsStartOfLine(position) &&
+                  !IsEndOfParagraph(position))
+             ? kPreviousWordIfOnBoundary
+             : kNextWordIfOnBoundary;
+}
+
+template <typename Strategy>
 static PositionTemplate<Strategy> ComputeStartRespectingGranularityAlgorithm(
     const PositionWithAffinityTemplate<Strategy>& passed_start,
     TextGranularity granularity) {
@@ -303,13 +313,8 @@ static PositionTemplate<Strategy> ComputeStartRespectingGranularityAlgorithm(
       // kNextWordIfOnBoundary);
       const VisiblePositionTemplate<Strategy> visible_start =
           CreateVisiblePosition(passed_start);
-      if (IsEndOfEditableOrNonEditableContent(visible_start) ||
-          (IsEndOfLine(visible_start) && !IsStartOfLine(visible_start) &&
-           !IsEndOfParagraph(visible_start))) {
-        return StartOfWord(visible_start, kPreviousWordIfOnBoundary)
-            .DeepEquivalent();
-      }
-      return StartOfWord(visible_start, kNextWordIfOnBoundary).DeepEquivalent();
+      return StartOfWord(visible_start, ChooseWordSide(visible_start))
+          .DeepEquivalent();
     }
     case TextGranularity::kSentence:
       return StartOfSentence(CreateVisiblePosition(passed_start))
@@ -375,14 +380,8 @@ static PositionTemplate<Strategy> ComputeEndRespectingGranularityAlgorithm(
       // |kNextWordIfOnBoundary|);
       const VisiblePositionTemplate<Strategy> original_end =
           CreateVisiblePosition(passed_end);
-      EWordSide side = kNextWordIfOnBoundary;
-      if (IsEndOfEditableOrNonEditableContent(original_end) ||
-          (IsEndOfLine(original_end) && !IsStartOfLine(original_end) &&
-           !IsEndOfParagraph(original_end)))
-        side = kPreviousWordIfOnBoundary;
-
       const VisiblePositionTemplate<Strategy> word_end =
-          EndOfWord(original_end, side);
+          EndOfWord(original_end, ChooseWordSide(original_end));
       if (!IsEndOfParagraph(original_end))
         return word_end.DeepEquivalent();
       if (IsEmptyTableCell(start.AnchorNode()))
