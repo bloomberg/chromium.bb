@@ -584,14 +584,12 @@ std::string SubstitutionWriter::GetLinkerSubstitution(
       if (target->output_dir().is_null()) {
         return ApplyPatternToLinkerAsOutputFile(
             target, tool, tool->default_output_dir()).value();
-      } else {
-        SetDirOrDotWithNoSlash(RebasePath(
-                target->output_dir().value(),
-                target->settings()->build_settings()->build_dir()),
-            &result);
-        return result;
       }
-      break;
+      SetDirOrDotWithNoSlash(RebasePath(
+              target->output_dir().value(),
+              target->settings()->build_settings()->build_dir()),
+          &result);
+      return result;
 
     case SUBSTITUTION_OUTPUT_EXTENSION:
       // Use the extension provided on the target if specified, otherwise

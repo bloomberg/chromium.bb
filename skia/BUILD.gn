@@ -669,6 +669,10 @@ source_set("skia_opts") {
   } else if (current_cpu == "mips64el") {
     cflags += [ "-fomit-frame-pointer" ]
     sources = skia_opts.none_sources
+  } else if (current_cpu == "ppc64") {
+    sources = skia_opts.none_sources
+  } else if (current_cpu == "s390x") {
+    sources = skia_opts.none_sources
   } else {
     assert(false, "Need to port cpu specific stuff from skia_library_opts.gyp")
   }
