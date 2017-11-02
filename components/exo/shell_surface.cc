@@ -683,6 +683,20 @@ void ShellSurface::SetMinimumSize(const gfx::Size& size) {
   pending_minimum_size_ = size;
 }
 
+void ShellSurface::SetBoundsMode(BoundsMode mode) {
+  TRACE_EVENT1("exo", "ShellSurface::SetBoundsMode", "mode",
+               static_cast<int>(mode));
+
+  bounds_mode_ = mode;
+}
+
+void ShellSurface::SetCanMinimize(bool can_minimize) {
+  TRACE_EVENT1("exo", "ShellSurface::SetCanMinimize", "can_minimize",
+               can_minimize);
+
+  can_minimize_ = can_minimize;
+}
+
 // static
 void ShellSurface::SetMainSurface(aura::Window* window, Surface* surface) {
   window->SetProperty(kMainSurfaceKey, surface);
@@ -1630,8 +1644,10 @@ void ShellSurface::UpdateWidgetBounds() {
           visible_bounds);
 
   switch (bounds_mode_) {
-    case BoundsMode::CLIENT:
     case BoundsMode::FIXED:
+      new_widget_bounds.set_origin(origin_);
+      break;
+    case BoundsMode::CLIENT:
       new_widget_bounds.set_origin(origin_ -
                                    GetSurfaceOrigin().OffsetFromOrigin());
       break;

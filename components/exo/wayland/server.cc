@@ -1259,6 +1259,51 @@ void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
 ////////////////////////////////////////////////////////////////////////////////
 // xdg_positioner_interface:
 
+struct WaylandPositioner {
+  // Calculate and return position from current state.
+  gfx::Point CalculatePosition() const {
+    gfx::Point position;
+
+    if (anchor & ZXDG_POSITIONER_V6_ANCHOR_LEFT)
+      position.set_x(anchor_rect.x());
+    else if (anchor & ZXDG_POSITIONER_V6_ANCHOR_RIGHT)
+      position.set_x(anchor_rect.right());
+    else
+      position.set_x(anchor_rect.CenterPoint().x());
+
+    if (anchor & ZXDG_POSITIONER_V6_ANCHOR_TOP)
+      position.set_y(anchor_rect.y());
+    else if (anchor & ZXDG_POSITIONER_V6_ANCHOR_BOTTOM)
+      position.set_y(anchor_rect.bottom());
+    else
+      position.set_y(anchor_rect.CenterPoint().y());
+
+    gfx::Vector2d gravity_offset;
+
+    if (gravity & ZXDG_POSITIONER_V6_GRAVITY_LEFT)
+      gravity_offset.set_x(size.width());
+    else if (gravity & ZXDG_POSITIONER_V6_GRAVITY_RIGHT)
+      gravity_offset.set_x(0);
+    else
+      gravity_offset.set_x(size.width() / 2);
+
+    if (gravity & ZXDG_POSITIONER_V6_GRAVITY_TOP)
+      gravity_offset.set_y(size.height());
+    else if (gravity & ZXDG_POSITIONER_V6_GRAVITY_BOTTOM)
+      gravity_offset.set_y(0);
+    else
+      gravity_offset.set_y(size.height() / 2);
+
+    return position + offset - gravity_offset;
+  }
+
+  gfx::Size size;
+  gfx::Rect anchor_rect;
+  uint32_t anchor = ZXDG_POSITIONER_V6_ANCHOR_NONE;
+  uint32_t gravity = ZXDG_POSITIONER_V6_GRAVITY_NONE;
+  gfx::Vector2d offset;
+};
+
 void xdg_positioner_v6_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
@@ -1267,7 +1312,13 @@ void xdg_positioner_v6_set_size(wl_client* client,
                                 wl_resource* resource,
                                 int32_t width,
                                 int32_t height) {
-  NOTIMPLEMENTED();
+  if (width < 1 || height < 1) {
+    wl_resource_post_error(resource, ZXDG_POSITIONER_V6_ERROR_INVALID_INPUT,
+                           "width and height must be positive and non-zero");
+    return;
+  }
+
+  GetUserDataAs<WaylandPositioner>(resource)->size = gfx::Size(width, height);
 }
 
 void xdg_positioner_v6_set_anchor_rect(wl_client* client,
@@ -1276,19 +1327,44 @@ void xdg_positioner_v6_set_anchor_rect(wl_client* client,
                                        int32_t y,
                                        int32_t width,
                                        int32_t height) {
-  NOTIMPLEMENTED();
+  if (width < 1 || height < 1) {
+    wl_resource_post_error(resource, ZXDG_POSITIONER_V6_ERROR_INVALID_INPUT,
+                           "width and height must be positive and non-zero");
+    return;
+  }
+
+  GetUserDataAs<WaylandPositioner>(resource)->anchor_rect =
+      gfx::Rect(x, y, width, height);
 }
 
 void xdg_positioner_v6_set_anchor(wl_client* client,
                                   wl_resource* resource,
                                   uint32_t anchor) {
-  NOTIMPLEMENTED();
+  if (((anchor & ZXDG_POSITIONER_V6_ANCHOR_LEFT) &&
+       (anchor & ZXDG_POSITIONER_V6_ANCHOR_RIGHT)) ||
+      ((anchor & ZXDG_POSITIONER_V6_ANCHOR_TOP) &&
+       (anchor & ZXDG_POSITIONER_V6_ANCHOR_BOTTOM))) {
+    wl_resource_post_error(resource, ZXDG_POSITIONER_V6_ERROR_INVALID_INPUT,
+                           "same-axis values are not allowed");
+    return;
+  }
+
+  GetUserDataAs<WaylandPositioner>(resource)->anchor = anchor;
 }
 
 void xdg_positioner_v6_set_gravity(wl_client* client,
                                    wl_resource* resource,
                                    uint32_t gravity) {
-  NOTIMPLEMENTED();
+  if (((gravity & ZXDG_POSITIONER_V6_GRAVITY_LEFT) &&
+       (gravity & ZXDG_POSITIONER_V6_GRAVITY_RIGHT)) ||
+      ((gravity & ZXDG_POSITIONER_V6_GRAVITY_TOP) &&
+       (gravity & ZXDG_POSITIONER_V6_GRAVITY_BOTTOM))) {
+    wl_resource_post_error(resource, ZXDG_POSITIONER_V6_ERROR_INVALID_INPUT,
+                           "same-axis values are not allowed");
+    return;
+  }
+
+  GetUserDataAs<WaylandPositioner>(resource)->gravity = gravity;
 }
 
 void xdg_positioner_v6_set_constraint_adjustment(
@@ -1302,7 +1378,7 @@ void xdg_positioner_v6_set_offset(wl_client* client,
                                   wl_resource* resource,
                                   int32_t x,
                                   int32_t y) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<WaylandPositioner>(resource)->offset = gfx::Vector2d(x, y);
 }
 
 const struct zxdg_positioner_v6_interface xdg_positioner_v6_implementation = {
@@ -1686,8 +1762,8 @@ void HandleXdgPopupV6CloseCallback(wl_resource* resource) {
 void xdg_surface_v6_get_popup(wl_client* client,
                               wl_resource* resource,
                               uint32_t id,
-                              wl_resource* parent,
-                              wl_resource* positioner) {
+                              wl_resource* parent_resource,
+                              wl_resource* positioner_resource) {
   ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
   if (shell_surface->enabled()) {
     wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_ALREADY_CONSTRUCTED,
@@ -1695,6 +1771,24 @@ void xdg_surface_v6_get_popup(wl_client* client,
     return;
   }
 
+  ShellSurface* parent = GetUserDataAs<ShellSurface>(parent_resource);
+  if (!parent->enabled()) {
+    wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_NOT_CONSTRUCTED,
+                           "popup parent not constructed");
+    return;
+  }
+
+  gfx::Point position = GetUserDataAs<WaylandPositioner>(positioner_resource)
+                            ->CalculatePosition();
+  // |position| is relative to the parent's origin, and |origin| is in screen
+  // coordinates.
+  gfx::Point origin = position;
+  wm::ConvertPointToScreen(parent->GetWidget()->GetNativeWindow(), &origin);
+  shell_surface->SetParent(parent);
+  shell_surface->SetOrigin(origin);
+  shell_surface->SetBoundsMode(ShellSurface::BoundsMode::FIXED);
+  shell_surface->SetActivatable(false);
+  shell_surface->SetCanMinimize(false);
   shell_surface->SetEnabled(true);
 
   wl_resource* xdg_popup_resource =
@@ -1903,12 +1997,11 @@ void xdg_shell_v6_destroy(wl_client* client, wl_resource* resource) {
 void xdg_shell_v6_create_positioner(wl_client* client,
                                     wl_resource* resource,
                                     uint32_t id) {
-  wl_resource* xdg_positioner_resource =
+  wl_resource* positioner_resource =
       wl_resource_create(client, &zxdg_positioner_v6_interface, 1, id);
 
-  wl_resource_set_implementation(xdg_positioner_resource,
-                                 &xdg_positioner_v6_implementation, nullptr,
-                                 nullptr);
+  SetImplementation(positioner_resource, &xdg_positioner_v6_implementation,
+                    std::make_unique<WaylandPositioner>());
 }
 
 uint32_t HandleXdgSurfaceV6ConfigureCallback(

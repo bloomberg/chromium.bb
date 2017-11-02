@@ -212,6 +212,12 @@ class ShellSurface : public SurfaceTreeHost,
   // Set the miniumum size for the surface.
   void SetMinimumSize(const gfx::Size& size);
 
+  // Set bounds mode for surface.
+  void SetBoundsMode(BoundsMode mode);
+
+  // Set "can minimize" state for surface.
+  void SetCanMinimize(bool can_minimize);
+
   // Sets the main surface for the window.
   static void SetMainSurface(aura::Window* window, Surface* surface);
 
@@ -353,11 +359,11 @@ class ShellSurface : public SurfaceTreeHost,
 
   views::Widget* widget_ = nullptr;
   aura::Window* parent_;
-  const BoundsMode bounds_mode_;
+  BoundsMode bounds_mode_ = BoundsMode::SHELL;
   int64_t primary_display_id_;
   gfx::Point origin_;
   bool activatable_ = true;
-  const bool can_minimize_;
+  bool can_minimize_ = true;
   // Container Window Id (see ash/public/cpp/shell_window_ids.h)
   int container_;
   bool frame_enabled_ = false;

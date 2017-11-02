@@ -762,9 +762,7 @@ TEST_F(ShellSurfaceTest, PopupWindow) {
   popup_surface.Commit();
 
   // Popup position is fixed, and geometry is relative to it.
-  EXPECT_EQ(gfx::Rect(parent_bounds.origin() +
-                      popup_bounds.OffsetFromOrigin() +
-                      geometry.OffsetFromOrigin(),
+  EXPECT_EQ(gfx::Rect(parent_bounds.origin() + popup_bounds.OffsetFromOrigin(),
                       geometry.size()),
             popup->GetWidget()->GetWindowBoundsInScreen());
 }
