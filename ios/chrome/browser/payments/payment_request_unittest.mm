@@ -1053,4 +1053,118 @@ TEST_F(PaymentRequestTest,
       payment_request.GetDisplayItems(selected_payment_method)[1].amount.value);
 }
 
+// Tests that payment_request_util::RequestContactInfo returns true if payer's
+// name, phone number, or email address are requested and false otherwise.
+TEST_F(PaymentRequestTest, RequestContactInfo) {
+  autofill::TestPersonalDataManager personal_data_manager;
+
+  payments::WebPaymentRequest web_payment_request;
+
+  web_payment_request.options.request_payer_name = true;
+  web_payment_request.options.request_payer_phone = true;
+  web_payment_request.options.request_payer_email = true;
+  payments::TestPaymentRequest payment_request1(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_TRUE(payment_request1.RequestContactInfo());
+
+  web_payment_request.options.request_payer_name = false;
+  payments::TestPaymentRequest payment_request2(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_TRUE(payment_request2.RequestContactInfo());
+
+  web_payment_request.options.request_payer_phone = false;
+  payments::TestPaymentRequest payment_request3(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_TRUE(payment_request3.RequestContactInfo());
+
+  web_payment_request.options.request_payer_email = false;
+  payments::TestPaymentRequest payment_request4(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_FALSE(payment_request4.RequestContactInfo());
+}
+
+// Tests the return value of payment_request_util::CanPay.
+TEST_F(PaymentRequestTest, CanPay) {
+  autofill::TestPersonalDataManager personal_data_manager;
+
+  payments::WebPaymentRequest web_payment_request;
+  payments::PaymentMethodData method_datum;
+  method_datum.supported_methods.push_back("basic-card");
+  method_datum.supported_networks.push_back("visa");
+  web_payment_request.method_data.push_back(method_datum);
+
+  // No selected payment method.
+  payments::TestPaymentRequest payment_request1(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_FALSE(payment_request1.IsAbleToPay());
+
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+  // Make the profile incomplete by removing the name and the phone number so
+  // that it is not selected as the default shipping address or contact info.
+  profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL), base::string16(),
+                  "en-US");
+  profile.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+                  base::string16(), "en-US");
+  autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
+  card.set_billing_address_id(profile.guid());
+  personal_data_manager.AddTestingProfile(&profile);
+  personal_data_manager.AddTestingCreditCard(&card);
+
+  // Has a selected payment method.
+  payments::TestPaymentRequest payment_request2(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_TRUE(payment_request2.IsAbleToPay());
+
+  // No selected contact info.
+  web_payment_request.options.request_payer_phone = true;
+  payments::TestPaymentRequest payment_request3(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_FALSE(payment_request3.IsAbleToPay());
+
+  profile.SetInfo(autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
+                  base::ASCIIToUTF16("16502111111"), "en-US");
+
+  // Has a selected contact info.
+  payments::TestPaymentRequest payment_request4(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_TRUE(payment_request4.IsAbleToPay());
+
+  // No selected shipping address.
+  web_payment_request.options.request_shipping = true;
+  payments::TestPaymentRequest payment_request5(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_FALSE(payment_request5.IsAbleToPay());
+
+  profile.SetInfo(autofill::AutofillType(autofill::NAME_FULL),
+                  base::ASCIIToUTF16("John Doe"), "en-US");
+
+  // Has a selected shipping address, but no selected shipping option.
+  payments::TestPaymentRequest payment_request6(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_FALSE(payment_request6.IsAbleToPay());
+
+  std::vector<payments::PaymentShippingOption> shipping_options;
+  payments::PaymentShippingOption option;
+  option.id = "1";
+  option.selected = true;
+  shipping_options.push_back(std::move(option));
+  web_payment_request.details.shipping_options = std::move(shipping_options);
+
+  // Has a selected shipping address and a selected shipping option.
+  payments::TestPaymentRequest payment_request7(
+      web_payment_request, chrome_browser_state_.get(), &web_state_,
+      &personal_data_manager);
+  EXPECT_TRUE(payment_request7.IsAbleToPay());
+}
+
 }  // namespace payments

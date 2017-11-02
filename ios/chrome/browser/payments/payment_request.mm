@@ -420,6 +420,17 @@ bool PaymentRequest::CanMakePayment() const {
   return false;
 }
 
+bool PaymentRequest::IsAbleToPay() {
+  return selected_payment_method() != nullptr &&
+         (selected_shipping_option() != nullptr || !request_shipping()) &&
+         (selected_shipping_profile() != nullptr || !request_shipping()) &&
+         (selected_contact_profile() != nullptr || !RequestContactInfo());
+}
+
+bool PaymentRequest::RequestContactInfo() {
+  return request_payer_name() || request_payer_email() || request_payer_phone();
+}
+
 void PaymentRequest::InvokePaymentApp(
     id<PaymentResponseHelperConsumer> consumer) {
   DCHECK(selected_payment_method());
