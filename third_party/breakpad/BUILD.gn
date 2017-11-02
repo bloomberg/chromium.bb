@@ -903,6 +903,7 @@ if (is_ios) {
       "breakpad/src/client/minidump_file_writer.h",
       "breakpad/src/common/convert_UTF.c",
       "breakpad/src/common/convert_UTF.h",
+      "breakpad/src/common/long_string_dictionary.cc",
       "breakpad/src/common/mac/HTTPMultipartUpload.m",
       "breakpad/src/common/mac/file_id.cc",
       "breakpad/src/common/mac/file_id.h",
