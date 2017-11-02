@@ -23997,6 +23997,7 @@ from previous Chrome versions.
   <int value="-2062373123" label="WebPaymentsModifiers:enabled"/>
   <int value="-2059771509" label="NTPTilesLowerResolutionFavicons:disabled"/>
   <int value="-2058656447" label="ContextualSearchUrlActions:enabled"/>
+  <int value="-2054501930" label="NativeSamba:enabled"/>
   <int value="-2053860791" label="XGEOVisibleNetworks:enabled"/>
   <int value="-2048732429" label="enable-alternative-services"/>
   <int value="-2048679945" label="NTPOfflinePageDownloadSuggestions:disabled"/>
@@ -24042,6 +24043,7 @@ from previous Chrome versions.
   <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
   <int value="-1957328398" label="MacSystemShareMenu:disabled"/>
   <int value="-1956349722" label="disable-smooth-scrolling"/>
+  <int value="-1949100957" label="NativeSamba:disabled"/>
   <int value="-1948540128" label="disable-webrtc-hw-encoding (deprecated)"/>
   <int value="-1946595906" label="enable-push-api-background-mode"/>
   <int value="-1946522787" label="VrCustomTabBrowsing:disabled"/>

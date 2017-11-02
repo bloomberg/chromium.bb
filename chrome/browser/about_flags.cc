@@ -3614,6 +3614,12 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableKeyboardShortcutViewer)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_CHROMEOS)
+    {"native-samba", flag_descriptions::kNativeSambaName,
+     flag_descriptions::kNativeSambaDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNativeSamba)}
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
