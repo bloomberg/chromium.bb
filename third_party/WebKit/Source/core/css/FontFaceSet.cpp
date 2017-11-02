@@ -14,11 +14,11 @@ const int FontFaceSet::kDefaultFontSize = 10;
 const char FontFaceSet::kDefaultFontFamily[] = "sans-serif";
 
 void FontFaceSet::Suspend() {
-  async_runner_->Suspend();
+  async_runner_->Pause();
 }
 
 void FontFaceSet::Resume() {
-  async_runner_->Resume();
+  async_runner_->Unpause();
 }
 
 void FontFaceSet::ContextDestroyed(ExecutionContext*) {

@@ -197,11 +197,11 @@ const char* NavigatorGamepad::SupplementName() {
 
 void NavigatorGamepad::RegisterWithDispatcher() {
   GamepadDispatcher::Instance().AddController(this);
-  dispatch_one_event_runner_->Resume();
+  dispatch_one_event_runner_->Unpause();
 }
 
 void NavigatorGamepad::UnregisterWithDispatcher() {
-  dispatch_one_event_runner_->Suspend();
+  dispatch_one_event_runner_->Pause();
   GamepadDispatcher::Instance().RemoveController(this);
 }
 

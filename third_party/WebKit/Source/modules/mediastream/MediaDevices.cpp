@@ -194,11 +194,11 @@ void MediaDevices::ContextDestroyed(ExecutionContext*) {
 }
 
 void MediaDevices::Suspend() {
-  dispatch_scheduled_event_runner_->Suspend();
+  dispatch_scheduled_event_runner_->Pause();
 }
 
 void MediaDevices::Resume() {
-  dispatch_scheduled_event_runner_->Resume();
+  dispatch_scheduled_event_runner_->Unpause();
 }
 
 void MediaDevices::ScheduleDispatchEvent(Event* event) {

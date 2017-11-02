@@ -53,11 +53,11 @@ class AsyncMethodRunner final
 
   // Schedules to run the method asynchronously. Do nothing if it's already
   // scheduled. If it's suspended, remember to schedule to run the method when
-  // resume() is called.
+  // Unpause() is called.
   void RunAsync() {
-    if (suspended_) {
+    if (paused_) {
       DCHECK(!timer_.IsActive());
-      run_when_resumed_ = true;
+      run_when_unpaused_ = true;
       return;
     }
 
@@ -68,42 +68,42 @@ class AsyncMethodRunner final
 
   // If it's scheduled to run the method, cancel it and remember to schedule
   // it again when resume() is called. Mainly for implementing
-  // SuspendableObject::suspend().
-  void Suspend() {
-    if (suspended_)
+  // PausableObject::Pause().
+  void Pause() {
+    if (paused_)
       return;
-    suspended_ = true;
+    paused_ = true;
 
     if (!timer_.IsActive())
       return;
 
     timer_.Stop();
-    run_when_resumed_ = true;
+    run_when_unpaused_ = true;
   }
 
   // Resumes pending method run.
-  void Resume() {
-    if (!suspended_)
+  void Unpause() {
+    if (!paused_)
       return;
-    suspended_ = false;
+    paused_ = false;
 
-    if (!run_when_resumed_)
+    if (!run_when_unpaused_)
       return;
 
-    run_when_resumed_ = false;
+    run_when_unpaused_ = false;
     // FIXME: resume should take a TraceLocation and pass it to timer here.
     timer_.StartOneShot(0, BLINK_FROM_HERE);
   }
 
   void Stop() {
-    if (suspended_) {
+    if (paused_) {
       DCHECK(!timer_.IsActive());
-      run_when_resumed_ = false;
-      suspended_ = false;
+      run_when_unpaused_ = false;
+      paused_ = false;
       return;
     }
 
-    DCHECK(!run_when_resumed_);
+    DCHECK(!run_when_unpaused_);
     timer_.Stop();
   }
 
@@ -116,8 +116,8 @@ class AsyncMethodRunner final
       : timer_(this, &AsyncMethodRunner<TargetClass>::Fired),
         object_(object),
         method_(method),
-        suspended_(false),
-        run_when_resumed_(false) {}
+        paused_(false),
+        run_when_unpaused_(false) {}
 
   void Fired(TimerBase*) { (object_->*method_)(); }
 
@@ -126,8 +126,8 @@ class AsyncMethodRunner final
   Member<TargetClass> object_;
   TargetMethod method_;
 
-  bool suspended_;
-  bool run_when_resumed_;
+  bool paused_;
+  bool run_when_unpaused_;
 };
 
 }  // namespace blink
