@@ -324,7 +324,7 @@ void ChannelMojo::GetGenericRemoteAssociatedInterface(
     // Attach the associated interface to a disconnected pipe, so that the
     // associated interface pointer can be used to make calls (which are
     // dropped).
-    mojo::AssociateWithDisconnectedPipe(std::move(handle));
+    mojo::GetIsolatedInterface(std::move(handle));
   }
 }
 

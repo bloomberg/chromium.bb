@@ -573,7 +573,7 @@ TEST_F(WallpaperControllerTest, MojoWallpaperObserverTest) {
   TestWallpaperObserver observer;
   mojom::WallpaperObserverAssociatedPtr observer_ptr;
   mojo::AssociatedBinding<mojom::WallpaperObserver> binding(
-      &observer, mojo::MakeRequestAssociatedWithDedicatedPipe(&observer_ptr));
+      &observer, mojo::MakeIsolatedRequest(&observer_ptr));
   controller_->AddObserver(observer_ptr.PassInterface());
 
   // Mojo observer will asynchronously receive the observed event, thus a run

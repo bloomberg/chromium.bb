@@ -1178,9 +1178,9 @@ TEST_F(AssociatedInterfaceTest, CloseWithoutBindingAssociatedRequest) {
   run_loop.Run();
 }
 
-TEST_F(AssociatedInterfaceTest, AssociateWithDisconnectedPipe) {
+TEST_F(AssociatedInterfaceTest, GetIsolatedInterface) {
   IntegerSenderAssociatedPtr sender;
-  AssociateWithDisconnectedPipe(MakeRequest(&sender).PassHandle());
+  GetIsolatedInterface(MakeRequest(&sender).PassHandle());
   sender->Send(42);
 }
 
