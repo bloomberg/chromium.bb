@@ -23,6 +23,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -262,6 +263,12 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
                                       "WebContents created",
                                       media_router_dialog);
 
+  // Clear the zoom level for the dialog so that it is not affected by the page
+  // zoom setting.
+  const GURL dialog_url = web_dialog_delegate->GetDialogContentURL();
+  content::HostZoomMap::Get(media_router_dialog->GetSiteInstance())
+      ->SetZoomLevelForHostAndScheme(dialog_url.scheme(), dialog_url.host(), 0);
+
   // |media_router_ui| is created when |constrained_delegate| is created.
   // For tests, GetWebUI() returns a nullptr.
   if (media_router_dialog->GetWebUI()) {
@@ -273,8 +280,8 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
 
   media_router_dialog_pending_ = true;
 
-  dialog_observer_.reset(new DialogWebContentsObserver(
-      media_router_dialog, this));
+  dialog_observer_ =
+      std::make_unique<DialogWebContentsObserver>(media_router_dialog, this);
 
   // The |action_controller_| must be notified after |action_| to avoid a UI
   // bug in which the drop shadow is drawn in an incorrect position.
