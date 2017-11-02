@@ -181,7 +181,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       const ServiceWorkerResponse& response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
       blink::mojom::BlobPtr body_as_blob,
-      const scoped_refptr<ServiceWorkerVersion>& version);
+      scoped_refptr<ServiceWorkerVersion> version);
   void SetResponse(const ServiceWorkerResponse& response);
 
   // Populates |http_response_headers_|.

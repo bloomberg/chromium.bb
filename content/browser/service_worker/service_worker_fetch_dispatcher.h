@@ -39,20 +39,20 @@ class URLLoaderFactoryGetter;
 class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
  public:
   using FetchCallback =
-      base::Callback<void(ServiceWorkerStatusCode,
-                          ServiceWorkerFetchEventResult,
-                          const ServiceWorkerResponse&,
-                          blink::mojom::ServiceWorkerStreamHandlePtr,
-                          blink::mojom::BlobPtr,
-                          const scoped_refptr<ServiceWorkerVersion>&)>;
+      base::OnceCallback<void(ServiceWorkerStatusCode,
+                              ServiceWorkerFetchEventResult,
+                              const ServiceWorkerResponse&,
+                              blink::mojom::ServiceWorkerStreamHandlePtr,
+                              blink::mojom::BlobPtr,
+                              scoped_refptr<ServiceWorkerVersion>)>;
 
   // S13nServiceWorker
   ServiceWorkerFetchDispatcher(std::unique_ptr<ResourceRequest> request,
                                scoped_refptr<ServiceWorkerVersion> version,
                                const base::Optional<base::TimeDelta>& timeout,
                                const net::NetLogWithSource& net_log,
-                               const base::Closure& prepare_callback,
-                               const FetchCallback& fetch_callback);
+                               base::OnceClosure prepare_callback,
+                               FetchCallback fetch_callback);
   // Non-S13nServiceWorker
   ServiceWorkerFetchDispatcher(
       std::unique_ptr<ServiceWorkerFetchRequest> request,
@@ -60,8 +60,8 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
       ResourceType resource_type,
       const base::Optional<base::TimeDelta>& timeout,
       const net::NetLogWithSource& net_log,
-      const base::Closure& prepare_callback,
-      const FetchCallback& fetch_callback);
+      base::OnceClosure prepare_callback,
+      FetchCallback fetch_callback);
   ~ServiceWorkerFetchDispatcher();
 
   // If appropriate, starts the navigation preload request and creates
@@ -123,7 +123,7 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   scoped_refptr<ServiceWorkerVersion> version_;
   ResourceType resource_type_;
   net::NetLogWithSource net_log_;
-  base::Closure prepare_callback_;
+  base::OnceClosure prepare_callback_;
   FetchCallback fetch_callback_;
   base::Optional<base::TimeDelta> timeout_;
   bool did_complete_;

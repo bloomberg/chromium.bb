@@ -4,7 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_url_loader_job.h"
 
-#include "base/guid.h"
+#include <utility>
+
 #include "base/optional.h"
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
@@ -17,7 +18,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
-#include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_reader.h"
@@ -164,11 +164,11 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
       std::make_unique<ResourceRequest>(resource_request_), active_worker,
       base::nullopt /* timeout */,
       net::NetLogWithSource() /* TODO(scottmg): net log? */,
-      base::Bind(&ServiceWorkerURLLoaderJob::DidPrepareFetchEvent,
-                 weak_factory_.GetWeakPtr(),
-                 base::WrapRefCounted(active_worker)),
-      base::Bind(&ServiceWorkerURLLoaderJob::DidDispatchFetchEvent,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceWorkerURLLoaderJob::DidPrepareFetchEvent,
+                     weak_factory_.GetWeakPtr(),
+                     base::WrapRefCounted(active_worker)),
+      base::BindOnce(&ServiceWorkerURLLoaderJob::DidDispatchFetchEvent,
+                     weak_factory_.GetWeakPtr()));
   did_navigation_preload_ =
       fetch_dispatcher_->MaybeStartNavigationPreloadWithURLLoader(
           resource_request_, url_loader_factory_getter_.get(),
@@ -177,24 +177,6 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
   response_head_.load_timing.send_start = base::TimeTicks::Now();
   response_head_.load_timing.send_end = base::TimeTicks::Now();
   fetch_dispatcher_->Run();
-}
-
-scoped_refptr<storage::BlobHandle>
-ServiceWorkerURLLoaderJob::CreateRequestBodyBlob() {
-  storage::BlobDataBuilder blob_builder(base::GenerateGUID());
-  // TODO(emim): Resolve file sizes before calling AppendIPCDataElement().
-  for (const auto& element : (*resource_request_.request_body->elements())) {
-    blob_builder.AppendIPCDataElement(element);
-  }
-
-  std::unique_ptr<storage::BlobDataHandle> request_body_blob_data_handle =
-      blob_storage_context_->AddFinishedBlob(&blob_builder);
-  // TODO(emim): Return a network error when the blob is broken.
-  CHECK(!request_body_blob_data_handle->IsBroken());
-  blink::mojom::BlobPtr blob_ptr;
-  storage::BlobImpl::Create(std::move(request_body_blob_data_handle),
-                            MakeRequest(&blob_ptr));
-  return base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
 }
 
 void ServiceWorkerURLLoaderJob::CommitResponseHeaders() {
@@ -235,7 +217,7 @@ void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
-    const scoped_refptr<ServiceWorkerVersion>& version) {
+    scoped_refptr<ServiceWorkerVersion> version) {
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
   if (!delegate_->RequestStillValid(&result)) {

@@ -6,6 +6,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
@@ -152,10 +153,10 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
     }
   }
 
-  void MayBeReportToDevTools(WorkerId worker_id, int fetch_event_id) {
+  void MaybeReportToDevTools(WorkerId worker_id, int fetch_event_id) {
     worker_id_ = worker_id;
     devtools_request_id_ = base::StringPrintf("preload-%d", fetch_event_id);
-    MayBeRunDevToolsCallbacks();
+    MaybeRunDevToolsCallbacks();
   }
 
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {
@@ -215,7 +216,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   }
 
  private:
-  void MayBeRunDevToolsCallbacks() {
+  void MaybeRunDevToolsCallbacks() {
     if (!worker_id_)
       return;
     while (!devtools_callbacks.empty()) {
@@ -229,7 +230,7 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   void AddDevToolsCallback(
       base::Callback<void(const WorkerId&, const std::string&)> callback) {
     devtools_callbacks.push(callback);
-    MayBeRunDevToolsCallbacks();
+    MaybeRunDevToolsCallbacks();
   }
 
   mojo::Binding<mojom::URLLoaderClient> binding_;
@@ -452,9 +453,9 @@ class ServiceWorkerFetchDispatcher::URLLoaderAssets
         url_loader_(std::move(url_loader)),
         url_loader_client_(std::move(url_loader_client)) {}
 
-  void MayBeReportToDevTools(std::pair<int, int> worker_id,
+  void MaybeReportToDevTools(std::pair<int, int> worker_id,
                              int fetch_event_id) {
-    url_loader_client_->MayBeReportToDevTools(worker_id, fetch_event_id);
+    url_loader_client_->MaybeReportToDevTools(worker_id, fetch_event_id);
   }
 
  private:
@@ -474,14 +475,14 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     scoped_refptr<ServiceWorkerVersion> version,
     const base::Optional<base::TimeDelta>& timeout,
     const net::NetLogWithSource& net_log,
-    const base::Closure& prepare_callback,
-    const FetchCallback& fetch_callback)
+    base::OnceClosure prepare_callback,
+    FetchCallback fetch_callback)
     : request_(std::move(request)),
       version_(std::move(version)),
       resource_type_(request_->resource_type),
       net_log_(net_log),
-      prepare_callback_(prepare_callback),
-      fetch_callback_(fetch_callback),
+      prepare_callback_(std::move(prepare_callback)),
+      fetch_callback_(std::move(fetch_callback)),
       timeout_(timeout),
       did_complete_(false),
       weak_factory_(this) {
@@ -498,14 +499,14 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     ResourceType resource_type,
     const base::Optional<base::TimeDelta>& timeout,
     const net::NetLogWithSource& net_log,
-    const base::Closure& prepare_callback,
-    const FetchCallback& fetch_callback)
+    base::OnceClosure prepare_callback,
+    FetchCallback fetch_callback)
     : legacy_request_(std::move(legacy_request)),
       version_(std::move(version)),
       resource_type_(resource_type),
       net_log_(net_log),
-      prepare_callback_(prepare_callback),
-      fetch_callback_(fetch_callback),
+      prepare_callback_(std::move(prepare_callback)),
+      fetch_callback_(std::move(fetch_callback)),
       timeout_(timeout),
       did_complete_(false),
       weak_factory_(this) {
@@ -580,17 +581,20 @@ void ServiceWorkerFetchDispatcher::DidFailToStartWorker(
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status())
       << "Worker stopped too soon after it was started.";
-  DCHECK(!prepare_callback_.is_null());
-  base::Closure prepare_callback = prepare_callback_;
-  prepare_callback.Run();
 
-  mojom::ServiceWorkerFetchResponseCallbackPtr mojo_response_callback_ptr;
+  // Run callback to say that the fetch event will be dispatched.
+  DCHECK(prepare_callback_);
+  std::move(prepare_callback_).Run();
+  net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
+
+  // Set up for receiving the response.
+  mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
   auto response_callback = std::make_unique<ResponseCallback>(
-      mojo::MakeRequest(&mojo_response_callback_ptr),
-      weak_factory_.GetWeakPtr(), version_.get());
+      mojo::MakeRequest(&response_callback_ptr), weak_factory_.GetWeakPtr(),
+      version_.get());
   ResponseCallback* response_callback_rawptr = response_callback.get();
 
-  net_log_.BeginEvent(net::NetLogEventType::SERVICE_WORKER_FETCH_EVENT);
+  // Set up the fetch event.
   int fetch_event_id;
   int event_finish_id;
   if (timeout_) {
@@ -614,38 +618,36 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
         FetchTypeToWaitUntilEventType(GetFetchType()),
         base::BindOnce(&ServiceWorkerUtils::NoOpStatusCallback));
   }
-
   response_callback_rawptr->set_fetch_event_id(fetch_event_id);
 
+  // Report navigation preload to DevTools if needed.
   if (url_loader_assets_) {
-    url_loader_assets_->MayBeReportToDevTools(
+    url_loader_assets_->MaybeReportToDevTools(
         std::make_pair(
             version_->embedded_worker()->process_id(),
             version_->embedded_worker()->worker_devtools_agent_route_id()),
         fetch_event_id);
   }
 
-  // TODO(falken): Ideally we DCHECK that request_ iff S13nSW, and
-  // legacy_request_ iff non-S13nSW, but some tests are violating that.  Update
-  // these tests.
-
+  // Dispatch the fetch event.
   // |event_dispatcher| is owned by |version_|. So it is safe to pass the
   // unretained raw pointer of |version_| to OnFetchEventFinished callback.
   // Pass |url_loader_assets_| to the callback to keep the URL loader related
   // assets alive while the FetchEvent is ongoing in the service worker.
-  if (request_) {
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    DCHECK(request_);
     DCHECK(!legacy_request_);
     version_->event_dispatcher()->DispatchFetchEvent(
-        *request_, std::move(preload_handle_),
-        std::move(mojo_response_callback_ptr),
+        *request_, std::move(preload_handle_), std::move(response_callback_ptr),
         base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
                        base::Unretained(version_.get()), event_finish_id,
                        url_loader_assets_));
   } else {
+    DCHECK(!request_);
     DCHECK(legacy_request_);
     version_->event_dispatcher()->DispatchLegacyFetchEvent(
         *legacy_request_, std::move(preload_handle_),
-        std::move(mojo_response_callback_ptr),
+        std::move(response_callback_ptr),
         base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
                        base::Unretained(version_.get()), event_finish_id,
                        url_loader_assets_));
@@ -684,17 +686,16 @@ void ServiceWorkerFetchDispatcher::Complete(
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob) {
-  DCHECK(!fetch_callback_.is_null());
+  DCHECK(fetch_callback_);
 
   did_complete_ = true;
   net_log_.EndEvent(
       net::NetLogEventType::SERVICE_WORKER_DISPATCH_FETCH_EVENT,
       base::Bind(&NetLogFetchEventCallback, status, fetch_result));
 
-  FetchCallback fetch_callback = fetch_callback_;
-  scoped_refptr<ServiceWorkerVersion> version = version_;
-  fetch_callback.Run(status, fetch_result, response, std::move(body_as_stream),
-                     std::move(body_as_blob), version);
+  std::move(fetch_callback_)
+      .Run(status, fetch_result, response, std::move(body_as_stream),
+           std::move(body_as_blob), version_);
 }
 
 bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(

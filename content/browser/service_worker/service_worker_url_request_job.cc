@@ -685,7 +685,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
-    const scoped_refptr<ServiceWorkerVersion>& version) {
+    scoped_refptr<ServiceWorkerVersion> version) {
   // Do not clear |fetch_dispatcher_| if it has dispatched a navigation preload
   // request to keep the mojom::URLLoader related objects in it, because the
   // preload response might still need to be streamed even after calling
@@ -999,14 +999,14 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
   initial_worker_status_ = active_worker->running_status();
 
   DCHECK(!fetch_dispatcher_);
-  fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
+  fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       CreateFetchRequest(), base::WrapRefCounted(active_worker), resource_type_,
       timeout_, request()->net_log(),
-      base::Bind(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
-                 weak_factory_.GetWeakPtr(),
-                 base::WrapRefCounted(active_worker)),
-      base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
-                 weak_factory_.GetWeakPtr())));
+      base::BindOnce(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
+                     weak_factory_.GetWeakPtr(),
+                     base::WrapRefCounted(active_worker)),
+      base::BindOnce(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
+                     weak_factory_.GetWeakPtr()));
   worker_start_time_ = base::TimeTicks::Now();
   nav_preload_metrics_ = std::make_unique<NavigationPreloadMetrics>(this);
   if (simulate_navigation_preload_for_test_) {

@@ -48,6 +48,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -139,8 +140,8 @@ void ReceivePrepareResult(bool* is_prepared) {
   *is_prepared = true;
 }
 
-base::Closure CreatePrepareReceiver(bool* is_prepared) {
-  return base::Bind(&ReceivePrepareResult, is_prepared);
+base::OnceClosure CreatePrepareReceiver(bool* is_prepared) {
+  return base::BindOnce(&ReceivePrepareResult, is_prepared);
 }
 
 void ReceiveFindRegistrationStatus(
@@ -866,16 +867,30 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                        bool* prepare_result,
                        FetchResult* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    std::unique_ptr<ServiceWorkerFetchRequest> request(
-        new ServiceWorkerFetchRequest(
-            embedded_test_server()->GetURL("/service_worker/empty.html"), "GET",
-            ServiceWorkerHeaderMap(), Referrer(), false));
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-    fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
-        std::move(request), version_.get(), RESOURCE_TYPE_MAIN_FRAME,
-        base::nullopt, net::NetLogWithSource(),
-        CreatePrepareReceiver(prepare_result),
-        CreateResponseReceiver(done, blob_context_.get(), result)));
+    GURL url = embedded_test_server()->GetURL("/service_worker/empty.html");
+    ResourceType resource_type = RESOURCE_TYPE_MAIN_FRAME;
+    base::OnceClosure prepare_callback = CreatePrepareReceiver(prepare_result);
+    ServiceWorkerFetchDispatcher::FetchCallback fetch_callback =
+        CreateResponseReceiver(done, blob_context_.get(), result);
+    if (ServiceWorkerUtils::IsServicificationEnabled()) {
+      auto request = std::make_unique<ResourceRequest>();
+      request->url = url;
+      request->method = "GET";
+      request->resource_type = resource_type;
+      fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
+          std::move(request), version_, base::nullopt /* timeout */,
+          net::NetLogWithSource(), std::move(prepare_callback),
+          std::move(fetch_callback));
+    } else {
+      auto legacy_request = std::make_unique<ServiceWorkerFetchRequest>(
+          url, "GET", ServiceWorkerHeaderMap(), Referrer(),
+          false /* is_reload */);
+      fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
+          std::move(legacy_request), version_, resource_type,
+          base::nullopt /* timeout */, net::NetLogWithSource(),
+          std::move(prepare_callback), std::move(fetch_callback));
+    }
     fetch_dispatcher_->Run();
   }
 
@@ -891,7 +906,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
       const ServiceWorkerResponse& actual_response,
       blink::mojom::ServiceWorkerStreamHandlePtr /* stream */,
       blink::mojom::BlobPtr /* blob */,
-      const scoped_refptr<ServiceWorkerVersion>& worker) {
+      scoped_refptr<ServiceWorkerVersion> worker) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ASSERT_TRUE(fetch_dispatcher_);
     fetch_dispatcher_.reset();
@@ -911,9 +926,9 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
       const base::Closure& quit,
       ChromeBlobStorageContext* blob_context,
       FetchResult* result) {
-    return base::Bind(&self::ReceiveFetchResultOnIOThread,
-                      base::Unretained(this), quit,
-                      base::RetainedRef(blob_context), result);
+    return base::BindOnce(&self::ReceiveFetchResultOnIOThread,
+                          base::Unretained(this), quit,
+                          base::RetainedRef(blob_context), result);
   }
 
   void StopOnIOThread(const base::Closure& done) {
