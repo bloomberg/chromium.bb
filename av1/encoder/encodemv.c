@@ -217,6 +217,11 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
 #if CONFIG_INTRABC
 void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
                    nmv_context *mvctx) {
+  // DV and ref DV should not have sub-pel.
+  assert((mv->col & 7) == 0);
+  assert((mv->row & 7) == 0);
+  assert((ref->col & 7) == 0);
+  assert((ref->row & 7) == 0);
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
 

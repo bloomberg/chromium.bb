@@ -8778,6 +8778,9 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
   int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
   if (dv_ref.as_int == 0) av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+  // Ref DV should not have sub-pel.
+  assert((dv_ref.as_mv.col & 7) == 0);
+  assert((dv_ref.as_mv.row & 7) == 0);
   mbmi_ext->ref_mvs[INTRA_FRAME][0] = dv_ref;
 
   struct buf_2d yv12_mb[MAX_MB_PLANE];
@@ -8855,6 +8858,9 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     if (mv_check_bounds(&x->mv_limits, &dv)) continue;
     if (!is_dv_valid(dv, tile, mi_row, mi_col, bsize)) continue;
 
+    // DV should not have sub-pel.
+    assert((dv.col & 7) == 0);
+    assert((dv.row & 7) == 0);
     memset(&mbmi->palette_mode_info, 0, sizeof(mbmi->palette_mode_info));
     mbmi->use_intrabc = 1;
     mbmi->mode = DC_PRED;
