@@ -208,8 +208,11 @@ void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
     available_width -= text_indent;
   }
 
+  // Negative margins can make the position negative, but the inline size is
+  // always positive or 0.
   line_info->SetLineBfcOffset({bfc_line_offset, bfc_block_offset_},
-                              available_width, line_.position);
+                              available_width,
+                              line_.position.ClampNegativeToZero());
 }
 
 bool NGLineBreaker::IsFirstBreakOpportunity(unsigned offset,
@@ -239,7 +242,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
 
   // If the start offset is at the item boundary, try to add the entire item.
   if (offset_ == item.StartOffset()) {
-    item_result->inline_size = item.InlineSize();
+    item_result->inline_size = item.InlineSize().ClampNegativeToZero();
     LayoutUnit next_position = line_.position + item_result->inline_size;
     if (!auto_wrap_ || next_position <= available_width) {
       item_result->shape_result = item.TextShapeResult();
@@ -321,7 +324,8 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
     item_result->inline_size = available_width;
     DCHECK(!result.is_hyphenated);
   } else {
-    item_result->inline_size = shape_result->SnappedWidth();
+    item_result->inline_size =
+        shape_result->SnappedWidth().ClampNegativeToZero();
 
     // If overflow and no break opportunities exist, and if 'word-wrap:
     // break-word', try to break at every grapheme cluster boundary.
@@ -336,7 +340,8 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
 
     if (result.is_hyphenated) {
       AppendHyphen(*item.Style(), line_info);
-      item_result->inline_size = shape_result->SnappedWidth();
+      item_result->inline_size =
+          shape_result->SnappedWidth().ClampNegativeToZero();
       // TODO(kojii): Implement when adding a hyphen caused overflow.
       // crbug.com/714962: Should be removed when switched to NGPaint.
       item_result->text_end_effect = NGTextEndEffect::kHyphen;

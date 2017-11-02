@@ -253,9 +253,12 @@ void NGInlineLayoutAlgorithm::PlaceItems(
   // the line box to the line top.
   line_box_.MoveInBlockDirection(line_box_metrics.ascent);
 
+  // Negative margins can make the position negative, but the inline size is
+  // always positive or 0.
+  LayoutUnit inline_size = position.ClampNegativeToZero();
+
   // Other 'text-align' values than 'justify' move line boxes as a whole, but
   // indivisual items do not change their relative position to the line box.
-  LayoutUnit inline_size = position;
   if (text_align != ETextAlign::kJustify) {
     ApplyTextAlign(*line_info, text_align, &line_bfc_offset.line_offset,
                    inline_size);
