@@ -38,7 +38,10 @@ struct EnrollmentConfig {
     // Start attestation-based enrollment.
     MODE_ATTESTATION,
     // Start attestation-based enrollment and only uses that.
-    MODE_ATTESTATION_FORCED,
+    MODE_ATTESTATION_LOCAL_FORCED,
+    // Server-backed-state-triggered attestation-based enrollment, user can't
+    // skip.
+    MODE_ATTESTATION_SERVER_FORCED,
   };
 
   // An enumeration of authentication mechanisms that can be used for
@@ -81,7 +84,8 @@ struct EnrollmentConfig {
 
   // Whether this configuration is in attestation mode.
   bool is_mode_attestation() const {
-    return mode == MODE_ATTESTATION || mode == MODE_ATTESTATION_FORCED;
+    return mode == MODE_ATTESTATION || mode == MODE_ATTESTATION_LOCAL_FORCED ||
+           mode == MODE_ATTESTATION_SERVER_FORCED;
   }
 
   // Whether this configuration is in OAuth mode.

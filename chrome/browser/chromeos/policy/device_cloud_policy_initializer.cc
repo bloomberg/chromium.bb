@@ -228,6 +228,11 @@ EnrollmentConfig DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
       kDeviceStateRestoreModeReEnrollmentEnforced) {
     config.mode = EnrollmentConfig::MODE_SERVER_FORCED;
     config.management_domain = device_state_management_domain;
+  } else if (device_state_restore_mode ==
+             kDeviceStateRestoreModeReEnrollmentZeroTouch) {
+    config.mode = EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED;
+    config.auth_mechanism = EnrollmentConfig::AUTH_MECHANISM_ATTESTATION;
+    config.management_domain = device_state_management_domain;
   } else if (pref_enrollment_auto_start_present &&
              pref_enrollment_auto_start &&
              pref_enrollment_can_exit_present &&

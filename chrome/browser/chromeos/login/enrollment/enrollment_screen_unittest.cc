@@ -119,7 +119,8 @@ class ZeroTouchEnrollmentScreenUnitTest : public EnrollmentScreenUnitTest {
   }
 
   void SetUpEnrollmentScreen() override {
-    enrollment_config_.mode = policy::EnrollmentConfig::MODE_ATTESTATION_FORCED;
+    enrollment_config_.mode =
+        policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED;
     enrollment_config_.auth_mechanism =
         policy::EnrollmentConfig::AUTH_MECHANISM_ATTESTATION;
     EnrollmentScreenUnitTest::SetUpEnrollmentScreen();

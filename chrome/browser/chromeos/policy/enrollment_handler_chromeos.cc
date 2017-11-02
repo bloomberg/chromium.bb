@@ -69,8 +69,12 @@ em::DeviceRegisterRequest::Flavor EnrollmentModeToRegistrationFlavor(
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_RECOVERY;
     case EnrollmentConfig::MODE_ATTESTATION:
       return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION;
-    case EnrollmentConfig::MODE_ATTESTATION_FORCED:
-      return em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION_FORCED;
+    case EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_LOCAL_FORCED;
+    case EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED:
+      return em::DeviceRegisterRequest::
+          FLAVOR_ENROLLMENT_ATTESTATION_SERVER_FORCED;
   }
 
   NOTREACHED() << "Bad enrollment mode: " << mode;
@@ -137,7 +141,10 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
   CHECK((enrollment_config_.mode == EnrollmentConfig::MODE_ATTESTATION ||
          enrollment_config_.mode ==
-             EnrollmentConfig::MODE_ATTESTATION_FORCED) == auth_token_.empty());
+             EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED ||
+         enrollment_config.mode ==
+             EnrollmentConfig::MODE_ATTESTATION_SERVER_FORCED) ==
+        auth_token_.empty());
   CHECK(enrollment_config_.auth_mechanism !=
             EnrollmentConfig::AUTH_MECHANISM_ATTESTATION ||
         attestation_flow_);

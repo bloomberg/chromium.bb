@@ -142,8 +142,9 @@ void EnrollmentScreen::SetParameters(
 void EnrollmentScreen::SetConfig() {
   config_ = enrollment_config_;
   if (current_auth_ == AUTH_ATTESTATION) {
+    // TODO(crbugs.com/778535): Don't lose server forced attestation.
     config_.mode = enrollment_config_.is_attestation_forced()
-                       ? policy::EnrollmentConfig::MODE_ATTESTATION_FORCED
+                       ? policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED
                        : policy::EnrollmentConfig::MODE_ATTESTATION;
   }
   view_->SetParameters(this, config_);

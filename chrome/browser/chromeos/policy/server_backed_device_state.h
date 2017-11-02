@@ -17,6 +17,7 @@ extern const char kDeviceStateDisabledMessage[];
 extern const char kDeviceStateRestoreModeReEnrollmentRequested[];
 extern const char kDeviceStateRestoreModeReEnrollmentEnforced[];
 extern const char kDeviceStateRestoreModeDisabled[];
+extern const char kDeviceStateRestoreModeReEnrollmentZeroTouch[];
 
 // Restorative action to take after device reset.
 enum RestoreMode {
@@ -29,6 +30,8 @@ enum RestoreMode {
   // The device has been disabled by its owner. The device will show a warning
   // screen and prevent the user from proceeding further.
   RESTORE_MODE_DISABLED = 3,
+  // Enterprise enrollment is enforced using Zero-Touch and cannot be skipped.
+  RESTORE_MODE_REENROLLMENT_ZERO_TOUCH = 4,
 };
 
 // Parses the contents of the kDeviceStateRestoreMode dictionary entry and
