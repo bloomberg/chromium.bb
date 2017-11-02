@@ -72,7 +72,9 @@ static INLINE int av1_use_angle_delta(BLOCK_SIZE bsize) {
 #if CONFIG_INTRABC
 static INLINE int av1_allow_intrabc(BLOCK_SIZE bsize,
                                     const AV1_COMMON *const cm) {
-  return (bsize >= BLOCK_8X8 || bsize == BLOCK_4X4) &&
+  // TODO(huisu@google.com): intrabc is disabled for BLOCK_4X16 and
+  // BLOCK_16X4 because of onflict between cfl.
+  return bsize != BLOCK_4X16 && bsize != BLOCK_16X4 &&
          cm->allow_screen_content_tools;
 }
 #endif  // CONFIG_INTRABC
