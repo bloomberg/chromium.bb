@@ -58,6 +58,13 @@ data thanks to Bert Frees
 - The Hungarian tables now conform to the new 2017 standard thanks to
   Attila Hammer
 
+** Backwards incompatible changes
+- The constant ~otherTrans~ has been removed in both the C API and the
+  corresponding Python bindings.
+- The constants ~ucBrl~, ~noUndefinedDots~ and ~partialTrans~ have
+  different values now in both the C API and the corresponding Python
+  bindings.
+
 ** New, renamed or removed tables
 *** New
 - hr-g1.ctb
