@@ -445,7 +445,9 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     }
 
     add_proto qw/int64_t av1_highbd_block_error/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz, int bd";
-    specialize qw/av1_highbd_block_error sse2/;
+    if (aom_config("CONFIG_DAALA_TX") ne "yes") {
+      specialize qw/av1_highbd_block_error sse2/;
+    }
 
     add_proto qw/void av1_highbd_temporal_filter_apply/, "uint8_t *frame1, unsigned int stride, uint8_t *frame2, unsigned int block_width, unsigned int block_height, int strength, int filter_weight, unsigned int *accumulator, uint16_t *count";
 

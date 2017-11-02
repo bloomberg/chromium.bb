@@ -156,7 +156,7 @@ TEST_P(ErrorBlockTest, ExtremeValues) {
       << "First failed at test case " << first_failure;
 }
 
-#if HAVE_SSE2 || HAVE_AVX
+#if (HAVE_SSE2 || HAVE_AVX) && !CONFIG_DAALA_TX
 using std::tr1::make_tuple;
 
 INSTANTIATE_TEST_CASE_P(

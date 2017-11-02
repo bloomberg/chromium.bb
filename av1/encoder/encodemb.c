@@ -147,7 +147,14 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
   const int16_t *const scan = scan_order->scan;
   const int16_t *const nb = scan_order->neighbors;
+#if CONFIG_DAALA_TX
+  // This is one of the few places where RDO is done on coeffs; it
+  // expects the coeffs to be in Q3/D11, so we need to scale them.
+  int depth_shift = (TX_COEFF_DEPTH - 11) * 2;
+  int depth_round = depth_shift > 1 ? (1 << depth_shift >> 1) : 0;
+#else
   const int shift = av1_get_tx_scale(tx_size);
+#endif
 #if CONFIG_AOM_QM
   int seg_id = xd->mi[0]->mbmi.segment_id;
   // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
@@ -212,14 +219,19 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
           tail_token_costs[band_cur][ctx_cur]);
       // accu_error does not change when x==0
     } else {
-      /*  Computing distortion
-       */
-      // compute the distortion for the first candidate
-      // and the distortion for quantizing to 0.
+/*  Computing distortion
+ */
+// compute the distortion for the first candidate
+// and the distortion for quantizing to 0.
+#if CONFIG_DAALA_TX
+      int dx0 = coeff[rc];
+      const int64_t d0 = ((int64_t)dx0 * dx0 + depth_round) >> depth_shift;
+#else
       int dx0 = abs(coeff[rc]) * (1 << shift);
       dx0 >>= xd->bd - 8;
 
       const int64_t d0 = (int64_t)dx0 * dx0;
+#endif
       const int x_a = x - 2 * sz - 1;
       int dqv;
 #if CONFIG_AOM_QM
@@ -233,15 +245,29 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       dqv = dequant_ptr[rc != 0];
 #endif
 
+#if CONFIG_DAALA_TX
+      int dx = dqcoeff[rc] - coeff[rc];
+      const int64_t d2 = ((int64_t)dx * dx + depth_round) >> depth_shift;
+#else
       int dx = (dqcoeff[rc] - coeff[rc]) * (1 << shift);
       dx = signed_shift_right(dx, xd->bd - 8);
       const int64_t d2 = (int64_t)dx * dx;
+#endif
 
       /* compute the distortion for the second candidate
        * x_a = x - 2 * sz + 1;
        */
       int64_t d2_a;
       if (x_a != 0) {
+#if CONFIG_DAALA_TX
+#if CONFIG_NEW_QUANT
+        dx = av1_dequant_coeff_nuq(x, dqv, dequant_val[band_translate[i]]) -
+             coeff[rc];
+#else   // CONFIG_NEW_QUANT
+        dx -= (dqv + sz) ^ sz;
+#endif  // CONFIG_NEW_QUANT
+        d2_a = ((int64_t)dx * dx + depth_round) >> depth_shift;
+#else  // CONFIG_DAALA_TX
 #if CONFIG_NEW_QUANT
         dx = av1_dequant_coeff_nuq(x, dqv, dequant_val[band_translate[i]]) -
              (coeff[rc] * (1 << shift));
@@ -250,9 +276,11 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
         dx -= ((dqv >> (xd->bd - 8)) + sz) ^ sz;
 #endif  // CONFIG_NEW_QUANT
         d2_a = (int64_t)dx * dx;
+#endif  // CONFIG_DAALA_TX
       } else {
         d2_a = d0;
       }
+
       // Computing RD cost
       int64_t base_bits;
       // rate cost of x
@@ -321,6 +349,15 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       int dqc_a = 0;
       if (best_x || best_eob_x) {
         if (x_a != 0) {
+#if CONFIG_DAALA_TX
+#if CONFIG_NEW_QUANT
+          dqc_a = av1_dequant_abscoeff_nuq(abs(x_a), dqv,
+                                           dequant_val[band_translate[i]]);
+          if (sz) dqc_a = -dqc_a;
+#else
+          dqc_a = x_a * dqv;
+#endif  // CONFIG_NEW_QUANT
+#else   // CONFIG_DAALA_TX
 #if CONFIG_NEW_QUANT
           dqc_a = av1_dequant_abscoeff_nuq(abs(x_a), dqv,
                                            dequant_val[band_translate[i]]);
@@ -332,9 +369,10 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
           else
             dqc_a = (x_a * dqv) >> shift;
 #endif  // CONFIG_NEW_QUANT
+#endif  // CONFIG_DAALA_TX
         } else {
           dqc_a = 0;
-        }  // if (x_a != 0)
+        }
       }
 
       // record the better quantized value
