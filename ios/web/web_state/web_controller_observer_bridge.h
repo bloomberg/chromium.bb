@@ -11,6 +11,7 @@
 #include "ios/web/public/web_state/web_state_observer.h"
 
 @class CRWWebController;
+@class CRBProtocolObservers;
 @protocol CRWWebControllerObserver;
 
 namespace web {
@@ -18,33 +19,28 @@ namespace web {
 class WebState;
 
 // This class allows to register a CRWWebControllerObserver instance as
-// a WebStateObserver.
-// It listens to WebStateObserver calls and forwards them to the underlying
-// CRWWebControllerObserver.
-// TODO(droger): Remove this class once all CRWWebControllerObserver have been
-// converted to WebStateObserver and WebState::ScriptCommandCallback.
+// a WebStateObserver. It listens to WebStateObserver calls and forwards
+// them to the underlying CRBProtocolObservers<CRWWebControllerObserver>.
+// TODO(crbug.com/675005): Remove this class once all CRWWebControllerObserver
+// have been converted to WebStateObserver and WebState::ScriptCommandCallback.
 class WebControllerObserverBridge : public WebStateObserver {
  public:
   // |web_controller_observer| and |web_controller| must not be nil, and must
   // outlive this WebControllerObserverBridge.
   WebControllerObserverBridge(
-      id<CRWWebControllerObserver> web_controller_observer,
-      WebState* web_state,
+      CRBProtocolObservers<CRWWebControllerObserver>* web_controller_observer,
       CRWWebController* web_controller);
 
   ~WebControllerObserverBridge() override;
-
-  // Gets the underlying CRWWebControllerObserver.
-  id<CRWWebControllerObserver> web_controller_observer() const {
-    return web_controller_observer_;
-  }
 
  private:
   // WebStateObserver implementation.
   void PageLoaded(WebState* web_state,
                   PageLoadCompletionStatus load_completion_status) override;
+  void WebStateDestroyed(WebState* web_state) override;
 
-  __weak id<CRWWebControllerObserver> web_controller_observer_ = nil;
+  CRBProtocolObservers<CRWWebControllerObserver>* web_controller_observer_ =
+      nil;
   __weak CRWWebController* web_controller_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(WebControllerObserverBridge);

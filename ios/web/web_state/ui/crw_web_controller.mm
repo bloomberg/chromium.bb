@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/containers/mru_cache.h"
 #import "base/ios/block_types.h"
+#import "base/ios/crb_protocol_observers.h"
 #include "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
 #include "base/json/string_escape.h"
@@ -24,7 +25,6 @@
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
-
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -278,15 +278,12 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   id<CRWNativeContent> _nativeController;
   BOOL _isHalted;  // YES if halted. Halting happens prior to destruction.
   BOOL _isBeingDestroyed;  // YES if in the process of closing.
-  // All CRWWebControllerObservers attached to the CRWWebController. A
-  // specially-constructed set is used that does not retain its elements.
-  NSMutableSet* _observers;
-  // Each observer in |_observers| is associated with a
-  // WebControllerObserverBridge in order to listen from WebState callbacks.
-  // TODO(droger): Remove |_observerBridges| when all CRWWebControllerObservers
-  // are converted to WebStateObservers.
-  std::vector<std::unique_ptr<web::WebControllerObserverBridge>>
-      _observerBridges;
+  // All CRWWebControllerObservers attached to the CRWWebController.
+  CRBProtocolObservers<CRWWebControllerObserver>* _observers;
+  // WebControllerObserverBridge translates WebState events and forward them
+  // to the CRWWebControllerObservers. TODO(crbug.com/675005): remove once
+  // CRWWebControllerObserver has been removed.
+  std::unique_ptr<web::WebControllerObserverBridge> _observerBridge;
   // YES if a user interaction has been registered at any time once the page has
   // loaded.
   BOOL _userInteractionRegistered;
@@ -1142,10 +1139,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if ([self.nativeController respondsToSelector:@selector(close)])
     [self.nativeController close];
 
-  NSSet* observers = [_observers copy];
-  for (id it in observers) {
-    if ([it respondsToSelector:@selector(webControllerWillClose:)])
-      [it webControllerWillClose:self];
+  if (_observers) {
+    DCHECK(_observerBridge);
+    [_observers webControllerWillClose:self];
+    _webStateImpl->RemoveObserver(_observerBridge.get());
+    _observerBridge.reset();
   }
 
   if (!_isHalted) {
@@ -5300,40 +5298,24 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)addObserver:(id<CRWWebControllerObserver>)observer {
   DCHECK(observer);
   if (!_observers) {
-    // We don't want our observer set to block dealloc on the observers. For the
-    // observer container, make an object compatible with NSMutableSet that does
-    // not perform retain or release on the contained objects (weak references).
-    CFSetCallBacks callbacks =
-        {0, NULL, NULL, CFCopyDescription, CFEqual, CFHash};
-    _observers = base::mac::CFToNSCast(
-        CFSetCreateMutable(kCFAllocatorDefault, 1, &callbacks));
+    _observers = [CRBProtocolObservers<CRWWebControllerObserver>
+        observersWithProtocol:@protocol(CRWWebControllerObserver)];
+    _observerBridge =
+        std::make_unique<web::WebControllerObserverBridge>(_observers, self);
+    _webStateImpl->AddObserver(_observerBridge.get());
   }
-  DCHECK(![_observers containsObject:observer]);
-  [_observers addObject:observer];
-  _observerBridges.push_back(base::MakeUnique<web::WebControllerObserverBridge>(
-      observer, self.webStateImpl, self));
+  [_observers addObserver:observer];
 
   if ([observer respondsToSelector:@selector(setWebViewProxy:controller:)])
     [observer setWebViewProxy:_webViewProxy controller:self];
 }
 
 - (void)removeObserver:(id<CRWWebControllerObserver>)observer {
-  DCHECK([_observers containsObject:observer]);
-  [_observers removeObject:observer];
-  // Remove the associated WebControllerObserverBridge.
-  auto it = std::find_if(
-      _observerBridges.begin(), _observerBridges.end(),
-      [observer](
-          const std::unique_ptr<web::WebControllerObserverBridge>& bridge) {
-        return bridge->web_controller_observer() == observer;
-      });
-  DCHECK(it != _observerBridges.end());
-  _observerBridges.erase(it);
+  [_observers removeObserver:observer];
 }
 
-- (NSUInteger)observerCount {
-  DCHECK_EQ(_observerBridges.size(), [_observers count]);
-  return [_observers count];
+- (BOOL)hasObservers {
+  return _observers && ![_observers empty];
 }
 
 - (NSString*)referrerFromNavigationAction:(WKNavigationAction*)action {
