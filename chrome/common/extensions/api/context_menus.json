@@ -147,6 +147,8 @@
             "type": "object",
             "name": "updateProperties",
             "description": "The properties to update. Accepts the same values as the create function.",
+            // We need to preserve null because we use it as an indication to clear the callback.
+            "preserveNull": true,
             "properties": {
               "type": {
                 "$ref": "ItemType",
