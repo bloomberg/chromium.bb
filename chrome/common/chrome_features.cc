@@ -439,7 +439,7 @@ const base::Feature kShowAllDialogsWithViewsToolkit{
 // different origins, instead of sending them all to a single 'Sites' channel.
 const base::Feature kSiteNotificationChannels{"SiteNotificationChannels",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined (OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 
 // A new user experience for transitioning into fullscreen and mouse pointer
 // lock states.
@@ -450,6 +450,12 @@ const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
 // origin.
 const base::Feature kSiteDetails{"SiteDetails",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
+
+#if defined(OS_CHROMEOS)
+// Enables or disables the ability to add a Samba Share to the Files app
+const base::Feature kNativeSamba{"NativeSamba",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
 
 // Enables or disables the ability to use the sound content setting to mute a
 // website.
