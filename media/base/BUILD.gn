@@ -375,6 +375,7 @@ static_library("test_support") {
     "//media:test_support",
     "//media/audio:test_support",
     "//media/base/android:test_support",
+    "//media/filters:test_support",
     "//media/formats:test_support",
     "//media/video:test_support",
   ]

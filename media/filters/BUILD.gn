@@ -42,8 +42,6 @@ source_set("filters") {
     "frame_processor.h",
     "gpu_video_decoder.cc",
     "gpu_video_decoder.h",
-    "ivf_parser.cc",
-    "ivf_parser.h",
     "jpeg_parser.cc",
     "jpeg_parser.h",
     "memory_data_source.cc",
@@ -213,6 +211,26 @@ source_set("perftests") {
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+  visibility = [ "//media:test_support" ]
+
+  sources = [
+    "ivf_parser.cc",
+    "ivf_parser.h",
+  ]
+
+  configs += [
+    # TODO(crbug.com/167187): Fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//media/base:test_support",
   ]
 }
 
