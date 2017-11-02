@@ -377,11 +377,20 @@ public class AppMenuPropertiesDelegate {
     }
 
     /**
-     * Determines whether the header should be shown based on the maximum available menu height.
+     * Determines whether the footer should be shown based on the maximum available menu height.
      * @param maxMenuHeight The maximum available height for the menu to draw.
      * @return Whether the footer, as specified in {@link #getFooterResourceId()}, should be shown.
      */
     public boolean shouldShowFooter(int maxMenuHeight) {
+        return true;
+    }
+
+    /**
+     * Determines whether the header should be shown based on the maximum available menu height.
+     * @param maxMenuHeight The maximum available height for the menu to draw.
+     * @return Whether the header, as specified in {@link #getHeaderView()}, should be shown.
+     */
+    public boolean shouldShowHeader(int maxMenuHeight) {
         return true;
     }
 
