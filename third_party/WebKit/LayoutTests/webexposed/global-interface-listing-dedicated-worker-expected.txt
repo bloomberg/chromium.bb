@@ -2407,6 +2407,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter caches
 [Worker]     getter crypto
+[Worker]     getter fonts
 [Worker]     getter indexedDB
 [Worker]     getter isSecureContext
 [Worker]     getter location

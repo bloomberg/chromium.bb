@@ -52,6 +52,7 @@ class InterfaceProvider;
 
 namespace blink {
 
+class FontFaceSet;
 class ConsoleMessage;
 class ExceptionState;
 class OffscreenFontSelector;
@@ -159,6 +160,10 @@ class CORE_EXPORT WorkerGlobalScope
 
   void Trace(blink::Visitor*) override;
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
+
+  // TODO(fserb): This can be removed once we WorkerGlobalScope implements
+  // FontFaceSource on the IDL.
+  FontFaceSet* fonts();
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,

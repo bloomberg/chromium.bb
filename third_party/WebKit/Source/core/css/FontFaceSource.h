@@ -13,12 +13,14 @@ namespace blink {
 
 class Document;
 class FontFaceSet;
+class WorkerGlobalScope;
 
 class FontFaceSource {
   STATIC_ONLY(FontFaceSource);
 
  public:
   static FontFaceSet* fonts(Document&);
+  static FontFaceSet* fonts(WorkerGlobalScope&);
 };
 
 }  // namespace blink
