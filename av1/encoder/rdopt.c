@@ -4876,20 +4876,24 @@ static void fetch_tx_rd_info(int n4, const TX_RD_INFO *const tx_rd_info,
 
 // Uses simple features on top of DCT coefficients to quickly predict
 // whether optimal RD decision is to skip encoding the residual.
-static int predict_skip_flag_8bit(const MACROBLOCK *x, BLOCK_SIZE bsize) {
+static int predict_skip_flag(const MACROBLOCK *x, BLOCK_SIZE bsize) {
   if (bsize > BLOCK_16X16) return 0;
   // Tuned for target false-positive rate of 5% for all block sizes:
-  const uint32_t threshold_table[] = { 50, 50, 50, 55, 47, 47, 53, 22, 22, 37 };
+  const uint32_t threshold_table[3][BLOCK_16X16 - BLOCK_4X4 + 1] = {
+    { 50, 50, 50, 55, 47, 47, 53 },
+    { 69, 69, 69, 67, 68, 68, 53 },
+    { 70, 73, 73, 70, 73, 73, 58 }
+  };
   const struct macroblock_plane *const p = &x->plane[0];
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
+  const MACROBLOCKD *xd = &x->e_mbd;
   DECLARE_ALIGNED(32, tran_low_t, DCT_coefs[32 * 32]);
   TxfmParam param;
   param.tx_type = DCT_DCT;
   param.tx_size = max_txsize_rect_lookup[bsize];
-  param.bd = 8;
+  param.bd = xd->bd;
   param.lossless = 0;
-  const MACROBLOCKD *xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[0];
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(xd->mi[0]->mbmi.sb_type, pd);
@@ -4902,11 +4906,14 @@ static int predict_skip_flag_8bit(const MACROBLOCK *x, BLOCK_SIZE bsize) {
 #if CONFIG_TXMG
   av1_highbd_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
 #else   // CONFIG_TXMG
-  av1_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
+  if (get_bitdepth_data_path_index(xd))
+    av1_highbd_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
+  else
+    av1_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
 #endif  // CONFIG_TXMG
 
-  uint32_t dc = (uint32_t)av1_dc_quant(x->qindex, 0, AOM_BITS_8);
-  uint32_t ac = (uint32_t)av1_ac_quant(x->qindex, 0, AOM_BITS_8);
+  uint32_t dc = (uint32_t)av1_dc_quant(x->qindex, 0, xd->bd);
+  uint32_t ac = (uint32_t)av1_ac_quant(x->qindex, 0, xd->bd);
   uint32_t max_quantized_coef = (100 * (uint32_t)abs(DCT_coefs[0])) / dc;
   for (int i = 1; i < bw * bh; i++) {
     uint32_t cur_quantized_coef = (100 * (uint32_t)abs(DCT_coefs[i])) / ac;
@@ -4914,7 +4921,9 @@ static int predict_skip_flag_8bit(const MACROBLOCK *x, BLOCK_SIZE bsize) {
       max_quantized_coef = cur_quantized_coef;
   }
 
-  return max_quantized_coef < threshold_table[AOMMAX(bsize - BLOCK_4X4, 0)];
+  const int bd_idx = (xd->bd == 8) ? 0 : ((xd->bd == 10) ? 1 : 2);
+  return max_quantized_coef <
+         threshold_table[bd_idx][AOMMAX(bsize - BLOCK_4X4, 0)];
 }
 
 // Used to set proper context for early termination with skip = 1.
@@ -5031,17 +5040,12 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     }
   }
 
-// If we predict that skip is the optimal RD decision - set the respective
-// context and terminate early.
-#if CONFIG_HIGHBITDEPTH
-  if (!(xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH))
-#endif  // CONFIG_HIGHBITDEPTH
-  {
-    if (is_inter && cpi->sf.tx_type_search.use_skip_flag_prediction &&
-        predict_skip_flag_8bit(x, bsize)) {
-      set_skip_flag(cpi, x, rd_stats, bsize);
-      return;
-    }
+  // If we predict that skip is the optimal RD decision - set the respective
+  // context and terminate early.
+  if (is_inter && cpi->sf.tx_type_search.use_skip_flag_prediction &&
+      predict_skip_flag(x, bsize)) {
+    set_skip_flag(cpi, x, rd_stats, bsize);
+    return;
   }
 
   if (is_inter && cpi->sf.tx_type_search.prune_mode > NO_PRUNE &&
