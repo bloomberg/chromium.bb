@@ -30,7 +30,6 @@
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
-#include "chrome/browser/push_messaging/push_messaging_service_observer.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -62,6 +61,11 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "jni/PushMessagingServiceObserver_jni.h"
 #endif
 
 using instance_id::InstanceID;
@@ -162,7 +166,6 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(Profile* profile)
       push_subscription_count_(0),
       pending_push_subscription_count_(0),
       notification_manager_(profile),
-      push_messaging_service_observer_(PushMessagingServiceObserver::Create()),
       weak_factory_(this) {
   DCHECK(profile);
   HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
@@ -414,8 +417,10 @@ void PushMessagingServiceImpl::DidHandleMessage(
 
   message_handled_closure.Run();
 
-  if (push_messaging_service_observer_)
-    push_messaging_service_observer_->OnMessageHandled();
+#if defined(OS_ANDROID)
+  chrome::android::Java_PushMessagingServiceObserver_onMessageHandled(
+      base::android::AttachCurrentThread());
+#endif
 }
 
 void PushMessagingServiceImpl::SetMessageCallbackForTesting(
