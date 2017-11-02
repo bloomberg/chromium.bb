@@ -59,7 +59,7 @@ void RecordStartedStreamingHistogram(ScriptStreamer::Type script_type,
 // normal operation (e.g., script already loaded, script too small) and doesn't
 // necessarily indicate a failure.
 enum NotStreamingReason {
-  kAlreadyLoaded,
+  kAlreadyLoaded,  // DEPRECATED
   kNotHTTP,
   kReload,
   kContextNotValid,
@@ -326,73 +326,6 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
 
 size_t ScriptStreamer::small_script_threshold_ = 30 * 1024;
 
-void ScriptStreamer::StartStreaming(
-    ClassicPendingScript* script,
-    Type script_type,
-    Settings* settings,
-    ScriptState* script_state,
-    scoped_refptr<WebTaskRunner> loading_task_runner) {
-  // We don't yet know whether the script will really be streamed. E.g.,
-  // suppressing streaming for short scripts is done later. Record only the
-  // sure negative cases here.
-  bool started_streaming =
-      StartStreamingInternal(script, script_type, settings, script_state,
-                             std::move(loading_task_runner));
-  if (!started_streaming)
-    RecordStartedStreamingHistogram(script_type, 0);
-}
-
-void ScriptStreamer::StartStreamingLoadedScript(
-    ClassicPendingScript* script,
-    Type script_type,
-    Settings* settings,
-    ScriptState* script_state,
-    scoped_refptr<WebTaskRunner> loading_task_runner) {
-  DCHECK(IsMainThread());
-  DCHECK(script_state->ContextIsValid());
-
-  ScriptResource* resource = script->GetResource();
-  if (!resource->Url().ProtocolIsInHTTPFamily()) {
-    RecordNotStreamingReasonHistogram(script_type, kNotHTTP);
-    return;
-  }
-  if (resource->IsCacheValidator()) {
-    RecordNotStreamingReasonHistogram(script_type, kReload);
-    // This happens e.g., during reloads. We're actually not going to load
-    // the current Resource of the ClassicPendingScript but switch to another
-    // Resource -> don't stream.
-    return;
-  }
-  if (!resource->ResourceBuffer()) {
-    // This happens for already loaded resources, e.g. if resource
-    // validation fails. In that case, the loading subsystem will discard
-    // the resource buffer.
-    RecordNotStreamingReasonHistogram(script_type, kNoResourceBuffer);
-    return;
-  }
-
-  // Decide what kind of cached data we should produce while streaming. Only
-  // produce parser cache if the non-streaming compile takes advantage of it.
-  v8::ScriptCompiler::CompileOptions compile_option =
-      v8::ScriptCompiler::kNoCompileOptions;
-  if (settings->GetV8CacheOptions() == kV8CacheOptionsParse)
-    compile_option = v8::ScriptCompiler::kProduceParserCache;
-
-  ScriptStreamer* streamer =
-      ScriptStreamer::Create(script, script_type, script_state, compile_option,
-                             std::move(loading_task_runner));
-
-  // Since the script has already loaded, we will not receive any
-  // notificatations for incoming data. So we will just emulate those right
-  // here.
-  DCHECK(resource->IsLoaded());
-  streamer->NotifyAppendData(resource);
-  if (!streamer->StreamingSuppressed()) {
-    script->SetStreamer(streamer);
-    streamer->NotifyFinished(resource);
-  }
-}
-
 bool ScriptStreamer::ConvertEncoding(
     const char* encoding_name,
     v8::ScriptCompiler::StreamedSource::Encoding* encoding) {
@@ -638,7 +571,7 @@ void ScriptStreamer::NotifyFinishedToClient() {
   pending_script_->StreamingFinished();
 }
 
-bool ScriptStreamer::StartStreamingInternal(
+void ScriptStreamer::StartStreaming(
     ClassicPendingScript* script,
     Type script_type,
     Settings* settings,
@@ -647,20 +580,26 @@ bool ScriptStreamer::StartStreamingInternal(
   DCHECK(IsMainThread());
   DCHECK(script_state->ContextIsValid());
   ScriptResource* resource = script->GetResource();
-  if (resource->IsLoaded()) {
-    RecordNotStreamingReasonHistogram(script_type, kAlreadyLoaded);
-    return false;
-  }
   if (!resource->Url().ProtocolIsInHTTPFamily()) {
     RecordNotStreamingReasonHistogram(script_type, kNotHTTP);
-    return false;
+    RecordStartedStreamingHistogram(script_type, 0);
+    return;
   }
   if (resource->IsCacheValidator()) {
     RecordNotStreamingReasonHistogram(script_type, kReload);
+    RecordStartedStreamingHistogram(script_type, 0);
     // This happens e.g., during reloads. We're actually not going to load
     // the current Resource of the ClassicPendingScript but switch to another
     // Resource -> don't stream.
-    return false;
+    return;
+  }
+  if (resource->IsLoaded() && !resource->ResourceBuffer()) {
+    // This happens for already loaded resources, e.g. if resource
+    // validation fails. In that case, the loading subsystem will discard
+    // the resource buffer.
+    RecordNotStreamingReasonHistogram(script_type, kNoResourceBuffer);
+    RecordStartedStreamingHistogram(script_type, 0);
+    return;
   }
   // We cannot filter out short scripts, even if we wait for the HTTP headers
   // to arrive: the Content-Length HTTP header is not sent for chunked
@@ -673,14 +612,30 @@ bool ScriptStreamer::StartStreamingInternal(
   if (settings->GetV8CacheOptions() == kV8CacheOptionsParse)
     compile_option = v8::ScriptCompiler::kProduceParserCache;
 
+  ScriptStreamer* streamer =
+      new ScriptStreamer(script, script_type, script_state, compile_option,
+                         std::move(loading_task_runner));
+
+  // If this script was ready when streaming began, no callbacks will be
+  // received to populate the data for the ScriptStreamer, so send them now.
+  // Note that this script may be processing an asynchronous cache hit, in
+  // which case ScriptResource::IsLoaded() will be true, but ready_state_ will
+  // not be kReadyStreaming. In that case, ScriptStreamer can listen to the
+  // async callbacks generated by the cache hit.
+  if (script->IsReady()) {
+    DCHECK(resource->IsLoaded());
+    streamer->NotifyAppendData(resource);
+    if (streamer->StreamingSuppressed())
+      return;
+  }
+
   // The Resource might go out of scope if the script is no longer needed.
   // This makes ClassicPendingScript notify the ScriptStreamer when it is
   // destroyed.
-  script->SetStreamer(ScriptStreamer::Create(script, script_type, script_state,
-                                             compile_option,
-                                             std::move(loading_task_runner)));
+  script->SetStreamer(streamer);
 
-  return true;
+  if (script->IsReady())
+    streamer->NotifyFinished(resource);
 }
 
 }  // namespace blink
