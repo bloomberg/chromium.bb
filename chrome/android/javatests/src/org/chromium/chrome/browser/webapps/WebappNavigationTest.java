@@ -334,14 +334,14 @@ public class WebappNavigationTest {
                         true /* hasUserGesture */, PageTransition.FORM_SUBMIT,
                         false /* isRedirect */, false /* isExternalProtocol */,
                         true /* isMainFrame */, true /* hasUserGestureCarryover */),
-                info, WebappScopePolicy.WEBAPK));
+                info, WebappScopePolicy.STRICT));
         Assert.assertTrue(WebappInterceptNavigationDelegate.shouldOpenInCustomTab(
                 NavigationParams.create("https://otherdomain.com",
                         "https://somewebapp.com" /* referrer */, false /* isPost */,
                         true /* hasUserGesture */, PageTransition.FORM_SUBMIT,
                         false /* isRedirect */, false /* isExternalProtocol */,
                         true /* isMainFrame */, true /* hasUserGestureCarryover */),
-                info, WebappScopePolicy.WEBAPK));
+                info, WebappScopePolicy.STRICT));
     }
 
     private WebappActivity runWebappActivityAndWaitForIdle(Intent intent) throws Exception {

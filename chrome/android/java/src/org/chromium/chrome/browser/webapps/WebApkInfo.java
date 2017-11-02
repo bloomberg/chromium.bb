@@ -36,7 +36,7 @@ public class WebApkInfo extends WebappInfo {
     private static final String TAG = "WebApkInfo";
 
     private Icon mBadgeIcon;
-    private String mWebApkPackageName;
+    private String mApkPackageName;
     private int mShellApkVersion;
     private String mManifestUrl;
     private String mManifestStartUrl;
@@ -202,7 +202,7 @@ public class WebApkInfo extends WebappInfo {
         super(id, url, scope, primaryIcon, name, shortName, displayMode, orientation, source,
                 themeColor, backgroundColor, false /* isIconGenerated */, forceNavigation);
         mBadgeIcon = badgeIcon;
-        mWebApkPackageName = webApkPackageName;
+        mApkPackageName = webApkPackageName;
         mShellApkVersion = shellApkVersion;
         mManifestUrl = manifestUrl;
         mManifestStartUrl = manifestStartUrl;
@@ -219,8 +219,8 @@ public class WebApkInfo extends WebappInfo {
     }
 
     @Override
-    public String webApkPackageName() {
-        return mWebApkPackageName;
+    public String apkPackageName() {
+        return mApkPackageName;
     }
 
     public int shellApkVersion() {
@@ -245,7 +245,7 @@ public class WebApkInfo extends WebappInfo {
         intent.putExtra(ShortcutHelper.EXTRA_ID, id());
         intent.putExtra(ShortcutHelper.EXTRA_URL, uri().toString());
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, source());
-        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName());
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, apkPackageName());
         intent.putExtra(ShortcutHelper.EXTRA_FORCE_NAVIGATION, shouldForceNavigation());
     }
 

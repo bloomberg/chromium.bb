@@ -8,8 +8,10 @@ import android.net.Uri;
 import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.navigation_interception.NavigationParams;
 
@@ -47,6 +49,16 @@ public class WebappInterceptNavigationDelegate extends InterceptNavigationDelega
         }
 
         return false;
+    }
+
+    @Override
+    public ExternalNavigationParams.Builder buildExternalNavigationParams(
+            NavigationParams navigationParams, TabRedirectHandler tabRedirectHandler,
+            boolean shouldCloseTab) {
+        ExternalNavigationParams.Builder builder = super.buildExternalNavigationParams(
+                navigationParams, tabRedirectHandler, shouldCloseTab);
+        builder.setNativeClientPackageName(mActivity.getNativeClientPackageName());
+        return builder;
     }
 
     static boolean shouldOpenInCustomTab(

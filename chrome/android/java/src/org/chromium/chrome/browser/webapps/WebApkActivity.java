@@ -10,19 +10,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 
-import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.metrics.WebApkUma;
-import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabDelegateFactory;
-import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.net.NetError;
 import org.chromium.net.NetworkChangeNotifier;
@@ -47,13 +40,11 @@ public class WebApkActivity extends WebappActivity {
     /** The start time that the activity becomes focused. */
     private long mStartTime;
 
-    /** Records whether we're currently showing a disclosure notification. */
-    private boolean mNotificationShowing;
-
     private static final String TAG = "cr_WebApkActivity";
 
     /** A {@link WebappSplashScreenController} that also handles WebAPK logic. */
     private class WebApkSplashScreenController extends WebappSplashScreenController {
+        // TODO(yusufo): Move this to be shared with Trusted Web Activity.
         /** The error code of the navigation. */
         private int mErrorCode;
 
@@ -133,8 +124,8 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    protected WebappScopePolicy scopePolicy() {
-        return WebappScopePolicy.WEBAPK;
+    protected boolean isVerified() {
+        return true;
     }
 
     @Override
@@ -151,35 +142,6 @@ public class WebApkActivity extends WebappActivity {
     protected void initializeUI(Bundle savedInstance) {
         super.initializeUI(savedInstance);
         getActivityTab().setWebappManifestScope(mWebappInfo.scopeUri().toString());
-    }
-
-    @Override
-    protected TabDelegateFactory createTabDelegateFactory() {
-        return new WebappDelegateFactory(this) {
-            @Override
-            public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab) {
-                return new WebappInterceptNavigationDelegate(WebApkActivity.this, tab) {
-                    @Override
-                    public ExternalNavigationParams.Builder buildExternalNavigationParams(
-                            NavigationParams navigationParams,
-                            TabRedirectHandler tabRedirectHandler, boolean shouldCloseTab) {
-                        ExternalNavigationParams.Builder builder =
-                                super.buildExternalNavigationParams(
-                                        navigationParams, tabRedirectHandler, shouldCloseTab);
-                        builder.setWebApkPackageName(getWebApkPackageName());
-                        return builder;
-                    }
-                };
-            }
-
-            @Override
-            public boolean canShowAppBanners(Tab tab) {
-                // Do not show app banners for WebAPKs regardless of the current page URL.
-                // A WebAPK can display a page outside of its WebAPK scope if a page within the
-                // WebAPK scope navigates via JavaScript while the WebAPK is in the background.
-                return false;
-            }
-        };
     }
 
     @Override
@@ -201,30 +163,8 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    public void onStartWithNative() {
-        super.onStartWithNative();
-        // If WebappStorage is available, check whether to show a disclosure notification. If it's
-        // not available, this check will happen once deferred startup returns with the storage
-        // instance.
-        WebappDataStorage storage =
-                WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
-        if (storage != null) maybeShowDisclosure(storage);
-    }
-
-    @Override
-    public void onStopWithNative() {
-        super.onStopWithNative();
-        if (mNotificationShowing) {
-            WebApkDisclosureNotificationManager.dismissNotification(mWebappInfo);
-            mNotificationShowing = false;
-        }
-    }
-
-    /**
-     * Returns the WebAPK's package name.
-     */
-    public String getWebApkPackageName() {
-        return getWebappInfo().webApkPackageName();
+    public String getNativeClientPackageName() {
+        return getWebappInfo().apkPackageName();
     }
 
     @Override
@@ -257,12 +197,10 @@ public class WebApkActivity extends WebappActivity {
         super.onDeferredStartupWithStorage(storage);
 
         WebApkInfo info = (WebApkInfo) mWebappInfo;
-        WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.webApkPackageName());
+        WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.apkPackageName());
 
         mUpdateManager = new WebApkUpdateManager(storage);
         mUpdateManager.updateIfNeeded(getActivityTab(), info);
-
-        maybeShowDisclosure(storage);
     }
 
     @Override
@@ -271,42 +209,6 @@ public class WebApkActivity extends WebappActivity {
         if (previouslyLaunched) {
             WebApkUma.recordLaunchInterval(storage.getLastUsedTime() - previousUsageTimestamp);
         }
-    }
-
-    /**
-     * If we're showing a WebApk that's not with an expected package, it must be an
-     * "Unbound WebApk" (crbug.com/714735) so show a notification that it's running in Chrome.
-     */
-    private void maybeShowDisclosure(WebappDataStorage storage) {
-        if (!getWebApkPackageName().startsWith(WEBAPK_PACKAGE_PREFIX)
-                && !storage.hasDismissedDisclosure() && !mNotificationShowing
-                && !WebappActionsNotificationManager.isEnabled()) {
-            int activityState = ApplicationStatus.getStateForActivity(this);
-            if (activityState == ActivityState.STARTED || activityState == ActivityState.RESUMED
-                    || activityState == ActivityState.PAUSED) {
-                mNotificationShowing = true;
-                WebApkDisclosureNotificationManager.showDisclosure(mWebappInfo);
-            }
-        }
-    }
-
-    @Override
-    protected void onDeferredStartupWithNullStorage() {
-        super.onDeferredStartupWithNullStorage();
-
-        // Register the WebAPK. The WebAPK was registered when it was created, but may also become
-        // unregistered after a user clears Chrome's data.
-        WebappRegistry.getInstance().register(
-                mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        // Initialize the time of the last is-update-needed check with the
-                        // registration time. This prevents checking for updates on the first run.
-                        storage.updateTimeOfLastCheckForUpdatedWebManifest();
-
-                        onDeferredStartupWithStorage(storage);
-                    }
-                });
     }
 
     @Override
@@ -334,7 +236,7 @@ public class WebApkActivity extends WebappActivity {
             boolean isExternalService = false;
             boolean bindToCaller = false;
             boolean ignoreVisibilityForImportance = false;
-            params = new ChildProcessCreationParams(getWebappInfo().webApkPackageName(),
+            params = new ChildProcessCreationParams(getWebappInfo().apkPackageName(),
                     isExternalService, LibraryProcessType.PROCESS_CHILD, bindToCaller,
                     ignoreVisibilityForImportance);
         }
