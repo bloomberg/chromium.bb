@@ -5,8 +5,6 @@
 #ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_MOCK_COORDINATION_UNIT_GRAPHS_H_
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_MOCK_COORDINATION_UNIT_GRAPHS_H_
 
-#include <memory>
-
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 
 namespace resource_coordinator {

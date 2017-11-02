@@ -39,6 +39,7 @@ class FrameCoordinationUnitImpl
   FrameCoordinationUnitImpl* GetParentFrameCoordinationUnit() const;
   PageCoordinationUnitImpl* GetPageCoordinationUnit() const;
   ProcessCoordinationUnitImpl* GetProcessCoordinationUnit() const;
+  bool IsAlmostIdle() const;
   bool IsMainFrame() const;
 
   const std::set<FrameCoordinationUnitImpl*>&

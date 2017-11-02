@@ -44,6 +44,9 @@ class TabSignalGeneratorImpl : public CoordinationUnitGraphObserver,
       const service_manager::BindSourceInfo& source_info);
 
  private:
+  void NotifyPageAlmostIdleIfPossible(
+      const FrameCoordinationUnitImpl* frame_cu);
+
   mojo::BindingSet<mojom::TabSignalGenerator> bindings_;
   mojo::InterfacePtrSet<mojom::TabSignalObserver> observers_;
 
