@@ -37,6 +37,7 @@
 #include "build/build_config.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentTiming.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -57,6 +58,7 @@
 #include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/IdlenessDetector.h"
 #include "core/loader/ScheduledNavigation.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "core/loader/resource/ScriptResource.h"
@@ -87,6 +89,7 @@ static const char kPageAgentScriptsToEvaluateOnLoad[] =
     "pageAgentScriptsToEvaluateOnLoad";
 static const char kScreencastEnabled[] = "screencastEnabled";
 static const char kAutoAttachToCreatedPages[] = "autoAttachToCreatedPages";
+static const char kLifecycleEventsEnabled[] = "lifecycleEventsEnabled";
 }
 
 namespace {
@@ -528,6 +531,51 @@ Response InspectorPageAgent::setAutoAttachToCreatedPages(bool auto_attach) {
   return Response::OK();
 }
 
+Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
+  state_->setBoolean(PageAgentState::kLifecycleEventsEnabled, enabled);
+  if (!enabled)
+    return Response::OK();
+
+  for (LocalFrame* frame : *inspected_frames_) {
+    Document* document = frame->GetDocument();
+    DocumentLoader* loader = frame->Loader().GetDocumentLoader();
+    if (!document || !loader)
+      continue;
+
+    DocumentLoadTiming& timing = loader->GetTiming();
+    double commit_timestamp = timing.ResponseEnd();
+    if (commit_timestamp) {
+      LifecycleEvent(frame, loader, "commit", commit_timestamp);
+    }
+
+    double domcontentloaded_timestamp =
+        document->GetTiming().DomContentLoadedEventEnd();
+    if (domcontentloaded_timestamp) {
+      LifecycleEvent(frame, loader, "DOMContentLoaded",
+                     domcontentloaded_timestamp);
+    }
+
+    double load_timestamp = timing.LoadEventEnd();
+    if (load_timestamp) {
+      LifecycleEvent(frame, loader, "load", load_timestamp);
+    }
+
+    IdlenessDetector* idleness_detector = frame->GetIdlenessDetector();
+    double network_almost_idle_timestamp =
+        idleness_detector->GetNetworkAlmostIdleTime();
+    if (network_almost_idle_timestamp) {
+      LifecycleEvent(frame, loader, "networkAlmostIdle",
+                     network_almost_idle_timestamp);
+    }
+    double network_idle_timestamp = idleness_detector->GetNetworkIdleTime();
+    if (network_idle_timestamp) {
+      LifecycleEvent(frame, loader, "networkIdle", network_idle_timestamp);
+    }
+  }
+
+  return Response::OK();
+}
+
 Response InspectorPageAgent::setAdBlockingEnabled(bool enable) {
   return Response::OK();
 }
@@ -844,7 +892,8 @@ void InspectorPageAgent::LifecycleEvent(LocalFrame* frame,
                                         DocumentLoader* loader,
                                         const char* name,
                                         double timestamp) {
-  if (!loader)
+  if (!loader ||
+      !state_->booleanProperty(PageAgentState::kLifecycleEventsEnabled, false))
     return;
   GetFrontend()->lifecycleEvent(IdentifiersFactory::FrameId(frame),
                                 IdentifiersFactory::LoaderId(loader), name,
