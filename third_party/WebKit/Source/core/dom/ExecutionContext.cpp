@@ -73,13 +73,13 @@ ExecutionContext* ExecutionContext::ForRelevantRealm(
   return ToExecutionContext(info.Holder()->CreationContext());
 }
 
-void ExecutionContext::SuspendSuspendableObjects() {
+void ExecutionContext::PausePausableObjects() {
   DCHECK(!is_context_paused_);
   NotifySuspendingSuspendableObjects();
   is_context_paused_ = true;
 }
 
-void ExecutionContext::ResumeSuspendableObjects() {
+void ExecutionContext::UnpausePausableObjects() {
   DCHECK(is_context_paused_);
   is_context_paused_ = false;
   NotifyResumingSuspendableObjects();
@@ -90,22 +90,21 @@ void ExecutionContext::NotifyContextDestroyed() {
   ContextLifecycleNotifier::NotifyContextDestroyed();
 }
 
-void ExecutionContext::SuspendScheduledTasks() {
-  SuspendSuspendableObjects();
+void ExecutionContext::PauseScheduledTasks() {
+  PausePausableObjects();
   TasksWereSuspended();
 }
 
-void ExecutionContext::ResumeScheduledTasks() {
-  ResumeSuspendableObjects();
+void ExecutionContext::UnpauseScheduledTasks() {
+  UnpausePausableObjects();
   TasksWereResumed();
 }
 
-void ExecutionContext::SuspendSuspendableObjectIfNeeded(
-    SuspendableObject* object) {
+void ExecutionContext::PausePausableObjectIfNeeded(PausableObject* object) {
 #if DCHECK_IS_ON()
   DCHECK(Contains(object));
 #endif
-  // Ensure all PausableObjects are suspended also newly created ones.
+  // Ensure all PausableObjects are paused also newly created ones.
   if (is_context_paused_)
     object->Pause();
 }

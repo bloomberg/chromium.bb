@@ -897,7 +897,7 @@ void VRDisplay::ProcessScheduledAnimations(double timestamp) {
     return;
   }
 
-  if (doc->IsContextSuspended()) {
+  if (doc->IsContextPaused()) {
     // We are currently suspended - try ProcessScheduledAnimations again later
     // when we resume.
     return;

@@ -191,7 +191,7 @@ void SuspendableScriptExecutor::Fired() {
 void SuspendableScriptExecutor::Run() {
   ExecutionContext* context = GetExecutionContext();
   DCHECK(context);
-  if (!context->IsContextSuspended()) {
+  if (!context->IsContextPaused()) {
     PauseIfNeeded();
     ExecuteAndDestroySelf();
     return;

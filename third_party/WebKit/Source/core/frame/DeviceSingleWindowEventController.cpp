@@ -25,7 +25,7 @@ void DeviceSingleWindowEventController::DidUpdateData() {
 }
 
 void DeviceSingleWindowEventController::DispatchDeviceEvent(Event* event) {
-  if (!GetDocument().domWindow() || GetDocument().IsContextSuspended() ||
+  if (!GetDocument().domWindow() || GetDocument().IsContextPaused() ||
       GetDocument().IsContextDestroyed())
     return;
 

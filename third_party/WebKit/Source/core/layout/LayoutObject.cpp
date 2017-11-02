@@ -3145,7 +3145,7 @@ bool LayoutObject::WillRenderImage() {
     return false;
 
   // We will not render a new image when SuspendableObjects is suspended
-  if (GetDocument().IsContextSuspended())
+  if (GetDocument().IsContextPaused())
     return false;
 
   // If we're not in a window (i.e., we're dormant from being in a background

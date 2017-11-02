@@ -38,7 +38,7 @@ void V8TestCallbackInterface::voidMethod() {
     return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.get());
-  DCHECK(!executionContext->IsContextSuspended());
+  DCHECK(!executionContext->IsContextPaused());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
@@ -60,7 +60,7 @@ bool V8TestCallbackInterface::booleanMethod() {
     return true;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.get());
-  DCHECK(!executionContext->IsContextSuspended());
+  DCHECK(!executionContext->IsContextPaused());
   if (!executionContext || executionContext->IsContextDestroyed())
     return true;
 
@@ -85,7 +85,7 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
     return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.get());
-  DCHECK(!executionContext->IsContextSuspended());
+  DCHECK(!executionContext->IsContextPaused());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
@@ -108,7 +108,7 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
     return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.get());
-  DCHECK(!executionContext->IsContextSuspended());
+  DCHECK(!executionContext->IsContextPaused());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
@@ -131,7 +131,7 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
     return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.get());
-  DCHECK(!executionContext->IsContextSuspended());
+  DCHECK(!executionContext->IsContextPaused());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
@@ -154,7 +154,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
     return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.get());
-  DCHECK(!executionContext->IsContextSuspended());
+  DCHECK(!executionContext->IsContextPaused());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
@@ -177,7 +177,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
     return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.get());
-  DCHECK(!executionContext->IsContextSuspended());
+  DCHECK(!executionContext->IsContextPaused());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 
@@ -201,7 +201,7 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
     return;
   ExecutionContext* executionContext =
       ExecutionContext::From(script_state_.get());
-  DCHECK(!executionContext->IsContextSuspended());
+  DCHECK(!executionContext->IsContextPaused());
   if (!executionContext || executionContext->IsContextDestroyed())
     return;
 

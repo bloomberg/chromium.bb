@@ -293,7 +293,7 @@ HeapHashSet<Member<Node>> MutationObserver::GetObservedNodes() const {
 
 bool MutationObserver::ShouldBeSuspended() const {
   const ExecutionContext* execution_context = delegate_->GetExecutionContext();
-  return execution_context && execution_context->IsContextSuspended();
+  return execution_context && execution_context->IsContextPaused();
 }
 
 void MutationObserver::CancelInspectorAsyncTasks() {

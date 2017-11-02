@@ -140,7 +140,7 @@ class CORE_EXPORT ScriptPromiseResolver
                       script_state_->GetIsolate()));
     }
 
-    if (GetExecutionContext()->IsContextSuspended()) {
+    if (GetExecutionContext()->IsContextPaused()) {
       // Retain this object until it is actually resolved or rejected.
       KeepAliveWhilePending();
       return;

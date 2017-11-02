@@ -46,7 +46,7 @@ bool V8VoidCallbackFunctionTestInterfaceSequenceArg::call(ScriptWrappable* scrip
 
   ExecutionContext* context = ExecutionContext::From(script_state_.get());
   DCHECK(context);
-  if (context->IsContextSuspended() || context->IsContextDestroyed())
+  if (context->IsContextPaused() || context->IsContextDestroyed())
     return false;
 
   ScriptState::Scope scope(script_state_.get());
