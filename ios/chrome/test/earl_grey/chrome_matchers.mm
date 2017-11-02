@@ -186,6 +186,10 @@ id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON);
 }
 
+id<GREYMatcher> AddAccountButton() {
+  return grey_accessibilityID(kSettingsAccountsAddAccountCellId);
+}
+
 id<GREYMatcher> SignOutAccountsButton() {
   return grey_accessibilityID(kSettingsAccountsSignoutCellId);
 }

@@ -87,6 +87,9 @@ id<GREYMatcher> AccountConsistencySetupSigninButton();
 // Returns matcher for the account consistency confirmation button.
 id<GREYMatcher> AccountConsistencyConfirmationOkButton();
 
+// Returns matcher for the add account accounts button.
+id<GREYMatcher> AddAccountButton();
+
 // Returns matcher for the sign out accounts button.
 id<GREYMatcher> SignOutAccountsButton();
 

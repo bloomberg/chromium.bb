@@ -13,6 +13,8 @@
 extern NSString* const kSettingsAccountsId;
 // The accessibility identifier of the header of the accounts list.
 extern NSString* const kSettingsHeaderId;
+// The accessibility identifier of the add account cell.
+extern NSString* const kSettingsAccountsAddAccountCellId;
 // The accessibility identifier of the signout cell.
 extern NSString* const kSettingsAccountsSignoutCellId;
 // The accessibility identifier of the sync account cell.
