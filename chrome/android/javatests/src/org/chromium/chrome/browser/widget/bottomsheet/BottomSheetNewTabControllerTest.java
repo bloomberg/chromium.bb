@@ -127,7 +127,7 @@ public class BottomSheetNewTabControllerTest {
 
         // The sheet should be opened at half height over the tab switcher and the tab count should
         // remain unchanged.
-        validateState(false, BottomSheet.SHEET_STATE_HALF);
+        validateState(false, BottomSheet.SHEET_STATE_FULL);
         assertEquals("There should be 1 tab.", 1, mTabModelSelector.getTotalTabCount());
         assertTrue("Overview mode should be showing.", layoutManager.overviewVisible());
         assertTrue(
@@ -314,7 +314,7 @@ public class BottomSheetNewTabControllerTest {
         MenuUtils.invokeCustomMenuActionSync(
                 InstrumentationRegistry.getInstrumentation(), mActivity, R.id.new_tab_menu_id);
 
-        validateState(false, BottomSheet.SHEET_STATE_HALF);
+        validateState(false, BottomSheet.SHEET_STATE_FULL);
         assertFalse("Normal model should be selected.", mTabModelSelector.isIncognitoSelected());
         assertTrue("Overview mode should be showing.", layoutManager.overviewVisible());
         assertFalse("Toolbar should be normal.", toolbarDataProvider.isIncognito());
@@ -411,7 +411,7 @@ public class BottomSheetNewTabControllerTest {
                 currentPendingTabCalls);
 
         // The sheet should be opened at half height over the tab switcher.
-        validateState(false, BottomSheet.SHEET_STATE_HALF);
+        validateState(false, BottomSheet.SHEET_STATE_FULL);
         assertTrue("Overview mode should be showing.", layoutManager.overviewVisible());
         assertTrue(
                 "Normal model should be pending tab addition.", normalTabModel.isPendingTabAdd());
@@ -511,7 +511,7 @@ public class BottomSheetNewTabControllerTest {
                 currentPendingTabCalls, 1);
         mTabModelSelectorObserver.mTabModelSelectedCallbackHelper.waitForCallback(
                 currentTabModelSelectedCalls);
-        validateState(false, BottomSheet.SHEET_STATE_HALF);
+        validateState(false, BottomSheet.SHEET_STATE_FULL);
         assertFalse("Normal model should be selected.", mTabModelSelector.isIncognitoSelected());
         assertTrue(
                 "Normal model should be pending tab addition.", normalTabModel.isPendingTabAdd());

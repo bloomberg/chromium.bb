@@ -174,13 +174,11 @@ public class LogoView extends FrameLayout implements OnClickListener {
     /**
      * Show a loading indicator or a baked-in default search provider logo, based on what is
      * available.
-     * @return Whether the default logo was shown.
      */
-    public boolean showSearchProviderInitialView() {
-        if (maybeShowDefaultLogo()) return true;
+    public void showSearchProviderInitialView() {
+        if (maybeShowDefaultLogo()) return;
 
         showLoadingView();
-        return false;
     }
 
     /**
