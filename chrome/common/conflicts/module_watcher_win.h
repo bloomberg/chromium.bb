@@ -9,6 +9,8 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
 
 class ModuleWatcherTest;
@@ -64,7 +66,8 @@ class ModuleWatcher {
   //
   // Note that it is possible for this callback to be invoked after the
   // destruction of the watcher.
-  using OnModuleEventCallback = base::Callback<void(const ModuleEvent& event)>;
+  using OnModuleEventCallback =
+      base::RepeatingCallback<void(const ModuleEvent& event)>;
 
   // Creates and starts a watcher. This enumerates all loaded modules
   // synchronously on the current thread during construction, and provides
@@ -89,6 +92,9 @@ class ModuleWatcher {
   // For unittesting.
   friend class ModuleWatcherTest;
 
+  // Private to enforce Singleton semantics. See Create above.
+  ModuleWatcher();
+
   // Initializes the ModuleWatcher instance.
   void Initialize(OnModuleEventCallback callback);
 
@@ -102,7 +108,9 @@ class ModuleWatcher {
 
   // Enumerates all currently loaded modules, synchronously invoking callbacks
   // on the current thread. Can be called on any thread.
-  void EnumerateAlreadyLoadedModules();
+  static void EnumerateAlreadyLoadedModules(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      OnModuleEventCallback callback);
 
   // Helper function for retrieving the callback associated with a given
   // LdrNotification context.
@@ -118,13 +126,15 @@ class ModuleWatcher {
       const LDR_DLL_NOTIFICATION_DATA* notification_data,
       void* context);
 
-  // Private to enforce Singleton semantics. See Create above.
-  ModuleWatcher();
+  // Used to bind the |callback_| to a WeakPtr.
+  void RunCallback(const ModuleEvent& event);
 
   // The current callback. Can end up being invoked on any thread.
   OnModuleEventCallback callback_;
   // Used by the DllNotification mechanism.
   void* dll_notification_cookie_ = nullptr;
+
+  base::WeakPtrFactory<ModuleWatcher> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleWatcher);
 };

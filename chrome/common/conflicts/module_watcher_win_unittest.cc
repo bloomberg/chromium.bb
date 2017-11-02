@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ModuleWatcherTest : public testing::Test {
@@ -52,10 +53,14 @@ class ModuleWatcherTest : public testing::Test {
     module_ = nullptr;
   }
 
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+
   std::unique_ptr<ModuleWatcher> Create() {
     return ModuleWatcher::Create(
         base::Bind(&ModuleWatcherTest::OnModuleEvent, base::Unretained(this)));
   }
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Holds a handle to a loaded module.
   HMODULE module_;
@@ -80,8 +85,10 @@ TEST_F(ModuleWatcherTest, SingleModuleWatcherOnly) {
 
 TEST_F(ModuleWatcherTest, ModuleEvents) {
   // Create the module watcher. This should immediately enumerate all already
-  // loaded modules.
+  // loaded modules on a background task.
   std::unique_ptr<ModuleWatcher> mw(Create());
+  RunUntilIdle();
+
   EXPECT_LT(0, module_event_count_);
   EXPECT_LT(0, module_already_loaded_event_count_);
   EXPECT_EQ(0, module_loaded_event_count_);
