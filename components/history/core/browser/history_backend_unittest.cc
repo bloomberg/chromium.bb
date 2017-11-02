@@ -2133,6 +2133,32 @@ TEST_F(HistoryBackendTest, SetFaviconsWithTwoPageURLs) {
   EXPECT_EQ(favicon_id, icon_mappings[0].icon_id);
 }
 
+// Test that favicon mappings can be deleted using DeleteFaviconMappings().
+TEST_F(HistoryBackendTest, DeleteFaviconMappings) {
+  GURL icon_url1("http://www.google.com/favicon.ico");
+  GURL icon_url2("http://www.google.com/favicon2.ico");
+  GURL page_url("http://www.google.com");
+  std::vector<SkBitmap> bitmaps;
+  bitmaps.push_back(CreateBitmap(SK_ColorBLUE, kSmallEdgeSize));
+  bitmaps.push_back(CreateBitmap(SK_ColorRED, kLargeEdgeSize));
+
+  // Setup
+  backend_->SetFavicons({page_url}, favicon_base::FAVICON, icon_url1, bitmaps);
+  backend_->SetFavicons({page_url}, favicon_base::TOUCH_ICON, icon_url2,
+                        bitmaps);
+  ClearBroadcastedNotifications();
+
+  // Delete one of the two mappings.
+  backend_->DeleteFaviconMappings({page_url}, favicon_base::TOUCH_ICON);
+  EXPECT_EQ(1u, NumIconMappingsForPageURL(page_url, favicon_base::FAVICON));
+  EXPECT_EQ(0u, NumIconMappingsForPageURL(page_url, favicon_base::TOUCH_ICON));
+  EXPECT_THAT(favicon_changed_notifications_page_urls(), ElementsAre(page_url));
+
+  // Delete the second mapping.
+  backend_->DeleteFaviconMappings({page_url}, favicon_base::FAVICON);
+  EXPECT_EQ(0u, NumIconMappingsForPageURL(page_url, favicon_base::FAVICON));
+}
+
 // Tests calling SetOnDemandFavicons(). Neither |page_url| nor |icon_url| are
 // known to the database.
 TEST_F(HistoryBackendTest, SetOnDemandFaviconsForEmptyDB) {

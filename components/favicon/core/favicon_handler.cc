@@ -190,6 +190,7 @@ FaviconHandler::FaviconHandler(
           handler_type == FaviconDriverObserver::NON_TOUCH_LARGEST ||
           handler_type == FaviconDriverObserver::TOUCH_LARGEST),
       candidates_received_(false),
+      error_other_than_404_found_(false),
       notification_icon_type_(favicon_base::INVALID_ICON),
       service_(service),
       delegate_(delegate),
@@ -295,6 +296,25 @@ void FaviconHandler::SetFavicon(const GURL& icon_url,
   NotifyFaviconUpdated(icon_url, icon_type, image);
 }
 
+void FaviconHandler::MaybeDeleteFaviconMappings() {
+  DCHECK(candidates_received_);
+  DCHECK(got_favicon_from_history_);
+
+  // The order of these conditions is important because we want the feature
+  // state to be checked at the very end.
+  if (!error_other_than_404_found_ &&
+      notification_icon_type_ != favicon_base::INVALID_ICON &&
+      base::FeatureList::IsEnabled(kAllowDeletionOfFaviconMappings)) {
+    if (!delegate_->IsOffTheRecord())
+      service_->DeleteFaviconMappings(page_urls_, notification_icon_type_);
+
+    delegate_->OnFaviconDeleted(last_page_url_, handler_type_);
+
+    notification_icon_url_ = GURL();
+    notification_icon_type_ = favicon_base::INVALID_ICON;
+  }
+}
+
 void FaviconHandler::NotifyFaviconUpdated(
     const std::vector<favicon_base::FaviconRawBitmapResult>&
         favicon_bitmap_results) {
@@ -341,7 +361,8 @@ void FaviconHandler::OnUpdateCandidates(
 
   // |candidates| or |manifest_url| could have been modified via Javascript. If
   // neither changed, ignore the call.
-  if ((!manifests_feature_enabled || manifest_url_ == manifest_url) &&
+  if (candidates_received_ &&
+      (!manifests_feature_enabled || manifest_url_ == manifest_url) &&
       (non_manifest_original_candidates_.size() == candidates.size() &&
        std::equal(candidates.begin(), candidates.end(),
                   non_manifest_original_candidates_.begin(),
@@ -350,6 +371,7 @@ void FaviconHandler::OnUpdateCandidates(
   }
 
   candidates_received_ = true;
+  error_other_than_404_found_ = false;
   non_manifest_original_candidates_ = candidates;
   cancelable_task_tracker_for_candidates_.TryCancelAll();
   manifest_download_request_.Cancel();
@@ -454,9 +476,7 @@ void FaviconHandler::OnGotFinalIconURLCandidates(
 
   candidates_ = std::move(sorted_candidates);
 
-  // TODO(davemoore) Should clear on empty url. Currently we ignore it.
-  // This appears to be what FF does as well.
-  if (current_candidate() && got_favicon_from_history_)
+  if (got_favicon_from_history_)
     OnGotInitialHistoryDataAndIconURLCandidates();
 }
 
@@ -473,6 +493,16 @@ int FaviconHandler::GetMaximalIconSize(
 }
 
 void FaviconHandler::OnGotInitialHistoryDataAndIconURLCandidates() {
+  DCHECK(candidates_received_);
+  DCHECK(got_favicon_from_history_);
+
+  if (candidates_.empty()) {
+    // The page lists no candidates that match our target |icon_types_|, so
+    // check if any existing mappings should be deleted.
+    MaybeDeleteFaviconMappings();
+    return;
+  }
+
   if (!initial_history_result_expired_or_incomplete_ &&
       current_candidate()->icon_url == notification_icon_url_ &&
       current_candidate()->icon_type == notification_icon_type_) {
@@ -500,14 +530,16 @@ void FaviconHandler::OnDidDownloadFavicon(
   // Mark download as finished.
   image_download_request_.Cancel();
 
-  if (bitmaps.empty() && http_status_code == 404) {
-    DVLOG(1) << "Failed to Download Favicon:" << image_url;
-    RecordDownloadOutcome(DownloadOutcome::FAILED);
-    service_->UnableToDownloadFavicon(image_url);
-  }
-
   bool request_next_icon = true;
-  if (!bitmaps.empty()) {
+  if (bitmaps.empty()) {
+    if (http_status_code == 404) {
+      DVLOG(1) << "Failed to Download Favicon:" << image_url;
+      RecordDownloadOutcome(DownloadOutcome::FAILED);
+      service_->UnableToDownloadFavicon(image_url);
+    } else if (http_status_code != 0) {
+      error_other_than_404_found_ = true;
+    }
+  } else {
     RecordDownloadOutcome(DownloadOutcome::SUCCEEDED);
     float score = 0.0f;
     gfx::ImageSkia image_skia;
@@ -548,8 +580,11 @@ void FaviconHandler::OnDidDownloadFavicon(
     // |num_image_download_requests_| can never be 0.
     RecordDownloadAttemptsForHandlerType(handler_type_,
                                          num_image_download_requests_);
-    // We have either found the ideal candidate or run out of candidates.
-    if (best_favicon_.candidate.icon_type != favicon_base::INVALID_ICON) {
+    if (best_favicon_.candidate.icon_type == favicon_base::INVALID_ICON) {
+      // No valid icon found, so check if mappings should be deleted.
+      MaybeDeleteFaviconMappings();
+    } else {
+      // We have either found the ideal candidate or run out of candidates.
       // No more icons to request, set the favicon from the candidate. The
       // manifest URL, if available, is used instead of the icon URL.
       SetFavicon(manifest_url_.is_empty() ? best_favicon_.candidate.icon_url
@@ -615,7 +650,7 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
     NotifyFaviconUpdated(favicon_bitmap_results);
   }
 
-  if (current_candidate())
+  if (candidates_received_)
     OnGotInitialHistoryDataAndIconURLCandidates();
 }
 
