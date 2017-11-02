@@ -83,12 +83,14 @@ class WebHTTPBody {
   // Append to the list of elements.
   BLINK_PLATFORM_EXPORT void AppendData(const WebData&);
   BLINK_PLATFORM_EXPORT void AppendFile(const WebString&);
-  // Passing -1 to fileLength means to the end of the file.
+  // Passing -1 to |file_length| means to the end of the file.
   BLINK_PLATFORM_EXPORT void AppendFileRange(const WebString&,
                                              long long file_start,
                                              long long file_length,
                                              double modification_time);
   BLINK_PLATFORM_EXPORT void AppendBlob(const WebString& uuid);
+
+  BLINK_PLATFORM_EXPORT void SetUniqueBoundary();
 
   // Identifies a particular form submission instance. A value of 0 is
   // used to indicate an unspecified identifier.

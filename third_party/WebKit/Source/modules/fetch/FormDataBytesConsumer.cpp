@@ -134,9 +134,10 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
           break;
         }
         case FormDataElement::kEncodedBlob:
-          if (element.optional_blob_data_handle_)
+          if (element.optional_blob_data_handle_) {
             blob_data->AppendBlob(element.optional_blob_data_handle_, 0,
                                   element.optional_blob_data_handle_->size());
+          }
           break;
       }
     }

@@ -17,6 +17,7 @@
 #include "platform/network/http_names.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "third_party/WebKit/Source/modules/fetch/FormDataBytesConsumer.h"
 
 namespace blink {
 
@@ -33,7 +34,12 @@ FetchRequestData* FetchRequestData::Create(
   for (HTTPHeaderMap::const_iterator it = web_request.Headers().begin();
        it != web_request.Headers().end(); ++it)
     request->header_list_->Append(it->key, it->value);
-  if (web_request.GetBlobDataHandle()) {
+  if (scoped_refptr<EncodedFormData> body = web_request.Body()) {
+    request->SetBuffer(new BodyStreamBuffer(
+        script_state,
+        new FormDataBytesConsumer(ExecutionContext::From(script_state),
+                                  std::move(body))));
+  } else if (web_request.GetBlobDataHandle()) {
     request->SetBuffer(new BodyStreamBuffer(
         script_state,
         new BlobBytesConsumer(ExecutionContext::From(script_state),

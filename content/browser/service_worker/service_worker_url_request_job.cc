@@ -1000,8 +1000,8 @@ void ServiceWorkerURLRequestJob::RequestBodyFileSizesResolved(bool success) {
 
   DCHECK(!fetch_dispatcher_);
   fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
-      CreateFetchRequest(), active_worker, resource_type_, timeout_,
-      request()->net_log(),
+      CreateFetchRequest(), base::WrapRefCounted(active_worker), resource_type_,
+      timeout_, request()->net_log(),
       base::Bind(&ServiceWorkerURLRequestJob::DidPrepareFetchEvent,
                  weak_factory_.GetWeakPtr(),
                  base::WrapRefCounted(active_worker)),

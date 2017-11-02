@@ -5,6 +5,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 
 #include "platform/blob/BlobData.h"
+#include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/RefCounted.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
@@ -19,6 +20,7 @@ class WebServiceWorkerRequestPrivate
   WebURL url_;
   WebString method_;
   HTTPHeaderMap headers_;
+  scoped_refptr<EncodedFormData> http_body;
   scoped_refptr<BlobDataHandle> blob_data_handle;
   Referrer referrer_;
   network::mojom::FetchRequestMode mode_ =
@@ -100,6 +102,14 @@ void WebServiceWorkerRequest::VisitHTTPHeaderFields(
 
 const HTTPHeaderMap& WebServiceWorkerRequest::Headers() const {
   return private_->headers_;
+}
+
+void WebServiceWorkerRequest::SetBody(const WebHTTPBody& body) {
+  private_->http_body = body;
+}
+
+WebHTTPBody WebServiceWorkerRequest::Body() const {
+  return private_->http_body;
 }
 
 void WebServiceWorkerRequest::SetBlob(const WebString& uuid,

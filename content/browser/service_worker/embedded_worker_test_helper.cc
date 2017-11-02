@@ -65,6 +65,26 @@ class MockServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
   DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerDispatcherHost);
 };
 
+void OnFetchEventCommon(
+    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
+        finish_callback) {
+  response_callback->OnResponse(
+      ServiceWorkerResponse(
+          std::make_unique<std::vector<GURL>>(), 200, "OK",
+          network::mojom::FetchResponseType::kDefault,
+          std::make_unique<ServiceWorkerHeaderMap>(), std::string(), 0,
+          nullptr /* blob */, blink::kWebServiceWorkerResponseErrorUnknown,
+          base::Time(), false /* is_in_cache_storage */,
+          std::string() /* cache_storage_cache_name */,
+          std::make_unique<
+              ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
+      base::Time::Now());
+  std::move(finish_callback)
+      .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+           base::Time::Now());
+}
+
 }  // namespace
 
 EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
@@ -217,8 +237,20 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
                                           std::move(callback));
   }
 
-  void DispatchFetchEvent(
+  void DispatchLegacyFetchEvent(
       const ServiceWorkerFetchRequest& request,
+      mojom::FetchEventPreloadHandlePtr preload_handle,
+      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      DispatchFetchEventCallback callback) override {
+    if (!helper_)
+      return;
+    helper_->OnLegacyFetchEventStub(
+        thread_id_, request, std::move(preload_handle),
+        std::move(response_callback), std::move(callback));
+  }
+
+  void DispatchFetchEvent(
+      const ResourceRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
@@ -615,25 +647,22 @@ void EmbeddedWorkerTestHelper::OnInstallEvent(
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
     int /* embedded_worker_id */,
+    const ResourceRequest& /* request */,
+    mojom::FetchEventPreloadHandlePtr /* preload_handle */,
+    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
+        finish_callback) {
+  OnFetchEventCommon(std::move(response_callback), std::move(finish_callback));
+}
+
+void EmbeddedWorkerTestHelper::OnLegacyFetchEvent(
+    int /* embedded_worker_id */,
     const ServiceWorkerFetchRequest& /* request */,
     mojom::FetchEventPreloadHandlePtr /* preload_handle */,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
         finish_callback) {
-  response_callback->OnResponse(
-      ServiceWorkerResponse(
-          std::make_unique<std::vector<GURL>>(), 200, "OK",
-          network::mojom::FetchResponseType::kDefault,
-          std::make_unique<ServiceWorkerHeaderMap>(), std::string(), 0,
-          nullptr /* blob */, blink::kWebServiceWorkerResponseErrorUnknown,
-          base::Time(), false /* is_in_cache_storage */,
-          std::string() /* cache_storage_cache_name */,
-          std::make_unique<
-              ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-      base::Time::Now());
-  std::move(finish_callback)
-      .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
-           base::Time::Now());
+  OnFetchEventCommon(std::move(response_callback), std::move(finish_callback));
 }
 
 void EmbeddedWorkerTestHelper::OnPushEvent(
@@ -921,7 +950,7 @@ void EmbeddedWorkerTestHelper::OnInstallEventStub(
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(
     int thread_id,
-    const ServiceWorkerFetchRequest& request,
+    const ResourceRequest& request,
     mojom::FetchEventPreloadHandlePtr preload_handle,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
@@ -930,9 +959,23 @@ void EmbeddedWorkerTestHelper::OnFetchEventStub(
       FROM_HERE,
       base::BindOnce(&EmbeddedWorkerTestHelper::OnFetchEvent, AsWeakPtr(),
                      thread_id_embedded_worker_id_map_[thread_id], request,
-                     base::Passed(&preload_handle),
-                     base::Passed(&response_callback),
-                     base::Passed(&finish_callback)));
+                     std::move(preload_handle), std::move(response_callback),
+                     std::move(finish_callback)));
+}
+
+void EmbeddedWorkerTestHelper::OnLegacyFetchEventStub(
+    int thread_id,
+    const ServiceWorkerFetchRequest& request,
+    mojom::FetchEventPreloadHandlePtr preload_handle,
+    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
+        finish_callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnLegacyFetchEvent, AsWeakPtr(),
+                     thread_id_embedded_worker_id_map_[thread_id], request,
+                     std::move(preload_handle), std::move(response_callback),
+                     std::move(finish_callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnNotificationClickEventStub(

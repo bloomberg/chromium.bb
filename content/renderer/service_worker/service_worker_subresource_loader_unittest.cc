@@ -8,7 +8,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
 #include "content/renderer/loader/child_url_loader_factory_getter_impl.h"
@@ -106,11 +108,25 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     redirect_location_header_ = redirect_location_header;
   }
 
+  void ReadRequestBody(std::string* out_string) {
+    ASSERT_TRUE(request_body_);
+    const std::vector<ResourceRequestBody::Element>* elements =
+        request_body_->elements();
+    // So far this test expects a single bytes element.
+    ASSERT_EQ(1u, elements->size());
+    const ResourceRequestBody::Element& element = elements->front();
+    ASSERT_EQ(ResourceRequestBody::Element::TYPE_BYTES, element.type());
+    *out_string = std::string(element.bytes(), element.length());
+  }
+
   // mojom::ControllerServiceWorker:
   void DispatchFetchEvent(
-      const ServiceWorkerFetchRequest& request,
+      const ResourceRequest& request,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
+    EXPECT_FALSE(ServiceWorkerUtils::IsMainResourceType(request.resource_type));
+    request_body_ = request.request_body;
+
     fetch_event_count_++;
     fetch_event_request_ = request;
     switch (response_mode_) {
@@ -195,7 +211,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   }
 
   int fetch_event_count() const { return fetch_event_count_; }
-  const ServiceWorkerFetchRequest& fetch_event_request() const {
+  const ResourceRequest& fetch_event_request() const {
     return fetch_event_request_;
   }
 
@@ -210,9 +226,10 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   };
 
   ResponseMode response_mode_ = ResponseMode::kDefault;
+  scoped_refptr<ResourceRequestBody> request_body_;
 
   int fetch_event_count_ = 0;
-  ServiceWorkerFetchRequest fetch_event_request_;
+  ResourceRequest fetch_event_request_;
   base::OnceClosure fetch_event_callback_;
   mojo::BindingSet<mojom::ControllerServiceWorker> bindings_;
 
@@ -327,6 +344,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     ResourceRequest request;
     request.url = url;
     request.method = "GET";
+    request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
     return request;
   }
 
@@ -680,8 +698,6 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
       std::string("https://www.example.com/redirect_") +
       base::IntToString(count);
   fake_controller_.RespondWithRedirect(redirect_location);
-
-  // Perform the request
   const GURL kScope("https://www.example.com/");
   std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
       CreateSubresourceLoaderFactory(kScope.GetOrigin());
@@ -792,6 +808,34 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CORSFallbackResponse) {
   }
 }
 
-// TODO(kinuko): Add more tests.
+// Test that the request body is passed to the fetch event.
+TEST_F(ServiceWorkerSubresourceLoaderTest, RequestBody) {
+  const GURL kUrl("https://www.example.com");
+  std::unique_ptr<ServiceWorkerSubresourceLoaderFactory> factory =
+      CreateSubresourceLoaderFactory(kUrl.GetOrigin());
+
+  // Create a request with a body.
+  auto request_body = base::MakeRefCounted<ResourceRequestBody>();
+  const std::string kData = "hi this is the request body";
+  request_body->AppendBytes(kData.c_str(), kData.length());
+  ResourceRequest request = CreateRequest(kUrl);
+  request.method = "POST";
+  request.request_body = request_body;
+
+  // This test doesn't use the response to the fetch event, so just have the
+  // service worker do simple network fallback.
+  fake_controller_.RespondWithFallback();
+
+  // Perform the request.
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<TestURLLoaderClient> client;
+  StartRequest(factory.get(), request, &loader, &client);
+  fake_controller_.RunUntilFetchEvent();
+
+  // Verify that the request body was passed to the fetch event.
+  std::string body;
+  fake_controller_.ReadRequestBody(&body);
+  EXPECT_EQ(kData, body);
+}
 
 }  // namespace content

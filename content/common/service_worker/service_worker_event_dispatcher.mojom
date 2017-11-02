@@ -91,15 +91,26 @@ interface ServiceWorkerEventDispatcher {
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
 
-  // The callback is called once the event finishes, which means the event
-  // handler ran and all outstanding respondWith() and waitUntil() promises have
-  // settled. |response_callback| is called once the promise to respondWith()
-  // settles, or when the event handler ran without calling respondWith().
-  DispatchFetchEvent(blink.mojom.FetchAPIRequest request,
+  // The Dispatch*FetchEvent() callback is called once the event finishes,
+  // which means the event handler ran and all outstanding respondWith() and
+  // waitUntil() promises have settled. |response_callback| is called once the
+  // promise to respondWith() settles, or when the event handler ran without
+  // calling respondWith().
+  //
+  // Non-S13nServiceWorker
+  // TODO(falken): Migrate non-S13nServiceWorker to the non-legacy method.
+  DispatchLegacyFetchEvent(blink.mojom.FetchAPIRequest request,
+                           FetchEventPreloadHandle? preload_handle,
+                           ServiceWorkerFetchResponseCallback response_callback)
+      => (blink.mojom.ServiceWorkerEventStatus status,
+          mojo.common.mojom.Time dispatch_event_time);
+  // S13nServiceWorker
+  DispatchFetchEvent(URLRequest request,
                      FetchEventPreloadHandle? preload_handle,
                      ServiceWorkerFetchResponseCallback response_callback)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
+
   DispatchNotificationClickEvent(string notification_id,
                                  PlatformNotificationData notification_data,
                                  int32 action_index,

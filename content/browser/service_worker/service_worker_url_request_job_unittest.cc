@@ -527,7 +527,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
     installed_scripts_info_ = std::move(installed_scripts_info);
   }
 
-  void OnFetchEvent(
+  void OnLegacyFetchEvent(
       int embedded_worker_id,
       const ServiceWorkerFetchRequest& /* request */,
       mojom::FetchEventPreloadHandlePtr preload_handle,
@@ -722,7 +722,7 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
   ~ProviderDeleteHelper() override {}
 
  protected:
-  void OnFetchEvent(
+  void OnLegacyFetchEvent(
       int /* embedded_worker_id */,
       const ServiceWorkerFetchRequest& /* request */,
       mojom::FetchEventPreloadHandlePtr /* preload_handle */,
@@ -754,8 +754,6 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
 // fetch event.
 TEST_F(ServiceWorkerURLRequestJobTest, DeletedProviderHostOnFetchEvent) {
   SetUpWithHelper(std::make_unique<ProviderDeleteHelper>());
-
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   TestRequest(500, "Service Worker Response Error", std::string(),
@@ -813,7 +811,7 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
   ~BlobResponder() override = default;
 
  protected:
-  void OnFetchEvent(
+  void OnLegacyFetchEvent(
       int /* embedded_worker_id */,
       const ServiceWorkerFetchRequest& /* request */,
       mojom::FetchEventPreloadHandlePtr /* preload_handle */,
@@ -914,7 +912,7 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
   ~StreamResponder() override {}
 
  protected:
-  void OnFetchEvent(
+  void OnLegacyFetchEvent(
       int /* embedded_worker_id */,
       const ServiceWorkerFetchRequest& /* request */,
       mojom::FetchEventPreloadHandlePtr /* preload_handle */,
@@ -1303,7 +1301,7 @@ class FailFetchHelper : public EmbeddedWorkerTestHelper {
   ~FailFetchHelper() override {}
 
  protected:
-  void OnFetchEvent(
+  void OnLegacyFetchEvent(
       int embedded_worker_id,
       const ServiceWorkerFetchRequest& /* request */,
       mojom::FetchEventPreloadHandlePtr /* preload_handle */,
@@ -1396,7 +1394,7 @@ class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
   }
 
  protected:
-  void OnFetchEvent(
+  void OnLegacyFetchEvent(
       int /* embedded_worker_id */,
       const ServiceWorkerFetchRequest& /* request */,
       mojom::FetchEventPreloadHandlePtr /* preload_handle */,

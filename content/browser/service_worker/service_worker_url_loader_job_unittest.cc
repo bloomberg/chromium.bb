@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -270,25 +271,29 @@ class Helper : public EmbeddedWorkerTestHelper {
   }
 
   void ReadRequestBody(std::string* out_string) {
-    ASSERT_TRUE(request_body_blob_);
-
-    mojo::DataPipe pipe;
-    (*request_body_blob_)->ReadAll(std::move(pipe.producer_handle), nullptr);
-    base::RunLoop().RunUntilIdle();
-
-    EXPECT_TRUE(mojo::common::BlockingCopyToString(
-        std::move(pipe.consumer_handle), out_string));
+    ASSERT_TRUE(request_body_);
+    const std::vector<ResourceRequestBody::Element>* elements =
+        request_body_->elements();
+    // So far this test expects a single bytes element.
+    ASSERT_EQ(1u, elements->size());
+    const ResourceRequestBody::Element& element = elements->front();
+    ASSERT_EQ(ResourceRequestBody::Element::TYPE_BYTES, element.type());
+    *out_string = std::string(element.bytes(), element.length());
   }
 
  protected:
   void OnFetchEvent(
       int embedded_worker_id,
-      const ServiceWorkerFetchRequest& request,
+      const ResourceRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
           finish_callback) override {
-    request_body_blob_ = request.blob;
+    // Basic checks on DispatchFetchEvent parameters.
+    EXPECT_TRUE(ServiceWorkerUtils::IsMainResourceType(request.resource_type));
+
+    request_body_ = request.request_body;
+
     switch (response_mode_) {
       case ResponseMode::kDefault:
         EmbeddedWorkerTestHelper::OnFetchEvent(
@@ -427,7 +432,7 @@ class Helper : public EmbeddedWorkerTestHelper {
   };
 
   ResponseMode response_mode_ = ResponseMode::kDefault;
-  scoped_refptr<storage::BlobHandle> request_body_blob_;
+  scoped_refptr<ResourceRequestBody> request_body_;
 
   // For ResponseMode::kBlob.
   std::string blob_uuid_;
@@ -641,12 +646,13 @@ TEST_F(ServiceWorkerURLLoaderJobTest, NoActiveWorker) {
 
 // Test that the request body is passed to the fetch event.
 TEST_F(ServiceWorkerURLLoaderJobTest, RequestBody) {
-  const std::string kData = "BlobRequest";
+  const std::string kData = "hi this is the request body";
 
   // Create a request with a body.
   auto request_body = base::MakeRefCounted<ResourceRequestBody>();
   request_body->AppendBytes(kData.c_str(), kData.length());
   std::unique_ptr<ResourceRequest> request = CreateRequest();
+  request->method = "POST";
   request->request_body = request_body;
 
   // This test doesn't use the response to the fetch event, so just have the
