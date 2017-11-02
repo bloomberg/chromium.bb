@@ -110,9 +110,8 @@ void ResizeHelperPostMsgToUIThread(int render_process_id,
 }
 #endif
 
-void NoOpCacheStorageErrorCallback(
-    std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-    CacheStorageError error) {}
+void NoOpCacheStorageErrorCallback(CacheStorageCacheHandle cache_handle,
+                                   CacheStorageError error) {}
 
 }  // namespace
 
@@ -310,13 +309,11 @@ void RenderMessageFilter::OnCacheStorageOpenCallback(
     base::Time expected_response_time,
     scoped_refptr<net::IOBuffer> buf,
     int buf_len,
-    std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+    CacheStorageCacheHandle cache_handle,
     CacheStorageError error) {
-  if (error != CACHE_STORAGE_OK || !cache_handle || !cache_handle->value())
+  if (error != CACHE_STORAGE_OK || !cache_handle.value())
     return;
-  CacheStorageCache* cache = cache_handle->value();
-  if (!cache)
-    return;
+  CacheStorageCache* cache = cache_handle.value();
   cache->WriteSideData(base::BindOnce(&NoOpCacheStorageErrorCallback,
                                       base::Passed(std::move(cache_handle))),
                        url, expected_response_time, buf, buf_len);

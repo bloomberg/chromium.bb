@@ -74,15 +74,14 @@ const int32_t kCachePaddingAlgorithmVersion = 2;
 class CacheStorageCacheDataHandle
     : public storage::BlobDataBuilder::DataHandle {
  public:
-  CacheStorageCacheDataHandle(
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-      disk_cache::ScopedEntryPtr entry)
+  CacheStorageCacheDataHandle(CacheStorageCacheHandle cache_handle,
+                              disk_cache::ScopedEntryPtr entry)
       : cache_handle_(std::move(cache_handle)), entry_(std::move(entry)) {}
 
  private:
   ~CacheStorageCacheDataHandle() override {}
 
-  std::unique_ptr<CacheStorageCacheHandle> cache_handle_;
+  CacheStorageCacheHandle cache_handle_;
   disk_cache::ScopedEntryPtr entry_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorageCacheDataHandle);
@@ -583,7 +582,7 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
   // last reference to this instance. Hold a handle for the duration of this
   // loop. (Asynchronous tasks scheduled by the operations use weak ptrs which
   // will no-op automatically.)
-  std::unique_ptr<CacheStorageCacheHandle> handle = CreateCacheHandle();
+  CacheStorageCacheHandle handle = CreateCacheHandle();
 
   for (const auto& operation : operations) {
     switch (operation.operation_type) {
@@ -1475,7 +1474,7 @@ void CacheStorageCache::UpdateCacheSize(base::OnceClosure callback) {
 }
 
 void CacheStorageCache::UpdateCacheSizeGotSize(
-    std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+    CacheStorageCacheHandle cache_handle,
     base::OnceClosure callback,
     int current_cache_size) {
   DCHECK_NE(current_cache_size, CacheStorage::kSizeUnknown);
@@ -1796,8 +1795,7 @@ CacheStorageCache::PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
   return result;
 }
 
-std::unique_ptr<CacheStorageCacheHandle>
-CacheStorageCache::CreateCacheHandle() {
+CacheStorageCacheHandle CacheStorageCache::CreateCacheHandle() {
   return cache_storage_->CreateCacheHandle(this);
 }
 

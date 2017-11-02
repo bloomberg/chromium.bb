@@ -16,13 +16,17 @@ namespace content {
 // CacheStorage is deleted.
 class CONTENT_EXPORT CacheStorageCacheHandle {
  public:
+  CacheStorageCacheHandle();
+  CacheStorageCacheHandle(CacheStorageCacheHandle&& other);
   ~CacheStorageCacheHandle();
 
   // Returns the underlying CacheStorageCache*. Will return nullptr if the
   // CacheStorage has been deleted.
   CacheStorageCache* value() { return cache_storage_cache_.get(); }
 
-  std::unique_ptr<CacheStorageCacheHandle> Clone();
+  CacheStorageCacheHandle Clone() const;
+
+  CacheStorageCacheHandle& operator=(CacheStorageCacheHandle&& rhs);
 
  private:
   friend class CacheStorage;

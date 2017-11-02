@@ -2685,16 +2685,15 @@ class CacheStorageSideDataSizeChecker
                        continuation));
   }
 
-  void OnCacheStorageOpenCallback(
-      int* result,
-      const base::Closure& continuation,
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-      CacheStorageError error) {
+  void OnCacheStorageOpenCallback(int* result,
+                                  const base::Closure& continuation,
+                                  CacheStorageCacheHandle cache_handle,
+                                  CacheStorageError error) {
     ASSERT_EQ(CACHE_STORAGE_OK, error);
     std::unique_ptr<ServiceWorkerFetchRequest> scoped_request(
         new ServiceWorkerFetchRequest());
     scoped_request->url = url_;
-    CacheStorageCache* cache = cache_handle->value();
+    CacheStorageCache* cache = cache_handle.value();
     cache->Match(
         std::move(scoped_request), CacheStorageCacheQueryParams(),
         base::BindOnce(&self::OnCacheStorageCacheMatchCallback, this, result,
@@ -2704,7 +2703,7 @@ class CacheStorageSideDataSizeChecker
   void OnCacheStorageCacheMatchCallback(
       int* result,
       const base::Closure& continuation,
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+      CacheStorageCacheHandle cache_handle,
       CacheStorageError error,
       std::unique_ptr<ServiceWorkerResponse> response,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {

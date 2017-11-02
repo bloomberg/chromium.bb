@@ -356,7 +356,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // manager of any change from the last report, and sets cache_size_ to the new
   // size.
   void UpdateCacheSize(base::OnceClosure callback);
-  void UpdateCacheSizeGotSize(std::unique_ptr<CacheStorageCacheHandle>,
+  void UpdateCacheSizeGotSize(CacheStorageCacheHandle,
                               base::OnceClosure callback,
                               int current_cache_size);
 
@@ -423,7 +423,7 @@ class CONTENT_EXPORT CacheStorageCache {
       ServiceWorkerResponse* response);
 
   // Virtual for testing.
-  virtual std::unique_ptr<CacheStorageCacheHandle> CreateCacheHandle();
+  virtual CacheStorageCacheHandle CreateCacheHandle();
 
   // Be sure to check |backend_state_| before use.
   std::unique_ptr<disk_cache::Backend> backend_;
