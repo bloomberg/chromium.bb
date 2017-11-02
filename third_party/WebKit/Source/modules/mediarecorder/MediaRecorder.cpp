@@ -307,11 +307,11 @@ ExecutionContext* MediaRecorder::GetExecutionContext() const {
 }
 
 void MediaRecorder::Suspend() {
-  dispatch_scheduled_event_runner_->Suspend();
+  dispatch_scheduled_event_runner_->Pause();
 }
 
 void MediaRecorder::Resume() {
-  dispatch_scheduled_event_runner_->Resume();
+  dispatch_scheduled_event_runner_->Unpause();
 }
 
 void MediaRecorder::ContextDestroyed(ExecutionContext*) {

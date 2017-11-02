@@ -1617,11 +1617,11 @@ ExecutionContext* RTCPeerConnection::GetExecutionContext() const {
 }
 
 void RTCPeerConnection::Suspend() {
-  dispatch_scheduled_event_runner_->Suspend();
+  dispatch_scheduled_event_runner_->Pause();
 }
 
 void RTCPeerConnection::Resume() {
-  dispatch_scheduled_event_runner_->Resume();
+  dispatch_scheduled_event_runner_->Unpause();
 }
 
 void RTCPeerConnection::ContextDestroyed(ExecutionContext*) {

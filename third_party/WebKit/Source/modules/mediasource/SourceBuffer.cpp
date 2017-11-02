@@ -1070,13 +1070,13 @@ bool SourceBuffer::HasPendingActivity() const {
 }
 
 void SourceBuffer::Suspend() {
-  append_buffer_async_part_runner_->Suspend();
-  remove_async_part_runner_->Suspend();
+  append_buffer_async_part_runner_->Pause();
+  remove_async_part_runner_->Pause();
 }
 
 void SourceBuffer::Resume() {
-  append_buffer_async_part_runner_->Resume();
-  remove_async_part_runner_->Resume();
+  append_buffer_async_part_runner_->Unpause();
+  remove_async_part_runner_->Unpause();
 }
 
 void SourceBuffer::ContextDestroyed(ExecutionContext*) {
