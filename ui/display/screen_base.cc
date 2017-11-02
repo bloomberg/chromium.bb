@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This has to be before any other includes, else default is picked up.
-// See base/logging for details on this.
-#define NOTIMPLEMENTED_POLICY 5
-
 #include "ui/display/screen_base.h"
 
 #include "ui/display/display_finder.h"
@@ -17,17 +13,17 @@ ScreenBase::ScreenBase() {}
 ScreenBase::~ScreenBase() {}
 
 gfx::Point ScreenBase::GetCursorScreenPoint() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return gfx::Point();
 }
 
 bool ScreenBase::IsWindowUnderCursor(gfx::NativeWindow window) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 gfx::NativeWindow ScreenBase::GetWindowAtScreenPoint(const gfx::Point& point) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 
@@ -41,7 +37,7 @@ Display ScreenBase::GetPrimaryDisplay() const {
 Display ScreenBase::GetDisplayNearestWindow(gfx::NativeWindow window) const {
   // TODO(riajiang): Implement this for multi-displays either here or in
   // ScreenMus.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return GetPrimaryDisplay();
 }
 

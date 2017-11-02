@@ -63,7 +63,7 @@ void AshWindowTreeHostMus::RegisterMirroringHost(
     AshWindowTreeHost* mirroring_ash_host) {
   // This should not be called, but it is because mirroring isn't wired up for
   // mus. Once that is done, this should be converted to a NOTREACHED.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void AshWindowTreeHostMus::SetCursorConfig(

@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Reduce number of log messages by logging each NOTIMPLEMENTED() only once.
-// This has to be before any other includes, else default is picked up.
-// See base/logging.h for details on this.
-#define NOTIMPLEMENTED_POLICY 5
-
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
 
 #include "base/strings/utf_string_conversions.h"
@@ -88,87 +83,87 @@ bool RemoteTextInputClient::GetCompositionCharacterBounds(
     uint32_t index,
     gfx::Rect* rect) const {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool RemoteTextInputClient::HasCompositionText() const {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool RemoteTextInputClient::GetTextRange(gfx::Range* range) const {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool RemoteTextInputClient::GetCompositionTextRange(gfx::Range* range) const {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool RemoteTextInputClient::GetSelectionRange(gfx::Range* range) const {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool RemoteTextInputClient::SetSelectionRange(const gfx::Range& range) {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool RemoteTextInputClient::DeleteRange(const gfx::Range& range) {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool RemoteTextInputClient::GetTextFromRange(const gfx::Range& range,
                                              base::string16* text) const {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void RemoteTextInputClient::OnInputMethodChanged() {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool RemoteTextInputClient::ChangeTextDirectionAndLayoutAlignment(
     base::i18n::TextDirection direction) {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void RemoteTextInputClient::ExtendSelectionAndDelete(size_t before,
                                                      size_t after) {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void RemoteTextInputClient::EnsureCaretNotInRect(const gfx::Rect& rect) {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool RemoteTextInputClient::IsTextEditCommandEnabled(
     ui::TextEditCommand command) const {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void RemoteTextInputClient::SetTextEditCommandForNextKeyEvent(
     ui::TextEditCommand command) {
   // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 ui::EventDispatchDetails RemoteTextInputClient::DispatchKeyEventPostIME(

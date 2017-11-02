@@ -54,41 +54,41 @@ service_manager::Connector* ShellDelegateMus::GetShellConnector() const {
 }
 
 bool ShellDelegateMus::IsRunningInForcedAppMode() const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool ShellDelegateMus::CanShowWindowForUser(aura::Window* window) const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return true;
 }
 
 bool ShellDelegateMus::IsForceMaximizeOnFirstRun() const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 void ShellDelegateMus::PreInit() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void ShellDelegateMus::PreShutdown() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 std::unique_ptr<keyboard::KeyboardUI> ShellDelegateMus::CreateKeyboardUI() {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 
 void ShellDelegateMus::OpenUrlFromArc(const GURL& url) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 NetworkingConfigDelegate* ShellDelegateMus::GetNetworkingConfigDelegate() {
   // TODO(mash): Provide a real implementation, perhaps by folding its behavior
   // into an ash-side network information cache. http://crbug.com/651157
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 
@@ -107,17 +107,17 @@ AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
 
 GPUSupport* ShellDelegateMus::CreateGPUSupport() {
   // TODO: http://crbug.com/647421.
-  NOTIMPLEMENTED() << " Using a stub GPUSupport implementation";
+  NOTIMPLEMENTED_LOG_ONCE() << " Using a stub GPUSupport implementation";
   return new GPUSupportStub();
 }
 
 base::string16 ShellDelegateMus::GetProductName() const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return base::string16();
 }
 
 gfx::Image ShellDelegateMus::GetDeprecatedAcceleratorImage() const {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return gfx::Image();
 }
 

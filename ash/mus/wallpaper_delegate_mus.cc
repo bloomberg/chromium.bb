@@ -21,7 +21,7 @@ int WallpaperDelegateMus::GetAnimationDurationOverride() {
 
 void WallpaperDelegateMus::SetAnimationDurationOverride(
     int animation_duration_in_ms) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool WallpaperDelegateMus::ShouldShowInitialAnimation() {
@@ -29,7 +29,7 @@ bool WallpaperDelegateMus::ShouldShowInitialAnimation() {
 }
 
 void WallpaperDelegateMus::UpdateWallpaper(bool clear_cache) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WallpaperDelegateMus::InitializeWallpaper() {

@@ -36,7 +36,7 @@ std::unique_ptr<ImmersiveGestureHandler>
 ImmersiveHandlerFactoryMus::CreateGestureHandler(
     ImmersiveFullscreenController* controller) {
   // http://crbug.com/640394.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
 }
 
