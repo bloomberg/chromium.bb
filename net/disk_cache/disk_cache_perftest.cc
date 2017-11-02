@@ -53,7 +53,9 @@ struct TestEntry {
 
 class DiskCachePerfTest : public DiskCacheTestWithCache {
  public:
-  DiskCachePerfTest() : saved_fd_limit_(base::GetMaxFds()) {
+  DiskCachePerfTest()
+      : DiskCacheTestWithCache(&scoped_task_environment_),
+        saved_fd_limit_(base::GetMaxFds()) {
     if (saved_fd_limit_ < kFdLimitForCacheTests)
       MaybeSetFdLimit(kFdLimitForCacheTests);
   }
