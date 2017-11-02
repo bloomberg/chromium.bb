@@ -1201,8 +1201,14 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkMadeDefault");
-  MaybeMigrateOrCloseSessions(network, /*close_if_cannot_migrate=*/false,
-                              scoped_event_log.net_log());
+
+  QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
+  // Sessions may be deleted while iterating through the map.
+  while (it != all_sessions_.end()) {
+    QuicChromiumClientSession* session = it->first;
+    ++it;
+    session->OnNetworkMadeDefault(network, scoped_event_log.net_log());
+  }
   set_require_confirmation(true);
 }
 
@@ -1238,8 +1244,13 @@ void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkDisconnected");
   NetworkHandle new_network = FindAlternateNetwork(network);
-  MaybeMigrateOrCloseSessions(new_network, /*close_if_cannot_migrate=*/true,
-                              scoped_event_log.net_log());
+  QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
+  // Sessions may be deleted while iterating through the map.
+  while (it != all_sessions_.end()) {
+    QuicChromiumClientSession* session = it->first;
+    ++it;
+    session->OnNetworkDisconnected(new_network, scoped_event_log.net_log());
+  }
 }
 
 // This method is expected to only be called when migrating from Cellular to
@@ -1260,19 +1271,6 @@ NetworkHandle QuicStreamFactory::FindAlternateNetwork(
   return NetworkChangeNotifier::kInvalidNetworkHandle;
 }
 
-void QuicStreamFactory::MaybeMigrateOrCloseSessions(
-    NetworkHandle new_network,
-    bool close_if_cannot_migrate,
-    const NetLogWithSource& net_log) {
-  QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
-  while (it != all_sessions_.end()) {
-    QuicChromiumClientSession* session = it->first;
-    ++it;
-    session->MaybeMigrateOrCloseSession(new_network, close_if_cannot_migrate,
-                                        net_log);
-  }
-}
-
 void QuicStreamFactory::CollectDataOnWriteError(int error_code) {
   most_recent_write_error_timestamp_ = base::TimeTicks::Now();
   most_recent_write_error_ = error_code;
@@ -1281,23 +1279,6 @@ void QuicStreamFactory::CollectDataOnWriteError(int error_code) {
 void QuicStreamFactory::CollectDataOnPathDegrading() {
   if (most_recent_path_degrading_timestamp_ == base::TimeTicks())
     most_recent_path_degrading_timestamp_ = base::TimeTicks::Now();
-}
-
-void QuicStreamFactory::MigrateSessionToNewPeerAddress(
-    QuicChromiumClientSession* session,
-    IPEndPoint peer_address,
-    const NetLogWithSource& net_log) {
-  if (!allow_server_migration_)
-    return;
-
-  IPEndPoint old_address;
-  session->GetDefaultSocket()->GetPeerAddress(&old_address);
-  DCHECK_EQ(old_address.GetFamily(), peer_address.GetFamily());
-
-  // Specifying kInvalidNetworkHandle for the |network| parameter
-  // causes the session to use the default network for the new socket.
-  session->Migrate(NetworkChangeNotifier::kInvalidNetworkHandle, peer_address,
-                   /*close_session_on_error*/ true, net_log);
 }
 
 std::unique_ptr<DatagramClientSocket> QuicStreamFactory::CreateSocket(

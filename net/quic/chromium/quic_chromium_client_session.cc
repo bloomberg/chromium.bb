@@ -1246,7 +1246,13 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
                              new_address.port());
   }
 
-  stream_factory_->MigrateSessionToNewPeerAddress(this, new_address, net_log_);
+  if (!stream_factory_->allow_server_migration())
+    return;
+
+  // Specifying kInvalidNetworkHandle for the |network| parameter
+  // causes the session to use the default network for the new socket.
+  Migrate(NetworkChangeNotifier::kInvalidNetworkHandle, new_address,
+          /*close_session_on_error*/ true, net_log_);
 }
 
 void QuicChromiumClientSession::OnCryptoHandshakeEvent(
@@ -1574,6 +1580,30 @@ void QuicChromiumClientSession::OnNetworkConnected(
   stream_factory_->OnSessionGoingAway(this);
   Migrate(network, connection()->peer_address().impl().socket_address(),
           /*close_session_on_error=*/true, net_log);
+}
+
+void QuicChromiumClientSession::OnNetworkDisconnected(
+    NetworkChangeNotifier::NetworkHandle alternate_network,
+    const NetLogWithSource& migration_net_log) {
+  // TODO(zhongyi): move metrics collection to session.
+  if (!migrate_session_on_network_change_)
+    return;
+
+  MaybeMigrateOrCloseSession(
+      alternate_network, /*close_if_cannot_migrate*/ true, migration_net_log);
+}
+
+void QuicChromiumClientSession::OnNetworkMadeDefault(
+    NetworkChangeNotifier::NetworkHandle new_network,
+    const NetLogWithSource& migration_net_log) {
+  // TODO(zhongyi): move metrics collection to session.
+  if (!migrate_session_on_network_change_)
+    return;
+
+  DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, new_network);
+
+  MaybeMigrateOrCloseSession(new_network, /*close_if_cannot_migrate*/ false,
+                             migration_net_log);
 }
 
 void QuicChromiumClientSession::OnWriteError(int error_code) {

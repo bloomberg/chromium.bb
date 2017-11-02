@@ -288,21 +288,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   NetworkChangeNotifier::NetworkHandle FindAlternateNetwork(
       NetworkChangeNotifier::NetworkHandle old_network);
 
-  // Method that initiates migration of active sessions to |new_network|.
-  // If |new_network| is a valid network, sessions that can migrate are
-  // migrated to |new_network|, and sessions not bound to |new_network|
-  // are left unchanged. Sessions with non-migratable streams are closed
-  // if |close_if_cannot_migrate| is true, and continue using their current
-  // network otherwise.
-  //
-  // If |new_network| is NetworkChangeNotifier::kInvalidNetworkHandle,
-  // there is no new network to migrate sessions onto, and all sessions are
-  // closed.
-  void MaybeMigrateOrCloseSessions(
-      NetworkChangeNotifier::NetworkHandle new_network,
-      bool close_if_cannot_migrate,
-      const NetLogWithSource& net_log);
-
   // TODO(zhongyi): move metrics collection to session once connection migration
   // logic is all in QuicChromiumClientSession.
   // Method that collects error code data on write error.
@@ -312,12 +297,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // logic is all in QuicChromiumClientSession.
   // Method that collects timestamp when some session is on path degrading.
   void CollectDataOnPathDegrading();
-
-  // Migrates |session| over to using |peer_address|. Causes a PING frame
-  // to be sent to the new peer address.
-  void MigrateSessionToNewPeerAddress(QuicChromiumClientSession* session,
-                                      IPEndPoint peer_address,
-                                      const NetLogWithSource& net_log);
 
   // Creates a datagram socket. |source| is the NetLogSource for the entity
   // trying to create the socket, if it has one.
@@ -352,6 +331,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void OnCertDBChanged() override;
 
   bool require_confirmation() const { return require_confirmation_; }
+
+  bool allow_server_migration() const { return allow_server_migration_; }
 
   void set_require_confirmation(bool require_confirmation);
 
