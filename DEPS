@@ -250,11 +250,6 @@ deps = {
       'condition': 'checkout_android',
   },
 
-  'src/third_party/auto/src': {
-      'url': Var('chromium_git') + '/external/github.com/google/auto.git' + '@' + '71802f2ae74dae2744abd999f8434e13055c4ee3',
-      'condition': 'checkout_android',
-  },
-
   'src/third_party/bidichecker':
     Var('chromium_git') + '/external/bidichecker/lib.git' + '@' + '97f2aa645b74c28c57eca56992235c79850fa9e0',
 

@@ -17,8 +17,9 @@ import java.util.List;
  * WebView Chromium implementation of WebBackForwardList. Simple immutable
  * wrapper around NavigationHistory.
  */
-@SuppressWarnings("NoSynchronizedMethodCheck")
-@SuppressFBWarnings({"CHROMIUM_SYNCHRONIZED_METHOD", "SE_BAD_FIELD"})
+@SuppressFBWarnings({
+        "CHROMIUM_SYNCHRONIZED_METHOD",
+        "SE_BAD_FIELD"})
 public class WebBackForwardListChromium extends WebBackForwardList {
     private final List<WebHistoryItemChromium> mHistroryItemList;
     private final int mCurrentIndex;

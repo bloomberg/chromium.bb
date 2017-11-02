@@ -2541,14 +2541,10 @@ if (enable_java_templates) {
         args += [ "--chromium-code=1" ]
       }
       if (_enable_errorprone) {
-        deps +=
-            [ "//third_party/errorprone:errorprone_java($default_toolchain)" ]
-        deps += [ "//tools/android/errorprone_plugin:errorprone_plugin_java" ]
+        deps += [ "//third_party/errorprone:chromium_errorprone($default_toolchain)" ]
         args += [
           "--use-errorprone-path",
-          "bin/errorprone_java",
-          "--processorpath",
-          "lib.java/tools/android/errorprone_plugin/errorprone_plugin_java.jar",
+          "bin/chromium_errorprone",
         ]
       }
       foreach(e, _provider_configurations) {
