@@ -30,9 +30,9 @@ class PDFiumRange {
   int char_count() const { return char_count_; }
 
   // Gets bounding rectangles of range in screen coordinates.
-  std::vector<pp::Rect> GetScreenRects(const pp::Point& offset,
-                                       double zoom,
-                                       int rotation);
+  const std::vector<pp::Rect>& GetScreenRects(const pp::Point& offset,
+                                              double zoom,
+                                              int rotation);
 
   // Gets the string of characters in this range.
   base::string16 GetText() const;
