@@ -345,6 +345,25 @@ TEST_F(AutoEnrollmentClientTest, ForcedReEnrollment) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
 }
 
+TEST_F(AutoEnrollmentClientTest, ForcedReEnrollmentZeroTouch) {
+  ServerWillReply(-1, true, true);
+  ServerWillSendState(
+      "example.com",
+      em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ZERO_TOUCH,
+      kDisabledMessage);
+  client_->Start();
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH, state_);
+  VerifyCachedResult(true, 8);
+  VerifyServerBackedState("example.com",
+                          kDeviceStateRestoreModeReEnrollmentZeroTouch,
+                          kDisabledMessage);
+
+  // Network changes don't trigger retries after obtaining a response from
+  // the server.
+  client_->OnNetworkChanged(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+  EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH, state_);
+}
+
 TEST_F(AutoEnrollmentClientTest, RequestedReEnrollment) {
   ServerWillReply(-1, true, true);
   ServerWillSendState(

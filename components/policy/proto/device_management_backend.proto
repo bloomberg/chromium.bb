@@ -112,7 +112,10 @@ message DeviceRegisterRequest {
     // mechanism.
     FLAVOR_ENROLLMENT_ATTESTATION = 8;
     // Forced attestation-based enrollment (cannot fallback to another flavor).
-    FLAVOR_ENROLLMENT_ATTESTATION_FORCED = 9;
+    FLAVOR_ENROLLMENT_ATTESTATION_LOCAL_FORCED = 9;
+    // Device state downloaded from the server during OOBE indicates that
+    // (re-)enrollment is mandatory and should be attestation-based.
+    FLAVOR_ENROLLMENT_ATTESTATION_SERVER_FORCED = 10;
   };
 
   // Indicates the registration flavor. This is passed to the server FYI when
@@ -916,6 +919,8 @@ message DeviceStateRetrievalResponse {
     // The device has been disabled by its owner. The device will show a warning
     // screen and prevent the user from proceeding further.
     RESTORE_MODE_DISABLED = 3;
+    // Enterprise enrollment is enforced using Zero-Touch and cannot be skipped.
+    RESTORE_MODE_REENROLLMENT_ZERO_TOUCH = 4;
   };
   // The server-indicated restore mode.
   optional RestoreMode restore_mode = 1 [default = RESTORE_MODE_NONE];

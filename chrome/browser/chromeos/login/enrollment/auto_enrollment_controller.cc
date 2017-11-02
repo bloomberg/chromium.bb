@@ -140,6 +140,7 @@ void AutoEnrollmentController::Start() {
       return;
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
       // Abort re-start when there's already a final decision.
       return;
 
@@ -279,6 +280,7 @@ void AutoEnrollmentController::UpdateState(
     case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
     case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
       safeguard_timer_.Stop();
       break;

@@ -205,6 +205,7 @@ bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
     case policy::AUTO_ENROLLMENT_STATE_PENDING:
     case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
       return false;
     case policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR:
@@ -256,6 +257,7 @@ bool AutoEnrollmentCheckScreen::IsCompleted() const {
     case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
     // Server errors don't block OOBE.
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
+    case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
       // Decision made, ready to proceed.
       return true;
