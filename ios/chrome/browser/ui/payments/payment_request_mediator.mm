@@ -22,7 +22,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
 #include "ios/chrome/browser/payments/payment_request.h"
-#include "ios/chrome/browser/payments/payment_request_util.h"
+#import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -78,13 +78,7 @@ using ::payment_request_util::GetShippingSectionTitle;
 #pragma mark - PaymentRequestViewControllerDataSource
 
 - (BOOL)canPay {
-  return self.paymentRequest->selected_payment_method() != nullptr &&
-         (self.paymentRequest->selected_shipping_option() != nullptr ||
-          ![self requestShipping]) &&
-         (self.paymentRequest->selected_shipping_profile() != nullptr ||
-          ![self requestShipping]) &&
-         (self.paymentRequest->selected_contact_profile() != nullptr ||
-          ![self requestContactInfo]);
+  return self.paymentRequest->IsAbleToPay();
 }
 
 - (BOOL)hasPaymentItems {
@@ -98,9 +92,7 @@ using ::payment_request_util::GetShippingSectionTitle;
 }
 
 - (BOOL)requestContactInfo {
-  return self.paymentRequest->request_payer_name() ||
-         self.paymentRequest->request_payer_email() ||
-         self.paymentRequest->request_payer_phone();
+  return self.paymentRequest->RequestContactInfo();
 }
 
 - (CollectionViewItem*)paymentSummaryItem {
