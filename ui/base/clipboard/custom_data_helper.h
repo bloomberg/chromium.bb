@@ -12,7 +12,7 @@
 
 #include <stddef.h>
 
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -47,10 +47,10 @@ UI_BASE_EXPORT void ReadCustomDataForType(const void* data,
 UI_BASE_EXPORT void ReadCustomDataIntoMap(
     const void* data,
     size_t data_length,
-    std::map<base::string16, base::string16>* result);
+    std::unordered_map<base::string16, base::string16>* result);
 
 UI_BASE_EXPORT void WriteCustomDataToPickle(
-    const std::map<base::string16, base::string16>& data,
+    const std::unordered_map<base::string16, base::string16>& data,
     base::Pickle* pickle);
 
 }  // namespace ui

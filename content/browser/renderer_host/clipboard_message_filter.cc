@@ -259,7 +259,7 @@ void ClipboardMessageFilter::OnWriteSmartPasteMarker(
 
 void ClipboardMessageFilter::OnWriteCustomData(
     ui::ClipboardType clipboard_type,
-    const std::map<base::string16, base::string16>& data) {
+    const std::unordered_map<base::string16, base::string16>& data) {
   base::Pickle pickle;
   ui::WriteCustomDataToPickle(data, &pickle);
   clipboard_writer_->WritePickledData(

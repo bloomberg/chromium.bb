@@ -85,9 +85,10 @@ void ReadCustomDataForType(const void* data,
   }
 }
 
-void ReadCustomDataIntoMap(const void* data,
-                           size_t data_length,
-                           std::map<base::string16, base::string16>* result) {
+void ReadCustomDataIntoMap(
+    const void* data,
+    size_t data_length,
+    std::unordered_map<base::string16, base::string16>* result) {
   base::Pickle pickle(reinterpret_cast<const char*>(data), data_length);
   base::PickleIterator iter(pickle);
 
@@ -102,8 +103,7 @@ void ReadCustomDataIntoMap(const void* data,
       result->clear();
       return;
     }
-    std::pair<std::map<base::string16, base::string16>::iterator, bool>
-        insert_result = result->insert(std::make_pair(type, base::string16()));
+    auto insert_result = result->insert(std::make_pair(type, base::string16()));
     if (!iter.ReadString16(&insert_result.first->second)) {
       // Data is corrupt, return an empty map.
       result->clear();
@@ -113,15 +113,12 @@ void ReadCustomDataIntoMap(const void* data,
 }
 
 void WriteCustomDataToPickle(
-    const std::map<base::string16, base::string16>& data,
+    const std::unordered_map<base::string16, base::string16>& data,
     base::Pickle* pickle) {
   pickle->WriteUInt32(data.size());
-  for (std::map<base::string16, base::string16>::const_iterator it =
-           data.begin();
-       it != data.end();
-       ++it) {
-    pickle->WriteString16(it->first);
-    pickle->WriteString16(it->second);
+  for (const auto& it : data) {
+    pickle->WriteString16(it.first);
+    pickle->WriteString16(it.second);
   }
 }
 

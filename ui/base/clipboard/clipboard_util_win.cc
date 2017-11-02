@@ -328,7 +328,7 @@ bool ClipboardUtil::GetFileContents(IDataObject* data_object,
 
 bool ClipboardUtil::GetWebCustomData(
     IDataObject* data_object,
-    std::map<base::string16, base::string16>* custom_data) {
+    std::unordered_map<base::string16, base::string16>* custom_data) {
   DCHECK(data_object && custom_data);
 
   if (!HasData(data_object, Clipboard::GetWebCustomDataFormatType()))

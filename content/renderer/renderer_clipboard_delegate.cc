@@ -104,7 +104,7 @@ void RendererClipboardDelegate::WriteSmartPasteMarker(
 
 void RendererClipboardDelegate::WriteCustomData(
     ui::ClipboardType clipboard_type,
-    const std::map<base::string16, base::string16>& data) {
+    const std::unordered_map<base::string16, base::string16>& data) {
   RenderThreadImpl::current()->Send(
       new ClipboardHostMsg_WriteCustomData(clipboard_type, data));
 }

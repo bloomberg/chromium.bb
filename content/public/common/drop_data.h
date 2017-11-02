@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -110,7 +110,7 @@ struct CONTENT_EXPORT DropData {
   base::FilePath::StringType file_contents_filename_extension;
   std::string file_contents_content_disposition;
 
-  std::map<base::string16, base::string16> custom_data;
+  std::unordered_map<base::string16, base::string16> custom_data;
 
   // The key-modifiers present for this update, included here so BrowserPlugin
   // can forward them to the guest renderer.

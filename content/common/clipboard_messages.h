@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "build/build_config.h"
@@ -30,7 +30,7 @@
 // Custom data consists of arbitrary MIME types an untrusted sender wants to
 // write to the clipboard. Note that exposing a general interface to do this is
 // dangerous--an untrusted sender could cause a DoS or code execution.
-typedef std::map<base::string16, base::string16> CustomDataMap;
+typedef std::unordered_map<base::string16, base::string16> CustomDataMap;
 
 #endif  // INTERNAL_CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
 

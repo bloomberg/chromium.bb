@@ -9,8 +9,8 @@
 
 #include <shlobj.h>
 #include <stddef.h>
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -56,7 +56,7 @@ class UI_BASE_EXPORT ClipboardUtil {
   // strings from web content.
   static bool GetWebCustomData(
       IDataObject* data_object,
-      std::map<base::string16, base::string16>* custom_data);
+      std::unordered_map<base::string16, base::string16>* custom_data);
 
   // Helper method for converting between MS CF_HTML format and plain
   // text/html.
