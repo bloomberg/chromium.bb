@@ -2405,19 +2405,6 @@
    fun:_ZN10extensions11ApiTestBase5SetUpEv
 }
 {
-   bug_448700_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN10extensions12_GLOBAL__N_111TestNatives24GetObjectTemplateBuilderEPN2v87IsolateE
-   fun:_ZN3gin13WrappableBase14GetWrapperImplEPN2v87IsolateEPNS_11WrapperInfoE
-   fun:_ZN3gin9WrappableIN10extensions12_GLOBAL__N_111TestNativesEE10GetWrapperEPN2v87IsolateE
-   fun:_ZN3gin12CreateHandleIN10extensions12_GLOBAL__N_111TestNativesEEENS_6HandleIT_EEPN2v87IsolateEPS5_
-   fun:_ZN10extensions12_GLOBAL__N_111TestNatives6CreateEPN2v87IsolateERKN4base8CallbackIFvvEEE
-   fun:_ZN10extensions11ApiTestBase7RunTestERKSsS2_
-   fun:_ZN10extensions30MojoPrivateApiTest_Define_Test8TestBodyEv
-}
-{
    bug_449156_a
    Memcheck:Leak
    fun:_Znw*
