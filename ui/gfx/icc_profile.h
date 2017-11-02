@@ -52,7 +52,12 @@ class COLOR_SPACE_EXPORT ICCProfile {
 
   // Return a ColorSpace that references this ICCProfile. ColorTransforms
   // created using this ColorSpace will match this ICCProfile precisely.
-  ColorSpace GetColorSpace() const;
+  const ColorSpace& GetColorSpace() const;
+
+  // Return a ColorSpace that is the best parametric approximation of this
+  // ICCProfile. The resulting ColorSpace will reference this ICCProfile only
+  // if the parametric approximation is almost exact.
+  const ColorSpace& GetParametricColorSpace() const;
 
   const std::vector<char>& GetData() const;
 
@@ -98,7 +103,12 @@ class COLOR_SPACE_EXPORT ICCProfile {
                                    size_t size,
                                    uint64_t id);
 
-  AnalyzeResult Initialize();
+  static AnalyzeResult ExtractColorSpaces(
+      const std::vector<char>& data,
+      gfx::ColorSpace* parametric_color_space,
+      float* parametric_tr_fn_max_error,
+      sk_sp<SkColorSpace>* useable_sk_color_space);
+
   void ComputeColorSpaceAndCache();
 
   // This globally identifies this ICC profile. It is used to look up this ICC
@@ -110,21 +120,18 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // The result of attepting to extract a color space from the color profile.
   AnalyzeResult analyze_result_ = kICCFailedToParse;
 
-  // Results of Skia parsing the ICC profile data.
-  sk_sp<SkColorSpace> sk_color_space_;
+  // |color_space| always links back to this ICC profile, and its SkColorSpace
+  // is always equal to the SkColorSpace created from this ICCProfile.
+  gfx::ColorSpace color_space_;
 
-  // The best-fit parametric primaries.
-  gfx::ColorSpace::PrimaryID primaries_;
-  SkMatrix44 to_XYZD50_;
-
-  // The best-fit parametric transfer function.
-  gfx::ColorSpace::TransferID transfer_;
-  SkColorSpaceTransferFn transfer_fn_;
+  // |parametric_color_space_| will only link back to this ICC profile if it
+  // is accurate, and its SkColorSpace will always be parametrically created.
+  gfx::ColorSpace parametric_color_space_;
 
   // The L-infinity error of the parametric color space fit. This is undefined
   // unless |analyze_result_| is kICCFailedToApproximateTrFnAccurately or
   // kICCExtractedMatrixAndApproximatedTrFn.
-  float transfer_fn_error_ = 0;
+  float parametric_tr_fn_error_ = -1;
 
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, BT709toSRGBICC);
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
