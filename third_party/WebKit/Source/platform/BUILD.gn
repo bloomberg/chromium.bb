@@ -31,15 +31,18 @@ action("runtime_enabled_features") {
   script = "../build/scripts/make_runtime_features.py"
 
   runtime_enabled_features_json5 = "runtime_enabled_features.json5"
-  inputs = scripts_for_json5_files + [
-             runtime_enabled_features_json5,
-             "../build/scripts/templates/runtime_enabled_features.cc.tmpl",
-             "../build/scripts/templates/runtime_enabled_features.h.tmpl",
-           ]
+  inputs =
+      scripts_for_json5_files + [
+        runtime_enabled_features_json5,
+        "../build/scripts/templates/runtime_enabled_features.cc.tmpl",
+        "../build/scripts/templates/runtime_enabled_features.h.tmpl",
+        "../build/scripts/templates/RuntimeEnabledFeaturesTestHelpers.h.tmpl",
+      ]
 
   outputs = [
     "$blink_platform_output_dir/runtime_enabled_features.cc",
     "$blink_platform_output_dir/runtime_enabled_features.h",
+    "$blink_platform_output_dir/testing/RuntimeEnabledFeaturesTestHelpers.h",
   ]
 
   args = [
@@ -1645,7 +1648,6 @@ jumbo_static_library("test_support") {
     "testing/PictureMatchers.cpp",
     "testing/PictureMatchers.h",
     "testing/PlatformTestPrinters.cpp",
-    "testing/RuntimeEnabledFeaturesTestHelpers.h",
     "testing/ScopedMockedURL.cpp",
     "testing/ScopedMockedURL.h",
     "testing/TestPaintArtifact.cpp",

@@ -1361,8 +1361,8 @@ TEST_F(AnimationCompositorAnimationsTest, canStartElementOnCompositorEffect) {
 
 TEST_F(AnimationCompositorAnimationsTest,
        cannotStartElementOnCompositorEffectWithRuntimeFeature) {
-  ScopedTurnOff2DAndOpacityCompositorAnimationForTest
-      turn_off_2d_and_opacity_compositor_animation(true);
+  ScopedTurnOff2DAndOpacityCompositorAnimationsForTest
+      turn_off_2d_and_opacity_compositors_animation(true);
   LoadTestData("transform-animation.html");
   Document* document = GetFrame()->GetDocument();
   Element* target = document->getElementById("target");

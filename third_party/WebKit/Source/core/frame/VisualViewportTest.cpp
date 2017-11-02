@@ -1982,7 +1982,7 @@ TEST_P(VisualViewportTest, ResizeWithScrollAnchoring) {
 // Ensure that resize anchoring as happens when browser controls hide/show
 // affects the scrollable area that's currently set as the root scroller.
 TEST_P(VisualViewportTest, ResizeAnchoringWithRootScroller) {
-  ScopedRootScrollerForTest root_scroller(true);
+  ScopedSetRootScrollerForTest root_scroller(true);
 
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(800, 600));
@@ -2012,7 +2012,7 @@ TEST_P(VisualViewportTest, ResizeAnchoringWithRootScroller) {
 // Ensure that resize anchoring as happens when the device is rotated affects
 // the scrollable area that's currently set as the root scroller.
 TEST_P(VisualViewportTest, RotationAnchoringWithRootScroller) {
-  ScopedRootScrollerForTest root_scroller(true);
+  ScopedSetRootScrollerForTest root_scroller(true);
 
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(800, 600));
