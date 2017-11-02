@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -16,8 +17,8 @@
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
+#include "content/browser/background_fetch/storage/database_task.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "url/origin.h"
@@ -34,6 +35,33 @@ class BrowserContext;
 class ChromeBlobStorageContext;
 class ServiceWorkerContextWrapper;
 
+// Interface used by the BackgroundFetchDataManager with the
+// BackgroundFetchJobController.
+// TODO(crbug.com/757760): As part of the persistence work, we should just
+// decouple the DataManager from the JobController rather than having this
+// clunky interface of unconnected methods.
+class BackgroundFetchDatabaseClient {
+ public:
+  virtual ~BackgroundFetchDatabaseClient() {}
+
+  // Called once the status of the active and completed downloads has been
+  // loaded from the database.
+  virtual void InitializeRequestStatus(
+      int completed_downloads,
+      int total_downloads,
+      const std::vector<std::string>& outstanding_guids) = 0;
+
+  // Called once UpdateRegistrationUI has been persisted to the database.
+  virtual void UpdateUI(const std::string& title) = 0;
+
+  // Should return the sum of the bytes downloaded by in progress requests.
+  virtual uint64_t GetInProgressDownloadedBytes() = 0;
+
+  // Called once MarkRegistrationForDeletion has been persisted to the
+  // database, because the registration was aborted by the user or website.
+  virtual void Abort() = 0;
+};
+
 // The BackgroundFetchDataManager is a wrapper around persistent storage (the
 // Service Worker database), exposing APIs for the read and write queries needed
 // for Background Fetch.
@@ -44,7 +72,7 @@ class ServiceWorkerContextWrapper;
 // Service Worker database (except for deletions, e.g. it's safe for the Service
 // Worker code to remove a ServiceWorkerRegistration and all its keys).
 //
-// Storage schema is documented in the .cc file.
+// Storage schema is documented in storage/README.md
 class CONTENT_EXPORT BackgroundFetchDataManager {
  public:
   using NextRequestCallback =
@@ -56,44 +84,21 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       bool /* background_fetch_succeeded */,
       std::vector<BackgroundFetchSettledFetch>,
       std::vector<std::unique_ptr<storage::BlobDataHandle>>)>;
-  // Note that this also handles non-error cases where the NONE is NONE.
-  using HandleBackgroundFetchErrorCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
-
-  class DatabaseTask;
-
-  class Controller {
-   public:
-    virtual ~Controller() {}
-
-    // Called once the status of the active and completed downloads has been
-    // loaded from the database.
-    virtual void InitializeRequestStatus(
-        int completed_downloads,
-        int total_downloads,
-        const std::vector<std::string>& outstanding_guids) = 0;
-
-    // Called once UpdateRegistrationUI has been persisted to the database.
-    virtual void UpdateUI(const std::string& title) = 0;
-
-    // Should return the sum of the bytes downloaded by in progress requests.
-    virtual uint64_t GetInProgressDownloadedBytes() = 0;
-
-    // Called once MarkRegistrationForDeletion has been persisted to the
-    // database, because the registration was aborted by the user or website.
-    virtual void Abort() = 0;
-  };
 
   BackgroundFetchDataManager(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~BackgroundFetchDataManager();
 
-  // Sets the JobController that handles in-progress requests for a
-  // registration, and will be notified of relevant changes to the registration
-  // data. Must outlive |this| or call SetController(nullptr) in its destructor.
-  void SetController(const BackgroundFetchRegistrationId& registration_id,
-                     Controller* controller);
+  // Sets the BackgroundFetchDatabaseClient that handles in-progress requests
+  // for a registration, and will be notified of relevant changes to the
+  // registration data. Must outlive |this| or call SetDatabaseClient(nullptr)
+  // in its destructor.
+  void SetDatabaseClient(const BackgroundFetchRegistrationId& registration_id,
+                         BackgroundFetchDatabaseClient* client);
+
+  BackgroundFetchDatabaseClient* GetDatabaseClientFromUniqueID(
+      const std::string& unique_id);
 
   // Creates and stores a new registration with the given properties. Will
   // invoke the |callback| when the registration has been created, which may
@@ -174,15 +179,18 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
  private:
   FRIEND_TEST_ALL_PREFIXES(BackgroundFetchDataManagerTest, Cleanup);
   friend class BackgroundFetchDataManagerTest;
+  friend class background_fetch::DatabaseTask;
 
   class RegistrationData;
+
+  void AddDatabaseTask(std::unique_ptr<background_fetch::DatabaseTask> task);
+
+  void OnDatabaseTaskFinished(background_fetch::DatabaseTask* task);
 
   // Returns true if not aborted/completed/failed.
   bool IsActive(const BackgroundFetchRegistrationId& registration_id);
 
   void Cleanup();
-
-  void AddDatabaseTask(std::unique_ptr<DatabaseTask> task);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
@@ -200,13 +208,14 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // registrations to their associated data.
   std::map<std::string, std::unique_ptr<RegistrationData>> registrations_;
 
-  // Map from background fetch registration |unique_id|s to the controller that
-  // needs to be notified about changes to the registration.
-  base::flat_map<std::string, Controller*> controllers_;
+  // Map from background fetch registration |unique_id|s to the
+  // BackgroundFetchDatabaseClient that needs to be notified about changes to
+  // the registration.
+  base::flat_map<std::string, BackgroundFetchDatabaseClient*> database_clients_;
 
   // Pending database operations, serialized to ensure consistency.
   // Invariant: the frontmost task, if any, has already been started.
-  base::queue<std::unique_ptr<DatabaseTask>> database_tasks_;
+  base::queue<std::unique_ptr<background_fetch::DatabaseTask>> database_tasks_;
 
   // The |unique_id|s of registrations that have been deactivated since the
   // browser was last started. They will be automatically deleted when the
