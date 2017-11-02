@@ -5,8 +5,8 @@
 #import <EarlGrey/EarlGrey.h>
 
 #include "base/ios/ios_util.h"
-#import "ios/chrome/browser/ui/payments/payment_request_picker_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"
 
@@ -27,11 +27,10 @@ id<GREYMatcher> SectionWithTitle(NSString* title) {
 // Returns the GREYMatcher for the picker row with the given label. |selected|
 // states whether or not the row must be selected.
 id<GREYMatcher> RowWithLabel(NSString* label, BOOL selected) {
-  id<GREYMatcher> matcher = grey_allOf(
-      grey_ancestor(
-          grey_accessibilityID(kPaymentRequestPickerRowAccessibilityID)),
-      grey_text(label), grey_kindOfClass([UILabel class]),
-      grey_sufficientlyVisible(), nil);
+  id<GREYMatcher> matcher =
+      grey_allOf(grey_ancestor(chrome_test_util::PaymentRequestPickerRow()),
+                 grey_text(label), grey_kindOfClass([UILabel class]),
+                 grey_sufficientlyVisible(), nil);
 
   if (selected) {
     return grey_allOf(
@@ -146,9 +145,8 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
   [self scrollToTop];
 
   // Type 'c' in the search bar.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kPaymentRequestPickerSearchBarAccessibilityID)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          PaymentRequestPickerSearchBar()]
       performAction:grey_typeText(@"chi")];
 
   [self assertSection:@"B" visible:NO];
@@ -167,9 +165,8 @@ id<GREYMatcher> UIAlertViewMessageForDelegateCallWithArgument(
   [self assertRow:@"México" selected:NO visible:NO];
 
   // Type 'l' in the search bar. So far we have typed "chil".
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kPaymentRequestPickerSearchBarAccessibilityID)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          PaymentRequestPickerSearchBar()]
       performAction:grey_typeText(@"l")];
 
   [self assertSection:@"B" visible:NO];

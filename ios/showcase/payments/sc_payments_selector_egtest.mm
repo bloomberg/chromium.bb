@@ -4,7 +4,6 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#import "ios/chrome/browser/ui/payments/payment_request_selector_view_controller.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"

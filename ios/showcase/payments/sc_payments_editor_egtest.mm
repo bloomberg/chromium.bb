@@ -8,7 +8,6 @@
 #import "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
-#import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -219,8 +218,7 @@ id<GREYMatcher> KeyboardNextKey() {
 // navigate between the textfields.
 - (void)testInputAccessoryViewNavigationButtons {
   // Initially, no error message is showing.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kWarningMessageAccessibilityID)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WarningMessageView()]
       assertWithMatcher:grey_nil()];
 
   // Tap the name textfield.
@@ -260,8 +258,7 @@ id<GREYMatcher> KeyboardNextKey() {
 
   // Assert an error message is showing because the address textfield is
   // required.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kWarningMessageAccessibilityID)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WarningMessageView()]
       assertWithMatcher:grey_accessibilityLabel(@"Field is required")];
 
   // Assert the postal code textfield is focused.
@@ -287,8 +284,7 @@ id<GREYMatcher> KeyboardNextKey() {
       performAction:grey_tap()];
 
   // Assert the error message disappeared because an address was typed in.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kWarningMessageAccessibilityID)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WarningMessageView()]
       assertWithMatcher:grey_notVisible()];
 }
 
