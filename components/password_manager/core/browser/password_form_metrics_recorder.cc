@@ -109,9 +109,21 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
   ukm_entry_builder_.SetUpdating_Prompt_Shown(update_prompt_shown_);
   ukm_entry_builder_.SetSaving_Prompt_Shown(save_prompt_shown_);
 
-  // TODO(crbug/755407): This shouldn't depend on UKM keeping repeated metrics.
-  for (const DetailedUserAction& action : one_time_report_user_actions_)
-    ukm_entry_builder_.SetUser_Action(static_cast<int64_t>(action));
+  for (const auto& action : detailed_user_actions_counts_) {
+    switch (action.first) {
+      case DetailedUserAction::kEditedUsernameInBubble:
+        ukm_entry_builder_.SetUser_Action_EditedUsernameInBubble(action.second);
+        break;
+      case DetailedUserAction::kSelectedDifferentPasswordInBubble:
+        ukm_entry_builder_.SetUser_Action_SelectedDifferentPasswordInBubble(
+            action.second);
+        break;
+      case DetailedUserAction::kCorrectedUsernameInForm:
+        ukm_entry_builder_.SetUser_Action_CorrectedUsernameInForm(
+            action.second);
+        break;
+    }
+  }
 
   ukm_entry_builder_.Record(ukm_recorder_);
 
@@ -204,15 +216,7 @@ int PasswordFormMetricsRecorder::GetActionsTakenNew() const {
 
 void PasswordFormMetricsRecorder::RecordDetailedUserAction(
     PasswordFormMetricsRecorder::DetailedUserAction action) {
-  // One-time actions are collected and reported during destruction of the
-  // PasswordFormMetricsRecorder.
-  if (!IsRepeatedUserAction(action)) {
-    one_time_report_user_actions_.insert(action);
-    return;
-  }
-  // Repeated actions can be reported immediately.
-  // TODO(crbug/755407): This shouldn't depend on UKM keeping repeated metrics.
-  ukm_entry_builder_.SetUser_Action(static_cast<int64_t>(action));
+  detailed_user_actions_counts_[action]++;
 }
 
 int PasswordFormMetricsRecorder::GetActionsTaken() const {
@@ -412,21 +416,6 @@ int PasswordFormMetricsRecorder::GetHistogramSampleForSuppressedAccounts(
   mixed_base_encoding += GetActionsTakenNew();
   DCHECK_LT(mixed_base_encoding, kMaxSuppressedAccountStats);
   return mixed_base_encoding;
-}
-
-// static
-bool PasswordFormMetricsRecorder::IsRepeatedUserAction(
-    DetailedUserAction action) {
-  switch (action) {
-    case DetailedUserAction::kUnknown:
-      return true;
-    case DetailedUserAction::kEditedUsernameInBubble:
-    case DetailedUserAction::kSelectedDifferentPasswordInBubble:
-    case DetailedUserAction::kCorrectedUsernameInForm:
-      return false;
-  }
-  NOTREACHED();
-  return true;
 }
 
 }  // namespace password_manager
