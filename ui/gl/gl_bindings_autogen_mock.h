@@ -474,6 +474,9 @@ static void GL_BINDING_CALL Mock_glFlush(void);
 static void GL_BINDING_CALL Mock_glFlushMappedBufferRange(GLenum target,
                                                           GLintptr offset,
                                                           GLsizeiptr length);
+static void GL_BINDING_CALL Mock_glFlushMappedBufferRangeEXT(GLenum target,
+                                                             GLintptr offset,
+                                                             GLsizeiptr length);
 static void GL_BINDING_CALL
 Mock_glFramebufferRenderbuffer(GLenum target,
                                GLenum attachment,

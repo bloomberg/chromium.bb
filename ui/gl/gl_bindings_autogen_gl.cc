@@ -891,10 +891,15 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glFinishFenceNV"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_map_buffer_range) {
     fn.glFlushMappedBufferRangeFn =
         reinterpret_cast<glFlushMappedBufferRangeProc>(
             GetGLProcAddress("glFlushMappedBufferRange"));
+  } else if (ext.b_GL_EXT_map_buffer_range) {
+    fn.glFlushMappedBufferRangeFn =
+        reinterpret_cast<glFlushMappedBufferRangeProc>(
+            GetGLProcAddress("glFlushMappedBufferRangeEXT"));
   }
 
   if (ver->IsAtLeastGL(3u, 0u) || ver->is_es) {
