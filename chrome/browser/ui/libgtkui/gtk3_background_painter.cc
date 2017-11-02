@@ -40,16 +40,17 @@ Gtk3BackgroundPainter::~Gtk3BackgroundPainter() {}
 
 void Gtk3BackgroundPainter::Paint(gfx::Canvas* canvas,
                                   views::View* view) const {
+  float scale = canvas->image_scale();
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(view->width(), view->height());
+  bitmap.allocN32Pixels(scale * view->width(), scale * view->height());
   bitmap.eraseColor(0);
   CairoSurface surface(bitmap);
+  cairo_t* cr = surface.cairo();
   gtk_style_context_set_state(context_, CalculateStateFlags());
-  gtk_render_background(context_, surface.cairo(), 0, 0, view->width(),
-                        view->height());
-  gtk_render_frame(context_, surface.cairo(), 0, 0, view->width(),
-                   view->height());
-  canvas->DrawImageInt(gfx::ImageSkia::CreateFrom1xBitmap(bitmap), 0, 0);
+  cairo_scale(cr, scale, scale);
+  gtk_render_background(context_, cr, 0, 0, view->width(), view->height());
+  gtk_render_frame(context_, cr, 0, 0, view->width(), view->height());
+  canvas->DrawImageInt(gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, scale)), 0, 0);
 }
 
 GtkStateFlags Gtk3BackgroundPainter::CalculateStateFlags() const {
