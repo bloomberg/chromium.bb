@@ -45,10 +45,12 @@ class BotUpdateTestApi(recipe_test_api.RecipeTestApi):
     output.update({
       'source_manifest': {
         'version': 0,
-        'git_checkout': {
+        'directories': {
           project_name: {
-            'repo_url': 'https://fake.org/%s.git' % project_name,
-            'revision': self.gen_revision(project_name),
+            'git_checkout': {
+              'repo_url': 'https://fake.org/%s.git' % project_name,
+              'revision': self.gen_revision(project_name),
+            }
           } for project_name in set(revision_mapping.values())
         }
       }
