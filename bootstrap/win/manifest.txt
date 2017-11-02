@@ -15,4 +15,4 @@
 infra/python/cpython/windows-386 version:2.7.6
 
 @Subdir git
-infra/git/${platform} version:2.14.1.chromium10
+infra/git/${platform} version:2.15.0.chromium12
