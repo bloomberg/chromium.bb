@@ -305,8 +305,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Sends event messages to the renderer. Events for the worker are queued up
   // until the worker thread id is known via SetReadyToSendMessagesToWorker().
-  void SendUpdateFoundMessage(
-      int registration_handle_id);
   void SendServiceWorkerStateChangedMessage(
       int worker_handle_id,
       blink::mojom::ServiceWorkerState state);

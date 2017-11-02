@@ -97,6 +97,6 @@ interface ServiceWorkerRegistrationObject {
                        ServiceWorkerObjectInfo? waiting,
                        ServiceWorkerObjectInfo? active);
 
-  // TODO(leonhsl): Implement all methods.
-  // UpdateFound();
+  // Corresponds to ServiceWorkerRegistration#onupdatefound.
+  UpdateFound();
 };

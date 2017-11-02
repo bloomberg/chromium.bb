@@ -162,8 +162,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   void OnServiceWorkerStateChanged(int thread_id,
                                    int handle_id,
                                    blink::mojom::ServiceWorkerState state);
-  void OnUpdateFound(int thread_id,
-                     int registration_handle_id);
   void OnCountFeature(int thread_id, int provider_id, uint32_t feature);
 
   // Keeps map from handle_id to ServiceWorker object.

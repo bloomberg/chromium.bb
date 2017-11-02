@@ -78,8 +78,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSetNavigationPreloadHeaderError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_UpdateFound,
-                        OnUpdateFound)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CountFeature, OnCountFeature)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -336,17 +334,6 @@ void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(
   WorkerObjectMap::iterator worker = service_workers_.find(handle_id);
   if (worker != service_workers_.end())
     worker->second->OnStateChanged(state);
-}
-
-void ServiceWorkerDispatcher::OnUpdateFound(
-    int thread_id,
-    int registration_handle_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcher::OnUpdateFound");
-  RegistrationObjectMap::iterator found =
-      registrations_.find(registration_handle_id);
-  if (found != registrations_.end())
-    found->second->OnUpdateFound();
 }
 
 void ServiceWorkerDispatcher::OnCountFeature(int thread_id,

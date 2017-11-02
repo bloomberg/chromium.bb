@@ -97,8 +97,6 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   void SetWaiting(const scoped_refptr<WebServiceWorkerImpl>& service_worker);
   void SetActive(const scoped_refptr<WebServiceWorkerImpl>& service_worker);
 
-  void OnUpdateFound();
-
   // blink::WebServiceWorkerRegistration overrides.
   void SetProxy(blink::WebServiceWorkerRegistrationProxy* proxy) override;
   blink::WebServiceWorkerRegistrationProxy* Proxy() override;
@@ -139,6 +137,7 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       blink::mojom::ServiceWorkerObjectInfoPtr installing,
       blink::mojom::ServiceWorkerObjectInfoPtr waiting,
       blink::mojom::ServiceWorkerObjectInfoPtr active) override;
+  void UpdateFound() override;
 
   // RefCounted traits implementation, rather than delete |impl| directly, calls
   // |impl->DetachAndMaybeDestroy()| to notify that the last reference to it has
