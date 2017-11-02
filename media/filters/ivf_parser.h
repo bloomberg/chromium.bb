@@ -9,14 +9,13 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "media/base/media_export.h"
 
 namespace media {
 
 const char kIvfHeaderSignature[] = "DKIF";
 
 #pragma pack(push, 1)
-struct MEDIA_EXPORT IvfFileHeader {
+struct IvfFileHeader {
   // Byte swap interger fields between native and (on disk) little endian.
   void ByteSwap();
 
@@ -38,7 +37,7 @@ static_assert(
     sizeof(IvfFileHeader) == 32,
     "sizeof(IvfFileHeader) must be fixed since it will be used with file IO");
 
-struct MEDIA_EXPORT IvfFrameHeader {
+struct IvfFrameHeader {
   // Byte swap interger fields between native and (on disk) little endian.
   void ByteSwap();
 
@@ -53,7 +52,7 @@ static_assert(
 
 // IVF is a simple container format for video frame. It is used by libvpx to
 // transport VP8 and VP9 bitstream.
-class MEDIA_EXPORT IvfParser {
+class IvfParser {
  public:
   IvfParser();
 

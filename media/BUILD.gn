@@ -138,6 +138,7 @@ source_set("test_support") {
     "//media/audio:test_support",
     "//media/base:test_support",
     "//media/base/android:test_support",
+    "//media/filters:test_support",
     "//media/formats:test_support",
     "//media/video:test_support",
   ]
@@ -325,7 +326,7 @@ fuzzer_test("media_vp8_parser_fuzzer") {
     "filters/vp8_parser_fuzzertest.cc",
   ]
   deps = [
-    ":media",
+    ":test_support",
     "//base",
   ]
   libfuzzer_options = [ "max_len = 400000" ]
@@ -337,7 +338,7 @@ fuzzer_test("media_vp9_parser_fuzzer") {
     "filters/vp9_parser_fuzzertest.cc",
   ]
   deps = [
-    ":media",
+    ":test_support",
     "//base",
   ]
   libfuzzer_options = [ "max_len = 400000" ]
