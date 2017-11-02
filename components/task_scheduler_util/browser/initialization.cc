@@ -25,7 +25,7 @@ GetBrowserTaskSchedulerInitParamsFromVariations() {
     return nullptr;
 
   return GetTaskSchedulerInitParams(
-      "", variation_params, base::SchedulerBackwardCompatibility::INIT_COM_STA);
+      "", variation_params, base::SchedulerBackwardCompatibility::DISABLED);
 }
 
 }  // namespace task_scheduler_util

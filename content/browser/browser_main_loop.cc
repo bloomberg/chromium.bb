@@ -453,13 +453,9 @@ GetDefaultTaskSchedulerInitParams() {
       base::SchedulerWorkerPoolParams(
           base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
           base::TimeDelta::FromSeconds(30)),
-      // Tasks posted to SequencedWorkerPool or BrowserThreadImpl may be
-      // redirected to this pool. Since COM STA is initialized in these
-      // environments, it must also be initialized in this pool.
       base::SchedulerWorkerPoolParams(
           base::RecommendedMaxNumberOfThreadsInPool(8, 32, 0.3, 0),
-          base::TimeDelta::FromSeconds(60),
-          base::SchedulerBackwardCompatibility::INIT_COM_STA));
+          base::TimeDelta::FromSeconds(60)));
 #endif
 }
 
