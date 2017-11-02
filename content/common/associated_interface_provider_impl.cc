@@ -15,7 +15,7 @@ class AssociatedInterfaceProviderImpl::LocalProvider
   explicit LocalProvider(mojom::AssociatedInterfaceProviderAssociatedPtr* proxy)
       : associated_interface_provider_binding_(this) {
     associated_interface_provider_binding_.Bind(
-        mojo::MakeIsolatedRequest(proxy));
+        mojo::MakeRequestAssociatedWithDedicatedPipe(proxy));
   }
 
   ~LocalProvider() override {}

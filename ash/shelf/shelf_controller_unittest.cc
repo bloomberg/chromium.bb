@@ -79,7 +79,7 @@ TEST_F(ShelfControllerTest, ShelfModelChangesWithoutSync) {
   TestShelfObserver observer;
   mojom::ShelfObserverAssociatedPtr observer_ptr;
   mojo::AssociatedBinding<mojom::ShelfObserver> binding(
-      &observer, mojo::MakeIsolatedRequest(&observer_ptr));
+      &observer, mojo::MakeRequestAssociatedWithDedicatedPipe(&observer_ptr));
   controller->AddObserver(observer_ptr.PassInterface());
 
   // The ShelfModel should be initialized with a single item for the AppList.
@@ -114,7 +114,7 @@ TEST_F(ShelfControllerTest, ShelfModelChangesWithSync) {
   TestShelfObserver observer;
   mojom::ShelfObserverAssociatedPtr observer_ptr;
   mojo::AssociatedBinding<mojom::ShelfObserver> binding(
-      &observer, mojo::MakeIsolatedRequest(&observer_ptr));
+      &observer, mojo::MakeRequestAssociatedWithDedicatedPipe(&observer_ptr));
   controller->AddObserver(observer_ptr.PassInterface());
   base::RunLoop().RunUntilIdle();
 
@@ -166,7 +166,7 @@ TEST_F(ShelfControllerTest, ShelfItemImageSync) {
   TestShelfObserver observer;
   mojom::ShelfObserverAssociatedPtr observer_ptr;
   mojo::AssociatedBinding<mojom::ShelfObserver> binding(
-      &observer, mojo::MakeIsolatedRequest(&observer_ptr));
+      &observer, mojo::MakeRequestAssociatedWithDedicatedPipe(&observer_ptr));
   controller->AddObserver(observer_ptr.PassInterface());
   base::RunLoop().RunUntilIdle();
 

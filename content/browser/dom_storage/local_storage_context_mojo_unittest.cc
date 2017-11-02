@@ -161,7 +161,7 @@ class LocalStorageContextMojoTest : public testing::Test {
           special_storage_policy());
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database_ptr;
       leveldb::mojom::LevelDBDatabaseAssociatedRequest request =
-          MakeIsolatedRequest(&database_ptr);
+          MakeRequestAssociatedWithDedicatedPipe(&database_ptr);
       context_->SetDatabaseForTesting(std::move(database_ptr));
       db_binding_.Bind(std::move(request));
     }

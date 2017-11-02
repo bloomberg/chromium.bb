@@ -413,14 +413,16 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
   auto renderer_interface_ptr =
       std::make_unique<mojom::RendererAssociatedPtr>();
   mock_renderer_interface_->AddBinding(
-      mojo::MakeIsolatedRequest(renderer_interface_ptr.get()));
+      mojo::MakeRequestAssociatedWithDedicatedPipe(
+          renderer_interface_ptr.get()));
   render_process_host_->OverrideRendererInterfaceForTesting(
       std::move(renderer_interface_ptr));
 
   auto new_renderer_interface_ptr =
       std::make_unique<mojom::RendererAssociatedPtr>();
   mock_renderer_interface_->AddBinding(
-      mojo::MakeIsolatedRequest(new_renderer_interface_ptr.get()));
+      mojo::MakeRequestAssociatedWithDedicatedPipe(
+          new_renderer_interface_ptr.get()));
   new_render_process_host_->OverrideRendererInterfaceForTesting(
       std::move(new_renderer_interface_ptr));
 }

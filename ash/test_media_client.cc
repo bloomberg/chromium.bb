@@ -14,7 +14,7 @@ TestMediaClient::~TestMediaClient() = default;
 
 mojom::MediaClientAssociatedPtrInfo TestMediaClient::CreateAssociatedPtrInfo() {
   mojom::MediaClientAssociatedPtr ptr;
-  binding_.Bind(mojo::MakeIsolatedRequest(&ptr));
+  binding_.Bind(mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));
   return ptr.PassInterface();
 }
 

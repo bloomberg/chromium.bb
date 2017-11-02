@@ -64,8 +64,9 @@ RemoteProviderInfo SetupProviderHostInfoPtrs(
   RemoteProviderInfo remote_info;
   mojom::ServiceWorkerContainerAssociatedPtr browser_side_client_ptr;
   remote_info.client_request =
-      mojo::MakeIsolatedRequest(&browser_side_client_ptr);
-  host_info->host_request = mojo::MakeIsolatedRequest(&remote_info.host_ptr);
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&browser_side_client_ptr);
+  host_info->host_request =
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&remote_info.host_ptr);
   host_info->client_ptr_info = browser_side_client_ptr.PassInterface();
   EXPECT_TRUE(host_info->host_request.is_pending());
   EXPECT_TRUE(host_info->client_ptr_info.is_valid());
