@@ -216,7 +216,17 @@ struct MediaRouteProviderConfig {
 
 // Modeled after the MediaRouter interface defined in
 // chrome/browser/media/router/media_router.h
+//
+// MediaRouteProvider is responsible for discovering MediaSinks, and managing
+// MediaRoutes associated with them. It notifies its observers (i.e.
+// MediaRouter) when there are changes related to sinks or routes.
 interface MediaRouteProvider {
+  // Each MediaRouteProvider is associated with a unique ID.
+  enum Id {
+    EXTENSION,
+    WIRED_DISPLAY
+  };
+
   // Creates a media route from |media_source| to the sink given by |sink_id|.
   //
   // The presentation ID of the route created will be |presentation_id|, but it
@@ -416,8 +426,8 @@ interface MediaRouteProvider {
                                  (bool success);
 };
 
-// Interface for a service which observes state changes across media
-// sources, sinks, and issues.
+// Interface for a service which observes MediaRouteProviders for state changes
+// across media sources, sinks, and issues.
 interface MediaRouter {
 
   // Represents overall media sink availability states.
@@ -449,26 +459,33 @@ interface MediaRouter {
   // Registers a MediaRouteProvider with the MediaRouter.
   // Returns a string that uniquely identifies the Media Router browser
   // process.
-  RegisterMediaRouteProvider(MediaRouteProvider media_router_provider) =>
+  RegisterMediaRouteProvider(MediaRouteProvider.Id provider_id,
+                             MediaRouteProvider media_router_provider) =>
       (string instance_id, MediaRouteProviderConfig config);
 
-  // Called when the Media Route Manager receives a new list of |sinks|
+  // Called when a MediaRouteProvider receives a new list of |sinks|
   // compatible with |media_source|. The result is only valid for |origins|. If
   // |origins| is empty, the result is valid for any origin.
-  OnSinksReceived(string media_source, array<MediaSink> sinks,
-      array<url.mojom.Origin> origins);
+  OnSinksReceived(MediaRouteProvider.Id provider_id,
+                  string media_source,
+                  array<MediaSink> sinks,
+                  array<url.mojom.Origin> origins);
 
   // Called when issues are reported for media routes.
   OnIssue(Issue issue);
 
-  // Called when list of routes has been updated in the context of the
-  // calling |media_source|.  The array |joinable_route_ids| should
-  // contain route IDs of joinable routes found in the |routes| array.
-  OnRoutesUpdated(array<MediaRoute> routes, string media_source,
-      array<string> joinable_route_ids);
+  // Called when list of routes for a MediaRouteProvider has been updated in the
+  // context of the calling |media_source|.  The array |joinable_route_ids|
+  // should contain route IDs of joinable routes found in the |routes| array.
+  OnRoutesUpdated(MediaRouteProvider.Id provider_id,
+                  array<MediaRoute> routes,
+                  string media_source,
+                  array<string> joinable_route_ids);
 
-  // Called when the overall availability of media sinks has been updated.
-  OnSinkAvailabilityUpdated(SinkAvailability availability);
+  // Called when the availability of media sinks for a MediaRouteProvider has
+  // been updated.
+  OnSinkAvailabilityUpdated(MediaRouteProvider.Id provider_id,
+                            SinkAvailability availability);
 
   // Called when the state of presentation connected to route |route_id| has
   // changed to |state|.

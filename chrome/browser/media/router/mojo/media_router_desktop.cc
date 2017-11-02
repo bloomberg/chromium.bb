@@ -57,30 +57,17 @@ void MediaRouterDesktop::OnUserGesture() {
 #endif
 }
 
-void MediaRouterDesktop::OnConnectionError() {
-  extension_provider_.OnMojoConnectionError();
-  MediaRouterMojoImpl::OnConnectionError();
-}
-
-void MediaRouterDesktop::SyncStateToMediaRouteProvider() {
-#if defined(OS_WIN)
-  // The MRPM extension already turns on mDNS discovery for platforms other than
-  // Windows. It only relies on this signalling from MR on Windows to avoid
-  // triggering a firewall prompt out of the context of MR from the user's
-  // perspective. This particular call reminds the extension to enable mDNS
-  // discovery when it wakes up, has been upgraded, etc.
-  if (should_enable_mdns_discovery_)
-    media_route_provider_->EnableMdnsDiscovery();
-#endif
-  MediaRouterMojoImpl::SyncStateToMediaRouteProvider();
-  StartDiscovery();
+mojom::MediaRouteProvider* MediaRouterDesktop::GetProviderForPresentation(
+    const std::string& presentation_id) {
+  // TODO(takumif): Support other MRPs as well.
+  return media_route_providers_[mojom::MediaRouteProvider::Id::EXTENSION].get();
 }
 
 MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context,
                                        FirewallCheck check_firewall)
     : MediaRouterMojoImpl(context),
-      extension_provider_(context, mojo::MakeRequest(&media_route_provider_)),
       weak_factory_(this) {
+  InitializeMediaRouteProviders();
 #if defined(OS_WIN)
   if (check_firewall == FirewallCheck::RUN) {
     CanFirewallUseLocalPorts(
@@ -91,6 +78,7 @@ MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context,
 }
 
 void MediaRouterDesktop::RegisterMediaRouteProvider(
+    mojom::MediaRouteProvider::Id provider_id,
     mojom::MediaRouteProviderPtr media_route_provider_ptr,
     mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) {
   auto config = mojom::MediaRouteProviderConfig::New();
@@ -101,15 +89,29 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   config->enable_cast_discovery = !media_router::CastDiscoveryEnabled();
   std::move(callback).Run(instance_id(), std::move(config));
 
-  SyncStateToMediaRouteProvider();
+  SyncStateToMediaRouteProvider(provider_id);
 
+  if (provider_id == mojom::MediaRouteProvider::Id::EXTENSION) {
+    RegisterExtensionMediaRouteProvider(std::move(media_route_provider_ptr));
+  } else {
+    media_route_provider_ptr.set_connection_error_handler(
+        base::BindOnce(&MediaRouterDesktop::OnProviderConnectionError,
+                       weak_factory_.GetWeakPtr(), provider_id));
+    media_route_providers_[provider_id] = std::move(media_route_provider_ptr);
+  }
+}
+
+void MediaRouterDesktop::RegisterExtensionMediaRouteProvider(
+    mojom::MediaRouteProviderPtr extension_provider_ptr) {
+  StartDiscovery();
 #if defined(OS_WIN)
-  // The MRPM may have been upgraded or otherwise reload such that we could be
-  // seeing an MRPM that doesn't know mDNS is enabled, even if we've told a
-  // previously registered MRPM it should be enabled. Furthermore, there may be
-  // a pending request to enable mDNS, so don't clear this flag after
-  // ExecutePendingRequests().
-  is_mdns_enabled_ = false;
+  // The extension MRP already turns on mDNS discovery for platforms other than
+  // Windows. It only relies on this signalling from MR on Windows to avoid
+  // triggering a firewall prompt out of the context of MR from the user's
+  // perspective. This particular call reminds the extension to enable mDNS
+  // discovery when it wakes up, has been upgraded, etc.
+  if (should_enable_mdns_discovery_)
+    EnsureMdnsDiscoveryEnabled();
 #endif
   // Now that we have a Mojo pointer to the extension MRP, we reset the Mojo
   // pointers to extension-side route controllers and request them to be bound
@@ -117,11 +119,13 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   // executes commands to the MRP and its route controllers. Commands to the
   // route controllers, once executed, will be queued in Mojo pipes until the
   // Mojo requests are bound to implementations.
+  // TODO(takumif): Once we have route controllers for MRPs other than the
+  // extension MRP, we'll need to group them by MRP so that below is performed
+  // only for extension route controllers.
   for (const auto& pair : route_controllers_)
     InitMediaRouteController(pair.second);
-
-  extension_provider_.RegisterMediaRouteProvider(
-      std::move(media_route_provider_ptr));
+  extension_provider_proxy_->RegisterMediaRouteProvider(
+      std::move(extension_provider_ptr));
 }
 
 void MediaRouterDesktop::BindToMojoRequest(
@@ -129,7 +133,7 @@ void MediaRouterDesktop::BindToMojoRequest(
     const extensions::Extension& extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MediaRouterMojoImpl::BindToMojoRequest(std::move(request));
-  extension_provider_.SetExtensionId(extension.id());
+  extension_provider_proxy_->SetExtensionId(extension.id());
   if (!provider_version_was_recorded_) {
     MediaRouterMojoMetrics::RecordMediaRouteProviderVersion(extension);
     provider_version_was_recorded_ = true;
@@ -175,15 +179,24 @@ void MediaRouterDesktop::ProvideSinks(const std::string& provider_name,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "Provider [" << provider_name << "] found " << sinks.size()
            << " devices...";
-  media_route_provider_->ProvideSinks(provider_name, std::move(sinks));
+  extension_provider_proxy_->ProvideSinks(provider_name, std::move(sinks));
+}
+
+void MediaRouterDesktop::InitializeMediaRouteProviders() {
+  // Initialize the extension MRP proxy.
+  mojom::MediaRouteProviderPtr extension_provider_proxy_ptr;
+  extension_provider_proxy_ =
+      std::make_unique<ExtensionMediaRouteProviderProxy>(
+          context(), mojo::MakeRequest(&extension_provider_proxy_ptr));
+  media_route_providers_[mojom::MediaRouteProvider::Id::EXTENSION] =
+      std::move(extension_provider_proxy_ptr);
 }
 
 #if defined(OS_WIN)
 void MediaRouterDesktop::EnsureMdnsDiscoveryEnabled() {
-  if (is_mdns_enabled_)
-    return;
-
-  media_route_provider_->EnableMdnsDiscovery();
+  extension_provider_proxy_->EnableMdnsDiscovery();
+  // Record that we enabled mDNS discovery, so that we will know to enable again
+  // when we reconnect to the component extension.
   should_enable_mdns_discovery_ = true;
 }
 
