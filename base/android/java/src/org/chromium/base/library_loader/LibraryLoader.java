@@ -305,7 +305,7 @@ public class LibraryLoader {
     // TODO(crbug.com/635567): Fix this properly.
     @SuppressLint("DefaultLocale")
     private void loadAlreadyLocked(Context appContext) throws ProcessInitException {
-        try {
+        try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadAlreadyLocked")) {
             if (!mLoaded) {
                 assert !mInitialized;
 
