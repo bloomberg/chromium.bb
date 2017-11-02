@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//ui/message_center/mojo/notification.typemap" ]
+typemaps = [
+  "//ui/message_center/mojo/notification.typemap",
+  "//ui/message_center/mojo/notifier_id.typemap",
+]

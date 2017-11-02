@@ -140,11 +140,8 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   set_notify_enter_exit_on_child(true);
   SetBackground(views::CreateSolidBackground(kBackgroundColor));
 
-  message_center::NotifierSettingsProvider* notifier_settings_provider =
-      message_center_->GetNotifierSettingsProvider();
   button_bar_ = new MessageCenterButtonBar(
-      this, message_center, notifier_settings_provider,
-      initially_settings_visible, GetButtonBarTitle());
+      this, message_center, initially_settings_visible, GetButtonBarTitle());
   button_bar_->SetCloseAllButtonEnabled(false);
 
   const int button_height = button_bar_->GetPreferredSize().height();
@@ -171,7 +168,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   scroller_contents->AddChildView(message_list_view_.get());
   scroller_->SetContents(scroller_contents);
 
-  settings_view_ = new NotifierSettingsView(notifier_settings_provider);
+  settings_view_ = new NotifierSettingsView();
 
   no_notifications_view_ = new EmptyNotificationView();
 

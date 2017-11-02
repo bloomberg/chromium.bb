@@ -29,14 +29,14 @@ ArcApplicationNotifierControllerChromeOS::
   StopObserving();
 }
 
-std::vector<std::unique_ptr<message_center::NotifierUiData>>
+std::vector<ash::mojom::NotifierUiDataPtr>
 ArcApplicationNotifierControllerChromeOS::GetNotifierList(Profile* profile) {
   package_to_app_ids_.clear();
   icons_.clear();
   StopObserving();
 
   ArcAppListPrefs* const app_list = ArcAppListPrefs::Get(profile);
-  std::vector<std::unique_ptr<message_center::NotifierUiData>> results;
+  std::vector<ash::mojom::NotifierUiDataPtr> results;
   // The app list can be null in unit tests.
   if (!app_list)
     return results;
@@ -69,10 +69,9 @@ ArcApplicationNotifierControllerChromeOS::GetNotifierList(Profile* profile) {
     package_to_app_ids_.insert(std::make_pair(app->package_name, app_id));
     message_center::NotifierId notifier_id(
         message_center::NotifierId::ARC_APPLICATION, app_id);
-    auto ui_data = std::make_unique<message_center::NotifierUiData>(
+    auto ui_data = ash::mojom::NotifierUiData::New(
         notifier_id, base::UTF8ToUTF16(app->name), false,
-        app->notifications_enabled);
-    ui_data->icon = gfx::Image(icon->image_skia());
+        app->notifications_enabled, icon->image_skia());
     icons_.push_back(std::move(icon));
     results.push_back(std::move(ui_data));
   }
@@ -105,7 +104,7 @@ void ArcApplicationNotifierControllerChromeOS::OnIconUpdated(ArcAppIcon* icon) {
   observer_->OnIconImageUpdated(
       message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
                                  icon->app_id()),
-      gfx::Image(icon->image_skia()));
+      icon->image_skia());
 }
 
 void ArcApplicationNotifierControllerChromeOS::StopObserving() {

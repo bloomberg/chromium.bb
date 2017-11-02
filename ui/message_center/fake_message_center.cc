@@ -77,6 +77,9 @@ void FakeMessageCenter::RemoveNotification(const std::string& id,
                                            bool by_user) {
 }
 
+void FakeMessageCenter::RemoveNotificationsForNotifierId(
+    const NotifierId& notifier_id) {}
+
 void FakeMessageCenter::RemoveAllNotifications(bool by_user, RemoveType type) {}
 
 void FakeMessageCenter::SetNotificationIcon(const std::string& notification_id,
@@ -109,15 +112,7 @@ void FakeMessageCenter::MarkSinglePopupAsShown(const std::string& id,
 void FakeMessageCenter::DisplayedNotification(const std::string& id,
                                               const DisplaySource source) {}
 
-void FakeMessageCenter::SetNotifierSettingsProvider(
-    std::unique_ptr<NotifierSettingsProvider> provider) {}
-
-NotifierSettingsProvider* FakeMessageCenter::GetNotifierSettingsProvider() {
-  return nullptr;
-}
-
-void FakeMessageCenter::SetQuietMode(bool in_quiet_mode) {
-}
+void FakeMessageCenter::SetQuietMode(bool in_quiet_mode) {}
 
 void FakeMessageCenter::SetLockedState(bool locked) {}
 

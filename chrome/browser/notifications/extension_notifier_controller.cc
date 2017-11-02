@@ -22,9 +22,9 @@ ExtensionNotifierController::ExtensionNotifierController(Observer* observer)
 
 ExtensionNotifierController::~ExtensionNotifierController() {}
 
-std::vector<std::unique_ptr<message_center::NotifierUiData>>
+std::vector<ash::mojom::NotifierUiDataPtr>
 ExtensionNotifierController::GetNotifierList(Profile* profile) {
-  std::vector<std::unique_ptr<message_center::NotifierUiData>> ui_data;
+  std::vector<ash::mojom::NotifierUiDataPtr> ui_data;
   const extensions::ExtensionSet& extension_set =
       extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   // The extension icon size has to be 32x32 at least to load bigger icons if
@@ -62,10 +62,11 @@ ExtensionNotifierController::GetNotifierList(Profile* profile) {
             : false;
     NotifierStateTracker* const notifier_state_tracker =
         NotifierStateTrackerFactory::GetForProfile(profile);
-    ui_data.emplace_back(new message_center::NotifierUiData(
+    ui_data.push_back(ash::mojom::NotifierUiData::New(
         notifier_id, base::UTF8ToUTF16(extension->name()),
         has_advanced_settings_button,
-        notifier_state_tracker->IsNotifierEnabled(notifier_id)));
+        notifier_state_tracker->IsNotifierEnabled(notifier_id),
+        gfx::ImageSkia()));
     app_icon_loader_->FetchImage(extension->id());
   }
 
@@ -83,8 +84,7 @@ void ExtensionNotifierController::SetNotifierEnabled(
 
 void ExtensionNotifierController::OnNotifierAdvancedSettingsRequested(
     Profile* profile,
-    const message_center::NotifierId& notifier_id,
-    const std::string* notification_id) {
+    const message_center::NotifierId& notifier_id) {
   const std::string& extension_id = notifier_id.id;
 
   extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
@@ -102,5 +102,5 @@ void ExtensionNotifierController::OnAppImageUpdated(
     const gfx::ImageSkia& image) {
   observer_->OnIconImageUpdated(
       message_center::NotifierId(message_center::NotifierId::APPLICATION, id),
-      gfx::Image(image));
+      image);
 }

@@ -20,6 +20,7 @@ class MenuModel;
 namespace message_center {
 
 class MessageCenter;
+class Notification;
 
 // Class that observes a MessageCenter. Manages the popup and message center
 // bubbles. Tells the MessageCenterTrayHost when the tray is changed, as well
