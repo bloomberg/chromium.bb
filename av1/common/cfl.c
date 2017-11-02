@@ -397,8 +397,7 @@ static void cfl_luma_subsampling_440_hbd(const uint16_t *input,
                                          int width, int height) {
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
-      int top = i << 1;
-      output_q3[i] = (input[top] + input[top + input_stride]) << 2;
+      output_q3[i] = (input[i] + input[i + input_stride]) << 2;
     }
     input += input_stride << 1;
     output_q3 += MAX_SB_SIZE;
