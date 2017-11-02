@@ -296,7 +296,8 @@ void decode_xq(const int *xqd, int *xq);
 // limits is the limits of the unit. rui gives the mode to use for this unit
 // and its coefficients. If striped loop restoration is enabled, rsb contains
 // deblocked pixels to use for stripe boundaries; rlbs is just some space to
-// use as a scratch buffer.
+// use as a scratch buffer. tile_rect gives the limits of the tile containing
+// this unit. tile_stripe0 is the index of the first stripe in this tile.
 //
 // ss_x and ss_y are flags which should be 1 if this is a plane with
 // horizontal/vertical subsampling, respectively. highbd is a flag which should
@@ -313,6 +314,7 @@ void av1_loop_restoration_filter_unit(
     const RestorationTileLimits *limits, const RestorationUnitInfo *rui,
 #if CONFIG_STRIPED_LOOP_RESTORATION
     const RestorationStripeBoundaries *rsb, RestorationLineBuffers *rlbs,
+    const AV1PixelRect *tile_rect, int tile_stripe0,
 #endif
     int ss_x, int ss_y, int highbd, int bit_depth, uint8_t *data8, int stride,
     uint8_t *dst8, int dst_stride, int32_t *tmpbuf);
@@ -325,6 +327,7 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
 void av1_loop_restoration_precal();
 
 typedef void (*rest_unit_visitor_t)(const RestorationTileLimits *limits,
+                                    const AV1PixelRect *tile_rect,
                                     int rest_unit_idx, void *priv);
 
 typedef void (*rest_tile_start_visitor_t)(int tile_row, int tile_col,

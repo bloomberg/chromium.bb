@@ -141,37 +141,60 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
                   (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE));
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
-#if CONFIG_FRAME_SUPERRES
-  int width = cm->superres_upscaled_width;
-  int height = cm->superres_upscaled_height;
+  // For striped loop restoration, we divide each row of tiles into "stripes",
+  // of height 64 luma pixels but with an offset by RESTORATION_TILE_OFFSET
+  // luma pixels to match the output from CDEF. We will need to store 2 *
+  // RESTORATION_CTX_VERT lines of data for each stripe, and also need to be
+  // able to quickly answer the question "Where is the <n>'th stripe for tile
+  // row <m>?" To make that efficient, we generate the rst_last_stripe array.
+  int num_stripes = 0;
+  for (int i = 0; i < cm->tile_rows; ++i) {
+#if CONFIG_MAX_TILE
+    const int sb_h = cm->tile_row_start_sb[i + 1] - cm->tile_row_start_sb[i];
+    const int mi_h = sb_h << MAX_MIB_SIZE_LOG2;
 #else
-  int width = cm->width;
-  int height = cm->height;
-#endif  // CONFIG_FRAME_SUPERRES
+    const int mi_h = ((i + 1) < cm->tile_rows)
+                         ? cm->tile_height
+                         : (cm->mi_rows - i * cm->tile_height);
+#endif
+    const int ext_h = RESTORATION_TILE_OFFSET + (mi_h << MI_SIZE_LOG2);
+    const int tile_stripes = (ext_h + 63) / 64;
+    num_stripes += tile_stripes;
+    cm->rst_end_stripe[i] = num_stripes;
+  }
 
-  // Allocate internal storage for the loop restoration stripe boundary lines
+// Now we need to allocate enough space to store the line buffers for the
+// stripes
+#if CONFIG_FRAME_SUPERRES
+  const int frame_w = cm->superres_upscaled_width;
+#else
+  const int frame_w = cm->width;
+#endif  // CONFIG_FRAME_SUPERRES
+#if CONFIG_HIGHBITDEPTH
+  const int use_highbd = cm->use_highbitdepth ? 1 : 0;
+#else
+  const int use_highbd = 0;
+#endif
   for (int p = 0; p < MAX_MB_PLANE; ++p) {
-    int w = p == 0 ? width : ROUND_POWER_OF_TWO(width, cm->subsampling_x);
-    int align_bits = 5;  // align for efficiency
-    int stride = ALIGN_POWER_OF_TWO(w + 2 * RESTORATION_EXTRA_HORZ, align_bits);
-    int num_stripes = (height + 63) / 64;
-    // for each processing stripe: 2 lines above, 2 below
-    int buf_size = num_stripes * RESTORATION_CTX_VERT * stride;
-    uint8_t *above_buf, *below_buf;
+    const int is_uv = p > 0;
+    const int ss_x = is_uv && cm->subsampling_x;
+
+    const int plane_w = (frame_w + 2 * RESTORATION_EXTRA_HORZ + ss_x) >> ss_x;
+    const int align_bits = 5;  // align for efficiency
+    const int stride = ALIGN_POWER_OF_TWO(plane_w, align_bits);
+
+    const int buf_size = num_stripes * stride * RESTORATION_CTX_VERT
+                         << use_highbd;
 
     RestorationStripeBoundaries *boundaries = &cm->rst_info[p].boundaries;
     aom_free(boundaries->stripe_boundary_above);
     aom_free(boundaries->stripe_boundary_below);
 
-#if CONFIG_HIGHBITDEPTH
-    if (cm->use_highbitdepth) buf_size = buf_size * 2;
-#endif
-    CHECK_MEM_ERROR(cm, above_buf,
+    CHECK_MEM_ERROR(cm, boundaries->stripe_boundary_above,
                     (uint8_t *)aom_memalign(1 << align_bits, buf_size));
-    CHECK_MEM_ERROR(cm, below_buf,
+    CHECK_MEM_ERROR(cm, boundaries->stripe_boundary_below,
                     (uint8_t *)aom_memalign(1 << align_bits, buf_size));
-    boundaries->stripe_boundary_above = above_buf;
-    boundaries->stripe_boundary_below = below_buf;
+
     boundaries->stripe_boundary_stride = stride;
   }
 #endif  // CONFIG_STRIPED_LOOP_RESTORATION

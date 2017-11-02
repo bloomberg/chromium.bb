@@ -370,6 +370,12 @@ typedef struct AV1Common {
 #endif  // CONFIG_FRAME_SUPERRES
 #if CONFIG_LOOP_RESTORATION
   RestorationInfo rst_info[MAX_MB_PLANE];
+
+  // rst_end_stripe[i] is one more than the index of the bottom stripe
+  // for tile row i.
+  int rst_end_stripe[MAX_TILE_ROWS];
+
+  // Pointer to a scratch buffer used by self-guided restoration
   int32_t *rst_tmpbuf;
 #endif  // CONFIG_LOOP_RESTORATION
 
