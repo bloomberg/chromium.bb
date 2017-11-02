@@ -21,7 +21,7 @@ class WebPageNotifierController : public NotifierController {
   explicit WebPageNotifierController(Observer* observer);
   ~WebPageNotifierController() override;
 
-  std::vector<std::unique_ptr<message_center::NotifierUiData>> GetNotifierList(
+  std::vector<ash::mojom::NotifierUiDataPtr> GetNotifierList(
       Profile* profile) override;
 
   void SetNotifierEnabled(Profile* profile,

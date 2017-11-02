@@ -5,7 +5,10 @@
 #include <stddef.h>
 #include <memory>
 
+#include "ash/message_center/message_center_controller.h"
 #include "ash/message_center/notifier_settings_view.h"
+#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,66 +16,69 @@
 #include "ui/message_center/notifier_settings.h"
 #include "ui/views/controls/scroll_view.h"
 
-using message_center::NotifierUiData;
-using message_center::NotifierId;
-using message_center::NotifierSettingsObserver;
-using message_center::NotifierSettingsProvider;
-
 namespace ash {
+
+using mojom::NotifierUiData;
+using message_center::NotifierId;
 
 namespace {
 
-// A class used by NotifierSettingsView to integrate with a setting system
-// for the clients of this module.
-class TestingNotifierSettingsProvider : public NotifierSettingsProvider {
+class TestAshMessageCenterClient : public mojom::AshMessageCenterClient {
  public:
-  ~TestingNotifierSettingsProvider() override = default;
+  TestAshMessageCenterClient() : binding_(this) {}
+  ~TestAshMessageCenterClient() override = default;
 
-  size_t request_count() const { return request_count_; }
+  size_t settings_request_count() const { return settings_request_count_; }
   const NotifierId* last_requested_notifier_id() const {
     return last_notifier_id_settings_requested_.get();
   }
+  void set_no_notifiers(bool no_notifiers) { no_notifiers_ = no_notifiers; }
 
-  // NotifierSettingsProvider
-
-  void AddObserver(NotifierSettingsObserver* observer) override {}
-  void RemoveObserver(NotifierSettingsObserver* observer) override {}
-
-  void GetNotifierList(
-      std::vector<std::unique_ptr<NotifierUiData>>* ui_data) override {
-    ui_data->clear();
-    if (!no_notifiers_) {
-      ui_data->push_back(NewNotifier("id", "title", true /* enabled */));
-      ui_data->push_back(
-          NewNotifier("id2", "other title", false /* enabled */));
-    }
+  mojom::AshMessageCenterClientAssociatedPtrInfo CreateInterfacePtr() {
+    mojom::AshMessageCenterClientAssociatedPtr ptr;
+    binding_.Bind(mojo::MakeIsolatedRequest(&ptr));
+    return ptr.PassInterface();
   }
+
+  // mojom::AshMessageCenterClient:
+  void HandleNotificationClosed(const std::string& id, bool by_user) override {}
+  void HandleNotificationClicked(const std::string& id) override {}
+  void HandleNotificationButtonClicked(const std::string& id,
+                                       int button_index) override {}
 
   void SetNotifierEnabled(const NotifierId& notifier_id,
                           bool enabled) override {}
 
-  void OnNotifierAdvancedSettingsRequested(
-      const NotifierId& notifier_id,
-      const std::string* notification_id) override {
-    request_count_++;
+  void HandleNotifierAdvancedSettingsRequested(
+      const NotifierId& notifier_id) override {
+    settings_request_count_++;
     last_notifier_id_settings_requested_.reset(new NotifierId(notifier_id));
   }
 
-  void set_no_notifiers(bool no_notifiers) { no_notifiers_ = no_notifiers; }
+  void GetNotifierList(GetNotifierListCallback callback) override {
+    std::vector<mojom::NotifierUiDataPtr> ui_data;
+    if (!no_notifiers_) {
+      ui_data.push_back(mojom::NotifierUiData::New(
+          NotifierId(NotifierId::APPLICATION, "id"),
+          base::ASCIIToUTF16("title"), true /* has_advanced_settings */,
+          true /* enabled */, gfx::ImageSkia()));
+      ui_data.push_back(mojom::NotifierUiData::New(
+          NotifierId(NotifierId::APPLICATION, "id2"),
+          base::ASCIIToUTF16("other title"), false /* has_advanced_settings */,
+          false /* enabled */, gfx::ImageSkia()));
+    }
 
- private:
-  std::unique_ptr<NotifierUiData> NewNotifier(const std::string& id,
-                                              const std::string& title,
-                                              bool enabled) {
-    NotifierId notifier_id(NotifierId::APPLICATION, id);
-    return std::make_unique<NotifierUiData>(
-        notifier_id, base::UTF8ToUTF16(title),
-        id == "id" /*has_advanced_settings*/, enabled);
+    std::move(callback).Run(std::move(ui_data));
   }
 
-  size_t request_count_ = 0u;
+ private:
+  size_t settings_request_count_ = 0u;
   std::unique_ptr<NotifierId> last_notifier_id_settings_requested_;
   bool no_notifiers_ = false;
+
+  mojo::AssociatedBinding<mojom::AshMessageCenterClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAshMessageCenterClient);
 };
 
 }  // namespace
@@ -87,15 +93,13 @@ class NotifierSettingsViewTest : public AshTestBase {
 
   void InitView();
   NotifierSettingsView* GetView() const;
-  const TestingNotifierSettingsProvider* settings_provider() const {
-    return &settings_provider_;
-  }
+  TestAshMessageCenterClient* client() { return &client_; }
   void SetNoNotifiers(bool no_notifiers) {
-    settings_provider_.set_no_notifiers(no_notifiers);
+    client_.set_no_notifiers(no_notifiers);
   }
 
  private:
-  TestingNotifierSettingsProvider settings_provider_;
+  TestAshMessageCenterClient client_;
   std::unique_ptr<NotifierSettingsView> notifier_settings_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifierSettingsViewTest);
@@ -108,6 +112,9 @@ NotifierSettingsViewTest::~NotifierSettingsViewTest() = default;
 void NotifierSettingsViewTest::SetUp() {
   AshTestBase::SetUp();
   SetNoNotifiers(false);
+
+  Shell::Get()->message_center_controller()->SetClient(
+      client_.CreateInterfacePtr());
 }
 
 void NotifierSettingsViewTest::TearDown() {
@@ -116,8 +123,8 @@ void NotifierSettingsViewTest::TearDown() {
 }
 
 void NotifierSettingsViewTest::InitView() {
-  notifier_settings_view_ =
-      std::make_unique<NotifierSettingsView>(&settings_provider_);
+  notifier_settings_view_.reset();
+  notifier_settings_view_ = std::make_unique<NotifierSettingsView>();
 }
 
 NotifierSettingsView* NotifierSettingsViewTest::GetView() const {
@@ -126,6 +133,8 @@ NotifierSettingsView* NotifierSettingsViewTest::GetView() const {
 
 TEST_F(NotifierSettingsViewTest, TestLearnMoreButton) {
   InitView();
+  // Wait for mojo.
+  base::RunLoop().RunUntilIdle();
   const std::set<NotifierSettingsView::NotifierButton*>& buttons =
       GetView()->buttons_;
   EXPECT_EQ(2u, buttons.size());
@@ -137,10 +146,12 @@ TEST_F(NotifierSettingsViewTest, TestLearnMoreButton) {
     }
   }
 
+  // Wait for mojo.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, number_of_settings_buttons);
-  EXPECT_EQ(1u, settings_provider()->request_count());
+  EXPECT_EQ(1u, client()->settings_request_count());
   const NotifierId* last_settings_button_id =
-      settings_provider()->last_requested_notifier_id();
+      client()->last_requested_notifier_id();
   ASSERT_FALSE(last_settings_button_id == nullptr);
   EXPECT_EQ(NotifierId(NotifierId::APPLICATION, "id"),
             *last_settings_button_id);
@@ -148,11 +159,15 @@ TEST_F(NotifierSettingsViewTest, TestLearnMoreButton) {
 
 TEST_F(NotifierSettingsViewTest, TestEmptyNotifierView) {
   InitView();
+  // Wait for mojo.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetView()->no_notifiers_view_->visible());
   EXPECT_TRUE(GetView()->top_label_->visible());
 
   SetNoNotifiers(true);
   InitView();
+  // Wait for mojo.
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetView()->no_notifiers_view_->visible());
   EXPECT_FALSE(GetView()->top_label_->visible());
 }

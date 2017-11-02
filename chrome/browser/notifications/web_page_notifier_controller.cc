@@ -20,9 +20,9 @@ WebPageNotifierController::WebPageNotifierController(Observer* observer)
 
 WebPageNotifierController::~WebPageNotifierController() {}
 
-std::vector<std::unique_ptr<message_center::NotifierUiData>>
+std::vector<ash::mojom::NotifierUiDataPtr>
 WebPageNotifierController::GetNotifierList(Profile* profile) {
-  std::vector<std::unique_ptr<message_center::NotifierUiData>> notifiers;
+  std::vector<ash::mojom::NotifierUiDataPtr> notifiers;
 
   ContentSettingsForOneType settings;
   DesktopNotificationProfileUtil::GetNotificationsSettings(profile, &settings);
@@ -46,9 +46,10 @@ WebPageNotifierController::GetNotifierList(Profile* profile) {
     message_center::NotifierId notifier_id(url);
     NotifierStateTracker* const notifier_state_tracker =
         NotifierStateTrackerFactory::GetForProfile(profile);
-    notifiers.emplace_back(new message_center::NotifierUiData(
+    notifiers.push_back(ash::mojom::NotifierUiData::New(
         notifier_id, name, false,
-        notifier_state_tracker->IsNotifierEnabled(notifier_id)));
+        notifier_state_tracker->IsNotifierEnabled(notifier_id),
+        gfx::ImageSkia()));
     patterns_[url_pattern] = iter->primary_pattern;
     // Note that favicon service obtains the favicon from history. This means
     // that it will fail to obtain the image if there are no history data for
@@ -131,5 +132,5 @@ void WebPageNotifierController::OnFaviconLoaded(
     const GURL& url,
     const favicon_base::FaviconImageResult& favicon_result) {
   observer_->OnIconImageUpdated(message_center::NotifierId(url),
-                                favicon_result.image);
+                                favicon_result.image.AsImageSkia());
 }

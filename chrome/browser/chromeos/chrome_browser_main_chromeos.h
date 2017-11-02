@@ -15,6 +15,7 @@
 #include "chromeos/system/version_loader.h"
 
 class NightLightClient;
+class NotificationPlatformBridge;
 class TabletModeClient;
 
 namespace lock_screen_apps {
@@ -112,6 +113,11 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       lock_screen_apps_state_controller_;
 
   std::unique_ptr<NightLightClient> night_light_client_;
+
+  // TODO(estade): Remove this when Chrome OS uses native notifications by
+  // default (as it will be instantiated elsewhere). For now it's necessary to
+  // send notifier settings information to Ash.
+  std::unique_ptr<NotificationPlatformBridge> notification_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

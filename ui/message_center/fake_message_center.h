@@ -39,6 +39,7 @@ class FakeMessageCenter : public MessageCenter {
       std::unique_ptr<Notification> new_notification) override;
 
   void RemoveNotification(const std::string& id, bool by_user) override;
+  void RemoveNotificationsForNotifierId(const NotifierId& notifier_id) override;
   void RemoveAllNotifications(bool by_user, RemoveType type) override;
   void SetNotificationIcon(const std::string& notification_id,
                            const gfx::Image& image) override;
@@ -57,9 +58,6 @@ class FakeMessageCenter : public MessageCenter {
                               bool mark_notification_as_read) override;
   void DisplayedNotification(const std::string& id,
                              const DisplaySource source) override;
-  void SetNotifierSettingsProvider(
-      std::unique_ptr<NotifierSettingsProvider> provider) override;
-  NotifierSettingsProvider* GetNotifierSettingsProvider() override;
   void SetQuietMode(bool in_quiet_mode) override;
   void SetLockedState(bool locked) override;
   void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) override;

@@ -19,15 +19,14 @@ class ExtensionNotifierController : public NotifierController,
   ~ExtensionNotifierController() override;
 
   // NotifierController:
-  std::vector<std::unique_ptr<message_center::NotifierUiData>> GetNotifierList(
+  std::vector<ash::mojom::NotifierUiDataPtr> GetNotifierList(
       Profile* profile) override;
   void SetNotifierEnabled(Profile* profile,
                           const message_center::NotifierId& notifier_id,
                           bool enabled) override;
   void OnNotifierAdvancedSettingsRequested(
       Profile* profile,
-      const message_center::NotifierId& notifier_id,
-      const std::string* notification_id) override;
+      const message_center::NotifierId& notifier_id) override;
 
  private:
   // Overridden from AppIconLoaderDelegate.

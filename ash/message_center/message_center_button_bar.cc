@@ -35,7 +35,6 @@
 #include "ui/views/painter.h"
 
 using message_center::MessageCenter;
-using message_center::NotifierSettingsProvider;
 
 namespace ash {
 
@@ -72,7 +71,6 @@ views::Separator* CreateVerticalSeparator() {
 MessageCenterButtonBar::MessageCenterButtonBar(
     MessageCenterView* message_center_view,
     MessageCenter* message_center,
-    NotifierSettingsProvider* notifier_settings_provider,
     bool settings_initially_visible,
     const base::string16& title)
     : message_center_view_(message_center_view),

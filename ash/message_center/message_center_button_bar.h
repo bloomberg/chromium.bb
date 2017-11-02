@@ -18,7 +18,6 @@ class ToggleImageButton;
 
 namespace message_center {
 class MessageCenter;
-class NotifierSettingsProvider;
 }  // namespace message_center
 
 namespace ash {
@@ -33,7 +32,6 @@ class MessageCenterButtonBar : public views::View,
   MessageCenterButtonBar(
       MessageCenterView* message_center_view,
       message_center::MessageCenter* message_center,
-      message_center::NotifierSettingsProvider* notifier_settings_provider,
       bool settings_initially_visible,
       const base::string16& title);
   ~MessageCenterButtonBar() override;

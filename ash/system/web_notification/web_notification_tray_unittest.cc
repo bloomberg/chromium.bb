@@ -428,6 +428,9 @@ TEST_F(WebNotificationTrayTest, CloseOnActivation) {
   EXPECT_TRUE(widget->IsActive());
   EXPECT_FALSE(tray->message_center_bubble());
 
+  // Wait for bubble to actually close.
+  RunAllPendingInMessageLoop();
+
   // Show a second widget.
   std::unique_ptr<views::Widget> second_widget(CreateTestWidget());
   EXPECT_TRUE(second_widget->IsActive());
