@@ -9,8 +9,9 @@
 namespace blink {
 namespace scheduler {
 
-WorkerTaskQueue::WorkerTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl)
-    : TaskQueue(std::move(impl)) {}
+WorkerTaskQueue::WorkerTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
+                                 const TaskQueue::Spec& spec)
+    : TaskQueue(std::move(impl), spec) {}
 
 WorkerTaskQueue::~WorkerTaskQueue() {}
 

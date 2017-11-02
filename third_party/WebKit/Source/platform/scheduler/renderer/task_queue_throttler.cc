@@ -166,7 +166,7 @@ bool TaskQueueThrottler::IsThrottled(TaskQueue* task_queue) const {
   return find_it->second.throttling_ref_count > 0;
 }
 
-void TaskQueueThrottler::UnregisterTaskQueue(TaskQueue* task_queue) {
+void TaskQueueThrottler::ShutdownTaskQueue(TaskQueue* task_queue) {
   auto find_it = queue_details_.find(task_queue);
   if (find_it == queue_details_.end())
     return;

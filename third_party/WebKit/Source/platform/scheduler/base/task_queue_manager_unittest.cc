@@ -54,6 +54,9 @@ class TaskQueueManagerForTest : public TaskQueueManager {
       : TaskQueueManager(delegate) {}
 
   using TaskQueueManager::NextTaskDelay;
+  using TaskQueueManager::active_queues_count;
+  using TaskQueueManager::queues_to_shutdown_count;
+  using TaskQueueManager::queues_to_delete_count;
 };
 
 class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
@@ -93,6 +96,12 @@ class TaskQueueManagerTest : public ::testing::Test {
 
  protected:
   void TearDown() { manager_.reset(); }
+
+  scoped_refptr<TestTaskQueue> CreateTaskQueueWithShutdownTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> shutdown_task_runner) {
+    return manager_->CreateTaskQueue<TestTaskQueue>(
+        TaskQueue::Spec("test").SetShutdownTaskRunner(shutdown_task_runner));
+  }
 
   scoped_refptr<TestTaskQueue> CreateTaskQueueWithSpec(TaskQueue::Spec spec) {
     return manager_->CreateTaskQueue<TestTaskQueue>(spec);
@@ -1472,7 +1481,7 @@ TEST_F(TaskQueueManagerTest, NewTaskQueues) {
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3));
 }
 
-TEST_F(TaskQueueManagerTest, UnregisterTaskQueue) {
+TEST_F(TaskQueueManagerTest, ShutdownTaskQueue) {
   Initialize(1u);
 
   scoped_refptr<TaskQueue> queue1 = CreateTaskQueue();
@@ -1488,13 +1497,13 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueue) {
   queue2->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
   queue3->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
 
-  queue2->UnregisterTaskQueue();
+  queue2->ShutdownTaskQueue();
   test_task_runner_->RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(1, 3));
 }
 
-TEST_F(TaskQueueManagerTest, UnregisterTaskQueue_WithDelayedTasks) {
+TEST_F(TaskQueueManagerTest, ShutdownTaskQueue_WithDelayedTasks) {
   Initialize(2u);
 
   // Register three delayed tasks
@@ -1506,7 +1515,7 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueue_WithDelayedTasks) {
   runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order),
                                base::TimeDelta::FromMilliseconds(30));
 
-  runners_[1]->UnregisterTaskQueue();
+  runners_[1]->ShutdownTaskQueue();
   test_task_runner_->RunUntilIdle();
 
   test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(40));
@@ -1514,18 +1523,18 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueue_WithDelayedTasks) {
 }
 
 namespace {
-void UnregisterQueue(scoped_refptr<TaskQueue> queue) {
-  queue->UnregisterTaskQueue();
+void ShutdownQueue(scoped_refptr<TaskQueue> queue) {
+  queue->ShutdownTaskQueue();
 }
 }
 
-TEST_F(TaskQueueManagerTest, UnregisterTaskQueue_InTasks) {
+TEST_F(TaskQueueManagerTest, ShutdownTaskQueue_InTasks) {
   Initialize(3u);
 
   std::vector<EnqueueOrder> run_order;
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  runners_[0]->PostTask(FROM_HERE, base::Bind(&UnregisterQueue, runners_[1]));
-  runners_[0]->PostTask(FROM_HERE, base::Bind(&UnregisterQueue, runners_[2]));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&ShutdownQueue, runners_[1]));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&ShutdownQueue, runners_[2]));
   runners_[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
   runners_[2]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
 
@@ -1585,7 +1594,7 @@ TEST_F(TaskQueueManagerTest, ExecutedNonBlockedTask) {
   manager_->SetObserver(nullptr);
 }
 
-TEST_F(TaskQueueManagerTest, UnregisterTaskQueueInNestedLoop) {
+TEST_F(TaskQueueManagerTest, ShutdownTaskQueueInNestedLoop) {
   InitializeWithRealMessageLoop(1u);
 
   // We retain a reference to the task queue even when the manager has deleted
@@ -1595,14 +1604,14 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueueInNestedLoop) {
   std::vector<bool> log;
   std::vector<std::pair<base::Closure, bool>> tasks_to_post_from_nested_loop;
 
-  // Inside a nested run loop, call task_queue->UnregisterTaskQueue, bookended
+  // Inside a nested run loop, call task_queue->ShutdownTaskQueue, bookended
   // by calls to HasOneRefTask to make sure the manager doesn't release its
   // reference until the nested run loop exits.
   // NB: This first HasOneRefTask is a sanity check.
   tasks_to_post_from_nested_loop.push_back(
       std::make_pair(base::Bind(&NopTask), true));
   tasks_to_post_from_nested_loop.push_back(
-      std::make_pair(base::Bind(&TaskQueue::UnregisterTaskQueue,
+      std::make_pair(base::Bind(&TaskQueue::ShutdownTaskQueue,
                                 base::Unretained(task_queue.get())),
                      true));
   tasks_to_post_from_nested_loop.push_back(
@@ -1656,8 +1665,8 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(4, 5, 6, 1, 2, 3));
 
-  runners_[0]->UnregisterTaskQueue();
-  runners_[1]->UnregisterTaskQueue();
+  runners_[0]->ShutdownTaskQueue();
+  runners_[1]->ShutdownTaskQueue();
 
   manager_->UnregisterTimeDomain(domain_a.get());
   manager_->UnregisterTimeDomain(domain_b.get());
@@ -1698,7 +1707,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
 
-  runners_[0]->UnregisterTaskQueue();
+  runners_[0]->ShutdownTaskQueue();
 
   manager_->UnregisterTimeDomain(domain_a.get());
   manager_->UnregisterTimeDomain(domain_b.get());
@@ -1723,7 +1732,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigrationWithIncomingImmediateTasks) {
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
 
-  runners_[0]->UnregisterTaskQueue();
+  runners_[0]->ShutdownTaskQueue();
 
   manager_->UnregisterTimeDomain(domain_a.get());
   manager_->UnregisterTimeDomain(domain_b.get());
@@ -1759,7 +1768,7 @@ TEST_F(TaskQueueManagerTest,
   test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(40));
   EXPECT_THAT(run_order, ElementsAre(4, 3, 2, 1));
 
-  runners_[0]->UnregisterTaskQueue();
+  runners_[0]->ShutdownTaskQueue();
 
   manager_->UnregisterTimeDomain(domain_a.get());
   manager_->UnregisterTimeDomain(domain_b.get());
@@ -1798,7 +1807,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_ImmediateTask) {
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
 
   // Tidy up.
-  runners_[0]->UnregisterTaskQueue();
+  runners_[0]->ShutdownTaskQueue();
 }
 
 TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTask) {
@@ -1843,7 +1852,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTask) {
   Mock::VerifyAndClearExpectations(&observer);
 
   // Tidy up.
-  runners_[0]->UnregisterTaskQueue();
+  runners_[0]->ShutdownTaskQueue();
 }
 
 TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
@@ -1896,8 +1905,8 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedTaskMultipleQueues) {
 
   // Tidy up.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(AnyNumber());
-  runners_[0]->UnregisterTaskQueue();
-  runners_[1]->UnregisterTaskQueue();
+  runners_[0]->ShutdownTaskQueue();
+  runners_[1]->ShutdownTaskQueue();
 }
 
 TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedWorkWhichCanRunNow) {
@@ -1933,7 +1942,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedWorkWhichCanRunNow) {
   Mock::VerifyAndClearExpectations(&observer);
 
   // Tidy up.
-  runners_[0]->UnregisterTaskQueue();
+  runners_[0]->ShutdownTaskQueue();
 }
 
 class CancelableTask {
@@ -2544,7 +2553,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueVoters) {
   EXPECT_TRUE(runners_[0]->IsQueueEnabled());
 }
 
-TEST_F(TaskQueueManagerTest, UnregisterQueueBeforeEnabledVoterDeleted) {
+TEST_F(TaskQueueManagerTest, ShutdownQueueBeforeEnabledVoterDeleted) {
   Initialize(1u);
 
   scoped_refptr<TaskQueue> queue = CreateTaskQueue();
@@ -2553,13 +2562,13 @@ TEST_F(TaskQueueManagerTest, UnregisterQueueBeforeEnabledVoterDeleted) {
       queue->CreateQueueEnabledVoter();
 
   voter->SetQueueEnabled(true);  // NOP
-  queue->UnregisterTaskQueue();
+  queue->ShutdownTaskQueue();
 
   // This should complete without DCHECKing.
   voter.reset();
 }
 
-TEST_F(TaskQueueManagerTest, UnregisterQueueBeforeDisabledVoterDeleted) {
+TEST_F(TaskQueueManagerTest, ShutdownQueueBeforeDisabledVoterDeleted) {
   Initialize(1u);
 
   scoped_refptr<TaskQueue> queue = CreateTaskQueue();
@@ -2568,7 +2577,7 @@ TEST_F(TaskQueueManagerTest, UnregisterQueueBeforeDisabledVoterDeleted) {
       queue->CreateQueueEnabledVoter();
 
   voter->SetQueueEnabled(false);
-  queue->UnregisterTaskQueue();
+  queue->ShutdownTaskQueue();
 
   // This should complete without DCHECKing.
   voter.reset();
@@ -3032,7 +3041,7 @@ TEST_F(TaskQueueManagerTest, SetTimeDomainForDisabledQueue) {
   runners_[0]->SetTimeDomain(domain.get());
 
   // Tidy up.
-  runners_[0]->UnregisterTaskQueue();
+  runners_[0]->ShutdownTaskQueue();
   manager_->UnregisterTimeDomain(domain.get());
 }
 
@@ -3128,6 +3137,145 @@ TEST_F(TaskQueueManagerTest, ProcessTasksWithTaskTimeObservers) {
   EXPECT_EQ(complete_counter, 4);
   EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5, 6, 7, 8));
+}
+
+TEST_F(TaskQueueManagerTest, GracefulShutdown) {
+  Initialize(0u);
+  test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  std::vector<base::TimeTicks> run_times;
+  scoped_refptr<TestTaskQueue> control_tq = CreateTaskQueue();
+  scoped_refptr<TestTaskQueue> main_tq =
+      CreateTaskQueueWithShutdownTaskRunner(control_tq);
+  base::WeakPtr<TestTaskQueue> main_tq_weak_ptr = main_tq->GetWeakPtr();
+
+  EXPECT_EQ(2u, manager_->active_queues_count());
+  EXPECT_EQ(0u, manager_->queues_to_shutdown_count());
+  EXPECT_EQ(0u, manager_->queues_to_delete_count());
+
+  for (int i = 1; i <= 5; ++i) {
+    main_tq->PostDelayedTask(
+        FROM_HERE, base::Bind(&RecordTimeTask, &run_times, now_src_.get()),
+        base::TimeDelta::FromMilliseconds(i * 100));
+  }
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(250));
+
+  main_tq = nullptr;
+  // Ensure that task queue went away.
+  EXPECT_FALSE(main_tq_weak_ptr.get());
+
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+
+  EXPECT_EQ(1u, manager_->active_queues_count());
+  EXPECT_EQ(1u, manager_->queues_to_shutdown_count());
+  EXPECT_EQ(0u, manager_->queues_to_delete_count());
+
+  test_task_runner_->RunUntilIdle();
+
+  // Even with TaskQueue gone, tasks are executed.
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(101),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(201),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(301),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(401),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(501)));
+
+  EXPECT_EQ(1u, manager_->active_queues_count());
+  EXPECT_EQ(0u, manager_->queues_to_shutdown_count());
+  EXPECT_EQ(0u, manager_->queues_to_delete_count());
+}
+
+TEST_F(TaskQueueManagerTest, GracefulShutdown_ManagerDeletedInFlight) {
+  Initialize(0u);
+  test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  std::vector<base::TimeTicks> run_times;
+  scoped_refptr<TestTaskQueue> control_tq = CreateTaskQueue();
+  std::vector<scoped_refptr<TestTaskQueue>> main_tqs;
+  std::vector<base::WeakPtr<TestTaskQueue>> main_tq_weak_ptrs;
+
+  // There might be a race condition - async task queues should be unregistered
+  // first. Increase the number of task queues to surely detect that.
+  // The problem is that pointers are compared in a set and generally for
+  // a small number of allocations value of the pointers increases
+  // monotonically. 100 is large enough to force allocations from different
+  // pages.
+  const int N = 100;
+  for (int i = 0; i < N; ++i) {
+    scoped_refptr<TestTaskQueue> tq =
+        CreateTaskQueueWithShutdownTaskRunner(control_tq);
+    main_tq_weak_ptrs.push_back(tq->GetWeakPtr());
+    main_tqs.push_back(std::move(tq));
+  }
+
+  for (int i = 1; i <= 5; ++i) {
+    main_tqs[0]->PostDelayedTask(
+        FROM_HERE, base::Bind(&RecordTimeTask, &run_times, now_src_.get()),
+        base::TimeDelta::FromMilliseconds(i * 100));
+  }
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(250));
+
+  main_tqs.clear();
+  // Ensure that task queues went away.
+  for (int i = 0; i < N; ++i) {
+    EXPECT_FALSE(main_tq_weak_ptrs[i].get());
+  }
+
+  // No leaks should occur when TQM was destroyed before processing
+  // shutdown task and TaskQueueImpl should be safely deleted on a correct
+  // thread.
+  manager_.reset();
+
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(101),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(201)));
+}
+
+TEST_F(TaskQueueManagerTest,
+       GracefulShutdown_ManagerDeletedWithQueuesToShutdown) {
+  Initialize(0u);
+  test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  std::vector<base::TimeTicks> run_times;
+  scoped_refptr<TestTaskQueue> control_tq = CreateTaskQueue();
+  scoped_refptr<TestTaskQueue> main_tq =
+      CreateTaskQueueWithShutdownTaskRunner(control_tq);
+  base::WeakPtr<TestTaskQueue> main_tq_weak_ptr = main_tq->GetWeakPtr();
+
+  EXPECT_EQ(2u, manager_->active_queues_count());
+  EXPECT_EQ(0u, manager_->queues_to_shutdown_count());
+  EXPECT_EQ(0u, manager_->queues_to_delete_count());
+
+  for (int i = 1; i <= 5; ++i) {
+    main_tq->PostDelayedTask(
+        FROM_HERE, base::Bind(&RecordTimeTask, &run_times, now_src_.get()),
+        base::TimeDelta::FromMilliseconds(i * 100));
+  }
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(250));
+
+  main_tq = nullptr;
+  // Ensure that task queue went away.
+  EXPECT_FALSE(main_tq_weak_ptr.get());
+
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+
+  EXPECT_EQ(1u, manager_->active_queues_count());
+  EXPECT_EQ(1u, manager_->queues_to_shutdown_count());
+  EXPECT_EQ(0u, manager_->queues_to_delete_count());
+
+  // Ensure that all queues-to-gracefully-shutdown are properly unregistered.
+  manager_.reset();
+
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(101),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(201)));
 }
 
 }  // namespace task_queue_manager_unittest

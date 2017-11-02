@@ -152,14 +152,15 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
                        base::TimeTicks start,
                        base::TimeTicks end);
 
-  // Override base method to notify RendererScheduler about unregistered queue.
-  void UnregisterTaskQueue() override;
+  // Override base method to notify RendererScheduler about shutdown queue.
+  void ShutdownTaskQueue() override;
 
   WebFrameScheduler* GetFrameScheduler() const;
   void SetFrameScheduler(WebFrameScheduler* frame);
 
  protected:
   MainThreadTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
+                      const Spec& spec,
                       const QueueCreationParams& params,
                       RendererSchedulerImpl* renderer_scheduler);
 

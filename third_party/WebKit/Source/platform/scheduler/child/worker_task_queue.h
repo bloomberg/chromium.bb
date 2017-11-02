@@ -12,7 +12,8 @@ namespace scheduler {
 
 class PLATFORM_EXPORT WorkerTaskQueue : public TaskQueue {
  public:
-  explicit WorkerTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl);
+  WorkerTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
+                  const Spec& spec);
   ~WorkerTaskQueue() override;
 };
 

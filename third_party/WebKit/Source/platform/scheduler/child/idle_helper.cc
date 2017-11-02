@@ -56,7 +56,7 @@ void IdleHelper::Shutdown() {
   is_shutdown_ = true;
   weak_factory_.InvalidateWeakPtrs();
   // Belt & braces, might not be needed.
-  idle_queue_->UnregisterTaskQueue();
+  idle_queue_->ShutdownTaskQueue();
 }
 
 IdleHelper::Delegate::Delegate() {}

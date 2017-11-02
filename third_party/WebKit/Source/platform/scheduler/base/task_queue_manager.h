@@ -105,11 +105,12 @@ class PLATFORM_EXPORT TaskQueueManager
 
   // Creates a task queue with the given type, |spec| and args. Must be called
   // on the thread this class was created on.
+  // TODO(altimin): TaskQueueManager should not create TaskQueues.
   template <typename TaskQueueType, typename... Args>
   scoped_refptr<TaskQueueType> CreateTaskQueue(const TaskQueue::Spec& spec,
                                                Args&&... args) {
     scoped_refptr<TaskQueueType> task_queue(new TaskQueueType(
-        CreateTaskQueueImpl(spec), std::forward<Args>(args)...));
+        CreateTaskQueueImpl(spec), spec, std::forward<Args>(args)...));
     return task_queue;
   }
 
@@ -161,6 +162,12 @@ class PLATFORM_EXPORT TaskQueueManager
   void UnregisterTaskQueueImpl(
       std::unique_ptr<internal::TaskQueueImpl> task_queue);
 
+  // Notify task queue manager that owning TaskQueue has been deleted.
+  // Task queue manager will continue running tasks and will delete queue when
+  // all tasks are completed.
+  void GracefullyShutdownTaskQueue(
+      std::unique_ptr<internal::TaskQueueImpl> task_queue);
+
   base::WeakPtr<TaskQueueManager> GetWeakPtr();
 
  protected:
@@ -203,6 +210,15 @@ class PLATFORM_EXPORT TaskQueueManager
     base::TimeDelta delay_;
     TimeDomain* time_domain_;
   };
+
+ protected:
+  size_t active_queues_count() const { return active_queues_.size(); }
+
+  size_t queues_to_shutdown_count() const {
+    return queues_to_gracefully_shutdown_.size();
+  }
+
+  size_t queues_to_delete_count() const { return queues_to_delete_.size(); }
 
  private:
   // Represents a scheduled delayed DoWork (if any). Only public for testing.
@@ -319,11 +335,15 @@ class PLATFORM_EXPORT TaskQueueManager
 
   // List of task queues managed by this TaskQueueManager.
   // - active_queues contains queues owned by relevant TaskQueues.
+  // - queues_to_gracefully_shutdown contains queues which should be deleted
+  //   when they become empty.
   // - queues_to_delete contains soon-to-be-deleted queues, because some
-  // internal
-  //   scheduling code does not expect queues to be pulled from underneath.
+  //   internal scheduling code does not expect queues to be pulled
+  //   from underneath.
 
   std::set<internal::TaskQueueImpl*> active_queues_;
+  std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
+      queues_to_gracefully_shutdown_;
   std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
       queues_to_delete_;
 
