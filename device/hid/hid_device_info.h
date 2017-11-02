@@ -31,7 +31,7 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
                 uint16_t product_id,
                 const std::string& product_name,
                 const std::string& serial_number,
-                device::mojom::HidBusType bus_type,
+                mojom::HidBusType bus_type,
                 const std::vector<uint8_t> report_descriptor,
                 std::string device_node = "");
 
@@ -40,13 +40,13 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
                 uint16_t product_id,
                 const std::string& product_name,
                 const std::string& serial_number,
-                device::mojom::HidBusType bus_type,
-                device::mojom::HidCollectionInfoPtr collection,
+                mojom::HidBusType bus_type,
+                mojom::HidCollectionInfoPtr collection,
                 size_t max_input_report_size,
                 size_t max_output_report_size,
                 size_t max_feature_report_size);
 
-  const device::mojom::HidDeviceInfoPtr& device() { return device_; }
+  const mojom::HidDeviceInfoPtr& device() { return device_; }
 
   // Device identification.
   const std::string& device_guid() const { return device_->guid; }
@@ -57,10 +57,10 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
   uint16_t product_id() const { return device_->product_id; }
   const std::string& product_name() const { return device_->product_name; }
   const std::string& serial_number() const { return device_->serial_number; }
-  device::mojom::HidBusType bus_type() const { return device_->bus_type; }
+  mojom::HidBusType bus_type() const { return device_->bus_type; }
 
   // Top-Level Collections information.
-  const std::vector<device::mojom::HidCollectionInfoPtr>& collections() const {
+  const std::vector<mojom::HidCollectionInfoPtr>& collections() const {
     return device_->collections;
   }
   bool has_report_id() const { return device_->has_report_id; };
@@ -87,7 +87,7 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
   friend class base::RefCountedThreadSafe<HidDeviceInfo>;
 
   HidPlatformDeviceId platform_device_id_;
-  device::mojom::HidDeviceInfoPtr device_;
+  mojom::HidDeviceInfoPtr device_;
 
   DISALLOW_COPY_AND_ASSIGN(HidDeviceInfo);
 };

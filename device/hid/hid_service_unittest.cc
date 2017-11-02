@@ -25,7 +25,7 @@ class HidServiceTest : public ::testing::Test {
 };
 
 void OnGetDevices(const base::Closure& quit_closure,
-                  std::vector<device::mojom::HidDeviceInfoPtr> devices) {
+                  std::vector<mojom::HidDeviceInfoPtr> devices) {
   // Since there's no guarantee that any devices are connected at the moment
   // this test doesn't assume anything about the result but it at least verifies
   // that devices can be enumerated without the application crashing.

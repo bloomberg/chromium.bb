@@ -37,12 +37,12 @@ void HidManagerImpl::SetHidServiceForTesting(
   g_hid_service.Get() = std::move(hid_service);
 }
 
-void HidManagerImpl::AddBinding(device::mojom::HidManagerRequest request) {
+void HidManagerImpl::AddBinding(mojom::HidManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 void HidManagerImpl::GetDevicesAndSetClient(
-    device::mojom::HidManagerClientAssociatedPtrInfo client,
+    mojom::HidManagerClientAssociatedPtrInfo client,
     GetDevicesCallback callback) {
   hid_service_->GetDevices(base::BindOnce(
       &HidManagerImpl::CreateDeviceList, weak_factory_.GetWeakPtr(),
@@ -57,14 +57,14 @@ void HidManagerImpl::GetDevices(GetDevicesCallback callback) {
 
 void HidManagerImpl::CreateDeviceList(
     GetDevicesCallback callback,
-    device::mojom::HidManagerClientAssociatedPtrInfo client,
-    std::vector<device::mojom::HidDeviceInfoPtr> devices) {
+    mojom::HidManagerClientAssociatedPtrInfo client,
+    std::vector<mojom::HidDeviceInfoPtr> devices) {
   std::move(callback).Run(std::move(devices));
 
   if (!client.is_valid())
     return;
 
-  device::mojom::HidManagerClientAssociatedPtr client_ptr;
+  mojom::HidManagerClientAssociatedPtr client_ptr;
   client_ptr.Bind(std::move(client));
   clients_.AddPtr(std::move(client_ptr));
 }
@@ -77,30 +77,29 @@ void HidManagerImpl::Connect(const std::string& device_guid,
                  base::Passed(&callback)));
 }
 
-void HidManagerImpl::CreateConnection(
-    ConnectCallback callback,
-    scoped_refptr<device::HidConnection> connection) {
+void HidManagerImpl::CreateConnection(ConnectCallback callback,
+                                      scoped_refptr<HidConnection> connection) {
   if (!connection) {
     std::move(callback).Run(nullptr);
     return;
   }
 
-  device::mojom::HidConnectionPtr client;
+  mojom::HidConnectionPtr client;
   mojo::MakeStrongBinding(base::MakeUnique<HidConnectionImpl>(connection),
                           mojo::MakeRequest(&client));
   std::move(callback).Run(std::move(client));
 }
 
-void HidManagerImpl::OnDeviceAdded(device::mojom::HidDeviceInfoPtr device) {
-  device::mojom::HidDeviceInfo* device_info = device.get();
-  clients_.ForAllPtrs([device_info](device::mojom::HidManagerClient* client) {
+void HidManagerImpl::OnDeviceAdded(mojom::HidDeviceInfoPtr device) {
+  mojom::HidDeviceInfo* device_info = device.get();
+  clients_.ForAllPtrs([device_info](mojom::HidManagerClient* client) {
     client->DeviceAdded(device_info->Clone());
   });
 }
 
-void HidManagerImpl::OnDeviceRemoved(device::mojom::HidDeviceInfoPtr device) {
-  device::mojom::HidDeviceInfo* device_info = device.get();
-  clients_.ForAllPtrs([device_info](device::mojom::HidManagerClient* client) {
+void HidManagerImpl::OnDeviceRemoved(mojom::HidDeviceInfoPtr device) {
+  mojom::HidDeviceInfo* device_info = device.get();
+  clients_.ForAllPtrs([device_info](mojom::HidManagerClient* client) {
     client->DeviceRemoved(device_info->Clone());
   });
 }

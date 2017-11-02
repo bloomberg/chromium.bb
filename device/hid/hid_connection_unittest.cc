@@ -53,9 +53,8 @@ class DeviceCatcher : HidService::Observer {
   }
 
  private:
-  void OnEnumerationComplete(
-      HidService* hid_service,
-      std::vector<device::mojom::HidDeviceInfoPtr> devices) {
+  void OnEnumerationComplete(HidService* hid_service,
+                             std::vector<mojom::HidDeviceInfoPtr> devices) {
     for (auto& device_info : devices) {
       if (device_info->serial_number == serial_number_) {
         device_guid_ = device_info->guid;
@@ -66,7 +65,7 @@ class DeviceCatcher : HidService::Observer {
     observer_.Add(hid_service);
   }
 
-  void OnDeviceAdded(device::mojom::HidDeviceInfoPtr device_info) override {
+  void OnDeviceAdded(mojom::HidDeviceInfoPtr device_info) override {
     if (device_info->serial_number == serial_number_) {
       device_guid_ = device_info->guid;
       run_loop_.Quit();
@@ -74,7 +73,7 @@ class DeviceCatcher : HidService::Observer {
   }
 
   std::string serial_number_;
-  ScopedObserver<device::HidService, device::HidService::Observer> observer_;
+  ScopedObserver<HidService, HidService::Observer> observer_;
   base::RunLoop run_loop_;
   std::string device_guid_;
 };

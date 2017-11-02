@@ -28,7 +28,7 @@ class HidFilterTest : public testing::Test {
   void SetUp() override {
     device_info_ = new HidDeviceInfo(
         kTestDeviceId, 0x046d, 0xc31c, "Test Keyboard", "123ABC",
-        device::mojom::HidBusType::kHIDBusTypeUSB,
+        mojom::HidBusType::kHIDBusTypeUSB,
         std::vector<uint8_t>(kKeyboard, kKeyboard + kKeyboardSize));
   }
 
@@ -69,33 +69,33 @@ TEST_F(HidFilterTest, MatchProductIdNegative) {
 
 TEST_F(HidFilterTest, MatchUsagePage) {
   HidDeviceFilter filter;
-  filter.SetUsagePage(device::mojom::kPageGenericDesktop);
+  filter.SetUsagePage(mojom::kPageGenericDesktop);
   ASSERT_TRUE(filter.Matches(*device_info_->device()));
 }
 
 TEST_F(HidFilterTest, MatchUsagePageNegative) {
   HidDeviceFilter filter;
-  filter.SetUsagePage(device::mojom::kPageLed);
+  filter.SetUsagePage(mojom::kPageLed);
   ASSERT_FALSE(filter.Matches(*device_info_->device()));
 }
 
 TEST_F(HidFilterTest, MatchVendorAndUsagePage) {
   HidDeviceFilter filter;
   filter.SetVendorId(0x046d);
-  filter.SetUsagePage(device::mojom::kPageGenericDesktop);
+  filter.SetUsagePage(mojom::kPageGenericDesktop);
   ASSERT_TRUE(filter.Matches(*device_info_->device()));
 }
 
 TEST_F(HidFilterTest, MatchUsageAndPage) {
   HidDeviceFilter filter;
-  filter.SetUsagePage(device::mojom::kPageGenericDesktop);
-  filter.SetUsage(device::mojom::kGenericDesktopKeyboard);
+  filter.SetUsagePage(mojom::kPageGenericDesktop);
+  filter.SetUsage(mojom::kGenericDesktopKeyboard);
   ASSERT_TRUE(filter.Matches(*device_info_->device()));
 }
 
 TEST_F(HidFilterTest, MatchUsageAndPageNegative) {
   HidDeviceFilter filter;
-  filter.SetUsagePage(device::mojom::kPageGenericDesktop);
+  filter.SetUsagePage(mojom::kPageGenericDesktop);
   filter.SetUsage(0x02);
   ASSERT_FALSE(filter.Matches(*device_info_->device()));
 }
@@ -108,7 +108,7 @@ TEST_F(HidFilterTest, MatchEmptyFilterListNegative) {
 TEST_F(HidFilterTest, MatchFilterList) {
   std::vector<HidDeviceFilter> filters;
   HidDeviceFilter filter;
-  filter.SetUsagePage(device::mojom::kPageGenericDesktop);
+  filter.SetUsagePage(mojom::kPageGenericDesktop);
   filters.push_back(filter);
   ASSERT_TRUE(HidDeviceFilter::MatchesAny(*device_info_->device(), filters));
 }
@@ -116,7 +116,7 @@ TEST_F(HidFilterTest, MatchFilterList) {
 TEST_F(HidFilterTest, MatchFilterListNegative) {
   std::vector<HidDeviceFilter> filters;
   HidDeviceFilter filter;
-  filter.SetUsagePage(device::mojom::kPageLed);
+  filter.SetUsagePage(mojom::kPageLed);
   filters.push_back(filter);
   ASSERT_FALSE(HidDeviceFilter::MatchesAny(*device_info_->device(), filters));
 }

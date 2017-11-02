@@ -17,7 +17,7 @@ namespace device {
 
 namespace {
 void OnGetDevices(base::OnceClosure quit_closure,
-                  std::vector<device::mojom::InputDeviceInfoPtr> devices) {
+                  std::vector<mojom::InputDeviceInfoPtr> devices) {
   for (size_t i = 0; i < devices.size(); ++i)
     ASSERT_TRUE(!devices[i]->id.empty());
 

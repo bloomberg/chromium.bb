@@ -15,12 +15,12 @@ namespace device {
 // HidConnectionImpl is reponsible for handling mojo communications from
 // clients. It delegates to HidConnection the real work of creating
 // connections in different platforms.
-class HidConnectionImpl : public device::mojom::HidConnection {
+class HidConnectionImpl : public mojom::HidConnection {
  public:
   explicit HidConnectionImpl(scoped_refptr<device::HidConnection> connection);
   ~HidConnectionImpl() final;
 
-  // device::mojom::HidConnection implementation:
+  // mojom::HidConnection implementation:
   void Read(ReadCallback callback) override;
   void Write(uint8_t report_id,
              const std::vector<uint8_t>& buffer,

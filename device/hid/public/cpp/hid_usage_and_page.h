@@ -10,7 +10,7 @@
 namespace device {
 
 // Indicates whether this usage is protected by Chrome.
-bool IsProtected(const device::mojom::HidUsageAndPage& hid_usage_and_page);
+bool IsProtected(const mojom::HidUsageAndPage& hid_usage_and_page);
 
 }  // namespace device
 

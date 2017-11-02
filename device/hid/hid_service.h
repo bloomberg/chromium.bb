@@ -36,15 +36,15 @@ class HidService {
   // might cause missing OnDeviceAdded() and OnDeviceRemoved() notifications.
   class Observer {
    public:
-    virtual void OnDeviceAdded(device::mojom::HidDeviceInfoPtr info);
+    virtual void OnDeviceAdded(mojom::HidDeviceInfoPtr info);
     // Notifies all observers that a device is being removed, called before
     // removing the device from HidService. Observers should not depend on the
     // order in which they are notified of the OnDeviceRemove event.
-    virtual void OnDeviceRemoved(device::mojom::HidDeviceInfoPtr info);
+    virtual void OnDeviceRemoved(mojom::HidDeviceInfoPtr info);
   };
 
   using GetDevicesCallback =
-      base::OnceCallback<void(std::vector<device::mojom::HidDeviceInfoPtr>)>;
+      base::OnceCallback<void(std::vector<mojom::HidDeviceInfoPtr>)>;
   using ConnectCallback =
       base::Callback<void(scoped_refptr<HidConnection> connection)>;
 
