@@ -68,6 +68,12 @@ using content::RenderThread;
 
 namespace android_webview {
 
+namespace {
+constexpr char kThrottledErrorDescription[] =
+    "Request throttled. Visit http://dev.chromium.org/throttling for more "
+    "information.";
+}  // namespace
+
 AwContentRendererClient::AwContentRendererClient() {}
 
 AwContentRendererClient::~AwContentRendererClient() {}
@@ -206,12 +212,15 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     const blink::WebURLError& error,
     std::string* error_html,
     base::string16* error_description) {
-  if (error_description) {
-    if (error.localized_description.IsEmpty())
-      *error_description = base::ASCIIToUTF16(net::ErrorToString(error.reason));
+  std::string err;
+  if (error.domain == blink::WebURLError::Domain::kNet) {
+    if (error.reason == net::ERR_TEMPORARILY_THROTTLED)
+      err = kThrottledErrorDescription;
     else
-      *error_description = error.localized_description.Utf16();
+      err = net::ErrorToString(error.reason);
   }
+  if (error_description)
+    *error_description = base::ASCIIToUTF16(err);
 
   if (!error_html)
     return;
@@ -245,9 +254,6 @@ void AwContentRendererClient::GetNavigationErrorStrings(
         reason_id = IDS_AW_WEBPAGE_PARENTAL_PERMISSION_NEEDED;
     }
   }
-
-  std::string err = error.localized_description.Utf8(
-      blink::WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD);
 
   if (err.empty())
     reason_id = IDS_AW_WEBPAGE_TEMPORARILY_DOWN;

@@ -38,7 +38,6 @@
 
 namespace blink {
 
-class WebURL;
 enum class ResourceRequestBlockedReason;
 
 class PLATFORM_EXPORT ResourceError final {
@@ -64,17 +63,7 @@ class PLATFORM_EXPORT ResourceError final {
   static ResourceError TimeoutError(const KURL&);
 
   ResourceError() = default;
-
-  ResourceError(Domain domain,
-                int error_code,
-                const KURL& failing_url,
-                const String& localized_description)
-      : domain_(domain),
-        error_code_(error_code),
-        failing_url_(failing_url),
-        localized_description_(localized_description) {
-    DCHECK_NE(domain, Domain::kEmpty);
-  }
+  ResourceError(Domain, int error_code, const KURL& failing_url);
 
   // Makes a deep copy. Useful for when you need to use a ResourceError on
   // another thread.
@@ -111,11 +100,6 @@ class PLATFORM_EXPORT ResourceError final {
   bool ShouldCollapseInitiator() const { return should_collapse_initiator_; }
 
   static bool Compare(const ResourceError&, const ResourceError&);
-
-  static void InitializeWebURLError(WebURLError*,
-                                    const WebURL&,
-                                    bool stale_copy_in_cache,
-                                    int reason);
 
  private:
   Domain domain_ = Domain::kEmpty;

@@ -65,11 +65,25 @@ ResourceError ResourceError::CancelledDueToAccessCheckError(
 }
 
 ResourceError ResourceError::CacheMissError(const KURL& url) {
-  return WebURLError(url, false, net::ERR_CACHE_MISS);
+  return ResourceError(Domain::kNet, net::ERR_CACHE_MISS, url);
 }
 
 ResourceError ResourceError::TimeoutError(const KURL& url) {
-  return WebURLError(url, false, net::ERR_TIMED_OUT);
+  return ResourceError(Domain::kNet, net::ERR_TIMED_OUT, url);
+}
+
+ResourceError::ResourceError(Domain domain, int error_code, const KURL& url)
+    : domain_(domain), error_code_(error_code), failing_url_(url) {
+  DCHECK_NE(domain, Domain::kEmpty);
+
+  if (domain_ == Domain::kNet) {
+    if (error_code_ == net::ERR_TEMPORARILY_THROTTLED) {
+      localized_description_ = WebString::FromASCII(kThrottledErrorDescription);
+    } else {
+      localized_description_ =
+          WebString::FromASCII(net::ErrorToString(error_code_));
+    }
+  }
 }
 
 ResourceError ResourceError::Copy() const {
@@ -105,23 +119,6 @@ bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
     return false;
 
   return true;
-}
-
-void ResourceError::InitializeWebURLError(WebURLError* error,
-                                          const WebURL& url,
-                                          bool stale_copy_in_cache,
-                                          int reason) {
-  error->domain = Domain::kNet;
-  error->reason = reason;
-  error->stale_copy_in_cache = stale_copy_in_cache;
-  error->unreachable_url = url;
-  if (reason == net::ERR_TEMPORARILY_THROTTLED) {
-    error->localized_description =
-        WebString::FromASCII(kThrottledErrorDescription);
-  } else {
-    error->localized_description =
-        WebString::FromASCII(net::ErrorToString(reason));
-  }
 }
 
 bool ResourceError::IsTimeout() const {
