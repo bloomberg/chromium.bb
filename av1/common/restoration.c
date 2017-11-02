@@ -1672,29 +1672,29 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 }
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
+static void memset16(uint16_t *arr, uint16_t val, int nelts) {
+  for (int i = 0; i < nelts; ++i) arr[i] = val;
+}
 
 // Extend to left and right
-static void extend_line(uint8_t *buf, int width, int extend,
-                        int use_highbitdepth) {
-  int i;
-  if (use_highbitdepth) {
-    uint16_t val, *buf16 = (uint16_t *)buf;
-    val = buf16[0];
-    for (i = 0; i < extend; i++) buf16[-1 - i] = val;
-    val = buf16[width - 1];
-    for (i = 0; i < extend; i++) buf16[width + i] = val;
-  } else {
-    uint8_t val;
-    val = buf[0];
-    for (i = 0; i < extend; i++) buf[-1 - i] = val;
-    val = buf[width - 1];
-    for (i = 0; i < extend; i++) buf[width + i] = val;
+static void extend_lines(uint8_t *buf, int width, int height, int stride,
+                         int extend, int use_highbitdepth) {
+  for (int i = 0; i < height; ++i) {
+    if (use_highbitdepth) {
+      uint16_t *buf16 = (uint16_t *)buf;
+      memset16(buf16 - extend, buf16[0], extend);
+      memset16(buf16 + width, buf16[width - 1], extend);
+    } else {
+      memset(buf - extend, buf[0], extend);
+      memset(buf + width, buf[width - 1], extend);
+    }
+    buf += stride;
   }
 }
 
-static void save_boundary_lines(const YV12_BUFFER_CONFIG *frame, int plane,
-                                int row, int stripe, int use_highbd,
-                                int is_above,
+static void save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
+                                const AV1_COMMON *cm, int plane, int row,
+                                int stripe, int use_highbd, int is_above,
                                 RestorationStripeBoundaries *boundaries) {
   const int is_uv = plane > 0;
   const int src_width = frame->crop_widths[is_uv];
@@ -1709,16 +1709,34 @@ static void save_boundary_lines(const YV12_BUFFER_CONFIG *frame, int plane,
   const int bdry_stride = boundaries->stripe_boundary_stride << use_highbd;
   uint8_t *bdry_rows = bdry_start + RESTORATION_CTX_VERT * stripe * bdry_stride;
 
+  const int lines_to_save = AOMMIN(RESTORATION_CTX_VERT, src_height - row);
+#if CONFIG_FRAME_SUPERRES
+  const int ss_x = is_uv && cm->subsampling_x;
+  const int upscaled_width = (cm->superres_upscaled_width + ss_x) >> ss_x;
+  const int step = av1_get_upscale_convolve_step(src_width, upscaled_width);
+#if CONFIG_HIGHBITDEPTH
+  if (use_highbd)
+    av1_highbd_convolve_horiz_rs(
+        (uint16_t *)src_rows, src_stride >> 1, (uint16_t *)bdry_rows,
+        bdry_stride >> 1, upscaled_width, lines_to_save,
+        &av1_resize_filter_normative[0][0], UPSCALE_NORMATIVE_TAPS, 0, step,
+        cm->bit_depth);
+  else
+#endif  // CONFIG_HIGHBITDEPTH
+    av1_convolve_horiz_rs(src_rows, src_stride, bdry_rows, bdry_stride,
+                          upscaled_width, lines_to_save,
+                          &av1_resize_filter_normative[0][0],
+                          UPSCALE_NORMATIVE_TAPS, 0, step);
+#else
+  (void)cm;
+  const int upscaled_width = src_width;
   const int line_bytes = src_width << use_highbd;
-
-  for (int i = 0; i < RESTORATION_CTX_VERT; i++) {
-    const int y = row + i;
-    if (y >= src_height) return;
-
+  for (int i = 0; i < lines_to_save; i++) {
     memcpy(bdry_rows + i * bdry_stride, src_rows + i * src_stride, line_bytes);
-    extend_line(bdry_rows + i * bdry_stride, src_width, RESTORATION_EXTRA_HORZ,
-                use_highbd);
   }
+#endif  // CONFIG_FRAME_SUPERRES
+  extend_lines(bdry_rows, upscaled_width, lines_to_save, bdry_stride,
+               RESTORATION_EXTRA_HORZ, use_highbd);
 }
 
 static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
@@ -1748,11 +1766,11 @@ static void save_tile_row_boundary_lines(const YV12_BUFFER_CONFIG *frame,
 
     if (frame_stripe > 0) {
       // Save RESTORATION_CTX_VERT lines above the stripe if frame_stripe > 0
-      save_boundary_lines(frame, plane, y0 - RESTORATION_CTX_VERT,
+      save_boundary_lines(frame, cm, plane, y0 - RESTORATION_CTX_VERT,
                           frame_stripe - 1, use_highbd, 1, boundaries);
     }
     // Always save RESTORATION_CTX_VERT lines below the LR stripe
-    save_boundary_lines(frame, plane, y1, frame_stripe, use_highbd, 0,
+    save_boundary_lines(frame, cm, plane, y1, frame_stripe, use_highbd, 0,
                         boundaries);
   }
 }

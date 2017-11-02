@@ -215,7 +215,7 @@ static const InterpKernel filteredinterp_filters1000[(1 << RS_SUBPEL_BITS)] = {
 #define UPSCALE_NORMATIVE_TAPS 6
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
-static const int16_t filter_normative[(
+const int16_t av1_resize_filter_normative[(
     1 << RS_SUBPEL_BITS)][UPSCALE_NORMATIVE_TAPS] = {
 #if UPSCALE_NORMATIVE_TAPS == 2
   { 128, 0 },  { 126, 2 },  { 124, 4 },  { 122, 6 },  { 120, 8 },  { 118, 10 },
@@ -438,7 +438,7 @@ static void interpolate(const uint8_t *const input, int in_length,
 #define UPSCALE_PROC_UNIT 0  // Source step (roughly), 0: do not use
 #define UPSCALE_PROC_UNIT_SCALE (UPSCALE_PROC_UNIT / SCALE_NUMERATOR)
 
-static int32_t get_upscale_convolve_step(int in_length, int out_length) {
+int32_t av1_get_upscale_convolve_step(int in_length, int out_length) {
   return ((in_length << RS_SCALE_SUBPEL_BITS) + out_length / 2) / out_length;
 }
 
@@ -461,7 +461,8 @@ static void interpolate_normative_core(const uint8_t *const src, int in_length,
                                        int interp_taps) {
   (void)superres_denom;
   assert(in_length < out_length);
-  const int32_t x_step_qn = get_upscale_convolve_step(in_length, out_length);
+  const int32_t x_step_qn =
+      av1_get_upscale_convolve_step(in_length, out_length);
   const int32_t x0_qn =
       get_upscale_convolve_x0(in_length, out_length, x_step_qn);
   // Note since we are upscaling, the first output sample is located before
@@ -498,7 +499,7 @@ static void interpolate_normative(const uint8_t *const input, int in_length,
     intbuf[in_length + k] = intbuf[in_length - 1];
   }
   interpolate_normative_core(intbuf, in_length, output, out_length,
-                             superres_denom, &filter_normative[0][0],
+                             superres_denom, &av1_resize_filter_normative[0][0],
                              UPSCALE_NORMATIVE_TAPS);
   aom_free(intbuf_alloc);
 }
@@ -731,10 +732,10 @@ static void upscale_normative_plane(const uint8_t *const input, int height,
   (void)height2;
   (void)superres_denom;
   assert(height2 == height);
-  const int32_t x_step_qn = get_upscale_convolve_step(width, width2);
+  const int32_t x_step_qn = av1_get_upscale_convolve_step(width, width2);
   const int32_t x0_qn = get_upscale_convolve_x0(width, width2, x_step_qn);
   av1_convolve_horiz_rs(input - 1, in_stride, output, out_stride, width2,
-                        height2, &filter_normative[0][0],
+                        height2, &av1_resize_filter_normative[0][0],
                         UPSCALE_NORMATIVE_TAPS, x0_qn, x_step_qn);
 #else
   uint8_t *intbuf = (uint8_t *)aom_malloc(sizeof(uint8_t) * width2 * height);
@@ -861,7 +862,8 @@ static void highbd_interpolate_normative_core(const uint16_t *const src,
                                               int interp_taps) {
   (void)superres_denom;
   assert(in_length < out_length);
-  const int32_t x_step_qn = get_upscale_convolve_step(in_length, out_length);
+  const int32_t x_step_qn =
+      av1_get_upscale_convolve_step(in_length, out_length);
   const int32_t x0_qn =
       get_upscale_convolve_x0(in_length, out_length, x_step_qn);
   // Note since we are upscaling, the first output sample is located before
@@ -898,9 +900,9 @@ static void highbd_interpolate_normative(const uint16_t *const input,
     intbuf[-k - 1] = intbuf[0];
     intbuf[in_length + k] = intbuf[in_length - 1];
   }
-  highbd_interpolate_normative_core(intbuf, in_length, output, out_length,
-                                    superres_denom, bd, &filter_normative[0][0],
-                                    UPSCALE_NORMATIVE_TAPS);
+  highbd_interpolate_normative_core(
+      intbuf, in_length, output, out_length, superres_denom, bd,
+      &av1_resize_filter_normative[0][0], UPSCALE_NORMATIVE_TAPS);
   aom_free(intbuf_alloc);
 }
 #endif  // !CONFIG_HORZONLY_FRAME_SUPERRES
@@ -1117,11 +1119,11 @@ static void highbd_upscale_normative_plane(const uint8_t *const input,
   (void)height2;
   (void)superres_denom;
   assert(height2 == height);
-  const int32_t x_step_qn = get_upscale_convolve_step(width, width2);
+  const int32_t x_step_qn = av1_get_upscale_convolve_step(width, width2);
   const int32_t x0_qn = get_upscale_convolve_x0(width, width2, x_step_qn);
   av1_highbd_convolve_horiz_rs(CONVERT_TO_SHORTPTR(input - 1), in_stride,
                                CONVERT_TO_SHORTPTR(output), out_stride, width2,
-                               height2, &filter_normative[0][0],
+                               height2, &av1_resize_filter_normative[0][0],
                                UPSCALE_NORMATIVE_TAPS, x0_qn, x_step_qn, bd);
 #else
   uint16_t *intbuf = (uint16_t *)aom_malloc(sizeof(uint16_t) * width2 * height);

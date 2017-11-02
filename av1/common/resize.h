@@ -110,6 +110,19 @@ static INLINE int av1_superres_unscaled(const AV1_COMMON *cm) {
 }
 #endif  // CONFIG_FRAME_SUPERRES
 
+#if CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
+#if CONFIG_HORZONLY_FRAME_SUPERRES
+#define UPSCALE_NORMATIVE_TAPS 8
+#else
+#define UPSCALE_NORMATIVE_TAPS 6
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
+
+extern const int16_t av1_resize_filter_normative[1 << RS_SUBPEL_BITS]
+                                                [UPSCALE_NORMATIVE_TAPS];
+
+int32_t av1_get_upscale_convolve_step(int in_length, int out_length);
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

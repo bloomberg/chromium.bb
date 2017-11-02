@@ -4628,6 +4628,9 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif  // CONFIG_INTRABC
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
+#if CONFIG_FRAME_SUPERRES && CONFIG_HORZONLY_FRAME_SUPERRES
+  aom_extend_frame_borders(cm->frame_to_show);
+#endif
   av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm);
 #endif
 
