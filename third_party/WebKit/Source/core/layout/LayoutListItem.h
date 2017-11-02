@@ -71,9 +71,13 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   void AddOverflowFromChildren() override;
 
+  void AlignMarkerInBlockDirection();
+
+  bool DealWithOverflow(const LayoutObject*);
+
   ListItemOrdinal ordinal_;
   LayoutListMarker* marker_;
-
+  bool need_block_direction_align_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListItem, IsListItem());
