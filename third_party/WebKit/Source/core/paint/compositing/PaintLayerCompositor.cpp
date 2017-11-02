@@ -623,29 +623,32 @@ bool PaintLayerCompositor::AllocateOrClearCompositedLayerMapping(
       break;
   }
 
-  if (composited_layer_mapping_changed &&
-      layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
+  if (!composited_layer_mapping_changed)
+    return false;
+
+  if (layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
     PaintLayerCompositor* inner_compositor = FrameContentsCompositor(
         ToLayoutEmbeddedContent(layer->GetLayoutObject()));
     if (inner_compositor && inner_compositor->StaleInCompositingMode())
       inner_compositor->EnsureRootLayer();
   }
 
-  if (composited_layer_mapping_changed)
-    layer->ClearClipRects(kPaintingClipRects);
+  layer->ClearClipRects(kPaintingClipRects);
 
   // If a fixed position layer gained/lost a compositedLayerMapping or the
   // reason not compositing it changed, the scrolling coordinator needs to
   // recalculate whether it can do fast scrolling.
-  if (composited_layer_mapping_changed) {
-    if (ScrollingCoordinator* scrolling_coordinator =
-            this->GetScrollingCoordinator()) {
-      scrolling_coordinator->FrameViewFixedObjectsDidChange(
-          layout_view_.GetFrameView());
-    }
+  if (ScrollingCoordinator* scrolling_coordinator =
+          this->GetScrollingCoordinator()) {
+    scrolling_coordinator->FrameViewFixedObjectsDidChange(
+        layout_view_.GetFrameView());
   }
 
-  return composited_layer_mapping_changed;
+  // Compositing state affects whether to create paint offset translation of
+  // this layer, and amount of paint offset translation of descendants.
+  layer->GetLayoutObject().SetNeedsPaintPropertyUpdate();
+
+  return true;
 }
 
 void PaintLayerCompositor::PaintInvalidationOnCompositingChange(

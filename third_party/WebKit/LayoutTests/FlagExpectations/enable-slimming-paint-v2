@@ -952,6 +952,7 @@ Bug(none) paint/invalidation/compositing/scrolling-without-painting.html [ Failu
 Bug(none) paint/invalidation/compositing/should-not-clip-composited-viewport-scrolling-layer.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-filter.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-opacity.html [ Failure ]
+Bug(none) paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
 Bug(none) paint/invalidation/document-flipped-blocks-writing-mode-scroll.html [ Failure ]
 Bug(none) paint/invalidation/empty-object-move-and-resize.html [ Failure ]
 Bug(none) paint/invalidation/flexbox/repaint-on-layout.html [ Failure ]

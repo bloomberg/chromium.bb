@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 30: debug
 {
   "layers": [
     {

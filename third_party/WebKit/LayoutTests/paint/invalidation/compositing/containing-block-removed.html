@@ -27,7 +27,6 @@
     {
       // Removing "will-change: transform" to the container div should make this
       // div no longer be the containing block for its fixed position descendant.
-      console.log('debug');
       document.getElementById("container").style.willChange = "top";
     }
     onload = runRepaintAndPixelTest;
