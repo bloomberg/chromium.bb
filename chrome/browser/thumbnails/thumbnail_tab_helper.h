@@ -44,6 +44,8 @@ class ThumbnailTabHelper
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DocumentAvailableInMainFrame() override;
+  void DocumentOnLoadCompletedInMainFrame() override;
   void DidStartLoading() override;
   void NavigationStopped() override;
 
@@ -79,6 +81,7 @@ class ThumbnailTabHelper
   bool load_interrupted_;
 
   scoped_refptr<thumbnails::ThumbnailingContext> thumbnailing_context_;
+  bool waiting_for_capture_;
 
   base::TimeTicks copy_from_surface_start_time_;
 

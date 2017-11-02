@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <utility>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,10 +23,18 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/test/controllable_http_response.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
+
+// These tests use --disable-gpu which isn't supported on ChromeOS.
+#if !defined(OS_CHROMEOS)
 
 namespace thumbnails {
 
@@ -37,6 +48,39 @@ using testing::_;
 
 ACTION_P(RunClosure, closure) {
   closure.Run();
+}
+
+// |arg| is a gfx::Image, |expected_color| is a SkColor.
+MATCHER_P(ImageColorIs, expected_color, "") {
+  SkBitmap bitmap = arg.AsBitmap();
+  if (bitmap.empty()) {
+    *result_listener << "expected color but no bitmap data available";
+    return false;
+  }
+
+  SkColor actual_color = bitmap.getColor(1, 1);
+  if (actual_color != expected_color) {
+    *result_listener << "expected color "
+                     << base::StringPrintf("%08X", expected_color)
+                     << " but actual color is "
+                     << base::StringPrintf("%08X", actual_color);
+    return false;
+  }
+  return true;
+}
+
+const char kHttpResponseHeader[] =
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Type: text/html; charset=utf-8\r\n"
+    "\r\n";
+
+std::string MakeHtmlDocument(const std::string& background_color) {
+  return base::StringPrintf(
+      "<html>"
+      "<head><style>body { background-color: %s }</style></head>"
+      "<body></body>"
+      "</html>",
+      background_color.c_str());
 }
 
 class MockThumbnailService : public ThumbnailService {
@@ -72,11 +116,19 @@ class ThumbnailTest : public InProcessBrowserTest {
   }
 
  private:
+  void SetUp() override {
+    // Enabling pixel output is required for readback to work.
+    EnablePixelOutput();
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kDisableGpu);
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     feature_list_.InitAndEnableFeature(
         features::kCaptureThumbnailOnNavigatingAway);
-
-    ASSERT_TRUE(embedded_test_server()->Start());
 
     will_create_browser_context_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
@@ -103,23 +155,31 @@ class ThumbnailTest : public InProcessBrowserTest {
       will_create_browser_context_services_subscription_;
 };
 
-IN_PROC_BROWSER_TEST_F(ThumbnailTest, ShouldCaptureOnNavigatingAway) {
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMus)) {
-    LOG(ERROR) << "This test fails in MUS mode, aborting.";
-    return;
-  }
-#endif
+IN_PROC_BROWSER_TEST_F(ThumbnailTest,
+                       ShouldCaptureOnNavigatingAwayExplicitWait) {
+  content::ControllableHttpResponse response_red(embedded_test_server(),
+                                                 "/red.html");
+  content::ControllableHttpResponse response_yellow(embedded_test_server(),
+                                                    "/yellow.html");
+  content::ControllableHttpResponse response_green(embedded_test_server(),
+                                                   "/green.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL about_blank_url("about:blank");
-  const GURL simple_url = embedded_test_server()->GetURL("/simple.html");
+  const GURL red_url = embedded_test_server()->GetURL("/red.html");
+  const GURL yellow_url = embedded_test_server()->GetURL("/yellow.html");
+  const GURL green_url = embedded_test_server()->GetURL("/green.html");
 
   // Normally, ShouldAcquirePageThumbnail depends on many things, e.g. whether
   // the given URL is in TopSites. For the purposes of this test, bypass all
-  // that and always take thumbnails for |simple_url|.
+  // that and always take thumbnails, except for about:blank.
   ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(about_blank_url, _))
       .WillByDefault(Return(false));
-  ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(simple_url, _))
+  ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(red_url, _))
+      .WillByDefault(Return(true));
+  ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(yellow_url, _))
+      .WillByDefault(Return(true));
+  ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(green_url, _))
       .WillByDefault(Return(true));
 
   // The test framework opens an about:blank tab by default.
@@ -132,20 +192,111 @@ IN_PROC_BROWSER_TEST_F(ThumbnailTest, ShouldCaptureOnNavigatingAway) {
       SetPageThumbnail(Field(&ThumbnailingContext::url, about_blank_url), _))
       .Times(0);
 
-  // Navigate to some page.
-  ui_test_utils::NavigateToURL(browser(), simple_url);
+  {
+    // Navigate to some page.
+    content::TestNavigationObserver nav_observer(active_tab);
+    browser()->OpenURL(content::OpenURLParams(
+        red_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+        ui::PAGE_TRANSITION_TYPED, false));
+    response_red.WaitForRequest();
+    response_red.Send(kHttpResponseHeader);
+    response_red.Send(MakeHtmlDocument("red"));
+    response_red.Done();
+    nav_observer.Wait();
+  }
 
-  // Before navigating away, we should take a thumbnail of the page.
-  base::RunLoop run_loop;
+  {
+    // Before navigating away from the red page, we should take a thumbnail.
+    base::RunLoop run_loop;
+    EXPECT_CALL(*thumbnail_service(),
+                SetPageThumbnail(Field(&ThumbnailingContext::url, red_url),
+                                 ImageColorIs(SK_ColorRED)))
+        .WillOnce(DoAll(RunClosure(run_loop.QuitClosure()), Return(true)));
+
+    content::TestNavigationObserver nav_observer(active_tab);
+    browser()->OpenURL(content::OpenURLParams(
+        yellow_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+        ui::PAGE_TRANSITION_TYPED, false));
+
+    response_yellow.WaitForRequest();
+    // Note: It's important that we wait for the thumbnailing to finish *before*
+    // sending the response. Otherwise, the DocumentAvailableInMainFrame event
+    // might fire first, and we'll discard the captured thumbnail.
+    run_loop.Run();
+    response_yellow.Send(kHttpResponseHeader);
+    response_yellow.Send(MakeHtmlDocument("yellow"));
+    response_yellow.Done();
+    nav_observer.Wait();
+  }
+
+  {
+    // Before navigating away from the yellow page, we should take a thumbnail.
+    base::RunLoop run_loop;
+    EXPECT_CALL(*thumbnail_service(),
+                SetPageThumbnail(Field(&ThumbnailingContext::url, yellow_url),
+                                 ImageColorIs(SK_ColorYELLOW)))
+        .WillOnce(DoAll(RunClosure(run_loop.QuitClosure()), Return(true)));
+
+    content::TestNavigationObserver nav_observer(active_tab);
+    browser()->OpenURL(content::OpenURLParams(
+        green_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+        ui::PAGE_TRANSITION_TYPED, false));
+
+    response_green.WaitForRequest();
+    // As above, but send the response header before waiting for the
+    // thumbnailing to finish. This should still be safe.
+    response_green.Send(kHttpResponseHeader);
+    run_loop.Run();
+    response_green.Send(MakeHtmlDocument("green"));
+    response_green.Done();
+    nav_observer.Wait();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ThumbnailTest,
+                       ShouldCaptureOnNavigatingAwaySlowPageLoad) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL about_blank_url("about:blank");
+  const GURL red_url =
+      embedded_test_server()->GetURL("/thumbnail_capture/red.html");
+  const GURL slow_url = embedded_test_server()->GetURL("/slow?1");
+
+  // Normally, ShouldAcquirePageThumbnail depends on many things, e.g. whether
+  // the given URL is in TopSites. For the purposes of this test, bypass all
+  // that and just take thumbnails of the red page.
+  ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(about_blank_url, _))
+      .WillByDefault(Return(false));
+  ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(red_url, _))
+      .WillByDefault(Return(true));
+  ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(slow_url, _))
+      .WillByDefault(Return(false));
+
+  // The test framework opens an about:blank tab by default.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(about_blank_url, active_tab->GetLastCommittedURL());
+
+  EXPECT_CALL(
+      *thumbnail_service(),
+      SetPageThumbnail(Field(&ThumbnailingContext::url, about_blank_url), _))
+      .Times(0);
+
+  // Navigate to some page.
+  ui_test_utils::NavigateToURL(browser(), red_url);
+
+  // Before navigating away from the red page, we should take a thumbnail.
+  // Note that the page load is deliberately slowed down, so that the
+  // thumbnailing process has time to finish before the new page comes in.
   EXPECT_CALL(*thumbnail_service(),
-              SetPageThumbnail(Field(&ThumbnailingContext::url, simple_url), _))
-      .WillOnce(DoAll(RunClosure(run_loop.QuitClosure()), Return(true)));
-  // Navigate to about:blank again.
-  ui_test_utils::NavigateToURL(browser(), about_blank_url);
-  // Wait for the thumbnailing process to finish.
-  run_loop.Run();
+              SetPageThumbnail(Field(&ThumbnailingContext::url, red_url),
+                               ImageColorIs(SK_ColorRED)))
+      .WillOnce(Return(true));
+  ui_test_utils::NavigateToURL(browser(), slow_url);
 }
 
 }  // namespace
 
 }  // namespace thumbnails
+
+#endif  // !defined(OS_CHROMEOS)
