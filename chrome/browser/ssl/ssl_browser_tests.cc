@@ -3955,10 +3955,10 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
 
   void SetUpOnMainThread() override {
     SSLUITest::SetUpOnMainThread();
-    scoped_feature_list_.InitFromCommandLine(
-        std::string(network_time::kNetworkTimeServiceQuerying.name) +
-            "<SSLNetworkTimeBrowserTestFieldTrial",
-        std::string());
+    std::map<std::string, std::string> parameters;
+    parameters["FetchBehavior"] = "on-demand-only";
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        network_time::kNetworkTimeServiceQuerying, parameters);
     SetUpNetworkTimeServer();
   }
 
@@ -5052,11 +5052,8 @@ MakeCaptivePortalConfig(int version_id,
 // is disabled via Finch. The list is passed to SSLErrorHandler via a proto.
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Disabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  // Use InitFromCommandLine instead of InitAndDisableFeature to avoid making
-  // the feature public in SSLErrorHandler header.
-  scoped_feature_list.InitFromCommandLine(
-      std::string() /* enabled */,
-      "CaptivePortalCertificateList" /* disabled */);
+  scoped_feature_list.InitWithFeatures(
+      {} /* enabled */, {kCaptivePortalCertificateList} /* disabled */);
 
   ASSERT_TRUE(https_server_mismatched_.Start());
   base::HistogramTester histograms;
@@ -5096,9 +5093,8 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Disabled) {
 // is enabled via Finch. The list is passed to SSLErrorHandler via a proto.
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListTest, Enabled_FromProto) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "CaptivePortalCertificateList" /* enabled */,
-      std::string() /* disabled */);
+  scoped_feature_list.InitWithFeatures(
+      {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
 
   ASSERT_TRUE(https_server_mismatched_.Start());
   base::HistogramTester histograms;
@@ -5170,9 +5166,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, OSReportsCaptivePortal) {
 // displayed.
 IN_PROC_BROWSER_TEST_F(SSLUITest, OSReportsCaptivePortal_FeatureDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      std::string() /* enabled */,
-      std::string("CaptivePortalInterstitial") /* disabled */);
+  scoped_feature_list.InitWithFeatures(
+      {} /* enabled */, {kCaptivePortalInterstitial} /* disabled */);
 
   ASSERT_TRUE(https_server_mismatched_.Start());
   base::HistogramTester histograms;
@@ -5319,9 +5314,8 @@ class SSLUICaptivePortalListResourceBundleTest
 // cert's SPKI hash is listed in ssl_error_assistant.asciipb.
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest, Enabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "CaptivePortalCertificateList" /* enabled */,
-      std::string() /* disabled */);
+  scoped_feature_list.InitWithFeatures(
+      {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
   ASSERT_TRUE(https_server()->Start());
   base::HistogramTester histograms;
 
@@ -5358,9 +5352,8 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest, Enabled) {
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
                        Enabled_DynamicUpdate) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "CaptivePortalCertificateList" /* enabled */,
-      std::string() /* disabled */);
+  scoped_feature_list.InitWithFeatures(
+      {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
   ASSERT_TRUE(https_server()->Start());
 
   // Mark the server's cert as a captive portal cert.
@@ -5474,9 +5467,8 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
                        Enabled_AuthorityInvalid) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "CaptivePortalCertificateList" /* enabled */,
-      std::string() /* disabled */);
+  scoped_feature_list.InitWithFeatures(
+      {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
 
   TestNoCaptivePortalInterstitial(net::CERT_STATUS_AUTHORITY_INVALID,
                                   net::ERR_CERT_AUTHORITY_INVALID);
@@ -5488,9 +5480,8 @@ IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
 IN_PROC_BROWSER_TEST_F(SSLUICaptivePortalListResourceBundleTest,
                        Enabled_NameMismatchAndWeakKey) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(
-      "CaptivePortalCertificateList" /* enabled */,
-      std::string() /* disabled */);
+  scoped_feature_list.InitWithFeatures(
+      {kCaptivePortalCertificateList} /* enabled */, {} /* disabled */);
 
   const net::CertStatus cert_status =
       net::CERT_STATUS_COMMON_NAME_INVALID | net::CERT_STATUS_WEAK_KEY;
@@ -5655,8 +5646,8 @@ class SSLUIMITMSoftwareEnabledTest : public SSLUIMITMSoftwareTest {
 
   void SetUpOnMainThread() override {
     SSLUIMITMSoftwareTest::SetUpOnMainThread();
-    scoped_feature_list_.InitFromCommandLine(
-        "MITMSoftwareInterstitial" /* enabled */, std::string() /* disabled */);
+    scoped_feature_list_.InitWithFeatures(
+        {kMITMSoftwareInterstitial} /* enabled */, {} /* disabled */);
   }
 
  private:
@@ -5672,8 +5663,8 @@ class SSLUIMITMSoftwareDisabledTest : public SSLUIMITMSoftwareTest {
 
   void SetUpOnMainThread() override {
     SSLUIMITMSoftwareTest::SetUpOnMainThread();
-    scoped_feature_list_.InitFromCommandLine(
-        std::string() /* enabled */, "MITMSoftwareInterstitial" /* disabled */);
+    scoped_feature_list_.InitWithFeatures(
+        {} /* enabled */, {kMITMSoftwareInterstitial} /* disabled */);
   }
 
  private:
@@ -6098,8 +6089,9 @@ IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, SuperfishInterstitial) {
   const char kInteractionHistogram[] = "interstitial.superfish.interaction";
 
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("SuperfishInterstitial",
-                                          std::string());
+  scoped_feature_list.InitWithFeatures({kSuperfishInterstitial} /* enabled */,
+                                       {} /* disabled */);
+
   SetUpCertVerifier(true /* use superfish cert */);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html"));
@@ -6133,8 +6125,8 @@ IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, SuperfishInterstitial) {
 // disabled.
 IN_PROC_BROWSER_TEST_F(SuperfishSSLUITest, SuperfishInterstitialDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(std::string(),
-                                          "SuperfishInterstitial");
+  scoped_feature_list.InitWithFeatures({} /* enabled */,
+                                       {kSuperfishInterstitial} /* disabled */);
   SetUpCertVerifier(true /* use superfish cert */);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL("/ssl/google.html"));

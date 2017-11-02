@@ -57,8 +57,6 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif  // #if defined(OS_WIN)
 
-namespace {
-
 const base::Feature kMITMSoftwareInterstitial{"MITMSoftwareInterstitial",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -68,9 +66,6 @@ const base::Feature kCaptivePortalInterstitial{
 const base::Feature kCaptivePortalCertificateList{
     "CaptivePortalCertificateList", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSSLCommonNameMismatchHandling{
-    "SSLCommonNameMismatchHandling", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_WIN)
 const base::Feature kSuperfishInterstitial{"SuperfishInterstitial",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
@@ -78,6 +73,11 @@ const base::Feature kSuperfishInterstitial{"SuperfishInterstitial",
 const base::Feature kSuperfishInterstitial{"SuperfishInterstitial",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+namespace {
+
+const base::Feature kSSLCommonNameMismatchHandling{
+    "SSLCommonNameMismatchHandling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Default delay in milliseconds before displaying the SSL interstitial.
 // This can be changed in tests.
