@@ -163,6 +163,6 @@ interface CoreProbes {
   void shouldBlockRequest(ExecutionContext*, const KURL&, bool* result);
   void shouldBypassServiceWorker(ExecutionContext* context, bool* result);
   void consoleTimeStamp(ExecutionContext*, const String& title);
-  void lifecycleEvent([Keep] LocalFrame*, const char* name, double timestamp);
+  void lifecycleEvent([Keep] LocalFrame*, DocumentLoader*, const char* name, double timestamp);
   void paintTiming([Keep] Document*, const char* name, double timestamp);
 }
