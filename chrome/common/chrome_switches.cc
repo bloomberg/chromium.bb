@@ -334,6 +334,10 @@ const char kEnableFastUnload[] = "enable-fast-unload";
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
 
+// Enables styling the profile chooser button using the systme theme.
+// Only available on desktop Linux.
+const char kEnableNativeAvatarButton[] = "enable-native-avatar-button";
+
 // Enables tracing for each navigation. It will attempt to trace each navigation
 // for 10s, until the buffer is full, or until the next navigation.
 // It only works if a URL was provided by --trace-upload-url.

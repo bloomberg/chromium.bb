@@ -24,6 +24,7 @@ import("//services/service_manager/public/service_manifest.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
+import("//ui/views/features.gni")
 import("//v8/gni/v8.gni")
 
 if (is_android) {
@@ -2400,9 +2401,8 @@ test("browser_tests") {
         sources -= [ "../browser/ui/views/select_file_dialog_extension_browsertest.cc" ]
       }
       if (is_win || is_linux) {
-        sources += [
-          "../browser/ui/views/ime/input_ime_apitest_nonchromeos.cc",
-        ]
+        sources +=
+            [ "../browser/ui/views/ime/input_ime_apitest_nonchromeos.cc" ]
       }
     }
     if (enable_desktop_in_product_help) {
@@ -4961,6 +4961,9 @@ test("unit_tests") {
         "../browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc",
         "../browser/ui/views/sync/one_click_signin_dialog_view_unittest.cc",
       ]
+    }
+    if (enable_native_window_nav_buttons) {
+      sources += [ "../browser/ui/views/frame/desktop_linux_browser_frame_view_layout_unittest.cc" ]
     }
     if (!is_mac || mac_views_browser) {
       sources += [

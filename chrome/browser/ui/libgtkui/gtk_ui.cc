@@ -62,7 +62,6 @@
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
 #include "ui/views/resources/grit/views_resources.h"
-#include "ui/views/window/nav_button_provider.h"
 
 #if GTK_MAJOR_VERSION == 2
 #include "chrome/browser/ui/libgtkui/native_theme_gtk2.h"  // nogncheck
@@ -74,6 +73,10 @@
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "printing/printing_context_linux.h"
+#endif
+
+#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
+#include "chrome/browser/ui/views/nav_button_provider.h"
 #endif
 
 #if defined(USE_GCONF)
@@ -789,13 +792,13 @@ void GtkUi::RemoveDeviceScaleFactorObserver(
   device_scale_factor_observer_list_.RemoveObserver(observer);
 }
 
+#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
 std::unique_ptr<views::NavButtonProvider> GtkUi::CreateNavButtonProvider() {
-#if GTK_MAJOR_VERSION >= 3
   if (GtkVersionCheck(3, 14))
     return base::MakeUnique<libgtkui::NavButtonProviderGtk3>();
-#endif
   return nullptr;
 }
+#endif
 
 bool GtkUi::MatchEvent(const ui::Event& event,
                        std::vector<ui::TextEditCommandAuraLinux>* commands) {

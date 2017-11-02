@@ -15,7 +15,6 @@
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/window/nav_button_provider.h"
 
 namespace {
 
@@ -73,9 +72,8 @@ const int OpaqueBrowserFrameViewLayout::kCaptionButtonBottomPadding = 3;
 // need to reserve a larger, 16 px gap to avoid looking too cluttered.
 const int OpaqueBrowserFrameViewLayout::kNewTabCaptionCondensedSpacing = 16;
 
-OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
-    OpaqueBrowserFrameViewLayoutDelegate* delegate)
-    : delegate_(delegate),
+OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout()
+    : new_avatar_button_(nullptr),
       leading_button_start_(0),
       trailing_button_start_(0),
       minimum_size_for_buttons_(0),
@@ -90,11 +88,9 @@ OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
       window_icon_(nullptr),
       window_title_(nullptr),
       incognito_icon_(nullptr),
-      new_avatar_button_(nullptr) {
-  trailing_buttons_.push_back(views::FRAME_BUTTON_MINIMIZE);
-  trailing_buttons_.push_back(views::FRAME_BUTTON_MAXIMIZE);
-  trailing_buttons_.push_back(views::FRAME_BUTTON_CLOSE);
-}
+      trailing_buttons_{views::FRAME_BUTTON_MINIMIZE,
+                        views::FRAME_BUTTON_MAXIMIZE,
+                        views::FRAME_BUTTON_CLOSE} {}
 
 OpaqueBrowserFrameViewLayout::~OpaqueBrowserFrameViewLayout() {}
 
@@ -204,19 +200,10 @@ int OpaqueBrowserFrameViewLayout::DefaultCaptionButtonY(bool restored) const {
 int OpaqueBrowserFrameViewLayout::CaptionButtonY(
     chrome::FrameButtonDisplayType button_id,
     bool restored) const {
-  if (delegate_->ShouldRenderNativeNavButtons()) {
-    auto* button_provider = delegate_->GetNavButtonProvider();
-    gfx::Insets insets = button_provider->GetNavButtonMargin(button_id);
-    return insets.top();
-  }
   return DefaultCaptionButtonY(restored);
 }
 
 int OpaqueBrowserFrameViewLayout::TopAreaPadding() const {
-  if (delegate_->ShouldRenderNativeNavButtons()) {
-    auto* button_provider = delegate_->GetNavButtonProvider();
-    return button_provider->GetTopAreaSpacing().left();
-  }
   return FrameBorderThickness(false);
 }
 
@@ -256,17 +243,6 @@ int OpaqueBrowserFrameViewLayout::GetWindowCaptionSpacing(
     views::FrameButton button_id,
     bool leading_spacing,
     bool is_leading_button) const {
-  if (delegate_->ShouldRenderNativeNavButtons()) {
-    auto* button_provider = delegate_->GetNavButtonProvider();
-    gfx::Insets insets =
-        button_provider->GetNavButtonMargin(GetButtonDisplayType(button_id));
-    if (!leading_spacing)
-      return insets.right();
-    int spacing = insets.left();
-    if (!is_leading_button)
-      spacing += button_provider->GetInterNavButtonSpacing();
-    return spacing;
-  }
   if (leading_spacing) {
     if (is_leading_button) {
       // If we're the first button and maximized, add width to the right
@@ -288,6 +264,41 @@ bool OpaqueBrowserFrameViewLayout::IsTitleBarCondensed() const {
   // title bar. If the window is maximized, the title bar is condensed
   // regardless of whether there are caption buttons.
   return !delegate_->ShouldShowCaptionButtons() || delegate_->IsMaximized();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OpaqueBrowserFrameViewLayout, protected:
+
+void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
+  if (!new_avatar_button_)
+    return;
+
+  int button_width = new_avatar_button_->GetPreferredSize().width();
+  int button_width_with_offset = button_width + kCaptionSpacing;
+
+  int button_x =
+      host->width() - trailing_button_start_ - button_width_with_offset;
+  int button_y = DefaultCaptionButtonY(!IsTitleBarCondensed());
+
+  minimum_size_for_buttons_ += button_width_with_offset;
+  trailing_button_start_ += button_width_with_offset;
+
+  // In non-tablet mode, allow the new tab button to completely slide under
+  // the avatar button.
+  if (!IsTitleBarCondensed()) {
+    trailing_button_start_ -=
+        GetLayoutSize(NEW_TAB_BUTTON).width() + kCaptionSpacing;
+  }
+
+  new_avatar_button_->SetBounds(button_x, button_y, button_width,
+                                kCaptionButtonHeight);
+}
+
+bool OpaqueBrowserFrameViewLayout::ShouldDrawImageMirrored(
+    views::ImageButton* button,
+    ButtonAlignment alignment) const {
+  return alignment == ALIGN_LEADING && !has_leading_buttons_ &&
+         button == close_button_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -400,31 +411,6 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
   }
 }
 
-void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
-  if (!new_avatar_button_)
-    return;
-
-  int button_width = new_avatar_button_->GetPreferredSize().width();
-  int button_width_with_offset = button_width + kCaptionSpacing;
-
-  int button_x =
-      host->width() - trailing_button_start_ - button_width_with_offset;
-  int button_y = DefaultCaptionButtonY(!IsTitleBarCondensed());
-
-  minimum_size_for_buttons_ += button_width_with_offset;
-  trailing_button_start_ += button_width_with_offset;
-
-  // In non-tablet mode, allow the new tab button to completely slide under
-  // the avatar button.
-  if (!IsTitleBarCondensed()) {
-    trailing_button_start_ -=
-        GetLayoutSize(NEW_TAB_BUTTON).width() + kCaptionSpacing;
-  }
-
-  new_avatar_button_->SetBounds(button_x, button_y, button_width,
-                                kCaptionButtonHeight);
-}
-
 void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
   const int old_button_size = leading_button_start_ + trailing_button_start_;
 
@@ -524,14 +510,10 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
   // to the screen left, for left-aligned buttons) to obey Fitts' Law.
   bool title_bar_condensed = IsTitleBarCondensed();
 
-  if (!delegate_->ShouldRenderNativeNavButtons()) {
-    // When we are the first button on the leading side and are the close
-    // button, we must flip ourselves, because the close button assets have
-    // a little notch to fit in the rounded frame.
-    button->SetDrawImageMirrored(alignment == ALIGN_LEADING &&
-                                 !has_leading_buttons_ &&
-                                 button == close_button_);
-  }
+  // When we are the first button on the leading side and are the close
+  // button, we must flip ourselves, because the close button assets have
+  // a little notch to fit in the rounded frame.
+  button->SetDrawImageMirrored(ShouldDrawImageMirrored(button, alignment));
 
   int extra_width = TopAreaPadding();
 

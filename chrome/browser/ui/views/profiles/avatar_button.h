@@ -15,6 +15,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget_observer.h"
 
+class AvatarButtonManager;
 class Profile;
 
 // Base class for avatar buttons that display the active profile's name in the
@@ -26,7 +27,8 @@ class AvatarButton : public views::LabelButton,
  public:
   AvatarButton(views::ButtonListener* listener,
                AvatarButtonStyle button_style,
-               Profile* profile);
+               Profile* profile,
+               AvatarButtonManager* manager);
   ~AvatarButton() override;
 
   void SetupThemeColorButton();
@@ -93,6 +95,10 @@ class AvatarButton : public views::LabelButton,
   gfx::ImageSkia generic_avatar_;
 
   AvatarButtonStyle button_style_;
+
+  // Set on desktop Linux to indicate if the avatar button should be
+  // drawn using the system theme.
+  bool render_native_nav_buttons_ = false;
 
   ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_;
 

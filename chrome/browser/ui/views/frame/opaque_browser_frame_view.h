@@ -41,7 +41,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                                public OpaqueBrowserFrameViewLayoutDelegate {
  public:
   // Constructs a non-client view for an BrowserFrame.
-  OpaqueBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
+  OpaqueBrowserFrameView(BrowserFrame* frame,
+                         BrowserView* browser_view,
+                         OpaqueBrowserFrameViewLayout* layout);
   ~OpaqueBrowserFrameView() override;
 
   // BrowserNonClientFrameView:
@@ -98,9 +100,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   int GetTabStripHeight() const override;
   bool IsToolbarVisible() const override;
   gfx::Size GetTabstripPreferredSize() const override;
-  bool ShouldRenderNativeNavButtons() const override;
   int GetTopAreaHeight() const override;
-  const views::NavButtonProvider* GetNavButtonProvider() const override;
 
  protected:
   views::ImageButton* minimize_button() const { return minimize_button_; }
@@ -114,6 +114,13 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // BrowserNonClientFrameView:
   bool ShouldPaintAsThemed() const override;
   void UpdateProfileIcons() override;
+
+  // If native window frame buttons are enabled, redraws the image resources
+  // associated with |{minimize,maximize,restore,close}_button_|.
+  virtual void MaybeRedrawFrameButtons();
+
+  // Wrapper around the in-frame avatar switcher.
+  AvatarButtonManager profile_switcher_;
 
  private:
   // Creates, adds and returns a new image button with |this| as its listener.
@@ -159,15 +166,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                            SkColor color,
                            gfx::Canvas* canvas) const;
 
-  // Returns one of |{minimize,maximize,restore,close}_button_|
-  // corresponding to |type|.
-  views::ImageButton* GetButtonFromDisplayType(
-      chrome::FrameButtonDisplayType type);
-
-  // If native window frame buttons are enabled, redraws the image resources
-  // associated with |{minimize,maximize,restore,close}_button_|.
-  void MaybeRedrawFrameButtons();
-
   // Our layout manager also calculates various bounds.
   OpaqueBrowserFrameViewLayout* layout_;
 
@@ -181,16 +179,11 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   TabIconView* window_icon_;
   views::Label* window_title_;
 
-  // Wrapper around the in-frame avatar switcher.
-  AvatarButtonManager profile_switcher_;
-
   // Background painter for the window frame.
   std::unique_ptr<views::FrameBackground> frame_background_;
 
   // Observer that handles platform dependent configuration.
   std::unique_ptr<OpaqueBrowserFrameViewPlatformSpecific> platform_observer_;
-
-  std::unique_ptr<views::NavButtonProvider> nav_button_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameView);
 };

@@ -82,6 +82,7 @@ template("libgtkui") {
     defines = [ "LIBGTKUI_IMPLEMENTATION" ]
 
     deps = invoker.deps + [
+             "//chrome/browser/ui/views",
              "//base",
              "//base:i18n",
              "//base/third_party/dynamic_annotations",
@@ -126,6 +127,8 @@ template("libgtkui") {
 if (use_gtk3) {
   libgtkui("libgtk3ui") {
     sources = [
+      "gtk3_background_painter.cc",
+      "gtk3_background_painter.h",
       "native_theme_gtk3.cc",
       "native_theme_gtk3.h",
       "nav_button_layout_manager_gtk3.cc",

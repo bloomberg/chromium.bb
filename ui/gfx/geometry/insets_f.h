@@ -75,6 +75,11 @@ class GFX_EXPORT InsetsF {
     return InsetsF(-top_, -left_, -bottom_, -right_);
   }
 
+  InsetsF Scale(float scale) const {
+    return InsetsF(scale * top(), scale * left(), scale * bottom(),
+                   scale * right());
+  }
+
   // Returns a string representation of the insets.
   std::string ToString() const;
 

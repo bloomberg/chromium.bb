@@ -15,6 +15,8 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/views/frame/avatar_button_manager.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
@@ -35,7 +37,13 @@
 #include "chrome/browser/ui/views/frame/minimize_button_metrics_win.h"
 #endif
 
+#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
+#include "chrome/browser/ui/views/nav_button_provider.h"
+#endif
+
 namespace {
+
+constexpr int kGenericAvatarIconSize = 16;
 
 // TODO(emx): Calculate width based on caption button [http://crbug.com/716365]
 constexpr int kCondensibleButtonMinWidth = 46;
@@ -171,13 +179,19 @@ class ShutdownNotifierFactory
 
 AvatarButton::AvatarButton(views::ButtonListener* listener,
                            AvatarButtonStyle button_style,
-                           Profile* profile)
+                           Profile* profile,
+                           AvatarButtonManager* manager)
     : LabelButton(listener, base::string16()),
       error_controller_(this, profile),
       profile_(profile),
       profile_observer_(this),
       button_style_(button_style),
       widget_observer_(this) {
+#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
+  views::NavButtonProvider* nav_button_provider =
+      manager->get_nav_button_provider();
+  render_native_nav_buttons_ = nav_button_provider != nullptr;
+#endif
   set_notify_action(Button::NOTIFY_ON_PRESS);
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                               ui::EF_RIGHT_MOUSE_BUTTON);
@@ -201,16 +215,26 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
   DCHECK_EQ(AvatarButtonStyle::THEMED, button_style);
   apply_ink_drop = true;
 #endif
+  if (render_native_nav_buttons_)
+    apply_ink_drop = false;
 
-  if (apply_ink_drop) {
+  if (render_native_nav_buttons_) {
+#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
+    SetBackground(nav_button_provider->CreateAvatarButtonBackground(this));
+    SetBorder(nullptr);
+    generic_avatar_ =
+        gfx::CreateVectorIcon(kProfileSwitcherOutlineIcon,
+                              kGenericAvatarIconSize, gfx::kPlaceholderColor);
+#endif
+  } else if (apply_ink_drop) {
     SetInkDropMode(InkDropMode::ON);
     SetFocusPainter(nullptr);
 #if defined(OS_LINUX)
-    constexpr int kIconSize = 16;
     set_ink_drop_base_color(SK_ColorWHITE);
     SetBorder(base::MakeUnique<AvatarButtonThemedBorder>());
-    generic_avatar_ = gfx::CreateVectorIcon(kProfileSwitcherOutlineIcon,
-                                            kIconSize, gfx::kPlaceholderColor);
+    generic_avatar_ =
+        gfx::CreateVectorIcon(kProfileSwitcherOutlineIcon,
+                              kGenericAvatarIconSize, gfx::kPlaceholderColor);
 #elif defined(OS_WIN)
     DCHECK_EQ(AvatarButtonStyle::NATIVE, button_style);
     SetBorder(views::CreateEmptyBorder(kBorderInsets));
@@ -255,11 +279,10 @@ void AvatarButton::SetupThemeColorButton() {
                                    ? SK_ColorWHITE
                                    : SK_ColorBLACK;
     set_ink_drop_base_color(base_color);
-    constexpr int kIconSize = 16;
     const SkColor icon_color =
         SkColorSetA(base_color, static_cast<SkAlpha>(0.54 * 0xFF));
-    generic_avatar_ =
-        gfx::CreateVectorIcon(kAccountCircleIcon, kIconSize, icon_color);
+    generic_avatar_ = gfx::CreateVectorIcon(kAccountCircleIcon,
+                                            kGenericAvatarIconSize, icon_color);
   }
 #endif  // defined(OS_WIN)
 }
@@ -292,6 +315,9 @@ gfx::Size AvatarButton::GetMinimumSize() const {
 }
 
 gfx::Size AvatarButton::CalculatePreferredSize() const {
+  if (render_native_nav_buttons_)
+    return LabelButton::CalculatePreferredSize();
+
   // TODO(estade): Calculate the height instead of hardcoding to 20 for the
   // not-condensible case.
   gfx::Size size(LabelButton::CalculatePreferredSize().width(), 20);
@@ -381,6 +407,8 @@ void AvatarButton::OnProfileSupervisedUserIdChanged(
 
 void AvatarButton::OnWidgetDestroying(views::Widget* widget) {
   AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+  if (render_native_nav_buttons_)
+    SchedulePaint();
   widget_observer_.Remove(widget);
 }
 
