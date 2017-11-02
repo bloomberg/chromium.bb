@@ -177,6 +177,8 @@ scoped_refptr<Uint8Array> CopyImageData(
   unsigned byte_length = dst_buffer->ByteLength();
   scoped_refptr<Uint8Array> dst_pixels =
       Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
+  if (!dst_pixels)
+    return nullptr;
   input->PaintImageForCurrentFrame().GetSkImage()->readPixels(
       info, dst_pixels->Data(), width * info.bytesPerPixel(), 0, 0);
   return dst_pixels;
@@ -257,6 +259,8 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
   if (sk_image->alphaType() == kUnpremul_SkAlphaType) {
     image = GetImageWithAlphaDisposition(std::move(image), kPremultiplyAlpha);
     sk_image = image->PaintImageForCurrentFrame().GetSkImage();
+    if (!sk_image.get())
+      return nullptr;
     converted_to_premul = true;
   }
   auto image_info = GetSkImageInfo(image);
@@ -600,19 +604,27 @@ ImageBitmap::ImageBitmap(ImageData* data,
 
   // swizzle back
   SwizzleImageDataIfNeeded(cropped_data);
+  if (!image_)
+    return;
 
   // premultiply if needed
   if (parsed_options.premultiply_alpha)
     image_ = GetImageWithAlphaDisposition(std::move(image_), kPremultiplyAlpha);
+  if (!image_)
+    return;
 
   // color correct if needed
   image_ = ApplyColorSpaceConversion(std::move(image_), parsed_options);
+  if (!image_)
+    return;
 
   // resize if needed
   if (parsed_options.should_scale_input) {
     image_ =
         ScaleImage(std::move(image_), parsed_options.resize_width,
                    parsed_options.resize_height, parsed_options.resize_quality);
+    if (!image_)
+      return;
   }
 }
 
@@ -629,9 +641,9 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
 
   image_ =
       CropImageAndApplyColorSpaceConversion(std::move(input), parsed_options);
-
   if (!image_)
     return;
+
   image_->SetOriginClean(bitmap->OriginClean());
 }
 
