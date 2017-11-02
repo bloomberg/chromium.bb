@@ -34,7 +34,6 @@ class RepostFormCoordinatorTest : public PlatformTest {
     [scoped_key_window_.Get() setRootViewController:view_controller_];
     UIView* view = [[UIView alloc] initWithFrame:view_controller_.view.bounds];
     web_state_.SetView(view);
-    web_state_.SetWebUsageEnabled(true);
 
     CGPoint dialogLocation =
         CGPointMake(kDialogHorizontalLocation, kDialogVerticalLocation);

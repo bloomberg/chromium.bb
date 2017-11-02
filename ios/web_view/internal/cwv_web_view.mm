@@ -410,7 +410,6 @@ static NSString* gUserAgentProduct = nil;
   } else {
     _webState = web::WebState::Create(webStateCreateParams);
   }
-  _webState->SetWebUsageEnabled(true);
 
   _webStateObserver =
       base::MakeUnique<web::WebStateObserverBridge>(_webState.get(), self);

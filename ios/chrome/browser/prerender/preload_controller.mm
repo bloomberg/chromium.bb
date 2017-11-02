@@ -336,7 +336,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   DCHECK(tab);
 
   [[tab webController] setNativeProvider:self];
-  webState_->SetWebUsageEnabled(true);
   [tab setIsPrerenderTab:YES];
   [tab setDelegate:self];
   if (AccountConsistencyService* accountConsistencyService =

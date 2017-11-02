@@ -61,7 +61,6 @@ WebState* TestWebStateDelegate::CreateNewWebState(WebState* source,
   web::WebState::CreateParams params(source->GetBrowserState());
   params.created_with_opener = true;
   std::unique_ptr<web::WebState> child = web::WebState::Create(params);
-  child->SetWebUsageEnabled(true);
 
   child_windows_.push_back(std::move(child));
   return child_windows_.back().get();

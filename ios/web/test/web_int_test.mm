@@ -74,9 +74,6 @@ void WebIntTest::SetUp() {
   web_state()->GetView().frame =
       [UIApplication sharedApplication].keyWindow.bounds;
 
-  // Enable web usage for the WebState.
-  web_state()->SetWebUsageEnabled(true);
-
   web_state()->SetDelegate(&web_state_delegate_);
 }
 

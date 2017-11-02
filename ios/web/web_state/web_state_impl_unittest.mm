@@ -180,15 +180,15 @@ class WebStateImplTest : public web::WebTest {
 
 TEST_F(WebStateImplTest, WebUsageEnabled) {
   // Default is false.
-  ASSERT_FALSE(web_state_->IsWebUsageEnabled());
-
-  web_state_->SetWebUsageEnabled(true);
-  EXPECT_TRUE(web_state_->IsWebUsageEnabled());
-  EXPECT_TRUE(web_state_->GetWebController().webUsageEnabled);
+  ASSERT_TRUE(web_state_->IsWebUsageEnabled());
 
   web_state_->SetWebUsageEnabled(false);
   EXPECT_FALSE(web_state_->IsWebUsageEnabled());
   EXPECT_FALSE(web_state_->GetWebController().webUsageEnabled);
+
+  web_state_->SetWebUsageEnabled(true);
+  EXPECT_TRUE(web_state_->IsWebUsageEnabled());
+  EXPECT_TRUE(web_state_->GetWebController().webUsageEnabled);
 }
 
 TEST_F(WebStateImplTest, ShouldSuppressDialogs) {
