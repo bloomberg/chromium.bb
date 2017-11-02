@@ -34,8 +34,6 @@ import javax.annotation.Nullable;
  * @see https://w3c.github.io/webpayments-payment-handler/
  */
 public class ServiceWorkerPaymentApp extends PaymentInstrument implements PaymentApp {
-    private final static String BASIC_CARD_PAYMENT_METHOD = "basic-card";
-
     private final WebContents mWebContents;
     private final long mRegistrationId;
     private final Drawable mIcon;
@@ -142,7 +140,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
             String iframeOrigin, byte[][] unusedCertificateChain,
             Map<String, PaymentDetailsModifier> modifiers, final InstrumentsCallback callback) {
         if (isOnlySupportBasiccard(methodDataMap)
-                && !matchBasiccardCapabilities(methodDataMap.get(BASIC_CARD_PAYMENT_METHOD))) {
+                && !matchBasiccardCapabilities(
+                           methodDataMap.get(BasicCardUtils.BASIC_CARD_METHOD_NAME))) {
             // Do not list this app if 'basic-card' is the only supported payment method with
             // unmatched capabilities.
             new Handler().post(() -> {
@@ -177,7 +176,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     private boolean isOnlySupportBasiccard(Map<String, PaymentMethodData> methodDataMap) {
         Set<String> requestMethods = new HashSet<>(methodDataMap.keySet());
         requestMethods.retainAll(mMethodNames);
-        return requestMethods.size() == 1 && requestMethods.contains(BASIC_CARD_PAYMENT_METHOD);
+        return requestMethods.size() == 1
+                && requestMethods.contains(BasicCardUtils.BASIC_CARD_METHOD_NAME);
     }
 
     // Matches |requestMethodData|.supportedTypes and |requestMethodData|.supportedNetwokrs for
@@ -263,6 +263,15 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     @Override
     public Set<String> getInstrumentMethodNames() {
         return getAppMethodNames();
+    }
+
+    @Override
+    public boolean isValidForPaymentMethodData(String method, PaymentMethodData data) {
+        boolean isSupportedMethod = super.isValidForPaymentMethodData(method, data);
+        if (isSupportedMethod && BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)) {
+            return matchBasiccardCapabilities(data);
+        }
+        return isSupportedMethod;
     }
 
     @Override
