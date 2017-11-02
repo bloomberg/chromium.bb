@@ -218,23 +218,24 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
 TEST_F(RendererMetricsHelperTest, GetFrameTypeTest) {
   MockWebFrameScheduler frame1(
       true, true, WebFrameScheduler::FrameType::kMainFrame, false, false);
-  EXPECT_EQ(GetFrameType(frame1), FrameType::MAIN_FRAME_VISIBLE);
+  EXPECT_EQ(GetFrameType(&frame1), FrameType::MAIN_FRAME_VISIBLE);
 
   MockWebFrameScheduler frame2(
       true, false, WebFrameScheduler::FrameType::kSubframe, false, false);
-  EXPECT_EQ(GetFrameType(frame2), FrameType::SAME_ORIGIN_HIDDEN);
+  EXPECT_EQ(GetFrameType(&frame2), FrameType::SAME_ORIGIN_HIDDEN);
 
   MockWebFrameScheduler frame3(
       true, false, WebFrameScheduler::FrameType::kSubframe, true, false);
-  EXPECT_EQ(GetFrameType(frame3), FrameType::CROSS_ORIGIN_HIDDEN);
+  EXPECT_EQ(GetFrameType(&frame3), FrameType::CROSS_ORIGIN_HIDDEN);
 
   MockWebFrameScheduler frame4(
       false, false, WebFrameScheduler::FrameType::kSubframe, false, false);
-  EXPECT_EQ(GetFrameType(frame4), FrameType::SAME_ORIGIN_BACKGROUND);
+  EXPECT_EQ(GetFrameType(&frame4), FrameType::SAME_ORIGIN_BACKGROUND);
 
   MockWebFrameScheduler frame5(
       false, false, WebFrameScheduler::FrameType::kMainFrame, false, true);
-  DCHECK_EQ(GetFrameType(frame5), FrameType::MAIN_FRAME_BACKGROUND_EXEMPT);
+  DCHECK_EQ(GetFrameType(&frame5),
+            FrameType::MAIN_FRAME_BACKGROUND_EXEMPT_SELF);
 }
 
 // TODO(crbug.com/754656): Add tests for NthMinute and AfterNthMinute

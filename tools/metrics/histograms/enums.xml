@@ -34233,6 +34233,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="RendererSchedulerFrameType">
+  <obsolete>
+    Superseded by RendererSchedulerFrameType2 as of 11/2017.
+  </obsolete>
   <int value="0" label="MainFrame_OnScreen"/>
   <int value="1" label="MainFrame_OffScreen"/>
   <int value="2" label="MainFrame_Background"/>
@@ -34245,6 +34248,32 @@ Called by update_use_counter_css.py.-->
   <int value="9" label="CrossOrigin_OffScreen"/>
   <int value="10" label="CrossOrigin_Background"/>
   <int value="11" label="CrossOrigin_Background_ThrottlingExempt"/>
+</enum>
+
+<enum name="RendererSchedulerFrameType2">
+  <int value="0" label="Non-frame"/>
+  <int value="1" label="Detached"/>
+  <int value="2" label="MainFrame_OnScreen"/>
+  <int value="3" label="MainFrame_OnScreen_ForcedForeground"/>
+  <int value="4" label="MainFrame_OffScreen"/>
+  <int value="5" label="MainFrame_OffScreen_ForcedForeground"/>
+  <int value="6" label="MainFrame_Background"/>
+  <int value="7" label="MainFrame_Background_ThrottlingExempt_Self"/>
+  <int value="8" label="MainFrame_Background_ThrottlingExempt_Other"/>
+  <int value="9" label="SameOrigin_OnScreen"/>
+  <int value="10" label="SameOrigin_OnScreen_ForcedForeground"/>
+  <int value="11" label="SameOrigin_OffScreen"/>
+  <int value="12" label="SameOrigin_OffScreen_ForcedForeground"/>
+  <int value="13" label="SameOrigin_Background"/>
+  <int value="14" label="SameOrigin_Background_ThrottlingExempt_Self"/>
+  <int value="15" label="SameOrigin_Background_ThrottlingExempt_Other"/>
+  <int value="16" label="CrossOrigin_OnScreen"/>
+  <int value="17" label="CrossOrigin_OnScreen_ForcedForeground"/>
+  <int value="18" label="CrossOrigin_OffScreen"/>
+  <int value="19" label="CrossOrigin_OffScreen_ForcedForeground"/>
+  <int value="20" label="CrossOrigin_Background"/>
+  <int value="21" label="CrossOrigin_Background_ThrottlingExempt_Self"/>
+  <int value="22" label="CrossOrigin_Background_ThrottlingExempt_Other"/>
 </enum>
 
 <enum name="RendererSchedulerTaskQueueType">
