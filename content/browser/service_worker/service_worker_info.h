@@ -55,7 +55,7 @@ struct CONTENT_EXPORT ServiceWorkerVersionInfo {
   EmbeddedWorkerStatus running_status;
   ServiceWorkerVersion::Status status;
   ServiceWorkerVersion::FetchHandlerExistence fetch_handler_existence;
-  NavigationPreloadState navigation_preload_state;
+  blink::mojom::NavigationPreloadState navigation_preload_state;
   GURL script_url;
   int64_t registration_id;
   int64_t version_id;

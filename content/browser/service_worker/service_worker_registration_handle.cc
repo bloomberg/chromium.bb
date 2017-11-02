@@ -27,6 +27,8 @@ const char kNoDocumentURLErrorMessage[] =
 const char kShutdownErrorMessage[] = "The Service Worker system has shutdown.";
 const char kUserDeniedPermissionMessage[] =
     "The user denied permission to use Service Worker.";
+const char kGetNavigationPreloadStateErrorPrefix[] =
+    "Failed to get navigation preload state: ";
 const char kEnableNavigationPreloadErrorPrefix[] =
     "Failed to enable or disable navigation preload: ";
 const char kInvalidStateErrorMessage[] = "The object is in an invalid state.";
@@ -143,6 +145,7 @@ void ServiceWorkerRegistrationHandle::Update(UpdateCallback callback) {
           base::BindOnce(&ServiceWorkerRegistrationHandle::UpdateComplete,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
+
 void ServiceWorkerRegistrationHandle::Unregister(UnregisterCallback callback) {
   if (!CanServeRegistrationObjectHostMethods(
           &callback, kServiceWorkerUnregisterErrorPrefix)) {
@@ -176,6 +179,18 @@ void ServiceWorkerRegistrationHandle::EnableNavigationPreload(
       base::AdaptCallbackForRepeating(base::BindOnce(
           &ServiceWorkerRegistrationHandle::DidUpdateNavigationPreloadEnabled,
           weak_ptr_factory_.GetWeakPtr(), enable, std::move(callback))));
+}
+
+void ServiceWorkerRegistrationHandle::GetNavigationPreloadState(
+    GetNavigationPreloadStateCallback callback) {
+  if (!CanServeRegistrationObjectHostMethods(
+          &callback, kGetNavigationPreloadStateErrorPrefix, nullptr)) {
+    return;
+  }
+
+  std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
+                          base::nullopt,
+                          registration_->navigation_preload_state().Clone());
 }
 
 void ServiceWorkerRegistrationHandle::UpdateComplete(
@@ -303,7 +318,8 @@ bool ServiceWorkerRegistrationHandle::CanServeRegistrationObjectHostMethods(
                      provider_host_->frame_id()))) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
-        std::string(error_prefix) + std::string(kUserDeniedPermissionMessage));
+        std::string(error_prefix) + std::string(kUserDeniedPermissionMessage),
+        args...);
     return false;
   }
 

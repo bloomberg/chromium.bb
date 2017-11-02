@@ -97,7 +97,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     return active_version() || waiting_version();
   }
 
-  const NavigationPreloadState& navigation_preload_state() const {
+  const blink::mojom::NavigationPreloadState navigation_preload_state() const {
     return navigation_preload_state_;
   }
 
@@ -205,7 +205,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   bool is_uninstalling_;
   bool is_uninstalled_;
   bool should_activate_when_ready_;
-  NavigationPreloadState navigation_preload_state_;
+  blink::mojom::NavigationPreloadState navigation_preload_state_;
   base::Time last_update_check_;
   int64_t resources_total_size_bytes_;
 

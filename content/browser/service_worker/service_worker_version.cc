@@ -327,7 +327,7 @@ ServiceWorkerVersion::~ServiceWorkerVersion() {
 }
 
 void ServiceWorkerVersion::SetNavigationPreloadState(
-    const NavigationPreloadState& state) {
+    const blink::mojom::NavigationPreloadState& state) {
   navigation_preload_state_ = state;
 }
 

@@ -129,10 +129,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
 
   // IPC Message handlers
-  void OnGetNavigationPreloadState(int thread_id,
-                                   int request_id,
-                                   int provider_id,
-                                   int64_t registration_id);
   void OnSetNavigationPreloadHeader(int thread_id,
                                     int request_id,
                                     int provider_id,

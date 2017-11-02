@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "third_party/WebKit/public/platform/modules/serviceworker/navigation_preload_state.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom";
 import "url/mojo/url.mojom";
@@ -74,8 +75,15 @@ interface ServiceWorkerRegistrationObjectHost {
   EnableNavigationPreload(bool enable)
     => (ServiceWorkerErrorType error, string? error_msg);
 
-  // TODO(leonhsl): Implement all methods.
-  // GetNavigationPreloadState();
+  // Corresponds to NavigationPreloadManager#getState().
+  // On success, |error| is kNone with |state| set.
+  // Otherwise, |error| and |error_msg| describe the failure.
+  GetNavigationPreloadState()
+    => (ServiceWorkerErrorType error,
+        string? error_msg,
+        blink.mojom.NavigationPreloadState? state);
+
+  // TODO(xiaofeng.zhang): Implement it.
   // SetNavigationPreloadHeader();
 };
 

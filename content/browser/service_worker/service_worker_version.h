@@ -186,7 +186,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   // Meaningful only if this version is active.
-  const NavigationPreloadState& navigation_preload_state() const {
+  const blink::mojom::NavigationPreloadState& navigation_preload_state() const {
     DCHECK(status_ == ACTIVATING || status_ == ACTIVATED) << status_;
     return navigation_preload_state_;
   }
@@ -194,7 +194,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // ServiceWorkerRegistration::EnableNavigationPreload or
   // ServiceWorkerRegistration::SetNavigationPreloadHeader instead of this
   // function.
-  void SetNavigationPreloadState(const NavigationPreloadState& state);
+  void SetNavigationPreloadState(
+      const blink::mojom::NavigationPreloadState& state);
 
   ServiceWorkerMetrics::Site site_for_uma() const { return site_for_uma_; }
 
@@ -707,7 +708,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // ServiceWorkerRegistration. |navigation_preload_state_| is essentially a
   // cached value because it must be looked up quickly and a live registration
   // doesn't necessarily exist whenever there is a live version.
-  NavigationPreloadState navigation_preload_state_;
+  blink::mojom::NavigationPreloadState navigation_preload_state_;
   ServiceWorkerMetrics::Site site_for_uma_;
 
   Status status_ = NEW;

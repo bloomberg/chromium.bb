@@ -67,6 +67,8 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
   void EnableNavigationPreload(
       bool enable,
       EnableNavigationPreloadCallback callback) override;
+  void GetNavigationPreloadState(
+      GetNavigationPreloadStateCallback callback) override;
 
   // Called back from ServiceWorkerContextCore when an update is complete.
   void UpdateComplete(UpdateCallback callback,

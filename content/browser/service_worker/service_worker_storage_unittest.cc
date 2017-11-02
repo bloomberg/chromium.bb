@@ -2036,12 +2036,12 @@ TEST_F(ServiceWorkerStorageTest, AbsentNavigationPreloadState) {
   scoped_refptr<ServiceWorkerRegistration> found_registration;
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationForDocument(scope1, &found_registration));
-  const NavigationPreloadState& registration_state =
+  const blink::mojom::NavigationPreloadState& registration_state =
       found_registration->navigation_preload_state();
   EXPECT_FALSE(registration_state.enabled);
   EXPECT_EQ("true", registration_state.header);
   ASSERT_TRUE(found_registration->active_version());
-  const NavigationPreloadState& state =
+  const blink::mojom::NavigationPreloadState& state =
       found_registration->active_version()->navigation_preload_state();
   EXPECT_FALSE(state.enabled);
   EXPECT_EQ("true", state.header);
@@ -2122,12 +2122,12 @@ TEST_F(ServiceWorkerStorageDiskTest, DisabledNavigationPreloadState) {
   scoped_refptr<ServiceWorkerRegistration> found_registration;
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationForDocument(kScope, &found_registration));
-  const NavigationPreloadState& registration_state =
+  const blink::mojom::NavigationPreloadState& registration_state =
       found_registration->navigation_preload_state();
   EXPECT_FALSE(registration_state.enabled);
   EXPECT_EQ("true", registration_state.header);
   ASSERT_TRUE(found_registration->active_version());
-  const NavigationPreloadState& state =
+  const blink::mojom::NavigationPreloadState& state =
       found_registration->active_version()->navigation_preload_state();
   EXPECT_FALSE(state.enabled);
   EXPECT_EQ("true", state.header);
@@ -2159,12 +2159,12 @@ TEST_F(ServiceWorkerStorageDiskTest, EnabledNavigationPreloadState) {
   scoped_refptr<ServiceWorkerRegistration> found_registration;
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationForDocument(kScope, &found_registration));
-  const NavigationPreloadState& registration_state =
+  const blink::mojom::NavigationPreloadState& registration_state =
       found_registration->navigation_preload_state();
   EXPECT_TRUE(registration_state.enabled);
   EXPECT_EQ(kHeaderValue, registration_state.header);
   ASSERT_TRUE(found_registration->active_version());
-  const NavigationPreloadState& state =
+  const blink::mojom::NavigationPreloadState& state =
       found_registration->active_version()->navigation_preload_state();
   EXPECT_TRUE(state.enabled);
   EXPECT_EQ(kHeaderValue, state.header);
