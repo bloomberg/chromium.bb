@@ -39,6 +39,9 @@ class SafeJsonParser {
   // |connector| is the connector provided by the service manager and is used
   // to retrieve the JSON decoder service. It's commonly retrieved from a
   // service manager connection context object that the embedder provides.
+  // Note that on Android, this runs in process, the sanitizing of |unsafe_json|
+  // being performed in Java for safety. On other platforms the parsing happens
+  // in an isolated sandboxed utility process.
   static void Parse(service_manager::Connector* connector,
                     const std::string& unsafe_json,
                     const SuccessCallback& success_callback,
