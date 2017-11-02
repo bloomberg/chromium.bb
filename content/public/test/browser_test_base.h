@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/metrics/field_trial.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "content/public/test/test_host_resolver.h"
@@ -147,6 +148,10 @@ class BrowserTestBase : public testing::Test {
 
   // Host resolver used during tests.
   std::unique_ptr<TestHostResolver> test_host_resolver_;
+
+  // A field trial list that's used to support field trials activated prior to
+  // browser start.
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   // Expected exit code (default is 0).
   int expected_exit_code_;

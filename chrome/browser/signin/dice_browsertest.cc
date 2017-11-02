@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -256,6 +257,31 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
                               base::Unretained(this))));
     signin::SetDiceAccountReconcilorBlockDelayForTesting(
         kAccountReconcilorDelayMs);
+
+    // Calc DICE field trial params.
+    std::string dice_method_name;
+    switch (account_consistency_method_) {
+      case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
+        dice_method_name =
+            signin::kAccountConsistencyFeatureMethodDiceFixAuthErrors;
+        break;
+      case signin::AccountConsistencyMethod::kDiceMigration:
+        dice_method_name =
+            signin::kAccountConsistencyFeatureMethodDiceMigration;
+        break;
+      case signin::AccountConsistencyMethod::kDice:
+        dice_method_name = signin::kAccountConsistencyFeatureMethodDice;
+        break;
+      case signin::AccountConsistencyMethod::kDisabled:
+      case signin::AccountConsistencyMethod::kMirror:
+        NOTREACHED();
+        return;
+    }
+
+    std::map<std::string, std::string> parameters = {
+        {signin::kAccountConsistencyFeatureMethodParameter, dice_method_name}};
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        signin::kAccountConsistencyFeature, parameters);
   }
 
   // Navigates to the given path on the test server.
@@ -334,30 +360,6 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     command_line->AppendSwitchASCII(switches::kGaiaUrl, base_url.spec());
     command_line->AppendSwitchASCII(switches::kGoogleApisUrl, base_url.spec());
     command_line->AppendSwitchASCII(switches::kLsoUrl, base_url.spec());
-
-    // Append DICE field trial.
-    std::string dice_method_name = "";
-    switch (account_consistency_method_) {
-      case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
-        dice_method_name = "dice_fix_auth_errors";
-        break;
-      case signin::AccountConsistencyMethod::kDiceMigration:
-        dice_method_name = "dice_migration";
-        break;
-      case signin::AccountConsistencyMethod::kDice:
-        dice_method_name = "dice";
-        break;
-      case signin::AccountConsistencyMethod::kDisabled:
-      case signin::AccountConsistencyMethod::kMirror:
-        NOTREACHED();
-        return;
-    }
-    command_line->AppendSwitchASCII(switches::kForceFieldTrials, "Trial/Group");
-    command_line->AppendSwitchASCII(
-        variations::switches::kForceFieldTrialParams,
-        "Trial.Group:method/" + dice_method_name);
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    "AccountConsistency<Trial");
   }
 
   void SetUpOnMainThread() override {
@@ -492,6 +494,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     EXPECT_EQ(count, token_revoked_count_);
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
   AccountConsistencyMethod account_consistency_method_;
   bool token_requested_;
@@ -510,6 +513,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   base::Closure service_login_quit_closure_;
   base::Closure unblock_count_quit_closure_;
   base::Closure tokens_loaded_quit_closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(DiceBrowserTestBase);
 };
 
 class DiceBrowserTest : public DiceBrowserTestBase {

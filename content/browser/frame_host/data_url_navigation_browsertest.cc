@@ -508,13 +508,25 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest, HTML_Navigation_Block) {
       NAVIGATION_BLOCKED);
 }
 
+class DataUrlNavigationBrowserTestWithFeatureFlag
+    : public DataUrlNavigationBrowserTest {
+ public:
+  DataUrlNavigationBrowserTestWithFeatureFlag() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAllowContentInitiatedDataUrlNavigations);
+  }
+  ~DataUrlNavigationBrowserTestWithFeatureFlag() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(DataUrlNavigationBrowserTestWithFeatureFlag);
+};
+
 // Tests that a content initiated navigation to a data URL is allowed if
 // blocking is disabled with a feature flag.
-IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTestWithFeatureFlag,
                        HTML_Navigation_Allow_FeatureFlag) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAllowContentInitiatedDataUrlNavigations);
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/data_url_navigations.html"));
   ExecuteScriptAndCheckNavigation(

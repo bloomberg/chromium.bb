@@ -6,10 +6,6 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_param_associator.h"
-#include "base/metrics/field_trial_params.h"
-#include "base/test/scoped_feature_list.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -22,42 +18,15 @@ namespace {
 
 class ResourceSchedulerBrowserTest : public ContentBrowserTest {
  protected:
-  ResourceSchedulerBrowserTest() : field_trial_list_(nullptr) {}
+  ResourceSchedulerBrowserTest() {}
+  ~ResourceSchedulerBrowserTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(embedded_test_server()->Start());
-    InitializeMaxDelayableRequestsExperiment();
-  }
-
-  void InitializeMaxDelayableRequestsExperiment() {
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-    const char kTrialName[] = "TrialName";
-    const char kGroupName[] = "GroupName";
-    const char kMaxDelayableRequestsNetworkOverride[] =
-        "MaxDelayableRequestsNetworkOverride";
-
-    std::map<std::string, std::string> params;
-    params["MaxEffectiveConnectionType"] = "2G";
-    params["MaxBDPKbits1"] = "130";
-    params["MaxDelayableRequests1"] = "2";
-    params["MaxBDPKbits2"] = "160";
-    params["MaxDelayableRequests2"] = "4";
-
-    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-    base::FieldTrial* field_trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-    std::unique_ptr<base::FeatureList> feature_list(
-        std::make_unique<base::FeatureList>());
-    feature_list->RegisterFieldTrialOverride(
-        kMaxDelayableRequestsNetworkOverride,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
-    feature_list_.InitWithFeatureList(std::move(feature_list));
   }
 
  private:
-  base::FieldTrialList field_trial_list_;
-  base::test::ScopedFeatureList feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(ResourceSchedulerBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ResourceSchedulerBrowserTest,
