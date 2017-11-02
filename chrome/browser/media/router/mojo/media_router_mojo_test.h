@@ -281,9 +281,17 @@ class MediaRouterMojoTest : public ::testing::Test {
   // return it.
   virtual MediaRouterMojoImpl* SetTestingFactoryAndUse() = 0;
 
-  void ProcessEventLoop();
+  // Notify media router that the provider provides a route or a sink.
+  // Need to be called after the provider is registered.
+  void ProvideTestRoute(mojom::MediaRouteProvider::Id provider_id,
+                        const MediaRoute::Id& route_id);
+  void ProvideTestSink(mojom::MediaRouteProvider::Id provider_id,
+                       const MediaSink::Id& sink_id);
 
-  void ConnectProviderManagerService();
+  // Register |mock_extension_provider_| or |mock_wired_display_provider_| with
+  // |media_router_|.
+  void RegisterExtensionProvider();
+  void RegisterWiredDisplayProvider();
 
   // Tests that calling MediaRouter methods result in calls to corresponding
   // MediaRouteProvider methods.
@@ -305,15 +313,23 @@ class MediaRouterMojoTest : public ::testing::Test {
   Profile* profile() { return &profile_; }
 
   // Mock objects.
-  MockMediaRouteProvider mock_media_route_provider_;
+  MockMediaRouteProvider mock_extension_provider_;
+  MockMediaRouteProvider mock_wired_display_provider_;
   MockEventPageRequestManager* request_manager_ = nullptr;
 
  private:
+  // Helper method for RegisterExtensionProvider() and
+  // RegisterWiredDisplayProvider().
+  void RegisterMediaRouteProvider(mojom::MediaRouteProvider* provider,
+                                  mojom::MediaRouteProvider::Id provider_id);
+
   content::TestBrowserThreadBundle test_thread_bundle_;
   scoped_refptr<extensions::Extension> extension_;
   TestingProfile profile_;
   MediaRouterMojoImpl* media_router_ = nullptr;
-  std::unique_ptr<mojo::Binding<mojom::MediaRouteProvider>> binding_;
+  mojo::BindingSet<mojom::MediaRouteProvider> provider_bindings_;
+  std::unique_ptr<MediaRoutesObserver> routes_observer_;
+  std::unique_ptr<MockMediaSinksObserver> sinks_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterMojoTest);
 };
