@@ -2588,11 +2588,69 @@ bool RenderFrameImpl::ScheduleFileChooser(
   return true;
 }
 
+void RenderFrameImpl::DidFailProvisionalLoadInternal(
+    const blink::WebURLError& error,
+    blink::WebHistoryCommitType commit_type,
+    const base::Optional<std::string>& error_page_content) {
+  TRACE_EVENT1("navigation,benchmark,rail",
+               "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
+  // Note: It is important this notification occur before DidStopLoading so the
+  //       SSL manager can react to the provisional load failure before being
+  //       notified the load stopped.
+  //
+  for (auto& observer : render_view_->observers())
+    observer.DidFailProvisionalLoad(frame_, error);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidFailProvisionalLoad");
+    for (auto& observer : observers_)
+      observer.DidFailProvisionalLoad(error);
+  }
+
+  WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
+  if (!document_loader)
+    return;
+
+  const WebURLRequest& failed_request = document_loader->GetRequest();
+
+  // Notify the browser that we failed a provisional load with an error.
+  SendFailedProvisionalLoad(failed_request, error, frame_);
+
+  if (!ShouldDisplayErrorPageForFailedLoad(error.reason, error.unreachable_url))
+    return;
+
+  // Make sure we never show errors in view source mode.
+  frame_->EnableViewSourceMode(false);
+
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(document_loader);
+  NavigationStateImpl* navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+
+  // If this is a failed back/forward/reload navigation, then we need to do a
+  // 'replace' load.  This is necessary to avoid messing up session history.
+  // Otherwise, we do a normal load, which simulates a 'go' navigation as far
+  // as session history is concerned.
+  bool replace = commit_type != blink::kWebStandardCommit;
+
+  // If we failed on a browser initiated request, then make sure that our error
+  // page load is regarded as the same browser initiated request.
+  if (!navigation_state->IsContentInitiated()) {
+    pending_navigation_params_.reset(new NavigationParams(
+        navigation_state->common_params(), navigation_state->start_params(),
+        navigation_state->request_params()));
+  }
+
+  // Load an error page.
+  LoadNavigationErrorPage(failed_request, error, replace, nullptr,
+                          error_page_content);
+}
+
 void RenderFrameImpl::LoadNavigationErrorPage(
     const WebURLRequest& failed_request,
     const WebURLError& error,
     bool replace,
-    HistoryEntry* entry) {
+    HistoryEntry* entry,
+    const base::Optional<std::string>& error_page_content) {
   blink::WebFrameLoadType frame_load_type =
       entry ? blink::WebFrameLoadType::kBackForward
             : blink::WebFrameLoadType::kStandard;
@@ -2617,8 +2675,12 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   }
 
   std::string error_html;
-  GetContentClient()->renderer()->GetNavigationErrorStrings(
-      this, failed_request, error, &error_html, nullptr);
+  if (error_page_content.has_value()) {
+    error_html = error_page_content.value();
+  } else {
+    GetContentClient()->renderer()->GetNavigationErrorStrings(
+        this, failed_request, error, &error_html, nullptr);
+  }
   LoadNavigationErrorPageInternal(error_html, GURL(kUnreachableWebDataURL),
                                   error.unreachable_url, replace,
                                   frame_load_type, history_item);
@@ -3781,56 +3843,7 @@ void RenderFrameImpl::DidReceiveServerRedirectForProvisionalLoad() {
 void RenderFrameImpl::DidFailProvisionalLoad(
     const blink::WebURLError& error,
     blink::WebHistoryCommitType commit_type) {
-  TRACE_EVENT1("navigation,benchmark,rail",
-               "RenderFrameImpl::didFailProvisionalLoad", "id", routing_id_);
-  // Note: It is important this notification occur before DidStopLoading so the
-  //       SSL manager can react to the provisional load failure before being
-  //       notified the load stopped.
-  //
-  for (auto& observer : render_view_->observers())
-    observer.DidFailProvisionalLoad(frame_, error);
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidFailProvisionalLoad");
-    for (auto& observer : observers_)
-      observer.DidFailProvisionalLoad(error);
-  }
-
-  WebDocumentLoader* document_loader = frame_->GetProvisionalDocumentLoader();
-  if (!document_loader)
-    return;
-
-  const WebURLRequest& failed_request = document_loader->GetRequest();
-
-  // Notify the browser that we failed a provisional load with an error.
-  SendFailedProvisionalLoad(failed_request, error, frame_);
-
-  if (!ShouldDisplayErrorPageForFailedLoad(error.reason, error.unreachable_url))
-    return;
-
-  // Make sure we never show errors in view source mode.
-  frame_->EnableViewSourceMode(false);
-
-  DocumentState* document_state =
-      DocumentState::FromDocumentLoader(document_loader);
-  NavigationStateImpl* navigation_state =
-      static_cast<NavigationStateImpl*>(document_state->navigation_state());
-
-  // If this is a failed back/forward/reload navigation, then we need to do a
-  // 'replace' load.  This is necessary to avoid messing up session history.
-  // Otherwise, we do a normal load, which simulates a 'go' navigation as far
-  // as session history is concerned.
-  bool replace = commit_type != blink::kWebStandardCommit;
-
-  // If we failed on a browser initiated request, then make sure that our error
-  // page load is regarded as the same browser initiated request.
-  if (!navigation_state->IsContentInitiated()) {
-    pending_navigation_params_.reset(new NavigationParams(
-        navigation_state->common_params(), navigation_state->start_params(),
-        navigation_state->request_params()));
-  }
-
-  // Load an error page.
-  LoadNavigationErrorPage(failed_request, error, replace, nullptr);
+  DidFailProvisionalLoadInternal(error, commit_type, base::nullopt);
 }
 
 void RenderFrameImpl::DidCommitProvisionalLoad(
@@ -5454,7 +5467,8 @@ void RenderFrameImpl::OnFailedNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
     bool has_stale_copy_in_cache,
-    int error_code) {
+    int error_code,
+    const base::Optional<std::string>& error_page_content) {
   DCHECK(IsBrowserSideNavigationEnabled());
   bool is_reload =
       FrameMsg_Navigate_Type::IsReload(common_params.navigation_type);
@@ -5534,8 +5548,17 @@ void RenderFrameImpl::OnFailedNavigation(
   // notification.
   bool had_provisional_document_loader = frame_->GetProvisionalDocumentLoader();
   if (request_params.nav_entry_id == 0) {
-    DidFailProvisionalLoad(error, replace ? blink::kWebHistoryInertCommit
-                                          : blink::kWebStandardCommit);
+    blink::WebHistoryCommitType commit_type =
+        replace ? blink::kWebHistoryInertCommit : blink::kWebStandardCommit;
+    if (error_page_content.has_value()) {
+      DidFailProvisionalLoadInternal(error, commit_type, error_page_content);
+    } else {
+      // TODO(crbug.com/778824): We only have this branch because a layout test
+      // expects DidFailProvisionalLoad() to be called directly, rather than
+      // DidFailProvisionalLoadInternal(). Once the bug is fixed, we should be
+      // able to call DidFailProvisionalLoadInternal() in all cases.
+      DidFailProvisionalLoad(error, commit_type);
+    }
     if (!weak_this)
       return;
   }
@@ -5544,8 +5567,8 @@ void RenderFrameImpl::OnFailedNavigation(
   // GetProvisionalDocumentLoader(), LoadNavigationErrorPage wasn't called, so
   // do it now.
   if (request_params.nav_entry_id != 0 || !had_provisional_document_loader) {
-    LoadNavigationErrorPage(failed_request, error, replace,
-                            history_entry.get());
+    LoadNavigationErrorPage(failed_request, error, replace, history_entry.get(),
+                            error_page_content);
     if (!weak_this)
       return;
   }

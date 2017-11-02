@@ -110,7 +110,7 @@ class CONTENT_EXPORT NavigationThrottle {
 
     ThrottleAction action() const { return action_; }
     net::Error net_error_code() const { return net_error_code_; }
-    base::Optional<std::string> error_page_content() {
+    const base::Optional<std::string>& error_page_content() {
       return error_page_content_;
     }
 

@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
@@ -971,11 +972,12 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SelectPopupMenuItems,
 // PlzNavigate
 // Tells the renderer that a navigation failed with the error code |error_code|
 // and that the renderer should display an appropriate error page.
-IPC_MESSAGE_ROUTED4(FrameMsg_FailedNavigation,
+IPC_MESSAGE_ROUTED5(FrameMsg_FailedNavigation,
                     content::CommonNavigationParams,  /* common_params */
                     content::RequestNavigationParams, /* request_params */
                     bool,                             /* stale_copy_in_cache */
-                    int                               /* error_code */)
+                    int,                              /* error_code */
+                    base::Optional<std::string> /* error_page_content */)
 
 // PlzNavigate
 // Tells the renderer that a navigation was blocked because a content security

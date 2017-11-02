@@ -237,7 +237,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       NavigationThrottle::ThrottleCheckResult result);
 
   // Called either by OnFailureChecksComplete() or OnRequestFailed() directly.
-  void CommitErrorPage(RenderFrameHostImpl* render_frame_host);
+  // |error_page_content| contains the content of the error page (i.e. flattened
+  // HTML, JS, CSS).
+  void CommitErrorPage(RenderFrameHostImpl* render_frame_host,
+                       const base::Optional<std::string>& error_page_content);
 
   // Have a RenderFrameHost commit the navigation. The NavigationRequest will
   // be destroyed after this call.

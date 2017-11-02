@@ -566,7 +566,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                         const BeginNavigationParams& begin_params,
                         const RequestNavigationParams& request_params,
                         bool has_stale_copy_in_cache,
-                        int error_code);
+                        int error_code,
+                        const base::Optional<std::string>& error_page_content);
 
   // Sets up the Mojo connection between this instance and its associated render
   // frame if it has not yet been set up.
