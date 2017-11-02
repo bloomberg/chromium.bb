@@ -56,6 +56,8 @@
 
 NSString* const kSettingsAccountsId = @"kSettingsAccountsId";
 NSString* const kSettingsHeaderId = @"kSettingsHeaderId";
+NSString* const kSettingsAccountsAddAccountCellId =
+    @"kSettingsAccountsAddAccountCellId";
 NSString* const kSettingsAccountsSignoutCellId =
     @"kSettingsAccountsSignoutCellId";
 NSString* const kSettingsAccountsSyncCellId = @"kSettingsAccountsSyncCellId";
@@ -268,6 +270,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[CollectionViewAccountItem alloc] initWithType:ItemTypeAddAccount];
   item.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_ADD_ACCOUNT_BUTTON);
+  item.accessibilityIdentifier = kSettingsAccountsAddAccountCellId;
   item.image = [UIImage imageNamed:@"settings_accounts_add_account"];
   return item;
 }
