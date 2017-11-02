@@ -154,12 +154,6 @@ ShellPortMus::CreateWorkspaceEventHandler(aura::Window* workspace_window) {
   return std::make_unique<WorkspaceEventHandlerClassic>(workspace_window);
 }
 
-std::unique_ptr<ImmersiveFullscreenController>
-ShellPortMus::CreateImmersiveFullscreenController() {
-  // TODO: Move this to Shell.
-  return std::make_unique<ImmersiveFullscreenController>();
-}
-
 std::unique_ptr<KeyboardUI> ShellPortMus::CreateKeyboardUI() {
   return KeyboardUI::Create();
 }

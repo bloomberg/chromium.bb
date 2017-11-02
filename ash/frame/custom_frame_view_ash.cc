@@ -15,7 +15,6 @@
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
@@ -69,11 +68,9 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     Shell::Get()->tablet_mode_controller()->AddObserver(this);
 
     immersive_fullscreen_controller_ =
-        ShellPort::Get()->CreateImmersiveFullscreenController();
-    if (immersive_fullscreen_controller_) {
-      custom_frame_view->InitImmersiveFullscreenControllerForView(
-          immersive_fullscreen_controller_.get());
-    }
+        std::make_unique<ImmersiveFullscreenController>();
+    custom_frame_view->InitImmersiveFullscreenControllerForView(
+        immersive_fullscreen_controller_.get());
   }
 
   ~CustomFrameViewAshWindowStateDelegate() override {

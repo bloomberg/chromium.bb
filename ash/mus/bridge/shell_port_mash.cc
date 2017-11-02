@@ -28,20 +28,15 @@
 namespace ash {
 namespace mus {
 
-ShellPortMash::MashSpecificState::MashSpecificState() = default;
-
-ShellPortMash::MashSpecificState::~MashSpecificState() = default;
-
 ShellPortMash::ShellPortMash(
     WindowManager* window_manager,
     views::PointerWatcherEventRouter* pointer_watcher_event_router)
-    : ShellPortMus(window_manager) {
-  DCHECK(pointer_watcher_event_router);
+    : ShellPortMus(window_manager),
+      pointer_watcher_event_router_(pointer_watcher_event_router),
+      immersive_handler_factory_(
+          std::make_unique<ImmersiveHandlerFactoryMus>()) {
+  DCHECK(pointer_watcher_event_router_);
   DCHECK_EQ(Config::MASH, GetAshConfig());
-  mash_state_ = std::make_unique<MashSpecificState>();
-  mash_state_->pointer_watcher_event_router = pointer_watcher_event_router;
-  mash_state_->immersive_handler_factory =
-      std::make_unique<ImmersiveHandlerFactoryMus>();
 }
 
 ShellPortMash::~ShellPortMash() {}
@@ -125,12 +120,6 @@ ShellPortMash::CreateWorkspaceEventHandler(aura::Window* workspace_window) {
   return std::make_unique<WorkspaceEventHandlerMus>(workspace_window);
 }
 
-std::unique_ptr<ImmersiveFullscreenController>
-ShellPortMash::CreateImmersiveFullscreenController() {
-  // TODO: Move to Shell.
-  return std::make_unique<ImmersiveFullscreenController>();
-}
-
 std::unique_ptr<KeyboardUI> ShellPortMash::CreateKeyboardUI() {
   return KeyboardUIMus::Create(window_manager_->connector());
 }
@@ -139,12 +128,12 @@ void ShellPortMash::AddPointerWatcher(views::PointerWatcher* watcher,
                                       views::PointerWatcherEventTypes events) {
   // TODO: implement drags for mus pointer watcher, http://crbug.com/641164.
   // NOTIMPLEMENTED_LOG_ONCE drags for mus pointer watcher.
-  mash_state_->pointer_watcher_event_router->AddPointerWatcher(
+  pointer_watcher_event_router_->AddPointerWatcher(
       watcher, events == views::PointerWatcherEventTypes::MOVES);
 }
 
 void ShellPortMash::RemovePointerWatcher(views::PointerWatcher* watcher) {
-  mash_state_->pointer_watcher_event_router->RemovePointerWatcher(watcher);
+  pointer_watcher_event_router_->RemovePointerWatcher(watcher);
 }
 
 bool ShellPortMash::IsTouchDown() {
@@ -164,7 +153,7 @@ void ShellPortMash::CreatePointerWatcherAdapter() {
 
 std::unique_ptr<AcceleratorController>
 ShellPortMash::CreateAcceleratorController() {
-  DCHECK(!mash_state_->accelerator_controller_delegate);
+  DCHECK(!accelerator_controller_delegate_);
 
   uint16_t accelerator_namespace_id = 0u;
   const bool add_result =
@@ -173,14 +162,14 @@ ShellPortMash::CreateAcceleratorController() {
   // should always succeed.
   DCHECK(add_result);
 
-  mash_state_->accelerator_controller_delegate =
+  accelerator_controller_delegate_ =
       std::make_unique<AcceleratorControllerDelegateMus>(window_manager_);
-  mash_state_->accelerator_controller_registrar =
+  accelerator_controller_registrar_ =
       std::make_unique<AcceleratorControllerRegistrar>(
           window_manager_, accelerator_namespace_id);
   return std::make_unique<AcceleratorController>(
-      mash_state_->accelerator_controller_delegate.get(),
-      mash_state_->accelerator_controller_registrar.get());
+      accelerator_controller_delegate_.get(),
+      accelerator_controller_registrar_.get());
 }
 
 }  // namespace mus

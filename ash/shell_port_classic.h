@@ -52,8 +52,6 @@ class ASH_EXPORT ShellPortClassic : public ShellPort {
       override;
   std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
       aura::Window* workspace_window) override;
-  std::unique_ptr<ImmersiveFullscreenController>
-  CreateImmersiveFullscreenController() override;
   std::unique_ptr<KeyboardUI> CreateKeyboardUI() override;
   void AddPointerWatcher(views::PointerWatcher* watcher,
                          views::PointerWatcherEventTypes events) override;

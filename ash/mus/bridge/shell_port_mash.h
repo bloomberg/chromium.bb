@@ -58,8 +58,6 @@ class ShellPortMash : public ShellPortMus {
       override;
   std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
       aura::Window* workspace_window) override;
-  std::unique_ptr<ImmersiveFullscreenController>
-  CreateImmersiveFullscreenController() override;
   std::unique_ptr<KeyboardUI> CreateKeyboardUI() override;
   void AddPointerWatcher(views::PointerWatcher* watcher,
                          views::PointerWatcherEventTypes events) override;
@@ -70,20 +68,12 @@ class ShellPortMash : public ShellPortMus {
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
 
  private:
-  struct MashSpecificState {
-    MashSpecificState();
-    ~MashSpecificState();
-
-    views::PointerWatcherEventRouter* pointer_watcher_event_router = nullptr;
-    std::unique_ptr<AcceleratorControllerDelegateMus>
-        accelerator_controller_delegate;
-    std::unique_ptr<AcceleratorControllerRegistrar>
-        accelerator_controller_registrar;
-    std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory;
-  };
-
-  // TODO(jamescook): Inline the members.
-  std::unique_ptr<MashSpecificState> mash_state_;
+  views::PointerWatcherEventRouter* pointer_watcher_event_router_ = nullptr;
+  std::unique_ptr<AcceleratorControllerDelegateMus>
+      accelerator_controller_delegate_;
+  std::unique_ptr<AcceleratorControllerRegistrar>
+      accelerator_controller_registrar_;
+  std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;
 
   bool cursor_touch_visible_ = true;
 
