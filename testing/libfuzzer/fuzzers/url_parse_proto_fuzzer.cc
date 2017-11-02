@@ -27,8 +27,8 @@ struct TestCase {
 
 TestCase* test_case = new TestCase();
 
-// Boilerplate code to silence libprotobuf-mutators logging.
-protobuf_mutator::protobuf::LogSilencer log_silincer;
+// Silence logging from the protobuf library.
+protobuf_mutator::protobuf::LogSilencer log_silencer;
 
 using namespace url_parse_proto_fuzzer;
 
