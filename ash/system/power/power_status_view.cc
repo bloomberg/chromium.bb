@@ -27,7 +27,7 @@ PowerStatusView::PowerStatusView()
     : percentage_label_(new views::Label),
       separator_label_(new views::Label),
       time_status_label_(new views::Label) {
-  SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
   percentage_label_->SetEnabledColor(kHeaderTextColorNormal);
   separator_label_->SetEnabledColor(kHeaderTextColorNormal);

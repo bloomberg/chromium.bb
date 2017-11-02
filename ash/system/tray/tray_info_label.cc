@@ -19,7 +19,7 @@ TrayInfoLabel::TrayInfoLabel(TrayInfoLabel::Delegate* delegate, int message_id)
       delegate_(delegate) {
   SetLayoutManager(new views::FillLayout);
 
-  TriView* tri_view = TrayPopupUtils::CreateMultiTargetRowView();
+  TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
   tri_view->SetInsets(gfx::Insets(0,
                                   kMenuExtraMarginFromLeftEdge +
                                       kTrayPopupPaddingHorizontal -
