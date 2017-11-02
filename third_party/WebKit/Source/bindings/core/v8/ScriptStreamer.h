@@ -48,14 +48,6 @@ class CORE_EXPORT ScriptStreamer final
                              ScriptState*,
                              scoped_refptr<WebTaskRunner>);
 
-  // Like StartStreaming, but assume that the resource has already been
-  // fully loaded.
-  static void StartStreamingLoadedScript(ClassicPendingScript*,
-                                         Type,
-                                         Settings*,
-                                         ScriptState*,
-                                         scoped_refptr<WebTaskRunner>);
-
   // Returns false if we cannot stream the given encoding.
   static bool ConvertEncoding(const char* encoding_name,
                               v8::ScriptCompiler::StreamedSource::Encoding*);
@@ -103,15 +95,6 @@ class CORE_EXPORT ScriptStreamer final
   // streamed. Non-const for testing.
   static size_t small_script_threshold_;
 
-  static ScriptStreamer* Create(
-      ClassicPendingScript* script,
-      Type script_type,
-      ScriptState* script_state,
-      v8::ScriptCompiler::CompileOptions compile_options,
-      scoped_refptr<WebTaskRunner> loading_task_runner) {
-    return new ScriptStreamer(script, script_type, script_state,
-                              compile_options, std::move(loading_task_runner));
-  }
   ScriptStreamer(ClassicPendingScript*,
                  Type,
                  ScriptState*,
@@ -120,12 +103,6 @@ class CORE_EXPORT ScriptStreamer final
 
   void StreamingComplete();
   void NotifyFinishedToClient();
-
-  static bool StartStreamingInternal(ClassicPendingScript*,
-                                     Type,
-                                     Settings*,
-                                     ScriptState*,
-                                     scoped_refptr<WebTaskRunner>);
 
   Member<ClassicPendingScript> pending_script_;
   // This pointer is weak. If ClassicPendingScript and its Resource are deleted

@@ -28856,7 +28856,7 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="NotStreamingReason">
-  <int value="0" label="Already loaded"/>
+  <int value="0" label="DEPRECATED: Already loaded"/>
   <int value="1" label="Not HTTP"/>
   <int value="2" label="Reload"/>
   <int value="3" label="Context not valid"/>
