@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// eslint-disable-next-line no-unused-vars
 (function(global, binding, v8) {
   'use strict';
 
@@ -17,7 +18,9 @@
       });
     }
 
-    size(chunk) { return 1; }
+    size() {
+      return 1;
+    }
   }
 
   defineProperty(global, 'CountQueuingStrategy', {
@@ -34,7 +37,9 @@
       defineProperty(this, 'highWaterMark', {value: highWaterMark});
     }
 
-    size(chunk) { return 1; }
+    size() {
+      return 1;
+    }
   }
 
   binding.createBuiltInCountQueuingStrategy = highWaterMark =>

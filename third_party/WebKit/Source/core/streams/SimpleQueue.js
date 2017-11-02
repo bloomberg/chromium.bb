@@ -15,7 +15,6 @@
   const _next = v8.createPrivateSymbol('next');
 
   // Take copies of global objects to protect against them being replaced.
-  const undefined = global.undefined;
   const RangeError = global.RangeError;
 
   // shift() and peek() can only be called on a non-empty queue. This function
