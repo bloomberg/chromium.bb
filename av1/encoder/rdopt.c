@@ -9962,12 +9962,14 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
 #if CONFIG_FRAME_MARKER
     if (sf->selective_ref_frame) {
-      if (mbmi->ref_frame[0] == ALTREF2_FRAME ||
-          mbmi->ref_frame[1] == ALTREF2_FRAME)
-        if (cm->cur_frame->alt2_frame_offset < cm->frame_offset) continue;
-      if (mbmi->ref_frame[0] == BWDREF_FRAME ||
-          mbmi->ref_frame[1] == BWDREF_FRAME)
-        if (cm->cur_frame->bwd_frame_offset < cm->frame_offset) continue;
+      if (sf->selective_ref_frame == 2) {
+        if (mbmi->ref_frame[0] == ALTREF2_FRAME ||
+            mbmi->ref_frame[1] == ALTREF2_FRAME)
+          if (cm->cur_frame->alt2_frame_offset < cm->frame_offset) continue;
+        if (mbmi->ref_frame[0] == BWDREF_FRAME ||
+            mbmi->ref_frame[1] == BWDREF_FRAME)
+          if (cm->cur_frame->bwd_frame_offset < cm->frame_offset) continue;
+      }
       if (mbmi->ref_frame[0] == LAST3_FRAME ||
           mbmi->ref_frame[1] == LAST3_FRAME)
         if (cm->cur_frame->lst3_frame_offset <= cm->cur_frame->gld_frame_offset)
@@ -10944,7 +10946,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
   }
 PALETTE_EXIT:
-
 // The inter modes' rate costs are not calculated precisely in some cases.
 // Therefore, sometimes, NEWMV is chosen instead of NEARESTMV, NEARMV, and
 // GLOBALMV. Here, checks are added for those cases, and the mode decisions

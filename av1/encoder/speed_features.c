@@ -135,6 +135,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   const int boosted = frame_is_boosted(cpi);
 
   if (speed >= 1) {
+    sf->selective_ref_frame = 1;
     sf->tx_size_search_init_depth_rect = 1;
     sf->tx_size_search_init_depth_sqr = 1;
   }
@@ -144,7 +145,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_type_search.fast_inter_tx_type_search = 1;
 
-    sf->selective_ref_frame = 1;
+    sf->selective_ref_frame = 2;
 
     if ((cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION) ||
         av1_internal_image_edge(cpi)) {
