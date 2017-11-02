@@ -1911,6 +1911,20 @@ void xdg_shell_v6_create_positioner(wl_client* client,
                                  nullptr);
 }
 
+uint32_t HandleXdgSurfaceV6ConfigureCallback(
+    wl_resource* resource,
+    const gfx::Size& size,
+    ash::mojom::WindowStateType state_type,
+    bool resizing,
+    bool activated,
+    const gfx::Vector2d& origin_offset) {
+  uint32_t serial = wl_display_next_serial(
+      wl_client_get_display(wl_resource_get_client(resource)));
+  zxdg_surface_v6_send_configure(resource, serial);
+  wl_client_flush(wl_resource_get_client(resource));
+  return serial;
+}
+
 void xdg_shell_v6_get_xdg_surface(wl_client* client,
                                   wl_resource* resource,
                                   uint32_t id,
@@ -1930,6 +1944,10 @@ void xdg_shell_v6_get_xdg_surface(wl_client* client,
 
   wl_resource* xdg_surface_resource =
       wl_resource_create(client, &zxdg_surface_v6_interface, 1, id);
+
+  shell_surface->set_configure_callback(
+      base::Bind(&HandleXdgSurfaceV6ConfigureCallback,
+                 base::Unretained(xdg_surface_resource)));
 
   SetImplementation(xdg_surface_resource, &xdg_surface_v6_implementation,
                     std::move(shell_surface));
