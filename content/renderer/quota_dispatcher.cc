@@ -16,7 +16,6 @@
 #include "content/renderer/quota_message_filter.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaType.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
 
 using blink::WebStorageQuotaCallbacks;
@@ -137,8 +136,6 @@ void QuotaDispatcher::RequestStorageQuota(int render_frame_id,
   params.origin_url = origin_url;
   params.storage_type = type;
   params.requested_size = requested_size;
-  params.user_gesture =
-      blink::WebUserGestureIndicator::IsProcessingUserGesture();
   thread_safe_sender_->Send(new QuotaHostMsg_RequestStorageQuota(params));
 }
 

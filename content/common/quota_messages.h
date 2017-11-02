@@ -23,7 +23,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::StorageQuotaParams)
   IPC_STRUCT_TRAITS_MEMBER(origin_url)
   IPC_STRUCT_TRAITS_MEMBER(storage_type)
   IPC_STRUCT_TRAITS_MEMBER(requested_size)
-  IPC_STRUCT_TRAITS_MEMBER(user_gesture)
 IPC_STRUCT_TRAITS_END()
 
 // Quota messages sent from the browser to the child process.

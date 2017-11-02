@@ -21,17 +21,13 @@ struct CONTENT_EXPORT StorageQuotaParams {
       : render_frame_id(MSG_ROUTING_NONE),
         request_id(-1),
         storage_type(storage::kStorageTypeTemporary),
-        requested_size(0),
-        user_gesture(false) {}
+        requested_size(0) {}
 
   int render_frame_id;
   int request_id;
   GURL origin_url;
   storage::StorageType storage_type;
   uint64_t requested_size;
-
-  // Request was made in the context of a user gesture.
-  bool user_gesture;
 };
 
 }  // namespace content
