@@ -347,7 +347,8 @@ static void vfilter(const int32_t *src, int src_stride, int32_t *dst,
         if (conv_params->do_average) {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;
 
-          dst[y * dst_stride + x] >>= (DIST_PRECISION_BITS - 1);
+          dst[y * dst_stride + x] = ROUND_POWER_OF_TWO(dst[y * dst_stride + x],
+                                                       DIST_PRECISION_BITS - 1);
         } else {
           dst[y * dst_stride + x] = res * conv_params->fwd_offset;
         }
@@ -465,7 +466,8 @@ static void vfilter8(const int32_t *src, int src_stride, int32_t *dst,
         if (conv_params->do_average) {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;
 
-          dst[y * dst_stride + x] >>= (DIST_PRECISION_BITS - 1);
+          dst[y * dst_stride + x] = ROUND_POWER_OF_TWO(dst[y * dst_stride + x],
+                                                       DIST_PRECISION_BITS - 1);
         } else {
           dst[y * dst_stride + x] = res * conv_params->fwd_offset;
         }

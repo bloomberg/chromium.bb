@@ -476,7 +476,8 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride,
         } else {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;
 
-          dst[y * dst_stride + x] >>= (DIST_PRECISION_BITS - 1);
+          dst[y * dst_stride + x] = ROUND_POWER_OF_TWO(dst[y * dst_stride + x],
+                                                       DIST_PRECISION_BITS - 1);
         }
       }
     }
@@ -546,7 +547,8 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
         } else {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;
 
-          dst[y * dst_stride + x] >>= (DIST_PRECISION_BITS - 1);
+          dst[y * dst_stride + x] = ROUND_POWER_OF_TWO(dst[y * dst_stride + x],
+                                                       DIST_PRECISION_BITS - 1);
         }
       }
 #else
@@ -676,7 +678,8 @@ void av1_jnt_convolve_2d_c(const uint8_t *src, int src_stride,
         if (conv_params->do_average) {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;
 
-          dst[y * dst_stride + x] >>= (DIST_PRECISION_BITS - 1);
+          dst[y * dst_stride + x] = ROUND_POWER_OF_TWO(dst[y * dst_stride + x],
+                                                       DIST_PRECISION_BITS - 1);
         } else {
           dst[y * dst_stride + x] = res * conv_params->fwd_offset;
         }
@@ -752,7 +755,8 @@ void av1_convolve_2d_scale_c(const uint8_t *src, int src_stride,
         if (conv_params->do_average) {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;
 
-          dst[y * dst_stride + x] >>= (DIST_PRECISION_BITS - 1);
+          dst[y * dst_stride + x] = ROUND_POWER_OF_TWO(dst[y * dst_stride + x],
+                                                       DIST_PRECISION_BITS - 1);
         } else {
           dst[y * dst_stride + x] = res * conv_params->fwd_offset;
         }
