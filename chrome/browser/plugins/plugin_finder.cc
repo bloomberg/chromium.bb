@@ -18,11 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugins/plugin_installer.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
-#include "chrome/common/features.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/common/webplugininfo.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -145,11 +141,6 @@ void RecordBuiltInPluginListError(PluginListError error_code) {
 }
 
 }  // namespace
-
-// static
-void PluginFinder::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kDisablePluginFinder, false);
-}
 
 // static
 PluginFinder* PluginFinder::GetInstance() {

@@ -1457,9 +1457,6 @@ const char kWasRestarted[] = "was.restarted";
 // Whether Extensions are enabled.
 const char kDisableExtensions[] = "extensions.disabled";
 
-// Whether the plugin finder that lets you install missing plugins is enabled.
-const char kDisablePluginFinder[] = "plugins.disable_plugin_finder";
-
 // Customized app page names that appear on the New Tab Page.
 const char kNtpAppPageNames[] = "ntp.app_page_names";
 

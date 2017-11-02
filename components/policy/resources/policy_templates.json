@@ -1849,19 +1849,20 @@
       'name': 'DisablePluginFinder',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:11-', 'chrome_os:11-'],
+      'supported_on': ['chrome.*:11-64', 'chrome_os:11-64'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 66,
-      'caption': '''Specify whether the plugin finder should be disabled''',
+      'caption': '''Specify whether the plugin finder should be disabled (deprecated)''',
       'tags': [],
-      'desc': '''If you set this setting to enabled the automatic search and installation of missing plugins will be disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''This policy has been removed as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 64.
 
-      Setting this option to disabled or leave it not set the plugin finder will be active.''',
-      'label': '''Disable plugin finder''',
+      Automatic search and installation of missing plugins is no longer supported.''',
+      'label': '''Disable plugin finder (deprecated)''',
     },
     {
       'name': 'SyncDisabled',
