@@ -248,8 +248,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
     return has_scheduled_tile_tasks_;
   }
 
-  void OnRasterTaskCompleted(std::unique_ptr<RasterBuffer> raster_buffer,
-                             Tile::Id tile_id,
+  void OnRasterTaskCompleted(Tile::Id tile_id,
                              Resource* resource,
                              bool was_canceled);
 

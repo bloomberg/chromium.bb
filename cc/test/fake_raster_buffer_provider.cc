@@ -18,9 +18,6 @@ FakeRasterBufferProviderImpl::AcquireBufferForRaster(
   return nullptr;
 }
 
-void FakeRasterBufferProviderImpl::ReleaseBufferForRaster(
-    std::unique_ptr<RasterBuffer> buffer) {}
-
 void FakeRasterBufferProviderImpl::OrderingBarrier() {}
 
 void FakeRasterBufferProviderImpl::Flush() {}

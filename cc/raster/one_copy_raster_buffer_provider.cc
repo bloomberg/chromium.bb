@@ -112,11 +112,6 @@ OneCopyRasterBufferProvider::AcquireBufferForRaster(
                                             previous_content_id);
 }
 
-void OneCopyRasterBufferProvider::ReleaseBufferForRaster(
-    std::unique_ptr<RasterBuffer> buffer) {
-  // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
-}
-
 void OneCopyRasterBufferProvider::OrderingBarrier() {
   TRACE_EVENT0("cc", "OneCopyRasterBufferProvider::OrderingBarrier");
 

@@ -91,11 +91,6 @@ ZeroCopyRasterBufferProvider::AcquireBufferForRaster(
       new RasterBufferImpl(resource_provider_, resource));
 }
 
-void ZeroCopyRasterBufferProvider::ReleaseBufferForRaster(
-    std::unique_ptr<RasterBuffer> buffer) {
-  // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
-}
-
 void ZeroCopyRasterBufferProvider::OrderingBarrier() {
   // No need to sync resources as this provider does not use GL context.
 }

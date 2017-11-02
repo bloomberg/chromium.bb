@@ -59,7 +59,6 @@ enum RasterBufferProviderType {
 class TestRasterTaskCompletionHandler {
  public:
   virtual void OnRasterTaskCompleted(
-      std::unique_ptr<RasterBuffer> raster_buffer,
       unsigned id,
       bool was_canceled) = 0;
 };
@@ -88,8 +87,8 @@ class TestRasterTaskImpl : public TileTask {
 
   // Overridden from TileTask:
   void OnTaskCompleted() override {
-    completion_handler_->OnRasterTaskCompleted(std::move(raster_buffer_), id_,
-                                               state().IsCanceled());
+    raster_buffer_ = nullptr;
+    completion_handler_->OnRasterTaskCompleted(id_, state().IsCanceled());
   }
 
  protected:
@@ -286,10 +285,7 @@ class RasterBufferProviderTest
     context_provider->ContextGL()->Flush();
   }
 
-  void OnRasterTaskCompleted(std::unique_ptr<RasterBuffer> raster_buffer,
-                             unsigned id,
-                             bool was_canceled) override {
-    raster_buffer_provider_->ReleaseBufferForRaster(std::move(raster_buffer));
+  void OnRasterTaskCompleted(unsigned id, bool was_canceled) override {
     RasterTaskResult result;
     result.id = id;
     result.canceled = was_canceled;

@@ -176,11 +176,6 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
       this, resource_provider_, resource->id(), resource_has_previous_content);
 }
 
-void GpuRasterBufferProvider::ReleaseBufferForRaster(
-    std::unique_ptr<RasterBuffer> buffer) {
-  // Nothing to do here. RasterBufferImpl destructor cleans up after itself.
-}
-
 void GpuRasterBufferProvider::OrderingBarrier() {
   TRACE_EVENT0("cc", "GpuRasterBufferProvider::OrderingBarrier");
 
