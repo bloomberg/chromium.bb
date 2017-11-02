@@ -355,8 +355,7 @@ Polymer({
       return;
     this.propertiesSent_ = true;
     this.error_ = '';
-    var source = this.networkProperties.Source;
-    if (!this.guid || !source || source == CrOnc.Source.NONE) {
+    if (!this.guid || this.getSource_() == CrOnc.Source.NONE) {
       // Create the configuration, then connect to it in the callback.
       this.networkingPrivate.createNetwork(
           this.shareNetwork_, this.configProperties_,
@@ -379,6 +378,16 @@ Polymer({
    */
   hasGuid_: function() {
     return !!this.guid;
+  },
+
+  /**
+   * Returns a valid CrOnc.Source.
+   * @private
+   * @return {!CrOnc.Source}
+   */
+  getSource_: function() {
+    var source = this.networkProperties.Source;
+    return source ? /** @type {!CrOnc.Source} */ (source) : CrOnc.Source.NONE;
   },
 
   /** @private */
@@ -456,7 +465,7 @@ Polymer({
   setShareNetwork_: function() {
     if (this.guid) {
       // Configured networks can not change whether they are shared.
-      var source = this.networkProperties.Source;
+      var source = this.getSource_();
       this.shareNetwork_ =
           source == CrOnc.Source.DEVICE || source == CrOnc.Source.DEVICE_POLICY;
       return;
@@ -923,7 +932,7 @@ Polymer({
    * @private
    */
   shareIsEnabled_: function() {
-    if (this.guid || !this.shareAllowEnable)
+    if (!this.shareAllowEnable || this.getSource_() != CrOnc.Source.NONE)
       return false;
 
     if (this.security_ == CrOnc.Security.WPA_EAP) {
