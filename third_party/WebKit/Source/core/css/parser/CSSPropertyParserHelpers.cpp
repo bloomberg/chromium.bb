@@ -1538,7 +1538,7 @@ void AddProperty(CSSPropertyID resolved_property,
                  const CSSValue& value,
                  bool important,
                  IsImplicitProperty implicit,
-                 HeapVector<CSSProperty, 256>& properties) {
+                 HeapVector<CSSPropertyValue, 256>& properties) {
   DCHECK(!isPropertyAlias(resolved_property));
   DCHECK(implicit == IsImplicitProperty::kNotImplicit ||
          implicit == IsImplicitProperty::kImplicit);
@@ -1556,9 +1556,9 @@ void AddProperty(CSSPropertyID resolved_property,
     }
   }
 
-  properties.push_back(CSSProperty(resolved_property, value, important,
-                                   set_from_shorthand, shorthand_index,
-                                   implicit == IsImplicitProperty::kImplicit));
+  properties.push_back(CSSPropertyValue(
+      resolved_property, value, important, set_from_shorthand, shorthand_index,
+      implicit == IsImplicitProperty::kImplicit));
 }
 
 CSSValue* ConsumeTransformList(CSSParserTokenRange& range,
@@ -1671,7 +1671,7 @@ bool ConsumeShorthandVia2LonghandAPIs(
     bool important,
     const CSSParserContext& context,
     CSSParserTokenRange& range,
-    HeapVector<CSSProperty, 256>& properties) {
+    HeapVector<CSSPropertyValue, 256>& properties) {
   DCHECK_EQ(shorthand.length(), 2u);
   const CSSPropertyID* longhands = shorthand.properties();
 
@@ -1699,7 +1699,7 @@ bool ConsumeShorthandVia4LonghandAPIs(
     bool important,
     const CSSParserContext& context,
     CSSParserTokenRange& range,
-    HeapVector<CSSProperty, 256>& properties) {
+    HeapVector<CSSPropertyValue, 256>& properties) {
   DCHECK_EQ(shorthand.length(), 4u);
   const CSSPropertyID* longhands = shorthand.properties();
   const CSSValue* top =
@@ -1744,7 +1744,7 @@ bool ConsumeShorthandGreedilyViaLonghandAPIs(
     bool important,
     const CSSParserContext& context,
     CSSParserTokenRange& range,
-    HeapVector<CSSProperty, 256>& properties) {
+    HeapVector<CSSPropertyValue, 256>& properties) {
   // Existing shorthands have at most 6 longhands.
   DCHECK_LE(shorthand.length(), 6u);
   const CSSValue* longhands[6] = {nullptr, nullptr, nullptr,
@@ -1778,10 +1778,11 @@ bool ConsumeShorthandGreedilyViaLonghandAPIs(
   return true;
 }
 
-void AddExpandedPropertyForValue(CSSPropertyID property,
-                                 const CSSValue& value,
-                                 bool important,
-                                 HeapVector<CSSProperty, 256>& properties) {
+void AddExpandedPropertyForValue(
+    CSSPropertyID property,
+    const CSSValue& value,
+    bool important,
+    HeapVector<CSSPropertyValue, 256>& properties) {
   const StylePropertyShorthand& shorthand = shorthandForProperty(property);
   unsigned shorthand_length = shorthand.length();
   DCHECK(shorthand_length);

@@ -4,7 +4,6 @@
 
 #include "core/css/properties/longhands/CSSPropertyAPIMaxInlineSizeOrMaxLogicalWidth.h"
 
-#include "core/css/CSSProperty.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
 
 namespace blink {

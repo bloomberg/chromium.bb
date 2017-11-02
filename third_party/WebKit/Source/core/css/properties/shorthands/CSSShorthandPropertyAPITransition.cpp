@@ -46,7 +46,7 @@ bool CSSShorthandPropertyAPITransition::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   const StylePropertyShorthand shorthand = transitionShorthandForParsing();
   const unsigned longhand_count = shorthand.length();
 

@@ -16,7 +16,7 @@ bool CSSShorthandPropertyAPIPadding::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandVia4LonghandAPIs(
       paddingShorthand(), important, context, range, properties);
 }

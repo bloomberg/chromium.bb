@@ -127,15 +127,15 @@ MutableStylePropertySet::SetResult CSSParserImpl::ParseVariableValue(
 
 static inline void FilterProperties(
     bool important,
-    const HeapVector<CSSProperty, 256>& input,
-    HeapVector<CSSProperty, 256>& output,
+    const HeapVector<CSSPropertyValue, 256>& input,
+    HeapVector<CSSPropertyValue, 256>& output,
     size_t& unused_entries,
     std::bitset<numCSSProperties>& seen_properties,
     HashSet<AtomicString>& seen_custom_properties) {
   // Add properties in reverse order so that highest priority definitions are
   // reached first. Duplicate definitions can then be ignored when found.
   for (size_t i = input.size(); i--;) {
-    const CSSProperty& property = input[i];
+    const CSSPropertyValue& property = input[i];
     if (property.IsImportant() != important)
       continue;
     const unsigned property_id_index = property.Id() - firstCSSProperty;
@@ -158,11 +158,11 @@ static inline void FilterProperties(
 }
 
 static ImmutableStylePropertySet* CreateStylePropertySet(
-    HeapVector<CSSProperty, 256>& parsed_properties,
+    HeapVector<CSSPropertyValue, 256>& parsed_properties,
     CSSParserMode mode) {
   std::bitset<numCSSProperties> seen_properties;
   size_t unused_entries = parsed_properties.size();
-  HeapVector<CSSProperty, 256> results(unused_entries);
+  HeapVector<CSSPropertyValue, 256> results(unused_entries);
   HashSet<AtomicString> seen_custom_properties;
 
   FilterProperties(true, parsed_properties, results, unused_entries,
@@ -208,7 +208,7 @@ bool CSSParserImpl::ParseDeclarationList(MutableStylePropertySet* declaration,
 
   std::bitset<numCSSProperties> seen_properties;
   size_t unused_entries = parser.parsed_properties_.size();
-  HeapVector<CSSProperty, 256> results(unused_entries);
+  HeapVector<CSSPropertyValue, 256> results(unused_entries);
   HashSet<AtomicString> seen_custom_properties;
   FilterProperties(true, parser.parsed_properties_, results, unused_entries,
                    seen_properties, seen_custom_properties);
@@ -858,7 +858,7 @@ void CSSParserImpl::ConsumeApplyRule(CSSParserTokenRange prelude) {
   const CSSParserToken& ident = prelude.ConsumeIncludingWhitespace();
   if (!prelude.AtEnd() || !CSSVariableParser::IsValidVariableName(ident))
     return;  // Parse error, expected a single custom property name
-  parsed_properties_.push_back(CSSProperty(
+  parsed_properties_.push_back(CSSPropertyValue(
       CSSPropertyApplyAtRule,
       *CSSCustomIdentValue::Create(ident.Value().ToAtomicString())));
 }
@@ -1070,7 +1070,7 @@ void CSSParserImpl::ConsumeVariableValue(CSSParserTokenRange range,
           CSSVariableParser::ParseDeclarationValue(variable_name, range,
                                                    is_animation_tainted)) {
     parsed_properties_.push_back(
-        CSSProperty(CSSPropertyVariable, *value, important));
+        CSSPropertyValue(CSSPropertyVariable, *value, important));
     context_->Count(context_->Mode(), CSSPropertyVariable);
   }
 }

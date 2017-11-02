@@ -15,7 +15,7 @@ bool CSSShorthandPropertyAPIGridGap::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   DCHECK_EQ(shorthandForProperty(CSSPropertyGridGap).length(), 2u);
   CSSValue* row_gap = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative);

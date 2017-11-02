@@ -8,7 +8,7 @@
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSProperty.h"
+#include "core/css/CSSPropertyValue.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StylePropertySet.h"

@@ -5,7 +5,6 @@
 #include "core/css/properties/shorthands/CSSShorthandPropertyAPIWebkitBorderBefore.h"
 
 #include "core/StylePropertyShorthand.h"
-#include "core/css/CSSProperty.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
 namespace blink {
@@ -15,7 +14,7 @@ bool CSSShorthandPropertyAPIWebkitBorderBefore::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandGreedilyViaLonghandAPIs(
       webkitBorderBeforeShorthand(), important, context, range, properties);
 }

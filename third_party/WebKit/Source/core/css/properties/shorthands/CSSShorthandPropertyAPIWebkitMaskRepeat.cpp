@@ -17,7 +17,7 @@ bool CSSShorthandPropertyAPIWebkitMaskRepeat::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValue* result_x = nullptr;
   CSSValue* result_y = nullptr;
   bool implicit = false;

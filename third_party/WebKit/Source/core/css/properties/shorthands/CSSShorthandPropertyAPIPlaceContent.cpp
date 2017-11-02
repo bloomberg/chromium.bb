@@ -16,7 +16,7 @@ bool CSSShorthandPropertyAPIPlaceContent::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceContent).length(), 2u);
 
   CSSValue* align_content_value = nullptr;

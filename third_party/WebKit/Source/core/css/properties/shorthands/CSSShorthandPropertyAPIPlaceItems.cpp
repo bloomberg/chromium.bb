@@ -16,7 +16,7 @@ bool CSSShorthandPropertyAPIPlaceItems::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceItems).length(), 2u);
 
   // align-items property does not allow the 'auto' value.

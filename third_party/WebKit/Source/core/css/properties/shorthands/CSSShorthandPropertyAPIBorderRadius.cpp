@@ -17,7 +17,7 @@ bool CSSShorthandPropertyAPIBorderRadius::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValue* horizontal_radii[4] = {nullptr};
   CSSValue* vertical_radii[4] = {nullptr};
 

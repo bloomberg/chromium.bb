@@ -20,7 +20,7 @@
 namespace blink {
 
 class CSSParserContext;
-class CSSProperty;
+class CSSPropertyValue;
 class CSSStringValue;
 class CSSURIValue;
 class CSSValuePair;
@@ -120,7 +120,7 @@ void AddProperty(CSSPropertyID resolved_property,
                  const CSSValue&,
                  bool important,
                  IsImplicitProperty,
-                 HeapVector<CSSProperty, 256>& properties);
+                 HeapVector<CSSPropertyValue, 256>& properties);
 
 void CountKeywordOnlyPropertyUsage(CSSPropertyID,
                                    const CSSParserContext&,
@@ -131,29 +131,31 @@ const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
                                     const CSSParserContext&,
                                     CSSParserTokenRange&);
 
-bool ConsumeShorthandVia2LonghandAPIs(const StylePropertyShorthand&,
-                                      bool important,
-                                      const CSSParserContext&,
-                                      CSSParserTokenRange&,
-                                      HeapVector<CSSProperty, 256>& properties);
+bool ConsumeShorthandVia2LonghandAPIs(
+    const StylePropertyShorthand&,
+    bool important,
+    const CSSParserContext&,
+    CSSParserTokenRange&,
+    HeapVector<CSSPropertyValue, 256>& properties);
 
-bool ConsumeShorthandVia4LonghandAPIs(const StylePropertyShorthand&,
-                                      bool important,
-                                      const CSSParserContext&,
-                                      CSSParserTokenRange&,
-                                      HeapVector<CSSProperty, 256>& properties);
+bool ConsumeShorthandVia4LonghandAPIs(
+    const StylePropertyShorthand&,
+    bool important,
+    const CSSParserContext&,
+    CSSParserTokenRange&,
+    HeapVector<CSSPropertyValue, 256>& properties);
 
 bool ConsumeShorthandGreedilyViaLonghandAPIs(
     const StylePropertyShorthand&,
     bool important,
     const CSSParserContext&,
     CSSParserTokenRange&,
-    HeapVector<CSSProperty, 256>& properties);
+    HeapVector<CSSPropertyValue, 256>& properties);
 
 void AddExpandedPropertyForValue(CSSPropertyID prop_id,
                                  const CSSValue&,
                                  bool,
-                                 HeapVector<CSSProperty, 256>& properties);
+                                 HeapVector<CSSPropertyValue, 256>& properties);
 
 // Template implementations are at the bottom of the file for readability.
 

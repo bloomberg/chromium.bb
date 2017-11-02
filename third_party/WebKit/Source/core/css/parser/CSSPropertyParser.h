@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class CSSProperty;
+class CSSPropertyValue;
 class CSSValue;
 
 // Inputs: PropertyID, isImportant bool, CSSParserTokenRange.
@@ -47,7 +47,7 @@ class CSSPropertyParser {
                          bool important,
                          const CSSParserTokenRange&,
                          const CSSParserContext*,
-                         HeapVector<CSSProperty, 256>&,
+                         HeapVector<CSSPropertyValue, 256>&,
                          StyleRule::RuleType);
 
   // Parses a non-shorthand CSS property
@@ -58,7 +58,7 @@ class CSSPropertyParser {
  private:
   CSSPropertyParser(const CSSParserTokenRange&,
                     const CSSParserContext*,
-                    HeapVector<CSSProperty, 256>*);
+                    HeapVector<CSSPropertyValue, 256>*);
 
   // TODO(timloh): Rename once the CSSParserValue-based parseValue is removed
   bool ParseValueStart(CSSPropertyID unresolved_property, bool important);
@@ -72,7 +72,7 @@ class CSSPropertyParser {
   CSSParserTokenRange range_;
   Member<const CSSParserContext> context_;
   // Outputs:
-  HeapVector<CSSProperty, 256>* parsed_properties_;
+  HeapVector<CSSPropertyValue, 256>* parsed_properties_;
 };
 
 CSSPropertyID UnresolvedCSSPropertyID(StringView);

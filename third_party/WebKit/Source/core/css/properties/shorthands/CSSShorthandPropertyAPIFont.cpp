@@ -7,7 +7,7 @@
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSProperty.h"
+#include "core/css/CSSPropertyValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
@@ -20,7 +20,7 @@ namespace {
 
 bool ConsumeSystemFont(bool important,
                        CSSParserTokenRange& range,
-                       HeapVector<CSSProperty, 256>& properties) {
+                       HeapVector<CSSPropertyValue, 256>& properties) {
   CSSValueID system_font_id = range.ConsumeIncludingWhitespace().Id();
   DCHECK_GE(system_font_id, CSSValueCaption);
   DCHECK_LE(system_font_id, CSSValueStatusBar);
@@ -89,7 +89,7 @@ bool ConsumeSystemFont(bool important,
 bool ConsumeFont(bool important,
                  CSSParserTokenRange& range,
                  const CSSParserContext& context,
-                 HeapVector<CSSProperty, 256>& properties) {
+                 HeapVector<CSSPropertyValue, 256>& properties) {
   // Let's check if there is an inherit or initial somewhere in the shorthand.
   CSSParserTokenRange range_copy = range;
   while (!range_copy.AtEnd()) {
@@ -226,7 +226,7 @@ bool CSSShorthandPropertyAPIFont::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   const CSSParserToken& token = range.Peek();
   if (token.Id() >= CSSValueCaption && token.Id() <= CSSValueStatusBar)
     return ConsumeSystemFont(important, range, properties);
