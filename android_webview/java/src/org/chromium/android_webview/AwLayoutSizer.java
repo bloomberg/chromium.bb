@@ -7,6 +7,9 @@ package org.chromium.android_webview;
 import android.view.View;
 import android.view.View.MeasureSpec;
 
+import org.chromium.base.CommandLine;
+import org.chromium.content.common.ContentSwitches;
+
 /**
  * Helper methods used to manage the layout of the View that contains AwContents.
  */
@@ -17,8 +20,8 @@ public class AwLayoutSizer {
     private boolean mHeightMeasurementIsFixed;
 
     // Size of the rendered content, as reported by native.
-    private int mContentHeightCss;
-    private int mContentWidthCss;
+    private int mContentHeightDip;
+    private int mContentWidthDip;
 
     // Page scale factor.
     private float mPageScaleFactor = 1.0f;
@@ -87,10 +90,16 @@ public class AwLayoutSizer {
      * Update the contents size.
      * This should be called whenever the content size changes (due to DOM manipulation or page
      * load, for example).
-     * The width and height should be in CSS pixels.
+     * The width and height should be in DIP pixels. When --use-zoom-for-dsf is disabled, the
+     * given width and height are in CSS pixels and we must scale them by DIP scale.
      */
-    public void onContentSizeChanged(int widthCss, int heightCss) {
-        doUpdate(widthCss, heightCss, mPageScaleFactor);
+    public void onContentSizeChanged(int width, int height) {
+        CommandLine commandLine = CommandLine.getInstance();
+        if (!commandLine.hasSwitch(ContentSwitches.ENABLE_USE_ZOOM_FOR_DSF)) {
+            width *= mDIPScale;
+            height *= mDIPScale;
+        }
+        doUpdate(width, height, mPageScaleFactor);
     }
 
     /**
@@ -99,25 +108,25 @@ public class AwLayoutSizer {
      * example).
      */
     public void onPageScaleChanged(float pageScaleFactor) {
-        doUpdate(mContentWidthCss, mContentHeightCss, pageScaleFactor);
+        doUpdate(mContentWidthDip, mContentHeightDip, pageScaleFactor);
     }
 
-    private void doUpdate(int widthCss, int heightCss, float pageScaleFactor) {
+    private void doUpdate(int widthDip, int heightDip, float pageScaleFactor) {
         // We want to request layout only if the size or scale change, however if any of the
         // measurements are 'fixed', then changing the underlying size won't have any effect, so we
         // ignore changes to dimensions that are 'fixed'.
-        final int heightPix = (int) (heightCss * mPageScaleFactor * mDIPScale);
+        final int heightPix = (int) (heightDip * mPageScaleFactor);
         boolean pageScaleChanged = mPageScaleFactor != pageScaleFactor;
         boolean contentHeightChangeMeaningful = !mHeightMeasurementIsFixed
                 && (!mHeightMeasurementLimited || heightPix < mHeightMeasurementLimit);
         boolean pageScaleChangeMeaningful =
                 !mWidthMeasurementIsFixed || contentHeightChangeMeaningful;
-        boolean layoutNeeded = (mContentWidthCss != widthCss && !mWidthMeasurementIsFixed)
-                || (mContentHeightCss != heightCss && contentHeightChangeMeaningful)
+        boolean layoutNeeded = (mContentWidthDip != widthDip && !mWidthMeasurementIsFixed)
+                || (mContentHeightDip != heightDip && contentHeightChangeMeaningful)
                 || (pageScaleChanged && pageScaleChangeMeaningful);
 
-        mContentWidthCss = widthCss;
-        mContentHeightCss = heightCss;
+        mContentWidthDip = widthDip;
+        mContentHeightDip = heightDip;
         mPageScaleFactor = pageScaleFactor;
 
         if (layoutNeeded) {
@@ -139,8 +148,8 @@ public class AwLayoutSizer {
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
 
-        int contentHeightPix = (int) (mContentHeightCss * mPageScaleFactor * mDIPScale);
-        int contentWidthPix = (int) (mContentWidthCss * mPageScaleFactor * mDIPScale);
+        int contentHeightPix = (int) (mContentHeightDip * mPageScaleFactor);
+        int contentWidthPix = (int) (mContentWidthDip * mPageScaleFactor);
 
         int measuredHeight = contentHeightPix;
         int measuredWidth = contentWidthPix;
