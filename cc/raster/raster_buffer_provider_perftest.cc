@@ -188,17 +188,14 @@ class PerfRasterBufferProviderHelper {
       const Resource* resource,
       uint64_t resource_content_id,
       uint64_t previous_content_id) = 0;
-  virtual void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) = 0;
 };
 
 class PerfRasterTaskImpl : public PerfTileTask {
  public:
-  PerfRasterTaskImpl(PerfRasterBufferProviderHelper* helper,
-                     std::unique_ptr<ScopedResource> resource,
+  PerfRasterTaskImpl(std::unique_ptr<ScopedResource> resource,
                      std::unique_ptr<RasterBuffer> raster_buffer,
                      TileTask::Vector* dependencies)
       : PerfTileTask(dependencies),
-        helper_(helper),
         resource_(std::move(resource)),
         raster_buffer_(std::move(raster_buffer)) {}
 
@@ -206,16 +203,12 @@ class PerfRasterTaskImpl : public PerfTileTask {
   void RunOnWorkerThread() override {}
 
   // Overridden from TileTask:
-  void OnTaskCompleted() override {
-    if (helper_)
-      helper_->ReleaseBufferForRaster(std::move(raster_buffer_));
-  }
+  void OnTaskCompleted() override { raster_buffer_ = nullptr; }
 
  protected:
   ~PerfRasterTaskImpl() override {}
 
  private:
-  PerfRasterBufferProviderHelper* helper_;
   std::unique_ptr<ScopedResource> resource_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
 
@@ -261,9 +254,8 @@ class RasterBufferProviderPerfTestBase {
       if (helper)
         raster_buffer = helper->AcquireBufferForRaster(resource.get(), 0, 0);
       TileTask::Vector dependencies = image_decode_tasks;
-      raster_tasks->push_back(
-          new PerfRasterTaskImpl(helper, std::move(resource),
-                                 std::move(raster_buffer), &dependencies));
+      raster_tasks->push_back(new PerfRasterTaskImpl(
+          std::move(resource), std::move(raster_buffer), &dependencies));
     }
   }
 
@@ -378,9 +370,6 @@ class RasterBufferProviderPerfTest
       uint64_t previous_content_id) override {
     return raster_buffer_provider_->AcquireBufferForRaster(
         resource, resource_content_id, previous_content_id);
-  }
-  void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) override {
-    raster_buffer_provider_->ReleaseBufferForRaster(std::move(buffer));
   }
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {

@@ -145,8 +145,9 @@ class RasterTaskImpl : public TileTask {
     // Here calling state().IsCanceled() is thread-safe, because this task is
     // already concluded as FINISHED or CANCELLED and no longer will be worked
     // upon by task graph runner.
-    tile_manager_->OnRasterTaskCompleted(std::move(raster_buffer_), tile_id_,
-                                         resource_, state().IsCanceled());
+    raster_buffer_ = nullptr;
+    tile_manager_->OnRasterTaskCompleted(tile_id_, resource_,
+                                         state().IsCanceled());
   }
 
  protected:
@@ -1224,12 +1225,9 @@ void TileManager::ResetSignalsForTesting() {
 }
 
 void TileManager::OnRasterTaskCompleted(
-    std::unique_ptr<RasterBuffer> raster_buffer,
     Tile::Id tile_id,
     Resource* resource,
     bool was_canceled) {
-  raster_buffer_provider_->ReleaseBufferForRaster(std::move(raster_buffer));
-
   auto found = tiles_.find(tile_id);
   Tile* tile = nullptr;
   bool raster_task_was_scheduled_with_checker_images = false;

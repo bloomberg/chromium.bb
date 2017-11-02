@@ -48,9 +48,6 @@ class CC_EXPORT RasterBufferProvider {
       uint64_t resource_content_id,
       uint64_t previous_content_id) = 0;
 
-  // Release raster buffer.
-  virtual void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) = 0;
-
   // Used for syncing resources to the worker context.
   virtual void OrderingBarrier() = 0;
 
