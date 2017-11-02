@@ -290,11 +290,16 @@ void LayoutSelection::ClearSelection() {
     return;
 
   for (auto layout_object : paint_range_) {
-    const SelectionState old_state = layout_object->GetSelectionState();
-    layout_object->SetSelectionStateIfNeeded(SelectionState::kNone);
-    if (layout_object->GetSelectionState() == old_state)
+    if (layout_object->GetSelectionState() == SelectionState::kNone)
       continue;
+    layout_object->LayoutObject::SetSelectionState(SelectionState::kNone);
     layout_object->SetShouldInvalidateSelection();
+    for (LayoutObject* runner = layout_object->ContainingBlock(); runner;
+         runner = runner->ContainingBlock()) {
+      if (runner->GetSelectionState() == SelectionState::kNone)
+        break;
+      runner->LayoutObject::SetSelectionState(SelectionState::kNone);
+    }
   }
 
   // Reset selection.
