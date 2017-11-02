@@ -44,7 +44,6 @@ namespace ash {
 class AcceleratorController;
 class AshWindowTreeHost;
 struct AshWindowTreeHostInitParams;
-class ImmersiveFullscreenController;
 class KeyboardUI;
 class RootWindowController;
 class WindowCycleEventFilter;
@@ -128,9 +127,6 @@ class ASH_EXPORT ShellPort {
 
   virtual std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
       aura::Window* workspace_window) = 0;
-
-  virtual std::unique_ptr<ImmersiveFullscreenController>
-  CreateImmersiveFullscreenController() = 0;
 
   // Creates the KeyboardUI. This is called early on.
   virtual std::unique_ptr<KeyboardUI> CreateKeyboardUI() = 0;
