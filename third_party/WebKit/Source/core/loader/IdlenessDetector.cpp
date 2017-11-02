@@ -117,9 +117,10 @@ double IdlenessDetector::GetNetworkIdleTime() {
 void IdlenessDetector::WillProcessTask(double start_time) {
   // If we have idle time and we are kNetworkQuietWindowSeconds seconds past it,
   // emit idle signals.
+  DocumentLoader* loader = local_frame_->Loader().GetDocumentLoader();
   if (network_2_quiet_ > 0 &&
       start_time - network_2_quiet_ > kNetworkQuietWindowSeconds) {
-    probe::lifecycleEvent(local_frame_, "networkAlmostIdle",
+    probe::lifecycleEvent(local_frame_, loader, "networkAlmostIdle",
                           network_2_quiet_start_time_);
     if (auto* frame_resource_coordinator =
             local_frame_->GetFrameResourceCoordinator()) {
@@ -131,7 +132,7 @@ void IdlenessDetector::WillProcessTask(double start_time) {
 
   if (network_0_quiet_ > 0 &&
       start_time - network_0_quiet_ > kNetworkQuietWindowSeconds) {
-    probe::lifecycleEvent(local_frame_, "networkIdle",
+    probe::lifecycleEvent(local_frame_, loader, "networkIdle",
                           network_0_quiet_start_time_);
     network_0_quiet_ = -1;
   }
