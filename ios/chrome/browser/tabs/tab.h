@@ -19,8 +19,8 @@
 @class CastController;
 @class ExternalAppLauncher;
 @class FormInputAccessoryViewController;
-@class LegacyFullscreenController;
-@protocol LegacyFullscreenControllerDelegate;
+@class FullScreenController;
+@protocol FullScreenControllerDelegate;
 class GURL;
 @class OpenInController;
 @class OverscrollActionsController;
@@ -116,8 +116,8 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // The delegate to use for the legacy fullscreen controller.  It should not be
 // set if the new fullscreen is enabled.
 // TODO(crbug.com/778823): Remove this property.
-@property(nonatomic, weak) id<LegacyFullscreenControllerDelegate>
-    legacyFullscreenControllerDelegate;
+@property(nonatomic, weak) id<FullScreenControllerDelegate>
+    fullScreenControllerDelegate;
 
 @property(nonatomic, readonly)
     OverscrollActionsController* overscrollActionsController;
