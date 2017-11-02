@@ -275,7 +275,6 @@ def main():
   elif sys.platform == 'win32':
     want.extend(['lib/clang/*/lib/windows/clang_rt.asan*.dll',
                  'lib/clang/*/lib/windows/clang_rt.asan*.lib',
-                 'lib/clang/*/lib/windows/clang_rt.ubsan*.lib',
                  ])
 
   for root, dirs, files in os.walk(LLVM_RELEASE_DIR):
