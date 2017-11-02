@@ -27,6 +27,7 @@
 
 #include "core/editing/iterators/TextIteratorTextState.h"
 
+#include "core/editing/iterators/BackwardsTextBuffer.h"
 #include "core/html/HTMLElement.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -181,6 +182,32 @@ void TextIteratorTextState::AppendTextTo(ForwardsTextBuffer* output,
     output->PushRange(text_.Characters8() + offset, length_to_append);
   else
     output->PushRange(text_.Characters16() + offset, length_to_append);
+}
+
+void TextIteratorTextState::PrependTextTo(BackwardsTextBuffer* output,
+                                          unsigned position,
+                                          unsigned length_to_prepend) const {
+  SECURITY_DCHECK(position + length_to_prepend <= length());
+  // Make sure there's no integer overflow.
+  SECURITY_DCHECK(position + length_to_prepend >= position);
+  if (!length_to_prepend)
+    return;
+  DCHECK(output);
+  if (single_character_buffer_) {
+    DCHECK_EQ(position, 0u);
+    DCHECK_EQ(length(), 1u);
+    output->PushCharacters(single_character_buffer_, 1);
+    return;
+  }
+  const unsigned offset =
+      text_start_offset_ + length() - position - length_to_prepend;
+  // Any failure is a security bug (buffer overflow) and must be captured.
+  CHECK_LE(offset, text_.length());
+  CHECK_LE(offset + length_to_prepend, text_.length());
+  if (text_.Is8Bit())
+    output->PushRange(text_.Characters8() + offset, length_to_prepend);
+  else
+    output->PushRange(text_.Characters16() + offset, length_to_prepend);
 }
 
 }  // namespace blink
