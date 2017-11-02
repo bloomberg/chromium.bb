@@ -798,7 +798,7 @@ RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
     } else {
       // The channel may not be initialized in some tests environments. In this
       // case we set up a dummy interface provider.
-      mojo::MakeRequestAssociatedWithDedicatedPipe(&remote_interfaces);
+      mojo::MakeIsolatedRequest(&remote_interfaces);
     }
     remote_associated_interfaces_.reset(new AssociatedInterfaceProviderImpl(
         std::move(remote_interfaces)));

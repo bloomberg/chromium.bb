@@ -351,7 +351,7 @@ void MockRenderProcessHost::Resume() {}
 mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {
   if (!renderer_interface_) {
     renderer_interface_.reset(new mojom::RendererAssociatedPtr);
-    mojo::MakeRequestAssociatedWithDedicatedPipe(renderer_interface_.get());
+    mojo::MakeIsolatedRequest(renderer_interface_.get());
   }
   return renderer_interface_->get();
 }

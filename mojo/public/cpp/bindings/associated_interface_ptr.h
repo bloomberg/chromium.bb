@@ -225,7 +225,7 @@ AssociatedInterfaceRequest<Interface> MakeRequest(
 //  * When discarding messages sent on an interface, which can be done by
 //    discarding the returned request.
 template <typename Interface>
-AssociatedInterfaceRequest<Interface> MakeRequestAssociatedWithDedicatedPipe(
+AssociatedInterfaceRequest<Interface> MakeIsolatedRequest(
     AssociatedInterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
   scoped_refptr<internal::MultiplexRouter> router0 =
@@ -252,7 +252,7 @@ AssociatedInterfaceRequest<Interface> MakeRequestAssociatedWithDedicatedPipe(
 // method associates the interface with a dedicated, disconnected message pipe.
 // That way, the corresponding associated interface pointer of |handle| can
 // safely make calls (although those calls are silently dropped).
-MOJO_CPP_BINDINGS_EXPORT void AssociateWithDisconnectedPipe(
+MOJO_CPP_BINDINGS_EXPORT void GetIsolatedInterface(
     ScopedInterfaceEndpointHandle handle);
 
 }  // namespace mojo
