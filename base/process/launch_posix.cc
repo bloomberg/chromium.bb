@@ -729,8 +729,9 @@ NOINLINE pid_t CloneAndLongjmpInChild(unsigned long flags,
   // specifying a new stack, so we use setjmp/longjmp to emulate
   // fork-like behavior.
   alignas(16) char stack_buf[PTHREAD_STACK_MIN];
-#if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY) || \
-    defined(ARCH_CPU_MIPS_FAMILY)
+#if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY) ||   \
+    defined(ARCH_CPU_MIPS_FAMILY) || defined(ARCH_CPU_S390_FAMILY) || \
+    defined(ARCH_CPU_PPC64_FAMILY)
   // The stack grows downward.
   void* stack = stack_buf + sizeof(stack_buf);
 #else
@@ -763,8 +764,9 @@ pid_t ForkWithFlags(unsigned long flags, pid_t* ptid, pid_t* ctid) {
     // parameters depending on CONFIG_CLONE_BACKWARDS* configuration options.
 #if defined(ARCH_CPU_X86_64)
     return syscall(__NR_clone, flags, nullptr, ptid, ctid, nullptr);
-#elif defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARM_FAMILY) || \
-    defined(ARCH_CPU_MIPS_FAMILY)
+#elif defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARM_FAMILY) ||        \
+    defined(ARCH_CPU_MIPS_FAMILY) || defined(ARCH_CPU_S390_FAMILY) || \
+    defined(ARCH_CPU_PPC64_FAMILY)
     // CONFIG_CLONE_BACKWARDS defined.
     return syscall(__NR_clone, flags, nullptr, ptid, nullptr, ctid);
 #else
