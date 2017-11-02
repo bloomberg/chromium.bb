@@ -215,6 +215,9 @@ static_library("protobuf_full") {
     # The traffic_annotation tool is not part of Chrome itself, and needs to
     # parse human-readable protobufs.
     "//tools/traffic_annotation/*",
+
+    # Chromecast requires descriptors and reflection.
+    "//chromecast/*",
   ]
 
   sources = protobuf_lite_sources + [
@@ -248,11 +251,8 @@ static_library("protobuf_full") {
               "src/google/protobuf/generated_message_reflection.cc",
               "src/google/protobuf/generated_message_reflection.h",
 
-              # gzip_stream.cc pulls in zlib, but it's not actually used by protoc, just
-              # by test code, so instead of compiling zlib for the host, let's just
-              # exclude this.
-              # "src/google/protobuf/io/gzip_stream.cc",
-              # "src/google/protobuf/io/gzip_stream.h",
+              "src/google/protobuf/io/gzip_stream.cc",
+              "src/google/protobuf/io/gzip_stream.h",
 
               "src/google/protobuf/io/printer.cc",
               "src/google/protobuf/io/printer.h",
@@ -347,6 +347,7 @@ static_library("protobuf_full") {
 
   deps = [
     "//build/config:exe_and_shlib_deps",
+    "//third_party/zlib",
   ]
 
   if (is_android) {
@@ -372,6 +373,8 @@ static_library("protobuf_full") {
   ]
 
   cflags = protobuf_lite_cflags
+
+  defines = [ "HAVE_ZLIB" ]
 }
 
 # Only compile the compiler for the host architecture.
