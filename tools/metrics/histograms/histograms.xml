@@ -93376,6 +93376,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebFont.InterventionResult.MissedCache"
     enum="WebFontInterventionResult">
+  <obsolete>
+    Deprecated 10/2017. Related field trial has finished rolling out.
+  </obsolete>
   <owner>toyoshim@chromium.org</owner>
   <owner>kenjibaheux@chromium.org</owner>
   <summary>
