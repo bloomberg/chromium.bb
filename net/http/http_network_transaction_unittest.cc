@@ -868,6 +868,35 @@ TEST_F(HttpNetworkTransactionTest, SimpleGETNoHeadersWeirdPort) {
   EXPECT_THAT(callback.GetResult(rv), IsError(ERR_INVALID_HTTP_RESPONSE));
 }
 
+// Tests that request info can be destroyed after the headers phase is complete.
+TEST_F(HttpNetworkTransactionTest, SimpleGETNoReadDestroyRequestInfo) {
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"), MockRead("Connection: keep-alive\r\n"),
+      MockRead("Content-Length: 100\r\n\r\n"), MockRead(SYNCHRONOUS, 0),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  {
+    auto request = std::make_unique<HttpRequestInfo>();
+    request->method = "GET";
+    request->url = GURL("http://www.example.org/");
+
+    int rv =
+        trans->Start(request.get(), callback.callback(), NetLogWithSource());
+
+    EXPECT_THAT(callback.GetResult(rv), IsOk());
+  }  // Let request info be destroyed.
+
+  trans.reset();
+}
+
 // Response with no status line, and a weird port.  Option to allow weird ports
 // enabled.
 TEST_F(HttpNetworkTransactionTest, SimpleGETNoHeadersWeirdPortAllowed) {
