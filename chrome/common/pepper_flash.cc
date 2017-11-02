@@ -18,8 +18,6 @@
 #include "base/win/registry.h"
 #endif
 
-namespace chrome {
-
 const int32_t kPepperFlashPermissions =
     ppapi::PERMISSION_DEV | ppapi::PERMISSION_PRIVATE |
     ppapi::PERMISSION_BYPASS_USER_GESTURE | ppapi::PERMISSION_FLASH;
@@ -153,5 +151,3 @@ bool IsSystemFlashScriptDebuggerPresent() {
   return false;
 #endif
 }
-
-}  // namespace chrome

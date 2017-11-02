@@ -164,7 +164,7 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
   plugin_info->is_out_of_process = out_of_process;
   plugin_info->path = flash_path;
   plugin_info->name = content::kFlashPluginName;
-  plugin_info->permissions = chrome::kPepperFlashPermissions;
+  plugin_info->permissions = kPepperFlashPermissions;
 
   // The description is like "Shockwave Flash 10.2 r154".
   plugin_info->description = base::StringPrintf("%s %d.%d r%d",
@@ -321,7 +321,7 @@ bool FlashComponentInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   base::Version unused;
-  return chrome::CheckPepperFlashManifest(manifest, &unused);
+  return CheckPepperFlashManifest(manifest, &unused);
 }
 
 // The base directory on Windows looks like:
