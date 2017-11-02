@@ -7,6 +7,10 @@
 
 #include "components/signin/ios/browser/ios_signin_client.h"
 
+#include "base/ios/weak_nsobject.h"
+
+@class CWVAuthenticationController;
+
 // iOS WebView specific signin client.
 class IOSWebViewSigninClient : public IOSSigninClient {
  public:
@@ -18,6 +22,8 @@ class IOSWebViewSigninClient : public IOSSigninClient {
       scoped_refptr<HostContentSettingsMap> host_content_settings_map,
       scoped_refptr<TokenWebData> token_web_data);
 
+  ~IOSWebViewSigninClient() override;
+
   // SigninClient implementation.
   void OnSignedOut() override;
   std::string GetProductVersion() override;
@@ -26,7 +32,14 @@ class IOSWebViewSigninClient : public IOSSigninClient {
   // SigninErrorController::Observer implementation.
   void OnErrorChanged() override;
 
+  // Setter and getter for |authentication_controller_|.
+  void SetAuthenticationController(
+      CWVAuthenticationController* authentication_controller);
+  CWVAuthenticationController* GetAuthenticationController();
+
  private:
+  base::WeakNSObject<CWVAuthenticationController> authentication_controller_;
+
   DISALLOW_COPY_AND_ASSIGN(IOSWebViewSigninClient);
 };
 
