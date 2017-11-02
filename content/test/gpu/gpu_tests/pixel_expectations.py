@@ -28,8 +28,8 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
-    # TODO(ccameron) fix these on Mac Retina, commented for
-    # self.Fail('Pixel_CSS3DBlueBox', ['mac'], bug=533690)
+    # TODO(ccameron) fix these on Mac Retina
+    self.Fail('Pixel_CSS3DBlueBox', ['mac'], bug=533690)
 
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
@@ -65,9 +65,6 @@ class PixelExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=773293)
     self.Skip('Pixel_WebGL2_ClearBufferfv_Result_Displayed',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=773293)
-
-    # Rebaseline Pixel_CSS3DBlueBox
-    self.Fail('Pixel_CSS3DBlueBox', bug=774354)
 
     # Failing on Mac Intel HighSierra
     self.Fail('Pixel_Video_MP4',
