@@ -547,9 +547,6 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
       FROM_HERE,
       base::Bind(&DetectFaultTolerantHeap),
       base::TimeDelta::FromMinutes(1));
-
-  // Start the swap thrashing monitor.
-  memory::SwapThrashingMonitor::Initialize();
 }
 
 // static
