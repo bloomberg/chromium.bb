@@ -37,11 +37,11 @@ namespace blink {
 
 WebURLError::WebURLError(const WebURL& unreachable_url,
                          bool stale_copy_in_cache,
-                         int reason) {
-  // This is implemented in ResourceError.h due to a DEPS restriction.
-  ResourceError::InitializeWebURLError(this, unreachable_url,
-                                       stale_copy_in_cache, reason);
-}
+                         int reason)
+    : domain(Domain::kNet),
+      reason(reason),
+      stale_copy_in_cache(stale_copy_in_cache),
+      unreachable_url(unreachable_url) {}
 
 WebURLError::WebURLError(const ResourceError& error) {
   *this = error;
@@ -55,7 +55,6 @@ WebURLError& WebURLError::operator=(const ResourceError& error) {
     reason = error.ErrorCode();
     unreachable_url = KURL(error.FailingURL());
     stale_copy_in_cache = error.StaleCopyInCache();
-    localized_description = error.LocalizedDescription();
     is_web_security_violation = error.IsAccessCheck();
   }
   return *this;
@@ -64,8 +63,7 @@ WebURLError& WebURLError::operator=(const ResourceError& error) {
 WebURLError::operator ResourceError() const {
   if (!reason)
     return ResourceError();
-  ResourceError resource_error =
-      ResourceError(domain, reason, unreachable_url, localized_description);
+  ResourceError resource_error(domain, reason, unreachable_url);
   resource_error.SetStaleCopyInCache(stale_copy_in_cache);
   resource_error.SetIsAccessCheck(is_web_security_violation);
   return resource_error;

@@ -70,9 +70,6 @@ struct WebURLError {
   // The url that failed to load.
   WebURL unreachable_url;
 
-  // A description for the error.
-  WebString localized_description;
-
   WebURLError() = default;
   // This constructor infers some members from the parameters.
   BLINK_PLATFORM_EXPORT WebURLError(const WebURL&,

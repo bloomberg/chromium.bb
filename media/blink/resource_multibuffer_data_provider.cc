@@ -456,9 +456,7 @@ void ResourceMultiBufferDataProvider::DidFinishLoading(double finishTime) {
 }
 
 void ResourceMultiBufferDataProvider::DidFail(const WebURLError& error) {
-  DVLOG(1) << "didFail: reason=" << error.reason << ", domain=" << error.domain
-           << ", localizedDescription="
-           << error.localized_description.Utf8().data();
+  DVLOG(1) << "didFail: reason=" << error.reason << ", domain=" << error.domain;
   DCHECK(active_loader_.get());
   active_loader_.reset();
 
