@@ -1401,9 +1401,15 @@ DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
 }
 
 bool DrawingBuffer::ShouldUseChromiumImage() {
+  // See whether the use of GpuMemoryBuffers was blacklisted since the
+  // time the browser determined whether to use the feature based on
+  // the command line flags. This is the only way to avoid race
+  // conditions when determining whether to use this feature.
   return RuntimeEnabledFeatures::WebGLImageChromiumEnabled() &&
          chromium_image_usage_ == kAllowChromiumImage &&
-         Platform::Current()->GetGpuMemoryBufferManager();
+         Platform::Current()->GetGpuMemoryBufferManager() &&
+         !ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+             gpu::DISABLE_GPU_MEMORY_BUFFERS_AS_RENDER_TARGETS);
 }
 
 }  // namespace blink
