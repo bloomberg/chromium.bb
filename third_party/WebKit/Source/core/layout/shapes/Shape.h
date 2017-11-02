@@ -81,8 +81,6 @@ class CORE_EXPORT Shape {
                                                   const LayoutRect& margin_rect,
                                                   WritingMode,
                                                   float margin);
-  static std::unique_ptr<Shape> CreateEmptyRasterShape(WritingMode,
-                                                       float margin);
   static std::unique_ptr<Shape> CreateLayoutBoxShape(const FloatRoundedRect&,
                                                      WritingMode,
                                                      float margin);
@@ -105,6 +103,9 @@ class CORE_EXPORT Shape {
   float ShapeMargin() const { return margin_; }
 
  private:
+  static std::unique_ptr<Shape> CreateEmptyRasterShape(WritingMode,
+                                                       float margin);
+
   bool LineOverlapsBoundingBox(LayoutUnit line_top,
                                LayoutUnit line_height,
                                const LayoutRect& rect) const {

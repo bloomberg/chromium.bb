@@ -47,6 +47,7 @@
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -228,6 +229,83 @@ std::unique_ptr<Shape> Shape::CreateEmptyRasterShape(WritingMode writing_mode,
   return std::move(raster_shape);
 }
 
+static bool ExtractImageData(Image* image,
+                             const IntSize& image_size,
+                             WTF::ArrayBufferContents& contents) {
+  if (!image)
+    return false;
+
+  std::unique_ptr<ImageBuffer> image_buffer = ImageBuffer::Create(image_size);
+  if (!image_buffer)
+    return false;
+
+  // FIXME: This is not totally correct but it is needed to prevent shapes
+  // that loads SVG Images during paint invalidations to mark layoutObjects
+  // for layout, which is not allowed. See https://crbug.com/429346
+  ImageObserverDisabler disabler(image);
+  PaintFlags flags;
+  IntRect image_source_rect(IntPoint(), image->Size());
+  IntRect image_dest_rect(IntPoint(), image_size);
+  // TODO(ccameron): No color conversion is required here.
+  image->Draw(image_buffer->Canvas(), flags, image_dest_rect, image_source_rect,
+              kDoNotRespectImageOrientation,
+              Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
+
+  return image_buffer->GetImageData(image_dest_rect, contents);
+}
+
+static std::unique_ptr<RasterShapeIntervals> ExtractIntervalsFromImageData(
+    WTF::ArrayBufferContents& contents,
+    float threshold,
+    const IntRect& image_rect,
+    const IntRect& margin_rect) {
+  DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
+  DOMUint8ClampedArray* pixel_array =
+      DOMUint8ClampedArray::Create(array_buffer, 0, array_buffer->ByteLength());
+
+  unsigned pixel_array_offset = 3;  // Each pixel is four bytes: RGBA.
+  uint8_t alpha_pixel_threshold = threshold * 255;
+
+  DCHECK_EQ(image_rect.Size().Area() * 4, pixel_array->length());
+
+  int min_buffer_y = std::max(0, margin_rect.Y() - image_rect.Y());
+  int max_buffer_y =
+      std::min(image_rect.Height(), margin_rect.MaxY() - image_rect.Y());
+
+  std::unique_ptr<RasterShapeIntervals> intervals = WTF::WrapUnique(
+      new RasterShapeIntervals(margin_rect.Height(), -margin_rect.Y()));
+
+  for (int y = min_buffer_y; y < max_buffer_y; ++y) {
+    int start_x = -1;
+    for (int x = 0; x < image_rect.Width(); ++x, pixel_array_offset += 4) {
+      uint8_t alpha = pixel_array->Item(pixel_array_offset);
+      bool alpha_above_threshold = alpha > alpha_pixel_threshold;
+      if (start_x == -1 && alpha_above_threshold) {
+        start_x = x;
+      } else if (start_x != -1 &&
+                 (!alpha_above_threshold || x == image_rect.Width() - 1)) {
+        int end_x = alpha_above_threshold ? x + 1 : x;
+        intervals->IntervalAt(y + image_rect.Y())
+            .Unite(IntShapeInterval(start_x + image_rect.X(),
+                                    end_x + image_rect.X()));
+        start_x = -1;
+      }
+    }
+  }
+  return intervals;
+}
+
+static bool IsValidRasterShapeSize(const IntSize& size) {
+  static size_t max_image_size_bytes = 0;
+  if (!max_image_size_bytes) {
+    size_t size32_max_bytes =
+        0xFFFFFFFF / 4;  // Some platforms don't limit MaxDecodedImageBytes.
+    max_image_size_bytes =
+        std::min(size32_max_bytes, Platform::Current()->MaxDecodedImageBytes());
+  }
+  return size.Area() * 4 < max_image_size_bytes;
+}
+
 std::unique_ptr<Shape> Shape::CreateRasterShape(Image* image,
                                                 float threshold,
                                                 const LayoutRect& image_r,
@@ -237,62 +315,18 @@ std::unique_ptr<Shape> Shape::CreateRasterShape(Image* image,
   IntRect image_rect = PixelSnappedIntRect(image_r);
   IntRect margin_rect = PixelSnappedIntRect(margin_r);
 
-  std::unique_ptr<RasterShapeIntervals> intervals = WTF::WrapUnique(
-      new RasterShapeIntervals(margin_rect.Height(), -margin_rect.Y()));
-  std::unique_ptr<ImageBuffer> image_buffer =
-      ImageBuffer::Create(image_rect.Size());
-
-  if (image && image_buffer) {
-    // FIXME: This is not totally correct but it is needed to prevent shapes
-    // that loads SVG Images during paint invalidations to mark layoutObjects
-    // for layout, which is not allowed. See https://crbug.com/429346
-    ImageObserverDisabler disabler(image);
-    PaintFlags flags;
-    IntRect image_source_rect(IntPoint(), image->Size());
-    IntRect image_dest_rect(IntPoint(), image_rect.Size());
-    // TODO(ccameron): No color conversion is required here.
-    image->Draw(image_buffer->Canvas(), flags, image_dest_rect,
-                image_source_rect, kDoNotRespectImageOrientation,
-                Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
-
-    WTF::ArrayBufferContents contents;
-    bool image_data_exists = image_buffer->GetImageData(
-        IntRect(IntPoint(), image_rect.Size()), contents);
-    if (!image_data_exists)
-      return nullptr;
-    DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
-    DOMUint8ClampedArray* pixel_array = DOMUint8ClampedArray::Create(
-        array_buffer, 0, array_buffer->ByteLength());
-    unsigned pixel_array_offset = 3;  // Each pixel is four bytes: RGBA.
-    uint8_t alpha_pixel_threshold = threshold * 255;
-
-    DCHECK_EQ(
-        static_cast<unsigned>(image_rect.Width() * image_rect.Height() * 4),
-        pixel_array->length());
-
-    int min_buffer_y = std::max(0, margin_rect.Y() - image_rect.Y());
-    int max_buffer_y =
-        std::min(image_rect.Height(), margin_rect.MaxY() - image_rect.Y());
-
-    for (int y = min_buffer_y; y < max_buffer_y; ++y) {
-      int start_x = -1;
-      for (int x = 0; x < image_rect.Width(); ++x, pixel_array_offset += 4) {
-        uint8_t alpha = pixel_array->Item(pixel_array_offset);
-        bool alpha_above_threshold = alpha > alpha_pixel_threshold;
-        if (start_x == -1 && alpha_above_threshold) {
-          start_x = x;
-        } else if (start_x != -1 &&
-                   (!alpha_above_threshold || x == image_rect.Width() - 1)) {
-          int end_x = alpha_above_threshold ? x + 1 : x;
-          intervals->IntervalAt(y + image_rect.Y())
-              .Unite(IntShapeInterval(start_x + image_rect.X(),
-                                      end_x + image_rect.X()));
-          start_x = -1;
-        }
-      }
-    }
+  if (!IsValidRasterShapeSize(margin_rect.Size()) ||
+      !IsValidRasterShapeSize(image_rect.Size())) {
+    return CreateEmptyRasterShape(writing_mode, margin);
   }
 
+  WTF::ArrayBufferContents contents;
+  if (!ExtractImageData(image, image_rect.Size(), contents))
+    return CreateEmptyRasterShape(writing_mode, margin);
+
+  std::unique_ptr<RasterShapeIntervals> intervals =
+      ExtractIntervalsFromImageData(contents, threshold, image_rect,
+                                    margin_rect);
   std::unique_ptr<RasterShape> raster_shape = WTF::WrapUnique(
       new RasterShape(std::move(intervals), margin_rect.Size()));
   raster_shape->writing_mode_ = writing_mode;
