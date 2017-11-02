@@ -191,6 +191,10 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     return oes_texture_float_linear_available_;
   }
 
+  bool oes_texture_half_float_linear_available() const {
+    return oes_texture_half_float_linear_available_;
+  }
+
  private:
   friend class base::RefCounted<FeatureInfo>;
   friend class BufferManagerClientSideArraysTest;

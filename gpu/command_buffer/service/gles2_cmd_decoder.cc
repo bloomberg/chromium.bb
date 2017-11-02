@@ -3946,10 +3946,10 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.texture_rg = feature_info_->feature_flags().ext_texture_rg;
   caps.texture_norm16 = feature_info_->feature_flags().ext_texture_norm16;
   caps.texture_half_float_linear =
-      feature_info_->feature_flags().enable_texture_half_float_linear;
+      feature_info_->oes_texture_half_float_linear_available();
   caps.color_buffer_half_float_rgba =
-      feature_info_->feature_flags().enable_color_buffer_float ||
-      feature_info_->feature_flags().enable_color_buffer_half_float;
+      feature_info_->ext_color_buffer_float_available() ||
+      feature_info_->ext_color_buffer_half_float_available();
   caps.image_ycbcr_422 =
       feature_info_->feature_flags().chromium_image_ycbcr_422;
   caps.image_ycbcr_420v =
