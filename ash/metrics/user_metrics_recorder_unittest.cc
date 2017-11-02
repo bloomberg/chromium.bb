@@ -8,7 +8,6 @@
 
 #include "ash/login_status.h"
 #include "ash/metrics/user_metrics_recorder_test_api.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
@@ -131,10 +130,6 @@ TEST_F(UserMetricsRecorderTest, VerifyStatsRecordedByRecordPeriodicMetrics) {
 // Verify the shelf item counts recorded by the
 // UserMetricsRecorder::RecordPeriodicMetrics() method.
 TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
-  // TODO: investigate failure in mash, http://crbug.com/695629.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   CreateUserSessions(1);
 
   // Make sure the shelf contains the app list launcher button.

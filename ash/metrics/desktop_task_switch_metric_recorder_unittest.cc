@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/user_action_tester.h"
@@ -120,10 +119,6 @@ DesktopTaskSwitchMetricRecorderTest::CreateNonPositionableWindow() const {
 // that a null window was activated last.
 TEST_F(DesktopTaskSwitchMetricRecorderTest,
        ActivatePositionableWindowWhenNullWindowWasActivatedLast) {
-  // TODO: investigate failure in mash, http://crbug.com/695628.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   std::unique_ptr<aura::Window> null_window;
   std::unique_ptr<aura::Window> positionable_window =
       CreatePositionableWindow();
@@ -140,10 +135,6 @@ TEST_F(DesktopTaskSwitchMetricRecorderTest,
 TEST_F(
     DesktopTaskSwitchMetricRecorderTest,
     ActivatePositionableWindowWhenADifferentPositionableWindowWasActivatedLast) {
-  // TODO: investigate failure in mash, http://crbug.com/695628.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   std::unique_ptr<aura::Window> positionable_window_1 =
       CreatePositionableWindow();
   std::unique_ptr<aura::Window> positionable_window_2 =
@@ -175,10 +166,6 @@ TEST_F(
 // a non-positionable window was activated last.
 TEST_F(DesktopTaskSwitchMetricRecorderTest,
        ActivatePositionableWindowWhenANonPositionableWindowWasActivatedLast) {
-  // TODO: investigate failure in mash, http://crbug.com/695628.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   std::unique_ptr<aura::Window> non_positionable_window =
       CreateNonPositionableWindow();
   std::unique_ptr<aura::Window> positionable_window =
@@ -320,9 +307,6 @@ aura::Window* DesktopTaskSwitchMetricRecorderWithShellIntegrationTest::
 // a INPUT_EVENT.
 TEST_F(DesktopTaskSwitchMetricRecorderWithShellIntegrationTest,
        ActivatePositionableWindowWithInputEvent) {
-  // TODO: investigate failure in mash, http://crbug.com/695628.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
   aura::Window* positionable_window =
       CreatePositionableWindowInShellWithBounds(gfx::Rect(0, 0, 10, 10));
 
