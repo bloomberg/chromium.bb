@@ -1032,10 +1032,16 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const int col_start = (block_size_wide[bsize] == 4) && ss_x ? -1 : 0;
 
   if (sub8x8_inter) {
-    for (int row = row_start; row <= 0 && sub8x8_inter; ++row)
-      for (int col = col_start; col <= 0; ++col)
-        if (!is_inter_block(&xd->mi[row * xd->mi_stride + col]->mbmi))
-          sub8x8_inter = 0;
+    for (int row = row_start; row <= 0 && sub8x8_inter; ++row) {
+      for (int col = col_start; col <= 0; ++col) {
+        const MB_MODE_INFO *this_mbmi =
+            &xd->mi[row * xd->mi_stride + col]->mbmi;
+        if (!is_inter_block(this_mbmi)) sub8x8_inter = 0;
+#if CONFIG_INTRABC
+        if (is_intrabc_block(this_mbmi)) sub8x8_inter = 0;
+#endif  // CONFIG_INTRABC
+      }
+    }
   }
 
   if (sub8x8_inter) {
