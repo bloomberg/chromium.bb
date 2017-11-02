@@ -2203,6 +2203,11 @@
         }
       },
       {
+        "args": [
+          "--debug",
+          "--time-out-ms",
+          "60000"
+        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
