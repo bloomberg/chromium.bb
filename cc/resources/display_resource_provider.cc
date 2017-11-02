@@ -35,6 +35,7 @@ DisplayResourceProvider::DisplayResourceProvider(
 DisplayResourceProvider::~DisplayResourceProvider() {
   while (!children_.empty())
     DestroyChildInternal(children_.begin(), FOR_SHUTDOWN);
+  resource_sk_image_.clear();
 }
 
 #if defined(OS_ANDROID)
@@ -486,11 +487,13 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
         resource_provider->compositor_context_provider_->GrContext(),
         backend_texture, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
         nullptr);
+    resource_provider_->resource_sk_image_[resource_id] = sk_image_;
   } else if (resource->pixels) {
     SkBitmap sk_bitmap;
     resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource);
     sk_bitmap.setImmutable();
     sk_image_ = SkImage::MakeFromBitmap(sk_bitmap);
+    resource_provider_->resource_sk_image_[resource_id] = sk_image_;
   } else {
     // During render process shutdown, ~RenderMessageFilter which calls
     // ~HostSharedBitmapClient (which deletes shared bitmaps from child)
