@@ -28,8 +28,8 @@ float ApproximatedDeviceMemory::GetApproximatedDeviceMemory() {
 
 // static
 void ApproximatedDeviceMemory::CalculateAndSetApproximatedDeviceMemory() {
-  // The calculations in this method are described in the specifcations:
-  // https://github.com/WICG/device-memory.
+  // The calculations in this method are described in the specification:
+  // https://w3c.github.io/device-memory/.
   DCHECK_GT(physical_memory_mb_, 0);
   int lower_bound = physical_memory_mb_;
   int power = 0;
@@ -52,8 +52,8 @@ void ApproximatedDeviceMemory::CalculateAndSetApproximatedDeviceMemory() {
   else
     approximated_device_memory_gb_ = static_cast<float>(upper_bound) / 1024.0;
 
-  // The exact value beyond 8GB is irrelvant, hence we max-limit the reported
-  // value to 8GB.
+  // Max-limit the reported value to 8GB to reduce fingerprintability of
+  // high-spec machines.
   if (approximated_device_memory_gb_ > 8)
     approximated_device_memory_gb_ = 8.0;
 }

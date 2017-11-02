@@ -16,8 +16,8 @@ class ApproximatedDeviceMemory {
   // Caches the device's physical memory in static members.
   static void BLINK_COMMON_EXPORT Initialize();
 
-  // Returns an approximation of the physical memory rounded to to the most
-  // significant 2-bits. This information is provided to web-developers to allow
+  // Returns an approximation of the physical memory rounded to the most
+  // significant bit. This information is provided to web-developers to allow
   // them to customize the experience of their page to the possible available
   // device memory.
   static float BLINK_COMMON_EXPORT GetApproximatedDeviceMemory();
