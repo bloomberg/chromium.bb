@@ -1976,23 +1976,6 @@ static const aom_prob default_compound_idx_probs[COMP_INDEX_CONTEXTS] = {
 };
 #endif  // CONFIG_JNT_COMP
 
-#if CONFIG_LGT_FROM_PRED
-static const aom_prob default_intra_lgt_prob[LGT_SIZES][INTRA_MODES] = {
-  { 255, 208, 208, 180, 230, 208, 194, 214, 220, 255,
-#if CONFIG_SMOOTH_HV
-    220, 220,
-#endif
-    230 },
-  { 255, 192, 216, 180, 180, 180, 180, 200, 200, 255,
-#if CONFIG_SMOOTH_HV
-    220, 220,
-#endif
-    222 },
-};
-
-static const aom_prob default_inter_lgt_prob[LGT_SIZES] = { 230, 230 };
-#endif  // CONFIG_LGT_FROM_PRED
-
 #if CONFIG_FILTER_INTRA
 static const aom_prob default_filter_intra_probs[2] = { 103, 231 };
 
@@ -5837,10 +5820,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->filter_intra_probs, default_filter_intra_probs);
   av1_copy(fc->filter_intra_mode_cdf, default_filter_intra_mode_cdf);
 #endif  // CONFIG_FILTER_INTRA
-#if CONFIG_LGT_FROM_PRED
-  av1_copy(fc->intra_lgt_prob, default_intra_lgt_prob);
-  av1_copy(fc->inter_lgt_prob, default_inter_lgt_prob);
-#endif  // CONFIG_LGT_FROM_PRED
 #if CONFIG_LOOP_RESTORATION
   av1_copy(fc->switchable_restore_cdf, default_switchable_restore_cdf);
 #if CONFIG_NEW_MULTISYMBOL
@@ -6032,23 +6011,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
     fc->skip_probs[i] =
         av1_mode_mv_merge_probs(pre_fc->skip_probs[i], counts->skip[i]);
 #endif  // !CONFIG_NEW_MULTISYMBOL
-
-#if CONFIG_LGT_FROM_PRED
-  int j;
-  if (LGT_FROM_PRED_INTRA) {
-    for (i = TX_4X4; i < LGT_SIZES; ++i) {
-      for (j = 0; j < INTRA_MODES; ++j)
-        fc->intra_lgt_prob[i][j] = av1_mode_mv_merge_probs(
-            pre_fc->intra_lgt_prob[i][j], counts->intra_lgt[i][j]);
-    }
-  }
-  if (LGT_FROM_PRED_INTER) {
-    for (i = TX_4X4; i < LGT_SIZES; ++i) {
-      fc->inter_lgt_prob[i] = av1_mode_mv_merge_probs(pre_fc->inter_lgt_prob[i],
-                                                      counts->inter_lgt[i]);
-    }
-  }
-#endif  // CONFIG_LGT_FROM_PRED
 
   if (cm->seg.temporal_update) {
     for (i = 0; i < PREDICTION_PROBS; i++)

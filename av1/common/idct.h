@@ -39,15 +39,6 @@ int get_lgt8(const TxfmParam *txfm_param, int is_col,
              const tran_high_t **lgtmtx);
 #endif  // CONFIG_LGT
 
-#if CONFIG_LGT_FROM_PRED
-void get_lgt4_from_pred(const TxfmParam *txfm_param, int is_col,
-                        const tran_high_t **lgtmtx, int ntx);
-void get_lgt8_from_pred(const TxfmParam *txfm_param, int is_col,
-                        const tran_high_t **lgtmtx, int ntx);
-void get_lgt16up_from_pred(const TxfmParam *txfm_param, int is_col,
-                           const tran_high_t **lgtmtx, int ntx);
-#endif  // CONFIG_LGT_FROM_PRED
-
 #if CONFIG_HIGHBITDEPTH
 typedef void (*highbd_transform_1d)(const tran_low_t *, tran_low_t *, int bd);
 
@@ -68,9 +59,6 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
                       TxfmParam *txfm_param);
 void av1_inverse_transform_block(const MACROBLOCKD *xd,
                                  const tran_low_t *dqcoeff,
-#if CONFIG_LGT_FROM_PRED
-                                 PREDICTION_MODE mode,
-#endif
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                  uint8_t *mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK

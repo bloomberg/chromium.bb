@@ -258,10 +258,6 @@ struct macroblock {
   int quarter_tx_size_cost[2];
 #endif
   int txfm_partition_cost[TXFM_PARTITION_CONTEXTS][2];
-#if CONFIG_LGT_FROM_PRED
-  int intra_lgt_cost[LGT_SIZES][INTRA_MODES][2];
-  int inter_lgt_cost[LGT_SIZES][2];
-#endif
   int inter_tx_type_costs[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];
   int intra_tx_type_costs[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                          [TX_TYPES];

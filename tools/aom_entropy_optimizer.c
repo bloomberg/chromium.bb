@@ -819,24 +819,6 @@ int main(int argc, const char **argv) {
 #endif  // CONFIG_LV_MAP
 
 /* lgt_from_pred experiment */
-#if CONFIG_LGT_FROM_PRED
-  cts_each_dim[0] = LGT_SIZES;
-  if (LGT_FROM_PRED_INTRA) {
-    cts_each_dim[1] = INTRA_MODES;
-    cts_each_dim[2] = 2;
-    optimize_entropy_table(&fc.intra_lgt[0][0][0], probsfile, 3, cts_each_dim,
-                           NULL, 1,
-                           "static const aom_prob default_intra_lgt_prob"
-                           "[LGT_SIZES][INTRA_MODES][2]");
-  }
-  if (LGT_FROM_PRED_INTER) {
-    cts_each_dim[1] = 2;
-    optimize_entropy_table(&fc.inter_lgt[0][0], probsfile, 2, cts_each_dim,
-                           NULL, 1,
-                           "static const aom_prob default_inter_lgt_prob"
-                           "[LGT_SIZES][2]");
-  }
-#endif  // CONFIG_LGT_FROM_PRED
 #if CONFIG_LPF_SB
   cts_each_dim[0] = LPF_REUSE_CONTEXT;
   cts_each_dim[1] = 2;
