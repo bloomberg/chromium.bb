@@ -1592,16 +1592,16 @@ public class ExternalNavigationHandlerTest {
 
             mDelegate.reset();
 
-            ExternalNavigationParams params =
-                    new ExternalNavigationParams
-                            .Builder(mUrl, mIsIncognito, mReferrerUrl, mPageTransition, mIsRedirect)
-                            .setApplicationMustBeInForeground(mChromeAppInForegroundRequired)
-                            .setRedirectHandler(mRedirectHandler)
-                            .setIsBackgroundTabNavigation(mIsBackgroundTabNavigation)
-                            .setIsMainFrame(true)
-                            .setNativeClientPackageName(mWebApkPackageName)
-                            .setHasUserGesture(mHasUserGesture)
-                            .build();
+            ExternalNavigationParams params = new ExternalNavigationParams.Builder(
+                    mUrl, mIsIncognito, mReferrerUrl,
+                    mPageTransition, mIsRedirect)
+                    .setApplicationMustBeInForeground(mChromeAppInForegroundRequired)
+                    .setRedirectHandler(mRedirectHandler)
+                    .setIsBackgroundTabNavigation(mIsBackgroundTabNavigation)
+                    .setIsMainFrame(true)
+                    .setWebApkPackageName(mWebApkPackageName)
+                    .setHasUserGesture(mHasUserGesture)
+                    .build();
             OverrideUrlLoadingResult result = mUrlHandler.shouldOverrideUrlLoading(params);
             boolean startActivityCalled = false;
             boolean startWebApkCalled = false;

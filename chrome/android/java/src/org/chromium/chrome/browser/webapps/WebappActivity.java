@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.CUSTOM_TABS_UI_TYPE_MINIMAL_UI_WEBAPP;
 
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -16,13 +15,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnSystemUiVisibilityChangeListener;
 import android.view.ViewGroup;
-import android.widget.RemoteViews;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
@@ -37,13 +33,9 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
-import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
-import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabLayoutManager;
-import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -99,43 +91,6 @@ public class WebappActivity extends SingleTabActivity {
     private Bitmap mLargestFavicon;
 
     private Runnable mSetImmersiveRunnable;
-
-    private BrowserSessionDataProvider mBrowserSessionDataProvider;
-
-    private TrustedWebContentProvider mTrustedWebContentProvider;
-
-    private class TrustedWebContentProvider implements BrowserSessionContentHandler {
-        @Override
-        public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {}
-
-        @Override
-        public CustomTabsSessionToken getSession() {
-            return mBrowserSessionDataProvider.getSession();
-        }
-
-        @Override
-        public boolean shouldIgnoreIntent(Intent intent) {
-            return true;
-        }
-
-        @Override
-        public boolean updateCustomButton(int id, Bitmap bitmap, String description) {
-            return false;
-        }
-
-        @Override
-        public boolean updateRemoteViews(
-                RemoteViews remoteViews, int[] clickableIDs, PendingIntent pendingIntent) {
-            return false;
-        }
-
-        @Override
-        public String getCurrentUrl() {
-            if (getActivityTab() == null) return null;
-
-            return getActivityTab().getUrl();
-        }
-    }
 
     /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
     private static class Holder {
@@ -206,12 +161,6 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
-    protected boolean shouldPreferLightweightFre(Intent intent) {
-        return intent.getBooleanExtra(
-                BrowserSessionDataProvider.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, false);
-    }
-
-    @Override
     public void preInflationStartup() {
         Intent intent = getIntent();
         String id = WebappInfo.idFromIntent(intent);
@@ -256,10 +205,6 @@ public class WebappActivity extends SingleTabActivity {
 
         ScreenOrientationProvider.lockOrientation(
                 getWindowAndroid(), (byte) mWebappInfo.orientation());
-
-        // TODO(yusufo): Consider not initializing these for WebAPKs.
-        mBrowserSessionDataProvider = new BrowserSessionDataProvider(intent);
-        mTrustedWebContentProvider = new TrustedWebContentProvider();
         super.preInflationStartup();
     }
 
@@ -299,26 +244,17 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        BrowserSessionContentUtils.setActiveContentHandler(mTrustedWebContentProvider);
         mDirectoryManager.cleanUpDirectories(this, getActivityId());
-        // If WebappStorage is available, check whether to show a disclosure notification. If it's
-        // not available, this check will happen once deferred startup returns with the storage
-        // instance.
-        WebappDataStorage storage =
-                WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
-        if (storage != null) WebApkDisclosureNotificationManager.maybeShowDisclosure(this, storage);
     }
 
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
         mDirectoryManager.cancelCleanup();
-        BrowserSessionContentUtils.setActiveContentHandler(null);
         if (getActivityTab() != null) saveState(getActivityDirectory());
         if (getFullscreenManager() != null) {
             getFullscreenManager().setPersistentFullscreenMode(false);
         }
-        WebApkDisclosureNotificationManager.dismissNotification(this);
     }
 
     /**
@@ -445,32 +381,10 @@ public class WebappActivity extends SingleTabActivity {
 
     protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
         updateStorage(storage);
-        WebApkDisclosureNotificationManager.maybeShowDisclosure(this, storage);
     }
 
     protected void onDeferredStartupWithNullStorage() {
-        if (isVerified()) {
-            // WebappDataStorage objects are cleared if a user clears Chrome's data. Recreate them
-            // for WebAPKs and TWAs since we need to store metadata for updates and disclosure
-            // notifications.
-            WebappRegistry.getInstance().register(
-                    mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
-                        @Override
-                        public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                            // Initialize the time of the last is-update-needed check with the
-                            // registration time. This prevents checking for updates on the
-                            // first run.
-                            // TODO(yusufo): We should clearly define what can be
-                            // registered through the support library and what happens for Trusted
-                            // Web Activities here.
-                            if (getBrowserSession() == null) {
-                                storage.updateTimeOfLastCheckForUpdatedWebManifest();
-                            }
-
-                            onDeferredStartupWithStorage(storage);
-                        }
-                    });
-        }
+        return;
     }
 
     @Override
@@ -550,9 +464,6 @@ public class WebappActivity extends SingleTabActivity {
             boolean previouslyLaunched = storage.hasBeenLaunched();
             long previousUsageTimestamp = storage.getLastUsedTime();
             storage.setHasBeenLaunched();
-            // TODO(yusufo): WebappRegistry#unregisterOldWebapps uses this information to delete
-            // WebappDataStorage objects for legacy webapps which haven't been used in a while.
-            // That will need to be updated to not delete anything for a TWA which remains installed
             storage.updateLastUsedTime();
             onUpdatedLastUsedTime(storage, previouslyLaunched, previousUsageTimestamp);
         }
@@ -676,33 +587,7 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     protected WebappScopePolicy scopePolicy() {
-        return isVerified() ? WebappScopePolicy.STRICT : WebappScopePolicy.LEGACY;
-    }
-
-    /**
-     * @return The BrowserSession linked with this {@link WebappActivity}. Non-null if and only if
-     *         this is a Trusted Web Activity.
-     */
-    public CustomTabsSessionToken getBrowserSession() {
-        return mTrustedWebContentProvider.getSession();
-    }
-
-    /**
-     * @return Whether this activity hosts the web content in a way that can be verified either
-     *         through Digital Asset Links (DAL) or browser level confirmation.
-     */
-    protected boolean isVerified() {
-        return mTrustedWebContentProvider.getSession() != null;
-    }
-
-    /**
-     * @return The package name if this Activity is associated with an APK. Null if there is no
-     *         associated Android native client.
-     */
-    public @Nullable String getNativeClientPackageName() {
-        if (getBrowserSession() == null) return null;
-        return CustomTabsConnection.getInstance().getClientPackageNameForSession(
-                getBrowserSession());
+        return WebappScopePolicy.WEBAPP;
     }
 
     private void updateToolbarCloseButtonVisibility() {

@@ -9,7 +9,7 @@ import org.chromium.chrome.browser.util.UrlUtilities;
  * Defines which URLs are inside a web app scope as well as what to do when user navigates to them.
  */
 enum WebappScopePolicy {
-    LEGACY {
+    WEBAPP {
         @Override
         public boolean isUrlInScope(WebappInfo info, String url) {
             return UrlUtilities.sameDomainOrHost(info.uri().toString(), url, true);
@@ -24,7 +24,7 @@ enum WebappScopePolicy {
             return false;
         }
     },
-    STRICT {
+    WEBAPK {
         @Override
         public boolean isUrlInScope(WebappInfo info, String url) {
             return UrlUtilities.isUrlWithinScope(url, info.scopeUri().toString());

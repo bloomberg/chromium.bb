@@ -43,7 +43,7 @@ public class WebappDelegateFactory extends TabDelegateFactory {
             // compatibility we relaunch it the hard way.
             String startUrl = mActivity.getWebappInfo().uri().toString();
 
-            String webApkPackageName = mActivity.getWebappInfo().apkPackageName();
+            String webApkPackageName = mActivity.getWebappInfo().webApkPackageName();
             if (!TextUtils.isEmpty(webApkPackageName)) {
                 Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
                         webApkPackageName, startUrl, false /* forceNavigation */);
@@ -91,11 +91,5 @@ public class WebappDelegateFactory extends TabDelegateFactory {
     @Override
     public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab) {
         return new WebappInterceptNavigationDelegate(mActivity, tab);
-    }
-
-    @Override
-    public boolean canShowAppBanners(Tab tab) {
-        // Do not show banners when we are in a standalone activity.
-        return false;
     }
 }

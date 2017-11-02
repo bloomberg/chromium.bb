@@ -21,14 +21,6 @@ import org.chromium.chrome.browser.util.IntentUtils;
 public class BrowserSessionDataProvider {
     private static final String TAG = "BrowserSessionData";
 
-    // TODO(yusufo): Remove this after support library roll.
-    /**
-     * Boolean extra that triggers a {@link CustomTabsIntent} launch to be in a fullscreen UI with
-     * no browser controls.
-     */
-    public static final String EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY =
-            "android.support.customtabs.extra.LAUNCH_AS_TRUSTED_WEB_ACTIVITY";
-
     /**
      * Extra used to keep the caller alive. Its value is an Intent.
      */

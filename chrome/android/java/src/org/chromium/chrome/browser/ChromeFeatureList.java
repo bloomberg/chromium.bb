@@ -219,7 +219,6 @@ public abstract class ChromeFeatureList {
     public static final String SOUND_CONTENT_SETTING = "SoundContentSetting";
     public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
     public static final String TAB_REPARENTING = "TabReparenting";
-    public static final String TRUSTED_WEB_ACTIVITY = "TrustedWebActivity";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
     public static final String VR_CUSTOM_TAB_BROWSING = "VrCustomTabBrowsing";
