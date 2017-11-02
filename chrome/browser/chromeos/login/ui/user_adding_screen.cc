@@ -69,7 +69,7 @@ void UserAddingScreenImpl::Cancel() {
 
   // Reset wallpaper if cancel adding user from multiple user sign in page.
   if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    WallpaperManager::Get()->SetUserWallpaperDelayed(
+    WallpaperManager::Get()->SetUserWallpaper(
         user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
   }
 }
