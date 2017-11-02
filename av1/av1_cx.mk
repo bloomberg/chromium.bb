@@ -160,8 +160,6 @@ AV1_CX_SRCS-$(HAVE_MSA) += encoder/mips/msa/temporal_filter_msa.c
 
 AV1_CX_SRCS-$(HAVE_SSE4_1) += encoder/x86/corner_match_sse4.c
 
-ifeq ($(CONFIG_EXT_TX),yes)
 AV1_CX_SRCS-yes += encoder/tx_prune_model_weights.h
-endif
 
 AV1_CX_SRCS-yes := $(filter-out $(AV1_CX_SRCS_REMOVE-yes),$(AV1_CX_SRCS-yes))

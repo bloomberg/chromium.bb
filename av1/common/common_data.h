@@ -777,18 +777,14 @@ static const TX_SIZE quarter_txsize_lookup[BLOCK_SIZES_ALL] = {
 
 static const TX_TYPE_1D vtx_tab[TX_TYPES] = {
   DCT_1D,      ADST_1D, DCT_1D,      ADST_1D,
-#if CONFIG_EXT_TX
   FLIPADST_1D, DCT_1D,  FLIPADST_1D, ADST_1D, FLIPADST_1D, IDTX_1D,
   DCT_1D,      IDTX_1D, ADST_1D,     IDTX_1D, FLIPADST_1D, IDTX_1D,
-#endif  // CONFIG_EXT_TX
 };
 
 static const TX_TYPE_1D htx_tab[TX_TYPES] = {
   DCT_1D,  DCT_1D,      ADST_1D,     ADST_1D,
-#if CONFIG_EXT_TX
   DCT_1D,  FLIPADST_1D, FLIPADST_1D, FLIPADST_1D, ADST_1D, IDTX_1D,
   IDTX_1D, DCT_1D,      IDTX_1D,     ADST_1D,     IDTX_1D, FLIPADST_1D,
-#endif  // CONFIG_EXT_TX
 };
 
 // Same as "max_txsize_lookup[bsize] - TX_8X8", except for rectangular

@@ -220,9 +220,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->allow_partition_search_skip = 1;
     sf->use_upsampled_references = 0;
     sf->adaptive_rd_thresh = 2;
-#if CONFIG_EXT_TX
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
-#endif
     sf->gm_search_type = GM_DISABLE_SEARCH;
   }
 
@@ -398,11 +396,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->cb_partition_search = 0;
   sf->alt_ref_search_fp = 0;
   sf->partition_search_type = SEARCH_PARTITION;
-#if CONFIG_EXT_TX
   sf->tx_type_search.prune_mode = PRUNE_2D_ACCURATE;
-#else
-  sf->tx_type_search.prune_mode = NO_PRUNE;
-#endif  // CONFIG_EXT_TX
   sf->tx_type_search.use_skip_flag_prediction = 1;
   sf->tx_type_search.fast_intra_tx_type_search = 0;
   sf->tx_type_search.fast_inter_tx_type_search = 0;

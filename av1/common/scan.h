@@ -88,13 +88,8 @@ static INLINE const SCAN_ORDER *get_default_scan(TX_SIZE tx_size,
 
 static INLINE int do_adapt_scan(TX_SIZE tx_size, TX_TYPE tx_type) {
   (void)tx_size;
-#if CONFIG_EXT_TX
   if (tx_size_2d[tx_size] >= 1024 && tx_type != DCT_DCT) return 0;
   return tx_type < IDTX;
-#else
-  (void)tx_type;
-  return 1;
-#endif
 }
 
 static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *cm, TX_SIZE tx_size,
@@ -111,11 +106,9 @@ static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *cm, TX_SIZE tx_size,
 #if CONFIG_ADAPT_SCAN
   (void)mbmi;
   (void)is_inter;
-#if CONFIG_EXT_TX
   if (!do_adapt_scan(tx_size, tx_type))
     return get_default_scan(tx_size, tx_type, is_inter);
   else
-#endif  // CONFIG_EXT_TX
     return &cm->fc->sc[tx_size][tx_type];
 #else   // CONFIG_ADAPT_SCAN
   (void)cm;

@@ -3994,11 +3994,9 @@ static void make_consistent_compound_tools(AV1_COMMON *cm) {
 
 void av1_encode_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-#if CONFIG_EXT_TX
   // Indicates whether or not to use a default reduced set for ext-tx
   // rather than the potential full set of 16 transforms
   cm->reduced_tx_set_used = 0;
-#endif  // CONFIG_EXT_TX
 #if CONFIG_ADAPT_SCAN
   cm->use_adapt_scan = 1;
   // TODO(angiebird): call av1_init_scan_order only when use_adapt_scan
@@ -4426,7 +4424,6 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
   TX_TYPE tx_type =
       av1_get_tx_type(PLANE_TYPE_Y, xd, blk_row, blk_col, block, tx_size);
 #endif
-#if CONFIG_EXT_TX
   if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) > 1 &&
       cm->base_qindex > 0 && !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
@@ -4510,31 +4507,6 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_LGT_FROM_PRED
     }
   }
-#else
-  (void)bsize;
-  if (tx_size < TX_32X32 &&
-      ((!cm->seg.enabled && cm->base_qindex > 0) ||
-       (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
-      !mbmi->skip &&
-      !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-    if (is_inter) {
-#if CONFIG_ENTROPY_STATS
-      ++counts->inter_ext_tx[tx_size][tx_type];
-#endif  // CONFIG_ENTROPY_STATS
-      update_cdf(fc->inter_ext_tx_cdf[tx_size], av1_ext_tx_ind[tx_type],
-                 TX_TYPES);
-    } else {
-#if CONFIG_ENTROPY_STATS
-      ++counts->intra_ext_tx[tx_size][intra_mode_to_tx_type_context[mbmi->mode]]
-                            [tx_type];
-#endif  // CONFIG_ENTROPY_STATS
-      update_cdf(
-          fc->intra_ext_tx_cdf[tx_size]
-                              [intra_mode_to_tx_type_context[mbmi->mode]],
-          av1_ext_tx_ind[tx_type], TX_TYPES);
-    }
-  }
-#endif  // CONFIG_EXT_TX
 }
 
 static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
@@ -4684,9 +4656,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #endif
       }
 #endif
-#if CONFIG_EXT_TX
       assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
-#endif  // CONFIG_EXT_TX
     } else {
       int i, j;
       TX_SIZE intra_tx_size;
@@ -4698,16 +4668,10 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
           intra_tx_size = tx_size_from_tx_mode(bsize, cm->tx_mode, 1);
         }
       } else {
-#if CONFIG_EXT_TX
         intra_tx_size = tx_size;
-#else
-        intra_tx_size = (bsize >= BLOCK_8X8) ? tx_size : TX_4X4;
-#endif  // CONFIG_EXT_TX
       }
-#if CONFIG_EXT_TX
       ++td->counts->tx_size_implied[max_txsize_lookup[bsize]]
                                    [txsize_sqr_up_map[tx_size]];
-#endif  // CONFIG_EXT_TX
 
       for (j = 0; j < mi_height; j++)
         for (i = 0; i < mi_width; i++)

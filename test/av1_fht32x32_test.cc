@@ -168,7 +168,6 @@ using std::tr1::make_tuple;
 #if HAVE_SSE2 && !CONFIG_DAALA_TX32
 const Ht32x32Param kArrayHt32x32Param_sse2[] = {
   make_tuple(&av1_fht32x32_sse2, &dummy_inv_txfm, DCT_DCT, AOM_BITS_8, 1024),
-#if CONFIG_EXT_TX
   make_tuple(&av1_fht32x32_sse2, &dummy_inv_txfm, ADST_DCT, AOM_BITS_8, 1024),
   make_tuple(&av1_fht32x32_sse2, &dummy_inv_txfm, DCT_ADST, AOM_BITS_8, 1024),
   make_tuple(&av1_fht32x32_sse2, &dummy_inv_txfm, ADST_ADST, AOM_BITS_8, 1024),
@@ -189,7 +188,6 @@ const Ht32x32Param kArrayHt32x32Param_sse2[] = {
   make_tuple(&av1_fht32x32_sse2, &dummy_inv_txfm, H_ADST, AOM_BITS_8, 1024),
   make_tuple(&av1_fht32x32_sse2, &dummy_inv_txfm, V_FLIPADST, AOM_BITS_8, 1024),
   make_tuple(&av1_fht32x32_sse2, &dummy_inv_txfm, H_FLIPADST, AOM_BITS_8, 1024)
-#endif  // CONFIG_EXT_TX
 };
 INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans32x32HT,
                         ::testing::ValuesIn(kArrayHt32x32Param_sse2));
@@ -198,7 +196,6 @@ INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans32x32HT,
 #if HAVE_AVX2 && !CONFIG_DAALA_TX32
 const Ht32x32Param kArrayHt32x32Param_avx2[] = {
   make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, DCT_DCT, AOM_BITS_8, 1024),
-#if CONFIG_EXT_TX
   make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, ADST_DCT, AOM_BITS_8, 1024),
   make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, DCT_ADST, AOM_BITS_8, 1024),
   make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, ADST_ADST, AOM_BITS_8, 1024),
@@ -219,7 +216,6 @@ const Ht32x32Param kArrayHt32x32Param_avx2[] = {
   make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, H_ADST, AOM_BITS_8, 1024),
   make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, V_FLIPADST, AOM_BITS_8, 1024),
   make_tuple(&av1_fht32x32_avx2, &dummy_inv_txfm, H_FLIPADST, AOM_BITS_8, 1024)
-#endif  // CONFIG_EXT_TX
 };
 INSTANTIATE_TEST_CASE_P(AVX2, AV1Trans32x32HT,
                         ::testing::ValuesIn(kArrayHt32x32Param_avx2));

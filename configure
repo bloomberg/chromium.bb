@@ -255,7 +255,6 @@ EXPERIMENT_LIST="
     dual_filter
     convolve_round
     compound_round
-    ext_tx
     tx64x64
     ext_intra
     filter_intra
@@ -498,7 +497,6 @@ post_process_cmdline() {
     # Enable adopted experiments by default
     soft_enable adopted_experiments
     if enabled adopted_experiments; then
-      soft_enable ext_tx
       soft_enable cdef
       soft_enable cdef_singlepass
       soft_enable ext_intra
@@ -540,16 +538,12 @@ post_process_cmdline() {
     # Fix up experiment dependencies
     enabled lv_map && disable_feature mrc_tx
     enabled eob_first && enable_feature lv_map
-    enabled eob_first && enable_feature ext_tx
-    enabled mrc_tx && enable_feature ext_tx
     enabled txk_sel && soft_enable lv_map
     enabled ctx1d && soft_enable lv_map
-    enabled ctx1d && soft_enable ext_tx
     enabled compound_round && soft_enable convolve_round
     enabled ext_intra_mod && enable_feature intra_edge
     enabled intra_edge && enable_feature ext_intra
     enabled ext_comp_refs && enable_feature one_sided_compound
-    enabled lgt_from_pred && enable_feature ext_tx
     enabled lgt_from_pred && disable_feature mrc_tx
     enabled cfl && enable_feature smooth_hv
     enabled cdef_singlepass && enable_feature cdef

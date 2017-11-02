@@ -28,9 +28,7 @@ typedef struct txfm_param {
   TX_SIZE tx_size;
   int lossless;
   int bd;
-#if CONFIG_EXT_TX
   TxSetType tx_set_type;
-#endif  // CONFIG_EXT_TX
 #if CONFIG_MRC_TX || CONFIG_LGT
   int is_inter;
 #endif  // CONFIG_MRC_TX || CONFIG_LGT

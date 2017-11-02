@@ -18,7 +18,6 @@ DECLARE_ALIGNED(16, static const int16_t, default_scan_4x4[16]) = {
   0, 4, 1, 5, 8, 2, 12, 9, 3, 6, 13, 10, 7, 14, 11, 15,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, mcol_scan_4x4[16]) = {
   0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15,
 };
@@ -26,7 +25,6 @@ DECLARE_ALIGNED(16, static const int16_t, mcol_scan_4x4[16]) = {
 DECLARE_ALIGNED(16, static const int16_t, mrow_scan_4x4[16]) = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, col_scan_4x4[16]) = {
   0, 4, 8, 1, 12, 5, 9, 2, 13, 6, 10, 3, 7, 14, 11, 15,
@@ -80,7 +78,6 @@ DECLARE_ALIGNED(16, static const int16_t, default_scan_16x4[64]) = {
   12, 28, 44, 60, 13, 29, 45, 61, 14, 30, 46, 62, 15, 31, 47, 63,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, mrow_scan_4x16[64]) = {
   0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
   16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
@@ -108,7 +105,6 @@ DECLARE_ALIGNED(16, static const int16_t, mcol_scan_16x4[64]) = {
   8,  24, 40, 56, 9,  25, 41, 57, 10, 26, 42, 58, 11, 27, 43, 59,
   12, 28, 44, 60, 13, 29, 45, 61, 14, 30, 46, 62, 15, 31, 47, 63,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, default_scan_8x32[256]) = {
   0,   1,   8,   2,   9,   16,  3,   10,  17,  24,  4,   11,  18,  25,  32,
@@ -152,7 +148,6 @@ DECLARE_ALIGNED(16, static const int16_t, default_scan_32x8[256]) = {
   255,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, mrow_scan_8x32[256]) = {
   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11,  12,  13,  14,
   15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,
@@ -234,7 +229,6 @@ DECLARE_ALIGNED(16, static const int16_t, mcol_scan_32x8[256]) = {
   28, 60, 92, 124, 156, 188, 220, 252, 29, 61, 93, 125, 157, 189, 221, 253,
   30, 62, 94, 126, 158, 190, 222, 254, 31, 63, 95, 127, 159, 191, 223, 255,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, default_scan_8x8[64]) = {
   0,  8,  1,  16, 9,  2,  17, 24, 10, 3,  18, 25, 32, 11, 4,  26,
@@ -243,7 +237,6 @@ DECLARE_ALIGNED(16, static const int16_t, default_scan_8x8[64]) = {
   45, 23, 52, 59, 38, 31, 60, 53, 46, 39, 61, 54, 47, 62, 55, 63,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, mcol_scan_8x8[64]) = {
   0, 8,  16, 24, 32, 40, 48, 56, 1, 9,  17, 25, 33, 41, 49, 57,
   2, 10, 18, 26, 34, 42, 50, 58, 3, 11, 19, 27, 35, 43, 51, 59,
@@ -257,7 +250,6 @@ DECLARE_ALIGNED(16, static const int16_t, mrow_scan_8x8[64]) = {
   32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
   48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, col_scan_8x8[64]) = {
   0,  8,  16, 1,  24, 9,  32, 17, 2,  40, 25, 10, 33, 18, 48, 3,
@@ -588,7 +580,6 @@ DECLARE_ALIGNED(16, static const int16_t, default_scan_16x16[256]) = {
   255,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, mcol_scan_16x16[256]) = {
   0,  16, 32, 48, 64, 80, 96,  112, 128, 144, 160, 176, 192, 208, 224, 240,
   1,  17, 33, 49, 65, 81, 97,  113, 129, 145, 161, 177, 193, 209, 225, 241,
@@ -628,7 +619,6 @@ DECLARE_ALIGNED(16, static const int16_t, mrow_scan_16x16[256]) = {
   240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254,
   255,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, col_scan_16x16[256]) = {
   0,   16,  32,  48,  1,   64,  17,  80,  33,  96,  49,  2,   65,  112, 18,
@@ -672,7 +662,6 @@ DECLARE_ALIGNED(16, static const int16_t, row_scan_16x16[256]) = {
   255,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, mcol_scan_32x32[1024]) = {
   0,   32,   64,  96,   128, 160,  192, 224,  256, 288,  320, 352,  384, 416,
   448, 480,  512, 544,  576, 608,  640, 672,  704, 736,  768, 800,  832, 864,
@@ -831,7 +820,6 @@ DECLARE_ALIGNED(16, static const int16_t, mrow_scan_32x32[1024]) = {
   1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013,
   1014, 1015, 1016, 1017, 1018, 1019, 1020, 1021, 1022, 1023,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, default_scan_32x32[1024]) = {
   0,    32,   1,    64,  33,   2,    96,   65,   34,   128,  3,    97,   66,
@@ -1818,7 +1806,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   2, 2, 5, 9, 12, 6, 9, 3, 6, 10, 13, 7, 10, 11, 14, 0, 0,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t,
                 mcol_scan_4x4_neighbors[17 * MAX_NEIGHBORS]) = {
   0, 0, 0, 0, 4, 4,  8,  8, 0, 0, 1, 4, 5,  8,  9,  12, 1,
@@ -1830,7 +1817,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   0, 0, 0, 0, 1, 1, 2,  2, 0, 0, 1,  4,  2,  5,  3,  6, 4,
   4, 5, 8, 6, 9, 7, 10, 8, 8, 9, 12, 10, 13, 11, 14, 0, 0,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t,
                 col_scan_4x4_neighbors[17 * MAX_NEIGHBORS]) = {
@@ -1914,7 +1900,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   14, 29, 30, 45, 46, 61, 14, 14, 15, 30, 31, 46, 47, 62, 0,  0
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t,
                 mrow_scan_4x16_neighbors[65 * MAX_NEIGHBORS]) = {
   0,  0,  0,  0,  1,  1,  2,  2,  0,  0,  1,  4,  2,  5,  3,  6,  4,  4,  5,
@@ -1958,7 +1943,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   58, 11, 11, 12, 27, 28, 43, 44, 59, 12, 12, 13, 28, 29, 44, 45, 60, 13, 13,
   14, 29, 30, 45, 46, 61, 14, 14, 15, 30, 31, 46, 47, 62, 0,  0
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t,
                 default_scan_8x32_neighbors[257 * MAX_NEIGHBORS]) = {
@@ -2038,7 +2022,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   223, 254, 0,   0
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t,
                 mrow_scan_8x32_neighbors[257 * MAX_NEIGHBORS]) = {
   0,   0,   0,   0,   1,   1,   2,   2,   3,   3,   4,   4,   5,   5,   6,
@@ -2192,7 +2175,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   30, 30, 31, 62, 63, 94, 95, 126, 127, 158, 159, 190, 191, 222, 223, 254,
   0,  0
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t,
                 col_scan_8x8_neighbors[65 * MAX_NEIGHBORS]) = {
@@ -2205,7 +2187,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   53, 60, 31, 38, 46, 53, 39, 46, 54, 61, 47, 54, 55, 62, 0,  0,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t,
                 mcol_scan_8x8_neighbors[65 * MAX_NEIGHBORS]) = {
   0,  0,  0,  0,  8,  8,  16, 16, 24, 24, 32, 32, 40, 40, 48, 48, 0,  0,  1,
@@ -2227,7 +2208,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   46, 40, 40, 41, 48, 42, 49, 43, 50, 44, 51, 45, 52, 46, 53, 47, 54, 48, 48,
   49, 56, 50, 57, 51, 58, 52, 59, 53, 60, 54, 61, 55, 62, 0,  0,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t,
                 row_scan_8x8_neighbors[65 * MAX_NEIGHBORS]) = {
@@ -2819,7 +2799,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   478, 509, 479, 510, 0,   0
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t,
                 mcol_scan_16x16_neighbors[257 * MAX_NEIGHBORS]) = {
   0,   0,   0,   0,   16,  16,  32,  32,  48,  48,  64,  64,  80,  80,  96,
@@ -2897,7 +2876,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   246, 232, 247, 233, 248, 234, 249, 235, 250, 236, 251, 237, 252, 238, 253,
   239, 254, 0,   0,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t,
                 col_scan_16x16_neighbors[257 * MAX_NEIGHBORS]) = {
@@ -3016,7 +2994,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   239, 254, 0,   0,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t,
                 mcol_scan_32x32_neighbors[1025 * MAX_NEIGHBORS]) = {
   0,   0,    0,   0,    32,  32,   64,  64,   96,  96,   128, 128,  160, 160,
@@ -3318,7 +3295,6 @@ DECLARE_ALIGNED(16, static const int16_t,
   983, 1014, 984, 1015, 985, 1016, 986, 1017, 987, 1018, 988, 1019, 989, 1020,
   990, 1021, 991, 1022, 0,   0,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t,
                 default_scan_32x32_neighbors[1025 * MAX_NEIGHBORS]) = {
@@ -5205,7 +5181,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_4x4[16]) = {
   0, 2, 5, 8, 1, 3, 9, 12, 4, 7, 11, 14, 6, 10, 13, 15,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, av1_mcol_iscan_4x4[16]) = {
   0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15,
 };
@@ -5213,7 +5188,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_mcol_iscan_4x4[16]) = {
 DECLARE_ALIGNED(16, static const int16_t, av1_mrow_iscan_4x4[16]) = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, av1_col_iscan_4x4[16]) = {
   0, 3, 7, 11, 1, 5, 9, 12, 2, 6, 10, 14, 4, 8, 13, 15,
@@ -5267,7 +5241,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_16x4[64]) = {
   10, 12, 14, 17, 20, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, av1_mrow_iscan_4x16[64]) = {
   0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
   16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
@@ -5295,7 +5268,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_mcol_iscan_16x4[64]) = {
   2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62,
   3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_8x32[256]) = {
   0,   1,   3,   6,   10,  15,  21,  28,  2,   4,   7,   11,  16,  22,  29,
@@ -5338,7 +5310,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_32x8[256]) = {
   255,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, av1_mrow_iscan_8x32[256]) = {
   0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11,  12,  13,  14,
   15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,
@@ -5420,9 +5391,7 @@ DECLARE_ALIGNED(16, static const int16_t, av1_mcol_iscan_32x8[256]) = {
   135, 143, 151, 159, 167, 175, 183, 191, 199, 207, 215, 223, 231, 239, 247,
   255,
 };
-#endif  // CONFIG_EXT_TX
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, av1_mcol_iscan_8x8[64]) = {
   0, 8,  16, 24, 32, 40, 48, 56, 1, 9,  17, 25, 33, 41, 49, 57,
   2, 10, 18, 26, 34, 42, 50, 58, 3, 11, 19, 27, 35, 43, 51, 59,
@@ -5436,7 +5405,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_mrow_iscan_8x8[64]) = {
   32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
   48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, av1_col_iscan_8x8[64]) = {
   0,  3,  8,  15, 22, 32, 40, 47, 1,  5,  11, 18, 26, 34, 44, 51,
@@ -5752,7 +5720,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_mrow_iscan_32x16[512]) = {
   510, 511,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, av1_mcol_iscan_16x16[256]) = {
   0,  16, 32, 48, 64, 80, 96,  112, 128, 144, 160, 176, 192, 208, 224, 240,
   1,  17, 33, 49, 65, 81, 97,  113, 129, 145, 161, 177, 193, 209, 225, 241,
@@ -5792,7 +5759,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_mrow_iscan_16x16[256]) = {
   240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254,
   255,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, av1_col_iscan_16x16[256]) = {
   0,  4,  11,  20,  31,  43,  59,  75,  85,  109, 130, 150, 165, 181, 195, 198,
@@ -5855,7 +5821,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_16x16[256]) = {
   255,
 };
 
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, static const int16_t, av1_mcol_iscan_32x32[1024]) = {
   0,   32,   64,  96,   128, 160,  192, 224,  256, 288,  320, 352,  384, 416,
   448, 480,  512, 544,  576, 608,  640, 672,  704, 736,  768, 800,  832, 864,
@@ -6014,7 +5979,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_mrow_iscan_32x32[1024]) = {
   1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013,
   1014, 1015, 1016, 1017, 1018, 1019, 1020, 1021, 1022, 1023,
 };
-#endif  // CONFIG_EXT_TX
 
 DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_32x32[1024]) = {
   0,    2,    5,    10,   17,   25,   38,   47,   62,   83,   101,  121,  145,
@@ -7004,7 +6968,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { row_scan_4x4, av1_row_iscan_4x4, row_scan_4x4_neighbors },
       { col_scan_4x4, av1_col_iscan_4x4, col_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
@@ -7017,7 +6980,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { col_scan_4x4, av1_col_iscan_4x4, col_scan_4x4_neighbors },
       { row_scan_4x4, av1_row_iscan_4x4, row_scan_4x4_neighbors },
       { col_scan_4x4, av1_col_iscan_4x4, col_scan_4x4_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_8X8
@@ -7025,7 +6987,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { row_scan_8x8, av1_row_iscan_8x8, row_scan_8x8_neighbors },
       { col_scan_8x8, av1_col_iscan_8x8, col_scan_8x8_neighbors },
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
@@ -7038,7 +6999,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { col_scan_8x8, av1_col_iscan_8x8, col_scan_8x8_neighbors },
       { row_scan_8x8, av1_row_iscan_8x8, row_scan_8x8_neighbors },
       { col_scan_8x8, av1_col_iscan_8x8, col_scan_8x8_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_16X16
@@ -7048,7 +7008,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { col_scan_16x16, av1_col_iscan_16x16, col_scan_16x16_neighbors },
       { default_scan_16x16, av1_default_iscan_16x16,
         default_scan_16x16_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_16x16, av1_default_iscan_16x16,
         default_scan_16x16_neighbors },
       { default_scan_16x16, av1_default_iscan_16x16,
@@ -7066,7 +7025,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { col_scan_16x16, av1_col_iscan_16x16, col_scan_16x16_neighbors },
       { row_scan_16x16, av1_row_iscan_16x16, row_scan_16x16_neighbors },
       { col_scan_16x16, av1_col_iscan_16x16, col_scan_16x16_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_32X32
@@ -7075,7 +7033,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { h2_scan_32x32, av1_h2_iscan_32x32, h2_scan_32x32_neighbors },
       { v2_scan_32x32, av1_v2_iscan_32x32, v2_scan_32x32_neighbors },
       { qtr_scan_32x32, av1_qtr_iscan_32x32, qtr_scan_32x32_neighbors },
-#if CONFIG_EXT_TX
       { h2_scan_32x32, av1_h2_iscan_32x32, h2_scan_32x32_neighbors },
       { v2_scan_32x32, av1_v2_iscan_32x32, v2_scan_32x32_neighbors },
       { qtr_scan_32x32, av1_qtr_iscan_32x32, qtr_scan_32x32_neighbors },
@@ -7088,7 +7045,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_32x32, av1_mcol_iscan_32x32, mcol_scan_32x32_neighbors },
       { mrow_scan_32x32, av1_mrow_iscan_32x32, mrow_scan_32x32_neighbors },
       { mcol_scan_32x32, av1_mcol_iscan_32x32, mcol_scan_32x32_neighbors },
-#endif  // CONFIG_EXT_TX
   },
 #if CONFIG_TX64X64
   {
@@ -7101,7 +7057,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_64x64_neighbors },
       { default_scan_64x64, av1_default_iscan_64x64,
         default_scan_64x64_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_64x64, av1_default_iscan_64x64,
         default_scan_64x64_neighbors },
       { default_scan_64x64, av1_default_iscan_64x64,
@@ -7126,7 +7081,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_64x64_neighbors },
       { default_scan_64x64, av1_default_iscan_64x64,
         default_scan_64x64_neighbors },
-#endif  // CONFIG_EXT_TX
   },
 #endif  // CONFIG_TX64X64
   {
@@ -7135,7 +7089,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mrow_scan_4x8, av1_mrow_iscan_4x8, mrow_scan_4x8_neighbors },
       { mcol_scan_4x8, av1_mcol_iscan_4x8, mcol_scan_4x8_neighbors },
       { default_scan_4x8, av1_default_iscan_4x8, default_scan_4x8_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_4x8, av1_default_iscan_4x8, default_scan_4x8_neighbors },
       { default_scan_4x8, av1_default_iscan_4x8, default_scan_4x8_neighbors },
       { default_scan_4x8, av1_default_iscan_4x8, default_scan_4x8_neighbors },
@@ -7148,7 +7101,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_4x8, av1_mcol_iscan_4x8, mcol_scan_4x8_neighbors },
       { mrow_scan_4x8, av1_mrow_iscan_4x8, mrow_scan_4x8_neighbors },
       { mcol_scan_4x8, av1_mcol_iscan_4x8, mcol_scan_4x8_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_8X4
@@ -7156,7 +7108,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mrow_scan_8x4, av1_mrow_iscan_8x4, mrow_scan_8x4_neighbors },
       { mcol_scan_8x4, av1_mcol_iscan_8x4, mcol_scan_8x4_neighbors },
       { default_scan_8x4, av1_default_iscan_8x4, default_scan_8x4_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_8x4, av1_default_iscan_8x4, default_scan_8x4_neighbors },
       { default_scan_8x4, av1_default_iscan_8x4, default_scan_8x4_neighbors },
       { default_scan_8x4, av1_default_iscan_8x4, default_scan_8x4_neighbors },
@@ -7169,7 +7120,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_8x4, av1_mcol_iscan_8x4, mcol_scan_8x4_neighbors },
       { mrow_scan_8x4, av1_mrow_iscan_8x4, mrow_scan_8x4_neighbors },
       { mcol_scan_8x4, av1_mcol_iscan_8x4, mcol_scan_8x4_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_8X16
@@ -7179,7 +7129,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_8x16, av1_mcol_iscan_8x16, mcol_scan_8x16_neighbors },
       { default_scan_8x16, av1_default_iscan_8x16,
         default_scan_8x16_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_8x16, av1_default_iscan_8x16,
         default_scan_8x16_neighbors },
       { default_scan_8x16, av1_default_iscan_8x16,
@@ -7197,7 +7146,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_8x16, av1_mcol_iscan_8x16, mcol_scan_8x16_neighbors },
       { mrow_scan_8x16, av1_mrow_iscan_8x16, mrow_scan_8x16_neighbors },
       { mcol_scan_8x16, av1_mcol_iscan_8x16, mcol_scan_8x16_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_16X8
@@ -7207,7 +7155,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_16x8, av1_mcol_iscan_16x8, mcol_scan_16x8_neighbors },
       { default_scan_16x8, av1_default_iscan_16x8,
         default_scan_16x8_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_16x8, av1_default_iscan_16x8,
         default_scan_16x8_neighbors },
       { default_scan_16x8, av1_default_iscan_16x8,
@@ -7225,7 +7172,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_16x8, av1_mcol_iscan_16x8, mcol_scan_16x8_neighbors },
       { mrow_scan_16x8, av1_mrow_iscan_16x8, mrow_scan_16x8_neighbors },
       { mcol_scan_16x8, av1_mcol_iscan_16x8, mcol_scan_16x8_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_16X32
@@ -7235,7 +7181,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_16x32, av1_mcol_iscan_16x32, mcol_scan_16x32_neighbors },
       { default_scan_16x32, av1_default_iscan_16x32,
         default_scan_16x32_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_16x32, av1_default_iscan_16x32,
         default_scan_16x32_neighbors },
       { default_scan_16x32, av1_default_iscan_16x32,
@@ -7253,7 +7198,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_16x32, av1_mcol_iscan_16x32, mcol_scan_16x32_neighbors },
       { mrow_scan_16x32, av1_mrow_iscan_16x32, mrow_scan_16x32_neighbors },
       { mcol_scan_16x32, av1_mcol_iscan_16x32, mcol_scan_16x32_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_32X16
@@ -7263,7 +7207,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_32x16, av1_mcol_iscan_32x16, mcol_scan_32x16_neighbors },
       { default_scan_32x16, av1_default_iscan_32x16,
         default_scan_32x16_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_32x16, av1_default_iscan_32x16,
         default_scan_32x16_neighbors },
       { default_scan_32x16, av1_default_iscan_32x16,
@@ -7281,7 +7224,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_32x16, av1_mcol_iscan_32x16, mcol_scan_32x16_neighbors },
       { mrow_scan_32x16, av1_mrow_iscan_32x16, mrow_scan_32x16_neighbors },
       { mcol_scan_32x16, av1_mcol_iscan_32x16, mcol_scan_32x16_neighbors },
-#endif  // CONFIG_EXT_TX
   },
 #if CONFIG_TX64X64
   {
@@ -7294,7 +7236,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_32x64_neighbors },
       { default_scan_32x64, av1_default_iscan_32x64,
         default_scan_32x64_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_32x64, av1_default_iscan_32x64,
         default_scan_32x64_neighbors },
       { default_scan_32x64, av1_default_iscan_32x64,
@@ -7319,7 +7260,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_32x64_neighbors },
       { default_scan_32x64, av1_default_iscan_32x64,
         default_scan_32x64_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_64X32
@@ -7331,7 +7271,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_64x32_neighbors },
       { default_scan_64x32, av1_default_iscan_64x32,
         default_scan_64x32_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_64x32, av1_default_iscan_64x32,
         default_scan_64x32_neighbors },
       { default_scan_64x32, av1_default_iscan_64x32,
@@ -7356,7 +7295,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_64x32_neighbors },
       { default_scan_64x32, av1_default_iscan_64x32,
         default_scan_64x32_neighbors },
-#endif  // CONFIG_EXT_TX
   }
 #endif  // CONFIG_TX64X64
 };
@@ -7368,7 +7306,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
@@ -7381,7 +7318,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_4x4, av1_mcol_iscan_4x4, mcol_scan_4x4_neighbors },
       { mrow_scan_4x4, av1_mrow_iscan_4x4, mrow_scan_4x4_neighbors },
       { mcol_scan_4x4, av1_mcol_iscan_4x4, mcol_scan_4x4_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_8X8
@@ -7389,7 +7325,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
@@ -7402,7 +7337,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_8x8, av1_mcol_iscan_8x8, mcol_scan_8x8_neighbors },
       { mrow_scan_8x8, av1_mrow_iscan_8x8, mrow_scan_8x8_neighbors },
       { mcol_scan_8x8, av1_mcol_iscan_8x8, mcol_scan_8x8_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_16X16
@@ -7414,7 +7348,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_16x16_neighbors },
       { default_scan_16x16, av1_default_iscan_16x16,
         default_scan_16x16_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_16x16, av1_default_iscan_16x16,
         default_scan_16x16_neighbors },
       { default_scan_16x16, av1_default_iscan_16x16,
@@ -7432,7 +7365,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_16x16, av1_mcol_iscan_16x16, mcol_scan_16x16_neighbors },
       { mrow_scan_16x16, av1_mrow_iscan_16x16, mrow_scan_16x16_neighbors },
       { mcol_scan_16x16, av1_mcol_iscan_16x16, mcol_scan_16x16_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_32X32
@@ -7441,7 +7373,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { h2_scan_32x32, av1_h2_iscan_32x32, h2_scan_32x32_neighbors },
       { v2_scan_32x32, av1_v2_iscan_32x32, v2_scan_32x32_neighbors },
       { qtr_scan_32x32, av1_qtr_iscan_32x32, qtr_scan_32x32_neighbors },
-#if CONFIG_EXT_TX
       { h2_scan_32x32, av1_h2_iscan_32x32, h2_scan_32x32_neighbors },
       { v2_scan_32x32, av1_v2_iscan_32x32, v2_scan_32x32_neighbors },
       { qtr_scan_32x32, av1_qtr_iscan_32x32, qtr_scan_32x32_neighbors },
@@ -7454,7 +7385,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_32x32, av1_mcol_iscan_32x32, mcol_scan_32x32_neighbors },
       { mrow_scan_32x32, av1_mrow_iscan_32x32, mrow_scan_32x32_neighbors },
       { mcol_scan_32x32, av1_mcol_iscan_32x32, mcol_scan_32x32_neighbors },
-#endif  // CONFIG_EXT_TX
   },
 #if CONFIG_TX64X64
   {
@@ -7467,7 +7397,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_64x64_neighbors },
       { default_scan_64x64, av1_default_iscan_64x64,
         default_scan_64x64_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_64x64, av1_default_iscan_64x64,
         default_scan_64x64_neighbors },
       { default_scan_64x64, av1_default_iscan_64x64,
@@ -7492,7 +7421,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_64x64_neighbors },
       { default_scan_64x64, av1_default_iscan_64x64,
         default_scan_64x64_neighbors },
-#endif  // CONFIG_EXT_TX
   },
 #endif  // CONFIG_TX64X64
   {
@@ -7501,7 +7429,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { default_scan_4x8, av1_default_iscan_4x8, default_scan_4x8_neighbors },
       { default_scan_4x8, av1_default_iscan_4x8, default_scan_4x8_neighbors },
       { default_scan_4x8, av1_default_iscan_4x8, default_scan_4x8_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_4x8, av1_default_iscan_4x8, default_scan_4x8_neighbors },
       { default_scan_4x8, av1_default_iscan_4x8, default_scan_4x8_neighbors },
       { default_scan_4x8, av1_default_iscan_4x8, default_scan_4x8_neighbors },
@@ -7514,7 +7441,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_4x8, av1_mcol_iscan_4x8, mcol_scan_4x8_neighbors },
       { mrow_scan_4x8, av1_mrow_iscan_4x8, mrow_scan_4x8_neighbors },
       { mcol_scan_4x8, av1_mcol_iscan_4x8, mcol_scan_4x8_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_8X4
@@ -7522,7 +7448,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { default_scan_8x4, av1_default_iscan_8x4, default_scan_8x4_neighbors },
       { default_scan_8x4, av1_default_iscan_8x4, default_scan_8x4_neighbors },
       { default_scan_8x4, av1_default_iscan_8x4, default_scan_8x4_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_8x4, av1_default_iscan_8x4, default_scan_8x4_neighbors },
       { default_scan_8x4, av1_default_iscan_8x4, default_scan_8x4_neighbors },
       { default_scan_8x4, av1_default_iscan_8x4, default_scan_8x4_neighbors },
@@ -7535,7 +7460,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_8x4, av1_mcol_iscan_8x4, mcol_scan_8x4_neighbors },
       { mrow_scan_8x4, av1_mrow_iscan_8x4, mrow_scan_8x4_neighbors },
       { mcol_scan_8x4, av1_mcol_iscan_8x4, mcol_scan_8x4_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_8X16
@@ -7547,7 +7471,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_8x16_neighbors },
       { default_scan_8x16, av1_default_iscan_8x16,
         default_scan_8x16_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_8x16, av1_default_iscan_8x16,
         default_scan_8x16_neighbors },
       { default_scan_8x16, av1_default_iscan_8x16,
@@ -7565,7 +7488,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_8x16, av1_mcol_iscan_8x16, mcol_scan_8x16_neighbors },
       { mrow_scan_8x16, av1_mrow_iscan_8x16, mrow_scan_8x16_neighbors },
       { mcol_scan_8x16, av1_mcol_iscan_8x16, mcol_scan_8x16_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_16X8
@@ -7577,7 +7499,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_16x8_neighbors },
       { default_scan_16x8, av1_default_iscan_16x8,
         default_scan_16x8_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_16x8, av1_default_iscan_16x8,
         default_scan_16x8_neighbors },
       { default_scan_16x8, av1_default_iscan_16x8,
@@ -7595,7 +7516,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_16x8, av1_mcol_iscan_16x8, mcol_scan_16x8_neighbors },
       { mrow_scan_16x8, av1_mrow_iscan_16x8, mrow_scan_16x8_neighbors },
       { mcol_scan_16x8, av1_mcol_iscan_16x8, mcol_scan_16x8_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_16X32
@@ -7607,7 +7527,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_16x32_neighbors },
       { default_scan_16x32, av1_default_iscan_16x32,
         default_scan_16x32_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_16x32, av1_default_iscan_16x32,
         default_scan_16x32_neighbors },
       { default_scan_16x32, av1_default_iscan_16x32,
@@ -7625,7 +7544,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_16x32, av1_mcol_iscan_16x32, mcol_scan_16x32_neighbors },
       { mrow_scan_16x32, av1_mrow_iscan_16x32, mrow_scan_16x32_neighbors },
       { mcol_scan_16x32, av1_mcol_iscan_16x32, mcol_scan_16x32_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_32X16
@@ -7637,7 +7555,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_32x16_neighbors },
       { default_scan_32x16, av1_default_iscan_32x16,
         default_scan_32x16_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_32x16, av1_default_iscan_32x16,
         default_scan_32x16_neighbors },
       { default_scan_32x16, av1_default_iscan_32x16,
@@ -7655,7 +7572,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_32x16, av1_mcol_iscan_32x16, mcol_scan_32x16_neighbors },
       { mrow_scan_32x16, av1_mrow_iscan_32x16, mrow_scan_32x16_neighbors },
       { mcol_scan_32x16, av1_mcol_iscan_32x16, mcol_scan_32x16_neighbors },
-#endif  // CONFIG_EXT_TX
   },
 #if CONFIG_TX64X64
   {
@@ -7668,7 +7584,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_32x64_neighbors },
       { default_scan_32x64, av1_default_iscan_32x64,
         default_scan_32x64_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_32x64, av1_default_iscan_32x64,
         default_scan_32x64_neighbors },
       { default_scan_32x64, av1_default_iscan_32x64,
@@ -7693,7 +7608,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_32x64_neighbors },
       { default_scan_32x64, av1_default_iscan_32x64,
         default_scan_32x64_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_64X32
@@ -7705,7 +7619,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_64x32_neighbors },
       { default_scan_64x32, av1_default_iscan_64x32,
         default_scan_64x32_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_64x32, av1_default_iscan_64x32,
         default_scan_64x32_neighbors },
       { default_scan_64x32, av1_default_iscan_64x32,
@@ -7730,7 +7643,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_64x32_neighbors },
       { default_scan_64x32, av1_default_iscan_64x32,
         default_scan_64x32_neighbors },
-#endif  // CONFIG_EXT_TX
   },
 #endif  // CONFIG_TX64X64
   {
@@ -7743,7 +7655,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_4x16_neighbors },
       { default_scan_4x16, av1_default_iscan_4x16,
         default_scan_4x16_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_4x16, av1_default_iscan_4x16,
         default_scan_4x16_neighbors },
       { default_scan_4x16, av1_default_iscan_4x16,
@@ -7761,7 +7672,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_4x16, av1_mcol_iscan_4x16, mcol_scan_4x16_neighbors },
       { mrow_scan_4x16, av1_mrow_iscan_4x16, mrow_scan_4x16_neighbors },
       { mcol_scan_4x16, av1_mcol_iscan_4x16, mcol_scan_4x16_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_16X4
@@ -7773,7 +7683,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_16x4_neighbors },
       { default_scan_16x4, av1_default_iscan_16x4,
         default_scan_16x4_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_16x4, av1_default_iscan_16x4,
         default_scan_16x4_neighbors },
       { default_scan_16x4, av1_default_iscan_16x4,
@@ -7791,7 +7700,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_16x4, av1_mcol_iscan_16x4, mcol_scan_16x4_neighbors },
       { mrow_scan_16x4, av1_mrow_iscan_16x4, mrow_scan_16x4_neighbors },
       { mcol_scan_16x4, av1_mcol_iscan_16x4, mcol_scan_16x4_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_8X32
@@ -7803,7 +7711,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_8x32_neighbors },
       { default_scan_8x32, av1_default_iscan_8x32,
         default_scan_8x32_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_8x32, av1_default_iscan_8x32,
         default_scan_8x32_neighbors },
       { default_scan_8x32, av1_default_iscan_8x32,
@@ -7821,7 +7728,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_8x32, av1_mcol_iscan_8x32, mcol_scan_8x32_neighbors },
       { mrow_scan_8x32, av1_mrow_iscan_8x32, mrow_scan_8x32_neighbors },
       { mcol_scan_8x32, av1_mcol_iscan_8x32, mcol_scan_8x32_neighbors },
-#endif  // CONFIG_EXT_TX
   },
   {
       // TX_32X8
@@ -7833,7 +7739,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
         default_scan_32x8_neighbors },
       { default_scan_32x8, av1_default_iscan_32x8,
         default_scan_32x8_neighbors },
-#if CONFIG_EXT_TX
       { default_scan_32x8, av1_default_iscan_32x8,
         default_scan_32x8_neighbors },
       { default_scan_32x8, av1_default_iscan_32x8,
@@ -7851,7 +7756,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       { mcol_scan_32x8, av1_mcol_iscan_32x8, mcol_scan_32x8_neighbors },
       { mrow_scan_32x8, av1_mrow_iscan_32x8, mrow_scan_32x8_neighbors },
       { mcol_scan_32x8, av1_mcol_iscan_32x8, mcol_scan_32x8_neighbors },
-#endif  // CONFIG_EXT_TX
   },
 };
 

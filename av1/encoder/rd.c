@@ -64,7 +64,6 @@ static const uint8_t rd_thresh_block_size_factor[BLOCK_SIZES_ALL] = {
 #endif  // CONFIG_EXT_PARTITION
 };
 
-#if CONFIG_EXT_TX
 static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
     {
       { 1, 1, 1, 1 },  // unused
@@ -83,7 +82,6 @@ static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
       { 0, 0, 0, 1 },
 #endif  // CONFIG_MRC_TX
     };
-#endif  // CONFIG_EXT_TX
 
 void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                          FRAME_CONTEXT *fc) {
@@ -246,7 +244,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 #endif
   }
 
-#if CONFIG_EXT_TX
 #if CONFIG_LGT_FROM_PRED
   if (LGT_FROM_PRED_INTRA) {
     for (i = 0; i < LGT_SIZES; ++i) {
@@ -282,17 +279,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       }
     }
   }
-#else
-  for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
-    for (j = 0; j < TX_TYPES; ++j)
-      av1_cost_tokens_from_cdf(x->intra_tx_type_costs[i][j],
-                               fc->intra_ext_tx_cdf[i][j], av1_ext_tx_inv);
-  }
-  for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
-    av1_cost_tokens_from_cdf(x->inter_tx_type_costs[i], fc->inter_ext_tx_cdf[i],
-                             av1_ext_tx_inv);
-  }
-#endif  // CONFIG_EXT_TX
 #if CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
   for (i = 0; i < DIRECTIONAL_MODES; ++i) {
     av1_cost_tokens_from_cdf(x->angle_delta_cost[i], fc->angle_delta_cdf[i],

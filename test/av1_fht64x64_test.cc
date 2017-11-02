@@ -90,7 +90,6 @@ const Ht64x64Param kArrayHt64x64Param_c[] = {
              4096),
   make_tuple(&av1_fht64x64_c, &av1_iht64x64_4096_add_c, ADST_ADST, AOM_BITS_8,
              4096),
-#if CONFIG_EXT_TX
   make_tuple(&av1_fht64x64_c, &av1_iht64x64_4096_add_c, FLIPADST_DCT,
              AOM_BITS_8, 4096),
   make_tuple(&av1_fht64x64_c, &av1_iht64x64_4096_add_c, DCT_FLIPADST,
@@ -114,7 +113,6 @@ const Ht64x64Param kArrayHt64x64Param_c[] = {
              4096),
   make_tuple(&av1_fht64x64_c, &av1_iht64x64_4096_add_c, H_FLIPADST, AOM_BITS_8,
              4096)
-#endif  // CONFIG_EXT_TX
 };
 INSTANTIATE_TEST_CASE_P(C, AV1Trans64x64HT,
                         ::testing::ValuesIn(kArrayHt64x64Param_c));

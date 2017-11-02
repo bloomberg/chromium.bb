@@ -153,7 +153,6 @@ static INLINE void set_flip_cfg(TX_TYPE tx_type, TXFM_2D_FLIP_CFG *cfg) {
       cfg->ud_flip = 0;
       cfg->lr_flip = 0;
       break;
-#if CONFIG_EXT_TX
     case IDTX:
     case V_DCT:
     case H_DCT:
@@ -178,7 +177,6 @@ static INLINE void set_flip_cfg(TX_TYPE tx_type, TXFM_2D_FLIP_CFG *cfg) {
       cfg->ud_flip = 1;
       cfg->lr_flip = 1;
       break;
-#endif  // CONFIG_EXT_TX
     default:
       cfg->ud_flip = 0;
       cfg->lr_flip = 0;
@@ -218,7 +216,6 @@ static INLINE TX_TYPE av1_rotate_tx_type(TX_TYPE tx_type) {
     case ADST_DCT: return DCT_ADST;
     case DCT_ADST: return ADST_DCT;
     case ADST_ADST: return ADST_ADST;
-#if CONFIG_EXT_TX
     case FLIPADST_DCT: return DCT_FLIPADST;
     case DCT_FLIPADST: return FLIPADST_DCT;
     case FLIPADST_FLIPADST: return FLIPADST_FLIPADST;
@@ -231,7 +228,6 @@ static INLINE TX_TYPE av1_rotate_tx_type(TX_TYPE tx_type) {
     case H_ADST: return V_ADST;
     case V_FLIPADST: return H_FLIPADST;
     case H_FLIPADST: return V_FLIPADST;
-#endif  // CONFIG_EXT_TX
 #if CONFIG_MRC_TX
     case MRC_DCT: return MRC_DCT;
 #endif  // CONFIG_MRC_TX

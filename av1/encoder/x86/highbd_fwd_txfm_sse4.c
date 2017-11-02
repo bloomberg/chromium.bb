@@ -233,7 +233,6 @@ void av1_fwd_txfm2d_4x4_sse4_1(const int16_t *input, int32_t *coeff,
       fadst4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
-#if CONFIG_EXT_TX
     case FLIPADST_DCT:
       row_cfg = &fwd_txfm_1d_row_cfg_dct_4;
       col_cfg = &fwd_txfm_1d_col_cfg_adst_4;
@@ -274,7 +273,6 @@ void av1_fwd_txfm2d_4x4_sse4_1(const int16_t *input, int32_t *coeff,
       fadst4x4_sse4_1(in, row_cfg->cos_bit[2]);
       write_buffer_4x4(in, coeff);
       break;
-#endif
     default: assert(0);
   }
   (void)bd;
@@ -976,7 +974,6 @@ void av1_fwd_txfm2d_8x8_sse4_1(const int16_t *input, int32_t *coeff, int stride,
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
-#if CONFIG_EXT_TX
     case FLIPADST_DCT:
       row_cfg = &fwd_txfm_1d_row_cfg_dct_8;
       col_cfg = &fwd_txfm_1d_col_cfg_adst_8;
@@ -1032,7 +1029,6 @@ void av1_fwd_txfm2d_8x8_sse4_1(const int16_t *input, int32_t *coeff, int stride,
       transpose_8x8(out, in);
       write_buffer_8x8(in, coeff);
       break;
-#endif  // CONFIG_EXT_TX
     default: assert(0);
   }
   (void)bd;
@@ -1850,7 +1846,6 @@ void av1_fwd_txfm2d_16x16_sse4_1(const int16_t *input, int32_t *coeff,
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;
-#if CONFIG_EXT_TX
     case FLIPADST_DCT:
       row_cfg = &fwd_txfm_1d_row_cfg_dct_16;
       col_cfg = &fwd_txfm_1d_col_cfg_adst_16;
@@ -1906,7 +1901,6 @@ void av1_fwd_txfm2d_16x16_sse4_1(const int16_t *input, int32_t *coeff,
       transpose_16x16(out, in);
       write_buffer_16x16(in, coeff);
       break;
-#endif  // CONFIG_EXT_TX
     default: assert(0);
   }
   (void)bd;

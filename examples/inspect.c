@@ -185,7 +185,6 @@ const map_entry tx_type_map[] = { ENUM(DCT_DCT),
                                   ENUM(ADST_DCT),
                                   ENUM(DCT_ADST),
                                   ENUM(ADST_ADST),
-#if CONFIG_EXT_TX
                                   ENUM(FLIPADST_DCT),
                                   ENUM(DCT_FLIPADST),
                                   ENUM(FLIPADST_FLIPADST),
@@ -198,7 +197,6 @@ const map_entry tx_type_map[] = { ENUM(DCT_DCT),
                                   ENUM(H_ADST),
                                   ENUM(V_FLIPADST),
                                   ENUM(H_FLIPADST),
-#endif
                                   LAST_ENUM };
 #if CONFIG_DUAL_FILTER
 const map_entry dual_filter_map[] = { ENUM(REG_REG),       ENUM(REG_SMOOTH),

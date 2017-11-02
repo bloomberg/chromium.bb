@@ -35,7 +35,6 @@ static INLINE __m128i mm_reverse_epi16(const __m128i x) {
   return _mm_shuffle_epi32(b, 0x4e);
 }
 
-#if CONFIG_EXT_TX
 // Identity transform (both forward and inverse).
 static INLINE void idtx16_8col(__m128i *in) {
   const __m128i k__zero_epi16 = _mm_set1_epi16((int16_t)0);
@@ -226,7 +225,6 @@ static INLINE void idtx16_8col(__m128i *in) {
   in[14] = _mm_packs_epi32(u6, y6);
   in[15] = _mm_packs_epi32(u7, y7);
 }
-#endif  // CONFIG_EXT_TX
 
 static INLINE void scale_sqrt2_8x4(__m128i *in) {
   // Implements ROUND_POWER_OF_TWO(input * Sqrt2, DCT_CONST_BITS), for 32

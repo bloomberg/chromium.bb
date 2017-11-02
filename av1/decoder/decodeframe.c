@@ -248,10 +248,7 @@ static void inverse_transform_block(MACROBLOCKD *xd, int plane,
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                               xd->mrc_mask,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-#if CONFIG_EXT_TX
-                              plane,
-#endif  // CONFIG_EXT_TX
-                              tx_type, tx_size, dst, stride, eob);
+                              plane, tx_type, tx_size, dst, stride, eob);
   memset(dqcoeff, 0, (scan_line + 1) * sizeof(dqcoeff[0]));
 }
 
@@ -3338,9 +3335,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   if (cm->reference_mode != SINGLE_REFERENCE) setup_compound_reference_mode(cm);
   read_compound_tools(cm, rb);
 
-#if CONFIG_EXT_TX
   cm->reduced_tx_set_used = aom_rb_read_bit(rb);
-#endif  // CONFIG_EXT_TX
 
 #if CONFIG_ADAPT_SCAN
   cm->use_adapt_scan = aom_rb_read_bit(rb);

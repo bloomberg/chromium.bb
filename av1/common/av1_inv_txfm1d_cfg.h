@@ -306,7 +306,6 @@ static const TXFM_1D_CFG inv_txfm_1d_col_cfg_adst_32 = {
   TXFM_TYPE_ADST32,             // .txfm_type
 };
 
-#if CONFIG_EXT_TX
 // identity does not need to differentiate between row and col
 //  ---------------- row/col config inv_identity_4 ----------
 static const TXFM_1D_CFG inv_txfm_1d_cfg_identity_4 = {
@@ -359,5 +358,4 @@ static const TXFM_1D_CFG inv_txfm_1d_cfg_identity_64 = {
   TXFM_TYPE_IDENTITY64,    // .txfm_type
 };
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_EXT_TX
 #endif  // AV1_INV_TXFM2D_CFG_H_

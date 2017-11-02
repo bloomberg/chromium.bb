@@ -328,9 +328,7 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                          : intra_tx_size_cat_lookup[bsize];
     const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
     const int depth = tx_size_to_depth(coded_tx_size);
-#if CONFIG_EXT_TX
     assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
-#endif  // CONFIG_EXT_TX
 
     aom_write_symbol(w, depth, ec_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
                      tx_size_cat + 2);
@@ -1316,7 +1314,6 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
 #endif
 
   if (!FIXED_TX_TYPE) {
-#if CONFIG_EXT_TX
     const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
     const BLOCK_SIZE bsize = mbmi->sb_type;
     if (get_ext_tx_types(tx_size, bsize, is_inter, cm->reduced_tx_set_used) >
@@ -1395,24 +1392,6 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
       }
 #endif  // CONFIG_LGT_FROM_PRED
     }
-#else   // CONFIG_EXT_TX
-    if (tx_size < TX_32X32 &&
-        ((!cm->seg.enabled && cm->base_qindex > 0) ||
-         (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
-        !mbmi->skip &&
-        !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-      if (is_inter) {
-        aom_write_symbol(w, av1_ext_tx_ind[tx_type],
-                         ec_ctx->inter_ext_tx_cdf[tx_size], TX_TYPES);
-      } else {
-        aom_write_symbol(
-            w, av1_ext_tx_ind[tx_type],
-            ec_ctx->intra_ext_tx_cdf[tx_size]
-                                    [intra_mode_to_tx_type_context[mbmi->mode]],
-            TX_TYPES);
-      }
-    }
-#endif  // CONFIG_EXT_TX
   }
 }
 
@@ -1787,9 +1766,9 @@ static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
     int_mv dv_ref = mbmi_ext->ref_mvs[INTRA_FRAME][0];
     av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
-#if CONFIG_EXT_TX && !CONFIG_TXK_SEL
+#if !CONFIG_TXK_SEL
     av1_write_tx_type(cm, xd, w);
-#endif  // CONFIG_EXT_TX && !CONFIG_TXK_SEL
+#endif  // !CONFIG_TXK_SEL
   }
 }
 #endif  // CONFIG_INTRABC
@@ -4145,9 +4124,7 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
   }
   write_compound_tools(cm, wb);
 
-#if CONFIG_EXT_TX
   aom_wb_write_bit(wb, cm->reduced_tx_set_used);
-#endif  // CONFIG_EXT_TX
 
 #if CONFIG_ADAPT_SCAN
   aom_wb_write_bit(wb, cm->use_adapt_scan);
@@ -4496,9 +4473,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   }
   write_compound_tools(cm, wb);
 
-#if CONFIG_EXT_TX
   aom_wb_write_bit(wb, cm->reduced_tx_set_used);
-#endif  // CONFIG_EXT_TX
 
   if (!frame_is_intra_only(cm)) write_global_motion(cpi, wb);
 

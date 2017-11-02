@@ -190,7 +190,6 @@ typedef enum {
   NO_PRUNE = 0,
   // eliminates one tx type in vertical and horizontal direction
   PRUNE_ONE = 1,
-#if CONFIG_EXT_TX
   // eliminates two tx types in each direction
   PRUNE_TWO = 2,
   // adaptively prunes the least perspective tx types out of all 16
@@ -198,7 +197,6 @@ typedef enum {
   PRUNE_2D_ACCURATE = 3,
   // similar, but applies much more aggressive pruning to get better speed-up
   PRUNE_2D_FAST = 4,
-#endif
 } TX_TYPE_PRUNE_MODE;
 
 typedef struct {

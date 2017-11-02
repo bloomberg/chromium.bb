@@ -399,14 +399,12 @@ static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
 
 static INLINE TX_CLASS get_tx_class(TX_TYPE tx_type) {
   switch (tx_type) {
-#if CONFIG_EXT_TX
     case V_DCT:
     case V_ADST:
     case V_FLIPADST: return TX_CLASS_VERT;
     case H_DCT:
     case H_ADST:
     case H_FLIPADST: return TX_CLASS_HORIZ;
-#endif
     default: return TX_CLASS_2D;
   }
 }
@@ -426,7 +424,6 @@ static INLINE int get_nz_map_ctx_from_count(int count,
   const int width = 1 << bwl;
 
   int ctx = 0;
-#if CONFIG_EXT_TX
   int tx_class = get_tx_class(tx_type);
   int offset;
   if (tx_class == TX_CLASS_2D)
@@ -438,9 +435,6 @@ static INLINE int get_nz_map_ctx_from_count(int count,
     offset = SIG_COEF_CONTEXTS_2D;
 #else
     offset = SIG_COEF_CONTEXTS_2D + SIG_COEF_CONTEXTS_1D;
-#endif
-#else
-  int offset = 0;
 #endif
 
 #if USE_CAUSAL_BASE_CTX

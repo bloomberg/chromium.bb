@@ -351,15 +351,10 @@ typedef struct frame_contexts {
 #endif  // CONFIG_LOOPFILTER_LEVEL
   aom_cdf_prob delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)];
 #endif
-#if CONFIG_EXT_TX
   aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                                [CDF_SIZE(TX_TYPES)];
   aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SETS_INTER][EXT_TX_SIZES]
                                [CDF_SIZE(TX_TYPES)];
-#else
-  aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES][CDF_SIZE(TX_TYPES)];
-  aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SIZES][CDF_SIZE(TX_TYPES)];
-#endif  // CONFIG_EXT_TX
 #if CONFIG_LGT_FROM_PRED
   aom_prob intra_lgt_prob[LGT_SIZES][INTRA_MODES];
   aom_prob inter_lgt_prob[LGT_SIZES];
@@ -500,18 +495,11 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_LOOPFILTER_LEVEL
   unsigned int delta_lf[DELTA_LF_PROBS][2];
 #endif
-#if CONFIG_EXT_TX
   unsigned int tx_size_implied[TX_SIZES][TX_SIZES];
-#endif  // CONFIG_EXT_TX
 #if CONFIG_ENTROPY_STATS
-#if CONFIG_EXT_TX
   unsigned int inter_ext_tx[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];
   unsigned int intra_ext_tx[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                            [TX_TYPES];
-#else
-  unsigned int intra_ext_tx[EXT_TX_SIZES][TX_TYPES][TX_TYPES];
-  unsigned int inter_ext_tx[EXT_TX_SIZES][TX_TYPES];
-#endif  // CONFIG_EXT_TX
 #endif  // CONFIG_ENTROPY_STATS
   struct seg_counts seg;
 #if CONFIG_FILTER_INTRA
@@ -539,7 +527,6 @@ extern const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
 extern const aom_prob
     av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS];
 
-#if CONFIG_EXT_TX
 static const int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES] = {
   {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -597,23 +584,6 @@ static const int av1_ext_tx_inv[EXT_TX_SET_TYPES][TX_TYPES] = {
       9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 4, 5, 3, 6, 7, 8,
   },
 };
-#else
-#if CONFIG_MRC_TX
-static const int av1_ext_tx_ind[TX_TYPES] = {
-  0, 3, 4, 2, 1,
-};
-static const int av1_ext_tx_inv[TX_TYPES] = {
-  0, 4, 3, 1, 2,
-};
-#else
-static const int av1_ext_tx_ind[TX_TYPES] = {
-  0, 2, 3, 1,
-};
-static const int av1_ext_tx_inv[TX_TYPES] = {
-  0, 3, 1, 2,
-};
-#endif  // CONFIG_MRC_TX
-#endif  // CONFIG_EXT_TX
 
 extern const aom_tree_index
     av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)];
@@ -631,12 +601,8 @@ extern const aom_tree_index
 #endif
 extern const aom_tree_index
     av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)];
-#if CONFIG_EXT_TX
 extern const aom_tree_index av1_ext_tx_tree[EXT_TX_SET_TYPES]
                                            [TREE_SIZE(TX_TYPES)];
-#else
-extern const aom_tree_index av1_ext_tx_tree[TREE_SIZE(TX_TYPES)];
-#endif  // CONFIG_EXT_TX
 extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 extern const aom_tree_index av1_ncobmc_mode_tree[TREE_SIZE(MAX_NCOBMC_MODES)];

@@ -344,7 +344,6 @@ static void iadst16(__m256i *in) {
   iadst16_avx2(in);
 }
 
-#if CONFIG_EXT_TX
 static void flip_row(__m256i *in, int rows) {
   int i;
   for (i = 0; i < rows; ++i) {
@@ -361,7 +360,6 @@ static void iidtx16(__m256i *in) {
   mm256_transpose_16x16(in, in);
   txfm_scaling16_avx2((int16_t)Sqrt2, in);
 }
-#endif
 
 void av1_iht16x16_256_add_avx2(const tran_low_t *input, uint8_t *dest,
                                int stride, const TxfmParam *txfm_param) {
@@ -386,7 +384,6 @@ void av1_iht16x16_256_add_avx2(const tran_low_t *input, uint8_t *dest,
       iadst16(in);
       iadst16(in);
       break;
-#if CONFIG_EXT_TX
     case FLIPADST_DCT:
       idct16(in);
       iadst16(in);
@@ -443,7 +440,6 @@ void av1_iht16x16_256_add_avx2(const tran_low_t *input, uint8_t *dest,
       iidtx16(in);
       flip_row(in, 16);
       break;
-#endif  // CONFIG_EXT_TX
     default: assert(0); break;
   }
   store_buffer_16xN(in, stride, dest, 16);

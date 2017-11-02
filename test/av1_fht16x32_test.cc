@@ -88,7 +88,6 @@ const Ht16x32Param kArrayHt16x32Param_c[] = {
              512),
   make_tuple(&av1_fht16x32_c, &av1_iht16x32_512_add_c, ADST_ADST, AOM_BITS_8,
              512),
-#if CONFIG_EXT_TX
   make_tuple(&av1_fht16x32_c, &av1_iht16x32_512_add_c, FLIPADST_DCT, AOM_BITS_8,
              512),
   make_tuple(&av1_fht16x32_c, &av1_iht16x32_512_add_c, DCT_FLIPADST, AOM_BITS_8,
@@ -108,7 +107,6 @@ const Ht16x32Param kArrayHt16x32Param_c[] = {
              512),
   make_tuple(&av1_fht16x32_c, &av1_iht16x32_512_add_c, H_FLIPADST, AOM_BITS_8,
              512)
-#endif  // CONFIG_EXT_TX
 };
 INSTANTIATE_TEST_CASE_P(C, AV1Trans16x32HT,
                         ::testing::ValuesIn(kArrayHt16x32Param_c));
@@ -123,7 +121,6 @@ const Ht16x32Param kArrayHt16x32Param_sse2[] = {
              AOM_BITS_8, 512),
   make_tuple(&av1_fht16x32_sse2, &av1_iht16x32_512_add_sse2, ADST_ADST,
              AOM_BITS_8, 512),
-#if CONFIG_EXT_TX
   make_tuple(&av1_fht16x32_sse2, &av1_iht16x32_512_add_sse2, FLIPADST_DCT,
              AOM_BITS_8, 512),
   make_tuple(&av1_fht16x32_sse2, &av1_iht16x32_512_add_sse2, DCT_FLIPADST,
@@ -148,7 +145,6 @@ const Ht16x32Param kArrayHt16x32Param_sse2[] = {
              AOM_BITS_8, 512),
   make_tuple(&av1_fht16x32_sse2, &av1_iht16x32_512_add_sse2, H_FLIPADST,
              AOM_BITS_8, 512)
-#endif  // CONFIG_EXT_TX
 };
 INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans16x32HT,
                         ::testing::ValuesIn(kArrayHt16x32Param_sse2));

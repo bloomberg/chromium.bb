@@ -29,7 +29,6 @@ static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
     case TXFM_TYPE_ADST8: return av1_iadst8_new;
     case TXFM_TYPE_ADST16: return av1_iadst16_new;
     case TXFM_TYPE_ADST32: return av1_iadst32_new;
-#if CONFIG_EXT_TX
     case TXFM_TYPE_IDENTITY4: return av1_iidentity4_c;
     case TXFM_TYPE_IDENTITY8: return av1_iidentity8_c;
     case TXFM_TYPE_IDENTITY16: return av1_iidentity16_c;
@@ -37,7 +36,6 @@ static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
 #if CONFIG_TX64X64
     case TXFM_TYPE_IDENTITY64: return av1_iidentity64_c;
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_EXT_TX
     default: assert(0); return NULL;
   }
 }
@@ -57,7 +55,6 @@ static const TXFM_1D_CFG *inv_txfm_col_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
     NULL
 #endif  // CONFIG_TX64X64
   },
-#if CONFIG_EXT_TX
   // FLIPADST
   { &inv_txfm_1d_col_cfg_adst_4, &inv_txfm_1d_col_cfg_adst_8,
     &inv_txfm_1d_col_cfg_adst_16, &inv_txfm_1d_col_cfg_adst_32,
@@ -72,7 +69,6 @@ static const TXFM_1D_CFG *inv_txfm_col_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
     &inv_txfm_1d_cfg_identity_64
 #endif  // CONFIG_TX64X64
   },
-#endif  // CONFIG_EXT_TX
 };
 
 static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
@@ -91,7 +87,6 @@ static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
     NULL
 #endif  // CONFIG_TX64X64
   },
-#if CONFIG_EXT_TX
   // FLIPADST
   { &inv_txfm_1d_row_cfg_adst_4, &inv_txfm_1d_row_cfg_adst_8,
     &inv_txfm_1d_row_cfg_adst_16, &inv_txfm_1d_row_cfg_adst_32,
@@ -106,7 +101,6 @@ static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
     &inv_txfm_1d_cfg_identity_64
 #endif  // CONFIG_TX64X64
   },
-#endif  // CONFIG_EXT_TX
 };
 
 TXFM_2D_FLIP_CFG av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size) {

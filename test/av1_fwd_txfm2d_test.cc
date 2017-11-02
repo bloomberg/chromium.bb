@@ -134,7 +134,6 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
 
 TEST_P(AV1FwdTxfm2d, RunFwdAccuracyCheck) { RunFwdAccuracyCheck(); }
 const AV1FwdTxfm2dParam av1_fwd_txfm2d_param_c[] = {
-#if CONFIG_EXT_TX
   AV1FwdTxfm2dParam(FLIPADST_DCT, TX_4X4, 2, 0.2),
   AV1FwdTxfm2dParam(DCT_FLIPADST, TX_4X4, 2, 0.2),
   AV1FwdTxfm2dParam(FLIPADST_FLIPADST, TX_4X4, 2, 0.2),
@@ -155,7 +154,6 @@ const AV1FwdTxfm2dParam av1_fwd_txfm2d_param_c[] = {
   AV1FwdTxfm2dParam(FLIPADST_FLIPADST, TX_32X32, 70, 7),
   AV1FwdTxfm2dParam(ADST_FLIPADST, TX_32X32, 70, 7),
   AV1FwdTxfm2dParam(FLIPADST_ADST, TX_32X32, 70, 7),
-#endif
   AV1FwdTxfm2dParam(DCT_DCT, TX_4X4, 2, 0.2),
   AV1FwdTxfm2dParam(ADST_DCT, TX_4X4, 2, 0.2),
   AV1FwdTxfm2dParam(DCT_ADST, TX_4X4, 2, 0.2),

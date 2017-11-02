@@ -1563,7 +1563,6 @@ void av1_iadst32_new(const int32_t *input, int32_t *output,
   range_check(stage, input, bf1, size, stage_range[stage]);
 }
 
-#if CONFIG_EXT_TX
 void av1_iidentity4_c(const int32_t *input, int32_t *output,
                       const int8_t *cos_bit, const int8_t *stage_range) {
   (void)cos_bit;
@@ -1603,7 +1602,6 @@ void av1_iidentity64_c(const int32_t *input, int32_t *output,
   range_check(0, input, output, 64, stage_range[0]);
 }
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_EXT_TX
 
 #if CONFIG_TX64X64
 void av1_idct64_new(const int32_t *input, int32_t *output,

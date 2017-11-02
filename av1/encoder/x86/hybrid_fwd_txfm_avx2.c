@@ -907,11 +907,9 @@ void fadst16_avx2(__m256i *in) {
   in[15] = _mm256_sub_epi16(zero, x1);
 }
 
-#if CONFIG_EXT_TX
 static void fidtx16_avx2(__m256i *in) {
   txfm_scaling16_avx2((int16_t)Sqrt2, in);
 }
-#endif
 
 void av1_fht16x16_avx2(const int16_t *input, tran_low_t *output, int stride,
                        TxfmParam *txfm_param) {
@@ -950,7 +948,6 @@ void av1_fht16x16_avx2(const int16_t *input, tran_low_t *output, int stride,
       right_shift_16x16(in);
       fadst16_avx2(in);
       break;
-#if CONFIG_EXT_TX
     case FLIPADST_DCT:
       load_buffer_16x16(input, stride, 1, 0, in);
       fadst16_avx2(in);
@@ -1035,7 +1032,6 @@ void av1_fht16x16_avx2(const int16_t *input, tran_low_t *output, int stride,
       right_shift_16x16(in);
       fadst16_avx2(in);
       break;
-#endif  // CONFIG_EXT_TX
     default: assert(0); break;
   }
   mm256_transpose_16x16(in, in);
@@ -1405,7 +1401,6 @@ static INLINE void write_buffer_32x32(const __m256i *in0, const __m256i *in1,
   }
 }
 
-#if CONFIG_EXT_TX
 static void fhalfright32_16col_avx2(__m256i *in) {
   int i = 0;
   const __m256i zero = _mm256_setzero_si256();
@@ -1436,7 +1431,6 @@ static void fhalfright32_avx2(__m256i *in0, __m256i *in1) {
   mm256_vectors_swap(in1, &in1[16], 16);
   mm256_transpose_32x32(in0, in1);
 }
-#endif  // CONFIG_EXT_TX
 
 static INLINE void load_buffer_32x32(const int16_t *input, int stride,
                                      int flipud, int fliplr, __m256i *in0,
@@ -1500,7 +1494,6 @@ static INLINE void right_shift_32x32(__m256i *in0, __m256i *in1) {
   right_shift_32x32_16col(bit, in1);
 }
 
-#if CONFIG_EXT_TX
 static void fidtx32_avx2(__m256i *in0, __m256i *in1) {
   int i = 0;
   while (i < 32) {
@@ -1510,7 +1503,6 @@ static void fidtx32_avx2(__m256i *in0, __m256i *in1) {
   }
   mm256_transpose_32x32(in0, in1);
 }
-#endif
 
 void av1_fht32x32_avx2(const int16_t *input, tran_low_t *output, int stride,
                        TxfmParam *txfm_param) {
@@ -1528,7 +1520,6 @@ void av1_fht32x32_avx2(const int16_t *input, tran_low_t *output, int stride,
       right_shift_32x32(in0, in1);
       fdct32_avx2(in0, in1);
       break;
-#if CONFIG_EXT_TX
     case ADST_DCT:
       load_buffer_32x32(input, stride, 0, 0, in0, in1);
       fhalfright32_avx2(in0, in1);
@@ -1619,7 +1610,6 @@ void av1_fht32x32_avx2(const int16_t *input, tran_low_t *output, int stride,
       right_shift_32x32(in0, in1);
       fhalfright32_avx2(in0, in1);
       break;
-#endif  // CONFIG_EXT_TX
     default: assert(0); break;
   }
   write_buffer_32x32(in0, in1, output);

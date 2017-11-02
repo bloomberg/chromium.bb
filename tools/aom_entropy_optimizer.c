@@ -704,21 +704,7 @@ int main(int argc, const char **argv) {
 #endif
 
 /* Transform type */
-#if CONFIG_EXT_TX
 // TODO(yuec): different trees are used depending on selected ext tx set
-#else
-  // TODO(yuec): intra_ext_tx use different trees depending on the context
-  cts_each_dim[0] = EXT_TX_SIZES;
-  cts_each_dim[1] = TX_TYPES;
-  optimize_entropy_table(&fc.inter_ext_tx[0][0], probsfile, 2, cts_each_dim,
-                         av1_ext_tx_tree, 0,
-                         "static const aom_prob default_inter_ext_tx_prob"
-                         "[EXT_TX_SIZES][TX_TYPES - 1]");
-  optimize_cdf_table(&fc.inter_ext_tx[0][0], probsfile, 2, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_inter_ext_tx_prob[EXT_TX_SIZES][CDF_SIZE(TX_"
-                     "TYPES)]");
-#endif
 
 /* supertx experiment */
 

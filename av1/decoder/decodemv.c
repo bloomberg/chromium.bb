@@ -522,12 +522,8 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
       return tx_size_from_tx_mode(bsize, tx_mode, is_inter);
     }
   } else {
-#if CONFIG_EXT_TX
     assert(IMPLIES(tx_mode == ONLY_4X4, bsize == BLOCK_4X4));
     return max_txsize_rect_lookup[bsize];
-#else
-    return TX_4X4;
-#endif  // CONFIG_EXT_TX
   }
 }
 
@@ -969,7 +965,6 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #endif
 
   if (!FIXED_TX_TYPE) {
-#if CONFIG_EXT_TX
     const TX_SIZE square_tx_size = txsize_sqr_map[tx_size];
     if (get_ext_tx_types(tx_size, mbmi->sb_type, inter_block,
                          cm->reduced_tx_set_used) > 1 &&
@@ -1073,35 +1068,6 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     } else {
       *tx_type = DCT_DCT;
     }
-#else  // CONFIG_EXT_TX
-
-    if (tx_size < TX_32X32 &&
-        ((!cm->seg.enabled && cm->base_qindex > 0) ||
-         (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
-        !mbmi->skip &&
-        !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
-#if CONFIG_ENTROPY_STATS
-      FRAME_COUNTS *counts = xd->counts;
-#endif  // CONFIG_ENTROPY_STATS
-      if (inter_block) {
-        *tx_type = av1_ext_tx_inv[aom_read_symbol(
-            r, ec_ctx->inter_ext_tx_cdf[tx_size], TX_TYPES, ACCT_STR)];
-#if CONFIG_ENTROPY_STATS
-        if (counts) ++counts->inter_ext_tx[tx_size][*tx_type];
-#endif  // CONFIG_ENTROPY_STATS
-      } else {
-        const TX_TYPE tx_type_nom = intra_mode_to_tx_type_context[mbmi->mode];
-        *tx_type = av1_ext_tx_inv[aom_read_symbol(
-            r, ec_ctx->intra_ext_tx_cdf[tx_size][tx_type_nom], TX_TYPES,
-            ACCT_STR)];
-#if CONFIG_ENTROPY_STATS
-        if (counts) ++counts->intra_ext_tx[tx_size][tx_type_nom][*tx_type];
-#endif  // CONFIG_ENTROPY_STATS
-      }
-    } else {
-      *tx_type = DCT_DCT;
-    }
-#endif  // CONFIG_EXT_TX
   }
 #if FIXED_TX_TYPE
   assert(mbmi->tx_type == DCT_DCT);
@@ -1183,9 +1149,9 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     if (dv_ref.as_int == 0) av1_find_ref_dv(&dv_ref, mi_row, mi_col);
     xd->corrupted |=
         !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);
-#if CONFIG_EXT_TX && !CONFIG_TXK_SEL
+#if !CONFIG_TXK_SEL
     av1_read_tx_type(cm, xd, r);
-#endif  // CONFIG_EXT_TX && !CONFIG_TXK_SEL
+#endif  // !CONFIG_TXK_SEL
   }
 }
 #endif  // CONFIG_INTRABC

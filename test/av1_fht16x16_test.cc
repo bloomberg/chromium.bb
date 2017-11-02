@@ -174,7 +174,6 @@ const Ht16x16Param kArrayHt16x16Param_sse2[] = {
              AOM_BITS_8, 256),
   make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2, ADST_ADST,
              AOM_BITS_8, 256),
-#if CONFIG_EXT_TX
   make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2, FLIPADST_DCT,
              AOM_BITS_8, 256),
   make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2, DCT_FLIPADST,
@@ -199,7 +198,6 @@ const Ht16x16Param kArrayHt16x16Param_sse2[] = {
              AOM_BITS_8, 256),
   make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_sse2, H_FLIPADST,
              AOM_BITS_8, 256)
-#endif  // CONFIG_EXT_TX
 };
 INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans16x16HT,
                         ::testing::ValuesIn(kArrayHt16x16Param_sse2));
@@ -215,7 +213,6 @@ const Ht16x16Param kArrayHt16x16Param_avx2[] = {
              AOM_BITS_8, 256),
   make_tuple(&av1_fht16x16_avx2, &av1_iht16x16_256_add_avx2, ADST_ADST,
              AOM_BITS_8, 256),
-#if CONFIG_EXT_TX
   make_tuple(&av1_fht16x16_avx2, &av1_iht16x16_256_add_avx2, FLIPADST_DCT,
              AOM_BITS_8, 256),
   make_tuple(&av1_fht16x16_avx2, &av1_iht16x16_256_add_avx2, DCT_FLIPADST,
@@ -240,7 +237,6 @@ const Ht16x16Param kArrayHt16x16Param_avx2[] = {
              AOM_BITS_8, 256),
   make_tuple(&av1_fht16x16_avx2, &av1_iht16x16_256_add_avx2, H_FLIPADST,
              AOM_BITS_8, 256)
-#endif  // CONFIG_EXT_TX
 };
 INSTANTIATE_TEST_CASE_P(AVX2, AV1Trans16x16HT,
                         ::testing::ValuesIn(kArrayHt16x16Param_avx2));
@@ -256,7 +252,6 @@ const HighbdHt16x16Param kArrayHBDHt16x16Param_sse4_1[] = {
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, DCT_ADST, 12),
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, ADST_ADST, 10),
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, ADST_ADST, 12),
-#if CONFIG_EXT_TX
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, FLIPADST_DCT, 10),
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, FLIPADST_DCT, 12),
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, DCT_FLIPADST, 10),
@@ -267,7 +262,6 @@ const HighbdHt16x16Param kArrayHBDHt16x16Param_sse4_1[] = {
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, ADST_FLIPADST, 12),
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, FLIPADST_ADST, 10),
   make_tuple(&av1_fwd_txfm2d_16x16_sse4_1, FLIPADST_ADST, 12),
-#endif  // CONFIG_EXT_TX
 };
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdTrans16x16HT,
                         ::testing::ValuesIn(kArrayHBDHt16x16Param_sse4_1));

@@ -125,17 +125,6 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
 
 if (aom_config("CONFIG_HIGHBITDEPTH") ne "yes") {
-  if (aom_config("CONFIG_EXT_TX") ne "yes") {
-    if (aom_config("CONFIG_DAALA_TX4") ne "yes") {
-      specialize qw/av1_iht4x4_16_add msa/;
-    }
-    if (aom_config("CONFIG_DAALA_TX8") ne "yes") {
-      specialize qw/av1_iht8x8_64_add msa/;
-    }
-    if (aom_config("CONFIG_DAALA_TX16") ne "yes") {
-      specialize qw/av1_iht16x16_256_add msa/;
-    }
-  }
 }
 
 add_proto qw/void av1_iht32x32_1024_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
@@ -364,19 +353,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   add_proto qw/void av1_fht32x8/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
 
-  if (aom_config("CONFIG_HIGHBITDEPTH") ne "yes") {
-    if (aom_config("CONFIG_EXT_TX") ne "yes") {
-      if (aom_config("CONFIG_DAALA_TX4") ne "yes") {
-        specialize qw/av1_fht4x4 msa/;
-      }
-      if (aom_config("CONFIG_DAALA_TX8") ne "yes") {
-        specialize qw/av1_fht8x8 msa/;
-      }
-      if (aom_config("CONFIG_DAALA_TX16") ne "yes") {
-        specialize qw/av1_fht16x16 msa/;
-      }
-    }
-  }
 
   add_proto qw/void av1_fwd_idtx/, "const int16_t *src_diff, tran_low_t *coeff, int stride, int bsx, int bsy, TX_TYPE tx_type";
 

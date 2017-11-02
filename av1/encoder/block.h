@@ -264,7 +264,6 @@ struct macroblock {
   int quarter_tx_size_cost[2];
 #endif
   int txfm_partition_cost[TXFM_PARTITION_CONTEXTS][2];
-#if CONFIG_EXT_TX
 #if CONFIG_LGT_FROM_PRED
   int intra_lgt_cost[LGT_SIZES][INTRA_MODES][2];
   int inter_lgt_cost[LGT_SIZES][2];
@@ -272,10 +271,6 @@ struct macroblock {
   int inter_tx_type_costs[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];
   int intra_tx_type_costs[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                          [TX_TYPES];
-#else
-  int intra_tx_type_costs[EXT_TX_SIZES][TX_TYPES][TX_TYPES];
-  int inter_tx_type_costs[EXT_TX_SIZES][TX_TYPES];
-#endif  // CONFIG_EXT_TX
 #if CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
   int angle_delta_cost[DIRECTIONAL_MODES][2 * MAX_ANGLE_DELTA + 1];
 #endif  // CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD

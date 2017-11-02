@@ -34,7 +34,6 @@ void get_txfm1d_type(TX_TYPE txfm2d_type, TYPE_TXFM *type0, TYPE_TXFM *type1) {
       *type0 = TYPE_ADST;
       *type1 = TYPE_ADST;
       break;
-#if CONFIG_EXT_TX
     case FLIPADST_DCT:
       *type0 = TYPE_ADST;
       *type1 = TYPE_DCT;
@@ -55,7 +54,6 @@ void get_txfm1d_type(TX_TYPE txfm2d_type, TYPE_TXFM *type0, TYPE_TXFM *type1) {
       *type0 = TYPE_ADST;
       *type1 = TYPE_ADST;
       break;
-#endif  // CONFIG_EXT_TX
     default:
       *type0 = TYPE_DCT;
       *type1 = TYPE_DCT;
