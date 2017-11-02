@@ -16,7 +16,6 @@
 #include "base/win/iat_patch_function.h"
 #endif
 
-namespace chrome {
 namespace {
 #if defined(OS_WIN)
 static base::win::IATPatchFunction g_iat_patch_createdca;
@@ -79,4 +78,3 @@ void InitializePDF() {
 #endif  // OS_WIN
 }
 
-}  // namespace chrome
