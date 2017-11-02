@@ -205,6 +205,7 @@ class CC_EXPORT LayerTreeImpl {
         is_first_frame_after_commit ? -1 : source_frame_number_;
   }
 
+  const HeadsUpDisplayLayerImpl* hud_layer() const { return hud_layer_; }
   HeadsUpDisplayLayerImpl* hud_layer() { return hud_layer_; }
   void set_hud_layer(HeadsUpDisplayLayerImpl* layer_impl) {
     hud_layer_ = layer_impl;
