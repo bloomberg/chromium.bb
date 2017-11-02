@@ -41,7 +41,7 @@ constexpr char kDeviceName1[] = "Device1";
 
 blink::mojom::WebBluetoothServerClientAssociatedPtr CreateServerClient() {
   blink::mojom::WebBluetoothServerClientAssociatedPtr client;
-  mojo::MakeIsolatedRequest(&client);
+  mojo::MakeRequestAssociatedWithDedicatedPipe(&client);
   return client;
 }
 

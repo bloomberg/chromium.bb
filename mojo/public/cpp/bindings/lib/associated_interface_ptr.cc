@@ -6,7 +6,7 @@
 
 namespace mojo {
 
-void GetIsolatedInterface(ScopedInterfaceEndpointHandle handle) {
+void AssociateWithDisconnectedPipe(ScopedInterfaceEndpointHandle handle) {
   MessagePipe pipe;
   scoped_refptr<internal::MultiplexRouter> router =
       new internal::MultiplexRouter(
