@@ -109,7 +109,7 @@ MutableStylePropertySet::SetResult CSSParser::ParseValue(
   if (value) {
     bool did_parse = true;
     bool did_change = declaration->SetProperty(
-        CSSProperty(resolved_property, *value, important));
+        CSSPropertyValue(resolved_property, *value, important));
     return MutableStylePropertySet::SetResult{did_parse, did_change};
   }
   CSSParserContext* context;

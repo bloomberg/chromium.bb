@@ -15,7 +15,7 @@ bool CSSShorthandPropertyAPIGridArea::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   DCHECK_EQ(gridAreaShorthand().length(), 4u);
 
   CSSValue* row_start_value = CSSPropertyGridUtils::ConsumeGridLine(range);

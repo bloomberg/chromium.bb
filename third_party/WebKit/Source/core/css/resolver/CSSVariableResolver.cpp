@@ -282,7 +282,7 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
     if (ResolveTokenRange(shorthand_value->VariableDataValue()->Tokens(),
                           disallow_animation_tainted, tokens, backing_strings,
                           is_animation_tainted)) {
-      HeapVector<CSSProperty, 256> parsed_properties;
+      HeapVector<CSSPropertyValue, 256> parsed_properties;
 
       if (CSSPropertyParser::ParseValue(
               shorthand_property_id, false, CSSParserTokenRange(tokens),

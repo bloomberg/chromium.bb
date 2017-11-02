@@ -7,8 +7,8 @@
 
 #include <memory>
 #include "core/CSSPropertyNames.h"
-#include "core/css/CSSProperty.h"
 #include "core/css/CSSPropertySourceData.h"
+#include "core/css/CSSPropertyValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/heap/Handle.h"
@@ -190,7 +190,7 @@ class CSSParserImpl {
 
   // FIXME: Can we build StylePropertySets directly?
   // FIXME: Investigate using a smaller inline buffer
-  HeapVector<CSSProperty, 256> parsed_properties_;
+  HeapVector<CSSPropertyValue, 256> parsed_properties_;
 
   Member<const CSSParserContext> context_;
   Member<StyleSheetContents> style_sheet_;

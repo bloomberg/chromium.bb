@@ -18,7 +18,7 @@ namespace blink {
 
 class CSSParserContext;
 class CSSParserLocalContext;
-class CSSProperty;
+class CSSPropertyValue;
 class CSSValue;
 class StyleResolverState;
 class StylePropertyShorthand;
@@ -53,7 +53,7 @@ class CSSPropertyAPI {
                               CSSParserTokenRange&,
                               const CSSParserContext&,
                               const CSSParserLocalContext&,
-                              HeapVector<CSSProperty, 256>& properties) const {
+                              HeapVector<CSSPropertyValue, 256>& properties) const {
     return false;
   }
 

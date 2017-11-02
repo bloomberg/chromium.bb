@@ -5,7 +5,6 @@
 #include "core/css/properties/longhands/CSSPropertyAPIWebkitPaddingAfter.h"
 
 #include "core/StylePropertyShorthand.h"
-#include "core/css/CSSProperty.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"

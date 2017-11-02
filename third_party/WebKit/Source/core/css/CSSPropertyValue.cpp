@@ -18,22 +18,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSProperty.h"
+#include "core/css/CSSPropertyValue.h"
 
 #include "core/StylePropertyShorthand.h"
 #include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
 
-struct SameSizeAsCSSProperty {
+struct SameSizeAsCSSPropertyValue {
   uint32_t bitfields;
   Member<void*> value;
 };
 
-static_assert(sizeof(CSSProperty) == sizeof(SameSizeAsCSSProperty),
-              "CSSProperty should stay small");
+static_assert(sizeof(CSSPropertyValue) == sizeof(SameSizeAsCSSPropertyValue),
+              "CSSPropertyValue should stay small");
 
-CSSPropertyID StylePropertyMetadata::ShorthandID() const {
+CSSPropertyID CSSPropertyValueMetadata::ShorthandID() const {
   if (!is_set_from_shorthand_)
     return CSSPropertyInvalid;
 
@@ -46,7 +46,7 @@ CSSPropertyID StylePropertyMetadata::ShorthandID() const {
   return shorthands.at(index_in_shorthands_vector_).id();
 }
 
-bool CSSProperty::operator==(const CSSProperty& other) const {
+bool CSSPropertyValue::operator==(const CSSPropertyValue& other) const {
   return DataEquivalent(value_, other.value_) &&
          IsImportant() == other.IsImportant();
 }

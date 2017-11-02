@@ -43,7 +43,7 @@ bool CSSShorthandPropertyAPIGrid::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   DCHECK_EQ(shorthandForProperty(CSSPropertyGrid).length(), 6u);
 
   CSSParserTokenRange range_copy = range;

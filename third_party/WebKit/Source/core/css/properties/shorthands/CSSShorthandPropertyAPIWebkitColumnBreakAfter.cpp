@@ -14,7 +14,7 @@ bool CSSShorthandPropertyAPIWebkitColumnBreakAfter::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   CSSValueID value;
   if (!CSSPropertyLegacyBreakUtils::ConsumeFromColumnBreakBetween(range,
                                                                   value)) {

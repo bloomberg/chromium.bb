@@ -184,8 +184,10 @@ void HTMLFontElement::CollectStyleForPresentationAttribute(
     AddHTMLColorToStyle(style, CSSPropertyColor, value);
   } else if (name == faceAttr && !value.IsEmpty()) {
     if (const CSSValueList* font_face_value =
-            CreateFontFaceValueWithPool(value))
-      style->SetProperty(CSSProperty(CSSPropertyFontFamily, *font_face_value));
+            CreateFontFaceValueWithPool(value)) {
+      style->SetProperty(
+          CSSPropertyValue(CSSPropertyFontFamily, *font_face_value));
+    }
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

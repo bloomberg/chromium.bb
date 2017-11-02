@@ -59,7 +59,7 @@ def check_property_parameters(property_to_check):
 
 class CSSProperties(object):
     def __init__(self, file_paths):
-        # StylePropertyMetadata assumes that there are at most 1024 properties
+        # CSSPropertyValueMetadata assumes that there are at most 1024 properties
         # + aliases.
         self._alias_offset = 512
         # 0: CSSPropertyInvalid

@@ -4,7 +4,6 @@
 
 #include "core/css/properties/longhands/CSSPropertyAPIMinInlineSizeOrMinLogicalWidth.h"
 
-#include "core/css/CSSProperty.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyLengthUtils.h"
 

@@ -14,7 +14,7 @@ bool CSSShorthandPropertyAPIBorderWidth::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandVia4LonghandAPIs(
       borderWidthShorthand(), important, context, range, properties);
 }

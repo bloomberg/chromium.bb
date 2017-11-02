@@ -13,7 +13,7 @@ bool CSSShorthandPropertyAPIMarker::ParseShorthand(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
+    HeapVector<CSSPropertyValue, 256>& properties) const {
   const CSSValue* marker = CSSPropertyParserHelpers::ParseLonghandViaAPI(
       CSSPropertyMarkerStart, CSSPropertyMarker, context, range);
   if (!marker || !range.AtEnd())
