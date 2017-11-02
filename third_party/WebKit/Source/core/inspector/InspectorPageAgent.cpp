@@ -597,8 +597,13 @@ Response InspectorPageAgent::reload(
 Response InspectorPageAgent::navigate(const String& url,
                                       Maybe<String> referrer,
                                       Maybe<String> transitionType,
-                                      String* out_frame_id) {
-  *out_frame_id = IdentifiersFactory::FrameId(inspected_frames_->Root());
+                                      String* out_frame_id,
+                                      String* loader_id) {
+  LocalFrame* frame = inspected_frames_->Root();
+  DocumentLoader* loader = frame->Loader().GetDocumentLoader();
+
+  *out_frame_id = IdentifiersFactory::FrameId(frame);
+  *loader_id = IdentifiersFactory::LoaderId(loader);
   return Response::OK();
 }
 

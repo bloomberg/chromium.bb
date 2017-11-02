@@ -86,7 +86,8 @@ class PageHandler : public DevToolsDomainHandler,
   Response Navigate(const std::string& url,
                     Maybe<std::string> referrer,
                     Maybe<std::string> transition_type,
-                    Page::FrameId* frame_id) override;
+                    Page::FrameId* frame_id,
+                    Network::LoaderId* loader_id) override;
   Response StopLoading() override;
 
   using NavigationEntries = protocol::Array<Page::NavigationEntry>;

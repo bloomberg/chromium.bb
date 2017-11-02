@@ -124,7 +124,8 @@ class CORE_EXPORT InspectorPageAgent final
   protocol::Response navigate(const String& url,
                               Maybe<String> referrer,
                               Maybe<String> transitionType,
-                              String* frame_id) override;
+                              String* frame_id,
+                              String* loader_id) override;
   protocol::Response stopLoading() override;
   protocol::Response setAdBlockingEnabled(bool) override;
   protocol::Response getResourceTree(
