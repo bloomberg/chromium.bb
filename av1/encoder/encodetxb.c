@@ -318,7 +318,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   for (int i = 0; i < eob; ++i) {
     c = eob - 1 - i;
     coeff_ctx = get_nz_map_ctx(tcoeff, c, scan, bwl, height, tx_type, 0);
-    if (c == eob - 1) assert(coeff_ctx == 0);
 
     tran_low_t v = tcoeff[scan[c]];
     int is_nz = (v != 0);
@@ -587,7 +586,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
     int level = abs(v);
 #if USE_CAUSAL_BASE_CTX
     coeff_ctx = get_nz_map_ctx(qcoeff, c, scan, bwl, height, tx_type, 0);
-    if (c == eob - 1) assert(coeff_ctx == 0);
 #endif
 
     if (c < eob - 1) {
@@ -2018,7 +2016,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
 #if USE_CAUSAL_BASE_CTX
     coeff_ctx = get_nz_map_ctx(tcoeff, c, scan, bwl, height, tx_type, 0);
-    if (c == eob - 1) assert(coeff_ctx == 0);
     if (c < eob - 1) {
       ++(*nz_map_count)[coeff_ctx][is_nz];
       update_cdf(ec_ctx->nz_map_cdf[txsize_ctx][plane_type][coeff_ctx], is_nz,

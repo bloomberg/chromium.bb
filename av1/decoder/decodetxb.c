@@ -160,7 +160,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     c = *eob - 1 - i;
     int is_nz;
     int coeff_ctx = get_nz_map_ctx(levels, c, scan, bwl, height, tx_type, 1);
-    // int eob_ctx = get_eob_ctx(tcoeffs, scan[c], txs_ctx, tx_type);
 
     if (c < *eob - 1) {
       is_nz = av1_read_record_bin(
@@ -180,16 +179,12 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       int k;
       for (k = 0; k < NUM_BASE_LEVELS; ++k) {
         int ctx = coeff_ctx;
-#if 0  // USE_CAUSAL_BASE_CTX read_coeffs
-        int is_k = av1_read_record_bit(counts, r, ACCT_STR);
-#else
         int is_k = av1_read_record_bin(
             counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][k][ctx], 2,
             ACCT_STR);
         if (counts) ++counts->coeff_base[txs_ctx][plane_type][k][ctx][is_k];
 
-#endif
-        // is_k = 1 if level > (k+1)
+        // semantic: is_k = 1 if level > (k+1)
         if (is_k == 0) {
           cul_level += k + 1;
           break;
