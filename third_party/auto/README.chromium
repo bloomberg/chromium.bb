@@ -1,0 +1,15 @@
+Name: Auto
+Short Name: auto
+URL: https://github.com/google/auto
+Version: 71802f2ae74dae2744abd999f8434e13055c4ee3
+Date: November 1, 2017
+License: Apache 2.0
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+* A collection of source code generators for Java.
+* AutoService used for custom plugins in //tools/android/errorprone_plugin.
+
+Local Modifications:
+* Add BUILD.gn.

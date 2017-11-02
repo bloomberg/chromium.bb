@@ -11,6 +11,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
  * Type adaptation layer between {@link android.webkit.ServiceWorkerWebSettings}
  * and {@link org.chromium.android_webview.AwServiceWorkerSettings}.
  */
+@SuppressWarnings("NoSynchronizedMethodCheck")
 @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
 public class ServiceWorkerSettingsAdapter extends android.webkit.ServiceWorkerWebSettings {
     private AwServiceWorkerSettings mAwServiceWorkerSettings;
