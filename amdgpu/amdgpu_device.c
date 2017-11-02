@@ -270,20 +270,14 @@ int amdgpu_device_initialize(int fd,
 		goto cleanup;
 	}
 
-	amdgpu_vamgr_init(&dev->vamgr, dev->dev_info.virtual_address_offset,
-			  dev->dev_info.virtual_address_max,
+	start = dev->dev_info.virtual_address_offset;
+	max = MIN2(dev->dev_info.virtual_address_max, 0xffffffff);
+	amdgpu_vamgr_init(&dev->vamgr_32, start, max,
 			  dev->dev_info.virtual_address_alignment);
 
-	max = MIN2(dev->dev_info.virtual_address_max, 0xffffffff);
-	start = amdgpu_vamgr_find_va(&dev->vamgr,
-				     max - dev->dev_info.virtual_address_offset,
-				     dev->dev_info.virtual_address_alignment, 0);
-	if (start > 0xffffffff) {
-		fprintf(stderr, "%s: amdgpu_vamgr_find_va failed\n", __func__);
-		goto free_va; /* shouldn't get here */
-	}
-
-	amdgpu_vamgr_init(&dev->vamgr_32, start, max,
+	start = MAX2(dev->dev_info.virtual_address_offset, 0x100000000ULL);
+	max = MAX2(dev->dev_info.virtual_address_max, 0x100000000ULL);
+	amdgpu_vamgr_init(&dev->vamgr, start, max,
 			  dev->dev_info.virtual_address_alignment);
 
 	r = amdgpu_parse_asic_ids(&dev->asic_ids);
@@ -299,12 +293,6 @@ int amdgpu_device_initialize(int fd,
 	pthread_mutex_unlock(&fd_mutex);
 
 	return 0;
-
-free_va:
-	r = -ENOMEM;
-	amdgpu_vamgr_free_va(&dev->vamgr, start,
-			     max - dev->dev_info.virtual_address_offset);
-	amdgpu_vamgr_deinit(&dev->vamgr);
 
 cleanup:
 	if (dev->fd >= 0)
