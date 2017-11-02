@@ -293,56 +293,6 @@ static const uint8_t num_8x8_blocks_high_lookup[BLOCK_SIZES_ALL] = {
   2,
   IF_EXT_PARTITION(16, 4)
 };
-static const uint8_t num_16x16_blocks_wide_lookup[BLOCK_SIZES_ALL] = {
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  2,
-  2,
-  2,
-  4,
-  4,
-  IF_EXT_PARTITION(4, 8, 8) 1,
-  1,
-  1,
-  2,
-  2,
-  4,
-  IF_EXT_PARTITION(2, 8)
-};
-static const uint8_t num_16x16_blocks_high_lookup[BLOCK_SIZES_ALL] = {
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  1,
-  2,
-  1,
-  2,
-  4,
-  2,
-  4,
-  IF_EXT_PARTITION(8, 4, 8) 1,
-  1,
-  2,
-  1,
-  4,
-  2,
-  IF_EXT_PARTITION(8, 2)
-};
 
 // AOMMIN(3, AOMMIN(b_width_log2(bsize), b_height_log2(bsize)))
 static const uint8_t size_group_lookup[BLOCK_SIZES_ALL] = {

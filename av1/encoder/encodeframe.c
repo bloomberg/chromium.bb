@@ -146,6 +146,59 @@ static const uint16_t AV1_HIGH_VAR_OFFS_12[MAX_SB_SIZE] = {
 };
 #endif  // CONFIG_HIGHBITDEPTH
 
+#if CONFIG_FP_MB_STATS
+static const uint8_t num_16x16_blocks_wide_lookup[BLOCK_SIZES_ALL] = {
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  2,
+  2,
+  2,
+  4,
+  4,
+  IF_EXT_PARTITION(4, 8, 8) 1,
+  1,
+  1,
+  2,
+  2,
+  4,
+  IF_EXT_PARTITION(2, 8)
+};
+static const uint8_t num_16x16_blocks_high_lookup[BLOCK_SIZES_ALL] = {
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  1,
+  2,
+  1,
+  2,
+  4,
+  2,
+  4,
+  IF_EXT_PARTITION(8, 4, 8) 1,
+  1,
+  2,
+  1,
+  4,
+  2,
+  IF_EXT_PARTITION(8, 2)
+};
+#endif  // CONFIG_FP_MB_STATS
+
 unsigned int av1_get_sby_perpixel_variance(const AV1_COMP *cpi,
                                            const struct buf_2d *ref,
                                            BLOCK_SIZE bs) {
