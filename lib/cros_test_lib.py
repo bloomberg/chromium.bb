@@ -1229,7 +1229,8 @@ class GerritTestCase(MockTempDirTestCase):
     if os.path.exists(netrc_path):
       self._populate_netrc(netrc_path)
       # Set netrc file for http authentication.
-      self.PatchObject(gob_util, 'NETRC', netrc.netrc(gi.netrc_file))
+      self.PatchObject(gob_util, '_GetNetRC',
+                       return_value=netrc.netrc(gi.netrc_file))
 
     if gi.cookies_path:
       cros_build_lib.RunCommand(
