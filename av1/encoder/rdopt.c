@@ -9985,7 +9985,22 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         if (cm->cur_frame->lst2_frame_offset <= cm->cur_frame->gld_frame_offset)
           continue;
     }
-#endif
+
+    // One-sided compound is used only when all reference frames are one-sided.
+    if (sf->selective_ref_frame && comp_pred && !cpi->all_one_sided_refs) {
+      unsigned int ref_offsets[2];
+      for (i = 0; i < 2; ++i) {
+        const int buf_idx = cm->frame_refs[mbmi->ref_frame[i] - LAST_FRAME].idx;
+        assert(buf_idx >= 0);
+        ref_offsets[i] = cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
+      }
+      if ((ref_offsets[0] <= cm->frame_offset &&
+           ref_offsets[1] <= cm->frame_offset) ||
+          (ref_offsets[0] > cm->frame_offset &&
+           ref_offsets[1] > cm->frame_offset))
+        continue;
+    }
+#endif  // CONFIG_FRAME_MARKER
 
     if (ref_frame == INTRA_FRAME) {
       RD_STATS rd_stats_y;

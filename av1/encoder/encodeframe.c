@@ -3755,6 +3755,21 @@ static int is_screen_content(const uint8_t *src,
   return counts * blk_h * blk_w * 10 > width * height;
 }
 
+#if CONFIG_FRAME_MARKER
+static int refs_are_one_sided(const AV1_COMMON *cm) {
+  int one_sided_refs = 1;
+  if (cm->cur_frame->lst_frame_offset > cm->frame_offset ||
+      cm->cur_frame->lst2_frame_offset > cm->frame_offset ||
+      cm->cur_frame->lst3_frame_offset > cm->frame_offset ||
+      cm->cur_frame->gld_frame_offset > cm->frame_offset ||
+      cm->cur_frame->bwd_frame_offset > cm->frame_offset ||
+      cm->cur_frame->alt2_frame_offset > cm->frame_offset ||
+      cm->cur_frame->alt_frame_offset > cm->frame_offset)
+    one_sided_refs = 0;
+  return one_sided_refs;
+}
+#endif  // CONFIG_FRAME_MARKER
+
 static void encode_frame_internal(AV1_COMP *cpi) {
   ThreadData *const td = &cpi->td;
   MACROBLOCK *const x = &td->mb;
@@ -4067,6 +4082,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #if CONFIG_MFMV
   av1_setup_motion_field(cm);
 #endif  // CONFIG_MFMV
+
+#if CONFIG_FRAME_MARKER
+  cpi->all_one_sided_refs = refs_are_one_sided(cm);
+#endif  // CONFIG_FRAME_MARKER
 
   {
     struct aom_usec_timer emr_timer;

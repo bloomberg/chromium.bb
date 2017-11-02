@@ -475,6 +475,9 @@ typedef struct AV1_COMP {
   int mv_step_param;
 
   int allow_comp_inter_inter;
+#if CONFIG_FRAME_MARKER
+  int all_one_sided_refs;
+#endif  // CONFIG_FARME_MARKER
 
   uint8_t *segmentation_map;
 
