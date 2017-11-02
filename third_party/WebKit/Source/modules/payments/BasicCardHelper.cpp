@@ -36,7 +36,7 @@ const struct {
 
 }  // namespace
 
-void BasicCardHelper::parseBasiccardData(
+void BasicCardHelper::ParseBasiccardData(
     const ScriptValue& input,
     Vector<BasicCardNetwork>& supported_networks_output,
     Vector<BasicCardType>& supported_types_output,
@@ -84,7 +84,7 @@ void BasicCardHelper::parseBasiccardData(
   }
 }
 
-bool BasicCardHelper::containsNetworkNames(const Vector<String>& input) {
+bool BasicCardHelper::ContainsNetworkNames(const Vector<String>& input) {
   for (size_t i = 0; i < arraysize(kBasicCardNetworks); ++i) {
     if (input.Contains(kBasicCardNetworks[i].name)) {
       return true;

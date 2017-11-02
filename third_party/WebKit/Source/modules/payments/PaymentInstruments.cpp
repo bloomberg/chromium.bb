@@ -202,7 +202,7 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
     }
     instrument->stringified_capabilities = ToCoreString(value);
     if (instrument->enabled_methods.Contains("basic-card")) {
-      BasicCardHelper::parseBasiccardData(
+      BasicCardHelper::ParseBasiccardData(
           details.capabilities(), instrument->supported_networks,
           instrument->supported_types, exception_state);
     }

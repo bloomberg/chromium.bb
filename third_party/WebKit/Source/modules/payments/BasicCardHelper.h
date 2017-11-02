@@ -18,7 +18,7 @@ class BasicCardHelper {
   // Parse 'basic-card' data in |input| and store result in
   // |supported_networks_output| and |supported_types_output| or throw
   // exception.
-  static void parseBasiccardData(
+  static void ParseBasiccardData(
       const ScriptValue& input,
       Vector<::payments::mojom::blink::BasicCardNetwork>&
           supported_networks_output,
@@ -26,7 +26,7 @@ class BasicCardHelper {
       ExceptionState&);
 
   // Check whether |input| contains 'basic-card' network names.
-  static bool containsNetworkNames(const Vector<String>& input);
+  static bool ContainsNetworkNames(const Vector<String>& input);
 };
 
 }  // namespace blink
