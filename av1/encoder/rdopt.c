@@ -3764,7 +3764,9 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   MACROBLOCKD *xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
-
+#if DISABLE_TRELLISQ_SEARCH
+  (void)fast;
+#endif
 #if CONFIG_TXK_SEL
   av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, a, l, 0, rd_stats);
