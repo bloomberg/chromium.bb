@@ -19,8 +19,12 @@ class CallbackCounter : public base::RefCounted<CallbackCounter> {
 
   explicit CallbackCounter(const FinalCallback& final_callback);
 
-  // Increments the count of pending callbacks.
+  // Increments the count of pending callbacks by |count| .
+  void IncrementCount(int count);
+
+  // Increments the count of pending callbacks by 1.
   void IncrementCount();
+
   // Decrements the count of pending callbacks.
   void DecrementCount();
 

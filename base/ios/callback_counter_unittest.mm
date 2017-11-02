@@ -12,8 +12,8 @@
 
 using CallbackCounterTest = PlatformTest;
 
-// Tests that CallbackCounter works with 2 callbacks.
-TEST_F(CallbackCounterTest, Basic) {
+// Tests that CallbackCounter works with adding callbacks one by one.
+TEST_F(CallbackCounterTest, BasicIncrementByOne) {
   __block BOOL block_was_called = NO;
   scoped_refptr<CallbackCounter> callback_counter =
       new CallbackCounter(base::BindBlock(^{
@@ -32,6 +32,26 @@ TEST_F(CallbackCounterTest, Basic) {
     callback_counter->DecrementCount();
   });
 
+  base::test::ios::WaitUntilCondition(^bool() {
+    return block_was_called;
+  });
+}
+
+// Tests that CallbackCounter works with adding all callbacks at once.
+TEST_F(CallbackCounterTest, BasicIncrementByMoreThanOne) {
+  __block BOOL block_was_called = NO;
+  scoped_refptr<CallbackCounter> callback_counter =
+      new CallbackCounter(base::BindBlock(^{
+        block_was_called = YES;
+      }));
+
+  // Enqueue the 5 callbacks.
+  callback_counter->IncrementCount(5);
+  for (int i = 0; i < 5; i++) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      callback_counter->DecrementCount();
+    });
+  }
   base::test::ios::WaitUntilCondition(^bool() {
     return block_was_called;
   });

@@ -13,10 +13,14 @@ CallbackCounter::~CallbackCounter() {
   DCHECK_EQ(0U, callback_count_);
 }
 
-void CallbackCounter::IncrementCount() {
+void CallbackCounter::IncrementCount(int count) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!final_callback_.is_null());
-  ++callback_count_;
+  callback_count_ += count;
+}
+
+void CallbackCounter::IncrementCount() {
+  IncrementCount(1);
 }
 
 void CallbackCounter::DecrementCount() {
