@@ -25,7 +25,6 @@ input[type="file" i]::-webkit-file-upload-button,
 button {
     /* The color is similar to the border of OSX 10.12 buttons. */
     border-color: #d8d8d8 #d1d1d1 #bababa;
-    border-radius: 4px;
     border-style: solid;
     border-width: 1px;
     /* Fixed padding provided by ThemeMac::ControlPadding() - 1px for broder */
