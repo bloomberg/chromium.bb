@@ -5482,6 +5482,32 @@ weston_compositor_add_pending_output(struct weston_output *output,
 	wl_list_insert(compositor->pending_output_list.prev, &output->link);
 }
 
+/** Create a string with the attached heads' names.
+ *
+ * The string must be free()'d.
+ */
+static char *
+weston_output_create_heads_string(struct weston_output *output)
+{
+	FILE *fp;
+	char *str = NULL;
+	size_t size = 0;
+	struct weston_head *head;
+	const char *sep = "";
+
+	fp = open_memstream(&str, &size);
+	if (!fp)
+		return NULL;
+
+	wl_list_for_each(head, &output->head_list, output_link) {
+		fprintf(fp, "%s%s", sep, head->name);
+		sep = ", ";
+	}
+	fclose(fp);
+
+	return str;
+}
+
 /** Constructs a weston_output object that can be used by the compositor.
  *
  * \param output The weston_output object that needs to be enabled. Must not
@@ -5521,6 +5547,7 @@ weston_output_enable(struct weston_output *output)
 	struct weston_compositor *c = output->compositor;
 	struct weston_output *iterator;
 	struct weston_head *head;
+	char *head_names;
 	int x = 0, y = 0;
 
 	if (output->enabled) {
@@ -5584,6 +5611,11 @@ weston_output_enable(struct weston_output *output)
 	}
 
 	weston_compositor_add_output(output->compositor, output);
+
+	head_names = weston_output_create_heads_string(output);
+	weston_log("Output '%s' enabled with head(s) %s\n",
+		   output->name, head_names);
+	free(head_names);
 
 	return 0;
 }
