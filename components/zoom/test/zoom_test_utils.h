@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ZOOM_ZOOM_TEST_UTILS_H_
 #define COMPONENTS_ZOOM_ZOOM_TEST_UTILS_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_observer.h"
@@ -20,20 +21,37 @@ bool operator==(const ZoomController::ZoomChangedEventData& lhs,
 
 class ZoomChangedWatcher : public zoom::ZoomObserver {
  public:
+  using ZoomEventPred = base::RepeatingCallback<bool(
+      const ZoomController::ZoomChangedEventData&)>;
+
+  // Used to wait until we see a zoom changed event that satisfies the
+  // given |predicate|.
+  ZoomChangedWatcher(ZoomController* zoom_controller, ZoomEventPred predicate);
+  ZoomChangedWatcher(content::WebContents* web_contents,
+                     ZoomEventPred predicate);
+
+  // Used to wait until we see a zoom changed event equal to the given
+  // |expected_event_data|.
   ZoomChangedWatcher(
       ZoomController* zoom_controller,
       const ZoomController::ZoomChangedEventData& expected_event_data);
+  ZoomChangedWatcher(
+      content::WebContents* web_contents,
+      const ZoomController::ZoomChangedEventData& expected_event_data);
+
   ~ZoomChangedWatcher() override;
 
   void Wait();
 
+  // zoom::ZoomObserver:
   void OnZoomChanged(
       const ZoomController::ZoomChangedEventData& event_data) override;
 
  private:
   ZoomController* zoom_controller_;
-  ZoomController::ZoomChangedEventData expected_event_data_;
+  ZoomEventPred predicate_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  bool change_received_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomChangedWatcher);
 };
