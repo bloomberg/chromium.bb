@@ -137,13 +137,12 @@ class CONTENT_EXPORT RenderMessageFilter
       const std::vector<char>& data,
       const url::Origin& cache_storage_origin,
       const std::string& cache_storage_cache_name);
-  void OnCacheStorageOpenCallback(
-      const GURL& url,
-      base::Time expected_response_time,
-      scoped_refptr<net::IOBuffer> buf,
-      int buf_len,
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-      CacheStorageError error);
+  void OnCacheStorageOpenCallback(const GURL& url,
+                                  base::Time expected_response_time,
+                                  scoped_refptr<net::IOBuffer> buf,
+                                  int buf_len,
+                                  CacheStorageCacheHandle cache_handle,
+                                  CacheStorageError error);
   void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
 
   bool CheckBenchmarkingEnabled() const;

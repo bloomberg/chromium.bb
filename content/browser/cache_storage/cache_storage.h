@@ -51,8 +51,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   using BoolAndErrorCallback =
       base::OnceCallback<void(bool, CacheStorageError)>;
   using CacheAndErrorCallback =
-      base::OnceCallback<void(std::unique_ptr<CacheStorageCacheHandle>,
-                              CacheStorageError)>;
+      base::OnceCallback<void(CacheStorageCacheHandle, CacheStorageError)>;
   using IndexCallback = base::OnceCallback<void(const CacheStorageIndex&)>;
   using SizeCallback = base::OnceCallback<void(int64_t)>;
 
@@ -145,15 +144,13 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   static void GenerateNewKeyForTesting();
 
   // Functions for exposing handles to CacheStorageCache to clients.
-  std::unique_ptr<CacheStorageCacheHandle> CreateCacheHandle(
-      CacheStorageCache* cache);
+  CacheStorageCacheHandle CreateCacheHandle(CacheStorageCache* cache);
   void AddCacheHandleRef(CacheStorageCache* cache);
   void DropCacheHandleRef(CacheStorageCache* cache);
 
   // Returns a CacheStorageCacheHandle for the given name if the name is known.
   // If the CacheStorageCache has been deleted, creates a new one.
-  std::unique_ptr<CacheStorageCacheHandle> GetLoadedCache(
-      const std::string& cache_name);
+  CacheStorageCacheHandle GetLoadedCache(const std::string& cache_name);
 
   // Initializer and its callback are below.
   void LazyInit();
@@ -166,10 +163,9 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void CreateCacheDidCreateCache(const std::string& cache_name,
                                  CacheAndErrorCallback callback,
                                  std::unique_ptr<CacheStorageCache> cache);
-  void CreateCacheDidWriteIndex(
-      CacheAndErrorCallback callback,
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-      bool success);
+  void CreateCacheDidWriteIndex(CacheAndErrorCallback callback,
+                                CacheStorageCacheHandle cache_handle,
+                                bool success);
 
   // The HasCache callbacks are below.
   void HasCacheImpl(const std::string& cache_name,
@@ -178,10 +174,9 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // The DeleteCache callbacks are below.
   void DeleteCacheImpl(const std::string& cache_name,
                        BoolAndErrorCallback callback);
-  void DeleteCacheDidWriteIndex(
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-      BoolAndErrorCallback callback,
-      bool success);
+  void DeleteCacheDidWriteIndex(CacheStorageCacheHandle cache_handle,
+                                BoolAndErrorCallback callback,
+                                bool success);
   void DeleteCacheFinalize(CacheStorageCache* doomed_cache);
   void DeleteCacheDidGetSize(CacheStorageCache* doomed_cache,
                              int64_t cache_size);
@@ -195,7 +190,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
                       std::unique_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCacheQueryParams& match_params,
                       CacheStorageCache::ResponseCallback callback);
-  void MatchCacheDidMatch(std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+  void MatchCacheDidMatch(CacheStorageCacheHandle cache_handle,
                           CacheStorageCache::ResponseCallback callback,
                           CacheStorageError error,
                           std::unique_ptr<ServiceWorkerResponse> response,
@@ -206,7 +201,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
                           const CacheStorageCacheQueryParams& match_params,
                           CacheStorageCache::ResponseCallback callback);
   void MatchAllCachesDidMatch(
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
+      CacheStorageCacheHandle cache_handle,
       CacheMatchResponse* out_match_response,
       const base::RepeatingClosure& barrier_closure,
       CacheStorageError error,
@@ -219,11 +214,10 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void GetSizeThenCloseAllCachesImpl(SizeCallback callback);
 
   void SizeImpl(SizeCallback callback);
-  void SizeRetrievedFromCache(
-      std::unique_ptr<CacheStorageCacheHandle> cache_handle,
-      base::OnceClosure closure,
-      int64_t* accumulator,
-      int64_t size);
+  void SizeRetrievedFromCache(CacheStorageCacheHandle cache_handle,
+                              base::OnceClosure closure,
+                              int64_t* accumulator,
+                              int64_t size);
 
   void NotifyCacheContentChanged(const std::string& cache_name);
 

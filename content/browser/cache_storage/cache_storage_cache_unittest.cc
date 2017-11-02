@@ -337,10 +337,10 @@ class TestCacheStorageCache : public CacheStorageCache {
   void Init() { InitBackend(); }
 
  private:
-  std::unique_ptr<CacheStorageCacheHandle> CreateCacheHandle() override {
+  CacheStorageCacheHandle CreateCacheHandle() override {
     // Returns an empty handle. There is no need for CacheStorage and its
     // handles in these tests.
-    return std::unique_ptr<CacheStorageCacheHandle>();
+    return CacheStorageCacheHandle();
   }
 
   bool delay_backend_creation_;
