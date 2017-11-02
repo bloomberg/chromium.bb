@@ -38,7 +38,6 @@
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "platform/LengthFunctions.h"
 #include "platform/wtf/AutoReset.h"
-#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -131,23 +130,12 @@ static LayoutRect GetShapeImageMarginRect(
   return LayoutRect(margin_box_origin, margin_rect_size);
 }
 
-static bool IsValidRasterShapeRect(const LayoutRect& rect) {
-  static double max_image_size_bytes = 0;
-  if (!max_image_size_bytes) {
-    size_t size32_max_bytes =
-        0xFFFFFFFF / 4;  // Some platforms don't limit maxDecodedImageBytes.
-    max_image_size_bytes =
-        std::min(size32_max_bytes, Platform::Current()->MaxDecodedImageBytes());
-  }
-  return (rect.Width().ToFloat() * rect.Height().ToFloat() * 4.0) <
-         max_image_size_bytes;
-}
-
 std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
     StyleImage* style_image,
     float shape_image_threshold,
     WritingMode writing_mode,
     float margin) const {
+  DCHECK(!style_image->IsPendingImage());
   const LayoutSize& image_size = style_image->ImageSize(
       layout_box_.GetDocument(), layout_box_.Style()->EffectiveZoom(),
       reference_box_logical_size_);
@@ -159,29 +147,13 @@ std::unique_ptr<Shape> ShapeOutsideInfo::CreateShapeForImage(
           ? ToLayoutImage(layout_box_).ReplacedContentRect()
           : LayoutRect(LayoutPoint(), image_size);
 
-  if (!IsValidRasterShapeRect(margin_rect) ||
-      !IsValidRasterShapeRect(image_rect)) {
-    layout_box_.GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(kRenderingMessageSource, kErrorMessageLevel,
-                               "The shape-outside image is too large."));
-    return Shape::CreateEmptyRasterShape(writing_mode, margin);
-  }
-
-  DCHECK(!style_image->IsPendingImage());
   scoped_refptr<Image> image = style_image->GetImage(
       layout_box_, layout_box_.GetDocument(), layout_box_.StyleRef(),
       FlooredIntSize(image_size), nullptr);
 
-  std::unique_ptr<Shape> new_shape =
-      Shape::CreateRasterShape(image.get(), shape_image_threshold, image_rect,
-                               margin_rect, writing_mode, margin);
-  if (!new_shape) {
-    layout_box_.GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(kRenderingMessageSource, kErrorMessageLevel,
-                               "The shape-outside image is too large."));
-    return Shape::CreateEmptyRasterShape(writing_mode, margin);
-  }
-  return new_shape;
+  return Shape::CreateRasterShape(image.get(), shape_image_threshold,
+                                  image_rect, margin_rect, writing_mode,
+                                  margin);
 }
 
 const Shape& ShapeOutsideInfo::ComputedShape() const {
