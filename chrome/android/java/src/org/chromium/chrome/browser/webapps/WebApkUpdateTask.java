@@ -89,7 +89,8 @@ public class WebApkUpdateTask extends NativeBackgroundTask {
             }
             WebApkActivity webApkActivity = (WebApkActivity) activity.get();
             if (webApkActivity != null
-                    && TextUtils.equals(webApkPackageName, webApkActivity.getWebApkPackageName())) {
+                    && TextUtils.equals(
+                               webApkPackageName, webApkActivity.getNativeClientPackageName())) {
                 return true;
             }
         }

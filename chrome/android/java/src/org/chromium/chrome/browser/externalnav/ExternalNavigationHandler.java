@@ -527,7 +527,7 @@ public class ExternalNavigationHandler {
             // To avoid bouncing indefinitely, don't override the navigation if we are currently
             // showing the WebApk |params.webApkPackageName()| that we will redirect to.
             if (targetWebApkPackageName != null
-                    && targetWebApkPackageName.equals(params.webApkPackageName())) {
+                    && targetWebApkPackageName.equals(params.nativeClientPackageName())) {
                 if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation in WebApk");
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             }

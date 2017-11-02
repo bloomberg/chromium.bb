@@ -777,7 +777,7 @@ public class ShortcutHelper {
                 if (webApkInfo != null) {
                     names.add(webApkInfo.name());
                     shortNames.add(webApkInfo.shortName());
-                    packageNames.add(webApkInfo.webApkPackageName());
+                    packageNames.add(webApkInfo.apkPackageName());
                     shellApkVersions.add(webApkInfo.shellApkVersion());
                     versionCodes.add(packageInfo.versionCode);
                     uris.add(webApkInfo.uri().toString());
