@@ -715,7 +715,10 @@ class BuilderStage(object):
       result, description, retrying = self._TopHandleStageException()
       if result not in (results_lib.Results.FORGIVEN,
                         results_lib.Results.SUCCESS):
-        raise failures_lib.StepFailure()
+        if isinstance(e, failures_lib.StepFailure):
+          raise
+        else:
+          raise failures_lib.StepFailure()
       elif retrying:
         raise failures_lib.RetriableStepFailure()
     except BaseException:

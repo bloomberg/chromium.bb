@@ -340,6 +340,22 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     self.mock_handle_failure.assert_called_once_with(
         set(), {'build_1'}, {'build_2'}, True)
 
+  def testStageRunWithImportantBuilderFailedException(self):
+    """Test stage.Run on master-paladin with ImportantBuilderFailedException."""
+    stage = self.ConstructStage()
+    stage._run.attrs.manifest_manager = mock.MagicMock()
+    statuses = {
+        'build_1': builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_INFLIGHT, None),
+        'build_2': builder_status_lib.BuilderStatus(
+            constants.BUILDER_STATUS_MISSING, None)
+    }
+    self.PatchObject(builder_status_lib.BuilderStatusesFetcher,
+                     'GetBuilderStatuses', return_value=(statuses, {}))
+
+    with self.assertRaises(completion_stages.ImportantBuilderFailedException):
+      stage.Run()
+
   def testAnnotateBuildStatusFromBuildbucket(self):
     """Test AnnotateBuildStatusFromBuildbucket"""
     stage = self.ConstructStage()

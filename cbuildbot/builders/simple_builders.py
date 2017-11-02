@@ -493,21 +493,28 @@ class DistributedBuilder(SimpleBuilder):
       build_finished: Whether the build completed. A build can be successful
         without completing if it raises ExitEarlyException.
     """
-    completion_stage = self._GetStageInstance(self.completion_stage_class,
-                                              self.sync_stage,
-                                              was_build_successful)
-    self._completion_stage = completion_stage
+    self._completion_stage = self._GetStageInstance(
+        self.completion_stage_class, self.sync_stage, was_build_successful)
     completion_successful = False
     try:
-      completion_stage.Run()
-
-      if config_lib.IsMasterCQ(self._run.config):
-        self._RunStage(handle_changes_stages.CommitQueueHandleChangesStage,
-                       self.sync_stage, completion_stage)
-
+      self._completion_stage.Run()
+      self._HandleChanges()
       completion_successful = True
+    except failures_lib.StepFailure as e:
+      if isinstance(e, completion_stages.ImportantBuilderFailedException):
+        # When ImportantBuilderFailedException is the only exception, the master
+        # build can still submit partial changes (CLs).
+        self._HandleChanges()
+
+      raise
     finally:
       self._Publish(was_build_successful, build_finished, completion_successful)
+
+  def _HandleChanges(self):
+    """Handle changes picked up by the validation_pool in the sync stage."""
+    if config_lib.IsMasterCQ(self._run.config):
+      self._RunStage(handle_changes_stages.CommitQueueHandleChangesStage,
+                     self.sync_stage, self._completion_stage)
 
   def _Publish(self, was_build_successful, build_finished,
                completion_successful):
