@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -53,8 +53,9 @@ class RendererClipboardDelegate {
                  const base::string16& markup,
                  const GURL& url);
   void WriteSmartPasteMarker(ui::ClipboardType type);
-  void WriteCustomData(ui::ClipboardType type,
-                       const std::map<base::string16, base::string16>& data);
+  void WriteCustomData(
+      ui::ClipboardType type,
+      const std::unordered_map<base::string16, base::string16>& data);
   void WriteBookmark(ui::ClipboardType type,
                      const GURL& url,
                      const base::string16& title);

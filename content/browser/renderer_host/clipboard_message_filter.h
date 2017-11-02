@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
@@ -82,8 +83,9 @@ class CONTENT_EXPORT ClipboardMessageFilter : public BrowserMessageFilter {
                    const base::string16& markup,
                    const GURL& url);
   void OnWriteSmartPasteMarker(ui::ClipboardType clipboard_type);
-  void OnWriteCustomData(ui::ClipboardType clipboard_type,
-                         const std::map<base::string16, base::string16>& data);
+  void OnWriteCustomData(
+      ui::ClipboardType clipboard_type,
+      const std::unordered_map<base::string16, base::string16>& data);
   void OnWriteBookmark(ui::ClipboardType clipboard_type,
                        const std::string& url,
                        const base::string16& title);
