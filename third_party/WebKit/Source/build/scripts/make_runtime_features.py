@@ -86,5 +86,26 @@ class RuntimeFeatureWriter(json5_generator.Writer):
         return self._template_inputs()
 
 
+class RuntimeFeatureTestHelpersWriter(json5_generator.Writer):
+    class_name = 'ScopedRuntimeEnabledFeatureForTest'
+    file_basename = 'RuntimeEnabledFeaturesTestHelpers'
+
+    def __init__(self, json5_file_path):
+        super(RuntimeFeatureTestHelpersWriter, self).__init__(json5_file_path)
+        self._outputs = {('testing/' + self.file_basename + '.h'): self.generate_header}
+
+        self._features = self.json5_file.name_dictionaries
+
+    def _template_inputs(self):
+        return {
+            'features': self._features,
+            'input_files': self._input_files,
+        }
+
+    @template_expander.use_jinja('templates/' + file_basename + '.h.tmpl')
+    def generate_header(self):
+        return self._template_inputs()
+
 if __name__ == '__main__':
     json5_generator.Maker(RuntimeFeatureWriter).main()
+    json5_generator.Maker(RuntimeFeatureTestHelpersWriter).main()

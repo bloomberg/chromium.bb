@@ -45,11 +45,11 @@ namespace {
 class RootScrollerTest : public ::testing::Test,
                          public ::testing::WithParamInterface<bool>,
                          private ScopedRootLayerScrollingForTest,
-                         private ScopedRootScrollerForTest {
+                         private ScopedSetRootScrollerForTest {
  public:
   RootScrollerTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
-        ScopedRootScrollerForTest(true),
+        ScopedSetRootScrollerForTest(true),
         base_url_("http://www.test.com/") {
     RegisterMockedHttpURLLoad("overflow-scrolling.html");
     RegisterMockedHttpURLLoad("root-scroller.html");
