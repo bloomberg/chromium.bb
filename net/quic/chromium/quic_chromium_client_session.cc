@@ -669,6 +669,10 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       clock_(clock),
       yield_after_packets_(yield_after_packets),
       yield_after_duration_(yield_after_duration),
+      most_recent_path_degrading_timestamp_(base::TimeTicks()),
+      most_recent_network_disconnected_timestamp_(base::TimeTicks()),
+      most_recent_write_error_(0),
+      most_recent_write_error_timestamp_(base::TimeTicks()),
       stream_factory_(stream_factory),
       transport_security_state_(transport_security_state),
       server_info_(std::move(server_info)),
@@ -1476,14 +1480,14 @@ int QuicChromiumClientSession::HandleWriteError(
 }
 
 void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
+  most_recent_write_error_timestamp_ = base::TimeTicks::Now();
+  most_recent_write_error_ = error_code;
   // If migration_pending_ is false, an earlier task completed migration.
   if (!migration_pending_)
     return;
 
   MigrationResult result = MigrationResult::FAILURE;
   if (stream_factory_ != nullptr) {
-    stream_factory_->CollectDataOnWriteError(error_code);
-
     const NetLogWithSource migration_net_log = NetLogWithSource::Make(
         net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
     migration_net_log.BeginEvent(
@@ -1585,7 +1589,31 @@ void QuicChromiumClientSession::OnNetworkConnected(
 void QuicChromiumClientSession::OnNetworkDisconnected(
     NetworkChangeNotifier::NetworkHandle alternate_network,
     const NetLogWithSource& migration_net_log) {
-  // TODO(zhongyi): move metrics collection to session.
+  if (most_recent_path_degrading_timestamp_ != base::TimeTicks()) {
+    most_recent_network_disconnected_timestamp_ = base::TimeTicks::Now();
+    base::TimeDelta degrading_duration =
+        most_recent_network_disconnected_timestamp_ -
+        most_recent_path_degrading_timestamp_;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Net.QuicNetworkDegradingDurationTillDisconnected", degrading_duration,
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
+        100);
+  }
+  if (most_recent_write_error_timestamp_ != base::TimeTicks()) {
+    base::TimeDelta write_error_to_disconnection_gap =
+        most_recent_network_disconnected_timestamp_ -
+        most_recent_write_error_timestamp_;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Net.QuicNetworkGapBetweenWriteErrorAndDisconnection",
+        write_error_to_disconnection_gap, base::TimeDelta::FromMilliseconds(1),
+        base::TimeDelta::FromMinutes(10), 100);
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "Net.QuicSession.WriteError.NetworkDisconnected",
+        -most_recent_write_error_);
+    most_recent_write_error_ = 0;
+    most_recent_write_error_timestamp_ = base::TimeTicks();
+  }
+
   if (!migrate_session_on_network_change_)
     return;
 
@@ -1596,7 +1624,28 @@ void QuicChromiumClientSession::OnNetworkDisconnected(
 void QuicChromiumClientSession::OnNetworkMadeDefault(
     NetworkChangeNotifier::NetworkHandle new_network,
     const NetLogWithSource& migration_net_log) {
-  // TODO(zhongyi): move metrics collection to session.
+  if (most_recent_path_degrading_timestamp_ != base::TimeTicks()) {
+    if (most_recent_network_disconnected_timestamp_ != base::TimeTicks()) {
+      // NetworkDiscconected happens before NetworkMadeDefault, the platform
+      // is dropping WiFi.
+      base::TimeTicks now = base::TimeTicks::Now();
+      base::TimeDelta disconnection_duration =
+          now - most_recent_network_disconnected_timestamp_;
+      base::TimeDelta degrading_duration =
+          now - most_recent_path_degrading_timestamp_;
+      UMA_HISTOGRAM_CUSTOM_TIMES("Net.QuicNetworkDisconnectionDuration",
+                                 disconnection_duration,
+                                 base::TimeDelta::FromMilliseconds(1),
+                                 base::TimeDelta::FromMinutes(10), 100);
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          "Net.QuicNetworkDegradingDurationTillNewNetworkMadeDefault",
+          degrading_duration, base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromMinutes(10), 100);
+      most_recent_network_disconnected_timestamp_ = base::TimeTicks();
+    }
+    most_recent_path_degrading_timestamp_ = base::TimeTicks();
+  }
+
   if (!migrate_session_on_network_change_)
     return;
 
@@ -1621,9 +1670,10 @@ void QuicChromiumClientSession::OnWriteUnblocked() {
 }
 
 void QuicChromiumClientSession::OnPathDegrading() {
-  if (stream_factory_) {
-    stream_factory_->CollectDataOnPathDegrading();
+  if (most_recent_path_degrading_timestamp_ == base::TimeTicks())
+    most_recent_path_degrading_timestamp_ = base::TimeTicks::Now();
 
+  if (stream_factory_) {
     const NetLogWithSource migration_net_log = NetLogWithSource::Make(
         net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
     migration_net_log.BeginEvent(

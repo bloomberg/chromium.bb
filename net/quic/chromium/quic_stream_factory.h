@@ -288,16 +288,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   NetworkChangeNotifier::NetworkHandle FindAlternateNetwork(
       NetworkChangeNotifier::NetworkHandle old_network);
 
-  // TODO(zhongyi): move metrics collection to session once connection migration
-  // logic is all in QuicChromiumClientSession.
-  // Method that collects error code data on write error.
-  void CollectDataOnWriteError(int error_code);
-
-  // TODO(zhongyi): move metrics collection to session once connection migration
-  // logic is all in QuicChromiumClientSession.
-  // Method that collects timestamp when some session is on path degrading.
-  void CollectDataOnPathDegrading();
-
   // Creates a datagram socket. |source| is the NetLogSource for the entity
   // trying to create the socket, if it has one.
   std::unique_ptr<DatagramClientSocket> CreateSocket(
@@ -492,12 +482,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // PING timeout for connections.
   QuicTime::Delta ping_timeout_;
   QuicTime::Delta reduced_ping_timeout_;
-
-  base::TimeTicks most_recent_path_degrading_timestamp_;
-  base::TimeTicks most_recent_network_disconnected_timestamp_;
-
-  int most_recent_write_error_;
-  base::TimeTicks most_recent_write_error_timestamp_;
 
   // If more than |yield_after_packets_| packets have been read or more than
   // |yield_after_duration_| time has passed, then
