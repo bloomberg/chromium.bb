@@ -608,7 +608,7 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
 
 #if CONFIG_JNT_COMP
-  if (has_second_ref(mbmi)) {
+  if (has_two_sided_comp_refs(cm, mbmi)) {
     const int comp_index_ctx = get_comp_index_context(cm, xd);
     ++td->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
   }

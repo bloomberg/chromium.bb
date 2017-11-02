@@ -1497,7 +1497,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     write_ref_frames(cm, xd, w);
 
 #if CONFIG_JNT_COMP
-    if (has_second_ref(mbmi)) {
+    if (has_two_sided_comp_refs(cm, mbmi)) {
       const int comp_index_ctx = get_comp_index_context(cm, xd);
       aom_write(w, mbmi->compound_idx,
                 ec_ctx->compound_index_probs[comp_index_ctx]);
