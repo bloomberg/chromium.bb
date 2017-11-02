@@ -53,8 +53,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
     CUSTOM,
     // For color spaces defined by an ICC profile which cannot be represented
     // parametrically. Any ColorTransform using this color space will use the
-    // ICC profile directly to compute a transform LUT. A parametric
-    // approximation of these primaries is stored in |custom_primary_matrix_|.
+    // ICC profile directly to compute a transform LUT.
     ICC_BASED,
     LAST = ICC_BASED,
   };
@@ -90,8 +89,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
     LINEAR_HDR,
     // A parametric transfer function defined by |custom_transfer_params_|.
     CUSTOM,
-    // See PrimaryID::ICC_BASED. A parametric approximation of the transfer
-    // function is stored in |custom_transfer_params_|.
+    // See PrimaryID::ICC_BASED.
     ICC_BASED,
     LAST = ICC_BASED,
   };
@@ -173,6 +171,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Returns true if the encoded values can be outside of the 0.0-1.0 range.
   bool FullRangeEncodedValues() const;
 
+  // Returns true if this color space can be represented parametrically.
+  bool IsParametric() const;
+
   // Return a parametric approximation of this color space (if it is not already
   // parametric).
   ColorSpace GetParametricApproximation() const;
@@ -207,7 +208,6 @@ class COLOR_SPACE_EXPORT ColorSpace {
   void GetRangeAdjustMatrix(SkMatrix44* matrix) const;
 
  private:
-  void SetCustomPrimaries(const SkMatrix44& to_XYZD50);
   void SetCustomTransferFunction(const SkColorSpaceTransferFn& fn);
 
   // Returns true if the transfer function is defined by an
@@ -219,12 +219,12 @@ class COLOR_SPACE_EXPORT ColorSpace {
   MatrixID matrix_ = MatrixID::INVALID;
   RangeID range_ = RangeID::INVALID;
 
-  // Only used if primaries_ is PrimaryID::CUSTOM or PrimaryID::ICC_BASED.
+  // Only used if primaries_ is PrimaryID::CUSTOM.
   float custom_primary_matrix_[9] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-  // Only used if transfer_ is TransferID::CUSTOM or PrimaryID::ICC_BASED.
-  // This array consists of the A through G entries of the
-  // SkColorSpaceTransferFn structure in alphabetical order.
+  // Only used if transfer_ is TransferID::CUSTOM. This array consists of the A
+  // through G entries of the SkColorSpaceTransferFn structure in alphabetical
+  // order.
   float custom_transfer_params_[7] = {0, 0, 0, 0, 0, 0, 0};
 
   // This is used to look up the ICCProfile from which this ColorSpace was

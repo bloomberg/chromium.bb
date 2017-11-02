@@ -252,9 +252,8 @@ TEST(SimpleColorSpace, ICCProfileOnlyColorSpin) {
   const float kEpsilon = 2.5f / 255.f;
   ICCProfile icc_profile = ICCProfileForTestingNoAnalyticTrFn();
   ColorSpace icc_space = icc_profile.GetColorSpace();
-  ColorSpace colorspin = ICCProfileForTestingColorSpin()
-                             .GetColorSpace()
-                             .GetParametricApproximation();
+  ColorSpace colorspin =
+      ICCProfileForTestingColorSpin().GetParametricColorSpace();
 
   ColorTransform::TriStim input_value(0.25f, 0.5f, 0.75f);
   ColorTransform::TriStim transformed_value = input_value;
