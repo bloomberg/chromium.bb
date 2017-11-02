@@ -43,9 +43,6 @@ class LaserPointerControllerTest : public AshTestBase {
 // Test to ensure the class responsible for drawing the laser pointer receives
 // points from stylus movements as expected.
 TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
-  // Crashes in mash mode: crbug.com/702657
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
   LaserPointerControllerTestApi controller_test_api_(controller_.get());
 
   // The laser pointer mode only works with stylus.
@@ -120,9 +117,6 @@ TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
 // Test to ensure the class responsible for drawing the laser pointer handles
 // prediction as expected when it receives points from stylus movements.
 TEST_F(LaserPointerControllerTest, LaserPointerPrediction) {
-  // Crashes in mash mode: crbug.com/702657
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
   LaserPointerControllerTestApi controller_test_api_(controller_.get());
 
   controller_test_api_.SetEnabled(true);
