@@ -8,12 +8,14 @@
 #include <string>
 
 #include "base/callback.h"
+#include "build/buildflag.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #include "ui/gfx/linux_font_delegate.h"
 #include "ui/shell_dialogs/shell_dialog_linux.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/features.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
 #include "ui/views/views_export.h"
 
@@ -41,8 +43,11 @@ class Border;
 class DeviceScaleFactorObserver;
 class LabelButton;
 class LabelButtonBorder;
-class NavButtonProvider;
 class WindowButtonOrderObserver;
+
+#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
+class NavButtonProvider;
+#endif
 
 // Adapter class with targets to render like different toolkits. Set by any
 // project that wants to do linux desktop native rendering.
@@ -167,9 +172,11 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual void RemoveDeviceScaleFactorObserver(
       DeviceScaleFactorObserver* observer) = 0;
 
+#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
   // Returns a new NavButtonProvider, or nullptr if the underlying
   // toolkit does not support drawing client-side navigation buttons.
   virtual std::unique_ptr<NavButtonProvider> CreateNavButtonProvider() = 0;
+#endif
 };
 
 }  // namespace views

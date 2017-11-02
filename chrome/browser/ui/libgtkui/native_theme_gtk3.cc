@@ -417,6 +417,7 @@ NativeThemeGtk3::NativeThemeGtk3() {
   g_type_class_unref(g_type_class_ref(gtk_separator_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_spinner_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_text_view_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_toggle_button_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_tree_view_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_window_get_type()));
 

@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "build/buildflag.h"
 #include "chrome/browser/ui/libgtkui/gtk_signal.h"
 #include "chrome/browser/ui/libgtkui/libgtkui_export.h"
 #include "ui/gfx/color_utils.h"
@@ -104,7 +105,9 @@ class GtkUi : public views::LinuxUI {
       views::DeviceScaleFactorObserver* observer) override;
   void RemoveDeviceScaleFactorObserver(
       views::DeviceScaleFactorObserver* observer) override;
+#if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
   std::unique_ptr<views::NavButtonProvider> CreateNavButtonProvider() override;
+#endif
 
   // ui::TextEditKeybindingDelegate:
   bool MatchEvent(const ui::Event& event,

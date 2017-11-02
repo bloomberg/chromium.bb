@@ -31,7 +31,7 @@ void AvatarButtonManager::Update(AvatarButtonStyle style) {
       // Desktop guest shows the avatar button.
       browser_view->IsIncognito()) {
     if (!view_) {
-      view_ = new AvatarButton(this, style, profile);
+      view_ = new AvatarButton(this, style, profile, this);
       view_->set_id(VIEW_ID_AVATAR_BUTTON);
       frame_view_->AddChildView(view_);
       frame->GetRootView()->Layout();

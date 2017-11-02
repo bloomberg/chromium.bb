@@ -2,12 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//components/vector_icons/vector_icons.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/ozone/ozone.gni")
-import("//components/vector_icons/vector_icons.gni")
+import("//ui/views/features.gni")
 
 config("flags") {
   defines = [ "TOOLKIT_VIEWS=1" ]
@@ -28,6 +30,12 @@ aggregate_vector_icons("views_vector_icons") {
     "submenu_arrow.1x.icon",
     "submenu_arrow.icon",
   ]
+}
+
+buildflag_header("features") {
+  header = "features.h"
+  flags =
+      [ "ENABLE_NATIVE_WINDOW_NAV_BUTTONS=$enable_native_window_nav_buttons" ]
 }
 
 component("views") {
@@ -231,7 +239,6 @@ component("views") {
     "window/frame_background.h",
     "window/frame_buttons.h",
     "window/native_frame_view.h",
-    "window/nav_button_provider.h",
     "window/non_client_view.h",
     "window/window_button_order_provider.h",
     "window/window_resources.h",
@@ -433,6 +440,7 @@ component("views") {
   defines = [ "VIEWS_IMPLEMENTATION" ]
 
   deps = [
+    ":features",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//cc/paint",

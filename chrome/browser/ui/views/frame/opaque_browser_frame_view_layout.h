@@ -37,9 +37,12 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   static const int kCaptionButtonBottomPadding;
   static const int kNewTabCaptionCondensedSpacing;
 
-  explicit OpaqueBrowserFrameViewLayout(
-      OpaqueBrowserFrameViewLayoutDelegate* delegate);
+  OpaqueBrowserFrameViewLayout();
   ~OpaqueBrowserFrameViewLayout() override;
+
+  void set_delegate(OpaqueBrowserFrameViewLayoutDelegate* delegate) {
+    delegate_ = delegate;
+  }
 
   // Configures the button ordering in the frame.
   void SetButtonOrdering(
@@ -81,12 +84,12 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   // Returns the y-coordinate of button |button_id|.  If |restored| is true,
   // acts as if the window is restored regardless of the real mode.
-  int CaptionButtonY(chrome::FrameButtonDisplayType button_id,
-                     bool restored) const;
+  virtual int CaptionButtonY(chrome::FrameButtonDisplayType button_id,
+                             bool restored) const;
 
   // Returns the initial spacing between the edge of the browser window and the
   // first button.
-  int TopAreaPadding() const;
+  virtual int TopAreaPadding() const;
 
   // Returns the thickness of the 3D edge along the top of the titlebar.  If
   // |restored| is true, acts as if the window is restored regardless of the
@@ -108,9 +111,9 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // Returns the margin around button |button_id|.  If |leading_spacing| is
   // true, returns the left margin (in RTL), otherwise returns the right margin
   // (in RTL).  Extra margin may be added if |is_leading_button| is true.
-  int GetWindowCaptionSpacing(views::FrameButton button_id,
-                              bool leading_spacing,
-                              bool is_leading_button) const;
+  virtual int GetWindowCaptionSpacing(views::FrameButton button_id,
+                                      bool leading_spacing,
+                                      bool is_leading_button) const;
 
   void set_extra_caption_y(int extra_caption_y) {
     extra_caption_y_ = extra_caption_y;
@@ -129,7 +132,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // the thick frame border and rounded corners.
   bool IsTitleBarCondensed() const;
 
- private:
+ protected:
   // Whether a specific button should be inserted on the leading or trailing
   // side.
   enum ButtonAlignment {
@@ -137,6 +140,26 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
     ALIGN_TRAILING
   };
 
+  virtual void LayoutNewStyleAvatar(views::View* host);
+
+  virtual bool ShouldDrawImageMirrored(views::ImageButton* button,
+                                       ButtonAlignment alignment) const;
+
+  OpaqueBrowserFrameViewLayoutDelegate* delegate_;
+
+  views::View* new_avatar_button_;
+
+  // How far from the leading/trailing edge of the view the next window control
+  // should be placed.
+  int leading_button_start_;
+  int trailing_button_start_;
+
+  // The size of the window buttons, and the avatar menu item (if any). This
+  // does not count labels or other elements that should be counted in a
+  // minimal frame.
+  int minimum_size_for_buttons_;
+
+ private:
   // Determines whether the incognito icon should be shown on the right side of
   // the tab strip (instead of the usual left).
   bool ShouldIncognitoIconBeOnRight() const;
@@ -149,7 +172,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   void LayoutWindowControls(views::View* host);
   void LayoutTitleBar(views::View* host);
   void LayoutIncognitoIcon(views::View* host);
-  void LayoutNewStyleAvatar(views::View* host);
 
   void ConfigureButton(views::View* host,
                        views::FrameButton button_id,
@@ -173,23 +195,11 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   void ViewAdded(views::View* host, views::View* view) override;
   void ViewRemoved(views::View* host, views::View* view) override;
 
-  OpaqueBrowserFrameViewLayoutDelegate* delegate_;
-
   // The bounds of the ClientView.
   gfx::Rect client_view_bounds_;
 
   // The layout of the window icon, if visible.
   gfx::Rect window_icon_bounds_;
-
-  // How far from the leading/trailing edge of the view the next window control
-  // should be placed.
-  int leading_button_start_;
-  int trailing_button_start_;
-
-  // The size of the window buttons, and the avatar menu item (if any). This
-  // does not count labels or other elements that should be counted in a
-  // minimal frame.
-  int minimum_size_for_buttons_;
 
   // Whether any of the window control buttons were packed on the leading.
   bool has_leading_buttons_;
@@ -213,7 +223,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   views::Label* window_title_;
 
   views::View* incognito_icon_;
-  views::View* new_avatar_button_;
 
   std::vector<views::FrameButton> leading_buttons_;
   std::vector<views::FrameButton> trailing_buttons_;
