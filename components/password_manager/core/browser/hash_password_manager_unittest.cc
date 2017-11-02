@@ -41,6 +41,15 @@ TEST_F(HashPasswordManagerTest, Saving) {
   hash_password_manager.set_prefs(&prefs_);
   hash_password_manager.SavePasswordHash(base::ASCIIToUTF16("sync_password"));
   EXPECT_TRUE(prefs_.HasPrefPath(prefs::kSyncPasswordHash));
+
+  // Saves the same password again won't change password hash, length or salt.
+  const std::string current_hash = prefs_.GetString(prefs::kSyncPasswordHash);
+  const std::string current_length_and_salt =
+      prefs_.GetString(prefs::kSyncPasswordLengthAndHashSalt);
+  hash_password_manager.SavePasswordHash(base::ASCIIToUTF16("sync_password"));
+  EXPECT_EQ(current_hash, prefs_.GetString(prefs::kSyncPasswordHash));
+  EXPECT_EQ(current_length_and_salt,
+            prefs_.GetString(prefs::kSyncPasswordLengthAndHashSalt));
 }
 
 TEST_F(HashPasswordManagerTest, Clearing) {
