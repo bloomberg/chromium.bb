@@ -8,6 +8,9 @@
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/interfaces/fetch_api.mojom.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -54,11 +57,14 @@ class CONTENT_EXPORT CORSURLLoader : public mojom::URLLoader,
   void OnComplete(
       const ResourceRequestCompletionStatus& completion_status) override;
 
+ private:
   // Called when there is a connection error on the upstream pipe used for the
   // actual request.
   void OnUpstreamConnectionError();
 
- private:
+  // Handles OnComplete() callback.
+  void HandleComplete(const ResourceRequestCompletionStatus& completion_status);
+
   // This raw URLLoaderFactory pointer is shared with the CORSURLLoaderFactory
   // that created and owns this object.
   mojom::URLLoaderFactory* network_loader_factory_;
@@ -69,6 +75,22 @@ class CONTENT_EXPORT CORSURLLoader : public mojom::URLLoader,
 
   // To be a URLLoader for the client.
   mojom::URLLoaderClientPtr forwarding_client_;
+
+  // Request initiator's origin.
+  url::Origin security_origin_;
+
+  // The last response URL, that is usually the requested URL, but can be
+  // different if redirects happen.
+  GURL last_response_url_;
+
+  // A flag to indicate that the instance is waiting for that forwarding_client_
+  // calls FollowRedirect.
+  bool is_waiting_follow_redirect_call_ = false;
+
+  // Corresponds to the Fetch spec, https://fetch.spec.whatwg.org/.
+  network::mojom::FetchRequestMode fetch_request_mode_;
+  network::mojom::FetchCredentialsMode fetch_credentials_mode_;
+  bool fetch_cors_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoader);
 };
