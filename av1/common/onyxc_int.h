@@ -43,6 +43,20 @@
 extern "C" {
 #endif
 
+#if defined(__clang__) && defined(__has_warning)
+#if __has_feature(cxx_attributes) && __has_warning("-Wimplicit-fallthrough")
+#define AOM_FALLTHROUGH_INTENDED [[clang::fallthrough]]  // NOLINT
+#endif
+#elif defined(__GNUC__) && __GNUC__ >= 7
+#define AOM_FALLTHROUGH_INTENDED [[gnu::fallthrough]]  // NOLINT
+#endif
+
+#ifndef AOM_FALLTHROUGH_INTENDED
+#define AOM_FALLTHROUGH_INTENDED \
+  do {                           \
+  } while (0)
+#endif
+
 #define CDEF_MAX_STRENGTHS 16
 
 #define REF_FRAMES_LOG2 3
@@ -998,6 +1012,7 @@ static INLINE void update_ext_partition_context(MACROBLOCKD *xd, int mi_row,
     switch (partition) {
       case PARTITION_SPLIT:
         if (bsize != BLOCK_8X8) break;
+        AOM_FALLTHROUGH_INTENDED;
       case PARTITION_NONE:
       case PARTITION_HORZ:
       case PARTITION_VERT:

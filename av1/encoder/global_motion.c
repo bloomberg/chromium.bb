@@ -110,11 +110,18 @@ static int32_t add_param_offset(int param_index, int32_t param_value,
 
 static void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype) {
   switch (wmtype) {
-    case IDENTITY: wm->wmmat[0] = 0; wm->wmmat[1] = 0;
+    case IDENTITY:
+      wm->wmmat[0] = 0;
+      wm->wmmat[1] = 0;
+      AOM_FALLTHROUGH_INTENDED;
     case TRANSLATION:
       wm->wmmat[2] = 1 << WARPEDMODEL_PREC_BITS;
       wm->wmmat[3] = 0;
-    case ROTZOOM: wm->wmmat[4] = -wm->wmmat[3]; wm->wmmat[5] = wm->wmmat[2];
+      AOM_FALLTHROUGH_INTENDED;
+    case ROTZOOM:
+      wm->wmmat[4] = -wm->wmmat[3];
+      wm->wmmat[5] = wm->wmmat[2];
+      AOM_FALLTHROUGH_INTENDED;
     case AFFINE: wm->wmmat[6] = wm->wmmat[7] = 0; break;
     default: assert(0);
   }
