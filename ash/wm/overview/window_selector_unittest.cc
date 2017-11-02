@@ -2581,6 +2581,37 @@ TEST_F(SplitViewWindowSelectorTest, SelectUnsnappableWindowInSplitView) {
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_FALSE(window_selector_controller()->IsSelecting());
   EXPECT_EQ(unsnappable_window.get(), wm::GetActiveWindow());
+
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  // Split view mode should be active. Overview mode should be ended.
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_EQ(SplitViewController::BOTH_SNAPPED,
+            split_view_controller()->state());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+
+  ToggleOverview();
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_EQ(SplitViewController::LEFT_SNAPPED,
+            split_view_controller()->state());
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+
+  // Now select the unsnappable window.
+  selector_item = GetWindowItemForWindow(grid_index, unsnappable_window.get());
+  GetEventGenerator().set_current_location(
+      selector_item->target_bounds().CenterPoint());
+  GetEventGenerator().ClickLeftButton();
+  base::RunLoop().RunUntilIdle();
+
+  // Split view mode should be ended. And the unsnappable window should be the
+  // active window now.
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+  EXPECT_EQ(unsnappable_window.get(), wm::GetActiveWindow());
 }
 
 }  // namespace ash
