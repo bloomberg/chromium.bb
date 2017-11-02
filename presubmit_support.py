@@ -685,6 +685,10 @@ class AffectedFile(object):
 
   def LocalPath(self):
     """Returns the path of this file on the local disk relative to client root.
+
+    This should be used for error messages but not for accessing files,
+    because presubmit checks are run with CWD=PresubmitLocalPath() (which is
+    often != client root).
     """
     return normpath(self._path)
 
