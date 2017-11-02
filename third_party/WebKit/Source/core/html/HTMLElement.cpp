@@ -58,6 +58,7 @@
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
+#include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/mathml_names.h"
@@ -1233,7 +1234,7 @@ int HTMLElement::offsetLeftForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustLayoutUnitForAbsoluteZoom(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(layout_object->PixelSnappedOffsetLeft(offset_parent)),
                layout_object->StyleRef())
         .Round();
@@ -1244,7 +1245,7 @@ int HTMLElement::offsetTopForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustLayoutUnitForAbsoluteZoom(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(layout_object->PixelSnappedOffsetTop(offset_parent)),
                layout_object->StyleRef())
         .Round();
@@ -1255,7 +1256,7 @@ int HTMLElement::offsetWidthForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustLayoutUnitForAbsoluteZoom(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(
                    layout_object->PixelSnappedOffsetWidth(offset_parent)),
                layout_object->StyleRef())
@@ -1268,7 +1269,7 @@ int HTMLElement::offsetHeightForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   Element* offset_parent = unclosedOffsetParent();
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustLayoutUnitForAbsoluteZoom(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(
                    layout_object->PixelSnappedOffsetHeight(offset_parent)),
                layout_object->StyleRef())

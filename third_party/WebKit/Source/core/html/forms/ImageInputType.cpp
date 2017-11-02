@@ -35,6 +35,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
 #include "core/input_type_names.h"
+#include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutImage.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -193,7 +194,9 @@ unsigned ImageInputType::Height() const {
   GetElement().GetDocument().UpdateStyleAndLayout();
 
   LayoutBox* box = GetElement().GetLayoutBox();
-  return box ? AdjustForAbsoluteZoom(box->ContentHeight().ToInt(), box) : 0;
+  return box ? AdjustForAbsoluteZoom::AdjustInt(box->ContentHeight().ToInt(),
+                                                box)
+             : 0;
 }
 
 unsigned ImageInputType::Width() const {
@@ -216,7 +219,9 @@ unsigned ImageInputType::Width() const {
   GetElement().GetDocument().UpdateStyleAndLayout();
 
   LayoutBox* box = GetElement().GetLayoutBox();
-  return box ? AdjustForAbsoluteZoom(box->ContentWidth().ToInt(), box) : 0;
+  return box ? AdjustForAbsoluteZoom::AdjustInt(box->ContentWidth().ToInt(),
+                                                box)
+             : 0;
 }
 
 bool ImageInputType::HasLegalLinkAttribute(const QualifiedName& name) const {

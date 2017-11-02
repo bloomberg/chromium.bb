@@ -7,6 +7,7 @@
 #include "core/dom/PseudoElement.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/geometry/DOMRect.h"
+#include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutInline.h"
@@ -460,12 +461,12 @@ bool InspectorHighlight::GetBoxModel(
           .setPadding(BuildArrayForQuad(padding))
           .setBorder(BuildArrayForQuad(border))
           .setMargin(BuildArrayForQuad(margin))
-          .setWidth(model_object ? AdjustForAbsoluteZoom(
+          .setWidth(model_object ? AdjustForAbsoluteZoom::AdjustInt(
                                        model_object->PixelSnappedOffsetWidth(
                                            model_object->OffsetParent()),
                                        model_object)
                                  : bounding_box.Width())
-          .setHeight(model_object ? AdjustForAbsoluteZoom(
+          .setHeight(model_object ? AdjustForAbsoluteZoom::AdjustInt(
                                         model_object->PixelSnappedOffsetHeight(
                                             model_object->OffsetParent()),
                                         model_object)

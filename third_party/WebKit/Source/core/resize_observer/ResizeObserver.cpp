@@ -7,6 +7,7 @@
 #include "bindings/core/v8/v8_resize_observer_callback.h"
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/layout/LayoutObject.h"
 #include "core/resize_observer/ResizeObservation.h"
 #include "core/resize_observer/ResizeObserverController.h"
@@ -118,13 +119,13 @@ void ResizeObserver::DeliverObservations() {
       const ComputedStyle& style =
           observation->Target()->GetLayoutObject()->StyleRef();
       content_rect.SetX(
-          AdjustLayoutUnitForAbsoluteZoom(content_rect.X(), style));
+          AdjustForAbsoluteZoom::AdjustLayoutUnit(content_rect.X(), style));
       content_rect.SetY(
-          AdjustLayoutUnitForAbsoluteZoom(content_rect.Y(), style));
+          AdjustForAbsoluteZoom::AdjustLayoutUnit(content_rect.Y(), style));
       content_rect.SetWidth(
-          AdjustLayoutUnitForAbsoluteZoom(content_rect.Width(), style));
-      content_rect.SetHeight(
-          AdjustLayoutUnitForAbsoluteZoom(content_rect.Height(), style));
+          AdjustForAbsoluteZoom::AdjustLayoutUnit(content_rect.Width(), style));
+      content_rect.SetHeight(AdjustForAbsoluteZoom::AdjustLayoutUnit(
+          content_rect.Height(), style));
     }
     auto entry = new ResizeObserverEntry(observation->Target(), content_rect);
     entries.push_back(entry);
