@@ -257,6 +257,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   bool dont_use_idle_scheduling_for_testing_ = false;
   bool did_draw_since_last_flush_ = false;
   bool did_draw_since_last_gpu_flush_ = false;
+  bool use_gpu_memory_buffers_ = false;
 
   friend class Canvas2DLayerBridgeTest;
   friend class CanvasRenderingContext2DTest;
