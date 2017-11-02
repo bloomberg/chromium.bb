@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef MockPaintCanvas_h
+#define MockPaintCanvas_h
+
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkMetaData.h"
@@ -103,3 +106,5 @@ class MockPaintCanvas : public PaintCanvas {
 };
 
 }  // namespace blink
+
+#endif  // MockPaintCanvas_h

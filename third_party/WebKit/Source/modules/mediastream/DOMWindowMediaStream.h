@@ -4,3 +4,10 @@
 
 // TODO: This is a dummy header file required by the generated binding code.
 // This file should be removed after fixing the code generator.
+
+#ifndef DOMWindowMediaStream_h
+#define DOMWindowMediaStream_h
+
+// This space intentionally left blank
+
+#endif  // DOMWindowMediaStream_h

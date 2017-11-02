@@ -4,6 +4,9 @@
  * found in the LICENSE file.
  */
 
+#ifndef HeapTestUtilities_h
+#define HeapTestUtilities_h
+
 namespace blink {
 
 void PreciselyCollectGarbage();
@@ -11,3 +14,5 @@ void ConservativelyCollectGarbage();
 void ClearOutOldGarbage();
 
 }  // namespace blink
+
+#endif  // HeapTestUtilities_h
