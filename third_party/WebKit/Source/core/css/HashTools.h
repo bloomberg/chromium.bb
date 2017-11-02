@@ -37,8 +37,8 @@ struct Value {
   int id;
 };
 
-const Property* FindProperty(register const char* str, register unsigned len);
-const Value* FindValue(register const char* str, register unsigned len);
+const Property* FindProperty(const char* str, unsigned len);
+const Value* FindValue(const char* str, unsigned len);
 
 }  // namespace blink
 
