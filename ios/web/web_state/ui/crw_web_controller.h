@@ -268,8 +268,8 @@ class WebStateImpl;
 - (void)injectWebViewContentView:(CRWWebViewContentView*)webViewContentView;
 - (void)resetInjectedWebViewContentView;
 
-// Returns the number of observers registered for this CRWWebController.
-- (NSUInteger)observerCount;
+// Returns whether any observers are registered with the CRWWebController.
+- (BOOL)hasObservers;
 
 // Loads the HTML into the page at the given URL.
 - (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL;

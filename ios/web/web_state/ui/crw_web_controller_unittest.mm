@@ -721,9 +721,9 @@ typedef WebTestWithWebController CRWWebControllerObserversTest;
 // Tests that CRWWebControllerObservers are called.
 TEST_F(CRWWebControllerObserversTest, Observers) {
   CountingObserver* observer = [[CountingObserver alloc] init];
-  EXPECT_EQ(0u, [web_controller() observerCount]);
+  EXPECT_FALSE([web_controller() hasObservers]);
   [web_controller() addObserver:observer];
-  EXPECT_EQ(1u, [web_controller() observerCount]);
+  EXPECT_TRUE([web_controller() hasObservers]);
 
   EXPECT_EQ(0, [observer pageLoadedCount]);
   [web_controller() webStateImpl]->OnPageLoaded(GURL("http://test"), false);
@@ -732,7 +732,7 @@ TEST_F(CRWWebControllerObserversTest, Observers) {
   EXPECT_EQ(1, [observer pageLoadedCount]);
 
   [web_controller() removeObserver:observer];
-  EXPECT_EQ(0u, [web_controller() observerCount]);
+  EXPECT_FALSE([web_controller() hasObservers]);
 };
 
 // Test fixture for window.open tests.
