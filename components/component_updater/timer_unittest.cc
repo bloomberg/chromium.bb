@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -28,20 +29,22 @@ class ComponentUpdaterTimerTest : public testing::Test {
 TEST_F(ComponentUpdaterTimerTest, Start) {
   class TimerClientFake {
    public:
-    TimerClientFake(int max_count, const base::Closure& quit_closure)
-        : max_count_(max_count), quit_closure_(quit_closure), count_(0) {}
+    TimerClientFake(int max_count, base::Closure quit_closure)
+        : max_count_(max_count),
+          quit_closure_(std::move(quit_closure)),
+          count_(0) {}
 
     void OnTimerEvent() {
       ++count_;
       if (count_ >= max_count_)
-        quit_closure_.Run();
+        std::move(quit_closure_).Run();
     }
 
     int count() const { return count_; }
 
    private:
     const int max_count_;
-    const base::Closure quit_closure_;
+    base::OnceClosure quit_closure_;
 
     int count_;
   };

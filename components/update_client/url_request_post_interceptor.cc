@@ -254,14 +254,15 @@ URLRequestPostInterceptorFactory::URLRequestPostInterceptorFactory(
                                                         hostname,
                                                         io_task_runner)) {
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&URLRequestPostInterceptor::Delegate::Register,
-                            base::Unretained(delegate_)));
+      FROM_HERE, base::BindOnce(&URLRequestPostInterceptor::Delegate::Register,
+                                base::Unretained(delegate_)));
 }
 
 URLRequestPostInterceptorFactory::~URLRequestPostInterceptorFactory() {
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&URLRequestPostInterceptor::Delegate::Unregister,
-                            base::Unretained(delegate_)));
+      FROM_HERE,
+      base::BindOnce(&URLRequestPostInterceptor::Delegate::Unregister,
+                     base::Unretained(delegate_)));
 }
 
 URLRequestPostInterceptor* URLRequestPostInterceptorFactory::CreateInterceptor(
@@ -273,8 +274,9 @@ URLRequestPostInterceptor* URLRequestPostInterceptorFactory::CreateInterceptor(
       new URLRequestPostInterceptor(absolute_url, io_task_runner_));
   bool res = io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestPostInterceptor::Delegate::OnCreateInterceptor,
-                 base::Unretained(delegate_), base::Unretained(interceptor)));
+      base::BindOnce(&URLRequestPostInterceptor::Delegate::OnCreateInterceptor,
+                     base::Unretained(delegate_),
+                     base::Unretained(interceptor)));
   if (!res) {
     delete interceptor;
     return nullptr;

@@ -166,14 +166,13 @@ class UpdateClientTest : public testing::Test {
   scoped_refptr<update_client::TestConfigurator> config() { return config_; }
   update_client::PersistedData* metadata() { return metadata_.get(); }
 
-  base::Closure quit_closure() { return quit_closure_; }
+  base::OnceClosure quit_closure() { return runloop_.QuitClosure(); }
 
  private:
   static constexpr int kNumWorkerThreads_ = 2;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::RunLoop runloop_;
-  const base::Closure quit_closure_ = runloop_.QuitClosure();
 
   scoped_refptr<update_client::TestConfigurator> config_ =
       base::MakeRefCounted<TestConfigurator>();
@@ -227,9 +226,9 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       EXPECT_EQ(Error::NONE, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -241,12 +240,11 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
       const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
@@ -263,7 +261,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
       component->SetParseResult(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -304,8 +302,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      ids, base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -338,9 +336,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       EXPECT_EQ(Error::NONE, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -352,12 +350,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
 
@@ -423,7 +420,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -516,8 +513,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "abagagagagagagagagagagagagagagag"};
   update_client->Update(
-      ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      ids, base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -549,9 +546,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       EXPECT_EQ(Error::NONE, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -563,12 +560,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
 
@@ -656,7 +652,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -715,9 +711,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
                                     base::Unretained(this), result));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(&FakeCrxDownloader::OnDownloadComplete,
-                     base::Unretained(this), true, result, download_metrics));
+          FROM_HERE, base::BindOnce(&FakeCrxDownloader::OnDownloadComplete,
+                                    base::Unretained(this), true, result,
+                                    download_metrics));
     }
   };
 
@@ -783,8 +779,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "ihfokbkgjpifnbbojhneepfflplebdkc"};
   update_client->Update(
-      ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      ids, base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -818,9 +814,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       EXPECT_EQ(Error::NONE, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -832,12 +828,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
 
@@ -922,7 +917,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -1045,8 +1040,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
                                         "ihfokbkgjpifnbbojhneepfflplebdkc"};
 
   update_client->Update(
-      ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      ids, base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -1085,9 +1080,9 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       EXPECT_EQ(Error::NONE, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -1099,12 +1094,11 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       static int num_call = 0;
       ++num_call;
 
@@ -1205,7 +1199,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -1330,17 +1324,17 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
   const std::vector<std::string> ids = {"ihfokbkgjpifnbbojhneepfflplebdkc"};
   {
     base::RunLoop runloop;
-    update_client->Update(
-        ids, base::Bind(&DataCallbackFake::Callback),
-        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          base::BindOnce(&CompletionCallbackFake::Callback,
+                                         runloop.QuitClosure()));
     runloop.Run();
   }
 
   {
     base::RunLoop runloop;
-    update_client->Update(
-        ids, base::Bind(&DataCallbackFake::Callback),
-        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          base::BindOnce(&CompletionCallbackFake::Callback,
+                                         runloop.QuitClosure()));
     runloop.Run();
   }
 
@@ -1355,22 +1349,23 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
   class MockInstaller : public CrxInstaller {
    public:
     MOCK_METHOD1(OnUpdateError, void(int error));
-    MOCK_METHOD3(Install,
+    MOCK_METHOD2(DoInstall,
                  void(const base::FilePath& unpack_path,
-                      const std::string& public_key,
                       const Callback& callback));
     MOCK_METHOD2(GetInstalledFile,
                  bool(const std::string& file, base::FilePath* installed_file));
     MOCK_METHOD0(Uninstall, bool());
 
-    void OnInstall(const base::FilePath& unpack_path,
-                   const std::string& /*public_key*/,
-                   const Callback& callback) {
+    void Install(const base::FilePath& unpack_path,
+                 const std::string& public_key,
+                 Callback callback) {
+      DoInstall(unpack_path, std::move(callback));
+
       unpack_path_ = unpack_path;
       EXPECT_TRUE(base::DirectoryExists(unpack_path_));
       base::PostTaskWithTraits(
           FROM_HERE, {base::MayBlock()},
-          base::BindOnce(callback,
+          base::BindOnce(std::move(callback),
                          CrxInstaller::Result(InstallError::GENERIC_ERROR)));
     }
 
@@ -1396,8 +1391,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
           base::MakeRefCounted<MockInstaller>();
 
       EXPECT_CALL(*installer, OnUpdateError(_)).Times(0);
-      EXPECT_CALL(*installer, Install(_, _, _))
-          .WillOnce(Invoke(installer.get(), &MockInstaller::OnInstall));
+      EXPECT_CALL(*installer, DoInstall(_, _)).Times(1);
       EXPECT_CALL(*installer, GetInstalledFile(_, _)).Times(0);
       EXPECT_CALL(*installer, Uninstall()).Times(0);
 
@@ -1412,9 +1406,9 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       EXPECT_EQ(Error::NONE, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -1426,12 +1420,11 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
 
@@ -1474,7 +1467,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       component->SetParseResult(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -1509,8 +1502,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       result.total_bytes = 1843;
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&FakeCrxDownloader::OnDownloadProgress,
-                                base::Unretained(this), result));
+          FROM_HERE, base::BindOnce(&FakeCrxDownloader::OnDownloadProgress,
+                                    base::Unretained(this), result));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&FakeCrxDownloader::OnDownloadComplete,
@@ -1559,8 +1552,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      ids, base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -1599,9 +1592,9 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       EXPECT_EQ(Error::NONE, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -1613,12 +1606,11 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       static int num_call = 0;
       ++num_call;
 
@@ -1721,7 +1713,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -1860,17 +1852,17 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   {
     base::RunLoop runloop;
-    update_client->Update(
-        ids, base::Bind(&DataCallbackFake::Callback),
-        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          base::BindOnce(&CompletionCallbackFake::Callback,
+                                         runloop.QuitClosure()));
     runloop.Run();
   }
 
   {
     base::RunLoop runloop;
-    update_client->Update(
-        ids, base::Bind(&DataCallbackFake::Callback),
-        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          base::BindOnce(&CompletionCallbackFake::Callback,
+                                         runloop.QuitClosure()));
     runloop.Run();
   }
 
@@ -1896,14 +1888,14 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       static int num_call = 0;
       ++num_call;
 
       EXPECT_EQ(Error::NONE, error);
 
       if (num_call == 2)
-        quit_closure.Run();
+        std::move(quit_closure).Run();
     }
   };
 
@@ -1915,12 +1907,11 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
       const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
@@ -1937,7 +1928,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
       component->SetParseResult(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -1984,11 +1975,11 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      ids, base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
   update_client->Update(
-      ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      ids, base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -2013,9 +2004,9 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       EXPECT_EQ(Error::NONE, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -2027,12 +2018,11 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
 
@@ -2081,7 +2071,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       EXPECT_TRUE(component->on_demand());
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -2168,8 +2158,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   update_client->Install(
       std::string("jebgalgnebhfojomionfpkfelancnnkf"),
-      base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -2194,7 +2184,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       static int num_call = 0;
       ++num_call;
 
@@ -2206,7 +2196,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
       }
       if (num_call == 2) {
         EXPECT_EQ(Error::NONE, error);
-        quit_closure.Run();
+        std::move(quit_closure).Run();
       }
     }
   };
@@ -2219,12 +2209,11 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
       const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
@@ -2242,7 +2231,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
       EXPECT_TRUE(component->on_demand());
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -2286,13 +2275,13 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   update_client->Install(
       std::string("jebgalgnebhfojomionfpkfelancnnkf"),
-      base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   update_client->Install(
       std::string("jebgalgnebhfojomionfpkfelancnnkf"),
-      base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -2310,9 +2299,9 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       DCHECK_EQ(Error::INVALID_ARGUMENT, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -2324,12 +2313,11 @@ TEST_F(UpdateClientTest, EmptyIdList) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {}
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {}
   };
 
   class FakeCrxDownloader : public CrxDownloader {
@@ -2353,16 +2341,16 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 
   const std::vector<std::string> empty_id_list;
   update_client->Update(
-      empty_id_list, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      empty_id_list, base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
   RunThreads();
 }
 
 TEST_F(UpdateClientTest, SendUninstallPing) {
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
-      quit_closure.Run();
+    static void Callback(base::OnceClosure quit_closure, Error error) {
+      std::move(quit_closure).Run();
     }
   };
 
@@ -2374,12 +2362,11 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
       return nullptr;
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {}
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {}
   };
 
   class FakeCrxDownloader : public CrxDownloader {
@@ -2418,7 +2405,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
 
   update_client->SendUninstallPing(
       "jebgalgnebhfojomionfpkfelancnnkf", base::Version("1.0"), 10,
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 }
@@ -2439,7 +2426,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       static int num_call = 0;
       ++num_call;
 
@@ -2461,7 +2448,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
         EXPECT_EQ(Error::NONE, error);
       }
 
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -2473,12 +2460,11 @@ TEST_F(UpdateClientTest, RetryAfter) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       static int num_call = 0;
       ++num_call;
 
@@ -2503,7 +2489,8 @@ TEST_F(UpdateClientTest, RetryAfter) {
       component->SetParseResult(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, retry_after_sec));
+          FROM_HERE,
+          base::BindOnce(std::move(update_check_callback), 0, retry_after_sec));
     }
   };
 
@@ -2562,9 +2549,9 @@ TEST_F(UpdateClientTest, RetryAfter) {
     // The engine handles this Update call but responds with a valid
     // |retry_after_sec|, which causes subsequent calls to fail.
     base::RunLoop runloop;
-    update_client->Update(
-        ids, base::Bind(&DataCallbackFake::Callback),
-        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          base::BindOnce(&CompletionCallbackFake::Callback,
+                                         runloop.QuitClosure()));
     runloop.Run();
   }
 
@@ -2572,9 +2559,9 @@ TEST_F(UpdateClientTest, RetryAfter) {
     // This call will result in a completion callback invoked with
     // Error::ERROR_UPDATE_RETRY_LATER.
     base::RunLoop runloop;
-    update_client->Update(
-        ids, base::Bind(&DataCallbackFake::Callback),
-        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          base::BindOnce(&CompletionCallbackFake::Callback,
+                                         runloop.QuitClosure()));
     runloop.Run();
   }
 
@@ -2582,19 +2569,19 @@ TEST_F(UpdateClientTest, RetryAfter) {
     // The Install call is handled, and the throttling is reset due to
     // the value of |retry_after_sec| in the completion callback.
     base::RunLoop runloop;
-    update_client->Install(
-        std::string("jebgalgnebhfojomionfpkfelancnnkf"),
-        base::Bind(&DataCallbackFake::Callback),
-        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    update_client->Install(std::string("jebgalgnebhfojomionfpkfelancnnkf"),
+                           base::BindOnce(&DataCallbackFake::Callback),
+                           base::BindOnce(&CompletionCallbackFake::Callback,
+                                          runloop.QuitClosure()));
     runloop.Run();
   }
 
   {
     // This call succeeds.
     base::RunLoop runloop;
-    update_client->Update(
-        ids, base::Bind(&DataCallbackFake::Callback),
-        base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
+    update_client->Update(ids, base::BindOnce(&DataCallbackFake::Callback),
+                          base::BindOnce(&CompletionCallbackFake::Callback,
+                                         runloop.QuitClosure()));
     runloop.Run();
   }
 
@@ -2632,9 +2619,9 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       EXPECT_EQ(Error::NONE, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -2646,12 +2633,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
 
@@ -2741,7 +2727,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -2854,8 +2840,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf",
                                         "ihfokbkgjpifnbbojhneepfflplebdkc"};
   update_client->Update(
-      ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      ids, base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -2879,9 +2865,9 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
 
   class CompletionCallbackFake {
    public:
-    static void Callback(const base::Closure& quit_closure, Error error) {
+    static void Callback(base::OnceClosure quit_closure, Error error) {
       EXPECT_EQ(Error::UPDATE_CHECK_ERROR, error);
-      quit_closure.Run();
+      std::move(quit_closure).Run();
     }
   };
 
@@ -2893,12 +2879,11 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
       const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
@@ -2906,7 +2891,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
       EXPECT_EQ(1u, components.count(id));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, -1, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), -1, 0));
     }
   };
 
@@ -2954,8 +2939,8 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
 
   const std::vector<std::string> ids = {"jebgalgnebhfojomionfpkfelancnnkf"};
   update_client->Update(
-      ids, base::Bind(&DataCallbackFake::Callback),
-      base::Bind(&CompletionCallbackFake::Callback, quit_closure()));
+      ids, base::BindOnce(&DataCallbackFake::Callback),
+      base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
 
@@ -2974,12 +2959,11 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
 
@@ -3028,7 +3012,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
       component->SetParseResult(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -3103,8 +3087,8 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
   // The action is a program which returns 1877345072 as a hardcoded value.
   update_client->Install(
       std::string("gjpmebpgbhcamgdgjcmnjfhggjpgcimm"),
-      base::Bind([](const std::vector<std::string>& ids,
-                    std::vector<CrxComponent>* components) {
+      base::BindOnce([](const std::vector<std::string>& ids,
+                        std::vector<CrxComponent>* components) {
         CrxComponent crx;
         crx.name = "test_niea";
         crx.pk_hash.assign(gjpm_hash, gjpm_hash + arraysize(gjpm_hash));
@@ -3112,10 +3096,10 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
         crx.installer = base::MakeRefCounted<VersionedTestInstaller>();
         components->push_back(crx);
       }),
-      base::Bind(
-          [](const base::Closure& quit_closure, Error error) {
+      base::BindOnce(
+          [](base::OnceClosure quit_closure, Error error) {
             EXPECT_EQ(Error::NONE, error);
-            quit_closure.Run();
+            std::move(quit_closure).Run();
           },
           quit_closure()));
 
@@ -3133,12 +3117,11 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
       return base::MakeUnique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(
-        const std::vector<std::string>& ids_to_check,
-        const IdToComponentPtrMap& components,
-        const std::string& additional_attributes,
-        bool enabled_component_updates,
-        const UpdateCheckCallback& update_check_callback) override {
+    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                         const IdToComponentPtrMap& components,
+                         const std::string& additional_attributes,
+                         bool enabled_component_updates,
+                         UpdateCheckCallback update_check_callback) override {
       /*
       Fake the following response:
 
@@ -3168,7 +3151,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
       component->SetParseResult(result);
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(update_check_callback, 0, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback), 0, 0));
     }
   };
 
@@ -3205,19 +3188,19 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
   base::FilePath unpack_path;
   {
     base::RunLoop runloop;
-    base::Closure quit_closure = runloop.QuitClosure();
+    base::OnceClosure quit_closure = runloop.QuitClosure();
 
     scoped_refptr<ComponentUnpacker> component_unpacker = new ComponentUnpacker(
         std::vector<uint8_t>(std::begin(gjpm_hash), std::end(gjpm_hash)),
         TestFilePath("runaction_test_win.crx3"), nullptr, nullptr);
 
-    component_unpacker->Unpack(base::Bind(
-        [](base::FilePath* unpack_path, const base::Closure& quit_closure,
+    component_unpacker->Unpack(base::BindOnce(
+        [](base::FilePath* unpack_path, base::OnceClosure quit_closure,
            const ComponentUnpacker::Result& result) {
           EXPECT_EQ(UnpackerError::kNone, result.error);
           EXPECT_EQ(0, result.extended_error);
           *unpack_path = result.unpack_path;
-          quit_closure.Run();
+          std::move(quit_closure).Run();
         },
         &unpack_path, runloop.QuitClosure()));
 
@@ -3243,7 +3226,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
   const std::vector<std::string> ids = {"gjpmebpgbhcamgdgjcmnjfhggjpgcimm"};
   update_client->Update(
       ids,
-      base::Bind(
+      base::BindOnce(
           [](const base::FilePath& unpack_path,
              const std::vector<std::string>& ids,
              std::vector<CrxComponent>* components) {
@@ -3256,10 +3239,10 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
             components->push_back(crx);
           },
           unpack_path),
-      base::Bind(
-          [](const base::Closure& quit_closure, Error error) {
+      base::BindOnce(
+          [](base::OnceClosure quit_closure, Error error) {
             EXPECT_EQ(Error::NONE, error);
-            quit_closure.Run();
+            std::move(quit_closure).Run();
           },
           quit_closure()));
 

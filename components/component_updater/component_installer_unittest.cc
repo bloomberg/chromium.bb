@@ -70,16 +70,16 @@ class MockUpdateClient : public UpdateClient {
   MockUpdateClient() {}
 
   void Install(const std::string& id,
-               const CrxDataCallback& crx_data_callback,
+               CrxDataCallback crx_data_callback,
                Callback callback) {
-    DoInstall(id, crx_data_callback);
+    DoInstall(id, std::move(crx_data_callback));
     std::move(callback).Run(update_client::Error::NONE);
   }
 
   void Update(const std::vector<std::string>& ids,
-              const CrxDataCallback& crx_data_callback,
+              CrxDataCallback crx_data_callback,
               Callback callback) {
-    DoUpdate(ids, crx_data_callback);
+    DoUpdate(ids, std::move(crx_data_callback));
     std::move(callback).Run(update_client::Error::NONE);
   }
 
@@ -174,7 +174,7 @@ class ComponentInstallerTest : public testing::Test {
     return component_updater_.get();
   }
   scoped_refptr<TestConfigurator> configurator() const { return config_; }
-  base::Closure quit_closure() const { return quit_closure_; }
+  base::OnceClosure quit_closure() { return runloop_.QuitClosure(); }
 
  protected:
   void RunThreads();
@@ -189,7 +189,6 @@ class ComponentInstallerTest : public testing::Test {
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
   base::RunLoop runloop_;
-  base::Closure quit_closure_ = runloop_.QuitClosure();
 
   scoped_refptr<TestConfigurator> config_ =
       base::MakeRefCounted<TestConfigurator>();
@@ -218,8 +217,8 @@ void ComponentInstallerTest::Unpack(const base::FilePath& crx_path) {
   auto component_unpacker = base::MakeRefCounted<ComponentUnpacker>(
       std::vector<uint8_t>(std::begin(kSha256Hash), std::end(kSha256Hash)),
       crx_path, nullptr, nullptr);
-  component_unpacker->Unpack(base::Bind(&ComponentInstallerTest::UnpackComplete,
-                                        base::Unretained(this)));
+  component_unpacker->Unpack(base::BindOnce(
+      &ComponentInstallerTest::UnpackComplete, base::Unretained(this)));
   RunThreads();
 }
 
@@ -230,7 +229,7 @@ void ComponentInstallerTest::UnpackComplete(
   EXPECT_EQ(update_client::UnpackerError::kNone, result_.error);
   EXPECT_EQ(0, result_.extended_error);
 
-  main_thread_task_runner_->PostTask(FROM_HERE, quit_closure_);
+  main_thread_task_runner_->PostTask(FROM_HERE, quit_closure());
 }
 
 }  // namespace
@@ -241,20 +240,20 @@ void ComponentInstallerTest::UnpackComplete(
 TEST_F(ComponentInstallerTest, RegisterComponent) {
   class LoopHandler {
    public:
-    LoopHandler(int max_cnt, const base::Closure& quit_closure)
-        : max_cnt_(max_cnt), quit_closure_(quit_closure) {}
+    LoopHandler(int max_cnt, base::OnceClosure quit_closure)
+        : max_cnt_(max_cnt), quit_closure_(std::move(quit_closure)) {}
 
     void OnUpdate(const std::vector<std::string>& ids,
                   const UpdateClient::CrxDataCallback& crx_data_callback) {
       static int cnt = 0;
       ++cnt;
       if (cnt >= max_cnt_)
-        quit_closure_.Run();
+        std::move(quit_closure_).Run();
     }
 
    private:
     const int max_cnt_;
-    base::Closure quit_closure_;
+    base::OnceClosure quit_closure_;
   };
 
   base::ScopedPathOverride scoped_path_override(DIR_COMPONENT_USER);
@@ -271,7 +270,7 @@ TEST_F(ComponentInstallerTest, RegisterComponent) {
 
   auto installer = base::MakeRefCounted<ComponentInstaller>(
       base::MakeUnique<FakeInstallerPolicy>());
-  installer->Register(component_updater(), base::Closure());
+  installer->Register(component_updater(), base::OnceClosure());
 
   RunThreads();
 
@@ -312,7 +311,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
   EXPECT_TRUE(base::CreateDirectory(base_dir));
   installer->Install(
       unpack_path, update_client::jebg_public_key,
-      base::Bind([](const update_client::CrxInstaller::Result& result) {
+      base::BindOnce([](const update_client::CrxInstaller::Result& result) {
         EXPECT_EQ(0, result.error);
       }));
 
@@ -340,7 +339,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
   // Calling |Install| fails since DIR_COMPONENT_USER does not exist.
   installer->Install(
       unpack_path, update_client::jebg_public_key,
-      base::Bind([](const update_client::CrxInstaller::Result& result) {
+      base::BindOnce([](const update_client::CrxInstaller::Result& result) {
         EXPECT_EQ(static_cast<int>(
                       update_client::InstallError::NO_DIR_COMPONENT_USER),
                   result.error);

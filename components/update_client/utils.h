@@ -87,7 +87,8 @@ void RemoveUnsecureUrls(std::vector<GURL>* urls);
 
 // Adapter function for the old definitions of CrxInstaller::Install until the
 // component installer code is migrated to use a Result instead of bool.
-CrxInstaller::Result InstallFunctionWrapper(base::Callback<bool()> callback);
+CrxInstaller::Result InstallFunctionWrapper(
+    base::OnceCallback<bool()> callback);
 
 // Deserializes the CRX manifest. The top level must be a dictionary.
 std::unique_ptr<base::DictionaryValue> ReadManifest(

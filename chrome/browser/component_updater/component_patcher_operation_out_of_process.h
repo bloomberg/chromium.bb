@@ -31,7 +31,7 @@ class ChromeOutOfProcessPatcher : public update_client::OutOfProcessPatcher {
              const base::FilePath& input_path,
              const base::FilePath& patch_path,
              const base::FilePath& output_path,
-             const base::Callback<void(int result)>& callback) override;
+             const base::OnceCallback<void(int result)> callback) override;
 
  private:
   ~ChromeOutOfProcessPatcher() override;
@@ -41,7 +41,7 @@ class ChromeOutOfProcessPatcher : public update_client::OutOfProcessPatcher {
 
   // Used to signal the operation result back to the Patch() requester.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::Callback<void(int result)> callback_;
+  base::OnceCallback<void(int result)> callback_;
 
   // Utility process used to perform out-of-process file patching.
   std::unique_ptr<content::UtilityProcessMojoClient<chrome::mojom::FilePatcher>>

@@ -5,6 +5,7 @@
 #include "components/update_client/request_sender.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -61,13 +62,13 @@ RequestSender::~RequestSender() {
 void RequestSender::Send(bool use_signing,
                          const std::string& request_body,
                          const std::vector<GURL>& urls,
-                         const RequestSenderCallback& request_sender_callback) {
+                         RequestSenderCallback request_sender_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   use_signing_ = use_signing;
   request_body_ = request_body;
   urls_ = urls;
-  request_sender_callback_ = request_sender_callback;
+  request_sender_callback_ = std::move(request_sender_callback);
 
   if (urls_.empty()) {
     return HandleSendError(-1, 0);
@@ -116,8 +117,8 @@ void RequestSender::SendInternalComplete(int error,
   if (!error) {
     if (!use_signing_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(request_sender_callback_, 0, response_body,
-                                    retry_after_sec));
+          FROM_HERE, base::BindOnce(std::move(request_sender_callback_), 0,
+                                    response_body, retry_after_sec));
       return;
     }
 
@@ -125,8 +126,8 @@ void RequestSender::SendInternalComplete(int error,
     DCHECK(signer_.get());
     if (signer_->ValidateResponse(response_body, response_etag)) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(request_sender_callback_, 0, response_body,
-                                    retry_after_sec));
+          FROM_HERE, base::BindOnce(std::move(request_sender_callback_), 0,
+                                    response_body, retry_after_sec));
       return;
     }
 
@@ -176,8 +177,8 @@ void RequestSender::OnURLFetchComplete(const net::URLFetcher* source) {
 
 void RequestSender::HandleSendError(int error, int retry_after_sec) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(request_sender_callback_, error, std::string(),
-                                retry_after_sec));
+      FROM_HERE, base::BindOnce(std::move(request_sender_callback_), error,
+                                std::string(), retry_after_sec));
 }
 
 std::string RequestSender::GetKey(const char* key_bytes_base64) {

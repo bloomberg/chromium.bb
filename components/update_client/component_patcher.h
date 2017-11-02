@@ -56,7 +56,7 @@ enum PatchType {
 // Encapsulates a task for applying a differential update to a component.
 class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
  public:
-  using Callback = base::Callback<void(UnpackerError, int)>;
+  using Callback = base::OnceCallback<void(UnpackerError, int)>;
 
   // Takes an unpacked differential CRX (|input_dir|) and a component installer,
   // and sets up the class to create a new (non-differential) unpacked CRX.
@@ -72,7 +72,7 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
   // posting a task to do the patching. When patching has been completed,
   // |callback| will be called with the error codes if any error codes were
   // encountered.
-  void Start(const Callback& callback);
+  void Start(Callback callback);
 
  private:
   friend class base::RefCountedThreadSafe<ComponentPatcher>;

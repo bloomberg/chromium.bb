@@ -248,9 +248,11 @@ void RemoveUnsecureUrls(std::vector<GURL>* urls) {
               urls->end());
 }
 
-CrxInstaller::Result InstallFunctionWrapper(base::Callback<bool()> callback) {
-  return CrxInstaller::Result(callback.Run() ? InstallError::NONE
-                                             : InstallError::GENERIC_ERROR);
+CrxInstaller::Result InstallFunctionWrapper(
+    base::OnceCallback<bool()> callback) {
+  return CrxInstaller::Result(std::move(callback).Run()
+                                  ? InstallError::NONE
+                                  : InstallError::GENERIC_ERROR);
 }
 
 // TODO(cpu): add a specific attribute check to a component json that the

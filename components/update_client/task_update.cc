@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "components/update_client/task_update.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -15,12 +17,12 @@ namespace update_client {
 TaskUpdate::TaskUpdate(UpdateEngine* update_engine,
                        bool is_foreground,
                        const std::vector<std::string>& ids,
-                       const UpdateClient::CrxDataCallback& crx_data_callback,
+                       UpdateClient::CrxDataCallback crx_data_callback,
                        Callback callback)
     : update_engine_(update_engine),
       is_foreground_(is_foreground),
       ids_(ids),
-      crx_data_callback_(crx_data_callback),
+      crx_data_callback_(std::move(crx_data_callback)),
       callback_(std::move(callback)) {}
 
 TaskUpdate::~TaskUpdate() {
@@ -36,8 +38,8 @@ void TaskUpdate::Run() {
   }
 
   update_engine_->Update(
-      is_foreground_, ids_, crx_data_callback_,
-      base::Bind(&TaskUpdate::TaskComplete, base::Unretained(this)));
+      is_foreground_, ids_, std::move(crx_data_callback_),
+      base::BindOnce(&TaskUpdate::TaskComplete, base::Unretained(this)));
 }
 
 void TaskUpdate::Cancel() {

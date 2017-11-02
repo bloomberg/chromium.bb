@@ -53,10 +53,10 @@ class FakeUpdateClient : public update_client::UpdateClient {
   void AddObserver(Observer* observer) override {}
   void RemoveObserver(Observer* observer) override {}
   void Install(const std::string& id,
-               const CrxDataCallback& crx_data_callback,
+               CrxDataCallback crx_data_callback,
                update_client::Callback callback) override {}
   void Update(const std::vector<std::string>& ids,
-              const CrxDataCallback& crx_data_callback,
+              CrxDataCallback crx_data_callback,
               update_client::Callback callback) override;
   bool GetCrxUpdateState(
       const std::string& id,
@@ -86,9 +86,9 @@ class FakeUpdateClient : public update_client::UpdateClient {
 FakeUpdateClient::FakeUpdateClient() {}
 
 void FakeUpdateClient::Update(const std::vector<std::string>& ids,
-                              const CrxDataCallback& crx_data_callback,
+                              CrxDataCallback crx_data_callback,
                               update_client::Callback callback) {
-  crx_data_callback.Run(ids, &data_);
+  std::move(crx_data_callback).Run(ids, &data_);
 }
 
 }  // namespace
@@ -125,8 +125,8 @@ class FakeExtensionSystem : public MockExtensionSystem {
     return &install_requests_;
   }
 
-  void set_install_callback(const base::Closure& callback) {
-    next_install_callback_ = callback;
+  void set_install_callback(base::OnceClosure callback) {
+    next_install_callback_ = std::move(callback);
   }
 
   // ExtensionSystem override
@@ -137,16 +137,13 @@ class FakeExtensionSystem : public MockExtensionSystem {
     request.extension_id = extension_id;
     request.temp_dir = temp_dir;
     install_requests_.push_back(request);
-    if (!next_install_callback_.is_null()) {
-      base::Closure tmp = next_install_callback_;
-      next_install_callback_.Reset();
-      tmp.Run();
-    }
+    if (!next_install_callback_.is_null())
+      std::move(next_install_callback_).Run();
   }
 
  private:
   std::vector<InstallUpdateRequest> install_requests_;
-  base::Closure next_install_callback_;
+  base::OnceClosure next_install_callback_;
 };
 
 class UpdateServiceTest : public ExtensionsTest {
@@ -173,7 +170,7 @@ class UpdateServiceTest : public ExtensionsTest {
     // We only expect that this will get called once, so consider it an error
     // if our update_client_ is already non-null.
     EXPECT_EQ(nullptr, update_client_.get());
-    update_client_ = new FakeUpdateClient();
+    update_client_ = base::MakeRefCounted<FakeUpdateClient>();
     return update_client_.get();
   }
 
@@ -195,7 +192,7 @@ class UpdateServiceTest : public ExtensionsTest {
   }
 
  private:
-  UpdateService* update_service_;
+  UpdateService* update_service_ = nullptr;
   scoped_refptr<FakeUpdateClient> update_client_;
   MockExtensionSystemFactory<FakeExtensionSystem>
       fake_extension_system_factory_;
@@ -272,7 +269,7 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
       }));
 
   scoped_refptr<content::MessageLoopRunner> loop_runner =
-      new content::MessageLoopRunner();
+      base::MakeRefCounted<content::MessageLoopRunner>();
   extension_system()->set_install_callback(loop_runner->QuitClosure());
   loop_runner->Run();
 

@@ -5,6 +5,7 @@
 #include "components/update_client/component_patcher_operation.h"
 
 #include <stdint.h>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -63,8 +64,8 @@ void DeltaUpdateOp::Run(const base::DictionaryValue* command_args,
                         const base::FilePath& input_dir,
                         const base::FilePath& unpack_dir,
                         const scoped_refptr<CrxInstaller>& installer,
-                        const ComponentPatcher::Callback& callback) {
-  callback_ = callback;
+                        ComponentPatcher::Callback callback) {
+  callback_ = std::move(callback);
   std::string output_rel_path;
   if (!command_args->GetString(kOutput, &output_rel_path) ||
       !command_args->GetString(kSha256, &output_sha256_)) {
@@ -89,16 +90,15 @@ void DeltaUpdateOp::Run(const base::DictionaryValue* command_args,
     }
   }
 
-  DoRun(base::Bind(&DeltaUpdateOp::DoneRunning,
-                   scoped_refptr<DeltaUpdateOp>(this)));
+  DoRun(base::BindOnce(&DeltaUpdateOp::DoneRunning,
+                       scoped_refptr<DeltaUpdateOp>(this)));
 }
 
 void DeltaUpdateOp::DoneRunning(UnpackerError error, int extended_error) {
   if (error == UnpackerError::kNone)
     error = CheckHash();
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback_, error, extended_error));
-  callback_.Reset();
+      FROM_HERE, base::BindOnce(std::move(callback_), error, extended_error));
 }
 
 // Uses the hash as a checksum to confirm that the file now residing in the
@@ -129,11 +129,11 @@ UnpackerError DeltaUpdateOpCopy::DoParseArguments(
   return UnpackerError::kNone;
 }
 
-void DeltaUpdateOpCopy::DoRun(const ComponentPatcher::Callback& callback) {
+void DeltaUpdateOpCopy::DoRun(ComponentPatcher::Callback callback) {
   if (!base::CopyFile(input_abs_path_, output_abs_path_))
-    callback.Run(UnpackerError::kDeltaOperationFailure, 0);
+    std::move(callback).Run(UnpackerError::kDeltaOperationFailure, 0);
   else
-    callback.Run(UnpackerError::kNone, 0);
+    std::move(callback).Run(UnpackerError::kNone, 0);
 }
 
 DeltaUpdateOpCreate::DeltaUpdateOpCreate() {
@@ -156,11 +156,11 @@ UnpackerError DeltaUpdateOpCreate::DoParseArguments(
   return UnpackerError::kNone;
 }
 
-void DeltaUpdateOpCreate::DoRun(const ComponentPatcher::Callback& callback) {
+void DeltaUpdateOpCreate::DoRun(ComponentPatcher::Callback callback) {
   if (!base::Move(patch_abs_path_, output_abs_path_))
-    callback.Run(UnpackerError::kDeltaOperationFailure, 0);
+    std::move(callback).Run(UnpackerError::kDeltaOperationFailure, 0);
   else
-    callback.Run(UnpackerError::kNone, 0);
+    std::move(callback).Run(UnpackerError::kNone, 0);
 }
 
 DeltaUpdateOpPatch::DeltaUpdateOpPatch(
@@ -192,44 +192,44 @@ UnpackerError DeltaUpdateOpPatch::DoParseArguments(
   return UnpackerError::kNone;
 }
 
-void DeltaUpdateOpPatch::DoRun(const ComponentPatcher::Callback& callback) {
+void DeltaUpdateOpPatch::DoRun(ComponentPatcher::Callback callback) {
   if (out_of_process_patcher_.get()) {
     out_of_process_patcher_->Patch(
         operation_, input_abs_path_, patch_abs_path_, output_abs_path_,
-        base::Bind(&DeltaUpdateOpPatch::DonePatching, this, callback));
+        base::BindOnce(&DeltaUpdateOpPatch::DonePatching, this,
+                       std::move(callback)));
     return;
   }
 
   if (operation_ == kBsdiff) {
-    DonePatching(callback,
+    DonePatching(std::move(callback),
                  bsdiff::ApplyBinaryPatch(input_abs_path_, patch_abs_path_,
                                           output_abs_path_));
   } else if (operation_ == kCourgette) {
-    DonePatching(callback, courgette::ApplyEnsemblePatch(
-                               input_abs_path_.value().c_str(),
-                               patch_abs_path_.value().c_str(),
-                               output_abs_path_.value().c_str()));
+    DonePatching(std::move(callback), courgette::ApplyEnsemblePatch(
+                                          input_abs_path_.value().c_str(),
+                                          patch_abs_path_.value().c_str(),
+                                          output_abs_path_.value().c_str()));
   } else {
     NOTREACHED();
   }
 }
 
-void DeltaUpdateOpPatch::DonePatching(
-    const ComponentPatcher::Callback& callback,
-    int result) {
+void DeltaUpdateOpPatch::DonePatching(ComponentPatcher::Callback callback,
+                                      int result) {
   if (operation_ == kBsdiff) {
     if (result == bsdiff::OK) {
-      callback.Run(UnpackerError::kNone, 0);
+      std::move(callback).Run(UnpackerError::kNone, 0);
     } else {
-      callback.Run(UnpackerError::kDeltaOperationFailure,
-                   result + kBsdiffErrorOffset);
+      std::move(callback).Run(UnpackerError::kDeltaOperationFailure,
+                              result + kBsdiffErrorOffset);
     }
   } else if (operation_ == kCourgette) {
     if (result == courgette::C_OK) {
-      callback.Run(UnpackerError::kNone, 0);
+      std::move(callback).Run(UnpackerError::kNone, 0);
     } else {
-      callback.Run(UnpackerError::kDeltaOperationFailure,
-                   result + kCourgetteErrorOffset);
+      std::move(callback).Run(UnpackerError::kDeltaOperationFailure,
+                              result + kCourgetteErrorOffset);
     }
   } else {
     NOTREACHED();

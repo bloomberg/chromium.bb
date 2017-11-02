@@ -111,8 +111,8 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
         base::MakeRefCounted<component_updater::ChromeOutOfProcessPatcher>();
 
     patcher->Patch(operation, input, patch, output,
-                   base::Bind(&OutOfProcessPatchTest::PatchDone,
-                              base::Unretained(this), expected_result));
+                   base::BindOnce(&OutOfProcessPatchTest::PatchDone,
+                                  base::Unretained(this), expected_result));
   }
 
   void PatchDone(int expected, int result) {

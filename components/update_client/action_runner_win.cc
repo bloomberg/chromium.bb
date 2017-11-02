@@ -43,7 +43,8 @@ void ActionRunner::WaitForCommand(base::Process process) {
       process.WaitForExitWithTimeout(kMaxWaitTime, &exit_code);
   base::DeleteFile(unpack_path_, true);
   main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(run_complete_, succeeded, exit_code, 0));
+      FROM_HERE,
+      base::BindOnce(std::move(run_complete_), succeeded, exit_code, 0));
 }
 
 base::CommandLine ActionRunner::MakeCommandLine(

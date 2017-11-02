@@ -262,7 +262,7 @@ class RecoveryComponentInstaller : public update_client::CrxInstaller {
 
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
-               const Callback& callback) override;
+               Callback callback) override;
 
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
@@ -397,11 +397,11 @@ bool SetPosixExecutablePermission(const base::FilePath& path) {
 void RecoveryComponentInstaller::Install(
     const base::FilePath& unpack_path,
     const std::string& /*public_key*/,
-    const update_client::CrxInstaller::Callback& callback) {
+    update_client::CrxInstaller::Callback callback) {
   auto result = update_client::InstallFunctionWrapper(
-      base::Bind(&RecoveryComponentInstaller::DoInstall, base::Unretained(this),
-                 base::ConstRef(unpack_path)));
-  base::PostTask(FROM_HERE, base::BindOnce(callback, result));
+      base::BindOnce(&RecoveryComponentInstaller::DoInstall,
+                     base::Unretained(this), base::ConstRef(unpack_path)));
+  base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 bool RecoveryComponentInstaller::DoInstall(

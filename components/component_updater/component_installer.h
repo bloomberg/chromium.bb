@@ -118,7 +118,7 @@ class ComponentInstaller final : public update_client::CrxInstaller {
 
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
-               const Callback& callback) override;
+               Callback callback) override;
 
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;

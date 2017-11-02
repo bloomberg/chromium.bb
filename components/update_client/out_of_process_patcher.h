@@ -20,12 +20,11 @@ namespace update_client {
 class OutOfProcessPatcher
     : public base::RefCountedThreadSafe<OutOfProcessPatcher> {
  public:
-  virtual void Patch(
-      const std::string& operation,
-      const base::FilePath& input_abs_path,
-      const base::FilePath& patch_abs_path,
-      const base::FilePath& output_abs_path,
-      const base::Callback<void(int result)>& callback) = 0;
+  virtual void Patch(const std::string& operation,
+                     const base::FilePath& input_abs_path,
+                     const base::FilePath& patch_abs_path,
+                     const base::FilePath& output_abs_path,
+                     base::OnceCallback<void(int result)> callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<OutOfProcessPatcher>;

@@ -124,7 +124,7 @@ class MockComponentUpdateService : public ComponentUpdateService,
   OnDemandUpdater& GetOnDemandUpdater() override { return *this; }
 
   void MaybeThrottle(const std::string& kCrxId,
-                     const base::Closure& callback) override {
+                     const base::OnceClosure callback) override {
     ADD_FAILURE();
   }
 

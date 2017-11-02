@@ -55,7 +55,7 @@
 //    update_client->AddObserver(&observer);
 //    std::vector<std::string> ids;
 //    ids.push_back(...));
-//    update_client->Update(ids, base::Bind(...), base::Bind(...));
+//    update_client->Update(ids, base::BindOnce(...), base::BindOnce(...));
 //
 // UpdateClient::Update takes two callbacks as parameters. First callback
 // allows the client of this code to provide an instance of CrxComponent
@@ -172,7 +172,7 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
     int extended_error = 0;
   };
 
-  using Callback = base::Callback<void(const Result& result)>;
+  using Callback = base::OnceCallback<void(const Result& result)>;
 
   // Called on the main thread when there was a problem unpacking or
   // verifying the CRX. |error| is a non-zero value which is only meaningful
@@ -187,7 +187,7 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
   // This method may be called from a thread other than the main thread.
   virtual void Install(const base::FilePath& unpack_path,
                        const std::string& public_key,
-                       const Callback& callback) = 0;
+                       Callback callback) = 0;
 
   // Sets |installed_file| to the full path to the installed |file|. |file| is
   // the filename of the file in this CRX. Returns false if this is
@@ -265,8 +265,8 @@ using Callback = base::OnceCallback<void(Error error)>;
 class UpdateClient : public base::RefCounted<UpdateClient> {
  public:
   using CrxDataCallback =
-      base::Callback<void(const std::vector<std::string>& ids,
-                          std::vector<CrxComponent>* components)>;
+      base::OnceCallback<void(const std::vector<std::string>& ids,
+                              std::vector<CrxComponent>* components)>;
 
   // Defines an interface to observe the UpdateClient. It provides
   // notifications when state changes occur for the service itself or for the
@@ -330,7 +330,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   // scenarios, which are triggered by user actions. Installs are never
   // queued up.
   virtual void Install(const std::string& id,
-                       const CrxDataCallback& crx_data_callback,
+                       CrxDataCallback crx_data_callback,
                        Callback callback) = 0;
 
   // Updates the specified CRXs. Calls back on |crx_data_callback| before the
@@ -341,7 +341,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
   // of each call is serialized. In addition, updates are always queued up when
   // installs are running.
   virtual void Update(const std::vector<std::string>& ids,
-                      const CrxDataCallback& crx_data_callback,
+                      CrxDataCallback crx_data_callback,
                       Callback callback) = 0;
 
   // Sends an uninstall ping for the CRX identified by |id| and |version|. The
