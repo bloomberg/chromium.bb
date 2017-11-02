@@ -87,7 +87,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor2");
 
   Dictionary dictionaryArg;
-  if (!IsUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
+  if (!info[0]->IsNullOrUndefined() && !info[0]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 1 ('dictionaryArg') is not an object.");
     return;
   }
@@ -144,22 +144,22 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (exceptionState.HadException())
     return;
 
-  defaultUndefinedOptionalStringArg = info[2];
+  defaultUndefinedOptionalStringArg = (2 < info.Length() ? info[2] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate())));
   if (!defaultUndefinedOptionalStringArg.Prepare())
     return;
 
   if (!info[3]->IsUndefined()) {
-    defaultNullStringOptionalStringArg = info[3];
+    defaultNullStringOptionalStringArg = (3 < info.Length() ? info[3] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate())));
     if (!defaultNullStringOptionalStringArg.Prepare())
       return;
   } else {
     defaultNullStringOptionalStringArg = nullptr;
   }
-  if (!IsUndefinedOrNull(info[4]) && !info[4]->IsObject()) {
+  if (4 < info.Length() && !info[4]->IsNullOrUndefined() && !info[4]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 5 ('defaultUndefinedOptionalDictionaryArg') is not an object.");
     return;
   }
-  defaultUndefinedOptionalDictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[4], exceptionState);
+  defaultUndefinedOptionalDictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), (4 < info.Length() ? info[4] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate()))), exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -170,7 +170,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
     V8SetReturnValue(info, wrapper);
     return;
   }
-  optionalStringArg = info[5];
+  optionalStringArg = (5 < info.Length() ? info[5] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate())));
   if (!optionalStringArg.Prepare())
     return;
 

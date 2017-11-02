@@ -121,7 +121,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  if (!IsUndefinedOrNull(info[3]) && !info[3]->IsObject()) {
+  if (!info[3]->IsNullOrUndefined() && !info[3]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 4 ('dictionaryArg') is not an object.");
     return;
   }
@@ -141,15 +141,15 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (exceptionState.HadException())
     return;
 
-  if (!IsUndefinedOrNull(info[7]) && !info[7]->IsObject()) {
+  if (7 < info.Length() && !info[7]->IsNullOrUndefined() && !info[7]->IsObject()) {
     exceptionState.ThrowTypeError("parameter 8 ('optionalDictionaryArg') is not an object.");
     return;
   }
-  optionalDictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[7], exceptionState);
+  optionalDictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), (7 < info.Length() ? info[7] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate()))), exceptionState);
   if (exceptionState.HadException())
     return;
 
-  optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[8]);
+  optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), (8 < info.Length() ? info[8] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate()))));
   if (!optionalTestInterfaceEmptyArg) {
     exceptionState.ThrowTypeError("parameter 9 is not of type 'TestInterfaceEmpty'.");
     return;
@@ -201,7 +201,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info) {
     V8SetReturnValue(info, wrapper);
     return;
   }
-  optArg = info[1];
+  optArg = (1 < info.Length() ? info[1] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate())));
   if (!optArg.Prepare())
     return;
 
@@ -382,7 +382,7 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
     V8SetReturnValue(info, wrapper);
     return;
   }
-  optArg = info[1];
+  optArg = (1 < info.Length() ? info[1] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate())));
   if (!optArg.Prepare())
     return;
 
