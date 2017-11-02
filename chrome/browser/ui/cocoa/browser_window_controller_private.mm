@@ -665,6 +665,24 @@ willPositionSheet:(NSWindow*)sheet
   if (fullscreenLowPowerCoordinator_)
     fullscreenLowPowerCoordinator_->SetInFullscreenTransition(true);
 
+  // macOS 10.12 and earlier have issues with exiting fullscreen while a window
+  // is on the detached/low power path (playing a video with no UI visible).
+  // See crbug/644133 for some discussion. This workaround kicks the window off
+  // the low power path as the transition begins.
+  if (base::mac::IsAtMostOS10_12()) {
+    CALayer* detachmentBlockerLayer = [CALayer layer];
+    detachmentBlockerLayer.backgroundColor =
+        CGColorGetConstantColor(kCGColorBlack);
+    detachmentBlockerLayer.frame = CGRectMake(0, 0, 1, 1);
+
+    [CATransaction begin];
+    [CATransaction setCompletionBlock:^{
+      [detachmentBlockerLayer removeFromSuperlayer];
+    }];
+    [self.window.contentView.layer addSublayer:detachmentBlockerLayer];
+    [CATransaction commit];
+  }
+
   if (notification)  // For System Fullscreen when non-nil.
     [self registerForContentViewResizeNotifications];
   exitingAppKitFullscreen_ = YES;

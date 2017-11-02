@@ -218,14 +218,15 @@ void CARendererLayerTree::CommitScheduledCALayers(
   scale_factor_ = scale_factor;
 }
 
-bool CARendererLayerTree::CommitFullscreenLowPowerLayer(
-    AVSampleBufferDisplayLayer109* fullscreen_low_power_layer) {
-  DCHECK(has_committed_);
-  const ContentLayer* video_layer = nullptr;
-  gfx::RectF video_layer_frame_dip;
-  for (const auto& clip_layer : root_layer_.clip_and_sorting_layers) {
-    for (const auto& transform_layer : clip_layer.transform_layers) {
-      for (const auto& content_layer : transform_layer.content_layers) {
+bool CARendererLayerTree::RootLayer::CommitFullscreenLowPowerLayer(
+    ContentLayer* old_low_power_layer,
+    float scale_factor) {
+  ContentLayer* video_layer = nullptr;
+  CGRect clip_rect;
+  CGRect frame_rect;
+  for (auto& clip_layer : clip_and_sorting_layers) {
+    for (auto& transform_layer : clip_layer.transform_layers) {
+      for (auto& content_layer : transform_layer.content_layers) {
         // Detached mode requires that no layers be on top of the video layer.
         if (video_layer)
           return false;
@@ -233,13 +234,15 @@ bool CARendererLayerTree::CommitFullscreenLowPowerLayer(
         // See if this is the video layer.
         if (content_layer.use_av_layer) {
           video_layer = &content_layer;
-          video_layer_frame_dip = gfx::RectF(video_layer->rect);
           if (!transform_layer.transform.IsPositiveScaleOrTranslation())
             return false;
           if (content_layer.opacity != 1)
             return false;
-          transform_layer.transform.TransformRect(&video_layer_frame_dip);
-          video_layer_frame_dip.Scale(1 / scale_factor_);
+          clip_rect = clip_layer.clip_rect.ToCGRect();
+          gfx::RectF frame_rect_f(video_layer->rect);
+          transform_layer.transform.TransformRect(&frame_rect_f);
+          frame_rect_f.Scale(1 / scale_factor);
+          frame_rect = frame_rect_f.ToCGRect();
           continue;
         }
 
@@ -256,16 +259,15 @@ bool CARendererLayerTree::CommitFullscreenLowPowerLayer(
   }
   if (!video_layer)
     return false;
+  low_power_layer = video_layer;
 
-  if (video_layer->cv_pixel_buffer) {
-    AVSampleBufferDisplayLayerEnqueueCVPixelBuffer(
-        fullscreen_low_power_layer, video_layer->cv_pixel_buffer);
-  } else {
-    AVSampleBufferDisplayLayerEnqueueIOSurface(fullscreen_low_power_layer,
-                                               video_layer->io_surface);
-  }
-  [fullscreen_low_power_layer setVideoGravity:AVLayerVideoGravityResize];
-  [fullscreen_low_power_layer setFrame:video_layer_frame_dip.ToCGRect()];
+  low_power_layer->CommitToCA(ca_layer, old_low_power_layer, scale_factor);
+  if (![ca_layer backgroundColor])
+    [ca_layer setBackgroundColor:CGColorGetConstantColor(kCGColorBlack)];
+  if (!CGRectEqualToRect([ca_layer frame], clip_rect))
+    [ca_layer setFrame:clip_rect];
+  if (!CGRectEqualToRect([low_power_layer->ca_layer frame], frame_rect))
+    [low_power_layer->ca_layer setFrame:frame_rect];
   return true;
 }
 
@@ -525,6 +527,20 @@ void CARendererLayerTree::RootLayer::CommitToCA(CALayer* superlayer,
   }
   if ([ca_layer superlayer] != superlayer) {
     DLOG(ERROR) << "CARendererLayerTree root layer not attached to tree.";
+  }
+
+  ContentLayer* old_low_power_layer =
+      old_layer ? old_layer->low_power_layer : nullptr;
+
+  if (CommitFullscreenLowPowerLayer(old_low_power_layer, scale_factor)) {
+    return;
+  } else if (old_low_power_layer) {
+    // Transitioning out of fullscreen low power mode, so:
+    // 1. Reset the root CALayer's background color and frame.
+    [ca_layer setBackgroundColor:nil];
+    [ca_layer setFrame:CGRectZero];
+    // 2. Reset old_layer so that the CALayer tree is rebuilt from scratch.
+    old_layer = nullptr;
   }
 
   for (size_t i = 0; i < clip_and_sorting_layers.size(); ++i) {
