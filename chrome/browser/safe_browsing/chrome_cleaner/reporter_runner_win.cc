@@ -40,12 +40,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
-#include "chrome/browser/safe_browsing/chrome_cleaner/srt_global_error_win.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/global_error/global_error_service.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/component_updater/pref_names.h"
@@ -76,26 +71,21 @@ enum SwReporterRunningTimeRegistryError {
 // prompt sequence. Replicated in the histograms.xml file, so the order MUST
 // NOT CHANGE.
 enum SwReporterUmaValue {
-  // Deprecated.
-  SW_REPORTER_EXPLICIT_REQUEST = 0,
-  // Deprecated.
-  SW_REPORTER_STARTUP_RETRY = 1,
-  // Deprecated.
-  SW_REPORTER_RETRIED_TOO_MANY_TIMES = 2,
+  DEPRECATED_SW_REPORTER_EXPLICIT_REQUEST = 0,
+  DEPRECATED_SW_REPORTER_STARTUP_RETRY = 1,
+  DEPRECATED_SW_REPORTER_RETRIED_TOO_MANY_TIMES = 2,
   SW_REPORTER_START_EXECUTION = 3,
   SW_REPORTER_FAILED_TO_START = 4,
-  // Deprecated.
-  SW_REPORTER_REGISTRY_EXIT_CODE = 5,
-  // Deprecated.
-  SW_REPORTER_RESET_RETRIES = 6,
-  SW_REPORTER_DOWNLOAD_START = 7,
+  DEPRECATED_SW_REPORTER_REGISTRY_EXIT_CODE = 5,
+  DEPRECATED_SW_REPORTER_RESET_RETRIES = 6,
+  DEPRECATED_SW_REPORTER_DOWNLOAD_START = 7,
   SW_REPORTER_NO_BROWSER = 8,
-  SW_REPORTER_NO_LOCAL_STATE = 9,
+  DEPRECATED_SW_REPORTER_NO_LOCAL_STATE = 9,
   SW_REPORTER_NO_PROMPT_NEEDED = 10,
   SW_REPORTER_NO_PROMPT_FIELD_TRIAL = 11,
   SW_REPORTER_ALREADY_PROMPTED = 12,
-  SW_REPORTER_RAN_DAILY = 13,
-  SW_REPORTER_ADDED_TO_MENU = 14,
+  DEPRECATED_SW_REPORTER_RAN_DAILY = 13,
+  DEPRECATED_SW_REPORTER_ADDED_TO_MENU = 14,
 
   SW_REPORTER_MAX,
 };
@@ -485,73 +475,6 @@ void RecordReporterStepHistogram(SwReporterUmaValue value) {
   uma.RecordReporterStep(value);
 }
 
-void DisplaySRTPrompt(base::FilePath download_path,
-                      ChromeCleanerFetchStatus fetch_status) {
-  // As long as the fetch didn't fail due to HTTP_NOT_FOUND, show a prompt
-  // (either offering the tool directly or pointing to the download page).
-  // If the fetch failed to find the file, don't prompt the user since the
-  // tool is not currently available.
-  // TODO(csharp): In the event the browser is closed before the prompt
-  //               displays, we will wait until the next scanner run to
-  //               re-display it.  Improve this. http://crbug.com/460295
-  if (fetch_status == ChromeCleanerFetchStatus::kNotFoundOnServer) {
-    RecordSRTPromptHistogram(SRT_PROMPT_DOWNLOAD_UNAVAILABLE);
-    RecordPromptNotShownWithReasonHistogram(
-        NO_PROMPT_REASON_CLEANER_DOWNLOAD_FAILED);
-    return;
-  }
-
-  // Find the last active browser, which may be NULL, in which case we won't
-  // show the prompt this time and will wait until the next run of the
-  // reporter. We can't use other ways of finding a browser because we don't
-  // have a profile.
-  Browser* browser = chrome::FindLastActive();
-  if (!browser) {
-    RecordPromptNotShownWithReasonHistogram(
-        NO_PROMPT_REASON_BROWSER_NOT_AVAILABLE);
-    return;
-  }
-
-  Profile* profile = browser->profile();
-  DCHECK(profile);
-
-  // Make sure we have a tabbed browser since we need to anchor the bubble to
-  // the toolbar's wrench menu. Create one if none exist already.
-  if (browser->type() != Browser::TYPE_TABBED) {
-    browser = chrome::FindTabbedBrowser(profile, false);
-    if (!browser)
-      browser = new Browser(Browser::CreateParams(profile, false));
-  }
-  GlobalErrorService* global_error_service =
-      GlobalErrorServiceFactory::GetForProfile(profile);
-  SRTGlobalError* global_error =
-      new SRTGlobalError(global_error_service, download_path);
-
-  // Ownership of |global_error| is passed to the service. The error removes
-  // itself from the service and self-destructs when done.
-  global_error_service->AddGlobalError(base::WrapUnique(global_error));
-
-  bool show_bubble = true;
-  PrefService* local_state = g_browser_process->local_state();
-  if (local_state && local_state->GetBoolean(prefs::kSwReporterPendingPrompt)) {
-    // Don't show the bubble if there's already a pending prompt to only be
-    // sown in the Chrome menu.
-    RecordReporterStepHistogram(SW_REPORTER_ADDED_TO_MENU);
-    show_bubble = false;
-  } else {
-    // Do not try to show bubble if another GlobalError is already showing
-    // one. The bubble will be shown once the others have been dismissed.
-    for (GlobalError* error : global_error_service->errors()) {
-      if (error->GetBubbleView()) {
-        show_bubble = false;
-        break;
-      }
-    }
-  }
-  if (show_bubble)
-    global_error->ShowBubbleView(browser);
-}
-
 // This function is called from a worker thread to launch the SwReporter and
 // wait for termination to collect its exit code. This task could be
 // interrupted by a shutdown at any time, so it shouldn't depend on anything
@@ -577,10 +500,6 @@ int LaunchAndWaitForExitOnBackgroundThread(
 }
 
 }  // namespace
-
-void DisplaySRTPromptForTesting(const base::FilePath& download_path) {
-  DisplaySRTPrompt(download_path, ChromeCleanerFetchStatus::kSuccess);
-}
 
 namespace {
 
@@ -632,48 +551,6 @@ void MaybeScanAndPrompt(const SwReporterInvocation& reporter_invocation) {
   new ChromeCleanerDialogControllerImpl(cleaner_controller);
 }
 
-// Try to fetch the SRT, and on success, show the prompt to run it.
-void MaybeFetchSRT(Browser* browser, const base::Version& reporter_version) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  Profile* profile = browser->profile();
-  DCHECK(profile);
-  PrefService* prefs = profile->GetPrefs();
-  DCHECK(prefs);
-
-  // Don't show the prompt again if it's been shown before for this profile
-  // and for the current variations seed, unless there's a pending prompt to
-  // show in the Chrome menu.
-  std::string incoming_seed = GetIncomingSRTSeed();
-  std::string old_seed = prefs->GetString(prefs::kSwReporterPromptSeed);
-  PrefService* local_state = g_browser_process->local_state();
-  bool pending_prompt =
-      local_state && local_state->GetBoolean(prefs::kSwReporterPendingPrompt);
-  if (!incoming_seed.empty() && incoming_seed == old_seed && !pending_prompt) {
-    RecordReporterStepHistogram(SW_REPORTER_ALREADY_PROMPTED);
-    RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_ALREADY_PROMPTED);
-    return;
-  }
-
-  if (!incoming_seed.empty() && incoming_seed != old_seed) {
-    prefs->SetString(prefs::kSwReporterPromptSeed, incoming_seed);
-    // Forget about pending prompts if prompt seed has changed.
-    if (local_state)
-      local_state->SetBoolean(prefs::kSwReporterPendingPrompt, false);
-  }
-  prefs->SetString(prefs::kSwReporterPromptVersion,
-                   reporter_version.GetString());
-
-  if (g_testing_delegate_) {
-    g_testing_delegate_->TriggerPrompt();
-    return;
-  }
-
-  // Download the SRT.
-  RecordReporterStepHistogram(SW_REPORTER_DOWNLOAD_START);
-  FetchChromeCleaner(base::Bind(DisplaySRTPrompt));
-}
-
 base::Time Now() {
   return g_testing_delegate_ ? g_testing_delegate_->Now() : base::Time::Now();
 }
@@ -683,7 +560,7 @@ base::Time Now() {
 // This class tries to run a queue of reporters and react to their exit codes.
 // It schedules subsequent runs of the queue as needed, or retries as soon as a
 // browser is available when none is on first try.
-class ReporterRunner : public chrome::BrowserListObserver {
+class ReporterRunner {
  public:
   // Registers |invocations| to run next time |TryToRun| is scheduled. (And if
   // it's not already scheduled, call it now.)
@@ -714,17 +591,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
 
  private:
   ReporterRunner() {}
-  ~ReporterRunner() override {}
-
-  // BrowserListObserver.
-  void OnBrowserSetLastActive(Browser* browser) override {}
-  void OnBrowserRemoved(Browser* browser) override {}
-  void OnBrowserAdded(Browser* browser) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(browser);
-    MaybeFetchSRT(browser, version_);
-    BrowserList::RemoveObserver(this);
-  }
+  virtual ~ReporterRunner() {}
 
   // Launches the command line at the head of the queue.
   void ScheduleNextInvocation() {
@@ -771,7 +638,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&ReporterRunner::TryToRun, base::Unretained(this)),
-          base::TimeDelta::FromDays(days_between_reporter_runs_));
+          base::TimeDelta::FromDays(kDaysBetweenSuccessfulSwReporterRuns));
     } else {
       ScheduleNextInvocation();
     }
@@ -811,8 +678,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
       return;
     }
 
-    if (!base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature) &&
-        !IsInSRTPromptFieldTrialGroups()) {
+    if (!IsInSRTPromptFieldTrialGroups()) {
       // Knowing about disabled field trial is more important than reporter not
       // finding anything to remove, so check this case first.
       RecordReporterStepHistogram(SW_REPORTER_NO_PROMPT_FIELD_TRIAL);
@@ -828,27 +694,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
       return;
     }
 
-    // The kInBrowserCleanerUI feature takes precedence over the
-    // SRTPromptFieldTrial. If it is enabled, no attempt will be made to show
-    // the old SRT prompt.
-    if (base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature)) {
-      MaybeScanAndPrompt(finished_invocation);
-      return;
-    }
-
-    // Find the last active browser, which may be NULL, in which case we need
-    // to wait for one to be available. We can't use other ways of finding a
-    // browser because we don't have a profile. And we need a browser to get to
-    // a profile, which we need, to tell whether we should prompt or not.
-    // TODO(mad): crbug.com/503269, investigate whether we should change how we
-    // decide when it's time to download the SRT and when to display the prompt.
-    Browser* browser = chrome::FindLastActive();
-    if (!browser) {
-      RecordReporterStepHistogram(SW_REPORTER_NO_BROWSER);
-      BrowserList::AddObserver(this);
-    } else {
-      MaybeFetchSRT(browser, version_);
-    }
+    MaybeScanAndPrompt(finished_invocation);
   }
 
   void TryToRun() {
@@ -865,24 +711,13 @@ class ReporterRunner : public chrome::BrowserListObserver {
     }
 
     // Run a queue of reporters if none have been triggered in the last
-    // |days_between_reporter_runs_| days, which depends if there is a pending
-    // prompt to be added to Chrome's menu.
-    //
-    // There is no concept of a pending prompt if the kInBrowserCleanerUIFeature
-    // feature is enabled, so always use kDaysBetweenSuccessfulSwReporterRuns in
-    // that case.
-    days_between_reporter_runs_ = kDaysBetweenSuccessfulSwReporterRuns;
-    if (!base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature) &&
-        local_state->GetBoolean(prefs::kSwReporterPendingPrompt)) {
-      days_between_reporter_runs_ = kDaysBetweenSwReporterRunsForPendingPrompt;
-      RecordReporterStepHistogram(SW_REPORTER_RAN_DAILY);
-    }
+    // |kDaysBetweenSuccessfulSwReporterRuns| days.
     const base::Time now = Now();
     const base::Time last_time_triggered = base::Time::FromInternalValue(
         local_state->GetInt64(prefs::kSwReporterLastTimeTriggered));
     const base::Time next_trigger(
         last_time_triggered +
-        base::TimeDelta::FromDays(days_between_reporter_runs_));
+        base::TimeDelta::FromDays(kDaysBetweenSuccessfulSwReporterRuns));
     if (!pending_invocations_.empty() &&
         (next_trigger <= now ||
          // Also make sure the kSwReporterLastTimeTriggered value is not set in
@@ -996,12 +831,6 @@ class ReporterRunner : public chrome::BrowserListObserver {
           {base::MayBlock(), base::WithBaseSyncPrimitives(),
            base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
-
-  // This value is used to identify how long to wait before starting a new run
-  // of the reporter queue. It's initialized with the default value and may be
-  // changed to a different value when a prompt is pending and the reporter
-  // should be run before adding the global error to the Chrome menu.
-  int days_between_reporter_runs_ = kDaysBetweenSuccessfulSwReporterRuns;
 
   // This will be true if the current queue of invocations started at a time
   // when logs should be uploaded.

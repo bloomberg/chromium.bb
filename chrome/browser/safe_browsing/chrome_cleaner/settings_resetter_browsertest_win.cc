@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
@@ -76,15 +75,7 @@ void SetCompletedState(DWORD value) {
   ASSERT_EQ(ERROR_SUCCESS, result);
 }
 
-class ChromeCleanerTagForResettingTest : public InProcessBrowserTest {
- public:
-  void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
-  }
-
- protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
+using ChromeCleanerTagForResettingTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(ChromeCleanerTagForResettingTest, Run) {
   Browser* browser = chrome::FindLastActive();
@@ -153,13 +144,11 @@ class ChromeCleanerResetTaggedProfilesTest
     completion_state_ = GetParam();
     ASSERT_TRUE(completion_state_ >= CleanupCompletionState::kNotAvailable &&
                 completion_state_ <= CleanupCompletionState::kInvalidValue);
-    scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
   }
 
  protected:
   CleanupCompletionState completion_state_;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   registry_util::RegistryOverrideManager registry_override_manager_;
 };
 

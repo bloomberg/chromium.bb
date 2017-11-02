@@ -180,10 +180,6 @@ void ChromeCleanupHandler::HandleDismiss(const base::ListValue* args) {
 void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
     const base::ListValue* args) {
   DCHECK_EQ(0U, args->GetSize());
-  // The Polymer element should never be attached if the feature is
-  // disabled.
-  DCHECK(
-      base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature));
 
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.CleanupCard", true);
   base::RecordAction(
