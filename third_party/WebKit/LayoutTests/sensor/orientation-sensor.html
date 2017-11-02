@@ -19,8 +19,24 @@ const kRotationMatrix = [1,  0,  0,  0,
                          0,  0,  0,  1];
 const kRotationDOMMatrix = new DOMMatrix(kRotationMatrix);
 
+function* quaternionGen() {
+  let index = 0;
+  while (true) {
+    let result = [0, 0, 0, 0];
+    result[index] = 1;
+    yield result;
+
+    if (++index > 3)
+      index = 0;
+  }
+}
+
+let gen = quaternionGen();
+let expectedReading;
+
 function update_sensor_reading(buffer) {
-  buffer.set(kQuaternion, 2)
+  expectedReading = gen.next().value;
+  buffer.set(expectedReading, 2);
 }
 
 function verify_sensor_reading(sensor, should_be_null) {
@@ -28,7 +44,7 @@ function verify_sensor_reading(sensor, should_be_null) {
     return sensor.quaternion === null && sensor.timestamp === null;
 
   if (sensor.timestamp === null ||
-      sensor.quaternion.some((e, i) => {e !== kQuaternion[i]}))
+      sensor.quaternion.some((e, i) => {e !== expectedReading[i]}))
     return false;
 
   return true;
@@ -51,7 +67,7 @@ async function checkPopulateMatrix(sensor, sensorType) {
   sensorObject.start();
 
   let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
-  await mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
+  await mockSensor.setUpdateSensorReadingFunction(buffer => buffer.set(kQuaternion, 2));
   await new Promise((resolve, reject) => {
     let wrapper = new CallbackWrapper(() => {
       // Works for all supported types.
@@ -83,7 +99,6 @@ async function checkPopulateMatrix(sensor, sensorType) {
   return mockSensor.removeConfigurationCalled();
 }
 
-
 runGenericSensorTests(AbsoluteOrientationSensor, update_sensor_reading, verify_sensor_reading);
 
 sensor_test(sensor => {
@@ -95,5 +110,4 @@ runGenericSensorTests(RelativeOrientationSensor, update_sensor_reading, verify_s
 sensor_test(sensor => {
   return checkPopulateMatrix(sensor, RelativeOrientationSensor);
 }, 'Test RelativeOrientationSensor.populateMatrix() method works correctly.');
-
 </script>

@@ -394,6 +394,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
     await new Promise((resolve, reject) => {
       let wrapper1 = new CallbackWrapper(() => {
         assert_true(sensorObject.hasReading);
+        assert_true(verifyReading(sensorObject));
         timestamp = sensorObject.timestamp;
         sensorObject.stop();
 
@@ -404,6 +405,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
 
       let wrapper2 = new CallbackWrapper(() => {
         assert_true(sensorObject.hasReading);
+        assert_true(verifyReading(sensorObject));
         // Make sure that 'timestamp' is already initialized.
         assert_greater_than(timestamp, 0);
         // Check that the reading is updated.
