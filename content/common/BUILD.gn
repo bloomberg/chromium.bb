@@ -317,6 +317,8 @@ source_set("common") {
     "throttling_url_loader.h",
     "unique_name_helper.cc",
     "unique_name_helper.h",
+    "url_loader_factory_bundle.cc",
+    "url_loader_factory_bundle.h",
     "url_request_struct_traits.cc",
     "url_request_struct_traits.h",
     "url_schemes.cc",
@@ -614,6 +616,7 @@ mojom("mojo_bindings") {
     "shared_worker/shared_worker_host.mojom",
     "shared_worker/shared_worker_info.mojom",
     "storage_partition_service.mojom",
+    "url_loader_factory_bundle.mojom",
     "video_capture.mojom",
     "widget.mojom",
   ]

@@ -1261,6 +1261,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // same Previews status as the top-level frame.
   PreviewsState last_navigation_previews_state_;
 
+  bool has_committed_any_navigation_ = false;
   mojo::AssociatedBinding<mojom::FrameHost> frame_host_associated_binding_;
   mojom::FramePtr frame_;
   mojom::FrameBindingsControlAssociatedPtr frame_bindings_control_;
