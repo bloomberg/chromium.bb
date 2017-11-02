@@ -60,7 +60,6 @@ class WebServiceWorkerRegistration {
       bool enable,
       std::unique_ptr<WebEnableNavigationPreloadCallbacks>) {}
   virtual void GetNavigationPreloadState(
-      WebServiceWorkerProvider*,
       std::unique_ptr<WebGetNavigationPreloadStateCallbacks>) {}
   virtual void SetNavigationPreloadHeader(
       const WebString& value,

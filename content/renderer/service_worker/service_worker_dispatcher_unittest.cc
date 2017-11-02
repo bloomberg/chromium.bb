@@ -67,6 +67,11 @@ class MockServiceWorkerRegistrationObjectHost
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
                             base::nullopt);
   }
+  void GetNavigationPreloadState(
+      GetNavigationPreloadStateCallback callback) override {
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
+                            base::nullopt, nullptr);
+  }
 
   void OnConnectionError() {
     // If there are still bindings, |this| is still being used.

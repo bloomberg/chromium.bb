@@ -57,7 +57,6 @@ ScriptPromise NavigationPreloadManager::getState(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   registration_->WebRegistration()->GetNavigationPreloadState(
-      client->Provider(),
       WTF::MakeUnique<GetNavigationPreloadStateCallbacks>(resolver));
   return promise;
 }

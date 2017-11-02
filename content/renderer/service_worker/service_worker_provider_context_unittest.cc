@@ -59,6 +59,11 @@ class MockServiceWorkerRegistrationObjectHost
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
                             base::nullopt);
   }
+  void GetNavigationPreloadState(
+      GetNavigationPreloadStateCallback callback) override {
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
+                            base::nullopt, nullptr);
+  }
 
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerRegistrationObjectHost>
       bindings_;

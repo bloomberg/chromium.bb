@@ -272,6 +272,8 @@ void WebServiceWorkerRegistrationImpl::Unregister(
 void WebServiceWorkerRegistrationImpl::EnableNavigationPreload(
     bool enable,
     std::unique_ptr<WebEnableNavigationPreloadCallbacks> callbacks) {
+  DCHECK(state_ == LifecycleState::kAttachedAndBound ||
+         state_ == LifecycleState::kUnbound);
   GetRegistrationObjectHost()->EnableNavigationPreload(
       enable,
       base::BindOnce(
@@ -280,16 +282,12 @@ void WebServiceWorkerRegistrationImpl::EnableNavigationPreload(
 }
 
 void WebServiceWorkerRegistrationImpl::GetNavigationPreloadState(
-    blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebGetNavigationPreloadStateCallbacks> callbacks) {
-  DCHECK(GetRegistrationObjectHost());
-  WebServiceWorkerProviderImpl* provider_impl =
-      static_cast<WebServiceWorkerProviderImpl*>(provider);
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
-  dispatcher->GetNavigationPreloadState(provider_impl->provider_id(),
-                                        RegistrationId(), std::move(callbacks));
+  DCHECK(state_ == LifecycleState::kAttachedAndBound ||
+         state_ == LifecycleState::kUnbound);
+  GetRegistrationObjectHost()->GetNavigationPreloadState(base::BindOnce(
+      &WebServiceWorkerRegistrationImpl::OnDidGetNavigationPreloadState,
+      base::Unretained(this), std::move(callbacks)));
 }
 
 void WebServiceWorkerRegistrationImpl::SetNavigationPreloadHeader(
@@ -352,6 +350,21 @@ void WebServiceWorkerRegistrationImpl::OnDidEnableNavigationPreload(
     return;
   }
   callbacks->OnSuccess();
+}
+
+void WebServiceWorkerRegistrationImpl::OnDidGetNavigationPreloadState(
+    std::unique_ptr<WebGetNavigationPreloadStateCallbacks> callbacks,
+    blink::mojom::ServiceWorkerErrorType error,
+    const base::Optional<std::string>& error_msg,
+    blink::mojom::NavigationPreloadStatePtr state) {
+  if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
+    DCHECK(error_msg);
+    callbacks->OnError(blink::WebServiceWorkerError(
+        error, blink::WebString::FromUTF8(*error_msg)));
+    return;
+  }
+  callbacks->OnSuccess(blink::WebNavigationPreloadState(
+      state->enabled, blink::WebString::FromUTF8(state->header)));
 }
 
 // static
