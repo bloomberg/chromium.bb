@@ -88,7 +88,6 @@ ChromeCleanerRunner::ChromeCleanerRunner(
       on_prompt_user_(std::move(on_prompt_user)),
       on_connection_closed_(std::move(on_connection_closed)),
       on_process_done_(std::move(on_process_done)) {
-  DCHECK(base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature));
   DCHECK(on_prompt_user_);
   DCHECK(on_connection_closed_);
   DCHECK(on_process_done_);

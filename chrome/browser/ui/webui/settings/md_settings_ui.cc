@@ -194,26 +194,22 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   bool chromeCleanupEnabled = false;
   bool userInitiatedCleanupsEnabled = false;
 
-  if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature)) {
-    AddSettingsPageUIHandler(base::MakeUnique<ChromeCleanupHandler>(profile));
+  AddSettingsPageUIHandler(base::MakeUnique<ChromeCleanupHandler>(profile));
 
-    safe_browsing::ChromeCleanerController* cleaner_controller =
-        safe_browsing::ChromeCleanerController::GetInstance();
-    chromeCleanupEnabled = cleaner_controller->ShouldShowCleanupInSettingsUI();
-    userInitiatedCleanupsEnabled =
-        safe_browsing::UserInitiatedCleanupsEnabled();
+  safe_browsing::ChromeCleanerController* cleaner_controller =
+      safe_browsing::ChromeCleanerController::GetInstance();
+  chromeCleanupEnabled = cleaner_controller->ShouldShowCleanupInSettingsUI();
+  userInitiatedCleanupsEnabled = safe_browsing::UserInitiatedCleanupsEnabled();
 
 #if defined(GOOGLE_CHROME_BUILD)
-    if (cleaner_controller->IsPoweredByPartner())
-      html_source->AddBoolean("cleanupPoweredByPartner", true);
+  if (cleaner_controller->IsPoweredByPartner())
+    html_source->AddBoolean("cleanupPoweredByPartner", true);
 
-    html_source->AddResourcePath("partner-logo.svg",
-                                 IDR_CHROME_CLEANUP_PARTNER);
+  html_source->AddResourcePath("partner-logo.svg", IDR_CHROME_CLEANUP_PARTNER);
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-    exclude_from_gzip.push_back("partner-logo.svg");
+  exclude_from_gzip.push_back("partner-logo.svg");
 #endif
 #endif  // defined(GOOGLE_CHROME_BUILD)
-  }
 
   html_source->AddBoolean("chromeCleanupEnabled", chromeCleanupEnabled);
   // Don't need to save this variable in UpdateCleanupDataSource() because it
@@ -312,11 +308,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #if defined(OS_WIN)
   // This needs to be below content::WebUIDataSource::Add to make sure there
   // is a WebUIDataSource to update if the observer is immediately notified.
-  if (base::FeatureList::IsEnabled(safe_browsing::kInBrowserCleanerUIFeature)) {
-    cleanup_observer_.reset(
-        new safe_browsing::ChromeCleanerStateChangeObserver(base::Bind(
-            &MdSettingsUI::UpdateCleanupDataSource, base::Unretained(this))));
-  }
+  cleanup_observer_.reset(
+      new safe_browsing::ChromeCleanerStateChangeObserver(base::Bind(
+          &MdSettingsUI::UpdateCleanupDataSource, base::Unretained(this))));
 #endif  // defined(OS_WIN)
 }
 

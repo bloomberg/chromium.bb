@@ -15,7 +15,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/multiprocess_test.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h"
@@ -69,7 +68,6 @@ class ChromeCleanerRunnerSimpleTest
     std::tie(metrics_status_, reporter_engine_) = GetParam();
 
     SetChromeCleanerRunnerTestDelegateForTesting(this);
-    scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
   }
 
   void CallRunChromeCleaner() {
@@ -128,7 +126,6 @@ class ChromeCleanerRunnerSimpleTest
 
  protected:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   // Test fixture parameters.
   ChromeCleanerRunner::ChromeMetricsStatus metrics_status_;
@@ -231,7 +228,6 @@ class ChromeCleanerRunnerTest
     prompt_acceptance_to_send_ = prompt_acceptance_to_send;
 
     SetChromeCleanerRunnerTestDelegateForTesting(this);
-    scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
   }
 
   void CallRunChromeCleaner() {
@@ -303,7 +299,6 @@ class ChromeCleanerRunnerTest
 
  protected:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   base::RunLoop run_loop_;
 

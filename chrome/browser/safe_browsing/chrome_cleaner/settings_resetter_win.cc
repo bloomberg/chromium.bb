@@ -203,8 +203,7 @@ PostCleanupSettingsResetter::~PostCleanupSettingsResetter() = default;
 // static
 bool PostCleanupSettingsResetter::IsEnabled() {
 #if defined(OS_WIN)
-  return base::FeatureList::IsEnabled(
-      safe_browsing::kInBrowserCleanerUIFeature);
+  return true;
 #else
   return false;
 #endif

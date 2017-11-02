@@ -21,7 +21,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -51,23 +50,14 @@ namespace {
 constexpr char kSRTPromptGroup[] = "SRTGroup";
 
 // Parameters for this test:
-//  - bool in_browser_cleaner_ui_: indicates if InBrowserCleanerUI feature
-//    is enabled;
-//
-//    We expect that the reporter's logic should remain unchanged even when the
-//    InBrowserCleanerUI feature is enabled with one exception: the reporter is
-//    not run daily because with the new feature enabled there is no concept of
-//    a pending prompt. See the RunDaily and InBrowserUINoRunDaily tests.
 //  - const char* old_seed_: The old "Seed" Finch parameter saved in prefs.
 //  - const char* incoming_seed_: The new "Seed" Finch parameter.
 class ReporterRunnerTest : public InProcessBrowserTest,
                            public SwReporterTestingDelegate,
                            public ::testing::WithParamInterface<
-                               testing::tuple<bool, const char*, const char*>> {
+                               testing::tuple<const char*, const char*>> {
  public:
-  ReporterRunnerTest() {
-    std::tie(in_browser_cleaner_ui_, old_seed_, incoming_seed_) = GetParam();
-  }
+  ReporterRunnerTest() { std::tie(old_seed_, incoming_seed_) = GetParam(); }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     variations::testing::VariationParamsManager::AppendVariationParams(
@@ -77,11 +67,6 @@ class ReporterRunnerTest : public InProcessBrowserTest,
 
   void SetUpInProcessBrowserTestFixture() override {
     SetSwReporterTestingDelegate(this);
-
-    if (in_browser_cleaner_ui_)
-      scoped_feature_list_.InitAndEnableFeature(kInBrowserCleanerUIFeature);
-    else
-      scoped_feature_list_.InitAndDisableFeature(kInBrowserCleanerUIFeature);
   }
 
   void SetUpOnMainThread() override {
@@ -291,7 +276,6 @@ class ReporterRunnerTest : public InProcessBrowserTest,
   scoped_refptr<base::SingleThreadTaskRunner> saved_task_runner_;
 
   // Test parameters.
-  bool in_browser_cleaner_ui_;
   std::string old_seed_;
   std::string incoming_seed_;
 
@@ -305,23 +289,8 @@ class ReporterRunnerTest : public InProcessBrowserTest,
   // all launch on the same mock clock tick.
   base::OnceClosure first_launch_callback_;
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ReporterRunnerTest);
-};
-
-class ReporterRunnerPromptTest : public DialogBrowserTest {
- public:
-  void ShowDialog(const std::string& name) override {
-    if (name == "SRTErrorNoFile")
-      DisplaySRTPromptForTesting(base::FilePath());
-    else if (name == "SRTErrorFile")
-      DisplaySRTPromptForTesting(
-          base::FilePath().Append(FILE_PATH_LITERAL("c:\temp\testfile.txt")));
-    else
-      ADD_FAILURE() << "Unknown dialog type.";
-  }
 };
 
 }  // namespace
@@ -395,64 +364,6 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, Failure) {
   RunReporter(kReporterNotLaunchedExitCode);
   ExpectReporterLaunches(0, 1, false);
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
-}
-
-IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, RunDaily) {
-  // When the kInBrowserCleanerUIFeature feature is enabled, the reporter should
-  // never run daily. Test that case separately.
-  if (in_browser_cleaner_ui_)
-    return;
-
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(prefs::kSwReporterPendingPrompt, true);
-  SetDaysSinceLastTriggered(kDaysBetweenSuccessfulSwReporterRuns - 1);
-  ASSERT_GT(kDaysBetweenSuccessfulSwReporterRuns - 1,
-            kDaysBetweenSwReporterRunsForPendingPrompt);
-  RunReporter(chrome_cleaner::kSwReporterNothingFound);
-
-  // Expect the reporter to run immediately, since a prompt is pending and it
-  // has been more than kDaysBetweenSwReporterRunsForPendingPrompt days.
-  ExpectReporterLaunches(0, 1, false);
-  ExpectToRunAgain(kDaysBetweenSwReporterRunsForPendingPrompt);
-
-  // Move the clock ahead kDaysBetweenSwReporterRunsForPendingPrompt days. The
-  // expected run should trigger, but not cause the reporter to launch because
-  // a prompt is no longer pending.
-  local_state->SetBoolean(prefs::kSwReporterPendingPrompt, false);
-  ExpectReporterLaunches(kDaysBetweenSwReporterRunsForPendingPrompt, 0, false);
-
-  // Instead it should now run kDaysBetweenSuccessfulSwReporterRuns after the
-  // first prompt (of which kDaysBetweenSwReporterRunsForPendingPrompt has
-  // already passed.)
-  int days_left = kDaysBetweenSuccessfulSwReporterRuns -
-                  kDaysBetweenSwReporterRunsForPendingPrompt;
-  ExpectToRunAgain(days_left);
-  ExpectReporterLaunches(days_left, 1, false);
-  ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
-}
-
-IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, InBrowserUINoRunDaily) {
-  // Ensure that the reporter always runs every
-  // kDaysBetweenSuccessfulSwReporterRuns days when kInBrowserCleanerUIFeature
-  // is enabled. The case when kInBrowserCleanerUIFeature is disabled is tested
-  // separately.
-  if (!in_browser_cleaner_ui_)
-    return;
-
-  // Users can have the pending prompt set to true when migrating to the new UI,
-  // but it should be disregarded and the reporter should only be run every
-  // kDaysBetweenSuccessfulSwReporterRuns days.
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(prefs::kSwReporterPendingPrompt, true);
-  SetDaysSinceLastTriggered(kDaysBetweenSuccessfulSwReporterRuns - 1);
-  ASSERT_GT(kDaysBetweenSuccessfulSwReporterRuns - 1,
-            kDaysBetweenSwReporterRunsForPendingPrompt);
-  RunReporter(chrome_cleaner::kSwReporterNothingFound);
-
-  // Pending prompt is set, but we should not run the reporter since it hasn't
-  // been kDaysBetweenSuccessfulSwReporterRuns days since the last run.
-  ExpectReporterLaunches(0, 0, false);
-  ExpectToRunAgain(1);
 }
 
 IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ParameterChange) {
@@ -666,23 +577,10 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerTest, ReporterLogging_MultipleLaunches) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    WithInBrowserCleanerUIParam,
+    Default,
     ReporterRunnerTest,
     ::testing::Combine(
-        ::testing::Bool(),                          // in_browser_cleaner_ui_
         ::testing::Values("", "Seed1"),             // old_seed_
         ::testing::Values("", "Seed1", "Seed2")));  // incoming_seed
-
-// This provide tests which allows explicit invocation of the SRT Prompt
-// useful for checking dialog layout or any other interactive functionality
-// tests. See docs/testing/test_browser_dialog.md for description of the
-// testing framework.
-IN_PROC_BROWSER_TEST_F(ReporterRunnerPromptTest, InvokeDialog_SRTErrorNoFile) {
-  RunDialog();
-}
-
-IN_PROC_BROWSER_TEST_F(ReporterRunnerPromptTest, InvokeDialog_SRTErrorFile) {
-  RunDialog();
-}
 
 }  // namespace safe_browsing

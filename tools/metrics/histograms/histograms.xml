@@ -80452,6 +80452,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SoftwareReporter.PromptUsage" enum="SRTPromptUsage">
+  <obsolete>
+    Deprecated as of 2017-11-01. Replaced with
+    SoftwareReporter.PromptDialogResponse.
+  </obsolete>
   <owner>mad@chromium.org</owner>
   <summary>Usage of the Software Removal Tool (SRT) Prompt.</summary>
 </histogram>

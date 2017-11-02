@@ -25,9 +25,8 @@
 namespace safe_browsing {
 
 // Class responsible for launching the cleaner process and waiting for its
-// completion when the InBrowserCleanerUI feature is enabled. This object is
-// also responsible for starting the ChromePromptImpl object on the IO thread
-// and controlling its lifetime.
+// completion. This object is also responsible for starting the ChromePromptImpl
+// object on the IO thread and controlling its lifetime.
 //
 // Expected lifecycle of a ChromeCleanerRunner:
 //

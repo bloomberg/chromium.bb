@@ -52,10 +52,6 @@ enum PromptTypeHistogramValue {
   PROMPT_TYPE_MAX,
 };
 
-// When enabled, all user interaction with the Chrome Cleaner will happen from
-// within Chrome.
-extern const base::Feature kInBrowserCleanerUIFeature;
-
 // When enabled, shows a prompt dialog if a cleanup requires a reboot and the
 // Settings page is not the current active tab.
 extern const base::Feature kRebootPromptDialogFeature;

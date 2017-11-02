@@ -37698,6 +37698,10 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="SRTPromptUsage">
+  <obsolete>
+    Deprecated as of 2017-11-01. Replaced with
+    SoftwareReporterPromptDialogResponse.
+  </obsolete>
   <int value="0" label="Shown"/>
   <int value="1" label="Accepted"/>
   <int value="2" label="Denied"/>
@@ -38656,21 +38660,21 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="SwReporterStep">
-  <int value="0" label="Explicit request"/>
-  <int value="1" label="Startup retry"/>
-  <int value="2" label="Retried too many times"/>
+  <int value="0" label="Explicit request (deprecated)"/>
+  <int value="1" label="Startup retry (deprecated)"/>
+  <int value="2" label="Retried too many times (deprecated)"/>
   <int value="3" label="Start execution"/>
   <int value="4" label="Failed to start"/>
-  <int value="5" label="Registry exit code"/>
-  <int value="6" label="Reset retries"/>
+  <int value="5" label="Registry exit code (deprecated)"/>
+  <int value="6" label="Reset retries (deprecated)"/>
   <int value="7" label="Begin SRT download"/>
   <int value="8" label="No browser to show prompt"/>
-  <int value="9" label="No local state"/>
+  <int value="9" label="No local state (deprecated)"/>
   <int value="10" label="No prompt needed"/>
   <int value="11" label="No prompt field trial"/>
   <int value="12" label="Already prompted"/>
-  <int value="13" label="Daily run"/>
-  <int value="14" label="Added to menu"/>
+  <int value="13" label="Daily run (deprecated)"/>
+  <int value="14" label="Added to menu (deprecated)"/>
 </enum>
 
 <enum name="SyncAttachmentStoreResult">

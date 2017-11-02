@@ -28,7 +28,6 @@ const int kReporterNotLaunchedExitCode = INT_MAX;
 
 // The number of days to wait before triggering another reporter run.
 const int kDaysBetweenSuccessfulSwReporterRuns = 7;
-const int kDaysBetweenSwReporterRunsForPendingPrompt = 1;
 // The number of days to wait before sending out reporter logs.
 const int kDaysBetweenReporterLogsSent = 7;
 
@@ -71,9 +70,8 @@ using SwReporterQueue = base::circular_deque<SwReporterInvocation>;
 
 // Tries to run the sw_reporter component, and then schedule the next try. If
 // called multiple times, then multiple sequences of trying to run will happen,
-// yet only one SwReporterQueue will actually run per specified period (either
-// |kDaysBetweenSuccessfulSwReporterRuns| or
-// |kDaysBetweenSwReporterRunsForPendingPrompt|).
+// yet only one SwReporterQueue will actually run in the period of
+// |kDaysBetweenSuccessfulSwReporterRuns| days.
 //
 // Each "run" of the sw_reporter component may aggregate the results of several
 // executions of the tool with different command lines. |invocations| is the
@@ -122,8 +120,6 @@ class SwReporterTestingDelegate {
 // reset the delegate. If |delegate| is nullptr, any previous delegate is
 // cleared.
 void SetSwReporterTestingDelegate(SwReporterTestingDelegate* delegate);
-
-void DisplaySRTPromptForTesting(const base::FilePath& download_path);
 
 }  // namespace safe_browsing
 
