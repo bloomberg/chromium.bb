@@ -36,7 +36,6 @@
 
 class Profile;
 class PushMessagingAppIdentifier;
-class PushMessagingServiceObserver;
 class PushMessagingServiceTest;
 class ScopedKeepAlive;
 struct PushSubscriptionOptions;
@@ -290,9 +289,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   std::multiset<std::string> in_flight_message_deliveries_;
 
   MessageDispatchedCallback message_dispatched_callback_for_testing_;
-
-  std::unique_ptr<PushMessagingServiceObserver>
-      push_messaging_service_observer_;
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
   // KeepAlive registered while we have in-flight push messages, to make sure
