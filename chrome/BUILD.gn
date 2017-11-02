@@ -1754,7 +1754,7 @@ if (is_android) {
       "//chrome/profiling",
       "//chrome/renderer",
       "//chrome/utility",
-      "//components/safe_browsing/db:safe_browsing_mobile",
+      "//components/safe_browsing/android:safe_browsing_mobile",
       "//content/public/app:both",
       "//content/public/common:service_names",
       "//services/service_manager/embedder",
