@@ -31,7 +31,7 @@ class HidReportDescriptor {
   // Returns top-level collections present in the descriptor,
   // together with max report sizes
   void GetDetails(
-      std::vector<device::mojom::HidCollectionInfoPtr>* top_level_collections,
+      std::vector<mojom::HidCollectionInfoPtr>* top_level_collections,
       bool* has_report_id,
       size_t* max_input_report_size,
       size_t* max_output_report_size,

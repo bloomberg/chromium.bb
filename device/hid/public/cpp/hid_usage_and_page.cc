@@ -6,30 +6,30 @@
 
 namespace device {
 
-bool IsProtected(const device::mojom::HidUsageAndPage& hid_usage_and_page) {
+bool IsProtected(const mojom::HidUsageAndPage& hid_usage_and_page) {
   const uint16_t usage = hid_usage_and_page.usage;
   const uint16_t usage_page = hid_usage_and_page.usage_page;
 
-  if (usage_page == device::mojom::kPageKeyboard)
+  if (usage_page == mojom::kPageKeyboard)
     return true;
 
-  if (usage_page != device::mojom::kPageGenericDesktop)
+  if (usage_page != mojom::kPageGenericDesktop)
     return false;
 
-  if (usage == device::mojom::kGenericDesktopPointer ||
-      usage == device::mojom::kGenericDesktopMouse ||
-      usage == device::mojom::kGenericDesktopKeyboard ||
-      usage == device::mojom::kGenericDesktopKeypad) {
+  if (usage == mojom::kGenericDesktopPointer ||
+      usage == mojom::kGenericDesktopMouse ||
+      usage == mojom::kGenericDesktopKeyboard ||
+      usage == mojom::kGenericDesktopKeypad) {
     return true;
   }
 
-  if (usage >= device::mojom::kGenericDesktopSystemControl &&
-      usage <= device::mojom::kGenericDesktopSystemWarmRestart) {
+  if (usage >= mojom::kGenericDesktopSystemControl &&
+      usage <= mojom::kGenericDesktopSystemWarmRestart) {
     return true;
   }
 
-  if (usage >= device::mojom::kGenericDesktopSystemDock &&
-      usage <= device::mojom::kGenericDesktopSystemDisplaySwap) {
+  if (usage >= mojom::kGenericDesktopSystemDock &&
+      usage <= mojom::kGenericDesktopSystemDisplaySwap) {
     return true;
   }
 

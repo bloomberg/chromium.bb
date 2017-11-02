@@ -19,7 +19,7 @@ namespace {
 struct CollectionHasReportId {
   explicit CollectionHasReportId(uint8_t report_id) : report_id_(report_id) {}
 
-  bool operator()(const device::mojom::HidCollectionInfoPtr& info) const {
+  bool operator()(const mojom::HidCollectionInfoPtr& info) const {
     if (info->report_ids.size() == 0 ||
         report_id_ == HidConnection::kNullReportId)
       return false;
@@ -36,13 +36,13 @@ struct CollectionHasReportId {
 
 // Functor returning true if collection has a protected usage.
 struct CollectionIsProtected {
-  bool operator()(const device::mojom::HidCollectionInfoPtr& info) const {
+  bool operator()(const mojom::HidCollectionInfoPtr& info) const {
     return IsProtected(*info->usage);
   }
 };
 
-const device::mojom::HidCollectionInfo* FindCollectionByReportId(
-    const std::vector<device::mojom::HidCollectionInfoPtr>& collections,
+const mojom::HidCollectionInfo* FindCollectionByReportId(
+    const std::vector<mojom::HidCollectionInfoPtr>& collections,
     uint8_t report_id) {
   auto collection_iter = std::find_if(collections.begin(), collections.end(),
                                       CollectionHasReportId(report_id));
@@ -55,7 +55,7 @@ const device::mojom::HidCollectionInfo* FindCollectionByReportId(
 }
 
 bool HasProtectedCollection(
-    const std::vector<device::mojom::HidCollectionInfoPtr>& collections) {
+    const std::vector<mojom::HidCollectionInfoPtr>& collections) {
   return std::find_if(collections.begin(), collections.end(),
                       CollectionIsProtected()) != collections.end();
 }

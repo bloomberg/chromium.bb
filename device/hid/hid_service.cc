@@ -24,11 +24,10 @@
 
 namespace device {
 
-void HidService::Observer::OnDeviceAdded(
-    device::mojom::HidDeviceInfoPtr device_info) {}
+void HidService::Observer::OnDeviceAdded(mojom::HidDeviceInfoPtr device_info) {}
 
 void HidService::Observer::OnDeviceRemoved(
-    device::mojom::HidDeviceInfoPtr device_info) {}
+    mojom::HidDeviceInfoPtr device_info) {}
 
 // static
 constexpr base::TaskTraits HidService::kBlockingTaskTraits;
@@ -120,9 +119,9 @@ void HidService::RunPendingEnumerations() {
   std::vector<GetDevicesCallback> callbacks;
   callbacks.swap(pending_enumerations_);
 
-  // Clone and pass device::mojom::HidDeviceInfoPtr vector for each clients.
+  // Clone and pass mojom::HidDeviceInfoPtr vector for each clients.
   for (auto& callback : callbacks) {
-    std::vector<device::mojom::HidDeviceInfoPtr> devices;
+    std::vector<mojom::HidDeviceInfoPtr> devices;
     for (const auto& map_entry : devices_)
       devices.push_back(map_entry.second->device()->Clone());
     std::move(callback).Run(std::move(devices));

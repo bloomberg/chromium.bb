@@ -20,8 +20,7 @@ namespace device {
 // HidManagerImpl is owned by Device Service. It is reponsible for handling mojo
 // communications from clients. It delegates to HidService the real work of
 // talking with different platforms.
-class HidManagerImpl : public device::mojom::HidManager,
-                       public device::HidService::Observer {
+class HidManagerImpl : public mojom::HidManager, public HidService::Observer {
  public:
   HidManagerImpl();
   ~HidManagerImpl() override;
@@ -31,33 +30,31 @@ class HidManagerImpl : public device::mojom::HidManager,
   // passed |hid_service|.
   static void SetHidServiceForTesting(std::unique_ptr<HidService> hid_service);
 
-  void AddBinding(device::mojom::HidManagerRequest request);
+  void AddBinding(mojom::HidManagerRequest request);
 
-  // device::mojom::HidManager implementation:
-  void GetDevicesAndSetClient(
-      device::mojom::HidManagerClientAssociatedPtrInfo client,
-      GetDevicesCallback callback) override;
+  // mojom::HidManager implementation:
+  void GetDevicesAndSetClient(mojom::HidManagerClientAssociatedPtrInfo client,
+                              GetDevicesCallback callback) override;
   void GetDevices(GetDevicesCallback callback) override;
   void Connect(const std::string& device_guid,
                ConnectCallback callback) override;
 
  private:
   void CreateDeviceList(GetDevicesCallback callback,
-                        device::mojom::HidManagerClientAssociatedPtrInfo client,
-                        std::vector<device::mojom::HidDeviceInfoPtr> devices);
+                        mojom::HidManagerClientAssociatedPtrInfo client,
+                        std::vector<mojom::HidDeviceInfoPtr> devices);
 
   void CreateConnection(ConnectCallback callback,
                         scoped_refptr<HidConnection> connection);
 
   // HidService::Observer:
-  void OnDeviceAdded(device::mojom::HidDeviceInfoPtr device_info) override;
-  void OnDeviceRemoved(device::mojom::HidDeviceInfoPtr device_info) override;
+  void OnDeviceAdded(mojom::HidDeviceInfoPtr device_info) override;
+  void OnDeviceRemoved(mojom::HidDeviceInfoPtr device_info) override;
 
   std::unique_ptr<HidService> hid_service_;
-  mojo::BindingSet<device::mojom::HidManager> bindings_;
-  mojo::AssociatedInterfacePtrSet<device::mojom::HidManagerClient> clients_;
-  ScopedObserver<device::HidService, device::HidService::Observer>
-      hid_service_observer_;
+  mojo::BindingSet<mojom::HidManager> bindings_;
+  mojo::AssociatedInterfacePtrSet<mojom::HidManagerClient> clients_;
+  ScopedObserver<HidService, HidService::Observer> hid_service_observer_;
 
   base::WeakPtrFactory<HidManagerImpl> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(HidManagerImpl);

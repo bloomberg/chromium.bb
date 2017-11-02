@@ -132,7 +132,7 @@ void HidServiceWin::CollectInfoFromButtonCaps(
     PHIDP_PREPARSED_DATA preparsed_data,
     HIDP_REPORT_TYPE report_type,
     USHORT button_caps_length,
-    device::mojom::HidCollectionInfo* collection_info) {
+    mojom::HidCollectionInfo* collection_info) {
   if (button_caps_length > 0) {
     std::unique_ptr<HIDP_BUTTON_CAPS[]> button_caps(
         new HIDP_BUTTON_CAPS[button_caps_length]);
@@ -155,7 +155,7 @@ void HidServiceWin::CollectInfoFromValueCaps(
     PHIDP_PREPARSED_DATA preparsed_data,
     HIDP_REPORT_TYPE report_type,
     USHORT value_caps_length,
-    device::mojom::HidCollectionInfo* collection_info) {
+    mojom::HidCollectionInfo* collection_info) {
   if (value_caps_length > 0) {
     std::unique_ptr<HIDP_VALUE_CAPS[]> value_caps(
         new HIDP_VALUE_CAPS[value_caps_length]);
@@ -219,9 +219,9 @@ void HidServiceWin::AddDeviceBlocking(
     max_feature_report_size = capabilities.FeatureReportByteLength - 1;
   }
 
-  auto collection_info = device::mojom::HidCollectionInfo::New();
-  collection_info->usage = device::mojom::HidUsageAndPage::New(
-      capabilities.Usage, capabilities.UsagePage);
+  auto collection_info = mojom::HidCollectionInfo::New();
+  collection_info->usage =
+      mojom::HidUsageAndPage::New(capabilities.Usage, capabilities.UsagePage);
   CollectInfoFromButtonCaps(preparsed_data, HidP_Input,
                             capabilities.NumberInputButtonCaps,
                             collection_info.get());
@@ -263,7 +263,7 @@ void HidServiceWin::AddDeviceBlocking(
       device_path, attrib.VendorID, attrib.ProductID, product_name,
       serial_number,
       // TODO(reillyg): Detect Bluetooth. crbug.com/443335
-      device::mojom::HidBusType::kHIDBusTypeUSB, std::move(collection_info),
+      mojom::HidBusType::kHIDBusTypeUSB, std::move(collection_info),
       max_input_report_size, max_output_report_size, max_feature_report_size));
 
   HidD_FreePreparsedData(preparsed_data);

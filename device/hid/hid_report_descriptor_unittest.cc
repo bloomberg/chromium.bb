@@ -21,9 +21,9 @@ namespace device {
 class HidReportDescriptorTest : public testing::Test {
 
  protected:
-  using HidUsageAndPage = device::mojom::HidUsageAndPage;
-  using HidCollectionInfo = device::mojom::HidCollectionInfo;
-  using HidCollectionInfoPtr = device::mojom::HidCollectionInfoPtr;
+  using HidUsageAndPage = mojom::HidUsageAndPage;
+  using HidCollectionInfo = mojom::HidCollectionInfo;
+  using HidCollectionInfoPtr = mojom::HidCollectionInfoPtr;
 
   void SetUp() override { descriptor_ = NULL; }
 
@@ -90,7 +90,7 @@ class HidReportDescriptorTest : public testing::Test {
 
 TEST_F(HidReportDescriptorTest, ValidateDetails_Digitizer) {
   auto digitizer = HidCollectionInfo::New();
-  digitizer->usage = HidUsageAndPage::New(0x01, device::mojom::kPageDigitizer);
+  digitizer->usage = HidUsageAndPage::New(0x01, mojom::kPageDigitizer);
   digitizer->report_ids.push_back(1);
   digitizer->report_ids.push_back(2);
   digitizer->report_ids.push_back(3);
@@ -101,8 +101,7 @@ TEST_F(HidReportDescriptorTest, ValidateDetails_Digitizer) {
 
 TEST_F(HidReportDescriptorTest, ValidateDetails_Keyboard) {
   auto keyboard = HidCollectionInfo::New();
-  keyboard->usage =
-      HidUsageAndPage::New(0x06, device::mojom::kPageGenericDesktop);
+  keyboard->usage = HidUsageAndPage::New(0x06, mojom::kPageGenericDesktop);
   std::vector<HidCollectionInfoPtr> expected;
   expected.push_back(std::move(keyboard));
   ValidateDetails(expected, false, 8, 1, 0, kKeyboard, kKeyboardSize);
@@ -110,7 +109,7 @@ TEST_F(HidReportDescriptorTest, ValidateDetails_Keyboard) {
 
 TEST_F(HidReportDescriptorTest, ValidateDetails_Monitor) {
   auto monitor = HidCollectionInfo::New();
-  monitor->usage = HidUsageAndPage::New(0x01, device::mojom::kPageMonitor0);
+  monitor->usage = HidUsageAndPage::New(0x01, mojom::kPageMonitor0);
   monitor->report_ids.push_back(1);
   monitor->report_ids.push_back(2);
   monitor->report_ids.push_back(3);
@@ -123,7 +122,7 @@ TEST_F(HidReportDescriptorTest, ValidateDetails_Monitor) {
 
 TEST_F(HidReportDescriptorTest, ValidateDetails_Mouse) {
   auto mouse = HidCollectionInfo::New();
-  mouse->usage = HidUsageAndPage::New(0x02, device::mojom::kPageGenericDesktop);
+  mouse->usage = HidUsageAndPage::New(0x02, mojom::kPageGenericDesktop);
   std::vector<HidCollectionInfoPtr> expected;
   expected.push_back(std::move(mouse));
   ValidateDetails(expected, false, 3, 0, 0, kMouse, kMouseSize);
@@ -131,13 +130,13 @@ TEST_F(HidReportDescriptorTest, ValidateDetails_Mouse) {
 
 TEST_F(HidReportDescriptorTest, ValidateDetails_LogitechUnifyingReceiver) {
   auto hidpp_short = HidCollectionInfo::New();
-  hidpp_short->usage = HidUsageAndPage::New(0x01, device::mojom::kPageVendor);
+  hidpp_short->usage = HidUsageAndPage::New(0x01, mojom::kPageVendor);
   hidpp_short->report_ids.push_back(0x10);
   auto hidpp_long = HidCollectionInfo::New();
-  hidpp_long->usage = HidUsageAndPage::New(0x02, device::mojom::kPageVendor);
+  hidpp_long->usage = HidUsageAndPage::New(0x02, mojom::kPageVendor);
   hidpp_long->report_ids.push_back(0x11);
   auto hidpp_dj = HidCollectionInfo::New();
-  hidpp_dj->usage = HidUsageAndPage::New(0x04, device::mojom::kPageVendor);
+  hidpp_dj->usage = HidUsageAndPage::New(0x04, mojom::kPageVendor);
   hidpp_dj->report_ids.push_back(0x20);
   hidpp_dj->report_ids.push_back(0x21);
 

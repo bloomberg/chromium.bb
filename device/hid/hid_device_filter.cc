@@ -38,8 +38,7 @@ void HidDeviceFilter::SetUsage(uint16_t usage) {
   usage_ = usage;
 }
 
-bool HidDeviceFilter::Matches(
-    const device::mojom::HidDeviceInfo& device_info) const {
+bool HidDeviceFilter::Matches(const mojom::HidDeviceInfo& device_info) const {
   if (vendor_id_set_) {
     if (device_info.vendor_id != vendor_id_) {
       return false;
@@ -70,9 +69,8 @@ bool HidDeviceFilter::Matches(
 }
 
 // static
-bool HidDeviceFilter::MatchesAny(
-    const device::mojom::HidDeviceInfo& device_info,
-    const std::vector<HidDeviceFilter>& filters) {
+bool HidDeviceFilter::MatchesAny(const mojom::HidDeviceInfo& device_info,
+                                 const std::vector<HidDeviceFilter>& filters) {
   for (const HidDeviceFilter& filter : filters) {
     if (filter.Matches(device_info)) {
       return true;
