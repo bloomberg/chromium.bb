@@ -519,6 +519,13 @@ public class BottomSheetContentController
         mSelectedItemId = navItemId;
         getMenu().findItem(mSelectedItemId).setChecked(true);
 
+        // Cancel clearing contents for switched tab model if showing contents other than Home.
+        // This is to prevent crash when bottom nav is clicked shortly after switching tab model.
+        // See crbug.com/780430 for more details.
+        if (mShouldClearContentsOnNextContentChange && mSelectedItemId != getHomeContentId()) {
+            mShouldClearContentsOnNextContentChange = false;
+        }
+
         BottomSheetContent newContent = getSheetContentForId(mSelectedItemId);
         mBottomSheet.showContent(newContent);
     }
