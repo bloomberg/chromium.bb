@@ -18,14 +18,14 @@ namespace {
 // thread than NetworkConnectionTracker's thread.
 void OnGetConnectionType(
     scoped_refptr<base::TaskRunner> task_runner,
-    const NetworkConnectionTracker::ConnectionTypeCallback& user_callback,
+    NetworkConnectionTracker::ConnectionTypeCallback user_callback,
     mojom::ConnectionType connection_type) {
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](NetworkConnectionTracker::ConnectionTypeCallback callback,
-             mojom::ConnectionType type) { callback.Run(type); },
-          user_callback, connection_type));
+             mojom::ConnectionType type) { std::move(callback).Run(type); },
+          std::move(user_callback), connection_type));
 }
 
 static const int32_t kConnectionTypeInvalid = -1;
@@ -78,9 +78,9 @@ bool NetworkConnectionTracker::GetConnectionType(
     return true;
   }
   if (!task_runner_->RunsTasksInCurrentSequence()) {
-    connection_type_callbacks_.push_back(
-        base::Bind(&OnGetConnectionType, base::ThreadTaskRunnerHandle::Get(),
-                   std::move(callback)));
+    connection_type_callbacks_.push_back(base::BindOnce(
+        &OnGetConnectionType, base::ThreadTaskRunnerHandle::Get(),
+        std::move(callback)));
   } else {
     connection_type_callbacks_.push_back(std::move(callback));
   }
@@ -124,7 +124,7 @@ void NetworkConnectionTracker::OnInitialConnectionType(
   base::subtle::NoBarrier_Store(&connection_type_,
                                 static_cast<base::subtle::Atomic32>(type));
   while (!connection_type_callbacks_.empty()) {
-    connection_type_callbacks_.front().Run(type);
+    std::move(connection_type_callbacks_.front()).Run(type);
     connection_type_callbacks_.pop_front();
   }
 }
