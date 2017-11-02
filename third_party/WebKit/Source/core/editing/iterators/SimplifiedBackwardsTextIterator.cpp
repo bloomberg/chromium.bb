@@ -75,12 +75,6 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
       start_offset_(0),
       end_node_(nullptr),
       end_offset_(0),
-      position_node_(nullptr),
-      position_start_offset_(0),
-      position_end_offset_(0),
-      text_offset_(0),
-      text_length_(0),
-      single_character_buffer_(0),
       have_passed_start_node_(false),
       should_handle_first_letter_(false),
       should_stop_(false) {
@@ -129,11 +123,6 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Init(Node* start_node,
   end_node_ = end_node;
   end_offset_ = end_offset;
 
-#if DCHECK_IS_ON()
-  // Need this just because of the assert.
-  position_node_ = end_node;
-#endif
-
   have_passed_start_node_ = false;
 
   Advance();
@@ -141,8 +130,6 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Init(Node* start_node,
 
 template <typename Strategy>
 void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Advance() {
-  DCHECK(position_node_);
-
   if (should_stop_)
     return;
 
@@ -152,8 +139,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Advance() {
     return;
   }
 
-  position_node_ = nullptr;
-  text_length_ = 0;
+  text_state_.ResetRunInformation();
 
   while (node_ && !have_passed_start_node_) {
     // Don't handle node if we start iterating at [node, 0].
@@ -173,7 +159,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Advance() {
       } else {
         handled_node_ = HandleNonTextNode();
       }
-      if (position_node_)
+      if (text_state_.PositionNode())
         return;
     }
 
@@ -188,7 +174,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Advance() {
           (!Strategy::LastChild(*node_) ||
            (node_ == end_node_ && !end_offset_))) {
         ExitNode();
-        if (position_node_) {
+        if (text_state_.PositionNode()) {
           handled_node_ = true;
           handled_children_ = true;
           return;
@@ -202,7 +188,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Advance() {
           break;
         fully_clipped_stack_.Pop();
         ExitNode();
-        if (position_node_) {
+        if (text_state_.PositionNode()) {
           handled_node_ = true;
           handled_children_ = true;
           return;
@@ -222,7 +208,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::Advance() {
     handled_node_ = false;
     handled_children_ = false;
 
-    if (position_node_)
+    if (text_state_.PositionNode())
       return;
   }
 }
@@ -239,25 +225,22 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::HandleTextNode() {
   if (!layout_object->HasTextBoxes() && text.length() > 0)
     return true;
 
-  position_end_offset_ = offset_;
+  const int position_end_offset = offset_;
   offset_ = start_offset;
-  position_node_ = node_;
-  position_start_offset_ = offset_;
-
-  DCHECK_LE(0, position_start_offset_ - offset_in_node);
-  DCHECK_LE(position_start_offset_ - offset_in_node,
+  const int position_start_offset = start_offset;
+  DCHECK_LE(0, position_start_offset - offset_in_node);
+  DCHECK_LE(position_start_offset - offset_in_node,
             static_cast<int>(text.length()));
-  DCHECK_LE(1, position_end_offset_ - offset_in_node);
-  DCHECK_LE(position_end_offset_ - offset_in_node,
+  DCHECK_LE(1, position_end_offset - offset_in_node);
+  DCHECK_LE(position_end_offset - offset_in_node,
             static_cast<int>(text.length()));
-  DCHECK_LE(position_start_offset_, position_end_offset_);
+  DCHECK_LE(position_start_offset, position_end_offset);
 
-  text_length_ = position_end_offset_ - position_start_offset_;
-  text_offset_ = position_start_offset_ - offset_in_node;
-  text_container_ = text;
-  single_character_buffer_ = 0;
-  CHECK_LE(static_cast<unsigned>(text_offset_ + text_length_), text.length());
-
+  const int text_length = position_end_offset - position_start_offset;
+  const int text_offset = position_start_offset - offset_in_node;
+  CHECK_LE(static_cast<unsigned>(text_offset + text_length), text.length());
+  text_state_.EmitText(node_, position_start_offset, position_end_offset, text,
+                       text_offset, text_offset + text_length);
   return !should_handle_first_letter_;
 }
 
@@ -360,12 +343,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::EmitCharacter(
     Node* node,
     int start_offset,
     int end_offset) {
-  single_character_buffer_ = c;
-  position_node_ = node;
-  position_start_offset_ = start_offset;
-  position_end_offset_ = end_offset;
-  text_offset_ = 0;
-  text_length_ = 1;
+  text_state_.SpliceBuffer(c, node, node, start_offset, end_offset);
 }
 
 template <typename Strategy>
@@ -383,24 +361,25 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::AdvanceRespectingRange(
 template <typename Strategy>
 Node* SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::StartContainer()
     const {
-  if (position_node_)
-    return position_node_;
+  if (text_state_.PositionNode())
+    return text_state_.PositionNode();
   return start_node_;
 }
 
 template <typename Strategy>
 int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::EndOffset() const {
-  if (position_node_)
-    return position_end_offset_;
+  if (text_state_.PositionNode())
+    return text_state_.PositionEndOffset();
   return start_offset_;
 }
 
 template <typename Strategy>
 PositionTemplate<Strategy>
 SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::StartPosition() const {
-  if (position_node_)
+  if (text_state_.PositionNode()) {
     return PositionTemplate<Strategy>::EditingPositionOf(
-        position_node_, position_start_offset_);
+        text_state_.PositionNode(), text_state_.PositionStartOffset());
+  }
   return PositionTemplate<Strategy>::EditingPositionOf(start_node_,
                                                        start_offset_);
 }
@@ -408,9 +387,10 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::StartPosition() const {
 template <typename Strategy>
 PositionTemplate<Strategy>
 SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::EndPosition() const {
-  if (position_node_)
-    return PositionTemplate<Strategy>::EditingPositionOf(position_node_,
-                                                         position_end_offset_);
+  if (text_state_.PositionNode()) {
+    return PositionTemplate<Strategy>::EditingPositionOf(
+        text_state_.PositionNode(), text_state_.PositionEndOffset());
+  }
   return PositionTemplate<Strategy>::EditingPositionOf(start_node_,
                                                        start_offset_);
 }
@@ -424,17 +404,9 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::IsInTextSecurityMode()
 template <typename Strategy>
 UChar SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::CharacterAt(
     unsigned index) const {
-  // TODO(xiaochengh): Mostly copied from TextIteratorTextState::characterAt.
-  // Should try to improve the code quality by reusing the code.
-  SECURITY_DCHECK(index < static_cast<unsigned>(length()));
-  if (!(index < static_cast<unsigned>(length())))
+  if (index >= text_state_.length())
     return 0;
-  if (single_character_buffer_) {
-    DCHECK_EQ(index, 0u);
-    DCHECK_EQ(length(), 1);
-    return single_character_buffer_;
-  }
-  return text_container_[text_offset_ + text_length_ - 1 - index];
+  return text_state_.CharacterAt(text_state_.length() - index - 1);
 }
 
 template <typename Strategy>
@@ -455,7 +427,7 @@ int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::CopyTextTo(
   if (IsBetweenSurrogatePair(end))
     ++end;
   int copied_length = end - position;
-  CopyCodeUnitsTo(output, position, copied_length);
+  text_state_.PrependTextTo(output, position, copied_length);
   return copied_length;
 }
 
@@ -463,31 +435,7 @@ template <typename Strategy>
 int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::CopyTextTo(
     BackwardsTextBuffer* output,
     int position) const {
-  return CopyTextTo(output, position, text_length_ - position);
-}
-
-template <typename Strategy>
-void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::CopyCodeUnitsTo(
-    BackwardsTextBuffer* output,
-    int position,
-    int copy_length) const {
-  DCHECK_GE(position, 0);
-  DCHECK_GE(copy_length, 0);
-  DCHECK_LE(position + copy_length, text_length_);
-  // Make sure there's no integer overflow.
-  DCHECK_GE(position + copy_length, position);
-  if (text_length_ == 0 || copy_length == 0)
-    return;
-  DCHECK(output);
-  if (single_character_buffer_) {
-    output->PushCharacters(single_character_buffer_, 1);
-    return;
-  }
-  int offset = text_offset_ + text_length_ - position - copy_length;
-  if (text_container_.Is8Bit())
-    output->PushRange(text_container_.Characters8() + offset, copy_length);
-  else
-    output->PushRange(text_container_.Characters16() + offset, copy_length);
+  return CopyTextTo(output, position, text_state_.length() - position);
 }
 
 template class CORE_TEMPLATE_EXPORT

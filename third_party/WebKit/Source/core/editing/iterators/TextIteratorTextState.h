@@ -33,6 +33,8 @@
 
 namespace blink {
 
+class BackwardsTextBuffer;
+
 class CORE_EXPORT TextIteratorTextState {
   STACK_ALLOCATED();
 
@@ -49,6 +51,9 @@ class CORE_EXPORT TextIteratorTextState {
   void AppendTextTo(ForwardsTextBuffer* output,
                     unsigned position,
                     unsigned length_to_append) const;
+  void PrependTextTo(BackwardsTextBuffer* output,
+                     unsigned position,
+                     unsigned length_to_prepend) const;
 
   void SpliceBuffer(UChar,
                     Node* text_node,
