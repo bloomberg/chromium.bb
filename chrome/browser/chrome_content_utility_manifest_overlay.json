@@ -10,7 +10,6 @@
           "chrome::mojom::ResourceUsageReporter",
           "chrome::mojom::SafeArchiveAnalyzer",
           "chrome::mojom::ShellHandler",
-          "chrome::mojom::ZipFileCreator",
           "extensions::mojom::ExtensionUnpacker",
           "extensions::mojom::ManifestParser",
           "extensions::mojom::MediaParser",

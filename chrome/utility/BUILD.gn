@@ -169,6 +169,7 @@ static_library("utility") {
       "//ash/autoclick/mus:lib",
       "//ash/mus:lib",
       "//ash/touch_hud/mus:lib",
+      "//chrome/services/file_util:lib",
     ]
   }
 

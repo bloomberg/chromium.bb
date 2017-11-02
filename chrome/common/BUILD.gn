@@ -683,10 +683,6 @@ mojom("mojo_bindings") {
     sources += [ "conflicts/module_event_sink_win.mojom" ]
   }
 
-  if (is_chromeos) {
-    sources += [ "zip_file_creator.mojom" ]
-  }
-
   if (safe_browsing_mode == 1) {
     sources += [ "safe_browsing/safe_archive_analyzer.mojom" ]
   }
