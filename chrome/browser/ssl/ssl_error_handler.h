@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
@@ -40,6 +41,11 @@ class WebContents;
 namespace network_time {
 class NetworkTimeTracker;
 }
+
+extern const base::Feature kMITMSoftwareInterstitial;
+extern const base::Feature kCaptivePortalInterstitial;
+extern const base::Feature kCaptivePortalCertificateList;
+extern const base::Feature kSuperfishInterstitial;
 
 // This class is responsible for deciding what type of interstitial to display
 // for an SSL validation error and actually displaying it. The display of the
