@@ -7093,31 +7093,6 @@
       }
     ]
   },
-  "WebKit Linux - RandomOrder": {
-    "isolated_scripts": [
-      {
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "hard_timeout": 900,
-          "shards": 18
-        }
-      }
-    ]
-  },
   "WebKit Linux layout_ng Dummy Builder": {
     "isolated_scripts": [
       {
@@ -7198,87 +7173,6 @@
           ],
           "hard_timeout": 900,
           "shards": 15
-        }
-      }
-    ]
-  },
-  "WebKit Mac - RandomOrder": {
-    "isolated_scripts": [
-      {
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.9.5",
-              "pool": "Chrome"
-            },
-            {
-              "gpu": "none",
-              "os": "Mac-10.10.5",
-              "pool": "Chrome"
-            },
-            {
-              "gpu": "none",
-              "os": "Mac-10.11.6",
-              "pool": "Chrome"
-            },
-            {
-              "gpu": "8086:0d26",
-              "hidpi": "1",
-              "os": "Mac-10.11.6",
-              "pool": "Chrome-perf"
-            },
-            {
-              "gpu": "8086:0a2e",
-              "hidpi": "0",
-              "os": "Mac-10.12.6",
-              "pool": "Chrome"
-            },
-            {
-              "gpu": "8086:0d26",
-              "hidpi": "1",
-              "os": "Mac-10.12.6",
-              "pool": "Chrome"
-            }
-          ],
-          "shards": 2
-        }
-      }
-    ]
-  },
-  "WebKit Win - RandomOrder": {
-    "isolated_scripts": [
-      {
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-10586"
-            },
-            {
-              "os": "Windows-7-SP1"
-            }
-          ],
-          "hard_timeout": 900,
-          "shards": 10
         }
       }
     ]
