@@ -18,7 +18,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
  * Chromium implementation of CookieManager -- forwards calls to the
  * chromium internal implementation.
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings({"deprecation", "NoSynchronizedMethodCheck"})
 @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
 public class CookieManagerAdapter extends CookieManager {
     private static final String TAG = "CookieManager";
