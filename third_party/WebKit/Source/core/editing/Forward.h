@@ -4,6 +4,9 @@
 
 // This file contains forward declarations of template classes in editing/
 
+#ifndef Forward_h
+#define Forward_h
+
 namespace blink {
 
 enum class TextAffinity;
@@ -51,3 +54,5 @@ using VisibleSelectionInFlatTree =
     VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
 
 }  // namespace blink
+
+#endif  // Forward_h
