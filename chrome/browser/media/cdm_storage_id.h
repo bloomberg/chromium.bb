@@ -10,22 +10,25 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "url/origin.h"
+
+namespace url {
+class Origin;
+}
 
 // This handles computing the Storage Id for platform verification.
-namespace cdm_storage_id {
+namespace chrome {
 
 using CdmStorageIdCallback =
     base::OnceCallback<void(const std::vector<uint8_t>& storage_id)>;
 
-// Compute the Storage Id based on |salt| and |origin|. This may be
-// asynchronous, so call |callback| with the result. If Storage Id is not
-// supported on the current platform, an empty string will be passed to
-// |callback|.
-void ComputeStorageId(const std::vector<uint8_t>& salt,
+// Computes the Storage Id based on |profile_salt|, |origin|, and some
+// platform specific values. This may be asynchronous, so call |callback|
+// with the result. If Storage Id is not supported on the current platform,
+// a compile time error will be generated.
+void ComputeStorageId(const std::vector<uint8_t>& profile_salt,
                       const url::Origin& origin,
                       CdmStorageIdCallback callback);
 
-}  // namespace cdm_storage_id
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_CDM_STORAGE_ID_H_

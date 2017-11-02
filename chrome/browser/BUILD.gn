@@ -607,8 +607,6 @@ split_static_library("browser") {
     "media/cast_remoting_connector.h",
     "media/cast_remoting_sender.cc",
     "media/cast_remoting_sender.h",
-    "media/cdm_storage_id.cc",
-    "media/cdm_storage_id.h",
     "media/media_access_handler.cc",
     "media/media_access_handler.h",
     "media/media_device_id_salt.cc",
@@ -631,6 +629,8 @@ split_static_library("browser") {
     "media/midi_sysex_permission_context.h",
     "media/output_protection_proxy.cc",
     "media/output_protection_proxy.h",
+    "media/platform_verification_impl.cc",
+    "media/platform_verification_impl.h",
     "media/router/media_router_feature.cc",
     "media/router/media_router_feature.h",
     "media/webrtc/desktop_media_list.h",
@@ -3518,6 +3518,8 @@ split_static_library("browser") {
     ]
     if (enable_cdm_storage_id) {
       sources += [
+        "media/cdm_storage_id.cc",
+        "media/cdm_storage_id.h",
         "media/cdm_storage_id_key.cc",
         "media/cdm_storage_id_key.h",
       ]
