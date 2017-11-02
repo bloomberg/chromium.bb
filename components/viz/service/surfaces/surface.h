@@ -160,7 +160,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   // Returns a number that increments by 1 every time a new frame is enqueued.
   uint64_t GetActiveFrameIndex() const {
-    return active_frame_data_->frame_index;
+    return active_frame_data_ ? active_frame_data_->frame_index : 0;
   }
 
   void TakeLatencyInfo(std::vector<ui::LatencyInfo>* latency_info);
