@@ -86,6 +86,9 @@ void ContentBrowserTest::SetUp() {
   ui::InitializeInputMethodForTesting();
 #endif
 
+  // Please setup FieldTrial at SetUpOnMainThread.
+  DCHECK_EQ(base::FieldTrialList::GetFieldTrialCount(), 0u);
+
   BrowserTestBase::SetUp();
 }
 

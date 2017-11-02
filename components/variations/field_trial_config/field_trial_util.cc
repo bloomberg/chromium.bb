@@ -131,7 +131,12 @@ bool AssociateParamsFromString(const std::string& varations_string) {
       std::string value = UnescapeValue(key_values[i + 1]);
       params[key] = value;
     }
-    AssociateVariationParams(trial, group, params);
+    bool result = AssociateVariationParams(trial, group, params);
+    if (!result) {
+      DLOG(ERROR) << "Failed to associate variation params for group \""
+                  << group << "\" in trial \"" << trial << "\"";
+      return false;
+    }
   }
   return true;
 }

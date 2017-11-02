@@ -888,40 +888,26 @@ class DownloadContentTest : public ContentBrowserTest {
 // Test fixture for parallel downloading.
 class ParallelDownloadTest : public DownloadContentTest {
  protected:
-  void SetUp() override {
-    field_trial_list_ = std::make_unique<base::FieldTrialList>(
-        std::make_unique<base::MockEntropyProvider>());
-    SetupConfig();
-    DownloadContentTest::SetUp();
+  ParallelDownloadTest() {}
+
+  ~ParallelDownloadTest() override {}
+
+  void SetUpOnMainThread() override {
+    std::map<std::string, std::string> params = {
+        {content::kMinSliceSizeFinchKey, "1"},
+        {content::kParallelRequestCountFinchKey,
+         base::IntToString(kTestRequestCount)},
+        {content::kParallelRequestDelayFinchKey, "0"},
+        {content::kParallelRequestRemainingTimeFinchKey, "0"}};
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kParallelDownloading, params);
+    DownloadContentTest::SetUpOnMainThread();
   }
 
  private:
-  // TODO(xingliu): Use this technique in parallel download unit tests to load
-  // the finch configuration.
-  void SetupConfig() {
-    const std::string kTrialName = "trial_name";
-    const std::string kGroupName = "group_name";
-
-    std::map<std::string, std::string> params;
-    params[content::kMinSliceSizeFinchKey] = "1";
-    params[content::kParallelRequestCountFinchKey] =
-        base::IntToString(kTestRequestCount);
-    params[content::kParallelRequestDelayFinchKey] = "0";
-    params[content::kParallelRequestRemainingTimeFinchKey] = "0";
-
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-    std::unique_ptr<base::FeatureList> feature_list =
-        std::make_unique<base::FeatureList>();
-    feature_list->RegisterFieldTrialOverride(
-        features::kParallelDownloading.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
-  }
-
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ParallelDownloadTest);
 };
 
 }  // namespace
