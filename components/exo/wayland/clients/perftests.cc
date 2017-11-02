@@ -35,10 +35,26 @@ TEST_F(WaylandClientPerfTests, Simple) {
                          "frames/s", true);
 }
 
-TEST_F(WaylandClientPerfTests, Blur) {
+class WaylandClientBlurPerfTests
+    : public WaylandClientPerfTests,
+      public ::testing::WithParamInterface<double> {
+ public:
+  WaylandClientBlurPerfTests() = default;
+  ~WaylandClientBlurPerfTests() override = default;
+
+  double max_sigma() const { return GetParam(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WaylandClientBlurPerfTests);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        WaylandClientBlurPerfTests,
+                        testing::Values(4.0, 15.0));
+
+TEST_P(WaylandClientBlurPerfTests, BlurSigma) {
   const int kWarmUpFrames = 20;
   const int kTestFrames = 600;
-  const double kMaxSigma = 4.0;
   const bool kOffscreen = true;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -51,66 +67,88 @@ TEST_F(WaylandClientPerfTests, Blur) {
   client.Run(0, 0, 0, false, kWarmUpFrames);
 
   auto start_time = base::Time::Now();
-  client.Run(0, 0, kMaxSigma, kOffscreen, kTestFrames);
+  client.Run(0, 0, max_sigma(), kOffscreen, kTestFrames);
   auto time_delta = base::Time::Now() - start_time;
   float fps = kTestFrames / time_delta.InSecondsF();
-  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma0x0", fps,
+  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma0", fps,
                          "frames/s", true);
 
   start_time = base::Time::Now();
-  client.Run(0, 5, kMaxSigma, kOffscreen, kTestFrames);
+  client.Run(5, 5, max_sigma(), kOffscreen, kTestFrames);
   time_delta = base::Time::Now() - start_time;
   fps = kTestFrames / time_delta.InSecondsF();
-  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma0x5", fps,
+  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma5", fps,
                          "frames/s", true);
 
   start_time = base::Time::Now();
-  client.Run(0, 10, kMaxSigma, kOffscreen, kTestFrames);
+  client.Run(15, 15, max_sigma(), kOffscreen, kTestFrames);
   time_delta = base::Time::Now() - start_time;
   fps = kTestFrames / time_delta.InSecondsF();
-  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma0x10", fps,
+  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma15", fps,
                          "frames/s", true);
 
   start_time = base::Time::Now();
-  client.Run(0, 25, kMaxSigma, kOffscreen, kTestFrames);
+  client.Run(30, 30, max_sigma(), kOffscreen, kTestFrames);
   time_delta = base::Time::Now() - start_time;
   fps = kTestFrames / time_delta.InSecondsF();
-  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma0x25", fps,
+  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma30", fps,
                          "frames/s", true);
 
   start_time = base::Time::Now();
-  client.Run(0, 50, kMaxSigma, kOffscreen, kTestFrames);
+  client.Run(50, 50, max_sigma(), kOffscreen, kTestFrames);
   time_delta = base::Time::Now() - start_time;
   fps = kTestFrames / time_delta.InSecondsF();
-  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma0x50", fps,
+  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma50", fps,
+                         "frames/s", true);
+}
+
+TEST_P(WaylandClientBlurPerfTests, BlurSigmaY) {
+  const int kWarmUpFrames = 20;
+  const int kTestFrames = 600;
+  const bool kOffscreen = true;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  exo::wayland::clients::ClientBase::InitParams params;
+  EXPECT_TRUE(params.FromCommandLine(*command_line));
+
+  exo::wayland::clients::Blur client;
+  EXPECT_TRUE(client.Init(params));
+
+  client.Run(0, 0, 0, false, kWarmUpFrames);
+
+  auto start_time = base::Time::Now();
+  client.Run(0, 0, max_sigma(), kOffscreen, kTestFrames);
+  auto time_delta = base::Time::Now() - start_time;
+  float fps = kTestFrames / time_delta.InSecondsF();
+  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigmaY0", fps,
                          "frames/s", true);
 
   start_time = base::Time::Now();
-  client.Run(5, 5, kMaxSigma, kOffscreen, kTestFrames);
+  client.Run(0, 5, max_sigma(), kOffscreen, kTestFrames);
   time_delta = base::Time::Now() - start_time;
   fps = kTestFrames / time_delta.InSecondsF();
-  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma5x5", fps,
+  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigmaY5", fps,
                          "frames/s", true);
 
   start_time = base::Time::Now();
-  client.Run(15, 15, kMaxSigma, kOffscreen, kTestFrames);
+  client.Run(0, 10, max_sigma(), kOffscreen, kTestFrames);
   time_delta = base::Time::Now() - start_time;
   fps = kTestFrames / time_delta.InSecondsF();
-  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma15x15", fps,
+  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigmaY10", fps,
                          "frames/s", true);
 
   start_time = base::Time::Now();
-  client.Run(30, 30, kMaxSigma, kOffscreen, kTestFrames);
+  client.Run(0, 25, max_sigma(), kOffscreen, kTestFrames);
   time_delta = base::Time::Now() - start_time;
   fps = kTestFrames / time_delta.InSecondsF();
-  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma30x30", fps,
+  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigmaY25", fps,
                          "frames/s", true);
 
   start_time = base::Time::Now();
-  client.Run(50, 50, kMaxSigma, kOffscreen, kTestFrames);
+  client.Run(0, 50, max_sigma(), kOffscreen, kTestFrames);
   time_delta = base::Time::Now() - start_time;
   fps = kTestFrames / time_delta.InSecondsF();
-  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigma50x50", fps,
+  perf_test::PrintResult("WaylandClientPerfTests", "", "BlurSigmaY50", fps,
                          "frames/s", true);
 }
 
