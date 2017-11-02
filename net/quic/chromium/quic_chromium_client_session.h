@@ -589,6 +589,12 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   int yield_after_packets_;
   QuicTime::Delta yield_after_duration_;
 
+  base::TimeTicks most_recent_path_degrading_timestamp_;
+  base::TimeTicks most_recent_network_disconnected_timestamp_;
+
+  int most_recent_write_error_;
+  base::TimeTicks most_recent_write_error_timestamp_;
+
   std::unique_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
   std::vector<std::unique_ptr<DatagramClientSocket>> sockets_;

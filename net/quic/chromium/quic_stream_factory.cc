@@ -706,10 +706,6 @@ QuicStreamFactory::QuicStreamFactory(
       ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
       reduced_ping_timeout_(
           QuicTime::Delta::FromSeconds(reduced_ping_timeout_seconds)),
-      most_recent_path_degrading_timestamp_(base::TimeTicks()),
-      most_recent_network_disconnected_timestamp_(base::TimeTicks()),
-      most_recent_write_error_(0),
-      most_recent_write_error_timestamp_(base::TimeTicks()),
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),
@@ -1174,27 +1170,6 @@ void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
 
 void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_MADE_DEFAULT);
-  if (most_recent_path_degrading_timestamp_ != base::TimeTicks()) {
-    if (most_recent_network_disconnected_timestamp_ != base::TimeTicks()) {
-      // NetworkDiscconected happens before NetworkMadeDefault, the platform
-      // is dropping WiFi.
-      base::TimeTicks now = base::TimeTicks::Now();
-      base::TimeDelta disconnection_duration =
-          now - most_recent_network_disconnected_timestamp_;
-      base::TimeDelta degrading_duration =
-          now - most_recent_path_degrading_timestamp_;
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.QuicNetworkDisconnectionDuration",
-                                 disconnection_duration,
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(10), 100);
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Net.QuicNetworkDegradingDurationTillNewNetworkMadeDefault",
-          degrading_duration, base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromMinutes(10), 100);
-      most_recent_network_disconnected_timestamp_ = base::TimeTicks();
-    }
-    most_recent_path_degrading_timestamp_ = base::TimeTicks();
-  }
 
   if (!migrate_sessions_on_network_change_)
     return;
@@ -1214,30 +1189,6 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
 
 void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_DISCONNECTED);
-  if (most_recent_path_degrading_timestamp_ != base::TimeTicks()) {
-    most_recent_network_disconnected_timestamp_ = base::TimeTicks::Now();
-    base::TimeDelta degrading_duration =
-        most_recent_network_disconnected_timestamp_ -
-        most_recent_path_degrading_timestamp_;
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Net.QuicNetworkDegradingDurationTillDisconnected", degrading_duration,
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
-        100);
-  }
-  if (most_recent_write_error_timestamp_ != base::TimeTicks()) {
-    base::TimeDelta write_error_to_disconnection_gap =
-        most_recent_network_disconnected_timestamp_ -
-        most_recent_write_error_timestamp_;
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Net.QuicNetworkGapBetweenWriteErrorAndDisconnection",
-        write_error_to_disconnection_gap, base::TimeDelta::FromMilliseconds(1),
-        base::TimeDelta::FromMinutes(10), 100);
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Net.QuicSession.WriteError.NetworkDisconnected",
-        -most_recent_write_error_);
-    most_recent_write_error_ = 0;
-    most_recent_write_error_timestamp_ = base::TimeTicks();
-  }
 
   if (!migrate_sessions_on_network_change_)
     return;
@@ -1269,16 +1220,6 @@ NetworkHandle QuicStreamFactory::FindAlternateNetwork(
       return new_network;
   }
   return NetworkChangeNotifier::kInvalidNetworkHandle;
-}
-
-void QuicStreamFactory::CollectDataOnWriteError(int error_code) {
-  most_recent_write_error_timestamp_ = base::TimeTicks::Now();
-  most_recent_write_error_ = error_code;
-}
-
-void QuicStreamFactory::CollectDataOnPathDegrading() {
-  if (most_recent_path_degrading_timestamp_ == base::TimeTicks())
-    most_recent_path_degrading_timestamp_ = base::TimeTicks::Now();
 }
 
 std::unique_ptr<DatagramClientSocket> QuicStreamFactory::CreateSocket(
