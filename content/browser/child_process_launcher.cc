@@ -134,8 +134,10 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
   // However, if GetTerminationStatus didn't reap the child (because it was
   // still running), we'll need to Terminate via ProcessWatcher. So we can't
   // close the handle here.
-  if (termination_status_ != base::TERMINATION_STATUS_STILL_RUNNING)
+  if (termination_status_ != base::TERMINATION_STATUS_STILL_RUNNING) {
+    process_.process.Exited(exit_code_);
     process_.process.Close();
+  }
 
   return termination_status_;
 }

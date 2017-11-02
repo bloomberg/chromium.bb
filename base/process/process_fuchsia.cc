@@ -203,6 +203,8 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
   return true;
 }
 
+void Process::Exited(int exit_code) const {}
+
 bool Process::IsProcessBackgrounded() const {
   // See SetProcessBackgrounded().
   DCHECK(IsValid());
