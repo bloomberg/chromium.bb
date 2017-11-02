@@ -126,12 +126,7 @@ class AppWindow : public ui::PlatformWindowDelegate {
   // PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
   void OnDamageRect(const gfx::Rect& damaged_region) override {}
-  void DispatchEvent(ui::Event* event) override {
-    if (event->IsKeyEvent() && event->AsKeyEvent()->code() == ui::DomCode::US_Q)
-      Quit();
-    else
-      vr_->HandleInput(event);
-  }
+  void DispatchEvent(ui::Event* event) override { vr_->HandleInput(event); }
   void OnCloseRequest() override { Quit(); }
   void OnClosed() override {}
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override {}
