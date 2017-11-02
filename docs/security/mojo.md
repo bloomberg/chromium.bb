@@ -20,27 +20,28 @@ that needs to be maintained in sync.
 **_Good_**
 
 ```c++
-interface FrameFactory {
-  CreateFrame(NavigationHost, MediaHost, PrintingHost) => (Frame);
+interface TeleporterFactory {
+  Create(Location start, Location end) => (Teleporter);
 };
-interface Frame {
-  // ...
+
+interface Teleporter {
+  TeleportGoat(Goat) = ();
 };
 ```
 
 **_Bad_**
 
 ```c++
-interface Frame {
-  // Bad: comments will need to explicitly call out that these must be called
-  // to set the host objects before using any other interface methods.
+interface Teleporter {
+  // Bad: comments will need to explicitly call out that both locations need to
+  // be bound before calling TeleportGoat()!
   //
-  // If untrustworthy processes can talk to trustworthy processes, the Frame
-  // implementation will also need to handle the case where the host objects are
-  // not yet bound. Double bad!
-  BindNavigationHost(NavigationHost);
-  BindMediaHost(MediaHost);
-  BindPrintingHost(PrintingHost);
+  // In addition, if untrustworthy processes can talk to trustworthy processes,
+  // the Teleporter implementation will need to also handle the case where the
+  // Location objects are not yet bound.
+  SetStart(Location);
+  SetEnd(Location);
+  TeleportGoat(Goat) = ();
 };
 ```
 
@@ -49,20 +50,38 @@ Similarly, strive to make methods focused. Do not overuse optional types.
 **_Good_**
 
 ```c++
-interface Panel {
-  UpdateTitle(string);
-  UpdateIcon(skia.mojom.Bitmap);
-  UpdateText(string);
+struct TeleporterStats {
+  AnimalStats animal_stats;
+  FungiStats fungi_stats;
+  GoatStats goat_stats;
+  PlantStats plant_stats;
+};
+
+interface Teleporter {
+  TeleportAnimal(Animal) => ();
+  TeleportFungi(Fungi) => ();
+  TeleportGoat(Goat) = ();
+  TeleportPlant(Plant) => ();
+
+  // TeleportStats is only non-null if success is true.
+  GetStats() => (bool success, TeleporterStats?);
 };
 ```
 
 **_Bad_**
 
 ```c++
-interface Panel {
-  // Updates window attributes.
-  // Bad: it's unclear what combination of arguments is valid.
-  Update(string? title, skia.mojom.Bitmap? icon, string? text);
+interface Teleporter {
+  // The intent of four optional arguments is unclear: can this call teleport
+  // multiple objects of different types at once, or is the caller only
+  // supposed to only pass one non-null argument per call?
+  Teleport(Animal?, Fungi?, Goat?, Plant?) => ();
+
+  // Does this return all stats if sucess is true? Or just the categories that
+  // the teleporter already has stats for? The intent is uncertain, so wrapping
+  // the disparate values into a result struct would be cleaner.
+  GetStats() =>
+      (bool success, AnimalStats?, FungiStats?, PlantStats?, FungiStats?);
 };
 ```
 
@@ -80,26 +99,25 @@ information through interfaces and how they interact to implement the feature.
 **_Good_**
 
 ```c++
-// Interface for controlling a goat teleporter from any process. Before
-// teleporting a goat, both the entrance and the exit must be bound to a
-// location.
-interface GoatTeleporter {
-  // Binds the entrance and exit, respectively. The entrance and exit
-  // may not be bound to the same location.
-  BindEntrance(LocationID) => ();
-  BindExit(LocationID) => ();
-  // Goats can be teleported from any process.
-  Teleport(Goat) => 0;
-};
-```
+// Interface for controlling a teleporter. Lives in the browser process, and
+// used to implement the Teleportation over Mojo IPC RFC.
+interface Teleporter {
+  // Teleportation helpers for different taxonomic kingdoms. Teleportation is
+  // not complete until the reply callback is invoked. The caller must NOT
+  // release the sender side resources until the reply callback runs; releasing
+  // the resources early will cause splinching.
+  TeleportAnimal(Animal) => ();
+  TeleportFungi(Fungi) => ();
+  // Goats require a specialized teleportation channel distinct from
+  // TeleportAnimal to ensure goatiness isolation.
+  TeleportGoat(Goat) => ();
+  TeleportPlant(Plant) => ();
 
-**_Bad_**
-
-```c++
-interface GoatTeleporter {
-  BindEntrance(LocationID) => ();
-  BindExit(LocationID) => ();
-  Teleport(Goat) => 0;
+  // Returns current teleportation stats. On failure (e.g. a teleportation
+  // operation is currently in progress) success will be false and a null stats
+  // object will be returned.
+  GetStats() =>
+      (bool success, TeleportationStats?);
 };
 ```
 
