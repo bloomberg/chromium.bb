@@ -67,7 +67,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                             const LayoutPoint&,
                                             const LayoutRect&);
   void PaintAllPhasesAtomically(const PaintInfo&, const LayoutPoint&);
-  void PaintChildren(const Vector<std::unique_ptr<const NGPaintFragment>>&,
+  void PaintChildren(const Vector<std::unique_ptr<NGPaintFragment>>&,
                      const PaintInfo&,
                      const LayoutPoint&);
   void PaintText(const NGPaintFragment&,
@@ -91,7 +91,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   bool VisibleToHitTestRequest(const HitTestRequest&) const;
   bool HitTestChildren(HitTestResult&,
-                       const Vector<std::unique_ptr<const NGPaintFragment>>&,
+                       const Vector<std::unique_ptr<NGPaintFragment>>&,
                        const HitTestLocation& location_in_container,
                        const LayoutPoint& accumulated_offset,
                        HitTestAction);

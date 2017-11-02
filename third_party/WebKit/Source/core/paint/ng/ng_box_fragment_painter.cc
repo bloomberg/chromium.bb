@@ -326,7 +326,7 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
 }
 
 void NGBoxFragmentPainter::PaintChildren(
-    const Vector<std::unique_ptr<const NGPaintFragment>>& children,
+    const Vector<std::unique_ptr<NGPaintFragment>>& children,
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
   PaintInfo child_info(paint_info);
@@ -593,12 +593,12 @@ bool NGBoxFragmentPainter::HitTestTextFragment(
 
 bool NGBoxFragmentPainter::HitTestChildren(
     HitTestResult& result,
-    const Vector<std::unique_ptr<const NGPaintFragment>>& children,
+    const Vector<std::unique_ptr<NGPaintFragment>>& children,
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
     HitTestAction action) {
   for (auto iter = children.rbegin(); iter != children.rend(); iter++) {
-    const std::unique_ptr<const NGPaintFragment>& child = *iter;
+    const std::unique_ptr<NGPaintFragment>& child = *iter;
 
     // TODO(layout-dev): Handle self painting layers.
     const NGPhysicalFragment& fragment = child->PhysicalFragment();
