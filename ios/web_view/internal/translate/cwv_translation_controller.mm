@@ -12,8 +12,10 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
+#import "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #import "ios/web_view/internal/translate/cwv_translation_language_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
+#include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_translation_controller_delegate.h"
 #import "ios/web_view/public/cwv_translation_policy.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -77,7 +79,9 @@ const NSInteger CWVTranslationErrorScriptLoadError =
       ios_web_view::WebViewTranslateClient::FromWebState(_webState)
           ->GetTranslateDriver()
           ->CreateLanguageDetectionCallback(),
-      nullptr /* url_language_histogram */);
+      ios_web_view::WebViewUrlLanguageHistogramFactory::GetForBrowserState(
+          ios_web_view::WebViewBrowserState::FromBrowserState(
+              _webState->GetBrowserState())));
 
   _translateClient =
       ios_web_view::WebViewTranslateClient::FromWebState(_webState);
