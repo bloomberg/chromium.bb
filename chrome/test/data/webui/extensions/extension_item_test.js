@@ -162,12 +162,13 @@ cr.define('extension_item_tests', function() {
       mockDelegate.testClickingCalls(
           item.$$('#repair-button'), 'repairItem', [item.data.id]);
 
-      item.set('data.disableReasons.corruptInstall', false);
+      item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
       Polymer.dom.flush();
       mockDelegate.testClickingCalls(
           item.$$('#terminated-reload-button'), 'reloadItem', [item.data.id]);
 
       item.set('data.location', chrome.developerPrivate.Location.UNPACKED);
+      item.set('data.state', chrome.developerPrivate.ExtensionState.ENABLED);
       Polymer.dom.flush();
       mockDelegate.testClickingCalls(
           item.$$('#dev-reload-button'), 'reloadItem', [item.data.id]);
