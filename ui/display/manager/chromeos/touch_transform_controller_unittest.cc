@@ -797,7 +797,6 @@ TEST_F(TouchTransformControllerTest, PillarBoxingUserTouchCalibration) {
   // mode.
   const gfx::Size kNativeDisplaySize(2560, 1600);
   const gfx::Size kDisplaySize(1920, 1400);
-  const gfx::Size kTouchSize(1920, 1400);
 
   ui::TouchscreenDevice internal_touchscreen =
       CreateTouchscreenDevice(kTouchId1, kDisplaySize);
