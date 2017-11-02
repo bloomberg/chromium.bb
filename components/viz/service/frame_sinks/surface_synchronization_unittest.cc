@@ -1747,5 +1747,28 @@ TEST_F(SurfaceSynchronizationTest, PendingSurfaceKeptAlive) {
   EXPECT_FALSE(GetSurfaceForId(parent_id1)->HasPendingFrame());
 }
 
+// Tests getting the correct active frame index.
+TEST_F(SurfaceSynchronizationTest, ActiveFrameIndex) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId child_id2 = MakeSurfaceId(kChildFrameSink2, 1);
+
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id1, child_id2}, empty_surface_ids(),
+                          std::vector<TransferableResource>()));
+
+  // parent_support is blocked on |child_id1| and |child_id2|.
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_EQ(0u, parent_surface()->GetActiveFrameIndex());
+
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeCompositorFrame());
+  child_support2().SubmitCompositorFrame(child_id2.local_surface_id(),
+                                         MakeCompositorFrame());
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_EQ(3u, parent_surface()->GetActiveFrameIndex());
+}
+
 }  // namespace test
 }  // namespace viz
