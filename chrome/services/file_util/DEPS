@@ -1,0 +1,4 @@
+include_rules = [
+  "+components/filesystem",
+  "+third_party/zlib/google",
+]

@@ -3254,8 +3254,8 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         V8 Proxy Resolver
       </message>
       <if expr="chromeos">
-        <message name="IDS_UTILITY_PROCESS_ZIP_FILE_CREATOR_NAME" desc="The name of the utility process used for creating zip files.">
-          Zip File Creator
+        <message name="IDS_UTILITY_PROCESS_FILE_UTILITY_NAME" desc="The name of the utility process used for various Chrome specific file operations.">
+          Chrome File Utilities
         </message>
       </if>
       <if expr="not is_android">

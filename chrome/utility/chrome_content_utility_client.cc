@@ -32,7 +32,6 @@
 #include "printing/features/features.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/zlib/google/zip.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/common/resource_usage_reporter.mojom.h"
@@ -46,7 +45,8 @@
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
-#include "chrome/common/zip_file_creator.mojom.h"
+#include "chrome/services/file_util/file_util_service.h"
+#include "chrome/services/file_util/public/interfaces/constants.mojom.h"
 #endif
 
 #if defined(OS_WIN)
@@ -129,40 +129,6 @@ class FilePatcherImpl : public chrome::mojom::FilePatcher {
 
   DISALLOW_COPY_AND_ASSIGN(FilePatcherImpl);
 };
-
-#if defined(OS_CHROMEOS)
-class ZipFileCreatorImpl : public chrome::mojom::ZipFileCreator {
- public:
-  ZipFileCreatorImpl() = default;
-  ~ZipFileCreatorImpl() override = default;
-
-  static void Create(chrome::mojom::ZipFileCreatorRequest request) {
-    mojo::MakeStrongBinding(base::MakeUnique<ZipFileCreatorImpl>(),
-                            std::move(request));
-  }
-
- private:
-  // chrome::mojom::ZipFileCreator:
-  void CreateZipFile(const base::FilePath& source_dir,
-                     const std::vector<base::FilePath>& source_relative_paths,
-                     base::File zip_file,
-                     const CreateZipFileCallback& callback) override {
-    DCHECK(zip_file.IsValid());
-
-    for (const auto& path : source_relative_paths) {
-      if (path.IsAbsolute() || path.ReferencesParent()) {
-        callback.Run(false);
-        return;
-      }
-    }
-
-    callback.Run(zip::ZipFiles(source_dir, source_relative_paths,
-                               zip_file.GetPlatformFile()));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ZipFileCreatorImpl);
-};
-#endif  // defined(OS_CHROMEOS)
 
 #if defined(FULL_SAFE_BROWSING)
 class SafeArchiveAnalyzerImpl : public chrome::mojom::SafeArchiveAnalyzer {
@@ -291,10 +257,6 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
         base::ThreadTaskRunnerHandle::Get());
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
-    registry->AddInterface(base::Bind(&ZipFileCreatorImpl::Create),
-                           base::ThreadTaskRunnerHandle::Get());
-#endif
 #if defined(FULL_SAFE_BROWSING)
     registry->AddInterface(base::Bind(&SafeArchiveAnalyzerImpl::Create),
                            base::ThreadTaskRunnerHandle::Get());
@@ -362,6 +324,14 @@ void ChromeContentUtilityClient::RegisterServices(
     service_manager::EmbeddedServiceInfo service_info;
     service_info.factory = base::Bind(&chrome::UtilWinService::CreateService);
     services->emplace(chrome::mojom::kUtilWinServiceName, service_info);
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  {
+    service_manager::EmbeddedServiceInfo service_info;
+    service_info.factory = base::Bind(&chrome::FileUtilService::CreateService);
+    services->emplace(chrome::mojom::kFileUtilServiceName, service_info);
   }
 #endif
 
