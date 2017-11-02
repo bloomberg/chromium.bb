@@ -336,6 +336,13 @@ void BlobRegistryImpl::BlobUnderConstruction::ResolvedAllBlobDependencies() {
     return;
   }
 
+  // The blob might no longer have any references, in which case it may no
+  // longer exist. If that happens there is no need to transport data.
+  if (!context()->registry().HasEntry(uuid())) {
+    MarkAsFinishedAndDeleteSelf();
+    return;
+  }
+
   auto blob_uuid_it = referenced_blob_uuids_.begin();
   for (const auto& element : elements_) {
     if (element->is_bytes()) {
