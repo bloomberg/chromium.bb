@@ -199,7 +199,7 @@ static INLINE int aom_read_symbol_(aom_reader *r, aom_cdf_prob *cdf,
                                    int nsymbs ACCT_STR_PARAM) {
   int ret;
   ret = aom_read_cdf(r, cdf, nsymbs, ACCT_STR_NAME);
-  update_cdf(cdf, ret, nsymbs);
+  if (r->allow_update_cdf) update_cdf(cdf, ret, nsymbs);
   return ret;
 }
 
@@ -210,7 +210,7 @@ static INLINE int aom_read_bin_(aom_reader *r, aom_cdf_prob *cdf,
   aom_cdf_prob this_cdf[3] = { (aom_cdf_prob)((cdf[0] >> 8) << 8), 0, 0 };
   this_cdf[0] = clamp(this_cdf[0], (1 << 8), (127 << 8));
   ret = aom_read_cdf(r, this_cdf, nsymbs, ACCT_STR_NAME);
-  update_bin(cdf, ret, nsymbs);
+  if (r->allow_update_cdf) update_bin(cdf, ret, nsymbs);
   return ret;
 }
 #endif

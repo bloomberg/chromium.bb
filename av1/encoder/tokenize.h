@@ -59,6 +59,7 @@ struct tokenize_b_args {
   struct ThreadData *td;
   TOKENEXTRA **tp;
   int this_rate;
+  uint8_t allow_update_cdf;
 };
 
 typedef enum {
@@ -72,7 +73,8 @@ typedef enum {
 // otherwise rate is not incremented.
 void av1_tokenize_sb_vartx(const struct AV1_COMP *cpi, struct ThreadData *td,
                            TOKENEXTRA **t, RUN_TYPE dry_run, int mi_row,
-                           int mi_col, BLOCK_SIZE bsize, int *rate);
+                           int mi_col, BLOCK_SIZE bsize, int *rate,
+                           uint8_t allow_update_cdf);
 
 int av1_cost_color_map(const MACROBLOCK *const x, int plane, int block,
                        BLOCK_SIZE bsize, TX_SIZE tx_size, COLOR_MAP_TYPE type);
@@ -83,7 +85,8 @@ void av1_tokenize_color_map(const MACROBLOCK *const x, int plane, int block,
 
 void av1_tokenize_sb(const struct AV1_COMP *cpi, struct ThreadData *td,
                      TOKENEXTRA **t, RUN_TYPE dry_run, BLOCK_SIZE bsize,
-                     int *rate, const int mi_row, const int mi_col);
+                     int *rate, const int mi_row, const int mi_col,
+                     uint8_t allow_update_cdf);
 
 extern const int16_t *av1_dct_value_cost_ptr;
 /* TODO: The Token field should be broken out into a separate char array to

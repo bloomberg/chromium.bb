@@ -3181,6 +3181,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_ANS
         mode_bc.size = 1 << cpi->common.ans_window_size_log2;
 #endif
+        mode_bc.allow_update_cdf = !cm->large_scale_tile;
 #if CONFIG_LOOP_RESTORATION
         for (int p = 0; p < MAX_MB_PLANE; ++p) {
           set_default_wiener(cpi->td.mb.e_mbd.wiener_info + p);
@@ -3367,6 +3368,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_ANS
         mode_bc.size = 1 << cpi->common.ans_window_size_log2;
 #endif  // CONFIG_ANS
+        mode_bc.allow_update_cdf = 1;
 #if CONFIG_LOOP_RESTORATION
         for (int p = 0; p < MAX_MB_PLANE; ++p) {
           set_default_wiener(cpi->td.mb.e_mbd.wiener_info + p);
@@ -4851,6 +4853,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_ANS
         mode_bc.size = 1 << cpi->common.ans_window_size_log2;
 #endif
+        mode_bc.allow_update_cdf = !cm->large_scale_tile;
         aom_start_encode(&mode_bc, buf->data + data_offset);
         write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
         assert(tok == tok_end);
@@ -4972,6 +4975,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #if CONFIG_ANS
         mode_bc.size = 1 << cpi->common.ans_window_size_log2;
 #endif  // CONFIG_ANS
+        mode_bc.allow_update_cdf = 1;
 #if CONFIG_LOOP_RESTORATION
         for (int p = 0; p < MAX_MB_PLANE; ++p) {
           set_default_wiener(cpi->td.mb.e_mbd.wiener_info + p);

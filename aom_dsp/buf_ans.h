@@ -47,6 +47,7 @@ struct BufAnsCoder {
   int window_size;
 #endif
   int pos;  // Dummy variable to store the output buffer after closing
+  uint8_t allow_update_cdf;
 };
 
 // Allocate a buffered ANS coder to store size symbols.

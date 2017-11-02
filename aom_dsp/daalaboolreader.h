@@ -34,6 +34,7 @@ struct daala_reader {
 #if CONFIG_ACCOUNTING
   Accounting *accounting;
 #endif
+  uint8_t allow_update_cdf;
 };
 
 typedef struct daala_reader daala_reader;

@@ -306,7 +306,7 @@ static INLINE void add_token(TOKENEXTRA **t,
                              aom_cdf_prob (*tail_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
                              aom_cdf_prob (*head_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
                              int8_t eob_val, int8_t first_val, int32_t extra,
-                             uint8_t token) {
+                             uint8_t token, uint8_t allow_update_cdf) {
   (*t)->token = token;
   (*t)->extra = extra;
   (*t)->tail_cdf = tail_cdf;
@@ -315,15 +315,17 @@ static INLINE void add_token(TOKENEXTRA **t,
   (*t)->first_val = first_val;
   (*t)++;
 
-  if (token == BLOCK_Z_TOKEN) {
-    update_cdf(*head_cdf, 0, HEAD_TOKENS + 1);
-  } else {
-    if (eob_val != LAST_EOB) {
-      const int symb = 2 * AOMMIN(token, TWO_TOKEN) - eob_val + first_val;
-      update_cdf(*head_cdf, symb, HEAD_TOKENS + first_val);
+  if (allow_update_cdf) {
+    if (token == BLOCK_Z_TOKEN) {
+      update_cdf(*head_cdf, 0, HEAD_TOKENS + 1);
+    } else {
+      if (eob_val != LAST_EOB) {
+        const int symb = 2 * AOMMIN(token, TWO_TOKEN) - eob_val + first_val;
+        update_cdf(*head_cdf, symb, HEAD_TOKENS + first_val);
+      }
+      if (token > ONE_TOKEN)
+        update_cdf(*tail_cdf, token - TWO_TOKEN, TAIL_TOKENS);
     }
-    if (token > ONE_TOKEN)
-      update_cdf(*tail_cdf, token - TWO_TOKEN, TAIL_TOKENS);
   }
 }
 
@@ -455,6 +457,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   TOKENEXTRA **tp = args->tp;
+  const uint8_t allow_update_cdf = args->allow_update_cdf;
   uint8_t token_cache[MAX_TX_SQUARE];
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
@@ -498,7 +501,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 
   if (eob == 0)
     add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt], 1,
-              1, 0, BLOCK_Z_TOKEN);
+              1, 0, BLOCK_Z_TOKEN, allow_update_cdf);
 
   while (c < eob) {
     int v = qcoeff[scan[c]];
@@ -506,14 +509,14 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 
     if (!v) {
       add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt],
-                0, first_val, 0, ZERO_TOKEN);
+                0, first_val, 0, ZERO_TOKEN, allow_update_cdf);
       token_cache[scan[c]] = 0;
     } else {
       eob_val =
           (c + 1 == eob) ? (c + 1 == seg_eob ? LAST_EOB : EARLY_EOB) : NO_EOB;
       av1_get_token_extra(v, &token, &extra);
       add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt],
-                eob_val, first_val, extra, (uint8_t)token);
+                eob_val, first_val, extra, (uint8_t)token, allow_update_cdf);
       token_cache[scan[c]] = av1_pt_energy_class[token];
     }
     ++c;
@@ -641,7 +644,8 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
 
 void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
                            RUN_TYPE dry_run, int mi_row, int mi_col,
-                           BLOCK_SIZE bsize, int *rate) {
+                           BLOCK_SIZE bsize, int *rate,
+                           uint8_t allow_update_cdf) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -651,7 +655,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 #else
   TOKENEXTRA *t_backup = *t;
 #endif
-  struct tokenize_b_args arg = { cpi, td, t, 0 };
+  struct tokenize_b_args arg = { cpi, td, t, 0, allow_update_cdf };
   int plane;
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
@@ -729,11 +733,12 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 
 void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
                      RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
-                     const int mi_row, const int mi_col) {
+                     const int mi_row, const int mi_col,
+                     uint8_t allow_update_cdf) {
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  struct tokenize_b_args arg = { cpi, td, t, 0 };
+  struct tokenize_b_args arg = { cpi, td, t, 0, allow_update_cdf };
   if (mbmi->skip) {
     av1_reset_skip_context(xd, mi_row, mi_col, bsize);
     return;

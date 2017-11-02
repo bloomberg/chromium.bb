@@ -320,6 +320,7 @@ typedef struct TileDataEnc {
   CFL_CTX cfl;
 #endif
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
+  uint8_t allow_update_cdf;
 } TileDataEnc;
 
 typedef struct RD_COUNTS {

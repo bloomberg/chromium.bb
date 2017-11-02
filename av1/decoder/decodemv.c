@@ -350,7 +350,7 @@ static PREDICTION_MODE read_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
           ? (NEAREST_NEARESTMV - NEAREST_NEARESTMV)
           : aom_read_symbol(r, ec_ctx->inter_compound_mode_cdf[ctx],
                             INTER_COMPOUND_MODES, ACCT_STR);
-  if (xd->mi[0]->mbmi.skip_mode)
+  if (xd->mi[0]->mbmi.skip_mode && r->allow_update_cdf)
     update_cdf(ec_ctx->inter_compound_mode_cdf[ctx], mode,
                INTER_COMPOUND_MODES);
 #else
@@ -1407,12 +1407,14 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
 
 #if CONFIG_EXT_SKIP
 static void update_block_reference_mode(AV1_COMMON *cm, const MACROBLOCKD *xd,
-                                        REFERENCE_MODE mode) {
+                                        REFERENCE_MODE mode,
+                                        uint8_t allow_update_cdf) {
   if (cm->reference_mode == REFERENCE_MODE_SELECT) {
     assert(mode == SINGLE_REFERENCE || mode == COMPOUND_REFERENCE);
     const int ctx = av1_get_reference_mode_context(cm, xd);
 #if CONFIG_NEW_MULTISYMBOL
-    update_cdf(xd->tile_ctx->comp_inter_cdf[ctx], mode, 2);
+    if (allow_update_cdf)
+      update_cdf(xd->tile_ctx->comp_inter_cdf[ctx], mode, 2);
 #endif  // CONFIG_NEW_MULTISYMBOL
     FRAME_COUNTS *counts = xd->counts;
     if (counts) ++counts->comp_inter[ctx][mode];
@@ -1455,13 +1457,15 @@ static COMP_REFERENCE_TYPE read_comp_reference_type(AV1_COMMON *cm,
 #if CONFIG_EXT_SKIP
 #if CONFIG_EXT_COMP_REFS
 static void update_comp_reference_type(AV1_COMMON *cm, const MACROBLOCKD *xd,
-                                       COMP_REFERENCE_TYPE comp_ref_type) {
+                                       COMP_REFERENCE_TYPE comp_ref_type,
+                                       uint8_t allow_update_cdf) {
   assert(comp_ref_type == UNIDIR_COMP_REFERENCE ||
          comp_ref_type == BIDIR_COMP_REFERENCE);
   (void)cm;
   const int ctx = av1_get_comp_reference_type_context(xd);
 #if CONFIG_NEW_MULTISYMBOL
-  update_cdf(xd->tile_ctx->comp_ref_type_cdf[ctx], comp_ref_type, 2);
+  if (allow_update_cdf)
+    update_cdf(xd->tile_ctx->comp_ref_type_cdf[ctx], comp_ref_type, 2);
 #endif  // CONFIG_NEW_MULTISYMBOL
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->comp_ref_type[ctx][comp_ref_type];
@@ -1470,25 +1474,27 @@ static void update_comp_reference_type(AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 static void set_ref_frames_for_skip_mode(AV1_COMMON *const cm,
                                          MACROBLOCKD *const xd,
-                                         MV_REFERENCE_FRAME ref_frame[2]) {
+                                         MV_REFERENCE_FRAME ref_frame[2],
+                                         uint8_t allow_update_cdf) {
   assert(xd->mi[0]->mbmi.skip_mode);
 
   ref_frame[0] = LAST_FRAME + cm->ref_frame_idx_0;
   ref_frame[1] = LAST_FRAME + cm->ref_frame_idx_1;
 
   const REFERENCE_MODE mode = COMPOUND_REFERENCE;
-  update_block_reference_mode(cm, xd, mode);
+  update_block_reference_mode(cm, xd, mode, allow_update_cdf);
 
 #if CONFIG_EXT_COMP_REFS
   const COMP_REFERENCE_TYPE comp_ref_type = BIDIR_COMP_REFERENCE;
-  update_comp_reference_type(cm, xd, comp_ref_type);
+  update_comp_reference_type(cm, xd, comp_ref_type, allow_update_cdf);
 #endif  // CONFIG_EXT_COMP_REFS
 
 // Update stats for both forward and backward references
 #if CONFIG_NEW_MULTISYMBOL
-#define UPDATE_REF_BIT(bname, pname, cname, iname)        \
-  update_cdf(av1_get_pred_cdf_##pname(cm, xd), bname, 2); \
-  if (counts)                                             \
+#define UPDATE_REF_BIT(bname, pname, cname, iname)          \
+  if (allow_update_cdf)                                     \
+    update_cdf(av1_get_pred_cdf_##pname(cm, xd), bname, 2); \
+  if (counts)                                               \
     ++counts->comp_##cname[av1_get_pred_context_##pname(cm, xd)][iname][bname];
 #else
 #define UPDATE_REF_BIT(bname, pname, cname, iname) \
@@ -1537,7 +1543,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   } else {
 #if CONFIG_EXT_SKIP
     if (xd->mi[0]->mbmi.skip_mode) {
-      set_ref_frames_for_skip_mode(cm, xd, ref_frame);
+      set_ref_frames_for_skip_mode(cm, xd, ref_frame, r->allow_update_cdf);
       return;
     }
 #endif  // CONFIG_EXT_SKIP
@@ -2060,12 +2066,13 @@ static int read_is_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #if CONFIG_EXT_SKIP
 static void update_block_intra_inter(AV1_COMMON *const cm,
                                      MACROBLOCKD *const xd, int segment_id,
-                                     const int is_inter) {
+                                     const int is_inter,
+                                     uint8_t allow_update_cdf) {
   if (!segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
     const int ctx = av1_get_intra_inter_context(xd);
 #if CONFIG_NEW_MULTISYMBOL
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-    update_cdf(ec_ctx->intra_inter_cdf[ctx], is_inter, 2);
+    if (allow_update_cdf) update_cdf(ec_ctx->intra_inter_cdf[ctx], is_inter, 2);
 #endif  // CONFIG_NEW_MULTISYMBOL
     FRAME_COUNTS *counts = xd->counts;
     if (counts) ++counts->intra_inter[ctx][is_inter];
@@ -2635,7 +2642,8 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_EXT_DELTA_Q
     }
 
-    update_block_intra_inter(cm, xd, mbmi->segment_id, inter_block);
+    update_block_intra_inter(cm, xd, mbmi->segment_id, inter_block,
+                             r->allow_update_cdf);
   } else {
 #endif  // CONFIG_EXT_SKIP
     mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);

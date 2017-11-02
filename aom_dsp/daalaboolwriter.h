@@ -28,6 +28,7 @@ struct daala_writer {
   unsigned int pos;
   uint8_t *buffer;
   od_ec_enc ec;
+  uint8_t allow_update_cdf;
 };
 
 typedef struct daala_writer daala_writer;

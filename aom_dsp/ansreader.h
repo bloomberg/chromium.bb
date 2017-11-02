@@ -42,6 +42,7 @@ struct AnsDecoder {
 #if CONFIG_ACCOUNTING
   Accounting *accounting;
 #endif
+  uint8_t allow_update_cdf;
 };
 
 static INLINE int ans_read_reinit(struct AnsDecoder *const ans);
