@@ -72,7 +72,7 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
   void NotifyStatusChange();
 
   // Called after a delay to notify the observer. See |delay_|.
-  void NotifyNetworkChange(NetworkStatus network_status);
+  void NotifyNetworkChange();
 
   // Used to start the device listener or notify network change after a delay.
   base::OneShotTimer timer_;
@@ -82,6 +82,9 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
 
   // The delay used when network status becomes online.
   base::TimeDelta online_delay_;
+
+  // Pending network status used to update the current network status.
+  NetworkStatus pending_network_status_ = NetworkStatus::DISCONNECTED;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusListener);
 };

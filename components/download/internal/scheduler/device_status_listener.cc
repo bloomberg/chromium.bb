@@ -88,10 +88,11 @@ void DeviceStatusListener::StartAfterDelay() {
       ToBatteryStatus(base::PowerMonitor::Get()->IsOnBatteryPower());
   status_.network_status =
       ToNetworkStatus(network_listener_->GetConnectionType());
+  pending_network_status_ = status_.network_status;
+
   listening_ = true;
   is_valid_state_ = true;
 
-  // Notify the current status if we are online or charging.
   NotifyStatusChange();
 }
 
@@ -113,13 +114,17 @@ void DeviceStatusListener::Stop() {
 
 void DeviceStatusListener::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  NetworkStatus new_network_status = ToNetworkStatus(type);
-  if (status_.network_status == new_network_status)
+  pending_network_status_ = ToNetworkStatus(type);
+
+  if (pending_network_status_ == status_.network_status) {
+    timer_.Stop();
+    is_valid_state_ = true;
     return;
+  }
 
   bool change_to_online =
       (status_.network_status == NetworkStatus::DISCONNECTED) &&
-      (new_network_status != NetworkStatus::DISCONNECTED);
+      (pending_network_status_ != NetworkStatus::DISCONNECTED);
 
   // It's unreliable to send requests immediately after the network becomes
   // online that the signal may not fully consider DHCP. Notify network change
@@ -129,10 +134,10 @@ void DeviceStatusListener::OnNetworkChanged(
     is_valid_state_ = false;
     timer_.Start(FROM_HERE, online_delay_,
                  base::Bind(&DeviceStatusListener::NotifyNetworkChange,
-                            base::Unretained(this), new_network_status));
+                            base::Unretained(this)));
   } else {
     timer_.Stop();
-    NotifyNetworkChange(new_network_status);
+    NotifyNetworkChange();
   }
 }
 
@@ -146,9 +151,12 @@ void DeviceStatusListener::NotifyStatusChange() {
   observer_->OnDeviceStatusChanged(status_);
 }
 
-void DeviceStatusListener::NotifyNetworkChange(NetworkStatus network_status) {
+void DeviceStatusListener::NotifyNetworkChange() {
   is_valid_state_ = true;
-  status_.network_status = network_status;
+  if (pending_network_status_ == status_.network_status)
+    return;
+
+  status_.network_status = pending_network_status_;
   NotifyStatusChange();
 }
 
