@@ -146,6 +146,45 @@ Resource* CachedResource(LocalFrame* frame,
   return cached_resource;
 }
 
+std::unique_ptr<protocol::Array<String>> GetEnabledWindowFeatures(
+    const WebWindowFeatures& window_features) {
+  std::unique_ptr<protocol::Array<String>> feature_strings =
+      protocol::Array<String>::create();
+  if (window_features.x_set) {
+    feature_strings->addItem(
+        String::Format("left=%d", static_cast<int>(window_features.x)));
+  }
+  if (window_features.y_set) {
+    feature_strings->addItem(
+        String::Format("top=%d", static_cast<int>(window_features.y)));
+  }
+  if (window_features.width_set) {
+    feature_strings->addItem(
+        String::Format("width=%d", static_cast<int>(window_features.width)));
+  }
+  if (window_features.height_set) {
+    feature_strings->addItem(
+        String::Format("height=%d", static_cast<int>(window_features.height)));
+  }
+  if (window_features.menu_bar_visible)
+    feature_strings->addItem("menubar");
+  if (window_features.tool_bar_visible)
+    feature_strings->addItem("toolbar");
+  if (window_features.status_bar_visible)
+    feature_strings->addItem("status");
+  if (window_features.scrollbars_visible)
+    feature_strings->addItem("scrollbars");
+  if (window_features.resizable)
+    feature_strings->addItem("resizable");
+  if (window_features.noopener)
+    feature_strings->addItem("noopener");
+  if (window_features.background)
+    feature_strings->addItem("background");
+  if (window_features.persistent)
+    feature_strings->addItem("persistent");
+  return feature_strings;
+}
+
 }  // namespace
 
 static bool PrepareResourceBuffer(Resource* cached_resource,
@@ -846,10 +885,11 @@ void InspectorPageAgent::WindowCreated(LocalFrame* created) {
 void InspectorPageAgent::WindowOpen(Document* document,
                                     const String& url,
                                     const AtomicString& window_name,
-                                    const String& window_features,
+                                    const WebWindowFeatures& window_features,
                                     bool user_gesture) {
   GetFrontend()->windowOpen(document->CompleteURL(url).GetString(), window_name,
-                            window_features, user_gesture);
+                            GetEnabledWindowFeatures(window_features),
+                            user_gesture);
 }
 
 std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(

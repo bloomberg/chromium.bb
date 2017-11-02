@@ -351,7 +351,9 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
          opener_frame.GetDocument()->Url().IsEmpty());
   DCHECK_EQ(request.GetResourceRequest().GetFrameType(),
             WebURLRequest::kFrameTypeAuxiliary);
-
+  probe::windowOpen(opener_frame.GetDocument(),
+                    request.GetResourceRequest().Url(), request.FrameName(),
+                    features, Frame::HasTransientUserActivation(&opener_frame));
   created = false;
 
   Frame* window =
