@@ -854,13 +854,13 @@ def _CheckUnwantedDependencies(input_api, output_api):
   for f in input_api.AffectedFiles():
     if CppChecker.IsCppFile(f.LocalPath()):
       changed_lines = [line for line_num, line in f.ChangedContents()]
-      added_includes.append([f.LocalPath(), changed_lines])
+      added_includes.append([f.AbsoluteLocalPath(), changed_lines])
     elif ProtoChecker.IsProtoFile(f.LocalPath()):
       changed_lines = [line for line_num, line in f.ChangedContents()]
-      added_imports.append([f.LocalPath(), changed_lines])
+      added_imports.append([f.AbsoluteLocalPath(), changed_lines])
     elif JavaChecker.IsJavaFile(f.LocalPath()):
       changed_lines = [line for line_num, line in f.ChangedContents()]
-      added_java_imports.append([f.LocalPath(), changed_lines])
+      added_java_imports.append([f.AbsoluteLocalPath(), changed_lines])
 
   deps_checker = checkdeps.DepsChecker(input_api.PresubmitLocalPath())
 
@@ -870,6 +870,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
   warning_subjects = set()
   for path, rule_type, rule_description in deps_checker.CheckAddedCppIncludes(
       added_includes):
+    path = input_api.os_path.relpath(path, input_api.PresubmitLocalPath())
     description_with_path = '%s\n    %s' % (path, rule_description)
     if rule_type == Rule.DISALLOW:
       error_descriptions.append(description_with_path)
@@ -880,6 +881,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
 
   for path, rule_type, rule_description in deps_checker.CheckAddedProtoImports(
       added_imports):
+    path = input_api.os_path.relpath(path, input_api.PresubmitLocalPath())
     description_with_path = '%s\n    %s' % (path, rule_description)
     if rule_type == Rule.DISALLOW:
       error_descriptions.append(description_with_path)
@@ -890,6 +892,7 @@ def _CheckUnwantedDependencies(input_api, output_api):
 
   for path, rule_type, rule_description in deps_checker.CheckAddedJavaImports(
       added_java_imports):
+    path = input_api.os_path.relpath(path, input_api.PresubmitLocalPath())
     description_with_path = '%s\n    %s' % (path, rule_description)
     if rule_type == Rule.DISALLOW:
       error_descriptions.append(description_with_path)
