@@ -7,7 +7,6 @@ include_rules = [
   "+components/safe_browsing/android/java",
   "+components/variations/android/java",
 
-  "+content/public/test/android/javatests",
   "-content/public/android/java",
   "+content/public/android/java/src/org/chromium/content_public",
   "!content/public/android/java/src/org/chromium/content/browser/AppWebMessagePort.java",
@@ -17,6 +16,9 @@ include_rules = [
   "!content/public/android/java/src/org/chromium/content/browser/RenderCoordinates.java",
   "!content/public/android/java/src/org/chromium/content/browser/input/ImeAdapter.java",
   "!content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
+
+  "-content/public/android/javatests",
+  "+content/public/test/android/javatests",
 
   "+device/geolocation/android/java",
   "+device/geolocation/android/javatests",
