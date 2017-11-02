@@ -11832,6 +11832,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="392" label="AutofillCreditCardEnabled"/>
   <int value="393" label="NtlmV2Enabled"/>
   <int value="394" label="MinimumRequiredChromeVersion"/>
+  <int value="395" label="PromptForDownloadLocation"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
