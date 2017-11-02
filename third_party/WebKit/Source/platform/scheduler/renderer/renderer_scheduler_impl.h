@@ -242,7 +242,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   void OnFirstMeaningfulPaint();
 
-  void OnUnregisterTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
+  void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 
   void OnTaskStarted(MainThreadTaskQueue* queue,
                      const TaskQueue::Task& task,

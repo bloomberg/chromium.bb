@@ -426,13 +426,13 @@ RendererSchedulerImpl::NewRenderWidgetSchedulingState() {
   return render_widget_scheduler_signals_.NewRenderWidgetSchedulingState();
 }
 
-void RendererSchedulerImpl::OnUnregisterTaskQueue(
+void RendererSchedulerImpl::OnShutdownTaskQueue(
     const scoped_refptr<MainThreadTaskQueue>& task_queue) {
   if (main_thread_only().was_shutdown)
     return;
 
   if (task_queue_throttler_)
-    task_queue_throttler_->UnregisterTaskQueue(task_queue.get());
+    task_queue_throttler_->ShutdownTaskQueue(task_queue.get());
 
   if (task_runners_.erase(task_queue)) {
     switch (task_queue->queue_class()) {
@@ -2095,7 +2095,7 @@ void RendererSchedulerImpl::DisableVirtualTimeForTesting() {
 
   ForceUpdatePolicy();
 
-  virtual_time_control_task_queue_->UnregisterTaskQueue();
+  virtual_time_control_task_queue_->ShutdownTaskQueue();
   virtual_time_control_task_queue_ = nullptr;
   UnregisterTimeDomain(virtual_time_domain_.get());
   virtual_time_domain_.reset();

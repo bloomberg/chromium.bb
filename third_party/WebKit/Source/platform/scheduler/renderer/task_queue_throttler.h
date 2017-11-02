@@ -120,7 +120,7 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   void DecreaseThrottleRefCount(TaskQueue* task_queue);
 
   // Removes |task_queue| from |queue_details| and from appropriate budget pool.
-  void UnregisterTaskQueue(TaskQueue* task_queue);
+  void ShutdownTaskQueue(TaskQueue* task_queue);
 
   // Disable throttling for all queues, this setting takes precedence over
   // all other throttling settings. Designed to be used when a global event

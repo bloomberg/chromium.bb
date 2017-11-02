@@ -30,8 +30,10 @@ namespace {
 class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
  public:
   MainThreadTaskQueueForTest(QueueType queue_type)
-      : MainThreadTaskQueue(nullptr, QueueCreationParams(queue_type), nullptr) {
-  }
+      : MainThreadTaskQueue(nullptr,
+                            Spec("test_tq"),
+                            QueueCreationParams(queue_type),
+                            nullptr) {}
   ~MainThreadTaskQueueForTest() {}
 };
 

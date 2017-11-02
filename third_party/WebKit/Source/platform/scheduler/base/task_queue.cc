@@ -11,9 +11,11 @@
 namespace blink {
 namespace scheduler {
 
-TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl)
+TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
+                     const TaskQueue::Spec& spec)
     : impl_(std::move(impl)),
       thread_id_(base::PlatformThread::CurrentId()),
+      shutdown_task_runner_(spec.shutdown_task_runner),
       task_queue_manager_(impl_ ? impl_->GetTaskQueueManagerWeakPtr()
                                 : nullptr) {}
 
@@ -23,7 +25,13 @@ TaskQueue::~TaskQueue() {
     return;
   if (impl_->IsUnregistered())
     return;
-  DCHECK(false) << "task queue must be unregistered before deletion";
+  // If |shutdown_task_runner_| is not provided, TaskQueue should be
+  // unregistered manually before deletion.
+  DCHECK(shutdown_task_runner_);
+  shutdown_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&TaskQueueManager::GracefullyShutdownTaskQueue,
+                 task_queue_manager_, base::Passed(std::move(impl_))));
 }
 
 TaskQueue::Task::Task(TaskQueue::PostedTask task,
@@ -45,7 +53,7 @@ TaskQueue::PostedTask::PostedTask(base::OnceClosure callback,
       nestable(nestable),
       task_type(task_type) {}
 
-void TaskQueue::UnregisterTaskQueue() {
+void TaskQueue::ShutdownTaskQueue() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   base::AutoLock lock(impl_lock_);
   if (!impl_)

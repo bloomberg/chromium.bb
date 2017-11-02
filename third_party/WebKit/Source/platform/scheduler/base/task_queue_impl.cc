@@ -50,7 +50,8 @@ TaskQueueImpl::TaskQueueImpl(TaskQueueManager* task_queue_manager,
       should_monitor_quiescence_(spec.should_monitor_quiescence),
       should_notify_observers_(spec.should_notify_observers),
       should_report_when_execution_blocked_(
-          spec.should_report_when_execution_blocked) {
+          spec.should_report_when_execution_blocked),
+      supports_async_deletion_(!!spec.shutdown_task_runner) {
   DCHECK(time_domain);
   time_domain->RegisterQueue(this);
 }

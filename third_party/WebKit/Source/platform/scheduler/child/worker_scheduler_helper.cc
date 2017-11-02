@@ -21,8 +21,8 @@ WorkerSchedulerHelper::WorkerSchedulerHelper(
 }
 
 WorkerSchedulerHelper::~WorkerSchedulerHelper() {
-  control_task_queue_->UnregisterTaskQueue();
-  default_task_queue_->UnregisterTaskQueue();
+  control_task_queue_->ShutdownTaskQueue();
+  default_task_queue_->ShutdownTaskQueue();
 }
 
 scoped_refptr<WorkerTaskQueue> WorkerSchedulerHelper::DefaultWorkerTaskQueue() {

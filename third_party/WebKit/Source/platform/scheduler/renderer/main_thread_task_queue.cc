@@ -87,9 +87,10 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
 
 MainThreadTaskQueue::MainThreadTaskQueue(
     std::unique_ptr<internal::TaskQueueImpl> impl,
+    const TaskQueue::Spec& spec,
     const QueueCreationParams& params,
     RendererSchedulerImpl* renderer_scheduler)
-    : TaskQueue(std::move(impl)),
+    : TaskQueue(std::move(impl), spec),
       queue_type_(params.queue_type),
       queue_class_(QueueClassForQueueType(params.queue_type)),
       can_be_blocked_(params.can_be_blocked),
@@ -123,12 +124,12 @@ void MainThreadTaskQueue::OnTaskCompleted(const TaskQueue::Task& task,
     renderer_scheduler_->OnTaskCompleted(this, task, start, end);
 }
 
-void MainThreadTaskQueue::UnregisterTaskQueue() {
+void MainThreadTaskQueue::ShutdownTaskQueue() {
   if (renderer_scheduler_) {
     // RendererScheduler can be null in tests.
-    renderer_scheduler_->OnUnregisterTaskQueue(this);
+    renderer_scheduler_->OnShutdownTaskQueue(this);
   }
-  TaskQueue::UnregisterTaskQueue();
+  TaskQueue::ShutdownTaskQueue();
 }
 
 WebFrameScheduler* MainThreadTaskQueue::GetFrameScheduler() const {

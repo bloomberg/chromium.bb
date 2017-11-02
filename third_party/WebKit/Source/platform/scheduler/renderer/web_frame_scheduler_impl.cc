@@ -114,7 +114,7 @@ namespace {
 void CleanUpQueue(MainThreadTaskQueue* queue) {
   if (!queue)
     return;
-  queue->UnregisterTaskQueue();
+  queue->ShutdownTaskQueue();
   queue->SetFrameScheduler(nullptr);
   queue->SetBlameContext(nullptr);
 }
