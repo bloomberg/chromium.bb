@@ -5973,6 +5973,9 @@ void Document::SetFeaturePolicy(const String& feature_policy_header) {
 }
 
 ukm::UkmRecorder* Document::UkmRecorder() {
+  // UKM must only be recorded using the main frame.
+  DCHECK(IsInMainFrame());
+
   if (ukm_recorder_)
     return ukm_recorder_.get();
 
