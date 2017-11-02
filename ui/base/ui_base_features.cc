@@ -12,9 +12,16 @@ const base::Feature kDirectManipulationStylus = {
     "DirectManipulationStylus", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
-// Applies the material design mode passed via --top-chrome-md to elements
-// throughout Chrome (not just top Chrome).
+// Applies the material design mode to elements throughout Chrome (not just top
+// Chrome).
 const base::Feature kSecondaryUiMd = {"SecondaryUiMd",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+// Enabled by default on Windows and Desktop Linux. http://crbug.com/775847.
+// TODO(tapted): Also enable on Mac when http://crbug.com/780409 is fixed.
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+                                      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+                                      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 }  // namespace features
