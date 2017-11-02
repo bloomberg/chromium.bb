@@ -364,13 +364,21 @@ bool SizedFormatAvailable(const FeatureInfo* feature_info,
 
   // TODO(dshwang): check if it's possible to remove
   // CHROMIUM_color_buffer_float_rgb. crbug.com/329605
-  if ((feature_info->feature_flags().chromium_color_buffer_float_rgb &&
-       internal_format == GL_RGB32F) ||
-      (feature_info->feature_flags().chromium_color_buffer_float_rgba &&
-       internal_format == GL_RGBA32F)) {
+  if (feature_info->feature_flags().chromium_color_buffer_float_rgb &&
+      internal_format == GL_RGB32F) {
     return true;
   }
-
+  if (feature_info->feature_flags().chromium_color_buffer_float_rgba &&
+      internal_format == GL_RGBA32F) {
+    return true;
+  }
+  // RGBA16F textures created as WebGL 2 backbuffers (in GLES3 contexts) may be
+  // shared with compositor GLES2 contexts for compositing.
+  // https://crbug.com/777750
+  if (feature_info->feature_flags().enable_texture_half_float_linear &&
+      internal_format == GL_RGBA16F) {
+    return true;
+  }
   return feature_info->IsWebGL2OrES3Context();
 }
 
