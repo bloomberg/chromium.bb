@@ -47,6 +47,14 @@ class IsolatedOriginTest : public ContentBrowserTest {
   WebContentsImpl* web_contents() const {
     return static_cast<WebContentsImpl*>(shell()->web_contents());
   }
+
+  void InjectAndClickLinkTo(GURL url) {
+    EXPECT_TRUE(ExecuteScript(web_contents(),
+                              "var link = document.createElement('a');"
+                              "link.href = '" + url.spec() + "';"
+                              "document.body.appendChild(link);"
+                              "link.click();"));
+  }
 };
 
 // Check that navigating a main frame from an non-isolated origin to an
@@ -550,11 +558,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   // that doesn't trigger this bug.
   GURL foo_url(embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
   TestNavigationManager manager(shell()->web_contents(), foo_url);
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "var link = document.createElement('a');"
-                            "link.href = '" + foo_url.spec() + "';"
-                            "document.body.appendChild(link);"
-                            "link.click();"));
+  InjectAndClickLinkTo(foo_url);
   EXPECT_TRUE(manager.WaitForRequestStart());
 
   // Before response is received, open a new, unrelated tab and navigate it to
@@ -611,11 +615,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title2.html"));
   TestNavigationManager manager(shell()->web_contents(), isolated_url);
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
-                            "var link = document.createElement('a');"
-                            "link.href = '" + isolated_url.spec() + "';"
-                            "document.body.appendChild(link);"
-                            "link.click();"));
+  InjectAndClickLinkTo(isolated_url);
   EXPECT_TRUE(manager.WaitForRequestStart());
 
   // Before response is received, open a new, unrelated tab and navigate it to
@@ -681,6 +681,130 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   // tab.
   EXPECT_NE(web_contents()->GetMainFrame()->GetProcess(),
             new_shell->web_contents()->GetMainFrame()->GetProcess());
+}
+
+// Verify that when a process has a pending SiteProcessCountTracker entry for
+// an isolated origin, and a navigation to a non-isolated origin reuses that
+// process, future isolated origin subframe navigations do not reuse that
+// process. See https://crbug.com/780661.
+IN_PROC_BROWSER_TEST_F(
+    IsolatedOriginTest,
+    IsolatedSubframeDoesNotReuseUnsuitableProcessWithPendingSiteEntry) {
+  // This test requires PlzNavigate.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  // Set the process limit to 1.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  // Start from an about:blank page, where the SiteInstance will not have a
+  // site assigned, but will have an associated process.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  EXPECT_TRUE(web_contents()->GetMainFrame()->GetProcess()->IsUnused());
+
+  // Inject and click a link to an isolated origin URL which never sends back a
+  // response.
+  GURL hung_isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/hung"));
+  TestNavigationManager manager(web_contents(), hung_isolated_url);
+  InjectAndClickLinkTo(hung_isolated_url);
+
+  // Wait for the request and send it.  This will place
+  // isolated.foo.com on the list of pending sites for this tab's process.
+  EXPECT_TRUE(manager.WaitForRequestStart());
+  manager.ResumeNavigation();
+
+  // Open a new, unrelated tab and navigate it to an unisolated URL. This
+  // should reuse the first process, which is still considered unused at this
+  // point, and mark it as used.
+  Shell* new_shell = CreateBrowser();
+  GURL foo_url(
+      embedded_test_server()->GetURL("www.foo.com", "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(new_shell, foo_url));
+
+  // Navigate iframe on second tab to isolated.foo.com.  This should *not*
+  // reuse the first process, even though isolated.foo.com is still in its list
+  // of pending sites (from the hung navigation in the first tab).  That
+  // process is unsuitable because it now contains www.foo.com.
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  NavigateIframeToURL(new_shell->web_contents(), "test_iframe", isolated_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(new_shell->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_NE(child->current_frame_host()->GetProcess(),
+            root->current_frame_host()->GetProcess());
+
+  // Manipulating cookies from the main frame should not result in a renderer
+  // kill.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
+                            "document.cookie = 'foo=bar';"));
+  std::string cookie;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->current_frame_host(),
+      "window.domAutomationController.send(document.cookie);", &cookie));
+  EXPECT_EQ("foo=bar", cookie);
+}
+
+// Similar to the test above, but for a ServiceWorker.  When a process has a
+// pending SiteProcessCountTracker entry for an isolated origin, and a
+// navigation to a non-isolated origin reuses that process, a ServiceWorker
+// subsequently created for that isolated origin shouldn't reuse that process.
+// See https://crbug.com/780661 and https://crbug.com/780089.
+IN_PROC_BROWSER_TEST_F(
+    IsolatedOriginTest,
+    IsolatedServiceWorkerDoesNotReuseUnsuitableProcessWithPendingSiteEntry) {
+  // This test requires PlzNavigate.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  // Set the process limit to 1.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  // Start from an about:blank page, where the SiteInstance will not have a
+  // site assigned, but will have an associated process.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  EXPECT_TRUE(web_contents()->GetMainFrame()->GetProcess()->IsUnused());
+
+  // Inject and click a link to an isolated origin URL which never sends back a
+  // response.
+  GURL hung_isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/hung"));
+  TestNavigationManager manager(shell()->web_contents(), hung_isolated_url);
+  InjectAndClickLinkTo(hung_isolated_url);
+
+  // Wait for the request and send it.  This will place
+  // isolated.foo.com on the list of pending sites for this tab's process.
+  EXPECT_TRUE(manager.WaitForRequestStart());
+  manager.ResumeNavigation();
+
+  // Open a new, unrelated tab and navigate it to an unisolated URL. This
+  // should reuse the first process, which is still considered unused at this
+  // point, and mark it as used.
+  Shell* new_shell = CreateBrowser();
+  GURL foo_url(embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(new_shell, foo_url));
+
+  // A SiteInstance created for an isolated origin ServiceWorker should
+  // not reuse the unsuitable first process.
+  scoped_refptr<SiteInstanceImpl> sw_site_instance =
+      SiteInstanceImpl::CreateForURL(web_contents()->GetBrowserContext(),
+                                     hung_isolated_url);
+  sw_site_instance->set_is_for_service_worker();
+  sw_site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  RenderProcessHost* sw_host = sw_site_instance->GetProcess();
+  EXPECT_NE(new_shell->web_contents()->GetMainFrame()->GetProcess(), sw_host);
+
+  // Cancel the hung request and commit a real navigation to an isolated
+  // origin. This should now end up in the ServiceWorker's process.
+  web_contents()->GetFrameTree()->root()->ResetNavigationRequest(false, false);
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+  EXPECT_EQ(web_contents()->GetMainFrame()->GetProcess(), sw_host);
 }
 
 // Check that subdomains on an isolated origin (e.g., bar.isolated.foo.com)
