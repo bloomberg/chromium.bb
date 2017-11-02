@@ -82,6 +82,8 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'MobileEmulationCapabilityTest.testDeviceName',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabs',
     'MobileEmulationCapabilityTest.testNetworkConnectionTypeIsAppliedToAllTabsImmediately',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2114
+    'ChromeDriverTest.testShadowDomFindElementFailsBetweenShadowRoots',
 ]
 
 _OS_SPECIFIC_FILTER = {}
