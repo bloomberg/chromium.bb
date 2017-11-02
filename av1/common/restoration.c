@@ -254,18 +254,19 @@ static void copy_tile(int width, int height, const uint8_t *src, int src_stride,
 //
 // limits gives the rectangular limits of the remaining stripes for the current
 // restoration unit. rsb is the stored stripe boundaries (the saved output from
-// the deblocker). stripe_height is the height of each stripe. ss_y is true if
-// we're on a chroma plane with vertical subsampling. use_highbd is true if the
-// data has 2 bytes per pixel. rlbs contain scratch buffers to hold the CDEF
-// data (written back to the frame by restore_processing_stripe_boundary)
+// the deblocker). ss_y is true if we're on a chroma plane with vertical
+// subsampling. use_highbd is true if the data has 2 bytes per pixel. rlbs
+// contain scratch buffers to hold the CDEF data (written back to the frame by
+// restore_processing_stripe_boundary)
 static int setup_processing_stripe_boundary(
     const RestorationTileLimits *limits, const RestorationStripeBoundaries *rsb,
-    int stripe_height, int ss_y, int use_highbd, uint8_t *data8, int stride,
+    int ss_y, int use_highbd, uint8_t *data8, int stride,
     RestorationLineBuffers *rlbs) {
   // Which stripe is this? limits->v_start is the top of the stripe in pixel
   // units, but we add tile_offset to get the number of pixels from the top of
   // the first stripe, which lies off the image.
   const int tile_offset = RESTORATION_TILE_OFFSET >> ss_y;
+  const int stripe_height = RESTORATION_PROC_UNIT_SIZE >> ss_y;
   const int stripe_index = (limits->v_start + tile_offset) / stripe_height;
 
   // Horizontal offsets within the line buffers. The buffer logically starts at
@@ -335,8 +336,9 @@ static int setup_processing_stripe_boundary(
 // setup_processing_stripe_boundary.
 static void restore_processing_stripe_boundary(
     const RestorationTileLimits *limits, const RestorationLineBuffers *rlbs,
-    int stripe_height, int ss_y, int use_highbd, uint8_t *data8, int stride) {
+    int ss_y, int use_highbd, uint8_t *data8, int stride) {
   const int tile_offset = RESTORATION_TILE_OFFSET >> ss_y;
+  const int stripe_height = RESTORATION_PROC_UNIT_SIZE >> ss_y;
   const int stripe_index = (limits->v_start + tile_offset) / stripe_height;
 
   const int line_width =
@@ -1344,16 +1346,13 @@ static const stripe_filter_fun stripe_filters[NUM_STRIPE_FILTERS] = {
 #endif  // CONFIG_HIGHBITDEPTH
 };
 
-void av1_loop_restoration_filter_unit(const RestorationTileLimits *limits,
-                                      const RestorationUnitInfo *rui,
+void av1_loop_restoration_filter_unit(
+    const RestorationTileLimits *limits, const RestorationUnitInfo *rui,
 #if CONFIG_STRIPED_LOOP_RESTORATION
-                                      const RestorationStripeBoundaries *rsb,
-                                      RestorationLineBuffers *rlbs, int ss_y,
+    const RestorationStripeBoundaries *rsb, RestorationLineBuffers *rlbs,
 #endif
-                                      int procunit_width, int procunit_height,
-                                      int highbd, int bit_depth, uint8_t *data8,
-                                      int stride, uint8_t *dst8, int dst_stride,
-                                      int32_t *tmpbuf) {
+    int ss_x, int ss_y, int highbd, int bit_depth, uint8_t *data8, int stride,
+    uint8_t *dst8, int dst_stride, int32_t *tmpbuf) {
   RestorationType unit_rtype = rui->restoration_type;
 
   int unit_h = limits->v_end - limits->v_start;
@@ -1370,6 +1369,8 @@ void av1_loop_restoration_filter_unit(const RestorationTileLimits *limits,
   assert(filter_idx < NUM_STRIPE_FILTERS);
   const stripe_filter_fun stripe_filter = stripe_filters[filter_idx];
 
+  const int procunit_width = RESTORATION_PROC_UNIT_SIZE >> ss_x;
+
 // Convolve the whole tile one stripe at a time
 #if CONFIG_STRIPED_LOOP_RESTORATION
   RestorationTileLimits remaining_stripes = *limits;
@@ -1378,19 +1379,19 @@ void av1_loop_restoration_filter_unit(const RestorationTileLimits *limits,
   while (i < unit_h) {
 #if CONFIG_STRIPED_LOOP_RESTORATION
     remaining_stripes.v_start = limits->v_start + i;
-    int h = setup_processing_stripe_boundary(&remaining_stripes, rsb,
-                                             procunit_height, ss_y, highbd,
-                                             data8, stride, rlbs);
+    int h = setup_processing_stripe_boundary(&remaining_stripes, rsb, ss_y,
+                                             highbd, data8, stride, rlbs);
 #else
-    const int h = AOMMIN(procunit_height, (unit_h - i + 15) & ~15);
+    const int h =
+        AOMMIN(RESTORATION_PROC_UNIT_SIZE >> ss_y, (unit_h - i + 15) & ~15);
 #endif
 
     stripe_filter(rui, unit_w, h, procunit_width, data8_tl + i * stride, stride,
                   dst8_tl + i * dst_stride, dst_stride, tmpbuf, bit_depth);
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
-    restore_processing_stripe_boundary(
-        &remaining_stripes, rlbs, procunit_height, ss_y, highbd, data8, stride);
+    restore_processing_stripe_boundary(&remaining_stripes, rlbs, ss_y, highbd,
+                                       data8, stride);
 #endif
 
     i += h;
@@ -1401,8 +1402,8 @@ typedef struct {
   const RestorationInfo *rsi;
 #if CONFIG_STRIPED_LOOP_RESTORATION
   RestorationLineBuffers *rlbs;
-  int ss_y;
 #endif
+  int ss_x, ss_y;
   int highbd, bit_depth;
   uint8_t *data8, *dst8;
   int data_stride, dst_stride;
@@ -1414,14 +1415,13 @@ static void filter_frame_on_unit(const RestorationTileLimits *limits,
   FilterFrameCtxt *ctxt = (FilterFrameCtxt *)priv;
   const RestorationInfo *rsi = ctxt->rsi;
 
-  av1_loop_restoration_filter_unit(limits, &rsi->unit_info[rest_unit_idx],
+  av1_loop_restoration_filter_unit(
+      limits, &rsi->unit_info[rest_unit_idx],
 #if CONFIG_STRIPED_LOOP_RESTORATION
-                                   &rsi->boundaries, ctxt->rlbs, ctxt->ss_y,
+      &rsi->boundaries, ctxt->rlbs,
 #endif
-                                   rsi->procunit_width, rsi->procunit_height,
-                                   ctxt->highbd, ctxt->bit_depth, ctxt->data8,
-                                   ctxt->data_stride, ctxt->dst8,
-                                   ctxt->dst_stride, ctxt->tmpbuf);
+      ctxt->ss_x, ctxt->ss_y, ctxt->highbd, ctxt->bit_depth, ctxt->data8,
+      ctxt->data_stride, ctxt->dst8, ctxt->dst_stride, ctxt->tmpbuf);
 }
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
@@ -1498,10 +1498,10 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
     FilterFrameCtxt ctxt;
     ctxt.rsi = prsi;
 #if CONFIG_STRIPED_LOOP_RESTORATION
-    const int ss_y = is_uv && cm->subsampling_y;
     ctxt.rlbs = &rlbs;
-    ctxt.ss_y = ss_y;
 #endif
+    ctxt.ss_x = is_uv && cm->subsampling_x;
+    ctxt.ss_y = is_uv && cm->subsampling_y;
     ctxt.highbd = highbd;
     ctxt.bit_depth = bit_depth;
     ctxt.data8 = frame->buffers[plane];

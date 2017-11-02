@@ -242,7 +242,6 @@ typedef struct {
 typedef struct {
   RestorationType frame_restoration_type;
   int restoration_unit_size;
-  int procunit_width, procunit_height;
 
   // Fields below here are allocated and initialised by
   // av1_alloc_restoration_struct. (horz_)units_per_tile give the number of
@@ -297,12 +296,11 @@ void decode_xq(const int *xqd, int *xq);
 // limits is the limits of the unit. rui gives the mode to use for this unit
 // and its coefficients. If striped loop restoration is enabled, rsb contains
 // deblocked pixels to use for stripe boundaries; rlbs is just some space to
-// use as a scratch buffer. ss_y is a flag which should be 1 if this is a plane
-// with vertical subsampling.
+// use as a scratch buffer.
 //
-// procunit_width and procunit_height are the width and height in which to
-// process the data. highbd is a flag which should be 1 in high bit depth mode,
-// in which case bit_depth is the bit depth.
+// ss_x and ss_y are flags which should be 1 if this is a plane with
+// horizontal/vertical subsampling, respectively. highbd is a flag which should
+// be 1 in high bit depth mode, in which case bit_depth is the bit depth.
 //
 // data8 is the frame data (pointing at the top-left corner of the frame, not
 // the restoration unit) and stride is its stride. dst8 is the buffer where the
@@ -311,16 +309,13 @@ void decode_xq(const int *xqd, int *xq);
 //
 // Finally tmpbuf is a scratch buffer used by the sgrproj filter which should
 // be at least SGRPROJ_TMPBUF_SIZE big.
-void av1_loop_restoration_filter_unit(const RestorationTileLimits *limits,
-                                      const RestorationUnitInfo *rui,
+void av1_loop_restoration_filter_unit(
+    const RestorationTileLimits *limits, const RestorationUnitInfo *rui,
 #if CONFIG_STRIPED_LOOP_RESTORATION
-                                      const RestorationStripeBoundaries *rsb,
-                                      RestorationLineBuffers *rlbs, int ss_y,
+    const RestorationStripeBoundaries *rsb, RestorationLineBuffers *rlbs,
 #endif
-                                      int procunit_height, int procunit_width,
-                                      int highbd, int bit_depth, uint8_t *data8,
-                                      int stride, uint8_t *dst8, int dst_stride,
-                                      int32_t *tmpbuf);
+    int ss_x, int ss_y, int highbd, int bit_depth, uint8_t *data8, int stride,
+    uint8_t *dst8, int dst_stride, int32_t *tmpbuf);
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                                        struct AV1Common *cm,

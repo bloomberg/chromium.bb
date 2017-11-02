@@ -75,11 +75,10 @@ static int64_t try_restoration_tile(const AV1_COMMON *cm,
                                     const RestorationTileLimits *limits,
                                     const RestorationUnitInfo *rui,
                                     YV12_BUFFER_CONFIG *dst, int plane) {
-  const RestorationInfo *rsi = &cm->rst_info[plane];
   const int is_uv = plane > 0;
 #if CONFIG_STRIPED_LOOP_RESTORATION
+  const RestorationInfo *rsi = &cm->rst_info[plane];
   RestorationLineBuffers rlbs;
-  const int ss_y = is_uv && cm->subsampling_y;
 #endif
 #if CONFIG_HIGHBITDEPTH
   const int bit_depth = cm->bit_depth;
@@ -91,14 +90,14 @@ static int64_t try_restoration_tile(const AV1_COMMON *cm,
 
   const YV12_BUFFER_CONFIG *fts = cm->frame_to_show;
 
-  av1_loop_restoration_filter_unit(limits, rui,
+  av1_loop_restoration_filter_unit(
+      limits, rui,
 #if CONFIG_STRIPED_LOOP_RESTORATION
-                                   &rsi->boundaries, &rlbs, ss_y,
+      &rsi->boundaries, &rlbs,
 #endif
-                                   rsi->procunit_width, rsi->procunit_height,
-                                   highbd, bit_depth, fts->buffers[plane],
-                                   fts->strides[is_uv], dst->buffers[plane],
-                                   dst->strides[is_uv], cm->rst_tmpbuf);
+      is_uv && cm->subsampling_x, is_uv && cm->subsampling_y, highbd, bit_depth,
+      fts->buffers[plane], fts->strides[is_uv], dst->buffers[plane],
+      dst->strides[is_uv], cm->rst_tmpbuf);
 
   return sse_restoration_tile(limits, src, dst, plane, highbd);
 }
@@ -472,8 +471,6 @@ static void search_sgrproj(const RestorationTileLimits *limits,
 
   const MACROBLOCK *const x = rsc->x;
   const AV1_COMMON *const cm = rsc->cm;
-  const RestorationInfo *rsi = &cm->rst_info[rsc->plane];
-
 #if CONFIG_HIGHBITDEPTH
   const int highbd = cm->use_highbitdepth;
   const int bit_depth = cm->bit_depth;
@@ -487,11 +484,17 @@ static void search_sgrproj(const RestorationTileLimits *limits,
   const uint8_t *src_start =
       rsc->src_buffer + limits->v_start * rsc->src_stride + limits->h_start;
 
+  const int is_uv = rsc->plane > 0;
+  const int ss_x = is_uv && cm->subsampling_x;
+  const int ss_y = is_uv && cm->subsampling_y;
+  const int procunit_width = RESTORATION_PROC_UNIT_SIZE >> ss_x;
+  const int procunit_height = RESTORATION_PROC_UNIT_SIZE >> ss_y;
+
   rusi->sgrproj = search_selfguided_restoration(
       dgd_start, limits->h_end - limits->h_start,
       limits->v_end - limits->v_start, rsc->dgd_stride, src_start,
-      rsc->src_stride, highbd, bit_depth, rsi->procunit_width,
-      rsi->procunit_height, cm->rst_tmpbuf);
+      rsc->src_stride, highbd, bit_depth, procunit_width, procunit_height,
+      cm->rst_tmpbuf);
 
   RestorationUnitInfo rui;
   rui.restoration_type = RESTORE_SGRPROJ;

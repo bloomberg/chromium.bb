@@ -4171,12 +4171,6 @@ static void set_restoration_unit_size(int width, int height, int sx, int sy,
   rst[0].restoration_unit_size = (RESTORATION_TILESIZE_MAX >> 1);
   rst[1].restoration_unit_size = rst[0].restoration_unit_size >> s;
   rst[2].restoration_unit_size = rst[1].restoration_unit_size;
-
-  rst[0].procunit_width = rst[0].procunit_height = RESTORATION_PROC_UNIT_SIZE;
-  rst[1].procunit_width = rst[2].procunit_width =
-      RESTORATION_PROC_UNIT_SIZE >> sx;
-  rst[1].procunit_height = rst[2].procunit_height =
-      RESTORATION_PROC_UNIT_SIZE >> sy;
 }
 #endif  // CONFIG_LOOP_RESTORATION
 
