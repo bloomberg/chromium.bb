@@ -123,7 +123,9 @@ def main():
   # --test-launcher-filter-file is specified relative to --output-directory,
   # so specifying type=os.path.* will break it.
   parser.add_argument('--test-launcher-filter-file',
-                      help='Pass filter file through to target process.')
+                      default=None,
+                      help='Override default filter file passed to target test '
+                      'process. Set an empty path to disable filtering.')
   parser.add_argument('--test-launcher-jobs',
                       type=int,
                       help='Sets the number of parallel test jobs.')
@@ -189,6 +191,16 @@ def main():
     config_file.flush()
     runtime_deps.append(('net-test-server-config', config_file.name))
 
+  # If no --test-launcher-filter-file is specified, use the default filter path.
+  if args.test_launcher_filter_file == None:
+    exe_base_name = os.path.basename(args.exe_name)
+    test_launcher_filter_file = os.path.normpath(os.path.join(
+        args.output_directory,
+        '../../testing/buildbot/filters/fuchsia.%s.filter' % exe_base_name))
+    if os.path.exists(test_launcher_filter_file):
+      args.test_launcher_filter_file = test_launcher_filter_file
+
+  # Copy the test-launcher-filter-file to the bootfs, if set.
   if args.test_launcher_filter_file:
     # Bundle the filter file in the runtime deps and compose the command-line
     # flag which references it.
@@ -196,6 +208,11 @@ def main():
         os.path.join(args.output_directory, args.test_launcher_filter_file))
     runtime_deps.append(('test_filter_file', test_launcher_filter_file))
     child_args.append('--test-launcher-filter-file=/system/test_filter_file')
+
+  if args.dry_run:
+    print 'Filter file is %s' % (args.test_launcher_filter_file if
+                                 args.test_launcher_filter_file else
+                                 'not applied.')
 
   try:
     bootfs = BuildBootfs(
