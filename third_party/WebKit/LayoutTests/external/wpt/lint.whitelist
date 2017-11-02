@@ -360,11 +360,11 @@ W3C-TEST.ORG:.travis.yml
 
 
 ## Third party data files
-TRAILING WHITESPACE: css/css-writing-modes-3/tools/generators/ucd/Blocks.txt
+TRAILING WHITESPACE: css/css-writing-modes/tools/generators/ucd/Blocks.txt
 
 
 ## Test generation files
-CONSOLE: css/css-writing-modes-3/tools/generators/unicode-data.js
+CONSOLE: css/css-writing-modes/tools/generators/unicode-data.js
 
 
 ## Give up on work-in-progress for now
@@ -477,7 +477,7 @@ INDENT TABS: css/css-transitions-1/*
 INDENT TABS: css/css-ui-3/*
 INDENT TABS: css/css-values-3/*
 INDENT TABS: css/css-variables-1/*
-INDENT TABS: css/css-writing-modes-3/*
+INDENT TABS: css/css-writing-modes/*
 INDENT TABS: css/filter-effects-1/*
 INDENT TABS: css/fonts/*
 INDENT TABS: css/mediaqueries-3/*
@@ -496,9 +496,9 @@ CONSOLE: css/css-shapes-1/shape-outside/supported-shapes/support/test-utils.js
 CONSOLE: css/css-transitions-1/transition-delay-002.html
 CONSOLE: css/css-transitions-1/transition-delay-003.html
 CONSOLE: css/css-values-3/viewport-units-css2-001.html
-CONSOLE: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001*.html
-CONSOLE: css/css-writing-modes-3/tools/generators/gulpfile.js
-CONSOLE: css/css-writing-modes-3/tools/generators/text-orientation-generator.js
+CONSOLE: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001*.html
+CONSOLE: css/css-writing-modes/tools/generators/gulpfile.js
+CONSOLE: css/css-writing-modes/tools/generators/text-orientation-generator.js
 CONSOLE: css/cssom-1/index-002.html
 CONSOLE: css/work-in-progress/mozilla/mochitest-simplified/packed.js
 CONSOLE: css/work-in-progress/ttwf_sf/divya/index-002.html
@@ -566,32 +566,32 @@ SET TIMEOUT: css/css-values-3/reference/vh_not_refreshing_on_chrome-ref.html
 SET TIMEOUT: css/css-values-3/reference/vh_not_refreshing_on_chrome_iframe-ref.html
 SET TIMEOUT: css/css-values-3/vh_not_refreshing_on_chrome.html
 SET TIMEOUT: css/css-values-3/support/vh_not_refreshing_on_chrome_iframe.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001a.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001b.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001c.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001d.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001e.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001f.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001g.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001h.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001i.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001j.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001k.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001l.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001m.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001n.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001o.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001p.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001q.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001r.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001s.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001t.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001u.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001v.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001w.html
-SET TIMEOUT: css/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001x.html
-SET TIMEOUT: css/css-writing-modes-3/support/text-orientation.js
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001a.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001b.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001c.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001d.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001e.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001f.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001g.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001h.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001i.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001j.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001k.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001l.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001m.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001n.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001o.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001p.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001q.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001r.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001s.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001t.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001u.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001v.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001w.html
+SET TIMEOUT: css/css-writing-modes/orthogonal-parent-shrink-to-fit-001x.html
+SET TIMEOUT: css/css-writing-modes/support/text-orientation.js
 SET TIMEOUT: css/CSS2/backgrounds/background-root-101.xht
 SET TIMEOUT: css/CSS2/backgrounds/background-root-102.xht
 SET TIMEOUT: css/CSS2/backgrounds/background-root-103.xht
@@ -645,7 +645,7 @@ CSS-COLLIDING-SUPPORT-NAME: css/css-flexbox-1/support/200x200-green.png
 CSS-COLLIDING-SUPPORT-NAME: css/css-grid-1/grid-items/support/200x200-green.png
 CSS-COLLIDING-SUPPORT-NAME: css/css-regions-1/contentEditable/support/common.css
 CSS-COLLIDING-SUPPORT-NAME: css/css-regions-1/interactivity/full-screen/support/common.css
-CSS-COLLIDING-SUPPORT-NAME: css/css-writing-modes-3/support/pattern-gg-gr-100x100.png
+CSS-COLLIDING-SUPPORT-NAME: css/css-writing-modes/support/pattern-gg-gr-100x100.png
 CSS-COLLIDING-SUPPORT-NAME: css/CSS2/support/pattern-gg-gr-100x100.png
 CSS-COLLIDING-SUPPORT-NAME: css/CSS2/visuren/support/pattern-gg-gr-100x100.png
 CSS-COLLIDING-SUPPORT-NAME: css/css-backgrounds-3/support/pattern-grg-rgr-grg.png
@@ -660,7 +660,7 @@ CSS-COLLIDING-SUPPORT-NAME: css/css-transitions-1/support/pattern-rgr-grg-rgr.pn
 CSS-COLLIDING-SUPPORT-NAME: css/CSS2/backgrounds/support/pattern-rgr-grg-rgr.png
 CSS-COLLIDING-SUPPORT-NAME: css/css-flexbox-1/support/solidblue.png
 CSS-COLLIDING-SUPPORT-NAME: css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/support/solidblue.png
-CSS-COLLIDING-SUPPORT-NAME: css/css-writing-modes-3/support/swatch-fuchsia.png
+CSS-COLLIDING-SUPPORT-NAME: css/css-writing-modes/support/swatch-fuchsia.png
 CSS-COLLIDING-SUPPORT-NAME: css/CSS2/support/swatch-fuchsia.png
 CSS-COLLIDING-SUPPORT-NAME: css/css-regions-1/interactivity/full-screen/support/util.js
 CSS-COLLIDING-SUPPORT-NAME: css/css-regions-1/interactivity/resizing/support/util.js
@@ -794,7 +794,7 @@ CSS-COLLIDING-SUPPORT-NAME: css/filter-effects-1/support/swatch-green.png
 CSS-COLLIDING-SUPPORT-NAME: css/CSS2/archive/raw-tests/css1tests/support/swatch-green.png
 CSS-COLLIDING-SUPPORT-NAME: css/support/support/swatch-green.png
 CSS-COLLIDING-SUPPORT-NAME: css/cssom-1/support/swatch-green.png
-CSS-COLLIDING-SUPPORT-NAME: css/css-writing-modes-3/support/swatch-green.png
+CSS-COLLIDING-SUPPORT-NAME: css/css-writing-modes/support/swatch-green.png
 CSS-COLLIDING-SUPPORT-NAME: css/CSS2/positioning/support/swatch-green.png
 CSS-COLLIDING-SUPPORT-NAME: css/css-fonts-3/support/swatch-green.png
 CSS-COLLIDING-SUPPORT-NAME: css/css-images-3/support/swatch-green.png
