@@ -2817,8 +2817,9 @@ error::Error GLES2DecoderPassthroughImpl::DoBlitFramebufferCHROMIUM(
     GLint dstY1,
     GLbitfield mask,
     GLenum filter) {
-  api()->glBlitFramebufferANGLEFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                  dstX1, dstY1, mask, filter);
+  DCHECK(feature_info_->feature_flags().chromium_framebuffer_multisample);
+  api()->glBlitFramebufferFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1,
+                             dstY1, mask, filter);
   return error::kNoError;
 }
 
@@ -2829,14 +2830,9 @@ GLES2DecoderPassthroughImpl::DoRenderbufferStorageMultisampleCHROMIUM(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  if (feature_info_->feature_flags().angle_framebuffer_multisample) {
-    api()->glRenderbufferStorageMultisampleANGLEFn(
-        target, samples, internalformat, width, height);
-  } else {
-    DCHECK(feature_info_->gl_version_info().is_es3);
-    api()->glRenderbufferStorageMultisampleFn(target, samples, internalformat,
-                                              width, height);
-  }
+  DCHECK(feature_info_->feature_flags().chromium_framebuffer_multisample);
+  api()->glRenderbufferStorageMultisampleFn(target, samples, internalformat,
+                                            width, height);
   return error::kNoError;
 }
 
@@ -2846,14 +2842,9 @@ error::Error GLES2DecoderPassthroughImpl::DoRenderbufferStorageMultisampleEXT(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  if (feature_info_->feature_flags().angle_framebuffer_multisample) {
-    api()->glRenderbufferStorageMultisampleANGLEFn(
-        target, samples, internalformat, width, height);
-  } else {
-    DCHECK(feature_info_->gl_version_info().is_es3);
-    api()->glRenderbufferStorageMultisampleFn(target, samples, internalformat,
-                                              width, height);
-  }
+  // This is for GL_EXT_multisampled_render_to_texture, which is not currently
+  // supported by ANGLE.
+  NOTREACHED();
   return error::kNoError;
 }
 
@@ -2864,14 +2855,9 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTexture2DMultisampleEXT(
     GLuint texture,
     GLint level,
     GLsizei samples) {
-  if (IsEmulatedFramebufferBound(target)) {
-    InsertError(GL_INVALID_OPERATION,
-                "Cannot change the attachments of the default framebuffer.");
-    return error::kNoError;
-  }
-  api()->glFramebufferTexture2DMultisampleEXTFn(
-      target, attachment, textarget,
-      GetTextureServiceID(api(), texture, resources_, false), level, samples);
+  // This is for GL_EXT_multisampled_render_to_texture, which is not currently
+  // supported by ANGLE.
+  NOTREACHED();
   return error::kNoError;
 }
 

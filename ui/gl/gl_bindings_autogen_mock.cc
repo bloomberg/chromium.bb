@@ -297,8 +297,8 @@ void GL_BINDING_CALL MockGLInterface::Mock_glBlitFramebuffer(GLint srcX0,
                                                              GLbitfield mask,
                                                              GLenum filter) {
   MakeFunctionUnique("glBlitFramebuffer");
-  interface_->BlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                 dstX1, dstY1, mask, filter);
+  interface_->BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1,
+                              dstY1, mask, filter);
 }
 
 void GL_BINDING_CALL
@@ -313,8 +313,8 @@ MockGLInterface::Mock_glBlitFramebufferANGLE(GLint srcX0,
                                              GLbitfield mask,
                                              GLenum filter) {
   MakeFunctionUnique("glBlitFramebufferANGLE");
-  interface_->BlitFramebufferANGLE(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                   dstX1, dstY1, mask, filter);
+  interface_->BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1,
+                              dstY1, mask, filter);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glBlitFramebufferEXT(GLint srcX0,
@@ -328,8 +328,8 @@ void GL_BINDING_CALL MockGLInterface::Mock_glBlitFramebufferEXT(GLint srcX0,
                                                                 GLbitfield mask,
                                                                 GLenum filter) {
   MakeFunctionUnique("glBlitFramebufferEXT");
-  interface_->BlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                 dstX1, dstY1, mask, filter);
+  interface_->BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1,
+                              dstY1, mask, filter);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glBufferData(GLenum target,
@@ -1218,7 +1218,7 @@ MockGLInterface::Mock_glFramebufferTexture2DMultisampleIMG(GLenum target,
                                                            GLint level,
                                                            GLsizei samples) {
   MakeFunctionUnique("glFramebufferTexture2DMultisampleIMG");
-  interface_->FramebufferTexture2DMultisampleIMG(target, attachment, textarget,
+  interface_->FramebufferTexture2DMultisampleEXT(target, attachment, textarget,
                                                  texture, level, samples);
 }
 
@@ -3008,8 +3008,8 @@ MockGLInterface::Mock_glRenderbufferStorageMultisampleANGLE(
     GLsizei width,
     GLsizei height) {
   MakeFunctionUnique("glRenderbufferStorageMultisampleANGLE");
-  interface_->RenderbufferStorageMultisampleANGLE(
-      target, samples, internalformat, width, height);
+  interface_->RenderbufferStorageMultisample(target, samples, internalformat,
+                                             width, height);
 }
 
 void GL_BINDING_CALL
@@ -3030,7 +3030,7 @@ MockGLInterface::Mock_glRenderbufferStorageMultisampleIMG(GLenum target,
                                                           GLsizei width,
                                                           GLsizei height) {
   MakeFunctionUnique("glRenderbufferStorageMultisampleIMG");
-  interface_->RenderbufferStorageMultisampleIMG(target, samples, internalformat,
+  interface_->RenderbufferStorageMultisampleEXT(target, samples, internalformat,
                                                 width, height);
 }
 

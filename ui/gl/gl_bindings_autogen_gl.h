@@ -87,26 +87,6 @@ typedef void(GL_BINDING_CALL* glBlitFramebufferProc)(GLint srcX0,
                                                      GLint dstY1,
                                                      GLbitfield mask,
                                                      GLenum filter);
-typedef void(GL_BINDING_CALL* glBlitFramebufferANGLEProc)(GLint srcX0,
-                                                          GLint srcY0,
-                                                          GLint srcX1,
-                                                          GLint srcY1,
-                                                          GLint dstX0,
-                                                          GLint dstY0,
-                                                          GLint dstX1,
-                                                          GLint dstY1,
-                                                          GLbitfield mask,
-                                                          GLenum filter);
-typedef void(GL_BINDING_CALL* glBlitFramebufferEXTProc)(GLint srcX0,
-                                                        GLint srcY0,
-                                                        GLint srcX1,
-                                                        GLint srcY1,
-                                                        GLint dstX0,
-                                                        GLint dstY0,
-                                                        GLint dstX1,
-                                                        GLint dstY1,
-                                                        GLbitfield mask,
-                                                        GLenum filter);
 typedef void(GL_BINDING_CALL* glBufferDataProc)(GLenum target,
                                                 GLsizeiptr size,
                                                 const void* data,
@@ -422,13 +402,6 @@ typedef void(GL_BINDING_CALL* glFramebufferTexture2DEXTProc)(GLenum target,
                                                              GLuint texture,
                                                              GLint level);
 typedef void(GL_BINDING_CALL* glFramebufferTexture2DMultisampleEXTProc)(
-    GLenum target,
-    GLenum attachment,
-    GLenum textarget,
-    GLuint texture,
-    GLint level,
-    GLsizei samples);
-typedef void(GL_BINDING_CALL* glFramebufferTexture2DMultisampleIMGProc)(
     GLenum target,
     GLenum attachment,
     GLenum textarget,
@@ -1087,19 +1060,7 @@ typedef void(GL_BINDING_CALL* glRenderbufferStorageMultisampleProc)(
     GLenum internalformat,
     GLsizei width,
     GLsizei height);
-typedef void(GL_BINDING_CALL* glRenderbufferStorageMultisampleANGLEProc)(
-    GLenum target,
-    GLsizei samples,
-    GLenum internalformat,
-    GLsizei width,
-    GLsizei height);
 typedef void(GL_BINDING_CALL* glRenderbufferStorageMultisampleEXTProc)(
-    GLenum target,
-    GLsizei samples,
-    GLenum internalformat,
-    GLsizei width,
-    GLsizei height);
-typedef void(GL_BINDING_CALL* glRenderbufferStorageMultisampleIMGProc)(
     GLenum target,
     GLsizei samples,
     GLenum internalformat,
@@ -1555,6 +1516,7 @@ struct ExtensionsGL {
   bool b_GL_ARB_blend_func_extended;
   bool b_GL_ARB_draw_buffers;
   bool b_GL_ARB_draw_instanced;
+  bool b_GL_ARB_framebuffer_object;
   bool b_GL_ARB_get_program_binary;
   bool b_GL_ARB_instanced_arrays;
   bool b_GL_ARB_internalformat_query;
@@ -1642,8 +1604,6 @@ struct ProcsGL {
   glBlendFuncProc glBlendFuncFn;
   glBlendFuncSeparateProc glBlendFuncSeparateFn;
   glBlitFramebufferProc glBlitFramebufferFn;
-  glBlitFramebufferANGLEProc glBlitFramebufferANGLEFn;
-  glBlitFramebufferEXTProc glBlitFramebufferEXTFn;
   glBufferDataProc glBufferDataFn;
   glBufferSubDataProc glBufferSubDataFn;
   glCheckFramebufferStatusEXTProc glCheckFramebufferStatusEXTFn;
@@ -1733,8 +1693,6 @@ struct ProcsGL {
   glFramebufferTexture2DEXTProc glFramebufferTexture2DEXTFn;
   glFramebufferTexture2DMultisampleEXTProc
       glFramebufferTexture2DMultisampleEXTFn;
-  glFramebufferTexture2DMultisampleIMGProc
-      glFramebufferTexture2DMultisampleIMGFn;
   glFramebufferTextureLayerProc glFramebufferTextureLayerFn;
   glFrontFaceProc glFrontFaceFn;
   glGenBuffersARBProc glGenBuffersARBFn;
@@ -1918,10 +1876,7 @@ struct ProcsGL {
   glReleaseShaderCompilerProc glReleaseShaderCompilerFn;
   glRenderbufferStorageEXTProc glRenderbufferStorageEXTFn;
   glRenderbufferStorageMultisampleProc glRenderbufferStorageMultisampleFn;
-  glRenderbufferStorageMultisampleANGLEProc
-      glRenderbufferStorageMultisampleANGLEFn;
   glRenderbufferStorageMultisampleEXTProc glRenderbufferStorageMultisampleEXTFn;
-  glRenderbufferStorageMultisampleIMGProc glRenderbufferStorageMultisampleIMGFn;
   glRequestExtensionANGLEProc glRequestExtensionANGLEFn;
   glResumeTransformFeedbackProc glResumeTransformFeedbackFn;
   glSampleCoverageProc glSampleCoverageFn;
@@ -2102,26 +2057,6 @@ class GL_EXPORT GLApi {
                                    GLint dstY1,
                                    GLbitfield mask,
                                    GLenum filter) = 0;
-  virtual void glBlitFramebufferANGLEFn(GLint srcX0,
-                                        GLint srcY0,
-                                        GLint srcX1,
-                                        GLint srcY1,
-                                        GLint dstX0,
-                                        GLint dstY0,
-                                        GLint dstX1,
-                                        GLint dstY1,
-                                        GLbitfield mask,
-                                        GLenum filter) = 0;
-  virtual void glBlitFramebufferEXTFn(GLint srcX0,
-                                      GLint srcY0,
-                                      GLint srcX1,
-                                      GLint srcY1,
-                                      GLint dstX0,
-                                      GLint dstY0,
-                                      GLint dstX1,
-                                      GLint dstY1,
-                                      GLbitfield mask,
-                                      GLenum filter) = 0;
   virtual void glBufferDataFn(GLenum target,
                               GLsizeiptr size,
                               const void* data,
@@ -2404,12 +2339,6 @@ class GL_EXPORT GLApi {
                                            GLuint texture,
                                            GLint level) = 0;
   virtual void glFramebufferTexture2DMultisampleEXTFn(GLenum target,
-                                                      GLenum attachment,
-                                                      GLenum textarget,
-                                                      GLuint texture,
-                                                      GLint level,
-                                                      GLsizei samples) = 0;
-  virtual void glFramebufferTexture2DMultisampleIMGFn(GLenum target,
                                                       GLenum attachment,
                                                       GLenum textarget,
                                                       GLuint texture,
@@ -2988,17 +2917,7 @@ class GL_EXPORT GLApi {
                                                   GLenum internalformat,
                                                   GLsizei width,
                                                   GLsizei height) = 0;
-  virtual void glRenderbufferStorageMultisampleANGLEFn(GLenum target,
-                                                       GLsizei samples,
-                                                       GLenum internalformat,
-                                                       GLsizei width,
-                                                       GLsizei height) = 0;
   virtual void glRenderbufferStorageMultisampleEXTFn(GLenum target,
-                                                     GLsizei samples,
-                                                     GLenum internalformat,
-                                                     GLsizei width,
-                                                     GLsizei height) = 0;
-  virtual void glRenderbufferStorageMultisampleIMGFn(GLenum target,
                                                      GLsizei samples,
                                                      GLenum internalformat,
                                                      GLsizei width,
@@ -3436,9 +3355,6 @@ class GL_EXPORT GLApi {
 #define glBlendFunc ::gl::g_current_gl_context->glBlendFuncFn
 #define glBlendFuncSeparate ::gl::g_current_gl_context->glBlendFuncSeparateFn
 #define glBlitFramebuffer ::gl::g_current_gl_context->glBlitFramebufferFn
-#define glBlitFramebufferANGLE \
-  ::gl::g_current_gl_context->glBlitFramebufferANGLEFn
-#define glBlitFramebufferEXT ::gl::g_current_gl_context->glBlitFramebufferEXTFn
 #define glBufferData ::gl::g_current_gl_context->glBufferDataFn
 #define glBufferSubData ::gl::g_current_gl_context->glBufferSubDataFn
 #define glCheckFramebufferStatusEXT \
@@ -3557,8 +3473,6 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glFramebufferTexture2DEXTFn
 #define glFramebufferTexture2DMultisampleEXT \
   ::gl::g_current_gl_context->glFramebufferTexture2DMultisampleEXTFn
-#define glFramebufferTexture2DMultisampleIMG \
-  ::gl::g_current_gl_context->glFramebufferTexture2DMultisampleIMGFn
 #define glFramebufferTextureLayer \
   ::gl::g_current_gl_context->glFramebufferTextureLayerFn
 #define glFrontFace ::gl::g_current_gl_context->glFrontFaceFn
@@ -3820,12 +3734,8 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glRenderbufferStorageEXTFn
 #define glRenderbufferStorageMultisample \
   ::gl::g_current_gl_context->glRenderbufferStorageMultisampleFn
-#define glRenderbufferStorageMultisampleANGLE \
-  ::gl::g_current_gl_context->glRenderbufferStorageMultisampleANGLEFn
 #define glRenderbufferStorageMultisampleEXT \
   ::gl::g_current_gl_context->glRenderbufferStorageMultisampleEXTFn
-#define glRenderbufferStorageMultisampleIMG \
-  ::gl::g_current_gl_context->glRenderbufferStorageMultisampleIMGFn
 #define glRequestExtensionANGLE \
   ::gl::g_current_gl_context->glRequestExtensionANGLEFn
 #define glResumeTransformFeedback \

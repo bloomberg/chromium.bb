@@ -258,7 +258,7 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
   functions->fFramebufferRenderbuffer = gl->glFramebufferRenderbufferEXTFn;
   functions->fBindRenderbuffer = gl->glBindRenderbufferEXTFn;
   functions->fRenderbufferStorageMultisample =
-      gl->glRenderbufferStorageMultisampleEXTFn;
+      gl->glRenderbufferStorageMultisampleFn;
   functions->fFramebufferTexture2DMultisample =
       gl->glFramebufferTexture2DMultisampleEXTFn;
   functions->fRenderbufferStorageMultisampleES2EXT =

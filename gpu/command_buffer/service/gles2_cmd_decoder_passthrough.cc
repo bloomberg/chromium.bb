@@ -56,16 +56,9 @@ void ResizeRenderbuffer(gl::GLApi* api,
 
   api->glBindRenderbufferEXTFn(GL_RENDERBUFFER, renderbuffer);
   if (samples > 0) {
-    if (feature_info->feature_flags().angle_framebuffer_multisample) {
-      api->glRenderbufferStorageMultisampleANGLEFn(GL_RENDERBUFFER, samples,
-                                                   internal_format,
-                                                   size.width(), size.height());
-    } else {
-      DCHECK(feature_info->gl_version_info().is_es3);
-      api->glRenderbufferStorageMultisampleFn(GL_RENDERBUFFER, samples,
-                                              internal_format, size.width(),
-                                              size.height());
-    }
+    DCHECK(feature_info->feature_flags().chromium_framebuffer_multisample);
+    api->glRenderbufferStorageMultisampleFn(
+        GL_RENDERBUFFER, samples, internal_format, size.width(), size.height());
   } else {
     api->glRenderbufferStorageEXTFn(GL_RENDERBUFFER, internal_format,
                                     size.width(), size.height());
@@ -351,9 +344,9 @@ void GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::Blit(
                                    GL_TEXTURE_2D, target->texture->service_id(),
                                    0);
 
-  api->glBlitFramebufferANGLEFn(0, 0, size.width(), size.height(), 0, 0,
-                                target->size.width(), target->size.height(),
-                                GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  api->glBlitFramebufferFn(0, 0, size.width(), size.height(), 0, 0,
+                           target->size.width(), target->size.height(),
+                           GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
   api->glDeleteFramebuffersEXTFn(1, &temp_fbo);
 }
@@ -758,8 +751,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
     offscreen_single_buffer_ = attrib_helper.single_buffer;
     offscreen_target_buffer_preserved_ = attrib_helper.buffer_preserved;
     const bool multisampled_framebuffers_supported =
-        feature_info_->gl_version_info().IsAtLeastGLES(3, 0) ||
-        feature_info_->feature_flags().angle_framebuffer_multisample;
+        feature_info_->feature_flags().chromium_framebuffer_multisample;
     if (attrib_helper.samples > 0 && attrib_helper.sample_buffers > 0 &&
         multisampled_framebuffers_supported && !offscreen_single_buffer_) {
       GLint max_sample_count = 0;

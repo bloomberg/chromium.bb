@@ -1191,9 +1191,8 @@ void GLES2DecoderTestBase::DoRenderbufferStorageMultisampleCHROMIUM(
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   EnsureRenderbufferBound(expect_bind);
-  EXPECT_CALL(*gl_,
-              RenderbufferStorageMultisampleEXT(
-                  target, samples, gl_format, width, height))
+  EXPECT_CALL(*gl_, RenderbufferStorageMultisample(target, samples, gl_format,
+                                                   width, height))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetError())

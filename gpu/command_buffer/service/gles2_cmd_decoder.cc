@@ -672,17 +672,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                             ForcedMultisampleMode mode);
   bool RegenerateRenderbufferIfNeeded(Renderbuffer* renderbuffer);
 
-  void BlitFramebufferHelper(GLint srcX0,
-                             GLint srcY0,
-                             GLint srcX1,
-                             GLint srcY1,
-                             GLint dstX0,
-                             GLint dstY0,
-                             GLint dstX1,
-                             GLint dstY1,
-                             GLbitfield mask,
-                             GLenum filter);
-
   PathManager* path_manager() { return group_->path_manager(); }
 
  private:
@@ -2699,16 +2688,8 @@ ScopedResolvedFramebufferBinder::ScopedResolvedFramebufferBinder(
   const int width = decoder_->offscreen_size_.width();
   const int height = decoder_->offscreen_size_.height();
   decoder->state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
-  decoder->BlitFramebufferHelper(0,
-                                 0,
-                                 width,
-                                 height,
-                                 0,
-                                 0,
-                                 width,
-                                 height,
-                                 GL_COLOR_BUFFER_BIT,
-                                 GL_NEAREST);
+  decoder->api()->glBlitFramebufferFn(0, 0, width, height, 0, 0, width, height,
+                                      GL_COLOR_BUFFER_BIT, GL_NEAREST);
   api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, targetid);
 }
 
@@ -7986,13 +7967,8 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
       api()->glFramebufferTexture2DEXTFn(target, attachments[ii], textarget,
                                          service_id, level);
     } else {
-      if (features().use_img_for_multisampled_render_to_texture) {
-        api()->glFramebufferTexture2DMultisampleIMGFn(
-            target, attachments[ii], textarget, service_id, level, samples);
-      } else {
-        api()->glFramebufferTexture2DMultisampleEXTFn(
-            target, attachments[ii], textarget, service_id, level, samples);
-      }
+      api()->glFramebufferTexture2DMultisampleEXTFn(
+          target, attachments[ii], textarget, service_id, level, samples);
     }
     GLenum error = LOCAL_PEEK_GL_ERROR(name);
     if (error == GL_NO_ERROR) {
@@ -8509,8 +8485,8 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       state_.EnableDisableFramebufferSRGB(enable_srgb);
     }
 
-    BlitFramebufferHelper(
-        srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+    api()->glBlitFramebufferFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1,
+                               dstY1, mask, filter);
     return;
   }
 
@@ -8618,20 +8594,12 @@ void GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(
   // RenderbufferStorageMultisampleEXT handler,
   // kForceExtMultisampledRenderToTexture is passed in order to
   // prevent the core ES 3.0 multisampling code path from being used.
-  if (features().use_core_framebuffer_multisample &&
-      mode != kForceExtMultisampledRenderToTexture) {
-    api()->glRenderbufferStorageMultisampleFn(target, samples, internal_format,
-                                              width, height);
-  } else if (features().angle_framebuffer_multisample) {
-    // This is ES2 only.
-    api()->glRenderbufferStorageMultisampleANGLEFn(
-        target, samples, internal_format, width, height);
-  } else if (features().use_img_for_multisampled_render_to_texture) {
-    api()->glRenderbufferStorageMultisampleIMGFn(
-        target, samples, internal_format, width, height);
-  } else {
+  if (mode == kForceExtMultisampledRenderToTexture) {
     api()->glRenderbufferStorageMultisampleEXTFn(
         target, samples, internal_format, width, height);
+  } else {
+    api()->glRenderbufferStorageMultisampleFn(target, samples, internal_format,
+                                              width, height);
   }
 }
 
@@ -8653,31 +8621,6 @@ bool GLES2DecoderImpl::RegenerateRenderbufferIfNeeded(
   }
 
   return true;
-}
-
-void GLES2DecoderImpl::BlitFramebufferHelper(GLint srcX0,
-                                             GLint srcY0,
-                                             GLint srcX1,
-                                             GLint srcY1,
-                                             GLint dstX0,
-                                             GLint dstY0,
-                                             GLint dstX1,
-                                             GLint dstY1,
-                                             GLbitfield mask,
-                                             GLenum filter) {
-  // TODO(sievers): This could be resolved at the GL binding level, but the
-  // binding process is currently a bit too 'brute force'.
-  if (feature_info_->feature_flags().use_core_framebuffer_multisample) {
-    api()->glBlitFramebufferFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1,
-                               dstY1, mask, filter);
-  } else if (feature_info_->feature_flags().angle_framebuffer_multisample) {
-    // This is ES2 only.
-    api()->glBlitFramebufferANGLEFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                    dstX1, dstY1, mask, filter);
-  } else {
-    api()->glBlitFramebufferEXTFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                  dstX1, dstY1, mask, filter);
-  }
 }
 
 bool GLES2DecoderImpl::ValidateRenderbufferStorageMultisample(
@@ -8866,8 +8809,8 @@ bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
                                 validation_fbo_multisample_);
   api()->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER, validation_fbo_);
 
-  BlitFramebufferHelper(
-      0, 0, 1, 1, 0, 0, 1, 1, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  api()->glBlitFramebufferFn(0, 0, 1, 1, 0, 0, 1, 1, GL_COLOR_BUFFER_BIT,
+                             GL_NEAREST);
 
   // Read a pixel from the buffer.
   api()->glBindFramebufferEXTFn(GL_FRAMEBUFFER, validation_fbo_);
