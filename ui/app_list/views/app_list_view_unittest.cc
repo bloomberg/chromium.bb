@@ -365,9 +365,13 @@ class AppListViewFocusTest : public views::ViewsTestBase {
 
   void Show() { view_->ShowWhenReady(); }
 
-  void SimulateKeyPress(ui::KeyboardCode key_code, bool shift_down) {
+  void SimulateKeyPress(ui::KeyboardCode key_code,
+                        bool shift_down,
+                        bool ctrl_down = false) {
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED, key_code,
-                           shift_down ? ui::EF_SHIFT_DOWN : ui::EF_NONE);
+                           shift_down
+                               ? ui::EF_SHIFT_DOWN
+                               : ctrl_down ? ui::EF_CONTROL_DOWN : ui::EF_NONE);
     view_->GetWidget()->OnKeyEvent(&key_event);
   }
 
@@ -849,6 +853,77 @@ TEST_F(AppListViewFocusTest, RedirectFocusToSearchBox) {
   SimulateKeyPress(ui::VKEY_BACK, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16(" a"));
+}
+
+// Tests that the search box textfield has no selection when the focus moves
+// away from the SearchBoxView.
+TEST_F(AppListViewFocusTest, SearchBoxTextfieldHasNoSelectionWhenFocusLeaves) {
+  Show();
+
+  search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
+  EXPECT_EQ(search_box_view()->search_box()->text(), base::UTF8ToUTF16("test"));
+
+  // Move selection away from the searchbox.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
+}
+
+// Tests that the search box selects the whole query when focus moves to the
+// SearchBoxTextfield.
+TEST_F(AppListViewFocusTest, SearchBoxSelectionCoversWholeQueryOnFocus) {
+  Show();
+
+  // Focus the searchbox and enter "test" into the searchbox.
+  SimulateKeyPress(ui::VKEY_SPACE, false);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
+  EXPECT_EQ(base::UTF8ToUTF16("test"), search_box_view()->search_box()->text());
+
+  // Move focus away from the searchbox.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
+
+  // Move focus back to the searchbox.
+  SimulateKeyPress(ui::VKEY_TAB, true);
+
+  EXPECT_EQ(gfx::Range(0, 4),
+            search_box_view()->search_box()->GetSelectedRange());
+}
+
+// Tests that ctrl-A selects all text in the searchbox when the SearchBoxView is
+// not focused.
+TEST_F(AppListViewFocusTest, CtrlASelectsAllTextInSearchbox) {
+  Show();
+  search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
+  EXPECT_EQ(app_list_view()->app_list_state(), AppListView::HALF);
+  constexpr int kTileResults = 3;
+  constexpr int kListResults = 2;
+  SetUpSearchResults(kTileResults, kListResults);
+
+  // Move focus to the first search result.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  SimulateKeyPress(ui::VKEY_TAB, false);
+
+  // Focus left the searchbox, so the selected range should be at the end of the
+  // search text.
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
+  EXPECT_EQ(gfx::Range(4, 4),
+            search_box_view()->search_box()->GetSelectedRange());
+
+  // Press Ctrl-A, everything should be selected and the selected range should
+  // include the whole text.
+  SimulateKeyPress(ui::VKEY_A, false, true);
+  EXPECT_TRUE(search_box_view()->search_box()->HasSelection());
+  EXPECT_EQ(gfx::Range(0, 4),
+            search_box_view()->search_box()->GetSelectedRange());
+
+  // Advance focus, Focus should leave the searchbox, and the selected range
+  // should be at the end of the search text.
+  SimulateKeyPress(ui::VKEY_TAB, false);
+  EXPECT_FALSE(search_box_view()->search_box()->HasSelection());
+  EXPECT_EQ(gfx::Range(4, 4),
+            search_box_view()->search_box()->GetSelectedRange());
 }
 
 // Tests that the first search result's view is always selected after search
