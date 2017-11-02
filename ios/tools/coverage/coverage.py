@@ -25,17 +25,12 @@
   -r coverage.profdata
   # Skip running tests and reuse the specified profile data file.
 
-  ios/tools/coverage/coverage.py url_unittests -t url/ -i url/mojo -o out/html
-  -e //url/ipc:url_ipc -r coverage.profdata
-  # Exclude the 'sources' of //url/ipc:url_ipc build target.
-
   For more options, please refer to ios/tools/coverage/coverage.py -h
 """
 import sys
 
 import argparse
 import ConfigParser
-import json
 import os
 import subprocess
 import webbrowser
@@ -211,24 +206,24 @@ class _FileLineCoverageReport(object):
     """
     return self._coverage.keys()
 
-  def FilterFiles(self, include_sources, exclude_sources):
+  def FilterFiles(self, include_paths, exclude_paths):
     """Filter files in the report.
 
     Only includes files that is under at least one of the paths in
-    |include_sources|, but none of them in |exclude_sources|.
+    |include_paths|, but none of them in |exclude_paths|.
 
     Args:
-      include_sources: A list of directories and files.
-      exclude_sources: A list of directories and files.
+      include_paths: A list of directories and files.
+      exclude_paths: A list of directories and files.
     """
     files_to_delete = []
     for path in self._coverage:
       should_include = (any(os.path.abspath(path).startswith(
-          os.path.abspath(source))
-                            for source in include_sources))
+          os.path.abspath(path))
+                            for path in include_paths))
       should_exclude = (any(os.path.abspath(path).startswith(
-          os.path.abspath(source))
-                            for source in exclude_sources))
+          os.path.abspath(path))
+                            for path in exclude_paths))
 
       if not should_include or should_exclude:
         files_to_delete.append(path)
@@ -827,75 +822,6 @@ def _AssertCoverageBuildDirectoryExists():
                                           'ios/build/tools/setup-gn.py.')
 
 
-def _SeparatePathsAndBuildTargets(paths_or_build_targets):
-  """Separate file/directory paths from build target paths.
-
-  Args:
-    paths_or_build_targets: A list of file/directory or build target paths.
-
-  Returns:
-    Two lists contain the file/directory and build target paths respectively.
-  """
-  paths = []
-  build_targets = []
-  for path_or_build_target in paths_or_build_targets:
-    if path_or_build_target.startswith('//'):
-      build_targets.append(path_or_build_target)
-    else:
-      paths.append(path_or_build_target)
-
-  return paths, build_targets
-
-
-def _FormatBuildTargetPaths(build_targets):
-  """Formats build target paths to explicitly specify target name.
-
-  Build target paths may have target name omitted, this method adds a target
-  name for the path if it is.
-  For example, //url is converted to //url:url.
-
-  Args:
-    build_targets: A list of build targets.
-
-  Returns:
-    A list of build targets.
-  """
-  formatted_build_targets = []
-  for build_target in build_targets:
-    if ':' not in os.path.basename(build_target):
-      formatted_build_targets.append(
-          build_target + ':' + os.path.basename(build_target))
-    else:
-      formatted_build_targets.append(build_target)
-
-  return formatted_build_targets
-
-
-def _AssertBuildTargetsExist(build_targets):
-  """Asserts that the build targets specified in |build_targets| exist.
-
-  Args:
-    build_targets: A list of build targets.
-  """
-  # The returned json objec has the following format:
-  # Root: dict => A dictionary of sources of build targets.
-  # -- target: dict => A dictionary that describes the target.
-  # ---- sources: list => A list of source files.
-  #
-  # For example:
-  # {u'//url:url': {u'sources': [u'//url/gurl.cc', u'//url/url_canon_icu.cc']}}
-  #
-  target_source_descriptions = _GetSourcesDescriptionOfBuildTargets(
-      build_targets)
-  for build_target in build_targets:
-    assert build_target in target_source_descriptions, (('{} is not a valid '
-                                                         'build target. Please '
-                                                         'run \'gn desc {} '
-                                                         'sources\' to debug.')
-                                                        .format(build_target,
-                                                                build_target))
-
-
 def _AssertPathsExist(paths):
   """Asserts that the paths specified in |paths| exist.
 
@@ -910,62 +836,6 @@ def _AssertPathsExist(paths):
                                       'root of source, which is {}. For '
                                       'example, \'ios/\' is a valid path.').
                                      format(abspath, src_root))
-
-
-def _GetSourcesOfBuildTargets(build_targets):
-  """Returns a list of paths corresponding to the sources of the build targets.
-
-  Args:
-    build_targets: A list of build targets.
-
-  Returns:
-    A list of os paths relative to the root of checkout, and en empty list if
-    |build_targets| is empty.
-  """
-  if not build_targets:
-    return []
-
-  target_sources_description = _GetSourcesDescriptionOfBuildTargets(
-      build_targets)
-  sources = []
-  for build_target in build_targets:
-    sources.extend(_ConvertBuildFilePathsToOsPaths(
-        target_sources_description[build_target]['sources']))
-
-  return sources
-
-
-def _GetSourcesDescriptionOfBuildTargets(build_targets):
-  """Returns the description of sources of the build targets using 'gn desc'.
-
-  Args:
-    build_targets: A list of build targets.
-
-  Returns:
-    A json object with the following format:
-
-    Root: dict => A dictionary of sources of build targets.
-    -- target: dict => A dictionary that describes the target.
-    ---- sources: list => A list of source files.
-  """
-  cmd = ['gn', 'desc', BUILD_DIRECTORY]
-  for build_target in build_targets:
-    cmd.append(build_target)
-  cmd.extend(['sources', '--format=json'])
-
-  return json.loads(subprocess.check_output(cmd))
-
-
-def _ConvertBuildFilePathsToOsPaths(build_file_paths):
-  """Converts paths in build file format to os path format.
-
-  Args:
-    build_file_paths: A list of paths starts with '//'.
-
-  Returns:
-   A list of os paths relative to the root of checkout.
-  """
-  return [build_file_path[2:] for build_file_path in build_file_paths]
 
 
 def _ParseCommandArguments():
@@ -983,24 +853,16 @@ def _ParseCommandArguments():
                                'root of the checkout.')
 
   arg_parser.add_argument('-i', '--include', action='append',
-                          help='Directories or build targets to get code '
-                               'coverage for. For directories, paths need to '
-                               'be relative to the root of the checkoutand and '
-                               'all files under them are included recursively; '
-                               'for build targets, only the \'sources\' of the '
-                               'targets are included, and the format of '
-                               'specifying build targets is the same as in '
-                               '\'deps\' in BUILD.gn.')
+                          help='Directories to get code coverage for, and the '
+                               'paths need to be relative to the root of the '
+                               'checkout and all files under them are included '
+                               'recursively.')
 
   arg_parser.add_argument('-e', '--exclude', action='append',
-                          help='Directories or build targets to get code '
-                               'coverage for. For directories, paths need to '
-                               'be relative to the root of the checkoutand and '
-                               'all files under them are excluded recursively; '
-                               'for build targets, only the \'sources\' of the '
-                               'targets are excluded, and the format of '
-                               'specifying build targets is the same as in '
-                               '\'deps\' in BUILD.gn.')
+                          help='Directories to get code coverage for, and the '
+                               'paths need to be relative to the root of the '
+                               'checkout and all files under them are excluded '
+                               'recursively.')
 
   arg_parser.add_argument('-j', '--jobs', type=int, default=None,
                           help='Run N jobs to build in parallel. If not '
@@ -1039,30 +901,18 @@ def Main():
   if not jobs and _IsGomaConfigured():
     jobs = DEFAULT_GOMA_JOBS
 
-  print 'Validating inputs'
   _AssertCoverageBuildDirectoryExists()
   _AssertPathsExist([args.top_level_dir])
 
-  include_paths, raw_include_targets = _SeparatePathsAndBuildTargets(
-      args.include or [])
-  exclude_paths, raw_exclude_targets = _SeparatePathsAndBuildTargets(
-      args.exclude or [])
-  include_targets = _FormatBuildTargetPaths(raw_include_targets)
-  exclude_targets = _FormatBuildTargetPaths(raw_exclude_targets)
-
+  include_paths = args.include or []
+  exclude_paths = args.exclude or []
   if include_paths:
     _AssertPathsExist(include_paths)
   if exclude_paths:
     _AssertPathsExist(exclude_paths)
-  if include_targets:
-    _AssertBuildTargetsExist(include_targets)
-  if exclude_targets:
-    _AssertBuildTargetsExist(exclude_targets)
 
   if not include_paths:
     include_paths.append(args.top_level_dir)
-  include_sources = include_paths + _GetSourcesOfBuildTargets(include_targets)
-  exclude_sources = exclude_paths + _GetSourcesOfBuildTargets(exclude_targets)
 
   output_dir_abspath = os.path.abspath(args.output_dir)
   profdata_file_path = args.reuse_profdata
@@ -1077,7 +927,7 @@ def Main():
   print 'Generating code coverge report'
   file_line_coverage_report = _GeneratePerFileLineCoverageReport(
       args.targets, profdata_file_path)
-  file_line_coverage_report.FilterFiles(include_sources, exclude_sources)
+  file_line_coverage_report.FilterFiles(include_paths, exclude_paths)
   file_line_coverage_report.ExcludeTestFiles()
 
   # ios/chrome and ios/chrome/ refer to the same directory.
