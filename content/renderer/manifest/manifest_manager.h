@@ -16,7 +16,7 @@
 #include "content/public/common/manifest.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/manifest/manifest_debug_info.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h"
 
 class GURL;
@@ -53,7 +53,7 @@ class ManifestManager : public RenderFrameObserver,
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
 
-  void BindToRequest(blink::mojom::ManifestManagerAssociatedRequest request);
+  void BindToRequest(blink::mojom::ManifestManagerRequest request);
 
  private:
   enum ResolveState {
@@ -106,7 +106,7 @@ class ManifestManager : public RenderFrameObserver,
 
   std::vector<GetManifestCallback> pending_callbacks_;
 
-  mojo::AssociatedBindingSet<blink::mojom::ManifestManager> bindings_;
+  mojo::BindingSet<blink::mojom::ManifestManager> bindings_;
 
   base::WeakPtrFactory<ManifestManager> weak_factory_;
 

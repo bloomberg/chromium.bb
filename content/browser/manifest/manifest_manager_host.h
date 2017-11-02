@@ -54,7 +54,7 @@ class ManifestManagerHost : public WebContentsObserver,
   void ManifestUrlChanged(const base::Optional<GURL>& manifest_url) override;
 
   RenderFrameHost* manifest_manager_frame_ = nullptr;
-  blink::mojom::ManifestManagerAssociatedPtr manifest_manager_;
+  blink::mojom::ManifestManagerPtr manifest_manager_;
   CallbackMap callbacks_;
 
   WebContentsFrameBindingSet<mojom::ManifestUrlChangeObserver>
