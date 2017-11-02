@@ -138,6 +138,9 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->selective_ref_frame = 1;
     sf->tx_size_search_init_depth_rect = 1;
     sf->tx_size_search_init_depth_sqr = 1;
+#if CONFIG_EXT_PARTITION_TYPES
+    sf->prune_ext_partition_types_search = 1;
+#endif  // CONFIG_EXT_PARTITION_TYPES
   }
 
   if (speed >= 2) {
@@ -439,6 +442,9 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->partition_search_breakout_dist_thr = 0;
   sf->partition_search_breakout_rate_thr = 0;
   sf->simple_model_rd_from_var = 0;
+#if CONFIG_EXT_PARTITION_TYPES
+  sf->prune_ext_partition_types_search = 0;
+#endif  // CONFIG_EXT_PARTITION_TYPES
 
   // Set this at the appropriate speed levels
   sf->use_transform_domain_distortion = 0;

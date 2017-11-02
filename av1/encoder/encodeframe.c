@@ -2481,7 +2481,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                               TileDataEnc *tile_data, TOKENEXTRA **tp,
                               int mi_row, int mi_col, BLOCK_SIZE bsize,
                               RD_STATS *rd_cost, int64_t best_rd,
-                              PC_TREE *pc_tree) {
+                              PC_TREE *pc_tree, int64_t *none_rd) {
   const AV1_COMMON *const cm = &cpi->common;
   TileInfo *const tile_info = &tile_data->tile_info;
   MACROBLOCK *const x = &td->mb;
@@ -2512,6 +2512,11 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       pl >= 0 ? x->partition_cost[pl] : x->partition_cost[0];
 
   int do_rectangular_split = 1;
+#if CONFIG_EXT_PARTITION_TYPES
+  int64_t split_rd[4] = { 0, 0, 0, 0 };
+  int64_t horz_rd[4] = { 0, 0 };
+  int64_t vert_rd[4] = { 0, 0 };
+#endif  // CONFIG_EXT_PARTITION_TYPES
 #if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
 #endif
@@ -2524,6 +2529,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   BLOCK_SIZE min_size = x->min_partition_size;
   BLOCK_SIZE max_size = x->max_partition_size;
+
+  if (none_rd) *none_rd = 0;
 
 #if CONFIG_FP_MB_STATS
   unsigned int src_diff_var = UINT_MAX;
@@ -2679,6 +2686,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                      PARTITION_NONE,
 #endif
                      bsize, ctx_none, best_rdc.rdcost);
+    if (none_rd) *none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
       if (bsize_at_least_8x8) {
         const int pt_cost = partition_cost[PARTITION_NONE] < INT_MAX
@@ -2786,9 +2794,14 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
 
       pc_tree->split[idx]->index = idx;
+#if CONFIG_EXT_PARTITION_TYPES
+      int64_t *p_split_rd = &split_rd[idx];
+#else
+      int64_t *p_split_rd = NULL;
+#endif  // CONFIG_EXT_PARTITION_TYPES
       rd_pick_partition(cpi, td, tile_data, tp, mi_row + y_idx, mi_col + x_idx,
                         subsize, &this_rdc, temp_best_rdcost - sum_rdc.rdcost,
-                        pc_tree->split[idx]);
+                        pc_tree->split[idx], p_split_rd);
 
       if (this_rdc.rate == INT_MAX) {
         sum_rdc.rdcost = INT64_MAX;
@@ -2846,6 +2859,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                      PARTITION_HORZ,
 #endif
                      subsize, &pc_tree->horizontal[0], best_rdc.rdcost);
+#if CONFIG_EXT_PARTITION_TYPES
+    horz_rd[0] = sum_rdc.rdcost;
+#endif  // CONFIG_EXT_PARTITION_TYPES
 
     if (sum_rdc.rdcost < temp_best_rdcost && !force_horz_split) {
       PICK_MODE_CONTEXT *ctx_h = &pc_tree->horizontal[0];
@@ -2866,6 +2882,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
                        subsize, &pc_tree->horizontal[1],
                        best_rdc.rdcost - sum_rdc.rdcost);
+#if CONFIG_EXT_PARTITION_TYPES
+      horz_rd[1] = this_rdc.rdcost;
+#endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && this_rdc.rate != INT_MAX && bsize == BLOCK_8X8) {
@@ -2925,6 +2944,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                      PARTITION_VERT,
 #endif
                      subsize, &pc_tree->vertical[0], best_rdc.rdcost);
+#if CONFIG_EXT_PARTITION_TYPES
+    vert_rd[0] = sum_rdc.rdcost;
+#endif  // CONFIG_EXT_PARTITION_TYPES
     const int64_t vert_max_rdcost = best_rdc.rdcost;
     if (sum_rdc.rdcost < vert_max_rdcost && !force_vert_split) {
       update_state(cpi, tile_data, td, &pc_tree->vertical[0], mi_row, mi_col,
@@ -2945,6 +2967,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
                        subsize, &pc_tree->vertical[1],
                        best_rdc.rdcost - sum_rdc.rdcost);
+#if CONFIG_EXT_PARTITION_TYPES
+      vert_rd[1] = this_rdc.rdcost;
+#endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && this_rdc.rate != INT_MAX && bsize == BLOCK_8X8) {
@@ -2998,105 +3023,157 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   // subsample to 16x2, which doesn't have an enum. Also, there's no BLOCK_8X2
   // or BLOCK_2X8, so we can't do 4:1 or 1:4 partitions for BLOCK_16X16 if there
   // is any subsampling.
-  const int horz4_partition_allowed =
-      ext_partition_allowed && partition_horz_allowed;
-  const int vert4_partition_allowed =
-      ext_partition_allowed && partition_vert_allowed;
+  int horz4_partition_allowed = ext_partition_allowed && partition_horz_allowed;
+  int vert4_partition_allowed = ext_partition_allowed && partition_vert_allowed;
 
 #if CONFIG_EXT_PARTITION_TYPES_AB
   // The alternative AB partitions are allowed iff the corresponding 4:1
   // partitions are allowed.
-  const int horzab_partition_allowed = horz4_partition_allowed;
-  const int vertab_partition_allowed = vert4_partition_allowed;
+  int horzab_partition_allowed = horz4_partition_allowed;
+  int vertab_partition_allowed = vert4_partition_allowed;
 #else
   // The standard AB partitions are allowed whenever ext-partition-types are
   // allowed
-  const int horzab_partition_allowed = ext_partition_allowed;
-  const int vertab_partition_allowed = ext_partition_allowed;
-#endif
+  int horzab_partition_allowed = ext_partition_allowed;
+  int vertab_partition_allowed = ext_partition_allowed;
 
-  // PARTITION_HORZ_A
-  if (partition_horz_allowed && horzab_partition_allowed) {
+  if (cpi->sf.prune_ext_partition_types_search) {
+    horzab_partition_allowed &= (pc_tree->partitioning == PARTITION_HORZ ||
+                                 pc_tree->partitioning == PARTITION_SPLIT);
+    vertab_partition_allowed &= (pc_tree->partitioning == PARTITION_VERT ||
+                                 pc_tree->partitioning == PARTITION_SPLIT);
+  }
+  int horza_partition_allowed = horzab_partition_allowed;
+  int horzb_partition_allowed = horzab_partition_allowed;
+  if (cpi->sf.prune_ext_partition_types_search) {
+    const int64_t horz_a_rd = (horz_rd[1] < INT64_MAX ? horz_rd[1] : 0) +
+                              (split_rd[0] < INT64_MAX ? split_rd[0] : 0) +
+                              (split_rd[1] < INT64_MAX ? split_rd[1] : 0);
+    const int64_t horz_b_rd = (horz_rd[0] < INT64_MAX ? horz_rd[0] : 0) +
+                              (split_rd[2] < INT64_MAX ? split_rd[2] : 0) +
+                              (split_rd[3] < INT64_MAX ? split_rd[3] : 0);
+    horza_partition_allowed &= (horz_a_rd / 16 * 15 < best_rdc.rdcost);
+    horzb_partition_allowed &= (horz_b_rd / 16 * 15 < best_rdc.rdcost);
+  }
+#endif  // CONFIG_EXT_PARTITION_TYPES_AB
+
+// PARTITION_HORZ_A
 #if CONFIG_EXT_PARTITION_TYPES_AB
+  if (partition_horz_allowed && horzab_partition_allowed) {
     rd_test_partition3(
         cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->horizontala,
         ctx_none, mi_row, mi_col, bsize, PARTITION_HORZ_A, mi_row, mi_col,
         get_subsize(bsize, PARTITION_HORZ_4), mi_row + mi_step / 2, mi_col,
         get_subsize(bsize, PARTITION_HORZ_4), mi_row + mi_step, mi_col,
         get_subsize(bsize, PARTITION_HORZ));
+    restore_context(x, &x_ctx, mi_row, mi_col, bsize);
+  }
 #else
+  if (partition_horz_allowed && horza_partition_allowed) {
     subsize = get_subsize(bsize, PARTITION_HORZ_A);
     rd_test_partition3(cpi, td, tile_data, tp, pc_tree, &best_rdc,
                        pc_tree->horizontala, ctx_none, mi_row, mi_col, bsize,
                        PARTITION_HORZ_A, mi_row, mi_col, bsize2, mi_row,
                        mi_col + mi_step, bsize2, mi_row + mi_step, mi_col,
                        subsize);
-#endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
   }
-  // PARTITION_HORZ_B
-  if (partition_horz_allowed && horzab_partition_allowed) {
+#endif
+// PARTITION_HORZ_B
 #if CONFIG_EXT_PARTITION_TYPES_AB
+  if (partition_horz_allowed && horzab_partition_allowed) {
     rd_test_partition3(
         cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->horizontalb,
         ctx_none, mi_row, mi_col, bsize, PARTITION_HORZ_B, mi_row, mi_col,
         get_subsize(bsize, PARTITION_HORZ), mi_row + mi_step, mi_col,
         get_subsize(bsize, PARTITION_HORZ_4), mi_row + 3 * mi_step / 2, mi_col,
         get_subsize(bsize, PARTITION_HORZ_4));
+    restore_context(x, &x_ctx, mi_row, mi_col, bsize);
+  }
+  (void)vert_rd;
+  (void)horz_rd;
+  (void)split_rd;
 #else
+  if (partition_horz_allowed && horzb_partition_allowed) {
     subsize = get_subsize(bsize, PARTITION_HORZ_B);
     rd_test_partition3(cpi, td, tile_data, tp, pc_tree, &best_rdc,
                        pc_tree->horizontalb, ctx_none, mi_row, mi_col, bsize,
                        PARTITION_HORZ_B, mi_row, mi_col, subsize,
                        mi_row + mi_step, mi_col, bsize2, mi_row + mi_step,
                        mi_col + mi_step, bsize2);
-#endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
   }
-  // PARTITION_VERT_A
-  if (partition_vert_allowed && vertab_partition_allowed) {
+
+  int verta_partition_allowed = vertab_partition_allowed;
+  int vertb_partition_allowed = vertab_partition_allowed;
+  if (cpi->sf.prune_ext_partition_types_search) {
+    const int64_t vert_a_rd = (vert_rd[1] < INT64_MAX ? vert_rd[1] : 0) +
+                              (split_rd[0] < INT64_MAX ? split_rd[0] : 0) +
+                              (split_rd[2] < INT64_MAX ? split_rd[2] : 0);
+    const int64_t vert_b_rd = (vert_rd[0] < INT64_MAX ? vert_rd[0] : 0) +
+                              (split_rd[1] < INT64_MAX ? split_rd[1] : 0) +
+                              (split_rd[3] < INT64_MAX ? split_rd[3] : 0);
+    verta_partition_allowed &= (vert_a_rd / 16 * 15 < best_rdc.rdcost);
+    vertb_partition_allowed &= (vert_b_rd / 16 * 15 < best_rdc.rdcost);
+  }
+#endif  // CONFIG_EXT_PARTITION_TYPES_AB
+
+// PARTITION_VERT_A
 #if CONFIG_EXT_PARTITION_TYPES_AB
+  if (partition_vert_allowed && vertab_partition_allowed) {
     rd_test_partition3(
         cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->verticala,
         ctx_none, mi_row, mi_col, bsize, PARTITION_VERT_A, mi_row, mi_col,
         get_subsize(bsize, PARTITION_VERT_4), mi_row, mi_col + mi_step / 2,
         get_subsize(bsize, PARTITION_VERT_4), mi_row, mi_col + mi_step,
         get_subsize(bsize, PARTITION_VERT));
+    restore_context(x, &x_ctx, mi_row, mi_col, bsize);
+  }
 #else
+  if (partition_vert_allowed && verta_partition_allowed) {
     subsize = get_subsize(bsize, PARTITION_VERT_A);
     rd_test_partition3(cpi, td, tile_data, tp, pc_tree, &best_rdc,
                        pc_tree->verticala, ctx_none, mi_row, mi_col, bsize,
                        PARTITION_VERT_A, mi_row, mi_col, bsize2,
                        mi_row + mi_step, mi_col, bsize2, mi_row,
                        mi_col + mi_step, subsize);
-#endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
   }
-  // PARTITION_VERT_B
-  if (partition_vert_allowed && vertab_partition_allowed) {
+#endif
+// PARTITION_VERT_B
 #if CONFIG_EXT_PARTITION_TYPES_AB
+  if (partition_vert_allowed && vertab_partition_allowed) {
     rd_test_partition3(
         cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->verticalb,
         ctx_none, mi_row, mi_col, bsize, PARTITION_VERT_B, mi_row, mi_col,
         get_subsize(bsize, PARTITION_VERT), mi_row, mi_col + mi_step,
         get_subsize(bsize, PARTITION_VERT_4), mi_row, mi_col + 3 * mi_step / 2,
         get_subsize(bsize, PARTITION_VERT_4));
+    restore_context(x, &x_ctx, mi_row, mi_col, bsize);
+  }
 #else
+  if (partition_vert_allowed && vertb_partition_allowed) {
     subsize = get_subsize(bsize, PARTITION_VERT_B);
     rd_test_partition3(cpi, td, tile_data, tp, pc_tree, &best_rdc,
                        pc_tree->verticalb, ctx_none, mi_row, mi_col, bsize,
                        PARTITION_VERT_B, mi_row, mi_col, subsize, mi_row,
                        mi_col + mi_step, bsize2, mi_row + mi_step,
                        mi_col + mi_step, bsize2);
-#endif
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
   }
+#endif
 
   // PARTITION_HORZ_4
   // TODO(david.barker): For this and PARTITION_VERT_4,
   // * Add support for BLOCK_16X16 once we support 2x8 and 8x2 blocks for the
   //   chroma plane
-  // * Add support for supertx
+  if (cpi->sf.prune_ext_partition_types_search) {
+    horz4_partition_allowed &= (pc_tree->partitioning == PARTITION_HORZ ||
+                                pc_tree->partitioning == PARTITION_HORZ_A ||
+                                pc_tree->partitioning == PARTITION_HORZ_B ||
+                                pc_tree->partitioning == PARTITION_NONE ||
+                                pc_tree->partitioning == PARTITION_SPLIT);
+  }
   if (horz4_partition_allowed && !force_horz_split &&
       (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
     const int quarter_step = mi_size_high[bsize] / 4;
@@ -3130,6 +3207,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     restore_context(x, &x_ctx, mi_row, mi_col, bsize);
   }
   // PARTITION_VERT_4
+  if (cpi->sf.prune_ext_partition_types_search) {
+    vert4_partition_allowed &= (pc_tree->partitioning == PARTITION_VERT ||
+                                pc_tree->partitioning == PARTITION_VERT_A ||
+                                pc_tree->partitioning == PARTITION_VERT_B ||
+                                pc_tree->partitioning == PARTITION_NONE ||
+                                pc_tree->partitioning == PARTITION_SPLIT);
+  }
   if (vert4_partition_allowed && !force_vert_split &&
       (do_rectangular_split || av1_active_v_edge(cpi, mi_row, mi_step))) {
     const int quarter_step = mi_size_wide[bsize] / 4;
@@ -3368,7 +3452,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                                 &x->min_partition_size, &x->max_partition_size);
       }
       rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, cm->sb_size,
-                        &dummy_rdc, INT64_MAX, pc_root);
+                        &dummy_rdc, INT64_MAX, pc_root, NULL);
     }
 #if CONFIG_LPF_SB
     if (USE_LOOP_FILTER_SUPERBLOCK) {
