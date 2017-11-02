@@ -324,6 +324,7 @@ EXPERIMENT_LIST="
     mfmv
     frame_marker
     jnt_comp
+    frame_refs
     frame_sign_bias
     ext_skip
     obu
@@ -548,6 +549,7 @@ post_process_cmdline() {
     enabled cdef_singlepass && enable_feature cdef
     enabled mfmv && enable_feature frame_marker
     enabled jnt_comp && enable_feature frame_marker
+    enabled frame_refs && enable_feature frame_marker
     enabled frame_sign_bias && enable_feature frame_marker
     enabled txmg && enable_feature highbitdepth
     enabled ext_skip && enable_feature frame_marker
