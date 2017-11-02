@@ -522,6 +522,7 @@ config("compiler") {
     if (is_win) {
       # This is a straight translation of the non-Windows flags below.
       ldflags += [
+        "/opt:lldlto=0",
         "/opt:lldltojobs=8",
         "/lldltocache:" +
             rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
