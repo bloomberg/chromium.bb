@@ -53,10 +53,10 @@
         eventSender.setPageZoomFactor(1.2);
         await sendMouseDownAt(100, 100);
         assert_true(eventFired);
-        assert_equals(lastEvent.clientX, 83);
-        assert_equals(lastEvent.clientY, 83);
-        assert_equals(lastEvent.pageX, 83);
-        assert_equals(lastEvent.pageY, 83);
+        assert_approx_equals(lastEvent.clientX, 83.33333, floatPrecision);
+        assert_approx_equals(lastEvent.clientY, 83.33333, floatPrecision);
+        assert_approx_equals(lastEvent.pageX, 83.33333, floatPrecision);
+        assert_approx_equals(lastEvent.pageY, 83.33333, floatPrecision);
         eventSender.setPageZoomFactor(1.0)
     }, 'Zoomed');
 
@@ -78,10 +78,10 @@
         window.scrollTo(50, 50);
         await sendMouseDownAt(100, 100);
         assert_true(eventFired);
-        assert_equals(lastEvent.clientX, 83);
-        assert_equals(lastEvent.clientY, 83);
-        assert_equals(lastEvent.pageX, 133);
-        assert_equals(lastEvent.pageY, 133);
+        assert_approx_equals(lastEvent.clientX, 83.33333, floatPrecision);
+        assert_approx_equals(lastEvent.clientY, 83.33333, floatPrecision);
+        assert_approx_equals(lastEvent.pageX, 133.33333, floatPrecision);
+        assert_approx_equals(lastEvent.pageY, 133.33333, floatPrecision);
         eventSender.setPageZoomFactor(1.0)
         window.scrollTo(0, 0);
     }, 'Zoomed and scrolled');

@@ -432,6 +432,13 @@
       status: "experimental",
     },
     {
+      name: "FractionalMouseEvent",
+    },
+    {
+      name: "FractionalMouseTypePointerEvent",
+      status: "experimental",
+    },
+    {
       name: "FractionalScrollOffsets",
     },
     {

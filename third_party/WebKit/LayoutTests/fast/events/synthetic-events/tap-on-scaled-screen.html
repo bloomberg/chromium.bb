@@ -18,14 +18,15 @@ var targetRect = box.getBoundingClientRect();
 var offset = 50;
 var x = targetRect.left + offset;
 var y = targetRect.top + offset;
+const floatPrecision = 0.00001;
 
 function validTapResult(event) {
     receivedTap = true;
     assert_equals(event.target.id, "box");
-    assert_equals(event.clientX, x);
-    assert_equals(event.clientY, y);  
-    assert_equals(event.screenX, x+window.screenX);
-    assert_equals(event.screenY, y+window.screenY);
+    assert_approx_equals(event.clientX, x, floatPrecision);
+    assert_approx_equals(event.clientY, y, floatPrecision);
+    assert_approx_equals(event.screenX, x+window.screenX, floatPrecision);
+    assert_approx_equals(event.screenY, y+window.screenY, floatPrecision);
 }
 
 var testTap = async_test('Send a tap event.');
