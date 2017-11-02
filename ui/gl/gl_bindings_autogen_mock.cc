@@ -1149,6 +1149,14 @@ MockGLInterface::Mock_glFlushMappedBufferRange(GLenum target,
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glFlushMappedBufferRangeEXT(GLenum target,
+                                                  GLintptr offset,
+                                                  GLsizeiptr length) {
+  MakeFunctionUnique("glFlushMappedBufferRangeEXT");
+  interface_->FlushMappedBufferRange(target, offset, length);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glFramebufferRenderbuffer(GLenum target,
                                                 GLenum attachment,
                                                 GLenum renderbuffertarget,
@@ -4348,6 +4356,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glFlushMappedBufferRange") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glFlushMappedBufferRange);
+  if (strcmp(name, "glFlushMappedBufferRangeEXT") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glFlushMappedBufferRangeEXT);
   if (strcmp(name, "glFramebufferRenderbuffer") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glFramebufferRenderbuffer);
