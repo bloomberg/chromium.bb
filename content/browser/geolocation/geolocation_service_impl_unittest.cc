@@ -26,8 +26,8 @@ using device::GeolocationContext;
 using device::Geoposition;
 using device::mojom::GeolocationPtr;
 using device::mojom::GeopositionPtr;
-using device::mojom::GeolocationService;
-using device::mojom::GeolocationServicePtr;
+using blink::mojom::GeolocationService;
+using blink::mojom::GeolocationServicePtr;
 
 typedef base::Callback<void(PermissionStatus)> PermissionCallback;
 

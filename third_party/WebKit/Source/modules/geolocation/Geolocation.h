@@ -41,6 +41,7 @@
 #include "platform/Timer.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/geolocation/geolocation_service.mojom-blink.h"
 
 namespace blink {
 
@@ -170,7 +171,7 @@ class MODULES_EXPORT Geolocation final : public ScriptWrappable,
   Member<Geoposition> last_position_;
 
   device::mojom::blink::GeolocationPtr geolocation_;
-  device::mojom::blink::GeolocationServicePtr geolocation_service_;
+  mojom::blink::GeolocationServicePtr geolocation_service_;
   bool enable_high_accuracy_ = false;
 
   // Whether a GeoNotifier is waiting for a position update.
