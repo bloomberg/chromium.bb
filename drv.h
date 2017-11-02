@@ -78,13 +78,17 @@ struct drv_import_fd_data {
 	uint64_t use_flags;
 };
 
-struct map_info {
+struct vma {
 	void *addr;
 	size_t length;
 	uint32_t handle;
 	uint32_t map_flags;
 	int32_t refcount;
 	void *priv;
+};
+
+struct mapping {
+	struct vma *vma;
 };
 
 struct driver *drv_create(int fd);
@@ -111,13 +115,13 @@ void drv_bo_destroy(struct bo *bo);
 struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data);
 
 void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
-		 uint32_t map_flags, struct map_info **map_data, size_t plane);
+		 uint32_t map_flags, struct mapping **map_data, size_t plane);
 
-int drv_bo_unmap(struct bo *bo, struct map_info *data);
+int drv_bo_unmap(struct bo *bo, struct mapping *mapping);
 
-int drv_bo_invalidate(struct bo *bo, struct map_info *data);
+int drv_bo_invalidate(struct bo *bo, struct mapping *mapping);
 
-int drv_bo_flush(struct bo *bo, struct map_info *data);
+int drv_bo_flush(struct bo *bo, struct mapping *mapping);
 
 uint32_t drv_bo_get_width(struct bo *bo);
 

@@ -239,7 +239,8 @@ static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height, ui
 						 ARRAY_SIZE(modifiers));
 }
 
-static void *rockchip_bo_map(struct bo *bo, struct map_info *data, size_t plane, uint32_t map_flags)
+static void *rockchip_bo_map(struct bo *bo, struct mapping *mapping, size_t plane,
+			     uint32_t map_flags)
 {
 	int ret;
 	struct drm_rockchip_gem_map_off gem_map;
@@ -262,37 +263,37 @@ static void *rockchip_bo_map(struct bo *bo, struct map_info *data, size_t plane,
 	void *addr = mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 			  gem_map.offset);
 
-	data->length = bo->total_size;
+	mapping->vma->length = bo->total_size;
 
 	if (bo->use_flags & BO_USE_RENDERSCRIPT) {
 		priv = calloc(1, sizeof(*priv));
 		priv->cached_addr = calloc(1, bo->total_size);
 		priv->gem_addr = addr;
 		memcpy(priv->cached_addr, priv->gem_addr, bo->total_size);
-		data->priv = priv;
+		mapping->vma->priv = priv;
 		addr = priv->cached_addr;
 	}
 
 	return addr;
 }
 
-static int rockchip_bo_unmap(struct bo *bo, struct map_info *data)
+static int rockchip_bo_unmap(struct bo *bo, struct mapping *mapping)
 {
-	if (data->priv) {
-		struct rockchip_private_map_data *priv = data->priv;
-		data->addr = priv->gem_addr;
+	if (mapping->vma->priv) {
+		struct rockchip_private_map_data *priv = mapping->vma->priv;
+		mapping->vma->addr = priv->gem_addr;
 		free(priv->cached_addr);
 		free(priv);
-		data->priv = NULL;
+		mapping->vma->priv = NULL;
 	}
 
-	return munmap(data->addr, data->length);
+	return munmap(mapping->vma->addr, mapping->vma->length);
 }
 
-static int rockchip_bo_flush(struct bo *bo, struct map_info *data)
+static int rockchip_bo_flush(struct bo *bo, struct mapping *mapping)
 {
-	struct rockchip_private_map_data *priv = data->priv;
-	if (priv && (data->map_flags & BO_MAP_WRITE))
+	struct rockchip_private_map_data *priv = mapping->vma->priv;
+	if (priv && (mapping->vma->map_flags & BO_MAP_WRITE))
 		memcpy(priv->gem_addr, priv->cached_addr, bo->total_size);
 
 	return 0;

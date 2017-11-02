@@ -75,10 +75,10 @@ struct backend {
 					uint32_t format, const uint64_t *modifiers, uint32_t count);
 	int (*bo_destroy)(struct bo *bo);
 	int (*bo_import)(struct bo *bo, struct drv_import_fd_data *data);
-	void *(*bo_map)(struct bo *bo, struct map_info *data, size_t plane, uint32_t map_flags);
-	int (*bo_unmap)(struct bo *bo, struct map_info *data);
-	int (*bo_invalidate)(struct bo *bo, struct map_info *data);
-	int (*bo_flush)(struct bo *bo, struct map_info *data);
+	void *(*bo_map)(struct bo *bo, struct mapping *mapping, size_t plane, uint32_t map_flags);
+	int (*bo_unmap)(struct bo *bo, struct mapping *mapping);
+	int (*bo_invalidate)(struct bo *bo, struct mapping *mapping);
+	int (*bo_flush)(struct bo *bo, struct mapping *mapping);
 	uint32_t (*resolve_format)(uint32_t format, uint64_t use_flags);
 };
 

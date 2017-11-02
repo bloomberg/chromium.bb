@@ -325,7 +325,7 @@ void drv_bo_destroy(struct bo *bo)
 	pthread_mutex_unlock(&drv->driver_lock);
 
 	if (total == 0) {
-		assert(drv_map_info_destroy(bo) == 0);
+		assert(drv_mapping_destroy(bo) == 0);
 		bo->drv->backend->bo_destroy(bo);
 	}
 
@@ -383,12 +383,12 @@ destroy_bo:
 }
 
 void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
-		 uint32_t map_flags, struct map_info **map_data, size_t plane)
+		 uint32_t map_flags, struct mapping **map_data, size_t plane)
 {
 	void *ptr;
 	uint8_t *addr;
 	size_t offset;
-	struct map_info *data;
+	struct mapping *mapping;
 
 	assert(width > 0);
 	assert(height > 0);
@@ -401,52 +401,55 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 	pthread_mutex_lock(&bo->drv->driver_lock);
 
 	if (!drmHashLookup(bo->drv->map_table, bo->handles[plane].u32, &ptr)) {
-		data = (struct map_info *)ptr;
+		mapping = (struct mapping *)ptr;
 		/* TODO(gsingh): support mapping same buffer with different flags. */
-		assert(data->map_flags == map_flags);
-		data->refcount++;
+		assert(mapping->vma->map_flags == map_flags);
+		mapping->vma->refcount++;
 		goto success;
 	}
 
-	data = calloc(1, sizeof(*data));
-	addr = bo->drv->backend->bo_map(bo, data, plane, map_flags);
+	mapping = calloc(1, sizeof(*mapping));
+	mapping->vma = calloc(1, sizeof(*mapping->vma));
+	addr = bo->drv->backend->bo_map(bo, mapping, plane, map_flags);
 	if (addr == MAP_FAILED) {
 		*map_data = NULL;
-		free(data);
+		free(mapping->vma);
+		free(mapping);
 		pthread_mutex_unlock(&bo->drv->driver_lock);
 		return MAP_FAILED;
 	}
 
-	data->refcount = 1;
-	data->addr = addr;
-	data->handle = bo->handles[plane].u32;
-	data->map_flags = map_flags;
-	drmHashInsert(bo->drv->map_table, bo->handles[plane].u32, (void *)data);
+	mapping->vma->refcount = 1;
+	mapping->vma->addr = addr;
+	mapping->vma->handle = bo->handles[plane].u32;
+	mapping->vma->map_flags = map_flags;
+	drmHashInsert(bo->drv->map_table, bo->handles[plane].u32, (void *)mapping);
 
 success:
-	drv_bo_invalidate(bo, data);
-	*map_data = data;
+	drv_bo_invalidate(bo, mapping);
+	*map_data = mapping;
 	offset = drv_bo_get_plane_stride(bo, plane) * y;
 	offset += drv_stride_from_format(bo->format, x, plane);
-	addr = (uint8_t *)data->addr;
+	addr = (uint8_t *)mapping->vma->addr;
 	addr += drv_bo_get_plane_offset(bo, plane) + offset;
 	pthread_mutex_unlock(&bo->drv->driver_lock);
 
 	return (void *)addr;
 }
 
-int drv_bo_unmap(struct bo *bo, struct map_info *data)
+int drv_bo_unmap(struct bo *bo, struct mapping *mapping)
 {
-	int ret = drv_bo_flush(bo, data);
+	int ret = drv_bo_flush(bo, mapping);
 	if (ret)
 		return ret;
 
 	pthread_mutex_lock(&bo->drv->driver_lock);
 
-	if (!--data->refcount) {
-		ret = bo->drv->backend->bo_unmap(bo, data);
-		drmHashDelete(bo->drv->map_table, data->handle);
-		free(data);
+	if (!--mapping->vma->refcount) {
+		ret = bo->drv->backend->bo_unmap(bo, mapping);
+		drmHashDelete(bo->drv->map_table, mapping->vma->handle);
+		free(mapping->vma);
+		free(mapping);
 	}
 
 	pthread_mutex_unlock(&bo->drv->driver_lock);
@@ -454,27 +457,31 @@ int drv_bo_unmap(struct bo *bo, struct map_info *data)
 	return ret;
 }
 
-int drv_bo_invalidate(struct bo *bo, struct map_info *data)
+int drv_bo_invalidate(struct bo *bo, struct mapping *mapping)
 {
 	int ret = 0;
-	assert(data);
-	assert(data->refcount > 0);
+
+	assert(mapping);
+	assert(mapping->vma);
+	assert(mapping->vma->refcount > 0);
 
 	if (bo->drv->backend->bo_invalidate)
-		ret = bo->drv->backend->bo_invalidate(bo, data);
+		ret = bo->drv->backend->bo_invalidate(bo, mapping);
 
 	return ret;
 }
 
-int drv_bo_flush(struct bo *bo, struct map_info *data)
+int drv_bo_flush(struct bo *bo, struct mapping *mapping)
 {
 	int ret = 0;
-	assert(data);
-	assert(data->refcount > 0);
+
+	assert(mapping);
+	assert(mapping->vma);
+	assert(mapping->vma->refcount > 0);
 	assert(!(bo->use_flags & BO_USE_PROTECTED));
 
 	if (bo->drv->backend->bo_flush)
-		ret = bo->drv->backend->bo_flush(bo, data);
+		ret = bo->drv->backend->bo_flush(bo, mapping);
 
 	return ret;
 }

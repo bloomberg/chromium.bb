@@ -309,7 +309,7 @@ int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	return 0;
 }
 
-void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane, uint32_t map_flags)
+void *drv_dumb_bo_map(struct bo *bo, struct mapping *mapping, size_t plane, uint32_t map_flags)
 {
 	int ret;
 	size_t i;
@@ -326,23 +326,23 @@ void *drv_dumb_bo_map(struct bo *bo, struct map_info *data, size_t plane, uint32
 
 	for (i = 0; i < bo->num_planes; i++)
 		if (bo->handles[i].u32 == bo->handles[plane].u32)
-			data->length += bo->sizes[i];
+			mapping->vma->length += bo->sizes[i];
 
-	return mmap(0, data->length, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	return mmap(0, mapping->vma->length, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    map_dumb.offset);
 }
 
-int drv_bo_munmap(struct bo *bo, struct map_info *data)
+int drv_bo_munmap(struct bo *bo, struct mapping *mapping)
 {
-	return munmap(data->addr, data->length);
+	return munmap(mapping->vma->addr, mapping->vma->length);
 }
 
-int drv_map_info_destroy(struct bo *bo)
+int drv_mapping_destroy(struct bo *bo)
 {
 	int ret;
 	void *ptr;
 	size_t plane;
-	struct map_info *data;
+	struct mapping *mapping;
 
 	/*
 	 * This function is called right before the buffer is destroyed. It will free any mappings
@@ -351,15 +351,16 @@ int drv_map_info_destroy(struct bo *bo)
 
 	for (plane = 0; plane < bo->num_planes; plane++) {
 		if (!drmHashLookup(bo->drv->map_table, bo->handles[plane].u32, &ptr)) {
-			data = (struct map_info *)ptr;
-			ret = bo->drv->backend->bo_unmap(bo, data);
+			mapping = (struct mapping *)ptr;
+			ret = bo->drv->backend->bo_unmap(bo, mapping);
 			if (ret) {
 				fprintf(stderr, "drv: munmap failed");
 				return ret;
 			}
 
-			drmHashDelete(bo->drv->map_table, data->handle);
-			free(data);
+			drmHashDelete(bo->drv->map_table, mapping->vma->handle);
+			free(mapping->vma);
+			free(mapping);
 		}
 	}
 

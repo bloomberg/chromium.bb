@@ -62,7 +62,7 @@ int32_t cros_gralloc_buffer::lock(uint32_t map_flags, uint8_t *addr[DRV_MAX_PLAN
 	if (map_flags) {
 		if (lock_data_[0]) {
 			drv_bo_invalidate(bo_, lock_data_[0]);
-			vaddr = lock_data_[0]->addr;
+			vaddr = lock_data_[0]->vma->addr;
 		} else {
 			vaddr = drv_bo_map(bo_, 0, 0, drv_bo_get_width(bo_), drv_bo_get_height(bo_),
 					   map_flags, &lock_data_[0], 0);

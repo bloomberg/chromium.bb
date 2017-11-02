@@ -62,7 +62,7 @@ static int vc4_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 	return 0;
 }
 
-static void *vc4_bo_map(struct bo *bo, struct map_info *data, size_t plane, uint32_t map_flags)
+static void *vc4_bo_map(struct bo *bo, struct mapping *mapping, size_t plane, uint32_t map_flags)
 {
 	int ret;
 	struct drm_vc4_mmap_bo bo_map;
@@ -76,7 +76,7 @@ static void *vc4_bo_map(struct bo *bo, struct map_info *data, size_t plane, uint
 		return MAP_FAILED;
 	}
 
-	data->length = bo->total_size;
+	mapping->vma->length = bo->total_size;
 	return mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    bo_map.offset);
 }

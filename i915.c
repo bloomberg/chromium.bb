@@ -445,7 +445,7 @@ static int i915_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	return 0;
 }
 
-static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane, uint32_t map_flags)
+static void *i915_bo_map(struct bo *bo, struct mapping *mapping, size_t plane, uint32_t map_flags)
 {
 	int ret;
 	void *addr;
@@ -489,11 +489,11 @@ static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane, uin
 		return addr;
 	}
 
-	data->length = bo->total_size;
+	mapping->vma->length = bo->total_size;
 	return addr;
 }
 
-static int i915_bo_invalidate(struct bo *bo, struct map_info *data)
+static int i915_bo_invalidate(struct bo *bo, struct mapping *mapping)
 {
 	int ret;
 	struct drm_i915_gem_set_domain set_domain;
@@ -502,11 +502,11 @@ static int i915_bo_invalidate(struct bo *bo, struct map_info *data)
 	set_domain.handle = bo->handles[0].u32;
 	if (bo->tiling == I915_TILING_NONE) {
 		set_domain.read_domains = I915_GEM_DOMAIN_CPU;
-		if (data->map_flags & BO_MAP_WRITE)
+		if (mapping->vma->map_flags & BO_MAP_WRITE)
 			set_domain.write_domain = I915_GEM_DOMAIN_CPU;
 	} else {
 		set_domain.read_domains = I915_GEM_DOMAIN_GTT;
-		if (data->map_flags & BO_MAP_WRITE)
+		if (mapping->vma->map_flags & BO_MAP_WRITE)
 			set_domain.write_domain = I915_GEM_DOMAIN_GTT;
 	}
 
@@ -519,11 +519,11 @@ static int i915_bo_invalidate(struct bo *bo, struct map_info *data)
 	return 0;
 }
 
-static int i915_bo_flush(struct bo *bo, struct map_info *data)
+static int i915_bo_flush(struct bo *bo, struct mapping *mapping)
 {
 	struct i915_device *i915 = bo->drv->priv;
 	if (!i915->has_llc && bo->tiling == I915_TILING_NONE)
-		i915_clflush(data->addr, data->length);
+		i915_clflush(mapping->vma->addr, mapping->vma->length);
 
 	return 0;
 }

@@ -232,7 +232,7 @@ PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t widt
 	*stride = gbm_bo_get_plane_stride(bo, plane);
 	map_flags = (transfer_flags & GBM_BO_TRANSFER_READ) ? BO_MAP_READ : BO_MAP_NONE;
 	map_flags |= (transfer_flags & GBM_BO_TRANSFER_WRITE) ? BO_MAP_WRITE : BO_MAP_NONE;
-	return drv_bo_map(bo->bo, x, y, width, height, map_flags, (struct map_info **)map_data,
+	return drv_bo_map(bo->bo, x, y, width, height, map_flags, (struct mapping **)map_data,
 			  plane);
 }
 

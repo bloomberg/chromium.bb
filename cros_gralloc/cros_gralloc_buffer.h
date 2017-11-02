@@ -38,7 +38,7 @@ class cros_gralloc_buffer
 	int32_t lockcount_;
 	uint32_t num_planes_;
 
-	struct map_info *lock_data_[DRV_MAX_PLANES];
+	struct mapping *lock_data_[DRV_MAX_PLANES];
 };
 
 #endif
