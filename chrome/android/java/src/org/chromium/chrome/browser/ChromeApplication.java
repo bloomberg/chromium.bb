@@ -18,6 +18,8 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.build.BuildHooksAndroid;
+import org.chromium.chrome.browser.crash.PureJavaExceptionHandler;
+import org.chromium.chrome.browser.crash.PureJavaExceptionReporter;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.IncognitoDocumentActivity;
 import org.chromium.chrome.browser.init.InvalidStartupDialog;
@@ -45,6 +47,10 @@ public class ChromeApplication extends ContentApplication {
         super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
         BuildHooksAndroid.initCustomResources(this);
+        Boolean isIsolatedProcess = PureJavaExceptionReporter.detectIsIsolatedProcess();
+        if (isIsolatedProcess != null && !isIsolatedProcess.booleanValue()) {
+            PureJavaExceptionHandler.installHandler();
+        }
     }
 
     /**
