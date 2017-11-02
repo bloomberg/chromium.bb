@@ -74,6 +74,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   bool IsFrameFetchContext() override { return true; }
 
+  void RecordDataUriWithOctothorpe() override;
+
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
   mojom::FetchCacheMode ResourceRequestCachePolicy(

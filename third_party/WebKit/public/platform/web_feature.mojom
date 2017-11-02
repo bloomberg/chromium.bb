@@ -1745,6 +1745,7 @@ enum WebFeature {
   kDocumentSetSelectedStylesheetSet = 2213,
   kGeolocationGetCurrentPosition = 2214,
   kGeolocationWatchPosition = 2215,
+  kDataUriHasOctothorpe = 2216,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
