@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_AUDIO_SAMPLE_TYPES_H_
 #define MEDIA_BASE_AUDIO_SAMPLE_TYPES_H_
 
+#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <type_traits>
@@ -60,6 +61,14 @@ class FloatSampleTypeTraits {
  private:
   template <typename FloatType>
   static SampleType From(FloatType source_value) {
+    // Apply clipping (aka. clamping). These values are frequently sent to OS
+    // level drivers that may not properly handle these values.
+    if (std::isnan(source_value))
+      return kZeroPointValue;
+    if (source_value <= kMinValue)
+      return kMinValue;
+    if (source_value >= kMaxValue)
+      return kMaxValue;
     return static_cast<SampleType>(source_value);
   }
 
