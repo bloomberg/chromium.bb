@@ -12,6 +12,7 @@
 #include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/OffscreenCanvasPlaceholder.h"
+#include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
@@ -133,10 +134,7 @@ void OffscreenCanvasFrameDispatcherImpl::PostImageToPlaceholder(
 void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
     scoped_refptr<StaticBitmapImage> image,
     double commit_start_time,
-    const SkIRect& damage_rect,
-    bool is_web_gl_software_rendering /* This flag is true when WebGL's commit
-                                         is called on SwiftShader. */
-    ) {
+    const SkIRect& damage_rect) {
   if (!image || !VerifyImageSize(image->Size()))
     return;
 
@@ -185,26 +183,26 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
       EnumerationHistogram, commit_type_histogram,
       ("OffscreenCanvas.CommitType", kOffscreenCanvasCommitTypeCount));
   if (image->IsTextureBacked()) {
-    if (Platform::Current()->IsGPUCompositingEnabled() &&
-        !is_web_gl_software_rendering) {
+    // While |image| is texture backed, it could be generated with "software
+    // rendering" aka swiftshader. If the compositor is not also using
+    // swiftshader, then we could not give a swiftshader based texture
+    // to the compositor. However in that case, IsGpuCompositingEnabled() will
+    // also be false, so we will avoid doing so.
+    if (SharedGpuContext::IsGpuCompositingEnabled()) {
       // Case 1: both canvas and compositor are gpu accelerated.
       commit_type = kCommitGPUCanvasGPUCompositing;
       offscreen_canvas_resource_provider_
           ->SetTransferableResourceToStaticBitmapImage(resource, image);
       yflipped = true;
     } else {
-      // Case 2: canvas is accelerated but --disable-gpu-compositing is
-      // specified, or WebGL's commit is called with SwiftShader. The latter
-      // case is indicated by
-      // WebGraphicsContext3DProvider::isSoftwareRendering.
+      // Case 2: canvas is accelerated but gpu compositing is disabled.
       commit_type = kCommitGPUCanvasSoftwareCompositing;
       offscreen_canvas_resource_provider_
           ->SetTransferableResourceToSharedBitmap(resource, image);
     }
   } else {
-    if (Platform::Current()->IsGPUCompositingEnabled() &&
-        !is_web_gl_software_rendering) {
-      // Case 3: canvas is not gpu-accelerated, but compositor is
+    if (SharedGpuContext::IsGpuCompositingEnabled()) {
+      // Case 3: canvas is not gpu-accelerated, but compositor is.
       commit_type = kCommitSoftwareCanvasGPUCompositing;
       offscreen_canvas_resource_provider_
           ->SetTransferableResourceToSharedGPUContext(resource, image);

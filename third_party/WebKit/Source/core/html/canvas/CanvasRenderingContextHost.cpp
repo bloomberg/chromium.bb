@@ -13,7 +13,6 @@ CanvasRenderingContextHost::CanvasRenderingContextHost() {}
 ScriptPromise CanvasRenderingContextHost::Commit(
     scoped_refptr<StaticBitmapImage> bitmap_image,
     const SkIRect& damage_rect,
-    bool is_web_gl_software_rendering,
     ScriptState* script_state,
     ExceptionState& exception_state) {
   exception_state.ThrowDOMException(kInvalidStateError,

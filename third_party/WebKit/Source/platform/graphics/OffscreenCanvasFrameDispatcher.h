@@ -25,8 +25,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
   virtual ~OffscreenCanvasFrameDispatcher() {}
   virtual void DispatchFrame(scoped_refptr<StaticBitmapImage>,
                              double commit_start_time,
-                             const SkIRect& damage_rect,
-                             bool is_web_gl_software_rendering) = 0;
+                             const SkIRect& damage_rect) = 0;
   virtual void ReclaimResource(unsigned resource_id) = 0;
   virtual void SetNeedsBeginFrame(bool) = 0;
   virtual void SetSuspendAnimation(bool) = 0;

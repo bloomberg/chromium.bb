@@ -43,7 +43,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
 
   virtual ScriptPromise Commit(scoped_refptr<StaticBitmapImage>,
                                const SkIRect& damage_rect,
-                               bool is_web_gl_software_rendering,
                                ScriptState*,
                                ExceptionState&);
 

@@ -35,8 +35,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl
   bool IsAnimationSuspended() const final { return suspend_animation_; }
   void DispatchFrame(scoped_refptr<StaticBitmapImage>,
                      double commit_start_time,
-                     const SkIRect& damage_rect,
-                     bool is_web_gl_software_rendering = false) final;
+                     const SkIRect& damage_rect) final;
   void ReclaimResource(unsigned resource_id) final;
   void Reshape(int width, int height) final;
 

@@ -741,10 +741,11 @@ bool RendererBlinkPlatformImpl::IsThreadedCompositingEnabled() {
   return thread && thread->compositor_task_runner().get();
 }
 
-bool RendererBlinkPlatformImpl::IsGPUCompositingEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return !command_line.HasSwitch(switches::kDisableGpuCompositing);
+bool RendererBlinkPlatformImpl::IsGpuCompositingDisabled() {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  // |thread| can be NULL in tests.
+  return !thread || thread->IsGpuCompositingDisabled();
 }
 
 bool RendererBlinkPlatformImpl::IsThreadedAnimationEnabled() {
