@@ -150,16 +150,6 @@ void WebServiceWorkerRegistrationImpl::SetActive(
     queued_tasks_.push_back(QueuedTask(ACTIVE, service_worker));
 }
 
-void WebServiceWorkerRegistrationImpl::OnUpdateFound() {
-  if (state_ == LifecycleState::kDetached)
-    return;
-  DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
-  if (proxy_)
-    proxy_->DispatchUpdateFoundEvent();
-  else
-    queued_tasks_.push_back(QueuedTask(UPDATE_FOUND, nullptr));
-}
-
 void WebServiceWorkerRegistrationImpl::SetProxy(
     blink::WebServiceWorkerRegistrationProxy* proxy) {
   DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
@@ -441,6 +431,26 @@ void WebServiceWorkerRegistrationImpl::SetVersionAttributes(
     SetActive(dispatcher->GetOrCreateServiceWorker(
         dispatcher->Adopt(std::move(active))));
   }
+}
+
+void WebServiceWorkerRegistrationImpl::UpdateFound() {
+  if (!creation_task_runner_->RunsTasksInCurrentSequence()) {
+    // As this posted task will definitely run before OnConnectionError() on the
+    // |creation_task_runner_|, using base::Unretained() here is safe.
+    creation_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WebServiceWorkerRegistrationImpl::UpdateFound,
+                       base::Unretained(this)));
+    return;
+  }
+
+  if (state_ == LifecycleState::kDetached)
+    return;
+  DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
+  if (proxy_)
+    proxy_->DispatchUpdateFoundEvent();
+  else
+    queued_tasks_.push_back(QueuedTask(UPDATE_FOUND, nullptr));
 }
 
 }  // namespace content

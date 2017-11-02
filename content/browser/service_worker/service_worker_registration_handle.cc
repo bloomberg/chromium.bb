@@ -117,9 +117,8 @@ void ServiceWorkerRegistrationHandle::OnRegistrationFailed(
 
 void ServiceWorkerRegistrationHandle::OnUpdateFound(
     ServiceWorkerRegistration* registration) {
-  if (!provider_host_)
-    return;  // Could be nullptr in some tests.
-  provider_host_->SendUpdateFoundMessage(handle_id_);
+  DCHECK(remote_registration_);
+  remote_registration_->UpdateFound();
 }
 
 void ServiceWorkerRegistrationHandle::Update(UpdateCallback callback) {

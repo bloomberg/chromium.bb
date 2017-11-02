@@ -238,12 +238,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      int /* handle_id */,
                      blink::mojom::ServiceWorkerState)
 
-// Informs the child process that new ServiceWorker enters the installation
-// phase.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_UpdateFound,
-                     int /* thread_id */,
-                     int /* registration_handle_id */)
-
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_DidGetNavigationPreloadState,
                      int /* thread_id */,
                      int /* request_id */,

@@ -761,22 +761,6 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   return provider_info;
 }
 
-void ServiceWorkerProviderHost::SendUpdateFoundMessage(
-    int registration_handle_id) {
-  if (!dispatcher_host_)
-    return;
-
-  if (!IsReadyToSendMessages()) {
-    queued_events_.push_back(
-        base::Bind(&ServiceWorkerProviderHost::SendUpdateFoundMessage,
-                   AsWeakPtr(), registration_handle_id));
-    return;
-  }
-
-  Send(new ServiceWorkerMsg_UpdateFound(
-      render_thread_id_, registration_handle_id));
-}
-
 void ServiceWorkerProviderHost::SendServiceWorkerStateChangedMessage(
     int worker_handle_id,
     blink::mojom::ServiceWorkerState state) {
