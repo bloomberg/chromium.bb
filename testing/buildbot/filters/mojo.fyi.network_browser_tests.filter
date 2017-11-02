@@ -19,6 +19,7 @@
 -Mojo/ECKEncryptedMediaTest.OutputProtectionTest/0
 -Mojo/ECKEncryptedMediaTest.PlatformVerificationTest/0
 -Mojo/ECKEncryptedMediaTest.Renewal/0
+-Mojo/ECKEncryptedMediaTest.StorageIdTest/0
 -MSE_ExternalClearKey_Mojo/EncryptedMediaTest.ConfigChangeVideo_ClearToEncrypted/0
 -MSE_ExternalClearKey_Mojo/EncryptedMediaTest.ConfigChangeVideo_EncryptedToClear/0
 -MSE_ExternalClearKey_Mojo/EncryptedMediaTest.ConfigChangeVideo_EncryptedToEncrypted/0
@@ -449,6 +450,7 @@
 -ExtensionBrowserTest.PageActionCrash25562
 -ExtensionBrowserTest.PageActionInPageNavigation
 -ExtensionBrowserTest.PageActionRefreshCrash
+-ExtensionBrowserTest.PromptToReEnableExtensionsOnNavigation
 -ExtensionBrowserTest.RSSMultiRelLink
 -ExtensionBrowserTest.TitleLocalizationPageAction
 -ExtensionBrowserTest.WebContents
@@ -1053,6 +1055,9 @@
 -PaymentRequestNoShippingTest.OrderSummaryAndClickCancel
 -PaymentRequestNoShippingTest.PayWithVisa
 -PaymentRequestNotShownTest.OnlyNotShownMetricsLogged
+-PaymentRequestNoUpdateWithTest.BuyWithoutCallingUpdateWith
+-PaymentRequestNoUpdateWithTest.BuyWithoutListeners
+-PaymentRequestNoUpdateWithTest.BuyWithoutPromises
 -PaymentRequestOrderSummaryViewControllerTest.OrderSummaryReflectsShippingOption
 -PaymentRequestPaymentAppTest.ShowNotSupportedError
 -PaymentRequestPaymentMethodIdentifierTest.BasicCard_NetworkThenBasicCardWithSameNetwork
@@ -2308,6 +2313,7 @@
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.WarningAllowCreatingNewWindows_LogsToConsole
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.WarningDoNotBlockCreatingNewWindows_LogsToConsole
 -SafeJsonParserTest.Parse
+-SafeJsonParserImplTest.Isolation
 -SecurityStateTabHelperTest.BrokenHTTPS
 -SecurityStateTabHelperTest.MixedContentWithSHA1Cert
 -SecurityStateTabHelperTest.PasswordSecurityLevelDowngradedOnFilesystemUrl
@@ -2513,6 +2519,7 @@
 -DownloadTest.DownloadTest_History
 -DownloadTest.DownloadTest_IncognitoRegular
 -DownloadTest.DownloadTest_PercentComplete
+-DownloadTest.DownloadTest_PauseResumeCancel
 -DownloadTest.DownloadTest_Remove
 -DownloadTest.DownloadTest_Renaming
 -DownloadTest.DownloadUrl
@@ -2792,6 +2799,9 @@
 # crbug.com/779197 The |state_| is actualy CANCELLED_INTERNAL.
 -SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithUserGesture
 -SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithoutUserGesture
+
+# URL with fragments is not correctly handled.
+-SBNavigationObserverBrowserTest.DownloadAttributionWithURLFragment
 
 # crbug.com/779210 NOTREACHED() reached at SaveFileManager::OnSaveURL().
 -SavePageBrowserTest.SavePageBrowserTest_NonMHTML
