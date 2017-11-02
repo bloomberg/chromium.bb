@@ -252,26 +252,29 @@
               hidden="[[isControlled_(data.controlledInfo)]]">
             $i18n{itemRemove}
           </paper-button>
-          <paper-button id="errors-button" on-tap="onErrorsTap_"
-              hidden$="[[computeErrorsHidden_(data.*)]]">
-            $i18n{itemErrors}
-          </paper-button>
+          <template is="dom-if" if="[[shouldShowErrorsButton_(data.*)]]">
+            <paper-button id="errors-button" on-tap="onErrorsTap_">
+              $i18n{itemErrors}
+            </paper-button>
+          </template>
         </div>
         <template is="dom-if" if="[[!computeDevReloadButtonHidden_(data.*)]]">
           <button id="dev-reload-button" is="paper-icon-button-light"
               class="icon-refresh no-overlap" on-tap="onReloadTap_">
           </button>
         </template>
-        <paper-button id="repair-button" class="action-button"
-            on-tap="onRepairTap_"
-            hidden$="[[!data.disableReasons.corruptInstall]]">
-          $i18n{itemRepair}
-        </paper-button>
-        <paper-button id="terminated-reload-button" on-tap="onReloadTap_"
-            class="action-button"
-            hidden$="[[!isTerminated_(data.state)]]">
-          $i18n{itemReload}
-        </paper-button>
+        <template is="dom-if" if="[[data.disableReasons.corruptInstall]]">
+          <paper-button id="repair-button" class="action-button"
+              on-tap="onRepairTap_">
+            $i18n{itemRepair}
+          </paper-button>
+        </template>
+        <template is="dom-if" if="[[isTerminated_(data.state)]]">
+          <paper-button id="terminated-reload-button" on-tap="onReloadTap_"
+              class="action-button">
+            $i18n{itemReload}
+          </paper-button>
+        </template>
         <cr-toggle id="enable-toggle" class="action-button"
             aria-label$="[[appOrExtension(
                 data.type,
