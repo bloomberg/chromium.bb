@@ -64,7 +64,9 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       const std::vector<std::string>& outstanding_guids) override;
   void UpdateUI(const std::string& title) override;
   uint64_t GetInProgressDownloadedBytes() override;
-  void Abort() override;
+
+  // Aborts the job including cancelling any ongoing downloads.
+  void Abort();
 
   // Returns the registration id for which this job is fetching data.
   const BackgroundFetchRegistrationId& registration_id() const {

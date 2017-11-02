@@ -18,11 +18,9 @@ namespace background_fetch {
 MarkRegistrationForDeletionTask::MarkRegistrationForDeletionTask(
     BackgroundFetchDataManager* data_manager,
     const BackgroundFetchRegistrationId& registration_id,
-    bool aborted,
     HandleBackgroundFetchErrorCallback callback)
     : DatabaseTask(data_manager),
       registration_id_(registration_id),
-      aborted_(aborted),
       callback_(std::move(callback)),
       weak_factory_(this) {}
 
@@ -102,12 +100,6 @@ void MarkRegistrationForDeletionTask::DidDeactivate(
   // If CleanupTask runs after this, it shouldn't clean up the
   // |unique_id| as there may still be JavaScript references to it.
   ref_counted_unique_ids().emplace(registration_id_.unique_id());
-
-  if (aborted_) {
-    auto* controller = GetController(registration_id_.unique_id());
-    if (controller)
-      controller->Abort();
-  }
 
   std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE);
   Finished();  // Destroys |this|.

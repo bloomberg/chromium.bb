@@ -105,13 +105,12 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
   // BackgroundFetchDataManager::MarkRegistrationForDeletion().
   void MarkRegistrationForDeletion(
       const BackgroundFetchRegistrationId& registration_id,
-      bool aborted,
       blink::mojom::BackgroundFetchError* out_error) {
     DCHECK(out_error);
 
     base::RunLoop run_loop;
     background_fetch_data_manager_->MarkRegistrationForDeletion(
-        registration_id, aborted,
+        registration_id,
         base::BindOnce(&DidGetError, run_loop.QuitClosure(), out_error));
     run_loop.Run();
   }
@@ -170,7 +169,7 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   blink::mojom::BackgroundFetchError error;
 
   // Deactivating the not-yet-created registration should fail.
-  MarkRegistrationForDeletion(registration_id1, true /* aborted */, &error);
+  MarkRegistrationForDeletion(registration_id1, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
 
   // Creating the initial registration should succeed.
@@ -189,11 +188,11 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID);
 
   // Deactivating the second registration that failed to be created should fail.
-  MarkRegistrationForDeletion(registration_id2, true /* aborted */, &error);
+  MarkRegistrationForDeletion(registration_id2, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
 
   // Deactivating the initial registration should succeed.
-  MarkRegistrationForDeletion(registration_id1, true /* aborted */, &error);
+  MarkRegistrationForDeletion(registration_id1, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   // And now registering the second registration should work fine, since there
@@ -250,7 +249,7 @@ TEST_F(BackgroundFetchDataManagerTest, CreateAndDeleteRegistrationPersisted) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID);
 
   // Deactivating the registration should succeed.
-  MarkRegistrationForDeletion(registration_id1, true /* aborted */, &error);
+  MarkRegistrationForDeletion(registration_id1, &error);
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   EXPECT_EQ(expected_inactive_data_count,
             GetRegistrationUserDataByKeyPrefix(sw_id, "bgfetch_").size());
@@ -303,7 +302,7 @@ TEST_F(BackgroundFetchDataManagerTest, Cleanup) {
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   // And deactivate it.
-  MarkRegistrationForDeletion(registration_id, true /* aborted */, &error);
+  MarkRegistrationForDeletion(registration_id, &error);
   ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
   RestartDataManagerFromPersistentStorage();

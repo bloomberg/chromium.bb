@@ -489,7 +489,6 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
 
 void BackgroundFetchDataManager::MarkRegistrationForDeletion(
     const BackgroundFetchRegistrationId& registration_id,
-    bool aborted,
     HandleBackgroundFetchErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -497,7 +496,7 @@ void BackgroundFetchDataManager::MarkRegistrationForDeletion(
           switches::kEnableBackgroundFetchPersistence)) {
     AddDatabaseTask(
         std::make_unique<background_fetch::MarkRegistrationForDeletionTask>(
-            this, registration_id, aborted, std::move(callback)));
+            this, registration_id, std::move(callback)));
     return;
   }
 
@@ -518,13 +517,6 @@ void BackgroundFetchDataManager::MarkRegistrationForDeletion(
   }
 
   active_registration_unique_ids_.erase(active_unique_id_iter);
-
-  if (aborted) {
-    // Terminate any active DatabaseClient's downloads.
-    auto client_iter = database_clients_.find(registration_id.unique_id());
-    if (client_iter != database_clients_.end())
-      client_iter->second->Abort();
-  }
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE);
 }

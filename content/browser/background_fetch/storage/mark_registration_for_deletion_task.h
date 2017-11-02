@@ -23,7 +23,6 @@ class MarkRegistrationForDeletionTask : public background_fetch::DatabaseTask {
   MarkRegistrationForDeletionTask(
       BackgroundFetchDataManager* data_manager,
       const BackgroundFetchRegistrationId& registration_id,
-      bool aborted,
       HandleBackgroundFetchErrorCallback callback);
 
   ~MarkRegistrationForDeletionTask() override;
@@ -37,7 +36,6 @@ class MarkRegistrationForDeletionTask : public background_fetch::DatabaseTask {
   void DidDeactivate(ServiceWorkerStatusCode status);
 
   BackgroundFetchRegistrationId registration_id_;
-  bool aborted_;
   HandleBackgroundFetchErrorCallback callback_;
 
   base::WeakPtrFactory<MarkRegistrationForDeletionTask>

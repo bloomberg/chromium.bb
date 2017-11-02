@@ -56,10 +56,6 @@ class BackgroundFetchDatabaseClient {
 
   // Should return the sum of the bytes downloaded by in progress requests.
   virtual uint64_t GetInProgressDownloadedBytes() = 0;
-
-  // Called once MarkRegistrationForDeletion has been persisted to the
-  // database, because the registration was aborted by the user or website.
-  virtual void Abort() = 0;
 };
 
 // The BackgroundFetchDataManager is a wrapper around persistent storage (the
@@ -160,7 +156,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // reached using GetIds or GetRegistration.
   void MarkRegistrationForDeletion(
       const BackgroundFetchRegistrationId& registration_id,
-      bool aborted,
       HandleBackgroundFetchErrorCallback callback);
 
   // Deletes the registration identified by |registration_id|. Should only be

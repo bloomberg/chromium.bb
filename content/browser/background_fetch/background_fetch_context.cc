@@ -134,7 +134,7 @@ void BackgroundFetchContext::DidFinishJob(
   // If |aborted| is true, this will also propagate the event to any active
   // JobController for the registration, to terminate in-progress requests.
   data_manager_.MarkRegistrationForDeletion(
-      registration_id, aborted,
+      registration_id,
       base::BindOnce(&BackgroundFetchContext::DidMarkForDeletion,
                      weak_factory_.GetWeakPtr(), registration_id, aborted,
                      std::move(callback)));
@@ -155,6 +155,8 @@ void BackgroundFetchContext::DidMarkForDeletion(
     return;
 
   if (aborted) {
+    job_controllers_[registration_id.unique_id()]->Abort();
+
     CleanupRegistration(registration_id, {});
 
     event_dispatcher_.DispatchBackgroundFetchAbortEvent(
