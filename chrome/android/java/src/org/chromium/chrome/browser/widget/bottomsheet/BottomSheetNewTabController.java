@@ -150,11 +150,8 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
         mActivity.getBottomSheetContentController().selectItem(actionId);
         mBottomSheet.endTransitionAnimations();
 
-        // Open the sheet if it isn't already open to the desired height.
-        int sheetState =
-                actionId != R.id.action_home || mTabModelSelector.getCurrentModel().getCount() == 0
-                ? BottomSheet.SHEET_STATE_FULL
-                : BottomSheet.SHEET_STATE_HALF;
+        // Open the sheet if it isn't already open to full height.
+        int sheetState = BottomSheet.SHEET_STATE_FULL;
         if (mBottomSheet.getSheetState() != sheetState) {
             mBottomSheet.setSheetState(sheetState, true, StateChangeReason.NEW_TAB);
         }

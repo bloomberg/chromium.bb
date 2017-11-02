@@ -54,6 +54,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -163,7 +164,7 @@ public class LocationBarLayout extends FrameLayout
     private AutocompleteController mAutocomplete;
 
     protected ToolbarDataProvider mToolbarDataProvider;
-    private UrlFocusChangeListener mUrlFocusChangeListener;
+    private ObserverList<UrlFocusChangeListener> mUrlFocusChangeListeners = new ObserverList<>();
 
     protected boolean mNativeInitialized;
 
@@ -1102,7 +1103,9 @@ public class LocationBarLayout extends FrameLayout
      */
     protected void handleUrlFocusAnimation(boolean hasFocus) {
         if (hasFocus) mUrlFocusedWithoutAnimations = false;
-        if (mUrlFocusChangeListener != null) mUrlFocusChangeListener.onUrlFocusChange(hasFocus);
+        for (UrlFocusChangeListener listener : mUrlFocusChangeListeners) {
+            listener.onUrlFocusChange(hasFocus);
+        }
 
         updateOmniboxResultsContainer();
         if (hasFocus) updateFadingBackgroundView(true);
@@ -1252,13 +1255,14 @@ public class LocationBarLayout extends FrameLayout
         mBottomSheet = sheet;
     }
 
-    /**
-     * Sets the URL focus change listner that will be notified when the URL gains or loses focus.
-     * @param listener The listener to be registered.
-     */
     @Override
-    public void setUrlFocusChangeListener(UrlFocusChangeListener listener) {
-        mUrlFocusChangeListener = listener;
+    public void addUrlFocusChangeListener(UrlFocusChangeListener listener) {
+        mUrlFocusChangeListeners.addObserver(listener);
+    }
+
+    @Override
+    public void removeUrlFocusChangeListener(UrlFocusChangeListener listener) {
+        mUrlFocusChangeListeners.removeObserver(listener);
     }
 
     @Override

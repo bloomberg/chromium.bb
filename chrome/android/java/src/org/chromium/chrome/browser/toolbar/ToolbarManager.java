@@ -223,7 +223,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         mLocationBar = mToolbar.getLocationBar();
         mLocationBar.setToolbarDataProvider(mToolbarModel);
-        mLocationBar.setUrlFocusChangeListener(this);
+        mLocationBar.addUrlFocusChangeListener(this);
         mLocationBar.setDefaultTextEditActionModeCallback(
                 mActionModeController.getActionModeCallback());
         mLocationBar.initializeControls(
@@ -777,6 +777,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * Call to tear down all of the toolbar dependencies.
      */
     public void destroy() {
+        mLocationBar.removeUrlFocusChangeListener(this);
         Tab currentTab = mToolbarModel.getTab();
         if (currentTab != null) currentTab.removeObserver(mTabObserver);
         mToolbar.destroy();

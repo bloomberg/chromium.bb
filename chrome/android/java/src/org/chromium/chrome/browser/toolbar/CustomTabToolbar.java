@@ -45,7 +45,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
-import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -703,9 +702,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public void backKeyPressed() {
         assert false : "The URL bar should never take focus in CCTs.";
     }
-
-    @Override
-    public void setUrlFocusChangeListener(UrlFocusChangeListener listener) {}
 
     @Override
     public void setUrlBarFocus(boolean shouldBeFocused) {}
