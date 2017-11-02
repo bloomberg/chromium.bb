@@ -378,7 +378,6 @@ def _GeneratePerDirectoryCoverageHtmlReport(dir_line_coverage_report,
     output_dir: output directory for generated html files, the path needs to be
                 an absolute path.
   """
-  print 'Generating per directory code coverage breakdown in html'
   assert os.path.isabs(output_dir), 'output_dir must be an absolute path.'
   for dir_path in dir_line_coverage_report.GetListOfDirectories():
     _GenerateCoverageHtmlReportForDirectory(dir_path, dir_line_coverage_report,
@@ -690,9 +689,10 @@ def _RunTestTargetsWithCoverageConfiguration(targets, gtest_filter=None):
       cmd.append(_GetXCTestBundlePath(target))
 
     print 'Running {} with command: {}'.format(target, ' '.join(cmd))
-    logs_chracters = subprocess.check_output(cmd)
-    logs.append(''.join(logs_chracters).split('\n'))
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    log_chracters, _ = process.communicate()
 
+    logs.append(''.join(log_chracters).split('\n'))
   return logs
 
 
