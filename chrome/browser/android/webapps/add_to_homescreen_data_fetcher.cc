@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/android/shortcut_helper.h"
@@ -93,6 +94,10 @@ std::pair<SkBitmap, bool> CreateLauncherIconFromFaviconInBackground(
   return CreateLauncherIconInBackground(start_url, decoded);
 }
 
+void RecordAddToHomescreenDialogDuration(base::TimeDelta duration) {
+  UMA_HISTOGRAM_TIMES("Webapp.AddToHomescreenDialog.Timeout", duration);
+}
+
 }  // namespace
 
 AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
@@ -104,7 +109,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       installable_manager_(InstallableManager::FromWebContents(web_contents)),
       observer_(observer),
       shortcut_info_(GetShortcutUrl(web_contents)),
-      data_timeout_ms_(data_timeout_ms),
+      data_timeout_ms_(base::TimeDelta::FromMilliseconds(data_timeout_ms)),
       check_webapk_compatibility_(check_webapk_compatibility),
       is_waiting_for_web_application_info_(true),
       is_waiting_for_manifest_(true),
@@ -163,9 +168,10 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
   // Kick off a timeout for downloading data. If we haven't finished within the
   // timeout, fall back to using a dynamically-generated launcher icon.
   data_timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(data_timeout_ms_),
+      FROM_HERE, data_timeout_ms_,
       base::Bind(&AddToHomescreenDataFetcher::OnDataTimedout,
                  weak_ptr_factory_.GetWeakPtr()));
+  start_time_ = base::TimeTicks::Now();
 
   installable_manager_->GetData(
       ParamsToPerformManifestAndIconFetch(check_webapk_compatibility_),
@@ -190,7 +196,13 @@ bool AddToHomescreenDataFetcher::OnMessageReceived(
   return handled;
 }
 
+void AddToHomescreenDataFetcher::StopTimer() {
+  data_timeout_timer_.Stop();
+  RecordAddToHomescreenDialogDuration(base::TimeTicks::Now() - start_time_);
+}
+
 void AddToHomescreenDataFetcher::OnDataTimedout() {
+  RecordAddToHomescreenDialogDuration(data_timeout_ms_);
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   if (!web_contents())
@@ -229,7 +241,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
       observer_->OnDidDetermineWebApkCompatibility(false);
     observer_->OnUserTitleAvailable(shortcut_info_.user_title,
                                     shortcut_info_.url);
-    data_timeout_timer_.Stop();
+    StopTimer();
     installable_manager_->RecordAddToHomescreenNoTimeout();
     FetchFavicon();
     return;
@@ -261,7 +273,7 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
 
 void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
     const InstallableData& data) {
-  data_timeout_timer_.Stop();
+  StopTimer();
 
   if (!web_contents())
     return;

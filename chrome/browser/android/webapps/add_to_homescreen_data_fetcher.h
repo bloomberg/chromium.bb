@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -73,6 +74,9 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* sender) override;
 
+  // Called to stop the timeout timer.
+  void StopTimer();
+
   // Called if either InstallableManager or the favicon fetch takes too long.
   void OnDataTimedout();
 
@@ -104,8 +108,9 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
 
   base::CancelableTaskTracker favicon_task_tracker_;
   base::OneShotTimer data_timeout_timer_;
+  base::TimeTicks start_time_;
 
-  const int data_timeout_ms_;
+  const base::TimeDelta data_timeout_ms_;
 
   // Indicates whether to check WebAPK compatibility.
   bool check_webapk_compatibility_;
