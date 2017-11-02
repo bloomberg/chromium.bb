@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef VideoFrameSubmitter_h
+#define VideoFrameSubmitter_h
+
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -80,3 +83,5 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 };
 
 }  // namespace blink
+
+#endif  // VideoFrameSubmitter_h
