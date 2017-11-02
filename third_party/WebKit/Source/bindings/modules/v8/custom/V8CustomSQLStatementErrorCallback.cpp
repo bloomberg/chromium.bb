@@ -43,7 +43,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
   v8::Isolate* isolate = script_state_->GetIsolate();
   ExecutionContext* execution_context =
       ExecutionContext::From(script_state_.get());
-  if (!execution_context || execution_context->IsContextSuspended() ||
+  if (!execution_context || execution_context->IsContextPaused() ||
       execution_context->IsContextDestroyed())
     return true;
   if (!script_state_->ContextIsValid())

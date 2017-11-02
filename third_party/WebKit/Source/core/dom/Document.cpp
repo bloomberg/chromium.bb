@@ -710,7 +710,7 @@ Document::Document(const DocumentInit& initializer,
   // objects, else this new Document would have a new ExecutionContext which
   // suspended state would not match the one from the parent, and could start
   // loading resources ignoring the defersLoading flag.
-  DCHECK(!ParentDocument() || !ParentDocument()->IsContextSuspended());
+  DCHECK(!ParentDocument() || !ParentDocument()->IsContextPaused());
 
 #ifndef NDEBUG
   liveDocumentSet().insert(this);

@@ -45,7 +45,7 @@ bool V8LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1
 
   ExecutionContext* context = ExecutionContext::From(script_state_.get());
   DCHECK(context);
-  if (context->IsContextSuspended() || context->IsContextDestroyed())
+  if (context->IsContextPaused() || context->IsContextDestroyed())
     return false;
 
   ScriptState::Scope scope(script_state_.get());

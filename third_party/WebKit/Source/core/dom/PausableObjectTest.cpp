@@ -95,7 +95,7 @@ TEST_F(PausableObjectTest, MoveToActiveDocument) {
 }
 
 TEST_F(PausableObjectTest, MoveToSuspendedDocument) {
-  DestDocument().SuspendScheduledTasks();
+  DestDocument().PauseScheduledTasks();
 
   EXPECT_CALL(PausableObject(), Suspend());
   PausableObject().DidMoveToNewExecutionContext(&DestDocument());

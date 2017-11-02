@@ -71,7 +71,7 @@ void BatteryManager::DidUpdateData() {
 
   Document* document = ToDocument(GetExecutionContext());
   DCHECK(document);
-  if (document->IsContextSuspended() || document->IsContextDestroyed())
+  if (document->IsContextPaused() || document->IsContextDestroyed())
     return;
 
   if (battery_status_.Charging() != old_status.Charging())

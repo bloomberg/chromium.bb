@@ -70,7 +70,7 @@ void ScriptPromiseResolver::OnTimerFired(TimerBase*) {
 
 void ScriptPromiseResolver::ResolveOrRejectImmediately() {
   DCHECK(!GetExecutionContext()->IsContextDestroyed());
-  DCHECK(!GetExecutionContext()->IsContextSuspended());
+  DCHECK(!GetExecutionContext()->IsContextPaused());
   {
     probe::AsyncTask async_task(GetExecutionContext(), this);
     if (state_ == kResolving) {

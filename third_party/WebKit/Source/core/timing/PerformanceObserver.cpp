@@ -107,7 +107,7 @@ bool PerformanceObserver::HasPendingActivity() const {
 }
 
 bool PerformanceObserver::ShouldBeSuspended() const {
-  return execution_context_->IsContextSuspended();
+  return execution_context_->IsContextPaused();
 }
 
 void PerformanceObserver::Deliver() {

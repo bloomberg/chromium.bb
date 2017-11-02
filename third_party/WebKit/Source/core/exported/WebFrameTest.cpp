@@ -457,7 +457,7 @@ TEST_P(ParameterizedWebFrameTest, SuspendedRequestExecuteScript) {
       ->MainFrameImpl()
       ->GetFrame()
       ->GetDocument()
-      ->SuspendScheduledTasks();
+      ->PauseScheduledTasks();
   web_view_helper.WebView()
       ->MainFrameImpl()
       ->RequestExecuteScriptAndReturnValue(
@@ -516,7 +516,7 @@ TEST_P(ParameterizedWebFrameTest, RequestExecuteV8FunctionWhileSuspended) {
 
   // Suspend scheduled tasks so the script doesn't run.
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-  main_frame->GetFrame()->GetDocument()->SuspendScheduledTasks();
+  main_frame->GetFrame()->GetDocument()->PauseScheduledTasks();
 
   ScriptExecutionCallbackHelper callback_helper(context);
   v8::Local<v8::Function> function =
@@ -527,7 +527,7 @@ TEST_P(ParameterizedWebFrameTest, RequestExecuteV8FunctionWhileSuspended) {
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
-  main_frame->GetFrame()->GetDocument()->ResumeScheduledTasks();
+  main_frame->GetFrame()->GetDocument()->UnpauseScheduledTasks();
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ("hello", callback_helper.StringValue());
@@ -547,7 +547,7 @@ TEST_P(ParameterizedWebFrameTest,
 
   // Suspend scheduled tasks so the script doesn't run.
   WebLocalFrameImpl* main_frame = web_view_helper.LocalMainFrame();
-  main_frame->GetFrame()->GetDocument()->SuspendScheduledTasks();
+  main_frame->GetFrame()->GetDocument()->PauseScheduledTasks();
 
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   v8::Local<v8::Context> context =
@@ -565,7 +565,7 @@ TEST_P(ParameterizedWebFrameTest,
   RunPendingTasks();
   EXPECT_FALSE(callback_helper.DidComplete());
 
-  main_frame->GetFrame()->GetDocument()->ResumeScheduledTasks();
+  main_frame->GetFrame()->GetDocument()->UnpauseScheduledTasks();
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
   EXPECT_EQ(true, callback_helper.BoolValue());

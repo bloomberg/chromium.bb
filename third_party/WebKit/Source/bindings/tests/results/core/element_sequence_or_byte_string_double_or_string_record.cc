@@ -16,6 +16,7 @@
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/double_or_string.h"
 #include "core/animation/ElementAnimation.h"
+#include "core/css/cssom/ElementComputedStyleMap.h"
 #include "core/dom/ChildNode.h"
 #include "core/dom/NonDocumentTypeChildNode.h"
 #include "core/dom/ParentNode.h"

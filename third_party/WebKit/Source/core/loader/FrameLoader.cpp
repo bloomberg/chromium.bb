@@ -307,9 +307,9 @@ void FrameLoader::SetDefersLoading(bool defers) {
   if (Document* document = frame_->GetDocument()) {
     document->Fetcher()->SetDefersLoading(defers);
     if (defers)
-      document->SuspendScheduledTasks();
+      document->PauseScheduledTasks();
     else
-      document->ResumeScheduledTasks();
+      document->UnpauseScheduledTasks();
   }
 
   if (!defers)

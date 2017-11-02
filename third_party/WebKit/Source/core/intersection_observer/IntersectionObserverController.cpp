@@ -60,7 +60,7 @@ void IntersectionObserverController::DeliverIntersectionObservations() {
     pending_intersection_observers_.clear();
     return;
   }
-  if (context->IsContextSuspended()) {
+  if (context->IsContextPaused()) {
     callback_fired_while_suspended_ = true;
     return;
   }
