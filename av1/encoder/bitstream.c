@@ -912,7 +912,8 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
                                          const MACROBLOCKD *xd,
                                          const MB_MODE_INFO *const mbmi,
                                          aom_writer *w) {
-  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0) {
+  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
+      av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
     aom_write(w, mbmi->filter_intra_mode_info.use_filter_intra_mode[0],
               cm->fc->filter_intra_probs[0]);
     if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0]) {

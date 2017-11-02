@@ -2466,6 +2466,12 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   mbmi->tx_type = tx_type;
   mbmi->tx_size = tx_size;
+#if CONFIG_FILTER_INTRA
+  if (!is_inter_block(mbmi) &&
+      mbmi->filter_intra_mode_info.use_filter_intra_mode[0] &&
+      !av1_filter_intra_allowed_txsize(tx_size))
+    return INT64_MAX;
+#endif
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, tx_size,
                    cpi->sf.use_fast_coef_costing);
   if (rd_stats->rate == INT_MAX) return INT64_MAX;
@@ -3285,7 +3291,7 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     int this_rate;
     int64_t this_rd, this_model_rd;
     RD_STATS tokenonly_rd_stats;
-    if (skip_mask & (1 << mode)) continue;
+    if (skip_mask & (1 << fimode_to_intradir[mode])) continue;
     mbmi->filter_intra_mode_info.filter_intra_mode[0] = mode;
     this_model_rd = intra_model_yrd(cpi, x, bsize, mode_cost);
     if (*best_model_rd != INT64_MAX &&
@@ -3735,7 +3741,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           x->palette_y_mode_cost[bsize - BLOCK_8X8][palette_y_mode_ctx][0];
     }
 #if CONFIG_FILTER_INTRA
-    if (mbmi->mode == DC_PRED)
+    if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_txsize(mbmi->tx_size))
       this_rate += av1_cost_bit(cpi->common.fc->filter_intra_probs[0], 0);
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA
@@ -3784,7 +3790,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 
 #if CONFIG_FILTER_INTRA
-  if (beat_best_rd) {
+  if (beat_best_rd && av1_filter_intra_allowed_bsize(bsize)) {
     if (rd_pick_filter_intra_sby(cpi, x, rate, rate_tokenonly, distortion,
                                  skippable, bsize, bmode_costs[DC_PRED],
                                  &best_rd, &best_model_rd,
@@ -10020,20 +10026,21 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       skippable = rd_stats_y.skip;
 
 #if CONFIG_FILTER_INTRA
-      int64_t best_rd_tmp = INT64_MAX;
-      if (rate_y != INT_MAX) {
-        best_rd_tmp = RDCOST(
-            x->rdmult,
-            rate_y + av1_cost_bit(cpi->common.fc->filter_intra_probs[0], 0) +
-                intra_mode_cost[mbmi->mode],
-            distortion_y);
-      }
       if (mbmi->mode == DC_PRED) {
         RD_STATS rd_stats_y_fi;
         int filter_intra_selected_flag = 0;
         TX_SIZE best_tx_size = mbmi->tx_size;
         TX_TYPE best_tx_type = mbmi->tx_type;
         FILTER_INTRA_MODE best_fi_mode = FILTER_DC_PRED;
+        int64_t best_rd_tmp = INT64_MAX;
+        if (rate_y != INT_MAX &&
+            av1_filter_intra_allowed_txsize(best_tx_size)) {
+          best_rd_tmp = RDCOST(
+              x->rdmult,
+              rate_y + av1_cost_bit(cpi->common.fc->filter_intra_probs[0], 0) +
+                  intra_mode_cost[mbmi->mode],
+              distortion_y);
+        }
 
         mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 1;
         for (FILTER_INTRA_MODE fi_mode = FILTER_DC_PRED;

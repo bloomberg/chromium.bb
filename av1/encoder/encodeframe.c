@@ -4159,7 +4159,8 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   }
 
 #if CONFIG_FILTER_INTRA
-  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0) {
+  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
+      av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
     const int use_filter_intra_mode =
         mbmi->filter_intra_mode_info.use_filter_intra_mode[0];
     ++counts->filter_intra[0][use_filter_intra_mode];

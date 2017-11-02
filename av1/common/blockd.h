@@ -249,6 +249,26 @@ typedef struct {
 static const PREDICTION_MODE fimode_to_intradir[FILTER_INTRA_MODES] = {
   DC_PRED, V_PRED, H_PRED, D117_PRED, D153_PRED, DC_PRED
 };
+
+#define DISABLE_SUB8X8_FILTER_INTRA 1
+
+static INLINE int av1_filter_intra_allowed_bsize(BLOCK_SIZE bs) {
+  (void)bs;
+#if DISABLE_SUB8X8_FILTER_INTRA
+  return block_size_wide[bs] >= 8 && block_size_high[bs] >= 8;
+#else
+  return 1;
+#endif
+}
+
+static INLINE int av1_filter_intra_allowed_txsize(TX_SIZE tx) {
+  (void)tx;
+#if DISABLE_SUB8X8_FILTER_INTRA
+  return tx_size_wide[tx] >= 8 && tx_size_high[tx] >= 8;
+#else
+  return 1;
+#endif
+}
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_RD_DEBUG

@@ -878,7 +878,8 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
   FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
       &mbmi->filter_intra_mode_info;
 
-  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0) {
+  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
+      av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
     filter_intra_mode_info->use_filter_intra_mode[0] =
         aom_read(r, cm->fc->filter_intra_probs[0], ACCT_STR);
     if (filter_intra_mode_info->use_filter_intra_mode[0]) {
