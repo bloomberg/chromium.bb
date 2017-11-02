@@ -4,6 +4,8 @@
 
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
+#include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
+#include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
@@ -88,6 +90,14 @@ TEST_F(FrameCoordinationUnitImplTest, RemoveChildFrame) {
   EXPECT_EQ(
       0u, child_frame_cu->child_frame_coordination_units_for_testing().size());
   EXPECT_TRUE(!child_frame_cu->GetParentFrameCoordinationUnit());
+}
+
+TEST_F(FrameCoordinationUnitImplTest, IsAlmostIdle) {
+  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
+  EXPECT_FALSE(cu_graph.frame->IsAlmostIdle());
+  cu_graph.process->SetMainThreadTaskLoadIsLow(true);
+  cu_graph.frame->SetNetworkAlmostIdle(true);
+  EXPECT_TRUE(cu_graph.frame->IsAlmostIdle());
 }
 
 }  // namespace resource_coordinator

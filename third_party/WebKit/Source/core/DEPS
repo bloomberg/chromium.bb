@@ -17,6 +17,7 @@ include_rules = [
     "+public/web",
     "+services/metrics/public",
     "+services/network/public/interfaces",
+    "+services/resource_coordinator/public/cpp/resource_coordinator_features.h",
     "+services/service_manager/public/interfaces/interface_provider.mojom-blink.h",
     "+third_party/skia/include",
     "+ui/gfx/geometry",

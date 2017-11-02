@@ -19,6 +19,8 @@ extern const SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT base::Feature
     kGlobalResourceCoordinator;
 extern const SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT base::Feature
     kGRCRenderProcessCPUProfiling;
+extern const SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT base::Feature
+    kPageAlmostIdle;
 
 }  // namespace features
 
@@ -32,6 +34,12 @@ GetGRCRenderProcessCPUProfilingDurationInMs();
 
 int64_t SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
 GetGRCRenderProcessCPUProfilingIntervalInMs();
+
+bool SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
+IsPageAlmostIdleSignalEnabled();
+
+int SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
+GetMainThreadTaskLoadLowThreshold();
 
 }  // namespace resource_coordinator
 

@@ -28,14 +28,14 @@ class PLATFORM_EXPORT RendererResourceCoordinator
 
   ~RendererResourceCoordinator();
 
-  void SetExpectedTaskQueueingDuration(base::TimeDelta duration);
+  void SetExpectedTaskQueueingDuration(base::TimeDelta);
+  void SetMainThreadTaskLoadIsLow(bool);
 
  protected:
   RendererResourceCoordinator();
 
  private:
-  RendererResourceCoordinator(service_manager::Connector*,
-                              const std::string& service_name);
+  RendererResourceCoordinator(service_manager::Connector*, const std::string&);
 
   resource_coordinator::mojom::blink::ProcessCoordinationUnitPtr service_;
 };

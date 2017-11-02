@@ -63,7 +63,7 @@ class TabManager::WebContentsData
   void WasShown() override;
   void WebContentsDestroyed() override;
 
-  // idle signal received from GRC.
+  // Idle signal received from GRC.
   void NotifyAlmostIdle() {}
 
   // Returns true if the tab has been discarded to save memory.

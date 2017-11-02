@@ -11,6 +11,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 namespace blink {
 
@@ -38,9 +39,11 @@ void IdlenessDetector::DomContentLoadedEventFired() {
   network_2_quiet_ = 0;
   network_0_quiet_ = 0;
 
-  if (auto* frame_resource_coordinator =
-          local_frame_->GetFrameResourceCoordinator()) {
-    frame_resource_coordinator->SetNetworkAlmostIdle(false);
+  if (::resource_coordinator::IsPageAlmostIdleSignalEnabled()) {
+    if (auto* frame_resource_coordinator =
+            local_frame_->GetFrameResourceCoordinator()) {
+      frame_resource_coordinator->SetNetworkAlmostIdle(false);
+    }
   }
   OnDidLoadResource();
 }
@@ -122,9 +125,11 @@ void IdlenessDetector::WillProcessTask(double start_time) {
       start_time - network_2_quiet_ > kNetworkQuietWindowSeconds) {
     probe::lifecycleEvent(local_frame_, loader, "networkAlmostIdle",
                           network_2_quiet_start_time_);
-    if (auto* frame_resource_coordinator =
-            local_frame_->GetFrameResourceCoordinator()) {
-      frame_resource_coordinator->SetNetworkAlmostIdle(true);
+    if (::resource_coordinator::IsPageAlmostIdleSignalEnabled()) {
+      if (auto* frame_resource_coordinator =
+              local_frame_->GetFrameResourceCoordinator()) {
+        frame_resource_coordinator->SetNetworkAlmostIdle(true);
+      }
     }
     local_frame_->GetDocument()->Fetcher()->OnNetworkQuiet();
     network_2_quiet_ = -1;
