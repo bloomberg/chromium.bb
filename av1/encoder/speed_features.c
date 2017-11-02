@@ -79,17 +79,6 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
                                                        int speed) {
   AV1_COMMON *const cm = &cpi->common;
 
-  if (speed >= 1) {
-    if (AOMMIN(cm->width, cm->height) >= 720) {
-      sf->disable_split_mask =
-          cm->show_frame ? DISABLE_ALL_SPLIT : DISABLE_ALL_INTER_SPLIT;
-      sf->partition_search_breakout_dist_thr = (1 << 23);
-    } else {
-      sf->disable_split_mask = DISABLE_COMPOUND_SPLIT;
-      sf->partition_search_breakout_dist_thr = (1 << 21);
-    }
-  }
-
   if (speed >= 2) {
     if (AOMMIN(cm->width, cm->height) >= 720) {
       sf->disable_split_mask =
