@@ -77,6 +77,7 @@ struct wet_head_tracker {
 };
 
 struct wet_compositor {
+	struct weston_compositor *compositor;
 	struct weston_config *config;
 	struct wet_output_config *parsed_options;
 	bool drm_use_current_mode;
@@ -1089,9 +1090,8 @@ wet_head_tracker_create(struct wet_compositor *compositor,
 }
 
 static void
-simple_head_enable(struct weston_compositor *compositor, struct weston_head *head)
+simple_head_enable(struct wet_compositor *wet, struct weston_head *head)
 {
-	struct wet_compositor *wet = to_wet_compositor(compositor);
 	struct weston_output *output;
 	int ret = 0;
 
@@ -1101,7 +1101,8 @@ simple_head_enable(struct weston_compositor *compositor, struct weston_head *hea
 	if (weston_head_get_output(head))
 		return;
 
-	output = weston_compositor_create_output_with_head(compositor, head);
+	output = weston_compositor_create_output_with_head(wet->compositor,
+							   head);
 	if (!output) {
 		weston_log("Could not create an output for head \"%s\".\n",
 			   weston_head_get_name(head));
@@ -1158,18 +1159,19 @@ static void
 simple_heads_changed(struct wl_listener *listener, void *arg)
 {
 	struct weston_compositor *compositor = arg;
+	struct wet_compositor *wet = to_wet_compositor(compositor);
 	struct weston_head *head = NULL;
 	bool connected;
 	bool enabled;
 	bool changed;
 
-	while ((head = weston_compositor_iterate_heads(compositor, head))) {
+	while ((head = weston_compositor_iterate_heads(wet->compositor, head))) {
 		connected = weston_head_is_connected(head);
 		enabled = weston_head_is_enabled(head);
 		changed = weston_head_is_device_changed(head);
 
 		if (connected && !enabled) {
-			simple_head_enable(compositor, head);
+			simple_head_enable(wet, head);
 		} else if (!connected && enabled) {
 			simple_head_disable(head);
 		} else if (enabled && changed) {
@@ -1926,6 +1928,7 @@ int main(int argc, char *argv[])
 	}
 
 	ec = weston_compositor_create(display, &user_data);
+	user_data.compositor = ec;
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
 		goto out;
