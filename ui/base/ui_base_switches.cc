@@ -117,6 +117,10 @@ const char kUseSkiaRenderer[] = "use-skia-renderer";
 const char kDisallowNonExactResourceReuse[] =
     "disallow-non-exact-resource-reuse";
 
+// Transform localized strings to be longer, with beginning and end markers to
+// make truncation visually apparent.
+const char kMangleLocalizedStrings[] = "mangle-localized-strings";
+
 // Re-draw everything multiple times to simulate a much slower machine.
 // Give a slow down factor to cause renderer to take that many times longer to
 // complete, such as --slow-down-compositing-scale-factor=2.

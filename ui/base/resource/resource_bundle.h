@@ -394,6 +394,11 @@ class UI_BASE_EXPORT ResourceBundle {
 
   const base::FilePath& GetOverriddenPakPath();
 
+  // If mangling of localized strings is enabled, mangles |str| to make it
+  // longer and to add begin and end markers so that any truncation of it is
+  // visible and returns the mangled string. If not, returns |str|.
+  base::string16 MaybeMangleLocalizedString(const base::string16& str);
+
   // This pointer is guaranteed to outlive the ResourceBundle instance and may
   // be NULL.
   Delegate* delegate_;
@@ -427,6 +432,7 @@ class UI_BASE_EXPORT ResourceBundle {
   IdToStringMap overridden_locale_strings_;
 
   bool is_test_resources_ = false;
+  bool mangle_localized_strings_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

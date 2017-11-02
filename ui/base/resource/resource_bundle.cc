@@ -21,6 +21,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
@@ -419,6 +420,20 @@ const base::FilePath& ResourceBundle::GetOverriddenPakPath() {
   return overridden_pak_path_;
 }
 
+base::string16 ResourceBundle::MaybeMangleLocalizedString(
+    const base::string16& str) {
+  if (!mangle_localized_strings_)
+    return str;
+  // For a string S, produce [[ --- S --- ]], where the number of dashes is 1/4
+  // of the number of characters in S. This makes S something around 50-75%
+  // longer, except for extremely short strings, which get > 100% longer.
+  base::string16 start_marker = base::UTF8ToUTF16("[[");
+  base::string16 end_marker = base::UTF8ToUTF16("]]");
+  base::string16 dashes = base::string16(str.size() / 4, '-');
+  return base::JoinString({start_marker, dashes, str, dashes, end_marker},
+                          base::UTF8ToUTF16(" "));
+}
+
 std::string ResourceBundle::ReloadLocaleResources(
     const std::string& pref_locale) {
   base::AutoLock lock_scope(*locale_resources_data_lock_);
@@ -545,7 +560,7 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
 base::string16 ResourceBundle::GetLocalizedString(int message_id) {
   base::string16 string;
   if (delegate_ && delegate_->GetLocalizedString(message_id, &string))
-    return string;
+    return MaybeMangleLocalizedString(string);
 
   // Ensure that ReloadLocaleResources() doesn't drop the resources while
   // we're using them.
@@ -554,7 +569,7 @@ base::string16 ResourceBundle::GetLocalizedString(int message_id) {
   IdToStringMap::const_iterator it =
       overridden_locale_strings_.find(message_id);
   if (it != overridden_locale_strings_.end())
-    return it->second;
+    return MaybeMangleLocalizedString(it->second);
 
   // If for some reason we were unable to load the resources , return an empty
   // string (better than crashing).
@@ -597,7 +612,7 @@ base::string16 ResourceBundle::GetLocalizedString(int message_id) {
   } else if (encoding == ResourceHandle::UTF8) {
     msg = base::UTF8ToUTF16(data);
   }
-  return msg;
+  return MaybeMangleLocalizedString(msg);
 }
 
 base::RefCountedMemory* ResourceBundle::LoadLocalizedResourceBytes(
@@ -723,6 +738,8 @@ ResourceBundle::ResourceBundle(Delegate* delegate)
     : delegate_(delegate),
       locale_resources_data_lock_(new base::Lock),
       max_scale_factor_(SCALE_FACTOR_100P) {
+  mangle_localized_strings_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kMangleLocalizedStrings);
 }
 
 ResourceBundle::~ResourceBundle() {

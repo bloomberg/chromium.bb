@@ -54,6 +54,7 @@ UI_BASE_EXPORT extern const char kUseSkiaRenderer[];
 
 // Test related.
 UI_BASE_EXPORT extern const char kDisallowNonExactResourceReuse[];
+UI_BASE_EXPORT extern const char kMangleLocalizedStrings[];
 
 }  // namespace switches
 
