@@ -126,14 +126,15 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 
   uint8_t token_cache[MAX_TX_SQUARE];
   const uint8_t *band_translate = get_band_translate(tx_size);
-  int dq_shift;
   int v, token;
   int32_t dqv = dq[0];
 #if CONFIG_NEW_QUANT
   const tran_low_t *dqv_val = &dq_val[0][0];
 #endif  // CONFIG_NEW_QUANT
 
-  dq_shift = av1_get_tx_scale(tx_size);
+#if !CONFIG_DAALA_TX
+  int dq_shift = av1_get_tx_scale(tx_size);
+#endif
 
   band = *band_translate++;
 
@@ -198,7 +199,9 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 
 #if CONFIG_NEW_QUANT
     v = av1_dequant_abscoeff_nuq(val, dqv, dqv_val);
+#if !CONFIG_DAALA_TX
     v = dq_shift ? ROUND_POWER_OF_TWO(v, dq_shift) : v;
+#endif
 #else
 #if CONFIG_AOM_QM
     // Apply quant matrix only for 2D transforms
@@ -206,7 +209,11 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
       dqv = ((iqmatrix[scan[c]] * (int)dqv) + (1 << (AOM_QM_BITS - 1))) >>
             AOM_QM_BITS;
 #endif
+#if !CONFIG_DAALA_TX
     v = (val * dqv) >> dq_shift;
+#else
+    v = val * dqv;
+#endif
 #endif
 
     v = (int)check_range(av1_read_record_bit(xd->counts, r, ACCT_STR) ? -v : v,

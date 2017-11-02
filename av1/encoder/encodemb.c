@@ -537,7 +537,11 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   src_diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
+#if CONFIG_DAALA_TX
+  qparam.log_scale = 0;
+#else
   qparam.log_scale = av1_get_tx_scale(tx_size);
+#endif
 #if CONFIG_NEW_QUANT
   qparam.tx_size = tx_size;
   qparam.dq = get_dq_profile_from_ctx(x->qindex, ctx, is_inter, plane_type);

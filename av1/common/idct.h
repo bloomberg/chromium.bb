@@ -40,8 +40,10 @@ typedef struct {
 } highbd_transform_2d;
 #endif  // CONFIG_HIGHBITDEPTH
 
+#if !CONFIG_DAALA_TX
 #define MAX_TX_SCALE 1
 int av1_get_tx_scale(const TX_SIZE tx_size);
+#endif
 
 void av1_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                      const TxfmParam *txfm_param);
