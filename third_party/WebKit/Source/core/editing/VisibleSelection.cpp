@@ -520,6 +520,33 @@ static SelectionTemplate<Strategy> AdjustSelectionRespectingGranularity(
              : builder.SetAsBackwardSelection(expanded_range).Build();
 }
 
+// TODO(editing-dev): Move this to SelectionAdjuster.
+template <typename Strategy>
+static SelectionTemplate<Strategy>
+AdjustSelectionToAvoidCrossingShadowBoundaries(
+    const SelectionTemplate<Strategy>& granularity_adjusted_selection) {
+  const EphemeralRangeTemplate<Strategy> expanded_range(
+      granularity_adjusted_selection.ComputeStartPosition(),
+      granularity_adjusted_selection.ComputeEndPosition());
+
+  const EphemeralRangeTemplate<Strategy> shadow_adjusted_range =
+      granularity_adjusted_selection.IsBaseFirst()
+          ? EphemeralRangeTemplate<Strategy>(
+                expanded_range.StartPosition(),
+                SelectionAdjuster::
+                    AdjustSelectionEndToAvoidCrossingShadowBoundaries(
+                        expanded_range))
+          : EphemeralRangeTemplate<Strategy>(
+                SelectionAdjuster::
+                    AdjustSelectionStartToAvoidCrossingShadowBoundaries(
+                        expanded_range),
+                expanded_range.EndPosition());
+  typename SelectionTemplate<Strategy>::Builder builder;
+  return granularity_adjusted_selection.IsBaseFirst()
+             ? builder.SetAsForwardSelection(shadow_adjusted_range).Build()
+             : builder.SetAsBackwardSelection(shadow_adjusted_range).Build();
+}
+
 template <typename Strategy>
 static SelectionTemplate<Strategy> ComputeVisibleSelection(
     const SelectionTemplate<Strategy>& passed_selection,
@@ -536,25 +563,13 @@ static SelectionTemplate<Strategy> ComputeVisibleSelection(
   const SelectionTemplate<Strategy>& granularity_adjusted_selection =
       AdjustSelectionRespectingGranularity(canonicalized_selection,
                                            granularity);
-  // TODO(editing-dev): Implement
-  // const SelectionTemplate<Strategy>& shadow_adjusted_selection =
-  // AdjustSelectionShadow(granularity_adjusted_selection);
-  const EphemeralRangeTemplate<Strategy> expanded_range(
-      granularity_adjusted_selection.ComputeStartPosition(),
-      granularity_adjusted_selection.ComputeEndPosition());
+  const SelectionTemplate<Strategy>& shadow_adjusted_selection =
+      AdjustSelectionToAvoidCrossingShadowBoundaries(
+          granularity_adjusted_selection);
 
-  const EphemeralRangeTemplate<Strategy> shadow_adjusted_range =
-      canonicalized_selection.IsBaseFirst()
-          ? EphemeralRangeTemplate<Strategy>(
-                expanded_range.StartPosition(),
-                SelectionAdjuster::
-                    AdjustSelectionEndToAvoidCrossingShadowBoundaries(
-                        expanded_range))
-          : EphemeralRangeTemplate<Strategy>(
-                SelectionAdjuster::
-                    AdjustSelectionStartToAvoidCrossingShadowBoundaries(
-                        expanded_range),
-                expanded_range.EndPosition());
+  const EphemeralRangeTemplate<Strategy> shadow_adjusted_range(
+      shadow_adjusted_selection.ComputeStartPosition(),
+      shadow_adjusted_selection.ComputeEndPosition());
   // TODO(editing-dev): Implement
   // const SelectionTemplate<Strategy>& editing_adjusted_selection =
   // AdjustSelectionEditing(shadow_adjusted_selection);
