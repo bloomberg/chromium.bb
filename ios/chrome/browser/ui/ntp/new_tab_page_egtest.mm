@@ -132,7 +132,7 @@ void AssertNTPScrolledToTop(bool scrolledToTop) {
   SelectNewTabPagePanel(ntp_home::INCOGNITO_PANEL);
   WaitForHistoryToDisappear();
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  chrome_test_util::CloseAllIncognitoTabs();
+  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
 }
 
 // Tests rotating the device when the NTP's omnibox is pinned to the top of the

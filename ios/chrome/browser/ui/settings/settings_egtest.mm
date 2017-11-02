@@ -616,7 +616,7 @@ bool IsCertificateCleared() {
 
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
-  chrome_test_util::CloseAllIncognitoTabs();
+  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
 }
 
 // Verifies the UI elements are accessible on the Settings page.
