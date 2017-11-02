@@ -814,6 +814,33 @@ static viz::RenderPass* FindRenderPassById(const viz::RenderPassList& list,
   return it == list.end() ? nullptr : it->get();
 }
 
+bool LayerTreeHostImpl::HasDamage(bool handle_visibility_changed) const {
+  DCHECK(!active_tree()->needs_update_draw_properties());
+  DCHECK(CanDraw());
+
+  if (handle_visibility_changed || !viewport_damage_rect_.IsEmpty())
+    return true;
+
+  const LayerTreeImpl* active_tree = active_tree_.get();
+
+  // If the root render surface has no visible damage, then don't generate a
+  // frame at all.
+  const RenderSurfaceImpl* root_surface = active_tree->RootRenderSurface();
+  bool root_surface_has_no_visible_damage =
+      !root_surface->GetDamageRect().Intersects(root_surface->content_rect());
+  bool root_surface_has_contributing_layers =
+      !!root_surface->num_contributors();
+  bool hud_wants_to_draw_ = active_tree->hud_layer() &&
+                            active_tree->hud_layer()->IsAnimatingHUDContents();
+  bool must_always_swap =
+      layer_tree_frame_sink_->capabilities().must_always_swap;
+
+  return !root_surface_has_contributing_layers ||
+         !root_surface_has_no_visible_damage ||
+         active_tree_->property_trees()->effect_tree.HasCopyRequests() ||
+         must_always_swap || hud_wants_to_draw_;
+}
+
 DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   DCHECK(frame->render_passes.empty());
   DCHECK(CanDraw());
@@ -826,17 +853,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   DamageTracker::UpdateDamageTracking(active_tree_.get(),
                                       active_tree_->GetRenderSurfaceList());
 
-  // If the root render surface has no visible damage, then don't generate a
-  // frame at all.
-  const RenderSurfaceImpl* root_surface = active_tree_->RootRenderSurface();
-  bool root_surface_has_no_visible_damage =
-      !root_surface->GetDamageRect().Intersects(root_surface->content_rect());
-  bool root_surface_has_contributing_layers =
-      !!root_surface->num_contributors();
-  bool hud_wants_to_draw_ = active_tree_->hud_layer() &&
-                            active_tree_->hud_layer()->IsAnimatingHUDContents();
-  bool must_always_swap =
-      layer_tree_frame_sink_->capabilities().must_always_swap;
   // When touch handle visibility changes there is no visible damage
   // because touch handles are composited in the browser. However we
   // still want the browser to be notified that the handles changed
@@ -844,10 +860,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // track of handle visibility changes through |handle_visibility_changed|.
   bool handle_visibility_changed =
       active_tree_->GetAndResetHandleVisibilityChanged();
-  if (root_surface_has_contributing_layers &&
-      root_surface_has_no_visible_damage &&
-      !active_tree_->property_trees()->effect_tree.HasCopyRequests() &&
-      !must_always_swap && !hud_wants_to_draw_ && !handle_visibility_changed) {
+
+  if (!HasDamage(handle_visibility_changed)) {
     TRACE_EVENT0("cc",
                  "LayerTreeHostImpl::CalculateRenderPasses::EmptyDamageRect");
     frame->has_no_damage = true;
