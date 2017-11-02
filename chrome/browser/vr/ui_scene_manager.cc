@@ -270,7 +270,7 @@ void UiSceneManager::CreateSystemIndicators() {
       base::MakeUnique<LinearLayout>(LinearLayout::kRight);
   indicator_layout->set_name(kIndicatorLayout);
   indicator_layout->set_hit_testable(false);
-  indicator_layout->set_y_anchoring(YAnchoring::YTOP);
+  indicator_layout->set_y_anchoring(TOP);
   indicator_layout->SetTranslate(0, kIndicatorVerticalOffset,
                                  kIndicatorDistanceOffset);
   indicator_layout->set_margin(kIndicatorGap);
@@ -460,7 +460,7 @@ void UiSceneManager::CreateSplashScreen(Model* model) {
   timeout_text->set_draw_phase(kPhaseOverlayForeground);
   timeout_text->SetVisible(true);
   timeout_text->SetSize(kTimeoutButtonTextWidth, kTimeoutButtonTextHeight);
-  timeout_text->set_y_anchoring(YBOTTOM);
+  timeout_text->set_y_anchoring(BOTTOM);
   timeout_text->SetTranslate(0, -kTimeoutButtonTextVerticalOffset, 0);
   scene_->AddUiElement(kWebVrTimeoutMessageButton, std::move(timeout_text));
 }
@@ -477,7 +477,7 @@ void UiSceneManager::CreateUnderDevelopmentNotice() {
   text->SetTranslate(0, -kUnderDevelopmentNoticeVerticalOffsetM, 0);
   text->SetRotate(1, 0, 0, kUnderDevelopmentNoticeRotationRad);
   text->SetVisible(true);
-  text->set_y_anchoring(YAnchoring::YBOTTOM);
+  text->set_y_anchoring(BOTTOM);
   control_elements_.push_back(text.get());
   scene_->AddUiElement(kUrlBar, std::move(text));
 }
@@ -563,7 +563,7 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   element->set_draw_phase(kPhaseForeground);
   element->SetTranslate(kVoiceSearchButtonXOffset, 0.f, 0.f);
   element->SetSize(kCloseButtonWidth, kCloseButtonHeight);
-  element->set_x_anchoring(XAnchoring::XRIGHT);
+  element->set_x_anchoring(RIGHT);
   element->AddBinding(base::MakeUnique<Binding<bool>>(
       base::Bind(
           [](Model* m) {
@@ -699,7 +699,7 @@ void UiSceneManager::CreateUrlBar(Model* model) {
   indicator_bg->SetTranslate(0, kLoadingIndicatorVerticalOffset,
                              kLoadingIndicatorDepthOffset);
   indicator_bg->SetSize(kLoadingIndicatorWidth, kLoadingIndicatorHeight);
-  indicator_bg->set_y_anchoring(YAnchoring::YTOP);
+  indicator_bg->set_y_anchoring(TOP);
   indicator_bg->SetTransitionedProperties({OPACITY});
   indicator_bg->set_corner_radius(kLoadingIndicatorHeight * 0.5f);
   indicator_bg->AddBinding(VR_BIND_FUNC(bool, Model, model, loading, Rect,
@@ -712,7 +712,7 @@ void UiSceneManager::CreateUrlBar(Model* model) {
   auto indicator_fg = base::MakeUnique<Rect>();
   indicator_fg->set_draw_phase(kPhaseForeground);
   indicator_fg->set_name(kLoadingIndicatorForeground);
-  indicator_fg->set_x_anchoring(XLEFT);
+  indicator_fg->set_x_anchoring(LEFT);
   indicator_fg->set_corner_radius(kLoadingIndicatorHeight * 0.5f);
   indicator_fg->set_hit_testable(false);
   BindColor(this, indicator_fg.get(),
@@ -735,8 +735,9 @@ void UiSceneManager::CreateSuggestionList(Model* model) {
 
   layout->set_name(kSuggestionLayout);
   layout->set_hit_testable(false);
-  layout->set_y_anchoring(YAnchoring::YTOP);
-  layout->SetTranslate(0, 0.5, 0.2);
+  layout->set_y_anchoring(BOTTOM);
+  layout->set_y_centering(TOP);
+  layout->SetTranslate(0, -0.05f, 0);
   layout->set_margin(kSuggestionGap);
   layout->SetVisible(true);
 

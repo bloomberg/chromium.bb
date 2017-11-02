@@ -137,6 +137,16 @@ void UiElement::SetTransformOperations(
 }
 
 void UiElement::SetLayoutOffset(float x, float y) {
+  if (x_centering() == LEFT) {
+    x += size_.width() / 2;
+  } else if (x_centering() == RIGHT) {
+    x -= size_.width() / 2;
+  }
+  if (y_centering() == TOP) {
+    y -= size_.height() / 2;
+  } else if (y_centering() == BOTTOM) {
+    y += size_.height() / 2;
+  }
   cc::TransformOperations operations = layout_offset_;
   cc::TransformOperation& op = operations.at(0);
   op.translate = {x, y, 0};
@@ -355,35 +365,17 @@ void UiElement::LayOutChildren() {
   DCHECK_LE(kUpdatedTexturesAndSizes, phase_);
   for (auto& child : children_) {
     // To anchor a child, use the parent's size to find its edge.
-    float x_offset;
-    switch (child->x_anchoring()) {
-      case XLEFT:
-        x_offset = -0.5f * size().width();
-        break;
-      case XRIGHT:
-        x_offset = 0.5f * size().width();
-        break;
-      case XNONE:
-        x_offset = 0.0f;
-        break;
-      default:
-        NOTREACHED();
-        return;
+    float x_offset = 0.0f;
+    if (child->x_anchoring() == LEFT) {
+      x_offset = -0.5f * size().width();
+    } else if (child->x_anchoring() == RIGHT) {
+      x_offset = 0.5f * size().width();
     }
-    float y_offset;
-    switch (child->y_anchoring()) {
-      case YTOP:
-        y_offset = 0.5f * size().height();
-        break;
-      case YBOTTOM:
-        y_offset = -0.5f * size().height();
-        break;
-      case YNONE:
-        y_offset = 0.0f;
-        break;
-      default:
-        NOTREACHED();
-        return;
+    float y_offset = 0.0f;
+    if (child->y_anchoring() == TOP) {
+      y_offset = 0.5f * size().height();
+    } else if (child->y_anchoring() == BOTTOM) {
+      y_offset = -0.5f * size().height();
     }
     child->SetLayoutOffset(x_offset, y_offset);
   }

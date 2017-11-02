@@ -172,15 +172,17 @@ TEST(UiScene, NoViewportAwareElementWhenNoVisibleChild) {
 }
 
 typedef struct {
-  XAnchoring x_anchoring;
-  YAnchoring y_anchoring;
+  LayoutAlignment x_anchoring;
+  LayoutAlignment y_anchoring;
+  LayoutAlignment x_centering;
+  LayoutAlignment y_centering;
   float expected_x;
   float expected_y;
-} AnchoringTestCase;
+} AlignmentTestCase;
 
-class AnchoringTest : public ::testing::TestWithParam<AnchoringTestCase> {};
+class AlignmentTest : public ::testing::TestWithParam<AlignmentTestCase> {};
 
-TEST_P(AnchoringTest, VerifyCorrectPosition) {
+TEST_P(AlignmentTest, VerifyCorrectPosition) {
   UiScene scene;
 
   // Create a parent element with non-unity size and scale.
@@ -196,6 +198,8 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   UiElement* child = element.get();
   element->set_x_anchoring(GetParam().x_anchoring);
   element->set_y_anchoring(GetParam().y_anchoring);
+  element->set_x_centering(GetParam().x_centering);
+  element->set_y_centering(GetParam().y_centering);
   element->set_draw_phase(0);
   parent->AddChild(std::move(element));
 
@@ -204,17 +208,26 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   EXPECT_NEAR(GetParam().expected_y, child->GetCenter().y(), TOLERANCE);
 }
 
-const std::vector<AnchoringTestCase> anchoring_test_cases = {
-    {XAnchoring::XNONE, YAnchoring::YNONE, 0, 0},
-    {XAnchoring::XLEFT, YAnchoring::YNONE, -2, 0},
-    {XAnchoring::XRIGHT, YAnchoring::YNONE, 2, 0},
-    {XAnchoring::XNONE, YAnchoring::YTOP, 0, 2},
-    {XAnchoring::XNONE, YAnchoring::YBOTTOM, 0, -2},
-    {XAnchoring::XLEFT, YAnchoring::YTOP, -2, 2},
+const std::vector<AlignmentTestCase> alignment_test_cases = {
+    // Test anchoring.
+    {NONE, NONE, NONE, NONE, 0, 0},
+    {LEFT, NONE, NONE, NONE, -2, 0},
+    {RIGHT, NONE, NONE, NONE, 2, 0},
+    {NONE, TOP, NONE, NONE, 0, 2},
+    {NONE, BOTTOM, NONE, NONE, 0, -2},
+    {LEFT, TOP, NONE, NONE, -2, 2},
+    // Test centering.
+    {NONE, NONE, LEFT, NONE, 1, 0},
+    {NONE, NONE, RIGHT, NONE, -1, 0},
+    {NONE, NONE, NONE, TOP, 0, -1},
+    {NONE, NONE, NONE, BOTTOM, 0, 1},
+    {NONE, NONE, LEFT, TOP, 1, -1},
+    // Test a combination of the two.
+    {RIGHT, TOP, LEFT, BOTTOM, 3, 3},
 };
 
-INSTANTIATE_TEST_CASE_P(AnchoringTestCases,
-                        AnchoringTest,
-                        ::testing::ValuesIn(anchoring_test_cases));
+INSTANTIATE_TEST_CASE_P(AlignmentTestCases,
+                        AlignmentTest,
+                        ::testing::ValuesIn(alignment_test_cases));
 
 }  // namespace vr
