@@ -130,6 +130,15 @@ id<GREYMatcher> LanguagePickerDoneButton() {
   return chrome_test_util::ButtonWithAccessibilityLabel(@"Done");
 }
 
+// Assigns the testing callback for the current WebState's language detection
+// helper.
+void SetTestingLanguageDetectionCallback(
+    const language::IOSLanguageDetectionTabHelper::Callback& callback) {
+  language::IOSLanguageDetectionTabHelper::FromWebState(
+      chrome_test_util::GetCurrentWebState())
+      ->SetExtraCallbackForTesting(callback);
+}
+
 #pragma mark - TestResponseProvider
 
 // A ResponseProvider that provides html responses of texts in different
@@ -317,17 +326,12 @@ using translate::LanguageDetectionController;
         _language_detection_details =
             base::MakeUnique<translate::LanguageDetectionDetails>(details);
       });
-
-  language::IOSLanguageDetectionTabHelper::FromWebState(
-      chrome_test_util::GetCurrentWebState())
-      ->SetExtraCallbackForTesting(copyDetailsCallback);
+  SetTestingLanguageDetectionCallback(copyDetailsCallback);
 }
 
 - (void)tearDown {
-  language::IOSLanguageDetectionTabHelper::FromWebState(
-      chrome_test_util::GetCurrentWebState())
-      ->SetExtraCallbackForTesting(
-          language::IOSLanguageDetectionTabHelper::Callback());
+  SetTestingLanguageDetectionCallback(
+      language::IOSLanguageDetectionTabHelper::Callback());
   _language_detection_details.reset();
   // TODO(crbug.com/642892): Investigate moving into test-specific teardown.
   // Re-enable translate.
