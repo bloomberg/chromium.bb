@@ -169,6 +169,7 @@ Bug(none) http/tests/websocket/httponly-cookie.pl [ Failure ]
 Bug(none) http/tests/xmlhttprequest/xmlhttprequest-data-url.html [ Failure ]
 Bug(none) http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-xhr.js [ Timeout ]
 Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
+Bug(none) virtual/mouseevent_fractional/fast/events/attribute-listener-cloned-from-frameless-doc.xhtml [ Timeout ]
 
 # Plugin throttle is not implemented.
 crbug.com/764474 http/tests/security/contentSecurityPolicy/object-src-url-allowed.html [ Failure ]
