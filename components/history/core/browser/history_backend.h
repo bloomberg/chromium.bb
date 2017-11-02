@@ -315,6 +315,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       const std::vector<int>& desired_sizes,
       std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
 
+  void DeleteFaviconMappings(const base::flat_set<GURL>& page_urls,
+                             favicon_base::IconType icon_type);
+
   void MergeFavicon(const GURL& page_url,
                     const GURL& icon_url,
                     favicon_base::IconType icon_type,
@@ -763,7 +766,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
           favicon_bitmap_results);
 
   // Maps the favicon ID |icon_id| to |page_url| (and all redirects) for
-  // |icon_type|.
+  // |icon_type|. |icon_id| == 0 deletes previously existing mappings.
   // Returns true if the mappings for the page or any of its redirects were
   // changed.
   bool SetFaviconMappingsForPageAndRedirects(const GURL& page_url,
@@ -771,6 +774,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                                              favicon_base::FaviconID icon_id);
 
   // Maps the favicon ID |icon_id| to URLs in |page_urls| for |icon_type|.
+  // |icon_id| == 0 deletes previously existing mappings.
   // Returns page URLs among |page_urls| whose mappings were changed (might be
   // empty).
   std::vector<GURL> SetFaviconMappingsForPages(
@@ -779,6 +783,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       favicon_base::FaviconID icon_id);
 
   // Maps the favicon ID |icon_ids| to |page_url| for |icon_type|.
+  // |icon_id| == 0 deletes previously existing mappings.
   // Returns true if the function changed at least one of |page_url|'s mappings.
   bool SetFaviconMappingsForPage(const GURL& page_url,
                                  favicon_base::IconType icon_type,

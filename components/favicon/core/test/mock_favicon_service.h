@@ -84,6 +84,9 @@ class MockFaviconService : public FaviconService {
                    int desired_size_in_dip,
                    const favicon_base::FaviconResultsCallback& callback,
                    base::CancelableTaskTracker* tracker));
+  MOCK_METHOD2(DeleteFaviconMappings,
+               void(const base::flat_set<GURL>& page_urls,
+                    favicon_base::IconType icon_type));
   MOCK_METHOD3(GetLargestRawFaviconForID,
                base::CancelableTaskTracker::TaskId(
                    favicon_base::FaviconID favicon_id,

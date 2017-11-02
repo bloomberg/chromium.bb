@@ -715,6 +715,10 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
 
+  // Deletes favicon mappings for each URL in |page_urls| and their redirects.
+  void DeleteFaviconMappings(const base::flat_set<GURL>& page_urls,
+                             favicon_base::IconType icon_type);
+
   // Used by FaviconService to set a favicon for |page_url| and |icon_url| with
   // |pixel_size|.
   // Example:

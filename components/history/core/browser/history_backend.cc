@@ -1599,6 +1599,24 @@ void HistoryBackend::UpdateFaviconMappingsAndFetch(
                                     desired_sizes, bitmap_results);
 }
 
+void HistoryBackend::DeleteFaviconMappings(
+    const base::flat_set<GURL>& page_urls,
+    favicon_base::IconType icon_type) {
+  if (!thumbnail_db_ || !db_)
+    return;
+
+  for (const GURL& page_url : page_urls) {
+    bool mapping_changed = SetFaviconMappingsForPageAndRedirects(
+        page_url, icon_type, /*icon_id=*/0);
+
+    if (mapping_changed) {
+      // Notify the UI that this function changed an icon mapping.
+      SendFaviconChangedNotificationForPageAndRedirects(page_url);
+      ScheduleCommit();
+    }
+  }
+}
+
 void HistoryBackend::MergeFavicon(
     const GURL& page_url,
     const GURL& icon_url,

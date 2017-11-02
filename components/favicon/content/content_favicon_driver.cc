@@ -162,10 +162,25 @@ void ContentFaviconDriver::OnFaviconUpdated(
                                 icon_url_changed, image);
 }
 
+void ContentFaviconDriver::OnFaviconDeleted(
+    const GURL& page_url,
+    FaviconDriverObserver::NotificationIconType notification_icon_type) {
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  DCHECK(entry && entry->GetURL() == page_url);
+
+  if (notification_icon_type == FaviconDriverObserver::NON_TOUCH_16_DIP) {
+    entry->GetFavicon() = content::FaviconStatus();
+    web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  }
+
+  NotifyFaviconUpdatedObservers(notification_icon_type, /*icon_url=*/GURL(),
+                                /*icon_url_changed=*/true,
+                                content::FaviconStatus().image);
+}
+
 void ContentFaviconDriver::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
-  DCHECK(!candidates.empty());
-
   // Ignore the update if there is no last committed navigation entry. This can
   // occur when loading an initially blank page.
   content::NavigationEntry* entry =

@@ -593,6 +593,18 @@ HistoryService::UpdateFaviconMappingsAndFetch(
       base::Bind(&RunWithFaviconResults, callback, base::Owned(results)));
 }
 
+void HistoryService::DeleteFaviconMappings(
+    const base::flat_set<GURL>& page_urls,
+    favicon_base::IconType icon_type) {
+  TRACE_EVENT0("browser", "HistoryService::DeleteFaviconMappings");
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  ScheduleTask(PRIORITY_NORMAL,
+               base::Bind(&HistoryBackend::DeleteFaviconMappings,
+                          history_backend_, page_urls, icon_type));
+}
+
 void HistoryService::MergeFavicon(
     const GURL& page_url,
     const GURL& icon_url,

@@ -186,6 +186,12 @@ FaviconServiceImpl::UpdateFaviconMappingsAndFetch(
       GetPixelSizesForFaviconScales(desired_size_in_dip), callback, tracker);
 }
 
+void FaviconServiceImpl::DeleteFaviconMappings(
+    const base::flat_set<GURL>& page_urls,
+    favicon_base::IconType icon_type) {
+  return history_service_->DeleteFaviconMappings(page_urls, icon_type);
+}
+
 base::CancelableTaskTracker::TaskId
 FaviconServiceImpl::GetLargestRawFaviconForID(
     favicon_base::FaviconID favicon_id,

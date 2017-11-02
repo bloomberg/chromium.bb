@@ -132,6 +132,13 @@ class FaviconHandler {
         const GURL& icon_url,
         bool icon_url_changed,
         const gfx::Image& image) = 0;
+
+    // Notifies that a page that used to have a favicon (reported via
+    // OnFaviconUpdated() above) stopped having it (e.g. it was removed via
+    // javascript).
+    virtual void OnFaviconDeleted(
+        const GURL& page_url,
+        FaviconDriverObserver::NotificationIconType notification_icon_type) = 0;
   };
 
   // |service| and |delegate| must not be nullptr and must outlive this class.
@@ -212,7 +219,8 @@ class FaviconHandler {
   void OnGotFinalIconURLCandidates(const std::vector<FaviconURL>& candidates);
 
   // Called when the history request for favicon data mapped to |url_| has
-  // completed and the renderer has told us the icon URLs used by |url_|
+  // completed and the renderer has told us the icon URLs used by |url_|,
+  // including the case where no relevant candidates exists.
   void OnGotInitialHistoryDataAndIconURLCandidates();
 
   // See description above class for details.
@@ -258,6 +266,14 @@ class FaviconHandler {
   void SetFavicon(const GURL& icon_url,
                   const gfx::Image& image,
                   favicon_base::IconType icon_type);
+
+  // Deletes the favicon mappings for |page_urls_|, if:
+  // - We're not in incognito.
+  // - A mapping is known to exist (reflected by |notification_icon_type_|).
+  // - All download attempts returned 404s OR no relevant candidate was
+  //   provided (as per |icon_types_|).
+  // - The corresponding feature is enabled (currently behind variations).
+  void MaybeDeleteFaviconMappings();
 
   // Notifies |driver_| that FaviconHandler found an icon which matches the
   // |handler_type_| criteria. NotifyFaviconUpdated() can be called multiple
@@ -332,6 +348,10 @@ class FaviconHandler {
   // Whether candidates have been received (OnUpdateCandidates() has been
   // called, regardless of whether the provided list was empty).
   bool candidates_received_;
+
+  // Whether among the processed candidates at least one download attempt
+  // resulted in an error other than a 404.
+  bool error_other_than_404_found_;
 
   // The manifest URL from the renderer (or empty URL if none).
   GURL manifest_url_;

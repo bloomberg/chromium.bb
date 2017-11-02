@@ -57,6 +57,9 @@ class FaviconDriverObserver {
   //     is redownloaded and stored into the database. OnFaviconUpdated() is
   //     called with |icon_url_changed| == false to notify that the icon in the
   //     history database MAY have changed visually.
+  //
+  // |icon_url| is empty for the cases where there is no actual icon (e.g. the
+  // page removed the favicon via Javascript).
   virtual void OnFaviconUpdated(FaviconDriver* favicon_driver,
                                 NotificationIconType notification_icon_type,
                                 const GURL& icon_url,

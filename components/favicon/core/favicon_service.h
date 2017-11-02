@@ -128,6 +128,10 @@ class FaviconService : public KeyedService {
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker) = 0;
 
+  // Deletes favicon mappings for each URL in |page_urls| and their redirects.
+  virtual void DeleteFaviconMappings(const base::flat_set<GURL>& page_urls,
+                                     favicon_base::IconType icon_type) = 0;
+
   // Used to request a bitmap for the favicon with |favicon_id| which is not
   // resized from the size it is stored at in the database. If there are
   // multiple favicon bitmaps for |favicon_id|, the largest favicon bitmap is
