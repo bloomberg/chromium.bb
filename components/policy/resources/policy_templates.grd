@@ -120,7 +120,7 @@ templates and will be translated for each locale. -->
     <structures fallback_to_english="true">
       <!-- List of policies and placeholder texts. This item should precede any
       message definitions. -->
-      <structure name="IDD_POLICY_SOURCE_FILE" file="policy_templates.json" type="policy_template_metafile" />
+      <structure name="IDD_POLICY_SOURCE_FILE" file="policy_templates.json" type="policy_template_metafile" encoding="utf-8" />
     </structures>
   </release>
 </grit>
