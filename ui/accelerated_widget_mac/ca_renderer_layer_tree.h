@@ -53,13 +53,11 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                                std::unique_ptr<CARendererLayerTree> old_tree,
                                float scale_factor);
 
-  // Check to see if the CALayer tree can be represented entirely by a video
-  // layer on a black background. If so, then set |fullscreen_low_power_layer|
-  // to draw this content and return true. Otherwise return false. This is to
-  // be called after committing scheduled CALayers.
-
+  // TODO(sdy): Remove. Guts have moved to RootLayer.
   bool CommitFullscreenLowPowerLayer(
-      AVSampleBufferDisplayLayer109* fullscreen_low_power_layer);
+      AVSampleBufferDisplayLayer109* fullscreen_low_power_layer) {
+    return false;
+  }
 
   // Returns the contents used for a given solid color.
   id ContentsForSolidColorForTesting(unsigned int color);
@@ -96,8 +94,19 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                     RootLayer* old_layer,
                     float scale_factor);
 
+    // Check to see if the CALayer tree can be represented entirely by a video
+    // layer on a black background. If so, then commit the layer, assign it to
+    // |low_power_layer|, and return true. Otherwise return false. This is to
+    // be called by CommitToCA().
+    bool CommitFullscreenLowPowerLayer(ContentLayer* old_low_power_layer,
+                                       float scale_factor);
+
     std::vector<ClipAndSortingLayer> clip_and_sorting_layers;
     base::scoped_nsobject<CALayer> ca_layer;
+
+    // Weak pointer to a child ContentLayer, if any, which is presented alone
+    // for fullscreen low power mode. Set by CommitFullscreenLowPowerLayer().
+    ContentLayer* low_power_layer = nullptr;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(RootLayer);
