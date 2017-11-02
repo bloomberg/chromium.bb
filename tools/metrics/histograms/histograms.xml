@@ -91796,6 +91796,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Webapp.AddToHomescreenDialog.Timeout" units="ms">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    Records the number of milliseconds that the add to homescreen dialog
+    required to check installability eligibility.
+  </summary>
+</histogram>
+
 <histogram name="Webapp.Install.DisplayMode" enum="WebAppDisplayMode">
   <owner>piotrs@chromium.org</owner>
   <summary>

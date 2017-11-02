@@ -299,6 +299,7 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
     histograms.ExpectUniqueSample(
         "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
         static_cast<int>(expected_status_for_histogram), 1);
+    histograms.ExpectTotalCount("Webapp.AddToHomescreenDialog.Timeout", 1);
   }
 
   void SetManifest(const content::Manifest& manifest) {
