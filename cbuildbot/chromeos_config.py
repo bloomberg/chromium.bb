@@ -577,6 +577,7 @@ _x86_internal_release_boards = frozenset([
     'lumpy',
     'mccloud',
     'monroe',
+    'nautilus',
     'newbie',
     'ninja',
     'novato',
@@ -664,6 +665,7 @@ _cheets_x86_boards = frozenset([
     'kunimitsu',
     'lars',
     'lulu',
+    'nautilus',
     'newbie',
     'novato',
     'novato-arc64',
@@ -3593,6 +3595,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
       'soraka-release': {
+          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
+      },
+
+      'nautilus-release': {
           'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
 
