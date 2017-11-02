@@ -111,7 +111,7 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
   if (state_ == StrategyState::kCleared)
     state_ = StrategyState::kExpanding;
 
-  VisiblePosition old_offset_extent_position = selection.VisibleExtent();
+  const VisiblePosition& old_offset_extent_position = selection.VisibleExtent();
   IntPoint old_extent_location = PositionLocation(old_offset_extent_position);
 
   IntPoint old_offset_extent_point =
@@ -263,7 +263,7 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
         offset_extent_before_middle ? bound_before_extent : bound_after_extent;
     // Update the offset if selection expanded in word granularity.
     if (new_selection_extent.DeepEquivalent() !=
-            selection.VisibleExtent().DeepEquivalent() &&
+            old_offset_extent_position.DeepEquivalent() &&
         ((new_extent_base_order > 0 && !offset_extent_before_middle) ||
          (new_extent_base_order < 0 && offset_extent_before_middle))) {
       offset_ = PositionLocation(new_selection_extent).X() - extent_point.X();
@@ -273,7 +273,7 @@ SelectionInDOMTree DirectionGranularityStrategy::UpdateExtent(
   // Only update the state if the selection actually changed as a result of
   // this move.
   if (new_selection_extent.DeepEquivalent() !=
-      selection.VisibleExtent().DeepEquivalent())
+      old_offset_extent_position.DeepEquivalent())
     state_ = this_move_shrunk_selection ? StrategyState::kShrinking
                                         : StrategyState::kExpanding;
 
