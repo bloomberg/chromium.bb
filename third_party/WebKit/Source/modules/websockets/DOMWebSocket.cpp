@@ -87,7 +87,7 @@ void DOMWebSocket::EventQueue::Dispatch(Event* event) {
       DCHECK(target_->GetExecutionContext());
       target_->DispatchEvent(event);
       break;
-    case kSuspended:
+    case kPaused:
       events_.push_back(event);
       break;
     case kStopped:
@@ -101,16 +101,16 @@ bool DOMWebSocket::EventQueue::IsEmpty() const {
   return events_.IsEmpty();
 }
 
-void DOMWebSocket::EventQueue::Suspend() {
+void DOMWebSocket::EventQueue::Pause() {
   resume_timer_.Stop();
   if (state_ != kActive)
     return;
 
-  state_ = kSuspended;
+  state_ = kPaused;
 }
 
-void DOMWebSocket::EventQueue::Resume() {
-  if (state_ != kSuspended || resume_timer_.IsActive())
+void DOMWebSocket::EventQueue::Unpause() {
+  if (state_ != kPaused || resume_timer_.IsActive())
     return;
 
   resume_timer_.StartOneShot(0, BLINK_FROM_HERE);
@@ -132,14 +132,14 @@ void DOMWebSocket::EventQueue::DispatchQueuedEvents() {
   HeapDeque<Member<Event>> events;
   events.Swap(events_);
   while (!events.IsEmpty()) {
-    if (state_ == kStopped || state_ == kSuspended)
+    if (state_ == kStopped || state_ == kPaused)
       break;
     DCHECK_EQ(state_, kActive);
     DCHECK(target_->GetExecutionContext());
     target_->DispatchEvent(events.TakeFirst());
     // |this| can be stopped here.
   }
-  if (state_ == kSuspended) {
+  if (state_ == kPaused) {
     while (!events_.IsEmpty())
       events.push_back(events_.TakeFirst());
     events.Swap(events_);
@@ -147,7 +147,7 @@ void DOMWebSocket::EventQueue::DispatchQueuedEvents() {
 }
 
 void DOMWebSocket::EventQueue::ResumeTimerFired(TimerBase*) {
-  DCHECK_EQ(state_, kSuspended);
+  DCHECK_EQ(state_, kPaused);
   state_ = kActive;
   DispatchQueuedEvents();
 }
@@ -221,7 +221,7 @@ const char* DOMWebSocket::SubprotocolSeperator() {
 }
 
 DOMWebSocket::DOMWebSocket(ExecutionContext* context)
-    : SuspendableObject(context),
+    : PausableObject(context),
       state_(kConnecting),
       buffered_amount_(0),
       consumed_buffered_amount_(0),
@@ -341,9 +341,9 @@ void DOMWebSocket::Connect(const String& url,
     // Delay the event dispatch until after the current task by suspending and
     // resuming the queue. If we don't do this, the event is fired synchronously
     // with the constructor, meaning that it's impossible to listen for.
-    event_queue_->Suspend();
+    event_queue_->Pause();
     event_queue_->Dispatch(Event::Create(EventTypeNames::error));
-    event_queue_->Resume();
+    event_queue_->Unpause();
     return;
   }
 
@@ -636,7 +636,7 @@ const AtomicString& DOMWebSocket::InterfaceName() const {
 }
 
 ExecutionContext* DOMWebSocket::GetExecutionContext() const {
-  return SuspendableObject::GetExecutionContext();
+  return PausableObject::GetExecutionContext();
 }
 
 void DOMWebSocket::ContextDestroyed(ExecutionContext*) {
@@ -655,11 +655,11 @@ bool DOMWebSocket::HasPendingActivity() const {
 }
 
 void DOMWebSocket::Suspend() {
-  event_queue_->Suspend();
+  event_queue_->Pause();
 }
 
 void DOMWebSocket::Resume() {
-  event_queue_->Resume();
+  event_queue_->Unpause();
 }
 
 void DOMWebSocket::DidConnect(const String& subprotocol,
@@ -843,7 +843,7 @@ void DOMWebSocket::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_queue_);
   WebSocketChannelClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
-  SuspendableObject::Trace(visitor);
+  PausableObject::Trace(visitor);
 }
 
 }  // namespace blink
