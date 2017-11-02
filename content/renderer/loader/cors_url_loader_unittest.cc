@@ -40,6 +40,8 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     client_ptr_->OnComplete(ResourceRequestCompletionStatus(error_code));
   }
 
+  bool IsCreateLoaderAndStartCalled() { return !!client_ptr_; }
+
  private:
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
@@ -67,7 +69,10 @@ class CORSURLLoaderTest : public testing::Test {
       : test_network_factory_binding_(&test_network_loader_factory_) {}
 
  protected:
-  void CreateLoaderAndStart(const GURL& origin, const GURL& url) {
+  void CreateLoaderAndStart(
+      const GURL& origin,
+      const GURL& url,
+      network::mojom::FetchRequestMode fetch_request_mode) {
     mojom::URLLoaderFactoryPtr network_factory_ptr;
     test_network_factory_binding_.Bind(mojo::MakeRequest(&network_factory_ptr));
 
@@ -78,6 +83,7 @@ class CORSURLLoaderTest : public testing::Test {
     ResourceRequest request;
     request.resource_type = RESOURCE_TYPE_IMAGE;
     request.fetch_request_context_type = REQUEST_CONTEXT_TYPE_IMAGE;
+    request.fetch_request_mode = fetch_request_mode;
     request.method = net::HttpRequestHeaders::kGetMethod;
     request.url = url;
     request.request_initiator = url::Origin::Create(origin);
@@ -91,6 +97,10 @@ class CORSURLLoaderTest : public testing::Test {
     // Flushes to ensure that the request is handled and
     // TestURLLoaderFactory::CreateLoaderAndStart() runs internally.
     loader_factory_ptr.FlushForTesting();
+  }
+
+  bool IsNetworkLoaderStarted() {
+    return test_network_loader_factory_.IsCreateLoaderAndStartCalled();
   }
 
   void NotifyLoaderClientOnReceiveResponse() {
@@ -124,17 +134,38 @@ class CORSURLLoaderTest : public testing::Test {
 
 TEST_F(CORSURLLoaderTest, SameOriginRequest) {
   const GURL url("http://example.com/foo.png");
-  CreateLoaderAndStart(url.GetOrigin(), url);
+  CreateLoaderAndStart(url.GetOrigin(), url,
+                       network::mojom::FetchRequestMode::kSameOrigin);
 
   NotifyLoaderClientOnReceiveResponse();
   NotifyLoaderClientOnComplete(net::OK);
 
   RunUntilComplete();
 
+  EXPECT_TRUE(IsNetworkLoaderStarted());
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_TRUE(client().has_received_response());
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::OK, client().completion_status().error_code);
+}
+
+TEST_F(CORSURLLoaderTest, CrossOriginRequestWithCORSModeButMissingCORSHeader) {
+  const GURL origin("http://example.com");
+  const GURL url("http://other.com/foo.png");
+  CreateLoaderAndStart(origin, url, network::mojom::FetchRequestMode::kCORS);
+
+  NotifyLoaderClientOnReceiveResponse();
+  NotifyLoaderClientOnComplete(net::OK);
+
+  RunUntilComplete();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_EQ(net::ERR_FAILED, client().completion_status().error_code);
+  ASSERT_TRUE(client().completion_status().cors_error);
+  EXPECT_EQ(network::mojom::CORSError::kMissingAllowOriginHeader,
+            *client().completion_status().cors_error);
 }
 
 }  // namespace

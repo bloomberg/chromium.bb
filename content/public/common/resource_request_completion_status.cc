@@ -15,6 +15,12 @@ ResourceRequestCompletionStatus::ResourceRequestCompletionStatus(
 ResourceRequestCompletionStatus::ResourceRequestCompletionStatus(int error_code)
     : error_code(error_code), completion_time(base::TimeTicks::Now()) {}
 
+ResourceRequestCompletionStatus::ResourceRequestCompletionStatus(
+    network::mojom::CORSError error)
+    : ResourceRequestCompletionStatus(net::ERR_FAILED) {
+  cors_error = error;
+}
+
 ResourceRequestCompletionStatus::~ResourceRequestCompletionStatus() = default;
 
 }  // namespace content
