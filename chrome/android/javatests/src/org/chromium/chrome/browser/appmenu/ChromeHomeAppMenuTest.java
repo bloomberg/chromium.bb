@@ -387,9 +387,7 @@ public class ChromeHomeAppMenuTest {
     @CommandLineFlags.Add({
         "disable-features=IPH_ChromeHomeMenuHeader," + ChromeFeatureList.CHROME_HOME_PROMO,
         "enable-features=" + ChromeFeatureList.DATA_REDUCTION_MAIN_MENU})
-    public void testDataSaverAppMenuHeader() throws InterruptedException {
-        // Load a test page and show the app menu. The header is only shown on the page menu.
-        loadTestPage();
+    public void testDataSaverAppMenuHeader() {
         showAppMenuAndAssertMenuShown();
 
         // There should currently be no headers.
