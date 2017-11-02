@@ -316,17 +316,6 @@ int HttpNetworkTransaction::Read(IOBuffer* buf, int buf_len,
   // Are we using SPDY or HTTP?
   next_state_ = STATE_READ_BODY;
 
-  // We have reached the end of Start state machine, reset the requestinfo to
-  // null.
-  // RequestInfo is a member of the HttpTransaction's consumer and is useful
-  // only till final response headers are received. A reset will ensure that
-  // HttpRequestInfo is only used up until final response headers are received.
-  // Resetting is allowed so that the transaction can be disassociated from its
-  // creating consumer in cases where it is shared for writing to the cache.
-  // It is also safe to reset it to null at this point since upload_data_stream
-  // is also not used in the Read state machine.
-  request_ = nullptr;
-
   read_buf_ = buf;
   read_buf_len_ = buf_len;
 
@@ -1333,6 +1322,19 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return rv;
 
   headers_valid_ = true;
+
+  // We have reached the end of Start state machine, set the RequestInfo to
+  // null.
+  // RequestInfo is a member of the HttpTransaction's consumer and is useful
+  // only until the final response headers are received. Clearing it will ensure
+  // that HttpRequestInfo is only used up until final response headers are
+  // received. Clearing is allowed so that the transaction can be disassociated
+  // from its creating consumer in cases where it is shared for writing to the
+  // cache. It is also safe to set it to null at this point since
+  // upload_data_stream is also not used in the Read state machine.
+  if (pending_auth_target_ == HttpAuth::AUTH_NONE)
+    request_ = nullptr;
+
   return OK;
 }
 
