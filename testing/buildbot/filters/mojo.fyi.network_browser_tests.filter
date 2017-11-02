@@ -2838,3 +2838,9 @@
 -ReferrerPolicyTest.ContextMenuRedirect
 -ReferrerPolicyTest.HttpsContextMenuOrigin
 -ReferrerPolicyTest.HttpsContextMenuRedirect
+
+# crbug.com/780325 Should be working again once chrome-extension loading is properly supported.
+-ExtensionFetchTest.ExtensionCanFetchExtensionResource
+-ExtensionFetchTest.ExtensionCanFetchHostedResourceWithHostPermissions
+-ExtensionFetchTest.ExtensionCannotFetchHostedResourceWithoutHostPermissions
+-ExtensionFetchTest.HostCanFetchWebAccessibleExtensionResource
