@@ -336,7 +336,8 @@ void TestHelper::SetupContextGroupInitExpectations(
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RENDERBUFFER_SIZE, _))
       .WillOnce(SetArgPointee<1>(kMaxRenderbufferSize))
       .RetiresOnSaturation();
-  if (gl::HasExtension(extension_set, "GL_EXT_framebuffer_multisample") ||
+  if (gl::HasExtension(extension_set, "GL_ARB_framebuffer_object") ||
+      gl::HasExtension(extension_set, "GL_EXT_framebuffer_multisample") ||
       gl::HasExtension(extension_set,
                        "GL_EXT_multisampled_render_to_texture") ||
       gl_info.is_es3 || gl_info.is_desktop_core_profile) {

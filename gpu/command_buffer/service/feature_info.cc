@@ -884,15 +884,14 @@ void FeatureInfo::InitializeFeatures() {
   // Check for multisample support
   if (!workarounds_.disable_chromium_framebuffer_multisample) {
     bool ext_has_multisample =
-        gl::HasExtension(extensions, "GL_EXT_framebuffer_multisample") ||
+        gl::HasExtension(extensions, "GL_ARB_framebuffer_object") ||
+        (gl::HasExtension(extensions, "GL_EXT_framebuffer_multisample") &&
+         gl::HasExtension(extensions, "GL_EXT_framebuffer_blit")) ||
         gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile;
     if (gl_version_info_->is_angle || gl_version_info_->is_swiftshader) {
-      feature_flags_.angle_framebuffer_multisample =
+      ext_has_multisample |=
           gl::HasExtension(extensions, "GL_ANGLE_framebuffer_multisample");
-      ext_has_multisample |= feature_flags_.angle_framebuffer_multisample;
     }
-    feature_flags_.use_core_framebuffer_multisample =
-        gl_version_info_->is_es3 || gl_version_info_->is_desktop_core_profile;
     if (ext_has_multisample) {
       feature_flags_.chromium_framebuffer_multisample = true;
       validators_.framebuffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);

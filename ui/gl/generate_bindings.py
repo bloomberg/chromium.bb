@@ -37,6 +37,7 @@ array instead of the names array. Each version has the following keys:
    extensions: Extra Extensions for which the function is bound. Only needed
                in some cases where the extension cannot be parsed from the
                headers.
+   explicit_only: if True, only extensions in 'extensions' are considered.
    is_optional: True if the GetProcAddress can return NULL for the
                 function.  This may happen for example when functions
                 are added to a new version of an extension, but the
@@ -160,17 +161,10 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha', },
 { 'return_type': 'void',
-  'names': ['glBlitFramebuffer'],
-  'arguments': 'GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, '
-               'GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, '
-               'GLbitfield mask, GLenum filter', },
-{ 'return_type': 'void',
-  'names': ['glBlitFramebufferANGLE', 'glBlitFramebuffer'],
-  'arguments': 'GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, '
-               'GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, '
-               'GLbitfield mask, GLenum filter', },
-{ 'return_type': 'void',
-  'names': ['glBlitFramebufferEXT', 'glBlitFramebuffer'],
+  'versions' : [{'name': 'glBlitFramebuffer',
+                 'extensions': ['GL_ARB_framebuffer_object']},
+                {'name': 'glBlitFramebufferANGLE'},
+                {'name': 'glBlitFramebufferEXT'}],
   'arguments': 'GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, '
                'GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, '
                'GLbitfield mask, GLenum filter', },
@@ -537,12 +531,8 @@ GL_FUNCTIONS = [
       'GLenum target, GLenum attachment, GLenum textarget, GLuint texture, '
       'GLint level', },
 { 'return_type': 'void',
-  'names': ['glFramebufferTexture2DMultisampleEXT'],
-  'arguments':
-      'GLenum target, GLenum attachment, GLenum textarget, GLuint texture, '
-      'GLint level, GLsizei samples', },
-{ 'return_type': 'void',
-  'names': ['glFramebufferTexture2DMultisampleIMG'],
+ 'versions': [{'name': 'glFramebufferTexture2DMultisampleEXT'},
+              {'name': 'glFramebufferTexture2DMultisampleIMG'}],
   'arguments':
       'GLenum target, GLenum attachment, GLenum textarget, GLuint texture, '
       'GLint level, GLsizei samples', },
@@ -1357,19 +1347,19 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum target, GLenum internalformat, GLsizei width, GLsizei height', },
 { 'return_type': 'void',
-  'names': ['glRenderbufferStorageMultisample'],
+ 'versions' : [{'name': 'glRenderbufferStorageMultisample',
+                'extensions': ['GL_ARB_framebuffer_object']},
+               {'name': 'glRenderbufferStorageMultisampleANGLE'},
+               {'name': 'glRenderbufferStorageMultisampleEXT',
+                'extensions': ['GL_EXT_framebuffer_multisample'],
+                'explicit_only': True}],
   'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
-  'names': ['glRenderbufferStorageMultisampleANGLE'],
-  'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
-               'GLsizei width, GLsizei height', },
-{ 'return_type': 'void',
-  'names': ['glRenderbufferStorageMultisampleEXT'],
-  'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
-               'GLsizei width, GLsizei height', },
-{ 'return_type': 'void',
-  'names': ['glRenderbufferStorageMultisampleIMG'],
+ 'versions' : [{'name': 'glRenderbufferStorageMultisampleEXT',
+                'extensions': ['GL_EXT_multisampled_render_to_texture'],
+                'explicit_only': True},
+               {'name': 'glRenderbufferStorageMultisampleIMG'}],
   'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
@@ -3327,7 +3317,10 @@ def FillExtensionsFromHeaders(functions, extension_headers, extra_extensions):
         print "[%s] Specified extra extensions for binding: %s" % (
             name, ', '.join(diff))
 
-      all_extensions = extensions_from_headers.union(explicit_extensions)
+      if version.get('explicit_only', False):
+        all_extensions = explicit_extensions
+      else:
+        all_extensions = extensions_from_headers.union(explicit_extensions)
       if len(all_extensions):
         version['extensions'] = all_extensions
 

@@ -181,8 +181,8 @@ gpu::ContextResult ContextGroup::Initialize(
   GLint max_samples = 0;
   if (feature_info_->feature_flags().chromium_framebuffer_multisample ||
       feature_info_->feature_flags().multisampled_render_to_texture) {
-    if (feature_info_->feature_flags(
-            ).use_img_for_multisampled_render_to_texture) {
+    if (feature_info_->feature_flags()
+            .use_img_for_multisampled_render_to_texture) {
       glGetIntegerv(GL_MAX_SAMPLES_IMG, &max_samples);
     } else {
       glGetIntegerv(GL_MAX_SAMPLES, &max_samples);

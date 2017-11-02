@@ -299,6 +299,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_ARB_draw_buffers = HasExtension(extensions, "GL_ARB_draw_buffers");
   ext.b_GL_ARB_draw_instanced =
       HasExtension(extensions, "GL_ARB_draw_instanced");
+  ext.b_GL_ARB_framebuffer_object =
+      HasExtension(extensions, "GL_ARB_framebuffer_object");
   ext.b_GL_ARB_get_program_binary =
       HasExtension(extensions, "GL_ARB_get_program_binary");
   ext.b_GL_ARB_instanced_arrays =
@@ -526,24 +528,15 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glBlendBarrierKHR"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_framebuffer_object) {
     fn.glBlitFramebufferFn = reinterpret_cast<glBlitFramebufferProc>(
         GetGLProcAddress("glBlitFramebuffer"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
-    fn.glBlitFramebufferANGLEFn = reinterpret_cast<glBlitFramebufferANGLEProc>(
-        GetGLProcAddress("glBlitFramebuffer"));
   } else if (ext.b_GL_ANGLE_framebuffer_blit) {
-    fn.glBlitFramebufferANGLEFn = reinterpret_cast<glBlitFramebufferANGLEProc>(
+    fn.glBlitFramebufferFn = reinterpret_cast<glBlitFramebufferProc>(
         GetGLProcAddress("glBlitFramebufferANGLE"));
-  }
-
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
-    fn.glBlitFramebufferEXTFn = reinterpret_cast<glBlitFramebufferEXTProc>(
-        GetGLProcAddress("glBlitFramebuffer"));
   } else if (ext.b_GL_EXT_framebuffer_blit) {
-    fn.glBlitFramebufferEXTFn = reinterpret_cast<glBlitFramebufferEXTProc>(
+    fn.glBlitFramebufferFn = reinterpret_cast<glBlitFramebufferProc>(
         GetGLProcAddress("glBlitFramebufferEXT"));
   }
 
@@ -926,11 +919,9 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glFramebufferTexture2DMultisampleEXTFn =
         reinterpret_cast<glFramebufferTexture2DMultisampleEXTProc>(
             GetGLProcAddress("glFramebufferTexture2DMultisampleEXT"));
-  }
-
-  if (ext.b_GL_IMG_multisampled_render_to_texture) {
-    fn.glFramebufferTexture2DMultisampleIMGFn =
-        reinterpret_cast<glFramebufferTexture2DMultisampleIMGProc>(
+  } else if (ext.b_GL_IMG_multisampled_render_to_texture) {
+    fn.glFramebufferTexture2DMultisampleEXTFn =
+        reinterpret_cast<glFramebufferTexture2DMultisampleEXTProc>(
             GetGLProcAddress("glFramebufferTexture2DMultisampleIMG"));
   }
 
@@ -1853,28 +1844,28 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glRenderbufferStorageEXT"));
   }
 
-  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u)) {
+  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
+      ext.b_GL_ARB_framebuffer_object) {
     fn.glRenderbufferStorageMultisampleFn =
         reinterpret_cast<glRenderbufferStorageMultisampleProc>(
             GetGLProcAddress("glRenderbufferStorageMultisample"));
-  }
-
-  if (ext.b_GL_ANGLE_framebuffer_multisample) {
-    fn.glRenderbufferStorageMultisampleANGLEFn =
-        reinterpret_cast<glRenderbufferStorageMultisampleANGLEProc>(
+  } else if (ext.b_GL_ANGLE_framebuffer_multisample) {
+    fn.glRenderbufferStorageMultisampleFn =
+        reinterpret_cast<glRenderbufferStorageMultisampleProc>(
             GetGLProcAddress("glRenderbufferStorageMultisampleANGLE"));
-  }
-
-  if (ext.b_GL_EXT_multisampled_render_to_texture ||
-      ext.b_GL_EXT_framebuffer_multisample) {
-    fn.glRenderbufferStorageMultisampleEXTFn =
-        reinterpret_cast<glRenderbufferStorageMultisampleEXTProc>(
+  } else if (ext.b_GL_EXT_framebuffer_multisample) {
+    fn.glRenderbufferStorageMultisampleFn =
+        reinterpret_cast<glRenderbufferStorageMultisampleProc>(
             GetGLProcAddress("glRenderbufferStorageMultisampleEXT"));
   }
 
-  if (ext.b_GL_IMG_multisampled_render_to_texture) {
-    fn.glRenderbufferStorageMultisampleIMGFn =
-        reinterpret_cast<glRenderbufferStorageMultisampleIMGProc>(
+  if (ext.b_GL_EXT_multisampled_render_to_texture) {
+    fn.glRenderbufferStorageMultisampleEXTFn =
+        reinterpret_cast<glRenderbufferStorageMultisampleEXTProc>(
+            GetGLProcAddress("glRenderbufferStorageMultisampleEXT"));
+  } else if (ext.b_GL_IMG_multisampled_render_to_texture) {
+    fn.glRenderbufferStorageMultisampleEXTFn =
+        reinterpret_cast<glRenderbufferStorageMultisampleEXTProc>(
             GetGLProcAddress("glRenderbufferStorageMultisampleIMG"));
   }
 
@@ -2392,34 +2383,6 @@ void GLApiBase::glBlitFramebufferFn(GLint srcX0,
                                     GLenum filter) {
   driver_->fn.glBlitFramebufferFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
                                   dstX1, dstY1, mask, filter);
-}
-
-void GLApiBase::glBlitFramebufferANGLEFn(GLint srcX0,
-                                         GLint srcY0,
-                                         GLint srcX1,
-                                         GLint srcY1,
-                                         GLint dstX0,
-                                         GLint dstY0,
-                                         GLint dstX1,
-                                         GLint dstY1,
-                                         GLbitfield mask,
-                                         GLenum filter) {
-  driver_->fn.glBlitFramebufferANGLEFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                       dstX1, dstY1, mask, filter);
-}
-
-void GLApiBase::glBlitFramebufferEXTFn(GLint srcX0,
-                                       GLint srcY0,
-                                       GLint srcX1,
-                                       GLint srcY1,
-                                       GLint dstX0,
-                                       GLint dstY0,
-                                       GLint dstX1,
-                                       GLint dstY1,
-                                       GLbitfield mask,
-                                       GLenum filter) {
-  driver_->fn.glBlitFramebufferEXTFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                     dstX1, dstY1, mask, filter);
 }
 
 void GLApiBase::glBufferDataFn(GLenum target,
@@ -2990,16 +2953,6 @@ void GLApiBase::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
                                                        GLint level,
                                                        GLsizei samples) {
   driver_->fn.glFramebufferTexture2DMultisampleEXTFn(
-      target, attachment, textarget, texture, level, samples);
-}
-
-void GLApiBase::glFramebufferTexture2DMultisampleIMGFn(GLenum target,
-                                                       GLenum attachment,
-                                                       GLenum textarget,
-                                                       GLuint texture,
-                                                       GLint level,
-                                                       GLsizei samples) {
-  driver_->fn.glFramebufferTexture2DMultisampleIMGFn(
       target, attachment, textarget, texture, level, samples);
 }
 
@@ -4162,30 +4115,12 @@ void GLApiBase::glRenderbufferStorageMultisampleFn(GLenum target,
                                                  internalformat, width, height);
 }
 
-void GLApiBase::glRenderbufferStorageMultisampleANGLEFn(GLenum target,
-                                                        GLsizei samples,
-                                                        GLenum internalformat,
-                                                        GLsizei width,
-                                                        GLsizei height) {
-  driver_->fn.glRenderbufferStorageMultisampleANGLEFn(
-      target, samples, internalformat, width, height);
-}
-
 void GLApiBase::glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                                       GLsizei samples,
                                                       GLenum internalformat,
                                                       GLsizei width,
                                                       GLsizei height) {
   driver_->fn.glRenderbufferStorageMultisampleEXTFn(
-      target, samples, internalformat, width, height);
-}
-
-void GLApiBase::glRenderbufferStorageMultisampleIMGFn(GLenum target,
-                                                      GLsizei samples,
-                                                      GLenum internalformat,
-                                                      GLsizei width,
-                                                      GLsizei height) {
-  driver_->fn.glRenderbufferStorageMultisampleIMGFn(
       target, samples, internalformat, width, height);
 }
 
@@ -5084,36 +5019,6 @@ void TraceGLApi::glBlitFramebufferFn(GLint srcX0,
                                dstY1, mask, filter);
 }
 
-void TraceGLApi::glBlitFramebufferANGLEFn(GLint srcX0,
-                                          GLint srcY0,
-                                          GLint srcX1,
-                                          GLint srcY1,
-                                          GLint dstX0,
-                                          GLint dstY0,
-                                          GLint dstX1,
-                                          GLint dstY1,
-                                          GLbitfield mask,
-                                          GLenum filter) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlitFramebufferANGLE")
-  gl_api_->glBlitFramebufferANGLEFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                    dstX1, dstY1, mask, filter);
-}
-
-void TraceGLApi::glBlitFramebufferEXTFn(GLint srcX0,
-                                        GLint srcY0,
-                                        GLint srcX1,
-                                        GLint srcY1,
-                                        GLint dstX0,
-                                        GLint dstY0,
-                                        GLint dstX1,
-                                        GLint dstY1,
-                                        GLbitfield mask,
-                                        GLenum filter) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlitFramebufferEXT")
-  gl_api_->glBlitFramebufferEXTFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                  dstX1, dstY1, mask, filter);
-}
-
 void TraceGLApi::glBufferDataFn(GLenum target,
                                 GLsizeiptr size,
                                 const void* data,
@@ -5779,18 +5684,6 @@ void TraceGLApi::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
   TRACE_EVENT_BINARY_EFFICIENT0(
       "gpu", "TraceGLAPI::glFramebufferTexture2DMultisampleEXT")
   gl_api_->glFramebufferTexture2DMultisampleEXTFn(target, attachment, textarget,
-                                                  texture, level, samples);
-}
-
-void TraceGLApi::glFramebufferTexture2DMultisampleIMGFn(GLenum target,
-                                                        GLenum attachment,
-                                                        GLenum textarget,
-                                                        GLuint texture,
-                                                        GLint level,
-                                                        GLsizei samples) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "TraceGLAPI::glFramebufferTexture2DMultisampleIMG")
-  gl_api_->glFramebufferTexture2DMultisampleIMGFn(target, attachment, textarget,
                                                   texture, level, samples);
 }
 
@@ -7165,17 +7058,6 @@ void TraceGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
                                               width, height);
 }
 
-void TraceGLApi::glRenderbufferStorageMultisampleANGLEFn(GLenum target,
-                                                         GLsizei samples,
-                                                         GLenum internalformat,
-                                                         GLsizei width,
-                                                         GLsizei height) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "TraceGLAPI::glRenderbufferStorageMultisampleANGLE")
-  gl_api_->glRenderbufferStorageMultisampleANGLEFn(
-      target, samples, internalformat, width, height);
-}
-
 void TraceGLApi::glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                                        GLsizei samples,
                                                        GLenum internalformat,
@@ -7184,17 +7066,6 @@ void TraceGLApi::glRenderbufferStorageMultisampleEXTFn(GLenum target,
   TRACE_EVENT_BINARY_EFFICIENT0(
       "gpu", "TraceGLAPI::glRenderbufferStorageMultisampleEXT")
   gl_api_->glRenderbufferStorageMultisampleEXTFn(target, samples,
-                                                 internalformat, width, height);
-}
-
-void TraceGLApi::glRenderbufferStorageMultisampleIMGFn(GLenum target,
-                                                       GLsizei samples,
-                                                       GLenum internalformat,
-                                                       GLsizei width,
-                                                       GLsizei height) {
-  TRACE_EVENT_BINARY_EFFICIENT0(
-      "gpu", "TraceGLAPI::glRenderbufferStorageMultisampleIMG")
-  gl_api_->glRenderbufferStorageMultisampleIMGFn(target, samples,
                                                  internalformat, width, height);
 }
 
@@ -8256,44 +8127,6 @@ void DebugGLApi::glBlitFramebufferFn(GLint srcX0,
                                dstY1, mask, filter);
 }
 
-void DebugGLApi::glBlitFramebufferANGLEFn(GLint srcX0,
-                                          GLint srcY0,
-                                          GLint srcX1,
-                                          GLint srcY1,
-                                          GLint dstX0,
-                                          GLint dstY0,
-                                          GLint dstX1,
-                                          GLint dstY1,
-                                          GLbitfield mask,
-                                          GLenum filter) {
-  GL_SERVICE_LOG("glBlitFramebufferANGLE"
-                 << "(" << srcX0 << ", " << srcY0 << ", " << srcX1 << ", "
-                 << srcY1 << ", " << dstX0 << ", " << dstY0 << ", " << dstX1
-                 << ", " << dstY1 << ", " << mask << ", "
-                 << GLEnums::GetStringEnum(filter) << ")");
-  gl_api_->glBlitFramebufferANGLEFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                    dstX1, dstY1, mask, filter);
-}
-
-void DebugGLApi::glBlitFramebufferEXTFn(GLint srcX0,
-                                        GLint srcY0,
-                                        GLint srcX1,
-                                        GLint srcY1,
-                                        GLint dstX0,
-                                        GLint dstY0,
-                                        GLint dstX1,
-                                        GLint dstY1,
-                                        GLbitfield mask,
-                                        GLenum filter) {
-  GL_SERVICE_LOG("glBlitFramebufferEXT"
-                 << "(" << srcX0 << ", " << srcY0 << ", " << srcX1 << ", "
-                 << srcY1 << ", " << dstX0 << ", " << dstY0 << ", " << dstX1
-                 << ", " << dstY1 << ", " << mask << ", "
-                 << GLEnums::GetStringEnum(filter) << ")");
-  gl_api_->glBlitFramebufferEXTFn(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
-                                  dstX1, dstY1, mask, filter);
-}
-
 void DebugGLApi::glBufferDataFn(GLenum target,
                                 GLsizeiptr size,
                                 const void* data,
@@ -9164,21 +8997,6 @@ void DebugGLApi::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
                  << GLEnums::GetStringEnum(textarget) << ", " << texture << ", "
                  << level << ", " << samples << ")");
   gl_api_->glFramebufferTexture2DMultisampleEXTFn(target, attachment, textarget,
-                                                  texture, level, samples);
-}
-
-void DebugGLApi::glFramebufferTexture2DMultisampleIMGFn(GLenum target,
-                                                        GLenum attachment,
-                                                        GLenum textarget,
-                                                        GLuint texture,
-                                                        GLint level,
-                                                        GLsizei samples) {
-  GL_SERVICE_LOG("glFramebufferTexture2DMultisampleIMG"
-                 << "(" << GLEnums::GetStringEnum(target) << ", "
-                 << GLEnums::GetStringEnum(attachment) << ", "
-                 << GLEnums::GetStringEnum(textarget) << ", " << texture << ", "
-                 << level << ", " << samples << ")");
-  gl_api_->glFramebufferTexture2DMultisampleIMGFn(target, attachment, textarget,
                                                   texture, level, samples);
 }
 
@@ -11022,19 +10840,6 @@ void DebugGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
                                               width, height);
 }
 
-void DebugGLApi::glRenderbufferStorageMultisampleANGLEFn(GLenum target,
-                                                         GLsizei samples,
-                                                         GLenum internalformat,
-                                                         GLsizei width,
-                                                         GLsizei height) {
-  GL_SERVICE_LOG("glRenderbufferStorageMultisampleANGLE"
-                 << "(" << GLEnums::GetStringEnum(target) << ", " << samples
-                 << ", " << GLEnums::GetStringEnum(internalformat) << ", "
-                 << width << ", " << height << ")");
-  gl_api_->glRenderbufferStorageMultisampleANGLEFn(
-      target, samples, internalformat, width, height);
-}
-
 void DebugGLApi::glRenderbufferStorageMultisampleEXTFn(GLenum target,
                                                        GLsizei samples,
                                                        GLenum internalformat,
@@ -11045,19 +10850,6 @@ void DebugGLApi::glRenderbufferStorageMultisampleEXTFn(GLenum target,
                  << ", " << GLEnums::GetStringEnum(internalformat) << ", "
                  << width << ", " << height << ")");
   gl_api_->glRenderbufferStorageMultisampleEXTFn(target, samples,
-                                                 internalformat, width, height);
-}
-
-void DebugGLApi::glRenderbufferStorageMultisampleIMGFn(GLenum target,
-                                                       GLsizei samples,
-                                                       GLenum internalformat,
-                                                       GLsizei width,
-                                                       GLsizei height) {
-  GL_SERVICE_LOG("glRenderbufferStorageMultisampleIMG"
-                 << "(" << GLEnums::GetStringEnum(target) << ", " << samples
-                 << ", " << GLEnums::GetStringEnum(internalformat) << ", "
-                 << width << ", " << height << ")");
-  gl_api_->glRenderbufferStorageMultisampleIMGFn(target, samples,
                                                  internalformat, width, height);
 }
 
@@ -12332,32 +12124,6 @@ void NoContextGLApi::glBlitFramebufferFn(GLint srcX0,
   NoContextHelper("glBlitFramebuffer");
 }
 
-void NoContextGLApi::glBlitFramebufferANGLEFn(GLint srcX0,
-                                              GLint srcY0,
-                                              GLint srcX1,
-                                              GLint srcY1,
-                                              GLint dstX0,
-                                              GLint dstY0,
-                                              GLint dstX1,
-                                              GLint dstY1,
-                                              GLbitfield mask,
-                                              GLenum filter) {
-  NoContextHelper("glBlitFramebufferANGLE");
-}
-
-void NoContextGLApi::glBlitFramebufferEXTFn(GLint srcX0,
-                                            GLint srcY0,
-                                            GLint srcX1,
-                                            GLint srcY1,
-                                            GLint dstX0,
-                                            GLint dstY0,
-                                            GLint dstX1,
-                                            GLint dstY1,
-                                            GLbitfield mask,
-                                            GLenum filter) {
-  NoContextHelper("glBlitFramebufferEXT");
-}
-
 void NoContextGLApi::glBufferDataFn(GLenum target,
                                     GLsizeiptr size,
                                     const void* data,
@@ -12907,15 +12673,6 @@ void NoContextGLApi::glFramebufferTexture2DMultisampleEXTFn(GLenum target,
                                                             GLint level,
                                                             GLsizei samples) {
   NoContextHelper("glFramebufferTexture2DMultisampleEXT");
-}
-
-void NoContextGLApi::glFramebufferTexture2DMultisampleIMGFn(GLenum target,
-                                                            GLenum attachment,
-                                                            GLenum textarget,
-                                                            GLuint texture,
-                                                            GLint level,
-                                                            GLsizei samples) {
-  NoContextHelper("glFramebufferTexture2DMultisampleIMG");
 }
 
 void NoContextGLApi::glFramebufferTextureLayerFn(GLenum target,
@@ -14067,15 +13824,6 @@ void NoContextGLApi::glRenderbufferStorageMultisampleFn(GLenum target,
   NoContextHelper("glRenderbufferStorageMultisample");
 }
 
-void NoContextGLApi::glRenderbufferStorageMultisampleANGLEFn(
-    GLenum target,
-    GLsizei samples,
-    GLenum internalformat,
-    GLsizei width,
-    GLsizei height) {
-  NoContextHelper("glRenderbufferStorageMultisampleANGLE");
-}
-
 void NoContextGLApi::glRenderbufferStorageMultisampleEXTFn(
     GLenum target,
     GLsizei samples,
@@ -14083,15 +13831,6 @@ void NoContextGLApi::glRenderbufferStorageMultisampleEXTFn(
     GLsizei width,
     GLsizei height) {
   NoContextHelper("glRenderbufferStorageMultisampleEXT");
-}
-
-void NoContextGLApi::glRenderbufferStorageMultisampleIMGFn(
-    GLenum target,
-    GLsizei samples,
-    GLenum internalformat,
-    GLsizei width,
-    GLsizei height) {
-  NoContextHelper("glRenderbufferStorageMultisampleIMG");
 }
 
 void NoContextGLApi::glRequestExtensionANGLEFn(const char* name) {

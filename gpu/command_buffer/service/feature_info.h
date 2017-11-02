@@ -33,14 +33,13 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   struct FeatureFlags {
     FeatureFlags();
 
+    // Use glBlitFramebuffer() and glRenderbufferStorageMultisample() with
+    // GL_EXT_framebuffer_multisample-style semantics (as opposed to
+    // GL_EXT_multisampled_render_to_texture semantics).
     bool chromium_framebuffer_multisample = false;
     bool chromium_sync_query = false;
-    // Use glBlitFramebuffer() and glRenderbufferStorageMultisample() with
-    // GL_EXT_framebuffer_multisample-style semantics, since they are exposed
-    // as core GL functions on this implementation.
-    bool use_core_framebuffer_multisample = false;
     bool multisampled_render_to_texture = false;
-    // Use the IMG GLenum values and functions rather than EXT.
+    // Use the IMG GLenum values rather than EXT.
     bool use_img_for_multisampled_render_to_texture = false;
     bool chromium_screen_space_antialiasing = false;
     bool use_chromium_screen_space_antialiasing_via_shaders = false;
@@ -110,7 +109,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_srgb = false;
     bool chromium_copy_texture = false;
     bool chromium_copy_compressed_texture = false;
-    bool angle_framebuffer_multisample = false;
     bool ext_disjoint_timer_query = false;
     bool angle_client_arrays = false;
     bool angle_request_extension = false;

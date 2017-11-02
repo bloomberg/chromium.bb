@@ -168,7 +168,6 @@ TEST_P(FeatureInfoTest, Basic) {
   SetupWithoutInit();
   // Test it starts off uninitialized.
   EXPECT_FALSE(info_->feature_flags().chromium_framebuffer_multisample);
-  EXPECT_FALSE(info_->feature_flags().use_core_framebuffer_multisample);
   EXPECT_FALSE(info_->feature_flags().multisampled_render_to_texture);
   EXPECT_FALSE(info_->feature_flags(
       ).use_img_for_multisampled_render_to_texture);
@@ -997,7 +996,24 @@ TEST_P(FeatureInfoTest, InitializeOES_texture_half_float_linearGLES2) {
 }
 
 TEST_P(FeatureInfoTest, InitializeEXT_framebuffer_multisample) {
-  SetupInitExpectations("GL_EXT_framebuffer_multisample");
+  SetupInitExpectations(
+      "GL_EXT_framebuffer_blit GL_EXT_framebuffer_multisample");
+  EXPECT_TRUE(info_->feature_flags().chromium_framebuffer_multisample);
+  EXPECT_TRUE(gl::HasExtension(info_->extensions(),
+                               "GL_CHROMIUM_framebuffer_multisample"));
+  EXPECT_TRUE(
+      info_->validators()->framebuffer_target.IsValid(GL_READ_FRAMEBUFFER_EXT));
+  EXPECT_TRUE(
+      info_->validators()->framebuffer_target.IsValid(GL_DRAW_FRAMEBUFFER_EXT));
+  EXPECT_TRUE(
+      info_->validators()->g_l_state.IsValid(GL_READ_FRAMEBUFFER_BINDING_EXT));
+  EXPECT_TRUE(info_->validators()->g_l_state.IsValid(GL_MAX_SAMPLES_EXT));
+  EXPECT_TRUE(info_->validators()->render_buffer_parameter.IsValid(
+      GL_RENDERBUFFER_SAMPLES_EXT));
+}
+
+TEST_P(FeatureInfoTest, InitializeARB_framebuffer_multisample) {
+  SetupInitExpectations("GL_ARB_framebuffer_object");
   EXPECT_TRUE(info_->feature_flags().chromium_framebuffer_multisample);
   EXPECT_TRUE(gl::HasExtension(info_->extensions(),
                                "GL_CHROMIUM_framebuffer_multisample"));
@@ -1428,7 +1444,6 @@ TEST_P(FeatureInfoTest, InitializeSamplersWithARBSamplerObjects) {
 TEST_P(FeatureInfoTest, InitializeWithES3) {
   SetupInitExpectationsWithGLVersion("", "", "OpenGL ES 3.0");
   EXPECT_TRUE(info_->feature_flags().chromium_framebuffer_multisample);
-  EXPECT_TRUE(info_->feature_flags().use_core_framebuffer_multisample);
   EXPECT_TRUE(gl::HasExtension(info_->extensions(),
                                "GL_CHROMIUM_framebuffer_multisample"));
   EXPECT_TRUE(info_->feature_flags().use_async_readpixels);
