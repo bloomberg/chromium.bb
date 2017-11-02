@@ -11,15 +11,33 @@
 #include "third_party/minizip/src/unzip.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  zlib_filefunc_def filefunc32 = {0};
-  ourmemory_t unzmem = {0};
+  zlib_filefunc_def filefunc32 = {};
+  ourmemory_t unzmem = {};
   unzFile handle;
   unzmem.size = size;
-  unzmem.base = (char*)data;
+  unzmem.base = reinterpret_cast<char*>(const_cast<uint8_t*>(data));
   unzmem.grow = 0;
+  int err = UNZ_OK;
+  unz_file_info64 file_info = {};
+  char filename_inzip[256] = {};
 
   fill_memory_filefunc(&filefunc32, &unzmem);
   handle = unzOpen2(nullptr, &filefunc32);
+  err = unzGoToFirstFile(handle);
+  while (err == UNZ_OK) {
+    err = unzGetCurrentFileInfo64(handle, &file_info, filename_inzip,
+                                  sizeof(filename_inzip), NULL, 0, NULL, 0);
+    if (err != UNZ_OK) {
+      break;
+    }
+    err = unzOpenCurrentFile(handle);
+    if (err != UNZ_OK) {
+      break;
+    }
+
+    unzCloseCurrentFile(handle);
+    err = unzGoToNextFile(handle);
+  }
   unzClose(handle);
 
   return 0;
