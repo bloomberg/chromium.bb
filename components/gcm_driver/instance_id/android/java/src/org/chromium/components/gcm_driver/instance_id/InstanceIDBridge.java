@@ -189,6 +189,7 @@ public class InstanceIDBridge {
         public void execute() {
             AsyncTask<Void, Void, Result> task = new AsyncTask<Void, Void, Result>() {
                 @Override
+                @SuppressWarnings("NoSynchronizedThisCheck") // Only used/accessible by native.
                 protected Result doInBackground(Void... params) {
                     synchronized (InstanceIDBridge.this) {
                         if (mInstanceID == null) {

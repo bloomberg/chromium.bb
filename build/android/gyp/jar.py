@@ -66,11 +66,11 @@ def Jar(class_files, classes_dir, jar_path, manifest_file=None,
 
 def JarDirectory(classes_dir, jar_path, manifest_file=None, predicate=None,
                  provider_configurations=None, additional_files=None):
-  class_files = build_utils.FindInDirectory(classes_dir, '*.class')
+  all_files = build_utils.FindInDirectory(classes_dir, '*')
   if predicate:
-    class_files = [f for f in class_files if predicate(f)]
+    all_files = [f for f in all_files if predicate(f)]
 
-  Jar(class_files, classes_dir, jar_path, manifest_file=manifest_file,
+  Jar(all_files, classes_dir, jar_path, manifest_file=manifest_file,
       provider_configurations=provider_configurations,
       additional_files=additional_files)
 
