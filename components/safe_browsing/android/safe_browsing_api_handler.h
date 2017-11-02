@@ -5,8 +5,8 @@
 // Glue to pass Safe Browsing API requests between
 // RemoteSafeBrowsingDatabaseManager and Java-based API to check URLs.
 
-#ifndef COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_H_
-#define COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_H_
+#ifndef COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_H_
+#define COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_H_
 
 #include <string>
 #include <vector>
@@ -42,4 +42,4 @@ class SafeBrowsingApiHandler {
 
 }  // namespace safe_browsing
 
-#endif  // COMPONENTS_SAFE_BROWSING_SAFE_BROWSING_API_HANDLER_H_
+#endif  // COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_H_

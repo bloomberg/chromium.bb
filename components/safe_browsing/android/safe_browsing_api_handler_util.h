@@ -4,8 +4,8 @@
 //
 // Helper functions for SafeBrowsingApiHandlerImpl.  Separated out for tests.
 
-#ifndef COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_UTIL_H_
-#define COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_UTIL_H_
+#ifndef COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_UTIL_H_
+#define COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_UTIL_H_
 
 #include <string>
 
@@ -60,4 +60,4 @@ UmaRemoteCallResult ParseJsonToThreatAndPB(const std::string& metadata_str,
                                            std::string* metadata_pb_str);
 }  // namespace safe_browsing
 
-#endif  // COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_UTIL_H_
+#endif  // COMPONENTS_SAFE_BROWSING_ANDROID_SAFE_BROWSING_API_HANDLER_UTIL_H_
