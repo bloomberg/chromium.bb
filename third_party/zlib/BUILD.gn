@@ -175,7 +175,7 @@ static_library("zlib") {
 
 fuzzer_test("zlib_uncompress_fuzzer") {
   sources = [
-    "contrib/tests/fuzzers/zlib_uncompress_fuzzer.cc",
+    "contrib/tests/fuzzers/uncompress_fuzzer.cc",
   ]
   deps = [
     ":zlib",
