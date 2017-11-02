@@ -39,34 +39,14 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   bool IsMouseEvent() const override;
   bool IsPointerEvent() const override;
 
-  // TODO(eirage): crbug.com/773813 Make PointerEvents of type mouse have
-  // fractional coordiantes
-  double screenX() const override {
-    return (pointer_type_ == "mouse") ? static_cast<int>(screen_location_.X())
-                                      : screen_location_.X();
-  }
-  double screenY() const override {
-    return (pointer_type_ == "mouse") ? static_cast<int>(screen_location_.Y())
-                                      : screen_location_.Y();
-  }
-
-  double clientX() const override {
-    return (pointer_type_ == "mouse") ? static_cast<int>(client_location_.X())
-                                      : client_location_.X();
-  }
-  double clientY() const override {
-    return (pointer_type_ == "mouse") ? static_cast<int>(client_location_.Y())
-                                      : client_location_.Y();
-  }
-
-  double pageX() const override {
-    return (pointer_type_ == "mouse") ? static_cast<int>(page_location_.X())
-                                      : page_location_.X();
-  }
-  double pageY() const override {
-    return (pointer_type_ == "mouse") ? static_cast<int>(page_location_.Y())
-                                      : page_location_.Y();
-  }
+  // TODO(eirage): Remove these override of coordinates getters when
+  // fractional mouseevent flag is removed.
+  double screenX() const override;
+  double screenY() const override;
+  double clientX() const override;
+  double clientY() const override;
+  double pageX() const override;
+  double pageY() const override;
 
   EventDispatchMediator* CreateMediator() override;
   void ReceivedTarget() override;

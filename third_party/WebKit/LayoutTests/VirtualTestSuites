@@ -574,5 +574,10 @@
     "prefix": "reporting",
     "base": "external/wpt/content-security-policy/reporting",
     "args": ["--enable-features=Reporting"]
+  },
+  {
+    "prefix": "mouseevent_fractional",
+    "base": "fast/events",
+    "args": ["--enable-blink-features=FractionalMouseEvent"]
   }
 ]

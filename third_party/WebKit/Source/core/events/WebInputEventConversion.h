@@ -50,8 +50,8 @@ class TouchEvent;
 class WebGestureEvent;
 class WebKeyboardEvent;
 
-// These classes are used to convert from WebInputEvent subclasses to
-// corresponding WebCore events.
+// These classes are used for conversion from Blink events to WebInputEvents
+// (for plugins).
 
 class CORE_EXPORT WebMouseEventBuilder : public WebMouseEvent {
  public:
