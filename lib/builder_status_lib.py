@@ -269,6 +269,10 @@ class BuilderStatusManager(object):
       A boolean for whether the build was canceled by master
         during self-destruction.
     """
+    if master_build_id is None:
+      # Builds without master_build_id can't be aborted by self-destruction.
+      return False
+
     build_messages = db.GetBuildMessages(master_build_id)
     build_messages = (
         message for message in build_messages if message['message_value'] ==
@@ -356,6 +360,7 @@ class SlaveBuilderStatus(object):
     self.buildbucket_info_dict = None
     self.cidb_info_dict = None
     self.slave_failures_dict = None
+    self.aborted_slaves = None
     self._InitSlaveInfo()
 
   def _GetSlaveFailures(self, buildbucket_info_dict):
@@ -388,6 +393,22 @@ class SlaveBuilderStatus(object):
 
     return slave_failures_dict
 
+  def _GetSlavesAbortedBySelfDestruction(self, cidb_info_dict):
+    """Get slaves aborted by self-destruction of the master.
+
+    Args:
+    cidb_info_dict: A dict mapping slave build config names (strings) to their
+        cidb infos (in the format of CIDBStatusInfo).
+
+    Returns:
+      A set of build config names (strings) of slaves aborted by
+    self-destruction.
+    """
+    return set(build_config
+               for build_config, cidb_info in cidb_info_dict.iteritems()
+               if BuilderStatusManager.AbortedBySelfDestruction(
+                   self.db, cidb_info.build_id, self.master_build_id))
+
   def _InitSlaveInfo(self):
     """Init slave info including buildbucket info, cidb info and failures."""
     if config_lib.UseBuildbucketScheduler(self.config):
@@ -403,6 +424,9 @@ class SlaveBuilderStatus(object):
 
     self.slave_failures_dict = self._GetSlaveFailures(
         self.buildbucket_info_dict)
+
+    self.aborted_slaves = self._GetSlavesAbortedBySelfDestruction(
+        self.cidb_info_dict)
 
   def _GetStatus(self, build_config, cidb_info_dict, buildbucket_info_dict):
     """Get status of a given build.
@@ -461,7 +485,7 @@ class SlaveBuilderStatus(object):
       return buildbucket_info_dict[build_config].url
 
   def _GetMessage(self, build_config, status, dashboard_url,
-                  slave_failures_dict):
+                  slave_failures_dict, aborted_slaves):
     """Get build_failure_message.BuildFailureMessage of a given build.
 
     Args:
@@ -470,6 +494,8 @@ class SlaveBuilderStatus(object):
       dashboard_url: The URL of the build.
       slave_failures_dict: A dict mapping the slave build config names (strings)
         to stage failure messages (See return type of _GetSlaveFailures)
+      aborted_slaves: A set of build config names (strings) of slaves aborted by
+        self-destruction.
 
     Returns:
       A build_failure_message.BuildFailureMessage object if the status is
@@ -478,9 +504,10 @@ class SlaveBuilderStatus(object):
     if status == constants.BUILDER_STATUS_FAILED:
       failure_messages = slave_failures_dict.get(build_config)
       overlays = site_config[build_config].overlays
-
+      aborted = build_config in aborted_slaves
       return BuilderStatusManager.CreateBuildFailureMessage(
-          build_config, overlays, dashboard_url, failure_messages)
+          build_config, overlays, dashboard_url, failure_messages,
+          aborted_by_self_destruction=aborted)
 
   def GetBuilderStatusForBuild(self, build_config):
     """Get BuilderStatus for a given build.
@@ -496,7 +523,8 @@ class SlaveBuilderStatus(object):
     dashboard_url = self._GetDashboardUrl(
         build_config, self.cidb_info_dict, self.buildbucket_info_dict)
     message = self._GetMessage(
-        build_config, status, dashboard_url, self.slave_failures_dict)
+        build_config, status, dashboard_url, self.slave_failures_dict,
+        self.aborted_slaves)
 
     return BuilderStatus(status, message, dashboard_url=dashboard_url)
 

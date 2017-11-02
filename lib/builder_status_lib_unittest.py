@@ -404,6 +404,29 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     self.assertTrue(isinstance(slave_failures_dict[self.slave_2][0],
                                failure_message_lib.StageFailureMessage))
 
+  def testGetSlavesAbortedBySelfDestructionReturnsEmptySet(self):
+    """Test GetSlavesAbortedBySelfDestruction returns an empty set."""
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
+    cidb_info_dict = cidb_infos.GetFullCIDBStatusInfo()
+    manager = self.ConstructBuilderStatusManager()
+
+    aborted_slaves = manager._GetSlavesAbortedBySelfDestruction(cidb_info_dict)
+    self.assertEqual(aborted_slaves, set())
+
+  def testGetSlavesAbortedBySelfDestructionWithAbortedBuilds(self):
+    """Test GetSlavesAbortedBySelfDestruction with aborted builds."""
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
+    cidb_info_dict = cidb_infos.GetFullCIDBStatusInfo()
+    self.db.InsertBuildMessage(
+        self.master_build_id,
+        message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+        message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
+        message_value=str(3))
+    manager = self.ConstructBuilderStatusManager()
+
+    aborted_slaves = manager._GetSlavesAbortedBySelfDestruction(cidb_info_dict)
+    self.assertEqual(aborted_slaves, {'completed_failure'})
+
   def testInitSlaveInfoWithBuildbucket(self):
     """Test _InitSlaveInfo with Buildbucket info."""
     self.PatchObject(config_lib, 'UseBuildbucketScheduler', return_value=True)
@@ -496,23 +519,31 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
   def testGetMessageOnFailedBuilds(self):
     """Test _GetMessage on failed builds."""
     self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
+    mock_create_msg = self.PatchObject(builder_status_lib.BuilderStatusManager,
+                                       'CreateBuildFailureMessage')
     manager = self.ConstructBuilderStatusManager()
     failure_messages = ConstructFailureMessages(self.slave_1)
     slave_failures_dict = {self.slave_1: failure_messages}
-    message = manager._GetMessage(
+    aborted_slaves = {self.slave_1, self.slave_2}
+    manager._GetMessage(
         self.slave_1, constants.BUILDER_STATUS_FAILED, 'dashboard_url',
-        slave_failures_dict)
+        slave_failures_dict, aborted_slaves)
 
-    self.assertIsNotNone(message)
+    mock_create_msg.assert_called_with(
+        self.slave_1, mock.ANY, 'dashboard_url',
+        slave_failures_dict.get(self.slave_1), aborted_by_self_destruction=True)
 
   def testGetMessageOnNotFailedBuilds(self):
     """Test _GetMessage on not failed builds."""
     self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
+    mock_create_msg = self.PatchObject(builder_status_lib.BuilderStatusManager,
+                                       'CreateBuildFailureMessage')
     manager = self.ConstructBuilderStatusManager()
-    message = manager._GetMessage(
-        self.slave_1, constants.BUILDER_STATUS_PASSED, 'dashboard_url', {})
+    manager._GetMessage(
+        self.slave_1, constants.BUILDER_STATUS_PASSED, 'dashboard_url', {},
+        set())
 
-    self.assertIsNone(message)
+    mock_create_msg.assert_not_called()
 
   def testGetBuilderStatusForBuild(self):
     """Test GetBuilderStatusForBuild."""
@@ -564,32 +595,30 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
   def testAbortedBySelfDestruction(self):
     """Test that self-destructive aborts in CIDB are recognized."""
     slave = 'cyan-paladin'
-    master_id = 'master_id'
     builder_number = 37
 
     slave_id = self.db.InsertBuild(slave, waterfall.WATERFALL_INTERNAL,
                                    builder_number, slave, 'bot_hostname',
-                                   master_build_id=master_id)
+                                   master_build_id=self.master_build_id)
     self.db.InsertBuildMessage(
-        master_id,
+        self.master_build_id,
         message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
         message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
         message_value=str(slave_id))
 
     self.assertTrue(
         builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
-            self.db, slave_id, master_id))
+            self.db, slave_id, self.master_build_id))
 
   def testNotAbortedBySelfDestruction(self):
     """Test that aborts in CIDB are only flagged if they happened."""
     slave = 'cyan-paladin'
-    master_id = 'master_id'
     builder_number = 37
 
     slave_id = self.db.InsertBuild(slave, waterfall.WATERFALL_INTERNAL,
                                    builder_number, slave, 'bot_hostname',
-                                   master_build_id=master_id)
-    self.db.InsertBuildMessage(master_id,
+                                   master_build_id=self.master_build_id)
+    self.db.InsertBuildMessage(self.master_build_id,
                                message_value=slave_id)
     builder_number = 1
 
@@ -599,7 +628,13 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
     self.assertFalse(
         builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
-            self.db, slave_id, master_id))
+            self.db, slave_id, self.master_build_id))
+
+  def testAbortedBySelfDestructionOnBuildWithoutMaster(self):
+    """AbortedBySelfDestruction returns False on builds without master."""
+    self.assertFalse(
+        builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
+            self.db, 1, None))
 
 
 class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
