@@ -20,6 +20,10 @@
 #include "test/register_state_check.h"
 #include "test/util.h"
 
+#if CONFIG_JNT_COMP
+#include "av1/common/common_data.h"
+#endif
+
 namespace {
 const int kTestIters = 10;
 const int kPerfIters = 1000;
@@ -257,13 +261,43 @@ class ConvolveScaleTestBase : public ::testing::Test {
     image_ = new TestImage<SrcPixel>(width_, height_, bd_);
   }
 
+#if CONFIG_JNT_COMP
+  void SetConvParamOffset(int i, int j) {
+    if (i == -1 && j == -1) {
+      convolve_params_.fwd_offset = -1;
+      convolve_params_.bck_offset = -1;
+    } else {
+      convolve_params_.fwd_offset = quant_dist_lookup_table[i][j][0];
+      convolve_params_.bck_offset = quant_dist_lookup_table[i][j][1];
+    }
+  }
+#endif  // CONFIG_JNT_COMP
+
   void Run() {
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     for (int i = 0; i < kTestIters; ++i) {
+#if CONFIG_JNT_COMP
+      SetConvParamOffset(-1, -1);
       Prep(&rnd);
       RunOne(true);
       RunOne(false);
       image_->Check();
+
+      for (int j = 0; j < 2; ++j) {
+        for (int k = 0; k < 4; ++k) {
+          SetConvParamOffset(j, k);
+          Prep(&rnd);
+          RunOne(true);
+          RunOne(false);
+          image_->Check();
+        }
+      }
+#else
+      Prep(&rnd);
+      RunOne(true);
+      RunOne(false);
+      image_->Check();
+#endif  // CONFIG_JNT_COMP
     }
   }
 

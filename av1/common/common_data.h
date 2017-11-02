@@ -1802,6 +1802,8 @@ static const int intra_mode_context[INTRA_MODES] = {
 #endif
 
 #if CONFIG_JNT_COMP
+// Note: this is also used in unit tests. So whenever one changes the table,
+// the unit tests need to be changed accordingly.
 static const double quant_dist_category[4] = { 1.5, 2.5, 3.5, 255 };
 static const int quant_dist_lookup_table[2][4][2] = {
   { { 8, 8 }, { 11, 5 }, { 12, 4 }, { 13, 3 } },
