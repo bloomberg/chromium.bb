@@ -12,7 +12,7 @@
 testElement.style.lineHeight = '10px';
 testElement.style.fontSize = '100px';
 
-var computedStyleMap = getComputedStyleMap(testElement);
+var computedStyleMap = testElement.computedStyleMap();
 
 test(function() {
   var result = computedStyleMap.get('line-height');

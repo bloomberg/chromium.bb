@@ -52,6 +52,7 @@ namespace http://www.w3.org/1999/xhtml
     property compareDocumentPosition
     property computedName
     property computedRole
+    property computedStyleMap
     property contains
     property contentEditable
     property createShadowRoot
@@ -1159,6 +1160,7 @@ namespace http://www.w3.org/2000/svg
     property compareDocumentPosition
     property computedName
     property computedRole
+    property computedStyleMap
     property contains
     property contentEditable
     property createShadowRoot

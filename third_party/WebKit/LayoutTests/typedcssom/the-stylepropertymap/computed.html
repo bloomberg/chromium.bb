@@ -13,8 +13,7 @@
 'use strict';
 
 const target = document.getElementById('target');
-// FIXME(774933): change this to Element.computedStyleMap
-const styleMap = getComputedStyleMap(target);
+const styleMap = target.computedStyleMap();
 
 test(() => {
   const computedStyle = getComputedStyle(target);

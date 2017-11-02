@@ -6,14 +6,8 @@
 
 <script>
 
-var computedStyleMap = getComputedStyleMap(testElement);
+var computedStyleMap = testElement.computedStyleMap();
 var computedStyle = getComputedStyle(testElement);
-
-test(function() {
-  assert_throws(new TypeError(), function() {
-    getComputedStyleMap(null);
-  });
-}, 'Test that passing null to getComputedStyleMap does not crash');
 
 test(function() {
   var properties = computedStyleMap.getProperties();

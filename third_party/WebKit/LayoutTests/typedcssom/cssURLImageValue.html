@@ -121,7 +121,7 @@ for (let property of supportedCSSProperties) {
     testImage4.style[property] = 'url(' + base64Url() + ')';
 
     assertLoadedDotImageValue(
-      getComputedStyleMap(testImage4).get(property),
+      testImage4.computedStyleMap().get(property),
       base64Url(),
       1,
       1,

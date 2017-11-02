@@ -15,7 +15,7 @@
 var locationPath = location.href.substring(0, location.href.lastIndexOf('/'));
 var imagePath = locationPath + '/resources/1x1-green.png';
 
-var computedStyleMap = getComputedStyleMap(testElement);
+var computedStyleMap = testElement.computedStyleMap();
 
 function checks() {
   var result = computedStyleMap.get('background-image');

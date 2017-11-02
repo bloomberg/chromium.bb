@@ -6,7 +6,7 @@
 
 <script>
 
-var computedStyleMap = getComputedStyleMap(testElement);
+var computedStyleMap = testElement.computedStyleMap();
 
 test(function() {
   testElement.style.borderTop = '10px solid #000';
