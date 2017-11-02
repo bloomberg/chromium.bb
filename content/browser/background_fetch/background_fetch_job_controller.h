@@ -34,7 +34,7 @@ namespace content {
 // waitUntil promise has been resolved so UpdateUI can no longer be called).
 class CONTENT_EXPORT BackgroundFetchJobController final
     : public BackgroundFetchDelegateProxy::Controller,
-      public BackgroundFetchDataManager::Controller {
+      public BackgroundFetchDatabaseClient {
  public:
   using FinishedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
@@ -57,7 +57,7 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // fetch new content until all requests have been handled.
   void Start();
 
-  // BackgroundFetchDataManager::Controller implementation:
+  // BackgroundFetchDatabaseClient implementation:
   void InitializeRequestStatus(
       int completed_downloads,
       int total_downloads,
