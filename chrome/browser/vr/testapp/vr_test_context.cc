@@ -149,9 +149,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
   // make it into this method and are missed.
   if (mouse_event->IsLeftMouseButton()) {
     if (mouse_event->type() == ui::ET_MOUSE_PRESSED) {
-      controller_info_->touchpad_button_state = UiInputManager::DOWN;
+      touchpad_pressed_ = true;
     } else if (mouse_event->type() == ui::ET_MOUSE_RELEASED) {
-      controller_info_->touchpad_button_state = UiInputManager::UP;
+      touchpad_pressed_ = false;
     }
   }
 
@@ -195,6 +195,8 @@ void VrTestContext::HandleInput(ui::Event* event) {
   local_offset.Scale(kControllerScaleFactor);
 
   ControllerModel controller_model;
+  controller_model.touchpad_button_state =
+      touchpad_pressed_ ? UiInputManager::DOWN : UiInputManager::UP;
   controller_model.laser_direction = controller_direction;
   controller_model.laser_origin = kLaserOrigin + local_offset;
 

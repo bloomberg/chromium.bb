@@ -73,6 +73,7 @@ class VrTestContext : public vr::ContentInputDelegate,
   float head_angle_y_degrees_ = 0;
   int last_drag_x_pixels_ = 0;
   int last_drag_y_pixels_ = 0;
+  bool touchpad_pressed_ = false;
 
   float view_scale_factor_ = 1.f;
 
