@@ -83,7 +83,8 @@ class DevToolsTargetRegistry::Impl {
               std::unique_ptr<const TargetInfo> new_info) {
     if (old_info)
       Remove(*old_info);
-    Add(std::move(new_info));
+    if (new_info)
+      Add(std::move(new_info));
   }
 
   Impl() { DETACH_FROM_THREAD(thread_checker_); }
