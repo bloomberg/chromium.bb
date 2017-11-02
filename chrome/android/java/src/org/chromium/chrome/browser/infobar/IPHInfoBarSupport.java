@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.app.Activity;
+import android.content.Context;
 import android.support.annotation.StringRes;
 import android.view.View;
 import android.widget.PopupWindow.OnDismissListener;
@@ -29,7 +29,7 @@ import org.chromium.components.feature_engagement.Tracker;
  */
 class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAnimationListener,
                                    InfoBarContainerObserver {
-    private final Activity mActivity;
+    private final Context mContext;
     private final Tracker mTracker;
 
     /** Helper class to hold all relevant display parameters for an in-product help window. */
@@ -67,8 +67,8 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
     private PopupState mCurrentState;
 
     /** Creates a new instance of an IPHInfoBarSupport class. */
-    IPHInfoBarSupport(Activity activity) {
-        mActivity = activity;
+    IPHInfoBarSupport(Context context) {
+        mContext = context;
         Profile profile = Profile.getLastUsedProfile();
         mTracker = TrackerFactory.getTrackerForProfile(profile);
     }
@@ -100,8 +100,6 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
         // Check if we need to log any IPH events based on the infobar.
         logEvent(frontInfoBar);
 
-        if (mActivity.isFinishing()) return;
-
         // Check if there are any IPH'es we need to show.
         TrackerParameters params = getTrackerParameters(frontInfoBar);
         if (params == null) return;
@@ -111,7 +109,7 @@ class IPHInfoBarSupport implements OnDismissListener, InfoBarContainer.InfoBarAn
         mCurrentState = new PopupState();
         mCurrentState.view = view;
         mCurrentState.bubble = new ViewAnchoredTextBubble(
-                mActivity, view, params.textId, params.accessibilityTextId);
+                mContext, view, params.textId, params.accessibilityTextId);
         mCurrentState.bubble.addOnDismissListener(this);
         mCurrentState.bubble.setDismissOnTouchInteraction(true);
         mCurrentState.bubble.show();
