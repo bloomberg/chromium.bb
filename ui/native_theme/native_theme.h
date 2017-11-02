@@ -330,6 +330,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_LinkPressed,
     // Separator
     kColorId_SeparatorColor,
+    // TabbedPane
+    kColorId_TabTitleColorActive,
+    kColorId_TabTitleColorInactive,
+    kColorId_TabBottomBorder,
     // Textfield
     kColorId_TextfieldDefaultColor,
     kColorId_TextfieldDefaultBackground,

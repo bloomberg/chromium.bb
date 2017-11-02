@@ -281,9 +281,11 @@ MdTab::~MdTab() {}
 void MdTab::OnStateChanged() {
   ui::NativeTheme* theme = GetNativeTheme();
 
-  SkColor font_color = selected()
-      ? theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor)
-      : theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonEnabledColor);
+  SkColor font_color =
+      selected()
+          ? theme->GetSystemColor(ui::NativeTheme::kColorId_TabTitleColorActive)
+          : theme->GetSystemColor(
+                ui::NativeTheme::kColorId_TabTitleColorInactive);
   title()->SetEnabledColor(font_color);
 
   gfx::Font::Weight font_weight = gfx::Font::Weight::MEDIUM;
@@ -434,7 +436,7 @@ void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   canvas->FillRect(gfx::Rect(0, max_y - kUnselectedBorderThickness, width(),
                              kUnselectedBorderThickness),
                    GetNativeTheme()->GetSystemColor(
-                       ui::NativeTheme::kColorId_UnfocusedBorderColor));
+                       ui::NativeTheme::kColorId_TabBottomBorder));
 
   int min_x = 0;
   int max_x = 0;

@@ -219,6 +219,15 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
           "GtkTreeView#treeview.view "
           "GtkTreeView#treeview.view.cell:selected:focus GtkLabel");
 
+    // TabbedPane
+    case ui::NativeTheme::kColorId_TabTitleColorActive:
+      return GetFgColor("GtkLabel");
+    case ui::NativeTheme::kColorId_TabTitleColorInactive:
+      return GetFgColor("GtkLabel:disabled");
+    case ui::NativeTheme::kColorId_TabBottomBorder:
+      return GetBorderColor(GtkVersionCheck(3, 20) ? "GtkFrame#frame #border"
+                                                   : "GtkFrame#frame");
+
     // Textfield
     case ui::NativeTheme::kColorId_TextfieldDefaultColor:
       return GetFgColor(GtkVersionCheck(3, 20)
@@ -404,6 +413,7 @@ NativeThemeGtk3::NativeThemeGtk3() {
   // doesn't optimize away this code.
   g_type_class_unref(g_type_class_ref(gtk_button_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_entry_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_frame_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_header_bar_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_image_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_info_bar_get_type()));
