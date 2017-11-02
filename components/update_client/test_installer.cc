@@ -34,17 +34,17 @@ void TestInstaller::OnUpdateError(int error) {
 
 void TestInstaller::Install(const base::FilePath& unpack_path,
                             const std::string& /*public_key*/,
-                            const Callback& callback) {
+                            Callback callback) {
   ++install_count_;
   unpack_path_ = unpack_path;
 
-  InstallComplete(callback, Result(InstallError::NONE));
+  InstallComplete(std::move(callback), Result(InstallError::NONE));
 }
 
-void TestInstaller::InstallComplete(const Callback& callback,
+void TestInstaller::InstallComplete(Callback callback,
                                     const Result& result) const {
   base::PostTaskWithTraits(FROM_HERE, {base::MayBlock()},
-                           base::BindOnce(callback, result));
+                           base::BindOnce(std::move(callback), result));
 }
 
 bool TestInstaller::GetInstalledFile(const std::string& file,
@@ -79,7 +79,7 @@ VersionedTestInstaller::~VersionedTestInstaller() {
 
 void VersionedTestInstaller::Install(const base::FilePath& unpack_path,
                                      const std::string& public_key,
-                                     const Callback& callback) {
+                                     Callback callback) {
   const auto manifest = update_client::ReadManifest(unpack_path);
   std::string version_string;
   manifest->GetStringASCII("version", &version_string);
@@ -89,13 +89,13 @@ void VersionedTestInstaller::Install(const base::FilePath& unpack_path,
       install_directory_.AppendASCII(version.GetString());
   base::CreateDirectory(path.DirName());
   if (!base::Move(unpack_path, path)) {
-    InstallComplete(callback, Result(InstallError::GENERIC_ERROR));
+    InstallComplete(std::move(callback), Result(InstallError::GENERIC_ERROR));
     return;
   }
   current_version_ = version;
   ++install_count_;
 
-  InstallComplete(callback, Result(InstallError::NONE));
+  InstallComplete(std::move(callback), Result(InstallError::NONE));
 }
 
 bool VersionedTestInstaller::GetInstalledFile(const std::string& file,

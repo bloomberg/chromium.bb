@@ -87,7 +87,7 @@ UpdateClientImpl::~UpdateClientImpl() {
 }
 
 void UpdateClientImpl::Install(const std::string& id,
-                               const CrxDataCallback& crx_data_callback,
+                               CrxDataCallback crx_data_callback,
                                Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -102,18 +102,18 @@ void UpdateClientImpl::Install(const std::string& id,
   // available when the task completes, along with the task itself.
   // Install tasks are run concurrently and never queued up.
   RunTask(std::make_unique<TaskUpdate>(
-      update_engine_.get(), true, ids, crx_data_callback,
+      update_engine_.get(), true, ids, std::move(crx_data_callback),
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback))));
 }
 
 void UpdateClientImpl::Update(const std::vector<std::string>& ids,
-                              const CrxDataCallback& crx_data_callback,
+                              CrxDataCallback crx_data_callback,
                               Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto task = std::make_unique<TaskUpdate>(
-      update_engine_.get(), false, ids, crx_data_callback,
+      update_engine_.get(), false, ids, std::move(crx_data_callback),
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback)));
 

@@ -76,7 +76,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
     std::string public_key;
   };
 
-  using Callback = base::Callback<void(const Result& result)>;
+  using Callback = base::OnceCallback<void(const Result& result)>;
 
   // Constructs an unpacker for a specific component unpacking operation.
   // |pk_hash| is the expected/ public key SHA256 hash. |path| is the current
@@ -89,7 +89,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   // Begins the actual unpacking of the files. May invoke a patcher and the
   // component installer if the package is a differential update.
   // Calls |callback| with the result.
-  void Unpack(const Callback& callback);
+  void Unpack(Callback callback);
 
  private:
   friend class base::RefCountedThreadSafe<ComponentUnpacker>;

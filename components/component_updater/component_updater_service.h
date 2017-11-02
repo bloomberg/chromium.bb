@@ -132,7 +132,7 @@ class ComponentUpdateService {
   // where the on-demand functionality is invoked too often. If this function
   // is called while still on cooldown, |callback| will be called immediately.
   virtual void MaybeThrottle(const std::string& id,
-                             const base::Closure& callback) = 0;
+                             base::OnceClosure callback) = 0;
 
   virtual ~ComponentUpdateService() {}
 

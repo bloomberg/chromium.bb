@@ -157,7 +157,7 @@ Result ComponentInstaller::InstallHelper(
 
 void ComponentInstaller::Install(const base::FilePath& unpack_path,
                                  const std::string& /*public_key*/,
-                                 const Callback& callback) {
+                                 Callback callback) {
   std::unique_ptr<base::DictionaryValue> manifest;
   base::Version version;
   base::FilePath install_path;
@@ -165,7 +165,8 @@ void ComponentInstaller::Install(const base::FilePath& unpack_path,
       InstallHelper(unpack_path, &manifest, &version, &install_path);
   base::DeleteFile(unpack_path, true);
   if (result.error) {
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+    main_task_runner_->PostTask(FROM_HERE,
+                                base::BindOnce(std::move(callback), result));
     return;
   }
 
@@ -182,7 +183,8 @@ void ComponentInstaller::Install(const base::FilePath& unpack_path,
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ComponentInstaller::ComponentReady, this,
                                 base::Passed(std::move(manifest))));
-  main_task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, result));
+  main_task_runner_->PostTask(FROM_HERE,
+                              base::BindOnce(std::move(callback), result));
 }
 
 bool ComponentInstaller::GetInstalledFile(const std::string& file,
@@ -196,7 +198,8 @@ bool ComponentInstaller::GetInstalledFile(const std::string& file,
 bool ComponentInstaller::Uninstall() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ComponentInstaller::UninstallOnTaskRunner, this));
+      FROM_HERE,
+      base::BindOnce(&ComponentInstaller::UninstallOnTaskRunner, this));
   return true;
 }
 

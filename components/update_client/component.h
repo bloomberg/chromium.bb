@@ -37,7 +37,7 @@ class Component {
  public:
   using Events = UpdateClient::Observer::Events;
 
-  using CallbackHandleComplete = base::Callback<void()>;
+  using CallbackHandleComplete = base::OnceCallback<void()>;
 
   Component(const UpdateContext& update_context, const std::string& id);
   ~Component();
@@ -55,7 +55,7 @@ class Component {
   void Uninstall(const base::Version& cur_version, int reason);
 
   // Called by the UpdateEngine when an update check for this component is done.
-  void UpdateCheckComplete() const;
+  void UpdateCheckComplete();
 
   // Returns true if the component has reached a final state and no further
   // handling and state transitions are possible.
@@ -139,7 +139,7 @@ class Component {
   class State {
    public:
     using CallbackNextState =
-        base::Callback<void(std::unique_ptr<State> next_state)>;
+        base::OnceCallback<void(std::unique_ptr<State> next_state)>;
 
     State(Component* component, ComponentState state);
     virtual ~State();
@@ -159,8 +159,6 @@ class Component {
 
     Component& component() { return component_; }
     const Component& component() const { return component_; }
-
-    CallbackNextState callback() const { return callback_; }
 
     base::ThreadChecker thread_checker_;
 
@@ -432,7 +430,7 @@ class Component {
   std::unique_ptr<State> state_;
   const UpdateContext& update_context_;
 
-  base::Closure update_check_complete_;
+  base::OnceClosure update_check_complete_;
 
   ComponentState previous_state_ = ComponentState::kLastStatus;
 

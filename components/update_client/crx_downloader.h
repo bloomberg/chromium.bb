@@ -78,7 +78,7 @@ class CrxDownloader {
   // download. The callback interface can be extended if needed to provide
   // more visibility into how the download has been handled, including
   // specific error codes and download metrics.
-  using DownloadCallback = base::Callback<void(const Result& result)>;
+  using DownloadCallback = base::OnceCallback<void(const Result& result)>;
 
   // The callback may fire 0 or many times during a download. Since this
   // class implements a chain of responsibility, the callback can fire for
@@ -108,10 +108,10 @@ class CrxDownloader {
   // the download payload, represented as a hexadecimal string.
   void StartDownloadFromUrl(const GURL& url,
                             const std::string& expected_hash,
-                            const DownloadCallback& download_callback);
+                            DownloadCallback download_callback);
   void StartDownload(const std::vector<GURL>& urls,
                      const std::string& expected_hash,
-                     const DownloadCallback& download_callback);
+                     DownloadCallback download_callback);
 
   const std::vector<DownloadMetrics> download_metrics() const;
 

@@ -18,8 +18,8 @@ namespace extensions {
 // A callback to implement the install of a new version of the extension.
 // Takes ownership of the directory at |temp_dir|.
 using UpdateInstallShimCallback =
-    base::Callback<void(const std::string& extension_id,
-                        const base::FilePath& temp_dir)>;
+    base::OnceCallback<void(const std::string& extension_id,
+                            const base::FilePath& temp_dir)>;
 
 // This class is used as a shim between the components::update_client and
 // extensions code, to help the generic update_client code prepare and then
@@ -34,7 +34,7 @@ class UpdateInstallShim : public update_client::CrxInstaller {
   // of it to install.
   UpdateInstallShim(std::string extension_id,
                     const base::FilePath& extension_root,
-                    const UpdateInstallShimCallback& callback);
+                    UpdateInstallShimCallback callback);
 
   // Called when an update attempt failed.
   void OnUpdateError(int error) override;
@@ -44,7 +44,7 @@ class UpdateInstallShim : public update_client::CrxInstaller {
   // CRX public_key in PEM format, without the header and the footer.
   void Install(const base::FilePath& unpack_path,
                const std::string& public_key,
-               const Callback& callback) override;
+               Callback callback) override;
 
   // This is called by the generic differential update code in the
   // update_client to provide the path to an existing file in the current

@@ -34,7 +34,7 @@ class TaskUpdate : public Task {
   TaskUpdate(UpdateEngine* update_engine,
              bool is_foreground,
              const std::vector<std::string>& ids,
-             const UpdateClient::CrxDataCallback& crx_data_callback,
+             UpdateClient::CrxDataCallback crx_data_callback,
              Callback callback);
   ~TaskUpdate() override;
 
@@ -55,7 +55,7 @@ class TaskUpdate : public Task {
 
   const bool is_foreground_;
   const std::vector<std::string> ids_;
-  const UpdateClient::CrxDataCallback crx_data_callback_;
+  UpdateClient::CrxDataCallback crx_data_callback_;
   Callback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskUpdate);

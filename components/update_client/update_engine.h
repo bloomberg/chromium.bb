@@ -40,7 +40,7 @@ struct UpdateContext;
 // applied one at a time.
 class UpdateEngine {
  public:
-  using Callback = base::Callback<void(Error error)>;
+  using Callback = base::OnceCallback<void(Error error)>;
   using NotifyObserversCallback =
       base::Callback<void(UpdateClient::Observer::Events event,
                           const std::string& id)>;
@@ -57,33 +57,32 @@ class UpdateEngine {
 
   void Update(bool is_foreground,
               const std::vector<std::string>& ids,
-              const UpdateClient::CrxDataCallback& crx_data_callback,
-              const Callback& update_callback);
+              UpdateClient::CrxDataCallback crx_data_callback,
+              Callback update_callback);
 
   void SendUninstallPing(const std::string& id,
                          const base::Version& version,
                          int reason,
-                         const Callback& update_callback);
+                         Callback update_callback);
 
  private:
   using UpdateContexts = std::set<std::unique_ptr<UpdateContext>>;
   using UpdateContextIterator = UpdateContexts::iterator;
 
-  void UpdateComplete(const UpdateContextIterator& it, Error error);
+  void UpdateComplete(UpdateContextIterator it, Error error);
 
-  void ComponentCheckingForUpdatesStart(const UpdateContextIterator& it,
-                                        const Component& component);
-  void ComponentCheckingForUpdatesComplete(const UpdateContextIterator& it,
-                                           const Component& component);
-  void UpdateCheckComplete(const UpdateContextIterator& it);
+  void ComponentCheckingForUpdatesStart(UpdateContextIterator it,
+                                        const std::string& id);
+  void ComponentCheckingForUpdatesComplete(UpdateContextIterator it);
+  void UpdateCheckComplete(UpdateContextIterator it);
 
-  void DoUpdateCheck(const UpdateContextIterator& it);
-  void UpdateCheckDone(const UpdateContextIterator& it,
+  void DoUpdateCheck(UpdateContextIterator it);
+  void UpdateCheckDone(UpdateContextIterator it,
                        int error,
                        int retry_after_sec);
 
-  void HandleComponent(const UpdateContextIterator& it);
-  void HandleComponentComplete(const UpdateContextIterator& it);
+  void HandleComponent(UpdateContextIterator it);
+  void HandleComponentComplete(UpdateContextIterator it);
 
   // Returns true if the update engine rejects this update call because it
   // occurs too soon.
@@ -124,9 +123,9 @@ struct UpdateContext {
       const scoped_refptr<Configurator>& config,
       bool is_foreground,
       const std::vector<std::string>& ids,
-      const UpdateClient::CrxDataCallback& crx_data_callback,
+      UpdateClient::CrxDataCallback crx_data_callback,
       const UpdateEngine::NotifyObserversCallback& notify_observers_callback,
-      const UpdateEngine::Callback& callback,
+      UpdateEngine::Callback callback,
       CrxDownloader::Factory crx_downloader_factory);
 
   ~UpdateContext();
@@ -143,13 +142,13 @@ struct UpdateContext {
   const std::vector<std::string> ids;
 
   // Called before an update check, when update metadata is needed.
-  const UpdateEngine::CrxDataCallback& crx_data_callback;
+  UpdateEngine::CrxDataCallback crx_data_callback;
 
   // Called when there is a state change for any update in this context.
   const UpdateEngine::NotifyObserversCallback notify_observers_callback;
 
   // Called when the all updates associated with this context have completed.
-  const UpdateEngine::Callback callback;
+  UpdateEngine::Callback callback;
 
   // Creates instances of CrxDownloader;
   CrxDownloader::Factory crx_downloader_factory;

@@ -13,6 +13,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -26,6 +27,10 @@ class MockComponentUpdateService : public ComponentUpdateService {
  public:
   MockComponentUpdateService();
   ~MockComponentUpdateService() override;
+
+  void MaybeThrottle(const std::string& id, base::OnceClosure callback) {
+    DoMaybeThrottle(id, std::move(callback));
+  }
 
   MOCK_METHOD1(AddObserver,
       void(Observer* observer));
@@ -43,8 +48,8 @@ class MockComponentUpdateService : public ComponentUpdateService {
   MOCK_CONST_METHOD0(GetComponents, std::vector<ComponentInfo>());
   MOCK_METHOD0(GetOnDemandUpdater,
       OnDemandUpdater&());
-  MOCK_METHOD2(MaybeThrottle,
-      void(const std::string& id, const base::Closure& callback));
+  MOCK_METHOD2(DoMaybeThrottle,
+               void(const std::string& id, const base::OnceClosure& callback));
   MOCK_METHOD0(GetSequencedTaskRunner,
       scoped_refptr<base::SequencedTaskRunner>());
   MOCK_CONST_METHOD2(GetComponentDetails,

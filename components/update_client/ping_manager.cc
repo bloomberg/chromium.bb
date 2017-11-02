@@ -77,9 +77,9 @@ bool PingSender::SendPing(const Component& component) {
     return false;
 
   request_sender_ = base::MakeUnique<RequestSender>(config_);
-  request_sender_->Send(
-      false, BuildEventPingRequest(*config_, component), urls,
-      base::Bind(&PingSender::OnRequestSenderComplete, base::Unretained(this)));
+  request_sender_->Send(false, BuildEventPingRequest(*config_, component), urls,
+                        base::BindOnce(&PingSender::OnRequestSenderComplete,
+                                       base::Unretained(this)));
   return true;
 }
 

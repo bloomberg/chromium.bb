@@ -42,7 +42,7 @@ class RequestSender : public net::URLFetcherDelegate {
   // range for this value is [-1, 86400]. If |retry_after_sec| is -1 it means
   // that the header could not be found, or trusted, or had an invalid value.
   // The upper bound represents a delay of one day.
-  using RequestSenderCallback = base::Callback<
+  using RequestSenderCallback = base::OnceCallback<
       void(int error, const std::string& response, int retry_after_sec)>;
 
   // This value is chosen not to conflict with network errors defined by
@@ -59,7 +59,7 @@ class RequestSender : public net::URLFetcherDelegate {
   void Send(bool use_signing,
             const std::string& request_body,
             const std::vector<GURL>& urls,
-            const RequestSenderCallback& request_sender_callback);
+            RequestSenderCallback request_sender_callback);
 
  private:
   // Combines the |url| and |query_params| parameters.

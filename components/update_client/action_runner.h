@@ -30,13 +30,13 @@ class Component;
 class ActionRunner {
  public:
   using Callback =
-      base::Callback<void(bool succeeded, int error_code, int extra_code1)>;
+      base::OnceCallback<void(bool succeeded, int error_code, int extra_code1)>;
 
   ActionRunner(const Component& component,
                const std::vector<uint8_t>& key_hash);
   ~ActionRunner();
 
-  void Run(const Callback& run_complete);
+  void Run(Callback run_complete);
 
  private:
   void Unpack();

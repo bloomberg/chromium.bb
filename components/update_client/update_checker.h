@@ -23,7 +23,7 @@ class PersistedData;
 class UpdateChecker {
  public:
   using UpdateCheckCallback =
-      base::Callback<void(int error, int retry_after_sec)>;
+      base::OnceCallback<void(int error, int retry_after_sec)>;
 
   using Factory = std::unique_ptr<UpdateChecker> (*)(
       const scoped_refptr<Configurator>& config,
@@ -37,12 +37,11 @@ class UpdateChecker {
   // XML attribute string.
   // On completion, the state of |components| is mutated as required by the
   // server response received.
-  virtual void CheckForUpdates(
-      const std::vector<std::string>& ids_to_check,
-      const IdToComponentPtrMap& components,
-      const std::string& additional_attributes,
-      bool enabled_component_updates,
-      const UpdateCheckCallback& update_check_callback) = 0;
+  virtual void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+                               const IdToComponentPtrMap& components,
+                               const std::string& additional_attributes,
+                               bool enabled_component_updates,
+                               UpdateCheckCallback update_check_callback) = 0;
 
   static std::unique_ptr<UpdateChecker> Create(
       const scoped_refptr<Configurator>& config,

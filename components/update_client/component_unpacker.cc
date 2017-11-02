@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -48,8 +49,8 @@ bool ComponentUnpacker::UnpackInternal() {
   return Verify() && Unzip() && BeginPatching();
 }
 
-void ComponentUnpacker::Unpack(const Callback& callback) {
-  callback_ = callback;
+void ComponentUnpacker::Unpack(Callback callback) {
+  callback_ = std::move(callback);
   if (!UnpackInternal())
     EndUnpacking();
 }
@@ -107,8 +108,8 @@ bool ComponentUnpacker::BeginPatching() {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&ComponentPatcher::Start, patcher_,
-                       base::Bind(&ComponentUnpacker::EndPatching,
-                                  scoped_refptr<ComponentUnpacker>(this))));
+                       base::BindOnce(&ComponentUnpacker::EndPatching,
+                                      scoped_refptr<ComponentUnpacker>(this))));
   } else {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&ComponentUnpacker::EndPatching,
@@ -141,7 +142,7 @@ void ComponentUnpacker::EndUnpacking() {
   }
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback_, result));
+      FROM_HERE, base::BindOnce(std::move(callback_), result));
 }
 
 }  // namespace update_client

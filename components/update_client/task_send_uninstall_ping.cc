@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "components/update_client/task_send_uninstall_ping.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -38,7 +40,8 @@ void TaskSendUninstallPing::Run() {
 
   update_engine_->SendUninstallPing(
       id_, version_, reason_,
-      base::Bind(&TaskSendUninstallPing::TaskComplete, base::Unretained(this)));
+      base::BindOnce(&TaskSendUninstallPing::TaskComplete,
+                     base::Unretained(this)));
 }
 
 void TaskSendUninstallPing::Cancel() {

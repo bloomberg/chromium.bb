@@ -81,17 +81,18 @@ TEST_F(ComponentPatcherOperationTest, CheckCreateOperation) {
       test_file("binary_output.bin"),
       input_dir_.GetPath().Append(FILE_PATH_LITERAL("binary_output.bin"))));
 
-  std::unique_ptr<base::DictionaryValue> command_args(
-      new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> command_args =
+      std::make_unique<base::DictionaryValue>();
   command_args->SetString("output", "output.bin");
   command_args->SetString("sha256", binary_output_hash);
   command_args->SetString("op", "create");
   command_args->SetString("patch", "binary_output.bin");
 
   TestCallback callback;
-  scoped_refptr<DeltaUpdateOp> op = new DeltaUpdateOpCreate();
+  scoped_refptr<DeltaUpdateOp> op = base::MakeRefCounted<DeltaUpdateOpCreate>();
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
-          nullptr, base::Bind(&TestCallback::Set, base::Unretained(&callback)));
+          nullptr,
+          base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
@@ -108,18 +109,18 @@ TEST_F(ComponentPatcherOperationTest, CheckCopyOperation) {
       test_file("binary_output.bin"),
       installed_dir_.GetPath().Append(FILE_PATH_LITERAL("binary_output.bin"))));
 
-  std::unique_ptr<base::DictionaryValue> command_args(
-      new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> command_args =
+      std::make_unique<base::DictionaryValue>();
   command_args->SetString("output", "output.bin");
   command_args->SetString("sha256", binary_output_hash);
   command_args->SetString("op", "copy");
   command_args->SetString("input", "binary_output.bin");
 
   TestCallback callback;
-  scoped_refptr<DeltaUpdateOp> op = new DeltaUpdateOpCopy();
+  scoped_refptr<DeltaUpdateOp> op = base::MakeRefCounted<DeltaUpdateOpCopy>();
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
-          base::Bind(&TestCallback::Set, base::Unretained(&callback)));
+          base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
@@ -139,8 +140,8 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
                              input_dir_.GetPath().Append(FILE_PATH_LITERAL(
                                  "binary_courgette_patch.bin"))));
 
-  std::unique_ptr<base::DictionaryValue> command_args(
-      new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> command_args =
+      std::make_unique<base::DictionaryValue>();
   command_args->SetString("output", "output.bin");
   command_args->SetString("sha256", binary_output_hash);
   command_args->SetString("op", "courgette");
@@ -152,7 +153,7 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
       CreateDeltaUpdateOp("courgette", nullptr /* out_of_process_patcher */);
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
-          base::Bind(&TestCallback::Set, base::Unretained(&callback)));
+          base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);
@@ -172,8 +173,8 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
                              input_dir_.GetPath().Append(FILE_PATH_LITERAL(
                                  "binary_bsdiff_patch.bin"))));
 
-  std::unique_ptr<base::DictionaryValue> command_args(
-      new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> command_args =
+      std::make_unique<base::DictionaryValue>();
   command_args->SetString("output", "output.bin");
   command_args->SetString("sha256", binary_output_hash);
   command_args->SetString("op", "courgette");
@@ -185,7 +186,7 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
       CreateDeltaUpdateOp("bsdiff", nullptr /* out_of_process_patcher */);
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
-          base::Bind(&TestCallback::Set, base::Unretained(&callback)));
+          base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_EQ(true, callback.called_);

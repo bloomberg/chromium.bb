@@ -28,10 +28,10 @@ void ChromeOutOfProcessPatcher::Patch(
     const base::FilePath& input_path,
     const base::FilePath& patch_path,
     const base::FilePath& output_path,
-    const base::Callback<void(int result)>& callback) {
+    base::OnceCallback<void(int result)> callback) {
   DCHECK(!callback.is_null());
 
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   base::File input_file(input_path,
                         base::File::FLAG_OPEN | base::File::FLAG_READ);
@@ -44,7 +44,7 @@ void ChromeOutOfProcessPatcher::Patch(
   if (!input_file.IsValid() || !patch_file.IsValid() ||
       !output_file.IsValid()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback_, -1));
+        FROM_HERE, base::BindOnce(std::move(callback_), -1));
     return;
   }
 
@@ -74,7 +74,7 @@ void ChromeOutOfProcessPatcher::Patch(
 void ChromeOutOfProcessPatcher::PatchDone(int result) {
   utility_process_mojo_client_.reset();  // Terminate the utility process.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback_, result));
+      FROM_HERE, base::BindOnce(std::move(callback_), result));
 }
 
 }  // namespace component_updater

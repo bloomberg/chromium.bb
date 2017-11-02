@@ -51,7 +51,7 @@ class CrxUpdateService : public ComponentUpdateService,
   std::vector<ComponentInfo> GetComponents() const override;
   OnDemandUpdater& GetOnDemandUpdater() override;
   void MaybeThrottle(const std::string& id,
-                     const base::Closure& callback) override;
+                     base::OnceClosure callback) override;
   bool GetComponentDetails(const std::string& id,
                            CrxUpdateItem* item) const override;
 
@@ -107,7 +107,8 @@ class CrxUpdateService : public ComponentUpdateService,
   std::vector<std::string> components_pending_unregistration_;
 
   // Contains the active resource throttles associated with a given component.
-  using ResourceThrottleCallbacks = std::multimap<std::string, base::Closure>;
+  using ResourceThrottleCallbacks =
+      std::multimap<std::string, base::OnceClosure>;
   ResourceThrottleCallbacks ready_callbacks_;
 
   // Contains the state of the component.
