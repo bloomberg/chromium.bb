@@ -199,10 +199,15 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
                            const std::vector<uint8_t>& storage_id);
 
   // Callbacks for OutputProtection.
-  void OnOutputProtectionRequestMade(bool success);
-  void OnOutputProtectionStatus(bool success,
-                                uint32_t link_mask,
-                                uint32_t protection_mask);
+  void OnEnableOutputProtectionDone(bool success);
+  void OnQueryOutputProtectionStatusDone(bool success,
+                                         uint32_t link_mask,
+                                         uint32_t protection_mask);
+
+  // Helper methods to report output protection UMAs.
+  void ReportOutputProtectionQuery();
+  void ReportOutputProtectionQueryResult(uint32_t link_mask,
+                                         uint32_t protection_mask);
 
   const std::string key_system_;
   const CdmConfig cdm_config_;
@@ -234,6 +239,11 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   // Keep track of video frame natural size from the latest configuration
   // as the CDM doesn't provide it.
   gfx::Size natural_size_;
+
+  // Tracks whether an output protection query and a positive query result (no
+  // unprotected external link) have been reported to UMA.
+  bool uma_for_output_protection_query_reported_ = false;
+  bool uma_for_output_protection_positive_result_reported_ = false;
 
   // Used to keep track of promises while the CDM is processing the request.
   CdmPromiseAdapter cdm_promise_adapter_;
