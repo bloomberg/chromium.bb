@@ -208,6 +208,10 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
 
   // For managing select file dialog.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
+  enum class SelectionType {
+    RtcEventLogs,
+    AudioDebugRecordings
+  } selection_type_;
 
   // Diagnostic audio recording state.
   bool audio_debug_recordings_;
@@ -215,7 +219,6 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
 
   // Diagnostic event log recording state.
   bool event_log_recordings_;
-  bool selecting_event_log_;
   base::FilePath event_log_recordings_file_path_;
 
   // While |num_open_connections_| is greater than zero, request a wake lock
