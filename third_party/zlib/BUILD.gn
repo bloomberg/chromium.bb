@@ -182,6 +182,15 @@ fuzzer_test("zlib_uncompress_fuzzer") {
   ]
 }
 
+fuzzer_test("zlib_inflate_fuzzer") {
+  sources = [
+    "contrib/tests/fuzzers/inflate_fuzzer.cc",
+  ]
+  deps = [
+    ":zlib",
+  ]
+}
+
 config("minizip_warnings") {
   visibility = [ ":*" ]
   if (is_clang) {
