@@ -85,7 +85,6 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
 #if defined(OS_WIN)
   AddFilter(new FontCacheDispatcher());
 #endif
-  content::BindInterface(this, &child_control_);
 }
 
 ChildProcessHostImpl::~ChildProcessHostImpl() {
@@ -119,7 +118,6 @@ void ChildProcessHostImpl::ForceShutdown() {
 }
 
 void ChildProcessHostImpl::CreateChannelMojo() {
-
   mojo::MessagePipe pipe;
   BindInterface(IPC::mojom::ChannelBootstrap::Name_, std::move(pipe.handle1));
   channel_ = IPC::ChannelMojo::Create(std::move(pipe.handle0),
@@ -136,7 +134,15 @@ bool ChildProcessHostImpl::InitChannel() {
 
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnFilterAdded(channel_.get());
+
   delegate_->OnChannelInitialized(channel_.get());
+
+  // We want to bind this interface as early as possible, but the constructor is
+  // too early. |delegate_| may not be fully initialized at that point and thus
+  // may be unable to properly fulfill the BindInterface() call. Instead we bind
+  // here since the |delegate_| has already been initialized and this is the
+  // first potential use of the interface.
+  content::BindInterface(this, &child_control_);
 
   // Make sure these messages get sent first.
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
