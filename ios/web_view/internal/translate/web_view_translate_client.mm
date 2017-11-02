@@ -21,6 +21,7 @@
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
+#include "ios/web_view/internal/language/web_view_language_model_factory.h"
 #include "ios/web_view/internal/pref_names.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #include "ios/web_view/internal/translate/web_view_translate_accept_languages_factory.h"
@@ -44,16 +45,14 @@ WebViewBrowserState* GetMainBrowserState() {
 }
 }  // namespace
 
-// TODO(crbug.com/729859): Support logging histogram data on detected language
-// page, by passing a valid language_histogram, when histogram logging is
-// available on ios/web_view.
 WebViewTranslateClient::WebViewTranslateClient(web::WebState* web_state)
     : web::WebStateObserver(web_state),
       translate_manager_(base::MakeUnique<translate::TranslateManager>(
           this,
           WebViewTranslateRankerFactory::GetForBrowserState(
               WebViewBrowserState::FromBrowserState(GetMainBrowserState())),
-          nullptr /* language_model */)),
+          WebViewLanguageModelFactory::GetForBrowserState(
+              WebViewBrowserState::FromBrowserState(GetMainBrowserState())))),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
                         translate_manager_.get()) {}
