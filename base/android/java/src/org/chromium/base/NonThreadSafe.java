@@ -33,6 +33,7 @@ public class NonThreadSafe {
      * Assigns the current thread if no thread was assigned.
      */
     @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
+    @SuppressWarnings("NoSynchronizedMethodCheck")
     public synchronized boolean calledOnValidThread() {
         ensureThreadIdAssigned();
         return mThreadId.equals(Thread.currentThread().getId());
