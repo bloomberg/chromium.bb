@@ -671,6 +671,18 @@ void ShellSurface::SetContainer(int container) {
   container_ = container;
 }
 
+void ShellSurface::SetMaximumSize(const gfx::Size& size) {
+  TRACE_EVENT1("exo", "ShellSurface::SetMaximumSize", "size", size.ToString());
+
+  pending_maximum_size_ = size;
+}
+
+void ShellSurface::SetMinimumSize(const gfx::Size& size) {
+  TRACE_EVENT1("exo", "ShellSurface::SetMinimumSize", "size", size.ToString());
+
+  pending_minimum_size_ = size;
+}
+
 // static
 void ShellSurface::SetMainSurface(aura::Window* window, Surface* surface) {
   window->SetProperty(kMainSurfaceKey, surface);
@@ -728,10 +740,14 @@ void ShellSurface::OnSurfaceCommit() {
   // Update resize direction to reflect acknowledged configure requests.
   resize_component_ = pending_resize_component_;
 
-  if (widget_) {
-    // Apply new window geometry.
-    geometry_ = pending_geometry_;
+  // Apply new window geometry.
+  geometry_ = pending_geometry_;
 
+  // Apply new minimum/maximium size.
+  minimum_size_ = pending_minimum_size_;
+  maximum_size_ = pending_maximum_size_;
+
+  if (widget_) {
     UpdateWidgetBounds();
     UpdateShadow();
 
@@ -943,7 +959,11 @@ gfx::Size ShellSurface::CalculatePreferredSize() const {
 }
 
 gfx::Size ShellSurface::GetMinimumSize() const {
-  return gfx::Size(1, 1);
+  return minimum_size_.IsEmpty() ? gfx::Size(1, 1) : minimum_size_;
+}
+
+gfx::Size ShellSurface::GetMaximumSize() const {
+  return maximum_size_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
