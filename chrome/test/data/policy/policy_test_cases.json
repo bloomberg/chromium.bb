@@ -534,13 +534,9 @@
   },
 
   "DisablePluginFinder": {
+    "note": "This policy is not in use anymore.",
     "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "DisablePluginFinder": true },
-    "pref_mappings": [
-      { "pref": "plugins.disable_plugin_finder",
-        "local_state": true
-      }
-    ]
+    "test_policy": { "DisablePluginFinder": true }
   },
 
   "SyncDisabled": {

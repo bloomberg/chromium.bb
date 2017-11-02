@@ -25,15 +25,12 @@ struct WebPluginInfo;
 
 class PluginInstaller;
 class PluginMetadata;
-class PrefRegistrySimple;
 
 // This class should be created and initialized by calling
 // |GetInstance()| and |Init()| on the UI thread.
 // After that it can be safely used on any other thread.
 class PluginFinder {
  public:
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   static PluginFinder* GetInstance();
 
   // It should be called on the UI thread.

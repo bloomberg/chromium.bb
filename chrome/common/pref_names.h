@@ -527,7 +527,6 @@ extern const char kWasRestarted[];
 #endif
 
 extern const char kDisableExtensions[];
-extern const char kDisablePluginFinder[];
 
 extern const char kNtpAppPageNames[];
 extern const char kNtpCollapsedForeignSessions[];

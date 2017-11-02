@@ -148,7 +148,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_info_message_filter.h"
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
@@ -359,7 +358,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  PluginFinder::RegisterPrefs(registry);
   PluginsResourceService::RegisterPrefs(registry);
 #endif
 
