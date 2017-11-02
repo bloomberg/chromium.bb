@@ -94,6 +94,13 @@ class PLATFORM_EXPORT FetchContext
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
 
+  // Called when the ResourceFetcher observes a data: URI load that contains an
+  // octothorpe ('#') character. This is a temporary method to support an Intent
+  // to Deprecate for spec incompliant handling of '#' characters in data URIs.
+  //
+  // TODO(crbug.com/123004): Remove once we have enough data for the I2D.
+  virtual void RecordDataUriWithOctothorpe() {}
+
   // Returns the cache policy for the resource. ResourceRequest is not passed as
   // a const reference as a header needs to be added for doc.write blocking
   // intervention.
