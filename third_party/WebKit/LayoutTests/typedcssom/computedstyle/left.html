@@ -34,7 +34,7 @@ function t2Callback(computedStyleMap) {
 
 document.onreadystatechange = function() {
   if (document.readyState == 'complete') {
-    var computedStyleMap = getComputedStyleMap(testElement);
+    var computedStyleMap = testElement.computedStyleMap();
     t1Callback(computedStyleMap);
     t2Callback(computedStyleMap);
   }

@@ -479,7 +479,7 @@ core_dependency_idl_files =
                     "css/FontFaceSource.idl",
                     "css/PropertyRegistration.idl",
                     "css/cssom/CSSUnitValues.idl",
-                    "css/cssom/WindowGetComputedStyle.idl",
+                    "css/cssom/ElementComputedStyleMap.idl",
                     "dom/ChildNode.idl",
                     "dom/DocumentOrShadowRoot.idl",
                     "dom/GlobalEventHandlers.idl",

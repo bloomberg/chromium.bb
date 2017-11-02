@@ -16,7 +16,7 @@ var properties = {
   'widows': 5,
 };
 
-var computedMap = getComputedStyleMap(testElement);
+var computedMap = testElement.computedStyleMap();
 
 test(function() {
   for (var property in properties) {

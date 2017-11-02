@@ -1822,6 +1822,7 @@ interface Element : Node
     method attachShadow
     method before
     method closest
+    method computedStyleMap
     method constructor
     method createShadowRoot
     method getAnimations
@@ -9282,7 +9283,6 @@ interface webkitURL
     method focus
     method gc
     method getComputedStyle
-    method getComputedStyleMap
     method getSelection
     method matchMedia
     method moveBy
