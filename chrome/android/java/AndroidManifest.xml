@@ -405,8 +405,13 @@ by a child template that "extends" this file.
             </intent-filter>
             {% endblock %}
         </activity>
+        <!-- TODO(crbug.com/780674): retarget .Main back to CTA for non-modern APK -->
         <activity-alias android:name="com.google.android.apps.chrome.Main"
+            {% if min_sdk_version|int < 21 %}
+            android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
+            {% else %}
             android:targetActivity="org.chromium.chrome.browser.ChromeTabbedActivity"
+            {% endif %}
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
