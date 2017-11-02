@@ -270,7 +270,7 @@ AvatarButton::AvatarButton(views::ButtonListener* listener,
 AvatarButton::~AvatarButton() {}
 
 void AvatarButton::SetupThemeColorButton() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   if (IsCondensible()) {
     // TODO(bsep): This needs to also be called when the Windows accent color
     // updates, but there is currently no signal for that.
@@ -284,7 +284,7 @@ void AvatarButton::SetupThemeColorButton() {
     generic_avatar_ = gfx::CreateVectorIcon(kAccountCircleIcon,
                                             kGenericAvatarIconSize, icon_color);
   }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
 
 void AvatarButton::AddedToWidget() {
