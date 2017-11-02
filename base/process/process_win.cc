@@ -132,16 +132,13 @@ bool Process::Terminate(int exit_code, bool wait) const {
   // exit_code cannot be implemented.
   DCHECK(IsValid());
   bool result = (::TerminateProcess(Handle(), exit_code) != FALSE);
-  if (result && wait) {
+  if (result) {
     // The process may not end immediately due to pending I/O
-    if (::WaitForSingleObject(Handle(), 60 * 1000) != WAIT_OBJECT_0)
+    if (wait && ::WaitForSingleObject(Handle(), 60 * 1000) != WAIT_OBJECT_0)
       DPLOG(ERROR) << "Error waiting for process exit";
+    Exited(exit_code);
   } else if (!result) {
     DPLOG(ERROR) << "Unable to terminate process";
-  }
-  if (result) {
-    base::debug::GlobalActivityTracker::RecordProcessExitIfEnabled(Pid(),
-                                                                   exit_code);
   }
   return result;
 }
@@ -170,9 +167,13 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
   if (exit_code)
     *exit_code = temp_code;
 
-  base::debug::GlobalActivityTracker::RecordProcessExitIfEnabled(
-      Pid(), static_cast<int>(temp_code));
+  Exited(temp_code);
   return true;
+}
+
+void Process::Exited(int exit_code) const {
+  base::debug::GlobalActivityTracker::RecordProcessExitIfEnabled(Pid(),
+                                                                 exit_code);
 }
 
 bool Process::IsProcessBackgrounded() const {
