@@ -11,6 +11,7 @@ import android.util.JsonWriter;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -101,6 +102,28 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     @Override
     public boolean isExactlyMatchingMerchantRequest() {
         return mIsMatchingMerchantsRequestedCardType;
+    }
+
+    @Override
+    public boolean isValidForPaymentMethodData(String method, PaymentMethodData data) {
+        boolean isSupportedMethod = super.isValidForPaymentMethodData(method, data);
+        if (!isSupportedMethod) return false;
+
+        int cardType = getCard().getCardType();
+        String cardIssuerNetwork = getCard().getBasicCardIssuerNetwork();
+        if (BasicCardUtils.isBasicCardTypeSpecified(data)) {
+            Set<Integer> targetCardTypes = BasicCardUtils.convertBasicCardToTypes(data);
+            targetCardTypes.remove(CardType.UNKNOWN);
+            assert targetCardTypes.size() > 0;
+            if (!targetCardTypes.contains(cardType)) return false;
+        }
+
+        if (BasicCardUtils.isBasicCardNetworkSpecified(data)) {
+            Set<String> targetCardNetworks = BasicCardUtils.convertBasicCardToNetworks(data);
+            assert targetCardNetworks.size() > 0;
+            if (!targetCardNetworks.contains(cardIssuerNetwork)) return false;
+        }
+        return true;
     }
 
     @Override

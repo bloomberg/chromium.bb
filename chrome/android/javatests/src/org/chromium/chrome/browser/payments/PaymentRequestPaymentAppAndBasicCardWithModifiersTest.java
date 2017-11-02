@@ -14,6 +14,7 @@ import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.ENABLE
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
 
+import android.graphics.drawable.ColorDrawable;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -31,6 +32,8 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.payments.mojom.BasicCardNetwork;
+import org.chromium.payments.mojom.BasicCardType;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -298,5 +301,65 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
 
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
+    }
+
+    /**
+     * Verify modifier for credit visa card is only applied for service worker payment app with
+     * credit visa card capabilities.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testUpdateTotalWithCreditVisaModifiersForServiceWorkerPaymentApp()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        String[] bobpayMethodNames = {"https://bobpay.com", "basic-card"};
+        int[] bobpayNetworks = {BasicCardNetwork.VISA};
+        int[] bobPayTypes = {BasicCardType.CREDIT};
+        ServiceWorkerPaymentApp.Capabilities[] bobpayCapabilities = {
+                new ServiceWorkerPaymentApp.Capabilities(bobpayNetworks, bobPayTypes)};
+
+        String[] alicepayMethodNames = {"https://alicepay.com", "basic-card"};
+        int[] alicepayNetworks = {BasicCardNetwork.MASTERCARD};
+        int[] alicepayTypes = {BasicCardType.CREDIT};
+        ServiceWorkerPaymentApp.Capabilities[] alicepayCapabilities = {
+                new ServiceWorkerPaymentApp.Capabilities(alicepayNetworks, alicepayTypes)};
+
+        PaymentAppFactory.getInstance().addAdditionalFactory((webContents, methodNames,
+                                                                     callback) -> {
+            ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+            callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
+                    0 /* registrationId */,
+                    UriUtils.parseUriFromString("https://bobpay.com") /* scope */,
+                    "BobPay" /* label */, "https://bobpay.com" /* sublabel*/,
+                    "https://bobpay.com" /* tertiarylabel */, new ColorDrawable() /* icon */,
+                    bobpayMethodNames /* methodNames */, bobpayCapabilities /* capabilities */,
+                    new String[0] /* preferredRelatedApplicationIds */));
+            callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents,
+                    0 /* registrationId */,
+                    UriUtils.parseUriFromString("https://alicepay.com") /* scope */,
+                    "AlicePay" /* label */, "https://bobpay.com" /* sublabel*/,
+                    "https://alicepay.com" /* tertiarylabel */, new ColorDrawable() /* icon */,
+                    alicepayMethodNames /* methodNames */, alicepayCapabilities /* capabilities */,
+                    new String[0] /* preferredRelatedApplicationIds */));
+            callback.onAllPaymentAppsCreated();
+        });
+        mPaymentRequestTestRule.triggerUIAndWait(
+                "visa_supported_network", mPaymentRequestTestRule.getReadyToPay());
+
+        if (mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith("BobPay")) {
+            assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
+
+            // select the alice pay and verify modifier is not applied.
+            mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
+                    1, mPaymentRequestTestRule.getReadyForInput());
+            assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
+        } else {
+            assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
+
+            // select the bob pay and verify modifier is applied.
+            mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
+                    1, mPaymentRequestTestRule.getReadyForInput());
+            assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
+        }
     }
 }
