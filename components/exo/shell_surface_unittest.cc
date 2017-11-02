@@ -388,6 +388,34 @@ TEST_F(ShellSurfaceTest, SetGeometry) {
             shell_surface->host_window()->bounds().ToString());
 }
 
+TEST_F(ShellSurfaceTest, SetMinimumSize) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  gfx::Size size(50, 50);
+  shell_surface->SetMinimumSize(size);
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_EQ(size, shell_surface->GetMinimumSize());
+}
+
+TEST_F(ShellSurfaceTest, SetMaximumSize) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  gfx::Size size(100, 100);
+  shell_surface->SetMaximumSize(size);
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_EQ(size, shell_surface->GetMaximumSize());
+}
+
 TEST_P(ShellSurfaceBoundsModeTest, DefaultDeviceScaleFactorForcedScaleFactor) {
   double scale = 1.5;
   display::Display::SetForceDeviceScaleFactor(scale);

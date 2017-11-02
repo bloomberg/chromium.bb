@@ -1401,14 +1401,16 @@ void xdg_toplevel_v6_set_max_size(wl_client* client,
                                   wl_resource* resource,
                                   int32_t width,
                                   int32_t height) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->SetMaximumSize(
+      gfx::Size(width, height));
 }
 
 void xdg_toplevel_v6_set_min_size(wl_client* client,
                                   wl_resource* resource,
                                   int32_t width,
                                   int32_t height) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->SetMinimumSize(
+      gfx::Size(width, height));
 }
 
 void xdg_toplevel_v6_set_maximized(wl_client* client, wl_resource* resource) {
