@@ -4109,8 +4109,9 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
 
   const uint8_t kTestIpAddress[] = {1, 2, 3, 4};
   const uint16_t kTestPort = 123;
-  factory_->MigrateSessionToNewPeerAddress(
-      session, IPEndPoint(IPAddress(kTestIpAddress), kTestPort), net_log_);
+  session->Migrate(NetworkChangeNotifier::kInvalidNetworkHandle,
+                   IPEndPoint(IPAddress(kTestIpAddress), kTestPort), true,
+                   net_log_);
 
   session->GetDefaultSocket()->GetPeerAddress(&ip);
   DVLOG(1) << "Socket migrated to: " << ip.address().ToString() << " "
