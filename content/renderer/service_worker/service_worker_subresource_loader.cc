@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
@@ -186,13 +187,14 @@ void ServiceWorkerSubresourceLoader::DeleteSoon() {
 
 void ServiceWorkerSubresourceLoader::StartRequest(
     const ResourceRequest& resource_request) {
-  // TODO(kinuko): Implement request.request_body handling.
-  DCHECK(!resource_request_.request_body);
-  DCHECK(!inflight_fetch_request_);
-  inflight_fetch_request_ =
-      ServiceWorkerLoaderHelpers::CreateFetchRequest(resource_request);
   DCHECK_EQ(Status::kNotStarted, status_);
   status_ = Status::kStarted;
+
+  DCHECK(
+      !ServiceWorkerUtils::IsMainResourceType(resource_request.resource_type));
+
+  DCHECK(!inflight_fetch_request_);
+  inflight_fetch_request_ = std::make_unique<ResourceRequest>(resource_request);
   controller_connector_->AddObserver(this);
   fetch_request_restarted_ = false;
 
@@ -219,6 +221,9 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
     return;
   }
 
+  // TODO(falken): Send client id so FetchEvent#clientId works. We have to
+  // plumb it from the provider host to subresource loader somehow.
+  // (crbug.com/780405)
   // TODO(kinuko): Implement request timeout and ask the browser to kill
   // the controller if it takes too long. (crbug.com/774374)
   controller->DispatchFetchEvent(

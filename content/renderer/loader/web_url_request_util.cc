@@ -380,6 +380,10 @@ WebHTTPBody GetWebHTTPBodyForRequestBody(
       case ResourceRequestBody::Element::TYPE_BLOB:
         http_body.AppendBlob(WebString::FromASCII(element.blob_uuid()));
         break;
+      case ResourceRequestBody::Element::TYPE_DATA_PIPE:
+        // TODO(falken): Implement this.
+        NOTIMPLEMENTED() << "data pipe";
+        break;
       case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
       case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
       default:

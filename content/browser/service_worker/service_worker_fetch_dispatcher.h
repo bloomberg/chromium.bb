@@ -46,9 +46,17 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                           blink::mojom::BlobPtr,
                           const scoped_refptr<ServiceWorkerVersion>&)>;
 
+  // S13nServiceWorker
+  ServiceWorkerFetchDispatcher(std::unique_ptr<ResourceRequest> request,
+                               scoped_refptr<ServiceWorkerVersion> version,
+                               const base::Optional<base::TimeDelta>& timeout,
+                               const net::NetLogWithSource& net_log,
+                               const base::Closure& prepare_callback,
+                               const FetchCallback& fetch_callback);
+  // Non-S13nServiceWorker
   ServiceWorkerFetchDispatcher(
       std::unique_ptr<ServiceWorkerFetchRequest> request,
-      ServiceWorkerVersion* version,
+      scoped_refptr<ServiceWorkerVersion> version,
       ResourceType resource_type,
       const base::Optional<base::TimeDelta>& timeout,
       const net::NetLogWithSource& net_log,
@@ -104,14 +112,19 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
       blink::mojom::ServiceWorkerEventStatus status,
       base::Time dispatch_event_time);
 
+  ServiceWorkerFetchType GetFetchType() const;
   ServiceWorkerMetrics::EventType GetEventType() const;
 
+  // S13nServiceWorker
+  std::unique_ptr<ResourceRequest> request_;
+  // Non-S13nServiceWorker
+  std::unique_ptr<ServiceWorkerFetchRequest> legacy_request_;
+
   scoped_refptr<ServiceWorkerVersion> version_;
+  ResourceType resource_type_;
   net::NetLogWithSource net_log_;
   base::Closure prepare_callback_;
   FetchCallback fetch_callback_;
-  std::unique_ptr<ServiceWorkerFetchRequest> request_;
-  ResourceType resource_type_;
   base::Optional<base::TimeDelta> timeout_;
   bool did_complete_;
 

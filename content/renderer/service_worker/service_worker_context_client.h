@@ -290,8 +290,13 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       DispatchExtendableMessageEventCallback callback) override;
-  void DispatchFetchEvent(
+  void DispatchLegacyFetchEvent(
       const ServiceWorkerFetchRequest& request,
+      mojom::FetchEventPreloadHandlePtr preload_handle,
+      mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      DispatchFetchEventCallback callback) override;
+  void DispatchFetchEvent(
+      const ResourceRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override;
@@ -360,8 +365,8 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       std::unique_ptr<blink::WebURLResponse> response,
       std::unique_ptr<blink::WebDataConsumerHandle> data_consumer_handle);
   // Called when the navigation preload request completed. Either
-  // OnNavigationPreloadComplete() or OnNavigationPreloadError() must be called
-  // to release the preload related resources.
+  // OnNavigationPreloadComplete() or OnNavigationPreloadError() must be
+  // called to release the preload related resources.
   void OnNavigationPreloadComplete(int fetch_event_id,
                                    base::TimeTicks completion_time,
                                    int64_t encoded_data_length,
@@ -372,6 +377,10 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void OnNavigationPreloadError(
       int fetch_event_id,
       std::unique_ptr<blink::WebServiceWorkerError> error);
+
+  void SetupNavigationPreload(int fetch_event_id,
+                              const GURL& url,
+                              mojom::FetchEventPreloadHandlePtr preload_handle);
 
   base::WeakPtr<ServiceWorkerContextClient> GetWeakPtr();
 

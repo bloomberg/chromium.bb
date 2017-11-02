@@ -36,6 +36,7 @@
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
+#include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/notifications/notification_data_conversions.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
@@ -185,6 +186,43 @@ ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
   web_client_info.client_type = client_info.client_type;
 
   return web_client_info;
+}
+
+void ToWebServiceWorkerRequest(const ResourceRequest& request,
+                               blink::WebServiceWorkerRequest* web_request) {
+  DCHECK(web_request);
+  web_request->SetURL(blink::WebURL(request.url));
+  web_request->SetMethod(blink::WebString::FromUTF8(request.method));
+  if (!request.headers.IsEmpty()) {
+    for (net::HttpRequestHeaders::Iterator it(request.headers); it.GetNext();) {
+      web_request->SetHeader(blink::WebString::FromUTF8(it.name()),
+                             blink::WebString::FromUTF8(it.value()));
+    }
+  }
+  if (request.request_body) {
+    blink::WebHTTPBody body =
+        GetWebHTTPBodyForRequestBody(request.request_body);
+    body.SetUniqueBoundary();
+    web_request->SetBody(body);
+  }
+  web_request->SetReferrer(blink::WebString::FromUTF8(request.referrer.spec()),
+                           request.referrer_policy);
+  web_request->SetMode(request.fetch_request_mode);
+  web_request->SetIsMainResourceLoad(
+      ServiceWorkerUtils::IsMainResourceType(request.resource_type));
+  web_request->SetCredentialsMode(request.fetch_credentials_mode);
+  web_request->SetCacheMode(
+      ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(request.load_flags));
+  web_request->SetRedirectMode(
+      GetBlinkFetchRedirectMode(request.fetch_redirect_mode));
+  web_request->SetRequestContext(
+      GetBlinkRequestContext(request.fetch_request_context_type));
+  web_request->SetFrameType(GetBlinkFrameType(request.fetch_frame_type));
+  // TODO(falken): Set client id. The browser needs to pass it to us.
+  web_request->SetIsReload(ui::PageTransitionCoreTypeIs(
+      request.transition_type, ui::PAGE_TRANSITION_RELOAD));
+  web_request->SetIntegrity(
+      blink::WebString::FromUTF8(request.fetch_integrity));
 }
 
 // Converts the |request| to its equivalent type in the Blink API.
@@ -1523,8 +1561,47 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
       WebServiceWorkerImpl::CreateHandle(worker));
 }
 
-void ServiceWorkerContextClient::DispatchFetchEvent(
+// Non-S13nServiceWorker
+void ServiceWorkerContextClient::DispatchLegacyFetchEvent(
     const ServiceWorkerFetchRequest& request,
+    mojom::FetchEventPreloadHandlePtr preload_handle,
+    mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+    DispatchLegacyFetchEventCallback callback) {
+  // Register callbacks for notifying about event completion and the response.
+  int fetch_event_id = context_->fetch_event_callbacks.Add(
+      std::make_unique<DispatchFetchEventCallback>(std::move(callback)));
+  context_->fetch_response_callbacks.insert(
+      std::make_pair(fetch_event_id, std::move(response_callback)));
+
+  // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
+  // events have completed. (crbug.com/736697)
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerContextClient::DispatchFetchEvent", "event_id",
+               fetch_event_id);
+
+  // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
+  const bool navigation_preload_sent = !!preload_handle;
+  if (navigation_preload_sent) {
+    SetupNavigationPreload(fetch_event_id, request.url,
+                           std::move(preload_handle));
+  }
+
+  // Dispatch the event to the service worker execution context.
+  const bool foreign_fetch =
+      request.fetch_type == ServiceWorkerFetchType::FOREIGN_FETCH;
+  blink::WebServiceWorkerRequest web_request;
+  ToWebServiceWorkerRequest(request, &web_request);
+  if (foreign_fetch) {
+    proxy_->DispatchForeignFetchEvent(fetch_event_id, web_request);
+  } else {
+    proxy_->DispatchFetchEvent(fetch_event_id, web_request,
+                               navigation_preload_sent);
+  }
+}
+
+// S13nServiceWorker
+void ServiceWorkerContextClient::DispatchFetchEvent(
+    const ResourceRequest& request,
     mojom::FetchEventPreloadHandlePtr preload_handle,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
@@ -1541,26 +1618,17 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
                fetch_event_id);
 
   // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
-  std::unique_ptr<NavigationPreloadRequest> preload_request =
-      preload_handle
-          ? std::make_unique<NavigationPreloadRequest>(
-                fetch_event_id, request.url, std::move(preload_handle))
-          : nullptr;
-  const bool navigation_preload_sent = !!preload_request;
-  if (preload_request) {
-    context_->preload_requests.AddWithID(std::move(preload_request),
-                                         fetch_event_id);
+  const bool navigation_preload_sent = !!preload_handle;
+  if (navigation_preload_sent) {
+    SetupNavigationPreload(fetch_event_id, request.url,
+                           std::move(preload_handle));
   }
 
   // Dispatch the event to the service worker execution context.
   blink::WebServiceWorkerRequest web_request;
   ToWebServiceWorkerRequest(request, &web_request);
-  if (request.fetch_type == ServiceWorkerFetchType::FOREIGN_FETCH) {
-    proxy_->DispatchForeignFetchEvent(fetch_event_id, web_request);
-  } else {
-    proxy_->DispatchFetchEvent(fetch_event_id, web_request,
-                               navigation_preload_sent);
-  }
+  proxy_->DispatchFetchEvent(fetch_event_id, web_request,
+                             navigation_preload_sent);
 }
 
 void ServiceWorkerContextClient::DispatchNotificationClickEvent(
@@ -1829,6 +1897,16 @@ void ServiceWorkerContextClient::OnNavigationPreloadComplete(
       fetch_event_id, (completion_time - base::TimeTicks()).InSecondsF(),
       encoded_data_length, encoded_body_length, decoded_body_length);
   context_->preload_requests.Remove(fetch_event_id);
+}
+
+void ServiceWorkerContextClient::SetupNavigationPreload(
+    int fetch_event_id,
+    const GURL& url,
+    mojom::FetchEventPreloadHandlePtr preload_handle) {
+  auto preload_request = std::make_unique<NavigationPreloadRequest>(
+      fetch_event_id, url, std::move(preload_handle));
+  context_->preload_requests.AddWithID(std::move(preload_request),
+                                       fetch_event_id);
 }
 
 base::WeakPtr<ServiceWorkerContextClient>

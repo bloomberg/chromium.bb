@@ -33,6 +33,7 @@
 #include "platform/FileMetadata.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/EncodedFormData.h"
+#include "platform/network/FormDataEncoder.h"
 
 namespace blink {
 
@@ -130,6 +131,11 @@ long long WebHTTPBody::Identifier() const {
 void WebHTTPBody::SetIdentifier(long long identifier) {
   EnsureMutable();
   return private_->SetIdentifier(identifier);
+}
+
+void WebHTTPBody::SetUniqueBoundary() {
+  EnsureMutable();
+  private_->SetBoundary(FormDataEncoder::GenerateUniqueBoundaryString());
 }
 
 bool WebHTTPBody::ContainsPasswordData() const {

@@ -25,7 +25,7 @@ void ControllerServiceWorkerImpl::Clone(
 }
 
 void ControllerServiceWorkerImpl::DispatchFetchEvent(
-    const ServiceWorkerFetchRequest& request,
+    const ResourceRequest& request,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
   DCHECK(context_client_);

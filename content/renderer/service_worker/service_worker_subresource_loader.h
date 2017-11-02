@@ -26,7 +26,6 @@ namespace content {
 
 class ChildURLLoaderFactoryGetter;
 class ControllerServiceWorkerConnector;
-struct ServiceWorkerFetchRequest;
 
 // S13nServiceWorker:
 // A custom URLLoader implementation used by Service Worker controllees
@@ -130,7 +129,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   scoped_refptr<ControllerServiceWorkerConnector> controller_connector_;
 
-  std::unique_ptr<ServiceWorkerFetchRequest> inflight_fetch_request_;
+  std::unique_ptr<ResourceRequest> inflight_fetch_request_;
   bool fetch_request_restarted_;
 
   // These are given by the constructor (as the params for
