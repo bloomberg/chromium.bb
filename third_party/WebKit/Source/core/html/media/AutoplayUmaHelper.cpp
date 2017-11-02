@@ -184,7 +184,7 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
   }
 
   // Record UKM autoplay event.
-  {
+  if (element_->GetDocument().IsInMainFrame()) {
     std::unique_ptr<ukm::UkmEntryBuilder> builder =
         CreateUkmBuilder(kAutoplayAttemptUkmEvent);
     builder->AddMetric(kAutoplayAttemptUkmSourceMetric,
@@ -290,7 +290,7 @@ void AutoplayUmaHelper::RecordAutoplayUnmuteStatus(
   autoplay_unmute_histogram.Count(static_cast<int>(status));
 
   // Record UKM event for unmute muted autoplay.
-  {
+  if (element_->GetDocument().IsInMainFrame()) {
     std::unique_ptr<ukm::UkmEntryBuilder> builder =
         CreateUkmBuilder(kAutoplayMutedUnmuteUkmEvent);
 
