@@ -198,7 +198,7 @@ void ManifestManager::ResolveCallbacks(ResolveState state) {
 }
 
 void ManifestManager::BindToRequest(
-    blink::mojom::ManifestManagerAssociatedRequest request) {
+    blink::mojom::ManifestManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

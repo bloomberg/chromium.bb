@@ -10,8 +10,8 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/manifest.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
 
@@ -44,7 +44,7 @@ blink::mojom::ManifestManager& ManifestManagerHost::GetManifestManager() {
 
   if (!manifest_manager_) {
     manifest_manager_frame_ = web_contents()->GetMainFrame();
-    manifest_manager_frame_->GetRemoteAssociatedInterfaces()->GetInterface(
+    manifest_manager_frame_->GetRemoteInterfaces()->GetInterface(
         &manifest_manager_);
     manifest_manager_.set_connection_error_handler(base::BindOnce(
         &ManifestManagerHost::OnConnectionError, base::Unretained(this)));

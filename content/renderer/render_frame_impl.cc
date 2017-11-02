@@ -6944,8 +6944,8 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
         &RenderFrameImpl::OnHostZoomClientRequest, weak_factory_.GetWeakPtr()));
 
     // Web manifests are only requested for main frames.
-    GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
-        &ManifestManager::BindToRequest, base::Unretained(manifest_manager_)));
+    registry_.AddInterface(base::Bind(&ManifestManager::BindToRequest,
+                                      base::Unretained(manifest_manager_)));
   }
 }
 
