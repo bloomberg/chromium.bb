@@ -1,3 +1,118 @@
+Overview of changes leading to 1.6.2
+Monday, October 23nd, 2017
+====================================
+
+- Yesterday's release had a bad crasher; don't use it.  That's what
+  happens when one works on Sunday...
+  https://github.com/behdad/harfbuzz/issues/578
+- Build fixes for FreeBSD and Chrome Android.
+
+
+Overview of changes leading to 1.6.1
+Sunday, October 22nd, 2017
+====================================
+
+- Don't skip over COMBINING GRAPHEME JOINER when ligating, etc.
+  To be refined: https://github.com/behdad/harfbuzz/issues/554
+- Faster hb_set_t implementation.
+- Don't use deprecated ICU API.
+- Fix undefined-behavior in Myanmar shaper, introduced in 1.6.0
+- Deprecated API:
+  hb_set_invert()
+
+
+Overview of changes leading to 1.6.0
+Friday, October the 13th, 2017
+====================================
+
+- Update to Unicode 10.
+
+- Various Indic and Universal Shaping Engine fixes as a result of
+  HarfBuzz Hackfest with Jonathan Kew at Web Engines Hackfest at
+  the Igalia offices in A Coruña, Spain.  Thanks Igalia for having
+  us!
+
+- Implement Unicode Arabic Mark Ordering Algorithm UTR#53.
+
+- Implement optical sizing / tracking in CoreText backend, using
+  new API hb_font_set_ptem().
+
+- Allow notifying hb_font_t that underlying FT_Face changed sizing,
+  using new API hb_ft_font_changed().
+
+- More Graphite backend RTL fixes.
+
+- Fix caching of variable font shaping plans.
+
+- hb-view / hb-shape now accept following new arguments:
+
+  o --unicodes: takes a list of hex numbers that represent Unicode
+    codepoints.
+
+New API:
++hb_face_get_table_tags()
++hb_font_set_ptem()
++hb_font_get_ptem()
++hb_ft_font_changed()
+
+
+Overview of changes leading to 1.5.1
+Tuesday, September 5, 2017
+====================================
+
+- Fix "unsafe-to-break" in fallback shaping and other corner cases.
+  All our tests pass with --verify now, meaning unsafe-to-break API
+  works as expected.
+- Add --unicodes to hb-view / hb-shape.
+- [indic] Treat Consonant_With_Stacker as consonant.  This will need
+  further tweaking.
+- hb_buffer_diff() tweaks.
+
+
+Overview of changes leading to 1.5.0
+Wednesday, August 23, 2017
+====================================
+
+- Misc new API, for appending a buffer to another, and for comparing
+  contents of two buffers for types of differences.
+
+- New "unsafe-to-break" API.  Can be used to speed up reshaping
+  in line-breaking situations.  Essentially, after shaping, it returns
+  positions in the input string (some of the cluster boundaries) that
+  are "safe to break" in that if the text is segmented at that position
+  and two sides reshaped and concatenated, the shaping result is
+  exactly the same as shaping the text in one piece.
+
+  hb-view and hb-shape and hb-shape now take --verify, which verifies
+  the above property.
+
+  Some corner cases of the implementation are still not quite working.
+  Those will be fixed in subsequent releases.
+
+- New API:
+
+hb_buffer_append()
+
+hb_glyph_flags_t
+HB_GLYPH_FLAG_UNSAFE_TO_BREAK
+HB_GLYPH_FLAG_DEFINED
+hb_glyph_info_get_glyph_flags()
+
+HB_BUFFER_SERIALIZE_FLAG_GLYPH_FLAGS
+
+hb_buffer_diff_flags_t
+HB_BUFFER_DIFF_FLAG_EQUAL
+HB_BUFFER_DIFF_FLAG_CONTENT_TYPE_MISMATCH
+HB_BUFFER_DIFF_FLAG_LENGTH_MISMATCH
+HB_BUFFER_DIFF_FLAG_NOTDEF_PRESENT
+HB_BUFFER_DIFF_FLAG_DOTTED_CIRCLE_PRESENT
+HB_BUFFER_DIFF_FLAG_CODEPOINT_MISMATCH
+HB_BUFFER_DIFF_FLAG_CLUSTER_MISMATCH
+HB_BUFFER_DIFF_FLAG_GLYPH_FLAGS_MISMATCH
+HB_BUFFER_DIFF_FLAG_POSITION_MISMATCH
+hb_buffer_diff
+
+
 Overview of changes leading to 1.4.8
 Tuesday, August 8, 2017
 ====================================

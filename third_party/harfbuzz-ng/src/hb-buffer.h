@@ -132,8 +132,8 @@ typedef struct hb_segment_properties_t {
 #define HB_SEGMENT_PROPERTIES_DEFAULT {HB_DIRECTION_INVALID, \
 				       HB_SCRIPT_INVALID, \
 				       HB_LANGUAGE_INVALID, \
-				       NULL, \
-				       NULL}
+				       (void *) 0, \
+				       (void *) 0}
 
 HB_EXTERN hb_bool_t
 hb_segment_properties_equal (const hb_segment_properties_t *a,
@@ -504,7 +504,7 @@ typedef enum { /*< flags >*/
 } hb_buffer_diff_flags_t;
 
 /* Compare the contents of two buffers, report types of differences. */
-hb_buffer_diff_flags_t
+HB_EXTERN hb_buffer_diff_flags_t
 hb_buffer_diff (hb_buffer_t *buffer,
 		hb_buffer_t *reference,
 		hb_codepoint_t dottedcircle_glyph,

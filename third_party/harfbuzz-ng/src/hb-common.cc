@@ -32,6 +32,9 @@
 #include "hb-object-private.hh"
 
 #include <locale.h>
+#ifdef HAVE_XLOCALE_H
+#include <xlocale.h>
+#endif
 
 
 /* hb_options_t */
@@ -246,8 +249,8 @@ struct hb_language_item_t {
 static hb_language_item_t *langs;
 
 #ifdef HB_USE_ATEXIT
-static
-void free_langs (void)
+static void
+free_langs (void)
 {
   while (langs) {
     hb_language_item_t *next = langs->next;
@@ -271,13 +274,13 @@ retry:
   /* Not found; allocate one. */
   hb_language_item_t *lang = (hb_language_item_t *) calloc (1, sizeof (hb_language_item_t));
   if (unlikely (!lang))
-    return NULL;
+    return nullptr;
   lang->next = first_lang;
   *lang = key;
   if (unlikely (!lang->lang))
   {
     free (lang);
-    return NULL;
+    return nullptr;
   }
 
   if (!hb_atomic_ptr_cmpexch (&langs, first_lang, lang)) {
@@ -315,7 +318,7 @@ hb_language_from_string (const char *str, int len)
   if (!str || !len || !*str)
     return HB_LANGUAGE_INVALID;
 
-  hb_language_item_t *item = NULL;
+  hb_language_item_t *item = nullptr;
   if (len >= 0)
   {
     /* NUL-terminate it. */
@@ -346,7 +349,7 @@ hb_language_from_string (const char *str, int len)
 const char *
 hb_language_to_string (hb_language_t language)
 {
-  /* This is actually NULL-safe! */
+  /* This is actually nullptr-safe! */
   return language->s;
 }
 
@@ -366,7 +369,7 @@ hb_language_get_default (void)
 
   hb_language_t language = (hb_language_t) hb_atomic_ptr_get (&default_language);
   if (unlikely (language == HB_LANGUAGE_INVALID)) {
-    language = hb_language_from_string (setlocale (LC_CTYPE, NULL), -1);
+    language = hb_language_from_string (setlocale (LC_CTYPE, nullptr), -1);
     (void) hb_atomic_ptr_cmpexch (&default_language, HB_LANGUAGE_INVALID, language);
   }
 
@@ -559,9 +562,9 @@ hb_user_data_array_t::set (hb_user_data_key_t *key,
 void *
 hb_user_data_array_t::get (hb_user_data_key_t *key)
 {
-  hb_user_data_item_t item = {NULL, NULL, NULL};
+  hb_user_data_item_t item = {nullptr, nullptr, nullptr};
 
-  return items.find (key, &item, lock) ? item.data : NULL;
+  return items.find (key, &item, lock) ? item.data : nullptr;
 }
 
 
@@ -694,6 +697,48 @@ parse_uint32 (const char **pp, const char *end, uint32_t *pv)
   return true;
 }
 
+#if defined (HAVE_NEWLOCALE) && defined (HAVE_STRTOD_L)
+#define USE_XLOCALE 1
+#endif
+
+#ifdef USE_XLOCALE
+
+static locale_t C_locale;
+
+#ifdef HB_USE_ATEXIT
+static void
+free_C_locale (void)
+{
+  if (C_locale)
+    freelocale (C_locale);
+}
+#endif
+
+static locale_t
+get_C_locale (void)
+{
+retry:
+  locale_t C = (locale_t) hb_atomic_ptr_get (&C_locale);
+
+  if (unlikely (!C))
+  {
+    C = newlocale (LC_ALL_MASK, "C", nullptr);
+
+    if (!hb_atomic_ptr_cmpexch (&C_locale, nullptr, C))
+    {
+      freelocale (C_locale);
+      goto retry;
+    }
+
+#ifdef HB_USE_ATEXIT
+    atexit (free_C_locale); /* First person registers atexit() callback. */
+#endif
+  }
+
+  return C;
+}
+#endif
+
 static bool
 parse_float (const char **pp, const char *end, float *pv)
 {
@@ -707,7 +752,11 @@ parse_float (const char **pp, const char *end, float *pv)
   float v;
 
   errno = 0;
+#ifdef USE_XLOCALE
+  v = strtod_l (p, &pend, get_C_locale ());
+#else
   v = strtod (p, &pend);
+#endif
   if (errno || p == pend)
     return false;
 

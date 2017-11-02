@@ -129,6 +129,7 @@ if (use_system_harfbuzz) {
       "src/hb-ot-var.h",
       "src/hb-ot.h",
       "src/hb-private.hh",
+      "src/hb-set-digest-private.hh",
       "src/hb-set-private.hh",
       "src/hb-set.cc",
       "src/hb-set.h",
