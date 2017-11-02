@@ -18,6 +18,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+namespace base {
+namespace test {
+
+class ScopedTaskEnvironment;
+
+}  // namespace test
+}  // namespace base
+
 namespace net {
 
 class IOBuffer;
@@ -73,7 +81,13 @@ class DiskCacheTestWithCache : public DiskCacheTest {
     std::unique_ptr<disk_cache::Backend::Iterator> iterator_;
   };
 
+  // Assumes NetTestSuite is available.
   DiskCacheTestWithCache();
+
+  // Does not take ownership of |scoped_task_env|, and will not use it past
+  // TearDown(). Does not require NetTestSuite.
+  explicit DiskCacheTestWithCache(
+      base::test::ScopedTaskEnvironment* scoped_task_env);
   ~DiskCacheTestWithCache() override;
 
   void CreateBackend(uint32_t flags);
@@ -190,6 +204,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
  private:
   void InitMemoryCache();
   void InitDiskCache();
+  base::test::ScopedTaskEnvironment* scoped_task_env_;
 
   DISALLOW_COPY_AND_ASSIGN(DiskCacheTestWithCache);
 };
