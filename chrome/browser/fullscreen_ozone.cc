@@ -6,7 +6,7 @@
 
 #include "ui/aura/env.h"
 
-bool IsFullScreenMode(int64_t display_id) {
+bool IsFullScreenMode() {
   if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS) {
     // TODO: http://crbug.com/640390.
     NOTIMPLEMENTED();
