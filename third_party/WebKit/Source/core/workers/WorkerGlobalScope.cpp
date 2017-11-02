@@ -32,6 +32,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/css/FontFaceSetWorker.h"
 #include "core/css/OffscreenFontSelector.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ExceptionCode.h"
@@ -74,6 +75,10 @@ void RemoveURLFromMemoryCacheInternal(const KURL& url) {
 }
 
 }  // namespace
+
+FontFaceSet* WorkerGlobalScope::fonts() {
+  return FontFaceSetWorker::From(*this);
+}
 
 WorkerGlobalScope::~WorkerGlobalScope() {
   DCHECK(!ScriptController());

@@ -2503,6 +2503,7 @@ interface WorkerGlobalScope : EventTarget
     attribute @@toStringTag
     getter caches
     getter crypto
+    getter fonts
     getter indexedDB
     getter isSecureContext
     getter location
