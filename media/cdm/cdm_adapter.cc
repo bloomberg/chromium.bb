@@ -318,6 +318,25 @@ SampleFormat ToMediaSampleFormat(cdm::AudioFormat format) {
   return kUnknownSampleFormat;
 }
 
+// Verify that OutputProtection types matches those in CDM interface.
+// Cannot use conversion function because these are used in bit masks.
+#define ASSERT_ENUM_EQ(media_enum, cdm_enum)                              \
+  static_assert(                                                          \
+      static_cast<int32_t>(media_enum) == static_cast<int32_t>(cdm_enum), \
+      "Mismatched enum: " #media_enum " != " #cdm_enum)
+
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::NONE, cdm::kLinkTypeNone);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::UNKNOWN, cdm::kLinkTypeUnknown);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::INTERNAL, cdm::kLinkTypeInternal);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::VGA, cdm::kLinkTypeVGA);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::HDMI, cdm::kLinkTypeHDMI);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::DVI, cdm::kLinkTypeDVI);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::DISPLAYPORT,
+               cdm::kLinkTypeDisplayPort);
+ASSERT_ENUM_EQ(OutputProtection::LinkTypes::NETWORK, cdm::kLinkTypeNetwork);
+ASSERT_ENUM_EQ(OutputProtection::ProtectionType::NONE, cdm::kProtectionNone);
+ASSERT_ENUM_EQ(OutputProtection::ProtectionType::HDCP, cdm::kProtectionHDCP);
+
 // Fill |input_buffer| based on the values in |encrypted|. |subsamples|
 // is used to hold some of the data. |input_buffer| will contain pointers
 // to data contained in |encrypted| and |subsamples|, so the lifetime of
@@ -405,6 +424,20 @@ void ReportSystemCodeUMA(const std::string& key_system, uint32_t system_code) {
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       "Media.EME." + GetKeySystemNameForUMA(key_system) + ".SystemCode",
       system_code);
+}
+
+// These are reported to UMA server. Do not renumber or reuse values.
+enum OutputProtectionStatus {
+  kQueried = 0,
+  kNoExternalLink = 1,
+  kAllExternalLinksProtected = 2,
+  // Note: Only add new values immediately before this line.
+  kStatusCount
+};
+
+void ReportOutputProtectionUMA(OutputProtectionStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Media.EME.OutputProtection", status,
+                            OutputProtectionStatus::kStatusCount);
 }
 
 }  // namespace
@@ -991,48 +1024,88 @@ void CdmAdapter::EnableOutputProtection(uint32_t desired_protection_mask) {
 
   helper_->EnableProtection(
       desired_protection_mask,
-      base::BindOnce(&CdmAdapter::OnOutputProtectionRequestMade,
+      base::BindOnce(&CdmAdapter::OnEnableOutputProtectionDone,
                      weak_factory_.GetWeakPtr()));
 }
 
-void CdmAdapter::OnOutputProtectionRequestMade(bool /* success */) {
+void CdmAdapter::OnEnableOutputProtectionDone(bool success) {
   // CDM needs to call QueryOutputProtectionStatus() to see if it took effect
   // or not.
+  DVLOG(1) << __func__ << ": success = " << success;
 }
 
 void CdmAdapter::QueryOutputProtectionStatus() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  helper_->QueryStatus(base::Bind(&CdmAdapter::OnOutputProtectionStatus,
-                                  weak_factory_.GetWeakPtr()));
+  ReportOutputProtectionQuery();
+  helper_->QueryStatus(
+      base::Bind(&CdmAdapter::OnQueryOutputProtectionStatusDone,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void CdmAdapter::OnOutputProtectionStatus(bool success,
-                                          uint32_t link_mask,
-                                          uint32_t protection_mask) {
-// Verify that the values in |link_mask| and |protection_mask| match what the
-// CDM expects.
-#define ASSERT_ENUM_EQ(media_enum, cdm_enum)                              \
-  static_assert(                                                          \
-      static_cast<int32_t>(media_enum) == static_cast<int32_t>(cdm_enum), \
-      "Mismatched enum: " #media_enum " != " #cdm_enum)
+void CdmAdapter::OnQueryOutputProtectionStatusDone(bool success,
+                                                   uint32_t link_mask,
+                                                   uint32_t protection_mask) {
+  // The bit mask definition must be consistent between media::OutputProtection
+  // and cdm::ContentDecryptionModule* interfaces. This is statically asserted
+  // by ASSERT_ENUM_EQs above.
 
-  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::NONE, cdm::kLinkTypeNone);
-  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::UNKNOWN, cdm::kLinkTypeUnknown);
-  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::INTERNAL, cdm::kLinkTypeInternal);
-  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::VGA, cdm::kLinkTypeVGA);
-  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::HDMI, cdm::kLinkTypeHDMI);
-  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::DVI, cdm::kLinkTypeDVI);
-  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::DISPLAYPORT,
-                 cdm::kLinkTypeDisplayPort);
-  ASSERT_ENUM_EQ(OutputProtection::LinkTypes::NETWORK, cdm::kLinkTypeNetwork);
+  // Return a query status of failure on error.
+  cdm::QueryResult query_result;
+  if (success) {
+    query_result = cdm::kQuerySucceeded;
+    ReportOutputProtectionQueryResult(link_mask, protection_mask);
+  } else {
+    DVLOG(1) << __func__ << ": query output protection status failed";
+    query_result = cdm::kQueryFailed;
+  }
 
-  ASSERT_ENUM_EQ(OutputProtection::ProtectionType::NONE, cdm::kProtectionNone);
-  ASSERT_ENUM_EQ(OutputProtection::ProtectionType::HDCP, cdm::kProtectionHDCP);
+  cdm_->OnQueryOutputProtectionStatus(query_result, link_mask, protection_mask);
+}
 
-  cdm_->OnQueryOutputProtectionStatus(
-      success ? cdm::kQuerySucceeded : cdm::kQueryFailed, link_mask,
-      protection_mask);
+void CdmAdapter::ReportOutputProtectionQuery() {
+  if (uma_for_output_protection_query_reported_)
+    return;
+
+  ReportOutputProtectionUMA(OutputProtectionStatus::kQueried);
+  uma_for_output_protection_query_reported_ = true;
+}
+
+void CdmAdapter::ReportOutputProtectionQueryResult(uint32_t link_mask,
+                                                   uint32_t protection_mask) {
+  DCHECK(uma_for_output_protection_query_reported_);
+
+  if (uma_for_output_protection_positive_result_reported_)
+    return;
+
+  // Report UMAs for output protection query result.
+
+  uint32_t external_links = (link_mask & ~cdm::kLinkTypeInternal);
+
+  if (!external_links) {
+    ReportOutputProtectionUMA(OutputProtectionStatus::kNoExternalLink);
+    uma_for_output_protection_positive_result_reported_ = true;
+    return;
+  }
+
+  const uint32_t kProtectableLinks =
+      cdm::kLinkTypeHDMI | cdm::kLinkTypeDVI | cdm::kLinkTypeDisplayPort;
+  bool is_unprotectable_link_connected =
+      (external_links & ~kProtectableLinks) != 0;
+  bool is_hdcp_enabled_on_all_protectable_links =
+      (protection_mask & cdm::kProtectionHDCP) != 0;
+
+  if (!is_unprotectable_link_connected &&
+      is_hdcp_enabled_on_all_protectable_links) {
+    ReportOutputProtectionUMA(
+        OutputProtectionStatus::kAllExternalLinksProtected);
+    uma_for_output_protection_positive_result_reported_ = true;
+    return;
+  }
+
+  // Do not report a negative result because it could be a false negative.
+  // Instead, we will calculate number of negatives using the total number of
+  // queries and positive results.
 }
 
 void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
