@@ -202,8 +202,11 @@ class SearchBoxTextfield : public views::Textfield {
   }
 
   void OnBlur() override {
-    if (is_app_list_focus_enabled_)
+    if (is_app_list_focus_enabled_) {
       search_box_view_->SetSelected(false);
+      // Clear selection and set the caret to the end of the text.
+      ClearSelection();
+    }
     Textfield::OnBlur();
   }
 
