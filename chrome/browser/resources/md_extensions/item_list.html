@@ -66,7 +66,12 @@
       </div>
       <template is="dom-if" if="[[shownExtensions_.length]]">
         <div class="items-container">
-          <template is="dom-repeat" items="[[shownExtensions_]]">
+          <!-- Construct and render a few items first, to improve FMP time, then
+            construct and render the remaining items on a different frame. Value
+            of 3 was chosen by experimentation, and it is a good tradeoff
+            between FMP and time to render everything. -->
+          <template is="dom-repeat" items="[[shownExtensions_]]"
+              initial-count="3">
             <extensions-item data="[[item]]" delegate="[[delegate]]"
                 in-dev-mode="[[inDevMode]]">
             </extensions-item>
