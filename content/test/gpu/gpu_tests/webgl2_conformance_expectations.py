@@ -726,6 +726,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # This test causes a lost device and then the next test fails.
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['linux', ('nvidia', 0x1cb3)], bug=709320)
+    # Observed flaky on Swarmed bots.
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_interleaved_lines.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_separate_lines.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
 
     # Linux NVIDIA Quadro P400, OpenGL backend
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
