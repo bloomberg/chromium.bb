@@ -419,7 +419,7 @@ void SetAndroidPayMethodData(const ScriptValue& input,
 void SetBasicCardMethodData(const ScriptValue& input,
                             PaymentMethodDataPtr& output,
                             ExceptionState& exception_state) {
-  BasicCardHelper::parseBasiccardData(input, output->supported_networks,
+  BasicCardHelper::ParseBasiccardData(input, output->supported_networks,
                                       output->supported_types, exception_state);
 }
 
@@ -469,7 +469,7 @@ void StringifyAndParseMethodSpecificData(
 void CountPaymentRequestNetworkNameInSupportedMethods(
     const Vector<String>& supported_methods,
     ExecutionContext& execution_context) {
-  if (BasicCardHelper::containsNetworkNames(supported_methods)) {
+  if (BasicCardHelper::ContainsNetworkNames(supported_methods)) {
     Deprecation::CountDeprecation(
         &execution_context,
         WebFeature::kPaymentRequestNetworkNameInSupportedMethods);

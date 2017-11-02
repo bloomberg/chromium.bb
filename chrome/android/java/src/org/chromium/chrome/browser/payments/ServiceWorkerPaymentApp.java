@@ -36,7 +36,6 @@ import javax.annotation.Nullable;
 public class ServiceWorkerPaymentApp extends PaymentInstrument implements PaymentApp {
     private final WebContents mWebContents;
     private final long mRegistrationId;
-    private final Drawable mIcon;
     private final Set<String> mMethodNames;
     private final Capabilities[] mCapabilities;
     private final boolean mCanPreselect;
@@ -114,7 +113,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         super(scope.toString(), label, sublabel, tertiarylabel, icon);
         mWebContents = webContents;
         mRegistrationId = registrationId;
-        mIcon = icon;
 
         // Sublabel and/or icon are set to null if fetching or processing the corresponding web app
         // manifest failed. Then do not preselect this payment app.
