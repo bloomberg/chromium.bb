@@ -1399,66 +1399,6 @@
       },
       {
         "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=android-chromium",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build14-b1--device7",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build14-b1--device7",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "memory.long_running_idle_gmail_background_tbmv2",
           "-v",
           "--upload-results",
@@ -6150,66 +6090,6 @@
       },
       {
         "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=android-chromium",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build74-b1--device7",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build74-b1--device7",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "memory.long_running_idle_gmail_background_tbmv2",
           "-v",
           "--upload-results",
@@ -10192,36 +10072,6 @@
       },
       {
         "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=android-webview",
-          "--output-format=chartjson",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
-        ],
-        "isolate_name": "telemetry_perf_webview_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_webview_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build165-b1--device7",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "memory.long_running_idle_gmail_tbmv2",
           "-v",
           "--upload-results",
@@ -13222,66 +13072,6 @@
           "dimension_sets": [
             {
               "id": "build45-b1--device1",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=android-chromium",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build16-b1--device7",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build16-b1--device7",
               "os": "Android",
               "pool": "Chrome-perf"
             }
@@ -17277,36 +17067,6 @@
       },
       {
         "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=android-webview",
-          "--output-format=chartjson",
-          "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
-        ],
-        "isolate_name": "telemetry_perf_webview_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_webview_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build113-b1--device7",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "memory.long_running_idle_gmail_tbmv2",
           "-v",
           "--upload-results",
@@ -20307,66 +20067,6 @@
           "dimension_sets": [
             {
               "id": "build49-b1--device1",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=android-chromium",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build10-b1--device7",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build10-b1--device7",
               "os": "Android",
               "pool": "Chrome-perf"
             }
@@ -25058,66 +24758,6 @@
           "dimension_sets": [
             {
               "id": "build47-b1--device1",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=android-chromium",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build47-b1--device3",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build47-b1--device3",
               "os": "Android",
               "pool": "Chrome-perf"
             }
@@ -29872,68 +29512,6 @@
         }
       },
       {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3",
-              "id": "build31-a9",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3",
-              "id": "build31-a9",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
         "args": [],
         "isolate_name": "media_perftests",
         "name": "media_perftests",
@@ -34059,68 +33637,6 @@
         }
       },
       {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0166",
-              "id": "build106-b1",
-              "os": "Mac-10.11",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0166",
-              "id": "build106-b1",
-              "os": "Mac-10.11",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
         "args": [],
         "isolate_name": "media_perftests",
         "name": "media_perftests",
@@ -38121,68 +37637,6 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.desktop.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "id": "build162-m1",
-              "os": "Mac-10.12",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "id": "build162-m1",
-              "os": "Mac-10.12",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
         "override_compile_targets": [
           "telemetry_perf_tests"
         ],
@@ -42226,68 +41680,6 @@
       },
       {
         "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1626",
-              "id": "build127-b1",
-              "os": "Mac-10.11",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1626",
-              "id": "build127-b1",
-              "os": "Mac-10.11",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "memory.desktop",
           "-v",
           "--upload-results",
@@ -46309,68 +45701,6 @@
       },
       {
         "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a26",
-              "id": "build28-b1",
-              "os": "Mac-10.12",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a26",
-              "id": "build28-b1",
-              "os": "Mac-10.12",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "memory.desktop",
           "-v",
           "--upload-results",
@@ -50349,68 +49679,6 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.desktop.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "id": "build132-b1",
-              "os": "Mac-10.11",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "id": "build132-b1",
-              "os": "Mac-10.11",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
         "override_compile_targets": [
           "telemetry_perf_tests"
         ],
@@ -54454,68 +53722,6 @@
       },
       {
         "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0d26",
-              "id": "build30-b4",
-              "os": "Mac-10.11",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0d26",
-              "id": "build30-b4",
-              "os": "Mac-10.11",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "memory.desktop",
           "-v",
           "--upload-results",
@@ -58413,68 +57619,6 @@
       },
       {
         "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release_x64",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1616",
-              "id": "build180-b4",
-              "os": "Windows-10-10240",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1616",
-              "id": "build180-b4",
-              "os": "Windows-10-10240",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "memory.desktop",
           "-v",
           "--upload-results",
@@ -62329,68 +61473,6 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.desktop.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "102b:0534",
-              "id": "build136-m1",
-              "os": "Windows-10-10240",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release_x64",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "102b:0534",
-              "id": "build136-m1",
-              "os": "Windows-10-10240",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
         "override_compile_targets": [
           "telemetry_perf_tests"
         ],
@@ -66330,68 +65412,6 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.desktop.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "id": "build105-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release_x64",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "id": "build105-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
         "override_compile_targets": [
           "telemetry_perf_tests"
         ],
@@ -70374,68 +69394,6 @@
       },
       {
         "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release_x64",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:041a",
-              "id": "build168-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:041a",
-              "id": "build168-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "memory.desktop",
           "-v",
           "--upload-results",
@@ -74353,68 +73311,6 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.desktop.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3",
-              "id": "build96-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release_x64",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3",
-              "id": "build96-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
         "override_compile_targets": [
           "telemetry_perf_tests"
         ],
@@ -78402,68 +77298,6 @@
         }
       },
       {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "102b:0532",
-              "id": "build189-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "102b:0532",
-              "id": "build189-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
         "args": [],
         "isolate_name": "media_perftests",
         "name": "media_perftests",
@@ -82383,68 +81217,6 @@
       },
       {
         "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release_x64",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "102b:0532",
-              "id": "build142-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "102b:0532",
-              "id": "build142-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
           "memory.desktop",
           "-v",
           "--upload-results",
@@ -86341,68 +85113,6 @@
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "media.desktop.reference",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "102b:0532",
-              "id": "build147-m1",
-              "os": "Windows-2012ServerR2-SP0",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": true,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=release_x64",
-          "--output-format=chartjson"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases",
-        "override_compile_targets": [
-          "telemetry_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "102b:0532",
-              "id": "build147-m1",
-              "os": "Windows-2012ServerR2-SP0",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
-        "args": [
-          "media.mse_cases",
-          "-v",
-          "--upload-results",
-          "--browser=reference",
-          "--output-format=chartjson",
-          "--max-failures=5",
-          "--output-trace-tag=_ref"
-        ],
-        "isolate_name": "telemetry_perf_tests",
-        "name": "media.mse_cases.reference",
         "override_compile_targets": [
           "telemetry_perf_tests"
         ],
