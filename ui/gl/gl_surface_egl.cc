@@ -1099,7 +1099,12 @@ void NativeViewGLSurfaceEGL::TraceSwapEvents(EGLuint64KHR oldFrameId) {
   TimeNamePair tracePairs[kMaxTimestampsSupportable];
   size_t valid_pairs = 0;
   for (size_t i = 0; i < supported_count; i++) {
-    if (egl_timestamps[i] == EGL_TIMESTAMP_INVALID_ANDROID ||
+    // Although a timestamp of 0 is technically valid, we shouldn't expect to
+    // see it in practice. 0's are more likely due to a known linux kernel bug
+    // that inadvertently discards timestamp information when merging two
+    // retired fences.
+    if (egl_timestamps[i] == 0 ||
+        egl_timestamps[i] == EGL_TIMESTAMP_INVALID_ANDROID ||
         egl_timestamps[i] == EGL_TIMESTAMP_PENDING_ANDROID) {
       continue;
     }
