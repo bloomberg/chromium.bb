@@ -8,7 +8,7 @@
 class GeolocationMock {
   constructor() {
     this.geolocationServiceInterceptor_ = new MojoInterfaceInterceptor(
-        device.mojom.GeolocationService.name);
+        blink.mojom.GeolocationService.name);
     this.geolocationServiceInterceptor_.oninterfacerequest =
         e => this.connectGeolocationService_(e.handle);
     this.geolocationServiceInterceptor_.start();
@@ -40,7 +40,7 @@ class GeolocationMock {
     this.geolocationBindingSet_ = new mojo.BindingSet(
         device.mojom.Geolocation);
     this.geolocationServiceBindingSet_ = new mojo.BindingSet(
-        device.mojom.GeolocationService);
+        blink.mojom.GeolocationService);
   }
 
   connectGeolocationService_(handle) {

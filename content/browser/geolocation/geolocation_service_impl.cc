@@ -72,7 +72,7 @@ GeolocationServiceImpl::GeolocationServiceImpl(
 GeolocationServiceImpl::~GeolocationServiceImpl() {}
 
 void GeolocationServiceImpl::Bind(
-    device::mojom::GeolocationServiceRequest request) {
+    blink::mojom::GeolocationServiceRequest request) {
   binding_set_.AddBinding(
       this, std::move(request),
       std::make_unique<GeolocationServiceImplContext>(permission_manager_));

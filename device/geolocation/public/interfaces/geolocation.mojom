@@ -18,14 +18,3 @@ interface Geolocation {
   // this method are prohibited and will be treated as a connection error.
   QueryNextPosition() => (Geoposition geoposition);
 };
-
-// GeolocationService provides a Geolocation. It exists in order to examine the
-// environment (permissions, etc.) before creating a Geolocation.
-// There should only be one GeolocationService instance that creates many
-// Geolocation instances.  There is one GeolocationService per RenderFrameHost.
-interface GeolocationService {
-  // Creates a Geolocation.
-  // This may not be called a second time until the Geolocation instance has
-  // been created.
-  CreateGeolocation(Geolocation& request, bool user_gesture);
-};
