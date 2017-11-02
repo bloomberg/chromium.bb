@@ -87,8 +87,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   }
 
   bool ShouldActivateDialog() const override {
-    views::Widget* widget = browser_view_layout_->browser_view_->GetWidget();
-    return widget->IsActive();
+    return chrome::FindLastActive() == browser_view_layout_->browser_;
   }
 
   gfx::Size GetMaximumDialogSize() override {
