@@ -34,18 +34,19 @@
 #include "util_math.h"
 
 int amdgpu_va_range_query(amdgpu_device_handle dev,
-			  enum amdgpu_gpu_va_range type, uint64_t *start, uint64_t *end)
+			  enum amdgpu_gpu_va_range type,
+			  uint64_t *start, uint64_t *end)
 {
-	if (type == amdgpu_gpu_va_range_general) {
-		*start = dev->dev_info.virtual_address_offset;
-		*end = dev->dev_info.virtual_address_max;
-		return 0;
-	}
-	return -EINVAL;
+	if (type != amdgpu_gpu_va_range_general)
+		return -EINVAL;
+
+	*start = dev->dev_info.virtual_address_offset;
+	*end = dev->dev_info.virtual_address_max;
+	return 0;
 }
 
 drm_private void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
-			      uint64_t max, uint64_t alignment)
+				   uint64_t max, uint64_t alignment)
 {
 	mgr->va_offset = start;
 	mgr->va_max = max;
@@ -83,8 +84,8 @@ amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 	/* first look for a hole */
 	LIST_FOR_EACH_ENTRY_SAFE(hole, n, &mgr->va_holes, list) {
 		if (base_required) {
-			if(hole->offset > base_required ||
-				(hole->offset + hole->size) < (base_required + size))
+			if (hole->offset > base_required ||
+			    (hole->offset + hole->size) < (base_required + size))
 				continue;
 			waste = base_required - hole->offset;
 			offset = base_required;
@@ -192,9 +193,9 @@ amdgpu_vamgr_free_va(struct amdgpu_bo_va_mgr *mgr, uint64_t va, uint64_t size)
 				hole->offset = va;
 				hole->size += size;
 				/* Merge lower hole if it's adjacent */
-				if (next != hole
-						&& &next->list != &mgr->va_holes
-						&& (next->offset + next->size) == va) {
+				if (next != hole &&
+				    &next->list != &mgr->va_holes &&
+				    (next->offset + next->size) == va) {
 					next->size += hole->size;
 					list_del(&hole->list);
 					free(hole);
