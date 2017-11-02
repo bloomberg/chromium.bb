@@ -100,6 +100,7 @@ class PageInfoBubbleView : public content::WebContentsObserver,
   static views::BubbleDialogDelegateView* GetPageInfoBubble();
 
  private:
+  friend class PageInfoBubbleViewBrowserTest;
   friend class test::PageInfoBubbleViewTestApi;
 
   PageInfoBubbleView(views::View* anchor_view,

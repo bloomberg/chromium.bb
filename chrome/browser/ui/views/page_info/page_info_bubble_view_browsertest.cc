@@ -10,6 +10,7 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -23,14 +24,14 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/events/event_constants.h"
 
 namespace {
-
-typedef InProcessBrowserTest PageInfoBubbleViewBrowserTest;
 
 const char kSyncPasswordPageInfoHistogramName[] =
     "PasswordProtection.PageInfoAction.SyncPasswordEntry";
@@ -105,6 +106,95 @@ const GURL OpenSiteSettingsForUrl(Browser* browser,
       ->GetActiveWebContents()
       ->GetLastCommittedURL();
 }
+
+}  // namespace
+
+class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
+ public:
+  PageInfoBubbleViewBrowserTest() {}
+
+  // DialogBrowserTest:
+  void ShowDialog(const std::string& name) override {
+    // All the possible test names.
+    constexpr char kInsecure[] = "Insecure";
+    constexpr char kInternal[] = "Internal";
+    constexpr char kSecure[] = "Secure";
+    constexpr char kMalware[] = "Malware";
+    constexpr char kDeceptive[] = "Deceptive";
+    constexpr char kUnwantedSoftware[] = "UnwantedSoftware";
+    constexpr char kPasswordReuseSoft[] = "PasswordReuseSoft";
+    constexpr char kPasswordReuse[] = "PasswordReuse";
+    constexpr char kMixedContentForm[] = "MixedContentForm";
+    constexpr char kMixedContent[] = "MixedContent";
+
+    const GURL internal_url("chrome://settings");
+    // Note the following two URLs are not really necessary to get the different
+    // versions of Page Info to appear, but are here to indicate the type of
+    // URL each IdentityInfo type would normally be associated with.
+    const GURL https_url("https://example.com");
+    const GURL http_url("http://example.com");
+
+    GURL url = http_url;
+    if (name == kSecure || name == kMixedContentForm || name == kMixedContent)
+      url = https_url;
+    if (name == kInternal)
+      url = internal_url;
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    OpenPageInfoBubble(browser());
+
+    PageInfoUI::IdentityInfo identity;
+    if (name == kInsecure) {
+      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_NO_CERT;
+    } else if (name == kSecure) {
+      // Generate a valid mock HTTPS identity, with a certificate.
+      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_CERT;
+      constexpr char kGoodCertificateFile[] = "ok_cert.pem";
+      identity.certificate = net::ImportCertFromFile(
+          net::GetTestCertsDirectory(), kGoodCertificateFile);
+    } else if (name == kMalware) {
+      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_MALWARE;
+    } else if (name == kDeceptive) {
+      identity.identity_status =
+          PageInfo::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING;
+    } else if (name == kUnwantedSoftware) {
+      identity.identity_status =
+          PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE;
+    } else if (name == kPasswordReuseSoft) {
+      softer_warning_feature_.InitAndEnableFeatureWithParameters(
+          safe_browsing::kGoogleBrandedPhishingWarning,
+          {{"softer_warning", "true"}});
+      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE;
+    } else if (name == kPasswordReuse) {
+      softer_warning_feature_.InitAndEnableFeatureWithParameters(
+          safe_browsing::kGoogleBrandedPhishingWarning,
+          {{"softer_warning", "false"}});
+      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE;
+    } else if (name == kMixedContentForm) {
+      identity.identity_status =
+          PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
+      identity.connection_status =
+          PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION;
+    } else if (name == kMixedContent) {
+      identity.identity_status =
+          PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
+      identity.connection_status =
+          PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE;
+    }
+
+    if (name != kInsecure && name != kInternal) {
+      // The bubble may be PageInfoBubbleView or InternalPageInfoBubbleView. The
+      // latter is only used for |kInternal|, so it is safe to static_cast here.
+      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
+          ->SetIdentityInfo(identity);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList softer_warning_feature_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewBrowserTest);
+};
 
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ShowBubble) {
   OpenPageInfoBubble(browser());
@@ -262,4 +352,63 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
             security_info.malicious_content_status);
 }
 
-}  // namespace
+// Shows the Page Info bubble for a HTTP page (specifically, about:blank).
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeDialog_Insecure) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble for a HTTPS page.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeDialog_Secure) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble for an internal page, e.g. chrome://settings.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeDialog_Internal) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble for a site flagged for malware by Safe Browsing.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeDialog_Malware) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble for a site flagged for social engineering by Safe
+// Browsing.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeDialog_Deceptive) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble for a site flagged for distributing unwanted
+// software by Safe Browsing.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeDialog_UnwantedSoftware) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble Safe Browsing soft warning after detecting the
+// user has re-used an existing password on a site, e.g. due to phishing.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeDialog_PasswordReuseSoft) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble Safe Browsing warning after detecting the user has
+// re-used an existing password on a site, e.g. due to phishing.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeDialog_PasswordReuse) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble for an admin-provided cert when the page is
+// secure, but has a form that submits to an insecure url.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeDialog_MixedContentForm) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble for an admin-provided cert when the page is
+// secure, but it uses insecure resources (e.g. images).
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeDialog_MixedContent) {
+  RunDialog();
+}
