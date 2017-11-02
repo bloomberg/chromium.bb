@@ -7,8 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 120, 100, 100],
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [200, 300, 200, 200],
           "reason": "appeared"
         }
       ]
@@ -16,7 +16,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='content'",
+      "object": "LayoutBlockFlow (positioned) DIV id='target'",
       "reason": "style change"
     }
   ]

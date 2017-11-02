@@ -7,17 +7,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [200, 300, 200, 200],
-          "reason": "appeared"
+          "object": "LayoutBlockFlow (positioned) DIV id='skewed'",
+          "rect": [100, 50, 600, 500],
+          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "style change"
+      "object": "LayoutBlockFlow (positioned) DIV id='skewed'",
+      "reason": "incremental"
     }
   ]
 }
