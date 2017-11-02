@@ -76,6 +76,7 @@
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/appcache/ApplicationCache.h"
 #include "core/page/ChromeClient.h"
@@ -83,7 +84,6 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/probe/CoreProbes.h"
-#include "core/style/ComputedStyle.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -977,16 +977,16 @@ int LocalDOMWindow::innerHeight() const {
   if (!GetFrame())
     return 0;
 
-  return AdjustForAbsoluteZoom(GetViewportSize().Height(),
-                               GetFrame()->PageZoomFactor());
+  return AdjustForAbsoluteZoom::AdjustInt(GetViewportSize().Height(),
+                                          GetFrame()->PageZoomFactor());
 }
 
 int LocalDOMWindow::innerWidth() const {
   if (!GetFrame())
     return 0;
 
-  return AdjustForAbsoluteZoom(GetViewportSize().Width(),
-                               GetFrame()->PageZoomFactor());
+  return AdjustForAbsoluteZoom::AdjustInt(GetViewportSize().Width(),
+                                          GetFrame()->PageZoomFactor());
 }
 
 int LocalDOMWindow::screenX() const {
@@ -1033,7 +1033,8 @@ double LocalDOMWindow::scrollX() const {
   // crbug.com/505516.
   double viewport_x =
       view->LayoutViewportScrollableArea()->GetScrollOffset().Width();
-  return AdjustScrollForAbsoluteZoom(viewport_x, GetFrame()->PageZoomFactor());
+  return AdjustForAbsoluteZoom::AdjustScroll(viewport_x,
+                                             GetFrame()->PageZoomFactor());
 }
 
 double LocalDOMWindow::scrollY() const {
@@ -1050,7 +1051,8 @@ double LocalDOMWindow::scrollY() const {
   // crbug.com/505516.
   double viewport_y =
       view->LayoutViewportScrollableArea()->GetScrollOffset().Height();
-  return AdjustScrollForAbsoluteZoom(viewport_y, GetFrame()->PageZoomFactor());
+  return AdjustForAbsoluteZoom::AdjustScroll(viewport_y,
+                                             GetFrame()->PageZoomFactor());
 }
 
 DOMVisualViewport* LocalDOMWindow::visualViewport() {

@@ -2562,42 +2562,6 @@ class ComputedStyle : public ComputedStyleBase,
       UpdatePropertySpecificDifferencesRespectsTransformAnimation);
 };
 
-// FIXME: Reduce/remove the dependency on zoom adjusted int values.
-// The float or LayoutUnit versions of layout values should be used.
-int AdjustForAbsoluteZoom(int value, float zoom_factor);
-
-inline int AdjustForAbsoluteZoom(int value, const ComputedStyle& style) {
-  float zoom_factor = style.EffectiveZoom();
-  if (zoom_factor == 1)
-    return value;
-  return AdjustForAbsoluteZoom(value, zoom_factor);
-}
-
-inline float AdjustFloatForAbsoluteZoom(float value,
-                                        const ComputedStyle& style) {
-  return value / style.EffectiveZoom();
-}
-
-inline double AdjustDoubleForAbsoluteZoom(double value,
-                                          const ComputedStyle& style) {
-  return value / style.EffectiveZoom();
-}
-
-inline LayoutUnit AdjustLayoutUnitForAbsoluteZoom(LayoutUnit value,
-                                                  const ComputedStyle& style) {
-  return LayoutUnit(value / style.EffectiveZoom());
-}
-
-inline float AdjustScrollForAbsoluteZoom(float scroll_offset,
-                                         float zoom_factor) {
-  return scroll_offset / zoom_factor;
-}
-
-inline float AdjustScrollForAbsoluteZoom(float scroll_offset,
-                                         const ComputedStyle& style) {
-  return AdjustScrollForAbsoluteZoom(scroll_offset, style.EffectiveZoom());
-}
-
 inline bool ComputedStyle::SetZoom(float f) {
   if (Zoom() == f)
     return false;

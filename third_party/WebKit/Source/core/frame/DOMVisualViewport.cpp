@@ -31,6 +31,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
+#include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 
@@ -87,7 +88,8 @@ float DOMVisualViewport::pageLeft() const {
 
   frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   float viewport_x = view->GetScrollableArea()->GetScrollOffset().Width();
-  return AdjustScrollForAbsoluteZoom(viewport_x, frame->PageZoomFactor());
+  return AdjustForAbsoluteZoom::AdjustScroll(viewport_x,
+                                             frame->PageZoomFactor());
 }
 
 float DOMVisualViewport::pageTop() const {
@@ -101,7 +103,8 @@ float DOMVisualViewport::pageTop() const {
 
   frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   float viewport_y = view->GetScrollableArea()->GetScrollOffset().Height();
-  return AdjustScrollForAbsoluteZoom(viewport_y, frame->PageZoomFactor());
+  return AdjustForAbsoluteZoom::AdjustScroll(viewport_y,
+                                             frame->PageZoomFactor());
 }
 
 double DOMVisualViewport::width() const {
@@ -115,8 +118,8 @@ double DOMVisualViewport::width() const {
     auto* scrollable_area = frame->View()->LayoutViewportScrollableArea();
     float width =
         scrollable_area->VisibleContentRect(kExcludeScrollbars).Width();
-    return AdjustForAbsoluteZoom(clampTo<int>(ceilf(width)),
-                                 frame->PageZoomFactor());
+    return AdjustForAbsoluteZoom::AdjustInt(clampTo<int>(ceilf(width)),
+                                            frame->PageZoomFactor());
   }
 
   if (Page* page = frame->GetPage())
@@ -136,8 +139,8 @@ double DOMVisualViewport::height() const {
     auto* scrollable_area = frame->View()->LayoutViewportScrollableArea();
     float height =
         scrollable_area->VisibleContentRect(kExcludeScrollbars).Height();
-    return AdjustForAbsoluteZoom(clampTo<int>(ceilf(height)),
-                                 frame->PageZoomFactor());
+    return AdjustForAbsoluteZoom::AdjustInt(clampTo<int>(ceilf(height)),
+                                            frame->PageZoomFactor());
   }
 
   if (Page* page = frame->GetPage())

@@ -120,6 +120,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/input/EventHandler.h"
 #include "core/intersection_observer/ElementIntersectionObserverData.h"
+#include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/api/LayoutBoxItem.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -714,7 +715,7 @@ void Element::CallApplyScroll(ScrollState& scroll_state) {
 int Element::OffsetLeft() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustLayoutUnitForAbsoluteZoom(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(
                    layout_object->PixelSnappedOffsetLeft(OffsetParent())),
                layout_object->StyleRef())
@@ -725,7 +726,7 @@ int Element::OffsetLeft() {
 int Element::OffsetTop() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustLayoutUnitForAbsoluteZoom(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(layout_object->PixelSnappedOffsetTop(OffsetParent())),
                layout_object->StyleRef())
         .Round();
@@ -735,7 +736,7 @@ int Element::OffsetTop() {
 int Element::OffsetWidth() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustLayoutUnitForAbsoluteZoom(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(
                    layout_object->PixelSnappedOffsetWidth(OffsetParent())),
                layout_object->StyleRef())
@@ -746,7 +747,7 @@ int Element::OffsetWidth() {
 int Element::OffsetHeight() {
   GetDocument().EnsurePaintLocationDataValidForNode(this);
   if (LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject())
-    return AdjustLayoutUnitForAbsoluteZoom(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(
                    layout_object->PixelSnappedOffsetHeight(OffsetParent())),
                layout_object->StyleRef())
@@ -765,8 +766,8 @@ int Element::clientLeft() {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
   if (LayoutBox* layout_object = GetLayoutBox())
-    return AdjustLayoutUnitForAbsoluteZoom(layout_object->ClientLeft(),
-                                           layout_object->StyleRef())
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(layout_object->ClientLeft(),
+                                                   layout_object->StyleRef())
         .Round();
   return 0;
 }
@@ -775,8 +776,8 @@ int Element::clientTop() {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
   if (LayoutBox* layout_object = GetLayoutBox())
-    return AdjustLayoutUnitForAbsoluteZoom(layout_object->ClientTop(),
-                                           layout_object->StyleRef())
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(layout_object->ClientTop(),
+                                                   layout_object->StyleRef())
         .Round();
   return 0;
 }
@@ -795,11 +796,11 @@ int Element::clientWidth() {
           !GetDocument().GetFrame()->IsLocalRoot())
         GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
-        return AdjustLayoutUnitForAbsoluteZoom(
+        return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                    layout_view.OverflowClipRect(LayoutPoint()).Width(),
                    layout_view.StyleRef())
             .Round();
-      return AdjustLayoutUnitForAbsoluteZoom(
+      return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                  LayoutUnit(layout_view.GetLayoutSize().Width()),
                  layout_view.StyleRef())
           .Round();
@@ -809,7 +810,7 @@ int Element::clientWidth() {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
   if (LayoutBox* layout_object = GetLayoutBox())
-    return AdjustLayoutUnitForAbsoluteZoom(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(layout_object->PixelSnappedClientWidth()),
                layout_object->StyleRef())
         .Round();
@@ -831,11 +832,11 @@ int Element::clientHeight() {
           !GetDocument().GetFrame()->IsLocalRoot())
         GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
-        return AdjustLayoutUnitForAbsoluteZoom(
+        return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                    layout_view.OverflowClipRect(LayoutPoint()).Height(),
                    layout_view.StyleRef())
             .Round();
-      return AdjustLayoutUnitForAbsoluteZoom(
+      return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                  LayoutUnit(layout_view.GetLayoutSize().Height()),
                  layout_view.StyleRef())
           .Round();
@@ -845,7 +846,7 @@ int Element::clientHeight() {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
   if (LayoutBox* layout_object = GetLayoutBox())
-    return AdjustLayoutUnitForAbsoluteZoom(
+    return AdjustForAbsoluteZoom::AdjustLayoutUnit(
                LayoutUnit(layout_object->PixelSnappedClientHeight()),
                layout_object->StyleRef())
         .Round();
@@ -864,8 +865,9 @@ double Element::scrollLeft() {
     return 0;
   }
 
-  if (LayoutBox* box = GetLayoutBox())
-    return AdjustScrollForAbsoluteZoom(box->ScrollLeft(), *box);
+  if (LayoutBox* box = GetLayoutBox()) {
+    return AdjustForAbsoluteZoom::AdjustScroll(box->ScrollLeft(), *box);
+  }
 
   return 0;
 }
@@ -882,8 +884,9 @@ double Element::scrollTop() {
     return 0;
   }
 
-  if (LayoutBox* box = GetLayoutBox())
-    return AdjustScrollForAbsoluteZoom(box->ScrollTop(), *box);
+  if (LayoutBox* box = GetLayoutBox()) {
+    return AdjustForAbsoluteZoom::AdjustScroll(box->ScrollTop(), *box);
+  }
 
   return 0;
 }
@@ -933,18 +936,22 @@ int Element::scrollWidth() {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
-    if (GetDocument().View())
-      return AdjustForAbsoluteZoom(GetDocument()
-                                       .View()
-                                       ->LayoutViewportScrollableArea()
-                                       ->ContentsSize()
-                                       .Width(),
-                                   GetDocument().GetFrame()->PageZoomFactor());
+    if (GetDocument().View()) {
+      return AdjustForAbsoluteZoom::AdjustInt(
+          GetDocument()
+              .View()
+              ->LayoutViewportScrollableArea()
+              ->ContentsSize()
+              .Width(),
+          GetDocument().GetFrame()->PageZoomFactor());
+    }
     return 0;
   }
 
-  if (LayoutBox* box = GetLayoutBox())
-    return AdjustForAbsoluteZoom(box->PixelSnappedScrollWidth(), box);
+  if (LayoutBox* box = GetLayoutBox()) {
+    return AdjustForAbsoluteZoom::AdjustInt(box->PixelSnappedScrollWidth(),
+                                            box);
+  }
   return 0;
 }
 
@@ -955,18 +962,22 @@ int Element::scrollHeight() {
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
   if (GetDocument().ScrollingElementNoLayout() == this) {
-    if (GetDocument().View())
-      return AdjustForAbsoluteZoom(GetDocument()
-                                       .View()
-                                       ->LayoutViewportScrollableArea()
-                                       ->ContentsSize()
-                                       .Height(),
-                                   GetDocument().GetFrame()->PageZoomFactor());
+    if (GetDocument().View()) {
+      return AdjustForAbsoluteZoom::AdjustInt(
+          GetDocument()
+              .View()
+              ->LayoutViewportScrollableArea()
+              ->ContentsSize()
+              .Height(),
+          GetDocument().GetFrame()->PageZoomFactor());
+    }
     return 0;
   }
 
-  if (LayoutBox* box = GetLayoutBox())
-    return AdjustForAbsoluteZoom(box->PixelSnappedScrollHeight(), box);
+  if (LayoutBox* box = GetLayoutBox()) {
+    return AdjustForAbsoluteZoom::AdjustInt(box->PixelSnappedScrollHeight(),
+                                            box);
+  }
   return 0;
 }
 

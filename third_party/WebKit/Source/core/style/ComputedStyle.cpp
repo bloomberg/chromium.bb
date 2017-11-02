@@ -2068,22 +2068,6 @@ bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {
   return false;
 }
 
-int AdjustForAbsoluteZoom(int value, float zoom_factor) {
-  if (zoom_factor == 1)
-    return value;
-  // Needed because computeLengthInt truncates (rather than rounds) when scaling
-  // up.
-  float fvalue = value;
-  if (zoom_factor > 1) {
-    if (value < 0)
-      fvalue -= 0.5f;
-    else
-      fvalue += 0.5f;
-  }
-
-  return RoundForImpreciseConversion<int>(fvalue / zoom_factor);
-}
-
 STATIC_ASSERT_ENUM(WebScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto,
                    EScrollBoundaryBehavior::kAuto);
 STATIC_ASSERT_ENUM(

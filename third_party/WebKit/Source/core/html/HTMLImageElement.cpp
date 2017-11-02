@@ -47,6 +47,7 @@
 #include "core/imagebitmap/ImageBitmap.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/api/LayoutImageItem.h"
@@ -499,15 +500,15 @@ unsigned HTMLImageElement::naturalHeight() const {
 
 unsigned HTMLImageElement::LayoutBoxWidth() const {
   LayoutBox* box = GetLayoutBox();
-  return box ? AdjustForAbsoluteZoom(box->ContentBoxRect().PixelSnappedWidth(),
-                                     box)
+  return box ? AdjustForAbsoluteZoom::AdjustInt(
+                   box->ContentBoxRect().PixelSnappedWidth(), box)
              : 0;
 }
 
 unsigned HTMLImageElement::LayoutBoxHeight() const {
   LayoutBox* box = GetLayoutBox();
-  return box ? AdjustForAbsoluteZoom(box->ContentBoxRect().PixelSnappedHeight(),
-                                     box)
+  return box ? AdjustForAbsoluteZoom::AdjustInt(
+                   box->ContentBoxRect().PixelSnappedHeight(), box)
              : 0;
 }
 
