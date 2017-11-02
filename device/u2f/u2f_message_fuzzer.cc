@@ -10,7 +10,7 @@
 #include "u2f_message.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  size_t packet_size = 65;
+  size_t packet_size = 64;
   size_t remaining_buffer = size;
   const uint8_t* start = data;
 
