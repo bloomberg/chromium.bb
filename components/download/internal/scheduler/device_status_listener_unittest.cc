@@ -84,9 +84,31 @@ class DeviceStatusListenerTest : public testing::Test {
 
   void TearDown() override { listener_.reset(); }
 
-  // Simulates a network change call.
+  // Start the listener with certain network and battery state.
+  void StartListener(ConnectionType type, bool on_battery_power) {
+    ChangeNetworkType(type);
+    SimulateBatteryChange(on_battery_power);
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(_))
+        .Times(1)
+        .RetiresOnSaturation();
+    listener_->Start(&mock_observer_);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Simulates a network change call, the event will be broadcasted
+  // asynchronously.
   void ChangeNetworkType(ConnectionType type) {
     test_network_notifier_.ChangeNetworkType(type);
+  }
+
+  // Simulates a network change call, the event will be sent to client
+  // immediately.
+  void ChangeNetworkTypeImmediately(ConnectionType type) {
+    DCHECK(listener_.get());
+    static_cast<NetworkStatusListener::Observer*>(listener_.get())
+        ->OnNetworkChanged(type);
   }
 
   // Simulates a battery change call.
@@ -138,8 +160,7 @@ TEST_F(DeviceStatusListenerTest, TestValidStateChecks) {
 
   // Simulate a connection change directly on the DeviceStatusListener itself to
   // allow validating the state correctly here.
-  static_cast<NetworkStatusListener::Observer*>(listener_.get())
-      ->OnNetworkChanged(ConnectionType::CONNECTION_4G);
+  ChangeNetworkTypeImmediately(ConnectionType::CONNECTION_4G);
   EXPECT_FALSE(listener_->is_valid_state());
 
   {
@@ -150,8 +171,7 @@ TEST_F(DeviceStatusListenerTest, TestValidStateChecks) {
 
   {
     EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(_)).Times(1);
-    static_cast<NetworkStatusListener::Observer*>(listener_.get())
-        ->OnNetworkChanged(ConnectionType::CONNECTION_NONE);
+    ChangeNetworkTypeImmediately(ConnectionType::CONNECTION_NONE);
     EXPECT_TRUE(listener_->is_valid_state());
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(listener_->is_valid_state());
@@ -225,6 +245,73 @@ TEST_F(DeviceStatusListenerTest, NotifyObserverBatteryChange) {
 
   listener_->Stop();
 };
+
+// Verify a sequence of offline->online->offline network state changes.
+TEST_F(DeviceStatusListenerTest, OfflineOnlineOffline) {
+  StartListener(ConnectionType::CONNECTION_NONE, true);
+
+  // Initial state is offline.
+  EXPECT_EQ(NetworkStatus::DISCONNECTED,
+            listener_->CurrentDeviceStatus().network_status);
+  EXPECT_TRUE(listener_->is_valid_state());
+  EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(_)).Times(0);
+
+  // Change to online.
+  ChangeNetworkTypeImmediately(ConnectionType::CONNECTION_4G);
+  EXPECT_FALSE(listener_->is_valid_state());
+  EXPECT_EQ(NetworkStatus::DISCONNECTED,
+            listener_->CurrentDeviceStatus().network_status);
+
+  // Change to offline immediately.
+  ChangeNetworkTypeImmediately(ConnectionType::CONNECTION_NONE);
+
+  // Since the state changed back to offline before delayed online signal is
+  // reported. The state becomes valid again immediately.
+  EXPECT_TRUE(listener_->is_valid_state());
+  EXPECT_EQ(NetworkStatus::DISCONNECTED,
+            listener_->CurrentDeviceStatus().network_status);
+
+  // No more online signal since we are already offline.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(NetworkStatus::DISCONNECTED,
+            listener_->CurrentDeviceStatus().network_status);
+}
+
+// Verify a sequence of online->offline->online network state changes.
+TEST_F(DeviceStatusListenerTest, OnlineOfflineOnline) {
+  StartListener(ConnectionType::CONNECTION_3G, true);
+
+  // Initial states is online.
+  EXPECT_EQ(NetworkStatus::METERED,
+            listener_->CurrentDeviceStatus().network_status);
+  EXPECT_TRUE(listener_->is_valid_state());
+
+  // Change to offline. Signal is broadcasted immediately.
+  EXPECT_CALL(
+      mock_observer_,
+      OnDeviceStatusChanged(NetworkStatusEqual(NetworkStatus::DISCONNECTED)))
+      .Times(1)
+      .RetiresOnSaturation();
+  ChangeNetworkTypeImmediately(ConnectionType::CONNECTION_NONE);
+  EXPECT_TRUE(listener_->is_valid_state());
+  EXPECT_EQ(NetworkStatus::DISCONNECTED,
+            listener_->CurrentDeviceStatus().network_status);
+
+  // Change to online. Signal will be broadcasted after a delay.
+  ChangeNetworkTypeImmediately(ConnectionType::CONNECTION_WIFI);
+  EXPECT_FALSE(listener_->is_valid_state());
+  EXPECT_EQ(NetworkStatus::DISCONNECTED,
+            listener_->CurrentDeviceStatus().network_status);
+
+  EXPECT_CALL(mock_observer_, OnDeviceStatusChanged(
+                                  NetworkStatusEqual(NetworkStatus::UNMETERED)))
+      .Times(1)
+      .RetiresOnSaturation();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(listener_->is_valid_state());
+  EXPECT_EQ(NetworkStatus::UNMETERED,
+            listener_->CurrentDeviceStatus().network_status);
+}
 
 }  // namespace
 }  // namespace download
