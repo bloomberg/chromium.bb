@@ -137,7 +137,7 @@ by a child template that "extends" this file.
         <meta-data android:name="com.samsung.android.sdk.multiwindow.enable"
             android:value="true" />
 
-        {% if min_sdk_version < 24 %}
+        {% if min_sdk_version|int < 24 %}
         <meta-data android:name="com.samsung.android.sdk.multiwindow.multiinstance.enable"
             android:value="true" />
         <meta-data android:name="com.samsung.android.sdk.multiwindow.multiinstance.launchmode"
