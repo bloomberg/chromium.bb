@@ -138,8 +138,7 @@ void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
       object.StyleRef().HasTransform())
     context.tree_builder_context->clip_changed = false;
 
-  if (!paint_layer.SupportsSubsequenceCaching() ||
-      !context.tree_builder_context->clip_changed)
+  if (!context.tree_builder_context->clip_changed)
     return;
 
   paint_layer.SetNeedsRepaint();

@@ -23,7 +23,7 @@
         },
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [10, 8, 1, 107],
+          "rect": [11, 8, 1, 111],
           "reason": "caret"
         }
       ]
