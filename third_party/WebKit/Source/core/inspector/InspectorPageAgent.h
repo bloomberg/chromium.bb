@@ -184,7 +184,7 @@ class CORE_EXPORT InspectorPageAgent final
   void WindowOpen(Document*,
                   const String&,
                   const AtomicString&,
-                  const String&,
+                  const WebWindowFeatures&,
                   bool);
 
   // Inspector Controller API
