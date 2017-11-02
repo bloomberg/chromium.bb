@@ -481,7 +481,6 @@ typedef struct FRAME_COUNTS {
   unsigned int compound_index[COMP_INDEX_CONTEXTS][2];
 #endif  // CONFIG_JNT_COMP
 #if CONFIG_INTRABC
-  unsigned int intrabc[2];
   nmv_context_counts dv;
 #endif
 #if CONFIG_LGT_FROM_PRED
