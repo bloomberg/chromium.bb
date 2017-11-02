@@ -124,7 +124,9 @@ bool ExceptionHandler::WriteMinidumpWithException(
     bool report_current_thread) {
   bool result = false;
 
+#if !TARGET_OS_TV
   exit_after_write = false;
+#endif  // !TARGET_OS_TV
 
   if (directCallback_) {
     if (directCallback_(callback_context_,
