@@ -38,6 +38,7 @@ class Watchlists(object):
   _RULES_FILENAME = _RULES
   _repo_root = None
   _defns = {}       # Definitions
+  _path_regexps = {}  # Name -> Regular expression mapping
   _watchlists = {}  # name to email mapping
 
   def __init__(self, repo_root):
@@ -88,6 +89,15 @@ class Watchlists(object):
     self._defns = defns
     self._watchlists = watchlists
 
+    # Compile the regular expressions ahead of time to avoid creating them
+    # on-the-fly multiple times per file.
+    self._path_regexps = {}
+    for name, rule in defns.iteritems():
+      filepath = rule.get('filepath')
+      if not filepath:
+        continue
+      self._path_regexps[name] = re.compile(filepath)
+
     # Verify that all watchlist names are defined
     for name in watchlists:
       if name not in defns:
@@ -105,13 +115,10 @@ class Watchlists(object):
     watchers = set()  # A set, to avoid duplicates
     for path in paths:
       path = path.replace(os.sep, '/')
-      for name, rule in self._defns.iteritems():
+      for name, rule in self._path_regexps.iteritems():
         if name not in self._watchlists:
           continue
-        rex_str = rule.get('filepath')
-        if not rex_str:
-          continue
-        if re.search(rex_str, path):
+        if rule.search(path):
           map(watchers.add, self._watchlists[name])
     return list(watchers)
 
