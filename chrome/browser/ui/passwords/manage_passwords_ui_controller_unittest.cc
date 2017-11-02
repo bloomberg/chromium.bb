@@ -489,31 +489,24 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSavedUKMRecording) {
         test_ukm_recorder.GetSourceForUrl("http://www.example.com/");
     ASSERT_TRUE(source);
 
-    const int64_t kEditedUsernameInBubbleAsInt64 =
-        static_cast<int64_t>(password_manager::PasswordFormMetricsRecorder::
-                                 DetailedUserAction::kEditedUsernameInBubble);
     if (test.edit_username) {
-      EXPECT_THAT(test_ukm_recorder.GetMetrics(*source, UkmEntry::kEntryName,
-                                               UkmEntry::kUser_ActionName),
-                  Contains(kEditedUsernameInBubbleAsInt64));
+      test_ukm_recorder.ExpectMetric(
+          *source, UkmEntry::kEntryName,
+          UkmEntry::kUser_Action_EditedUsernameInBubbleName, 1u);
     } else {
-      EXPECT_THAT(test_ukm_recorder.GetMetrics(*source, UkmEntry::kEntryName,
-                                               UkmEntry::kUser_ActionName),
-                  Not(Contains(kEditedUsernameInBubbleAsInt64)));
+      EXPECT_FALSE(test_ukm_recorder.HasMetric(
+          *source, UkmEntry::kEntryName,
+          UkmEntry::kUser_Action_EditedUsernameInBubbleName));
     }
 
-    const int64_t kSelectedDifferentPasswordInBubbleAsInt64 =
-        static_cast<int64_t>(
-            password_manager::PasswordFormMetricsRecorder::DetailedUserAction::
-                kSelectedDifferentPasswordInBubble);
     if (test.change_password) {
-      EXPECT_THAT(test_ukm_recorder.GetMetrics(*source, UkmEntry::kEntryName,
-                                               UkmEntry::kUser_ActionName),
-                  Contains(kSelectedDifferentPasswordInBubbleAsInt64));
+      test_ukm_recorder.ExpectMetric(
+          *source, UkmEntry::kEntryName,
+          UkmEntry::kUser_Action_SelectedDifferentPasswordInBubbleName, 1u);
     } else {
-      EXPECT_THAT(test_ukm_recorder.GetMetrics(*source, UkmEntry::kEntryName,
-                                               UkmEntry::kUser_ActionName),
-                  Not(Contains(kSelectedDifferentPasswordInBubbleAsInt64)));
+      EXPECT_FALSE(test_ukm_recorder.HasMetric(
+          *source, UkmEntry::kEntryName,
+          UkmEntry::kUser_Action_SelectedDifferentPasswordInBubbleName));
     }
 
     histogram_tester.ExpectUniqueSample("PasswordManager.EditsInSaveBubble",

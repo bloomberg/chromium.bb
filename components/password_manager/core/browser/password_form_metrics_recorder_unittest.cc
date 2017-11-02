@@ -584,26 +584,27 @@ TEST(PasswordFormMetricsRecorder, SequencesOfBubbles) {
 // PasswordFormMetricsRecorder.
 TEST(PasswordFormMetricsRecorder, RecordDetailedUserAction) {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  using DetailedUserAction = PasswordFormMetricsRecorder::DetailedUserAction;
-  const DetailedUserAction kOneTimeAction =
-      DetailedUserAction::kEditedUsernameInBubble;
-  const DetailedUserAction kRepeatedAction = DetailedUserAction::kUnknown;
+  using Action = PasswordFormMetricsRecorder::DetailedUserAction;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     auto recorder = CreatePasswordFormMetricsRecorder(
         true /*is_main_frame_secure*/, &test_ukm_recorder);
-    recorder->RecordDetailedUserAction(kOneTimeAction);
-    recorder->RecordDetailedUserAction(kOneTimeAction);
-    recorder->RecordDetailedUserAction(kRepeatedAction);
-    recorder->RecordDetailedUserAction(kRepeatedAction);
+    recorder->RecordDetailedUserAction(Action::kCorrectedUsernameInForm);
+    recorder->RecordDetailedUserAction(Action::kCorrectedUsernameInForm);
+    recorder->RecordDetailedUserAction(Action::kEditedUsernameInBubble);
   }
   const ukm::UkmSource* source = test_ukm_recorder.GetSourceForUrl(kTestUrl);
   ASSERT_TRUE(source);
-  test_ukm_recorder.ExpectMetrics(*source, UkmEntry::kEntryName,
-                                  UkmEntry::kUser_ActionName,
-                                  {static_cast<int64_t>(kOneTimeAction),
-                                   static_cast<int64_t>(kRepeatedAction),
-                                   static_cast<int64_t>(kRepeatedAction)});
+  test_ukm_recorder.ExpectMetric(
+      *source, UkmEntry::kEntryName,
+      UkmEntry::kUser_Action_CorrectedUsernameInFormName, 2u);
+  test_ukm_recorder.ExpectMetric(
+      *source, UkmEntry::kEntryName,
+      UkmEntry::kUser_Action_EditedUsernameInBubbleName, 1u);
+  EXPECT_EQ(0,
+            test_ukm_recorder.CountMetrics(
+                *source, UkmEntry::kEntryName,
+                UkmEntry::kUser_Action_SelectedDifferentPasswordInBubbleName));
 }
 
 }  // namespace password_manager

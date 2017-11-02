@@ -1211,12 +1211,33 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="User.Action">
+    <obsolete>
+      Deprecated. Use new user actions (&quot;User.Action....&quot;) instead.
+    </obsolete>
     <summary>
       Records what the user does with all UI entry points of the password
       manager UI, like bubbles, context menus, forms, form fields, etc. in
       relation to a given form. Recorded values correspond to the enum
       PasswordFormMetricsRecorder::DetailedUserAction. In contrast to
       User.ActionSimplified, this metric is intended to be extended over time.
+    </summary>
+  </metric>
+  <metric name="User.Action.CorrectedUsernameInForm">
+    <summary>
+      Counts how many times the user corrected a username in a password form.
+      This is only populated if events happened.
+    </summary>
+  </metric>
+  <metric name="User.Action.EditedUsernameInBubble">
+    <summary>
+      Counts how many times the user edited a username in a password save/update
+      bubble. This is only populated if events happened.
+    </summary>
+  </metric>
+  <metric name="User.Action.SelectedDifferentPasswordInBubble">
+    <summary>
+      Counts how many times the user selected a different password in a
+      save/update bubble. This is only populated if events happened.
     </summary>
   </metric>
   <metric name="User.ActionSimplified">
