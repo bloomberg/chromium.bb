@@ -127,13 +127,13 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
 
   const auto& tree_state = chunk.properties.property_tree_state;
   EXPECT_EQ(EffectPaintPropertyNode::Root(), tree_state.Effect());
+  const auto* properties = GetLayoutView().FirstFragment().PaintProperties();
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    const auto* properties = GetLayoutView().FirstFragment().PaintProperties();
     EXPECT_EQ(properties->ScrollTranslation(), tree_state.Transform());
     EXPECT_EQ(properties->OverflowClip(), tree_state.Clip());
   } else {
     const auto* frame_view = GetDocument().View();
-    EXPECT_EQ(frame_view->ScrollTranslation(), tree_state.Transform());
+    EXPECT_EQ(properties->PaintOffsetTranslation(), tree_state.Transform());
     EXPECT_EQ(frame_view->ContentClip(), tree_state.Clip());
   }
 }

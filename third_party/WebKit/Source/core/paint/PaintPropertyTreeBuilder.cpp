@@ -282,6 +282,23 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
     return true;
   if (NeedsSVGLocalToBorderBoxTransform(object))
     return true;
+
+  // Don't let paint offset cross composited layer boundaries, to avoid
+  // unnecessary full layer paint/raster invalidation when paint offset in
+  // ancestor transform node changes which should not affect the descendants
+  // of the composited layer.
+  // TODO(wangxianzhu): For SPv2, we also need a avoid unnecessary paint/raster
+  // invalidation in composited layers when their paint offset changes.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      // For only LayoutBlocks that won't be escaped by floating objects and
+      // column spans when finding their containing blocks.
+      // TODO(crbug.com/780242): This can be avoided if we have fully correct
+      // paint property tree states for floating objects and column spans.
+      object.IsLayoutBlock() && object.HasLayer() &&
+      !ToLayoutBoxModelObject(object).Layer()->EnclosingPaginationLayer() &&
+      object.GetCompositingState() == kPaintsIntoOwnBacking)
+    return true;
+
   return false;
 }
 
@@ -319,7 +336,6 @@ Optional<IntPoint> PaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
   if (NeedsPaintOffsetTranslation(object)) {
     paint_offset_translation =
         ApplyPaintOffsetTranslation(object, context.current.paint_offset);
-
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
         object.IsLayoutView()) {
       context.absolute_position.paint_offset = context.current.paint_offset;
