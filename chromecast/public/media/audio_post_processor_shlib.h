@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "chromecast_export.h"
+#include "volume_control.h"
 
 namespace chromecast {
 namespace media {
@@ -76,6 +77,10 @@ class AudioPostProcessor {
   // for the format and parsing of messages.
   // OEM's do not need to implement this method.
   virtual void UpdateParameters(const std::string& message) {}
+
+  // Set content type to the PostProcessor so it could change processing
+  // settings accordingly.
+  virtual void SetContentType(AudioContentType content_type) {}
 
   virtual ~AudioPostProcessor() = default;
 };
