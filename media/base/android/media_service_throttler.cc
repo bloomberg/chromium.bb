@@ -160,7 +160,7 @@ base::TimeDelta MediaServiceThrottler::GetThrottlingDelayFromServerCrashes() {
 }
 
 void MediaServiceThrottler::OnMediaServerCrash(bool watchdog_needs_release) {
-  if (watchdog_needs_release)
+  if (watchdog_needs_release && crash_listener_)
     crash_listener_->ReleaseWatchdog();
 
   UpdateServerCrashes();
@@ -192,8 +192,8 @@ void MediaServiceThrottler::ReleaseCrashListener() {
 
 void MediaServiceThrottler::EnsureCrashListenerStarted() {
   if (!crash_listener_) {
-    // base::Unretained is safe here because both the MediaServiceThrottler and
-    // the MediaServerCrashListener live until the process is terminated.
+    // base::Unretained is safe here because the MediaServiceThrottler will live
+    // until the process is terminated.
     crash_listener_ = base::MakeUnique<MediaServerCrashListener>(
         base::Bind(&MediaServiceThrottler::OnMediaServerCrash,
                    base::Unretained(this)),

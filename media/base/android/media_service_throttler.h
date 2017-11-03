@@ -65,7 +65,7 @@ class MEDIA_EXPORT MediaServiceThrottler {
   // Called by the |crash_listener_| whenever a crash is detected.
   void OnMediaServerCrash(bool watchdog_needs_release);
 
-  // Updates |current_craches_| according to a linear decay function.
+  // Updates |current_crashes_| according to a linear decay function.
   void UpdateServerCrashes();
 
   // Ensures that the MediaServerCrashListener was properly started (can lead
@@ -83,7 +83,7 @@ class MEDIA_EXPORT MediaServiceThrottler {
 
   // Effective number of media server crashes.
   // NOTE: This is of type double because we decay the number of crashes at a
-  // rate of one per minute (e.g. 30s after a single crash, |curren_crashes_|
+  // rate of one per minute (e.g. 30s after a single crash, |current_crashes_|
   // should be equal to 0.5).
   double current_crashes_;
 
@@ -103,7 +103,7 @@ class MEDIA_EXPORT MediaServiceThrottler {
   base::Closure release_crash_listener_cb_;
   base::CancelableClosure cancelable_release_crash_listener_cb_;
 
-  // Listener that verifies
+  // Listens for MediaServer crashes using a watchdog MediaPlayer.
   std::unique_ptr<MediaServerCrashListener> crash_listener_;
 
   scoped_refptr<base::SingleThreadTaskRunner> crash_listener_task_runner_;
