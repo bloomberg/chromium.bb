@@ -6,7 +6,6 @@ package org.chromium.chrome.test.util;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
@@ -22,12 +21,7 @@ public class BookmarkTestUtil {
         final BookmarkModel bookmarkModel =
                 ThreadUtils.runOnUiThreadBlockingNoException(BookmarkModel::new);
 
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return bookmarkModel.isBookmarkModelLoaded();
-            }
-        });
+        CriteriaHelper.pollUiThread(bookmarkModel::isBookmarkModelLoaded);
 
         ThreadUtils.runOnUiThreadBlocking(bookmarkModel::destroy);
     }
