@@ -31,7 +31,6 @@ class CONTENT_EXPORT SharedWorkerInstance {
       ResourceContext* resource_context,
       const WorkerStoragePartitionId& partition_id,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
-      bool data_saver_enabled,
       const base::UnguessableToken& devtools_worker_token);
   SharedWorkerInstance(const SharedWorkerInstance& other);
   ~SharedWorkerInstance();
@@ -67,7 +66,6 @@ class CONTENT_EXPORT SharedWorkerInstance {
   blink::mojom::SharedWorkerCreationContextType creation_context_type() const {
     return creation_context_type_;
   }
-  bool data_saver_enabled() const { return data_saver_enabled_; }
   const base::UnguessableToken& devtools_worker_token() const {
     return devtools_worker_token_;
   }
@@ -81,7 +79,6 @@ class CONTENT_EXPORT SharedWorkerInstance {
   ResourceContext* const resource_context_;
   const WorkerStoragePartitionId partition_id_;
   const blink::mojom::SharedWorkerCreationContextType creation_context_type_;
-  const bool data_saver_enabled_;
   const base::UnguessableToken devtools_worker_token_;
 };
 

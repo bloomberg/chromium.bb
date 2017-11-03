@@ -90,7 +90,6 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
       const WebString& content_security_policy,
       WebContentSecurityPolicyType,
       WebAddressSpace,
-      bool data_saver_enabled,
       const WebString& instrumentation_token,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle interface_provider) override;

@@ -10,7 +10,7 @@
 <script>
   window.internals.settings.setAutoplayPolicy('user-gesture-required');
   window.internals.runtimeFlags.autoplayMutedVideosEnabled = true;
-  window.internals.settings.setDataSaverEnabled(false);
+  internals.setSaveDataEnabled(false);
 
   promise_test(function(t)
   {

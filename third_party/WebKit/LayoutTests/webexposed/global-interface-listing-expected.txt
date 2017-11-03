@@ -4486,6 +4486,7 @@ interface NetworkInformation : EventTarget
     getter onchange
     getter ontypechange
     getter rtt
+    getter saveData
     getter type
     method constructor
     setter onchange

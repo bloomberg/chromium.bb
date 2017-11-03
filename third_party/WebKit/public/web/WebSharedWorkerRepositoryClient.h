@@ -57,7 +57,6 @@ class WebSharedWorkerRepositoryClient {
       WebContentSecurityPolicyType,
       WebAddressSpace,
       mojom::SharedWorkerCreationContextType,
-      bool data_saver_enabled,
       MessagePortChannel,
       std::unique_ptr<blink::WebSharedWorkerConnectListener>) = 0;
 

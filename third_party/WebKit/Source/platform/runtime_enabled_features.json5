@@ -693,6 +693,10 @@
       status: "stable",
     },
     {
+      name: "NetInfoSaveData",
+      status: "experimental",
+    },
+    {
       name: "NetworkService",
     },
     // Not a web exposed feature, enabled from the command line.

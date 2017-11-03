@@ -4,7 +4,7 @@
 <p>Test that 'Save-Data' header is treated as a simple header and preflight request is not created. Should print PASS.</p>
 <div id="log"></div>
 <script>
-window.internals.settings.setDataSaverEnabled(true);
+internals.setSaveDataEnabled(true);
 
 function log(message) {
     document.getElementById("log").innerHTML += message + "<br>";

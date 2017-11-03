@@ -50,8 +50,6 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
     DCHECK(web_worker_fetch_context);
     web_worker_fetch_context->SetApplicationCacheHostID(
         document->Fetcher()->Context().ApplicationCacheHostID());
-    web_worker_fetch_context->SetDataSaverEnabled(
-        document->GetFrame()->GetSettings()->GetDataSaverEnabled());
     web_worker_fetch_context->SetIsOnSubframe(
         document->GetFrame() != document->GetFrame()->Tree().Top());
     ProvideWorkerFetchContextToWorker(worker_clients,

@@ -100,15 +100,15 @@ function runTest(t, test) {
   assert_true('cellular' in test.conditions);
   assert_true('lowEndDevice' in test.conditions);
 
-  internals.settings.setDataSaverEnabled(test.conditions.dataSaver);
+  internals.setSaveDataEnabled(test.conditions.dataSaver);
   if (test.conditions.cellular)
     internals.setNetworkConnectionInfoOverride(true, 'cellular3g', 2.0);
   else
-    internals.clearNetworkConnectionInfoOverride();
+    internals.setNetworkConnectionInfoOverride(true, 'wifi', 2.0);
   internals.settings.setForcePreloadNoneForMediaElements(test.conditions.lowEndDevice);
 
   t.add_cleanup(() => {
-    internals.settings.setDataSaverEnabled(false);
+    internals.setSaveDataEnabled(false);
     internals.clearNetworkConnectionInfoOverride();
     internals.settings.setForcePreloadNoneForMediaElements(false);
   });

@@ -34,7 +34,6 @@
 #include <utility>
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/events/Event.h"
-#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/probe/CoreProbes.h"
@@ -148,7 +147,6 @@ void SharedWorkerRepositoryClientImpl::Connect(SharedWorker* worker,
       url, name, GetId(document), header, header_type,
       worker->GetExecutionContext()->GetSecurityContext().AddressSpace(),
       ToCreationContextType(is_secure_context),
-      document->GetFrame()->GetSettings()->GetDataSaverEnabled(),
       std::move(port), std::move(listener));
 }
 

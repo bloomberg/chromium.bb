@@ -52,8 +52,6 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   void WillSendRequest(blink::WebURLRequest&) override;
   bool IsControlledByServiceWorker() const override;
-  void SetDataSaverEnabled(bool) override;
-  bool IsDataSaverEnabled() const override;
   void SetIsOnSubframe(bool) override;
   bool IsOnSubframe() const override;
   blink::WebURL SiteForCookies() const override;
@@ -130,7 +128,6 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   std::unique_ptr<blink::WebDocumentSubresourceFilter::Builder>
       subresource_filter_builder_;
-  bool is_data_saver_enabled_ = false;
   bool is_on_sub_frame_ = false;
   int parent_frame_id_ = MSG_ROUTING_NONE;
   GURL site_for_cookies_;

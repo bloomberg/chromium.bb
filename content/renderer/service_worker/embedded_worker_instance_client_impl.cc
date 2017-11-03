@@ -160,7 +160,6 @@ EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
       blink::WebString::FromUTF8(params.devtools_worker_token.ToString());
   start_data.v8_cache_options = static_cast<blink::WebSettings::V8CacheOptions>(
       params.settings.v8_cache_options);
-  start_data.data_saver_enabled = params.settings.data_saver_enabled;
   start_data.pause_after_download_mode =
       params.pause_after_download
           ? blink::WebEmbeddedWorkerStartData::kPauseAfterDownload

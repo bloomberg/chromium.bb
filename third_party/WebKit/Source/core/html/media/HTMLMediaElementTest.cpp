@@ -120,7 +120,7 @@ TEST_P(HTMLMediaElementTest, preloadType) {
 
   int index = 0;
   for (const auto& data : test_data) {
-    Media()->GetDocument().GetSettings()->SetDataSaverEnabled(
+    GetNetworkStateNotifier().SetSaveDataEnabledOverride(
         data.data_saver_enabled);
     Media()->GetDocument().GetSettings()->SetForcePreloadNoneForMediaElements(
         data.force_preload_none_for_media_elements);

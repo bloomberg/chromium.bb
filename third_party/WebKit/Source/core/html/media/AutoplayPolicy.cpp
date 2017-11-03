@@ -11,6 +11,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/media/AutoplayUmaHelper.h"
 #include "core/html/media/HTMLMediaElement.h"
+#include "platform/network/NetworkStateNotifier.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 #include "public/platform/WebMediaPlayer.h"
@@ -282,7 +283,7 @@ bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
   if (element_->IsHTMLVideoElement() && element_->muted() &&
       RuntimeEnabledFeatures::AutoplayMutedVideosEnabled() &&
       !(element_->GetDocument().GetSettings() &&
-        element_->GetDocument().GetSettings()->GetDataSaverEnabled()) &&
+        GetNetworkStateNotifier().SaveDataEnabled()) &&
       !(element_->GetDocument().GetSettings() &&
         element_->GetDocument()
             .GetSettings()

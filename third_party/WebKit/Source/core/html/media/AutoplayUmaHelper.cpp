@@ -7,11 +7,11 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/events/Event.h"
-#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/media/AutoplayPolicy.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "platform/Histogram.h"
+#include "platform/network/NetworkStateNotifier.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
@@ -167,9 +167,7 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
   // Record if it will be blocked by Data Saver or Autoplay setting.
   if (element_->IsHTMLVideoElement() && element_->muted() &&
       RuntimeEnabledFeatures::AutoplayMutedVideosEnabled()) {
-    bool data_saver_enabled =
-        element_->GetDocument().GetSettings() &&
-        element_->GetDocument().GetSettings()->GetDataSaverEnabled();
+    bool data_saver_enabled = GetNetworkStateNotifier().SaveDataEnabled();
     bool blocked_by_setting =
         !element_->GetAutoplayPolicy().IsAutoplayAllowedPerSettings();
 

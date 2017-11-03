@@ -79,6 +79,7 @@
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/loader/fetch/fetch_initiator_type_names.h"
 #include "platform/mhtml/MHTMLArchive.h"
+#include "platform/network/NetworkStateNotifier.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -247,7 +248,9 @@ ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
 }
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
-    : document_loader_(loader), document_(document) {
+    : document_loader_(loader),
+      document_(document),
+      save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   DCHECK(GetFrame());
 }
 
@@ -341,7 +344,7 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
   if (IsReloadLoadType(MasterDocumentLoader()->LoadType()))
     request.ClearHTTPHeaderField(HTTPNames::Save_Data);
 
-  if (GetSettings() && GetSettings()->GetDataSaverEnabled())
+  if (save_data_enabled_)
     request.SetHTTPHeaderField(HTTPNames::Save_Data, "on");
 
   if (GetLocalFrameClient()->IsClientLoFiActiveForFrame()) {

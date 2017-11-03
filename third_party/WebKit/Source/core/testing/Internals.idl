@@ -330,6 +330,7 @@ enum EffectiveConnectionType {
     // These functions are for testing NetInfo. You must call clearNetworkConnectionInfoOverride() at the end.
     [RaisesException] void setNetworkConnectionInfoOverride(boolean onLine, DOMString type, double downlinkMaxMbps);
     [RaisesException] void setNetworkQualityInfoOverride(EffectiveConnectionType effective_type, unsigned long transport_rtt_msec, double downlink_throughput_mbps);
+    void setSaveDataEnabled(boolean enabled);
     void clearNetworkConnectionInfoOverride();
 
     // This function is for testing HitRegions on Canvas2D.

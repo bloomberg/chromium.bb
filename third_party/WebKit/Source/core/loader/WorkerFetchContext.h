@@ -117,6 +117,11 @@ class WorkerFetchContext final : public BaseFetchContext {
   Member<SubresourceFilter> subresource_filter_;
   Member<ResourceFetcher> resource_fetcher_;
   scoped_refptr<WebTaskRunner> loading_task_runner_;
+
+  // The value of |save_data_enabled_| is read once per frame from
+  // NetworkStateNotifier, which is guarded by a mutex lock, and cached locally
+  // here for performance.
+  const bool save_data_enabled_;
 };
 
 }  // namespace blink
