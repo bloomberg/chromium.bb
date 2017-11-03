@@ -52,6 +52,8 @@ component("gamepad") {
     "gamepad_user_gesture.h",
     "raw_input_data_fetcher_win.cc",
     "raw_input_data_fetcher_win.h",
+    "xbox_controller_mac.h",
+    "xbox_controller_mac.mm",
     "xbox_data_fetcher_mac.h",
     "xbox_data_fetcher_mac.mm",
   ]
