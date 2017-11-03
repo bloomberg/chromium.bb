@@ -1704,21 +1704,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         }
-      },
-      {
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 900,
-          "shards": 10
-        }
       }
     ],
     "scripts": [
