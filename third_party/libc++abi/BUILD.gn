@@ -4,10 +4,11 @@
 
 source_set("libc++abi") {
   visibility = [ "//buildtools/third_party/libc++" ]
+  deps = []
 
   # This condition should match the one in build/config/c++.
   if (current_cpu == "arm" || is_fuchsia) {
-    deps = [
+    deps += [
       "//buildtools/third_party/libunwind",
     ]
   }
