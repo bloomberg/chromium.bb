@@ -26,6 +26,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "third_party/crashpad/crashpad/client/annotation.h"
+#include "third_party/crashpad/crashpad/client/annotation_list.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
@@ -148,6 +150,12 @@ void InitializeCrashpadImpl(bool initial_client,
   // for component and non component builds.
   base::debug::SetCrashKeyReportingFunctions(SetCrashKeyValue, ClearCrashKey);
   crash_reporter_client->RegisterCrashKeys();
+
+  crashpad::AnnotationList::Register();
+
+  // TODO(rsesek): Remove this test annotation.
+  static crashpad::StringAnnotation<8> test_annotation("annotation-v2-test");
+  test_annotation.Set("it works");
 
   SetCrashKeyValue("ptype", browser_process ? base::StringPiece("browser")
                                             : base::StringPiece(process_type));
