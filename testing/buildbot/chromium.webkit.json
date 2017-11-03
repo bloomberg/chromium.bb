@@ -664,32 +664,7 @@
     ]
   },
   "WebKit Win7": {
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_heap_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_platform_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "webkit_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "wtf_unittests"
-      }
-    ],
+    "gtest_tests": [],
     "isolated_scripts": [
       {
         "isolate_name": "webkit_layout_tests_exparchive",
@@ -708,7 +683,7 @@
               "os": "Windows-7-SP1"
             }
           ],
-          "shards": 5
+          "shards": 2
         }
       }
     ],
@@ -750,33 +725,7 @@
         "test": "wtf_unittests"
       }
     ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "--debug",
-          "--time-out-ms",
-          "60000"
-        ],
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-7-SP1"
-            }
-          ],
-          "shards": 10
-        }
-      }
-    ],
+    "isolated_scripts": [],
     "scripts": [
       {
         "name": "webkit_lint",
