@@ -856,7 +856,8 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
   ResourceDispatcherHostTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         host_(base::Bind(&DownloadResourceHandler::Create),
-              base::ThreadTaskRunnerHandle::Get()),
+              base::ThreadTaskRunnerHandle::Get(),
+              /* enable_resource_scheduler */ true),
         use_test_ssl_certificate_(false),
         send_data_received_acks_(false),
         auto_advance_(false) {

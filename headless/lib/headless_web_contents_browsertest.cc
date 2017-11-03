@@ -921,33 +921,29 @@ namespace {
 const char* kRequestOrderTestPage = R"(
 <html>
   <body>
-    <img src="img0">
-    <img src="img1">
-    <img src="img2">
-    <img src="img3">
-    <img src="img4">
-    <img src="img5">
-    <img src="img6">
+    <script src='script1' async></script>
+    <script src='script2' async></script>
+    <script src='script3' async></script>
+    <script src='script4' async></script>
+    <script src='script5' async></script>
+    <script src='script6' async></script>
     <script src='script7' async></script>
-    <script>
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', 'xhr8');
-      xhr.send();
-    </script>
-    <iframe src=frame9></iframe>
-    <img src="img10">
-    <img src="img11">
+    <script src='script8' async></script>
+    <script src='script9' async></script>
+    <script src='script10' async></script>
+    <script src='script11' async></script>
+    <script src='script12' async></script>
+    <script src='script13' async></script>
+    <script src='script14' async></script>
+    <script src='script15' async></script>
+    <script src='script16' async></script>
+    <script src='script17' async></script>
+    <script src='script18' async></script>
+    <script src='script19' async></script>
+    <script src='script20' async></script>
   </body>
 </html> )";
 
-const char* kRequestOrderTestPageUrls[] = {
-    "http://foo.com/index.html", "http://foo.com/img0",
-    "http://foo.com/img1",       "http://foo.com/img2",
-    "http://foo.com/img3",       "http://foo.com/img4",
-    "http://foo.com/img5",       "http://foo.com/img6",
-    "http://foo.com/script7",    "http://foo.com/img10",
-    "http://foo.com/img11",      "http://foo.com/xhr8",
-    "http://foo.com/frame9"};
 }  // namespace
 
 class ResourceSchedulerTest
@@ -987,31 +983,44 @@ class ResourceSchedulerTest
   }
 
   void OnRequest(const GURL& url, base::Closure complete_request) override {
+    if (max_requests_in_flight_ < ++num_requests_in_flight_)
+      max_requests_in_flight_ = num_requests_in_flight_;
     browser()->BrowserIOThread()->PostDelayedTask(
-        FROM_HERE, complete_request, base::TimeDelta::FromMilliseconds(100));
+        FROM_HERE,
+        base::Bind(&ResourceSchedulerTest::AllowRequest, base::Unretained(this),
+                   complete_request),
+        base::TimeDelta::FromMilliseconds(100));
+  }
+
+  void AllowRequest(base::Closure complete_request) {
+    num_requests_in_flight_--;
+    complete_request.Run();
   }
 
   const TestInMemoryProtocolHandler* http_handler() const {
     return http_handler_;
   }
 
+  int max_requests_in_flight() const { return max_requests_in_flight_; }
+
  private:
   TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
+  int num_requests_in_flight_ = 0;
+  int max_requests_in_flight_ = 0;
 };
 
-// TODO(alexclarke): Fix the flakes. http://crbug.com/766884
-class DISABLED_DisableResourceSchedulerTest : public ResourceSchedulerTest {
+class DisableResourceSchedulerTest : public ResourceSchedulerTest {
  public:
   bool GetEnableResourceScheduler() override { return false; }
 
   void OnLoadEventFired(const page::LoadEventFiredParams&) override {
-    EXPECT_THAT(http_handler()->urls_requested(),
-                ElementsAreArray(kRequestOrderTestPageUrls));
+    // All scripts should have been requested simultaneously.
+    EXPECT_EQ(20, max_requests_in_flight());
     FinishAsynchronousTest();
   }
 };
 
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(DISABLED_DisableResourceSchedulerTest);
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(DisableResourceSchedulerTest);
 
 class EnableResourceSchedulerTest : public ResourceSchedulerTest {
  public:
@@ -1020,12 +1029,8 @@ class EnableResourceSchedulerTest : public ResourceSchedulerTest {
   }
 
   void OnLoadEventFired(const page::LoadEventFiredParams&) override {
-    // We expect a different resource order when the ResourceScheduler is used.
-    EXPECT_THAT(http_handler()->urls_requested(),
-                Not(ElementsAreArray(kRequestOrderTestPageUrls)));
-    // However all the same urls should still be requested.
-    EXPECT_THAT(http_handler()->urls_requested(),
-                UnorderedElementsAreArray(kRequestOrderTestPageUrls));
+    // Only a limited number of scripts should be requested simultaneously.
+    EXPECT_EQ(6, max_requests_in_flight());
     FinishAsynchronousTest();
   }
 };

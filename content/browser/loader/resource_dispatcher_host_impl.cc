@@ -335,9 +335,11 @@ ResourceDispatcherHost* ResourceDispatcherHost::Get() {
 
 ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
     CreateDownloadHandlerIntercept download_handler_intercept,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner,
+    bool enable_resource_scheduler)
     : request_id_(-1),
       is_shutdown_(false),
+      enable_resource_scheduler_(enable_resource_scheduler),
       num_in_flight_requests_(0),
       max_num_in_flight_requests_(base::SharedMemory::GetHandleLimit()),
       max_num_in_flight_requests_per_process_(static_cast<int>(
@@ -380,7 +382,8 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
 // the main thread and the IO thread are the same for unittests.
 ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
     : ResourceDispatcherHostImpl(CreateDownloadHandlerIntercept(),
-                                 base::ThreadTaskRunnerHandle::Get()) {}
+                                 base::ThreadTaskRunnerHandle::Get(),
+                                 /* enable_resource_scheduler */ true) {}
 
 ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
   DCHECK(outstanding_requests_stats_map_.empty());
@@ -738,11 +741,7 @@ std::unique_ptr<net::ClientCertStore>
 }
 
 void ResourceDispatcherHostImpl::OnInit() {
-  // In some tests |delegate_| does not get set, when that happens assume the
-  // scheduler is enabled.
-  bool enable_resource_scheduler =
-      delegate_ ? delegate_->ShouldUseResourceScheduler() : true;
-  scheduler_.reset(new ResourceScheduler(enable_resource_scheduler));
+  scheduler_.reset(new ResourceScheduler(enable_resource_scheduler_));
 }
 
 void ResourceDispatcherHostImpl::OnShutdown() {
