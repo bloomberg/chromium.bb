@@ -33,6 +33,16 @@ const char kDumpDom[] = "dump-dom";
 // Hide scrollbars from screenshots.
 const char kHideScrollbars[] = "hide-scrollbars";
 
+// Specifies which encryption storage backend to use. Possible values are
+// kwallet, kwallet5, gnome, gnome-keyring, gnome-libsecret, basic. Any other
+// value will lead to Chrome detecting the best backend automatically.
+// TODO(crbug.com/571003): Once PasswordStore no longer uses the Keyring or
+// KWallet for storing passwords, rename this flag to stop referencing
+// passwords. Do not rename it sooner, though; developers and testers might
+// rely on it keeping large amounts of testing passwords out of their Keyrings
+// or KWallets.
+const char kPasswordStore[] = "password-store";
+
 // Save a pdf file of the loaded page.
 const char kPrintToPDF[] = "print-to-pdf";
 

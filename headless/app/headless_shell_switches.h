@@ -17,6 +17,7 @@ extern const char kDisableCrashReporter[];
 extern const char kDumpDom[];
 extern const char kEnableCrashReporter[];
 extern const char kHideScrollbars[];
+extern const char kPasswordStore[];
 extern const char kPrintToPDF[];
 extern const char kProxyBypassList[];
 extern const char kProxyServer[];
