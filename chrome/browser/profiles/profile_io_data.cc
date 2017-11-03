@@ -506,10 +506,10 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   network_prediction_options_.MoveToThread(io_task_runner);
 
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<policy::PolicyCertVerifier> verifier =
-      policy::PolicyCertServiceFactory::CreateForProfile(profile);
-  policy_cert_verifier_ = verifier.get();
-  cert_verifier_ = std::move(verifier);
+  if (!g_cert_verifier_for_testing) {
+    profile_params_->policy_cert_verifier =
+        policy::PolicyCertServiceFactory::CreateForProfile(profile);
+  }
 #endif
   // The URLBlacklistManager has to be created on the UI thread to register
   // observers of |pref_service|, and it also has to clean up on
@@ -619,7 +619,6 @@ ProfileIOData::ProfileParams::~ProfileParams() {}
 ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
     : initialized_(false),
 #if defined(OS_CHROMEOS)
-      policy_cert_verifier_(nullptr),
       use_system_key_slot_(false),
 #endif
       main_request_context_(nullptr),
@@ -1107,18 +1106,19 @@ void ProfileIOData::Init(
     // for cert trust purposes anyway.
     scoped_refptr<net::CertVerifyProc> verify_proc(
         new chromeos::CertVerifyProcChromeOS(std::move(public_slot)));
-    if (policy_cert_verifier_) {
-      DCHECK_EQ(policy_cert_verifier_, cert_verifier_.get());
-      policy_cert_verifier_->InitializeOnIOThread(verify_proc);
+    std::unique_ptr<net::CertVerifier> cert_verifier;
+    if (profile_params_->policy_cert_verifier) {
+      profile_params_->policy_cert_verifier->InitializeOnIOThread(verify_proc);
+      cert_verifier = std::move(profile_params_->policy_cert_verifier);
     } else {
-      cert_verifier_ = base::MakeUnique<net::CachingCertVerifier>(
+      cert_verifier = base::MakeUnique<net::CachingCertVerifier>(
           base::MakeUnique<net::MultiThreadedCertVerifier>(verify_proc.get()));
     }
     const base::CommandLine& command_line =
         *base::CommandLine::ForCurrentProcess();
-    cert_verifier_ = content::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
-        command_line, switches::kUserDataDir, std::move(cert_verifier_));
-    builder->set_shared_cert_verifier(cert_verifier_.get());
+    cert_verifier = content::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
+        command_line, switches::kUserDataDir, std::move(cert_verifier));
+    builder->SetCertVerifier(std::move(cert_verifier));
 #else
     builder->set_shared_cert_verifier(
         io_thread_globals->system_request_context->cert_verifier());
