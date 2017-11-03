@@ -20,10 +20,8 @@ web-platform-tests, including tips for writing and reviewing tests.
 
 ## Importing tests
 
-Chromium has a mirror
-([web-platform-tests](https://chromium.googlesource.com/external/w3c/web-platform-tests/)
-of the
-GitHub repos, and periodically imports a subset of the tests so that they are
+Chromium has a [mirror](https://chromium.googlesource.com/external/w3c/web-platform-tests/)
+of the GitHub repo and periodically imports a subset of the tests to
 run as part of the regular Blink layout test testing process.
 
 The goals of this process are to be able to run web-platform-tests unmodified
