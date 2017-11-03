@@ -290,4 +290,10 @@ public interface TabObserver {
      * @param tab The notifying {@link Tab}.
      */
     public void onReparentingFinished(Tab tab);
+
+    /**
+     * A notification when tab changes whether or not it is interactable and is accepting input.
+     * @param isInteractable Whether or not the tab is interactable.
+     */
+    public void onInteractabilityChanged(boolean isInteractable);
 }
