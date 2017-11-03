@@ -28,7 +28,7 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
   MediaMobile)."""
 
   def CreateStorySet(self, options):
-    return page_sets.ToughVideoCasesPageSet(measure_memory=True)
+    return page_sets.MediaCasesStorySet(measure_memory=True)
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
@@ -65,7 +65,6 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
     return not _IGNORED_STATS_RE.search(value.name)
 
 
-# android: See media.mobile below
 @benchmark.Owner(emails=['johnchen@chromium.org', 'crouleau@chromium.org'],
                  component='Internals>Media')
 class MediaDesktop(_MediaBenchmark):
