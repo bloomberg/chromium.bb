@@ -111,44 +111,6 @@ FileLockMap* GetFileLockMap() {
   return file_lock_map;
 }
 
-// Takes ownership of the file and closes it. Used only in OnFileOpened().
-void CloseFile(base::File file, const base::Closure& on_close_callback) {
-  DVLOG(3) << __func__;
-
-  if (file.IsValid())
-    file.Close();
-
-  if (on_close_callback)
-    on_close_callback.Run();
-}
-
-// Called when storage::AsyncFileUtil::CreateOrOpen() completes. As the
-// CdmFileImpl may have been destroyed in the meantime, check if it has
-// happened and respond appropriately. http://crbug.com/778839
-void OnFileOpened(base::WeakPtr<CdmFileImpl> weak_ptr,
-                  storage::AsyncFileUtil::CreateOrOpenCallback callback,
-                  base::File file,
-                  const base::Closure& on_close_callback) {
-  DVLOG(3) << __func__ << (weak_ptr ? " callback" : " post_task");
-
-  if (weak_ptr) {
-    // CdmFileImpl still alive, so run |callback| and we're done.
-    std::move(callback).Run(std::move(file), on_close_callback);
-    return;
-  }
-
-  // CdmFileImpl not around anymore, so free |file| and |on_close_callback|
-  // if necessary.
-  if (file.IsValid()) {
-    constexpr base::TaskTraits traits = {base::MayBlock()};
-    base::PostTaskWithTraits(
-        FROM_HERE, traits,
-        base::BindOnce(&CloseFile, std::move(file), on_close_callback));
-  } else {
-    DCHECK(!on_close_callback);
-  }
-}
-
 }  // namespace
 
 CdmFileImpl::CdmFileImpl(
@@ -234,12 +196,8 @@ void CdmFileImpl::OpenFile(const std::string& file_name,
   operation_context->set_allowed_bytes_growth(storage::QuotaManager::kNoLimit);
   DVLOG(3) << "Opening " << file_url.DebugString();
 
-  // As |this| may go away while the CreateOrOpen() is being processed, use
-  // the static method OnFileOpened() to handle the response. If |this| has
-  // been destroyed, it will clean up the base::File returned properly.
   file_util->CreateOrOpen(std::move(operation_context), file_url, file_flags,
-                          base::Bind(&OnFileOpened, weak_factory_.GetWeakPtr(),
-                                     std::move(callback)));
+                          std::move(callback));
 }
 
 void CdmFileImpl::OnFileOpenedForReading(
