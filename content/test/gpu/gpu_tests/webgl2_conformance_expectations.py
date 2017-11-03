@@ -726,21 +726,81 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # This test causes a lost device and then the next test fails.
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['linux', ('nvidia', 0x1cb3)], bug=709320)
-    # Observed flaky on Swarmed bots.
+    # Failing reliably on tryservers.
+    self.Fail('conformance2/offscreencanvas/' +
+        'offscreencanvas-transfer-image-bitmap.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=781418)
+    # Observed flaky on Swarmed bots. Some of these were directly
+    # observed, some not. We can't afford any flakes on the tryservers
+    # so mark them all flaky.
     self.Flaky('deqp/functional/gles3/transformfeedback/' +
         'array_interleaved_lines.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'array_interleaved_points.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'array_interleaved_triangles.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'array_separate_lines.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'array_separate_points.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'array_separate_triangles.html',
         ['linux', ('nvidia', 0x1cb3)], bug=780706)
     self.Flaky('deqp/functional/gles3/transformfeedback/' +
         'basic_types_interleaved_lines.html',
         ['linux', ('nvidia', 0x1cb3)], bug=780706)
     self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_interleaved_points.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_interleaved_triangles.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
         'basic_types_separate_lines.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_separate_points.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'basic_types_separate_triangles.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'interpolation_centroid.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'interpolation_flat.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'interpolation_smooth.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'point_size.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'position.html',
         ['linux', ('nvidia', 0x1cb3)], bug=780706)
     self.Flaky('deqp/functional/gles3/transformfeedback/' +
         'random_interleaved_lines.html',
         ['linux', ('nvidia', 0x1cb3)], bug=780706)
     self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'random_interleaved_points.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'random_interleaved_triangles.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
         'random_separate_lines.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'random_separate_points.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=780706)
+    self.Flaky('deqp/functional/gles3/transformfeedback/' +
+        'random_separate_triangles.html',
         ['linux', ('nvidia', 0x1cb3)], bug=780706)
 
     # Linux NVIDIA Quadro P400, OpenGL backend

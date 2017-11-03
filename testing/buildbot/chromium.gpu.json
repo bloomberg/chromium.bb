@@ -19,7 +19,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -37,7 +37,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -55,7 +55,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -84,7 +84,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -109,7 +109,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -134,7 +134,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -159,7 +159,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -177,7 +177,7 @@
           "--expected-vendor-id",
           "10de",
           "--expected-device-id",
-          "104a"
+          "1cb3"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
@@ -188,7 +188,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -219,7 +219,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -258,7 +258,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -283,7 +283,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -308,7 +308,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -333,7 +333,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -355,7 +355,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -377,7 +377,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -395,7 +395,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -413,7 +413,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -442,7 +442,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -467,7 +467,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -492,7 +492,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -517,7 +517,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -535,7 +535,7 @@
           "--expected-vendor-id",
           "10de",
           "--expected-device-id",
-          "104a"
+          "1cb3"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
@@ -546,7 +546,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -577,7 +577,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -616,7 +616,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -641,7 +641,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -666,7 +666,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -691,7 +691,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a",
+              "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
@@ -2090,7 +2090,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2108,7 +2108,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2127,7 +2127,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2144,7 +2144,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2164,7 +2164,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2193,7 +2193,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2218,7 +2218,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2243,7 +2243,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2268,7 +2268,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2286,7 +2286,7 @@
           "--expected-vendor-id",
           "10de",
           "--expected-device-id",
-          "104a"
+          "1cb3"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
@@ -2297,7 +2297,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2328,7 +2328,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2367,7 +2367,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2392,7 +2392,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2417,7 +2417,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2442,7 +2442,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2463,7 +2463,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2484,7 +2484,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2502,7 +2502,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2521,7 +2521,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2538,7 +2538,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2558,7 +2558,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2587,7 +2587,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2612,7 +2612,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2637,7 +2637,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2662,7 +2662,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2680,7 +2680,7 @@
           "--expected-vendor-id",
           "10de",
           "--expected-device-id",
-          "104a"
+          "1cb3"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "info_collection_tests",
@@ -2691,7 +2691,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2722,7 +2722,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2761,7 +2761,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2786,7 +2786,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2811,7 +2811,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
@@ -2836,7 +2836,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "gpu": "10de:104a-23.21.13.8792",
+              "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }

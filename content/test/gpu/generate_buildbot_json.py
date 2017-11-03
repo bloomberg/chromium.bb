@@ -17,20 +17,14 @@ import sys
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
 
-# Current stable Windows NVIDIA GeForce GT 610 device/driver identifier.
-WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER = '10de:104a-23.21.13.8792'
-
 # Current stable Windows NVIDIA Quadro P400 device/driver identifier.
 WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER = '10de:1cb3-23.21.13.8792'
 
-# Current experimental Windows NVIDIA GeForce GT 610 device/driver identifier.
-WIN_NVIDIA_GEFORCE_610_EXPERIMENTAL_DRIVER = '10de:104a-23.21.13.8792'
+# Current experimental Windows NVIDIA Quadro P400 device/driver identifier.
+WIN_NVIDIA_QUADRO_P400_EXPERIMENTAL_DRIVER = '10de:1cb3-23.21.13.8792'
 
-# Use this to match all drivers for the NVIDIA GeForce GT 610.
-NVIDIA_GEFORCE_610_ALL_DRIVERS = '10de:104a-*'
-
-# Linux NVIDIA GeForce GT 610.
-LINUX_GEFORCE_610_STABLE_DRIVER = '10de:104a'
+# Use this to match all drivers for the NVIDIA Quadro P400.
+NVIDIA_QUADRO_P400_ALL_DRIVERS = '10de:1cb3-*'
 
 # Linux NVIDIA Quadro P400.
 LINUX_QUADRO_P400_STABLE_DRIVER = '10de:1cb3-384.90'
@@ -130,7 +124,7 @@ WATERFALL = {
     'Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -142,7 +136,7 @@ WATERFALL = {
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -202,7 +196,7 @@ WATERFALL = {
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -214,7 +208,7 @@ WATERFALL = {
     'Linux Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -246,7 +240,7 @@ FYI_WATERFALL = {
     'Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -258,7 +252,7 @@ FYI_WATERFALL = {
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -282,7 +276,7 @@ FYI_WATERFALL = {
     'Win7 dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -295,7 +289,7 @@ FYI_WATERFALL = {
     'Win7 Experimental Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_EXPERIMENTAL_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_EXPERIMENTAL_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -307,7 +301,7 @@ FYI_WATERFALL = {
     'Win10 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-10',
           'pool': 'Chrome-GPU',
         },
@@ -319,7 +313,7 @@ FYI_WATERFALL = {
     'Win10 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-10',
           'pool': 'Chrome-GPU',
         },
@@ -407,7 +401,7 @@ FYI_WATERFALL = {
     'Win7 x64 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -419,7 +413,7 @@ FYI_WATERFALL = {
     'Win7 x64 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -431,7 +425,7 @@ FYI_WATERFALL = {
     'Win7 x64 dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -629,7 +623,7 @@ FYI_WATERFALL = {
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -653,7 +647,7 @@ FYI_WATERFALL = {
     'Linux Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -665,7 +659,7 @@ FYI_WATERFALL = {
     'Linux dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -704,7 +698,7 @@ FYI_WATERFALL = {
     'Linux GPU TSAN Release': {
       'swarming_dimensions': [
         {
-          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -834,7 +828,7 @@ FYI_WATERFALL = {
     'Optional Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -887,7 +881,7 @@ FYI_WATERFALL = {
     'Optional Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -988,7 +982,7 @@ V8_FYI_WATERFALL = {
     'Win Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_QUADRO_P400_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -1011,7 +1005,7 @@ V8_FYI_WATERFALL = {
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -1023,7 +1017,7 @@ V8_FYI_WATERFALL = {
     'Linux Release - concurrent marking (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
+          'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -1059,7 +1053,7 @@ COMMON_GTESTS = {
         'build_configs': ['Release', 'Release_x64'],
         'swarming_dimension_sets': [
           {
-            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           }
         ],
@@ -1087,7 +1081,7 @@ COMMON_GTESTS = {
         'swarming_dimension_sets': [
           # NVIDIA Win 7
           {
-            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
           # AMD Win 7
@@ -1120,11 +1114,6 @@ COMMON_GTESTS = {
       {
         'predicate': Predicates.DEQP,
         'swarming_dimension_sets': [
-          # Linux NVIDIA GeForce GT 610
-          {
-            'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
-            'os': 'Ubuntu'
-          },
           # Linux NVIDIA Quadro P400
           {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
@@ -1249,7 +1238,7 @@ COMMON_GTESTS = {
         'swarming_dimension_sets': [
           # NVIDIA Win 7
           {
-            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
           # AMD Win 7
@@ -1285,11 +1274,6 @@ COMMON_GTESTS = {
         # TODO(jmadill): Run this on ANGLE roll tryservers.
         'predicate': Predicates.DEQP,
         'swarming_dimension_sets': [
-          # NVIDIA Linux GeForce GT 610
-          {
-            'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
-            'os': 'Ubuntu'
-          },
           # NVIDIA Linux Quadro P400
           {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
@@ -1332,7 +1316,7 @@ COMMON_GTESTS = {
         'predicate': Predicates.DEQP,
         'swarming_dimension_sets': [
           {
-            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           }
         ],
@@ -1361,12 +1345,8 @@ COMMON_GTESTS = {
         'predicate': Predicates.DEQP,
         'swarming_dimension_sets': [
           {
-            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
-          },
-          {
-            'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
-            'os': 'Ubuntu'
           },
           {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
@@ -2176,10 +2156,6 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Only run on the NVIDIA Release and Intel Release Linux bots.
         'swarming_dimension_sets': [
           {
-            'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
-            'os': 'Ubuntu'
-          },
-          {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
             'os': 'Ubuntu'
           },
@@ -2233,7 +2209,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Only run on the NVIDIA Release Windows bots.
         'swarming_dimension_sets': [
           {
-            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
         ],
@@ -2277,7 +2253,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Only run on the NVIDIA Release Windows bots.
         'swarming_dimension_sets': [
           {
-            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
         ],
@@ -2318,12 +2294,8 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
         'build_configs': ['Release', 'android-chromium'],
         'swarming_dimension_sets': [
           {
-            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
-          },
-          {
-            'gpu': LINUX_GEFORCE_610_STABLE_DRIVER,
-            'os': 'Ubuntu'
           },
           {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
@@ -2365,7 +2337,7 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
           {
-            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
         ],
@@ -2388,7 +2360,7 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
           {
-            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
             'os': 'Windows-2008ServerR2-SP1'
           },
         ],
