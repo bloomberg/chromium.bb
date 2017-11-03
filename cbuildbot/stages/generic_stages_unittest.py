@@ -21,7 +21,6 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
@@ -142,9 +141,6 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     build_config['manifest_repo_url'] = 'fake_url'
     if extra_config:
       build_config.update(extra_config)
-    if options.remote_trybot:
-      build_config = config_lib.OverrideConfigForTrybot(
-          build_config, options)
     options.managed_chrome = build_config['sync_chrome']
 
     self._boards = build_config['boards']

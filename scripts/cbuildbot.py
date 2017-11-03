@@ -960,10 +960,6 @@ def main(argv):
     # cgroups would kill gets killed, etc.
     stack.Add(critical_section.ForkWatchdog)
 
-    if not options.buildbot:
-      build_config = config_lib.OverrideConfigForTrybot(
-          build_config, options)
-
     if options.mock_tree_status is not None:
       stack.Add(_ObjectMethodPatcher, tree_status, '_GetStatus',
                 return_value=options.mock_tree_status)

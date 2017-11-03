@@ -10,7 +10,6 @@ from __future__ import print_function
 import copy
 import cPickle
 import json
-import mock
 
 from chromite.lib.const import waterfall
 from chromite.lib import config_lib
@@ -792,109 +791,6 @@ class SiteConfigFindTests(cros_test_lib.TestCase):
 
     self.assertEqual(results_map, {'slave_a': slave_a})
     self.assertItemsEqual(results_slaves, [slave_a])
-
-
-class OverrideForTrybotTest(cros_test_lib.TestCase):
-  """Test config override functionality."""
-
-  # TODO(dgarrett): Test other override behaviors.
-
-  def setUp(self):
-    self.base_vmtests = [config_lib.VMTestConfig('base')]
-    self.override_vmtests = [config_lib.VMTestConfig('override')]
-    self.base_hwtests = [config_lib.HWTestConfig('base')]
-    self.override_hwtests = [config_lib.HWTestConfig('override')]
-
-    self.all_configs = MockSiteConfig()
-    self.all_configs.Add(
-        'no_tests_without_override',
-        vm_tests=[],
-    )
-    self.all_configs.Add(
-        'no_tests_with_override',
-        vm_tests=[],
-        vm_tests_override=self.override_vmtests,
-        hw_tests_override=self.override_hwtests,
-    )
-    self.all_configs.Add(
-        'tests_without_override',
-        vm_tests=self.base_vmtests,
-        hw_tests=self.base_hwtests,
-    )
-    self.all_configs.Add(
-        'tests_with_override',
-        vm_tests=self.base_vmtests,
-        vm_tests_override=self.override_vmtests,
-        hw_tests=self.base_hwtests,
-        hw_tests_override=self.override_hwtests,
-    )
-
-  def _createMockOptions(self, **kwargs):
-    mock_options = mock.Mock()
-    for k, v in kwargs.iteritems():
-      mock_options.__setattr__(k, v)
-
-    return mock_options
-
-  def testVmTestOverride(self):
-    """Verify that vm_tests override for trybots reference original config."""
-    mock_options = self._createMockOptions(hwtest=False, remote_trybot=False)
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['no_tests_without_override'], mock_options)
-    self.assertEqual(result.vm_tests, [])
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['no_tests_with_override'], mock_options)
-    self.assertEqual(result.vm_tests, self.override_vmtests)
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['tests_without_override'], mock_options)
-    self.assertEqual(result.vm_tests, self.base_vmtests)
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['tests_with_override'], mock_options)
-    self.assertEqual(result.vm_tests, self.override_vmtests)
-
-  def testHwTestOverrideDisabled(self):
-    """Verify that hw_tests_override is not used without --hwtest."""
-    mock_options = self._createMockOptions(hwtest=False, remote_trybot=False)
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['no_tests_without_override'], mock_options)
-    self.assertEqual(result.hw_tests, [])
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['no_tests_with_override'], mock_options)
-    self.assertEqual(result.hw_tests, [])
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['tests_without_override'], mock_options)
-    self.assertEqual(result.hw_tests, self.base_hwtests)
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['tests_with_override'], mock_options)
-    self.assertEqual(result.hw_tests, self.base_hwtests)
-
-  def testHwTestOverrideEnabled(self):
-    """Verify that hw_tests_override is not used without --hwtest."""
-    mock_options = self._createMockOptions(hwtest=True, remote_trybot=False)
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['no_tests_without_override'], mock_options)
-    self.assertEqual(result.hw_tests, [])
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['no_tests_with_override'], mock_options)
-    self.assertEqual(result.hw_tests, self.override_hwtests)
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['tests_without_override'], mock_options)
-    self.assertEqual(result.hw_tests, self.base_hwtests)
-
-    result = config_lib.OverrideConfigForTrybot(
-        self.all_configs['tests_with_override'], mock_options)
-    self.assertEqual(result.hw_tests, self.override_hwtests)
 
 
 class GetConfigTests(cros_test_lib.TestCase):

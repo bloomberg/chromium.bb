@@ -192,50 +192,6 @@ def ScheduledByBuildbucket(config):
   return (config.build_type == constants.PALADIN_TYPE and
           config.name != constants.CQ_MASTER)
 
-def OverrideConfigForTrybot(build_config, options):
-  """Apply trybot-specific configuration settings.
-
-  Args:
-    build_config: The build configuration dictionary to override.
-      The dictionary is not modified.
-    options: The options passed on the commandline.
-
-  Returns:
-    A build configuration dictionary with the overrides applied.
-  """
-  # TODO: crbug.com/504653 is about deleting this method fully.
-
-  copy_config = copy.deepcopy(build_config)
-  for my_config in [copy_config] + copy_config['child_configs']:
-    # Force uprev. This is so patched in changes are always built.
-    my_config['uprev'] = True
-    if my_config['internal']:
-      my_config['overlays'] = constants.BOTH_OVERLAYS
-
-    # Use the local manifest which only requires elevated access if it's really
-    # needed to build.
-    if not options.remote_trybot:
-      my_config['manifest'] = my_config['dev_manifest']
-
-    my_config['push_image'] = False
-
-    if my_config['build_type'] != constants.PAYLOADS_TYPE:
-      my_config['paygen'] = False
-
-    if options.hwtest and my_config['hw_tests_override'] is not None:
-      my_config['hw_tests'] = my_config['hw_tests_override']
-
-    # Default to starting with a fresh chroot on remote trybot runs.
-    if options.remote_trybot:
-      my_config['chroot_replace'] = True
-
-    # In trybots, we want to always run VM tests and all unit tests, so that
-    # developers will get better testing for their changes.
-    if my_config['vm_tests_override'] is not None:
-      my_config['vm_tests'] = my_config['vm_tests_override']
-
-  return copy_config
-
 
 class AttrDict(dict):
   """Dictionary with 'attribute' access.

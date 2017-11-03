@@ -1110,30 +1110,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
           '%s timeout %s is greater than 24h'
           % (build_name, config.build_timeout))
 
-class OverrideForTrybotTest(ChromeosConfigTestBase):
-  """Test config override functionality."""
-
-  def testVmTestOverride(self):
-    """Verify that vm_tests override for trybots pay heed to original config."""
-    mock_options = mock.Mock()
-    old = self.site_config['betty-paladin']
-    new = config_lib.OverrideConfigForTrybot(old, mock_options)
-    self.assertEquals(new['vm_tests'], [
-        config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                test_suite='smoke', retry=True),
-        config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE),
-        config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)])
-
-    # Don't override vm tests for arm boards.
-    old = self.site_config['daisy-paladin']
-    new = config_lib.OverrideConfigForTrybot(old, mock_options)
-    self.assertEquals(new['vm_tests'], old['vm_tests'])
-
-    # Don't override vm tests for brillo boards.
-    old = self.site_config['whirlwind-paladin']
-    new = config_lib.OverrideConfigForTrybot(old, mock_options)
-    self.assertEquals(new['vm_tests'], old['vm_tests'])
-
   def testWaterfallManualConfigIsValid(self):
     """Verify the correctness of the manual waterfall configuration."""
 
