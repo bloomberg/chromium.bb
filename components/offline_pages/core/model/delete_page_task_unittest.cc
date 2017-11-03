@@ -368,9 +368,12 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit_UnlimitedNamespace) {
 
   auto task = DeletePageTask::CreateTaskDeletingForPageLimit(
       store(), delete_page_callback(), policy_controller(), page);
-  // Since there's no limit for page per url of Download Namespace, the task
-  // should be nullptr.
-  EXPECT_FALSE(task);
+  runner()->RunTask(std::move(task));
+
+  // Since there's no limit for page per url of Download Namespace, the result
+  // should be success with no page deleted.
+  EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
+  EXPECT_EQ(0UL, last_deleted_page_infos().size());
 }
 
 }  // namespace offline_pages

@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "build/build_config.h"
 #include "components/offline_pages/core/client_policy_controller.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
@@ -308,6 +309,10 @@ DeletePageTaskResult DeletePagesForPageLimit(const GURL& url,
   if (!db)
     return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
 
+  // If the namespace can have unlimited pages per url, just return success.
+  if (limit == kUnlimitedPages)
+    return DeletePageTaskResult(DeletePageResult::SUCCESS, {});
+
   // If you create a transaction but dont Commit() it is automatically
   // rolled back by its destructor when it falls out of scope.
   sql::Transaction transaction(db);
@@ -381,8 +386,6 @@ std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskDeletingForPageLimit(
     const OfflinePageItem& page) {
   std::string name_space = page.client_id.name_space;
   size_t limit = policy_controller->GetPolicy(name_space).pages_allowed_per_url;
-  if (limit == kUnlimitedPages)
-    return nullptr;
   return std::unique_ptr<DeletePageTask>(new DeletePageTask(
       store,
       base::BindOnce(&DeletePagesForPageLimit, page.url, name_space, limit),
