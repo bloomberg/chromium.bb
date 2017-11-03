@@ -1548,17 +1548,10 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
         100);
   }
 
-  // Blocked navigations are expected to commit in the old renderer
-  // (and therefore such navigations do not go through CanCommitURL checks
-  // below).
-  bool is_blocked_navigation =
-      navigation_handle_ &&
-      navigation_handle_->GetNetErrorCode() == net::ERR_BLOCKED_BY_CLIENT;
-
   // Attempts to commit certain off-limits URL should be caught more strictly
   // than our FilterURL checks below.  If a renderer violates this policy, it
   // should be killed.
-  if (!is_blocked_navigation && !CanCommitURL(validated_params->url)) {
+  if (!CanCommitURL(validated_params->url)) {
     VLOG(1) << "Blocked URL " << validated_params->url.spec();
     // Kills the process.
     bad_message::ReceivedBadMessage(process,
@@ -3739,23 +3732,6 @@ bool RenderFrameHostImpl::CanCommitURL(const GURL& url) {
   // TODO(creis): We should also check for WebUI pages here.  Also, when the
   // out-of-process iframes implementation is ready, we should check for
   // cross-site URLs that are not allowed to commit in this process.
-
-  // WebView guests can commit any origin.
-  // This is safe, because:
-  // 1) WebView guests are in a different StoragePartition, essentially outside
-  //    the browser.
-  // 2) The user has to trust the app that's providing the webview (e.g.
-  //    Webviews don't have reliable address bars so the user has to trust that
-  //    the Webview won't contain any malicious or phishing sites).
-  // This is difficult to change, because:
-  // 1) WebView guests cannot contain OOPIFs today.
-  // 2) extensions::ProcessMap doesn't track webview accessible resources
-  //    (see WebViewTest.ReloadWebviewAccessibleResource).
-  //
-  // TODO(lukasza): https://crbug.com/614463: Removes this exception once
-  // WebView guests support OOPIFs.
-  if (GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
-    return true;
 
   // Give the client a chance to disallow URLs from committing.
   return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
