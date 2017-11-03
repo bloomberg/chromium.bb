@@ -51,9 +51,6 @@ class BackgroundFetchDatabaseClient {
       int total_downloads,
       const std::vector<std::string>& outstanding_guids) = 0;
 
-  // Called once UpdateRegistrationUI has been persisted to the database.
-  virtual void UpdateUI(const std::string& title) = 0;
-
   // Should return the sum of the bytes downloaded by in progress requests.
   virtual uint64_t GetInProgressDownloadedBytes() = 0;
 };

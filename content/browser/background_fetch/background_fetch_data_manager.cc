@@ -337,10 +337,6 @@ void BackgroundFetchDataManager::UpdateRegistrationUI(
   // Update stored registration.
   registrations_iter->second->SetTitle(title);
 
-  // Update any active DatabaseClient that cached this data for notifications.
-  if (database_clients_iter != database_clients_.end())
-    database_clients_iter->second->UpdateUI(title);
-
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE);
 }
 

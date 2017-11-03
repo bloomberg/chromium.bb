@@ -4,16 +4,12 @@
 
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
 
+#include <memory>
+
 #include "base/guid.h"
-#include "base/logging.h"
-#include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
-#include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -97,8 +93,8 @@ void BackgroundFetchServiceImpl::UpdateUI(const std::string& unique_id,
     return;
   }
 
-  background_fetch_context_->data_manager().UpdateRegistrationUI(
-      unique_id, title, std::move(callback));
+  background_fetch_context_->UpdateRegistrationUI(unique_id, title,
+                                                  std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
