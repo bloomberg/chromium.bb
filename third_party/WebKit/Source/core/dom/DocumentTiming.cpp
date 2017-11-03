@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/InteractiveDetector.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
@@ -56,6 +57,11 @@ void DocumentTiming::MarkDomContentLoadedEventEnd() {
       "blink.user_timing,rail", "domContentLoadedEventEnd",
       TraceEvent::ToTraceTimestamp(dom_content_loaded_event_end_), "frame",
       GetFrame());
+  InteractiveDetector* interactive_detector(
+      InteractiveDetector::From(*document_));
+  if (interactive_detector) {
+    interactive_detector->OnDomContentLoadedEnd(dom_content_loaded_event_end_);
+  }
   NotifyDocumentTimingChanged();
 }
 

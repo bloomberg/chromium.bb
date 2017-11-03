@@ -40,6 +40,8 @@ blink_core_sources("loader") {
     "IdlenessDetector.h",
     "ImageLoader.cpp",
     "ImageLoader.h",
+    "InteractiveDetector.cpp",
+    "InteractiveDetector.h",
     "LinkLoader.cpp",
     "LinkLoader.h",
     "LinkLoaderClient.h",
