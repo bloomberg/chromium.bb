@@ -21,6 +21,8 @@ public class UrlConstants {
     public static final String INLINE_SCHEME = "inline";
     public static final String JAR_SCHEME = "jar";
     public static final String JAVASCRIPT_SCHEME = "javascript";
+    public static final String SMS_SCHEME = "sms";
+    public static final String TEL_SCHEME = "tel";
 
     public static final String CONTENT_URL_SHORT_PREFIX = "content:";
     public static final String CHROME_URL_SHORT_PREFIX = "chrome:";
