@@ -82862,11 +82862,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.SafeBrowsing.CheckDispatchTime"
+    units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The microseconds it took to dispatch the Safe Browsing check. This includes
+    IPC descheduling delays to communicate with SafetyNet on Android, and
+    synchronous db checks on desktop.
+  </summary>
+</histogram>
+
 <histogram name="SubresourceFilter.SafeBrowsing.CheckTime" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
     The time an individual Safe Browsing URL check took before finishing. Logged
     when a check is complete or cancelled due to a timeout.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.SafeBrowsing.TotalCheckTime" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The time an individual Safe Browsing URL check took before finishing,
+    including posting tasks to and from the IO thread. Measured on the UI
+    thread.
   </summary>
 </histogram>
 
