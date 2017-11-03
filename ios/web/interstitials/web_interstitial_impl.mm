@@ -17,24 +17,24 @@
 
 namespace web {
 
-// static
-WebInterstitial* WebInterstitial::GetWebInterstitial(web::WebState* web_state) {
-  return web_state->GetWebInterstitial();
-}
-
 WebInterstitialImpl::WebInterstitialImpl(WebStateImpl* web_state,
                                          bool new_navigation,
                                          const GURL& url)
-    : WebStateObserver(web_state),
+    : web_state_(web_state),
       navigation_manager_(&web_state->GetNavigationManagerImpl()),
       url_(url),
       new_navigation_(new_navigation),
       action_taken_(false) {
-  DCHECK(web_state);
+  DCHECK(web_state_);
+  web_state_->AddObserver(this);
 }
 
 WebInterstitialImpl::~WebInterstitialImpl() {
   Hide();
+  if (web_state_) {
+    web_state_->RemoveObserver(this);
+    web_state_ = nullptr;
+  }
 }
 
 const GURL& WebInterstitialImpl::GetUrl() const {
@@ -87,11 +87,14 @@ void WebInterstitialImpl::Proceed() {
 }
 
 void WebInterstitialImpl::WebStateDestroyed(WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
   DontProceed();
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
 }
 
 WebStateImpl* WebInterstitialImpl::GetWebStateImpl() const {
-  return static_cast<web::WebStateImpl*>(web_state());
+  return web_state_;
 }
 
 }  // namespace web

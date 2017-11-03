@@ -39,10 +39,6 @@ class WebInterstitial {
       const GURL& url,
       std::unique_ptr<NativeWebInterstitialDelegate> delegate);
 
-  // Retrieves the WebInterstitial if any associated with the specified
-  // |web_state|.
-  static WebInterstitial* GetWebInterstitial(WebState* web_state);
-
   virtual ~WebInterstitial() {}
 
   // Shows the interstitial page in the WebState.
