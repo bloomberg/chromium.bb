@@ -27,21 +27,6 @@ if (is_android) {
 
   if (enable_chrome_android_internal) {
     import("//clank/config.gni")
-
-    # TODO(jbudorick): Remove this after landing the corresponding
-    # internal change.
-    if (!defined(android_sdk_release)) {
-      if (defined(use_unpublished_apis) && use_unpublished_apis) {
-        default_android_sdk_release = "o_mr1"
-        public_android_sdk = false
-      } else {
-        default_android_sdk_release = "o"
-      }
-      declare_args() {
-        # Android SDK release. Currently, only "o" is publicly supported.
-        android_sdk_release = default_android_sdk_release
-      }
-    }
   } else {
     declare_args() {
       # Android SDK release. Currently, only "o" is publicly supported.
