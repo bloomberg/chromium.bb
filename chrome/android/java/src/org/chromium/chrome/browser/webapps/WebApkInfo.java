@@ -200,7 +200,8 @@ public class WebApkInfo extends WebappInfo {
             int shellApkVersion, String manifestUrl, String manifestStartUrl,
             Map<String, String> iconUrlToMurmur2HashMap, boolean forceNavigation) {
         super(id, url, scope, primaryIcon, name, shortName, displayMode, orientation, source,
-                themeColor, backgroundColor, false /* isIconGenerated */, forceNavigation);
+                themeColor, backgroundColor, null /* splash_screen_url */,
+                false /* isIconGenerated */, forceNavigation);
         mBadgeIcon = badgeIcon;
         mWebApkPackageName = webApkPackageName;
         mShellApkVersion = shellApkVersion;

@@ -22,21 +22,50 @@ class ShortcutInfoTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ShortcutInfoTest);
 };
 
-TEST_F(ShortcutInfoTest, NameUpdates) {
-  info_.name = base::ASCIIToUTF16("old");
-  manifest_.name = base::NullableString16(base::ASCIIToUTF16("new"), false);
+TEST_F(ShortcutInfoTest, AllAttributesUpdate) {
+  info_.name = base::ASCIIToUTF16("old name");
+  manifest_.name =
+      base::NullableString16(base::ASCIIToUTF16("new name"), false);
+
+  info_.short_name = base::ASCIIToUTF16("old short name");
+  manifest_.short_name =
+      base::NullableString16(base::ASCIIToUTF16("new short name"), false);
+
+  info_.url = GURL("https://old.com/start");
+  manifest_.start_url = GURL("https://new.com/start");
+
+  info_.scope = GURL("https://old.com/");
+  manifest_.scope = GURL("https://new.com/");
+
+  info_.display = blink::kWebDisplayModeStandalone;
+  manifest_.display = blink::kWebDisplayModeFullscreen;
+
+  info_.theme_color = 0xffff0000;
+  manifest_.theme_color = 0xffcc0000;
+
+  info_.background_color = 0xffaa0000;
+  manifest_.background_color = 0xffbb0000;
+
+  info_.splash_screen_url = GURL("https://old.com/splash.html");
+  manifest_.splash_screen_url = GURL("https://new.com/splash.html");
+
+  info_.icon_urls.push_back("https://old.com/icon.png");
+  content::Manifest::Icon icon;
+  icon.src = GURL("https://new.com/icon.png");
+  manifest_.icons.push_back(icon);
+
   info_.UpdateFromManifest(manifest_);
 
   ASSERT_EQ(manifest_.name.string(), info_.name);
-}
-
-TEST_F(ShortcutInfoTest, ShortNameUpdates) {
-  info_.short_name = base::ASCIIToUTF16("old");
-  manifest_.short_name =
-      base::NullableString16(base::ASCIIToUTF16("new"), false);
-  info_.UpdateFromManifest(manifest_);
-
   ASSERT_EQ(manifest_.short_name.string(), info_.short_name);
+  ASSERT_EQ(manifest_.start_url, info_.url);
+  ASSERT_EQ(manifest_.scope, info_.scope);
+  ASSERT_EQ(manifest_.display, info_.display);
+  ASSERT_EQ(manifest_.theme_color, info_.theme_color);
+  ASSERT_EQ(manifest_.background_color, info_.background_color);
+  ASSERT_EQ(manifest_.splash_screen_url, info_.splash_screen_url);
+  ASSERT_EQ(1u, info_.icon_urls.size());
+  ASSERT_EQ(manifest_.icons[0].src, GURL(info_.icon_urls[0]));
 }
 
 TEST_F(ShortcutInfoTest, NameFallsBackToShortName) {
