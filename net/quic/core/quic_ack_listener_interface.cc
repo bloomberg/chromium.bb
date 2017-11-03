@@ -8,14 +8,4 @@ namespace net {
 
 QuicAckListenerInterface::~QuicAckListenerInterface() {}
 
-AckListenerWrapper::AckListenerWrapper(
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener,
-    QuicPacketLength data_length)
-    : ack_listener(std::move(ack_listener)), length(data_length) {}
-
-AckListenerWrapper::AckListenerWrapper(const AckListenerWrapper& other) =
-    default;
-
-AckListenerWrapper::~AckListenerWrapper() {}
-
 }  // namespace net

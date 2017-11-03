@@ -56,10 +56,14 @@ GetStartOfEncryptedData(QuicTransportVersion version,
                         bool include_diversification_nonce,
                         QuicPacketNumberLength packet_number_length);
 
-struct QUIC_EXPORT_PRIVATE QuicPacketPublicHeader {
-  QuicPacketPublicHeader();
-  QuicPacketPublicHeader(const QuicPacketPublicHeader& other);
-  ~QuicPacketPublicHeader();
+struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
+  QuicPacketHeader();
+  QuicPacketHeader(const QuicPacketHeader& other);
+  ~QuicPacketHeader();
+
+  QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os,
+      const QuicPacketHeader& header);
 
   // Universal header. All QuicPacket headers will have a connection_id and
   // public flags.
@@ -68,36 +72,31 @@ struct QUIC_EXPORT_PRIVATE QuicPacketPublicHeader {
   bool reset_flag;
   bool version_flag;
   QuicPacketNumberLength packet_number_length;
-  QuicTransportVersionVector versions;
+  QuicTransportVersion version;
   // nonce contains an optional, 32-byte nonce value. If not included in the
   // packet, |nonce| will be empty.
   DiversificationNonce* nonce;
-};
-
-// Header for Data packets.
-struct QUIC_EXPORT_PRIVATE QuicPacketHeader {
-  QuicPacketHeader();
-  explicit QuicPacketHeader(const QuicPacketPublicHeader& header);
-  QuicPacketHeader(const QuicPacketHeader& other);
-
-  QUIC_EXPORT_PRIVATE friend std::ostream& operator<<(
-      std::ostream& os,
-      const QuicPacketHeader& s);
-
-  QuicPacketPublicHeader public_header;
   QuicPacketNumber packet_number;
 };
 
 struct QUIC_EXPORT_PRIVATE QuicPublicResetPacket {
   QuicPublicResetPacket();
-  explicit QuicPublicResetPacket(const QuicPacketPublicHeader& header);
+  explicit QuicPublicResetPacket(QuicConnectionId connection_id);
 
-  QuicPacketPublicHeader public_header;
+  QuicConnectionId connection_id;
   QuicPublicResetNonceProof nonce_proof;
   QuicSocketAddress client_address;
 };
 
-typedef QuicPacketPublicHeader QuicVersionNegotiationPacket;
+struct QUIC_EXPORT_PRIVATE QuicVersionNegotiationPacket {
+  QuicVersionNegotiationPacket();
+  explicit QuicVersionNegotiationPacket(QuicConnectionId connection_id);
+  QuicVersionNegotiationPacket(const QuicVersionNegotiationPacket& other);
+  ~QuicVersionNegotiationPacket();
+
+  QuicConnectionId connection_id;
+  QuicTransportVersionVector versions;
+};
 
 class QUIC_EXPORT_PRIVATE QuicData {
  public:
@@ -122,9 +121,9 @@ class QUIC_EXPORT_PRIVATE QuicData {
 
 class QUIC_EXPORT_PRIVATE QuicPacket : public QuicData {
  public:
-  // TODO(fayang): 3 fields from public header are passed in as arguments.
+  // TODO(fayang): 3 fields from header are passed in as arguments.
   // Consider to add a convenience method which directly accepts the entire
-  // public header.
+  // header.
   QuicPacket(char* buffer,
              size_t length,
              bool owns_buffer,

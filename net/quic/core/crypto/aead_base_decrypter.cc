@@ -155,7 +155,7 @@ bool AeadBaseDecrypter::DecryptPacket(QuicTransportVersion /*version*/,
   if (use_ietf_nonce_construction_) {
     for (size_t i = 0; i < sizeof(packet_number); ++i) {
       nonce[prefix_len + i] ^=
-          (packet_number >> ((sizeof(packet_number) - i + 1) * 8)) & 0xff;
+          (packet_number >> ((sizeof(packet_number) - i - 1) * 8)) & 0xff;
     }
   } else {
     memcpy(nonce + prefix_len, &packet_number, sizeof(packet_number));

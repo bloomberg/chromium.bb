@@ -6,7 +6,7 @@
 
 // Dumps out the decryptable contents of a QUIC packet in a human-readable way.
 // If the packet is null encrypted, this will dump full packet contents.
-// Otherwise it will dump the public header, and fail with an error that the
+// Otherwise it will dump the header, and fail with an error that the
 // packet is undecryptable.
 //
 // Usage: quic_packet_printer server|client <hex dump of packet>
@@ -82,8 +82,7 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
       const QuicVersionNegotiationPacket& packet) override {
     std::cerr << "OnVersionNegotiationPacket\n";
   }
-  bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header) override {
+  bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override {
     std::cerr << "OnUnauthenticatedPublicHeader\n";
     return true;
   }

@@ -105,6 +105,8 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   void SetMaxPacingRate(QuicBandwidth max_pacing_rate);
 
+  QuicBandwidth MaxPacingRate() const;
+
   void SetHandshakeConfirmed();
 
   // Processes the incoming ack.

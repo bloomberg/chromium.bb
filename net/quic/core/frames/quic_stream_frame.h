@@ -15,24 +15,6 @@
 
 namespace net {
 
-// Deleter for stream buffers. Copyable to support platforms where the deleter
-// of a unique_ptr must be copyable. Otherwise it would be nice for this to be
-// move-only.
-class QUIC_EXPORT_PRIVATE StreamBufferDeleter {
- public:
-  StreamBufferDeleter() : allocator_(nullptr) {}
-  explicit StreamBufferDeleter(QuicBufferAllocator* allocator)
-      : allocator_(allocator) {}
-
-  // Deletes |buffer| using |allocator_|.
-  void operator()(char* buffer) const;
-
- private:
-  // Not owned; must be valid so long as the buffer stored in the unique_ptr
-  // that owns |this| is valid.
-  QuicBufferAllocator* allocator_;
-};
-
 struct QUIC_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame();
   QuicStreamFrame(QuicStreamId stream_id,

@@ -83,9 +83,19 @@ const QuicTag kTBBR = TAG('T', 'B', 'B', 'R');   // Reduced Buffer Bloat TCP
 const QuicTag k1RTT = TAG('1', 'R', 'T', 'T');   // STARTUP in BBR for 1 RTT
 const QuicTag k2RTT = TAG('2', 'R', 'T', 'T');   // STARTUP in BBR for 2 RTTs
 const QuicTag kLRTT = TAG('L', 'R', 'T', 'T');   // Exit STARTUP in BBR on loss
+const QuicTag kBBS1 = TAG('B', 'B', 'S', '1');   // Rate-based recovery in
+                                                 // BBR STARTUP
+const QuicTag kBBS2 = TAG('B', 'B', 'S', '2');   // More aggressive packet
+                                                 // conservation in BBR STARTUP
+const QuicTag kBBS3 = TAG('B', 'B', 'S', '3');   // Slowstart packet
+                                                 // conservation in BBR STARTUP
 const QuicTag kBBRR = TAG('B', 'B', 'R', 'R');   // Rate-based recovery in BBR
 const QuicTag kBBR1 = TAG('B', 'B', 'R', '1');   // Ack aggregation v1
 const QuicTag kBBR2 = TAG('B', 'B', 'R', '2');   // Ack aggregation v2
+const QuicTag kBBR3 = TAG('B', 'B', 'R', '3');   // Fully drain the queue once
+                                                 // per cycle
+const QuicTag kBBR4 = TAG('B', 'B', 'R', '4');   // 20 RTT ack aggregation
+const QuicTag kBBR5 = TAG('B', 'B', 'R', '5');   // 40 RTT ack aggregation
 const QuicTag kBBRS = TAG('B', 'B', 'R', 'S');   // Use 1.5x pacing in startup
                                                  // after a loss has occurred.
 const QuicTag kRENO = TAG('R', 'E', 'N', 'O');   // Reno Congestion Control
@@ -157,10 +167,6 @@ const QuicTag kBWS2 = TAG('B', 'W', 'S', '2');  // Server bw resumption v2.
 // Enable path MTU discovery experiment.
 const QuicTag kMTUH = TAG('M', 'T', 'U', 'H');  // High-target MTU discovery.
 const QuicTag kMTUL = TAG('M', 'T', 'U', 'L');  // Low-target MTU discovery.
-
-// Tags for async signing experiments
-const QuicTag kASYN = TAG('A', 'S', 'Y', 'N');  // Perform asynchronous signing
-const QuicTag kSYNC = TAG('S', 'Y', 'N', 'C');  // Perform synchronous signing
 
 // Proof types (i.e. certificate types)
 // NOTE: although it would be silly to do so, specifying both kX509 and kX59R

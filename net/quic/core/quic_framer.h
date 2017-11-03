@@ -87,10 +87,11 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   virtual void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) = 0;
 
-  // Called when the public header has been parsed, but has not been
-  // authenticated. If it returns false, framing for this packet will cease.
+  // Called when all fields except packet number has been parsed, but has not
+  // been authenticated. If it returns false, framing for this packet will
+  // cease.
   virtual bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header) = 0;
+      const QuicPacketHeader& header) = 0;
 
   // Called when the unauthenticated portion of the header has been parsed.
   // If OnUnauthenticatedHeader returns false, framing for this packet will
@@ -256,9 +257,9 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicConnectionId connection_id,
       const QuicTransportVersionVector& versions);
 
-  // If header.public_header.version_flag is set, the version in the
+  // If header.version_flag is set, the version in the
   // packet will be set -- but it will be set from transport_version_ not
-  // header.public_header.versions.
+  // header.versions.
   bool AppendPacketHeader(const QuicPacketHeader& header,
                           QuicDataWriter* writer);
   bool AppendTypeByte(const QuicFrame& frame,
@@ -362,19 +363,18 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   };
 
   bool ProcessDataPacket(QuicDataReader* reader,
-                         const QuicPacketPublicHeader& public_header,
+                         QuicPacketHeader* header,
                          const QuicEncryptedPacket& packet,
                          char* decrypted_buffer,
                          size_t buffer_length);
 
   bool ProcessPublicResetPacket(QuicDataReader* reader,
-                                const QuicPacketPublicHeader& public_header);
+                                const QuicPacketHeader& header);
 
   bool ProcessVersionNegotiationPacket(QuicDataReader* reader,
-                                       QuicPacketPublicHeader* public_header);
+                                       const QuicPacketHeader& header);
 
-  bool ProcessPublicHeader(QuicDataReader* reader,
-                           QuicPacketPublicHeader* header);
+  bool ProcessPublicHeader(QuicDataReader* reader, QuicPacketHeader* header);
 
   // Processes the unauthenticated portion of the header into |header| from
   // the current QuicDataReader.  Returns true on success, false on failure.
@@ -400,7 +400,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                                    QuicDataReader* reader,
                                    QuicAckFrame* ack_frame);
   bool ProcessStopWaitingFrame(QuicDataReader* reader,
-                               const QuicPacketHeader& public_header,
+                               const QuicPacketHeader& header,
                                QuicStopWaitingFrame* stop_waiting);
   bool ProcessRstStreamFrame(QuicDataReader* reader, QuicRstStreamFrame* frame);
   bool ProcessConnectionCloseFrame(QuicDataReader* reader,

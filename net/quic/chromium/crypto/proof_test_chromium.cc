@@ -154,9 +154,9 @@ TEST_P(ProofTest, DISABLED_Verify) {
   // GetProof here expects the async method to invoke the callback
   // synchronously.
   source->GetProof(server_addr, hostname, server_config, quic_version,
-                   first_chlo_hash, QuicTagVector(), std::move(first_cb));
+                   first_chlo_hash, std::move(first_cb));
   source->GetProof(server_addr, hostname, server_config, quic_version,
-                   second_chlo_hash, QuicTagVector(), std::move(cb));
+                   second_chlo_hash, std::move(cb));
   ASSERT_TRUE(called);
   ASSERT_TRUE(first_called);
   ASSERT_TRUE(ok);
@@ -282,7 +282,7 @@ TEST_P(ProofTest, UseAfterFree) {
   // GetProof here expects the async method to invoke the callback
   // synchronously.
   source->GetProof(server_addr, hostname, server_config, GetParam(), chlo_hash,
-                   QuicTagVector(), std::move(cb));
+                   std::move(cb));
   ASSERT_TRUE(called);
   ASSERT_TRUE(ok);
 

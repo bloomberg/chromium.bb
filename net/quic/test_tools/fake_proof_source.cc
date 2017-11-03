@@ -25,7 +25,6 @@ FakeProofSource::GetProofOp::GetProofOp(
     string server_config,
     QuicTransportVersion transport_version,
     string chlo_hash,
-    const QuicTagVector& connection_options,
     std::unique_ptr<ProofSource::Callback> callback,
     ProofSource* delegate)
     : server_address_(server_addr),
@@ -33,7 +32,6 @@ FakeProofSource::GetProofOp::GetProofOp(
       server_config_(std::move(server_config)),
       transport_version_(transport_version),
       chlo_hash_(std::move(chlo_hash)),
-      connection_options_(connection_options),
       callback_(std::move(callback)),
       delegate_(delegate) {}
 
@@ -42,8 +40,7 @@ FakeProofSource::GetProofOp::~GetProofOp() = default;
 void FakeProofSource::GetProofOp::Run() {
   // Note: relies on the callback being invoked synchronously
   delegate_->GetProof(server_address_, hostname_, server_config_,
-                      transport_version_, chlo_hash_, connection_options_,
-                      std::move(callback_));
+                      transport_version_, chlo_hash_, std::move(callback_));
 }
 
 FakeProofSource::ComputeSignatureOp::ComputeSignatureOp(
@@ -77,19 +74,16 @@ void FakeProofSource::GetProof(
     const string& server_config,
     QuicTransportVersion transport_version,
     QuicStringPiece chlo_hash,
-    const QuicTagVector& connection_options,
     std::unique_ptr<ProofSource::Callback> callback) {
   if (!active_) {
     delegate_->GetProof(server_address, hostname, server_config,
-                        transport_version, chlo_hash, connection_options,
-                        std::move(callback));
+                        transport_version, chlo_hash, std::move(callback));
     return;
   }
 
   pending_ops_.push_back(QuicMakeUnique<GetProofOp>(
       server_address, hostname, server_config, transport_version,
-      string(chlo_hash), connection_options, std::move(callback),
-      delegate_.get()));
+      string(chlo_hash), std::move(callback), delegate_.get()));
 }
 
 QuicReferenceCountedPointer<ProofSource::Chain> FakeProofSource::GetCertChain(

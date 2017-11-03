@@ -45,7 +45,7 @@ QuicAckFrame InitAckFrame(const std::vector<QuicAckBlock>& ack_blocks) {
     end_of_previous_block = block.limit;
   }
 
-  ack.largest_observed = ack.packets.Max();
+  ack.deprecated_largest_observed = ack.packets.Max();
 
   return ack;
 }
@@ -57,7 +57,7 @@ QuicAckFrame InitAckFrame(QuicPacketNumber largest_acked) {
 QuicAckFrame MakeAckFrameWithAckBlocks(size_t num_ack_blocks,
                                        QuicPacketNumber least_unacked) {
   QuicAckFrame ack;
-  ack.largest_observed = 2 * num_ack_blocks + least_unacked;
+  ack.deprecated_largest_observed = 2 * num_ack_blocks + least_unacked;
   // Add enough received packets to get num_ack_blocks ack blocks.
   for (QuicPacketNumber i = 2; i < 2 * num_ack_blocks + 1; i += 2) {
     ack.packets.Add(least_unacked + i);
@@ -76,7 +76,7 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
     bool last_frame = i == frames.size() - 1;
     const size_t frame_size = framer->GetSerializedFrameLength(
         frames[i], max_plaintext_size - packet_size, first_frame, last_frame,
-        header.public_header.packet_number_length);
+        header.packet_number_length);
     DCHECK(frame_size);
     packet_size += frame_size;
   }
@@ -92,10 +92,8 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
   DCHECK_NE(0u, length);
   // Re-construct the data packet with data ownership.
   return new QuicPacket(buffer, length, /* owns_buffer */ true,
-                        header.public_header.connection_id_length,
-                        header.public_header.version_flag,
-                        header.public_header.nonce != nullptr,
-                        header.public_header.packet_number_length);
+                        header.connection_id_length, header.version_flag,
+                        header.nonce != nullptr, header.packet_number_length);
 }
 
 string Sha1Hash(QuicStringPiece data) {
@@ -169,7 +167,7 @@ bool NoOpFramerVisitor::OnProtocolVersionMismatch(
 }
 
 bool NoOpFramerVisitor::OnUnauthenticatedPublicHeader(
-    const QuicPacketPublicHeader& header) {
+    const QuicPacketHeader& header) {
   return true;
 }
 
@@ -660,11 +658,11 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
     QuicTransportVersionVector* versions,
     Perspective perspective) {
   QuicPacketHeader header;
-  header.public_header.connection_id = connection_id;
-  header.public_header.connection_id_length = connection_id_length;
-  header.public_header.version_flag = version_flag;
-  header.public_header.reset_flag = reset_flag;
-  header.public_header.packet_number_length = packet_number_length;
+  header.connection_id = connection_id;
+  header.connection_id_length = connection_id_length;
+  header.version_flag = version_flag;
+  header.reset_flag = reset_flag;
+  header.packet_number_length = packet_number_length;
   header.packet_number = packet_number;
   QuicStreamFrame stream_frame(1, false, 0, QuicStringPiece(data));
   QuicFrame frame(&stream_frame);
@@ -704,11 +702,11 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicTransportVersionVector* versions,
     Perspective perspective) {
   QuicPacketHeader header;
-  header.public_header.connection_id = connection_id;
-  header.public_header.connection_id_length = connection_id_length;
-  header.public_header.version_flag = version_flag;
-  header.public_header.reset_flag = reset_flag;
-  header.public_header.packet_number_length = packet_number_length;
+  header.connection_id = connection_id;
+  header.connection_id_length = connection_id_length;
+  header.version_flag = version_flag;
+  header.reset_flag = reset_flag;
+  header.packet_number_length = packet_number_length;
   header.packet_number = packet_number;
   QuicStreamFrame stream_frame(1, false, 0, QuicStringPiece(data));
   QuicFrame frame(&stream_frame);

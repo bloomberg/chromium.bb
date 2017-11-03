@@ -52,9 +52,6 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Marks |packet_number| as no longer in flight.
   void RemoveFromInFlight(QuicPacketNumber packet_number);
 
-  // Marks |packet_number| as in flight.  Must not be unackable.
-  void RestoreToInFlight(QuicPacketNumber packet_number);
-
   // No longer retransmit data for |stream_id|.
   void CancelRetransmissionsForStream(QuicStreamId stream_id);
 

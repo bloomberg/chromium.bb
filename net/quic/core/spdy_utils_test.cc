@@ -256,7 +256,6 @@ TEST_F(CopyAndValidateTrailers, DuplicateTrailers) {
   // Duplicate trailers are allowed, and their values are concatenated into a
   // single string delimted with '\0'. Some of the duplicate headers
   // deliberately have an empty value.
-  FLAGS_quic_reloadable_flag_quic_handle_duplicate_trailers = true;
   auto trailers = FromList({{"key", "value0"},
                             {"key", "value1"},
                             {"key", ""},
@@ -283,7 +282,6 @@ TEST_F(CopyAndValidateTrailers, DuplicateTrailers) {
 TEST_F(CopyAndValidateTrailers, DuplicateCookies) {
   // Duplicate cookie headers in trailers should be concatenated into a single
   //  "; " delimted string.
-  FLAGS_quic_reloadable_flag_quic_handle_duplicate_trailers = true;
   auto headers = FromList({{"cookie", " part 1"},
                            {"cookie", "part 2 "},
                            {"cookie", "part3"},

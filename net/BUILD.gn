@@ -6247,8 +6247,8 @@ proto_library("reporting_policy_proto") {
 fuzzer_test("net_reporting_header_parser_fuzzer") {
   sources = [
     "reporting/reporting_header_parser_fuzzer.cc",
-    "reporting/reporting_test_util.h",
     "reporting/reporting_test_util.cc",
+    "reporting/reporting_test_util.h",
   ]
 
   deps = [

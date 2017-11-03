@@ -17,10 +17,9 @@ namespace net {
 
 size_t GetPacketHeaderSize(QuicTransportVersion version,
                            const QuicPacketHeader& header) {
-  return GetPacketHeaderSize(version, header.public_header.connection_id_length,
-                             header.public_header.version_flag,
-                             header.public_header.nonce != nullptr,
-                             header.public_header.packet_number_length);
+  return GetPacketHeaderSize(version, header.connection_id_length,
+                             header.version_flag, header.nonce != nullptr,
+                             header.packet_number_length);
 }
 
 size_t GetPacketHeaderSize(QuicTransportVersion version,
@@ -49,50 +48,51 @@ size_t GetStartOfEncryptedData(QuicTransportVersion version,
                              packet_number_length);
 }
 
-QuicPacketPublicHeader::QuicPacketPublicHeader()
+QuicPacketHeader::QuicPacketHeader()
     : connection_id(0),
       connection_id_length(PACKET_8BYTE_CONNECTION_ID),
       reset_flag(false),
       version_flag(false),
       packet_number_length(PACKET_6BYTE_PACKET_NUMBER),
-      nonce(nullptr) {}
-
-QuicPacketPublicHeader::QuicPacketPublicHeader(
-    const QuicPacketPublicHeader& other) = default;
-
-QuicPacketPublicHeader::~QuicPacketPublicHeader() {}
-
-QuicPacketHeader::QuicPacketHeader() : packet_number(0) {}
-
-QuicPacketHeader::QuicPacketHeader(const QuicPacketPublicHeader& header)
-    : public_header(header), packet_number(0) {}
+      version(QUIC_VERSION_UNSUPPORTED),
+      nonce(nullptr),
+      packet_number(0) {}
 
 QuicPacketHeader::QuicPacketHeader(const QuicPacketHeader& other) = default;
 
-QuicPublicResetPacket::QuicPublicResetPacket() : nonce_proof(0) {}
+QuicPacketHeader::~QuicPacketHeader() {}
 
-QuicPublicResetPacket::QuicPublicResetPacket(
-    const QuicPacketPublicHeader& header)
-    : public_header(header), nonce_proof(0) {}
+QuicPublicResetPacket::QuicPublicResetPacket()
+    : connection_id(0), nonce_proof(0) {}
+
+QuicPublicResetPacket::QuicPublicResetPacket(QuicConnectionId connection_id)
+    : connection_id(connection_id), nonce_proof(0) {}
+
+QuicVersionNegotiationPacket::QuicVersionNegotiationPacket()
+    : connection_id(0) {}
+
+QuicVersionNegotiationPacket::QuicVersionNegotiationPacket(
+    QuicConnectionId connection_id)
+    : connection_id(connection_id) {}
+
+QuicVersionNegotiationPacket::QuicVersionNegotiationPacket(
+    const QuicVersionNegotiationPacket& other) = default;
+
+QuicVersionNegotiationPacket::~QuicVersionNegotiationPacket() {}
 
 std::ostream& operator<<(std::ostream& os, const QuicPacketHeader& header) {
-  os << "{ connection_id: " << header.public_header.connection_id
-     << ", connection_id_length: " << header.public_header.connection_id_length
-     << ", packet_number_length: " << header.public_header.packet_number_length
-     << ", reset_flag: " << header.public_header.reset_flag
-     << ", version_flag: " << header.public_header.version_flag;
-  if (header.public_header.version_flag) {
-    os << ", version:";
-    for (size_t i = 0; i < header.public_header.versions.size(); ++i) {
-      os << " ";
-      os << QuicVersionToString(header.public_header.versions[i]);
-    }
+  os << "{ connection_id: " << header.connection_id
+     << ", connection_id_length: " << header.connection_id_length
+     << ", packet_number_length: " << header.packet_number_length
+     << ", reset_flag: " << header.reset_flag
+     << ", version_flag: " << header.version_flag;
+  if (header.version_flag) {
+    os << ", version: " << QuicVersionToString(header.version);
   }
-  if (header.public_header.nonce != nullptr) {
+  if (header.nonce != nullptr) {
     os << ", diversification_nonce: "
        << QuicTextUtils::HexEncode(
-              QuicStringPiece(header.public_header.nonce->data(),
-                              header.public_header.nonce->size()));
+              QuicStringPiece(header.nonce->data(), header.nonce->size()));
   }
   os << ", packet_number: " << header.packet_number << " }\n";
   return os;

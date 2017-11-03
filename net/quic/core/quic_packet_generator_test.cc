@@ -19,6 +19,7 @@
 #include "net/quic/platform/api/quic_string_piece.h"
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/mock_random.h"
+#include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
 #include "net/quic/test_tools/quic_packet_generator_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -705,6 +706,7 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
   generator_.AddControlFrame(QuicFrame(CreateRstStreamFrame()));
   EXPECT_TRUE(generator_.HasQueuedFrames());
   EXPECT_TRUE(generator_.HasRetransmittableFrames());
+  EXPECT_FALSE(generator_.HasPendingStreamFramesOfStream(3));
 
   delegate_.SetCanWriteAnything();
 
@@ -718,6 +720,7 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
   MakeIOVector("quux", &iov_);
   generator_.ConsumeData(3, &iov_, 1u, iov_.iov_len, 0, NO_FIN);
   generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()));
+  EXPECT_TRUE(generator_.HasPendingStreamFramesOfStream(3));
 
   // All five frames will be flushed out in a single packet.
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -725,6 +728,7 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
   generator_.FinishBatchOperations();
   EXPECT_FALSE(generator_.HasQueuedFrames());
   EXPECT_FALSE(generator_.HasRetransmittableFrames());
+  EXPECT_FALSE(generator_.HasPendingStreamFramesOfStream(3));
 
   PacketContents contents;
   contents.num_ack_frames = 1;
@@ -787,6 +791,7 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations2) {
 }
 
 TEST_F(QuicPacketGeneratorTest, TestConnectionIdLength) {
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_SERVER);
   generator_.SetConnectionIdLength(0);
   EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID, creator_->connection_id_length());
 

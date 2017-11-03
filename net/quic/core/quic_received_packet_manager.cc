@@ -10,6 +10,7 @@
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_logging.h"
 
 namespace net {
 
@@ -21,52 +22,50 @@ namespace {
 // Set to the number of nacks needed for fast retransmit plus one for protection
 // against an ack loss
 const size_t kMaxPacketsAfterNewMissing = 4;
-}
+}  // namespace
 
 QuicReceivedPacketManager::QuicReceivedPacketManager(QuicConnectionStats* stats)
     : peer_least_packet_awaiting_ack_(0),
       ack_frame_updated_(false),
       max_ack_ranges_(0),
       time_largest_observed_(QuicTime::Zero()),
-      stats_(stats) {
-  ack_frame_.largest_observed = 0;
-}
+      stats_(stats) {}
 
 QuicReceivedPacketManager::~QuicReceivedPacketManager() {}
 
 void QuicReceivedPacketManager::RecordPacketReceived(
     const QuicPacketHeader& header,
     QuicTime receipt_time) {
-  QuicPacketNumber packet_number = header.packet_number;
+  const QuicPacketNumber packet_number = header.packet_number;
   DCHECK(IsAwaitingPacket(packet_number)) << " packet_number:" << packet_number;
   if (!ack_frame_updated_) {
     ack_frame_.received_packet_times.clear();
   }
   ack_frame_updated_ = true;
-  ack_frame_.packets.Add(header.packet_number);
 
-  if (ack_frame_.largest_observed > packet_number) {
+  if (LargestAcked(ack_frame_) > packet_number) {
     // Record how out of order stats.
     ++stats_->packets_reordered;
     stats_->max_sequence_reordering =
         std::max(stats_->max_sequence_reordering,
-                 ack_frame_.largest_observed - packet_number);
+                 LargestAcked(ack_frame_) - packet_number);
     int64_t reordering_time_us =
         (receipt_time - time_largest_observed_).ToMicroseconds();
     stats_->max_time_reordering_us =
         std::max(stats_->max_time_reordering_us, reordering_time_us);
   }
-  if (packet_number > ack_frame_.largest_observed) {
-    ack_frame_.largest_observed = packet_number;
+  if (packet_number > LargestAcked(ack_frame_)) {
+    ack_frame_.deprecated_largest_observed = packet_number;
     time_largest_observed_ = receipt_time;
   }
+  ack_frame_.packets.Add(packet_number);
 
   ack_frame_.received_packet_times.push_back(
       std::make_pair(packet_number, receipt_time));
 }
 
 bool QuicReceivedPacketManager::IsMissing(QuicPacketNumber packet_number) {
-  return packet_number < ack_frame_.largest_observed &&
+  return packet_number < LargestAcked(ack_frame_) &&
          !ack_frame_.packets.Contains(packet_number);
 }
 
@@ -92,12 +91,11 @@ const QuicFrame QuicReceivedPacketManager::GetUpdatedAckFrame(
          ack_frame_.packets.NumIntervals() > max_ack_ranges_) {
     ack_frame_.packets.RemoveSmallestInterval();
   }
-
   // Clear all packet times if any are too far from largest observed.
   // It's expected this is extremely rare.
   for (PacketTimeVector::iterator it = ack_frame_.received_packet_times.begin();
        it != ack_frame_.received_packet_times.end();) {
-    if (ack_frame_.largest_observed - it->first >=
+    if (LargestAcked(ack_frame_) - it->first >=
         std::numeric_limits<uint8_t>::max()) {
       it = ack_frame_.received_packet_times.erase(it);
     } else {
@@ -142,7 +140,7 @@ bool QuicReceivedPacketManager::ack_frame_updated() const {
 }
 
 QuicPacketNumber QuicReceivedPacketManager::GetLargestObserved() const {
-  return ack_frame_.largest_observed;
+  return LargestAcked(ack_frame_);
 }
 
 }  // namespace net

@@ -32,17 +32,6 @@ class QUIC_EXPORT_PRIVATE QuicAckListenerInterface
   ~QuicAckListenerInterface() override;
 };
 
-struct QUIC_EXPORT_PRIVATE AckListenerWrapper {
-  AckListenerWrapper(
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener,
-      QuicPacketLength data_length);
-  AckListenerWrapper(const AckListenerWrapper& other);
-  ~AckListenerWrapper();
-
-  QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener;
-  QuicPacketLength length;
-};
-
 }  // namespace net
 
 #endif  // NET_QUIC_CORE_QUIC_ACK_LISTENER_INTERFACE_H_

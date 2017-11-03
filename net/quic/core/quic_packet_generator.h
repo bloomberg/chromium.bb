@@ -147,8 +147,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
 
   // Update the packet number length to use in future packets as soon as it
   // can be safely changed.
-  void UpdateSequenceNumberLength(QuicPacketNumber least_packet_awaited_by_peer,
-                                  QuicPacketCount max_packets_in_flight);
+  void UpdatePacketNumberLength(QuicPacketNumber least_packet_awaited_by_peer,
+                                QuicPacketCount max_packets_in_flight);
 
   // Set the minimum number of bytes for the connection id length;
   void SetConnectionIdLength(uint32_t length);
@@ -159,6 +159,10 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // Returns true if there are control frames or current constructed packet has
   // pending retransmittable frames.
   bool HasRetransmittableFrames() const;
+
+  // Returns true if current constructed packet has pending stream frames for
+  // stream |id|.
+  bool HasPendingStreamFramesOfStream(QuicStreamId id) const;
 
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level);

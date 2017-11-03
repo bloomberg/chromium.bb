@@ -123,6 +123,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Returns true if there are retransmittable frames pending to be serialized.
   bool HasPendingRetransmittableFrames() const;
 
+  // Returns true if there are stream frames for |id| pending to be serialized.
+  bool HasPendingStreamFramesOfStream(QuicStreamId id) const;
+
   // Returns the number of bytes which are available to be used by additional
   // frames in the packet.  Since stream frames are slightly smaller when they
   // are the last frame in a packet, this method will return a different
@@ -169,9 +172,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
     return connection_id_length_;
   }
 
-  void set_connection_id_length(QuicConnectionIdLength length) {
-    connection_id_length_ = length;
-  }
+  void SetConnectionIdLength(QuicConnectionIdLength length);
 
   QuicByteCount max_packet_length() const { return max_packet_length_; }
 
@@ -240,7 +241,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   void ClearPacket();
 
   // Returns true if a diversification nonce should be included in the current
-  // packet's public header.
+  // packet's header.
   bool IncludeNonceInPublicHeader();
 
   // Returns true if |frame| starts with CHLO.
@@ -253,8 +254,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Controls whether version should be included while serializing the packet.
   bool send_version_in_packet_;
-  // If true, then |nonce_for_public_header_| will be included in the public
-  // header of all packets created at the initial encryption level.
+  // If true, then |diversification_nonce_| will be included in the header of
+  // all packets created at the initial encryption level.
   bool have_diversification_nonce_;
   DiversificationNonce diversification_nonce_;
   // Maximum length including headers and encryption (UDP payload length.)

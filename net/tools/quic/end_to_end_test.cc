@@ -1438,8 +1438,7 @@ TEST_P(EndToEndTest, 0ByteConnectionId) {
 
   QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
       client_->client()->client_session()->connection());
-  EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID,
-            header->public_header.connection_id_length);
+  EXPECT_EQ(PACKET_0BYTE_CONNECTION_ID, header->connection_id_length);
 }
 
 TEST_P(EndToEndTest, 8ByteConnectionId) {
@@ -1450,8 +1449,7 @@ TEST_P(EndToEndTest, 8ByteConnectionId) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
       client_->client()->client_session()->connection());
-  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
-            header->public_header.connection_id_length);
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, header->connection_id_length);
 }
 
 TEST_P(EndToEndTest, 15ByteConnectionId) {
@@ -1463,8 +1461,7 @@ TEST_P(EndToEndTest, 15ByteConnectionId) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
   QuicPacketHeader* header = QuicConnectionPeer::GetLastHeader(
       client_->client()->client_session()->connection());
-  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
-            header->public_header.connection_id_length);
+  EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID, header->connection_id_length);
 }
 
 TEST_P(EndToEndTest, ResetConnection) {
@@ -1951,9 +1948,7 @@ TEST_P(EndToEndTest, ServerSendPublicReset) {
   QuicConnectionId connection_id =
       client_->client()->client_session()->connection()->connection_id();
   QuicPublicResetPacket header;
-  header.public_header.connection_id = connection_id;
-  header.public_header.reset_flag = true;
-  header.public_header.version_flag = false;
+  header.connection_id = connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
                     Perspective::IS_SERVER);
   std::unique_ptr<QuicEncryptedPacket> packet(
@@ -1983,9 +1978,7 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
   QuicConnectionId incorrect_connection_id =
       client_->client()->client_session()->connection()->connection_id() + 1;
   QuicPublicResetPacket header;
-  header.public_header.connection_id = incorrect_connection_id;
-  header.public_header.reset_flag = true;
-  header.public_header.version_flag = false;
+  header.connection_id = incorrect_connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
                     Perspective::IS_SERVER);
   std::unique_ptr<QuicEncryptedPacket> packet(
@@ -2019,9 +2012,7 @@ TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
   QuicConnectionId incorrect_connection_id =
       client_->client()->client_session()->connection()->connection_id() + 1;
   QuicPublicResetPacket header;
-  header.public_header.connection_id = incorrect_connection_id;
-  header.public_header.reset_flag = true;
-  header.public_header.version_flag = false;
+  header.connection_id = incorrect_connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
                     Perspective::IS_CLIENT);
   std::unique_ptr<QuicEncryptedPacket> packet(

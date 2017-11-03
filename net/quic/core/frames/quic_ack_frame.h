@@ -260,9 +260,10 @@ struct QUIC_EXPORT_PRIVATE QuicAckFrame {
       const QuicAckFrame& ack_frame);
 
   // The highest packet number we've observed from the peer.
-  QuicPacketNumber largest_observed;
+  // This is being deprecated.
+  QuicPacketNumber deprecated_largest_observed;
 
-  // Time elapsed since largest_observed was received until this Ack frame was
+  // Time elapsed since largest_observed() was received until this Ack frame was
   // sent.
   QuicTime::Delta ack_delay_time;
 
@@ -272,6 +273,10 @@ struct QUIC_EXPORT_PRIVATE QuicAckFrame {
   // Set of packets.
   PacketNumberQueue packets;
 };
+
+// The highest acked packet number we've observed from the peer. If no packets
+// have been observed, return 0.
+QUIC_EXPORT_PRIVATE QuicPacketNumber LargestAcked(const QuicAckFrame& frame);
 
 // True if the packet number is greater than largest_observed or is listed
 // as missing.

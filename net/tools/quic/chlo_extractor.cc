@@ -31,8 +31,7 @@ class ChloFramerVisitor : public QuicFramerVisitorInterface,
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {}
   void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override {}
-  bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header) override;
+  bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override;
   bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
   void OnDecryptedPacket(EncryptionLevel level) override {}
   bool OnPacketHeader(const QuicPacketHeader& header) override;
@@ -78,7 +77,7 @@ bool ChloFramerVisitor::OnProtocolVersionMismatch(
 }
 
 bool ChloFramerVisitor::OnUnauthenticatedPublicHeader(
-    const QuicPacketPublicHeader& header) {
+    const QuicPacketHeader& header) {
   connection_id_ = header.connection_id;
   return true;
 }

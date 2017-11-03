@@ -217,6 +217,28 @@ TEST_F(Aes128GcmEncrypterTest, Encrypt) {
   }
 }
 
+TEST_F(Aes128GcmEncrypterTest, EncryptPacket) {
+  string key = QuicTextUtils::HexDecode("d95a145250826c25a77b6a84fd4d34fc");
+  string iv = QuicTextUtils::HexDecode("50c4431ebb18283448e276e2");
+  QuicPacketNumber packet_num = 0x13278f44;
+  string aad = QuicTextUtils::HexDecode("875d49f64a70c9cbe713278f44ff000005");
+  string pt = QuicTextUtils::HexDecode("aa0003a250bd000000000001");
+  string ct = QuicTextUtils::HexDecode(
+      "7dd4708b989ee7d38a013e3656e9b37beefd05808fe1ab41e3b4f2c0");
+
+  std::vector<char> out(ct.size());
+  size_t out_size;
+
+  Aes128GcmEncrypter encrypter;
+  ASSERT_TRUE(encrypter.SetKey(key));
+  ASSERT_TRUE(encrypter.SetIV(iv));
+  ASSERT_TRUE(encrypter.EncryptPacket(QUIC_VERSION_43, packet_num, aad, pt,
+                                      out.data(), &out_size, out.size()));
+  EXPECT_EQ(out_size, out.size());
+  test::CompareCharArraysWithHexError("ciphertext", out.data(), out.size(),
+                                      ct.data(), ct.size());
+}
+
 TEST_F(Aes128GcmEncrypterTest, GetMaxPlaintextSize) {
   Aes128GcmEncrypter encrypter;
   EXPECT_EQ(1000u, encrypter.GetMaxPlaintextSize(1016));

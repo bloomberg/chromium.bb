@@ -117,7 +117,10 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       end_recovery_at_(0),
       recovery_window_(max_congestion_window_),
       rate_based_recovery_(false),
-      slower_startup_(false) {
+      slower_startup_(false),
+      rate_based_startup_(false),
+      initial_conservation_in_startup_(CONSERVATION),
+      fully_drain_queue_(false) {
   EnterStartupMode();
 }
 
@@ -167,7 +170,8 @@ QuicByteCount BbrSender::GetCongestionWindow() const {
     return kMinimumCongestionWindow;
   }
 
-  if (InRecovery() && !rate_based_recovery_) {
+  if (InRecovery() && !rate_based_recovery_ &&
+      !(rate_based_startup_ && mode_ == STARTUP)) {
     return std::min(congestion_window_, recovery_window_);
   }
 
@@ -211,6 +215,41 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
       config.HasClientRequestedIndependentOption(kBBRS, perspective)) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_slower_startup);
     slower_startup_ = true;
+  }
+  if (FLAGS_quic_reloadable_flag_quic_bbr_fully_drain_queue &&
+      config.HasClientRequestedIndependentOption(kBBR3, perspective)) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_fully_drain_queue);
+    fully_drain_queue_ = true;
+  }
+  if (FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup &&
+      config.HasClientRequestedIndependentOption(kBBS1, perspective)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_conservation_in_startup, 1,
+                      3);
+    rate_based_startup_ = true;
+  }
+  if (FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup &&
+      config.HasClientRequestedIndependentOption(kBBS2, perspective)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_conservation_in_startup, 2,
+                      3);
+    initial_conservation_in_startup_ = MEDIUM_GROWTH;
+  }
+  if (FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup &&
+      config.HasClientRequestedIndependentOption(kBBS3, perspective)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_conservation_in_startup, 3,
+                      3);
+    initial_conservation_in_startup_ = GROWTH;
+  }
+  if (FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_window &&
+      config.HasClientRequestedIndependentOption(kBBR4, perspective)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_ack_aggregation_window, 1,
+                      2);
+    max_ack_height_.SetWindowLength(2 * kBandwidthWindowSize);
+  }
+  if (FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_window &&
+      config.HasClientRequestedIndependentOption(kBBR5, perspective)) {
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_ack_aggregation_window, 2,
+                      2);
+    max_ack_height_.SetWindowLength(4 * kBandwidthWindowSize);
   }
 }
 
@@ -422,6 +461,13 @@ void BbrSender::UpdateGainCyclePhase(QuicTime now,
   if (should_advance_gain_cycling) {
     cycle_current_offset_ = (cycle_current_offset_ + 1) % kGainCycleLength;
     last_cycle_start_ = now;
+    // Stay in low gain mode until the target BDP is hit.
+    // Low gain mode will be exited immediately when the target BDP is achieved.
+    if (fully_drain_queue_ && pacing_gain_ < 1 &&
+        kPacingGain[cycle_current_offset_] == 1 &&
+        prior_in_flight > GetTargetCongestionWindow(1)) {
+      return;
+    }
     pacing_gain_ = kPacingGain[cycle_current_offset_];
   }
 }
@@ -512,6 +558,9 @@ void BbrSender::UpdateRecoveryState(QuicPacketNumber last_acked_packet,
       // Enter conservation on the first loss.
       if (has_losses) {
         recovery_state_ = CONSERVATION;
+        if (mode_ == STARTUP) {
+          recovery_state_ = initial_conservation_in_startup_;
+        }
         // This will cause the |recovery_window_| to be set to the correct
         // value in CalculateRecoveryWindow().
         recovery_window_ = 0;
@@ -522,6 +571,7 @@ void BbrSender::UpdateRecoveryState(QuicPacketNumber last_acked_packet,
       break;
 
     case CONSERVATION:
+    case MEDIUM_GROWTH:
       if (is_round_start) {
         recovery_state_ = GROWTH;
       }
@@ -653,7 +703,7 @@ void BbrSender::CalculateCongestionWindow(QuicByteCount bytes_acked) {
 
 void BbrSender::CalculateRecoveryWindow(QuicByteCount bytes_acked,
                                         QuicByteCount bytes_lost) {
-  if (rate_based_recovery_) {
+  if (rate_based_recovery_ || (rate_based_startup_ && mode_ == STARTUP)) {
     return;
   }
 
@@ -676,8 +726,11 @@ void BbrSender::CalculateRecoveryWindow(QuicByteCount bytes_acked,
 
   // In CONSERVATION mode, just subtracting losses is sufficient.  In GROWTH,
   // release additional |bytes_acked| to achieve a slow-start-like behavior.
+  // In MEDIUM_GROWTH, release |bytes_acked| / 2 to split the difference.
   if (recovery_state_ == GROWTH) {
     recovery_window_ += bytes_acked;
+  } else if (recovery_state_ == MEDIUM_GROWTH) {
+    recovery_window_ += bytes_acked / 2;
   }
 
   // Sanity checks.  Ensure that we always allow to send at least

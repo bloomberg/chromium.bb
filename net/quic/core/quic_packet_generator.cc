@@ -318,7 +318,7 @@ void QuicPacketGenerator::ReserializeAllFrames(
   packet_creator_.ReserializeAllFrames(retransmission, buffer, buffer_len);
 }
 
-void QuicPacketGenerator::UpdateSequenceNumberLength(
+void QuicPacketGenerator::UpdatePacketNumberLength(
     QuicPacketNumber least_packet_awaited_by_peer,
     QuicPacketCount max_packets_in_flight) {
   return packet_creator_.UpdatePacketNumberLength(least_packet_awaited_by_peer,
@@ -327,9 +327,9 @@ void QuicPacketGenerator::UpdateSequenceNumberLength(
 
 void QuicPacketGenerator::SetConnectionIdLength(uint32_t length) {
   if (length == 0) {
-    packet_creator_.set_connection_id_length(PACKET_0BYTE_CONNECTION_ID);
+    packet_creator_.SetConnectionIdLength(PACKET_0BYTE_CONNECTION_ID);
   } else {
-    packet_creator_.set_connection_id_length(PACKET_8BYTE_CONNECTION_ID);
+    packet_creator_.SetConnectionIdLength(PACKET_8BYTE_CONNECTION_ID);
   }
 }
 
@@ -357,6 +357,11 @@ void QuicPacketGenerator::SendRemainingPendingPadding() {
 bool QuicPacketGenerator::HasRetransmittableFrames() const {
   return !queued_control_frames_.empty() ||
          packet_creator_.HasPendingRetransmittableFrames();
+}
+
+bool QuicPacketGenerator::HasPendingStreamFramesOfStream(
+    QuicStreamId id) const {
+  return packet_creator_.HasPendingStreamFramesOfStream(id);
 }
 
 }  // namespace net

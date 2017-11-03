@@ -694,8 +694,6 @@ void QuicCryptoServerConfig::ProcessClientHello(
 
   // No need to get a new proof if one was already generated.
   if (!signed_config->chain) {
-    QuicTagVector connection_options;
-    client_hello.GetTaglist(kCOPT, &connection_options);
     std::unique_ptr<ProcessClientHelloCallback> cb(
         new ProcessClientHelloCallback(
             this, validate_chlo_result, reject_only, connection_id,
@@ -706,7 +704,7 @@ void QuicCryptoServerConfig::ProcessClientHello(
             primary_config, std::move(done_cb)));
     proof_source_->GetProof(server_address, info.sni.as_string(),
                             primary_config->serialized, version, chlo_hash,
-                            connection_options, std::move(cb));
+                            std::move(cb));
     helper.DetachCallback();
     return;
   }
@@ -1249,8 +1247,6 @@ void QuicCryptoServerConfig::EvaluateClientHello(
                                     Perspective::IS_SERVER);
   bool need_proof = true;
   need_proof = !signed_config->chain;
-  QuicTagVector connection_options;
-  client_hello.GetTaglist(kCOPT, &connection_options);
 
   if (need_proof) {
     // Make an async call to GetProof and setup the callback to trampoline
@@ -1262,7 +1258,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
             std::move(done_cb)));
     proof_source_->GetProof(server_address, info->sni.as_string(),
                             serialized_config, version, chlo_hash,
-                            connection_options, std::move(cb));
+                            std::move(cb));
     helper.DetachCallback();
     return;
   }
@@ -1335,7 +1331,6 @@ void QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
     QuicCompressedCertsCache* compressed_certs_cache,
     const QuicCryptoNegotiatedParameters& params,
     const CachedNetworkParameters* cached_network_params,
-    const QuicTagVector& connection_options,
     std::unique_ptr<BuildServerConfigUpdateMessageResultCallback> cb) const {
   string serialized;
   string source_address_token;
@@ -1366,8 +1361,7 @@ void QuicCryptoServerConfig::BuildServerConfigUpdateMessage(
   // tag (plus it would be a chore to plumb information about the tag down to
   // here).
   proof_source_->GetProof(server_address, params.sni, serialized, version,
-                          chlo_hash, connection_options,
-                          std::move(proof_source_cb));
+                          chlo_hash, std::move(proof_source_cb));
 }
 
 QuicCryptoServerConfig::BuildServerConfigUpdateMessageProofSourceCallback::
