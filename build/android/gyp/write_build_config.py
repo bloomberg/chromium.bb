@@ -150,16 +150,20 @@ def _MergeAssets(all_assets):
   """Merges all assets from the given deps.
 
   Returns:
-    A tuple of lists: (compressed, uncompressed)
-    Each tuple entry is a list of "srcPath:zipPath". srcPath is the path of the
-    asset to add, and zipPath is the location within the zip (excluding assets/
-    prefix)
+    A tuple of: (compressed, uncompressed, locale_paks)
+    |compressed| and |uncompressed| are lists of "srcPath:zipPath". srcPath is
+    the path of the asset to add, and zipPath is the location within the zip
+    (excluding assets/ prefix).
+    |locale_paks| is a set of all zipPaths that have been marked as
+    treat_as_locale_paks=true.
   """
   compressed = {}
   uncompressed = {}
+  locale_paks = set()
   for asset_dep in all_assets:
     entry = asset_dep['assets']
-    disable_compression = entry.get('disable_compression', False)
+    disable_compression = entry.get('disable_compression')
+    treat_as_locale_paks = entry.get('treat_as_locale_paks')
     dest_map = uncompressed if disable_compression else compressed
     other_map = compressed if disable_compression else uncompressed
     outputs = entry.get('outputs', [])
@@ -170,6 +174,8 @@ def _MergeAssets(all_assets):
       # deps of the same target override previous ones.
       other_map.pop(dest, 0)
       dest_map[dest] = src
+      if treat_as_locale_paks:
+        locale_paks.add(dest)
 
   def create_list(asset_map):
     ret = ['%s:%s' % (src, dest) for dest, src in asset_map.iteritems()]
@@ -177,7 +183,7 @@ def _MergeAssets(all_assets):
     ret.sort()
     return ret
 
-  return create_list(compressed), create_list(uncompressed)
+  return create_list(compressed), create_list(uncompressed), locale_paks
 
 
 def _ResolveGroups(configs):
@@ -236,11 +242,11 @@ def _CreateJavaLibrariesList(library_paths):
   return ('{%s}' % ','.join(['"%s"' % s[3:-3] for s in library_paths]))
 
 
-def _CreateLocalePaksAssetJavaList(assets):
+def _CreateLocalePaksAssetJavaList(assets, locale_paks):
   """Returns a java literal array from a list of assets in the form src:dst."""
-  names_only = (a.split(':')[1][:-4] for a in assets if a.endswith('.pak'))
-  locales_only = (a for a in names_only if '-' in a or len(a) == 2)
-  return '{%s}' % ','.join(sorted('"%s"' % a for a in locales_only))
+  asset_paths = [a.split(':')[1] for a in assets]
+  return '{%s}' % ','.join(
+      sorted('"%s"' % a[:-4] for a in asset_paths if a in locale_paks))
 
 
 def main(argv):
@@ -272,6 +278,8 @@ def main(argv):
                     help='List of asset custom destinations.')
   parser.add_option('--disable-asset-compression', action='store_true',
                     help='Whether to disable asset compression.')
+  parser.add_option('--treat-as-locale-paks', action='store_true',
+      help='Consider the assets as locale paks in BuildConfig.java')
 
   # java library options
   parser.add_option('--jar-path', help='Path to target\'s jar output.')
@@ -526,6 +534,8 @@ def main(argv):
           build_utils.ParseGnList(options.asset_renaming_destinations))
     if options.disable_asset_compression:
       deps_info['assets']['disable_compression'] = True
+    if options.treat_as_locale_paks:
+      deps_info['assets']['treat_as_locale_paks'] = True
 
   if options.type == 'android_resources':
     deps_info['resources_zip'] = options.resources_zip
@@ -721,12 +731,12 @@ def main(argv):
       'java_libraries_list': java_libraries_list,
       'secondary_abi_java_libraries_list': secondary_abi_java_libraries_list,
     }
-    config['assets'], config['uncompressed_assets'] = (
+    config['assets'], config['uncompressed_assets'], locale_paks = (
         _MergeAssets(deps.All('android_assets')))
-    config['compressed_locales_java_list'] = (
-        _CreateLocalePaksAssetJavaList(config['assets']))
-    config['uncompressed_locales_java_list'] = (
-        _CreateLocalePaksAssetJavaList(config['uncompressed_assets']))
+    config['compressed_locales_java_list'] = _CreateLocalePaksAssetJavaList(
+        config['assets'], locale_paks)
+    config['uncompressed_locales_java_list'] = _CreateLocalePaksAssetJavaList(
+        config['uncompressed_assets'], locale_paks)
 
     config['extra_android_manifests'] = filter(None, (
         d.get('android_manifest') for d in all_resources_deps))

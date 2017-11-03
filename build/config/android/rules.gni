@@ -857,6 +857,8 @@ if (enable_java_templates) {
   #   renaming_destinations: List of asset paths for files in renaming_sources.
   #   disable_compression: Whether to disable compression for files that are
   #     known to be compressable (default: false).
+  #   treat_as_locale_paks: Causes base's BuildConfig.java to consider these
+  #     assets to be locale paks.
   #
   # Example:
   # android_assets("content_shell_assets") {
@@ -889,7 +891,11 @@ if (enable_java_templates) {
       type = "android_assets"
       build_config = _build_config
 
-      forward_variables_from(invoker, [ "disable_compression" ])
+      forward_variables_from(invoker,
+                             [
+                               "disable_compression",
+                               "treat_as_locale_paks",
+                             ])
 
       if (defined(invoker.deps)) {
         possible_config_deps = invoker.deps

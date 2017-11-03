@@ -152,6 +152,8 @@ public class ResourceExtractor {
             assert Arrays.asList(BuildConfig.COMPRESSED_LOCALES).contains(FALLBACK_LOCALE);
             activeLocalePakFiles.add(FALLBACK_LOCALE + ".pak");
         }
+        Log.i(TAG, "Android Locale: %s requires .pak files: %s", defaultLocale,
+                activeLocalePakFiles);
         return activeLocalePakFiles.toArray(new String[activeLocalePakFiles.size()]);
     }
 
