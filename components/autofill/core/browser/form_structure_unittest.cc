@@ -3380,6 +3380,7 @@ TEST_F(FormStructureTest, CheckFormSignature) {
                 "https://login.facebook.com&login_form&email&first")),
             form_structure->FormSignatureAsStr());
 
+  // Checks how digits are removed from field names.
   field.check_status = FormFieldData::NOT_CHECKABLE;
   field.label = ASCIIToUTF16("Random Field label");
   field.name = ASCIIToUTF16("random1234");
@@ -3389,15 +3390,15 @@ TEST_F(FormStructureTest, CheckFormSignature) {
   field.name = ASCIIToUTF16("random12345");
   form.fields.push_back(field);
   field.label = ASCIIToUTF16("Random Field label3");
-  field.name = ASCIIToUTF16("1random12345678");
+  field.name = ASCIIToUTF16("1ran12dom12345678");
   form.fields.push_back(field);
   field.label = ASCIIToUTF16("Random Field label3");
-  field.name = ASCIIToUTF16("12345random");
+  field.name = ASCIIToUTF16("12345ran123456dom123");
   form.fields.push_back(field);
   form_structure.reset(new FormStructure(form));
   EXPECT_EQ(FormStructureTest::Hash64Bit(
                 std::string("https://login.facebook.com&login_form&email&first&"
-                            "random1234&random&1random&random")),
+                            "random1234&random&1ran12dom&random123")),
             form_structure->FormSignatureAsStr());
 }
 

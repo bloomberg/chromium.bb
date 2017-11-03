@@ -4,30 +4,41 @@
 
 #include "components/autofill/core/common/signatures_util.h"
 
+#include <cctype>
+
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "third_party/re2/src/re2/re2.h"
-#include "third_party/re2/src/re2/stringpiece.h"
 #include "url/gurl.h"
 
 namespace autofill {
 
 namespace {
 
-// Strip away >= 5 consecutive digits.
-const char kIgnorePatternInFieldName[] = "\\d{5,}";
-
-// Returns a copy of |input| without all occurrences of
-// |kIgnorePatternInFieldName|
+// Returns a copy of |input| without >= 5 consecutive digits.
 std::string StripDigitsIfRequired(const base::string16& input) {
-  std::string return_string = base::UTF16ToUTF8(input);
-  re2::RE2::GlobalReplace(&return_string, re2::RE2(kIgnorePatternInFieldName),
-                          re2::StringPiece());
-  return return_string;
+  std::string input_utf8 = base::UTF16ToUTF8(input);
+  std::string result;
+  result.reserve(input_utf8.length());
+
+  for (size_t i = 0; i < input_utf8.length();) {
+    if (std::isdigit(input_utf8[i])) {
+      size_t count = 0;
+      while (i < input_utf8.length() && std::isdigit(input_utf8[i])) {
+        i++;
+        count++;
+      }
+      if (count < 5)
+        result.append(input_utf8, i - count, count);
+    } else {
+      result.push_back(input_utf8[i]);
+      i++;
+    }
+  }
+  return result;
 }
 
 }  // namespace
