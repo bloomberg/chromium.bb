@@ -32,6 +32,7 @@
 #include "base/timer/timer.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
+#include "base/win/winrt_storage_util.h"
 #include "media/midi/midi_scheduler.h"
 
 namespace midi {
@@ -668,17 +669,11 @@ class MidiManagerWinrt::MidiInPortManager final
               }
 
               uint8_t* p_buffer_data = nullptr;
-              hr = base::win::GetPointerToBufferData(buffer.Get(),
-                                                     &p_buffer_data);
+              uint32_t data_length = 0;
+              hr = base::win::GetPointerToBufferData(
+                  buffer.Get(), &p_buffer_data, &data_length);
               if (FAILED(hr))
                 return hr;
-
-              uint32_t data_length = 0;
-              hr = buffer->get_Length(&data_length);
-              if (FAILED(hr)) {
-                VLOG(1) << "get_Length failed: " << PrintHr(hr);
-                return hr;
-              }
 
               std::vector<uint8_t> data(p_buffer_data,
                                         p_buffer_data + data_length);
@@ -869,7 +864,7 @@ void MidiManagerWinrt::SendOnComThread(uint32_t port_index,
 
   WRL::ComPtr<IBuffer> buffer;
   HRESULT hr = base::win::CreateIBufferFromData(
-      data.data(), static_cast<UINT32>(data.size()), buffer.GetAddressOf());
+      data.data(), static_cast<UINT32>(data.size()), &buffer);
   if (FAILED(hr)) {
     VLOG(1) << "CreateIBufferFromData failed: " << PrintHr(hr);
     return;
