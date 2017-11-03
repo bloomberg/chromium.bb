@@ -3887,7 +3887,8 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #endif
 
   // Non frame parallel update frame context here.
-  if (cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_FORWARD) {
+  if (!cm->frame_parallel_decode ||
+      cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_FORWARD) {
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
     cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
 #else
