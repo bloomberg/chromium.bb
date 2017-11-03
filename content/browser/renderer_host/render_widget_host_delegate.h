@@ -82,7 +82,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual void ScreenInfoChanged() {}
 
   // Retrieve screen information.
-  virtual void GetScreenInfo(ScreenInfo* web_screen_info);
+  virtual void GetScreenInfo(ScreenInfo* screen_info);
 
   // Callback to give the browser a chance to handle the specified keyboard
   // event before sending it to the renderer. See enum for details on return
