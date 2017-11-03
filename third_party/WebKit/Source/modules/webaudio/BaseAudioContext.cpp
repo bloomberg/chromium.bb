@@ -1049,9 +1049,8 @@ void BaseAudioContext::SetWorkletMessagingProxy(
   // If the context is running or suspended, restart the destination to switch
   // the render thread with the worklet thread. Note that restarting can happen
   // right after the context construction.
-  // TODO(hongchan): consider removing redundant restart.
   if (ContextState() != kClosed) {
-    destination()->GetAudioDestinationHandler().RestartDestination();
+    destination()->GetAudioDestinationHandler().RestartRendering();
   }
 }
 
