@@ -681,6 +681,12 @@ def decorate_shard_output(swarming, shard_index, metadata, include_stdout):
     pending = '%.1fs' % (
         parse_time(metadata['started_ts']) - parse_time(metadata['created_ts'])
         ).total_seconds()
+  elif (metadata.get('state') in ('BOT_DIED', 'CANCELED', 'EXPIRED') and
+        metadata.get('abandoned_ts')):
+    pending = '%.1fs' % (
+        parse_time(metadata['abandoned_ts']) -
+            parse_time(metadata['created_ts'])
+        ).total_seconds()
   else:
     pending = 'N/A'
 
@@ -700,8 +706,16 @@ def decorate_shard_output(swarming, shard_index, metadata, include_stdout):
   url = '%s/user/task/%s' % (swarming, metadata['task_id'])
   tag_header = 'Shard %d  %s' % (shard_index, url)
   tag_footer1 = 'End of shard %d' % (shard_index)
-  tag_footer2 = ' Pending: %s  Duration: %s  Bot: %s  Exit: %s' % (
-      pending, duration, bot_id, exit_code)
+  if metadata.get('state') == 'CANCELED':
+    tag_footer2 = ' Pending: %s  CANCELED' % pending
+  elif metadata.get('state') == 'EXPIRED':
+    tag_footer2 = ' Pending: %s  EXPIRED (lack of capacity)' % pending
+  elif metadata.get('state') in ('BOT_DIED', 'TIMED_OUT'):
+    tag_footer2 = ' Pending: %s  Duration: %s  Bot: %s  Exit: %s  %s' % (
+        pending, duration, bot_id, exit_code, metadata['state'])
+  else:
+    tag_footer2 = ' Pending: %s  Duration: %s  Bot: %s  Exit: %s' % (
+        pending, duration, bot_id, exit_code)
 
   tag_len = max(len(x) for x in [tag_header, tag_footer1, tag_footer2])
   dash_pad = '+-%s-+' % ('-' * tag_len)
@@ -714,7 +728,7 @@ def decorate_shard_output(swarming, shard_index, metadata, include_stdout):
         dash_pad,
         tag_header,
         dash_pad,
-        metadata.get('output', '').rstrip(),
+        (metadata.get('output') or '').rstrip(),
         dash_pad,
         tag_footer1,
         tag_footer2,
