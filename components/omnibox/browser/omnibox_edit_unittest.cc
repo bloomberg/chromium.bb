@@ -378,11 +378,15 @@ TEST_F(OmniboxEditTest, SetSelectedLine) {
     AutocompleteMatch match(nullptr, 1000, false,
                             AutocompleteMatchType::URL_WHAT_YOU_TYPED);
     match.keyword = base::ASCIIToUTF16("match");
+    match.allowed_to_be_default_match = true;
     matches.push_back(match);
   }
   auto* result = &model()->autocomplete_controller()->result_;
-  result->AppendMatches(AutocompleteInput(), matches);
-  result->SortAndCull(AutocompleteInput(), nullptr);
+  AutocompleteInput input(base::UTF8ToUTF16("match"),
+                          metrics::OmniboxEventProto::NTP,
+                          TestingSchemeClassifier());
+  result->AppendMatches(input, matches);
+  result->SortAndCull(input, nullptr);
   popup_model()->OnResultChanged();
   EXPECT_FALSE(popup_model()->has_selected_match());
   popup_model()->SetSelectedLine(0, true, false);
