@@ -292,9 +292,9 @@ void DelegatedFrameHost::WasResized() {
 
   if (enable_surface_synchronization_) {
     ui::Layer* layer = client_->DelegatedFrameHostGetLayer();
-    gfx::Size desired_size_in_pixels =
-        gfx::ConvertSizeToPixel(layer->device_scale_factor(),
-                                client_->DelegatedFrameHostDesiredSizeInDIP());
+    current_frame_size_in_dip_ = client_->DelegatedFrameHostDesiredSizeInDIP();
+    gfx::Size desired_size_in_pixels = gfx::ConvertSizeToPixel(
+        layer->device_scale_factor(), current_frame_size_in_dip_);
 
     viz::SurfaceId surface_id(frame_sink_id_, client_->GetLocalSurfaceId());
     viz::SurfaceInfo surface_info(surface_id, layer->device_scale_factor(),
@@ -589,6 +589,10 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
   client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
       surface_info.id());
   local_surface_id_ = surface_info.id().local_surface_id();
+
+  // Surface synchronization deals with resizes in WasResized().
+  if (enable_surface_synchronization_)
+    return;
 
   released_front_lock_ = nullptr;
   gfx::Size frame_size_in_dip = gfx::ConvertSizeToDIP(

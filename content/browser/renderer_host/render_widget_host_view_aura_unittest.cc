@@ -3020,18 +3020,23 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   // Prevent the DelegatedFrameHost from skipping frames.
   view_->DisableResizeLock();
   EXPECT_FALSE(view_->HasPrimarySurface());
+  ASSERT_TRUE(view_->delegated_frame_host_);
 
   view_->SetSize(gfx::Size(300, 300));
   ASSERT_TRUE(view_->HasPrimarySurface());
   EXPECT_EQ(gfx::Size(300, 300),
             view_->window_->layer()->GetPrimarySurfaceInfo()->size_in_pixels());
   EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+  EXPECT_EQ(gfx::Size(300, 300),
+            view_->delegated_frame_host_->CurrentFrameSizeInDipForTesting());
 
   // Resizing should update the primary SurfaceInfo.
   view_->SetSize(gfx::Size(400, 400));
   EXPECT_EQ(gfx::Size(400, 400),
             view_->window_->layer()->GetPrimarySurfaceInfo()->size_in_pixels());
   EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+  EXPECT_EQ(gfx::Size(400, 400),
+            view_->delegated_frame_host_->CurrentFrameSizeInDipForTesting());
 
   // Submitting a CompositorFrame should update the fallback SurfaceInfo
   view_->SubmitCompositorFrame(
