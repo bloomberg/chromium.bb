@@ -137,7 +137,7 @@ void OpenVRGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
       pad.buttons_length = 0;
       pad.axes_length = 0;
 
-      for (int j = 0; j < vr::k_unControllerStateAxisCount; ++j) {
+      for (unsigned int j = 0; j < vr::k_unControllerStateAxisCount; ++j) {
         int32_t axis_type = vr_system_->GetInt32TrackedDeviceProperty(
             i, static_cast<vr::TrackedDeviceProperty>(vr::Prop_Axis0Type_Int32 +
                                                       j));

@@ -2593,9 +2593,9 @@ namespace Json {
 Exception::Exception(std::string const& msg)
   : msg_(msg)
 {}
-Exception::~Exception() throw()
+Exception::~Exception()
 {}
-char const* Exception::what() const throw()
+char const* Exception::what() const
 {
   return msg_.c_str();
 }
@@ -2607,11 +2607,11 @@ LogicError::LogicError(std::string const& msg)
 {}
 void throwRuntimeError(std::string const& msg)
 {
-  throw RuntimeError(msg);
+  JSON_FAIL_MESSAGE(msg);
 }
 void throwLogicError(std::string const& msg)
 {
-  throw LogicError(msg);
+  JSON_FAIL_MESSAGE(msg);
 }
 
 // //////////////////////////////////////////////////////////////////

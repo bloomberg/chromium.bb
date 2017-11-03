@@ -79,6 +79,20 @@ if (enable_vr) {
         "openvr/openvr_device_provider.h",
         "openvr/openvr_gamepad_data_fetcher.cc",
         "openvr/openvr_gamepad_data_fetcher.h",
+        "openvr/openvr_render_loop.cc",
+        "openvr/openvr_render_loop.h",
+        "openvr/openvr_type_converters.cc",
+        "openvr/openvr_type_converters.h",
+      ]
+    }
+
+    if (is_win && enable_openvr) {
+      libs = [ "d3d11.lib" ]
+      sources += [
+        "windows/d3d11_texture_helper.cc",
+        "windows/d3d11_texture_helper.h",
+        "windows/flip_pixel_shader.h",
+        "windows/flip_vertex_shader.h",
       ]
     }
   }

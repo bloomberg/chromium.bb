@@ -102,6 +102,8 @@ interface VRMagicWindowProvider {
 
 // Provides the necessary functionality for a presenting WebVR page to draw
 // frames for a VrDisplay.
+// This interface is hosted in the Browser process, but will move to a sandboxed
+// utility process on Windows.  The render process communicates with it.
 interface VRPresentationProvider {
   enum VSyncStatus { SUCCESS, CLOSING };
 
@@ -111,6 +113,10 @@ interface VRPresentationProvider {
   GetVSync() => (VRPose? pose, mojo.common.mojom.TimeDelta time, int16 frame_id,
                  VSyncStatus status);
   SubmitFrame(int16 frame_id, gpu.mojom.MailboxHolder mailbox_holder);
+
+  // TODO(https://crbug.com/676224): Support preprocessing of mojom files, since
+  // this is Windows only.
+  SubmitFrameWithTextureHandle(int16 frameId, handle texture);
   UpdateLayerBounds(int16 frame_id, gfx.mojom.RectF left_bounds,
                     gfx.mojom.RectF right_bounds, gfx.mojom.Size source_size);
 };
