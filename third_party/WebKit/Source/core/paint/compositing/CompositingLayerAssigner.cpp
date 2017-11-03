@@ -122,6 +122,18 @@ CompositingLayerAssigner::ComputeCompositedLayerUpdate(PaintLayer* layer) {
   return update;
 }
 
+static bool SiblingSkippedOverlapTest(const PaintLayer* layer) {
+  PaintLayer* sibling = layer->PreviousSibling();
+  while (sibling) {
+    if (sibling->OverlapSkippedDueToInlineTransform(
+            sibling->GetCompositingReasons())) {
+      return true;
+    }
+    sibling = sibling->PreviousSibling();
+  }
+  return false;
+}
+
 SquashingDisallowedReasons
 CompositingLayerAssigner::GetReasonsPreventingSquashing(
     const PaintLayer* layer,
@@ -209,7 +221,8 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
     return kSquashingDisallowedReasonFragmentedContent;
 
   if (layer->GetLayoutObject().Style()->HasBorderRadius() &&
-      layer->GetLayoutObject().HasOverflowClip())
+      layer->GetLayoutObject().HasOverflowClip() &&
+      SiblingSkippedOverlapTest(layer))
     return kSquashingDisallowedReasonBorderRadiusClipsDescendants;
 
   return kSquashingDisallowedReasonsNone;
