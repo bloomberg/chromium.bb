@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 
-/** Tests for {@link UrlUtilities}. */
+/** Tests for functions in {@link UrlUtilities} that use native code. */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class UrlUtilitiesTest {
     @Rule
@@ -88,75 +88,6 @@ public class UrlUtilitiesTest {
         Assert.assertFalse(UrlUtilities.isValidForIntentFallbackNavigation("data:data"));
         Assert.assertFalse(UrlUtilities.isValidForIntentFallbackNavigation("about:awesome"));
         Assert.assertFalse(UrlUtilities.isValidForIntentFallbackNavigation(""));
-    }
-
-    @Test
-    @SmallTest
-    public void testValidateIntentUrl() {
-        // Valid action, hostname, and (empty) path.
-        Assert.assertTrue(UrlUtilities.validateIntentUrl(
-                "intent://10010#Intent;scheme=tel;action=com.google.android.apps."
-                + "authenticator.AUTHENTICATE;end"));
-        // Valid package, scheme, hostname, and path.
-        Assert.assertTrue(UrlUtilities.validateIntentUrl(
-                "intent://scan/#Intent;package=com.google.zxing.client.android;"
-                + "scheme=zxing;end;"));
-        // Valid package, scheme, component, hostname, and path.
-        Assert.assertTrue(UrlUtilities.validateIntentUrl(
-                "intent://wump-hey.example.com/#Intent;package=com.example.wump;"
-                + "scheme=yow;component=com.example.PUMPKIN;end;"));
-        // Valid package, scheme, action, hostname, and path.
-        Assert.assertTrue(UrlUtilities.validateIntentUrl(
-                "intent://wump-hey.example.com/#Intent;package=com.example.wump;"
-                + "scheme=eeek;action=frighten_children;end;"));
-        // Valid package, component, String extra, hostname, and path.
-        Assert.assertTrue(UrlUtilities.validateIntentUrl(
-                "intent://testing/#Intent;package=cybergoat.noodle.crumpet;"
-                + "component=wump.noodle/Crumpet;S.goat=leg;end"));
-
-        // Valid package, component, int extra (with URL-encoded key), String
-        // extra, hostname, and path.
-        Assert.assertTrue(UrlUtilities.validateIntentUrl(
-                "intent://testing/#Intent;package=cybergoat.noodle.crumpet;"
-                + "component=wump.noodle/Crumpet;i.pumpkinCount%3D=42;"
-                + "S.goat=leg;end"));
-
-        // Android's Intent.toUri does not generate URLs like this, but
-        // Google Authenticator does, and we must handle them.
-        Assert.assertTrue(UrlUtilities.validateIntentUrl(
-                "intent:#Intent;action=com.google.android.apps.chrome."
-                + "TEST_AUTHENTICATOR;category=android.intent.category."
-                + "BROWSABLE;S.inputData=cancelled;end"));
-
-        // null does not have a valid intent scheme.
-        Assert.assertFalse(UrlUtilities.validateIntentUrl(null));
-        // The empty string does not have a valid intent scheme.
-        Assert.assertFalse(UrlUtilities.validateIntentUrl(""));
-        // A whitespace string does not have a valid intent scheme.
-        Assert.assertFalse(UrlUtilities.validateIntentUrl(" "));
-        // Junk after end.
-        Assert.assertFalse(UrlUtilities.validateIntentUrl(
-                "intent://10010#Intent;scheme=tel;action=com.google.android.apps."
-                + "authenticator.AUTHENTICATE;end','*');"
-                + "alert(document.cookie);//"));
-        // component appears twice.
-        Assert.assertFalse(UrlUtilities.validateIntentUrl(
-                "intent://wump-hey.example.com/#Intent;package=com.example.wump;"
-                + "scheme=yow;component=com.example.PUMPKIN;"
-                + "component=com.example.AVOCADO;end;"));
-        // scheme contains illegal character.
-        Assert.assertFalse(UrlUtilities.validateIntentUrl(
-                "intent://wump-hey.example.com/#Intent;package=com.example.wump;"
-                + "scheme=hello+goodbye;component=com.example.PUMPKIN;end;"));
-        // category contains illegal character.
-        Assert.assertFalse(UrlUtilities.validateIntentUrl(
-                "intent://wump-hey.example.com/#Intent;package=com.example.wump;"
-                + "category=42%_by_volume;end"));
-        // Incorrectly URL-encoded.
-        Assert.assertFalse(UrlUtilities.validateIntentUrl(
-                "intent://testing/#Intent;package=cybergoat.noodle.crumpet;"
-                + "component=wump.noodle/Crumpet;i.pumpkinCount%%3D=42;"
-                + "S.goat=&leg;end"));
     }
 
     @Test
