@@ -435,6 +435,9 @@ bool ArcSupportHost::Initialize() {
   loadtime_data->SetString(
       "greetingHeader", l10n_util::GetStringUTF16(IDS_ARC_OOBE_TERMS_HEADING));
   loadtime_data->SetString(
+      "initializingHeader",
+      l10n_util::GetStringUTF16(IDS_ARC_PLAYSTORE_SETTING_UP_TITLE));
+  loadtime_data->SetString(
       "greetingDescription",
       l10n_util::GetStringUTF16(IDS_ARC_OOBE_TERMS_DESCRIPTION));
   loadtime_data->SetString(
