@@ -16,30 +16,28 @@ void PersistentNotificationHandler::OnShow(Profile* profile,
 }
 
 void PersistentNotificationHandler::OnClose(Profile* profile,
-                                            const std::string& origin,
+                                            const GURL& origin,
                                             const std::string& notification_id,
                                             bool by_user) {
   if (!by_user)
     return;  // no need to propagate back programmatic close events
 
-  const GURL notification_origin(origin);
-  DCHECK(notification_origin.is_valid());
+  DCHECK(origin.is_valid());
 
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClose(
-      profile, notification_id, notification_origin, by_user);
+      profile, notification_id, origin, by_user);
 }
 
 void PersistentNotificationHandler::OnClick(
     Profile* profile,
-    const std::string& origin,
+    const GURL& origin,
     const std::string& notification_id,
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply) {
-  const GURL notification_origin(origin);
-  DCHECK(notification_origin.is_valid());
+  DCHECK(origin.is_valid());
 
   PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
-      profile, notification_id, notification_origin, action_index, reply);
+      profile, notification_id, origin, action_index, reply);
 }
 
 void PersistentNotificationHandler::OpenSettings(Profile* profile) {

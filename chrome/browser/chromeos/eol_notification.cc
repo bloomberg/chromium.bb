@@ -41,7 +41,7 @@ class EolNotificationHandler : public NotificationHandler {
   ~EolNotificationHandler() override = default;
 
   void OnClick(Profile* profile,
-               const std::string& origin,
+               const GURL& origin,
                const std::string& notification_id,
                const base::Optional<int>& action_index,
                const base::Optional<base::string16>& reply) override {
@@ -166,7 +166,7 @@ void EolNotification::Update() {
 
   EolNotificationHandler::Register(profile_);
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-      NotificationCommon::PRODUCT_EOL, kEolNotificationId, notification);
+      NotificationCommon::PRODUCT_EOL, notification);
 }
 
 }  // namespace chromeos

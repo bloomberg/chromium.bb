@@ -17,12 +17,12 @@ class NonPersistentNotificationHandler : public NotificationHandler {
   // NotificationHandler implementation
   void OnShow(Profile* profile, const std::string& notification_id) override;
   void OnClose(Profile* profile,
-               const std::string& origin,
+               const GURL& origin,
                const std::string& notification_id,
                bool by_user) override;
 
   void OnClick(Profile* profile,
-               const std::string& origin,
+               const GURL& origin,
                const std::string& notification_id,
                const base::Optional<int>& action_index,
                const base::Optional<base::string16>& reply) override;

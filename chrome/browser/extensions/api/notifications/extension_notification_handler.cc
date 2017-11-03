@@ -57,7 +57,7 @@ void ExtensionNotificationHandler::OnShow(Profile* profile,
                                           const std::string& notification_id) {}
 
 void ExtensionNotificationHandler::OnClose(Profile* profile,
-                                           const std::string& origin,
+                                           const GURL& origin,
                                            const std::string& notification_id,
                                            bool by_user) {
   EventRouter::UserGestureState gesture =
@@ -80,7 +80,7 @@ void ExtensionNotificationHandler::OnClose(Profile* profile,
 
 void ExtensionNotificationHandler::OnClick(
     Profile* profile,
-    const std::string& origin,
+    const GURL& origin,
     const std::string& notification_id,
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply) {

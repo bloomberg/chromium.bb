@@ -69,22 +69,21 @@ void NativeNotificationDisplayService::OnNotificationPlatformBridgeReady(
 
 void NativeNotificationDisplayService::Display(
     NotificationCommon::Type notification_type,
-    const std::string& notification_id,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   if (notification_bridge_ready_) {
-    notification_bridge_->Display(
-        notification_type, notification_id, GetProfileId(profile_),
-        profile_->IsOffTheRecord(), notification, std::move(metadata));
+    notification_bridge_->Display(notification_type, GetProfileId(profile_),
+                                  profile_->IsOffTheRecord(), notification,
+                                  std::move(metadata));
     NotificationHandler* handler = GetNotificationHandler(notification_type);
-    handler->OnShow(profile_, notification_id);
+    handler->OnShow(profile_, notification.id());
   } else if (message_center_display_service_) {
-    message_center_display_service_->Display(notification_type, notification_id,
-                                             notification, std::move(metadata));
+    message_center_display_service_->Display(notification_type, notification,
+                                             std::move(metadata));
   } else {
-    actions_.push(base::BindOnce(
-        &NativeNotificationDisplayService::Display, weak_factory_.GetWeakPtr(),
-        notification_type, notification_id, notification, std::move(metadata)));
+    actions_.push(base::BindOnce(&NativeNotificationDisplayService::Display,
+                                 weak_factory_.GetWeakPtr(), notification_type,
+                                 notification, std::move(metadata)));
   }
 }
 
@@ -99,7 +98,7 @@ void NativeNotificationDisplayService::Close(
     // origin works because only non persistent notifications care about
     // this method for JS generated close calls and they don't require
     // the origin.
-    handler->OnClose(profile_, "", notification_id, false /* by user */);
+    handler->OnClose(profile_, GURL(), notification_id, false /* by user */);
   } else if (message_center_display_service_) {
     message_center_display_service_->Close(notification_type, notification_id);
   } else {

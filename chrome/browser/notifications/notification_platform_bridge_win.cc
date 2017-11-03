@@ -146,7 +146,7 @@ HRESULT GetToastNotification(
 // Perform |operation| on a notification once the profile has been loaded.
 void ProfileLoadedCallback(NotificationCommon::Operation operation,
                            NotificationCommon::Type notification_type,
-                           const std::string& origin,
+                           const GURL& origin,
                            const std::string& notification_id,
                            const base::Optional<int>& action_index,
                            const base::Optional<base::string16>& reply,
@@ -165,7 +165,7 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
 void ForwardNotificationOperationOnUiThread(
     NotificationCommon::Operation operation,
     NotificationCommon::Type notification_type,
-    const std::string& origin,
+    const GURL& origin,
     const std::string& notification_id,
     const std::string& profile_id,
     bool incognito) {
@@ -188,7 +188,7 @@ void ForwardNotificationOperation(NotificationData* data,
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&ForwardNotificationOperationOnUiThread, operation,
-                 data->notification_type, data->origin_url.spec(),
+                 data->notification_type, data->origin_url,
                  data->notification_id, data->profile_id, data->incognito));
 }
 
@@ -208,7 +208,6 @@ NotificationPlatformBridgeWin::~NotificationPlatformBridgeWin() = default;
 
 void NotificationPlatformBridgeWin::Display(
     NotificationCommon::Type notification_type,
-    const std::string& notification_id,
     const std::string& profile_id,
     bool incognito,
     const message_center::Notification& notification,
@@ -217,10 +216,11 @@ void NotificationPlatformBridgeWin::Display(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   NotificationData* data = FindNotificationData(
-      notification_id, profile_id, notification.origin_url(), incognito);
+      notification.id(), profile_id, notification.origin_url(), incognito);
   if (!data) {
-    data = new NotificationData(notification_type, notification_id, profile_id,
-                                incognito, notification.origin_url());
+    data =
+        new NotificationData(notification_type, notification.id(), profile_id,
+                             incognito, notification.origin_url());
     notifications_.emplace(data, base::WrapUnique(data));
   }
 
@@ -246,7 +246,7 @@ void NotificationPlatformBridgeWin::Display(
   }
 
   std::unique_ptr<NotificationTemplateBuilder> notification_template =
-      NotificationTemplateBuilder::Build(notification_id, notification);
+      NotificationTemplateBuilder::Build(notification);
   mswr::ComPtr<winui::Notifications::IToastNotification> toast;
   hr = GetToastNotification(*notification_template, &toast);
   if (FAILED(hr)) {

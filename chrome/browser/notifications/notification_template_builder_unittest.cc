@@ -64,8 +64,7 @@ class NotificationTemplateBuilderTest : public ::testing::Test {
   // must be wrapped in ASSERT_NO_FATAL_FAILURE().
   void VerifyXml(const message_center::Notification& notification,
                  const base::string16& xml_template) {
-    template_ =
-        NotificationTemplateBuilder::Build(kNotificationId, notification);
+    template_ = NotificationTemplateBuilder::Build(notification);
     ASSERT_TRUE(template_);
 
     EXPECT_EQ(template_->GetNotificationTemplate(), xml_template);

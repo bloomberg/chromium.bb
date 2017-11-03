@@ -73,8 +73,8 @@ void StubNotificationDisplayService::RemoveNotification(
     NotificationHandler* handler = GetNotificationHandler(notification_type);
     DCHECK(handler);
 
-    handler->OnClose(profile_, iter->notification.origin_url().spec(),
-                     notification_id, by_user);
+    handler->OnClose(profile_, iter->notification.origin_url(), notification_id,
+                     by_user);
   }
 
   notifications_.erase(iter);
@@ -87,7 +87,7 @@ void StubNotificationDisplayService::RemoveAllNotifications(
   DCHECK(handler);
   for (auto iter = notifications_.begin(); iter != notifications_.end();) {
     if (iter->type == notification_type) {
-      handler->OnClose(profile_, iter->notification.origin_url().spec(),
+      handler->OnClose(profile_, iter->notification.origin_url(),
                        iter->notification.id(), by_user);
       iter = notifications_.erase(iter);
     } else {
@@ -98,17 +98,16 @@ void StubNotificationDisplayService::RemoveAllNotifications(
 
 void StubNotificationDisplayService::Display(
     NotificationCommon::Type notification_type,
-    const std::string& notification_id,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   // This mimics notification replacement behaviour; the Close() method on a
   // notification's delegate is not meant to be invoked in this situation.
-  Close(notification_type, notification_id);
+  Close(notification_type, notification.id());
 
   NotificationHandler* handler = GetNotificationHandler(notification_type);
   DCHECK(handler);
 
-  handler->OnShow(profile_, notification_id);
+  handler->OnShow(profile_, notification.id());
   if (notification_added_closure_)
     notification_added_closure_.Run();
 

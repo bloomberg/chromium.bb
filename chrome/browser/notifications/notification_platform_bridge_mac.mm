@@ -69,7 +69,7 @@ namespace {
 // given |operation| in a notification.
 void ProfileLoadedCallback(NotificationCommon::Operation operation,
                            NotificationCommon::Type notification_type,
-                           const std::string& origin,
+                           const GURL& origin,
                            const std::string& notification_id,
                            const base::Optional<int>& action_index,
                            const base::Optional<base::string16>& reply,
@@ -95,7 +95,7 @@ void DoProcessNotificationResponse(NotificationCommon::Operation operation,
                                    NotificationCommon::Type type,
                                    const std::string& profile_id,
                                    bool incognito,
-                                   const std::string& origin,
+                                   const GURL& origin,
                                    const std::string& notification_id,
                                    const base::Optional<int>& action_index,
                                    const base::Optional<base::string16>& reply,
@@ -224,7 +224,6 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
 
 void NotificationPlatformBridgeMac::Display(
     NotificationCommon::Type notification_type,
-    const std::string& notification_id,
     const std::string& profile_id,
     bool incognito,
     const message_center::Notification& notification,
@@ -269,7 +268,7 @@ void NotificationPlatformBridgeMac::Display(
     [builder setButtons:buttonOne secondaryButton:buttonTwo];
   }
 
-  [builder setTag:base::SysUTF8ToNSString(notification_id)];
+  [builder setTag:base::SysUTF8ToNSString(notification.id())];
   // If renotify is needed, delete the notification with the same id
   // from the notification center before displaying this one.
   // TODO(miguelg): This will need to work for alerts as well via XPC
@@ -281,7 +280,7 @@ void NotificationPlatformBridgeMac::Display(
          [notification_center deliveredNotifications]) {
       NSString* identifier = [existing_notification valueForKey:@"identifier"];
       if ([identifier
-              isEqualToString:base::SysUTF8ToNSString(notification_id)]) {
+              isEqualToString:base::SysUTF8ToNSString(notification.id())]) {
         [notification_center removeDeliveredNotification:existing_notification];
         break;
       }
@@ -289,7 +288,7 @@ void NotificationPlatformBridgeMac::Display(
   }
 
   [builder setOrigin:base::SysUTF8ToNSString(notification.origin_url().spec())];
-  [builder setNotificationId:base::SysUTF8ToNSString(notification_id)];
+  [builder setNotificationId:base::SysUTF8ToNSString(notification.id())];
   [builder setProfileId:base::SysUTF8ToNSString(profile_id)];
   [builder setIncognito:incognito];
   [builder setNotificationType:[NSNumber numberWithInteger:notification_type]];
@@ -387,9 +386,9 @@ void NotificationPlatformBridgeMac::ProcessNotificationResponse(
                      operation.unsignedIntValue),
                  static_cast<NotificationCommon::Type>(
                      notification_type.unsignedIntValue),
-                 profile_id, [is_incognito boolValue], notification_origin,
-                 notification_id, action_index, base::nullopt /* reply */,
-                 true /* by_user */));
+                 profile_id, [is_incognito boolValue],
+                 GURL(notification_origin), notification_id, action_index,
+                 base::nullopt /* reply */, true /* by_user */));
 }
 
 // static

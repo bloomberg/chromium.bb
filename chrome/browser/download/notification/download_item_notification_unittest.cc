@@ -131,7 +131,6 @@ class DownloadItemNotificationTest : public testing::Test {
         download_notification_manager_->items_[download_item_.get()].get();
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
         NotificationCommon::DOWNLOAD,
-        download_item_notification_->notification_->id(),
         *download_item_notification_->notification_);
   }
 

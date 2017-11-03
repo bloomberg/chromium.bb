@@ -20,7 +20,7 @@ void NonPersistentNotificationHandler::OnShow(
 
 void NonPersistentNotificationHandler::OnClose(
     Profile* profile,
-    const std::string& origin,
+    const GURL& origin,
     const std::string& notification_id,
     bool by_user) {
   content::NotificationEventDispatcher::GetInstance()
@@ -29,7 +29,7 @@ void NonPersistentNotificationHandler::OnClose(
 
 void NonPersistentNotificationHandler::OnClick(
     Profile* profile,
-    const std::string& origin,
+    const GURL& origin,
     const std::string& notification_id,
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply) {
