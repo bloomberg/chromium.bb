@@ -60,7 +60,7 @@ struct driver {
 	const struct backend *backend;
 	void *priv;
 	void *buffer_table;
-	void *map_table;
+	struct drv_array *mappings;
 	struct combinations combos;
 	pthread_mutex_t driver_lock;
 };

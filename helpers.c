@@ -340,27 +340,36 @@ int drv_bo_munmap(struct bo *bo, struct mapping *mapping)
 int drv_mapping_destroy(struct bo *bo)
 {
 	int ret;
-	void *ptr;
 	size_t plane;
 	struct mapping *mapping;
+	uint32_t idx;
 
 	/*
 	 * This function is called right before the buffer is destroyed. It will free any mappings
 	 * associated with the buffer.
 	 */
 
+	idx = 0;
 	for (plane = 0; plane < bo->num_planes; plane++) {
-		if (!drmHashLookup(bo->drv->map_table, bo->handles[plane].u32, &ptr)) {
-			mapping = (struct mapping *)ptr;
-			ret = bo->drv->backend->bo_unmap(bo, mapping);
-			if (ret) {
-				fprintf(stderr, "drv: munmap failed");
-				return ret;
+		while (idx < drv_array_size(bo->drv->mappings)) {
+			mapping = (struct mapping *)drv_array_at_idx(bo->drv->mappings, idx);
+			if (mapping->vma->handle != bo->handles[plane].u32) {
+				idx++;
+				continue;
 			}
 
-			drmHashDelete(bo->drv->map_table, mapping->vma->handle);
-			free(mapping->vma);
-			free(mapping);
+			if (!--mapping->vma->refcount) {
+				ret = bo->drv->backend->bo_unmap(bo, mapping);
+				if (ret) {
+					fprintf(stderr, "drv: munmap failed");
+					return ret;
+				}
+
+				free(mapping->vma);
+			}
+
+			/* This shrinks and shifts the array, so don't increment idx. */
+			drv_array_remove(bo->drv->mappings, idx);
 		}
 	}
 
