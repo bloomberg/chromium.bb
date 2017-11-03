@@ -10,7 +10,7 @@ layer at (0,0) size 800x600
           text run at (0,18) width 229: "twice, followed by a blue rectangle."
       LayoutBlockFlow {P} at (0,52) size 784x0
       LayoutBlockFlow {FORM} at (0,52) size 784x93
-        LayoutBlockFlow {INPUT} at (0,0) size 59.44x16
+        LayoutBlockFlow {INPUT} at (0,0) size 59.89x16
           LayoutInline {SPAN} at (0,0) size 44x13
             LayoutImage (floating) {IMG} at (0,0) size 16x16
             LayoutInline {SPAN} at (0,0) size 44x13

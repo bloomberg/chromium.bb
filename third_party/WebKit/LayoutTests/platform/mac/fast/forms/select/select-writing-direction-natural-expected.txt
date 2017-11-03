@@ -42,7 +42,7 @@ layer at (0,0) size 800x600
               LayoutText (anonymous) at (8,2) size 19x13
                 text run at (8,2) width 4: "("
                 text run at (11,2) width 8 RTL: "\x{5D0}"
-                text run at (18,2) width 9: "A"
+                text run at (19,2) width 8: "A"
           LayoutText {#text} at (218,0) size 4x18
             text run at (218,0) width 4: " "
           LayoutMenuList {SELECT} at (222,1) size 70x18 [bgcolor=#F8F8F8]
@@ -71,7 +71,7 @@ layer at (0,0) size 800x600
               LayoutText (anonymous) at (8,2) size 19x13
                 text run at (8,2) width 4: "("
                 text run at (11,2) width 8 RTL: "\x{5D0}"
-                text run at (18,2) width 9: "A"
+                text run at (19,2) width 8: "A"
           LayoutText {#text} at (710,0) size 4x18
             text run at (710,0) width 4: " "
           LayoutMenuList {SELECT} at (714,1) size 70x18 [bgcolor=#F8F8F8]
@@ -99,8 +99,8 @@ layer at (0,0) size 800x600
           LayoutMenuList {SELECT} at (74,1) size 70x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 70x18
               LayoutText (anonymous) at (43,2) size 19x13
-                text run at (43,2) width 9: "A"
-                text run at (51,2) width 11 RTL: "(\x{5D0}"
+                text run at (43,2) width 8: "A"
+                text run at (50,2) width 12 RTL: "(\x{5D0}"
           LayoutText {#text} at (70,0) size 4x18
             text run at (70,0) width 4 RTL: " "
           LayoutMenuList {SELECT} at (0,1) size 70x18 [bgcolor=#F8F8F8]
@@ -128,8 +128,8 @@ layer at (0,0) size 800x600
           LayoutMenuList {SELECT} at (566,1) size 70x18 [bgcolor=#F8F8F8]
             LayoutBlockFlow (anonymous) at (0,0) size 70x18
               LayoutText (anonymous) at (43,2) size 19x13
-                text run at (43,2) width 9: "A"
-                text run at (51,2) width 11 RTL: "(\x{5D0}"
+                text run at (43,2) width 8: "A"
+                text run at (50,2) width 12 RTL: "(\x{5D0}"
           LayoutText {#text} at (562,0) size 4x18
             text run at (562,0) width 4 RTL: " "
           LayoutMenuList {SELECT} at (492,1) size 70x18 [bgcolor=#F8F8F8]

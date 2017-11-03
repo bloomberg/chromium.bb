@@ -23,9 +23,9 @@ layer at (204,52) size 190x24
       text run at (0,0) width 74: "\x{3075} ABCgjy"
 layer at (10,78) size 251x28
   LayoutBlockFlow {DIV} at (2,0) size 251x28
-    LayoutText {#text} at (0,0) size 79x28
-      text run at (0,0) width 79: "ABCgjy"
+    LayoutText {#text} at (0,0) size 80x28
+      text run at (0,0) width 80: "ABCgjy"
 layer at (11,111) size 167x18
   LayoutBlockFlow {DIV} at (3,5) size 167x18
-    LayoutText {#text} at (0,0) size 56x18
-      text run at (0,0) width 56: "ABCgjy"
+    LayoutText {#text} at (0,0) size 54x18
+      text run at (0,0) width 54: "ABCgjy"

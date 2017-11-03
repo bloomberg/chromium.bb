@@ -20,5 +20,5 @@ layer at (0,0) size 800x600
           text run at (0,18) width 64: "vertically."
 layer at (11,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 67x13
-      text run at (0,0) width 67: "Lorem Ipsum"
+    LayoutText {#text} at (0,0) size 68x13
+      text run at (0,0) width 68: "Lorem Ipsum"

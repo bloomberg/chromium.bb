@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (464,14) size 1x0
       LayoutTextControl {INPUT} at (0,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (0,0) size 0x0
-layer at (11,29) size 125x13 scrollWidth 158
+layer at (11,29) size 125x13 scrollWidth 160
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 159x13
-      text run at (0,0) width 159: "This border should be dimmed"
+    LayoutText {#text} at (0,0) size 161x13
+      text run at (0,0) width 161: "This border should be dimmed"

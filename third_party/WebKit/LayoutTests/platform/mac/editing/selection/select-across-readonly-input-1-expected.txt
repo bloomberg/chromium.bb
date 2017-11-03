@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
 layer at (11,115) size 53x18
   LayoutBlockFlow {DIV} at (3,3) size 52.95x18
-    LayoutText {#text} at (0,0) size 37x18
-      text run at (0,0) width 37: "hello"
+    LayoutText {#text} at (0,0) size 35x18
+      text run at (0,0) width 35: "hello"
 selection start: position 4 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 5 {DIV} of body
 selection end:   position 5 of child 0 {#text} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 5 {DIV} of body

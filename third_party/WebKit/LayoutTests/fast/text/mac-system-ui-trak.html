@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+    .macsystemfont {
+    font-family: system-ui;
+    }
+</style>
+<div id="testDivs"></div>
+<script>
+setup({ explicit_done: true });
+  test(function() {
+
+      for (var i = 10; i < 120; i += 10) {
+          containerDiv = document.createElement('div');
+          el = document.createElement('span');
+          el.classList += "macsystemfont";
+          el.style.fontSize = i + "px";
+          el.appendChild(document.createTextNode('YouWebTorrentVa'));
+          containerDiv.appendChild(el);
+          testDivs.appendChild(containerDiv);
+      }
+
+      // Width to font size ratios from Safari for ".SF NS Text". If the ratio
+      // is not constant, this means letter spacing is not linearly changing
+      // with font size, which means varying tracking is applied. At font sizes
+      // above 78px, the tracking table ends and values become constant again.
+      var expectedRatios = [ 11.358723958333334,
+                             10.4921875,
+                             10.375,
+                             10.31640625,
+                             10.267578125,
+                             10.208984375,
+                             10.16015625,
+                             10.130859375,
+                             10.130859375,
+                             10.130859375,
+                             10.130859375,
+                             10.130859375 ];
+
+      var theDivs = document.querySelectorAll(".macsystemfont");
+      assert_equals(theDivs.length, 11);
+      var kCssPixelsPerPoint = 96 / 72;
+      for (oneDiv of theDivs) {
+          var fontSize = parseFloat(getComputedStyle(oneDiv)['fontSize'],10);
+          var width = oneDiv.getBoundingClientRect().width;
+          var ptSize = fontSize / kCssPixelsPerPoint;
+          var ratio = width/ptSize;
+          var expectation = expectedRatios[fontSize / 10 - 1];
+          assert_less_than(Math.abs(ratio - expectation), 0.01);
+      }
+      testDivs.style.display = "none";
+  }, "Font size to width ratio should match Safari and stay constant above 78px, according to the font's trak table.");
+done();
+</script>

@@ -34,6 +34,7 @@
 
 #include "build/build_config.h"
 #include "platform/Histogram.h"
+#include "platform/ResolutionUnits.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontGlobalContext.h"
 #include "platform/fonts/FontPlatformData.h"
@@ -342,6 +343,7 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
   int scale =
       SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(platform_data_->size());
   hb_font_set_scale(unscaled_font_, scale, scale);
+  hb_font_set_ptem(unscaled_font_, platform_data_->size() / kCssPixelsPerPoint);
 
   SkTypeface* typeface = harf_buzz_font_data_->paint_.getTypeface();
   int axis_count = typeface->getVariationDesignPosition(nullptr, 0);

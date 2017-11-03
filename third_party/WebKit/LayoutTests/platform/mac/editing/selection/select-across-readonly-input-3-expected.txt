@@ -21,7 +21,7 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
 layer at (47,115) size 53x18
   LayoutBlockFlow {DIV} at (3,3) size 52.95x18
-    LayoutText {#text} at (0,0) size 42x18
-      text run at (0,0) width 42: "world"
+    LayoutText {#text} at (0,0) size 40x18
+      text run at (0,0) width 40: "world"
 selection start: position 2 of child 0 {#text} of child 1 {SPAN} of child 5 {DIV} of body
 selection end:   position 1 of child 2 {#text} of child 5 {DIV} of body
