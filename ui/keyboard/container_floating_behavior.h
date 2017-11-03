@@ -47,6 +47,7 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
   ContainerType GetType() const override;
+  bool TextBlurHidesKeyboard() const override;
 
  private:
   // Ensures that the keyboard is neither off the screen nor overlapping an
