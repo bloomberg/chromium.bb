@@ -36,6 +36,11 @@ SPURIOUS_PATTERNS = map(re.compile, [
     # crbug.com/770634, likely a bug in Xcode 9.1 beta, remove once build
     # requires a version of Xcode with a fix.
     r'\[\]\[ipad\]\[76x76\]\[\]\[\]\[1x\]\[\]\[\]: notice: \(null\)',
+
+    # crbug.com/770634, likely a bug in Xcode 9.2 beta, remove once build
+    # requires a version of Xcode with a fix.
+    r'\[\]\[ipad\]\[76x76\]\[\]\[\]\[1x\]\[\]\[\]: notice: 76x76@1x app icons'
+    ' only apply to iPad apps targeting releases of iOS prior to 10.0.',
 ])
 
 # Map special type of asset catalog to the corresponding command-line
