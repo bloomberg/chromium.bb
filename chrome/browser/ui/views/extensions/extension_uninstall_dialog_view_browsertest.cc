@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -250,4 +251,106 @@ IN_PROC_BROWSER_TEST_F(
   // The delegate should not be canceled because the user chose to uninstall the
   // extension, which should be successful.
   EXPECT_TRUE(!delegate.canceled());
+}
+
+class ExtensionUninstallDialogViewInteractiveBrowserTest
+    : public DialogBrowserTest {
+ public:
+  enum UninstallMethod {
+    MANUAL_UNINSTALL,
+    UNINSTALL_BY_EXTENSION,
+  };
+  enum ExtensionOrigin {
+    EXTENSION_LOCAL_SOURCE,
+    EXTENSION_FROM_WEBSTORE,
+  };
+  void ShowDialog(const std::string& name) override {
+    extensions::DictionaryBuilder manifest_builder;
+    manifest_builder.Set("name", "ExtensionForRemoval").Set("version", "1.0");
+    if (extension_origin_ == EXTENSION_FROM_WEBSTORE) {
+      manifest_builder.Set("update_url",
+                           extension_urls::GetWebstoreUpdateUrl().spec());
+    }
+
+    extension_ = extensions::ExtensionBuilder()
+                     .SetManifest(manifest_builder.Build())
+                     .Build();
+    extensions::ExtensionSystem::Get(browser()->profile())
+        ->extension_service()
+        ->AddExtension(extension_.get());
+
+    dialog_.reset(extensions::ExtensionUninstallDialog::Create(
+        browser()->profile(), browser()->window()->GetNativeWindow(),
+        &delegate_));
+    if (uninstall_method_ == UNINSTALL_BY_EXTENSION) {
+      triggering_extension_ =
+          extensions::ExtensionBuilder()
+              .SetManifest(extensions::DictionaryBuilder()
+                               .Set("name", "TestExtensionRemover")
+                               .Set("version", "1.0")
+                               .Build())
+              .Build();
+      dialog_->ConfirmUninstallByExtension(
+          extension_.get(), triggering_extension_.get(),
+          extensions::UNINSTALL_REASON_FOR_TESTING,
+          extensions::UNINSTALL_SOURCE_FOR_TESTING);
+    } else {
+      dialog_->ConfirmUninstall(extension_.get(),
+                                extensions::UNINSTALL_REASON_FOR_TESTING,
+                                extensions::UNINSTALL_SOURCE_FOR_TESTING);
+    }
+
+    // The dialog shows when an icon update happens, run all pending messages to
+    // make sure that the widget exists and is showing at the end of this call.
+    content::RunAllPendingInMessageLoop();
+  }
+
+  void RunTest(UninstallMethod uninstall_method,
+               ExtensionOrigin extension_origin) {
+    uninstall_method_ = uninstall_method;
+    extension_origin_ = extension_origin;
+
+    RunDialog();
+  }
+
+ private:
+  class TestDelegate : public extensions::ExtensionUninstallDialog::Delegate {
+    void OnExtensionUninstallDialogClosed(
+        bool did_start_uninstall,
+        const base::string16& error) override {}
+  };
+
+  void TearDownOnMainThread() override {
+    // Dialog holds references to the profile, so it needs to tear down before
+    // profiles are deleted.
+    dialog_.reset();
+  }
+
+  scoped_refptr<extensions::Extension> extension_;
+  scoped_refptr<extensions::Extension> triggering_extension_;
+  TestDelegate delegate_;
+  std::unique_ptr<extensions::ExtensionUninstallDialog> dialog_;
+
+  UninstallMethod uninstall_method_;
+  ExtensionOrigin extension_origin_;
+};
+
+IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_ManualUninstall) {
+  RunTest(MANUAL_UNINSTALL, EXTENSION_LOCAL_SOURCE);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_ManualUninstallShowReportAbuse) {
+  RunTest(MANUAL_UNINSTALL, EXTENSION_FROM_WEBSTORE);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_UninstallByExtension) {
+  RunTest(UNINSTALL_BY_EXTENSION, EXTENSION_LOCAL_SOURCE);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_UninstallByExtensionShowReportAbuse) {
+  RunTest(UNINSTALL_BY_EXTENSION, EXTENSION_FROM_WEBSTORE);
 }

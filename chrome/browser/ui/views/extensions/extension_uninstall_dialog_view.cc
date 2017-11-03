@@ -16,12 +16,14 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_features.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -31,8 +33,6 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace {
-
-const int kRightColumnWidth = 210;
 
 class ExtensionUninstallDialogDelegateView;
 
@@ -65,9 +65,12 @@ class ExtensionUninstallDialogViews
 // The dialog's view, owned by the views framework.
 class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
  public:
+  // Constructor for view component of dialog. triggering_extension may be null
+  // if the uninstall dialog was manually triggered (from chrome://extensions).
   ExtensionUninstallDialogDelegateView(
       ExtensionUninstallDialogViews* dialog_view,
-      bool triggered_by_extension,
+      const std::string& extension_name,
+      const extensions::Extension* triggering_extension,
       const gfx::ImageSkia* image);
   ~ExtensionUninstallDialogDelegateView() override;
 
@@ -76,28 +79,25 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
   void DialogDestroyed() { dialog_ = NULL; }
 
  private:
-  // views::DialogDelegate:
-  views::View* CreateExtraView() override;
-  bool GetExtraViewPadding(int* padding) override;
+  // views::DialogDelegateView:
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  int GetDefaultDialogButton() const override {
-    // Default to accept when triggered via chrome://extensions page.
-    return triggered_by_extension_ ?
-        ui::DIALOG_BUTTON_CANCEL : ui::DIALOG_BUTTON_OK;
-  }
   bool Accept() override;
   bool Cancel() override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // views::WidgetDelegate:
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_WINDOW; }
   base::string16 GetWindowTitle() const override;
+  gfx::ImageSkia GetWindowIcon() override { return image_; }
+  bool ShouldShowWindowIcon() const override { return true; }
+  bool ShouldShowCloseButton() const override { return false; }
 
   ExtensionUninstallDialogViews* dialog_;
+  const base::string16 extension_name_;
 
-  views::ImageView* icon_;
   views::Label* heading_;
-  bool triggered_by_extension_;
   views::Checkbox* report_abuse_checkbox_;
+  gfx::ImageSkia image_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUninstallDialogDelegateView);
 };
@@ -118,7 +118,7 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 
 void ExtensionUninstallDialogViews::Show() {
   view_ = new ExtensionUninstallDialogDelegateView(
-      this, triggering_extension() != nullptr, &icon());
+      this, extension()->name(), triggering_extension(), &icon());
   constrained_window::CreateBrowserModalDialogViews(view_, parent())->Show();
 }
 
@@ -149,29 +149,44 @@ void ExtensionUninstallDialogViews::DialogCanceled() {
 
 ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     ExtensionUninstallDialogViews* dialog_view,
-    bool triggered_by_extension,
+    const std::string& extension_name,
+    const extensions::Extension* triggering_extension,
     const gfx::ImageSkia* image)
     : dialog_(dialog_view),
-      triggered_by_extension_(triggered_by_extension),
-      report_abuse_checkbox_(nullptr) {
+      extension_name_(base::UTF8ToUTF16(extension_name)),
+      report_abuse_checkbox_(nullptr),
+      image_(gfx::ImageSkiaOperations::CreateResizedImage(
+          *image,
+          skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
+          gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
+                    extension_misc::EXTENSION_ICON_SMALL))) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kHorizontal,
-      provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
+      views::BoxLayout::kVertical,
+      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  icon_ = new views::ImageView();
-  DCHECK(image->width() && image->height());
-  icon_->SetImageSize(gfx::Size(image->width(), image->height()));
-  icon_->SetImage(*image);
-  AddChildView(icon_);
+  if (triggering_extension) {
+    heading_ = new views::Label(l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_PROMPT_UNINSTALL_TRIGGERED_BY_EXTENSION,
+        base::UTF8ToUTF16(triggering_extension->name())));
+    heading_->SetMultiLine(true);
+    heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    heading_->SetAllowCharacterBreak(true);
+    AddChildView(heading_);
+  }
 
-  heading_ = new views::Label(base::UTF8ToUTF16(dialog_->GetHeadingText()));
-  heading_->SetMultiLine(true);
-  heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  heading_->SetAllowCharacterBreak(true);
-  heading_->SizeToFit(kRightColumnWidth);
-  AddChildView(heading_);
+  if (dialog_->ShouldShowReportAbuseCheckbox()) {
+    if (triggering_extension) {
+      report_abuse_checkbox_ = new views::Checkbox(l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE_FROM_EXTENSION,
+          extension_name_));
+    } else {
+      report_abuse_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
+          IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE));
+    }
+    AddChildView(report_abuse_checkbox_);
+  }
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_UNINSTALL);
 }
@@ -185,22 +200,6 @@ ExtensionUninstallDialogDelegateView::~ExtensionUninstallDialogDelegateView() {
   // about to be freed by the Widget framework.
   if (dialog_)
     dialog_->DialogDelegateDestroyed();
-}
-
-views::View* ExtensionUninstallDialogDelegateView::CreateExtraView() {
-  if (dialog_->ShouldShowReportAbuseCheckbox()) {
-    report_abuse_checkbox_ = new views::Checkbox(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE));
-  }
-  return report_abuse_checkbox_;
-}
-
-bool ExtensionUninstallDialogDelegateView::GetExtraViewPadding(int* padding) {
-  // We want a little more padding between the "report abuse" checkbox and the
-  // buttons.
-  *padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE);
-  return true;
 }
 
 base::string16 ExtensionUninstallDialogDelegateView::GetDialogButtonLabel(
@@ -223,8 +222,15 @@ bool ExtensionUninstallDialogDelegateView::Cancel() {
   return true;
 }
 
+gfx::Size ExtensionUninstallDialogDelegateView::CalculatePreferredSize() const {
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_MODAL_DIALOG_WIDTH_CONTAINING_MULTILINE_TEXT);
+  return gfx::Size(width, GetHeightForWidth(width));
+}
+
 base::string16 ExtensionUninstallDialogDelegateView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
+  return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_TITLE,
+                                    extension_name_);
 }
 
 }  // namespace

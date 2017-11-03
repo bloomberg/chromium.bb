@@ -4338,11 +4338,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
         Remove
       </message>
-      <message name="IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE" desc="Message to indicate the user can report abuse for the extension about to be uninstalled.">
+      <message name="IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE" desc="Label for a checkbox the user can tick to report abuse for the extension being uninstalled.">
         Report abuse
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE_FROM_EXTENSION" desc="Label for a checkbox the user can tick to report abuse for the extension being uninstalled.">
+        Report abuse from "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_UNINSTALL_TITLE" desc="Title text for removing an extension.">
+        Remove "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON" desc="Text for the uninstall button on the non-platform app and ARC(App Runtime for Chrome) app uninstall prompt">
         Uninstall
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_UNINSTALL_TRIGGERED_BY_EXTENSION" desc="Text in uninstall-extension dialog that indicates the uninstall was triggered by another extension (the name of the extension being uninstalled is already present in the dialog title).">
+        "<ph name="TRIGGERING_EXTENSION_NAME">$1<ex>Extension Manager</ex></ph>" would like to remove this extension.
       </message>
       <message name="IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON" desc="Text for the enable button on the extension re-enable prompt">
         Re-enable
