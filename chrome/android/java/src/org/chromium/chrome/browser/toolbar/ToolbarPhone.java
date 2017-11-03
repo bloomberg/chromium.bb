@@ -458,7 +458,7 @@ public class ToolbarPhone extends ToolbarLayout
                 return getMenuButtonHelper().onEnterKeyPress(mMenuButton);
             }
         });
-        onHomeButtonUpdate(HomepageManager.isHomepageEnabled(getContext()));
+        onHomeButtonUpdate(HomepageManager.isHomepageEnabled());
 
         updateVisualsForToolbarState();
     }

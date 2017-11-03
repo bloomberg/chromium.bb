@@ -159,8 +159,7 @@ public class MainPreferences extends PreferenceFragment
 
         if (HomepageManager.shouldShowHomepageSetting()) {
             Preference homepagePref = addPreferenceIfAbsent(PREF_HOMEPAGE);
-            setOnOffSummary(homepagePref,
-                    HomepageManager.getInstance(getActivity()).getPrefHomepageEnabled());
+            setOnOffSummary(homepagePref, HomepageManager.getInstance().getPrefHomepageEnabled());
         } else {
             removePreferenceIfPresent(PREF_HOMEPAGE);
         }
