@@ -393,10 +393,10 @@ void KeyboardController::SetContainerBehaviorInternal(
     const ContainerType type) {
   switch (type) {
     case ContainerType::FULL_WIDTH:
-      container_behavior_ = std::make_unique<ContainerFullWidthBehavior>();
+      container_behavior_ = std::make_unique<ContainerFullWidthBehavior>(this);
       break;
     case ContainerType::FLOATING:
-      container_behavior_ = std::make_unique<ContainerFloatingBehavior>();
+      container_behavior_ = std::make_unique<ContainerFloatingBehavior>(this);
       break;
     default:
       NOTREACHED();

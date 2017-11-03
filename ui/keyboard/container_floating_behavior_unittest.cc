@@ -17,7 +17,7 @@ class ContainerFloatingBehaviorTest : public testing::Test {
 };
 
 TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequest) {
-  ContainerFloatingBehavior floating_behavior;
+  ContainerFloatingBehavior floating_behavior(nullptr);
 
   const int keyboard_width = 600;
   const int keyboard_height = 70;
@@ -48,7 +48,7 @@ TEST(ContainerFloatingBehaviorTest, AdjustSetBoundsRequest) {
 }
 
 TEST(ContainerFloatingBehaviorTest, DontSaveCoordinatesUntilKeyboardMoved) {
-  ContainerFloatingBehavior floating_behavior;
+  ContainerFloatingBehavior floating_behavior(nullptr);
 
   const int keyboard_width = 600;
   const int keyboard_height = 70;

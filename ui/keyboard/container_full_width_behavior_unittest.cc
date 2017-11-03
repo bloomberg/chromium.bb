@@ -16,7 +16,7 @@ class ContainerFullWidthBehaviorTest : public testing::Test {
 };
 
 TEST(ContainerFullWidthBehaviorTest, AdjustSetBoundsRequest) {
-  ContainerFullWidthBehavior full_width_behavior;
+  ContainerFullWidthBehavior full_width_behavior(nullptr);
 
   gfx::Rect workspace(0, 0, 300, 200);
   gfx::Rect requested_bounds(0, 0, 10, 10);
