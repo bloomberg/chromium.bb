@@ -67,8 +67,8 @@ void daala_inv_txfm_add(const tran_low_t *input_coeffs, void *output_pixels,
                              txfm_param->eob, px_depth);
   } else {
     // General TX case
-    // Q3 coeff Q4 TX compatability mode
-    const int downshift = 4;
+    const int downshift = TX_COEFF_DEPTH - px_depth;
+    assert(downshift >= 0);
     assert(sizeof(tran_low_t) == sizeof(od_coeff));
     assert(sizeof(tran_low_t) >= 4);
 
@@ -92,16 +92,6 @@ void daala_inv_txfm_add(const tran_low_t *input_coeffs, void *output_pixels,
 
     assert(col_tx);
     assert(row_tx);
-
-    // This is temporary while we're testing against existing
-    // behavior (preshift up one).
-    // Remove before flight
-    od_coeff tmp[MAX_TX_SQUARE];
-    int upshift = 1;
-    for (r = 0; r < rows; ++r)
-      for (c = 0; c < cols; ++c)
-        tmp[r * cols + c] = input_coeffs[r * cols + c] << upshift;
-    input_coeffs = tmp;
 
     // Inverse-transform rows
     for (r = 0; r < rows; ++r) {
