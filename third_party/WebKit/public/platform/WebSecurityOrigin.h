@@ -34,11 +34,10 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/WebString.h"
+#include "url/origin.h"
 
 #if INSIDE_BLINK
 #include "platform/wtf/RefPtr.h"
-#else
-#include "url/origin.h"
 #endif
 
 namespace blink {
@@ -116,30 +115,12 @@ class WebSecurityOrigin {
       scoped_refptr<SecurityOrigin>);
   BLINK_PLATFORM_EXPORT operator scoped_refptr<SecurityOrigin>() const;
   BLINK_PLATFORM_EXPORT SecurityOrigin* Get() const;
-#else
+#endif
   // TODO(mkwst): A number of properties don't survive a round-trip
   // ('document.domain', for instance).  We'll need to fix that for OOPI-enabled
   // embedders, https://crbug.com/490074.
-  operator url::Origin() const {
-    return IsUnique() ? url::Origin()
-                      : url::Origin::CreateFromNormalizedTupleWithSuborigin(
-                            Protocol().Ascii(), Host().Ascii(), EffectivePort(),
-                            Suborigin().Ascii());
-  }
-
-  WebSecurityOrigin(const url::Origin& origin) {
-    if (origin.unique()) {
-      Assign(WebSecurityOrigin::CreateUnique());
-      return;
-    }
-
-    // TODO(mkwst): This might open up issues by double-canonicalizing the host.
-    Assign(WebSecurityOrigin::CreateFromTupleWithSuborigin(
-        WebString::FromUTF8(origin.scheme()),
-        WebString::FromUTF8(origin.host()), origin.port(),
-        WebString::FromUTF8(origin.suborigin())));
-  }
-#endif
+  BLINK_PLATFORM_EXPORT WebSecurityOrigin(const url::Origin&);
+  BLINK_PLATFORM_EXPORT operator url::Origin() const;
 
  private:
   // Present only to facilitate conversion from 'url::Origin'; this constructor
