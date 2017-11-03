@@ -2875,7 +2875,8 @@ void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
 
 void WebContentsImpl::ResizeDueToAutoResize(
     RenderWidgetHostImpl* render_widget_host,
-    const gfx::Size& new_size) {
+    const gfx::Size& new_size,
+    uint64_t sequence_number) {
   if (render_widget_host != GetRenderViewHost()->GetWidget())
     return;
 
@@ -2895,6 +2896,11 @@ void WebContentsImpl::ResizeDueToAutoResize(
 
   if (delegate_)
     delegate_->ResizeDueToAutoResize(this, new_size);
+
+  RenderWidgetHostViewBase* view =
+      static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
+  if (view)
+    view->ResizeDueToAutoResize(new_size, sequence_number);
 }
 
 gfx::Size WebContentsImpl::GetAutoResizeSize() {

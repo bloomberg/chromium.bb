@@ -708,6 +708,13 @@ void RenderWidgetHostViewGuest::GetScreenInfo(ScreenInfo* screen_info) {
   *screen_info = guest_->screen_info();
 }
 
+void RenderWidgetHostViewGuest::ResizeDueToAutoResize(
+    const gfx::Size& new_size,
+    uint64_t sequence_number) {
+  if (guest_)
+    guest_->ResizeDueToAutoResize(new_size, sequence_number);
+}
+
 bool RenderWidgetHostViewGuest::IsRenderWidgetHostViewGuest() {
   return true;
 }

@@ -150,23 +150,19 @@ function testAutosizeHeight() {
   webview.maxheight = 200;
 
   var step = 1;
+  var finalWidth = 200;
+  var finalHeight = 50;
   webview.addEventListener('sizechanged', function(e) {
-    switch (step) {
-      case 1:
-        embedder.test.assertEq(200, e.newHeight);
-        // Change the maxheight to verify that we see the change.
-        webview.maxheight = 50;
-        break;
-      case 2:
-        embedder.test.assertEq(200, e.oldHeight);
-        embedder.test.assertEq(50, e.newHeight);
-        embedder.test.succeed();
-        break;
-      default:
-        window.console.log('Unexpected sizechanged event, step = ' + step);
-        embedder.test.fail();
-        break;
-    }
+    embedder.test.assertTrue(e.newHeight >= webview.minheight);
+    embedder.test.assertTrue(e.newHeight <= webview.maxheight);
+    embedder.test.assertTrue(e.newWidth >= webview.minwidth);
+    embedder.test.assertTrue(e.newWidth <= webview.maxwidth);
+    if (step == 1)
+      webview.maxheight = 50;
+
+    // We are done once the size settles on the final width and height.
+    if (e.newHeight == finalHeight && e.newWidth == finalWidth)
+      embedder.test.succeed();
     ++step;
   });
 

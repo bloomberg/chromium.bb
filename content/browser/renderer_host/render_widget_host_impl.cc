@@ -2462,19 +2462,27 @@ void RenderWidgetHostImpl::DelayedAutoResized(uint64_t sequence_number) {
   if (!auto_resize_enabled_)
     return;
 
+  last_auto_resize_request_number_ = sequence_number;
+
   if (delegate_)
-    delegate_->ResizeDueToAutoResize(this, new_size);
+    delegate_->ResizeDueToAutoResize(this, new_size, sequence_number);
+}
+
+void RenderWidgetHostImpl::DetachDelegate() {
+  delegate_ = nullptr;
+  latency_tracker_.SetDelegate(nullptr);
+}
+
+void RenderWidgetHostImpl::DidAllocateLocalSurfaceIdForAutoResize(
+    uint64_t sequence_number) {
+  if (last_auto_resize_request_number_ != sequence_number)
+    return;
 
   viz::LocalSurfaceId local_surface_id(view_->GetLocalSurfaceId());
   if (local_surface_id.is_valid()) {
     Send(new ViewMsg_SetLocalSurfaceIdForAutoResize(
         routing_id_, sequence_number, local_surface_id));
   }
-}
-
-void RenderWidgetHostImpl::DetachDelegate() {
-  delegate_ = nullptr;
-  latency_tracker_.SetDelegate(nullptr);
 }
 
 void RenderWidgetHostImpl::DidReceiveRendererFrame() {
