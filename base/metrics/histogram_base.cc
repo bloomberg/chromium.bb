@@ -7,17 +7,21 @@
 #include <limits.h>
 
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "base/values.h"
 
 namespace base {
@@ -62,14 +66,13 @@ HistogramBase* DeserializeHistogramInfo(PickleIterator* iter) {
 
 const HistogramBase::Sample HistogramBase::kSampleType_MAX = INT_MAX;
 
-HistogramBase::HistogramBase(const std::string& name)
-    : histogram_name_(name),
-      flags_(kNoFlags) {}
+HistogramBase::HistogramBase(const char* name)
+    : histogram_name_(name), flags_(kNoFlags) {}
 
 HistogramBase::~HistogramBase() {}
 
 void HistogramBase::CheckName(const StringPiece& name) const {
-  DCHECK_EQ(histogram_name(), name);
+  DCHECK_EQ(StringPiece(histogram_name()), name);
 }
 
 void HistogramBase::SetFlags(int32_t flags) {
@@ -159,6 +162,19 @@ void HistogramBase::WriteAsciiBucketValue(Count current,
                                           double scaled_sum,
                                           std::string* output) const {
   StringAppendF(output, " (%d = %3.1f%%)", current, current/scaled_sum);
+}
+
+// static
+char const* HistogramBase::GetPermanentName(const std::string& name) {
+  // A set of histogram names that provides the "permanent" lifetime required
+  // by histogram objects for those strings that are not already code constants
+  // or held in persistent memory.
+  static LazyInstance<std::set<std::string>>::Leaky permanent_names;
+  static LazyInstance<Lock>::Leaky permanent_names_lock;
+
+  AutoLock lock(permanent_names_lock.Get());
+  auto result = permanent_names.Get().insert(name);
+  return result.first->c_str();
 }
 
 }  // namespace base

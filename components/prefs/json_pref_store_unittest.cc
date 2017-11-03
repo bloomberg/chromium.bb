@@ -540,7 +540,7 @@ TEST_F(JsonPrefStoreTest, WriteCountHistogramTestBasic) {
   histogram_tester.ExpectTotalCount(histogram_name, 1);
 
   ASSERT_EQ("Settings.JsonDataWriteCount.Local_State",
-            histogram.GetHistogram()->histogram_name());
+            std::string(histogram.GetHistogram()->histogram_name()));
   ASSERT_TRUE(histogram.GetHistogram()->HasConstructionArguments(1, 30, 31));
 }
 

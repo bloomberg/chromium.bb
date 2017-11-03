@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -87,16 +88,14 @@ const HistogramArgs kHistogramsToGroup[] = {
 // of the form "<metric-name>.<app-name>".
 class GroupedHistogram : public base::Histogram {
  public:
-  GroupedHistogram(const std::string& metric_to_override,
+  GroupedHistogram(const char* metric_to_override,
                    Sample minimum,
                    Sample maximum,
                    const base::BucketRanges* ranges)
       : Histogram(metric_to_override, minimum, maximum, ranges),
-        metric_to_group_(metric_to_override),
         minimum_(minimum),
         maximum_(maximum),
-        bucket_count_(ranges->bucket_count()) {
-  }
+        bucket_count_(ranges->bucket_count()) {}
 
   ~GroupedHistogram() override {
   }
@@ -104,9 +103,12 @@ class GroupedHistogram : public base::Histogram {
   // base::Histogram implementation:
   void Add(Sample value) override {
     Histogram::Add(value);
-    std::string name(base::StringPrintf("%s.%s",
-                                        histogram_name().c_str(),
-                                        GetAppName().c_str()));
+
+    // Note: This is very inefficient. Fetching the app name (which has a lock)
+    // plus doing a search by name with FactoryGet (which also has a lock) makes
+    // incrementing a metric relatively slow.
+    std::string name(
+        base::StringPrintf("%s.%s", histogram_name(), GetAppName().c_str()));
     HistogramBase* grouped_histogram =
         base::Histogram::FactoryGet(name,
                                     minimum_,
@@ -120,7 +122,6 @@ class GroupedHistogram : public base::Histogram {
  private:
   // Saved construction arguments for reconstructing the Histogram later (with
   // a suffixed app name).
-  std::string metric_to_group_;
   Sample minimum_;
   Sample maximum_;
   uint32_t bucket_count_;
@@ -132,15 +133,17 @@ class GroupedHistogram : public base::Histogram {
 // before any Histogram of the same name has been used.
 // It acts similarly to Histogram::FactoryGet but checks that
 // the histogram is being newly created and does not already exist.
-void PreregisterHistogram(const std::string& name,
+void PreregisterHistogram(const char* name,
                           GroupedHistogram::Sample minimum,
                           GroupedHistogram::Sample maximum,
                           uint32_t bucket_count,
                           int32_t flags) {
+  base::StringPiece name_piece(name);
+
   DCHECK(base::StatisticsRecorder::IsActive());
   DCHECK(base::Histogram::InspectConstructionArguments(
-      name, &minimum, &maximum, &bucket_count));
-  DCHECK(!base::StatisticsRecorder::FindHistogram(name))
+      name_piece, &minimum, &maximum, &bucket_count));
+  DCHECK(!base::StatisticsRecorder::FindHistogram(name_piece))
       << "Failed to preregister " << name << ", Histogram already exists.";
 
   // To avoid racy destruction at shutdown, the following will be leaked.

@@ -80,6 +80,7 @@
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -140,7 +141,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
 
   // Create a histogram using data in persistent storage.
   static std::unique_ptr<HistogramBase> PersistentCreate(
-      const std::string& name,
+      const char* name,
       Sample minimum,
       Sample maximum,
       const BucketRanges* ranges,
@@ -186,7 +187,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
   // converts it to good input: 1.
   // TODO(bcwhite): Use false returns to create "sink" histograms so that bad
   // data doesn't create confusion on the servers.
-  static bool InspectConstructionArguments(const std::string& name,
+  static bool InspectConstructionArguments(StringPiece name,
                                            Sample* minimum,
                                            Sample* maximum,
                                            uint32_t* bucket_count);
@@ -226,7 +227,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
 
   // |ranges| should contain the underflow and overflow buckets. See top
   // comments for example.
-  Histogram(const std::string& name,
+  Histogram(const char* name,
             Sample minimum,
             Sample maximum,
             const BucketRanges* ranges);
@@ -237,7 +238,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
   // the life of this memory is managed externally and exceeds the lifetime
   // of this object. Practically, this memory is never released until the
   // process exits and the OS cleans it up.
-  Histogram(const std::string& name,
+  Histogram(const char* name,
             Sample minimum,
             Sample maximum,
             const BucketRanges* ranges,
@@ -311,18 +312,18 @@ class BASE_EXPORT Histogram : public HistogramBase {
                              int64_t* sum,
                              ListValue* buckets) const override;
 
+  // Samples that have not yet been logged with SnapshotDelta().
+  std::unique_ptr<SampleVectorBase> unlogged_samples_;
+
+  // Accumulation of all samples that have been logged with SnapshotDelta().
+  std::unique_ptr<SampleVectorBase> logged_samples_;
+
   // This is a dummy field placed where corruption is frequently seen on
   // current Android builds. The hope is that it will mitigate the problem
   // sufficiently to continue with the M61 beta branch while investigation
   // into the true problem continues.
   // TODO(bcwhite): Remove this once crbug/736675 is fixed.
   const uintptr_t dummy_;
-
-  // Samples that have not yet been logged with SnapshotDelta().
-  std::unique_ptr<SampleVectorBase> unlogged_samples_;
-
-  // Accumulation of all samples that have been logged with SnapshotDelta().
-  std::unique_ptr<SampleVectorBase> logged_samples_;
 
 #if DCHECK_IS_ON()  // Don't waste memory if it won't be used.
   // Flag to indicate if PrepareFinalDelta has been previously called. It is
@@ -370,7 +371,7 @@ class BASE_EXPORT LinearHistogram : public Histogram {
 
   // Create a histogram using data in persistent storage.
   static std::unique_ptr<HistogramBase> PersistentCreate(
-      const std::string& name,
+      const char* name,
       Sample minimum,
       Sample maximum,
       const BucketRanges* ranges,
@@ -407,12 +408,12 @@ class BASE_EXPORT LinearHistogram : public Histogram {
  protected:
   class Factory;
 
-  LinearHistogram(const std::string& name,
+  LinearHistogram(const char* name,
                   Sample minimum,
                   Sample maximum,
                   const BucketRanges* ranges);
 
-  LinearHistogram(const std::string& name,
+  LinearHistogram(const char* name,
                   Sample minimum,
                   Sample maximum,
                   const BucketRanges* ranges,
@@ -459,7 +460,7 @@ class BASE_EXPORT BooleanHistogram : public LinearHistogram {
 
   // Create a histogram using data in persistent storage.
   static std::unique_ptr<HistogramBase> PersistentCreate(
-      const std::string& name,
+      const char* name,
       const BucketRanges* ranges,
       const DelayedPersistentAllocation& counts,
       const DelayedPersistentAllocation& logged_counts,
@@ -472,8 +473,8 @@ class BASE_EXPORT BooleanHistogram : public LinearHistogram {
   class Factory;
 
  private:
-  BooleanHistogram(const std::string& name, const BucketRanges* ranges);
-  BooleanHistogram(const std::string& name,
+  BooleanHistogram(const char* name, const BucketRanges* ranges);
+  BooleanHistogram(const char* name,
                    const BucketRanges* ranges,
                    const DelayedPersistentAllocation& counts,
                    const DelayedPersistentAllocation& logged_counts,
@@ -509,7 +510,7 @@ class BASE_EXPORT CustomHistogram : public Histogram {
 
   // Create a histogram using data in persistent storage.
   static std::unique_ptr<HistogramBase> PersistentCreate(
-      const std::string& name,
+      const char* name,
       const BucketRanges* ranges,
       const DelayedPersistentAllocation& counts,
       const DelayedPersistentAllocation& logged_counts,
@@ -530,10 +531,9 @@ class BASE_EXPORT CustomHistogram : public Histogram {
  protected:
   class Factory;
 
-  CustomHistogram(const std::string& name,
-                  const BucketRanges* ranges);
+  CustomHistogram(const char* name, const BucketRanges* ranges);
 
-  CustomHistogram(const std::string& name,
+  CustomHistogram(const char* name,
                   const BucketRanges* ranges,
                   const DelayedPersistentAllocation& counts,
                   const DelayedPersistentAllocation& logged_counts,

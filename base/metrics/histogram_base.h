@@ -133,10 +133,12 @@ class BASE_EXPORT HistogramBase {
     NEVER_EXCEEDED_VALUE = 0x10,
   };
 
-  explicit HistogramBase(const std::string& name);
+  // Construct the base histogram. The name is not copied; it's up to the
+  // caller to ensure that it lives at least as long as this object.
+  explicit HistogramBase(const char* name);
   virtual ~HistogramBase();
 
-  const std::string& histogram_name() const { return histogram_name_; }
+  const char* histogram_name() const { return histogram_name_; }
 
   // Comapres |name| to the histogram name and triggers a DCHECK if they do not
   // match. This is a helper function used by histogram macros, which results in
@@ -253,10 +255,24 @@ class BASE_EXPORT HistogramBase {
   // passing |sample| as the parameter.
   void FindAndRunCallback(Sample sample) const;
 
+  // Gets a permanent string that can be used for histogram objects when the
+  // original is not a code constant or held in persistent memory.
+  static const char* GetPermanentName(const std::string& name);
+
  private:
   friend class HistogramBaseTest;
 
-  const std::string histogram_name_;
+  // A pointer to permanent storage where the histogram name is held. This can
+  // be code space or the output of GetPermanentName() or any other storage
+  // that is known to never change. This is not StringPiece because (a) char*
+  // is 1/2 the size and (b) StringPiece transparently casts from std::string
+  // which can easily lead to a pointer to non-permanent space.
+  // For persistent histograms, this will simply point into the persistent
+  // memory segment, thus avoiding duplication. For heap histograms, the
+  // GetPermanentName method will create the necessary copy.
+  const char* const histogram_name_;
+
+  // Additional information about the histogram.
   AtomicCount flags_;
 
   DISALLOW_COPY_AND_ASSIGN(HistogramBase);

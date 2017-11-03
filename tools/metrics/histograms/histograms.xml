@@ -27241,6 +27241,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Histogram.PermanentNameChanged" enum="HistogramNameHash">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    The hash codes of histograms of which the external name storage was altered
+    after the histogram was created.
+  </summary>
+</histogram>
+
 <histogram name="History.AttemptedToFixProfileError">
   <owner>brettw@chromium.org</owner>
   <summary>

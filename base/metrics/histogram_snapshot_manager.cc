@@ -85,7 +85,7 @@ void HistogramSnapshotManager::PrepareSamples(
     HistogramBase::Sample* ranges_ptr = &ranges_copy[0];
     uint32_t ranges_checksum = ranges->checksum();
     uint32_t ranges_calc_checksum = ranges->CalculateChecksum();
-    const char* histogram_name = histogram->histogram_name().c_str();
+    const char* histogram_name = histogram->histogram_name();
     int32_t flags = histogram->flags();
     // The checksum should have caught this, so crash separately if it didn't.
     CHECK_NE(0U, HistogramBase::RANGE_CHECKSUM_ERROR & corruption);

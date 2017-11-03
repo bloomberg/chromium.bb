@@ -45,7 +45,7 @@ HistogramBase* SparseHistogram::FactoryGet(const std::string& name,
       DCHECK(!histogram_ref);  // Should never have been set.
       DCHECK(!allocator);      // Shouldn't have failed.
       flags &= ~HistogramBase::kIsPersistent;
-      tentative_histogram.reset(new SparseHistogram(name));
+      tentative_histogram.reset(new SparseHistogram(GetPermanentName(name)));
       tentative_histogram->SetFlags(flags);
     }
 
@@ -71,7 +71,7 @@ HistogramBase* SparseHistogram::FactoryGet(const std::string& name,
 // static
 std::unique_ptr<HistogramBase> SparseHistogram::PersistentCreate(
     PersistentHistogramAllocator* allocator,
-    const std::string& name,
+    const char* name,
     HistogramSamples::Metadata* meta,
     HistogramSamples::Metadata* logged_meta) {
   return WrapUnique(
@@ -170,13 +170,13 @@ void SparseHistogram::SerializeInfoImpl(Pickle* pickle) const {
   pickle->WriteInt(flags());
 }
 
-SparseHistogram::SparseHistogram(const std::string& name)
+SparseHistogram::SparseHistogram(const char* name)
     : HistogramBase(name),
       unlogged_samples_(new SampleMap(HashMetricName(name))),
       logged_samples_(new SampleMap(unlogged_samples_->id())) {}
 
 SparseHistogram::SparseHistogram(PersistentHistogramAllocator* allocator,
-                                 const std::string& name,
+                                 const char* name,
                                  HistogramSamples::Metadata* meta,
                                  HistogramSamples::Metadata* logged_meta)
     : HistogramBase(name),
@@ -274,9 +274,7 @@ void SparseHistogram::WriteAsciiImpl(bool graph_it,
 
 void SparseHistogram::WriteAsciiHeader(const Count total_count,
                                        std::string* output) const {
-  StringAppendF(output,
-                "Histogram: %s recorded %d samples",
-                histogram_name().c_str(),
+  StringAppendF(output, "Histogram: %s recorded %d samples", histogram_name(),
                 total_count);
   if (flags())
     StringAppendF(output, " (flags = 0x%x)", flags());
