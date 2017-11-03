@@ -31,7 +31,6 @@ source_set("ui") {
   ]
   public_deps = [
     ":ui_util",
-    "//ios/chrome/browser/ui/captive_portal",
     "//ios/chrome/browser/ui/util:constraints_ui",
   ]
   deps = [

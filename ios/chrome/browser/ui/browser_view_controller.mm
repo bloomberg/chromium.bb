@@ -117,7 +117,6 @@
 #import "ios/chrome/browser/ui/browser_container_view.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
-#import "ios/chrome/browser/ui/captive_portal/captive_portal_login_coordinator.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -419,9 +418,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Controller for edge swipe gestures for page and tab navigation.
   SideSwipeController* _sideSwipeController;
-
-  // Handles displaying the captive portal login page.
-  CaptivePortalLoginCoordinator* _captivePortalLoginCoordinator;
 
   // Handles displaying the context menu for all form factors.
   ContextMenuCoordinator* _contextMenuCoordinator;
@@ -5246,10 +5242,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)captivePortalDetectorTabHelper:
             (CaptivePortalDetectorTabHelper*)tabHelper
                  connectWithLandingURL:(const GURL&)landingURL {
-  _captivePortalLoginCoordinator = [[CaptivePortalLoginCoordinator alloc]
-      initWithBaseViewController:self
-                      landingURL:landingURL];
-  [_captivePortalLoginCoordinator start];
+  [self addSelectedTabWithURL:landingURL transition:ui::PAGE_TRANSITION_TYPED];
 }
 
 #pragma mark - PageInfoPresentation
