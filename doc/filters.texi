@@ -601,7 +601,7 @@ separated by '|'. Allowed range for each @code{delay} is @code{(0 - 90000.0]}.
 Default is @code{1000}.
 
 @item decays
-Set list of loudnesses of reflected signals separated by '|'.
+Set list of loudness of reflected signals separated by '|'.
 Allowed range for each @code{decay} is @code{(0 - 1.0]}.
 Default is @code{0.5}.
 @end table
@@ -2744,7 +2744,7 @@ The filter accepts the following options:
 Set base delay in milliseconds. Range from 0 to 30. Default value is 0.
 
 @item depth
-Set added swep delay in milliseconds. Range from 0 to 10. Default value is 2.
+Set added sweep delay in milliseconds. Range from 0 to 10. Default value is 2.
 
 @item regen
 Set percentage regeneration (delayed signal feedback). Range from -95 to 95.
@@ -2775,7 +2775,7 @@ Apply Haas effect to audio.
 
 Note that this makes most sense to apply on mono signals.
 With this filter applied to mono signals it give some directionality and
-streches its stereo image.
+stretches its stereo image.
 
 The filter accepts the following options:
 
@@ -2851,7 +2851,7 @@ so the resulting 20-bit stream will be truncated back to 16-bit. Use something
 like @command{-acodec pcm_s24le} after the filter to get 24-bit PCM output.
 @example
 ffmpeg -i HDCD16.wav -af hdcd OUT16.wav
-ffmpeg -i HDCD16.wav -af hdcd -acodec pcm_s24le OUT24.wav
+ffmpeg -i HDCD16.wav -af hdcd -c:a pcm_s24le OUT24.wav
 @end example
 
 The filter accepts the following options:
@@ -3750,7 +3750,7 @@ Default is @var{freq}.
 Set custom positions of virtual loudspeakers. Syntax for this option is:
 <CH> <AZIM> <ELEV>[|<CH> <AZIM> <ELEV>|...].
 Each virtual loudspeaker is described with short channel name following with
-azimuth and elevation in degreees.
+azimuth and elevation in degrees.
 Each virtual loudspeaker description is separated by '|'.
 For example to override front left and front right channel positions use:
 'speakers=FL 45 15|FR 345 15'.
@@ -4512,7 +4512,7 @@ Synthesize a voice utterance using the libflite library.
 To enable compilation of this filter you need to configure FFmpeg with
 @code{--enable-libflite}.
 
-Note that the flite library is not thread-safe.
+Note that versions of the flite library prior to 2.0 are not thread-safe.
 
 The filter accepts the following options:
 
@@ -4567,7 +4567,7 @@ ffplay -f lavfi flite=text='No more be grieved for which that thou hast done.'
 @end itemize
 
 For more information about libflite, check:
-@url{http://www.speech.cs.cmu.edu/flite/}
+@url{http://www.festvox.org/flite/}
 
 @section anoisesrc
 
@@ -5267,7 +5267,7 @@ the more similar the pixels color is to the key color.
 @item yuv
 Signals that the color passed is already in YUV instead of RGB.
 
-Litteral colors like "green" or "red" don't make sense with this enabled anymore.
+Literal colors like "green" or "red" don't make sense with this enabled anymore.
 This can be used to pass exact YUV values as hexadecimal numbers.
 @end table
 
@@ -6911,14 +6911,14 @@ Set how spillmap will be generated.
 Set how much to get rid of still remaining spill.
 
 @item red
-Controls ammount of red in spill area.
+Controls amount of red in spill area.
 
 @item green
-Controls ammount of green in spill area.
+Controls amount of green in spill area.
 Should be -1 for greenscreen.
 
 @item blue
-Controls ammount of blue in spill area.
+Controls amount of blue in spill area.
 Should be -1 for bluescreen.
 
 @item brightness
@@ -8669,13 +8669,21 @@ It accepts the following parameters:
 @item fps
 The desired output frame rate. The default is @code{25}.
 
+@item start_time
+Assume the first PTS should be the given value, in seconds. This allows for
+padding/trimming at the start of stream. By default, no assumption is made
+about the first frame's expected PTS, so no padding or trimming is done.
+For example, this could be set to 0 to pad the beginning with duplicates of
+the first frame if a video stream starts after the audio stream or to trim any
+frames with a negative PTS.
+
 @item round
-Rounding method.
+Timestamp (PTS) rounding method.
 
 Possible values are:
 @table @option
 @item zero
-zero round towards 0
+round towards 0
 @item inf
 round away from 0
 @item down
@@ -8687,18 +8695,22 @@ round to nearest
 @end table
 The default is @code{near}.
 
-@item start_time
-Assume the first PTS should be the given value, in seconds. This allows for
-padding/trimming at the start of stream. By default, no assumption is made
-about the first frame's expected PTS, so no padding or trimming is done.
-For example, this could be set to 0 to pad the beginning with duplicates of
-the first frame if a video stream starts after the audio stream or to trim any
-frames with a negative PTS.
+@item eof_action
+Action performed when reading the last frame.
+
+Possible values are:
+@table @option
+@item round
+Use same timestamp rounding method as used for other frames.
+@item pass
+Pass through last frame if input duration has not been reached yet.
+@end table
+The default is @code{round}.
 
 @end table
 
 Alternatively, the options can be specified as a flat string:
-@var{fps}[:@var{round}].
+@var{fps}[:@var{start_time}[:@var{round}]].
 
 See also the @ref{setpts} filter.
 
@@ -10553,7 +10565,7 @@ A description of the accepted options follows.
 @item max
 Set the maximum number of consecutive frames which can be dropped (if
 positive), or the minimum interval between dropped frames (if
-negative). If the value is 0, the frame is dropped unregarding the
+negative). If the value is 0, the frame is dropped disregarding the
 number of previous sequentially dropped frames.
 
 Default value is 0.
@@ -10675,7 +10687,7 @@ Can be one of the following:
 @end table
 
 @item nns
-Set the number of neurons in predicctor neural network.
+Set the number of neurons in predictor neural network.
 Can be one of the following:
 
 @table @samp
@@ -10738,7 +10750,7 @@ It accepts the following parameters:
 
 @item pix_fmts
 A '|'-separated list of pixel format names, such as
-apix_fmts=yuv420p|monow|rgb24".
+pix_fmts=yuv420p|monow|rgb24".
 
 @end table
 
@@ -11446,6 +11458,9 @@ If not set, the maximum of colors in the palette will be 256. You probably want
 to disable this option for a standalone image.
 Set by default.
 
+@item transparency_color
+Set the color that will be used as background for transparency.
+
 @item stats_mode
 Set statistics mode.
 
@@ -11533,6 +11548,13 @@ Default is @var{none}.
 
 @item new
 Take new palette for each output frame.
+
+@item alpha_threshold
+Sets the alpha threshold for transparency. Alpha values above this threshold
+will be treated as completely opaque, and values below this threshold will be
+treated as completely transparent.
+
+The option must be an integer value in the range [0,255]. Default is @var{128}.
 @end table
 
 @subsection Examples
@@ -11699,7 +11721,8 @@ can be used to test the monowhite pixel format descriptor definition.
 
 @section pixscope
 
-Display sample values of color channels. Mainly useful for checking color and levels.
+Display sample values of color channels. Mainly useful for checking color
+and levels. Minimum supported resolution is 640x480.
 
 The filters accept the following options:
 
@@ -12199,7 +12222,7 @@ the following constants:
 1 if index is not 129, 0 otherwise.
 
 @item qp
-Sequentional index starting from -129 to 128.
+Sequential index starting from -129 to 128.
 @end table
 
 @subsection Examples
@@ -14723,7 +14746,7 @@ Preserve overall image brightness with a simple curve, using nonlinear
 contrast, which results in flattening details and degrading color accuracy.
 
 @item hable
-Peserve both dark and bright details better than @var{reinhard}, at the cost
+Preserve both dark and bright details better than @var{reinhard}, at the cost
 of slightly darkening everything. Use it when detail preservation is more
 important than color and brightness accuracy.
 
@@ -15569,6 +15592,20 @@ vignette='PI/4+random(1)*PI/50':eval=frame
 @end example
 
 @end itemize
+
+@section vmafmotion
+
+Obtain the average vmaf motion score of a video.
+It is one of the component filters of VMAF.
+
+The obtained average motion score is printed through the logging system.
+
+In the below example the input file @file{ref.mpg} is being processed and score
+is computed.
+
+@example
+ffmpeg -i ref.mpg -lavfi vmafmotion -f null -
+@end example
 
 @section vstack
 Stack input videos vertically.
@@ -17652,7 +17689,7 @@ with AV_LOG_INFO loglevel.
 
 @itemize
 @item
-Print all metadata values for frames with key @code{lavfi.singnalstats.YDIF} with values
+Print all metadata values for frames with key @code{lavfi.signalstats.YDIF} with values
 between 0 and 1.
 @example
 signalstats,metadata=print:key=lavfi.signalstats.YDIF:value=0:function=expr:expr='between(VALUE1,0,1)'
@@ -17710,7 +17747,7 @@ perms/aperms filter can avoid this problem.
 
 @section realtime, arealtime
 
-Slow down filtering to match real time approximatively.
+Slow down filtering to match real time approximately.
 
 These filters will pause the filtering for a variable amount of time to
 match the output rate with the input timestamps.
@@ -17780,7 +17817,7 @@ The PTS of the previously filtered video frame. It's NAN if undefined.
 The PTS of the last previously filtered video frame. It's NAN if undefined.
 
 @item prev_selected_t
-The PTS of the last previously selected video frame. It's NAN if undefined.
+The PTS of the last previously selected video frame, expressed in seconds. It's NAN if undefined.
 
 @item start_pts
 The PTS of the first video frame in the video. It's NAN if undefined.

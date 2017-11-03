@@ -215,6 +215,22 @@ static int mkdir_p(const char *path) {
     return ret;
 }
 
+static void set_http_options(AVFormatContext *s, AVDictionary **options, HLSContext *c)
+{
+    const char *proto = avio_find_protocol_name(s->filename);
+    int http_base_proto = proto ? (!av_strcasecmp(proto, "http") || !av_strcasecmp(proto, "https")) : 0;
+
+    if (c->method) {
+        av_dict_set(options, "method", c->method, 0);
+    } else if (http_base_proto) {
+        av_log(c, AV_LOG_WARNING, "No HTTP method set, hls muxer defaulting to method PUT.\n");
+        av_dict_set(options, "method", "PUT", 0);
+    }
+    if (c->user_agent)
+        av_dict_set(options, "user_agent", c->user_agent, 0);
+
+}
+
 static int replace_int_data_in_filename(char *buf, int buf_size, const char *filename, char placeholder, int64_t number)
 {
     const char *p;
@@ -592,7 +608,8 @@ static int hls_mux_init(AVFormatContext *s)
             return AVERROR_PATCHWELCOME;
         }
         hls->fmp4_init_mode = !byterange_mode;
-        if ((ret = s->io_open(s, &oc->pb, hls->base_output_dirname, AVIO_FLAG_WRITE, NULL)) < 0) {
+        set_http_options(s, &options, hls);
+        if ((ret = s->io_open(s, &oc->pb, hls->base_output_dirname, AVIO_FLAG_WRITE, &options)) < 0) {
             av_log(s, AV_LOG_ERROR, "Failed to open segment '%s'\n", hls->fmp4_init_filename);
             return ret;
         }
@@ -964,22 +981,6 @@ static void hls_free_segments(HLSSegment *p)
     }
 }
 
-static void set_http_options(AVFormatContext *s, AVDictionary **options, HLSContext *c)
-{
-    const char *proto = avio_find_protocol_name(s->filename);
-    int http_base_proto = proto ? (!av_strcasecmp(proto, "http") || !av_strcasecmp(proto, "https")) : 0;
-
-    if (c->method) {
-        av_dict_set(options, "method", c->method, 0);
-    } else if (http_base_proto) {
-        av_log(c, AV_LOG_WARNING, "No HTTP method set, hls muxer defaulting to method PUT.\n");
-        av_dict_set(options, "method", "PUT", 0);
-    }
-    if (c->user_agent)
-        av_dict_set(options, "user_agent", c->user_agent, 0);
-
-}
-
 static void write_m3u8_head_block(HLSContext *hls, AVIOContext *out, int version,
                                   int target_duration, int64_t sequence)
 {
@@ -1079,15 +1080,15 @@ static int hls_window(AVFormatContext *s, int last)
                 avio_printf(out, ",BYTERANGE=\"%"PRId64"@%"PRId64"\"", en->size, en->pos);
             }
             avio_printf(out, "\n");
-        } else {
-            if (hls->flags & HLS_ROUND_DURATIONS)
-                avio_printf(out, "#EXTINF:%ld,\n",  lrint(en->duration));
-            else
-                avio_printf(out, "#EXTINF:%f,\n", en->duration);
-            if (byterange_mode)
-                avio_printf(out, "#EXT-X-BYTERANGE:%"PRId64"@%"PRId64"\n",
-                            en->size, en->pos);
         }
+        if (hls->flags & HLS_ROUND_DURATIONS)
+            avio_printf(out, "#EXTINF:%ld,\n",  lrint(en->duration));
+        else
+            avio_printf(out, "#EXTINF:%f,\n", en->duration);
+        if (byterange_mode)
+            avio_printf(out, "#EXT-X-BYTERANGE:%"PRId64"@%"PRId64"\n",
+                        en->size, en->pos);
+
         if (hls->flags & HLS_PROGRAM_DATE_TIME) {
             time_t tt, wrongsecs;
             int milli;
@@ -1112,11 +1113,9 @@ static int hls_window(AVFormatContext *s, int last)
             avio_printf(out, "#EXT-X-PROGRAM-DATE-TIME:%s.%03d%s\n", buf0, milli, buf1);
             prog_date_time += en->duration;
         }
-        if (!((hls->segment_type == SEGMENT_TYPE_FMP4) && (en == hls->segments))) {
-            if (hls->baseurl)
-                avio_printf(out, "%s", hls->baseurl);
-            avio_printf(out, "%s\n", en->filename);
-        }
+        if (hls->baseurl)
+            avio_printf(out, "%s", hls->baseurl);
+        avio_printf(out, "%s\n", en->filename);
     }
 
     if (last && (hls->flags & HLS_OMIT_ENDLIST)==0)
@@ -1327,13 +1326,14 @@ static int hls_write_header(AVFormatContext *s)
 {
     HLSContext *hls = s->priv_data;
     int ret, i;
-    char *p;
+    char *p = NULL;
     const char *pattern = "%d.ts";
     const char *pattern_localtime_fmt = get_default_pattern_localtime_fmt(s);
     const char *vtt_pattern = "%d.vtt";
     AVDictionary *options = NULL;
-    int basename_size;
-    int vtt_basename_size;
+    int basename_size = 0;
+    int vtt_basename_size = 0;
+    int fmp4_init_filename_len = strlen(hls->fmp4_init_filename) + 1;
 
     if (hls->segment_type == SEGMENT_TYPE_FMP4) {
         pattern = "%d.m4s";
@@ -1443,28 +1443,35 @@ static int hls_write_header(AVFormatContext *s)
         }
     }
 
-    if (av_strcasecmp(hls->fmp4_init_filename, "init.mp4")) {
-        int fmp4_init_filename_len = strlen(hls->fmp4_init_filename) + 1;
-        hls->base_output_dirname = av_malloc(fmp4_init_filename_len);
-        if (!hls->base_output_dirname) {
-            ret = AVERROR(ENOMEM);
-            goto fail;
-        }
-        av_strlcpy(hls->base_output_dirname, hls->fmp4_init_filename, fmp4_init_filename_len);
-    } else {
-        hls->base_output_dirname = av_malloc(basename_size);
-        if (!hls->base_output_dirname) {
-            ret = AVERROR(ENOMEM);
-            goto fail;
-        }
-
-        av_strlcpy(hls->base_output_dirname, s->filename, basename_size);
-        p = strrchr(hls->base_output_dirname, '/');
-        if (p) {
-            *(p + 1) = '\0';
-            av_strlcat(hls->base_output_dirname, hls->fmp4_init_filename, basename_size);
+    if (hls->segment_type == SEGMENT_TYPE_FMP4) {
+        if (av_strcasecmp(hls->fmp4_init_filename, "init.mp4")) {
+            hls->base_output_dirname = av_malloc(fmp4_init_filename_len);
+            if (!hls->base_output_dirname) {
+                ret = AVERROR(ENOMEM);
+                goto fail;
+            }
+            av_strlcpy(hls->base_output_dirname, hls->fmp4_init_filename, fmp4_init_filename_len);
         } else {
-            av_strlcpy(hls->base_output_dirname, hls->fmp4_init_filename, basename_size);
+            if (basename_size > 0) {
+                hls->base_output_dirname = av_malloc(basename_size);
+            } else {
+                hls->base_output_dirname = av_malloc(strlen(hls->fmp4_init_filename));
+            }
+            if (!hls->base_output_dirname) {
+                ret = AVERROR(ENOMEM);
+                goto fail;
+            }
+
+            if (basename_size > 0) {
+                av_strlcpy(hls->base_output_dirname, s->filename, basename_size);
+                p = strrchr(hls->base_output_dirname, '/');
+            }
+            if (p) {
+                *(p + 1) = '\0';
+                av_strlcat(hls->base_output_dirname, hls->fmp4_init_filename, basename_size);
+            } else {
+                av_strlcpy(hls->base_output_dirname, hls->fmp4_init_filename, fmp4_init_filename_len);
+            }
         }
     }
 

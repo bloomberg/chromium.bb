@@ -352,7 +352,11 @@ static void export_stream_params(AVCodecContext *avctx, const HEVCParamSets *ps,
 
 static enum AVPixelFormat get_format(HEVCContext *s, const HEVCSPS *sps)
 {
-    #define HWACCEL_MAX (CONFIG_HEVC_DXVA2_HWACCEL + CONFIG_HEVC_D3D11VA_HWACCEL * 2 + CONFIG_HEVC_VAAPI_HWACCEL + CONFIG_HEVC_VDPAU_HWACCEL)
+#define HWACCEL_MAX (CONFIG_HEVC_DXVA2_HWACCEL + \
+                     CONFIG_HEVC_D3D11VA_HWACCEL * 2 + \
+                     CONFIG_HEVC_VAAPI_HWACCEL + \
+                     CONFIG_HEVC_VIDEOTOOLBOX_HWACCEL + \
+                     CONFIG_HEVC_VDPAU_HWACCEL)
     enum AVPixelFormat pix_fmts[HWACCEL_MAX + 2], *fmt = pix_fmts;
 
     switch (sps->pix_fmt) {
@@ -371,6 +375,9 @@ static enum AVPixelFormat get_format(HEVCContext *s, const HEVCSPS *sps)
 #if CONFIG_HEVC_VDPAU_HWACCEL
         *fmt++ = AV_PIX_FMT_VDPAU;
 #endif
+#if CONFIG_HEVC_VIDEOTOOLBOX_HWACCEL
+        *fmt++ = AV_PIX_FMT_VIDEOTOOLBOX;
+#endif
         break;
     case AV_PIX_FMT_YUV420P10:
 #if CONFIG_HEVC_DXVA2_HWACCEL
@@ -382,6 +389,9 @@ static enum AVPixelFormat get_format(HEVCContext *s, const HEVCSPS *sps)
 #endif
 #if CONFIG_HEVC_VAAPI_HWACCEL
         *fmt++ = AV_PIX_FMT_VAAPI;
+#endif
+#if CONFIG_HEVC_VIDEOTOOLBOX_HWACCEL
+        *fmt++ = AV_PIX_FMT_VIDEOTOOLBOX;
 #endif
         break;
     }
@@ -3025,7 +3035,7 @@ static int verify_md5(HEVCContext *s, AVFrame *frame)
         int h = (i == 1 || i == 2) ? (height >> desc->log2_chroma_h) : height;
         uint8_t md5[16];
 
-        av_md5_init(s->sei.picture_hash.md5_ctx);
+        av_md5_init(s->md5_ctx);
         for (j = 0; j < h; j++) {
             const uint8_t *src = frame->data[i] + j * frame->linesize[i];
 #if HAVE_BIGENDIAN
@@ -3035,9 +3045,9 @@ static int verify_md5(HEVCContext *s, AVFrame *frame)
                 src = s->checksum_buf;
             }
 #endif
-            av_md5_update(s->sei.picture_hash.md5_ctx, src, w << pixel_shift);
+            av_md5_update(s->md5_ctx, src, w << pixel_shift);
         }
-        av_md5_final(s->sei.picture_hash.md5_ctx, md5);
+        av_md5_final(s->md5_ctx, md5);
 
         if (!memcmp(md5, s->sei.picture_hash.md5[i], 16)) {
             av_log   (s->avctx, AV_LOG_DEBUG, "plane %d - correct ", i);
@@ -3190,7 +3200,7 @@ static av_cold int hevc_decode_free(AVCodecContext *avctx)
 
     pic_arrays_free(s);
 
-    av_freep(&s->sei.picture_hash.md5_ctx);
+    av_freep(&s->md5_ctx);
 
     av_freep(&s->cabac_state);
 
@@ -3265,8 +3275,8 @@ static av_cold int hevc_init_context(AVCodecContext *avctx)
 
     s->max_ra = INT_MAX;
 
-    s->sei.picture_hash.md5_ctx = av_md5_alloc();
-    if (!s->sei.picture_hash.md5_ctx)
+    s->md5_ctx = av_md5_alloc();
+    if (!s->md5_ctx)
         goto fail;
 
     ff_bswapdsp_init(&s->bdsp);

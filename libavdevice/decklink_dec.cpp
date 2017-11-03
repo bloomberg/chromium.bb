@@ -1,6 +1,7 @@
 /*
  * Blackmagic DeckLink input
  * Copyright (c) 2013-2014 Luca Barbato, Deti Fliegl
+ * Copyright (c) 2014 Rafaël Carré
  * Copyright (c) 2017 Akamai Technologies, Inc.
  *
  * This file is part of FFmpeg.
@@ -38,6 +39,7 @@ extern "C" {
 #include "libavutil/time.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/reverse.h"
+#include "avdevice.h"
 #if CONFIG_LIBZVBI
 #include <libzvbi.h>
 #endif
@@ -45,6 +47,105 @@ extern "C" {
 
 #include "decklink_common.h"
 #include "decklink_dec.h"
+
+#define MAX_WIDTH_VANC 1920
+
+typedef struct VANCLineNumber {
+    BMDDisplayMode mode;
+    int vanc_start;
+    int field0_vanc_end;
+    int field1_vanc_start;
+    int vanc_end;
+} VANCLineNumber;
+
+/* These VANC line numbers need not be very accurate. In any case
+ * GetBufferForVerticalBlankingLine() will return an error when invalid
+ * ancillary line number was requested. We just need to make sure that the
+ * entire VANC region is covered, while making sure we don't decode VANC of
+ * another source during switching*/
+static VANCLineNumber vanc_line_numbers[] = {
+    /* SD Modes */
+
+    {bmdModeNTSC, 11, 19, 274, 282},
+    {bmdModeNTSC2398, 11, 19, 274, 282},
+    {bmdModePAL, 7, 22, 320, 335},
+    {bmdModeNTSCp, 11, -1, -1, 39},
+    {bmdModePALp, 7, -1, -1, 45},
+
+    /* HD 1080 Modes */
+
+    {bmdModeHD1080p2398, 8, -1, -1, 42},
+    {bmdModeHD1080p24, 8, -1, -1, 42},
+    {bmdModeHD1080p25, 8, -1, -1, 42},
+    {bmdModeHD1080p2997, 8, -1, -1, 42},
+    {bmdModeHD1080p30, 8, -1, -1, 42},
+    {bmdModeHD1080i50, 8, 20, 570, 585},
+    {bmdModeHD1080i5994, 8, 20, 570, 585},
+    {bmdModeHD1080i6000, 8, 20, 570, 585},
+    {bmdModeHD1080p50, 8, -1, -1, 42},
+    {bmdModeHD1080p5994, 8, -1, -1, 42},
+    {bmdModeHD1080p6000, 8, -1, -1, 42},
+
+     /* HD 720 Modes */
+
+    {bmdModeHD720p50, 8, -1, -1, 26},
+    {bmdModeHD720p5994, 8, -1, -1, 26},
+    {bmdModeHD720p60, 8, -1, -1, 26},
+
+    /* For all other modes, for which we don't support VANC */
+    {bmdModeUnknown, 0, -1, -1, -1}
+};
+
+static int get_vanc_line_idx(BMDDisplayMode mode)
+{
+    unsigned int i;
+    for (i = 0; i < FF_ARRAY_ELEMS(vanc_line_numbers); i++) {
+        if (mode == vanc_line_numbers[i].mode)
+            return i;
+    }
+    /* Return the VANC idx for Unknown mode */
+    return i - 1;
+}
+
+static inline void clear_parity_bits(uint16_t *buf, int len) {
+    int i;
+    for (i = 0; i < len; i++)
+        buf[i] &= 0xff;
+}
+
+static int check_vanc_parity_checksum(uint16_t *buf, int len, uint16_t checksum) {
+    int i;
+    uint16_t vanc_sum = 0;
+    for (i = 3; i < len - 1; i++) {
+        uint16_t v = buf[i];
+        int np = v >> 8;
+        int p = av_parity(v & 0xff);
+        if ((!!p ^ !!(v & 0x100)) || (np != 1 && np != 2)) {
+            // Parity check failed
+            return -1;
+        }
+        vanc_sum += v;
+    }
+    vanc_sum &= 0x1ff;
+    vanc_sum |= ((~vanc_sum & 0x100) << 1);
+    if (checksum != vanc_sum) {
+        // Checksum verification failed
+        return -1;
+    }
+    return 0;
+}
+
+/* The 10-bit VANC data is packed in V210, we only need the luma component. */
+static void extract_luma_from_v210(uint16_t *dst, const uint8_t *src, int width)
+{
+    int i;
+    for (i = 0; i < width / 3; i++) {
+        *dst++ = (src[1] >> 2) + ((src[2] & 15) << 6);
+        *dst++ =  src[4]       + ((src[5] &  3) << 8);
+        *dst++ = (src[6] >> 4) + ((src[7] & 63) << 4);
+        src += 8;
+    }
+}
 
 static uint8_t calc_parity_and_line_offset(int line)
 {
@@ -161,28 +262,146 @@ static uint8_t* teletext_data_unit_from_ancillary_packet(uint16_t *py, uint16_t 
     return tgt;
 }
 
-static uint8_t* teletext_data_unit_from_vanc_data(uint8_t *src, uint8_t *tgt, int64_t wanted_lines)
+uint8_t *vanc_to_cc(AVFormatContext *avctx, uint16_t *buf, size_t words,
+    unsigned &cc_count)
 {
-    uint16_t y[1920];
-    uint16_t *py = y;
-    uint16_t *pend = y + 1920;
-    /* The 10-bit VANC data is packed in V210, we only need the luma component. */
-    while (py < pend) {
-        *py++ = (src[1] >> 2) + ((src[2] & 15) << 6);
-        *py++ =  src[4]       + ((src[5] &  3) << 8);
-        *py++ = (src[6] >> 4) + ((src[7] & 63) << 4);
-        src += 8;
+    size_t i, len = (buf[5] & 0xff) + 6 + 1;
+    uint8_t cdp_sum, rate;
+    uint16_t hdr, ftr;
+    uint8_t *cc;
+    uint16_t *cdp = &buf[6]; // CDP follows
+    if (cdp[0] != 0x96 || cdp[1] != 0x69) {
+        av_log(avctx, AV_LOG_WARNING, "Invalid CDP header 0x%.2x 0x%.2x\n", cdp[0], cdp[1]);
+        return NULL;
     }
-    py = y;
-    while (py < pend - 6) {
-        if (py[0] == 0 && py[1] == 0x3ff && py[2] == 0x3ff) {           // ancillary data flag
-            py += 3;
-            tgt = teletext_data_unit_from_ancillary_packet(py, pend, tgt, wanted_lines, 0);
-            py += py[2] & 255;
-        } else {
-            py++;
+
+    len -= 7; // remove VANC header and checksum
+
+    if (cdp[2] != len) {
+        av_log(avctx, AV_LOG_WARNING, "CDP len %d != %zu\n", cdp[2], len);
+        return NULL;
+    }
+
+    cdp_sum = 0;
+    for (i = 0; i < len - 1; i++)
+        cdp_sum += cdp[i];
+    cdp_sum = cdp_sum ? 256 - cdp_sum : 0;
+    if (cdp[len - 1] != cdp_sum) {
+        av_log(avctx, AV_LOG_WARNING, "CDP checksum invalid 0x%.4x != 0x%.4x\n", cdp_sum, cdp[len-1]);
+        return NULL;
+    }
+
+    rate = cdp[3];
+    if (!(rate & 0x0f)) {
+        av_log(avctx, AV_LOG_WARNING, "CDP frame rate invalid (0x%.2x)\n", rate);
+        return NULL;
+    }
+    rate >>= 4;
+    if (rate > 8) {
+        av_log(avctx, AV_LOG_WARNING, "CDP frame rate invalid (0x%.2x)\n", rate);
+        return NULL;
+    }
+
+    if (!(cdp[4] & 0x43)) /* ccdata_present | caption_service_active | reserved */ {
+        av_log(avctx, AV_LOG_WARNING, "CDP flags invalid (0x%.2x)\n", cdp[4]);
+        return NULL;
+    }
+
+    hdr = (cdp[5] << 8) | cdp[6];
+    if (cdp[7] != 0x72) /* ccdata_id */ {
+        av_log(avctx, AV_LOG_WARNING, "Invalid ccdata_id 0x%.2x\n", cdp[7]);
+        return NULL;
+    }
+
+    cc_count = cdp[8];
+    if (!(cc_count & 0xe0)) {
+        av_log(avctx, AV_LOG_WARNING, "Invalid cc_count 0x%.2x\n", cc_count);
+        return NULL;
+    }
+
+    cc_count &= 0x1f;
+    if ((len - 13) < cc_count * 3) {
+        av_log(avctx, AV_LOG_WARNING, "Invalid cc_count %d (> %zu)\n", cc_count * 3, len - 13);
+        return NULL;
+    }
+
+    if (cdp[len - 4] != 0x74) /* footer id */ {
+        av_log(avctx, AV_LOG_WARNING, "Invalid footer id 0x%.2x\n", cdp[len-4]);
+        return NULL;
+    }
+
+    ftr = (cdp[len - 3] << 8) | cdp[len - 2];
+    if (ftr != hdr) {
+        av_log(avctx, AV_LOG_WARNING, "Header 0x%.4x != Footer 0x%.4x\n", hdr, ftr);
+        return NULL;
+    }
+
+    cc = (uint8_t *)av_malloc(cc_count * 3);
+    if (cc == NULL) {
+        av_log(avctx, AV_LOG_WARNING, "CC - av_malloc failed for cc_count = %d\n", cc_count);
+        return NULL;
+    }
+
+    for (size_t i = 0; i < cc_count; i++) {
+        cc[3*i + 0] = cdp[9 + 3*i+0] /* & 3 */;
+        cc[3*i + 1] = cdp[9 + 3*i+1];
+        cc[3*i + 2] = cdp[9 + 3*i+2];
+    }
+
+    cc_count *= 3;
+    return cc;
+}
+
+uint8_t *get_metadata(AVFormatContext *avctx, uint16_t *buf, size_t width,
+                      uint8_t *tgt, size_t tgt_size, AVPacket *pkt)
+{
+    decklink_cctx *cctx = (struct decklink_cctx *) avctx->priv_data;
+    uint16_t *max_buf = buf + width;
+
+    while (buf < max_buf - 6) {
+        int len;
+        uint16_t did = buf[3] & 0xFF;                                  // data id
+        uint16_t sdid = buf[4] & 0xFF;                                 // secondary data id
+        /* Check for VANC header */
+        if (buf[0] != 0 || buf[1] != 0x3ff || buf[2] != 0x3ff) {
+            return tgt;
         }
+
+        len = (buf[5] & 0xff) + 6 + 1;
+        if (len > max_buf - buf) {
+            av_log(avctx, AV_LOG_WARNING, "Data Count (%d) > data left (%zu)\n",
+                    len, max_buf - buf);
+            return tgt;
+        }
+
+        if (did == 0x43 && (sdid == 0x02 || sdid == 0x03) && cctx->teletext_lines &&
+            width == 1920 && tgt_size >= 1920) {
+            if (check_vanc_parity_checksum(buf, len, buf[len - 1]) < 0) {
+                av_log(avctx, AV_LOG_WARNING, "VANC parity or checksum incorrect\n");
+                goto skip_packet;
+            }
+            tgt = teletext_data_unit_from_ancillary_packet(buf + 3, buf + len, tgt, cctx->teletext_lines, 1);
+        } else if (did == 0x61 && sdid == 0x01) {
+            unsigned int data_len;
+            uint8_t *data;
+            if (check_vanc_parity_checksum(buf, len, buf[len - 1]) < 0) {
+                av_log(avctx, AV_LOG_WARNING, "VANC parity or checksum incorrect\n");
+                goto skip_packet;
+            }
+            clear_parity_bits(buf, len);
+            data = vanc_to_cc(avctx, buf, width, data_len);
+            if (data) {
+                if (av_packet_add_side_data(pkt, AV_PKT_DATA_A53_CC, data, data_len) < 0)
+                    av_free(data);
+            }
+        } else {
+            av_log(avctx, AV_LOG_DEBUG, "Unknown meta data DID = 0x%.2x SDID = 0x%.2x\n",
+                    did, sdid);
+        }
+skip_packet:
+        buf += len;
     }
+
     return tgt;
 }
 
@@ -232,22 +451,24 @@ static unsigned long long avpacket_queue_size(AVPacketQueue *q)
 static int avpacket_queue_put(AVPacketQueue *q, AVPacket *pkt)
 {
     AVPacketList *pkt1;
+    int ret;
 
     // Drop Packet if queue size is > maximum queue size
     if (avpacket_queue_size(q) > (uint64_t)q->max_q_size) {
         av_log(q->avctx, AV_LOG_WARNING,  "Decklink input buffer overrun!\n");
         return -1;
     }
-    /* duplicate the packet */
-    if (av_dup_packet(pkt) < 0) {
-        return -1;
-    }
 
-    pkt1 = (AVPacketList *)av_malloc(sizeof(AVPacketList));
+    pkt1 = (AVPacketList *)av_mallocz(sizeof(AVPacketList));
     if (!pkt1) {
         return -1;
     }
-    pkt1->pkt  = *pkt;
+    ret = av_packet_ref(&pkt1->pkt, pkt);
+    av_packet_unref(pkt);
+    if (ret < 0) {
+        av_free(pkt1);
+        return -1;
+    }
     pkt1->next = NULL;
 
     pthread_mutex_lock(&q->mutex);
@@ -474,7 +695,7 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
                            videoFrame->GetHeight();
         //fprintf(stderr,"Video Frame size %d ts %d\n", pkt.size, pkt.pts);
 
-        if (!no_video && ctx->teletext_lines) {
+        if (!no_video) {
             IDeckLinkVideoFrameAncillary *vanc;
             AVPacket txt_pkt;
             uint8_t txt_buf0[3531]; // 35 * 46 bytes decoded teletext lines + 1 byte data_identifier + 1920 bytes OP47 decode buffer
@@ -487,7 +708,8 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
                 txt_buf[0] = 0x10;    // data_identifier - EBU_data
                 txt_buf++;
 #if CONFIG_LIBZVBI
-                if (ctx->bmd_mode == bmdModePAL && (vanc_format == bmdFormat8BitYUV || vanc_format == bmdFormat10BitYUV)) {
+                if (ctx->bmd_mode == bmdModePAL && ctx->teletext_lines &&
+                    (vanc_format == bmdFormat8BitYUV || vanc_format == bmdFormat10BitYUV)) {
                     av_assert0(videoFrame->GetWidth() == 720);
                     for (i = 6; i < 336; i++, line_mask <<= 1) {
                         uint8_t *buf;
@@ -502,18 +724,18 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
                     }
                 }
 #endif
-                if (videoFrame->GetWidth() == 1920 && vanc_format == bmdFormat10BitYUV) {
-                    int first_active_line = ctx->bmd_field_dominance == bmdProgressiveFrame ? 42 : 584;
-                    for (i = 8; i < first_active_line; i++) {
+                if (vanc_format == bmdFormat10BitYUV && videoFrame->GetWidth() <= MAX_WIDTH_VANC) {
+                    int idx = get_vanc_line_idx(ctx->bmd_mode);
+                    for (i = vanc_line_numbers[idx].vanc_start; i <= vanc_line_numbers[idx].vanc_end; i++) {
                         uint8_t *buf;
-                        if (vanc->GetBufferForVerticalBlankingLine(i, (void**)&buf) == S_OK)
-                            txt_buf = teletext_data_unit_from_vanc_data(buf, txt_buf, ctx->teletext_lines);
-                        if (ctx->bmd_field_dominance != bmdProgressiveFrame && i == 20)     // skip field1 active lines
-                            i = 569;
-                        if (txt_buf - txt_buf0 > 1611) {   // ensure we still have at least 1920 bytes free in the buffer
-                            av_log(avctx, AV_LOG_ERROR, "Too many OP47 teletext packets.\n");
-                            break;
+                        if (vanc->GetBufferForVerticalBlankingLine(i, (void**)&buf) == S_OK) {
+                            uint16_t luma_vanc[MAX_WIDTH_VANC];
+                            extract_luma_from_v210(luma_vanc, buf, videoFrame->GetWidth());
+                            txt_buf = get_metadata(avctx, luma_vanc, videoFrame->GetWidth(),
+                                                   txt_buf, sizeof(txt_buf0) - (txt_buf - txt_buf0), &pkt);
                         }
+                        if (i == vanc_line_numbers[idx].field0_vanc_end)
+                            i = vanc_line_numbers[idx].field1_vanc_start - 1;
                     }
                 }
                 vanc->Release();
@@ -549,7 +771,7 @@ HRESULT decklink_input_callback::VideoInputFrameArrived(
         av_init_packet(&pkt);
 
         //hack among hacks
-        pkt.size = audioFrame->GetSampleFrameCount() * ctx->audio_st->codecpar->channels * (16 / 8);
+        pkt.size = audioFrame->GetSampleFrameCount() * ctx->audio_st->codecpar->channels * (ctx->audio_depth / 8);
         audioFrame->GetBytes(&audioFrameBytes);
         audioFrame->GetPacketTime(&audio_pts, ctx->audio_st->time_base.den);
         pkt.pts = get_pkt_pts(videoFrame, audioFrame, wallclock, ctx->audio_pts_source, ctx->audio_st->time_base, &initial_audio_pts);
@@ -632,6 +854,7 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
     ctx->audio_pts_source = cctx->audio_pts_source;
     ctx->video_pts_source = cctx->video_pts_source;
     ctx->draw_bars = cctx->draw_bars;
+    ctx->audio_depth = cctx->audio_depth;
     cctx->ctx = ctx;
 
     /* Check audio channel option for valid values: 2, 8 or 16 */
@@ -645,10 +868,25 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
             return AVERROR(EINVAL);
     }
 
+    /* Check audio bit depth option for valid values: 16 or 32 */
+    switch (cctx->audio_depth) {
+        case 16:
+        case 32:
+            break;
+        default:
+            av_log(avctx, AV_LOG_ERROR, "Value for audio bit depth option must be either 16 or 32\n");
+            return AVERROR(EINVAL);
+    }
+
     /* List available devices. */
     if (ctx->list_devices) {
-        ff_decklink_list_devices(avctx);
+        ff_decklink_list_devices_legacy(avctx, 1, 0);
         return AVERROR_EXIT;
+    }
+
+    if (cctx->v210) {
+        av_log(avctx, AV_LOG_WARNING, "The bm_v210 option is deprecated and will be removed. Please use the -raw_format yuv422p10.\n");
+        cctx->raw_format = MKBETAG('v','2','1','0');
     }
 
     strcpy (fname, avctx->filename);
@@ -703,7 +941,7 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
         goto error;
     }
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
-    st->codecpar->codec_id    = AV_CODEC_ID_PCM_S16LE;
+    st->codecpar->codec_id    = cctx->audio_depth == 32 ? AV_CODEC_ID_PCM_S32LE : AV_CODEC_ID_PCM_S16LE;
     st->codecpar->sample_rate = bmdAudioSampleRate48kHz;
     st->codecpar->channels    = cctx->audio_channels;
     avpriv_set_pts_info(st, 64, 1, 1000000);  /* 64 bits pts in us */
@@ -721,17 +959,44 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
 
     st->time_base.den      = ctx->bmd_tb_den;
     st->time_base.num      = ctx->bmd_tb_num;
-    av_stream_set_r_frame_rate(st, av_make_q(st->time_base.den, st->time_base.num));
+    st->r_frame_rate       = av_make_q(st->time_base.den, st->time_base.num);
 
-    if (cctx->v210) {
-        st->codecpar->codec_id    = AV_CODEC_ID_V210;
-        st->codecpar->codec_tag   = MKTAG('V', '2', '1', '0');
-        st->codecpar->bit_rate    = av_rescale(ctx->bmd_width * ctx->bmd_height * 64, st->time_base.den, st->time_base.num * 3);
-    } else {
+    switch((BMDPixelFormat)cctx->raw_format) {
+    case bmdFormat8BitYUV:
         st->codecpar->codec_id    = AV_CODEC_ID_RAWVIDEO;
-        st->codecpar->format      = AV_PIX_FMT_UYVY422;
         st->codecpar->codec_tag   = MKTAG('U', 'Y', 'V', 'Y');
+        st->codecpar->format      = AV_PIX_FMT_UYVY422;
         st->codecpar->bit_rate    = av_rescale(ctx->bmd_width * ctx->bmd_height * 16, st->time_base.den, st->time_base.num);
+        break;
+    case bmdFormat10BitYUV:
+        st->codecpar->codec_id    = AV_CODEC_ID_V210;
+        st->codecpar->codec_tag   = MKTAG('V','2','1','0');
+        st->codecpar->bit_rate    = av_rescale(ctx->bmd_width * ctx->bmd_height * 64, st->time_base.den, st->time_base.num * 3);
+        st->codecpar->bits_per_coded_sample = 10;
+        break;
+    case bmdFormat8BitARGB:
+        st->codecpar->codec_id    = AV_CODEC_ID_RAWVIDEO;
+        st->codecpar->codec_tag   = avcodec_pix_fmt_to_codec_tag((enum AVPixelFormat)st->codecpar->format);;
+        st->codecpar->format      = AV_PIX_FMT_0RGB;
+        st->codecpar->bit_rate    = av_rescale(ctx->bmd_width * ctx->bmd_height * 32, st->time_base.den, st->time_base.num);
+        break;
+    case bmdFormat8BitBGRA:
+        st->codecpar->codec_id    = AV_CODEC_ID_RAWVIDEO;
+        st->codecpar->codec_tag   = avcodec_pix_fmt_to_codec_tag((enum AVPixelFormat)st->codecpar->format);
+        st->codecpar->format      = AV_PIX_FMT_BGR0;
+        st->codecpar->bit_rate    = av_rescale(ctx->bmd_width * ctx->bmd_height * 32, st->time_base.den, st->time_base.num);
+        break;
+    case bmdFormat10BitRGB:
+        st->codecpar->codec_id    = AV_CODEC_ID_R210;
+        st->codecpar->codec_tag   = MKTAG('R','2','1','0');
+        st->codecpar->format      = AV_PIX_FMT_RGB48LE;
+        st->codecpar->bit_rate    = av_rescale(ctx->bmd_width * ctx->bmd_height * 30, st->time_base.den, st->time_base.num);
+        st->codecpar->bits_per_coded_sample = 10;
+        break;
+    default:
+        av_log(avctx, AV_LOG_ERROR, "Raw Format %.4s not supported\n", (char*) &cctx->raw_format);
+        ret = AVERROR(EINVAL);
+        goto error;
     }
 
     switch (ctx->bmd_field_dominance) {
@@ -767,7 +1032,7 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
     }
 
     av_log(avctx, AV_LOG_VERBOSE, "Using %d input audio channels\n", ctx->audio_st->codecpar->channels);
-    result = ctx->dli->EnableAudioInput(bmdAudioSampleRate48kHz, bmdAudioSampleType16bitInteger, ctx->audio_st->codecpar->channels);
+    result = ctx->dli->EnableAudioInput(bmdAudioSampleRate48kHz, cctx->audio_depth == 32 ? bmdAudioSampleType32bitInteger : bmdAudioSampleType16bitInteger, ctx->audio_st->codecpar->channels);
 
     if (result != S_OK) {
         av_log(avctx, AV_LOG_ERROR, "Cannot enable audio input\n");
@@ -776,7 +1041,7 @@ av_cold int ff_decklink_read_header(AVFormatContext *avctx)
     }
 
     result = ctx->dli->EnableVideoInput(ctx->bmd_mode,
-                                        cctx->v210 ? bmdFormat10BitYUV : bmdFormat8BitYUV,
+                                        (BMDPixelFormat) cctx->raw_format,
                                         bmdVideoInputFlagDefault);
 
     if (result != S_OK) {
@@ -808,6 +1073,11 @@ int ff_decklink_read_packet(AVFormatContext *avctx, AVPacket *pkt)
     avpacket_queue_get(&ctx->queue, pkt, 1);
 
     return 0;
+}
+
+int ff_decklink_list_input_devices(AVFormatContext *avctx, struct AVDeviceInfoList *device_list)
+{
+    return ff_decklink_list_devices(avctx, device_list, 1, 0);
 }
 
 } /* extern "C" */
