@@ -8,7 +8,6 @@
 #include "chrome/browser/feature_engagement/feature_tracker.h"
 
 #include "chrome/browser/feature_engagement/session_duration_updater.h"
-#include "chrome/browser/feature_engagement/session_duration_updater_factory.h"
 
 namespace feature_engagement {
 
@@ -26,8 +25,7 @@ namespace feature_engagement {
 //   to a new page.
 class NewTabTracker : public FeatureTracker {
  public:
-  NewTabTracker(Profile* profile,
-                SessionDurationUpdater* session_duration_updater);
+  explicit NewTabTracker(Profile* profile);
 
   // Alerts the new tab tracker that a new tab was opened.
   void OnNewTabOpened();
@@ -45,8 +43,6 @@ class NewTabTracker : public FeatureTracker {
   void CloseBubble();
 
  protected:
-  // Alternate constructor to support unit testing.
-  explicit NewTabTracker(SessionDurationUpdater* session_duration_updater);
   ~NewTabTracker() override;
 
  private:

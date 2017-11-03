@@ -4,6 +4,8 @@
 
 #include "chrome/browser/feature_engagement/bookmark/bookmark_tracker.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
@@ -13,7 +15,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/feature_engagement/feature_tracker.h"
 #include "chrome/browser/feature_engagement/session_duration_updater.h"
-#include "chrome/browser/feature_engagement/session_duration_updater_factory.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -34,16 +35,14 @@ namespace feature_engagement {
 
 namespace {
 
-const char kBookmarkTrialName[] = "BookmarkTrial";
-const char kGroupName[] = "Enabled";
-const char kTestProfileName[] = "test-profile";
+constexpr char kBookmarkTrialName[] = "BookmarkTrial";
+constexpr char kGroupName[] = "Enabled";
+constexpr char kTestProfileName[] = "test-profile";
 
 class FakeBookmarkTracker : public BookmarkTracker {
  public:
   FakeBookmarkTracker(Tracker* feature_tracker, Profile* profile)
-      : BookmarkTracker(
-            feature_engagement::SessionDurationUpdaterFactory::GetInstance()
-                ->GetForProfile(profile)),
+      : BookmarkTracker(profile),
         feature_tracker_(feature_tracker),
         pref_service_(
             base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>()) {
@@ -52,7 +51,7 @@ class FakeBookmarkTracker : public BookmarkTracker {
 
   PrefService* GetPrefs() { return pref_service_.get(); }
 
-  // feature_engagement::NewTabTracker:
+  // feature_engagement::BookmarkTracker:
   Tracker* GetTracker() const override { return feature_tracker_; }
 
  private:
@@ -80,8 +79,8 @@ class BookmarkTrackerEventTest : public testing::Test {
 
   void TearDown() override {
     bookmark_tracker_->RemoveSessionDurationObserver();
-    metrics::DesktopSessionDurationTracker::CleanupForTesting();
     testing_profile_manager_.reset();
+    metrics::DesktopSessionDurationTracker::CleanupForTesting();
   }
 
  protected:

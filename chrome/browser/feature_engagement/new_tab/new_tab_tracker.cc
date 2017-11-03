@@ -14,21 +14,19 @@
 namespace {
 
 const int kDefaultPromoShowTimeInHours = 2;
+constexpr char kNewTabObservedSessionTimeKey[] =
+    "new_tab_in_product_help_observed_session_time_key";
 
 }  // namespace
 
 namespace feature_engagement {
 
-NewTabTracker::NewTabTracker(Profile* profile,
-                             SessionDurationUpdater* session_duration_updater)
+NewTabTracker::NewTabTracker(Profile* profile)
     : FeatureTracker(profile,
-                     session_duration_updater,
                      &kIPHNewTabFeature,
+                     kNewTabObservedSessionTimeKey,
                      base::TimeDelta::FromHours(kDefaultPromoShowTimeInHours)) {
 }
-
-NewTabTracker::NewTabTracker(SessionDurationUpdater* session_duration_updater)
-    : NewTabTracker(nullptr, session_duration_updater) {}
 
 NewTabTracker::~NewTabTracker() = default;
 

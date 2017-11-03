@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_FEATURE_ENGAGEMENT_SESSION_DURATION_UPDATER_H_
 #define CHROME_BROWSER_FEATURE_ENGAGEMENT_SESSION_DURATION_UPDATER_H_
 
+#include <memory>
+
 #include "base/scoped_observer.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_service.h"
@@ -48,16 +51,27 @@ class SessionDurationUpdater
     virtual void OnSessionEnded(base::TimeDelta total_session_time) = 0;
   };
 
-  explicit SessionDurationUpdater(PrefService* pref_service);
+  explicit SessionDurationUpdater(PrefService* pref_service,
+                                  const char* observed_session_time_pref_key);
   ~SessionDurationUpdater() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Returns the total amount of observed active session time of the current
+  // session plus the previously recorded observed session time. The resulting
+  // value should be cumulative session time across all Chrome restarts.
+  base::TimeDelta GetCumulativeElapsedSessionTime();
+
+  // Gets the recorded observed session time which is cumulative for all
+  // previous sessions.
+  base::TimeDelta GetRecordedObservedSessionTime();
 
   // For observing the status of the session tracker.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
   // metrics::DesktopSessionDurationtracker::Observer:
+  void OnSessionStarted(base::TimeTicks delta) override;
   void OnSessionEnded(base::TimeDelta delta) override;
 
  private:
@@ -76,6 +90,13 @@ class SessionDurationUpdater
 
   // Owned by Profile manager.
   PrefService* const pref_service_;
+
+  // The profile dict key of kObservedSessionTime that tracks the observed
+  // session time for an In-Product Help feature.
+  const char* observed_session_time_dict_key_;
+
+  // Tracks the elapsed active session time while the browser is open.
+  std::unique_ptr<base::ElapsedTimer> current_session_timer_;
 
   base::ObserverList<Observer> observer_list_;
 

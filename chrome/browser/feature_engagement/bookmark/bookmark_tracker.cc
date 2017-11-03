@@ -6,32 +6,28 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/feature_engagement/session_duration_updater.h"
-#include "chrome/browser/feature_engagement/session_duration_updater_factory.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
+#include "chrome/common/pref_names.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 
 namespace {
 
-const int kDefaultPromoShowTimeInHours = 5;
+constexpr int kDefaultPromoShowTimeInHours = 5;
+constexpr char kBookmarkObservedSessionTimeKey[] =
+    "bookmark_in_product_help_observed_session_time_key";
 
 }  // namespace
 
 namespace feature_engagement {
 
-BookmarkTracker::BookmarkTracker(
-    Profile* profile,
-    SessionDurationUpdater* session_duration_updater)
+BookmarkTracker::BookmarkTracker(Profile* profile)
     : FeatureTracker(profile,
-                     session_duration_updater,
                      &kIPHBookmarkFeature,
+                     kBookmarkObservedSessionTimeKey,
                      base::TimeDelta::FromHours(kDefaultPromoShowTimeInHours)) {
 }
-
-BookmarkTracker::BookmarkTracker(
-    SessionDurationUpdater* session_duration_updater)
-    : BookmarkTracker(nullptr, session_duration_updater) {}
 
 BookmarkTracker::~BookmarkTracker() = default;
 

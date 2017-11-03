@@ -4,6 +4,8 @@
 
 #include "chrome/browser/feature_engagement/feature_tracker.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
@@ -13,9 +15,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/feature_engagement/session_duration_updater.h"
-#include "chrome/browser/feature_engagement/session_duration_updater_factory.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/feature_engagement/public/event_constants.h"
@@ -30,22 +32,21 @@ namespace feature_engagement {
 
 namespace {
 
-const int kTestTimeDeltaInMinutes = 100;
-const int kTestTimeSufficentInMinutes = 110;
-const int kTestTimeInsufficientInMinutes = 90;
-const char kGroupName[] = "Enabled";
-const char kNewTabFieldTrialName[] = "NewTabFieldTrial";
-const char kTestProfileName[] = "test-profile";
+constexpr int kTestTimeDeltaInMinutes = 100;
+constexpr int kTestTimeSufficentInMinutes = 110;
+constexpr int kTestTimeInsufficientInMinutes = 90;
+constexpr char kGroupName[] = "Enabled";
+constexpr char kNewTabFieldTrialName[] = "NewTabFieldTrial";
+constexpr char kTestProfileName[] = "test-profile";
+constexpr char kTestObservedSessionTimeKey[] = "test_observed_session_time_key";
 
 class TestFeatureTracker : public FeatureTracker {
  public:
   explicit TestFeatureTracker(Profile* profile)
-      : FeatureTracker(
-            profile,
-            feature_engagement::SessionDurationUpdaterFactory::GetInstance()
-                ->GetForProfile(profile),
-            &kIPHNewTabFeature,
-            base::TimeDelta::FromMinutes(kTestTimeDeltaInMinutes)),
+      : FeatureTracker(profile,
+                       &kIPHNewTabFeature,
+                       kTestObservedSessionTimeKey,
+                       base::TimeDelta::FromMinutes(kTestTimeDeltaInMinutes)),
         pref_service_(
             base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>()) {
     SessionDurationUpdater::RegisterProfilePrefs(pref_service_->registry());
@@ -87,9 +88,9 @@ class FeatureTrackerTest : public testing::Test {
   }
 
   void TearDown() override {
-    metrics::DesktopSessionDurationTracker::CleanupForTesting();
     // Need to invoke the reset method as TearDown is on the UI thread.
     testing_profile_manager_.reset();
+    metrics::DesktopSessionDurationTracker::CleanupForTesting();
   }
 
  protected:
@@ -144,9 +145,7 @@ class FeatureTrackerMinutesTest : public testing::Test {
     testing_profile_manager_ = base::MakeUnique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(testing_profile_manager_->SetUp());
-    mock_feature_tracker_ =
-        base::MakeUnique<testing::StrictMock<MockTestFeatureTracker>>(
-            testing_profile_manager_->CreateTestingProfile(kTestProfileName));
+
     // Set up the NewTabInProductHelp field trial.
     base::FieldTrial* new_tab_trial = base::FieldTrialList::CreateFieldTrial(
         kNewTabFieldTrialName, kGroupName);
@@ -164,10 +163,9 @@ class FeatureTrackerMinutesTest : public testing::Test {
   }
 
   void TearDown() override {
-    mock_feature_tracker_.get()->RemoveSessionDurationObserver();
-    metrics::DesktopSessionDurationTracker::CleanupForTesting();
     // Need to invoke the rest method as TearDown is on the UI thread.
     testing_profile_manager_.reset();
+    metrics::DesktopSessionDurationTracker::CleanupForTesting();
   }
 
   void SetFeatureParams(const base::Feature& feature,
@@ -176,15 +174,14 @@ class FeatureTrackerMinutesTest : public testing::Test {
         base::FieldTrialParamAssociator::GetInstance()
             ->AssociateFieldTrialParams(trials_[feature.name]->trial_name(),
                                         kGroupName, params));
-
     std::map<std::string, std::string> actualParams;
-    EXPECT_TRUE(base::GetFieldTrialParamsByFeature(feature, &actualParams));
+    EXPECT_TRUE(
+        base::GetFieldTrialParamsByFeature(kIPHNewTabFeature, &actualParams));
     EXPECT_EQ(params, actualParams);
   }
 
  protected:
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
-  std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::map<std::string, base::FieldTrial*> trials_;
   variations::testing::VariationParamsManager params_manager_;
@@ -198,8 +195,14 @@ class FeatureTrackerMinutesTest : public testing::Test {
 // Test that session time defaults to the time in the constructor if there is no
 // field param value.
 TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithNoFieldTrialValue) {
-  EXPECT_EQ(mock_feature_tracker_->GetSessionTimeRequiredToShowWrapper(),
+  std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
+      std::make_unique<testing::StrictMock<MockTestFeatureTracker>>(
+          testing_profile_manager_->CreateTestingProfile(kTestProfileName));
+
+  EXPECT_EQ(mock_feature_tracker->GetSessionTimeRequiredToShowWrapper(),
             base::TimeDelta::FromMinutes(kTestTimeDeltaInMinutes));
+
+  mock_feature_tracker.get()->RemoveSessionDurationObserver();
 }
 
 // Test that session time defaults to the valid time from the field param value.
@@ -208,8 +211,14 @@ TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithValidFieldTrialValue) {
   new_tab_params["x_minutes"] = "1";
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
 
-  EXPECT_EQ(mock_feature_tracker_->GetSessionTimeRequiredToShowWrapper(),
+  std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
+      std::make_unique<testing::StrictMock<MockTestFeatureTracker>>(
+          testing_profile_manager_->CreateTestingProfile(kTestProfileName));
+
+  EXPECT_EQ(mock_feature_tracker->GetSessionTimeRequiredToShowWrapper(),
             base::TimeDelta::FromMinutes(1));
+
+  mock_feature_tracker.get()->RemoveSessionDurationObserver();
 }
 
 // Test that session time defaults to the time in the constructor if the field
@@ -219,8 +228,14 @@ TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithEmptyFieldTrialValue) {
   new_tab_params["x_minutes"] = "";
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
 
-  EXPECT_EQ(mock_feature_tracker_->GetSessionTimeRequiredToShowWrapper(),
+  std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
+      std::make_unique<testing::StrictMock<MockTestFeatureTracker>>(
+          testing_profile_manager_->CreateTestingProfile(kTestProfileName));
+
+  EXPECT_EQ(mock_feature_tracker->GetSessionTimeRequiredToShowWrapper(),
             base::TimeDelta::FromMinutes(kTestTimeDeltaInMinutes));
+
+  mock_feature_tracker.get()->RemoveSessionDurationObserver();
 }
 
 // Test that session time defaults to the time in the constructor if the field
@@ -230,8 +245,14 @@ TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithInvalidFieldTrialValue) {
   new_tab_params["x_minutes"] = "12g4";
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
 
-  EXPECT_EQ(mock_feature_tracker_->GetSessionTimeRequiredToShowWrapper(),
+  std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
+      std::make_unique<testing::StrictMock<MockTestFeatureTracker>>(
+          testing_profile_manager_->CreateTestingProfile(kTestProfileName));
+
+  EXPECT_EQ(mock_feature_tracker->GetSessionTimeRequiredToShowWrapper(),
             base::TimeDelta::FromMinutes(kTestTimeDeltaInMinutes));
+
+  mock_feature_tracker.get()->RemoveSessionDurationObserver();
 }
 
 }  // namespace
