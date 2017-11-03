@@ -1881,12 +1881,7 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
   // TODO(sky): move to a whitelist, but currently the set of flags is rather
   // sprawling.
   if (copy_switches) {
-    base::CommandLine::SwitchMap switches =
-        base::CommandLine::ForCurrentProcess()->GetSwitches();
-    switches.erase("single_process");
-    switches.erase(switches::kSingleProcess);
-    switches.erase("gtest_filter");
-    for (const auto& sw : switches)
+    for (const auto& sw : base::CommandLine::ForCurrentProcess()->GetSwitches())
       command_line->AppendSwitchNative(sw.first, sw.second);
   }
 #endif
