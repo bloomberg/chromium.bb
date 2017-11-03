@@ -112,5 +112,6 @@ static std::string GetStringVertexAttribIType(uint32_t value);
 static std::string GetStringVertexAttribType(uint32_t value);
 static std::string GetStringVertexAttribute(uint32_t value);
 static std::string GetStringVertexPointer(uint32_t value);
+static std::string GetStringWindowRectanglesMode(uint32_t value);
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_AUTOGEN_H_

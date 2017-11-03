@@ -402,5 +402,6 @@
 #define glTexStorage2DImageCHROMIUM GLES2_GET_FUN(TexStorage2DImageCHROMIUM)
 #define glSetColorSpaceMetadataCHROMIUM \
   GLES2_GET_FUN(SetColorSpaceMetadataCHROMIUM)
+#define glWindowRectanglesEXT GLES2_GET_FUN(WindowRectanglesEXT)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

@@ -387,3 +387,6 @@ GL_APICALL void         GL_APIENTRY glTexStorage2DImageCHROMIUM (GLenumTextureBi
 
 // Extension CHROMIUM_color_space_metadata
 GL_APICALL void         GL_APIENTRY glSetColorSpaceMetadataCHROMIUM (GLuint texture_id, GLColorSpace color_space);
+
+// Extension EXT_window_rectangles
+GL_APICALL void         GL_APIENTRY glWindowRectanglesEXT (GLenumWindowRectanglesMode mode, GLsizeiNotNegative count, const GLint* box);

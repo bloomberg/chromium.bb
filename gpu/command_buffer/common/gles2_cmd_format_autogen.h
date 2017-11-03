@@ -16294,4 +16294,50 @@ static_assert(
     offsetof(SetColorSpaceMetadataCHROMIUM, color_space_size) == 16,
     "offset of SetColorSpaceMetadataCHROMIUM color_space_size should be 16");
 
+struct WindowRectanglesEXTImmediate {
+  typedef WindowRectanglesEXTImmediate ValueType;
+  static const CommandId kCmdId = kWindowRectanglesEXTImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(GLint) * 4 * count);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei count) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(count));  // NOLINT
+  }
+
+  void SetHeader(GLsizei count) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  }
+
+  void Init(GLenum _mode, GLsizei _count, const GLint* _box) {
+    SetHeader(_count);
+    mode = _mode;
+    count = _count;
+    memcpy(ImmediateDataAddress(this), _box, ComputeDataSize(_count));
+  }
+
+  void* Set(void* cmd, GLenum _mode, GLsizei _count, const GLint* _box) {
+    static_cast<ValueType*>(cmd)->Init(_mode, _count, _box);
+    const uint32_t size = ComputeSize(_count);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t mode;
+  int32_t count;
+};
+
+static_assert(sizeof(WindowRectanglesEXTImmediate) == 12,
+              "size of WindowRectanglesEXTImmediate should be 12");
+static_assert(offsetof(WindowRectanglesEXTImmediate, header) == 0,
+              "offset of WindowRectanglesEXTImmediate header should be 0");
+static_assert(offsetof(WindowRectanglesEXTImmediate, mode) == 4,
+              "offset of WindowRectanglesEXTImmediate mode should be 4");
+static_assert(offsetof(WindowRectanglesEXTImmediate, count) == 8,
+              "offset of WindowRectanglesEXTImmediate count should be 8");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

@@ -648,6 +648,27 @@ _STATES = {
       },
     ],
   },
+  'WindowRectanglesEXT': {
+    'type': 'Normal',
+    'func': 'WindowRectanglesEXT',
+    'custom_function': True,
+    'extension_flag': 'ext_window_rectangles',
+    'no_init': True,
+    'states': [
+      {
+        'name': 'window_rectangles_mode',
+        'type': 'GLenum',
+        'enum': 'GL_WINDOW_RECTANGLE_MODE_EXT',
+        'default': 'GL_EXCLUSIVE_EXT',
+      },
+      {
+        'name': 'num_window_rectangles',
+        'type': 'GLint',
+        'enum': 'GL_NUM_WINDOW_RECTANGLES_EXT',
+        'default': '0',
+      },
+    ],
+  },
 }
 
 # Named type info object represents a named type that is used in OpenGL call
@@ -958,7 +979,6 @@ _NAMED_TYPE_INFO = {
   },
   'IndexedGLState': {
     'type': 'GLenum',
-    'is_complete': True,
     'valid': [
       'GL_TRANSFORM_FEEDBACK_BUFFER_BINDING',
       'GL_TRANSFORM_FEEDBACK_BUFFER_SIZE',
@@ -2302,7 +2322,15 @@ _NAMED_TYPE_INFO = {
     'invalid': [
       'GL_NONE',
     ],
-  }
+  },
+  'WindowRectanglesMode': {
+    'type': 'GLenum',
+    'is_complete': True,
+    'valid': [
+      'GL_INCLUSIVE_EXT',
+      'GL_EXCLUSIVE_EXT',
+    ],
+  },
 }
 
 _ETC_COMPRESSED_TEXTURE_FORMATS = [
@@ -4620,6 +4648,15 @@ _FUNCTION_INFO = {
     'cmd_args': 'GLuint texture_id, GLuint shm_id, GLuint shm_offset, '
                 'GLsizei color_space_size',
     'extension': 'CHROMIUM_color_space_metadata',
+  },
+  'WindowRectanglesEXT': {
+    'type': 'PUTn',
+    'count': 4,
+    'decoder_func': 'DoWindowRectanglesEXT',
+    'unit_test': False,
+    'extension': 'EXT_window_rectangles',
+    'extension_flag': 'ext_window_rectangles',
+    'es3': True,
   },
 }
 
@@ -10328,6 +10365,8 @@ void ContextState::InitState(const ContextState *prev_state) const {
         # We need to sort the keys so the expectations match
         for state_name in sorted(_STATES.keys()):
           state = _STATES[state_name]
+          if 'no_init' in state and state['no_init']:
+            continue
           if state['type'] == 'FrontBack':
             num_states = len(state['states'])
             for ndx, group in enumerate(Grouper(num_states / 2,
@@ -10642,7 +10681,7 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
 
             guarded_operation = GuardState(item, ''.join(operation))
             f.write(guarded_operation)
-        else:
+        elif 'no_init' not in state:
           if 'extension_flag' in state:
             f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
                        state['extension_flag'])

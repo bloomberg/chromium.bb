@@ -1806,6 +1806,11 @@ void GL_APIENTRY GLES2SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
                                                     GLColorSpace color_space) {
   gles2::GetGLContext()->SetColorSpaceMetadataCHROMIUM(texture_id, color_space);
 }
+void GL_APIENTRY GLES2WindowRectanglesEXT(GLenum mode,
+                                          GLsizei count,
+                                          const GLint* box) {
+  gles2::GetGLContext()->WindowRectanglesEXT(mode, count, box);
+}
 
 namespace gles2 {
 
@@ -3160,6 +3165,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glSetColorSpaceMetadataCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glSetColorSpaceMetadataCHROMIUM),
+    },
+    {
+        "glWindowRectanglesEXT",
+        reinterpret_cast<GLES2FunctionPointer>(glWindowRectanglesEXT),
     },
     {
         NULL, NULL,

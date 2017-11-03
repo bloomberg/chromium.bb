@@ -3603,4 +3603,26 @@ void GLES2Implementation::TexStorage2DImageCHROMIUM(GLenum target,
   CheckGLError();
 }
 
+void GLES2Implementation::WindowRectanglesEXT(GLenum mode,
+                                              GLsizei count,
+                                              const GLint* box) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glWindowRectanglesEXT("
+                     << GLES2Util::GetStringWindowRectanglesMode(mode) << ", "
+                     << count << ", " << static_cast<const void*>(box) << ")");
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (GLsizei i = 0; i < count; ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << box[0 + i * 4] << ", "
+                          << box[1 + i * 4] << ", " << box[2 + i * 4] << ", "
+                          << box[3 + i * 4]);
+    }
+  });
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glWindowRectanglesEXT", "count < 0");
+    return;
+  }
+  helper_->WindowRectanglesEXTImmediate(mode, count, box);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

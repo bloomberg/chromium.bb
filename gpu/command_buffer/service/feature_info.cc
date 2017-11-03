@@ -1335,6 +1335,15 @@ void FeatureInfo::InitializeFeatures() {
       "GPU.TextureR16Ext_LuminanceF16", GpuTextureUMAHelper(),
       static_cast<int>(GpuTextureResultR16_L16::kMax) + 1);
 
+  if (enable_es3 && gl::HasExtension(extensions, "GL_EXT_window_rectangles")) {
+    AddExtensionString("GL_EXT_window_rectangles");
+    feature_flags_.ext_window_rectangles = true;
+    validators_.g_l_state.AddValue(GL_WINDOW_RECTANGLE_MODE_EXT);
+    validators_.g_l_state.AddValue(GL_MAX_WINDOW_RECTANGLES_EXT);
+    validators_.g_l_state.AddValue(GL_NUM_WINDOW_RECTANGLES_EXT);
+    validators_.indexed_g_l_state.AddValue(GL_WINDOW_RECTANGLE_EXT);
+  }
+
   bool has_opengl_dual_source_blending =
       gl_version_info_->IsAtLeastGL(3, 3) ||
       (gl_version_info_->IsAtLeastGL(3, 2) &&

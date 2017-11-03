@@ -122,6 +122,8 @@ GLint viewport_x;
 GLint viewport_y;
 GLsizei viewport_width;
 GLsizei viewport_height;
+GLenum window_rectangles_mode;
+GLint num_window_rectangles;
 
 inline void SetDeviceCapabilityState(GLenum cap, bool enable) {
   switch (cap) {

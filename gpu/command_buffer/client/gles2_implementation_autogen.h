@@ -1268,4 +1268,6 @@ void TexStorage2DImageCHROMIUM(GLenum target,
 void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
                                    GLColorSpace color_space) override;
 
+void WindowRectanglesEXT(GLenum mode, GLsizei count, const GLint* box) override;
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

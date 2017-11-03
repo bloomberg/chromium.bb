@@ -943,4 +943,7 @@ virtual void TexStorage2DImageCHROMIUM(GLenum target,
                                        GLsizei height) = 0;
 virtual void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
                                            GLColorSpace color_space) = 0;
+virtual void WindowRectanglesEXT(GLenum mode,
+                                 GLsizei count,
+                                 const GLint* box) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

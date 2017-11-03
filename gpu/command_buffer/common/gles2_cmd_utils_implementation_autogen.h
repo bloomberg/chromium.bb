@@ -5815,4 +5815,13 @@ std::string GLES2Util::GetStringVertexPointer(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringWindowRectanglesMode(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_INCLUSIVE_EXT, "GL_INCLUSIVE_EXT"},
+      {GL_EXCLUSIVE_EXT, "GL_EXCLUSIVE_EXT"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_IMPLEMENTATION_AUTOGEN_H_

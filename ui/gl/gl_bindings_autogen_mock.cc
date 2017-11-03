@@ -4025,6 +4025,14 @@ void GL_BINDING_CALL MockGLInterface::Mock_glWaitSync(GLsync sync,
   interface_->WaitSync(sync, flags, timeout);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glWindowRectanglesEXT(GLenum mode,
+                                            GLsizei n,
+                                            const GLint* box) {
+  MakeFunctionUnique("glWindowRectanglesEXT");
+  interface_->WindowRectanglesEXT(mode, n, box);
+}
+
 static void MockInvalidFunction() {
   NOTREACHED();
 }
@@ -5165,6 +5173,8 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glViewport);
   if (strcmp(name, "glWaitSync") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glWaitSync);
+  if (strcmp(name, "glWindowRectanglesEXT") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glWindowRectanglesEXT);
   return reinterpret_cast<GLFunctionPointerType>(&MockInvalidFunction);
 }
 

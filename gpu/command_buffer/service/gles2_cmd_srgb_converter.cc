@@ -272,6 +272,9 @@ void SRGBConverter::Blit(
   glDepthMask(GL_FALSE);
   glDisable(GL_BLEND);
   glDisable(GL_DITHER);
+  if (decoder->GetFeatureInfo()->feature_flags().ext_window_rectangles) {
+    glWindowRectanglesEXT(GL_EXCLUSIVE_EXT, 0, nullptr);
+  }
 
   // Copy the image from read buffer to the 1st texture(srgb).
   // TODO(yunchao) If the read buffer is a fbo texture, we can sample
@@ -456,6 +459,9 @@ void SRGBConverter::GenerateMipmap(const gles2::GLES2Decoder* decoder,
   glDepthMask(GL_FALSE);
   glDisable(GL_BLEND);
   glDisable(GL_DITHER);
+  if (decoder->GetFeatureInfo()->feature_flags().ext_window_rectangles) {
+    glWindowRectanglesEXT(GL_EXCLUSIVE_EXT, 0, nullptr);
+  }
 
   glBindVertexArrayOES(srgb_converter_vao_);
   glActiveTexture(GL_TEXTURE0);

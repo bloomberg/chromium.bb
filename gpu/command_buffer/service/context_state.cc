@@ -551,6 +551,56 @@ void ContextState::UpdatePackParameters() const {
   }
 }
 
+void ContextState::SetMaxWindowRectangles(size_t max) {
+  window_rectangles_ = std::vector<GLint>(max * 4, 0);
+}
+
+size_t ContextState::GetMaxWindowRectangles() const {
+  size_t size = window_rectangles_.size();
+  DCHECK_EQ(0ull, size % 4);
+  return size / 4;
+}
+
+void ContextState::SetWindowRectangles(GLenum mode,
+                                       size_t count,
+                                       const volatile GLint* box) {
+  window_rectangles_mode = mode;
+  num_window_rectangles = count;
+  DCHECK_LE(count, GetMaxWindowRectangles());
+  if (count) {
+    std::copy(box, &box[count * 4], window_rectangles_.begin());
+  }
+}
+
+void ContextState::UpdateWindowRectangles() const {
+  if (!feature_info_->feature_flags().ext_window_rectangles) {
+    return;
+  }
+
+  if (current_draw_framebuffer_client_id == 0) {
+    // Window rectangles must not take effect for client_id 0 (backbuffer).
+    api()->glWindowRectanglesEXTFn(GL_EXCLUSIVE_EXT, 0, nullptr);
+  } else {
+    DCHECK_LE(static_cast<size_t>(num_window_rectangles),
+              GetMaxWindowRectangles());
+    const GLint* data =
+        num_window_rectangles ? window_rectangles_.data() : nullptr;
+    api()->glWindowRectanglesEXTFn(window_rectangles_mode,
+                                   num_window_rectangles, data);
+  }
+}
+
+void ContextState::UpdateWindowRectanglesForBoundDrawFramebufferClientID(
+    GLuint client_id) {
+  bool old_id_nonzero = current_draw_framebuffer_client_id != 0;
+  bool new_id_nonzero = client_id != 0;
+  current_draw_framebuffer_client_id = client_id;
+  // If switching from FBO to backbuffer, or vice versa, update driver state.
+  if (old_id_nonzero ^ new_id_nonzero) {
+    UpdateWindowRectangles();
+  }
+}
+
 void ContextState::UpdateUnpackParameters() const {
   if (!feature_info_->IsES3Capable())
     return;
@@ -727,6 +777,7 @@ void ContextState::InitStateManual(const ContextState*) const {
   // will opmitize this.
   UpdatePackParameters();
   UpdateUnpackParameters();
+  UpdateWindowRectangles();
 }
 
 // Include the auto-generated part of this file. We split this because it means

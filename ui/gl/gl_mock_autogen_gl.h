@@ -1207,3 +1207,5 @@ MOCK_METHOD6(VertexAttribPointer,
                   const void* ptr));
 MOCK_METHOD4(Viewport, void(GLint x, GLint y, GLsizei width, GLsizei height));
 MOCK_METHOD3(WaitSync, void(GLsync sync, GLbitfield flags, GLuint64 timeout));
+MOCK_METHOD3(WindowRectanglesEXT,
+             void(GLenum mode, GLsizei n, const GLint* box));
