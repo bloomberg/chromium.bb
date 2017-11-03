@@ -3918,7 +3918,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_ADD_4BYTES_OBUSIZE
     obu_size = mem_get_le32(data);
 #else
-    obu_size = data_end - data;
+    obu_size = (size_t)(data_end - data);
 #endif
     obu_type = read_obu_header(&rb, &obu_header_size);
     data += (PRE_OBU_SIZE_BYTES + obu_header_size);

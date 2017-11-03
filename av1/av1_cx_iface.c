@@ -1326,10 +1326,13 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 
 #if CONFIG_OBU
       // move data PRE_OBU_SIZE_BYTES + 1 bytes and insert OBU_TD preceded by
-      // 4-byte size
+      // optional 4 byte size
       uint32_t obu_size = 1;
-      memmove(ctx->pending_cx_data + PRE_OBU_SIZE_BYTES + 1,
-              ctx->pending_cx_data, ctx->pending_cx_data_sz);
+      if (ctx->pending_cx_data) {
+        const size_t index_sz = PRE_OBU_SIZE_BYTES + 1;
+        memmove(ctx->pending_cx_data + index_sz, ctx->pending_cx_data,
+                ctx->pending_cx_data_sz);
+      }
       obu_size = write_obu_header(
           OBU_TEMPORAL_DELIMITER, 0,
           (uint8_t *)(ctx->pending_cx_data + PRE_OBU_SIZE_BYTES));
