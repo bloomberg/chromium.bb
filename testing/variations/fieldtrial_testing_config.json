@@ -809,6 +809,29 @@
             ]
         }
     ],
+    "ChromeSuggestionsTuningForceTopSites": [
+        {
+            "platforms": [
+                "win",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Default"
+                },
+                {
+                    "name": "ForceTopSites",
+                    "disable_features": [
+                        "DisplaySuggestionsServiceTiles"
+                    ]
+                }
+            ]
+        }
+    ],
     "ClearOldOnDemandFavicons": [
         {
             "platforms": [
