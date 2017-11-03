@@ -22,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/key_system_names.h"
@@ -161,6 +162,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       const std::string& key_system,
       base::StringPairs& query_params,
       const std::string& expected_title) {
+    DVLOG(1) << "Mojo CDM " << (IsUsingMojoCdm() ? "" : " not") << " enabled.";
     base::StringPairs new_query_params = query_params;
     StartLicenseServerIfNeeded(key_system, &new_query_params);
     RunMediaTestPage(html_page, new_query_params, expected_title, true);
@@ -283,6 +285,10 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "EncryptedMediaHdcpPolicyCheck");
+    // The test covers both mojo CDM and pepper CDM, so we need to disable the
+    // field trial testing config, which might enable mojo CDM unexpectedly.
+    command_line->AppendSwitch(
+        variations::switches::kDisableFieldTrialTestingConfig);
   }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -330,6 +336,11 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
   }
 
+  // Check whether the test is actually using mojo CDM.
+  bool IsUsingMojoCdm() const {
+    return base::FeatureList::IsEnabled(media::kMojoCdm);
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -364,8 +375,6 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
                           session_to_load, false, PlayCount::ONCE,
                           expected_title);
   }
-
-  bool IsUsingMojoCdm() const { return GetParam() == CdmHostType::kMojo; }
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -410,8 +419,6 @@ class EncryptedMediaTest
   }
 
   CdmHostType CurrentCdmHostType() { return std::tr1::get<2>(GetParam()); }
-
-  bool IsUsingMojoCdm() { return CurrentCdmHostType() == CdmHostType::kMojo; }
 
   void TestSimplePlayback(const std::string& encrypted_media,
                           const std::string& media_type) {
