@@ -281,6 +281,7 @@ LoginUserView::LoginUserView(LoginDisplayStyle style,
 
   hover_notifier_ = std::make_unique<HoverNotifier>(
       this, base::Bind(&LoginUserView::OnHover, base::Unretained(this)));
+  user_menu_ = std::make_unique<LoginBubble>();
 }
 
 LoginUserView::~LoginUserView() = default;
@@ -376,8 +377,7 @@ void LoginUserView::ButtonPressed(Button* sender, const ui::Event& event) {
   // Handle click on the dropdown arrow.
   if (sender == user_dropdown_) {
     DCHECK(user_dropdown_);
-    if (!user_menu_ || !user_menu_->IsVisible()) {
-      user_menu_ = std::make_unique<LoginBubble>();
+    if (!user_menu_->IsVisible()) {
       base::string16 display_name =
           base::UTF8ToUTF16(current_user_->basic_user_info->display_name);
 
