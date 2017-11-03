@@ -2535,7 +2535,6 @@
 -DownloadTest.DontCloseNewTab3
 -DownloadTest.DownloadAndWait
 -DownloadTest.DownloadDangerousBlobData
--DownloadTest.DownloadHistoryCheck
 -DownloadTest.DownloadHistoryDangerCheck
 -DownloadTest.DownloadMimeType
 -DownloadTest.DownloadMimeTypeSelect
@@ -2543,7 +2542,6 @@
 -DownloadTest.DownloadTest_GZipWithNoContent
 -DownloadTest.DownloadTest_History
 -DownloadTest.DownloadTest_IncognitoRegular
--DownloadTest.DownloadTest_PercentComplete
 -DownloadTest.DownloadTest_PauseResumeCancel
 -DownloadTest.DownloadTest_Remove
 -DownloadTest.DownloadTest_Renaming

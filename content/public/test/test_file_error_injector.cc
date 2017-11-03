@@ -52,6 +52,9 @@ class DownloadFileWithError: public DownloadFileImpl {
                                           const char* data,
                                           size_t data_len) override;
 
+  DownloadInterruptReason HandleStreamCompletionStatus(
+      SourceStream* source_stream) override;
+
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
   void RenameAndAnnotate(const base::FilePath& full_path,
@@ -173,6 +176,21 @@ DownloadInterruptReason DownloadFileWithError::WriteDataToFile(
       DownloadFileImpl::WriteDataToFile(offset, data, data_len));
 }
 
+DownloadInterruptReason DownloadFileWithError::HandleStreamCompletionStatus(
+    SourceStream* source_stream) {
+  DownloadInterruptReason origin_error =
+      DownloadFileImpl::HandleStreamCompletionStatus(source_stream);
+
+  if (error_info_.code ==
+          TestFileErrorInjector::FILE_OPERATION_STREAM_COMPLETE &&
+      source_stream->offset() == error_info_.stream_offset &&
+      source_stream->bytes_written() >= error_info_.stream_bytes_written) {
+    return error_info_.error;
+  }
+
+  return origin_error;
+}
+
 void DownloadFileWithError::RenameAndUniquify(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
@@ -286,11 +304,7 @@ DownloadFileWithErrorFactory::DownloadFileWithErrorFactory(
     const base::Closure& ctor_callback,
     const base::Closure& dtor_callback)
     : construction_callback_(ctor_callback),
-      destruction_callback_(dtor_callback) {
-  injected_error_.code = TestFileErrorInjector::FILE_OPERATION_INITIALIZE;
-  injected_error_.error = DOWNLOAD_INTERRUPT_REASON_NONE;
-  injected_error_.operation_instance = -1;
-}
+      destruction_callback_(dtor_callback) {}
 
 DownloadFileWithErrorFactory::~DownloadFileWithErrorFactory() {}
 
@@ -311,6 +325,17 @@ bool DownloadFileWithErrorFactory::SetError(
   injected_error_ = std::move(error);
   return true;
 }
+
+TestFileErrorInjector::FileErrorInfo::FileErrorInfo()
+    : FileErrorInfo(FILE_OPERATION_INITIALIZE,
+                    -1,
+                    DOWNLOAD_INTERRUPT_REASON_NONE) {}
+
+TestFileErrorInjector::FileErrorInfo::FileErrorInfo(
+    FileOperationCode code,
+    int operation_instance,
+    DownloadInterruptReason error)
+    : code(code), operation_instance(operation_instance), error(error) {}
 
 TestFileErrorInjector::TestFileErrorInjector(DownloadManager* download_manager)
     :  // This code is only used for browser_tests, so a
