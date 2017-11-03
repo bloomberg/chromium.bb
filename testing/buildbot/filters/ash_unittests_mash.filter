@@ -63,7 +63,6 @@
 -ImmersiveFullscreenControllerTest.EventsDoNotLeakToWindowUnderneath
 -ImmersiveFullscreenControllerTest.Focus
 -ImmersiveFullscreenControllerTest.Inactive
-# TODO: Needs SetLayoutForCurrentDisplays() http://crbug.com/698043
 -ImmersiveFullscreenControllerTest.MouseEventsVerticalDisplayLayout
 -ImmersiveFullscreenControllerTest.MouseHoveredWithoutMoving
 -ImmersiveFullscreenControllerTest.OnMouseEvent
@@ -142,8 +141,6 @@
 -TabletModeWindowManagerTest.ExitFullScreenWithEdgeSwipeFromTop
 -TabletModeWindowManagerTest.ExitFullScreenWithEdgeTouchAtBottom
 -TabletModeWindowManagerTest.ExitFullScreenWithEdgeTouchAtTop
-# TODO: Needs SetLayoutForCurrentDisplays(). http://crbug.com/698043
--ToplevelWindowEventHandlerTest.DragSnappedWindowToExternalDisplay
 # TODO: Touch HUD. http://crbug.com/698032
 -TouchHudDebugTest.DualDisplays
 -TouchHudDebugTest.Headless
@@ -188,5 +185,7 @@
 -WorkspaceLayoutManagerKeyboardTest.ChildWindowFocused
 -WorkspaceLayoutManagerKeyboardTest.IgnoreKeyboardBoundsChange
 -WorkspaceLayoutManagerKeyboardTest.IgnoreWorkAreaChangeinNonStickyMode
+# TODO: Needs CursorManager. http://crbug.com/631103
+-WorkspaceWindowResizerTest.MouseMoveWithTouchDrag
 
 # Keep alphabetized. See comment at top of file.
