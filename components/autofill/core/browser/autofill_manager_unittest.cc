@@ -15,7 +15,6 @@
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/metrics_hashes.h"
@@ -138,14 +137,14 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void AddProfile(const AutofillProfile& profile) override {
     std::unique_ptr<AutofillProfile> profile_ptr =
-        base::MakeUnique<AutofillProfile>(profile);
+        std::make_unique<AutofillProfile>(profile);
     profile_ptr->set_modification_date(AutofillClock::Now());
     web_profiles_.push_back(std::move(profile_ptr));
   }
 
   void AddCreditCard(const CreditCard& credit_card) override {
     std::unique_ptr<CreditCard> local_credit_card =
-        base::MakeUnique<CreditCard>(credit_card);
+        std::make_unique<CreditCard>(credit_card);
     local_credit_card->set_modification_date(AutofillClock::Now());
     local_credit_cards_.push_back(std::move(local_credit_card));
   }
@@ -193,7 +192,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void AddServerCreditCard(const CreditCard& credit_card) {
     std::unique_ptr<CreditCard> server_credit_card =
-        base::MakeUnique<CreditCard>(credit_card);
+        std::make_unique<CreditCard>(credit_card);
     server_credit_card->set_modification_date(AutofillClock::Now());
     server_credit_cards_.push_back(std::move(server_credit_card));
   }
@@ -201,7 +200,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Create Elvis card with whitespace in the credit card number.
   void CreateTestCreditCardWithWhitespace() {
     ClearCreditCards();
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+    std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Elvis Presley",
                             "4234 5678 9012 3456",  // Visa
                             "04", "2999", "1");
@@ -212,7 +211,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Create Elvis card with separator characters in the credit card number.
   void CreateTestCreditCardWithSeparators() {
     ClearCreditCards();
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+    std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Elvis Presley",
                             "4234-5678-9012-3456",  // Visa
                             "04", "2999", "1");
@@ -222,7 +221,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void CreateTestCreditCardsYearAndMonth(const char* year, const char* month) {
     ClearCreditCards();
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+    std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Miku Hatsune",
                             "4234567890654321",  // Visa
                             month, year, "1");
@@ -232,7 +231,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void CreateTestExpiredCreditCard() {
     ClearCreditCards();
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+    std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Homer Simpson",
                             "4234567890654321",  // Visa
                             "05", "2000", "1");
@@ -244,20 +243,20 @@ class TestPersonalDataManager : public PersonalDataManager {
   void CreateTestAutofillProfiles(
       std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
     std::unique_ptr<AutofillProfile> profile =
-        base::MakeUnique<AutofillProfile>();
+        std::make_unique<AutofillProfile>();
     test::SetProfileInfo(profile.get(), "Elvis", "Aaron", "Presley",
                          "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
                          "Apt. 10", "Memphis", "Tennessee", "38116", "US",
                          "12345678901");
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(std::move(profile));
-    profile = base::MakeUnique<AutofillProfile>();
+    profile = std::make_unique<AutofillProfile>();
     test::SetProfileInfo(profile.get(), "Charles", "Hardin", "Holley",
                          "buddy@gmail.com", "Decca", "123 Apple St.", "unit 6",
                          "Lubbock", "Texas", "79401", "US", "23456789012");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(std::move(profile));
-    profile = base::MakeUnique<AutofillProfile>();
+    profile = std::make_unique<AutofillProfile>();
     test::SetProfileInfo(profile.get(), "", "", "", "", "", "", "", "", "", "",
                          "", "");
     profile->set_guid("00000000-0000-0000-0000-000000000003");
@@ -266,7 +265,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void CreateTestCreditCards(
       std::vector<std::unique_ptr<CreditCard>>* credit_cards) {
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+    std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Elvis Presley",
                             "4234567890123456",  // Visa
                             "04", "2999", "1");
@@ -276,7 +275,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                               base::TimeDelta::FromDays(5));
     credit_cards->push_back(std::move(credit_card));
 
-    credit_card = base::MakeUnique<CreditCard>();
+    credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Buddy Holly",
                             "5187654321098765",  // Mastercard
                             "10", "2998", "1");
@@ -286,7 +285,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                               base::TimeDelta::FromDays(4));
     credit_cards->push_back(std::move(credit_card));
 
-    credit_card = base::MakeUnique<CreditCard>();
+    credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "", "", "", "", "");
     credit_card->set_guid("00000000-0000-0000-0000-000000000006");
     credit_cards->push_back(std::move(credit_card));
@@ -1302,7 +1301,7 @@ TEST_F(AutofillManagerTest,
   // Two profiles have the same last name, and the third shares the same first
   // letter for last name.
   std::unique_ptr<AutofillProfile> profile1 =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   profile1->set_guid("00000000-0000-0000-0000-000000000103");
   profile1->SetInfo(NAME_FIRST, ASCIIToUTF16("Robin"), "en-US");
   profile1->SetInfo(NAME_LAST, ASCIIToUTF16("Grimes"), "en-US");
@@ -1311,7 +1310,7 @@ TEST_F(AutofillManagerTest,
   autofill_manager_->AddProfile(std::move(profile1));
 
   std::unique_ptr<AutofillProfile> profile2 =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   profile2->set_guid("00000000-0000-0000-0000-000000000124");
   profile2->SetInfo(NAME_FIRST, ASCIIToUTF16("Carl"), "en-US");
   profile2->SetInfo(NAME_LAST, ASCIIToUTF16("Grimes"), "en-US");
@@ -1320,7 +1319,7 @@ TEST_F(AutofillManagerTest,
   autofill_manager_->AddProfile(std::move(profile2));
 
   std::unique_ptr<AutofillProfile> profile3 =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   profile3->set_guid("00000000-0000-0000-0000-000000000126");
   profile3->SetInfo(NAME_FIRST, ASCIIToUTF16("Aaron"), "en-US");
   profile3->SetInfo(NAME_LAST, ASCIIToUTF16("Googler"), "en-US");
@@ -1396,7 +1395,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_WithDuplicates) {
 
   // Add a duplicate profile.
   std::unique_ptr<AutofillProfile> duplicate_profile =
-      base::MakeUnique<AutofillProfile>(*(autofill_manager_->GetProfileWithGUID(
+      std::make_unique<AutofillProfile>(*(autofill_manager_->GetProfileWithGUID(
           "00000000-0000-0000-0000-000000000001")));
   autofill_manager_->AddProfile(std::move(duplicate_profile));
 
@@ -1993,7 +1992,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
 
   // |profile| will be owned by the mock PersonalDataManager.
   std::unique_ptr<AutofillProfile> profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   test::SetProfileInfo(profile.get(), "Elvis", "", "", "", "", "", "", "", "",
                        "", "", "");
   profile->set_guid("00000000-0000-0000-0000-000000000101");
@@ -2017,7 +2016,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_FancyPhone) {
   FormsSeen(forms);
 
   std::unique_ptr<AutofillProfile> profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   profile->set_guid("00000000-0000-0000-0000-000000000103");
   profile->SetInfo(NAME_FULL, ASCIIToUTF16("Natty Bumppo"), "en-US");
   profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1800PRAIRIE"));
@@ -2066,7 +2065,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_ForPhonePrefixOrSuffix) {
   FormsSeen(forms);
 
   std::unique_ptr<AutofillProfile> profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   profile->set_guid("00000000-0000-0000-0000-000000000104");
   profile->SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("1800FLOWERS"));
   personal_data_.ClearAutofillProfiles();
@@ -4121,7 +4120,7 @@ TEST_F(AutofillManagerTest, DisambiguateUploadTypes) {
 TEST_F(AutofillManagerTest, RemoveProfile) {
   // Add and remove an Autofill profile.
   std::unique_ptr<AutofillProfile> profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   const char guid[] = "00000000-0000-0000-0000-000000000102";
   profile->set_guid(guid);
   autofill_manager_->AddProfile(std::move(profile));
@@ -4809,7 +4808,7 @@ TEST_F(AutofillManagerTest,
   FormsSeen(forms);
 
   std::unique_ptr<AutofillProfile> profile1 =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   profile1->set_guid("00000000-0000-0000-0000-000000000103");
   profile1->SetInfo(NAME_FIRST, ASCIIToUTF16("Robin"), "en-US");
   profile1->SetInfo(NAME_MIDDLE, ASCIIToUTF16("Adam Smith"), "en-US");
@@ -4819,7 +4818,7 @@ TEST_F(AutofillManagerTest,
   autofill_manager_->AddProfile(std::move(profile1));
 
   std::unique_ptr<AutofillProfile> profile2 =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   profile2->set_guid("00000000-0000-0000-0000-000000000124");
   profile2->SetInfo(NAME_FIRST, ASCIIToUTF16("Carl"), "en-US");
   profile2->SetInfo(NAME_MIDDLE, ASCIIToUTF16("Shawn Smith"), "en-US");
@@ -5056,7 +5055,7 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsForUpdatedServerTypedForm) {
   test::CreateTestFormField("Field 3", "field3", "", "text", &field);
   form.fields.push_back(field);
 
-  auto form_structure = base::MakeUnique<TestFormStructure>(form);
+  auto form_structure = std::make_unique<TestFormStructure>(form);
   form_structure->DetermineHeuristicTypes(nullptr /* ukm_recorder */);
   // Make sure the form can not be autofilled now.
   ASSERT_EQ(0u, form_structure->autofill_count());

@@ -4,7 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autofill_table_encryptor_factory.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/memory/singleton.h"
 #include "components/autofill/core/browser/webdata/system_encryptor.h"
 
@@ -21,7 +22,7 @@ AutofillTableEncryptorFactory* AutofillTableEncryptorFactory::GetInstance() {
 std::unique_ptr<AutofillTableEncryptor>
 AutofillTableEncryptorFactory::Create() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  return delegate_ ? delegate_->Create() : base::MakeUnique<SystemEncryptor>();
+  return delegate_ ? delegate_->Create() : std::make_unique<SystemEncryptor>();
 }
 
 void AutofillTableEncryptorFactory::SetDelegate(

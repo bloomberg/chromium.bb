@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -21,7 +22,6 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -194,7 +194,7 @@ AutofillManager::AutofillManager(
     AutofillDownloadManagerState enable_download_manager)
     : AutofillHandler(driver),
       client_(client),
-      payments_client_(base::MakeUnique<payments::PaymentsClient>(
+      payments_client_(std::make_unique<payments::PaymentsClient>(
           driver->GetURLRequestContext(),
           client->GetPrefs(),
           client->GetIdentityProvider(),
@@ -210,16 +210,16 @@ AutofillManager::AutofillManager(
                                              client->GetPersonalDataManager(),
                                              app_locale)),
       autocomplete_history_manager_(
-          base::MakeUnique<AutocompleteHistoryManager>(driver, client)),
+          std::make_unique<AutocompleteHistoryManager>(driver, client)),
       form_interactions_ukm_logger_(
-          base::MakeUnique<AutofillMetrics::FormInteractionsUkmLogger>(
+          std::make_unique<AutofillMetrics::FormInteractionsUkmLogger>(
               client->GetUkmRecorder())),
       address_form_event_logger_(
-          base::MakeUnique<AutofillMetrics::FormEventLogger>(
+          std::make_unique<AutofillMetrics::FormEventLogger>(
               false /* is_for_credit_card */,
               form_interactions_ukm_logger_.get())),
       credit_card_form_event_logger_(
-          base::MakeUnique<AutofillMetrics::FormEventLogger>(
+          std::make_unique<AutofillMetrics::FormEventLogger>(
               true /* is_for_credit_card */,
               form_interactions_ukm_logger_.get())),
       has_logged_autofill_enabled_(false),
@@ -1212,7 +1212,7 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
                                  PersonalDataManager* personal_data)
     : AutofillHandler(driver),
       client_(client),
-      payments_client_(base::MakeUnique<payments::PaymentsClient>(
+      payments_client_(std::make_unique<payments::PaymentsClient>(
           driver->GetURLRequestContext(),
           client->GetPrefs(),
           client->GetIdentityProvider(),
@@ -1223,21 +1223,21 @@ AutofillManager::AutofillManager(AutofillDriver* driver,
       app_locale_("en-US"),
       personal_data_(personal_data),
       form_data_importer_(
-          base::MakeUnique<FormDataImporter>(client,
+          std::make_unique<FormDataImporter>(client,
                                              payments_client_.get(),
                                              personal_data,
                                              app_locale_)),
       autocomplete_history_manager_(
-          base::MakeUnique<AutocompleteHistoryManager>(driver, client)),
+          std::make_unique<AutocompleteHistoryManager>(driver, client)),
       form_interactions_ukm_logger_(
-          base::MakeUnique<AutofillMetrics::FormInteractionsUkmLogger>(
+          std::make_unique<AutofillMetrics::FormInteractionsUkmLogger>(
               client->GetUkmRecorder())),
       address_form_event_logger_(
-          base::MakeUnique<AutofillMetrics::FormEventLogger>(
+          std::make_unique<AutofillMetrics::FormEventLogger>(
               false /* is_for_credit_card */,
               form_interactions_ukm_logger_.get())),
       credit_card_form_event_logger_(
-          base::MakeUnique<AutofillMetrics::FormEventLogger>(
+          std::make_unique<AutofillMetrics::FormEventLogger>(
               true /* is_for_credit_card */,
               form_interactions_ukm_logger_.get())),
       has_logged_autofill_enabled_(false),
@@ -1475,7 +1475,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
 std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
     const FormData& form) {
   std::unique_ptr<FormStructure> submitted_form(
-      base::MakeUnique<FormStructure>(form));
+      std::make_unique<FormStructure>(form));
   if (!ShouldUploadForm(*submitted_form))
     return std::unique_ptr<FormStructure>();
 
@@ -1727,7 +1727,7 @@ bool AutofillManager::ParseForm(const FormData& form,
   if (form_structures_.size() >= kMaxFormCacheSize)
     return false;
 
-  auto form_structure = base::MakeUnique<FormStructure>(form);
+  auto form_structure = std::make_unique<FormStructure>(form);
   form_structure->ParseFieldTypesFromAutocompleteAttributes();
   if (!form_structure->ShouldBeParsed())
     return false;

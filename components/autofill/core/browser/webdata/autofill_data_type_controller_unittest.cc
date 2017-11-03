@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -124,7 +123,7 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
     db_thread_.Start();
     web_data_service_ = new FakeWebDataService(
         base::ThreadTaskRunnerHandle::Get(), db_thread_.task_runner());
-    autofill_dtc_ = base::MakeUnique<AutofillDataTypeController>(
+    autofill_dtc_ = std::make_unique<AutofillDataTypeController>(
         db_thread_.task_runner(), base::Bind(&base::DoNothing), &sync_client_,
         web_data_service_);
   }

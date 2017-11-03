@@ -9,13 +9,13 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -1312,7 +1312,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
   // Copy in the new profiles.
   web_profiles_.clear();
   for (const AutofillProfile& it : *profiles) {
-    web_profiles_.push_back(base::MakeUnique<AutofillProfile>(it));
+    web_profiles_.push_back(std::make_unique<AutofillProfile>(it));
   }
 
   // Refresh our local cache and send notifications to observers.
@@ -1355,7 +1355,7 @@ void PersonalDataManager::SetCreditCards(
   // Copy in the new credit cards.
   local_credit_cards_.clear();
   for (const CreditCard& card : *credit_cards)
-    local_credit_cards_.push_back(base::MakeUnique<CreditCard>(card));
+    local_credit_cards_.push_back(std::make_unique<CreditCard>(card));
 
   // Refresh our local cache and send notifications to observers.
   Refresh();

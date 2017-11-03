@@ -7,13 +7,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -70,13 +70,13 @@ ACTION_P2(GetCopiesOf, profiles, cards) {
   for (const auto& profile : *profiles) {
     std::string utf8_server_id;
     base::Base64Encode(profile.server_id(), &utf8_server_id);
-    (*arg0)[utf8_server_id] = base::MakeUnique<AutofillProfile>(profile);
+    (*arg0)[utf8_server_id] = std::make_unique<AutofillProfile>(profile);
   }
 
   for (const auto& card : *cards) {
     std::string utf8_server_id;
     base::Base64Encode(card.server_id(), &utf8_server_id);
-    (*arg1)[utf8_server_id] = base::MakeUnique<CreditCard>(card);
+    (*arg1)[utf8_server_id] = std::make_unique<CreditCard>(card);
   }
 }
 

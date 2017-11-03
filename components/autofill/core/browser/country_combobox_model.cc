@@ -6,10 +6,10 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/country_data.h"
@@ -37,7 +37,7 @@ void CountryComboboxModel::SetCountries(
 
   if (filter.is_null() || filter.Run(default_country_code)) {
     countries_.push_back(
-        base::MakeUnique<AutofillCountry>(default_country_code, app_locale));
+        std::make_unique<AutofillCountry>(default_country_code, app_locale));
 #if !defined(OS_ANDROID)
     // The separator item. On Android, there are separators after all items, so
     // this is unnecessary.
@@ -65,7 +65,7 @@ void CountryComboboxModel::SetCountries(
   for (const auto& country_code : *available_countries) {
     if (filter.is_null() || filter.Run(country_code))
       sorted_countries.push_back(
-          base::MakeUnique<AutofillCountry>(country_code, app_locale));
+          std::make_unique<AutofillCountry>(country_code, app_locale));
   }
 
   l10n_util::SortStringsUsingMethod(app_locale, &sorted_countries,

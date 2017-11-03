@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/guid.h"
@@ -526,7 +527,7 @@ AutofillProfileSyncableService::CreateOrUpdateProfile(
 
   // New profile synced.
   std::unique_ptr<AutofillProfile> new_profile =
-      base::MakeUnique<AutofillProfile>(autofill_specifics.guid(),
+      std::make_unique<AutofillProfile>(autofill_specifics.guid(),
                                         autofill_specifics.origin());
   AutofillProfile* new_profile_ptr = new_profile.get();
   OverwriteProfileWithServerData(autofill_specifics, new_profile_ptr);
@@ -595,7 +596,7 @@ void AutofillProfileSyncableService::ActOnChange(
       DCHECK(profiles_map_.find(change.data_model()->guid()) ==
              profiles_map_.end());
       profiles_.push_back(
-          base::MakeUnique<AutofillProfile>(*(change.data_model())));
+          std::make_unique<AutofillProfile>(*(change.data_model())));
       profiles_map_[change.data_model()->guid()] = profiles_.back().get();
       break;
     case AutofillProfileChange::UPDATE: {

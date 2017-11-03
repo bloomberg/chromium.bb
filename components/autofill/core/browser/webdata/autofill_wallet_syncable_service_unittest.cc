@@ -4,9 +4,9 @@
 
 #include "components/autofill/core/browser/webdata/autofill_wallet_syncable_service.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
@@ -61,7 +61,7 @@ class TestAutofillTable : public AutofillTable {
   bool GetServerCreditCards(
       std::vector<std::unique_ptr<CreditCard>>* cards) const override {
     for (const auto& card_on_disk : cards_on_disk_)
-      cards->push_back(base::MakeUnique<CreditCard>(card_on_disk));
+      cards->push_back(std::make_unique<CreditCard>(card_on_disk));
     return true;
   }
 

@@ -18,7 +18,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/i18n/time_formatting.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -3077,7 +3076,7 @@ INSTANTIATE_TEST_CASE_P(
 // existing profile in decreasing order of frecency.
 TEST_F(PersonalDataManagerTest, MergeProfile_Frecency) {
   // Create two very similar profiles except with different company names.
-  std::unique_ptr<AutofillProfile> profile1 = base::MakeUnique<AutofillProfile>(
+  std::unique_ptr<AutofillProfile> profile1 = std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(profile1.get(), "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",

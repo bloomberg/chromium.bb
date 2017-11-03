@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -169,14 +168,14 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void AddProfile(const AutofillProfile& profile) override {
     std::unique_ptr<AutofillProfile> profile_ptr =
-        base::MakeUnique<AutofillProfile>(profile);
+        std::make_unique<AutofillProfile>(profile);
     profile_ptr->set_modification_date(AutofillClock::Now());
     web_profiles_.push_back(std::move(profile_ptr));
   }
 
   void AddCreditCard(const CreditCard& credit_card) override {
     std::unique_ptr<CreditCard> local_credit_card =
-        base::MakeUnique<CreditCard>(credit_card);
+        std::make_unique<CreditCard>(credit_card);
     local_credit_card->set_modification_date(AutofillClock::Now());
     local_credit_cards_.push_back(std::move(local_credit_card));
   }
@@ -224,7 +223,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void AddServerCreditCard(const CreditCard& credit_card) {
     std::unique_ptr<CreditCard> server_credit_card =
-        base::MakeUnique<CreditCard>(credit_card);
+        std::make_unique<CreditCard>(credit_card);
     server_credit_card->set_modification_date(AutofillClock::Now());
     server_credit_cards_.push_back(std::move(server_credit_card));
   }
@@ -232,7 +231,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Create Elvis card with whitespace in the credit card number.
   void CreateTestCreditCardWithWhitespace() {
     ClearCreditCards();
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+    std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Elvis Presley",
                             "4234 5678 9012 3456",  // Visa
                             "04", "2999", "1");
@@ -243,7 +242,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   // Create Elvis card with separator characters in the credit card number.
   void CreateTestCreditCardWithSeparators() {
     ClearCreditCards();
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+    std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Elvis Presley",
                             "4234-5678-9012-3456",  // Visa
                             "04", "2999", "1");
@@ -253,7 +252,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void CreateTestCreditCardsYearAndMonth(const char* year, const char* month) {
     ClearCreditCards();
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+    std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Miku Hatsune",
                             "4234567890654321",  // Visa
                             month, year, "1");
@@ -263,7 +262,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void CreateTestExpiredCreditCard() {
     ClearCreditCards();
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+    std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Homer Simpson",
                             "4234567890654321",  // Visa
                             "05", "2000", "1");
@@ -275,20 +274,20 @@ class TestPersonalDataManager : public PersonalDataManager {
   void CreateTestAutofillProfiles(
       std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
     std::unique_ptr<AutofillProfile> profile =
-        base::MakeUnique<AutofillProfile>();
+        std::make_unique<AutofillProfile>();
     test::SetProfileInfo(profile.get(), "Elvis", "Aaron", "Presley",
                          "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
                          "Apt. 10", "Memphis", "Tennessee", "38116", "US",
                          "12345678901");
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(std::move(profile));
-    profile = base::MakeUnique<AutofillProfile>();
+    profile = std::make_unique<AutofillProfile>();
     test::SetProfileInfo(profile.get(), "Charles", "Hardin", "Holley",
                          "buddy@gmail.com", "Decca", "123 Apple St.", "unit 6",
                          "Lubbock", "Texas", "79401", "US", "23456789012");
     profile->set_guid("00000000-0000-0000-0000-000000000002");
     profiles->push_back(std::move(profile));
-    profile = base::MakeUnique<AutofillProfile>();
+    profile = std::make_unique<AutofillProfile>();
     test::SetProfileInfo(profile.get(), "", "", "", "", "", "", "", "", "", "",
                          "", "");
     profile->set_guid("00000000-0000-0000-0000-000000000003");
@@ -297,7 +296,7 @@ class TestPersonalDataManager : public PersonalDataManager {
 
   void CreateTestCreditCards(
       std::vector<std::unique_ptr<CreditCard>>* credit_cards) {
-    std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+    std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Elvis Presley",
                             "4234567890123456",  // Visa
                             "04", "2999", "1");
@@ -307,7 +306,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                               base::TimeDelta::FromDays(5));
     credit_cards->push_back(std::move(credit_card));
 
-    credit_card = base::MakeUnique<CreditCard>();
+    credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "Buddy Holly",
                             "5187654321098765",  // Mastercard
                             "10", "2998", "1");
@@ -317,7 +316,7 @@ class TestPersonalDataManager : public PersonalDataManager {
                               base::TimeDelta::FromDays(4));
     credit_cards->push_back(std::move(credit_card));
 
-    credit_card = base::MakeUnique<CreditCard>();
+    credit_card = std::make_unique<CreditCard>();
     test::SetCreditCardInfo(credit_card.get(), "", "", "", "", "");
     credit_card->set_guid("00000000-0000-0000-0000-000000000006");
     credit_cards->push_back(std::move(credit_card));

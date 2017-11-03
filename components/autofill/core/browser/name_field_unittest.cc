@@ -45,17 +45,17 @@ TEST_F(NameFieldTest, FirstMiddleLast) {
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("First");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = ASCIIToUTF16("Middle Name");
   field.name = ASCIIToUTF16("Middle");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("Last");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
@@ -82,17 +82,17 @@ TEST_F(NameFieldTest, FirstMiddleLast2) {
   field.label = base::string16();
   field.name = ASCIIToUTF16("firstName");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("middleName");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("lastName");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
@@ -119,12 +119,12 @@ TEST_F(NameFieldTest, FirstLast) {
   field.label = base::string16();
   field.name = ASCIIToUTF16("first_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("last_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
@@ -147,12 +147,12 @@ TEST_F(NameFieldTest, FirstLast2) {
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("first_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("last_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
@@ -175,17 +175,17 @@ TEST_F(NameFieldTest, FirstLastMiddleWithSpaces) {
   field.label = ASCIIToUTF16("First  Name");
   field.name = ASCIIToUTF16("first_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = ASCIIToUTF16("Middle  Name");
   field.name = ASCIIToUTF16("middle_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = ASCIIToUTF16("Last  Name");
   field.name = ASCIIToUTF16("last_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
@@ -212,12 +212,12 @@ TEST_F(NameFieldTest, FirstLastEmpty) {
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("first_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("last_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
@@ -240,17 +240,17 @@ TEST_F(NameFieldTest, FirstMiddleLastEmpty) {
   field.label = ASCIIToUTF16("Name");
   field.name = ASCIIToUTF16("first_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("middle_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("last_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
@@ -277,17 +277,17 @@ TEST_F(NameFieldTest, MiddleInitial) {
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("first_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = ASCIIToUTF16("MI");
   field.name = ASCIIToUTF16("middle_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = ASCIIToUTF16("Last Name");
   field.name = ASCIIToUTF16("last_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
@@ -314,12 +314,12 @@ TEST_F(NameFieldTest, MiddleInitialNoLastName) {
   field.label = ASCIIToUTF16("First Name");
   field.name = ASCIIToUTF16("first_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = ASCIIToUTF16("MI");
   field.name = ASCIIToUTF16("middle_name");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);
@@ -335,17 +335,17 @@ TEST_F(NameFieldTest, MiddleInitialAtEnd) {
   field.label = base::string16();
   field.name = ASCIIToUTF16("XXXnameXXXfirst");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name1")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name1")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("XXXnameXXXmi");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name2")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name2")));
 
   field.label = base::string16();
   field.name = ASCIIToUTF16("XXXnameXXXlast");
   list_.push_back(
-      base::MakeUnique<AutofillField>(field, ASCIIToUTF16("name3")));
+      std::make_unique<AutofillField>(field, ASCIIToUTF16("name3")));
 
   AutofillScanner scanner(list_);
   field_ = Parse(&scanner);

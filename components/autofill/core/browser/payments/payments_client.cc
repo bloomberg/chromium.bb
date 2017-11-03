@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -184,7 +183,7 @@ void SetActiveExperiments(const std::vector<const char*>& active_experiments,
     return;
 
   std::unique_ptr<base::ListValue> active_chrome_experiments(
-      base::MakeUnique<base::ListValue>());
+      std::make_unique<base::ListValue>());
   for (const char* it : active_experiments)
     active_chrome_experiments->AppendString(it);
 
@@ -472,7 +471,7 @@ void PaymentsClient::UnmaskCard(
     const PaymentsClient::UnmaskRequestDetails& request_details) {
   DCHECK(unmask_delegate_);
   IssueRequest(
-      base::MakeUnique<UnmaskCardRequest>(request_details, unmask_delegate_),
+      std::make_unique<UnmaskCardRequest>(request_details, unmask_delegate_),
       true);
 }
 
@@ -481,7 +480,7 @@ void PaymentsClient::GetUploadDetails(
     const std::vector<const char*>& active_experiments,
     const std::string& app_locale) {
   DCHECK(save_delegate_);
-  IssueRequest(base::MakeUnique<GetUploadDetailsRequest>(
+  IssueRequest(std::make_unique<GetUploadDetailsRequest>(
                    addresses, active_experiments, app_locale, save_delegate_),
                false);
 }
@@ -490,7 +489,7 @@ void PaymentsClient::UploadCard(
     const PaymentsClient::UploadRequestDetails& request_details) {
   DCHECK(save_delegate_);
   IssueRequest(
-      base::MakeUnique<UploadCardRequest>(request_details, save_delegate_),
+      std::make_unique<UploadCardRequest>(request_details, save_delegate_),
       true);
 }
 
