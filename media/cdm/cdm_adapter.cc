@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_initialized_promise.h"
 #include "media/base/cdm_key_information.h"
@@ -665,6 +666,9 @@ void CdmAdapter::Decrypt(StreamType stream_type,
                          const scoped_refptr<DecoderBuffer>& encrypted,
                          const DecryptCB& decrypt_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
+
+  TRACE_EVENT0("media", "CdmAdapter::Decrypt");
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
@@ -765,6 +769,9 @@ void CdmAdapter::DecryptAndDecodeAudio(
     const scoped_refptr<DecoderBuffer>& encrypted,
     const AudioDecodeCB& audio_decode_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
+
+  TRACE_EVENT0("media", "CdmAdapter::DecryptAndDecodeAudio");
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
@@ -797,7 +804,9 @@ void CdmAdapter::DecryptAndDecodeVideo(
     const scoped_refptr<DecoderBuffer>& encrypted,
     const VideoDecodeCB& video_decode_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(3) << __func__ << " encrypted: " << encrypted->AsHumanReadableString();
+  DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
+
+  TRACE_EVENT0("media", "CdmAdapter::DecryptAndDecodeVideo");
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;
