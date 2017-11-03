@@ -165,12 +165,12 @@ static void write_drl_idx(FRAME_CONTEXT *ec_ctx, const MB_MODE_INFO *mbmi,
 
   assert(mbmi->ref_mv_idx < 3);
 
+  const int new_mv =
 #if CONFIG_COMPOUND_SINGLEREF
-  if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
-      mbmi->mode == SR_NEW_NEWMV) {
-#else   // !CONFIG_COMPOUND_SINGLEREF
-  if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) {
-#endif  // CONFIG_COMPOUND_SINGLEREF
+      mbmi->mode == SR_NEW_NEWMV ||
+#endif
+      mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV;
+  if (new_mv) {
     int idx;
     for (idx = 0; idx < 2; ++idx) {
       if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
@@ -262,12 +262,14 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
     return;
   }
 
+  const int write_txfm_partition =
 #if CONFIG_RECT_TX_EXT
-  if (tx_size == mbmi->inter_tx_size[tx_row][tx_col] ||
-      mbmi->tx_size == quarter_txsize_lookup[mbmi->sb_type]) {
+      tx_size == mbmi->inter_tx_size[tx_row][tx_col] ||
+      mbmi->tx_size == quarter_txsize_lookup[mbmi->sb_type];
 #else
-  if (tx_size == mbmi->inter_tx_size[tx_row][tx_col]) {
+      tx_size == mbmi->inter_tx_size[tx_row][tx_col];
 #endif
+  if (write_txfm_partition) {
 #if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, 0, ec_ctx->txfm_partition_cdf[ctx], 2);
 #else
@@ -401,30 +403,29 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   MOTION_MODE last_motion_mode_allowed =
       motion_mode_allowed(0, cm->global_motion, xd, mi);
-  if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return;
+  switch (last_motion_mode_allowed) {
+    case SIMPLE_TRANSLATION: break;
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
-  if (last_motion_mode_allowed == NCOBMC_ADAPT_WEIGHT) {
-    aom_write_symbol(w, mbmi->motion_mode,
-                     xd->tile_ctx->ncobmc_cdf[mbmi->sb_type],
-                     OBMC_FAMILY_MODES);
-  } else if (last_motion_mode_allowed == OBMC_CAUSAL) {
-    aom_write_symbol(w, mbmi->motion_mode == OBMC_CAUSAL,
-                     xd->tile_ctx->obmc_cdf[mbmi->sb_type], 2);
-  } else {
-#else
-  if (last_motion_mode_allowed == OBMC_CAUSAL) {
-#if CONFIG_NEW_MULTISYMBOL
-    aom_write_symbol(w, mbmi->motion_mode == OBMC_CAUSAL,
-                     xd->tile_ctx->obmc_cdf[mbmi->sb_type], 2);
-#else
-    aom_write(w, mbmi->motion_mode == OBMC_CAUSAL,
-              cm->fc->obmc_prob[mbmi->sb_type]);
+    case NCOBMC_ADAPT_WEIGHT:
+      aom_write_symbol(w, mbmi->motion_mode,
+                       xd->tile_ctx->ncobmc_cdf[mbmi->sb_type],
+                       OBMC_FAMILY_MODES);
+      break;
 #endif
-  } else {
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
-    aom_write_symbol(w, mbmi->motion_mode,
-                     xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
-                     MOTION_MODES);
+    case OBMC_CAUSAL:
+#if CONFIG_NEW_MULTISYMBOL
+      aom_write_symbol(w, mbmi->motion_mode == OBMC_CAUSAL,
+                       xd->tile_ctx->obmc_cdf[mbmi->sb_type], 2);
+#else
+      aom_write(w, mbmi->motion_mode == OBMC_CAUSAL,
+                cm->fc->obmc_prob[mbmi->sb_type]);
+#endif
+      break;
+
+    default:
+      aom_write_symbol(w, mbmi->motion_mode,
+                       xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
+                       MOTION_MODES);
   }
 }
 
