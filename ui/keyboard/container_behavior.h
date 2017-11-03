@@ -65,6 +65,8 @@ class KEYBOARD_EXPORT ContainerBehavior {
                                   const gfx::Vector2d& kb_offset) = 0;
 
   virtual ContainerType GetType() const = 0;
+
+  virtual bool TextBlurHidesKeyboard() const = 0;
 };
 
 }  // namespace keyboard
