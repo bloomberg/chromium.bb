@@ -25,6 +25,7 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/mus_util.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_child_frame.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -1039,15 +1040,6 @@ bool RenderWidgetHostViewChildFrame::CanBecomeVisible() {
 
   return static_cast<RenderWidgetHostViewChildFrame*>(parent_view)
       ->CanBecomeVisible();
-}
-
-// static
-bool RenderWidgetHostViewChildFrame::IsUsingMus() {
-#if defined(USE_AURA)
-  return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
-#else
-  return false;
-#endif
 }
 
 }  // namespace content

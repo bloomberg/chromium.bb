@@ -1785,12 +1785,11 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   } else {
     view_.reset(CreateWebContentsView(this, delegate,
                                       &render_view_host_delegate_view_));
-  }
-
-  if (browser_plugin_guest_ && !GuestMode::IsCrossProcessFrameGuest(this)) {
-    view_.reset(new WebContentsViewGuest(this, browser_plugin_guest_.get(),
-                                         std::move(view_),
-                                         &render_view_host_delegate_view_));
+    if (browser_plugin_guest_) {
+      view_ = std::make_unique<WebContentsViewGuest>(
+          this, browser_plugin_guest_.get(), std::move(view_),
+          &render_view_host_delegate_view_);
+    }
   }
   CHECK(render_view_host_delegate_view_);
   CHECK(view_.get());
