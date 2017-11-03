@@ -712,7 +712,11 @@ class RemoteDevice(object):
     for cmd, kwargs in self.cleanup_cmds:
       # We want to run through all cleanup commands even if there are errors.
       kwargs.setdefault('error_code_ok', True)
-      self.BaseRunCommand(cmd, **kwargs)
+      try:
+        self.BaseRunCommand(cmd, **kwargs)
+      except SSHConnectionError:
+        logging.error('Failed to connect to host in Cleanup, so '
+                      'SSHConnectionError will not be raised.')
 
     self.tempdir.Cleanup()
 

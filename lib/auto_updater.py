@@ -188,6 +188,9 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   PAYLOAD_MODE_PARALLEL = 'parallel'
   PAYLOAD_MODE_SCP = 'scp'
 
+  # Related to crbug.com/276094: Restore to 5 mins once the 'host did not
+  # return from reboot' bug is solved.
+  REBOOT_TIMEOUT = 480
 
   def __init__(self, device, payload_dir, dev_dir='', tempdir=None,
                original_payload_dir=None, do_rootfs_update=True,
@@ -435,7 +438,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     status, = self.GetUpdateStatus(self.device)
     if status == UPDATE_STATUS_UPDATED_NEED_REBOOT:
       logging.info('Device needs to reboot before updating...')
-      self.device.Reboot()
+      self._Reboot('setup of Rootfs Update')
       status, = self.GetUpdateStatus(self.device)
 
     if status != UPDATE_STATUS_IDLE:
@@ -619,7 +622,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     """Restore stateful partition for device."""
     logging.warning('Restoring the stateful partition')
     self.RunUpdateStateful()
-    self.device.Reboot()
+    self._Reboot('stateful partition restoration')
     try:
       self._CheckDevserverCanRun()
       logging.info('Stateful partition restored.')
@@ -950,6 +953,16 @@ class ChromiumOSFlashUpdater(BaseUpdater):
               self.REMOTE_HOSTLOG_FILE_PATH), partial_filename])),
           **self._cmd_kwargs_omit_error)
 
+  def _Reboot(self, error_stage):
+    try:
+      self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
+    except cros_build_lib.DieSystemExit:
+      raise ChromiumOSUpdateError('%s cannot recover from reboot at %s' % (
+          self.device.hostname, error_stage))
+    except remote_access.SSHConnectionError:
+      raise ChromiumOSUpdateError('Failed to connect to %s at %s' % (
+          self.device.hostname, error_stage))
+
 
 class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   """Used to auto-update Cros DUT with image.
@@ -968,9 +981,6 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   KERNEL_A = {'name': 'KERN-A', 'kernel': 2, 'root': 3}
   KERNEL_B = {'name': 'KERN-B', 'kernel': 4, 'root': 5}
   KERNEL_UPDATE_TIMEOUT = 180
-  # Related to crbug.com/276094: Restore to 5 mins once the 'host did not
-  # return from reboot' bug is solved.
-  REBOOT_TIMEOUT = 480
 
   def __init__(self, device, build_name, payload_dir, dev_dir='',
                log_file=None, tempdir=None, original_payload_dir=None,
@@ -1271,7 +1281,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   def PostCheckStatefulUpdate(self):
     """Post-check for stateful update for CrOS host."""
     logging.debug('Start post check for stateful update...')
-    self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
+    self._Reboot('post check of stateful update')
     if self._clobber_stateful:
       for folder in self.REMOTE_STATEFUL_PATH_TO_CHECK:
         test_file_path = os.path.join(folder,
@@ -1284,7 +1294,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   def PreSetupRootfsUpdate(self):
     """Pre-setup for rootfs update for CrOS host."""
     logging.debug('Start pre-setup for rootfs update...')
-    self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
+    self._Reboot('pre-setup of rootfs update')
     self._RetryCommand(['sudo', 'stop', 'ap-update-manager'],
                        **self._cmd_kwargs_omit_error)
     self._ResetUpdateEngine()
@@ -1353,7 +1363,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       # all; this change is just papering over the real bug.
       self._RetryCommand('crossystem clear_tpm_owner_request=1',
                          **self._cmd_kwargs_omit_error)
-    self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
+    self._Reboot('post check of rootfs update')
 
   def PostCheckCrOSUpdate(self):
     """Post check for the whole auto-update process."""
