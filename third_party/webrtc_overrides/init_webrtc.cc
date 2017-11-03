@@ -65,7 +65,7 @@ Histogram* HistogramFactoryGetEnumeration(
           base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
-const std::string& GetHistogramName(Histogram* histogram_pointer) {
+const char* GetHistogramName(Histogram* histogram_pointer) {
   base::HistogramBase* ptr =
       reinterpret_cast<base::HistogramBase*>(histogram_pointer);
   return ptr->histogram_name();

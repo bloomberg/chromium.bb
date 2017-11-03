@@ -254,7 +254,7 @@ bool LeveldbValueStore::OnMemoryDump(
     return true;
 
   auto* dump = pmd->CreateAllocatorDump(base::StringPrintf(
-      "extensions/value_store/%s/0x%" PRIXPTR, open_histogram_name().c_str(),
+      "extensions/value_store/%s/0x%" PRIXPTR, open_histogram_name(),
       reinterpret_cast<uintptr_t>(this)));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,

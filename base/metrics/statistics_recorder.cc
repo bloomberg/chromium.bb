@@ -95,12 +95,13 @@ HistogramBase* StatisticsRecorder::RegisterOrDeleteDuplicate(
       // twice |if (!histograms_)|.
       ANNOTATE_LEAKING_OBJECT_PTR(histogram);  // see crbug.com/79322
     } else {
-      const std::string& name = histogram->histogram_name();
-      HistogramMap::iterator it = histograms_->find(name);
+      const char* name = histogram->histogram_name();
+      StringPiece name_piece(name);
+      HistogramMap::iterator it = histograms_->find(name_piece);
       if (histograms_->end() == it) {
-        // The StringKey references the name within |histogram| rather than
-        // making a copy.
-        (*histograms_)[name] = histogram;
+        // |name_piece| is guaranteed to never change or be deallocated so long
+        // as the histogram is alive (which is forever).
+        (*histograms_)[name_piece] = histogram;
         ANNOTATE_LEAKING_OBJECT_PTR(histogram);  // see crbug.com/79322
         // If there are callbacks for this histogram, we set the kCallbackExists
         // flag.
@@ -117,8 +118,9 @@ HistogramBase* StatisticsRecorder::RegisterOrDeleteDuplicate(
         histogram_to_return = histogram;
       } else {
         // We already have one histogram with this name.
-        DCHECK_EQ(histogram->histogram_name(),
-                  it->second->histogram_name()) << "hash collision";
+        DCHECK_EQ(StringPiece(histogram->histogram_name()),
+                  StringPiece(it->second->histogram_name()))
+            << "hash collision";
         histogram_to_return = it->second;
         histogram_to_delete = histogram;
       }
@@ -321,8 +323,11 @@ void StatisticsRecorder::GetSnapshot(const std::string& query,
   if (!histograms_)
     return;
 
+  // Need a c-string query for comparisons against c-string histogram name.
+  const char* query_string = query.c_str();
+
   for (const auto& entry : *histograms_) {
-    if (entry.second->histogram_name().find(query) != std::string::npos)
+    if (strstr(entry.second->histogram_name(), query_string) != nullptr)
       snapshot->push_back(entry.second);
   }
 }

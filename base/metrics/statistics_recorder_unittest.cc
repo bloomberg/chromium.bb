@@ -90,7 +90,7 @@ class StatisticsRecorderTest : public testing::TestWithParam<bool> {
     StatisticsRecorder::UninitializeForTesting();
   }
 
-  Histogram* CreateHistogram(const std::string& name,
+  Histogram* CreateHistogram(const char* name,
                              HistogramBase::Sample min,
                              HistogramBase::Sample max,
                              size_t bucket_count) {

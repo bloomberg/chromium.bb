@@ -73,7 +73,9 @@ class SparseHistogramTest : public testing::TestWithParam<bool> {
     GlobalHistogramAllocator::ReleaseForTesting();
   }
 
-  std::unique_ptr<SparseHistogram> NewSparseHistogram(const std::string& name) {
+  std::unique_ptr<SparseHistogram> NewSparseHistogram(const char* name) {
+    // std::make_unique can't access protected ctor so do it manually. This
+    // test class is a friend so can access it.
     return std::unique_ptr<SparseHistogram>(new SparseHistogram(name));
   }
 
@@ -181,7 +183,7 @@ TEST_P(SparseHistogramTest, MacroBasicTest) {
   HistogramBase* sparse_histogram = histograms[0];
 
   EXPECT_EQ(SPARSE_HISTOGRAM, sparse_histogram->GetHistogramType());
-  EXPECT_EQ("Sparse", sparse_histogram->histogram_name());
+  EXPECT_EQ("Sparse", StringPiece(sparse_histogram->histogram_name()));
   EXPECT_EQ(
       HistogramBase::kUmaTargetedHistogramFlag |
           (use_persistent_histogram_allocator_ ? HistogramBase::kIsPersistent

@@ -98,7 +98,6 @@ void ANGLEPlatformImpl_histogramCustomCounts(PlatformMethods* platform,
   base::HistogramBase* counter = base::Histogram::FactoryGet(
       name, min, max, bucket_count,
       base::HistogramBase::kUmaTargetedHistogramFlag);
-  DCHECK_EQ(name, counter->histogram_name());
   counter->Add(sample);
 }
 
@@ -111,7 +110,6 @@ void ANGLEPlatformImpl_histogramEnumeration(PlatformMethods* platform,
   base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
       name, 1, boundary_value, boundary_value + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
-  DCHECK_EQ(name, counter->histogram_name());
   counter->Add(sample);
 }
 

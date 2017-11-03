@@ -662,7 +662,7 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
       /*make_iterable=*/false);
 
   // Create the right type of histogram.
-  std::string name(histogram_data_ptr->name);
+  const char* name = histogram_data_ptr->name;
   std::unique_ptr<HistogramBase> histogram;
   switch (histogram_type) {
     case HISTOGRAM:
