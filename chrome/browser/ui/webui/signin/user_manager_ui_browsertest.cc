@@ -10,8 +10,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -21,7 +23,26 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using ::testing::_;
+
+class MockLoginUIService : public LoginUIService {
+ public:
+  MockLoginUIService() : LoginUIService(nullptr) {}
+  ~MockLoginUIService() override {}
+  MOCK_METHOD3(DisplayLoginResult,
+               void(Browser* browser,
+                    const base::string16& error_message,
+                    const base::string16& email));
+};
+
+std::unique_ptr<KeyedService> CreateLoginUIService(
+    content::BrowserContext* context) {
+  return std::make_unique<MockLoginUIService>();
+}
 
 class UserManagerUIBrowserTest : public InProcessBrowserTest,
                                  public testing::WithParamInterface<bool> {
@@ -83,6 +104,37 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageRedirectsToAboutChrome) {
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL current_URL = about_chrome_contents->GetVisibleURL();
   EXPECT_EQ(GURL(chrome::kChromeUIHelpURL), current_URL);
+}
+
+IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, LaunchBlockedUser) {
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeUIMdUserManagerUrl));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  signin_util::SetForceSigninForTesting(true);
+
+  Profile* profile = browser()->profile();
+  ProfileAttributesEntry* entry;
+  EXPECT_TRUE(g_browser_process->profile_manager()
+                  ->GetProfileAttributesStorage()
+                  .GetProfileAttributesWithPath(profile->GetPath(), &entry));
+  entry->SetIsSigninRequired(true);
+  entry->SetActiveTimeToNow();
+  MockLoginUIService* service = static_cast<MockLoginUIService*>(
+      LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile, CreateLoginUIService));
+
+  std::string profile_path;
+  base::ReplaceChars(profile->GetPath().MaybeAsASCII(), "\\", "\\\\",
+                     &profile_path);
+  std::string launch_js = base::StringPrintf(
+      "chrome.send('authenticatedLaunchUser', ['%s', '', ''])",
+      profile_path.c_str());
+
+  EXPECT_CALL(*service, DisplayLoginResult(_, _, _));
+
+  EXPECT_TRUE(content::ExecuteScript(web_contents, launch_js));
 }
 
 // TODO(mlerman): Test that unlocking a locked profile causes the extensions
