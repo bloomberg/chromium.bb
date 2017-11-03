@@ -7,9 +7,8 @@
 #include "base/time/time.h"
 #include "content/browser/speech/audio_buffer.h"
 
-using base::Time;
-
 namespace {
+const int64_t kMicrosecondsPerSecond = base::Time::kMicrosecondsPerSecond;
 const int kFrameRate = 50;  // 1 frame = 20ms of audio.
 }
 
@@ -26,13 +25,13 @@ Endpointer::Endpointer(int sample_rate)
   frame_size_ = static_cast<int>(sample_rate / static_cast<float>(kFrameRate));
 
   speech_input_minimum_length_us_ =
-      static_cast<int64_t>(1.7 * Time::kMicrosecondsPerSecond);
+      static_cast<int64_t>(1.7 * kMicrosecondsPerSecond);
   speech_input_complete_silence_length_us_ =
-      static_cast<int64_t>(0.5 * Time::kMicrosecondsPerSecond);
+      static_cast<int64_t>(0.5 * kMicrosecondsPerSecond);
   long_speech_input_complete_silence_length_us_ = -1;
   long_speech_length_us_ = -1;
   speech_input_possibly_complete_silence_length_us_ =
-      1 * Time::kMicrosecondsPerSecond;
+      1 * kMicrosecondsPerSecond;
 
   // Set the default configuration for Push To Talk mode.
   EnergyEndpointerParams ep_config;
@@ -105,8 +104,8 @@ EpStatus Endpointer::ProcessAudio(const AudioChunk& raw_audio, float* rms_out) {
                                          frame_size_,
                                          rms_out);
     sample_index += frame_size_;
-    audio_frame_time_us_ += (frame_size_ * Time::kMicrosecondsPerSecond) /
-                         sample_rate_;
+    audio_frame_time_us_ +=
+        (frame_size_ * kMicrosecondsPerSecond) / sample_rate_;
 
     // Get the status of the endpointer.
     int64_t ep_time;
