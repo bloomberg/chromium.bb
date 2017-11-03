@@ -3715,6 +3715,26 @@
             ]
         }
     ],
+    "TurnOffCompositorAnimation": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TurnOffCompositorAnimation"
+                    ]
+                }
+            ]
+        }
+    ],
     "UKM": [
         {
             "platforms": [
