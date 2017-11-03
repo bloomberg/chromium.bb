@@ -34,7 +34,10 @@ constexpr int kAnimationDistance = 30;
 // drag handles are added to the extension.
 constexpr int kDragHandleSquareMargin = 60;
 
-ContainerFloatingBehavior::ContainerFloatingBehavior() {}
+ContainerFloatingBehavior::ContainerFloatingBehavior(
+    KeyboardController* controller) {
+  controller_ = controller;
+}
 ContainerFloatingBehavior::~ContainerFloatingBehavior() {}
 
 ContainerType ContainerFloatingBehavior::GetType() const {
@@ -173,8 +176,10 @@ bool ContainerFloatingBehavior::IsDragHandle(
 void ContainerFloatingBehavior::HandlePointerEvent(
     bool isMouseButtonPressed,
     const gfx::Vector2d& kb_offset) {
-  KeyboardController* controller = KeyboardController::GetInstance();
-  aura::Window* container = controller->GetContainerWindow();
+  // Cannot call UI-backed operations without a KeyboardController
+  DCHECK(controller_);
+
+  aura::Window* container = controller_->GetContainerWindow();
 
   const gfx::Rect& keyboard_bounds = container->bounds();
 
@@ -204,7 +209,7 @@ void ContainerFloatingBehavior::HandlePointerEvent(
           cumulative_drag_offset;
       const gfx::Rect new_bounds =
           gfx::Rect(new_keyboard_location, keyboard_bounds.size());
-      controller->MoveKeyboard(new_bounds);
+      controller_->MoveKeyboard(new_bounds);
     }
 
     // re-query the container for the new bounds

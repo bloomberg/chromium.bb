@@ -9,6 +9,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/keyboard/container_behavior.h"
 #include "ui/keyboard/container_type.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_export.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -20,6 +21,7 @@ constexpr int kFullWidthKeyboardAnimationDistance = 30;
 
 class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
  public:
+  ContainerFullWidthBehavior(KeyboardController* controller);
   ~ContainerFullWidthBehavior() override;
 
   // ContainerBehavior overrides
@@ -42,6 +44,9 @@ class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
   ContainerType GetType() const override;
+
+ private:
+  KeyboardController* controller_;
 };
 
 }  // namespace keyboard

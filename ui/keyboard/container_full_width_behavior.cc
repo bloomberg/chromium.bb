@@ -21,6 +21,10 @@ constexpr int kFullWidthKeyboardAnimationDurationMs = 100;
 // allowed to be shown with zero opacity, we always animate to 0.01 instead.
 constexpr float kAnimationStartOrAfterHideOpacity = 0.01f;
 
+ContainerFullWidthBehavior::ContainerFullWidthBehavior(
+    KeyboardController* controller) {
+  controller_ = controller;
+}
 ContainerFullWidthBehavior::~ContainerFullWidthBehavior() {}
 
 ContainerType ContainerFullWidthBehavior::GetType() const {
@@ -81,8 +85,7 @@ const gfx::Rect ContainerFullWidthBehavior::AdjustSetBoundsRequest(
 bool ContainerFullWidthBehavior::IsOverscrollAllowed() const {
   // TODO(blakeo): The locked keyboard is essentially its own behavior type and
   // should be refactored as such. Then this will simply return 'true'.
-  return KeyboardController::GetInstance() &&
-         !KeyboardController::GetInstance()->keyboard_locked();
+  return controller_ && !controller_->keyboard_locked();
 }
 
 void ContainerFullWidthBehavior::SavePosition(const gfx::Point& position) {
