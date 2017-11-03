@@ -9,7 +9,6 @@
 #include "chrome/browser/feature_engagement/feature_tracker.h"
 
 class Profile;
-class SessionDurationUpdater;
 
 namespace feature_engagement {
 
@@ -26,8 +25,7 @@ namespace feature_engagement {
 // - This URL cannot be the home page or new tab page.
 class BookmarkTracker : public FeatureTracker {
  public:
-  BookmarkTracker(Profile* profile,
-                  SessionDurationUpdater* session_duration_updater);
+  explicit BookmarkTracker(Profile* profile);
 
   // Alerts the bookmark tracker that a bookmark was added.
   void OnBookmarkAdded();
@@ -37,8 +35,6 @@ class BookmarkTracker : public FeatureTracker {
   void OnPromoClosed();
 
  protected:
-  // Alternate constructor to support unit testing.
-  explicit BookmarkTracker(SessionDurationUpdater* session_duration_updater);
   ~BookmarkTracker() override;
 
  private:

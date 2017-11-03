@@ -34,8 +34,8 @@ class FeatureTracker : public SessionDurationUpdater::Observer,
                        public KeyedService {
  public:
   FeatureTracker(Profile* profile,
-                 SessionDurationUpdater* session_duration_updater,
                  const base::Feature* feature,
+                 const char* observed_session_time_dict_key,
                  base::TimeDelta defaultTimeRequiredToShowPromo);
 
   // Adds the SessionDurationUpdater observer.
@@ -66,6 +66,11 @@ class FeatureTracker : public SessionDurationUpdater::Observer,
   base::TimeDelta GetSessionTimeRequiredToShow();
 
  private:
+  // Notifies In-Product Help and removes the session duration obverser if the
+  // session time requirement has been met for the feature.
+  void NotifyAndRemoveSessionDurationObserverIfSessionTimeMet(
+      base::TimeDelta total_session_time);
+
   // Returns whether the active session time of a user has elapsed more than the
   // required active session time for the feature.
   bool HasEnoughSessionTimeElapsed(base::TimeDelta total_session_time);
@@ -73,8 +78,8 @@ class FeatureTracker : public SessionDurationUpdater::Observer,
   // Owned by the ProfileManager.
   Profile* const profile_;
 
-  // Singleton instance of KeyedService.
-  SessionDurationUpdater* const session_duration_updater_;
+  // Tracks the elapsed session time while |feature_| is active.
+  SessionDurationUpdater session_duration_updater_;
 
   // Observes the SessionDurationUpdater and notifies when a desktop session
   // starts and ends.
@@ -90,6 +95,9 @@ class FeatureTracker : public SessionDurationUpdater::Observer,
   // Whether the "x_minutes" param value has already been retrieved to prevent
   // reading from the field trial multiple times for the same param.
   bool has_retrieved_field_trial_minutes_ = false;
+
+  // Whether the "x_session_time" requirement has already been met.
+  bool has_session_time_been_met_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FeatureTracker);
 };

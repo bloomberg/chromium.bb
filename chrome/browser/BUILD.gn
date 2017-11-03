@@ -3250,8 +3250,6 @@ split_static_library("browser") {
       "feature_engagement/new_tab/new_tab_tracker_factory.h",
       "feature_engagement/session_duration_updater.cc",
       "feature_engagement/session_duration_updater.h",
-      "feature_engagement/session_duration_updater_factory.cc",
-      "feature_engagement/session_duration_updater_factory.h",
     ]
   }
 

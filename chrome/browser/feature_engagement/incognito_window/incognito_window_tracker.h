@@ -8,7 +8,6 @@
 #include "chrome/browser/feature_engagement/feature_tracker.h"
 
 #include "chrome/browser/feature_engagement/session_duration_updater.h"
-#include "chrome/browser/feature_engagement/session_duration_updater_factory.h"
 #include "ui/views/widget/widget_observer.h"
 
 class IncognitoWindowPromoBubbleView;
@@ -29,8 +28,7 @@ namespace feature_engagement {
 class IncognitoWindowTracker : public FeatureTracker,
                                public views::WidgetObserver {
  public:
-  IncognitoWindowTracker(Profile* profile,
-                         SessionDurationUpdater* session_duration_updater);
+  explicit IncognitoWindowTracker(Profile* profile);
 
   // Alerts the incognito window tracker that an incognito window was opened.
   void OnIncognitoWindowOpened();
@@ -42,9 +40,6 @@ class IncognitoWindowTracker : public FeatureTracker,
   void ShowPromo();
 
  protected:
-  // Alternate constructor to support unit testing.
-  explicit IncognitoWindowTracker(
-      SessionDurationUpdater* session_duration_updater);
   ~IncognitoWindowTracker() override;
 
  private:

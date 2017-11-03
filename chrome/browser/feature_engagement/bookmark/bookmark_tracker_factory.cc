@@ -6,8 +6,6 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/feature_engagement/bookmark/bookmark_tracker.h"
-#include "chrome/browser/feature_engagement/session_duration_updater.h"
-#include "chrome/browser/feature_engagement/session_duration_updater_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,7 +28,6 @@ BookmarkTrackerFactory::BookmarkTrackerFactory()
     : BrowserContextKeyedServiceFactory(
           "BookmarkTracker",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(SessionDurationUpdaterFactory::GetInstance());
   DependsOn(TrackerFactory::GetInstance());
 }
 
@@ -38,15 +35,16 @@ BookmarkTrackerFactory::~BookmarkTrackerFactory() = default;
 
 KeyedService* BookmarkTrackerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new BookmarkTracker(
-      Profile::FromBrowserContext(context),
-      feature_engagement::SessionDurationUpdaterFactory::GetInstance()
-          ->GetForProfile(Profile::FromBrowserContext(context)));
+  return new BookmarkTracker(Profile::FromBrowserContext(context));
 }
 
 content::BrowserContext* BookmarkTrackerFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
+}
+
+bool BookmarkTrackerFactory::ServiceIsNULLWhileTesting() const {
+  return true;
 }
 
 }  // namespace feature_engagement
