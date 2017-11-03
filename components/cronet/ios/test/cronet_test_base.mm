@@ -102,8 +102,20 @@
         withTimeout:(int64_t)timeout_ns {
   dispatch_semaphore_t _semaphore = [self getSemaphoreForTask:task];
   if (timeout_ns > 0) {
-    return dispatch_semaphore_wait(
-               _semaphore, dispatch_time(DISPATCH_TIME_NOW, timeout_ns)) == 0;
+    BOOL request_completed =
+        dispatch_semaphore_wait(
+            _semaphore, dispatch_time(DISPATCH_TIME_NOW, timeout_ns)) == 0;
+    if (!request_completed) {
+      // Cancel the pending request; otherwise, the request is still active and
+      // may invoke the delegate methods later.
+      [task cancel];
+      LOG(WARNING) << "The request was canceled due to timeout.";
+      // Give the canceled request some time to execute didCompleteWithError
+      // method with NSURLErrorCancelled error code.
+      dispatch_semaphore_wait(
+          _semaphore, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC));
+    }
+    return request_completed;
   } else {
     return dispatch_semaphore_wait(_semaphore, DISPATCH_TIME_FOREVER) == 0;
   }
@@ -201,6 +213,16 @@ bool CronetTestBase::StartDataTaskAndWaitForCompletion(
                cStringUsingEncoding:NSUTF8StringEncoding];
   else
     return ::testing::AssertionSuccess() << "no errors in response";
+}
+
+::testing::AssertionResult CronetTestBase::IsResponseCanceled() {
+  if ([delegate_ error] && [[delegate_ error] code] == NSURLErrorCancelled)
+    return ::testing::AssertionSuccess() << "the response is canceled";
+  else
+    return ::testing::AssertionFailure() << "the response is not canceled."
+                                         << " The response error is " <<
+           [[[delegate_ error] description]
+               cStringUsingEncoding:NSUTF8StringEncoding];
 }
 
 std::unique_ptr<net::MockCertVerifier> CronetTestBase::CreateMockCertVerifier(

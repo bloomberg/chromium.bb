@@ -78,13 +78,14 @@ class CronetTestBase : public ::testing::Test {
   void SetUp() override;
   void TearDown() override;
   bool StartDataTaskAndWaitForCompletion(NSURLSessionDataTask* task,
-                                         int64_t deadline_ns = 20 *
+                                         int64_t deadline_ns = 30 *
                                                                NSEC_PER_SEC);
   std::unique_ptr<net::MockCertVerifier> CreateMockCertVerifier(
       const std::vector<std::string>& certs,
       bool known_root);
 
   ::testing::AssertionResult IsResponseSuccessful();
+  ::testing::AssertionResult IsResponseCanceled();
 
   TestDelegate* delegate_;
 };  // class CronetTestBase

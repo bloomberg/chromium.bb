@@ -70,6 +70,7 @@ class PkpTest : public CronetTestBase {
       ASSERT_TRUE(IsResponseSuccessful());
     } else {
       ASSERT_FALSE(IsResponseSuccessful());
+      ASSERT_FALSE(IsResponseCanceled());
     }
   }
 
