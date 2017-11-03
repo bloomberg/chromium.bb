@@ -12,7 +12,7 @@ import shutil
 import sys
 
 import archive
-import paths
+import path_util
 
 
 # Node dictionary keys. These are output in json read by the webapp so
@@ -154,7 +154,7 @@ def _CopyTemplateFiles(dest_dir):
   d3_out = os.path.join(dest_dir, 'd3')
   if not os.path.exists(d3_out):
     os.makedirs(d3_out, 0755)
-  d3_src = os.path.join(paths.SRC_ROOT, 'third_party', 'd3', 'src')
+  d3_src = os.path.join(path_util.SRC_ROOT, 'third_party', 'd3', 'src')
   template_src = os.path.join(os.path.dirname(__file__), 'template')
   shutil.copy(os.path.join(d3_src, 'LICENSE'), d3_out)
   shutil.copy(os.path.join(d3_src, 'd3.js'), d3_out)

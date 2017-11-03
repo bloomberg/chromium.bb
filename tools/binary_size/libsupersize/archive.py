@@ -27,7 +27,7 @@ import linker_map_parser
 import models
 import ninja_parser
 import nm
-import paths
+import path_util
 
 
 # Effect of _MAX_SAME_NAME_ALIAS_COUNT (as of Oct 2017, with min_pss = max):
@@ -554,7 +554,7 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
     timestamp_obj = datetime.datetime.utcfromtimestamp(os.path.getmtime(
         elf_path))
     timestamp = calendar.timegm(timestamp_obj.timetuple())
-    relative_tool_prefix = paths.ToSrcRootRelative(tool_prefix)
+    relative_tool_prefix = path_util.ToSrcRootRelative(tool_prefix)
 
     metadata = {
         models.METADATA_GIT_REVISION: git_rev,
@@ -826,9 +826,9 @@ def Run(args, parser):
   any_input = apk_path or elf_path or map_path
   if not any_input:
     parser.error('Most pass at least one of --apk-file, --elf-file, --map-file')
-  lazy_paths = paths.LazyPaths(tool_prefix=args.tool_prefix,
-                               output_directory=args.output_directory,
-                               any_path_within_output_directory=any_input)
+  lazy_paths = path_util.LazyPaths(tool_prefix=args.tool_prefix,
+                                   output_directory=args.output_directory,
+                                   any_path_within_output_directory=any_input)
   if apk_path:
     with zipfile.ZipFile(apk_path) as z:
       lib_infos = [f for f in z.infolist()

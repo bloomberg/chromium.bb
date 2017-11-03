@@ -24,7 +24,7 @@ import file_format
 import match_util
 import models
 import nm
-import paths
+import path_util
 
 
 # Number of lines before using less for Print().
@@ -216,7 +216,7 @@ class _Session(object):
     tool_prefix = self._lazy_paths.tool_prefix
     orig_tool_prefix = size_info.metadata.get(models.METADATA_TOOL_PREFIX)
     if orig_tool_prefix:
-      orig_tool_prefix = paths.FromSrcRootRelative(orig_tool_prefix)
+      orig_tool_prefix = path_util.FromSrcRootRelative(orig_tool_prefix)
       if os.path.exists(orig_tool_prefix + 'objdump'):
         tool_prefix = orig_tool_prefix
 
@@ -237,7 +237,7 @@ class _Session(object):
       paths_to_try.append(elf_path)
     else:
       auto_lazy_paths = [
-          paths.LazyPaths(any_path_within_output_directory=s.size_path)
+          path_util.LazyPaths(any_path_within_output_directory=s.size_path)
           for s in self._size_infos]
       for lazy_paths in auto_lazy_paths + [self._lazy_paths]:
         output_dir = lazy_paths.output_directory
@@ -322,7 +322,7 @@ class _Session(object):
       output_directory = self._lazy_paths.output_directory
       # Only matters for non-generated paths, so be lenient here.
       if output_directory is None:
-        output_directory = os.path.join(paths.SRC_ROOT, 'out', 'Release')
+        output_directory = os.path.join(path_util.SRC_ROOT, 'out', 'Release')
         if not os.path.exists(output_directory):
           os.makedirs(output_directory)
 
@@ -472,9 +472,10 @@ def Run(args, parser):
       parser.error('All inputs must end with ".size"')
 
   size_infos = [archive.LoadAndPostProcessSizeInfo(p) for p in args.inputs]
-  lazy_paths = paths.LazyPaths(tool_prefix=args.tool_prefix,
-                               output_directory=args.output_directory,
-                               any_path_within_output_directory=args.inputs[0])
+  lazy_paths = path_util.LazyPaths(tool_prefix=args.tool_prefix,
+                                   output_directory=args.output_directory,
+                                   any_path_within_output_directory=
+                                       args.inputs[0])
   session = _Session(size_infos, lazy_paths)
 
   if args.query:
