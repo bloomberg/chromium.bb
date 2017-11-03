@@ -130,6 +130,13 @@ class PpdProviderTest : public ::testing::Test {
          R"([
             ["printer_c", "printer_c_ref"]
             ])"},
+        {"metadata_v2/reverse_index-en-01.json",
+         R"([
+             ["printer_a_ref", "manufacturer_a_en", "printer_a"]
+             ])"},
+        {"metadata_v2/reverse_index-en-19.json",
+         R"([
+             ])"},
         {"ppds/printer_a.ppd", kCupsFilterPpdContents},
         {"ppds/printer_b.ppd", kCupsFilter2PpdContents},
         {"ppds/printer_c.ppd", "c"},
