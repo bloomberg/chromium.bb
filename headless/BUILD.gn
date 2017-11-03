@@ -388,6 +388,7 @@ component("headless") {
     ":headless_render_frame_controller",
     ":tab_socket",
     ":version_header",
+    "//components/cookie_config",
     "//components/security_state/core",
     "//content/public/common",
     "//content/public/common:service_names",
@@ -398,6 +399,10 @@ component("headless") {
     "//ui/events/devices",
     "//url",
   ]
+
+  if (is_linux && !is_chromeos) {
+    deps += [ "//components/os_crypt" ]
+  }
 
   if (is_component_build) {
     sources += [

@@ -10,9 +10,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "build/build_config.h"
+#include "components/cookie_config/cookie_store_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/devtools_network_transaction_factory.h"
+#include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_network_delegate.h"
@@ -25,6 +28,12 @@
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "components/os_crypt/key_storage_config_linux.h"
+#include "components/os_crypt/os_crypt.h"
+#endif
 
 namespace headless {
 
@@ -88,10 +97,29 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
       if (headless_browser_context_ &&
           !headless_browser_context_->IsOffTheRecord() &&
           !headless_browser_context_->options()->user_data_dir().empty()) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+        std::unique_ptr<os_crypt::Config> config(new os_crypt::Config());
+        base::CommandLine* command_line =
+            base::CommandLine::ForCurrentProcess();
+        config->store =
+            command_line->GetSwitchValueASCII(switches::kPasswordStore);
+        config->product_name = "HeadlessChrome";
+        // OSCrypt may target keyring, which requires calls from the main
+        // thread.
+        config->main_thread_runner =
+            content::BrowserThread::GetTaskRunnerForThread(
+                content::BrowserThread::UI);
+        config->should_use_preference = false;
+        config->user_data_path = headless_browser_context_->GetPath();
+        OSCrypt::SetConfig(std::move(config));
+#endif
+
         content::CookieStoreConfig cookie_config(
             headless_browser_context_->GetPath().Append(
                 FILE_PATH_LITERAL("Cookies")),
             content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, NULL);
+        cookie_config.crypto_delegate =
+            cookie_config::GetCookieCryptoDelegate();
         std::unique_ptr<net::CookieStore> cookie_store =
             CreateCookieStore(cookie_config);
         std::unique_ptr<net::ChannelIDService> channel_id_service =
