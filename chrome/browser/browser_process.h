@@ -91,6 +91,10 @@ namespace network_time {
 class NetworkTimeTracker;
 }
 
+namespace optimization_guide {
+class OptimizationGuideService;
+}
+
 namespace physical_web {
 class PhysicalWebDataSource;
 }
@@ -250,6 +254,11 @@ class BrowserProcess {
   // Browsing subresource filter.
   virtual subresource_filter::ContentRulesetService*
   subresource_filter_ruleset_service() = 0;
+
+  // Returns the service used to provide hints for what optimizations can be
+  // performed on slow page loads.
+  virtual optimization_guide::OptimizationGuideService*
+  optimization_guide_service() = 0;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   // This will start a timer that, if Chrome is in persistent mode, will check
