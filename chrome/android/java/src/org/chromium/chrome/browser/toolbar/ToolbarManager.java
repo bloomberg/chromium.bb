@@ -237,11 +237,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mHomepageStateListener = new HomepageStateListener() {
             @Override
             public void onHomepageStateUpdated() {
-                mToolbar.onHomeButtonUpdate(
-                        HomepageManager.isHomepageEnabled(mToolbar.getContext()));
+                mToolbar.onHomeButtonUpdate(HomepageManager.isHomepageEnabled());
             }
         };
-        HomepageManager.getInstance(mToolbar.getContext()).addListener(mHomepageStateListener);
+        HomepageManager.getInstance().addListener(mHomepageStateListener);
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
@@ -666,8 +665,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mToolbar.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
             @Override
             public void onViewDetachedFromWindow(View v) {
-                Context context = mToolbar.getContext();
-                HomepageManager.getInstance(context).removeListener(mHomepageStateListener);
+                HomepageManager.getInstance().removeListener(mHomepageStateListener);
                 mTabModelSelector.removeObserver(mTabModelSelectorObserver);
                 for (TabModel model : mTabModelSelector.getModels()) {
                     model.removeObserver(mTabModelObserver);
@@ -964,8 +962,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         Tab currentTab = mToolbarModel.getTab();
         if (currentTab == null) return;
-        Context context = mToolbar.getContext();
-        String homePageUrl = HomepageManager.getHomepageUri(context);
+        String homePageUrl = HomepageManager.getHomepageUri();
         if (TextUtils.isEmpty(homePageUrl)) {
             homePageUrl = UrlConstants.NTP_URL;
         }

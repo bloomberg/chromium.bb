@@ -266,7 +266,7 @@ public class PartnerBrowserCustomizations {
                 sInitializeAsyncCallbacks.clear();
 
                 if (mHomepageUriChanged) {
-                    HomepageManager.getInstance(context).notifyHomepageUpdated();
+                    HomepageManager.getInstance().notifyHomepageUpdated();
                 }
 
                 // Disable partner bookmarks editing if necessary.

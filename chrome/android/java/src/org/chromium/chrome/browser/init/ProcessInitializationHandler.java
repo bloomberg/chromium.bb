@@ -275,9 +275,9 @@ public class ProcessInitializationHandler {
                 PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
                     @Override
                     public void run() {
-                        String homepageUrl = HomepageManager.getHomepageUri(application);
+                        String homepageUrl = HomepageManager.getHomepageUri();
                         LaunchMetrics.recordHomePageLaunchMetrics(
-                                HomepageManager.isHomepageEnabled(application),
+                                HomepageManager.isHomepageEnabled(),
                                 NewTabPage.isNTPUrl(homepageUrl), homepageUrl);
                     }
                 });

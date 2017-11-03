@@ -247,7 +247,7 @@ public class ToolbarTablet
                 return getMenuButtonHelper().onEnterKeyPress(mMenuButton);
             }
         });
-        if (HomepageManager.isHomepageEnabled(getContext())) {
+        if (HomepageManager.isHomepageEnabled()) {
             mHomeButton.setVisibility(VISIBLE);
         }
 

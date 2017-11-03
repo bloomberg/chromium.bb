@@ -469,7 +469,7 @@ public class ChromeTabbedActivity
                 private void closeIfNoTabsAndHomepageEnabled(boolean isPendingClosure) {
                     if (getTabModelSelector().getTotalTabCount() == 0) {
                         // If the last tab is closed, and homepage is enabled, then exit Chrome.
-                        if (HomepageManager.isHomepageEnabled(getApplicationContext())) {
+                        if (HomepageManager.isHomepageEnabled()) {
                             finish();
                         } else if (isPendingClosure) {
                             NewTabPageUma.recordNTPImpression(
@@ -1175,7 +1175,7 @@ public class ChromeTabbedActivity
      * Create an initial tab for cold start without restored tabs.
      */
     private void createInitialTab() {
-        String url = HomepageManager.getHomepageUri(getApplicationContext());
+        String url = HomepageManager.getHomepageUri();
         if (TextUtils.isEmpty(url) || NewTabPage.isNTPUrl(url)) {
             url = UrlConstants.NTP_URL;
         }
