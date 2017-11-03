@@ -139,8 +139,6 @@ InterventionsInternalPageImpl.prototype = {
     descriptionTd.textContent = log.description;
     tableRow.appendChild(descriptionTd);
 
-    // TODO(thanhdle): Truncate url and show full url when user clicks on it.
-    // crbug.com/773019
     let urlTd = document.createElement('td');
     urlTd.setAttribute('class', 'log-url');
     urlTd.textContent = log.url.url;
