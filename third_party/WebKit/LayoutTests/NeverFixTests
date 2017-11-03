@@ -46,7 +46,7 @@ fast/harness/test-expectations.html [ WontFix ]
 [ Win Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
 
 # Tests trak table support / letter spacing specific to Mac system font
-[ Win Linux Android ] fast/text/mac-system-ui-trak.html [ WontFix ]
+[ Win Linux Android Mac10.10 Mac10.11 ] fast/text/mac-system-ui-trak.html [ WontFix ]
 
  # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
