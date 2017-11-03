@@ -51,7 +51,8 @@ class ClientConfig(IntegrationTest):
       data = t.StopAndGetNetLog()
       for i in data["events"]:
         dumped_event = json.dumps(i)
-        if dumped_event.find("datasaver.googleapis.com") !=-1 and\
+        if dumped_event.find("datasaver.") !=-1 and\
+          dumped_event.find(".googleapis.com") !=-1 and\
           dumped_event.find("clientConfigs") != -1 and\
           dumped_event.find("headers") != -1 and\
           dumped_event.find("accept-encoding") != -1 and\
@@ -79,7 +80,8 @@ class ClientConfig(IntegrationTest):
       data = t.StopAndGetNetLog()
       for i in data["events"]:
         dumped_event = json.dumps(i)
-        if dumped_event.find("datasaver.googleapis.com") !=-1 and\
+        if dumped_event.find("datasaver.") !=-1 and\
+          dumped_event.find(".googleapis.com") !=-1 and\
           dumped_event.find("clientConfigs") != -1 and\
           dumped_event.find("headers") != -1 and\
           dumped_event.find("accept-encoding") != -1 and\
