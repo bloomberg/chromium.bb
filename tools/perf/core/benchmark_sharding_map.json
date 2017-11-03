@@ -139,7 +139,6 @@
     "build14-b1--device7": {
       "benchmarks": [
         "image_decoding.image_decoding_measurement",
-        "media.mse_cases",
         "memory.long_running_idle_gmail_tbmv2",
         "smoothness.scrolling_tough_ad_cases",
         "speedometer-classic",
@@ -372,7 +371,6 @@
     "build74-b1--device7": {
       "benchmarks": [
         "image_decoding.image_decoding_measurement",
-        "media.mse_cases",
         "memory.long_running_idle_gmail_tbmv2",
         "smoothness.scrolling_tough_ad_cases",
         "speedometer-classic",
@@ -590,7 +588,6 @@
     },
     "build165-b1--device7": {
       "benchmarks": [
-        "media.mse_cases",
         "smoothness.key_desktop_move_cases",
         "smoothness.tough_ad_cases",
         "smoothness.tough_scrolling_cases",
@@ -813,7 +810,6 @@
     "build16-b1--device7": {
       "benchmarks": [
         "image_decoding.image_decoding_measurement",
-        "media.mse_cases",
         "memory.long_running_idle_gmail_tbmv2",
         "smoothness.scrolling_tough_ad_cases",
         "speedometer-classic",
@@ -1031,7 +1027,6 @@
     },
     "build113-b1--device7": {
       "benchmarks": [
-        "media.mse_cases",
         "smoothness.key_desktop_move_cases",
         "smoothness.tough_ad_cases",
         "smoothness.tough_scrolling_cases",
@@ -1198,7 +1193,6 @@
     "build10-b1--device7": {
       "benchmarks": [
         "image_decoding.image_decoding_measurement",
-        "media.mse_cases",
         "memory.long_running_idle_gmail_tbmv2",
         "smoothness.scrolling_tough_ad_cases",
         "speedometer-classic",
@@ -1516,7 +1510,6 @@
     },
     "build47-b1--device3": {
       "benchmarks": [
-        "media.mse_cases",
         "memory.top_10_mobile_stress",
         "smoothness.key_desktop_move_cases",
         "smoothness.sync_scroll.key_mobile_sites_smooth",
@@ -1719,7 +1712,6 @@
     "build248-m4--device7": {
       "benchmarks": [
         "image_decoding.image_decoding_measurement",
-        "media.mse_cases",
         "memory.long_running_idle_gmail_tbmv2",
         "smoothness.scrolling_tough_ad_cases",
         "speedometer-classic",
@@ -1816,8 +1808,7 @@
     "swarm823-c4": {
       "benchmarks": [
         "blink_perf.css",
-        "smoothness.maps",
-        "media.mse_cases"
+        "smoothness.maps"
       ]
     }
   },
@@ -1961,7 +1952,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -2130,7 +2120,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -2299,7 +2288,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -2468,7 +2456,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -2637,7 +2624,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -2806,7 +2792,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -2844,7 +2829,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -3189,7 +3173,6 @@
       "benchmarks": [
         "blink_perf.bindings",
         "blink_perf.canvas",
-        "media.mse_cases",
         "page_cycler_v2.top_10_mobile",
         "page_cycler_v2_site_isolation.basic_oopif",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -3381,7 +3364,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -3595,7 +3577,6 @@
       "benchmarks": [
         "blink_perf.bindings",
         "blink_perf.canvas",
-        "media.mse_cases",
         "page_cycler_v2.top_10_mobile",
         "page_cycler_v2_site_isolation.basic_oopif",
         "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -3788,7 +3769,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -3956,7 +3936,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -4125,7 +4104,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -4295,7 +4273,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -4463,7 +4440,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -4632,7 +4608,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -4802,7 +4777,6 @@
         "blink_perf.shadow_dom",
         "kraken",
         "loading.mobile",
-        "media.mse_cases",
         "media.desktop",
         "memory.long_running_idle_gmail_tbmv2",
         "memory.top_10_mobile_stress",
@@ -4861,7 +4835,6 @@
     "media.android.tough_video_cases",
     "media.mobile",
     "media.media_cns_cases",
-    "media.mse_cases",
     "media.tough_video_cases",
     "media.desktop",
     "memory.desktop",
