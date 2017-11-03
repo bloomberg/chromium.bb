@@ -15,7 +15,9 @@
 
 namespace blink {
 
+class VRLayer;
 class VRSession;
+class VRViewport;
 
 class VRView final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -28,6 +30,7 @@ class VRView final : public ScriptWrappable {
   const String& eye() const { return eye_string_; }
   VRSession* session() const;
   DOMFloat32Array* projectionMatrix() const { return projection_matrix_; }
+  VRViewport* getViewport(VRLayer*) const;
 
   void UpdateProjectionMatrixFromFoV(float up_rad,
                                      float down_rad,

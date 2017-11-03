@@ -6,10 +6,15 @@
 <script src="file:///gen/device/vr/vr_service.mojom.js"></script>
 <script src="../resources/mock-vr-service.js"></script>
 <script src="../resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="../resources/presentation-setup.js"></script>
 <script>
 let fakeDisplays = fakeVRDisplays();
 
 vr_session_test( (t, session, mockService) => {
+  // Session must have a baseLayer or else frame requests will be ignored.
+  session.baseLayer = new VRWebGLLayer(session, gl);
+
   session.requestFrameOfReference("eyeLevel").then((frameOfRef) => {
     let expected_pose = VALID_POSE;
     let counter = 0;

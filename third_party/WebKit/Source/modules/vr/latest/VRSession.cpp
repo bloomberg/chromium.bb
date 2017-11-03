@@ -14,6 +14,7 @@
 #include "modules/vr/latest/VRFrameOfReference.h"
 #include "modules/vr/latest/VRFrameOfReferenceOptions.h"
 #include "modules/vr/latest/VRFrameProvider.h"
+#include "modules/vr/latest/VRLayer.h"
 #include "modules/vr/latest/VRPresentationFrame.h"
 #include "modules/vr/latest/VRSessionEvent.h"
 #include "modules/vr/latest/VRView.h"
@@ -68,6 +69,10 @@ void VRSession::setDepthFar(double value) {
   }
 }
 
+void VRSession::setBaseLayer(VRLayer* value) {
+  base_layer_ = value;
+}
+
 ExecutionContext* VRSession::GetExecutionContext() const {
   return device_->GetExecutionContext();
 }
@@ -120,6 +125,11 @@ ScriptPromise VRSession::requestFrameOfReference(
 int VRSession::requestFrame(V8VRFrameRequestCallback* callback) {
   // Don't allow any new frame requests once the session is ended.
   if (detached_)
+    return 0;
+
+  // Don't allow frames to be scheduled if there's no layers attached to the
+  // session. That would allow tracking with no associated visuals.
+  if (!base_layer_)
     return 0;
 
   int id = callback_collection_.RegisterCallback(callback);
@@ -190,6 +200,11 @@ void VRSession::OnFrame(
   if (detached_)
     return;
 
+  // Don't allow frames to be processed if there's no layers attached to the
+  // session. That would allow tracking with no associated visuals.
+  if (!base_layer_)
+    return;
+
   VRPresentationFrame* presentation_frame = new VRPresentationFrame(this);
   presentation_frame->UpdateBasePose(std::move(base_pose_matrix));
 
@@ -231,6 +246,7 @@ const HeapVector<Member<VRView>>& VRSession::views() {
 
 void VRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_);
+  visitor->Trace(base_layer_);
   visitor->Trace(views_);
   visitor->Trace(callback_collection_);
   EventTargetWithInlineData::Trace(visitor);

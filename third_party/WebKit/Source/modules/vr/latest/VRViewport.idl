@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/webvr/spec/latest/#vrview-interface
+// https://w3c.github.io/webvr/spec/latest/#vrviewport-interface
 [
     SecureContext,
     RuntimeEnabled=WebVR2
-] interface VRView {
-  readonly attribute VREye? eye;
-  readonly attribute Float32Array projectionMatrix;
-  VRViewport? getViewport(VRLayer layer);
+] interface VRViewport {
+  readonly attribute long x;
+  readonly attribute long y;
+  readonly attribute long width;
+  readonly attribute long height;
 };

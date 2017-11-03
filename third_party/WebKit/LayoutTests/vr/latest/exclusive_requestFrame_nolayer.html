@@ -12,17 +12,36 @@ let fakeDisplays = fakeVRDisplays();
 
 vr_session_test( (t, session) => {
   // Session must have a baseLayer or frame requests will be ignored.
-  session.baseLayer = new VRWebGLLayer(session, gl);
+  let webglLayer = new VRWebGLLayer(session, gl);
 
-  function onFrame(vrFrame) {
+  function onBadFrame(vrFrame) {
     t.step( () => {
-      assert_true(vrFrame instanceof VRPresentationFrame);
+      assert_unreached("Callback registered without layer was called");
     });
     t.done();
   }
 
-  session.requestFrame(onFrame);
+  function onGoodFrame(vrFrame) {
+    t.done();
+  }
+
+  // This callback shouldn't be allowed to register, since the session doesn't
+  // have a baseLayer when this call is made.
+  let badHandle = session.requestFrame(onBadFrame);
+
+  t.step( () => {
+    assert_equals(badHandle, 0);
+  });
+
+  // Once the base layer is set the callback should be allowed.
+  session.baseLayer = webglLayer;
+
+  let goodHandle = session.requestFrame(onGoodFrame);
+
+  t.step( () => {
+    assert_not_equals(goodHandle, 0);
+  });
 }, fakeDisplays["Pixel"], { exclusive: true },
-"VRSession requestFrame properly calls the provided callback");
+"VRSession requestFrame must fail if the session has no baseLayer");
 
 </script>
