@@ -440,13 +440,7 @@ void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
       "." + IntToString(cpu.stepping()) + ", x" +
       IntToString(base::SysInfo::NumberOfProcessors()) + ", " +
       IntToString(base::SysInfo::AmountOfPhysicalMemoryMB()) + "MB");
-  std::string cpu_brand = cpu.cpu_brand();
-  // Workaround for crbug.com/249713.
-  // TODO(grunell): Remove workaround when bug is fixed.
-  size_t null_pos = cpu_brand.find('\0');
-  if (null_pos != std::string::npos)
-    cpu_brand.erase(null_pos);
-  LogToCircularBuffer("Cpu brand: " + cpu_brand);
+  LogToCircularBuffer("Cpu brand: " + cpu.cpu_brand());
 
   // Computer model
   std::string computer_model = "Not available";
