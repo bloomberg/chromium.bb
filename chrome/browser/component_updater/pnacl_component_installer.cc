@@ -69,10 +69,9 @@ std::string SanitizeForPath(const std::string& input) {
 // If we don't have Pnacl installed, this is the version we claim.
 const char kMinPnaclVersion[] = "0.46.0.4";
 
-// Initially say that we do not need OnDemand updates. This should be
-// updated by CheckVersionCompatiblity(), before doing any URLRequests
-// that depend on PNaCl.
-volatile base::subtle::Atomic32 needs_on_demand_update = 0;
+// Initially say that we do need OnDemand updates. If there is a version of
+// PNaCl on disk, this will be updated by CheckVersionCompatiblity().
+volatile base::subtle::Atomic32 needs_on_demand_update = 1;
 
 void CheckVersionCompatiblity(const base::Version& current_version) {
   // Using NoBarrier, since needs_on_demand_update is standalone and does
