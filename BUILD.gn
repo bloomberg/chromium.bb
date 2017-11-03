@@ -179,21 +179,6 @@ target(link_target_type, "ffmpeg_internal") {
     "_POSIX_C_SOURCE=200112",
     "_XOPEN_SOURCE=600",
     "PIC",
-
-    # Disable deprecated features that generate spammy warnings.
-    # media/ffmpeg/ffmpeg_common.h defines these as well and must be kept
-    # in sync with this file.
-    "FF_API_CONVERGENCE_DURATION=0",
-
-    # Upstream libavcodec/utils.c still uses the deprecated
-    # av_dup_packet(), avcodec_encode_{audio,video}2(), and
-    # libavformat/utils.c still accesses the deprecated AVStream.codec,
-    # causing deprecation warnings.
-    # The normal fix for such things is to disable the features like setting
-    # "FF_API_AVPACKET_OLD_API=0", but the upstream code does not yet compile
-    # with it disabled (in the case of av_dup_packet()), and has no FF_API*
-    # gate for avcodec_encode_{audio,video}2() or AVStream.codec.  In the
-    # meantime, we directly disable those warnings locally in the C files.
   ]
 
   # Disable internal ffmpeg logs in the official build; this saves ~158kb.
@@ -335,12 +320,6 @@ target(link_target_type, "ffmpeg_internal") {
       configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
       configs += [ "//build/config/gcc:symbol_visibility_default" ]
     }
-
-    # TODO(ajwong): How to handle openbsd? Especially w/o the is_posix?
-    #      if (is_openbsd) {
-    #       # OpenBSD's gcc (4.2.1) does not support this flag
-    #       cflags -= [ "-fno-signed-zeros" ]
-    #      }
   }
   if (is_mac) {
     if (is_component_ffmpeg) {
