@@ -46,7 +46,7 @@ def _MakePNG(chunks):
 def _GetFilesInPak(pakname):
   '''Get a set of the files that were actually included in the .pak output.
   '''
-  return set(data_pack.DataPack.ReadDataPack(pakname).resources.values())
+  return set(data_pack.ReadDataPack(pakname).resources.values())
 
 
 def _GetFilesInRc(rcname, tmp_dir, contents):

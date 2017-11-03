@@ -94,7 +94,7 @@ def repack_locales(locales):
   for locale in locales:
     inputs = calc_inputs(locale)
     output = calc_output(locale)
-    data_pack.DataPack.RePack(output, inputs)
+    data_pack.RePack(output, inputs)
 
 
 def DoMain(argv):

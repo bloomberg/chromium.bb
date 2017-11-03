@@ -242,16 +242,6 @@ def RePackFromDataPackStrings(inputs, whitelist,
   return DataPackContents(resources, encoding)
 
 
-# Temporary hack for external programs that import data_pack.
-# TODO(benrg): Remove this.
-class DataPack(object):
-  pass
-DataPack.ReadDataPack = staticmethod(ReadDataPack)
-DataPack.WriteDataPackToString = staticmethod(WriteDataPackToString)
-DataPack.WriteDataPack = staticmethod(WriteDataPack)
-DataPack.RePack = staticmethod(RePack)
-
-
 def main():
   # Write a simple file.
   data = {1: '', 4: 'this is id 4', 6: 'this is id 6', 10: ''}
