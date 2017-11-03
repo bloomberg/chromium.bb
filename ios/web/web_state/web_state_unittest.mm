@@ -174,4 +174,11 @@ TEST_F(WebStateTest, Snapshot) {
   });
 }
 
+// Tests that the web state has an opener after calling SetHasOpener().
+TEST_F(WebStateTest, SetHasOpener) {
+  ASSERT_FALSE(web_state()->HasOpener());
+  web_state()->SetHasOpener(true);
+  EXPECT_TRUE(web_state()->HasOpener());
+}
+
 }  // namespace web

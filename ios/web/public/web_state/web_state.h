@@ -288,9 +288,10 @@ class WebState : public base::SupportsUserData {
                                       std::move(request.PassMessagePipe()));
   }
 
-  // Returns whether this WebState was created with an opener.  See
-  // CreateParams::created_with_opener for more details.
+  // Whether this WebState was created with an opener.
+  // See CreateParams::created_with_opener for more details.
   virtual bool HasOpener() const = 0;
+  virtual void SetHasOpener(bool has_opener) = 0;
 
   // Callback used to handle snapshots. The parameter is the snapshot image.
   typedef base::Callback<void(const gfx::Image&)> SnapshotCallback;
