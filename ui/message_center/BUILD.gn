@@ -89,8 +89,8 @@ component("message_center") {
       "notification_list.h",
       "notification_types.cc",
       "notification_types.h",
-      "notifier_settings.cc",
-      "notifier_settings.h",
+      "notifier_id.cc",
+      "notifier_id.h",
       "popup_timer.cc",
       "popup_timer.h",
       "popup_timers_controller.cc",
@@ -173,8 +173,8 @@ component("message_center") {
       sources += [
         "notification.cc",
         "notification.h",
-        "notifier_settings.cc",
-        "notifier_settings.h",
+        "notifier_id.cc",
+        "notifier_id.h",
       ]
     }
   }

@@ -21,7 +21,7 @@
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 #include "ui/message_center/popup_timers_controller.h"
 
 namespace message_center {

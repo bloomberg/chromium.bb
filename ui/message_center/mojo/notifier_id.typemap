@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom = "//ui/message_center/mojo/notifier_id.mojom"
-public_headers = [ "//ui/message_center/notifier_settings.h" ]
+public_headers = [ "//ui/message_center/notifier_id.h" ]
 traits_headers = [ "//ui/message_center/mojo/notifier_id_struct_traits.h" ]
 deps = [
   "//ui/message_center/mojo:struct_traits",

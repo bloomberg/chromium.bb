@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/status_icons/status_icon_linux_wrapper.h"
 
 #include "base/memory/ptr_util.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
 StatusIconLinuxWrapper::StatusIconLinuxWrapper(

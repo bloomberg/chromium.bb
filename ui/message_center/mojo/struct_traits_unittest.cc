@@ -11,7 +11,7 @@
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/message_center/mojo/traits_test_service.mojom.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 
 namespace message_center {
 namespace {

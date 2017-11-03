@@ -43,7 +43,7 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 
 #if BUILDFLAG(ENABLE_MDNS)
 #include "chrome/browser/printing/cloud_print/privet_traffic_detector.h"

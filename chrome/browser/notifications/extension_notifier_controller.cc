@@ -15,7 +15,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 
 ExtensionNotifierController::ExtensionNotifierController(Observer* observer)
     : observer_(observer) {}
