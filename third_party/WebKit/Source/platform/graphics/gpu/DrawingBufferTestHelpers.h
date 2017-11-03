@@ -397,6 +397,7 @@ class DrawingBufferForTests : public DrawingBuffer {
  public:
   static scoped_refptr<DrawingBufferForTests> Create(
       std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+      bool using_gpu_compositing,
       DrawingBuffer::Client* client,
       const IntSize& size,
       PreserveDrawingBuffer preserve,
@@ -404,9 +405,9 @@ class DrawingBufferForTests : public DrawingBuffer {
     std::unique_ptr<Extensions3DUtil> extensions_util =
         Extensions3DUtil::Create(context_provider->ContextGL());
     scoped_refptr<DrawingBufferForTests> drawing_buffer =
-        WTF::AdoptRef(new DrawingBufferForTests(std::move(context_provider),
-                                                std::move(extensions_util),
-                                                client, preserve));
+        WTF::AdoptRef(new DrawingBufferForTests(
+            std::move(context_provider), using_gpu_compositing,
+            std::move(extensions_util), client, preserve));
     if (!drawing_buffer->Initialize(
             size, use_multisampling != kDisableMultisampling)) {
       drawing_buffer->BeginDestruction();
@@ -417,11 +418,13 @@ class DrawingBufferForTests : public DrawingBuffer {
 
   DrawingBufferForTests(
       std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+      bool using_gpu_compositing,
       std::unique_ptr<Extensions3DUtil> extensions_util,
       DrawingBuffer::Client* client,
       PreserveDrawingBuffer preserve)
       : DrawingBuffer(
             std::move(context_provider),
+            using_gpu_compositing,
             std::move(extensions_util),
             client,
             false /* discardFramebufferSupported */,

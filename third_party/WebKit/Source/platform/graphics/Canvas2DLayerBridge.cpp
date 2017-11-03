@@ -197,8 +197,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
   if (acceleration_mode != kDisableAcceleration) {
     context_provider_wrapper_ = SharedGpuContext::ContextProviderWrapper();
     DCHECK(context_provider_wrapper_);
-    DCHECK(
-        !context_provider_wrapper_->ContextProvider()->IsSoftwareRendering());
+    DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
     // See whether the use of GpuMemoryBuffers was blacklisted since
     // the time the browser determined whether to use the feature
     // based on the command line flags. This is the only way to avoid

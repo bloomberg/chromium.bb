@@ -115,6 +115,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   static scoped_refptr<DrawingBuffer> Create(
       std::unique_ptr<WebGraphicsContext3DProvider>,
+      bool using_gpu_compositing,
       Client*,
       const IntSize&,
       bool premultiplied_alpha,
@@ -246,6 +247,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
  protected:  // For unittests
   DrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>,
+                bool using_gpu_compositing,
                 std::unique_ptr<Extensions3DUtil>,
                 Client*,
                 bool discard_framebuffer_supported,
@@ -392,7 +394,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   // Updates the current size of the buffer, ensuring that
   // s_currentResourceUsePixels is updated.
-  void SetSize(const IntSize& size);
+  void SetSize(const IntSize&);
 
   // This is the order of bytes to use when doing a readback.
   enum ReadbackOrder { kReadbackRGBA, kReadbackSkia };
@@ -461,7 +463,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // channel.
   bool have_alpha_channel_ = false;
   const bool premultiplied_alpha_;
-  const bool software_rendering_;
+  const bool using_gpu_compositing_;
   bool has_implicit_stencil_buffer_ = false;
   bool storage_texture_supported_ = false;
 

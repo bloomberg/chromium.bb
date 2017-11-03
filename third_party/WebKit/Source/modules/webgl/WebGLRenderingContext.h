@@ -88,6 +88,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
  private:
   WebGLRenderingContext(CanvasRenderingContextHost*,
                         std::unique_ptr<WebGraphicsContext3DProvider>,
+                        bool using_gpu_compositing,
                         const CanvasContextCreationAttributes&);
 
   // Enabled extension objects.

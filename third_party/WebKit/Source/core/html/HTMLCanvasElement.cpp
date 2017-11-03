@@ -916,6 +916,10 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
       return false;
   }
 
+  // Don't use accelerated canvas if compositor is in software mode.
+  if (!SharedGpuContext::IsGpuCompositingEnabled())
+    return false;
+
   // Avoid creating |contextProvider| until we're sure we want to try use it,
   // since it costs us GPU memory.
   WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
@@ -925,9 +929,6 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
         CanvasMetrics::kAccelerated2DCanvasGPUContextLost);
     return false;
   }
-
-  if (context_provider_wrapper->ContextProvider()->IsSoftwareRendering())
-    return false;  // Don't use accelerated canvas with swiftshader.
 
   const gpu::GpuFeatureInfo& gpu_feature_info =
       context_provider_wrapper->ContextProvider()->GetGpuFeatureInfo();

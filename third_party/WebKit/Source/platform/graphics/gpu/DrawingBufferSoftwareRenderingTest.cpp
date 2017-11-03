@@ -21,59 +21,26 @@ namespace {
 
 using namespace testing;
 
-class WebGraphicsContext3DProviderSoftwareRenderingForTests
-    : public WebGraphicsContext3DProvider {
- public:
-  WebGraphicsContext3DProviderSoftwareRenderingForTests(
-      std::unique_ptr<gpu::gles2::GLES2Interface> gl)
-      : gl_(std::move(gl)) {}
-
-  gpu::gles2::GLES2Interface* ContextGL() override { return gl_.get(); }
-  bool IsSoftwareRendering() const override { return true; }
-
-  // Not used by WebGL code.
-  GrContext* GetGrContext() override { return nullptr; }
-  bool BindToCurrentThread() override { return false; }
-  const gpu::Capabilities& GetCapabilities() const override {
-    return capabilities_;
-  }
-  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
-    return gpu_feature_info_;
-  }
-  void SetLostContextCallback(const base::Closure&) {}
-  void SetErrorMessageCallback(
-      const base::Callback<void(const char*, int32_t id)>&) {}
-  void SignalQuery(uint32_t, const base::Closure&) override {}
-
- private:
-  std::unique_ptr<gpu::gles2::GLES2Interface> gl_;
-  gpu::Capabilities capabilities_;
-  gpu::GpuFeatureInfo gpu_feature_info_;
-};
-
-class DrawingBufferSoftwareRenderingTest : public Test {
+class DrawingBufferSoftwareCompositingTest : public Test {
  protected:
   void SetUp() override {
     IntSize initial_size(kInitialWidth, kInitialHeight);
-    std::unique_ptr<GLES2InterfaceForTests> gl =
-        WTF::WrapUnique(new GLES2InterfaceForTests);
-    std::unique_ptr<WebGraphicsContext3DProviderSoftwareRenderingForTests>
-        provider = WTF::WrapUnique(
-            new WebGraphicsContext3DProviderSoftwareRenderingForTests(
-                std::move(gl)));
+    auto gl = WTF::MakeUnique<GLES2InterfaceForTests>();
+    auto provider =
+        WTF::MakeUnique<WebGraphicsContext3DProviderForTests>(std::move(gl));
     GLES2InterfaceForTests* gl_ =
         static_cast<GLES2InterfaceForTests*>(provider->ContextGL());
+    bool gpu_compositing = false;
     drawing_buffer_ = DrawingBufferForTests::Create(
-        std::move(provider), gl_, initial_size, DrawingBuffer::kPreserve,
-        kDisableMultisampling);
+        std::move(provider), gpu_compositing, gl_, initial_size,
+        DrawingBuffer::kPreserve, kDisableMultisampling);
     CHECK(drawing_buffer_);
   }
 
   scoped_refptr<DrawingBufferForTests> drawing_buffer_;
-  bool is_software_rendering_ = false;
 };
 
-TEST_F(DrawingBufferSoftwareRenderingTest, BitmapRecycling) {
+TEST_F(DrawingBufferSoftwareCompositingTest, BitmapRecycling) {
   viz::TextureMailbox texture_mailbox;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
@@ -111,7 +78,7 @@ TEST_F(DrawingBufferSoftwareRenderingTest, BitmapRecycling) {
   drawing_buffer_->BeginDestruction();
 }
 
-TEST_F(DrawingBufferSoftwareRenderingTest, FramebufferBinding) {
+TEST_F(DrawingBufferSoftwareCompositingTest, FramebufferBinding) {
   GLES2InterfaceForTests* gl_ = drawing_buffer_->ContextGLForTests();
   viz::TextureMailbox texture_mailbox;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
