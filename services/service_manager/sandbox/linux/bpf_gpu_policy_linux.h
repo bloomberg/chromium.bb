@@ -11,12 +11,11 @@
 #include "base/macros.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "services/service_manager/sandbox/export.h"
-#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 
 namespace service_manager {
 
-class SERVICE_MANAGER_SANDBOX_EXPORT GpuProcessPolicy
-    : public SandboxBPFBasePolicy {
+class SERVICE_MANAGER_SANDBOX_EXPORT GpuProcessPolicy : public BPFBasePolicy {
  public:
   GpuProcessPolicy();
   ~GpuProcessPolicy() override;

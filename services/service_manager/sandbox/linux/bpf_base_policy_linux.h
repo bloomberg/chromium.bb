@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_
-#define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_
+#ifndef SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_BASE_POLICY_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_BASE_POLICY_LINUX_H_
 
 #include <memory>
 
@@ -15,15 +15,15 @@
 
 namespace service_manager {
 
-// The "baseline" BPF policy for content/. Any content/ seccomp-bpf policy
-// should inherit from it.
+// The "baseline" BPF policy. Any other seccomp-bpf policy should inherit
+// from it.
 // It implements the main Policy interface. Due to its nature
 // as a "kernel attack surface reduction" layer, it's implementation-defined.
-class SERVICE_MANAGER_SANDBOX_EXPORT SandboxBPFBasePolicy
+class SERVICE_MANAGER_SANDBOX_EXPORT BPFBasePolicy
     : public sandbox::bpf_dsl::Policy {
  public:
-  SandboxBPFBasePolicy();
-  ~SandboxBPFBasePolicy() override;
+  BPFBasePolicy();
+  ~BPFBasePolicy() override;
 
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
@@ -37,9 +37,9 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxBPFBasePolicy
  private:
   // Compose the BaselinePolicy from sandbox/.
   std::unique_ptr<sandbox::BaselinePolicy> baseline_policy_;
-  DISALLOW_COPY_AND_ASSIGN(SandboxBPFBasePolicy);
+  DISALLOW_COPY_AND_ASSIGN(BPFBasePolicy);
 };
 
 }  // namespace service_manager
 
-#endif  // SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_SANDBOX_BPF_BASE_POLICY_LINUX_H_
+#endif  // SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_BASE_POLICY_LINUX_H_

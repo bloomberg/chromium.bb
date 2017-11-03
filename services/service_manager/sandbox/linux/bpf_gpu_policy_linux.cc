@@ -30,7 +30,7 @@
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
-#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 
@@ -129,7 +129,7 @@ ResultExpr GpuProcessPolicy::EvaluateSyscall(int sysno) const {
         return Allow();
 
       // Default on the baseline policy.
-      return SandboxBPFBasePolicy::EvaluateSyscall(sysno);
+      return BPFBasePolicy::EvaluateSyscall(sysno);
   }
 }
 

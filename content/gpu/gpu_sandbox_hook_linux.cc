@@ -242,7 +242,7 @@ std::unique_ptr<BrokerProcess> InitGpuBrokerProcess(
   }
 
   auto result = std::make_unique<BrokerProcess>(
-      service_manager::SandboxBPFBasePolicy::GetFSDeniedErrno(), permissions);
+      service_manager::BPFBasePolicy::GetFSDeniedErrno(), permissions);
   // The initialization callback will perform generic initialization and then
   // call broker_sandboxer_callback.
   CHECK(result->Init(base::Bind(&UpdateProcessTypeAndEnableSandbox,
