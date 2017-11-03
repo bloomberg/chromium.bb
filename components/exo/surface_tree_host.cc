@@ -212,7 +212,7 @@ void SurfaceTreeHost::UpdateNeedsBeginFrame() {
 void SurfaceTreeHost::OnSurfaceCommit() {
   DCHECK(presentation_callbacks_.empty());
   gfx::Rect bounds = root_surface_->CommitSurfaceHierarchy(
-      &frame_callbacks_, &presentation_callbacks_);
+      &frame_callbacks_, &presentation_callbacks_, false);
 
   host_window_->SetBounds(
       gfx::Rect(host_window_->bounds().origin(), bounds.size()));

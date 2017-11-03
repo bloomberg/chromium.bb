@@ -96,8 +96,8 @@ void SubSurface::OnSurfaceCommit() {
   if (IsSurfaceSynchronized())
     return;
 
-  // TODO(penghuang): http://crbug.com/740110 Support async mode.
-  NOTIMPLEMENTED() << "Async subsurface is not supported!";
+  if (parent_)
+    parent_->OnSubSurfaceCommit();
 }
 
 bool SubSurface::IsSurfaceSynchronized() const {

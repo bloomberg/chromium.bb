@@ -145,20 +145,18 @@ TEST_F(SubSurfaceTest, SetCommitBehavior) {
   EXPECT_EQ(position1.ToString(),
             grandchild->window()->bounds().origin().ToString());
 
-  // TODO(penghuang): http://crbug.com/740110 Support async mode.
-  // Disable synchronous commit behavior.
-  // bool synchronized = false;
-  // child_sub_surface->SetCommitBehavior(synchronized);
+  bool synchronized = false;
+  child_sub_surface->SetCommitBehavior(synchronized);
 
   // Set position to 20, 20.
-  // gfx::Point position2(20, 20);
-  // grandchild_sub_surface->SetPosition(position2);
-  // child->Commit();
+  gfx::Point position2(20, 20);
+  grandchild_sub_surface->SetPosition(position2);
+  child->Commit();
 
   // A Commit() call on child should be sufficient for the position of
   // grandchild to take effect when synchronous is disabled.
-  // EXPECT_EQ(position2.ToString(),
-  //           grandchild->window()->bounds().origin().ToString());
+  EXPECT_EQ(position2.ToString(),
+            grandchild->window()->bounds().origin().ToString());
 }
 
 }  // namespace
