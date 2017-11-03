@@ -6,13 +6,16 @@ import("//third_party/closure_compiler/closure_args.gni")
 
 script_path = "//third_party/closure_compiler"
 compiler_path = "$script_path/compiler/compiler.jar"
+externs_path = "$script_path/externs"
+polymer_externs = "$externs_path/polymer-1.0.js"
 
 # Defines a target that creates an ordering for .js files to be used by
 # js_binary to compile.
 #
 # Variables:
 #   sources:
-#     List of Javascript files to include in the library
+#     List of Javascript files to include in the library. Uses target_name.js by
+#     default.
 #
 #   deps:
 #     List of js_library targets to depend on
@@ -32,14 +35,13 @@ compiler_path = "$script_path/compiler/compiler.jar"
 #   }
 
 template("js_library") {
-  assert(defined(invoker.sources) || defined(invoker.deps),
-         "Need sources or deps in $target_name for js_library")
   action(target_name) {
     script = "$script_path/js_library.py"
     forward_variables_from(invoker,
                            [
                              "sources",
                              "deps",
+                             "externs_list",
                              "extra_deps",
                            ])
     output_file = "$target_gen_dir/$target_name.js_library"
@@ -47,9 +49,15 @@ template("js_library") {
       output_file,
     ]
     args = [ "--output" ] + [ rebase_path(output_file, root_build_dir) ]
-    if (defined(sources)) {
-      args += [ "--sources" ] + rebase_path(sources, root_build_dir)
+
+    if (!defined(sources)) {
+      sources = [
+        target_name + ".js",
+      ]
     }
+
+    args += [ "--sources" ] + rebase_path(sources, root_build_dir)
+
     if (defined(deps)) {
       args += [ "--deps" ]
       foreach(dep, deps) {
@@ -59,6 +67,9 @@ template("js_library") {
         dep_output_path = "$dep_gen_dir/$dep_name.js_library"
         args += [ rebase_path(dep_output_path, root_build_dir) ]
       }
+    }
+    if (defined(externs_list)) {
+      args += [ "--externs" ] + rebase_path(externs_list, root_build_dir)
     }
     if (defined(extra_deps)) {
       if (!defined(deps)) {
@@ -75,7 +86,9 @@ template("js_library") {
 #
 # Variables:
 #   sources:
-#     List of .js files to compile
+#     List of .js files to compile. Will be target_name.js by default. Use
+#     sources = [] to specify no input files (when making a target that just
+#     group compiles other targets, for example).
 #
 #   deps:
 #     List of js_library rules to depend on
@@ -113,10 +126,6 @@ template("js_library") {
 #   }
 
 template("js_binary") {
-  assert(defined(invoker.sources) || defined(invoker.deps),
-         "Need sources or deps in $target_name for js_binary")
-  assert(defined(invoker.outputs), "Need outputs in $target_name for js_binary")
-
   action(target_name) {
     script = "$script_path/js_binary.py"
     forward_variables_from(invoker,
@@ -133,12 +142,20 @@ template("js_binary") {
       "--compiler",
       rebase_path(compiler_path, root_build_dir),
     ]
-    args += [ "--output" ] + rebase_path(outputs, root_build_dir)
-    if (defined(sources)) {
-      args += [ "--sources" ] + rebase_path(sources, root_build_dir)
-    } else {
-      sources = []
+
+    if (!defined(outputs)) {
+      outputs = [
+        "$target_gen_dir/$target_name.js",
+      ]
     }
+    args += [ "--output" ] + rebase_path(outputs, root_build_dir)
+
+    if (!defined(sources)) {
+      sources = [
+        "$target_name.js",
+      ]
+    }
+
     if (defined(deps)) {
       args += [ "--deps" ]
       foreach(dep, deps) {
@@ -149,6 +166,9 @@ template("js_binary") {
         args += [ rebase_path(dep_output_path, root_build_dir) ]
       }
     }
+
+    args += [ "--sources" ] + rebase_path(sources, root_build_dir)
+
     if (defined(bootstrap_file)) {
       args += [
         "--bootstrap",
@@ -163,12 +183,15 @@ template("js_binary") {
 
     # |minifying_closure_args| from
     # //third_party/closure_compiler/closure_args.gni
-    args += [ "--flags" ] + minifying_closure_args
-    if (defined(closure_flags)) {
-      args += closure_flags
+    if (!defined(closure_flags)) {
+      closure_flags = default_closure_args
     }
+    args += [ "--flags" ] + closure_flags
+    args += [
+      "--externs",
+      rebase_path("$polymer_externs", root_build_dir),
+    ]
     if (defined(externs_list)) {
-      args += [ "--externs" ]
       args += rebase_path(externs_list, root_build_dir)
       sources += externs_list
     }

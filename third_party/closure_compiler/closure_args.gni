@@ -42,9 +42,10 @@ checking_closure_args = [
   "language_in=ECMASCRIPT6_STRICT",
   "language_out=ECMASCRIPT5_STRICT",
 
-  "checks_only",
   "chrome_pass",
   "polymer_pass",
+
+  "jscomp_off=duplicate",
 ]
 
 # Additional closure arguments for minifying
@@ -61,6 +62,4 @@ minifying_closure_args = [
 # For compatibility with old uses.
 default_closure_args = common_closure_args + checking_closure_args
 
-default_disabled_closure_args = [
-  "jscomp_off=duplicate",
-]
+default_disabled_closure_args = [ "jscomp_off=duplicate" ]
