@@ -42,7 +42,7 @@ class UploadTests(unittest.TestCase):
     self.lorem_ipsum = os.path.join(self.base_path, 'lorem_ipsum.txt')
     self.lorem_ipsum_sha1 = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
 
-  def cleanUp(self):
+  def tearDown(self):
     shutil.rmtree(self.temp_dir)
     sys.stdin = sys.__stdin__
 

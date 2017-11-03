@@ -91,7 +91,7 @@ class GstoolsUnitTests(unittest.TestCase):
     self.base_path = os.path.join(self.temp_dir, 'test_files')
     shutil.copytree(os.path.join(TEST_DIR, 'gstools'), self.base_path)
 
-  def cleanUp(self):
+  def tearDown(self):
     shutil.rmtree(self.temp_dir)
 
   def test_validate_tar_file(self):
@@ -198,7 +198,7 @@ class DownloadTests(unittest.TestCase):
     self.lorem_ipsum_sha1 = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
     self.maxDiff = None
 
-  def cleanUp(self):
+  def tearDown(self):
     shutil.rmtree(self.temp_dir)
 
   def test_enumerate_files_non_recursive(self):
