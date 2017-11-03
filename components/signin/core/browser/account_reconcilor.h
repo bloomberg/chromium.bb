@@ -81,7 +81,8 @@ class AccountReconcilor : public KeyedService,
   AccountReconcilor(ProfileOAuth2TokenService* token_service,
                     SigninManagerBase* signin_manager,
                     SigninClient* client,
-                    GaiaCookieManagerService* cookie_manager_service);
+                    GaiaCookieManagerService* cookie_manager_service,
+                    bool is_new_profile);
   ~AccountReconcilor() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -159,6 +160,7 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, NoLoopWithBadPrimary);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, WontMergeAccountsWithError);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMigrationTest, MigrateAtCreation);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMigrationTest, NewProfile);
 
   bool IsRegisteredWithTokenService() const {
     return registered_with_token_service_;
@@ -242,7 +244,7 @@ class AccountReconcilor : public KeyedService,
 
   // Dice migration methods:
   // Returns true if migration should happen on the next startup.
-  bool ShouldMigrateToDiceOnStartup();
+  bool ShouldMigrateToDiceOnStartup(bool is_new_profile);
   // Schedules migration to happen at next startup.
   static void SetDiceMigrationOnStartup(PrefService* prefs, bool migrate);
 

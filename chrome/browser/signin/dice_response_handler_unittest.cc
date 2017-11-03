@@ -130,7 +130,7 @@ class DiceResponseHandlerTest : public testing::Test,
     SigninManager::RegisterProfilePrefs(pref_service_.registry());
     signin::RegisterAccountConsistencyProfilePrefs(pref_service_.registry());
     account_reconcilor_ = base::MakeUnique<AccountReconcilor>(
-        &token_service_, &signin_manager_, &signin_client_, nullptr);
+        &token_service_, &signin_manager_, &signin_client_, nullptr, false);
     dice_response_handler_ = base::MakeUnique<DiceResponseHandler>(
         &signin_client_, &signin_manager_, &token_service_,
         &account_tracker_service_, account_reconcilor_.get());
