@@ -47,6 +47,11 @@ vars = {
   # custom_vars.
   'checkout_src_internal': False,
 
+  # Fetch the additional packages and files needed to run all of the
+  # telemetry tests. This is false by default as some stuff is only
+  # privately accessible.
+  'checkout_telemetry_dependencies': False,
+
   # libaom provides support for AV1 but the bitstream is not frozen.
   'checkout_libaom': False,
 
@@ -1103,7 +1108,19 @@ hooks = [
     ],
   },
 
+  # Download Telemetry's binary dependencies via conditionals
+  {
+    'name': 'checkout_telemetry_binary_dependencies',
+    'condition': 'checkout_telemetry_dependencies',
+    'pattern': '.',
+    'action': [ 'python',
+                'src/third_party/catapult/telemetry/bin/fetch_telemetry_binary_dependencies',
+    ],
+  },
+
   # Download Telemetry's binary dependencies
+  # TODO(crbug.com/780967) - remove this once the bots are setting the
+  # `checkout_telemetry_dependencies` condition.
   {
     'name': 'fetch_telemetry_binary_dependencies',
     'pattern': '.',
