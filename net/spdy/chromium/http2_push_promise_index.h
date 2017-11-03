@@ -44,11 +44,11 @@ class NET_EXPORT Http2PushPromiseIndex {
   typedef std::vector<base::WeakPtr<SpdySession>> WeakSessionList;
   typedef std::map<GURL, WeakSessionList> UnclaimedPushedStreamMap;
 
-  // A map of all SpdySessions owned by |this| that have an unclaimed pushed
-  // streams for a GURL.  Might contain invalid WeakPtr's.
-  // A single SpdySession can only have at most one pushed stream for each GURL,
-  // but it is possible that multiple SpdySessions have pushed streams for the
-  // same GURL.
+  // A map of all SpdySessions that have an unclaimed pushed stream for a GURL.
+  // SpdySession must unregister its streams before destruction, therefore all
+  // weak pointers must be valid.  A single SpdySession can only have at most
+  // one pushed stream for each GURL, but it is possible that multiple
+  // SpdySessions have pushed streams for the same GURL.
   UnclaimedPushedStreamMap unclaimed_pushed_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(Http2PushPromiseIndex);
