@@ -83,7 +83,7 @@
 #include "zutil.h"
 #include "inftrees.h"
 #include "inflate.h"
-#include "inffast.h"
+#include "contrib/optimizations/inffast_chunky.h"
 #include "contrib/optimizations/chunkcopy.h"
 
 #ifdef MAKEFIXED
@@ -1056,7 +1056,7 @@ int flush;
         case LEN:
             if (have >= 6 && left >= 258) {
                 RESTORE();
-                inflate_fast(strm, out);
+                inflate_fast_chunky(strm, out);
                 LOAD();
                 if (state->mode == TYPE)
                     state->back = -1;
@@ -1262,6 +1262,16 @@ int flush;
        Note: a memory error from inflate() is non-recoverable.
      */
   inf_leave:
+   /* We write a defined value in the unused space to help mark
+    * where the stream has ended. We don't use zeros as that can
+    * mislead clients relying on undefined behavior (i.e. assuming
+    * that the data is over when the buffer has a zero/null value).
+    */
+   if (left >= CHUNKCOPY_CHUNK_SIZE)
+      memset(put, 0x55, CHUNKCOPY_CHUNK_SIZE);
+   else
+      memset(put, 0x55, left);
+
     RESTORE();
     if (state->wsize || (out != strm->avail_out && state->mode < BAD &&
             (state->mode < CHECK || flush != Z_FINISH)))
