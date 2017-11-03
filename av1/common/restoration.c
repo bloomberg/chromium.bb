@@ -315,8 +315,7 @@ static int setup_processing_stripe_boundary(
   // (which might happen at the bottom of a restoration unit).
   const int stripe_bottom = limits->v_start + stripe_height;
   const int below_buf_y = RESTORATION_CTX_VERT * frame_stripe;
-  uint8_t *data8_bl =
-      data8 + (data_x0 << use_highbd) + stripe_bottom * data_stride;
+  uint8_t *data8_bl = data8 + data_x0 + stripe_bottom * data_stride;
 
   for (int i = 0; i < RESTORATION_BORDER; ++i) {
     const int buf_row = below_buf_y + AOMMIN(i, RESTORATION_CTX_VERT - 1);
@@ -365,8 +364,7 @@ static void restore_processing_stripe_boundary(
   }
 
   const int stripe_bottom = limits->v_start + stripe_height;
-  uint8_t *data8_bl =
-      data8 + (data_x0 << use_highbd) + stripe_bottom * data_stride;
+  uint8_t *data8_bl = data8 + data_x0 + stripe_bottom * data_stride;
 
   for (int i = 0; i < RESTORATION_BORDER; ++i) {
     if (stripe_bottom + i >= limits->v_end + RESTORATION_BORDER) break;
