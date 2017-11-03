@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_test_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -1397,8 +1398,18 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
 // TODO(groby): Remove once the bubble is enabled by default everywhere.
 // http://crbug.com/507442
 #if defined(OS_MACOSX)
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kEnableTranslateNewUX);
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableTranslateNewUX)) {
+    // On MacViews kEnableTranslateNewUX will engage the MacViews bubble UI
+    // which isn't ready and isn't used yet. The Cocoa browser still uses an
+    // InfoBar. See http://crbug.com/781134. So only continue when testing the
+    // Cocoa UI.
+    if (base::FeatureList::IsEnabled(features::kShowAllDialogsWithViewsToolkit))
+      return;
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableTranslateNewUX);
+  }
 #endif
   ASSERT_TRUE(TranslateService::IsTranslateBubbleEnabled());
 
