@@ -30,6 +30,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/http/http_util.h"
 #include "platform/loader/fetch/FetchUtils.h"
+#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/http_names.h"
 #include "platform/weborigin/KURL.h"
