@@ -31,7 +31,6 @@ class FaviconHelper {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_profile,
       const base::android::JavaParamRef<jstring>& j_page_url,
-      jint j_icon_types,
       jint j_desired_size_in_pixel,
       const base::android::JavaParamRef<jobject>& j_favicon_image_callback);
   base::android::ScopedJavaLocalRef<jobject> GetSyncedFaviconImageForURL(

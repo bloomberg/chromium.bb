@@ -50,8 +50,8 @@ bool FaviconSQLHandler::Update(const HistoryAndBookmarkRow& row,
        i != ids_set.end(); ++i) {
     // Remove all icon mappings to favicons of type FAVICON.
     std::vector<IconMapping> icon_mappings;
-    thumbnail_db_->GetIconMappingsForPageURL(
-        i->url, favicon_base::FAVICON, &icon_mappings);
+    thumbnail_db_->GetIconMappingsForPageURL(i->url, {favicon_base::FAVICON},
+                                             &icon_mappings);
     for (std::vector<IconMapping>::const_iterator m = icon_mappings.begin();
          m != icon_mappings.end(); ++m) {
       if (!thumbnail_db_->DeleteIconMapping(m->mapping_id))

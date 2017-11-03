@@ -412,9 +412,7 @@ class RemoveFaviconTester {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     favicon_service_->GetRawFaviconForPageURL(
-        page_url,
-        favicon_base::FAVICON,
-        gfx::kFaviconSize,
+        page_url, {favicon_base::FAVICON}, gfx::kFaviconSize,
         base::Bind(&RemoveFaviconTester::SaveResultAndQuit,
                    base::Unretained(this)),
         &tracker_);

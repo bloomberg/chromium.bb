@@ -313,7 +313,7 @@ favicon_base::FaviconID ExpireHistoryTest::GetFavicon(
     const GURL& page_url,
     favicon_base::IconType icon_type) {
   std::vector<IconMapping> icon_mappings;
-  if (thumb_db_->GetIconMappingsForPageURL(page_url, icon_type,
+  if (thumb_db_->GetIconMappingsForPageURL(page_url, {icon_type},
                                            &icon_mappings)) {
     return icon_mappings[0].icon_id;
   }

@@ -95,7 +95,6 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jstring>& j_page_url,
-    jint j_icon_types,
     jint j_desired_size_in_pixel,
     const JavaParamRef<jobject>& j_favicon_image_callback) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
@@ -116,9 +115,9 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
 
   favicon_service->GetRawFaviconForPageURL(
       GURL(ConvertJavaStringToUTF16(env, j_page_url)),
-      static_cast<int>(j_icon_types),
-      static_cast<int>(j_desired_size_in_pixel),
-      callback_runner,
+      {favicon_base::FAVICON, favicon_base::TOUCH_ICON,
+       favicon_base::TOUCH_PRECOMPOSED_ICON, favicon_base::WEB_MANIFEST_ICON},
+      static_cast<int>(j_desired_size_in_pixel), callback_runner,
       cancelable_task_tracker_.get());
 
   return true;

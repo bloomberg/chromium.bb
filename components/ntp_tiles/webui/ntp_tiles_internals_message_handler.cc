@@ -299,7 +299,7 @@ void NTPTilesInternalsMessageHandler::OnURLsAvailable(
   for (const NTPTile& tile : tiles) {
     for (const auto& entry : kIconTypesAndNames) {
       favicon_service_->GetLargestRawFaviconForPageURL(
-          tile.url, std::vector<int>(1U, entry.type_enum),
+          tile.url, std::vector<favicon_base::IconTypeSet>({{entry.type_enum}}),
           /*minimum_size_in_pixels=*/0, base::Bind(on_lookup_done, tile.url),
           &cancelable_task_tracker_);
     }

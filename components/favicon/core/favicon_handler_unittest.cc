@@ -372,7 +372,7 @@ class FakeFaviconService {
 
   base::CancelableTaskTracker::TaskId GetFaviconForPageURL(
       const GURL& page_url,
-      int icon_types,
+      const favicon_base::IconTypeSet& icon_types,
       int desired_size_in_dip,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker) {
@@ -780,8 +780,9 @@ TEST_F(FaviconHandlerTest, CloneFaviconMappingsForPageInHistory) {
                                  CreateRawBitmapResult(kIconURL16x16));
 
   EXPECT_CALL(favicon_service_,
-              CloneFaviconMappingsForPages(kPageURL, FAVICON,
-                                           base::flat_set<GURL>{kPageURL}));
+              CloneFaviconMappingsForPages(kPageURL,
+                                           favicon_base::IconTypeSet({FAVICON}),
+                                           base::flat_set<GURL>({kPageURL})));
 
   std::unique_ptr<FaviconHandler> handler = base::MakeUnique<FaviconHandler>(
       &favicon_service_, &delegate_, FaviconDriverObserver::NON_TOUCH_16_DIP);
@@ -807,8 +808,8 @@ TEST_F(FaviconHandlerTest, CloneFaviconMappingsWithMultipleURLs) {
 
   EXPECT_CALL(favicon_service_,
               CloneFaviconMappingsForPages(
-                  kPageURLInHistory, FAVICON,
-                  base::flat_set<GURL>{kPageURL, kPageURLInHistory}));
+                  kPageURLInHistory, favicon_base::IconTypeSet({FAVICON}),
+                  base::flat_set<GURL>({kPageURL, kPageURLInHistory})));
 
   handler->FetchFavicon(kPageURLInHistory, /*is_same_document=*/true);
   base::RunLoop().RunUntilIdle();

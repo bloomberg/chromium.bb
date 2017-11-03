@@ -4,7 +4,9 @@
 
 #include "components/favicon/core/large_icon_service.h"
 
+#include <algorithm>
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
@@ -448,10 +450,10 @@ LargeIconService::LargeIconService(
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : favicon_service_(favicon_service),
       image_fetcher_(std::move(image_fetcher)) {
-  large_icon_types_.push_back(favicon_base::IconType::WEB_MANIFEST_ICON);
-  large_icon_types_.push_back(favicon_base::IconType::FAVICON);
-  large_icon_types_.push_back(favicon_base::IconType::TOUCH_ICON);
-  large_icon_types_.push_back(favicon_base::IconType::TOUCH_PRECOMPOSED_ICON);
+  large_icon_types_.push_back({favicon_base::IconType::WEB_MANIFEST_ICON});
+  large_icon_types_.push_back({favicon_base::IconType::FAVICON});
+  large_icon_types_.push_back({favicon_base::IconType::TOUCH_ICON});
+  large_icon_types_.push_back({favicon_base::IconType::TOUCH_PRECOMPOSED_ICON});
   // TODO(jkrcal): Add non-null image_fetcher into remaining unit-tests and add
   // a DCHECK(image_fetcher_) here.
 }

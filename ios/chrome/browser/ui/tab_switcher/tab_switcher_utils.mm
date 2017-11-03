@@ -95,9 +95,11 @@ void TabSwitcherGetFavicon(GURL const& url,
   FaviconLoader* loader =
       IOSChromeFaviconLoaderFactory::GetForBrowserState(browser_state);
   if (loader) {
-    int types = favicon_base::FAVICON | favicon_base::TOUCH_ICON |
-                favicon_base::TOUCH_PRECOMPOSED_ICON;
-    UIImage* image = loader->ImageForURL(url, types, block);
+    UIImage* image =
+        loader->ImageForURL(url,
+                            {favicon_base::FAVICON, favicon_base::TOUCH_ICON,
+                             favicon_base::TOUCH_PRECOMPOSED_ICON},
+                            block);
     DCHECK(image);
     block(image);
     return;

@@ -186,9 +186,10 @@ class ThumbnailDatabase {
   // Returns true if there are icon mappings for the given page and icon types.
   // The matched icon mappings are returned in the |mapping_data| parameter if
   // it is not NULL.
-  bool GetIconMappingsForPageURL(const GURL& page_url,
-                                 int required_icon_types,
-                                 std::vector<IconMapping>* mapping_data);
+  bool GetIconMappingsForPageURL(
+      const GURL& page_url,
+      const favicon_base::IconTypeSet& required_icon_types,
+      std::vector<IconMapping>* mapping_data);
 
   // Returns true if there is any matched icon mapping for the given page.
   // All matched icon mappings are returned in descent order of IconType if

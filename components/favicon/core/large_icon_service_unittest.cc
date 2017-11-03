@@ -5,6 +5,7 @@
 #include "components/favicon/core/large_icon_service.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"

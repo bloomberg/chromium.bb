@@ -44,7 +44,8 @@ base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
   }
 
   return favicon_service->GetRawFaviconForPageURL(
-      page_url, type, 0, base::Bind(&RunCallbackWithImage, callback), tracker);
+      page_url, {type}, 0, base::Bind(&RunCallbackWithImage, callback),
+      tracker);
 }
 
 }  // namespace favicon

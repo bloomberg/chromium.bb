@@ -668,7 +668,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // will be fewer results.
   base::CancelableTaskTracker::TaskId GetFaviconsForURL(
       const GURL& page_url,
-      int icon_types,
+      const favicon_base::IconTypeSet& icon_types,
       const std::vector<int>& desired_sizes,
       const favicon_base::FaviconResultsCallback& callback,
       base::CancelableTaskTracker* tracker);
@@ -686,7 +686,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // long as its size is larger than a specific value.
   base::CancelableTaskTracker::TaskId GetLargestFaviconForURL(
       const GURL& page_url,
-      const std::vector<int>& icon_types,
+      const std::vector<favicon_base::IconTypeSet>& icon_types,
       int minimum_size_in_pixels,
       const favicon_base::FaviconRawBitmapCallback& callback,
       base::CancelableTaskTracker* tracker);
@@ -762,7 +762,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // No-op if |page_url_to_read| has no mappings for |icon_types|.
   void CloneFaviconMappingsForPages(
       const GURL& page_url_to_read,
-      int icon_types,
+      const favicon_base::IconTypeSet& icon_types,
       const base::flat_set<GURL>& page_urls_to_write);
 
   // Same as SetFavicons with three differences:

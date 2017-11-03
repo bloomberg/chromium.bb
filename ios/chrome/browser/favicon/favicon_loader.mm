@@ -38,7 +38,7 @@ FaviconLoader::~FaviconLoader() {}
 // We can possibly just rely on this class being purged or the app being killed
 // to reset it, but then how do we ensure the FaviconService is updated?
 UIImage* FaviconLoader::ImageForURL(const GURL& url,
-                                    int types,
+                                    const favicon_base::IconTypeSet& types,
                                     ImageCompletionBlock block) {
   DCHECK(thread_checker_.CalledOnValidThread());
   NSString* key = base::SysUTF8ToNSString(url.spec());
