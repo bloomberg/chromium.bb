@@ -742,7 +742,7 @@ void TreeView::LayoutEditor() {
 void TreeView::SchedulePaintForNode(InternalNode* node) {
   if (!node)
     return;  // Explicitly allow NULL to be passed in.
-  SchedulePaintInRect(GetBoundsForNode(node));
+  SchedulePaintInRect(GetBackgroundBoundsForNode(node));
 }
 
 void TreeView::PaintRows(gfx::Canvas* canvas,
