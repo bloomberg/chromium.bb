@@ -98,6 +98,12 @@
         "override_compile_targets": [
           "telemetry_perf_tests_new"
         ],
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//tools/perf/core/merge_script.py"
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
