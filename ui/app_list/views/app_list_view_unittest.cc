@@ -40,7 +40,6 @@
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
-#include "ui/app_list/views/test/app_list_view_test_api.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/app_list/views/tile_item_view.h"
 #include "ui/compositor/layer_animator.h"
@@ -54,7 +53,6 @@ namespace test {
 
 namespace {
 
-// Choose a set that is 3 regular app list pages and 2 landscape app list pages.
 constexpr int kInitialItems = 34;
 // Default peeking y value for the app list.
 constexpr int kPeekingYValue = 280;
@@ -102,27 +100,28 @@ class AppListViewTest : public views::ViewsTestBase {
   AppListViewTest() = default;
   ~AppListViewTest() override = default;
 
-  // testing::Test
-  void SetUp() override {
-    views::ViewsTestBase::SetUp();
-
-    gfx::NativeView parent = GetContext();
-    delegate_.reset(new AppListTestViewDelegate);
-    view_ = new AppListView(delegate_.get());
-    AppListView::InitParams params;
-    params.parent = parent;
-    view_->Initialize(params);
-    // Initialize around a point that ensures the window is wholly shown.
-    const gfx::Size size = view_->bounds().size();
-    view_->MaybeSetAnchorPoint(gfx::Point(size.width() / 2, size.height() / 2));
-  }
-
   void TearDown() override {
     view_->GetWidget()->Close();
     views::ViewsTestBase::TearDown();
   }
 
  protected:
+  void Show() { view_->ShowWhenReady(); }
+
+  void Initialize(int initial_apps_page,
+                  bool is_tablet_mode,
+                  bool is_side_shelf) {
+    delegate_.reset(new AppListTestViewDelegate);
+    view_ = new AppListView(delegate_.get());
+    AppListView::InitParams params;
+    params.parent = GetContext();
+    params.initial_apps_page = initial_apps_page;
+    params.is_tablet_mode = is_tablet_mode;
+    params.is_side_shelf = is_side_shelf;
+    view_->Initialize(params);
+    EXPECT_FALSE(view_->GetWidget()->IsVisible());
+  }
+
   // Switches the launcher to |state| and lays out to ensure all launcher pages
   // are in the correct position. Checks that the state is where it should be
   // and returns false on failure.
@@ -143,17 +142,6 @@ class AppListViewTest : public views::ViewsTestBase {
                  contents_view->GetPageView(i)->bounds());
     }
     return success && state == delegate_->GetTestModel()->state();
-  }
-
-  // Shows the app list and waits until a paint occurs.
-  void Show() {
-    view_->GetWidget()->Show();
-    base::RunLoop run_loop;
-    AppListViewTestApi test_api(view_);
-    test_api.SetNextPaintCallback(run_loop.QuitClosure());
-    run_loop.Run();
-
-    EXPECT_TRUE(view_->GetWidget()->IsVisible());
   }
 
   // Checks the search box widget is at |expected| in the contents view's
@@ -177,134 +165,14 @@ class AppListViewTest : public views::ViewsTestBase {
     return view_->GetAppsPaginationModel();
   }
 
+  SearchBoxView* search_box_view() {
+    return view_->app_list_main_view()->search_box_view();
+  }
+
   AppListView* view_ = nullptr;  // Owned by native widget.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(AppListViewTest);
-};
-
-// TODO(crbug.com/748260): Stop inheriting from AppListViewTest here.
-class AppListViewFullscreenTest : public AppListViewTest {
- public:
-  AppListViewFullscreenTest() = default;
-  ~AppListViewFullscreenTest() override = default;
-
-  // testing::Test
-  void SetUp() override {
-    views::ViewsTestBase::SetUp();
-  }
-
- protected:
-  void Show() { view_->ShowWhenReady(); }
-
-  void Initialize(int initial_apps_page,
-                  bool is_tablet_mode,
-                  bool is_side_shelf) {
-    delegate_.reset(new AppListTestViewDelegate);
-    view_ = new AppListView(delegate_.get());
-    AppListView::InitParams params;
-    params.parent = GetContext();
-    params.initial_apps_page = initial_apps_page;
-    params.is_tablet_mode = is_tablet_mode;
-    params.is_side_shelf = is_side_shelf;
-    view_->Initialize(params);
-    EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  }
-
-  void InitializeStartPageView(size_t apps_num) {
-    Initialize(0, false, false);
-    AppListTestModel* model = delegate_->GetTestModel();
-
-    // Adds suggestion apps to the start page view and show start page view.
-    for (size_t i = 0; i < apps_num; i++)
-      model->results()->Add(std::make_unique<TestStartPageSearchResult>());
-    EXPECT_TRUE(SetAppListState(AppListModel::STATE_START));
-    start_page_view()->UpdateForTesting();
-    EXPECT_EQ(apps_num, GetVisibleViews(start_page_view()->tile_views()));
-
-    // Initially, no view gets focus.
-    EXPECT_EQ(FOCUS_NONE, search_box_view()->get_focused_view_for_test());
-    EXPECT_EQ(StartPageView::kNoSelection,
-              start_page_view()->GetSelectedIndexForTest());
-  }
-
-  // Test focus movement within search box view and start page view on tab key
-  // or right arrow key.
-  void TestStartPageViewForwardFocusOnKey(ui::KeyEvent* key, size_t apps_num) {
-    // Sets focus on search box.
-    search_box_view()->search_box()->OnKeyEvent(key);
-    EXPECT_EQ(FOCUS_SEARCH_BOX, search_box_view()->get_focused_view_for_test());
-    EXPECT_EQ(StartPageView::kNoSelection,
-              start_page_view()->GetSelectedIndexForTest());
-
-    // When focus is on search box, moves focus through suggestion apps.
-    for (size_t i = 0; i < apps_num; i++) {
-      search_box_view()->search_box()->OnKeyEvent(key);
-      EXPECT_EQ(FOCUS_CONTENTS_VIEW,
-                search_box_view()->get_focused_view_for_test());
-      EXPECT_EQ(static_cast<int>(i),
-                start_page_view()->GetSelectedIndexForTest());
-    }
-
-    // When focus is on the last suggestion app, moves focus to expand arrow.
-    search_box_view()->search_box()->OnKeyEvent(key);
-    EXPECT_EQ(FOCUS_CONTENTS_VIEW,
-              search_box_view()->get_focused_view_for_test());
-    EXPECT_EQ(StartPageView::kExpandArrowSelection,
-              start_page_view()->GetSelectedIndexForTest());
-
-    // When focus is on expand arrow, clears focus.
-    search_box_view()->search_box()->OnKeyEvent(key);
-    EXPECT_EQ(FOCUS_NONE, search_box_view()->get_focused_view_for_test());
-    EXPECT_EQ(StartPageView::kNoSelection,
-              start_page_view()->GetSelectedIndexForTest());
-  }
-
-  // Test focus movement within search box view and start page view on shift+tab
-  // key or left arrow key.
-  void TestStartPageViewBackwardFocusOnKey(ui::KeyEvent* key, size_t apps_num) {
-    // Sets focus on expand arrow.
-    search_box_view()->search_box()->OnKeyEvent(key);
-    EXPECT_EQ(FOCUS_CONTENTS_VIEW,
-              search_box_view()->get_focused_view_for_test());
-    EXPECT_EQ(StartPageView::kExpandArrowSelection,
-              start_page_view()->GetSelectedIndexForTest());
-
-    // When focus is on search box, moves focus through suggestion apps
-    // reversely.
-    for (size_t i = 0; i < apps_num; i++) {
-      search_box_view()->search_box()->OnKeyEvent(key);
-      EXPECT_EQ(FOCUS_CONTENTS_VIEW,
-                search_box_view()->get_focused_view_for_test());
-      EXPECT_EQ(static_cast<int>(apps_num - 1 - i),
-                start_page_view()->GetSelectedIndexForTest());
-    }
-
-    // When focus is on the first suggestion app, moves focus to search box.
-    search_box_view()->search_box()->OnKeyEvent(key);
-    EXPECT_EQ(FOCUS_SEARCH_BOX, search_box_view()->get_focused_view_for_test());
-    EXPECT_EQ(StartPageView::kNoSelection,
-              start_page_view()->GetSelectedIndexForTest());
-
-    // When focus is on search box, clears focus.
-    search_box_view()->search_box()->OnKeyEvent(key);
-    EXPECT_EQ(FOCUS_NONE, search_box_view()->get_focused_view_for_test());
-    EXPECT_EQ(StartPageView::kNoSelection,
-              start_page_view()->GetSelectedIndexForTest());
-  }
-
-  AppListMainView* main_view() { return view_->app_list_main_view(); }
-
-  StartPageView* start_page_view() {
-    return main_view()->contents_view()->start_page_view();
-  }
-
-  SearchBoxView* search_box_view() { return main_view()->search_box_view(); }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(AppListViewFullscreenTest);
 };
 
 // TODO(weidongg/766807) Remove all old focus tests after the flag is enabled
@@ -1015,7 +883,7 @@ TEST_F(AppListViewFocusTest, SetFocusOnSearchboxWhenActivated) {
 }
 
 // Tests that opening the app list opens in peeking mode by default.
-TEST_F(AppListViewFullscreenTest, ShowPeekingByDefault) {
+TEST_F(AppListViewTest, ShowPeekingByDefault) {
   Initialize(0, false, false);
 
   Show();
@@ -1024,7 +892,7 @@ TEST_F(AppListViewFullscreenTest, ShowPeekingByDefault) {
 }
 
 // Tests that in side shelf mode, the app list opens in fullscreen by default.
-TEST_F(AppListViewFullscreenTest, ShowFullscreenWhenInSideShelfMode) {
+TEST_F(AppListViewTest, ShowFullscreenWhenInSideShelfMode) {
   Initialize(0, false, true);
 
   Show();
@@ -1033,7 +901,7 @@ TEST_F(AppListViewFullscreenTest, ShowFullscreenWhenInSideShelfMode) {
 }
 
 // Tests that in tablet mode, the app list opens in fullscreen by default.
-TEST_F(AppListViewFullscreenTest, ShowFullscreenWhenInTabletMode) {
+TEST_F(AppListViewTest, ShowFullscreenWhenInTabletMode) {
   Initialize(0, true, false);
 
   Show();
@@ -1042,7 +910,7 @@ TEST_F(AppListViewFullscreenTest, ShowFullscreenWhenInTabletMode) {
 }
 
 // Tests that setting empty text in the search box does not change the state.
-TEST_F(AppListViewFullscreenTest, EmptySearchTextStillPeeking) {
+TEST_F(AppListViewTest, EmptySearchTextStillPeeking) {
   Initialize(0, false, false);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
@@ -1053,7 +921,7 @@ TEST_F(AppListViewFullscreenTest, EmptySearchTextStillPeeking) {
   ASSERT_EQ(AppListView::PEEKING, view_->app_list_state());
 }
 
-TEST_F(AppListViewFullscreenTest, MouseWheelScrollTransitionsToFullscreen) {
+TEST_F(AppListViewTest, MouseWheelScrollTransitionsToFullscreen) {
   Initialize(0, false, false);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
@@ -1062,7 +930,7 @@ TEST_F(AppListViewFullscreenTest, MouseWheelScrollTransitionsToFullscreen) {
   EXPECT_EQ(AppListView::FULLSCREEN_ALL_APPS, view_->app_list_state());
 }
 
-TEST_F(AppListViewFullscreenTest, GestureScrollTransitionsToFullscreen) {
+TEST_F(AppListViewTest, GestureScrollTransitionsToFullscreen) {
   Initialize(0, false, false);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
@@ -1072,7 +940,7 @@ TEST_F(AppListViewFullscreenTest, GestureScrollTransitionsToFullscreen) {
 }
 
 // Tests that typing text after opening transitions from peeking to half.
-TEST_F(AppListViewFullscreenTest, TypingPeekingToHalf) {
+TEST_F(AppListViewTest, TypingPeekingToHalf) {
   Initialize(0, false, false);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
@@ -1085,7 +953,7 @@ TEST_F(AppListViewFullscreenTest, TypingPeekingToHalf) {
 }
 
 // Tests that typing when in fullscreen changes the state to fullscreen search.
-TEST_F(AppListViewFullscreenTest, TypingFullscreenToFullscreenSearch) {
+TEST_F(AppListViewTest, TypingFullscreenToFullscreenSearch) {
   Initialize(0, false, false);
   view_->SetState(AppListView::FULLSCREEN_ALL_APPS);
   views::Textfield* search_box =
@@ -1099,7 +967,7 @@ TEST_F(AppListViewFullscreenTest, TypingFullscreenToFullscreenSearch) {
 }
 
 // Tests that in tablet mode, typing changes the state to fullscreen search.
-TEST_F(AppListViewFullscreenTest, TypingTabletModeFullscreenSearch) {
+TEST_F(AppListViewTest, TypingTabletModeFullscreenSearch) {
   Initialize(0, true, false);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
@@ -1112,7 +980,7 @@ TEST_F(AppListViewFullscreenTest, TypingTabletModeFullscreenSearch) {
 }
 
 // Tests that pressing escape when in peeking closes the app list.
-TEST_F(AppListViewFullscreenTest, EscapeKeyPeekingToClosed) {
+TEST_F(AppListViewTest, EscapeKeyPeekingToClosed) {
   Initialize(0, false, false);
 
   Show();
@@ -1122,7 +990,7 @@ TEST_F(AppListViewFullscreenTest, EscapeKeyPeekingToClosed) {
 }
 
 // Tests that pressing escape when in half screen changes the state to peeking.
-TEST_F(AppListViewFullscreenTest, EscapeKeyHalfToPeeking) {
+TEST_F(AppListViewTest, EscapeKeyHalfToPeeking) {
   Initialize(0, false, false);
   views::Textfield* search_box =
       view_->app_list_main_view()->search_box_view()->search_box();
@@ -1136,7 +1004,7 @@ TEST_F(AppListViewFullscreenTest, EscapeKeyHalfToPeeking) {
 }
 
 // Tests that pressing escape when in fullscreen changes the state to closed.
-TEST_F(AppListViewFullscreenTest, EscapeKeyFullscreenToClosed) {
+TEST_F(AppListViewTest, EscapeKeyFullscreenToClosed) {
   Initialize(0, false, false);
   view_->SetState(AppListView::FULLSCREEN_ALL_APPS);
 
@@ -1147,7 +1015,7 @@ TEST_F(AppListViewFullscreenTest, EscapeKeyFullscreenToClosed) {
 }
 
 // Tests that pressing escape when in fullscreen side-shelf closes the app list.
-TEST_F(AppListViewFullscreenTest, EscapeKeySideShelfFullscreenToClosed) {
+TEST_F(AppListViewTest, EscapeKeySideShelfFullscreenToClosed) {
   // Put into fullscreen by using side-shelf.
   Initialize(0, false, true);
 
@@ -1158,7 +1026,7 @@ TEST_F(AppListViewFullscreenTest, EscapeKeySideShelfFullscreenToClosed) {
 }
 
 // Tests that pressing escape when in tablet mode closes the app list.
-TEST_F(AppListViewFullscreenTest, EscapeKeyTabletModeFullscreenToClosed) {
+TEST_F(AppListViewTest, EscapeKeyTabletModeFullscreenToClosed) {
   // Put into fullscreen by using tablet mode.
   Initialize(0, true, false);
 
@@ -1169,7 +1037,7 @@ TEST_F(AppListViewFullscreenTest, EscapeKeyTabletModeFullscreenToClosed) {
 }
 
 // Tests that pressing escape when in fullscreen search changes to fullscreen.
-TEST_F(AppListViewFullscreenTest, EscapeKeyFullscreenSearchToFullscreen) {
+TEST_F(AppListViewTest, EscapeKeyFullscreenSearchToFullscreen) {
   Initialize(0, false, false);
   view_->SetState(AppListView::FULLSCREEN_ALL_APPS);
   views::Textfield* search_box =
@@ -1184,7 +1052,7 @@ TEST_F(AppListViewFullscreenTest, EscapeKeyFullscreenSearchToFullscreen) {
 }
 
 // Tests that pressing escape when in sideshelf search changes to fullscreen.
-TEST_F(AppListViewFullscreenTest, EscapeKeySideShelfSearchToFullscreen) {
+TEST_F(AppListViewTest, EscapeKeySideShelfSearchToFullscreen) {
   // Put into fullscreen using side-shelf.
   Initialize(0, false, true);
   views::Textfield* search_box =
@@ -1199,7 +1067,7 @@ TEST_F(AppListViewFullscreenTest, EscapeKeySideShelfSearchToFullscreen) {
 }
 
 // Tests that in fullscreen, the app list has multiple pages with enough apps.
-TEST_F(AppListViewFullscreenTest, PopulateAppsCreatesAnotherPage) {
+TEST_F(AppListViewTest, PopulateAppsCreatesAnotherPage) {
   Initialize(0, false, false);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
@@ -1210,7 +1078,7 @@ TEST_F(AppListViewFullscreenTest, PopulateAppsCreatesAnotherPage) {
 
 // Tests that even if initialize is called again with a different initial page,
 // that for fullscreen we always select the first page.
-TEST_F(AppListViewFullscreenTest, MultiplePagesAlwaysReinitializeOnFirstPage) {
+TEST_F(AppListViewTest, MultiplePagesAlwaysReinitializeOnFirstPage) {
   Initialize(0, false, false);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
@@ -1231,7 +1099,7 @@ TEST_F(AppListViewFullscreenTest, MultiplePagesAlwaysReinitializeOnFirstPage) {
 }
 
 // Tests that pressing escape when in tablet search changes to fullscreen.
-TEST_F(AppListViewFullscreenTest, EscapeKeyTabletModeSearchToFullscreen) {
+TEST_F(AppListViewTest, EscapeKeyTabletModeSearchToFullscreen) {
   // Put into fullscreen using tablet mode.
   Initialize(0, true, false);
   views::Textfield* search_box =
@@ -1246,7 +1114,7 @@ TEST_F(AppListViewFullscreenTest, EscapeKeyTabletModeSearchToFullscreen) {
 }
 
 // Tests that leaving tablet mode when in tablet search causes no change.
-TEST_F(AppListViewFullscreenTest, LeaveTabletModeNoChange) {
+TEST_F(AppListViewTest, LeaveTabletModeNoChange) {
   // Put into fullscreen using tablet mode.
   Initialize(0, true, false);
   views::Textfield* search_box =
@@ -1261,7 +1129,7 @@ TEST_F(AppListViewFullscreenTest, LeaveTabletModeNoChange) {
 }
 
 // Tests that escape works after leaving tablet mode from search.
-TEST_F(AppListViewFullscreenTest, LeaveTabletModeEscapeKeyToFullscreen) {
+TEST_F(AppListViewTest, LeaveTabletModeEscapeKeyToFullscreen) {
   // Put into fullscreen using tablet mode.
   Initialize(0, true, false);
   views::Textfield* search_box =
@@ -1277,7 +1145,7 @@ TEST_F(AppListViewFullscreenTest, LeaveTabletModeEscapeKeyToFullscreen) {
 }
 
 // Tests that escape twice closes after leaving tablet mode from search.
-TEST_F(AppListViewFullscreenTest, LeaveTabletModeEscapeKeyTwiceToClosed) {
+TEST_F(AppListViewTest, LeaveTabletModeEscapeKeyTwiceToClosed) {
   // Put into fullscreen using tablet mode.
   Initialize(0, true, false);
   views::Textfield* search_box =
@@ -1294,7 +1162,7 @@ TEST_F(AppListViewFullscreenTest, LeaveTabletModeEscapeKeyTwiceToClosed) {
 }
 
 // Tests that opening in peeking mode sets the correct height.
-TEST_F(AppListViewFullscreenTest, OpenInPeekingCorrectHeight) {
+TEST_F(AppListViewTest, OpenInPeekingCorrectHeight) {
   Initialize(0, false, false);
 
   Show();
@@ -1306,7 +1174,7 @@ TEST_F(AppListViewFullscreenTest, OpenInPeekingCorrectHeight) {
 }
 
 // Tests that opening in peeking mode sets the correct height.
-TEST_F(AppListViewFullscreenTest, OpenInFullscreenCorrectHeight) {
+TEST_F(AppListViewTest, OpenInFullscreenCorrectHeight) {
   Initialize(0, false, false);
 
   Show();
@@ -1318,7 +1186,7 @@ TEST_F(AppListViewFullscreenTest, OpenInFullscreenCorrectHeight) {
 }
 
 // Tests that AppListView::SetState fails when the state has been set to CLOSED.
-TEST_F(AppListViewFullscreenTest, SetStateFailsWhenClosing) {
+TEST_F(AppListViewTest, SetStateFailsWhenClosing) {
   Initialize(0, false, false);
   Show();
   view_->SetState(AppListView::CLOSED);
@@ -1330,7 +1198,7 @@ TEST_F(AppListViewFullscreenTest, SetStateFailsWhenClosing) {
 
 // Tests that going into a folder view, then setting the AppListState to PEEKING
 // hides the folder view.
-TEST_F(AppListViewFullscreenTest, FolderViewToPeeking) {
+TEST_F(AppListViewTest, FolderViewToPeeking) {
   Initialize(0, false, false);
   AppListTestModel* model = delegate_->GetTestModel();
   model->PopulateApps(kInitialItems);
@@ -1360,7 +1228,7 @@ TEST_F(AppListViewFullscreenTest, FolderViewToPeeking) {
 // Tests that when a click or tap event propagates to the AppListView, if the
 // event location is within the bounds of AppsGridView, do not close the
 // AppListView.
-TEST_F(AppListViewFullscreenTest, TapAndClickWithinAppsGridView) {
+TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
   Initialize(0, false, false);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
@@ -1388,7 +1256,7 @@ TEST_F(AppListViewFullscreenTest, TapAndClickWithinAppsGridView) {
 }
 
 // Tests that search box should not become a rectangle during drag.
-TEST_F(AppListViewFullscreenTest, SearchBoxCornerRadiusDuringDragging) {
+TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   Initialize(0, false, false);
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
   Show();
@@ -1447,21 +1315,14 @@ TEST_F(AppListViewFullscreenTest, SearchBoxCornerRadiusDuringDragging) {
 // Tests displaying the app list and performs a standard set of checks on its
 // top level views. Then closes the window.
 TEST_F(AppListViewTest, DisplayTest) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
-  EXPECT_FALSE(view_->GetWidget()->IsVisible());
+  Initialize(0, false, false);
   EXPECT_EQ(-1, GetPaginationModel()->total_pages());
   delegate_->GetTestModel()->PopulateApps(kInitialItems);
 
   Show();
 
-  // Explicitly enforce the exact dimensions of the app list. Feel free to
-  // change these if you need to (they are just here to prevent against
-  // accidental changes to the window size).
-  EXPECT_EQ("768x570", view_->bounds().size().ToString());
+  // |view_| bounds equal to the root window's size.
+  EXPECT_EQ("800x600", view_->bounds().size().ToString());
 
   EXPECT_EQ(2, GetPaginationModel()->total_pages());
   EXPECT_EQ(0, GetPaginationModel()->selected_page());
@@ -1476,57 +1337,9 @@ TEST_F(AppListViewTest, DisplayTest) {
   EXPECT_EQ(expected, delegate_->GetTestModel()->state());
 }
 
-// Tests that the main grid view is shown after hiding and reshowing the app
-// list with a folder view open. This is a regression test for crbug.com/357058.
-TEST_F(AppListViewTest, ReshowWithOpenFolderTest) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (features::IsFullscreenAppListEnabled())
-    return;
-
-  EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
-
-  AppListTestModel* model = delegate_->GetTestModel();
-  model->PopulateApps(kInitialItems);
-  const std::string folder_id =
-      model->MergeItems(model->top_level_item_list()->item_at(0)->id(),
-                        model->top_level_item_list()->item_at(1)->id());
-
-  AppListFolderItem* folder_item = model->FindFolderItem(folder_id);
-  EXPECT_TRUE(folder_item);
-
-  Show();
-
-  // The main grid view should be showing initially.
-  AppListMainView* main_view = view_->app_list_main_view();
-  AppsContainerView* container_view =
-      main_view->contents_view()->apps_container_view();
-  EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
-  EXPECT_NO_FATAL_FAILURE(CheckView(container_view->apps_grid_view()));
-  EXPECT_FALSE(container_view->app_list_folder_view()->visible());
-
-  AppsGridViewTestApi test_api(container_view->apps_grid_view());
-  test_api.PressItemAt(0);
-
-  // After pressing the folder item, the folder view should be showing.
-  EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
-  EXPECT_NO_FATAL_FAILURE(CheckView(container_view->app_list_folder_view()));
-  EXPECT_FALSE(container_view->apps_grid_view()->visible());
-
-  view_->GetWidget()->Hide();
-  EXPECT_FALSE(view_->GetWidget()->IsVisible());
-
-  Show();
-
-  // The main grid view should be showing after a reshow.
-  EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
-  EXPECT_NO_FATAL_FAILURE(CheckView(container_view->apps_grid_view()));
-  EXPECT_FALSE(container_view->app_list_folder_view()->visible());
-}
-
 // Tests that the start page view operates correctly.
 TEST_F(AppListViewTest, StartPageTest) {
+  Initialize(0, false, false);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
   if (features::IsFullscreenAppListEnabled())
@@ -1588,6 +1401,7 @@ TEST_F(AppListViewTest, StartPageTest) {
 
 // Tests switching rapidly between multiple pages of the launcher.
 TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
+  Initialize(0, false, false);
   AppListMainView* main_view = view_->app_list_main_view();
   // Checks on the main view.
   EXPECT_NO_FATAL_FAILURE(CheckView(main_view));
@@ -1616,6 +1430,7 @@ TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
 
 // Tests that the correct views are displayed for showing search results.
 TEST_F(AppListViewTest, SearchResultsTest) {
+  Initialize(0, false, false);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
   if (features::IsFullscreenAppListEnabled())
@@ -1681,6 +1496,7 @@ TEST_F(AppListViewTest, SearchResultsTest) {
 
 // Tests that the back button navigates through the app list correctly.
 TEST_F(AppListViewTest, BackTest) {
+  Initialize(0, false, false);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
   if (features::IsFullscreenAppListEnabled())
@@ -1737,6 +1553,7 @@ TEST_F(AppListViewTest, BackTest) {
 
 // Tests that the correct views are displayed for showing search results.
 TEST_F(AppListViewTest, AppListOverlayTest) {
+  Initialize(0, false, false);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
   if (features::IsFullscreenAppListEnabled())
@@ -1761,6 +1578,7 @@ TEST_F(AppListViewTest, AppListOverlayTest) {
 // Tests that even if initialize is called again with a different initial page,
 // that different initial page is respected.
 TEST_F(AppListViewTest, MultiplePagesReinitializeOnInputPage) {
+  Initialize(0, false, false);
   // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
   // list (http://crbug.com/759779).
   if (features::IsFullscreenAppListEnabled())
