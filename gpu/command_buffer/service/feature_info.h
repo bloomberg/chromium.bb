@@ -121,6 +121,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool angle_robust_resource_initialization = false;
     bool nv_fence = false;
     bool chromium_texture_storage_image = false;
+    bool ext_window_rectangles = false;
   };
 
   FeatureInfo();

@@ -231,6 +231,7 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder, public AsyncAPIInterface {
   virtual void RestoreTextureUnitBindings(unsigned unit) const = 0;
   virtual void RestoreVertexAttribArray(unsigned index) = 0;
   virtual void RestoreAllExternalTextureBindingsIfNeeded() = 0;
+  virtual void RestoreDeviceWindowRectangles() const = 0;
 
   virtual void ClearAllAttributes() const = 0;
   virtual void RestoreAllAttributes() const = 0;

@@ -205,6 +205,9 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::
   glDisable(GL_STENCIL_TEST);
   glDisable(GL_CULL_FACE);
   glDisable(GL_BLEND);
+  if (decoder->GetFeatureInfo()->feature_flags().ext_window_rectangles) {
+    glWindowRectanglesEXT(GL_EXCLUSIVE_EXT, 0, nullptr);
+  }
 
   // Process each color attachment of the current draw framebuffer.
   uint32_t max_draw_buffers = decoder->GetContextGroup()->max_draw_buffers();

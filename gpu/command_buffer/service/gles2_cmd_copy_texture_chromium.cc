@@ -1369,6 +1369,9 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     } else {
       glDisable(GL_SCISSOR_TEST);
     }
+    if (decoder->GetFeatureInfo()->feature_flags().ext_window_rectangles) {
+      glWindowRectanglesEXT(GL_EXCLUSIVE_EXT, 0, nullptr);
+    }
     glViewport(0, 0, dest_width, dest_height);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
   }

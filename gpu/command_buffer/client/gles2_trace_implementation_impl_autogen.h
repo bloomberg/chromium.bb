@@ -2621,4 +2621,11 @@ void GLES2TraceImplementation::SetColorSpaceMetadataCHROMIUM(
   gl_->SetColorSpaceMetadataCHROMIUM(texture_id, color_space);
 }
 
+void GLES2TraceImplementation::WindowRectanglesEXT(GLenum mode,
+                                                   GLsizei count,
+                                                   const GLint* box) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::WindowRectanglesEXT");
+  gl_->WindowRectanglesEXT(mode, count, box);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

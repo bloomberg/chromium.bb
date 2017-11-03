@@ -321,6 +321,20 @@ struct GPU_EXPORT ContextState {
   // parameters user values; otherwise, set them to 0.
   void UpdateUnpackParameters() const;
 
+  void SetMaxWindowRectangles(size_t max);
+  size_t GetMaxWindowRectangles() const;
+  void SetWindowRectangles(GLenum mode,
+                           size_t count,
+                           const volatile GLint* box);
+  template <typename T>
+  void GetWindowRectangle(GLuint index, T* box) {
+    for (size_t i = 0; i < 4; ++i) {
+      box[i] = window_rectangles_[4 * index + i];
+    }
+  }
+  void UpdateWindowRectangles() const;
+  void UpdateWindowRectanglesForBoundDrawFramebufferClientID(GLuint client_id);
+
   void EnableDisableFramebufferSRGB(bool enable);
 
   #include "gpu/command_buffer/service/context_state_autogen.h"
@@ -378,6 +392,8 @@ struct GPU_EXPORT ContextState {
 
   mutable bool fbo_binding_for_scissor_workaround_dirty;
 
+  GLuint current_draw_framebuffer_client_id = 0;
+
  private:
   void EnableDisable(GLenum pname, bool enable) const;
 
@@ -396,6 +412,10 @@ struct GPU_EXPORT ContextState {
 
   GLfloat line_width_min_ = 0.0f;
   GLfloat line_width_max_ = 1.0f;
+
+  // Stores the list of N window rectangles as N*4 GLints, like
+  // vector<[x,y,w,h]>. Always has space for MAX_WINDOW_RECTANGLES rectangles.
+  std::vector<GLint> window_rectangles_;
 
   gl::GLApi* api_ = nullptr;
   FeatureInfo* feature_info_;

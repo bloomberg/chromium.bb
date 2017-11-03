@@ -1228,4 +1228,7 @@ void GLES2InterfaceStub::TexStorage2DImageCHROMIUM(GLenum /* target */,
 void GLES2InterfaceStub::SetColorSpaceMetadataCHROMIUM(
     GLuint /* texture_id */,
     GLColorSpace /* color_space */) {}
+void GLES2InterfaceStub::WindowRectanglesEXT(GLenum /* mode */,
+                                             GLsizei /* count */,
+                                             const GLint* /* box */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

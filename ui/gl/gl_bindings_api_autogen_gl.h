@@ -1246,3 +1246,4 @@ void glVertexAttribPointerFn(GLuint indx,
                              const void* ptr) override;
 void glViewportFn(GLint x, GLint y, GLsizei width, GLsizei height) override;
 void glWaitSyncFn(GLsync sync, GLbitfield flags, GLuint64 timeout) override;
+void glWindowRectanglesEXTFn(GLenum mode, GLsizei n, const GLint* box) override;

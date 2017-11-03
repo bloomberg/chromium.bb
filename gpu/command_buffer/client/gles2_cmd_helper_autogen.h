@@ -3320,4 +3320,17 @@ void SetColorSpaceMetadataCHROMIUM(GLuint texture_id,
   }
 }
 
+void WindowRectanglesEXTImmediate(GLenum mode,
+                                  GLsizei count,
+                                  const GLint* box) {
+  const uint32_t size =
+      gles2::cmds::WindowRectanglesEXTImmediate::ComputeSize(count);
+  gles2::cmds::WindowRectanglesEXTImmediate* c =
+      GetImmediateCmdSpaceTotalSize<gles2::cmds::WindowRectanglesEXTImmediate>(
+          size);
+  if (c) {
+    c->Init(mode, count, box);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

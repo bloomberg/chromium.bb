@@ -769,6 +769,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   void SetupMockGLBehaviors();
 
   void SetupInitStateManualExpectations(bool es3_capable);
+  void SetupInitStateManualExpectationsForWindowRectanglesEXT(GLenum mode,
+                                                              GLint count);
   void SetupInitStateManualExpectationsForDoLineWidth(GLfloat width);
 
   GpuPreferences gpu_preferences_;

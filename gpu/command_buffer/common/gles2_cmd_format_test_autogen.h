@@ -5422,4 +5422,32 @@ TEST_F(GLES2FormatTest, SetColorSpaceMetadataCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, WindowRectanglesEXTImmediate) {
+  const int kSomeBaseValueToTestWith = 51;
+  static GLint data[] = {
+      static_cast<GLint>(kSomeBaseValueToTestWith + 0),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 1),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 2),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 3),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 4),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 5),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 6),
+      static_cast<GLint>(kSomeBaseValueToTestWith + 7),
+  };
+  cmds::WindowRectanglesEXTImmediate& cmd =
+      *GetBufferAs<cmds::WindowRectanglesEXTImmediate>();
+  const GLsizei kNumElements = 2;
+  const size_t kExpectedCmdSize =
+      sizeof(cmd) + kNumElements * sizeof(GLint) * 4;
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLenum>(1), static_cast<GLsizei>(2), data);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::WindowRectanglesEXTImmediate::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(kExpectedCmdSize, cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(1), cmd.mode);
+  EXPECT_EQ(static_cast<GLsizei>(2), cmd.count);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd) + RoundSizeToMultipleOfEntries(sizeof(data)));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_

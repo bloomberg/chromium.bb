@@ -288,6 +288,15 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:
       return 1;
 
+    // -- glGetBooleanv, glGetFloatv, glGetIntergerv with
+    //    GL_EXT_window_rectangles
+    case GL_WINDOW_RECTANGLE_MODE_EXT:
+      return 1;
+    case GL_MAX_WINDOW_RECTANGLES_EXT:
+      return 1;
+    case GL_NUM_WINDOW_RECTANGLES_EXT:
+      return 1;
+
     // -- glGetBufferParameteriv
     case GL_BUFFER_SIZE:
       return 1;

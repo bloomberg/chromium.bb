@@ -387,6 +387,16 @@
 #define GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT 0x88FC
 #endif /* GL_EXT_blend_func_extended */
 
+#ifndef GL_EXT_window_rectangles
+#define GL_EXT_window_rectangles 1
+#define GL_INCLUSIVE_EXT 0x8F10
+#define GL_EXCLUSIVE_EXT 0x8F11
+#define GL_WINDOW_RECTANGLE_EXT 0x8F12
+#define GL_WINDOW_RECTANGLE_MODE_EXT 0x8F13
+#define GL_MAX_WINDOW_RECTANGLES_EXT 0x8F14
+#define GL_NUM_WINDOW_RECTANGLES_EXT 0x8F15
+#endif /* GL_EXT_window_rectangles */
+
 #define GL_GLEXT_PROTOTYPES 1
 
 #if defined(OS_WIN)

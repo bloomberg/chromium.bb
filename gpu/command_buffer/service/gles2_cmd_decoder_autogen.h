@@ -5247,6 +5247,40 @@ error::Error GLES2DecoderImpl::HandleTexStorage2DImageCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleWindowRectanglesEXTImmediate(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2OrES3Context())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::WindowRectanglesEXTImmediate& c =
+      *static_cast<const volatile gles2::cmds::WindowRectanglesEXTImmediate*>(
+          cmd_data);
+  if (!features().ext_window_rectangles) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum mode = static_cast<GLenum>(c.mode);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  uint32_t data_size = 0;
+  if (count >= 0 && !GLES2Util::ComputeDataSize<GLint, 4>(count, &data_size)) {
+    return error::kOutOfBounds;
+  }
+  if (data_size > immediate_data_size) {
+    return error::kOutOfBounds;
+  }
+  volatile const GLint* box = GetImmediateDataAs<volatile const GLint*>(
+      c, data_size, immediate_data_size);
+  if (!validators_->window_rectangles_mode.IsValid(mode)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glWindowRectanglesEXT", mode, "mode");
+    return error::kNoError;
+  }
+  if (box == NULL) {
+    return error::kOutOfBounds;
+  }
+  DoWindowRectanglesEXT(mode, count, box);
+  return error::kNoError;
+}
+
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
     case GL_BLEND:

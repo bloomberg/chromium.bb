@@ -38,7 +38,6 @@ const char* kBlacklistExtensions[] = {
     "GL_EXT_direct_state_access",
     "GL_EXT_multi_draw_indirect",
     "GL_EXT_raster_multisample",
-    "GL_EXT_window_rectangles",
     "GL_NV_bindless_texture",
     "GL_NV_texture_barrier",
     "GL_OES_sample_shading",
@@ -472,7 +471,7 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
   functions->fObjectLabel = gl->glObjectLabelFn;
 
   // GL_EXT_window_rectangles
-  // functions->fWindowRectangles = gl->glWindowRectanglesEXTFn;
+  functions->fWindowRectangles = gl->glWindowRectanglesEXTFn;
 
   // EGL_KHR_image / EGL_KHR_image_base
   // functions->fCreateImage = nullptr;

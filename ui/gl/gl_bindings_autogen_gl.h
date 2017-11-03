@@ -1503,6 +1503,9 @@ typedef void(GL_BINDING_CALL* glViewportProc)(GLint x,
 typedef void(GL_BINDING_CALL* glWaitSyncProc)(GLsync sync,
                                               GLbitfield flags,
                                               GLuint64 timeout);
+typedef void(GL_BINDING_CALL* glWindowRectanglesEXTProc)(GLenum mode,
+                                                         GLsizei n,
+                                                         const GLint* box);
 
 struct ExtensionsGL {
   bool b_GL_ANGLE_framebuffer_blit;
@@ -1560,6 +1563,7 @@ struct ExtensionsGL {
   bool b_GL_EXT_timer_query;
   bool b_GL_EXT_transform_feedback;
   bool b_GL_EXT_unpack_subimage;
+  bool b_GL_EXT_window_rectangles;
   bool b_GL_IMG_multisampled_render_to_texture;
   bool b_GL_INTEL_framebuffer_CMAA;
   bool b_GL_KHR_blend_equation_advanced;
@@ -1986,6 +1990,7 @@ struct ProcsGL {
   glVertexAttribPointerProc glVertexAttribPointerFn;
   glViewportProc glViewportFn;
   glWaitSyncProc glWaitSyncFn;
+  glWindowRectanglesEXTProc glWindowRectanglesEXTFn;
 };
 
 class GL_EXPORT GLApi {
@@ -3316,6 +3321,9 @@ class GL_EXPORT GLApi {
   virtual void glWaitSyncFn(GLsync sync,
                             GLbitfield flags,
                             GLuint64 timeout) = 0;
+  virtual void glWindowRectanglesEXTFn(GLenum mode,
+                                       GLsizei n,
+                                       const GLint* box) = 0;
 };
 
 }  // namespace gl
@@ -3871,5 +3879,7 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glVertexAttribPointerFn
 #define glViewport ::gl::g_current_gl_context->glViewportFn
 #define glWaitSync ::gl::g_current_gl_context->glWaitSyncFn
+#define glWindowRectanglesEXT \
+  ::gl::g_current_gl_context->glWindowRectanglesEXTFn
 
 #endif  //  UI_GL_GL_BINDINGS_AUTOGEN_GL_H_

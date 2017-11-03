@@ -1214,6 +1214,8 @@ void GLES2DecoderPassthroughImpl::RestoreVertexAttribArray(unsigned index) {}
 
 void GLES2DecoderPassthroughImpl::RestoreAllExternalTextureBindingsIfNeeded() {}
 
+void GLES2DecoderPassthroughImpl::RestoreDeviceWindowRectangles() const {}
+
 void GLES2DecoderPassthroughImpl::ClearAllAttributes() const {}
 
 void GLES2DecoderPassthroughImpl::RestoreAllAttributes() const {}

@@ -138,12 +138,7 @@ class IndexedBufferTargetValidator {
 };
 IndexedBufferTargetValidator indexed_buffer_target;
 
-class IndexedGLStateValidator {
- public:
-  bool IsValid(const GLenum value) const;
-};
-IndexedGLStateValidator indexed_g_l_state;
-
+ValueValidator<GLenum> indexed_g_l_state;
 class InternalFormatParameterValidator {
  public:
   bool IsValid(const GLenum value) const;
@@ -398,5 +393,10 @@ VertexAttribITypeValidator vertex_attrib_i_type;
 ValueValidator<GLenum> vertex_attrib_type;
 ValueValidator<GLenum> vertex_attribute;
 ValueValidator<GLenum> vertex_pointer;
+class WindowRectanglesModeValidator {
+ public:
+  bool IsValid(const GLenum value) const;
+};
+WindowRectanglesModeValidator window_rectangles_mode;
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_AUTOGEN_H_

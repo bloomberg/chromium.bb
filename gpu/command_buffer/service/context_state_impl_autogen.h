@@ -151,6 +151,8 @@ void ContextState::Initialize() {
   viewport_y = 0;
   viewport_width = 1;
   viewport_height = 1;
+  window_rectangles_mode = GL_EXCLUSIVE_EXT;
+  num_window_rectangles = 0;
 }
 
 void ContextState::InitCapabilities(const ContextState* prev_state) const {
@@ -823,6 +825,18 @@ bool ContextState::GetStateAsGLint(GLenum pname,
         params[3] = static_cast<GLint>(viewport_height);
       }
       return true;
+    case GL_WINDOW_RECTANGLE_MODE_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(window_rectangles_mode);
+      }
+      return true;
+    case GL_NUM_WINDOW_RECTANGLES_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(num_window_rectangles);
+      }
+      return true;
     case GL_BLEND:
       *num_written = 1;
       if (params) {
@@ -1261,6 +1275,18 @@ bool ContextState::GetStateAsGLfloat(GLenum pname,
         params[1] = static_cast<GLfloat>(viewport_y);
         params[2] = static_cast<GLfloat>(viewport_width);
         params[3] = static_cast<GLfloat>(viewport_height);
+      }
+      return true;
+    case GL_WINDOW_RECTANGLE_MODE_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(window_rectangles_mode);
+      }
+      return true;
+    case GL_NUM_WINDOW_RECTANGLES_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(num_window_rectangles);
       }
       return true;
     case GL_BLEND:
