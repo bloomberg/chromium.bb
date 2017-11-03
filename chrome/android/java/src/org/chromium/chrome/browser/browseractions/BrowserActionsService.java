@@ -52,12 +52,6 @@ public class BrowserActionsService extends Service {
     public static final String EXTRA_SOURCE_PACKAGE_NAME =
             "org.chromium.chrome.browser.browseractions.SOURCE_PACKAGE_NAME";
 
-    /**
-     * Action to request open ChromeTabbedActivity in tab switcher mode.
-     */
-    public static final String ACTION_BROWSER_ACTIONS_OPEN_IN_BACKGROUND =
-            "org.chromium.chrome.browser.browseractions.browser_action_open_in_background";
-
     public static final String PREF_HAS_BROWSER_ACTIONS_NOTIFICATION =
             "org.chromium.chrome.browser.browseractions.HAS_BROWSER_ACTIONS_NOTIFICATION";
 
@@ -238,13 +232,14 @@ public class BrowserActionsService extends Service {
 
     private Intent buildNotificationIntent(int tabId) {
         boolean multipleUrls = hasBrowserActionsNotification();
+        Intent intent;
         if (!multipleUrls && tabId != Tab.INVALID_TAB_ID) {
-            return Tab.createBringTabToFrontIntent(tabId);
+            intent = Tab.createBringTabToFrontIntent(tabId);
+        } else {
+            intent = new Intent(this, ChromeLauncherActivity.class);
+            IntentHandler.addTrustedIntentExtras(intent);
         }
-        Intent intent = new Intent(this, ChromeLauncherActivity.class);
-        intent.setAction(ACTION_BROWSER_ACTIONS_OPEN_IN_BACKGROUND);
         intent.putExtra(EXTRA_IS_SINGLE_URL, !multipleUrls);
-        IntentHandler.addTrustedIntentExtras(intent);
         return intent;
     }
 
@@ -284,7 +279,7 @@ public class BrowserActionsService extends Service {
      */
     public static boolean shouldToggleOverview(Intent intent, boolean isOverviewVisible) {
         if (!IntentHandler.wasIntentSenderChrome(intent)) return false;
-        if (!ACTION_BROWSER_ACTIONS_OPEN_IN_BACKGROUND.equals(intent.getAction())) return false;
+        if (!IntentUtils.safeHasExtra(intent, EXTRA_IS_SINGLE_URL)) return false;
         boolean isSingleUrl = IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_SINGLE_URL, false);
         return isSingleUrl == isOverviewVisible;
     }
