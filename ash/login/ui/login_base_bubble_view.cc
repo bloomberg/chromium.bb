@@ -37,6 +37,10 @@ LoginBaseBubbleView::LoginBaseBubbleView(views::View* anchor_view)
   set_color(SK_ColorBLACK);
   set_can_activate(false);
   set_close_on_deactivate(false);
+
+  // Layer rendering is needed for animation.
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 LoginBaseBubbleView::~LoginBaseBubbleView() = default;

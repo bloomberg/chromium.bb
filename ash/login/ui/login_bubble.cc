@@ -7,6 +7,8 @@
 #include "ash/login/ui/login_button.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
+#include "ui/compositor/layer_animator.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
@@ -33,6 +35,9 @@ constexpr int kAnchorViewHorizontalSpacingDp = 105;
 
 // Vertical spacing between the anchor view and user menu.
 constexpr int kAnchorViewUserMenuVerticalSpacingDp = 4;
+
+// The amount of time for bubble show/hide animation.
+constexpr int kBubbleAnimationDurationMs = 300;
 
 views::Label* CreateLabel(const base::string16& message, SkColor color) {
   views::Label* label = new views::Label(message, views::style::CONTEXT_LABEL,
@@ -130,7 +135,9 @@ LoginBubble::~LoginBubble() {
 
 void LoginBubble::ShowErrorBubble(views::StyledLabel* label,
                                   views::View* anchor_view) {
-  DCHECK_EQ(bubble_view_, nullptr);
+  if (bubble_view_)
+    CloseImmediately();
+
   bubble_view_ = new LoginErrorBubbleView(label, anchor_view);
   Show();
 }
@@ -140,7 +147,9 @@ void LoginBubble::ShowUserMenu(const base::string16& message,
                                views::View* anchor_view,
                                LoginButton* bubble_opener,
                                bool show_remove_user) {
-  DCHECK_EQ(bubble_view_, nullptr);
+  if (bubble_view_)
+    CloseImmediately();
+
   bubble_opener_ = bubble_opener;
   bubble_view_ = new LoginUserMenuView(message, sub_message, anchor_view,
                                        show_remove_user);
@@ -150,19 +159,14 @@ void LoginBubble::ShowUserMenu(const base::string16& message,
 void LoginBubble::ShowTooltip(const base::string16& message,
                               views::View* anchor_view) {
   if (bubble_view_)
-    Close();
+    CloseImmediately();
 
   bubble_view_ = new LoginTooltipView(message, anchor_view);
   Show();
 }
 
 void LoginBubble::Close() {
-  if (bubble_opener_)
-    bubble_opener_->AnimateInkDrop(views::InkDropState::DEACTIVATED,
-                                   nullptr /*event*/);
-
-  if (bubble_view_)
-    bubble_view_->GetWidget()->Close();
+  ScheduleAnimation(false /*visible*/);
 }
 
 bool LoginBubble::IsVisible() {
@@ -171,8 +175,8 @@ bool LoginBubble::IsVisible() {
 
 void LoginBubble::OnWidgetClosing(views::Widget* widget) {
   bubble_opener_ = nullptr;
-  widget->RemoveObserver(this);
   bubble_view_ = nullptr;
+  widget->RemoveObserver(this);
 }
 
 void LoginBubble::OnWidgetDestroying(views::Widget* widget) {
@@ -203,15 +207,29 @@ void LoginBubble::OnKeyEvent(ui::KeyEvent* event) {
   Close();
 }
 
+void LoginBubble::OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) {
+  if (!bubble_view_)
+    return;
+
+  bubble_view_->layer()->GetAnimator()->RemoveObserver(this);
+  if (!is_visible_)
+    bubble_view_->GetWidget()->Close();
+}
+
 void LoginBubble::Show() {
   DCHECK(bubble_view_);
   views::BubbleDialogDelegateView::CreateBubble(bubble_view_)->Show();
   bubble_view_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_view_->GetWidget()->AddObserver(this);
 
-  if (bubble_opener_)
-    bubble_opener_->AnimateInkDrop(views::InkDropState::ACTIVATED,
-                                   nullptr /*event*/);
+  ScheduleAnimation(true /*visible*/);
+}
+
+void LoginBubble::CloseImmediately() {
+  DCHECK(bubble_view_);
+  bubble_view_->layer()->GetAnimator()->RemoveObserver(this);
+  bubble_view_->GetWidget()->Close();
+  is_visible_ = false;
 }
 
 void LoginBubble::ProcessPressedEvent(const ui::LocatedEvent* event) {
@@ -235,6 +253,39 @@ void LoginBubble::ProcessPressedEvent(const ui::LocatedEvent* event) {
   }
 
   Close();
+}
+
+void LoginBubble::ScheduleAnimation(bool visible) {
+  if (!bubble_view_ || is_visible_ == visible)
+    return;
+
+  if (bubble_opener_) {
+    bubble_opener_->AnimateInkDrop(visible ? views::InkDropState::ACTIVATED
+                                           : views::InkDropState::DEACTIVATED,
+                                   nullptr /*event*/);
+  }
+
+  ui::Layer* layer = bubble_view_->layer();
+  layer->GetAnimator()->StopAnimating();
+  is_visible_ = visible;
+
+  float opacity_start = 0.0f;
+  float opacity_end = 1.0f;
+  if (!is_visible_)
+    std::swap(opacity_start, opacity_end);
+
+  layer->GetAnimator()->AddObserver(this);
+  layer->SetOpacity(opacity_start);
+  {
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kBubbleAnimationDurationMs));
+    settings.SetTweenType(is_visible_ ? gfx::Tween::EASE_OUT
+                                      : gfx::Tween::EASE_IN);
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    layer->SetOpacity(opacity_end);
+  }
 }
 
 }  // namespace ash
