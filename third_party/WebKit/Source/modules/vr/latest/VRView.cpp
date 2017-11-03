@@ -4,8 +4,10 @@
 
 #include "modules/vr/latest/VRView.h"
 
+#include "modules/vr/latest/VRLayer.h"
 #include "modules/vr/latest/VRPresentationFrame.h"
 #include "modules/vr/latest/VRSession.h"
+#include "modules/vr/latest/VRViewport.h"
 #include "platform/geometry/FloatPoint3D.h"
 
 namespace blink {
@@ -19,6 +21,13 @@ VRView::VRView(VRSession* session, Eye eye)
 
 VRSession* VRView::session() const {
   return session_;
+}
+
+VRViewport* VRView::getViewport(VRLayer* layer) const {
+  if (!layer || layer->session() != session_)
+    return nullptr;
+
+  return layer->GetViewport(eye_);
 }
 
 void VRView::UpdateProjectionMatrixFromFoV(float up_rad,

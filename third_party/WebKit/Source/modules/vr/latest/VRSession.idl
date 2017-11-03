@@ -12,6 +12,8 @@
   attribute double depthNear;
   attribute double depthFar;
 
+  attribute VRLayer baseLayer;
+
   attribute EventHandler onblur;
   attribute EventHandler onfocus;
   attribute EventHandler onresetpose;

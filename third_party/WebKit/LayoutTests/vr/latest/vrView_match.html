@@ -6,10 +6,16 @@
 <script src="file:///gen/device/vr/vr_service.mojom.js"></script>
 <script src="../resources/mock-vr-service.js"></script>
 <script src="../resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="../resources/presentation-setup.js"></script>
 <script>
 let fakeDisplays = fakeVRDisplays();
 
 vr_session_test( (t, session, mockService) => {
+  // Session must have a baseLayer or frame requests will be ignored.
+  let webglLayer = new VRWebGLLayer(session, gl);
+  session.baseLayer = webglLayer;
+
   session.requestFrameOfReference("eyeLevel").then((frameOfRef) => {
     function onFrame(vrFrame) {
       t.step( () => {
@@ -24,10 +30,11 @@ vr_session_test( (t, session, mockService) => {
         assert_true(leftView instanceof VRView);
         assert_true(rightView instanceof VRView);
 
-        // Ensure that they have to expected eye enums.
+        // Ensure that they have the expected eye enums.
         assert_equals(leftView.eye, "left");
         assert_equals(rightView.eye, "right");
 
+        // Ensure they have the expected projection matrices.
         assert_not_equals(leftView.projectionMatrix, null);
         assert_not_equals(rightView.projectionMatrix, null);
 
