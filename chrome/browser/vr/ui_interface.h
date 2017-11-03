@@ -43,6 +43,8 @@ class UiInterface {
   virtual void OnWebVrFrameAvailable() = 0;
   virtual void OnWebVrTimedOut() = 0;
   virtual void OnWebVrTimeoutImminent() = 0;
+
+  virtual bool IsControllerVisible() const = 0;
 };
 
 }  // namespace vr

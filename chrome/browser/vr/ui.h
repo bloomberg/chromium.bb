@@ -83,6 +83,7 @@ class Ui : public BrowserUiInterface, public UiInterface {
   void OnWebVrFrameAvailable() override;
   void OnWebVrTimedOut() override;
   void OnWebVrTimeoutImminent() override;
+  bool IsControllerVisible() const override;
 
   void SetOmniboxSuggestions(std::unique_ptr<OmniboxSuggestions> suggestions);
 
