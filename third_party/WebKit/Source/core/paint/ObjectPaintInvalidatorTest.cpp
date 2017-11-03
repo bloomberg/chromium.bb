@@ -4,6 +4,7 @@
 
 #include "core/paint/ObjectPaintInvalidator.h"
 
+#include "core/editing/FrameSelection.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayer.h"
@@ -305,6 +306,48 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
   EXPECT_EQ(PaintInvalidationReason::kRectangle,
             raster_invalidations[0].reason);
 
+  GetDocument().View()->SetTracksPaintInvalidations(false);
+}
+
+TEST_F(ObjectPaintInvalidatorTest, Selection) {
+  EnableCompositing();
+  SetBodyInnerHTML("<img id='target' style='width: 100px; height: 100px'>");
+  auto* target = GetLayoutObjectByElementId("target");
+  EXPECT_EQ(LayoutRect(), target->SelectionVisualRect());
+
+  // Add selection.
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  GetDocument().GetFrame()->Selection().SelectAll();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  const auto* graphics_layer = GetLayoutView().Layer()->GraphicsLayerBacking();
+  const auto* invalidations =
+      &graphics_layer->GetRasterInvalidationTracking()->Invalidations();
+  ASSERT_EQ(1u, invalidations->size());
+  EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[0].rect);
+  EXPECT_EQ(PaintInvalidationReason::kSelection, (*invalidations)[0].reason);
+  EXPECT_EQ(LayoutRect(8, 8, 100, 100), target->SelectionVisualRect());
+  GetDocument().View()->SetTracksPaintInvalidations(false);
+
+  // Simulate a change without full invalidation or selection change.
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  target->SetMayNeedPaintInvalidation();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(graphics_layer->GetRasterInvalidationTracking()
+                  ->Invalidations()
+                  .IsEmpty());
+  EXPECT_EQ(LayoutRect(8, 8, 100, 100), target->SelectionVisualRect());
+  GetDocument().View()->SetTracksPaintInvalidations(false);
+
+  // Remove selection.
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  GetDocument().GetFrame()->Selection().Clear();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  invalidations =
+      &graphics_layer->GetRasterInvalidationTracking()->Invalidations();
+  ASSERT_EQ(1u, invalidations->size());
+  EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[0].rect);
+  EXPECT_EQ(PaintInvalidationReason::kSelection, (*invalidations)[0].reason);
+  EXPECT_EQ(LayoutRect(), target->SelectionVisualRect());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
