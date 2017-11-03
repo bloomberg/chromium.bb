@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {
@@ -89,9 +91,14 @@ class ExtensionMessageBubbleBrowserTestMac
     : public ExtensionMessageBubbleBrowserTest {
  public:
   ExtensionMessageBubbleBrowserTestMac() {}
-  ~ExtensionMessageBubbleBrowserTestMac() override {}
 
   // ExtensionMessageBubbleBrowserTest:
+  void SetUp() override {
+    // This file only tests Cocoa UI and can be deleted when kSecondaryUiMd is
+    // default.
+    scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
+    ExtensionMessageBubbleBrowserTest::SetUp();
+  }
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
@@ -102,6 +109,8 @@ class ExtensionMessageBubbleBrowserTestMac
   void ClickLearnMoreButton(Browser* browser) override;
   void ClickActionButton(Browser* browser) override;
   void ClickDismissButton(Browser* browser) override;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleBrowserTestMac);
 };

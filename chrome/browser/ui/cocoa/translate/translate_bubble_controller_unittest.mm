@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #import "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/site_instance.h"
+#include "ui/base/ui_base_features.h"
 
 @implementation BrowserWindowController (ForTesting)
 
@@ -38,8 +40,16 @@
 
 class TranslateBubbleControllerTest : public CocoaProfileTest {
  public:
+  TranslateBubbleControllerTest() {}
+
+  // CocoaProfileTest:
   void SetUp() override {
+    // This file only tests Cocoa UI and can be deleted when kSecondaryUiMd is
+    // default.
+    scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
+
     CocoaProfileTest::SetUp();
+
     site_instance_ = content::SiteInstance::Create(profile());
 
     NSWindow* nativeWindow = browser()->window()->GetNativeWindow();
@@ -89,9 +99,12 @@ class TranslateBubbleControllerTest : public CocoaProfileTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<content::SiteInstance> site_instance_;
   BrowserWindowController* bwc_;
   content::WebContents* web_contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(TranslateBubbleControllerTest);
 };
 
 TEST_F(TranslateBubbleControllerTest, ShowAndClose) {

@@ -4,6 +4,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_objc_class_swizzler.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest_mac.h"
+#include "ui/base/ui_base_features.h"
 
 // A helper class to swizzle [NSWindow isKeyWindow] to always return true.
 @interface AlwaysKeyNSWindow : NSWindow
@@ -32,8 +34,13 @@
 // Integration tests for the Mac password bubble.
 class ManagePasswordsBubbleTest : public ManagePasswordsTest {
  public:
+  ManagePasswordsBubbleTest() {}
+
   void SetUpOnMainThread() override {
     ManagePasswordsTest::SetUpOnMainThread();
+    // This file only tests Cocoa UI and can be deleted when kSecondaryUiMd is
+    // default.
+    scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
     browser()->window()->Show();
   }
 
@@ -69,6 +76,11 @@ class ManagePasswordsBubbleTest : public ManagePasswordsTest {
   }
 
   ManagePasswordsIconCocoa* GetView() { return decoration()->icon(); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleTest,
