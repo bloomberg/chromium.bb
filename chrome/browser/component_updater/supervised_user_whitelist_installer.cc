@@ -17,7 +17,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -119,11 +119,12 @@ base::FilePath GetSanitizedWhitelistPath(const std::string& crx_id) {
 }
 
 void RecordUncleanUninstall() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &base::RecordAction,
-          base::UserMetricsAction("ManagedUsers_Whitelist_UncleanUninstall")));
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&base::RecordAction,
+                         base::UserMetricsAction(
+                             "ManagedUsers_Whitelist_UncleanUninstall")));
 }
 
 void OnWhitelistSanitizationError(const base::FilePath& whitelist,
@@ -139,7 +140,7 @@ void DeleteFileOnTaskRunner(const base::FilePath& path) {
 void OnWhitelistSanitizationResult(
     const std::string& crx_id,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     const std::string& result) {
   const base::FilePath sanitized_whitelist_path =
       GetSanitizedWhitelistPath(crx_id);
@@ -156,7 +157,7 @@ void OnWhitelistSanitizationResult(
     PLOG(ERROR) << "Couldn't write file " << sanitized_whitelist_path.value();
     return;
   }
-  task_runner->PostTask(FROM_HERE, callback);
+  task_runner->PostTask(FROM_HERE, std::move(callback));
 }
 
 void CheckForSanitizedWhitelistOnTaskRunner(
@@ -360,7 +361,7 @@ class SupervisedUserWhitelistInstallerImpl
  private:
   void RegisterComponent(const std::string& crx_id,
                          const std::string& name,
-                         const base::Closure& callback);
+                         base::OnceClosure callback);
   void RegisterNewComponent(const std::string& crx_id, const std::string& name);
   bool UnregisterWhitelistInternal(base::DictionaryValue* pref_dict,
                                    const std::string& client_id,
@@ -418,15 +419,15 @@ SupervisedUserWhitelistInstallerImpl::SupervisedUserWhitelistInstallerImpl(
 void SupervisedUserWhitelistInstallerImpl::RegisterComponent(
     const std::string& crx_id,
     const std::string& name,
-    const base::Closure& callback) {
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new SupervisedUserWhitelistComponentInstallerPolicy(
+    base::OnceClosure callback) {
+  std::unique_ptr<ComponentInstallerPolicy> policy =
+      std::make_unique<SupervisedUserWhitelistComponentInstallerPolicy>(
           crx_id, name,
           base::Bind(&SupervisedUserWhitelistInstallerImpl::OnRawWhitelistReady,
-                     weak_ptr_factory_.GetWeakPtr(), crx_id)));
-  scoped_refptr<ComponentInstaller> installer(
-      new ComponentInstaller(std::move(policy)));
-  installer->Register(cus_, callback);
+                     weak_ptr_factory_.GetWeakPtr(), crx_id));
+  scoped_refptr<ComponentInstaller> installer =
+      base::MakeRefCounted<ComponentInstaller>(std::move(policy));
+  installer->Register(cus_, std::move(callback));
 }
 
 void SupervisedUserWhitelistInstallerImpl::RegisterNewComponent(
@@ -434,8 +435,8 @@ void SupervisedUserWhitelistInstallerImpl::RegisterNewComponent(
     const std::string& name) {
   RegisterComponent(
       crx_id, name,
-      base::Bind(&SupervisedUserWhitelistInstaller::TriggerComponentUpdate,
-                 &cus_->GetOnDemandUpdater(), crx_id));
+      base::BindOnce(&SupervisedUserWhitelistInstaller::TriggerComponentUpdate,
+                     &cus_->GetOnDemandUpdater(), crx_id));
 }
 
 bool SupervisedUserWhitelistInstallerImpl::UnregisterWhitelistInternal(
@@ -455,7 +456,7 @@ bool SupervisedUserWhitelistInstallerImpl::UnregisterWhitelistInternal(
     return removed;
 
   pref_dict->RemoveWithoutPathExpansion(crx_id, nullptr);
-  bool result = cus_->UnregisterComponent(crx_id);
+  const bool result = cus_->UnregisterComponent(crx_id);
   DCHECK(result);
 
   sequenced_task_runner_->PostTask(
@@ -517,9 +518,9 @@ void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {
     }
 
     std::string name;
-    bool result = dict->GetString(kName, &name);
+    const bool result = dict->GetString(kName, &name);
     DCHECK(result);
-    RegisterComponent(id, name, base::Closure());
+    RegisterComponent(id, name, base::OnceClosure());
 
     registered_whitelists.insert(id);
   }
@@ -550,7 +551,7 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
       crx_id, &whitelist_dict_weak);
   if (newly_added) {
     whitelist_dict_weak = pref_dict->SetDictionaryWithoutPathExpansion(
-        crx_id, base::MakeUnique<base::DictionaryValue>());
+        crx_id, std::make_unique<base::DictionaryValue>());
     whitelist_dict_weak->SetString(kName, name);
   }
 
@@ -558,12 +559,12 @@ void SupervisedUserWhitelistInstallerImpl::RegisterWhitelist(
     base::ListValue* clients_weak = nullptr;
     if (!whitelist_dict_weak->GetList(kClients, &clients_weak)) {
       DCHECK(newly_added);
-      auto clients = base::MakeUnique<base::ListValue>();
+      auto clients = std::make_unique<base::ListValue>();
       clients_weak = clients.get();
       whitelist_dict_weak->Set(kClients, std::move(clients));
     }
     bool success = clients_weak->AppendIfNotPresent(
-        base::MakeUnique<base::Value>(client_id));
+        std::make_unique<base::Value>(client_id));
     DCHECK(success);
   }
 
@@ -617,8 +618,8 @@ SupervisedUserWhitelistInstaller::Create(
     ComponentUpdateService* cus,
     ProfileAttributesStorage* profile_attributes_storage,
     PrefService* local_state) {
-  return base::WrapUnique(new SupervisedUserWhitelistInstallerImpl(
-      cus, profile_attributes_storage, local_state));
+  return std::make_unique<SupervisedUserWhitelistInstallerImpl>(
+      cus, profile_attributes_storage, local_state);
 }
 
 // static

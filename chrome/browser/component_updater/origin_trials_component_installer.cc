@@ -143,11 +143,11 @@ std::vector<std::string> OriginTrialsComponentInstallerPolicy::GetMimeTypes()
 
 void RegisterOriginTrialsComponent(ComponentUpdateService* cus,
                                    const base::FilePath& user_data_dir) {
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new OriginTrialsComponentInstallerPolicy());
+  std::unique_ptr<ComponentInstallerPolicy> policy =
+      std::make_unique<OriginTrialsComponentInstallerPolicy>();
   // |cus| will take ownership of |installer| during installer->Register(cus).
   ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
-  installer->Register(cus, base::Closure());
+  installer->Register(cus, base::OnceClosure());
 }
 
 }  // namespace component_updater

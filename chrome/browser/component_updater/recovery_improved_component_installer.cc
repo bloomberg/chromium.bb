@@ -92,11 +92,11 @@ void RegisterRecoveryImprovedComponent(ComponentUpdateService* cus,
 
   DVLOG(1) << "Registering RecoveryImproved component.";
 
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new RecoveryImprovedInstallerPolicy(prefs));
+  std::unique_ptr<ComponentInstallerPolicy> policy =
+      std::make_unique<RecoveryImprovedInstallerPolicy>(prefs);
   // |cus| will take ownership of |installer| during installer->Register(cus).
   ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
-  installer->Register(cus, base::Closure());
+  installer->Register(cus, base::OnceClosure());
 #endif
 #endif
 }

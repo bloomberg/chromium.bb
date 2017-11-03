@@ -475,12 +475,13 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
       is_x86_architecture;
 
   // Install the component.
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new SwReporterInstallerPolicy(base::Bind(&RunSwReportersAfterStartup),
-                                    is_experimental_engine_supported));
+  std::unique_ptr<ComponentInstallerPolicy> policy =
+      std::make_unique<SwReporterInstallerPolicy>(
+          base::Bind(&RunSwReportersAfterStartup),
+          is_experimental_engine_supported);
   // |cus| will take ownership of |installer| during installer->Register(cus).
   ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
-  installer->Register(cus, base::Closure());
+  installer->Register(cus, base::OnceClosure());
 }
 
 void RegisterPrefsForSwReporter(PrefRegistrySimple* registry) {

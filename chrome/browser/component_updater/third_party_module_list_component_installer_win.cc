@@ -132,12 +132,12 @@ void RegisterThirdPartyModuleListComponent(ComponentUpdateService* cus) {
     return;
   ModuleListManager* manager = &database->module_list_manager();
 
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new ThirdPartyModuleListComponentInstallerPolicy(manager));
+  std::unique_ptr<ComponentInstallerPolicy> policy =
+      std::make_unique<ThirdPartyModuleListComponentInstallerPolicy>(manager);
 
   // |cus| will take ownership of |installer| during installer->Register(cus).
   ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
-  installer->Register(cus, base::Closure());
+  installer->Register(cus, base::OnceClosure());
 }
 
 }  // namespace component_updater

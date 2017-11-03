@@ -141,7 +141,7 @@ class UpdateCheckerTest : public testing::Test {
   std::unique_ptr<UpdateContext> MakeFakeUpdateContext() const;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerTest);
 };
@@ -199,7 +199,7 @@ void UpdateCheckerTest::RunThreads() {
 
 void UpdateCheckerTest::Quit() {
   if (!quit_closure_.is_null())
-    quit_closure_.Run();
+    std::move(quit_closure_).Run();
 }
 
 void UpdateCheckerTest::UpdateCheckComplete(int error, int retry_after_sec) {

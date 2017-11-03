@@ -375,11 +375,11 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
     return;
 #endif  // defined(OS_CHROMEOS)
 
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new FlashComponentInstallerPolicy);
+  std::unique_ptr<ComponentInstallerPolicy> policy =
+      std::make_unique<FlashComponentInstallerPolicy>();
   // |cus| will take ownership of |installer| during installer->Register(cus).
   ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
-  installer->Register(cus, base::Closure());
+  installer->Register(cus, base::OnceClosure());
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }
 

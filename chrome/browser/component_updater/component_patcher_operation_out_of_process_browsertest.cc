@@ -119,7 +119,7 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
     EXPECT_EQ(expected, result);
     done_called_ = true;
     content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
-        ->PostTask(FROM_HERE, quit_closure_);
+        ->PostTask(FROM_HERE, std::move(quit_closure_));
   }
 
   static void CopyFile(const base::FilePath& source,
@@ -130,7 +130,7 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
   base::ScopedTempDir installed_dir_;
   base::ScopedTempDir input_dir_;
   base::ScopedTempDir unpack_dir_;
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
   bool done_called_;
 
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessPatchTest);

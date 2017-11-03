@@ -205,8 +205,8 @@ static void RegisterComponent(ComponentUpdateService* cus,
                               const ComponentConfig& config,
                               base::OnceClosure register_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new CrOSComponentInstallerPolicy(config));
+  std::unique_ptr<ComponentInstallerPolicy> policy =
+      std::make_unique<CrOSComponentInstallerPolicy>(config);
   // |cus| will take ownership of |installer| during
   // installer->Register(cus).
   ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
@@ -274,7 +274,7 @@ void CrOSComponent::RegisterComponents(
   component_updater::ComponentUpdateService* updater =
       g_browser_process->component_updater();
   for (const auto& config : configs) {
-    RegisterComponent(updater, config, base::Closure());
+    RegisterComponent(updater, config, base::OnceClosure());
   }
 }
 

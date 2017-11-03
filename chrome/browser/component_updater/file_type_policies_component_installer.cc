@@ -128,11 +128,11 @@ void RegisterFileTypePoliciesComponent(ComponentUpdateService* cus,
                                        const base::FilePath& user_data_dir) {
   VLOG(1) << "Registering File Type Policies component.";
 
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new FileTypePoliciesComponentInstallerPolicy());
+  std::unique_ptr<ComponentInstallerPolicy> policy =
+      std::make_unique<FileTypePoliciesComponentInstallerPolicy>();
   // |cus| will take ownership of |installer| during installer->Register(cus).
   ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
-  installer->Register(cus, base::Closure());
+  installer->Register(cus, base::OnceClosure());
 }
 
 }  // namespace component_updater
