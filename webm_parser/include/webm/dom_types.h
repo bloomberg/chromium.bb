@@ -783,6 +783,17 @@ enum class Primaries : std::uint64_t {
   kSmpteSt4281 = 10,
 
   /**
+   Society of Motion Picture and Television Engineers RP 431-2 (a.k.a. DCI-P3).
+   */
+  kSmpteRp431 = 11,
+
+  /**
+   Society of Motion Picture and Television Engineers EG 432-1
+   (a.k.a. DCI-P3 D65).
+   */
+  kSmpteEg432 = 12,
+
+  /**
    JEDEC P22 phosphors/EBU Tech. 3213-E (1975).
    */
   kJedecP22Phosphors = 22,
@@ -1046,6 +1057,12 @@ enum class StereoMode : std::uint64_t {
    Both eyes are laced in one block, right eye is first.
    */
   kBlockLacedRightFirst = 14,
+
+  /**
+   Stereo, but the layout for the left and right eyes is application dependent
+   and must be determined from other data (like the ProjectionPrivate element).
+   */
+  kStereoCustom = 15,
 };
 
 /**
