@@ -591,6 +591,8 @@ const char kChromeOSReleaseNotesVersion[] = "settings.release_notes.version";
 const char kDisplayPowerState[] = "settings.display.power_state";
 // A dictionary pref that stores per display preferences.
 const char kDisplayProperties[] = "settings.display.properties";
+// A dictionary pref that stores the touch associations for the device.
+const char kDisplayTouchAssociations[] = "settings.display.touch_associations";
 
 // A dictionary pref that specifies per-display layout/offset information.
 // Its key is the ID of the display and its value is a dictionary for the

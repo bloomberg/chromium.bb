@@ -7,23 +7,16 @@
 
 #include <stdint.h>
 #include <algorithm>
-#include <array>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
-
-#if defined(OS_CHROMEOS)
-#include "ui/display/manager/chromeos/touch_device_manager.h"
-#endif
 
 namespace display {
 
@@ -149,23 +142,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
     touch_support_ = support;
   }
   Display::TouchSupport touch_support() const { return touch_support_; }
-#if defined(OS_CHROMEOS)
-  // Associate the touch device with identifier |touch_device_identifier| to
-  // this display.
-  void AddTouchDevice(const TouchDeviceIdentifier& identifier);
-
-  // Clear the list of touch devices associated with this display.
-  void ClearTouchDevices();
-
-  // Returns true if the touch device with identifer |touch_device_identifier|
-  // is associated with this display.
-  bool HasTouchDevice(const TouchDeviceIdentifier& identifier) const;
-
-  // The identifiers of touch devices that are associated with this display.
-  std::set<TouchDeviceIdentifier> touch_device_identifiers() const {
-    return touch_device_identifiers_;
-  }
-#endif
 
   // Gets/Sets the device scale factor of the display.
   float device_scale_factor() const { return device_scale_factor_; }
@@ -254,22 +230,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // display.
   void SetManagedDisplayModes(const ManagedDisplayModeList& display_modes);
 
-#if defined(OS_CHROMEOS)
-  void SetTouchCalibrationData(const TouchDeviceIdentifier& identifier,
-                               const TouchCalibrationData& calibration_data);
-  const TouchCalibrationData& GetTouchCalibrationData(
-      const TouchDeviceIdentifier& touch_device_identifier) const;
-  const std::map<TouchDeviceIdentifier, TouchCalibrationData>&
-  touch_calibration_data_map() const {
-    return touch_calibration_data_map_;
-  }
-  void SetTouchCalibrationDataMap(
-      const std::map<TouchDeviceIdentifier, TouchCalibrationData>& data_map);
-  bool HasTouchCalibrationData(const TouchDeviceIdentifier& identifier) const;
-  void ClearTouchCalibrationData(const TouchDeviceIdentifier& identifier);
-  void ClearAllTouchCalibrationData();
-#endif
-
   // Returns the native mode size. If a native mode is not present, return an
   // empty size.
   gfx::Size GetNativeModeSize() const;
@@ -310,11 +270,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   Display::RotationSource active_rotation_source_;
   Display::TouchSupport touch_support_;
 
-#if defined(OS_CHROMEOS)
-  // Identifiers for touch devices that are associated with this display.
-  std::set<TouchDeviceIdentifier> touch_device_identifiers_;
-#endif
-
   // This specifies the device's pixel density. (For example, a display whose
   // DPI is higher than the threshold is considered to have device_scale_factor
   // = 2.0 on Chrome OS).  This is used by the graphics layer to choose and draw
@@ -354,14 +309,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
 
   // Maximum cursor size.
   gfx::Size maximum_cursor_size_;
-
-#if defined(OS_CHROMEOS)
-  // Information associated to touch calibration for the display. Stores a
-  // mapping of each touch device, identified by its unique touch device
-  // identifier, with the touch calibration data associated with the display.
-  std::map<TouchDeviceIdentifier, TouchCalibrationData>
-      touch_calibration_data_map_;
-#endif
 
   // Colorimetry information of the Display (if IsValid()), including e.g.
   // transfer and primaries information, retrieved from its EDID.

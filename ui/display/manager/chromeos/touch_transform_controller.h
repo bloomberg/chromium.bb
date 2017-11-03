@@ -30,6 +30,7 @@ class TouchDeviceIdentifier;
 
 namespace test {
 class TouchTransformControllerTest;
+class TouchTransformControllerTestApi;
 }
 
 // TouchTransformController matches touchscreen displays with touch
@@ -52,7 +53,7 @@ class DISPLAY_MANAGER_EXPORT TouchTransformController {
 
  private:
   friend class test::TouchTransformControllerTest;
-  friend class TouchTransformControllerTestApi;
+  friend class test::TouchTransformControllerTestApi;
 
   // Contains the data that is passed to TouchTransformSetter.
   struct UpdateData {

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/manager/chromeos/touch_transform_controller_test_api.h"
+#include "ui/display/manager/chromeos/test/touch_transform_controller_test_api.h"
 
 namespace display {
+namespace test {
 
 TouchTransformControllerTestApi::TouchTransformControllerTestApi(
     TouchTransformController* controller)
@@ -12,4 +13,5 @@ TouchTransformControllerTestApi::TouchTransformControllerTestApi(
 
 TouchTransformControllerTestApi::~TouchTransformControllerTestApi() = default;
 
+}  // namespace test
 }  // namespace display

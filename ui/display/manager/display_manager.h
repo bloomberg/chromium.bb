@@ -200,19 +200,12 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // |overscan_insets| is null if the display has no custom overscan insets.
   // |touch_calibration_data| is null if the display has no touch calibration
   // associated data.
-  void RegisterDisplayProperty(
-      int64_t display_id,
-      Display::Rotation rotation,
-      float ui_scale,
-      const gfx::Insets* overscan_insets,
-      const gfx::Size& resolution_in_pixels,
-      float device_scale_factor
-#if defined(OS_CHROMEOS)
-      ,
-      std::map<TouchDeviceIdentifier, TouchCalibrationData>*
-          touch_calibration_data_map
-#endif
-      );
+  void RegisterDisplayProperty(int64_t display_id,
+                               Display::Rotation rotation,
+                               float ui_scale,
+                               const gfx::Insets* overscan_insets,
+                               const gfx::Size& resolution_in_pixels,
+                               float device_scale_factor);
 
   // Register stored rotation properties for the internal display.
   void RegisterDisplayRotationProperties(bool rotation_lock,

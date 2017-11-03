@@ -38,12 +38,14 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/chromeos/display_change_observer.h"
+#include "ui/display/manager/chromeos/test/touch_device_manager_test_api.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font_render_params.h"
 
@@ -1148,14 +1150,21 @@ TEST_F(DisplayManagerTest, ZeroOverscanInsets) {
 TEST_F(DisplayManagerTest, TouchCalibrationTest) {
   UpdateDisplay("0+0-500x500,0+501-1024x600");
   reset();
+  display::TouchDeviceManager* touch_device_manager =
+      display_manager()->touch_device_manager();
+  display::test::TouchDeviceManagerTestApi tdm_test_api(touch_device_manager);
+
+  const ui::TouchscreenDevice touchdevice(
+      11, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
+      std::string("test touch device"), gfx::Size(123, 456), 1);
+  const display::TouchDeviceIdentifier touch_device_identifier_2 =
+      display::TouchDeviceIdentifier::FromDevice(touchdevice);
 
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
   const display::ManagedDisplayInfo display_info1 = GetDisplayInfoAt(0);
   const display::ManagedDisplayInfo display_info2 = GetDisplayInfoAt(1);
 
-  display::TouchDeviceIdentifier touch_device_identifier_2(2345);
-
-  EXPECT_FALSE(display_info2.touch_calibration_data_map().size());
+  EXPECT_FALSE(tdm_test_api.GetTouchDeviceCount(display_info2));
 
   const display::TouchCalibrationData::CalibrationPointPairQuad
       point_pair_quad = {
@@ -1172,14 +1181,17 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
       display_info2.id(), point_pair_quad, bounds_at_calibration,
       touch_device_identifier_2);
 
-  EXPECT_TRUE(GetDisplayInfoAt(1).touch_calibration_data_map().size());
-  EXPECT_EQ(touch_data, GetDisplayInfoAt(1).GetTouchCalibrationData(
-                            touch_device_identifier_2));
+  EXPECT_TRUE(tdm_test_api.GetTouchDeviceCount(display_info2));
+  EXPECT_EQ(touch_data, touch_device_manager->GetCalibrationData(
+                            touchdevice, display_info2.id()));
 
   // Clearing touch calibration data from the secondary display.
-  display_manager()->ClearTouchCalibrationData(GetDisplayInfoAt(1).id(),
-                                               touch_device_identifier_2);
-  EXPECT_FALSE(GetDisplayInfoAt(1).touch_calibration_data_map().size());
+  touch_device_manager->ClearTouchCalibrationData(touch_device_identifier_2,
+                                                  GetDisplayInfoAt(1).id());
+
+  EXPECT_TRUE(touch_device_manager
+                  ->GetCalibrationData(touchdevice, GetDisplayInfoAt(1).id())
+                  .IsEmpty());
 
   // Make sure that SetTouchCalibrationData() is idempotent.
   display::TouchCalibrationData::CalibrationPointPairQuad point_pair_quad_2 =
@@ -1192,15 +1204,14 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
       display_info2.id(), point_pair_quad_2, bounds_at_calibration,
       touch_device_identifier_2);
 
-  EXPECT_TRUE(GetDisplayInfoAt(1).touch_calibration_data_map().size());
-  EXPECT_EQ(touch_data_2, GetDisplayInfoAt(1).GetTouchCalibrationData(
-                              touch_device_identifier_2));
+  EXPECT_EQ(touch_data_2, touch_device_manager->GetCalibrationData(
+                              touchdevice, GetDisplayInfoAt(1).id()));
 
   // Recreate a new 2nd display. It won't apply the touhc calibration data
   // because the new display has a different ID.
   UpdateDisplay("0+0-500x500");
   UpdateDisplay("0+0-500x500,0+501-400x400");
-  EXPECT_FALSE(GetDisplayInfoAt(1).touch_calibration_data_map().size());
+  tdm_test_api.ResetTouchDeviceManager();
 
   // Recreate the displays with the same ID.  It should apply the touch
   // calibration associated data.
@@ -1215,17 +1226,22 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
       display_info2.id(), point_pair_quad, bounds_at_calibration,
       touch_device_identifier_2);
 
-  EXPECT_TRUE(GetDisplayInfoAt(1).touch_calibration_data_map().size());
-  EXPECT_EQ(touch_data, GetDisplayInfoAt(1).GetTouchCalibrationData(
-                            touch_device_identifier_2));
+  EXPECT_EQ(touch_data, touch_device_manager->GetCalibrationData(
+                            touchdevice, GetDisplayInfoAt(1).id()));
 
-  display::TouchDeviceIdentifier touch_device_identifier_2_2(2456);
+  const ui::TouchscreenDevice touchdevice_2(
+      12, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
+      std::string("test touch device 2"), gfx::Size(234, 567), 1);
+  display::TouchDeviceIdentifier touch_device_identifier_2_2 =
+      display::TouchDeviceIdentifier::FromDevice(touchdevice_2);
+
   display_manager()->SetTouchCalibrationData(
       display_info2.id(), point_pair_quad_2, bounds_at_calibration,
       touch_device_identifier_2_2);
-  EXPECT_EQ(GetDisplayInfoAt(1).touch_calibration_data_map().size(), 2UL);
-  EXPECT_EQ(touch_data_2, GetDisplayInfoAt(1).GetTouchCalibrationData(
-                              touch_device_identifier_2_2));
+  EXPECT_EQ(touch_data_2, touch_device_manager->GetCalibrationData(
+                              touchdevice_2, GetDisplayInfoAt(1).id()));
+  EXPECT_EQ(touch_data, touch_device_manager->GetCalibrationData(
+                            touchdevice, GetDisplayInfoAt(1).id()));
 }
 
 TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
@@ -2035,7 +2051,7 @@ TEST_F(DisplayManagerTest, FHD125DefaultsTo08UIScalingNoOverride) {
   const gfx::Insets dummy_overscan_insets;
   display_manager()->RegisterDisplayProperty(
       display_id, display::Display::ROTATE_0, 1.0f, &dummy_overscan_insets,
-      gfx::Size(), 1.0f, nullptr /* touch_calibration_data_map */);
+      gfx::Size(), 1.0f);
 
   // Setup the display modes with UI-scale.
   display::ManagedDisplayInfo native_display_info =
@@ -3243,9 +3259,8 @@ TEST_F(DisplayManagerFontTest,
 
 TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
   int64_t id = display_manager()->GetDisplayAt(0).id();
-  display_manager()->RegisterDisplayProperty(
-      id, display::Display::ROTATE_90, 1.0f, nullptr, gfx::Size(), 1.0f,
-      nullptr /* touch_calibration_data_map */);
+  display_manager()->RegisterDisplayProperty(id, display::Display::ROTATE_90,
+                                             1.0f, nullptr, gfx::Size(), 1.0f);
 
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(id);
