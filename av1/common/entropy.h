@@ -70,7 +70,7 @@ extern "C" {
 #define EOB_COEF_CONTEXTS 22
 #endif  // CONFIG_CTX1D
 
-#define USE_CAUSAL_BASE_CTX 0
+#define USE_CAUSAL_BASE_CTX 1
 
 #define SIG_COEF_CONTEXTS_2D 26
 #define SIG_COEF_CONTEXTS_1D 16
