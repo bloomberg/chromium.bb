@@ -38,6 +38,7 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobBytesProvider.h"
 #include "platform/blob/BlobRegistry.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/text/LineEnding.h"
 #include "platform/wtf/PtrUtil.h"
@@ -285,6 +286,8 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
       size_(size),
       is_single_unknown_size_file_(data->IsSingleUnknownSizeFile()) {
   if (RuntimeEnabledFeatures::MojoBlobsEnabled()) {
+    TRACE_EVENT0("Blob", "Registry::RegisterBlob");
+
     // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
     // ends up going through the main thread. Ideally workers wouldn't need
     // to do that.
