@@ -791,7 +791,9 @@ void IOThread::ConstructSystemRequestContext() {
       base::MakeUnique<net::MultiThreadedCertVerifier>(
           new chromeos::CertVerifyProcChromeOS()));
 #else
-  cert_verifier = net::CertVerifier::CreateDefault();
+  cert_verifier = std::make_unique<net::CachingCertVerifier>(
+      std::make_unique<net::MultiThreadedCertVerifier>(
+          net::CertVerifyProc::CreateDefault()));
 #endif
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
