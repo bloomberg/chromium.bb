@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 
+#include <set>
+
+#include "base/stl_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -16,10 +19,27 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #endif
 
+namespace {
+
+using WebContentsSet = std::set<content::WebContents*>;
+
+WebContentsSet BuildOpenerSet(content::WebContents* contents) {
+  WebContentsSet result;
+  while (contents) {
+    result.insert(contents);
+    contents = content::WebContents::FromRenderFrameHost(
+        contents->GetOriginalOpener());
+  }
+
+  return result;
+}
+
+}  // namespace
+
 PopunderPreventer::PopunderPreventer(content::WebContents* activating_contents)
     : popup_(nullptr) {
   // If a popup is the active window, and the WebContents that is going to be
-  // activated is in the opener chain of that popup, then we suspect that
+  // activated shares in the opener chain of that popup, then we suspect that
   // WebContents to be trying to create a popunder. Store the popup window so
   // that it can be re-activated once the dialog (or whatever is causing the
   // activation) is closed.
@@ -32,30 +52,28 @@ PopunderPreventer::PopunderPreventer(content::WebContents* activating_contents)
   if (!active_popup)
     return;
 
-  content::WebContents* actual_host = activating_contents;
+  content::WebContents* actual_activating_contents = activating_contents;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // If the dialog was triggered via an PDF, get the actual web contents that
   // embeds the PDF.
   guest_view::GuestViewBase* guest =
       guest_view::GuestViewBase::FromWebContents(activating_contents);
   if (guest)
-    actual_host = guest->embedder_web_contents();
+    actual_activating_contents = guest->embedder_web_contents();
 #endif
 
-  content::WebContents* original_opener =
-      content::WebContents::FromRenderFrameHost(
-          active_popup->GetOriginalOpener());
-  while (original_opener) {
-    if (original_opener == actual_host) {
-      // It's indeed a popup from the dialog opening WebContents. Store it, so
-      // we can focus it later.
-      popup_ = active_popup;
-      Observe(popup_);
-      return;
-    }
+  WebContentsSet popup_opener_set = BuildOpenerSet(active_popup);
+  WebContentsSet activator_opener_set =
+      BuildOpenerSet(actual_activating_contents);
 
-    original_opener = content::WebContents::FromRenderFrameHost(
-        original_opener->GetOriginalOpener());
+  WebContentsSet common_openers = base::STLSetIntersection<WebContentsSet>(
+      popup_opener_set, activator_opener_set);
+
+  if (!common_openers.empty()) {
+    // The popup is indeed related to the WebContents wanting to activate. Store
+    // it, so we can focus it later.
+    popup_ = active_popup;
+    Observe(popup_);
   }
 }
 
