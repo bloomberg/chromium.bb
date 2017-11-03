@@ -1923,6 +1923,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/survey/ChromeHomeSurveyControllerTest.java",
   "junit/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",
   "junit/src/org/chromium/chrome/browser/tabstate/TabStateUnitTest.java",
+  "junit/src/org/chromium/chrome/browser/util/UrlUtilitiesUnitTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/MockWebappDataStorageClockRule.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebappDataStorageTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebappDirectoryManagerTest.java",

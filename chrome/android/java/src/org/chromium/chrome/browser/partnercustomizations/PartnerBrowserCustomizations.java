@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
+import org.chromium.chrome.browser.util.UrlUtilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +37,11 @@ public class PartnerBrowserCustomizations {
     private static final String TAG = "PartnerCustomize";
     private static final String PROVIDER_AUTHORITY = "com.android.partnerbrowsercustomizations";
 
+    private static final int HOMEPAGE_URL_MAX_LENGTH = 1000;
     // Private homepage structure.
+    @VisibleForTesting
     static final String PARTNER_HOMEPAGE_PATH = "homepage";
+    @VisibleForTesting
     static final String PARTNER_DISABLE_BOOKMARKS_EDITING_PATH = "disablebookmarksediting";
     @VisibleForTesting
     static final String PARTNER_DISABLE_INCOGNITO_MODE_PATH = "disableincognitomode";
@@ -176,7 +180,8 @@ public class PartnerBrowserCustomizations {
             private void refreshHomepage() {
                 try {
                     String homepage = provider.getHomepage();
-                    if (TextUtils.isEmpty(sHomepage) || !sHomepage.equals(homepage)) {
+                    if (!isValidHomepage(homepage)) homepage = null;
+                    if (!TextUtils.equals(sHomepage, homepage)) {
                         mHomepageUriChanged = true;
                     }
                     sHomepage = homepage;
@@ -326,5 +331,17 @@ public class PartnerBrowserCustomizations {
             return commandLine.getSwitchValue(ChromeSwitches.PARTNER_HOMEPAGE_FOR_TESTING);
         }
         return sHomepage;
+    }
+
+    private static boolean isValidHomepage(String url) {
+        if (!UrlUtilities.isHttpOrHttps(url)) {
+            Log.w(TAG, "The scheme in homepage URL \"%s\" is not allowed.", url);
+            return false;
+        }
+        if (url.length() > HOMEPAGE_URL_MAX_LENGTH) {
+            Log.w(TAG, "The homepage URL \"%s\" is too long.", url);
+            return false;
+        }
+        return true;
     }
 }
