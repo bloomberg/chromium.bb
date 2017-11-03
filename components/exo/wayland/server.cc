@@ -2864,14 +2864,23 @@ class WaylandDataSourceDelegate : public DataSourceDelegate {
     wl_data_source_send_cancelled(data_source_resource_);
   }
   void OnDndDropPerformed() override {
-    wl_data_source_send_dnd_drop_performed(data_source_resource_);
+    if (wl_resource_get_version(data_source_resource_) >=
+        WL_DATA_SOURCE_DND_DROP_PERFORMED_SINCE_VERSION) {
+      wl_data_source_send_dnd_drop_performed(data_source_resource_);
+    }
   }
   void OnDndFinished() override {
-    wl_data_source_send_dnd_finished(data_source_resource_);
+    if (wl_resource_get_version(data_source_resource_) >=
+        WL_DATA_SOURCE_DND_FINISHED_SINCE_VERSION) {
+      wl_data_source_send_dnd_finished(data_source_resource_);
+    }
   }
   void OnAction(DndAction dnd_action) override {
-    wl_data_source_send_action(data_source_resource_,
-                               WaylandDataDeviceManagerDndAction(dnd_action));
+    if (wl_resource_get_version(data_source_resource_) >=
+        WL_DATA_SOURCE_ACTION_SINCE_VERSION) {
+      wl_data_source_send_action(data_source_resource_,
+                                 WaylandDataDeviceManagerDndAction(dnd_action));
+    }
   }
 
  private:
@@ -2915,13 +2924,19 @@ class WaylandDataOfferDelegate : public DataOfferDelegate {
   }
   void OnSourceActions(
       const base::flat_set<DndAction>& source_actions) override {
-    wl_data_offer_send_source_actions(
-        data_offer_resource_,
-        WaylandDataDeviceManagerDndActions(source_actions));
+    if (wl_resource_get_version(data_offer_resource_) >=
+        WL_DATA_OFFER_SOURCE_ACTIONS_SINCE_VERSION) {
+      wl_data_offer_send_source_actions(
+          data_offer_resource_,
+          WaylandDataDeviceManagerDndActions(source_actions));
+    }
   }
   void OnAction(DndAction action) override {
-    wl_data_offer_send_action(data_offer_resource_,
-                              WaylandDataDeviceManagerDndAction(action));
+    if (wl_resource_get_version(data_offer_resource_) >=
+        WL_DATA_OFFER_ACTION_SINCE_VERSION) {
+      wl_data_offer_send_action(data_offer_resource_,
+                                WaylandDataDeviceManagerDndAction(action));
+    }
   }
 
  private:
@@ -2981,7 +2996,8 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
   }
   DataOffer* OnDataOffer() override {
     wl_resource* data_offer_resource =
-        wl_resource_create(client_, &wl_data_offer_interface, 1, 0);
+        wl_resource_create(client_, &wl_data_offer_interface,
+                           wl_resource_get_version(data_device_resource_), 0);
     std::unique_ptr<DataOffer> data_offer = std::make_unique<DataOffer>(
         new WaylandDataOfferDelegate(data_offer_resource));
     data_offer->SetProperty(kDataOfferResourceKey, data_offer_resource);
@@ -3053,8 +3069,8 @@ const struct wl_data_device_interface data_device_implementation = {
 void data_device_manager_create_data_source(wl_client* client,
                                             wl_resource* resource,
                                             uint32_t id) {
-  wl_resource* data_source_resource =
-      wl_resource_create(client, &wl_data_device_interface, 1, id);
+  wl_resource* data_source_resource = wl_resource_create(
+      client, &wl_data_device_interface, wl_resource_get_version(resource), id);
   SetImplementation(data_source_resource, &data_source_implementation,
                     std::make_unique<DataSource>(
                         new WaylandDataSourceDelegate(data_source_resource)));
@@ -3065,8 +3081,8 @@ void data_device_manager_get_data_device(wl_client* client,
                                          uint32_t id,
                                          wl_resource* seat_resource) {
   Display* display = GetUserDataAs<Display>(resource);
-  wl_resource* data_device_resource =
-      wl_resource_create(client, &wl_data_device_interface, 1, id);
+  wl_resource* data_device_resource = wl_resource_create(
+      client, &wl_data_device_interface, wl_resource_get_version(resource), id);
   SetImplementation(data_device_resource, &data_device_implementation,
                     display->CreateDataDevice(new WaylandDataDeviceDelegate(
                         client, data_device_resource)));
@@ -3077,12 +3093,15 @@ const struct wl_data_device_manager_interface
         data_device_manager_create_data_source,
         data_device_manager_get_data_device};
 
+const uint32_t data_device_manager_version = 3;
+
 void bind_data_device_manager(wl_client* client,
                               void* data,
                               uint32_t version,
                               uint32_t id) {
   wl_resource* resource =
-      wl_resource_create(client, &wl_data_device_manager_interface, 1, id);
+      wl_resource_create(client, &wl_data_device_manager_interface,
+                         std::min(version, data_device_manager_version), id);
   wl_resource_set_implementation(resource, &data_device_manager_implementation,
                                  data, nullptr);
 }
@@ -4652,8 +4671,9 @@ Server::Server(Display* display)
                    bind_xdg_shell_v6);
   wl_global_create(wl_display_.get(), &zcr_vsync_feedback_v1_interface, 1,
                    display_, bind_vsync_feedback);
-  wl_global_create(wl_display_.get(), &wl_data_device_manager_interface, 1,
-                   display_, bind_data_device_manager);
+  wl_global_create(wl_display_.get(), &wl_data_device_manager_interface,
+                   data_device_manager_version, display_,
+                   bind_data_device_manager);
   wl_global_create(wl_display_.get(), &wl_seat_interface, seat_version,
                    display_, bind_seat);
   wl_global_create(wl_display_.get(), &wp_viewporter_interface, 1, display_,
