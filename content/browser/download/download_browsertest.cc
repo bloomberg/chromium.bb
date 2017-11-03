@@ -656,32 +656,6 @@ class TestRequestPauseHandler {
   base::OnceClosure resume_callback_;
 };
 
-// Class for creating and monitoring the completed response from the server.
-class TestDownloadResponseHandler {
- public:
-  static std::unique_ptr<net::test_server::HttpResponse>
-  HandleTestDownloadRequest(
-      const TestDownloadHttpResponse::OnResponseSentCallback& callback,
-      const net::test_server::HttpRequest& request) {
-    return TestDownloadHttpResponse::Create(request, callback);
-  }
-
-  TestDownloadResponseHandler() = default;
-
-  void OnRequestCompleted(
-      std::unique_ptr<TestDownloadHttpResponse::CompletedRequest> request) {
-    completed_requests_.push_back(std::move(request));
-  }
-
-  using CompletedRequests =
-      std::vector<std::unique_ptr<TestDownloadHttpResponse::CompletedRequest>>;
-  CompletedRequests const& completed_requests() { return completed_requests_; }
-
- private:
-  CompletedRequests completed_requests_;
-  DISALLOW_COPY_AND_ASSIGN(TestDownloadResponseHandler);
-};
-
 class DownloadContentTest : public ContentBrowserTest {
  protected:
   void SetUpOnMainThread() override {
@@ -700,10 +674,7 @@ class DownloadContentTest : public ContentBrowserTest {
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&SlowDownloadHttpResponse::HandleSlowDownloadRequest));
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&TestDownloadResponseHandler::HandleTestDownloadRequest,
-                   base::Bind(&TestDownloadResponseHandler::OnRequestCompleted,
-                              base::Unretained(&test_response_handler_))));
+    test_response_handler_.RegisterToTestServer(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
     const std::string real_host =
         embedded_test_server()->host_port_pair().host();

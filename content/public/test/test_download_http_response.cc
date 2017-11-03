@@ -452,4 +452,30 @@ std::string TestDownloadHttpResponse::GetCommonEntityHeaders() {
   return headers;
 }
 
+// static
+std::unique_ptr<net::test_server::HttpResponse>
+TestDownloadResponseHandler::HandleTestDownloadRequest(
+    const TestDownloadHttpResponse::OnResponseSentCallback& callback,
+    const net::test_server::HttpRequest& request) {
+  return TestDownloadHttpResponse::Create(request, callback);
+}
+
+TestDownloadResponseHandler::TestDownloadResponseHandler() = default;
+TestDownloadResponseHandler::~TestDownloadResponseHandler() = default;
+
+void TestDownloadResponseHandler::RegisterToTestServer(
+    net::test_server::EmbeddedTestServer* server) {
+  DCHECK(!server->Started())
+      << "Register request handler before starting the server";
+  server->RegisterRequestHandler(base::Bind(
+      &content::TestDownloadResponseHandler::HandleTestDownloadRequest,
+      base::Bind(&content::TestDownloadResponseHandler::OnRequestCompleted,
+                 base::Unretained(this))));
+}
+
+void TestDownloadResponseHandler::OnRequestCompleted(
+    std::unique_ptr<TestDownloadHttpResponse::CompletedRequest> request) {
+  completed_requests_.push_back(std::move(request));
+}
+
 }  // namespace content
