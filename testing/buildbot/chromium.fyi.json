@@ -4322,7 +4322,7 @@
         "args": [
           "--mash",
           "--override-use-software-gl-for-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.mash.browser_tests.filter"
         ],
         "name": "mash_browser_tests",
         "swarming": {
