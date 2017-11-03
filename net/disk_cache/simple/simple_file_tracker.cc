@@ -132,6 +132,7 @@ bool SimpleFileTracker::IsEmptyForTesting() {
 std::vector<SimpleFileTracker::TrackedFiles>::iterator SimpleFileTracker::Find(
     const SimpleSynchronousEntry* owner) {
   auto candidates = tracked_files_.find(owner->entry_file_key().entry_hash);
+  DCHECK(candidates != tracked_files_.end());
   for (std::vector<TrackedFiles>::iterator i = candidates->second.begin();
        i != candidates->second.end(); ++i) {
     if (i->owner == owner) {

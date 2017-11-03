@@ -956,10 +956,10 @@ bool SimpleSynchronousEntry::MaybeCreateFile(
   }
 
   *out_error = file->error_details();
-  empty_file_omitted_[file_index] = false;
   if (file->IsValid()) {
     file_tracker_->Register(this, SubFileForFileIndex(file_index),
                             std::move(file));
+    empty_file_omitted_[file_index] = false;
     return true;
   }
   return false;
