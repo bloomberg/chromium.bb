@@ -10,7 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 
 namespace ash {
 namespace system_notifier {

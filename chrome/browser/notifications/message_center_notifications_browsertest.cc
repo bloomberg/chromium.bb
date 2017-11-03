@@ -26,7 +26,7 @@
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 #include "ui/message_center/public/cpp/message_center_switches.h"
 
 using message_center::Notification;

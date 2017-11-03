@@ -6,7 +6,7 @@
 
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_delegate.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 
 using message_center::MessageCenter;
 using message_center::NotifierId;
@@ -88,8 +88,8 @@ void MessageCenterController::ShowClientNotification(
 
 void MessageCenterController::UpdateNotifierIcon(const NotifierId& notifier_id,
                                                  const gfx::ImageSkia& icon) {
-  if (notifier_settings_)
-    notifier_settings_->UpdateNotifierIcon(notifier_id, icon);
+  if (notifier_id_)
+    notifier_id_->UpdateNotifierIcon(notifier_id, icon);
 }
 
 void MessageCenterController::NotifierEnabledChanged(
@@ -101,8 +101,8 @@ void MessageCenterController::NotifierEnabledChanged(
 
 void MessageCenterController::SetNotifierSettingsListener(
     NotifierSettingsListener* listener) {
-  DCHECK(!listener || !notifier_settings_);
-  notifier_settings_ = listener;
+  DCHECK(!listener || !notifier_id_);
+  notifier_id_ = listener;
 
   // |client_| may not be bound in unit tests.
   if (listener && client_.is_bound()) {
@@ -113,8 +113,8 @@ void MessageCenterController::SetNotifierSettingsListener(
 
 void MessageCenterController::OnGotNotifierList(
     std::vector<mojom::NotifierUiDataPtr> ui_data) {
-  if (notifier_settings_)
-    notifier_settings_->SetNotifierList(ui_data);
+  if (notifier_id_)
+    notifier_id_->SetNotifierList(ui_data);
 }
 
 }  // namespace ash

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_H_
-#define UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_H_
+#ifndef UI_MESSAGE_CENTER_NOTIFIER_ID_H_
+#define UI_MESSAGE_CENTER_NOTIFIER_ID_H_
 
 #include <stddef.h>
 
@@ -20,8 +20,7 @@ namespace message_center {
 
 // A struct that identifies the source of notifications. For example, a web page
 // might send multiple notifications but they'd all have the same NotifierId.
-// TODO(estade): rename to Notifier. Rename file to notifier.h. Move to public
-// directory.
+// TODO(estade): move to public directory.
 struct MESSAGE_CENTER_EXPORT NotifierId {
   // This enum is being used for histogram reporting and the elements should not
   // be re-ordered.
@@ -63,4 +62,4 @@ struct MESSAGE_CENTER_EXPORT NotifierId {
 
 }  // namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_NOTIFIER_SETTINGS_H_
+#endif  // UI_MESSAGE_CENTER_NOTIFIER_ID_H_

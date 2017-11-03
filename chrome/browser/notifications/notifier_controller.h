@@ -10,7 +10,7 @@
 
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "base/macros.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 
 class Profile;
 

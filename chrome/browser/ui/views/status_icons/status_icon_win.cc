@@ -12,7 +12,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/icon_util.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
 ////////////////////////////////////////////////////////////////////////////////

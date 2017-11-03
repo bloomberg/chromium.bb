@@ -6,7 +6,7 @@
 #define UI_MESSAGE_CENTER_NOTIFIER_ID_STRUCT_TRAITS_H_
 
 #include "ui/message_center/mojo/notifier_id.mojom-shared.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 
 namespace mojo {
 

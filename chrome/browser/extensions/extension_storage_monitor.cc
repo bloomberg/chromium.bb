@@ -36,7 +36,7 @@
 #include "storage/browser/quota/storage_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 #include "ui/message_center/views/constants.h"
 
 using content::BrowserThread;

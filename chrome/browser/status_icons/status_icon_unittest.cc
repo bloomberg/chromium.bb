@@ -8,7 +8,7 @@
 #include "chrome/browser/status_icons/status_icon_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/notifier_settings.h"
+#include "ui/message_center/notifier_id.h"
 
 class MockStatusIconObserver : public StatusIconObserver {
  public:

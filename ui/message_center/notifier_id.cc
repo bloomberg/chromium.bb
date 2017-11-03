@@ -2,25 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/message_center/notifier_id.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "ui/message_center/notifier_settings.h"
 
 namespace message_center {
 
 NotifierId::NotifierId() : type(SYSTEM_COMPONENT) {}
 
-NotifierId::NotifierId(NotifierType type,
-                       const std::string& id)
-    : type(type),
-      id(id) {
+NotifierId::NotifierId(NotifierType type, const std::string& id)
+    : type(type), id(id) {
   DCHECK(type != WEB_PAGE);
   DCHECK(!id.empty());
 }
 
-NotifierId::NotifierId(const GURL& url)
-    : type(WEB_PAGE),
-      url(url) {}
+NotifierId::NotifierId(const GURL& url) : type(WEB_PAGE), url(url) {}
 
 NotifierId::NotifierId(const NotifierId& other) = default;
 

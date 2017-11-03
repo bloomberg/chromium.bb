@@ -67,7 +67,7 @@ class ASH_EXPORT MessageCenterController
         const gfx::ImageSkia& icon) = 0;
   };
 
-  // Sets |notifier_settings_| and asks the client for the list of notifiers to
+  // Sets |notifier_id_| and asks the client for the list of notifiers to
   // display.
   void SetNotifierSettingsListener(NotifierSettingsListener* listener);
 
@@ -79,7 +79,7 @@ class ASH_EXPORT MessageCenterController
   InactiveUserNotificationBlocker inactive_user_notification_blocker_;
   LoginStateNotificationBlocker login_notification_blocker_;
 
-  NotifierSettingsListener* notifier_settings_ = nullptr;
+  NotifierSettingsListener* notifier_id_ = nullptr;
 
   mojo::Binding<mojom::AshMessageCenterController> binding_;
 
