@@ -9,16 +9,16 @@
 #include <utility>
 #include <vector>
 
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
+#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -30,6 +30,7 @@
 #include "components/safe_browsing/db/safebrowsing.pb.h"
 #include "components/safe_browsing/db/v4_embedded_test_server_util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -108,20 +109,21 @@ class ScopedLoggingObserver {
 class SafeBrowsingTriggeredPopupBlockerBrowserTest
     : public InProcessBrowserTest {
  public:
-  SafeBrowsingTriggeredPopupBlockerBrowserTest() {}
+  SafeBrowsingTriggeredPopupBlockerBrowserTest() {
+    // Note the safe browsing popup blocker is still reliant on
+    // SubresourceFilter to get notifications from the safe browsing navigation
+    // throttle. We could consider separating that out in the future.
+    scoped_feature_list_.InitWithFeatures(
+        {subresource_filter::kSafeBrowsingSubresourceFilter,
+         kAbusiveExperienceEnforce},
+        {});
+  }
+
   ~SafeBrowsingTriggeredPopupBlockerBrowserTest() override {}
 
   void SetUp() override {
     database_helper_ = CreateTestDatabase();
     InProcessBrowserTest::SetUp();
-  }
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Note the safe browsing popup blocker is still reliant on
-    // SubresourceFilter to get notifications from the safe browsing navigation
-    // throttle. We could consider separating that out in the future.
-    command_line->AppendSwitchASCII(
-        switches::kEnableFeatures,
-        "SubresourceFilter,AbusiveExperienceEnforce");
   }
   void SetUpOnMainThread() override {
     base::FilePath test_data_dir;
@@ -169,6 +171,7 @@ class SafeBrowsingTriggeredPopupBlockerBrowserTest
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestSafeBrowsingDatabaseHelper> database_helper_;
   std::unique_ptr<SafeBrowsingTriggeredPopupBlocker> popup_blocker_;
 
