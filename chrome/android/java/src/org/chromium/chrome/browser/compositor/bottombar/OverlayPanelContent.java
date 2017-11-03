@@ -291,7 +291,7 @@ public class OverlayPanelContent {
 
                     @Override
                     public void setViewPosition(View anchorView, float x, float y, float width,
-                            float height, float scale, int leftMargin, int topMargin) { }
+                            float height, int leftMargin, int topMargin) {}
 
                     @Override
                     public void removeView(View anchorView) { }

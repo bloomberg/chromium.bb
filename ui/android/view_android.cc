@@ -30,6 +30,8 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using blink::WebCursorInfo;
 
+bool ViewAndroid::is_use_zoom_for_dsf_enabled_ = false;
+
 ViewAndroid::ScopedAnchorView::ScopedAnchorView(
     JNIEnv* env,
     const JavaRef<jobject>& jview,
@@ -199,19 +201,24 @@ ViewAndroid::ScopedAnchorView ViewAndroid::AcquireAnchorView() {
       env, Java_ViewAndroidDelegate_acquireView(env, delegate), delegate);
 }
 
+void ViewAndroid::SetIsUseZoomForDSFEnabled(bool enabled) {
+  is_use_zoom_for_dsf_enabled_ = enabled;
+}
+
 void ViewAndroid::SetAnchorRect(const JavaRef<jobject>& anchor,
                                 const gfx::RectF& bounds) {
   ScopedJavaLocalRef<jobject> delegate(GetViewAndroidDelegate());
   if (delegate.is_null())
     return;
 
-  float dip_scale = GetDipScale();
-  int left_margin = std::round(bounds.x() * dip_scale);
-  int top_margin = std::round((content_offset() + bounds.y()) * dip_scale);
+  float scale = is_use_zoom_for_dsf_enabled_ ? 1 : GetDipScale();
+  int left_margin = std::round(bounds.x() * scale);
+  int top_margin = std::round((content_offset() + bounds.y()) * scale);
+  const gfx::RectF scaled_bounds = gfx::ScaleRect(bounds, scale);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ViewAndroidDelegate_setViewPosition(
-      env, delegate, anchor, bounds.x(), bounds.y(), bounds.width(),
-      bounds.height(), dip_scale, left_margin, top_margin);
+      env, delegate, anchor, scaled_bounds.x(), scaled_bounds.y(),
+      scaled_bounds.width(), scaled_bounds.height(), left_margin, top_margin);
 }
 
 ScopedJavaLocalRef<jobject> ViewAndroid::GetContainerView() {
