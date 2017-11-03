@@ -55,14 +55,13 @@ const char kXmlVersionHeader[] = "<?xml version=\"1.0\"?>\n";
 
 // static
 std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
-    const std::string& notification_id,
     const message_center::Notification& notification) {
   std::unique_ptr<NotificationTemplateBuilder> builder =
       base::WrapUnique(new NotificationTemplateBuilder);
 
   // TODO(finnur): Can we set <toast scenario="reminder"> for notifications
   // that have set the never_timeout() flag?
-  builder->StartToastElement(notification_id, notification.timestamp());
+  builder->StartToastElement(notification.id(), notification.timestamp());
   builder->StartVisualElement();
 
   // TODO(finnur): Set the correct binding template based on the |notification|.

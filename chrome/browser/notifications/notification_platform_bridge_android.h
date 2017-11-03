@@ -73,7 +73,6 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
 
   // NotificationPlatformBridge implementation.
   void Display(NotificationCommon::Type notification_type,
-               const std::string& notification_id,
                const std::string& profile_id,
                bool incognito,
                const message_center::Notification& notification,
@@ -105,14 +104,14 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
   struct RegeneratedNotificationInfo {
     RegeneratedNotificationInfo();
     RegeneratedNotificationInfo(
-        const std::string& origin,
-        const std::string& service_worker_scope,
+        const GURL& origin,
+        const GURL& service_worker_scope,
         const std::string& tag,
         const base::Optional<std::string>& webapk_package);
     ~RegeneratedNotificationInfo();
 
-    std::string origin;
-    std::string service_worker_scope;
+    GURL origin;
+    GURL service_worker_scope;
     std::string tag;
     base::Optional<std::string> webapk_package;
   };

@@ -180,7 +180,7 @@ gfx::Image ResizeImageToFdoMaxSize(const gfx::Image& image) {
 // |operation| on a notification.
 void ProfileLoadedCallback(NotificationCommon::Operation operation,
                            NotificationCommon::Type notification_type,
-                           const std::string& origin,
+                           const GURL& origin,
                            const std::string& notification_id,
                            const base::Optional<int>& action_index,
                            const base::Optional<base::string16>& reply,
@@ -199,7 +199,7 @@ void ProfileLoadedCallback(NotificationCommon::Operation operation,
 void ForwardNotificationOperationOnUiThread(
     NotificationCommon::Operation operation,
     NotificationCommon::Type notification_type,
-    const std::string& origin,
+    const GURL& origin,
     const std::string& notification_id,
     const base::Optional<int>& action_index,
     const base::Optional<bool>& by_user,
@@ -286,7 +286,6 @@ class NotificationPlatformBridgeLinuxImpl
 
   void Display(
       NotificationCommon::Type notification_type,
-      const std::string& notification_id,
       const std::string& profile_id,
       bool is_incognito,
       const message_center::Notification& notification,
@@ -309,7 +308,7 @@ class NotificationPlatformBridgeLinuxImpl
 
     PostTaskToTaskRunnerThread(base::BindOnce(
         &NotificationPlatformBridgeLinuxImpl::DisplayOnTaskRunner, this,
-        notification_type, notification_id, profile_id, is_incognito,
+        notification_type, profile_id, is_incognito,
         base::Passed(&notification_copy)));
   }
 
@@ -365,7 +364,6 @@ class NotificationPlatformBridgeLinuxImpl
     // first "Notify" message completes.
     uint32_t dbus_id = 0;
 
-    // Same parameters used by NotificationPlatformBridge::Display().
     NotificationCommon::Type notification_type;
     const std::string notification_id;
     const std::string profile_id;
@@ -499,22 +497,21 @@ class NotificationPlatformBridgeLinuxImpl
   // Makes the "Notify" call to D-Bus.
   void DisplayOnTaskRunner(
       NotificationCommon::Type notification_type,
-      const std::string& notification_id,
       const std::string& profile_id,
       bool is_incognito,
       std::unique_ptr<message_center::Notification> notification) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     NotificationData* data =
-        FindNotificationData(notification_id, profile_id, is_incognito);
+        FindNotificationData(notification->id(), profile_id, is_incognito);
     if (data) {
       // Update an existing notification.
       data->notification_type = notification_type;
       data->resource_files.clear();
     } else {
       // Send the notification for the first time.
-      data =
-          new NotificationData(notification_type, notification_id, profile_id,
-                               is_incognito, notification->origin_url());
+      data = new NotificationData(notification_type, notification->id(),
+                                  profile_id, is_incognito,
+                                  notification->origin_url());
       notifications_.emplace(data, base::WrapUnique(data));
     }
 
@@ -773,7 +770,7 @@ class NotificationPlatformBridgeLinuxImpl
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     PostTaskToUiThread(base::BindOnce(
         ForwardNotificationOperationOnUiThread, operation,
-        data->notification_type, data->origin_url.spec(), data->notification_id,
+        data->notification_type, data->origin_url, data->notification_id,
         action_index, by_user, data->profile_id, data->is_incognito));
   }
 
@@ -984,13 +981,12 @@ NotificationPlatformBridgeLinux::~NotificationPlatformBridgeLinux() = default;
 
 void NotificationPlatformBridgeLinux::Display(
     NotificationCommon::Type notification_type,
-    const std::string& notification_id,
     const std::string& profile_id,
     bool is_incognito,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
-  impl_->Display(notification_type, notification_id, profile_id, is_incognito,
-                 notification, std::move(metadata));
+  impl_->Display(notification_type, profile_id, is_incognito, notification,
+                 std::move(metadata));
 }
 
 void NotificationPlatformBridgeLinux::Close(

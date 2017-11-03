@@ -33,7 +33,7 @@ class DownloadNotificationHandler : public NotificationHandler {
   ~DownloadNotificationHandler() override {}
 
   void OnClose(Profile* profile,
-               const std::string& origin,
+               const GURL& origin,
                const std::string& notification_id,
                bool by_user) override {
     if (by_user) {
@@ -43,7 +43,7 @@ class DownloadNotificationHandler : public NotificationHandler {
   }
 
   void OnClick(Profile* profile,
-               const std::string& origin,
+               const GURL& origin,
                const std::string& notification_id,
                const base::Optional<int>& action_index,
                const base::Optional<base::string16>& reply) override {

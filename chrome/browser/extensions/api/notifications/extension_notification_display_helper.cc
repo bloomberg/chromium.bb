@@ -30,8 +30,7 @@ void ExtensionNotificationDisplayHelper::Display(
   notifications_.push_back(
       std::make_unique<message_center::Notification>(notification));
 
-  GetDisplayService()->Display(NotificationCommon::EXTENSION, notification.id(),
-                               notification);
+  GetDisplayService()->Display(NotificationCommon::EXTENSION, notification);
 }
 
 message_center::Notification*

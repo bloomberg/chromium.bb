@@ -33,10 +33,8 @@ class Notification;
 // is used frequently in Chrome, is nicer to use and has already been vetted.
 class NotificationTemplateBuilder {
  public:
-  // Builds the notification template for the given |notification|. The given
-  // |notification_id| will be available when the user interacts with the toast.
+  // Builds the notification template for the given |notification|.
   static std::unique_ptr<NotificationTemplateBuilder> Build(
-      const std::string& notification_id,
       const message_center::Notification& notification);
 
   ~NotificationTemplateBuilder();

@@ -58,7 +58,7 @@ NotificationHandler* NotificationDisplayService::GetNotificationHandler(
 void NotificationDisplayService::ProcessNotificationOperation(
     NotificationCommon::Operation operation,
     NotificationCommon::Type notification_type,
-    const std::string& origin,
+    const GURL& origin,
     const std::string& notification_id,
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply,

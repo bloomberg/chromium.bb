@@ -235,7 +235,7 @@ void DownloadItemNotification::DisablePopup() {
   notification_->set_priority(message_center::LOW_PRIORITY);
   closed_ = false;
   NotificationDisplayServiceFactory::GetForProfile(profile())->Display(
-      NotificationCommon::DOWNLOAD, GetNotificationId(), *notification_);
+      NotificationCommon::DOWNLOAD, *notification_);
 }
 
 void DownloadItemNotification::OnNotificationClose() {
@@ -428,7 +428,7 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
       notification_->set_priority(notification_->priority() + 1);
     }
     NotificationDisplayServiceFactory::GetForProfile(profile())->Display(
-        NotificationCommon::DOWNLOAD, GetNotificationId(), *notification_);
+        NotificationCommon::DOWNLOAD, *notification_);
   }
 
   if (item_->IsDone() && image_decode_status_ == NOT_STARTED) {

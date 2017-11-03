@@ -353,7 +353,7 @@ void PlatformNotificationServiceImpl::DisplayNotification(
                                   notification_id, origin));
 
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
-      NotificationCommon::NON_PERSISTENT, notification_id, notification);
+      NotificationCommon::NON_PERSISTENT, notification);
 }
 
 void PlatformNotificationServiceImpl::DisplayPersistentNotification(
@@ -383,8 +383,7 @@ void PlatformNotificationServiceImpl::DisplayPersistentNotification(
   metadata->service_worker_scope = service_worker_scope;
 
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
-      NotificationCommon::PERSISTENT, notification_id, notification,
-      std::move(metadata));
+      NotificationCommon::PERSISTENT, notification, std::move(metadata));
   base::RecordAction(base::UserMetricsAction("Notifications.Persistent.Shown"));
 }
 
