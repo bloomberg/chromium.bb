@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -318,127 +317,6 @@ IN_PROC_BROWSER_TEST_F(DefaultProfileExtensionBrowserTest, NoExtensionHosts) {
 
   pm = ProcessManager::Get(otr);
   EXPECT_EQ(0u, pm->background_hosts().size());
-}
-
-// Test that extension URLs can be opened in main profile and in incognito
-// profile without hitting the tightened CanCommitURL checks in
-// ChromeContentBrowserClientExtensionsPart.  This test is mostly based
-// on the manual repro steps for https://crbug.com/691145.
-IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
-                       ExtensionSpanningIncognitoProfile_ChildFrame) {
-  // Setup the embedded test server.
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Create a test extension in incognito spanning mode (see also
-  // https://developer.chrome.com/extensions/manifest/incognito).
-  TestExtensionDir test_dir;
-  test_dir.WriteManifest(R"( { "manifest_version": 2,
-                               "browser_action": {},
-                               "permissions": ["activeTab"],
-                               "name": "spanning",
-                               "incognito": "spanning",
-                               "web_accessible_resources": ["foo.html"],
-                               "version": "0.1"
-                             } )");
-  test_dir.WriteFile(FILE_PATH_LITERAL("foo.html"),
-                     "<!DOCTYPE HTML>\n<html><body>Hello world!</body></html>");
-  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
-  ASSERT_TRUE(extension);
-  extensions::util::SetIsIncognitoEnabled(extension->id(), browser()->profile(),
-                                          true);
-
-  // Grab the 2 URLs that we will test with.
-  GURL page_url(embedded_test_server()->GetURL("/title1.html"));
-  GURL extension_url = extension->GetResourceURL("foo.html");
-  std::string script = base::StringPrintf(R"(
-            var i = document.createElement("iframe");
-            i.src = "%s";
-            document.body.appendChild(i);
-  )", extension_url.spec().c_str());
-
-  // Navigate a subframe to an extension URL in the main profile.
-  ui_test_utils::NavigateToURL(browser(), page_url);
-  content::WebContents* user_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver user_nav_observer(user_contents);
-  EXPECT_TRUE(content::ExecuteScript(user_contents, script));
-  user_nav_observer.WaitForNavigationFinished();
-  ASSERT_EQ(2u, user_contents->GetAllFrames().size());
-  content::RenderFrameHost* user_frame = user_contents->GetAllFrames()[1];
-
-  // Navigate a subframe to an extension URL in the incognito profile.
-  Browser* browser_incognito =
-      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
-  ui_test_utils::NavigateToURL(browser_incognito, page_url);
-  content::WebContents* incognito_contents =
-      browser_incognito->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver incognito_nav_observer(incognito_contents);
-  EXPECT_TRUE(content::ExecuteScript(incognito_contents, script));
-  incognito_nav_observer.WaitForNavigationFinished();
-  ASSERT_EQ(2u, incognito_contents->GetAllFrames().size());
-  content::RenderFrameHost* incognito_frame =
-      incognito_contents->GetAllFrames()[1];
-
-  // The main test verification is that nothing crashad / no renderer got killed
-  // (and that both tabs show the expected contents).
-  EXPECT_EQ(extension_url, incognito_frame->GetLastCommittedURL());
-  EXPECT_EQ(extension_url, user_frame->GetLastCommittedURL());
-  EXPECT_TRUE(user_frame->IsRenderFrameLive());
-  EXPECT_TRUE(incognito_frame->IsRenderFrameLive());
-
-  // Verify that the incognito frame is in a separate process from the main
-  // profile frame.  Other process relationships are not well defined until
-  // we resolve https://crbug.com/691145.
-  EXPECT_NE(incognito_frame->GetProcess()->GetID(),
-            user_frame->GetProcess()->GetID());
-}
-
-// Test that extension URLs can be opened in main profile and in incognito
-// profile without hitting the tightened CanCommitURL checks in
-// ChromeContentBrowserClientExtensionsPart.
-IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
-                       ExtensionSpanningIncognitoProfile_MainFrame) {
-  // Create a test extension in incognito spanning mode (see also
-  // https://developer.chrome.com/extensions/manifest/incognito).
-  TestExtensionDir test_dir;
-  test_dir.WriteManifest(R"( { "manifest_version": 2,
-                               "name": "spanning",
-                               "incognito": "spanning",
-                               "version": "0.1"
-                             } )");
-  test_dir.WriteFile(FILE_PATH_LITERAL("foo.html"),
-                     "<!DOCTYPE HTML>\n<html><body>Hello world!</body></html>");
-  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
-  ASSERT_TRUE(extension);
-  GURL extension_url = extension->GetResourceURL("foo.html");
-
-  // Navigate in the main profile to an extension URL.
-  ui_test_utils::NavigateToURL(browser(), extension_url);
-  content::WebContents* user_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  content::RenderFrameHost* user_frame = user_contents->GetMainFrame();
-
-  // Navigate in the incognito profile to an extension URL.
-  Browser* browser_incognito =
-      OpenURLOffTheRecord(browser()->profile(), GURL("about:blank"));
-  ui_test_utils::NavigateToURL(browser_incognito, extension_url);
-  content::WebContents* incognito_contents =
-      browser_incognito->tab_strip_model()->GetActiveWebContents();
-  content::RenderFrameHost* incognito_frame =
-      incognito_contents->GetMainFrame();
-
-  // The main test verification is that nothing crashad / no renderer got killed
-  // (and that both tabs show the expected contents).
-  EXPECT_EQ(extension_url, incognito_frame->GetLastCommittedURL());
-  EXPECT_EQ(extension_url, user_frame->GetLastCommittedURL());
-  EXPECT_TRUE(user_frame->IsRenderFrameLive());
-  EXPECT_TRUE(incognito_frame->IsRenderFrameLive());
-
-  // Verify that the incognito frame is in a separate process from the main
-  // profile frame.  Other process relationships are not well defined until
-  // we resolve https://crbug.com/691145.
-  EXPECT_NE(incognito_frame->GetProcess()->GetID(),
-            user_frame->GetProcess()->GetID());
 }
 
 // Test that basic extension loading creates the appropriate ExtensionHosts
