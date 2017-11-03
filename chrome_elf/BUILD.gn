@@ -101,18 +101,6 @@ static_library("test_stubs") {
 ## source sets
 ##------------------------------------------------------------------------------
 
-source_set("security") {
-  sources = [
-    "chrome_elf_security.cc",
-    "chrome_elf_security.h",
-  ]
-  deps = [
-    ":constants",
-    ":nt_registry",
-    "//chrome/install_static:install_static_util",
-  ]
-}
-
 source_set("constants") {
   sources = [
     "chrome_elf_constants.cc",
@@ -127,6 +115,25 @@ source_set("dll_hash") {
   sources = [
     "dll_hash/dll_hash.cc",
     "dll_hash/dll_hash.h",
+  ]
+}
+
+source_set("security") {
+  sources = [
+    "chrome_elf_security.cc",
+    "chrome_elf_security.h",
+  ]
+  deps = [
+    ":constants",
+    ":nt_registry",
+    "//chrome/install_static:install_static_util",
+  ]
+}
+
+source_set("sha1") {
+  sources = [
+    "sha1/sha1.cc",
+    "sha1/sha1.h",
   ]
 }
 
@@ -243,6 +250,7 @@ test("chrome_elf_unittests") {
     "hook_util/test/hook_util_test.cc",
     "nt_registry/nt_registry_unittest.cc",
     "run_all_unittests.cc",
+    "sha1/sha1_unittest.cc",
     "whitelist/whitelist_ime_unittest.cc",
   ]
   include_dirs = [ "$target_gen_dir" ]
@@ -255,6 +263,7 @@ test("chrome_elf_unittests") {
     ":hook_util_test_dll",
     ":nt_registry",
     ":security",
+    ":sha1",
     ":whitelist",
     "//base",
     "//base/test:test_support",
