@@ -52,7 +52,7 @@ public abstract class ViewAndroidDelegate {
     }
 
     /**
-     * Set the anchor view to specified position and size (all units in dp).
+     * Set the anchor view to specified position and size (all units in px).
      * @param view The anchor view that needs to be positioned.
      * @param x X coordinate of the top left corner of the anchor view.
      * @param y Y coordinate of the top left corner of the anchor view.
@@ -60,24 +60,24 @@ public abstract class ViewAndroidDelegate {
      * @param height The height of the anchor view.
      */
     @CalledByNative
-    public void setViewPosition(View view, float x, float y,
-            float width, float height, float scale, int leftMargin, int topMargin) {
+    public void setViewPosition(
+            View view, float x, float y, float width, float height, int leftMargin, int topMargin) {
         ViewGroup containerView = getContainerView();
         if (containerView == null) return;
 
-        int scaledWidth = Math.round(width * scale);
-        int scaledHeight = Math.round(height * scale);
+        int widthInt = Math.round(width);
+        int heightInt = Math.round(height);
         int startMargin;
 
         if (ApiCompatibilityUtils.isLayoutRtl(containerView)) {
-            startMargin = containerView.getMeasuredWidth() - Math.round((width + x) * scale);
+            startMargin = containerView.getMeasuredWidth() - Math.round(width + x);
         } else {
             startMargin = leftMargin;
         }
-        if (scaledWidth + startMargin > containerView.getWidth()) {
-            scaledWidth = containerView.getWidth() - startMargin;
+        if (widthInt + startMargin > containerView.getWidth()) {
+            widthInt = containerView.getWidth() - startMargin;
         }
-        LayoutParams lp = new LayoutParams(scaledWidth, scaledHeight);
+        LayoutParams lp = new LayoutParams(widthInt, heightInt);
         ApiCompatibilityUtils.setMarginStart(lp, startMargin);
         lp.topMargin = topMargin;
         view.setLayoutParams(lp);

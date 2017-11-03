@@ -210,8 +210,10 @@ public class AwContentsAnchorViewTest {
 
     private LayoutParams setLayoutParams(View anchorView, int coords, int dimension) {
         float scale = DisplayAndroid.getNonMultiDisplay(mContainerView.getContext()).getDipScale();
+        float scaledCoords = (float) coords * scale;
+        float scaledDimension = (float) dimension * scale;
         mViewDelegate.setViewPosition(
-                anchorView, coords, coords, dimension, dimension, scale, 10, 10);
+                anchorView, scaledCoords, scaledCoords, scaledDimension, scaledDimension, 10, 10);
         return anchorView.getLayoutParams();
     }
 

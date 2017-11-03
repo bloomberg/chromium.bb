@@ -105,25 +105,23 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
             }
             containerView.addView(anchorView);
             if (position != null) {
-                float scale = display.getDipScale();
-                setViewPosition(anchorView, position.mX, position.mY,
-                        position.mWidth, position.mHeight, scale,
-                        position.mLeftMargin, position.mTopMargin);
+                setViewPosition(anchorView, position.mX, position.mY, position.mWidth,
+                        position.mHeight, position.mLeftMargin, position.mTopMargin);
             }
         }
     }
 
-    @SuppressWarnings("deprecation")  // AbsoluteLayout
+    @SuppressWarnings("deprecation") // AbsoluteLayout
     @Override
     public void setViewPosition(View anchorView, float x, float y, float width, float height,
-            float scale, int leftMargin, int topMargin) {
+            int leftMargin, int topMargin) {
         ViewGroup containerView = getContainerView();
         if (!mAnchorViews.containsKey(anchorView) || containerView == null) return;
 
         mAnchorViews.put(anchorView, new Position(x, y, width, height, leftMargin, topMargin));
 
         if (containerView instanceof FrameLayout) {
-            super.setViewPosition(anchorView, x, y, width, height, scale, leftMargin, topMargin);
+            super.setViewPosition(anchorView, x, y, width, height, leftMargin, topMargin);
             return;
         }
         // This fixes the offset due to a difference in
@@ -134,11 +132,9 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
         leftMargin += mRenderCoordinates.getScrollXPixInt();
         topMargin += mRenderCoordinates.getScrollYPixInt();
 
-        int scaledWidth = Math.round(width * scale);
-        int scaledHeight = Math.round(height * scale);
         android.widget.AbsoluteLayout.LayoutParams lp =
                 new android.widget.AbsoluteLayout.LayoutParams(
-                    scaledWidth, scaledHeight, leftMargin, topMargin);
+                        Math.round(width), Math.round(height), leftMargin, topMargin);
         anchorView.setLayoutParams(lp);
     }
 

@@ -68,7 +68,7 @@ public class AutofillTest {
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             View anchorView = viewDelegate.acquireView();
-            viewDelegate.setViewPosition(anchorView, 50f, 500f, 500f, 500f, 1f, 10, 10);
+            viewDelegate.setViewPosition(anchorView, 50f, 500f, 500f, 500f, 10, 10);
 
             mWindowAndroid = new ActivityWindowAndroid(activity);
             mAutofillPopup = new AutofillPopup(activity, anchorView, mMockAutofillCallback);
