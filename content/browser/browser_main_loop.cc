@@ -244,14 +244,6 @@
 namespace content {
 namespace {
 
-bool IsUsingMus() {
-#if defined(USE_AURA)
-  return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
-#else
-  return false;
-#endif
-}
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
     !defined(OS_FUCHSIA)
 void SetupSandbox(const base::CommandLine& parsed_command_line) {
@@ -1654,6 +1646,15 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
 
   return result_code_;
+}
+
+// static
+bool BrowserMainLoop::IsUsingMus() {
+#if defined(USE_AURA)
+  return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
+#else
+  return false;
+#endif
 }
 
 bool BrowserMainLoop::UsingInProcessGpu() const {
