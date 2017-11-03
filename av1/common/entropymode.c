@@ -1629,13 +1629,10 @@ static const aom_cdf_prob
       { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
       { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
       { AOM_ICDF(8192), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(8192), AOM_ICDF(32768), 0 }
     };
 #endif  // CONFIG_NEW_MULTISYMBOL
 static const aom_prob default_compound_idx_probs[COMP_INDEX_CONTEXTS] = {
-  192, 128, 64, 192, 128, 64, 192, 128, 64,
+  192, 128, 64, 192, 128, 64
 };
 #endif  // CONFIG_JNT_COMP
 
