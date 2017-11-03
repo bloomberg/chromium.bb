@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/lock_screen_apps/toast_dialog_view.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,14 +16,25 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/extension.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 
 namespace lock_screen_apps {
+
+namespace {
+
+// Toast dialog's vertical offset from the app window bottom.
+constexpr int kToastDialogVerticalOffset = 20;
+
+}  // namespace
 
 FirstAppRunToastManager::FirstAppRunToastManager(Profile* profile)
     : profile_(profile),
       toast_widget_observer_(this),
       app_window_observer_(this),
+      native_app_window_observer_(this),
       weak_ptr_factory_(this) {}
 
 FirstAppRunToastManager::~FirstAppRunToastManager() {
@@ -47,14 +59,18 @@ void FirstAppRunToastManager::RunForAppWindow(
   }
 
   app_window_ = app_window;
+  native_app_window_observer_.Add(app_window_->GetNativeWindow());
 
-  if (app_window_->GetNativeWindow()->IsVisible())
+  if (app_window_->GetNativeWindow()->HasFocus()) {
     CreateAndShowToastDialog();
-  else
-    app_window_observer_.Add(app_window->GetNativeWindow());
+  } else {
+    app_window_observer_.Add(
+        extensions::AppWindowRegistry::Get(app_window_->browser_context()));
+  }
 }
 
 void FirstAppRunToastManager::Reset() {
+  native_app_window_observer_.RemoveAll();
   app_window_observer_.RemoveAll();
   toast_widget_observer_.RemoveAll();
 
@@ -71,17 +87,26 @@ void FirstAppRunToastManager::OnWidgetDestroyed(views::Widget* widget) {
   Reset();
 }
 
-void FirstAppRunToastManager::OnWindowVisibilityChanged(aura::Window* window,
-                                                        bool visible) {
-  // NOTE: Use |window->IsVisible()|, rather than |visible| because |IsVisible|
-  // takes into account whether the window is actually drawn (not just whether
-  // window show has been called).
-  if (!window->IsVisible())
-    return;
+void FirstAppRunToastManager::OnAppWindowActivated(
+    extensions::AppWindow* app_window) {
+  if (app_window == app_window_) {
+    app_window_observer_.RemoveAll();
 
-  app_window_observer_.RemoveAll();
+    // Start toast dialog creation asynchronously so it happens after app window
+    // activation completes.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&FirstAppRunToastManager::CreateAndShowToastDialog,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
 
-  CreateAndShowToastDialog();
+void FirstAppRunToastManager::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
+  if (toast_widget_ && window == app_window_->GetNativeWindow())
+    AdjustToastWidgetBounds();
 }
 
 void FirstAppRunToastManager::CreateAndShowToastDialog() {
@@ -91,6 +116,7 @@ void FirstAppRunToastManager::CreateAndShowToastDialog() {
                  weak_ptr_factory_.GetWeakPtr()));
   toast_dialog->Show();
   toast_widget_ = toast_dialog->GetWidget();
+  AdjustToastWidgetBounds();
   toast_widget_observer_.Add(toast_widget_);
 }
 
@@ -102,6 +128,27 @@ void FirstAppRunToastManager::ToastDialogDismissed() {
     dict_update->SetBoolean(app->id(), true);
   }
   Reset();
+}
+
+void FirstAppRunToastManager::AdjustToastWidgetBounds() {
+  DCHECK(toast_widget_);
+  DCHECK(app_window_);
+
+  const gfx::Rect app_window_bounds =
+      app_window_->GetNativeWindow()->GetBoundsInScreen();
+  const gfx::Rect original_bounds = toast_widget_->GetWindowBoundsInScreen();
+
+  gfx::Point intended_origin = gfx::Point(
+      // Center toast widget horizontally relative to app_window bounds.
+      app_window_bounds.x() +
+          (app_window_bounds.width() - original_bounds.width()) / 2,
+      // Position toast widget dialog at the bottom of app window, with an
+      // additional offset (so poirtion of the dialog is painted outside the
+      // app window bounds).
+      app_window_bounds.bottom() - original_bounds.height() +
+          kToastDialogVerticalOffset);
+
+  toast_widget_->SetBounds(gfx::Rect(intended_origin, original_bounds.size()));
 }
 
 }  // namespace lock_screen_apps
