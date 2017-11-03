@@ -618,58 +618,6 @@ void SpdyStreamRequest::Reset() {
   callback_.Reset();
 }
 
-SpdySession::UnclaimedPushedStreamContainer::UnclaimedPushedStreamContainer(
-    SpdySession* spdy_session)
-    : spdy_session_(spdy_session) {}
-SpdySession::UnclaimedPushedStreamContainer::~UnclaimedPushedStreamContainer() {
-}
-
-size_t SpdySession::UnclaimedPushedStreamContainer::erase(const GURL& url) {
-  const_iterator it = find(url);
-  if (it != end()) {
-    erase(it);
-    return 1;
-  }
-  return 0;
-}
-
-SpdySession::UnclaimedPushedStreamContainer::iterator
-SpdySession::UnclaimedPushedStreamContainer::erase(const_iterator it) {
-  DCHECK(spdy_session_->pool_);
-  DCHECK(it != end());
-  // Only allow cross-origin push for secure resources.
-  if (it->first.SchemeIsCryptographic()) {
-    spdy_session_->pool_->push_promise_index()->UnregisterUnclaimedPushedStream(
-        it->first, spdy_session_);
-  }
-  return streams_.erase(it);
-}
-
-bool SpdySession::UnclaimedPushedStreamContainer::insert(
-    const GURL& url,
-    SpdyStreamId stream_id,
-    const base::TimeTicks& creation_time) {
-  DCHECK(spdy_session_->pool_);
-  auto result = streams_.insert(std::make_pair(
-      url, SpdySession::UnclaimedPushedStreamContainer::PushedStreamInfo(
-               stream_id, creation_time)));
-  if (!result.second) {
-    // Only one pushed stream is allowed for each URL.
-    return false;
-  }
-  // Only allow cross-origin push for https resources.
-  if (url.SchemeIsCryptographic()) {
-    spdy_session_->pool_->push_promise_index()->RegisterUnclaimedPushedStream(
-        url, spdy_session_->GetWeakPtr());
-  }
-  return true;
-}
-
-size_t SpdySession::UnclaimedPushedStreamContainer::EstimateMemoryUsage()
-    const {
-  return SpdyEstimateMemoryUsage(streams_);
-}
-
 // static
 bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
                           const SSLInfo& ssl_info,
@@ -1380,6 +1328,58 @@ size_t SpdySession::DumpMemoryStats(StreamSocket::SocketMemoryStats* stats,
          SpdyEstimateMemoryUsage(initial_settings_) +
          SpdyEstimateMemoryUsage(stream_send_unstall_queue_) +
          SpdyEstimateMemoryUsage(priority_dependency_state_);
+}
+
+SpdySession::UnclaimedPushedStreamContainer::UnclaimedPushedStreamContainer(
+    SpdySession* spdy_session)
+    : spdy_session_(spdy_session) {}
+SpdySession::UnclaimedPushedStreamContainer::~UnclaimedPushedStreamContainer() {
+}
+
+size_t SpdySession::UnclaimedPushedStreamContainer::erase(const GURL& url) {
+  const_iterator it = find(url);
+  if (it != end()) {
+    erase(it);
+    return 1;
+  }
+  return 0;
+}
+
+SpdySession::UnclaimedPushedStreamContainer::iterator
+SpdySession::UnclaimedPushedStreamContainer::erase(const_iterator it) {
+  DCHECK(spdy_session_->pool_);
+  DCHECK(it != end());
+  // Only allow cross-origin push for secure resources.
+  if (it->first.SchemeIsCryptographic()) {
+    spdy_session_->pool_->push_promise_index()->UnregisterUnclaimedPushedStream(
+        it->first, spdy_session_);
+  }
+  return streams_.erase(it);
+}
+
+bool SpdySession::UnclaimedPushedStreamContainer::insert(
+    const GURL& url,
+    SpdyStreamId stream_id,
+    const base::TimeTicks& creation_time) {
+  DCHECK(spdy_session_->pool_);
+  auto result = streams_.insert(std::make_pair(
+      url, SpdySession::UnclaimedPushedStreamContainer::PushedStreamInfo(
+               stream_id, creation_time)));
+  if (!result.second) {
+    // Only one pushed stream is allowed for each URL.
+    return false;
+  }
+  // Only allow cross-origin push for https resources.
+  if (url.SchemeIsCryptographic()) {
+    spdy_session_->pool_->push_promise_index()->RegisterUnclaimedPushedStream(
+        url, spdy_session_->GetWeakPtr());
+  }
+  return true;
+}
+
+size_t SpdySession::UnclaimedPushedStreamContainer::EstimateMemoryUsage()
+    const {
+  return SpdyEstimateMemoryUsage(streams_);
 }
 
 // {,Try}CreateStream() can be called with |in_io_loop_| set if a stream is
