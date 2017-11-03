@@ -52,10 +52,11 @@ void DesktopLinuxBrowserFrameViewLayout::LayoutNewStyleAvatar(
   nav_button_provider_->CalculateCaptionButtonLayout(
       new_avatar_button_->GetPreferredSize(), delegate_->GetTopAreaHeight(),
       &button_size, &button_spacing);
-  int inter_button_spacing = nav_button_provider_->GetInterNavButtonSpacing();
+  int extra_offset = has_trailing_buttons()
+                         ? nav_button_provider_->GetInterNavButtonSpacing()
+                         : 0;
 
-  int total_width =
-      button_size.width() + button_spacing.right() + inter_button_spacing;
+  int total_width = button_size.width() + button_spacing.right() + extra_offset;
 
   int button_x = host->width() - trailing_button_start_ - total_width;
   int button_y = button_spacing.top();

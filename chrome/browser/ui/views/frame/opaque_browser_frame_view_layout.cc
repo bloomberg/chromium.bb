@@ -274,7 +274,9 @@ void OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(views::View* host) {
     return;
 
   int button_width = new_avatar_button_->GetPreferredSize().width();
-  int button_width_with_offset = button_width + kCaptionSpacing;
+  int button_width_with_offset = button_width;
+  if (!trailing_buttons_.empty())
+    button_width_with_offset += kCaptionSpacing;
 
   int button_x =
       host->width() - trailing_button_start_ - button_width_with_offset;
