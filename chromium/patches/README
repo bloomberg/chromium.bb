@@ -92,10 +92,6 @@ Current patches:
   libavutil/mem.c
     Enable av_max_alloc(0) to remove alloc size bound.
 
-  libavutil/timer.h
-    C++11 compatability for string concatenation (http://crbug.com/454590).
-    Add spaces between string literals and tokens.
-
   libavutil/x86/x86inc.asm
     https://chromium-review.googlesource.com/#/c/272274/
     Fixes the conditionals on Linux so that these symbols are hidden and
