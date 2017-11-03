@@ -131,15 +131,12 @@ static_library("zlib") {
 
   if (current_cpu == "arm" || current_cpu == "arm64") {
     if (arm_use_neon) {
-      # TODO: handle InflateBack case, see crbug.com/769880.
-      sources -= [
-        "inffast.c",
-        "inflate.c",
-      ]
+      sources -= [ "inflate.c" ]
       sources += [
         "contrib/optimizations/arm/chunkcopy_arm.h",
         "contrib/optimizations/chunkcopy.h",
         "contrib/optimizations/inffast_chunky.c",
+        "contrib/optimizations/inffast_chunky.h",
         "contrib/optimizations/inflate.c",
       ]
     }
