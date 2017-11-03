@@ -74,7 +74,6 @@ HOST_POST_CROSS_PACKAGES = (
 # so we have to list them here and wait.  Once it completes, entries here can
 # be removed so they'll end up on bots & dev's systems.
 NEW_PACKAGES = (
-    'sys-devel/lld',
 )
 
 # Enable the Go compiler for these targets.
@@ -127,6 +126,7 @@ class Crossdev(object):
   # crossdev.
   MANUAL_PKGS = {
       'clang': 'sys-devel',
+      'lld': 'sys-devel',
       'llvm': 'sys-devel',
       'libcxxabi': 'sys-libs',
       'libcxx': 'sys-libs',
