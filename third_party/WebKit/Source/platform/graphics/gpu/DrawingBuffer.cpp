@@ -73,6 +73,7 @@ static bool g_should_fail_drawing_buffer_creation_for_testing = false;
 
 scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+    bool using_gpu_compositing,
     Client* client,
     const IntSize& size,
     bool premultiplied_alpha,
@@ -129,10 +130,11 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
     extensions_util->EnsureExtensionEnabled("GL_EXT_discard_framebuffer");
 
   scoped_refptr<DrawingBuffer> drawing_buffer = WTF::AdoptRef(new DrawingBuffer(
-      std::move(context_provider), std::move(extensions_util), client,
-      discard_framebuffer_supported, want_alpha_channel, premultiplied_alpha,
-      preserve, webgl_version, want_depth_buffer, want_stencil_buffer,
-      chromium_image_usage, color_params));
+      std::move(context_provider), using_gpu_compositing,
+      std::move(extensions_util), client, discard_framebuffer_supported,
+      want_alpha_channel, premultiplied_alpha, preserve, webgl_version,
+      want_depth_buffer, want_stencil_buffer, chromium_image_usage,
+      color_params));
   if (!drawing_buffer->Initialize(size, multisample_supported)) {
     drawing_buffer->BeginDestruction();
     return scoped_refptr<DrawingBuffer>();
@@ -146,6 +148,7 @@ void DrawingBuffer::ForceNextDrawingBufferCreationToFail() {
 
 DrawingBuffer::DrawingBuffer(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+    bool using_gpu_compositing,
     std::unique_ptr<Extensions3DUtil> extensions_util,
     Client* client,
     bool discard_framebuffer_supported,
@@ -167,7 +170,7 @@ DrawingBuffer::DrawingBuffer(
       discard_framebuffer_supported_(discard_framebuffer_supported),
       want_alpha_channel_(want_alpha_channel),
       premultiplied_alpha_(premultiplied_alpha),
-      software_rendering_(this->ContextProvider()->IsSoftwareRendering()),
+      using_gpu_compositing_(using_gpu_compositing),
       want_depth_(want_depth),
       want_stencil_(want_stencil),
       storage_color_space_(color_params.GetStorageGfxColorSpace()),
@@ -291,7 +294,7 @@ bool DrawingBuffer::PrepareTextureMailboxInternal(
   // Resolve the multisampled buffer into m_backColorBuffer texture.
   ResolveIfNeeded();
 
-  if (software_rendering_ && !force_gpu_result) {
+  if (!using_gpu_compositing_ && !force_gpu_result) {
     return FinishPrepareTextureMailboxSoftware(out_mailbox,
                                                out_release_callback);
   } else {

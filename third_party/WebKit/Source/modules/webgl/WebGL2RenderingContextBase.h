@@ -985,6 +985,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   WebGL2RenderingContextBase(
       CanvasRenderingContextHost*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
+      bool using_gpu_compositing,
       const CanvasContextCreationAttributes& requested_attributes);
 
   // DrawingBuffer::Client implementation.

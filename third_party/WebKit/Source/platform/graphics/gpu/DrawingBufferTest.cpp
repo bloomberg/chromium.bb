@@ -73,16 +73,15 @@ class DrawingBufferTest : public Test {
 
   void Init(UseMultisampling use_multisampling) {
     IntSize initial_size(kInitialWidth, kInitialHeight);
-    std::unique_ptr<GLES2InterfaceForTests> gl =
-        WTF::WrapUnique(new GLES2InterfaceForTests);
-    std::unique_ptr<WebGraphicsContext3DProviderForTests> provider =
-        WTF::WrapUnique(
-            new WebGraphicsContext3DProviderForTests(std::move(gl)));
+    auto gl = WTF::MakeUnique<GLES2InterfaceForTests>();
+    auto provider =
+        WTF::MakeUnique<WebGraphicsContext3DProviderForTests>(std::move(gl));
     GLES2InterfaceForTests* gl_ =
         static_cast<GLES2InterfaceForTests*>(provider->ContextGL());
+    bool gpu_compositing = true;
     drawing_buffer_ = DrawingBufferForTests::Create(
-        std::move(provider), gl_, initial_size, DrawingBuffer::kPreserve,
-        use_multisampling);
+        std::move(provider), gpu_compositing, gl_, initial_size,
+        DrawingBuffer::kPreserve, use_multisampling);
     CHECK(drawing_buffer_);
     SetAndSaveRestoreState(false);
   }
@@ -401,18 +400,17 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest,
     platform_.reset(new ScopedTestingPlatformSupport<FakePlatformSupport>);
 
     IntSize initial_size(kInitialWidth, kInitialHeight);
-    std::unique_ptr<GLES2InterfaceForTests> gl =
-        WTF::WrapUnique(new GLES2InterfaceForTests);
-    std::unique_ptr<WebGraphicsContext3DProviderForTests> provider =
-        WTF::WrapUnique(
-            new WebGraphicsContext3DProviderForTests(std::move(gl)));
+    auto gl = WTF::MakeUnique<GLES2InterfaceForTests>();
+    auto provider =
+        WTF::MakeUnique<WebGraphicsContext3DProviderForTests>(std::move(gl));
     GLES2InterfaceForTests* gl_ =
         static_cast<GLES2InterfaceForTests*>(provider->ContextGL());
     image_id0_ = gl_->NextImageIdToBeCreated();
     EXPECT_CALL(*gl_, BindTexImage2DMock(image_id0_)).Times(1);
+    bool gpu_compositing = true;
     drawing_buffer_ = DrawingBufferForTests::Create(
-        std::move(provider), gl_, initial_size, DrawingBuffer::kPreserve,
-        kDisableMultisampling);
+        std::move(provider), gpu_compositing, gl_, initial_size,
+        DrawingBuffer::kPreserve, kDisableMultisampling);
     CHECK(drawing_buffer_);
     SetAndSaveRestoreState(true);
     ::testing::Mock::VerifyAndClearExpectations(gl_);
@@ -650,12 +648,10 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
     SCOPED_TRACE(cases[i].test_case_name);
-    std::unique_ptr<DepthStencilTrackingGLES2Interface> gl =
-        WTF::WrapUnique(new DepthStencilTrackingGLES2Interface);
+    auto gl = WTF::MakeUnique<DepthStencilTrackingGLES2Interface>();
     DepthStencilTrackingGLES2Interface* tracking_gl = gl.get();
-    std::unique_ptr<WebGraphicsContext3DProviderForTests> provider =
-        WTF::WrapUnique(
-            new WebGraphicsContext3DProviderForTests(std::move(gl)));
+    auto provider =
+        WTF::MakeUnique<WebGraphicsContext3DProviderForTests>(std::move(gl));
     DrawingBuffer::PreserveDrawingBuffer preserve = DrawingBuffer::kPreserve;
 
     bool premultiplied_alpha = false;
@@ -663,11 +659,13 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
     bool want_depth_buffer = cases[i].request_depth;
     bool want_stencil_buffer = cases[i].request_stencil;
     bool want_antialiasing = false;
+    bool gpu_compositing = true;
     scoped_refptr<DrawingBuffer> drawing_buffer = DrawingBuffer::Create(
-        std::move(provider), nullptr, IntSize(10, 10), premultiplied_alpha,
-        want_alpha_channel, want_depth_buffer, want_stencil_buffer,
-        want_antialiasing, preserve, DrawingBuffer::kWebGL1,
-        DrawingBuffer::kAllowChromiumImage, CanvasColorParams());
+        std::move(provider), gpu_compositing, nullptr, IntSize(10, 10),
+        premultiplied_alpha, want_alpha_channel, want_depth_buffer,
+        want_stencil_buffer, want_antialiasing, preserve,
+        DrawingBuffer::kWebGL1, DrawingBuffer::kAllowChromiumImage,
+        CanvasColorParams());
 
     // When we request a depth or a stencil buffer, we will get both.
     EXPECT_EQ(cases[i].request_depth || cases[i].request_stencil,
@@ -730,11 +728,12 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes) {
 }
 
 TEST_F(DrawingBufferTest,
-       verifyTooBigDrawingBufferExceedingV8MaxSizeFailsToCreate) {
+       VerifyTooBigDrawingBufferExceedingV8MaxSizeFailsToCreate) {
   IntSize too_big_size(1, (v8::TypedArray::kMaxLength / 4) + 1);
+  bool gpu_compositing = true;
   scoped_refptr<DrawingBuffer> too_big_drawing_buffer = DrawingBuffer::Create(
-      nullptr, nullptr, too_big_size, false, false, false, false, false,
-      DrawingBuffer::kDiscard, DrawingBuffer::kWebGL1,
+      nullptr, gpu_compositing, nullptr, too_big_size, false, false, false,
+      false, false, DrawingBuffer::kDiscard, DrawingBuffer::kWebGL1,
       DrawingBuffer::kAllowChromiumImage, CanvasColorParams());
   EXPECT_EQ(too_big_drawing_buffer, nullptr);
   drawing_buffer_->BeginDestruction();

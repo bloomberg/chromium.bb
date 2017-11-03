@@ -55,6 +55,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   WebGL2RenderingContext(
       CanvasRenderingContextHost*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
+      bool using_gpu_compositing,
       const CanvasContextCreationAttributes& requested_attributes);
 
   Member<EXTColorBufferFloat> ext_color_buffer_float_;

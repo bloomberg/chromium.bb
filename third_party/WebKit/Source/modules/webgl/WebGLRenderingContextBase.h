@@ -143,7 +143,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   static std::unique_ptr<WebGraphicsContext3DProvider>
   CreateWebGraphicsContext3DProvider(CanvasRenderingContextHost*,
                                      const CanvasContextCreationAttributes&,
-                                     unsigned web_gl_version);
+                                     unsigned web_gl_version,
+                                     bool* using_gpu_compositing);
   static void ForceNextWebGLContextCreationToFail();
 
   unsigned Version() const { return version_; }
@@ -627,10 +628,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
+                            bool using_gpu_compositing,
                             const CanvasContextCreationAttributes&,
                             unsigned);
   scoped_refptr<DrawingBuffer> CreateDrawingBuffer(
-      std::unique_ptr<WebGraphicsContext3DProvider>);
+      std::unique_ptr<WebGraphicsContext3DProvider>,
+      bool using_gpu_compositing);
   void SetupFlags();
 
   // CanvasRenderingContext implementation.
@@ -1658,13 +1661,15 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
                             scoped_refptr<WebTaskRunner>,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
+                            bool using_gpu_compositing,
                             const CanvasContextCreationAttributes&,
                             unsigned);
   static bool SupportOwnOffscreenSurface(ExecutionContext*);
   static std::unique_ptr<WebGraphicsContext3DProvider>
   CreateContextProviderInternal(CanvasRenderingContextHost*,
                                 const CanvasContextCreationAttributes&,
-                                unsigned);
+                                unsigned web_gl_version,
+                                bool* using_gpu_compositing);
   void TexImageCanvasByGPU(TexImageFunctionID,
                            HTMLCanvasElement*,
                            GLenum,

@@ -91,13 +91,15 @@ static bool ShouldCreateContext(
 CanvasRenderingContext* WebGLRenderingContext::Factory::Create(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributes& attrs) {
+  bool using_gpu_compositing;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider(
-      CreateWebGraphicsContext3DProvider(host, attrs, 1));
+      CreateWebGraphicsContext3DProvider(host, attrs, 1,
+                                         &using_gpu_compositing));
   if (!ShouldCreateContext(context_provider.get()))
     return nullptr;
 
-  WebGLRenderingContext* rendering_context =
-      new WebGLRenderingContext(host, std::move(context_provider), attrs);
+  WebGLRenderingContext* rendering_context = new WebGLRenderingContext(
+      host, std::move(context_provider), using_gpu_compositing, attrs);
   if (!rendering_context->GetDrawingBuffer()) {
     host->HostDispatchEvent(WebGLContextEvent::Create(
         EventTypeNames::webglcontextcreationerror, false, true,
@@ -119,9 +121,11 @@ void WebGLRenderingContext::Factory::OnError(HTMLCanvasElement* canvas,
 WebGLRenderingContext::WebGLRenderingContext(
     CanvasRenderingContextHost* host,
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+    bool using_gpu_compositing,
     const CanvasContextCreationAttributes& requested_attributes)
     : WebGLRenderingContextBase(host,
                                 std::move(context_provider),
+                                using_gpu_compositing,
                                 requested_attributes,
                                 1) {}
 

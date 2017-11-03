@@ -586,12 +586,17 @@ struct ContextProviderCreationInfo {
   KURL url;
   // Outputs.
   std::unique_ptr<WebGraphicsContext3DProvider> created_context_provider;
+  bool* using_gpu_compositing;
 };
 
 static void CreateContextProviderOnMainThread(
     ContextProviderCreationInfo* creation_info,
     WaitableEvent* waitable_event) {
   DCHECK(IsMainThread());
+  // Ask for gpu compositing mode when making the context. The context will be
+  // lost if the mode changes.
+  *creation_info->using_gpu_compositing =
+      !Platform::Current()->IsGpuCompositingDisabled();
   creation_info->created_context_provider =
       Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
           creation_info->context_attributes, creation_info->url, nullptr,
@@ -603,12 +608,14 @@ static std::unique_ptr<WebGraphicsContext3DProvider>
 CreateContextProviderOnWorkerThread(
     Platform::ContextAttributes context_attributes,
     Platform::GraphicsInfo* gl_info,
+    bool* using_gpu_compositing,
     const KURL& url) {
   WaitableEvent waitable_event;
   ContextProviderCreationInfo creation_info;
   creation_info.context_attributes = context_attributes;
   creation_info.gl_info = gl_info;
   creation_info.url = url.Copy();
+  creation_info.using_gpu_compositing = using_gpu_compositing;
   scoped_refptr<WebTaskRunner> task_runner =
       Platform::Current()->MainThread()->GetWebTaskRunner();
   task_runner->PostTask(
@@ -641,7 +648,8 @@ std::unique_ptr<WebGraphicsContext3DProvider>
 WebGLRenderingContextBase::CreateContextProviderInternal(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributes& attributes,
-    unsigned web_gl_version) {
+    unsigned web_gl_version,
+    bool* using_gpu_compositing) {
   DCHECK(host);
   ExecutionContext* execution_context = host->GetTopExecutionContext();
   DCHECK(execution_context);
@@ -654,12 +662,15 @@ WebGLRenderingContextBase::CreateContextProviderInternal(
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider;
   const auto& url = execution_context->Url();
   if (IsMainThread()) {
+    // Ask for gpu compositing mode when making the context. The context will be
+    // lost if the mode changes.
+    *using_gpu_compositing = !Platform::Current()->IsGpuCompositingDisabled();
     context_provider =
         Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
             context_attributes, url, nullptr, &gl_info);
   } else {
-    context_provider =
-        CreateContextProviderOnWorkerThread(context_attributes, &gl_info, url);
+    context_provider = CreateContextProviderOnWorkerThread(
+        context_attributes, &gl_info, using_gpu_compositing, url);
   }
   if (context_provider && !context_provider->BindToCurrentThread()) {
     context_provider = nullptr;
@@ -688,7 +699,8 @@ std::unique_ptr<WebGraphicsContext3DProvider>
 WebGLRenderingContextBase::CreateWebGraphicsContext3DProvider(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributes& attributes,
-    unsigned webgl_version) {
+    unsigned webgl_version,
+    bool* using_gpu_compositing) {
   if (host->IsWebGLBlocked()) {
     host->HostDispatchEvent(WebGLContextEvent::Create(
         EventTypeNames::webglcontextcreationerror, false, true,
@@ -703,7 +715,8 @@ WebGLRenderingContextBase::CreateWebGraphicsContext3DProvider(
     return nullptr;
   }
 
-  return CreateContextProviderInternal(host, attributes, webgl_version);
+  return CreateContextProviderInternal(host, attributes, webgl_version,
+                                       using_gpu_compositing);
 }
 
 void WebGLRenderingContextBase::ForceNextWebGLContextCreationToFail() {
@@ -976,12 +989,14 @@ static const GLenum kSupportedTypesTexImageSourceES3[] = {
 WebGLRenderingContextBase::WebGLRenderingContextBase(
     CanvasRenderingContextHost* host,
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+    bool using_gpu_compositing,
     const CanvasContextCreationAttributes& requested_attributes,
     unsigned version)
     : WebGLRenderingContextBase(
           host,
           host->GetTopExecutionContext()->GetTaskRunner(TaskType::kWebGL),
           std::move(context_provider),
+          using_gpu_compositing,
           requested_attributes,
           version) {}
 
@@ -989,6 +1004,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     CanvasRenderingContextHost* host,
     scoped_refptr<WebTaskRunner> task_runner,
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+    bool using_gpu_compositing,
     const CanvasContextCreationAttributes& requested_attributes,
     unsigned version)
     : CanvasRenderingContext(host, requested_attributes),
@@ -1026,7 +1042,8 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
                                              max_viewport_dims_);
 
   scoped_refptr<DrawingBuffer> buffer;
-  buffer = CreateDrawingBuffer(std::move(context_provider));
+  buffer =
+      CreateDrawingBuffer(std::move(context_provider), using_gpu_compositing);
   if (!buffer) {
     context_lost_mode_ = kSyntheticLostContext;
     return;
@@ -1053,7 +1070,8 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
 }
 
 scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
-    std::unique_ptr<WebGraphicsContext3DProvider> context_provider) {
+    std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+    bool using_gpu_compositing) {
   bool premultiplied_alpha = CreationAttributes().premultipliedAlpha();
   bool want_alpha_channel = CreationAttributes().alpha();
   bool want_depth_buffer = CreationAttributes().depth();
@@ -1084,10 +1102,10 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
                                   : DrawingBuffer::kAllowChromiumImage;
 
   return DrawingBuffer::Create(
-      std::move(context_provider), this, ClampedCanvasSize(),
-      premultiplied_alpha, want_alpha_channel, want_depth_buffer,
-      want_stencil_buffer, want_antialiasing, preserve, web_gl_version,
-      chromium_image_usage, ColorParams());
+      std::move(context_provider), using_gpu_compositing, this,
+      ClampedCanvasSize(), premultiplied_alpha, want_alpha_channel,
+      want_depth_buffer, want_stencil_buffer, want_antialiasing, preserve,
+      web_gl_version, chromium_image_usage, ColorParams());
 }
 
 void WebGLRenderingContextBase::InitializeNewContext() {
@@ -7495,20 +7513,25 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
       SupportOwnOffscreenSurface(execution_context));
   Platform::GraphicsInfo gl_info;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider;
+  bool using_gpu_compositing;
   const auto& url = Host()->GetExecutionContextUrl();
 
   if (IsMainThread()) {
+    // Ask for gpu compositing mode when making the context. The context will be
+    // lost if the mode changes.
+    using_gpu_compositing = !Platform::Current()->IsGpuCompositingDisabled();
     context_provider =
         Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
             attributes, url, nullptr, &gl_info);
   } else {
-    context_provider =
-        CreateContextProviderOnWorkerThread(attributes, &gl_info, url);
+    context_provider = CreateContextProviderOnWorkerThread(
+        attributes, &gl_info, &using_gpu_compositing, url);
   }
   scoped_refptr<DrawingBuffer> buffer;
   if (context_provider && context_provider->BindToCurrentThread()) {
     // Construct a new drawing buffer with the new GL context.
-    buffer = CreateDrawingBuffer(std::move(context_provider));
+    buffer =
+        CreateDrawingBuffer(std::move(context_provider), using_gpu_compositing);
     // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is
     // set to null.
   }
