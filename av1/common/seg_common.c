@@ -52,6 +52,17 @@ int av1_is_segfeature_signed(SEG_LVL_FEATURES feature_id) {
   return seg_feature_data_signed[feature_id];
 }
 
+// The 'seg_data' given for each segment can be either deltas (from the default
+// value chosen for the frame) or absolute values.
+//
+// Valid range for abs values is (0-127 for MB_LVL_ALT_Q), (0-63 for
+// SEGMENT_ALT_LF)
+// Valid range for delta values are (+/-127 for MB_LVL_ALT_Q), (+/-63 for
+// SEGMENT_ALT_LF)
+//
+// abs_delta = SEGMENT_DELTADATA (deltas) abs_delta = SEGMENT_ABSDATA (use
+// the absolute values given).
+
 void av1_set_segdata(struct segmentation *seg, int segment_id,
                      SEG_LVL_FEATURES feature_id, int seg_data) {
   if (seg_data < 0) {

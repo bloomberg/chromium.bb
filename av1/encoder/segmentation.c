@@ -32,12 +32,6 @@ void av1_disable_segmentation(struct segmentation *seg) {
   seg->update_data = 0;
 }
 
-void av1_set_segment_data(struct segmentation *seg, int8_t *feature_data,
-                          unsigned char abs_delta) {
-  seg->abs_delta = abs_delta;
-
-  memcpy(seg->feature_data, feature_data, sizeof(seg->feature_data));
-}
 void av1_disable_segfeature(struct segmentation *seg, int segment_id,
                             SEG_LVL_FEATURES feature_id) {
   seg->feature_mask[segment_id] &= ~(1 << feature_id);
