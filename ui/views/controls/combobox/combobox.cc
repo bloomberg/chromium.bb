@@ -488,6 +488,7 @@ void Combobox::ModelChanged() {
 
   content_size_ = GetContentSize();
   PreferredSizeChanged();
+  SchedulePaint();
 }
 
 void Combobox::SetSelectedIndex(int index) {
