@@ -631,7 +631,6 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
              origin->HasSuboriginAndShouldAllowCredentialsFor(params.Url()));
         break;
       case network::mojom::FetchCredentialsMode::kInclude:
-      case network::mojom::FetchCredentialsMode::kPassword:
         allow_stored_credentials = true;
         break;
     }

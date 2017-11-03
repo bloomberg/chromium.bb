@@ -109,18 +109,18 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheTimeout) {
   cache.AppendEntry(
       origin, url,
       CreateCacheItem("POST", "",
-                      network::mojom::FetchCredentialsMode::kPassword, 5));
+                      network::mojom::FetchCredentialsMode::kInclude, 5));
   cache.AppendEntry(
       origin, other_url,
       CreateCacheItem("POST", "",
-                      network::mojom::FetchCredentialsMode::kPassword, 5));
+                      network::mojom::FetchCredentialsMode::kInclude, 5));
 
   // Cache size should be 3 (counting origins and urls separately):
   EXPECT_EQ(3, cache.CacheSize());
 
   // Cache entry should still be valid:
   EXPECT_TRUE(cache.CanSkipPreflight(
-      origin, url, network::mojom::FetchCredentialsMode::kPassword, "POST",
+      origin, url, network::mojom::FetchCredentialsMode::kInclude, "POST",
       HTTPHeaderMap()));
 
   // Advance time by ten seconds:
@@ -128,7 +128,7 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheTimeout) {
 
   // Cache entry should now be expired:
   EXPECT_FALSE(cache.CanSkipPreflight(
-      origin, url, network::mojom::FetchCredentialsMode::kPassword, "POST",
+      origin, url, network::mojom::FetchCredentialsMode::kInclude, "POST",
       HTTPHeaderMap()));
 
   // Cache size should be 2, with the expired entry removed by call to
@@ -137,8 +137,8 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheTimeout) {
 
   // Cache entry should be expired:
   EXPECT_FALSE(cache.CanSkipPreflight(
-      origin, other_url, network::mojom::FetchCredentialsMode::kPassword,
-      "POST", HTTPHeaderMap()));
+      origin, other_url, network::mojom::FetchCredentialsMode::kInclude, "POST",
+      HTTPHeaderMap()));
 
   // Cache size should be 0, with the expired entry removed by call to
   // CanSkipPreflight():
@@ -161,7 +161,7 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheSize) {
   cache.AppendEntry(
       origin, url,
       CreateCacheItem("POST", "",
-                      network::mojom::FetchCredentialsMode::kPassword));
+                      network::mojom::FetchCredentialsMode::kInclude));
 
   // Cache size should be 2 (counting origins and urls separately):
   EXPECT_EQ(2, cache.CacheSize());
@@ -169,7 +169,7 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheSize) {
   cache.AppendEntry(
       origin, other_url,
       CreateCacheItem("POST", "",
-                      network::mojom::FetchCredentialsMode::kPassword));
+                      network::mojom::FetchCredentialsMode::kInclude));
 
   // Cache size should now be 3 (1 origin, 2 urls):
   EXPECT_EQ(3, cache.CacheSize());
@@ -177,7 +177,7 @@ TEST_F(WebCORSPreflightResultCacheTest, CacheSize) {
   cache.AppendEntry(
       other_origin, url,
       CreateCacheItem("POST", "",
-                      network::mojom::FetchCredentialsMode::kPassword));
+                      network::mojom::FetchCredentialsMode::kInclude));
   // Cache size should now be 4 (4 origin, 3 urls):
   EXPECT_EQ(5, cache.CacheSize());
 }
@@ -254,7 +254,7 @@ TEST_F(WebCORSPreflightResultCacheTest, CanSkipPreflight) {
       {"GET", "", network::mojom::FetchCredentialsMode::kOmit, "GET", "",
        network::mojom::FetchCredentialsMode::kInclude, false},
       {"GET", "", network::mojom::FetchCredentialsMode::kOmit, "GET", "",
-       network::mojom::FetchCredentialsMode::kPassword, false},
+       network::mojom::FetchCredentialsMode::kInclude, false},
   };
 
   for (const auto& test : tests) {

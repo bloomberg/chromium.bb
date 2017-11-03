@@ -6,7 +6,6 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/ThreadableLoader.h"
-#include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/fetch/BlobBytesConsumer.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/BytesConsumer.h"
@@ -76,7 +75,6 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   request->mime_type_ = mime_type_;
   request->integrity_ = integrity_;
   request->keepalive_ = keepalive_;
-  request->attached_credential_ = attached_credential_;
   return request;
 }
 
@@ -116,13 +114,6 @@ FetchRequestData::FetchRequestData()
       redirect_(WebURLRequest::kFetchRedirectModeFollow),
       response_tainting_(kBasicTainting),
       keepalive_(false) {}
-
-void FetchRequestData::SetCredentials(
-    network::mojom::FetchCredentialsMode credentials) {
-  credentials_ = credentials;
-  if (credentials_ != network::mojom::FetchCredentialsMode::kPassword)
-    attached_credential_ = nullptr;
-}
 
 void FetchRequestData::Trace(blink::Visitor* visitor) {
   visitor->Trace(buffer_);

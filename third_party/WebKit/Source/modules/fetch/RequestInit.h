@@ -9,7 +9,6 @@
 #include "bindings/modules/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
 #include "modules/fetch/Headers.h"
 #include "platform/heap/Handle.h"
-#include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/RefPtr.h"
@@ -40,9 +39,6 @@ class RequestInit {
   const String& Redirect() const { return redirect_; }
   const String& Integrity() const { return integrity_; }
   const WTF::Optional<bool>& Keepalive() const { return keepalive_; }
-  scoped_refptr<EncodedFormData> AttachedCredential() {
-    return attached_credential_;
-  }
   bool AreAnyMembersSet() const { return are_any_members_set_; }
 
  private:
@@ -75,7 +71,6 @@ class RequestInit {
   String redirect_;
   String integrity_;
   WTF::Optional<bool> keepalive_;
-  scoped_refptr<EncodedFormData> attached_credential_;
   // True if any members in RequestInit are set and hence the referrer member
   // should be used in the Request constructor.
   bool are_any_members_set_ = false;
