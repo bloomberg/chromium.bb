@@ -11,6 +11,7 @@
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/path_service.h"
+#include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -829,17 +830,23 @@ TEST_F(CRWWebControllerTitleTest, TitleChange) {
   // Observes and waits for TitleWasSet call.
   class TitleObserver : public WebStateObserver {
    public:
-    explicit TitleObserver(WebState* web_state) : WebStateObserver(web_state) {}
+    TitleObserver() = default;
+
     // Returns number of times |TitleWasSet| was called.
     int title_change_count() { return title_change_count_; }
     // WebStateObserver overrides:
     void TitleWasSet(WebState* web_state) override { title_change_count_++; }
+    void WebStateDestroyed(WebState* web_state) override { NOTREACHED(); }
 
    private:
     int title_change_count_ = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(TitleObserver);
   };
 
-  TitleObserver observer(web_state());
+  TitleObserver observer;
+  ScopedObserver<WebState, WebStateObserver> scoped_observer(&observer);
+  scoped_observer.Add(web_state());
   ASSERT_EQ(0, observer.title_change_count());
 
   // Expect TitleWasSet callback after the page is loaded.
