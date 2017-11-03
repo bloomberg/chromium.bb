@@ -228,6 +228,10 @@ template("write_build_config") {
       if (defined(invoker.disable_compression) && invoker.disable_compression) {
         args += [ "--disable-asset-compression" ]
       }
+      if (defined(invoker.treat_as_locale_paks) &&
+          invoker.treat_as_locale_paks) {
+        args += [ "--treat-as-locale-paks" ]
+      }
     }
 
     if (is_android_resources || is_apk) {

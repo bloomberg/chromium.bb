@@ -31,7 +31,7 @@ _CHROME_TO_ANDROID_LOCALE_MAP = {
     'en-GB': 'en-rGB',
     'en-US': 'en-rUS',
     'es-419': 'es-rUS',
-    'fin': 'tl',
+    'fil': 'tl',
     'he': 'iw',
     'id': 'in',
     'pt-PT': 'pt-rPT',
