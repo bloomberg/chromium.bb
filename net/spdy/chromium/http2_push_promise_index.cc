@@ -11,7 +11,10 @@
 namespace net {
 
 Http2PushPromiseIndex::Http2PushPromiseIndex() {}
-Http2PushPromiseIndex::~Http2PushPromiseIndex() {}
+
+Http2PushPromiseIndex::~Http2PushPromiseIndex() {
+  DCHECK(unclaimed_pushed_streams_.empty());
+}
 
 base::WeakPtr<SpdySession> Http2PushPromiseIndex::Find(
     const SpdySessionKey& key,
@@ -29,11 +32,6 @@ base::WeakPtr<SpdySession> Http2PushPromiseIndex::Find(
   for (WeakSessionList::iterator it = url_it->second.begin();
        it != url_it->second.end();) {
     base::WeakPtr<SpdySession> spdy_session = *it;
-    // Lazy deletion of destroyed SpdySessions.
-    if (!spdy_session) {
-      it = url_it->second.erase(it);
-      continue;
-    }
     ++it;
     const SpdySessionKey& spdy_session_key = spdy_session->spdy_session_key();
     if (spdy_session_key.proxy_server() != key.proxy_server() ||
@@ -85,11 +83,6 @@ void Http2PushPromiseIndex::UnregisterUnclaimedPushedStream(
   size_t removed = 0;
   for (WeakSessionList::iterator it = url_it->second.begin();
        it != url_it->second.end();) {
-    // Lazy deletion of destroyed SpdySessions.
-    if (!*it) {
-      it = url_it->second.erase(it);
-      continue;
-    }
     if (it->get() == spdy_session) {
       it = url_it->second.erase(it);
       ++removed;
