@@ -243,7 +243,7 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
 
     EXPECT_EQ(output->animations.size(), 1ul);
     EXPECT_EQ(output->animations[0].local_time,
-              WTF::TimeDelta::FromSecondsD(123));
+              WTF::TimeDelta::FromMillisecondsD(123));
 
     // Passing a new empty input state should cause the worklet to remove the
     // previously constructed animator.

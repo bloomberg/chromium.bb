@@ -20,10 +20,10 @@ class MODULES_EXPORT EffectProxy : public ScriptWrappable {
   EffectProxy() {}
 
   void setLocalTime(double time) {
-    local_time_ = WTF::TimeDelta::FromSecondsD(time);
+    local_time_ = WTF::TimeDelta::FromMillisecondsD(time);
   }
 
-  double localTime() const { return local_time_.InSecondsF(); }
+  double localTime() const { return local_time_.InMillisecondsF(); }
 
   WTF::TimeDelta GetLocalTime() const { return local_time_; }
 
