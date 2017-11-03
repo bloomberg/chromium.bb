@@ -214,20 +214,6 @@ void CompositeEditCommand::ApplyCommandToComposite(
   commands_.push_back(command);
 }
 
-void CompositeEditCommand::ApplyCommandToComposite(
-    CompositeEditCommand* command,
-    const SelectionForUndoStep& selection,
-    EditingState* editing_state) {
-  command->SetParent(this);
-  if (selection != command->EndingSelection()) {
-    command->SetStartingSelection(selection);
-    command->SetEndingSelection(selection);
-  }
-  command->DoApply(editing_state);
-  if (!editing_state->IsAborted())
-    commands_.push_back(command);
-}
-
 void CompositeEditCommand::AppendCommandToUndoStep(
     CompositeEditCommand* command) {
   EnsureUndoStep()->Append(command->EnsureUndoStep());
