@@ -573,13 +573,7 @@ void DisplayManager::RegisterDisplayProperty(
     float ui_scale,
     const gfx::Insets* overscan_insets,
     const gfx::Size& resolution_in_pixels,
-    float device_scale_factor
-#if defined(OS_CHROMEOS)
-    ,
-    std::map<TouchDeviceIdentifier, TouchCalibrationData>*
-        touch_calibration_data_map
-#endif
-    ) {
+    float device_scale_factor) {
   if (display_info_.find(display_id) == display_info_.end())
     display_info_[display_id] =
         ManagedDisplayInfo(display_id, std::string(), false);
@@ -599,14 +593,7 @@ void DisplayManager::RegisterDisplayProperty(
     display_info_[display_id].set_configured_ui_scale(ui_scale);
   if (overscan_insets)
     display_info_[display_id].SetOverscanInsets(*overscan_insets);
-#if defined(OS_CHROMEOS)
-  if (touch_calibration_data_map) {
-    display_info_[display_id].SetTouchCalibrationDataMap(
-        *touch_calibration_data_map);
-  } else {
-    display_info_[display_id].ClearAllTouchCalibrationData();
-  }
-#endif
+
   if (!resolution_in_pixels.IsEmpty()) {
     DCHECK(!Display::IsInternalDisplayId(display_id));
     // Default refresh rate, until OnNativeDisplaysChanged() updates us with the
@@ -1271,57 +1258,77 @@ void DisplayManager::SetTouchCalibrationData(
   // calibration information related to the internal display.
   if (Display::HasInternalDisplay()) {
     int64_t intenral_display_id = Display::InternalDisplayId();
-    if (GetDisplayInfo(intenral_display_id)
-            .HasTouchDevice(touch_device_identifier)) {
+    if (touch_device_manager_->DisplayHasTouchDevice(intenral_display_id,
+                                                     touch_device_identifier)) {
       return;
     }
   }
-  bool update = false;
+  // Id of the display the touch device in context is currently associated
+  // with. This display id will be equal to |display_id| if no reassociation is
+  // being performed.
+  int64_t previous_display_id =
+      touch_device_manager_->GetAssociatedDisplay(touch_device_identifier);
+
+  bool update_add_support = false;
+  bool update_remove_support = false;
+
   TouchCalibrationData calibration_data(point_pair_quad, display_bounds);
+  touch_device_manager_->AddTouchCalibrationData(touch_device_identifier,
+                                                 display_id, calibration_data);
 
   DisplayInfoList display_info_list;
   for (const auto& display : active_display_list_) {
     ManagedDisplayInfo info = GetDisplayInfo(display.id());
     if (info.id() == display_id) {
-      info.SetTouchCalibrationData(touch_device_identifier, calibration_data);
-      update = true;
+      info.set_touch_support(Display::TOUCH_SUPPORT_AVAILABLE);
+      update_add_support = true;
+    } else if (info.id() == previous_display_id) {
+      // Since we are reassociating the touch device to another display, we need
+      // to check whether the display it was previous connected to still
+      // supports touch.
+      if (!touch_device_manager_
+               ->GetAssociatedTouchDevicesForDisplay(previous_display_id)
+               .empty()) {
+        info.set_touch_support(Display::TOUCH_SUPPORT_UNAVAILABLE);
+        update_remove_support = true;
+      }
     }
     display_info_list.push_back(info);
   }
-  if (update) {
-    UpdateDisplaysWith(display_info_list);
-  } else {
-    display_info_[display_id].SetTouchCalibrationData(touch_device_identifier,
-                                                      calibration_data);
+
+  // Update the non active displays.
+  if (!update_add_support) {
+    display_info_[display_id].set_touch_support(
+        Display::TOUCH_SUPPORT_AVAILABLE);
   }
+  if (!update_remove_support &&
+      !touch_device_manager_
+           ->GetAssociatedTouchDevicesForDisplay(previous_display_id)
+           .empty()) {
+    display_info_[previous_display_id].set_touch_support(
+        Display::TOUCH_SUPPORT_UNAVAILABLE);
+  }
+  // Update the active displays.
+  if (update_add_support || update_remove_support)
+    UpdateDisplaysWith(display_info_list);
 }
 
 void DisplayManager::ClearTouchCalibrationData(
     int64_t display_id,
     base::Optional<TouchDeviceIdentifier> touch_device_identifier) {
-  bool update = false;
+  if (touch_device_identifier) {
+    touch_device_manager_->ClearTouchCalibrationData(*touch_device_identifier,
+                                                     display_id);
+  } else {
+    touch_device_manager_->ClearAllTouchCalibrationData(display_id);
+  }
+
   DisplayInfoList display_info_list;
   for (const auto& display : active_display_list_) {
     ManagedDisplayInfo info = GetDisplayInfo(display.id());
-    if (info.id() == display_id) {
-      if (touch_device_identifier)
-        info.ClearTouchCalibrationData(*touch_device_identifier);
-      else
-        info.ClearAllTouchCalibrationData();
-      update = true;
-    }
     display_info_list.push_back(info);
   }
-  if (update) {
-    UpdateDisplaysWith(display_info_list);
-  } else {
-    if (touch_device_identifier) {
-      display_info_[display_id].ClearTouchCalibrationData(
-          *touch_device_identifier);
-    } else {
-      display_info_[display_id].ClearAllTouchCalibrationData();
-    }
-  }
+  UpdateDisplaysWith(display_info_list);
 }
 #endif
 

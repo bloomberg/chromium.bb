@@ -17,6 +17,10 @@ namespace gfx {
 class Point;
 }
 
+namespace display {
+struct TouchCalibrationData;
+}
+
 namespace chromeos {
 
 // Registers the prefs associated with display settings and stored
@@ -42,6 +46,14 @@ void StoreDisplayLayoutPrefForTest(const display::DisplayIdList& list,
 
 // Stores the given |power_state| for tests.
 void StoreDisplayPowerStateForTest(DisplayPowerState power_state);
+
+// Loads the touch association preference and updates the touch device manager.
+void LoadTouchAssociationPreferenceForTest();
+
+// Stores touch calibration data for display identified by |display_id| in the
+// deprecated legacy format.
+void StoreLegacyTouchDataForTest(int64_t display_id,
+                                 const display::TouchCalibrationData& data);
 
 // Parses the marshalled string data stored in local preferences for calibration
 // points and populates |point_pair_quad| using the unmarshalled data.

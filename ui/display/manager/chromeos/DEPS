@@ -17,4 +17,7 @@ specific_include_rules = {
     "+ui/events/devices/device_data_manager.h",
     "+ui/events/test/device_data_manager_test_api.h",
   ],
+  "touch_device_manager_test_api.cc": [
+    "+ui/events/devices/touchscreen_device.h",
+  ],
 }
