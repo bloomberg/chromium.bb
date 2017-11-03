@@ -46,8 +46,10 @@ class AutocompleteResult {
                      const ACMatches& matches);
 
   // Removes duplicates, puts the list in sorted order and culls to leave only
-  // the best GetMaxMatches() matches.  Sets the default match to the best match
-  // and updates the alternate nav URL.
+  // the best GetMaxMatches() matches. Sets the default match to the best match
+  // and updates the alternate nav URL. On desktop, it filters the matches to be
+  // either all tail suggestions (except for the first match) or no tail
+  // suggestions.
   void SortAndCull(const AutocompleteInput& input,
                    TemplateURLService* template_url_service);
 
@@ -126,6 +128,11 @@ class AutocompleteResult {
   // |match|.
   static bool HasMatchByDestination(const AutocompleteMatch& match,
                                     const ACMatches& matches);
+
+  // If there are both tail and non-tail suggestions (ignoring one default
+  // match), remove the tail suggestions.  If the only default matches are tail
+  // suggestions, remove the non-tail suggestions.
+  static void MaybeCullTailSuggestions(ACMatches* matches);
 
   // operator=() by another name.
   void CopyFrom(const AutocompleteResult& rhs);

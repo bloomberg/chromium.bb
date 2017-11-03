@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <string>
 
@@ -131,10 +132,13 @@ void AutocompleteResult::SortAndCull(
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i)
     i->ComputeStrippedDestinationURL(input, template_url_service);
 
+#if !(defined(OS_ANDROID) || defined(OS_IOS))
+  // Wipe tail suggestions if not exclusive (minus default match).
+  MaybeCullTailSuggestions(&matches_);
+#endif
   SortAndDedupMatches(input.current_page_classification(), &matches_);
 
   // Sort and trim to the most relevant GetMaxMatches() matches.
-  size_t max_num_matches = std::min(GetMaxMatches(), matches_.size());
   CompareWithDemoteByType<AutocompleteMatch> comparing_object(
       input.current_page_classification());
   std::sort(matches_.begin(), matches_.end(), comparing_object);
@@ -145,6 +149,7 @@ void AutocompleteResult::SortAndCull(
     std::rotate(matches_.begin(), it, it + 1);
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
+  const size_t max_num_matches = std::min(GetMaxMatches(), matches_.size());
   size_t num_matches;
   for (num_matches = 0u; (num_matches < max_num_matches) &&
        (comparing_object.GetDemotedRelevance(*match_at(num_matches)) > 0);
@@ -356,6 +361,71 @@ void AutocompleteResult::InlineTailPrefixes() {
   }
 }
 
+// static
+bool AutocompleteResult::HasMatchByDestination(const AutocompleteMatch& match,
+                                               const ACMatches& matches) {
+  for (ACMatches::const_iterator i(matches.begin()); i != matches.end(); ++i) {
+    if (i->destination_url == match.destination_url)
+      return true;
+  }
+  return false;
+}
+
+// static
+void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
+  std::function<bool(const AutocompleteMatch&)> is_tail =
+      [](const AutocompleteMatch& match) {
+        return match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
+      };
+  auto non_tail_default = std::find_if(
+      matches->begin(), matches->end(), [&](const AutocompleteMatch& match) {
+        return match.allowed_to_be_default_match && !is_tail(match);
+      });
+  // If the only default matches are tail suggestions, let them remain and
+  // instead remove the non-tail suggestions.  This is necessary because we do
+  // not want to display tail suggestions mixed with other suggestions in the
+  // dropdown below the first item (the default match).  In this case, we
+  // cannot remove the tail suggestions because we'll be left without a legal
+  // default match--the non-tail ones much go.  This situation though is
+  // unlikely, as we normally would expect the search-what-you-typed suggestion
+  // as a default match (and that's a non-tail suggestion).
+  if (non_tail_default == matches->end()) {
+    matches->erase(
+        std::remove_if(matches->begin(), matches->end(), std::not1(is_tail)),
+        matches->end());
+    return;
+  }
+  // Determine if there are both tail and non-tail matches, excluding the
+  // non-tail default match.
+  bool any_tail = false, any_non_tail = false;
+  for (auto i = matches->begin();
+       i != matches->end() && !(any_tail && any_non_tail); ++i) {
+    // We allow one default non-tail match.
+    if (i != non_tail_default) {
+      if (is_tail(*i))
+        any_tail = true;
+      else
+        any_non_tail = true;
+    }
+  }
+  // If both tail and non-tail matches, remove tail. Note that this can
+  // remove the highest rated suggestions.
+  if (any_tail) {
+    if (any_non_tail) {
+      matches->erase(std::remove_if(matches->begin(), matches->end(), is_tail),
+                     matches->end());
+    } else {
+      // We want the non-tail default match to be first. Mark tail suggestions
+      // as not a legal default match, so that the default match will be moved
+      // up explicitly.
+      for (auto& match : *matches) {
+        if (is_tail(match))
+          match.allowed_to_be_default_match = false;
+      }
+    }
+  }
+}
+
 void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
   if (this == &rhs)
     return;
@@ -373,16 +443,6 @@ void AutocompleteResult::BuildProviderToMatches(
     ProviderToMatches* provider_to_matches) const {
   for (ACMatches::const_iterator i(begin()); i != end(); ++i)
     (*provider_to_matches)[i->provider].push_back(*i);
-}
-
-// static
-bool AutocompleteResult::HasMatchByDestination(const AutocompleteMatch& match,
-                                               const ACMatches& matches) {
-  for (ACMatches::const_iterator i(matches.begin()); i != matches.end(); ++i) {
-    if (i->destination_url == match.destination_url)
-      return true;
-  }
-  return false;
 }
 
 void AutocompleteResult::MergeMatchesByProvider(
