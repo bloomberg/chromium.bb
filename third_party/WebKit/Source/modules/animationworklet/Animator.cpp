@@ -58,7 +58,7 @@ bool Animator::Animate(ScriptState* script_state,
       ToV8(effect_, script_state->GetContext()->Global(), isolate);
 
   v8::Local<v8::Value> v8_current_time =
-      ToV8((current_time_ - WTF::TimeTicks()).InSecondsF(),
+      ToV8((current_time_ - WTF::TimeTicks()).InMillisecondsF(),
            script_state->GetContext()->Global(), isolate);
 
   v8::Local<v8::Value> argv[] = {v8_current_time, v8_effect};
