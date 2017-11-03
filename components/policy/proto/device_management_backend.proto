@@ -1275,6 +1275,20 @@ message CheckDeviceLicenseResponse {
   repeated LicenseAvailability license_availability = 2;
 }
 
+// Sign in an Active Directory user using SAML SSO. The device management server
+// redirects the client to the Active Directory server in order to authenticate
+// and identify the Active Directory user. Active Directory redirects the client
+// back to the device management server with an assertion of the Active
+// Directory user's identity. The device management server then redirects the
+// client to Google's authentication service in order to provision the user on
+// the device.
+message ActiveDirectoryUserSigninRequest {}
+
+message ActiveDirectoryUserSigninResponse {
+  // Initial Redirect URL to start the SAML flow.
+  optional string auth_redirect_url = 1;
+}
+
 // Contains information about the TPM used on the device.
 message TpmVersionInfo {
   optional uint32 family = 1;
@@ -1314,6 +1328,7 @@ message TpmVersionInfo {
 //     * active_directory_enroll_play_user
 //     * active_directory_play_activity
 //     * check_device_license
+//     * active_directory_user_signin
 //
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
@@ -1325,8 +1340,8 @@ message TpmVersionInfo {
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
 //   * For unregister, policy, status, cert_upload, remote_commands,
-//     gcm_id_update, active_directory_enroll_play_user and
-//     active_directory_play_activity requests
+//     gcm_id_update, active_directory_enroll_play_user,
+//     active_directory_play_activity, and active_directory_user_signin requests
 //      Authorization: GoogleDMToken token=<dm token from register>
 //
 //   * The Authorization header isn't used for enterprise_check or for
@@ -1357,6 +1372,7 @@ message TpmVersionInfo {
 //       active_directory_enroll_play_user_request
 //   active_directory_play_activity: active_directory_play_activity_request
 //   check_device_license: check_device_license_request
+//   active_directory_user_signin: active_directory_user_signin_request
 //
 message DeviceManagementRequest {
   // Register request.
@@ -1401,8 +1417,7 @@ message DeviceManagementRequest {
       device_attribute_update_permission_request = 14;
 
   // Update device attribute.
-  optional DeviceAttributeUpdateRequest device_attribute_update_request
-      = 15;
+  optional DeviceAttributeUpdateRequest device_attribute_update_request = 15;
 
   // Update the GCM id to device_id mapping.
   optional GcmIdUpdateRequest gcm_id_update_request = 16;
@@ -1425,6 +1440,10 @@ message DeviceManagementRequest {
 
   // Request device license information.
   optional CheckDeviceLicenseRequest check_device_license_request = 21;
+
+  // Initiate an Active Directory user signin.
+  optional ActiveDirectoryUserSigninRequest
+      active_directory_user_signin_request = 22;
 }
 
 // Response from server to device.
@@ -1541,4 +1560,8 @@ message DeviceManagementResponse {
 
   // Response to a check device license request.
   optional CheckDeviceLicenseResponse check_device_license_response = 21;
+
+  // Response to a request initiating an Active Directory user signin.
+  optional ActiveDirectoryUserSigninResponse
+      active_directory_user_signin_response = 22;
 }
