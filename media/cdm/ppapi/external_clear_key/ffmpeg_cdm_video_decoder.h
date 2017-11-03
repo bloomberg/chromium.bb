@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
@@ -19,6 +20,7 @@ struct AVCodecContext;
 struct AVFrame;
 
 namespace media {
+class FFmpegDecodingLoop;
 
 class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
  public:
@@ -41,19 +43,24 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
                                   const cdm::Size& data_size);
 
  private:
-  // Allocates storage, then copies video frame stored in |av_frame_| to
+  bool OnNewFrame(AVFrame* frame);
+
+  // Allocates storage, then copies video frame stored in |frame| to
   // |cdm_video_frame|. Returns true when allocation and copy succeed.
-  bool CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame);
+  bool CopyAvFrameTo(AVFrame* frame, cdm::VideoFrame* cdm_video_frame);
 
   void ReleaseFFmpegResources();
 
   // FFmpeg structures owned by this object.
   std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
-  std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
+  std::unique_ptr<FFmpegDecodingLoop> decoding_loop_;
 
   bool is_initialized_;
 
   ClearKeyCdmHost* const host_;
+
+  base::circular_deque<std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame>>
+      pending_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegCdmVideoDecoder);
 };

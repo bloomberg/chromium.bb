@@ -4,17 +4,13 @@
 
 #include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "media/base/limits.h"
 #include "media/ffmpeg/ffmpeg_common.h"
-
-// Include FFmpeg header files.
-extern "C" {
-// Temporarily disable possible loss of data warning.
-MSVC_PUSH_DISABLE_WARNING(4244);
-#include <libavcodec/avcodec.h>
-MSVC_POP_WARNING();
-}  // extern "C"
+#include "media/ffmpeg/ffmpeg_decoding_loop.h"
 
 namespace media {
 
@@ -178,7 +174,7 @@ bool FFmpegCdmVideoDecoder::Initialize(const cdm::VideoDecoderConfig& config) {
     return false;
   }
 
-  av_frame_.reset(av_frame_alloc());
+  decoding_loop_.reset(new FFmpegDecodingLoop(codec_context_.get()));
   is_initialized_ = true;
 
   return true;
@@ -225,54 +221,51 @@ cdm::Status FFmpegCdmVideoDecoder::DecodeFrame(
   // Let FFmpeg handle presentation timestamp reordering.
   codec_context_->reordered_opaque = timestamp;
 
-  // Reset frame to default values.
-  av_frame_unref(av_frame_.get());
+  if (decoding_loop_->DecodePacket(
+          &packet, base::BindRepeating(&FFmpegCdmVideoDecoder::OnNewFrame,
+                                       base::Unretained(this))) !=
+      FFmpegDecodingLoop::DecodeStatus::kOkay) {
+    return cdm::kDecodeError;
+  }
 
-  // This is for codecs not using get_buffer to initialize
-  // |av_frame_->reordered_opaque|
-  av_frame_->reordered_opaque = codec_context_->reordered_opaque;
+  if (pending_frames_.empty())
+    return cdm::kNeedMoreData;
 
-  int frame_decoded = 0;
-  int result = avcodec_decode_video2(codec_context_.get(),
-                                     av_frame_.get(),
-                                     &frame_decoded,
-                                     &packet);
-  // Log the problem when we can't decode a video frame and exit early.
-  if (result < 0) {
-    LOG(ERROR) << "DecodeFrame(): Error decoding video frame with timestamp: "
-               << timestamp << " us, packet size: " << packet.size  << " bytes";
+  auto frame = std::move(pending_frames_.front());
+  pending_frames_.pop_front();
+
+  if (!CopyAvFrameTo(frame.get(), decoded_frame)) {
+    LOG(ERROR) << "DecodeFrame() could not copy video frame to output buffer.";
     return cdm::kDecodeError;
   }
 
   // If no frame was produced then signal that more data is required to produce
   // more frames.
-  if (frame_decoded == 0)
-    return cdm::kNeedMoreData;
-
-  // The decoder is in a bad state and not decoding correctly.
-  // Checking for NULL avoids a crash.
-  if (!av_frame_->data[cdm::VideoFrame::kYPlane] ||
-      !av_frame_->data[cdm::VideoFrame::kUPlane] ||
-      !av_frame_->data[cdm::VideoFrame::kVPlane]) {
-    LOG(ERROR) << "DecodeFrame(): Video frame has invalid frame data.";
-    return cdm::kDecodeError;
-  }
-
-  if (!CopyAvFrameTo(decoded_frame)) {
-    LOG(ERROR) << "DecodeFrame() could not copy video frame to output buffer.";
-    return cdm::kDecodeError;
-  }
-
   return cdm::kSuccess;
 }
 
-bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
-  DCHECK(cdm_video_frame);
-  DCHECK_EQ(av_frame_->format, AV_PIX_FMT_YUV420P);
-  DCHECK_EQ(av_frame_->width % 2, 0);
-  DCHECK_EQ(av_frame_->height % 2, 0);
+bool FFmpegCdmVideoDecoder::OnNewFrame(AVFrame* frame) {
+  // The decoder is in a bad state and not decoding correctly.
+  // Checking for NULL avoids a crash.
+  if (!frame->data[cdm::VideoFrame::kYPlane] ||
+      !frame->data[cdm::VideoFrame::kUPlane] ||
+      !frame->data[cdm::VideoFrame::kVPlane]) {
+    LOG(ERROR) << "DecodeFrame(): Video frame has invalid frame data.";
+    return false;
+  }
 
-  const int y_size = av_frame_->width * av_frame_->height;
+  pending_frames_.emplace_back(av_frame_clone(frame));
+  return true;
+}
+
+bool FFmpegCdmVideoDecoder::CopyAvFrameTo(AVFrame* frame,
+                                          cdm::VideoFrame* cdm_video_frame) {
+  DCHECK(cdm_video_frame);
+  DCHECK_EQ(frame->format, AV_PIX_FMT_YUV420P);
+  DCHECK_EQ(frame->width % 2, 0);
+  DCHECK_EQ(frame->height % 2, 0);
+
+  const int y_size = frame->width * frame->height;
   const int uv_size = y_size / 2;
   const int space_required = y_size + (uv_size * 2);
 
@@ -284,47 +277,39 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
   }
   cdm_video_frame->FrameBuffer()->SetSize(space_required);
 
-  CopyPlane(av_frame_->data[cdm::VideoFrame::kYPlane],
-            av_frame_->linesize[cdm::VideoFrame::kYPlane],
-            av_frame_->width,
-            av_frame_->height,
-            av_frame_->width,
+  CopyPlane(frame->data[cdm::VideoFrame::kYPlane],
+            frame->linesize[cdm::VideoFrame::kYPlane], frame->width,
+            frame->height, frame->width,
             cdm_video_frame->FrameBuffer()->Data());
 
-  const int uv_stride = av_frame_->width / 2;
-  const int uv_rows = av_frame_->height / 2;
-  CopyPlane(av_frame_->data[cdm::VideoFrame::kUPlane],
-            av_frame_->linesize[cdm::VideoFrame::kUPlane],
-            uv_stride,
-            uv_rows,
-            uv_stride,
-            cdm_video_frame->FrameBuffer()->Data() + y_size);
+  const int uv_stride = frame->width / 2;
+  const int uv_rows = frame->height / 2;
+  CopyPlane(frame->data[cdm::VideoFrame::kUPlane],
+            frame->linesize[cdm::VideoFrame::kUPlane], uv_stride, uv_rows,
+            uv_stride, cdm_video_frame->FrameBuffer()->Data() + y_size);
 
-  CopyPlane(av_frame_->data[cdm::VideoFrame::kVPlane],
-            av_frame_->linesize[cdm::VideoFrame::kVPlane],
-            uv_stride,
-            uv_rows,
+  CopyPlane(frame->data[cdm::VideoFrame::kVPlane],
+            frame->linesize[cdm::VideoFrame::kVPlane], uv_stride, uv_rows,
             uv_stride,
             cdm_video_frame->FrameBuffer()->Data() + y_size + uv_size);
 
-  AVPixelFormat format = static_cast<AVPixelFormat>(av_frame_->format);
+  AVPixelFormat format = static_cast<AVPixelFormat>(frame->format);
   cdm_video_frame->SetFormat(AVPixelFormatToCdmVideoFormat(format));
 
   cdm::Size video_frame_size;
-  video_frame_size.width = av_frame_->width;
-  video_frame_size.height = av_frame_->height;
+  video_frame_size.width = frame->width;
+  video_frame_size.height = frame->height;
   cdm_video_frame->SetSize(video_frame_size);
 
   cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kYPlane, 0);
   cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kUPlane, y_size);
-  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kVPlane,
-                                    y_size + uv_size);
+  cdm_video_frame->SetPlaneOffset(cdm::VideoFrame::kVPlane, y_size + uv_size);
 
-  cdm_video_frame->SetStride(cdm::VideoFrame::kYPlane, av_frame_->width);
+  cdm_video_frame->SetStride(cdm::VideoFrame::kYPlane, frame->width);
   cdm_video_frame->SetStride(cdm::VideoFrame::kUPlane, uv_stride);
   cdm_video_frame->SetStride(cdm::VideoFrame::kVPlane, uv_stride);
 
-  cdm_video_frame->SetTimestamp(av_frame_->reordered_opaque);
+  cdm_video_frame->SetTimestamp(frame->reordered_opaque);
 
   return true;
 }
@@ -332,8 +317,8 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
 void FFmpegCdmVideoDecoder::ReleaseFFmpegResources() {
   DVLOG(1) << "ReleaseFFmpegResources()";
 
+  decoding_loop_.reset();
   codec_context_.reset();
-  av_frame_.reset();
 }
 
 }  // namespace media

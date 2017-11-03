@@ -53,8 +53,8 @@ ACTION_P(ReturnBuffer, buffer) {
   arg0.Run(buffer.get() ? DemuxerStream::kOk : DemuxerStream::kAborted, buffer);
 }
 
-MATCHER(ContainsInvalidDataLog, "") {
-  return CONTAINS_STRING(arg, "Invalid data");
+MATCHER(ContainsFailedToSendLog, "") {
+  return CONTAINS_STRING(arg, "Failed to send");
 }
 
 class FFmpegVideoDecoderTest : public testing::Test {
@@ -284,7 +284,7 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_0ByteFrame) {
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {
   Initialize();
 
-  EXPECT_MEDIA_LOG(ContainsInvalidDataLog());
+  EXPECT_MEDIA_LOG(ContainsFailedToSendLog());
 
   // The error is only raised on the second decode attempt, so we expect at
   // least one successful decode but we don't expect valid frame to be decoded.
@@ -304,7 +304,7 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeErrorAtEndOfStream) {
   Initialize();
 
-  EXPECT_MEDIA_LOG(ContainsInvalidDataLog());
+  EXPECT_MEDIA_LOG(ContainsFailedToSendLog());
 
   EXPECT_EQ(DecodeStatus::DECODE_ERROR,
             DecodeSingleFrame(corrupt_i_frame_buffer_));

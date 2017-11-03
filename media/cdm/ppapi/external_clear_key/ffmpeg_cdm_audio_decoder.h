@@ -21,6 +21,7 @@ struct AVFrame;
 
 namespace media {
 class AudioTimestampHelper;
+class FFmpegDecodingLoop;
 }
 
 namespace media {
@@ -52,12 +53,13 @@ class FFmpegCdmAudioDecoder {
                            cdm::AudioFrames* decoded_frames);
 
  private:
+  bool OnNewFrame(
+      size_t* total_size,
+      std::vector<std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame>>* audio_frames,
+      AVFrame* frame);
   void ResetTimestampState();
   void ReleaseFFmpegResources();
-
-  base::TimeDelta GetNextOutputTimestamp() const;
-
-  void SerializeInt64(int64_t value);
+  void SerializeInt64(int64_t value, uint8_t* dest);
 
   bool is_initialized_;
 
@@ -65,7 +67,7 @@ class FFmpegCdmAudioDecoder {
 
   // FFmpeg structures owned by this object.
   std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
-  std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
+  std::unique_ptr<FFmpegDecodingLoop> decoding_loop_;
 
   // Audio format.
   int samples_per_second_;
@@ -78,14 +80,6 @@ class FFmpegCdmAudioDecoder {
   std::unique_ptr<AudioTimestampHelper> output_timestamp_helper_;
   int bytes_per_frame_;
   base::TimeDelta last_input_timestamp_;
-
-  // Number of output sample bytes to drop before generating output buffers.
-  // This is required for handling negative timestamps when decoding Vorbis
-  // audio, for example.
-  int output_bytes_to_drop_;
-
-  typedef std::vector<uint8_t> SerializedAudioFrames;
-  SerializedAudioFrames serialized_audio_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegCdmAudioDecoder);
 };
