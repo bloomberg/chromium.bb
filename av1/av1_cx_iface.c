@@ -1184,13 +1184,6 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 
   volatile aom_enc_frame_flags_t flags = enc_flags;
 
-  // Handle Flags
-  if (((flags & AOM_EFLAG_NO_UPD_GF) && (flags & AOM_EFLAG_FORCE_GF)) ||
-      ((flags & AOM_EFLAG_NO_UPD_ARF) && (flags & AOM_EFLAG_FORCE_ARF))) {
-    ctx->base.err_detail = "Conflicting flags.";
-    return AOM_CODEC_INVALID_PARAM;
-  }
-
   if (setjmp(cpi->common.error.jmp)) {
     cpi->common.error.setjmp = 0;
     res = update_error_state(ctx, &cpi->common.error);
@@ -1199,6 +1192,9 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
   }
   cpi->common.error.setjmp = 1;
 
+  // Note(yunqing): While applying encoding flags, always start from enabling
+  // all, and then modifying according to the flags. Previous frame's flags are
+  // overwritten.
   av1_apply_encoding_flags(cpi, flags);
 
   // Handle fixed keyframe intervals

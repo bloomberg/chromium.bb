@@ -424,6 +424,8 @@ typedef struct AV1_COMP {
   int ext_refresh_frame_flags_pending;
   int ext_refresh_last_frame;
   int ext_refresh_golden_frame;
+  int ext_refresh_bwd_ref_frame;
+  int ext_refresh_alt2_ref_frame;
   int ext_refresh_alt_ref_frame;
 
   int ext_refresh_frame_context_pending;

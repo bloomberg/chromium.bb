@@ -48,14 +48,27 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  * last frame or not automatically.
  */
 #define AOM_EFLAG_NO_REF_LAST (1 << 16)
-
+/*!\brief Don't reference the last2 frame
+ *
+ * When this flag is set, the encoder will not use the last2 frame as a
+ * predictor. When not set, the encoder will choose whether to use the
+ * last2 frame or not automatically.
+ */
+#define AOM_EFLAG_NO_REF_LAST2 (1 << 17)
+/*!\brief Don't reference the last3 frame
+ *
+ * When this flag is set, the encoder will not use the last3 frame as a
+ * predictor. When not set, the encoder will choose whether to use the
+ * last3 frame or not automatically.
+ */
+#define AOM_EFLAG_NO_REF_LAST3 (1 << 18)
 /*!\brief Don't reference the golden frame
  *
  * When this flag is set, the encoder will not use the golden frame as a
  * predictor. When not set, the encoder will choose whether to use the
  * golden frame or not automatically.
  */
-#define AOM_EFLAG_NO_REF_GF (1 << 17)
+#define AOM_EFLAG_NO_REF_GF (1 << 19)
 
 /*!\brief Don't reference the alternate reference frame
  *
@@ -63,49 +76,48 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  * predictor. When not set, the encoder will choose whether to use the
  * alt ref frame or not automatically.
  */
-#define AOM_EFLAG_NO_REF_ARF (1 << 21)
+#define AOM_EFLAG_NO_REF_ARF (1 << 20)
+/*!\brief Don't reference the bwd reference frame
+ *
+ * When this flag is set, the encoder will not use the bwd ref frame as a
+ * predictor. When not set, the encoder will choose whether to use the
+ * bwd ref frame or not automatically.
+ */
+#define AOM_EFLAG_NO_REF_BWD (1 << 21)
+/*!\brief Don't reference the alt2 reference frame
+ *
+ * When this flag is set, the encoder will not use the alt2 ref frame as a
+ * predictor. When not set, the encoder will choose whether to use the
+ * alt2 ref frame or not automatically.
+ */
+#define AOM_EFLAG_NO_REF_ARF2 (1 << 22)
 
 /*!\brief Don't update the last frame
  *
  * When this flag is set, the encoder will not update the last frame with
  * the contents of the current frame.
  */
-#define AOM_EFLAG_NO_UPD_LAST (1 << 18)
+#define AOM_EFLAG_NO_UPD_LAST (1 << 23)
 
 /*!\brief Don't update the golden frame
  *
  * When this flag is set, the encoder will not update the golden frame with
  * the contents of the current frame.
  */
-#define AOM_EFLAG_NO_UPD_GF (1 << 22)
+#define AOM_EFLAG_NO_UPD_GF (1 << 24)
 
 /*!\brief Don't update the alternate reference frame
  *
  * When this flag is set, the encoder will not update the alt ref frame with
  * the contents of the current frame.
  */
-#define AOM_EFLAG_NO_UPD_ARF (1 << 23)
-
-/*!\brief Force golden frame update
- *
- * When this flag is set, the encoder copy the contents of the current frame
- * to the golden frame buffer.
- */
-#define AOM_EFLAG_FORCE_GF (1 << 19)
-
-/*!\brief Force alternate reference frame update
- *
- * When this flag is set, the encoder copy the contents of the current frame
- * to the alternate reference frame buffer.
- */
-#define AOM_EFLAG_FORCE_ARF (1 << 24)
-
+#define AOM_EFLAG_NO_UPD_ARF (1 << 25)
 /*!\brief Disable entropy update
  *
  * When this flag is set, the encoder will not update its internal entropy
  * model based on the entropy of this frame.
  */
-#define AOM_EFLAG_NO_UPD_ENTROPY (1 << 20)
+#define AOM_EFLAG_NO_UPD_ENTROPY (1 << 26)
 
 /*!\brief AVx encoder control functions
  *

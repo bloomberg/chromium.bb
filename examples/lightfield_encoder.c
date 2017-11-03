@@ -190,9 +190,8 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
         die_codec(&codec, "Failed to set reference flags");
       // Reference frames can be encoded encoded without tiles.
       ++frame_count;
-      get_frame_stats(&codec, raw, frame_count, 1,
-                      AOM_EFLAG_FORCE_GF | AOM_EFLAG_NO_UPD_ENTROPY, deadline,
-                      &stats);
+      get_frame_stats(&codec, raw, frame_count, 1, AOM_EFLAG_NO_UPD_ENTROPY,
+                      deadline, &stats);
       ref_frame.idx = 0;
       aom_codec_control(&codec, AV1_GET_REFERENCE, &ref_frame);
       aom_img_copy(&ref_frame.img, &reference_images[frame_count - 1]);
@@ -317,9 +316,8 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
       ++frame_count;
       printf("Encoding reference image %d of %d\n", bv * u_blocks + bu,
              u_blocks * v_blocks);
-      encode_frame(&codec, raw, frame_count, 1,
-                   AOM_EFLAG_FORCE_GF | AOM_EFLAG_NO_UPD_ENTROPY, deadline,
-                   writer);
+      encode_frame(&codec, raw, frame_count, 1, AOM_EFLAG_NO_UPD_ENTROPY,
+                   deadline, writer);
       ref_frame.idx = 0;
       aom_codec_control(&codec, AV1_GET_REFERENCE, &ref_frame);
       aom_img_copy(&ref_frame.img, &reference_images[frame_count - 1]);
