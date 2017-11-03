@@ -24,6 +24,7 @@ const int kMinNumIterations = 1;
 const int kMaxNumIterations = 10;
 
 static const int kSupportedVideoCodecs[] = {kCodecVP8, kCodecVP9, kCodecH264};
+static const int kSupportedAudioCodecs[] = {kCodecOpus, kCodecPCM};
 
 static const int kSampleRatesInKHz[] = {48, 24, 16, 12, 8};
 
@@ -54,8 +55,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   for (const auto& input_type : kVideoAudioInputTypes) {
     const auto video_codec = static_cast<VideoCodec>(
         kSupportedVideoCodecs[rng() % arraysize(kSupportedVideoCodecs)]);
-    WebmMuxer muxer(video_codec, input_type.has_video, input_type.has_audio,
-                    base::Bind(&OnWriteCallback));
+    const auto audio_codec = static_cast<AudioCodec>(
+        kSupportedAudioCodecs[rng() % arraysize(kSupportedAudioCodecs)]);
+    WebmMuxer muxer(video_codec, audio_codec, input_type.has_video,
+                    input_type.has_audio, base::Bind(&OnWriteCallback));
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
 

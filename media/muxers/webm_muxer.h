@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 #include "third_party/libwebm/source/mkvmuxer.hpp"
@@ -36,9 +37,9 @@ class AudioParameters;
 // including at least a Track Section and a number of SimpleBlocks each
 // containing a single encoded video or audio frame. WebM container has no
 // Trailer.
-// Clients will push encoded VPx video frames and Opus audio frames one by one
-// via OnEncoded{Video|Audio}(). libwebm will eventually ping the WriteDataCB
-// passed on contructor with the wrapped encoded data.
+// Clients will push encoded VPx or AV1 video frames and Opus or PCM audio
+// frames one by one via OnEncoded{Video|Audio}(). libwebm will eventually ping
+// the WriteDataCB passed on contructor with the wrapped encoded data.
 // WebmMuxer is designed for use on a single thread.
 // [1] http://www.webmproject.org/docs/container/
 // [2] http://www.matroska.org/technical/specs/index.html
@@ -57,9 +58,10 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
     double frame_rate;
   };
 
-  // |codec| can be VP8 or VP9 and should coincide with whatever is sent in
-  // OnEncodedVideo().
-  WebmMuxer(VideoCodec codec,
+  // |video_codec| should coincide with whatever is sent in OnEncodedVideo(),
+  // and the same applies to audio.
+  WebmMuxer(VideoCodec video_codec,
+            AudioCodec audio_codec,
             bool has_video_,
             bool has_audio_,
             const WriteDataCB& write_data_callback);
@@ -112,8 +114,9 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
-  // Video Codec configured on construction.
+  // Video and audio codecs configured on construction.
   const VideoCodec video_codec_;
+  const AudioCodec audio_codec_;
 
   // Caller-side identifiers to interact with |segment_|, initialised upon
   // first frame arrival to Add{Video, Audio}Track().
