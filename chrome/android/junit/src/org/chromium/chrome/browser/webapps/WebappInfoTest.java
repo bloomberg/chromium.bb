@@ -23,6 +23,8 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class WebappInfoTest {
+    private static final String SPLASH_SCREEN_URL = "https://foo.com/splash.html";
+
     @Test
     public void testAbout() {
         String id = "webapp id";
@@ -33,8 +35,8 @@ public class WebappInfoTest {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
-                false /* forceNavigation */);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, SPLASH_SCREEN_URL,
+                false /* isIconGenerated */, false /* forceNavigation */);
         Assert.assertNotNull(info);
     }
 
@@ -48,8 +50,8 @@ public class WebappInfoTest {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
-                false /* forceNavigation */);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, SPLASH_SCREEN_URL,
+                false /* isIconGenerated */, false /* forceNavigation */);
         Assert.assertNotNull(info);
     }
 
@@ -132,8 +134,8 @@ public class WebappInfoTest {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.FULLSCREEN, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
-                false /* forceNavigation */);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, SPLASH_SCREEN_URL,
+                false /* isIconGenerated */, false /* forceNavigation */);
         Assert.assertEquals(WebDisplayMode.FULLSCREEN, info.displayMode());
         Assert.assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
         Assert.assertEquals(ShortcutSource.UNKNOWN, info.source());
@@ -148,10 +150,10 @@ public class WebappInfoTest {
         long themeColor = 0xFF00FF00L;
         long backgroundColor = 0xFF0000FFL;
 
-        WebappInfo info =
-                WebappInfo.create(id, url, null, null, name, shortName, WebDisplayMode.STANDALONE,
-                        ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN, themeColor,
-                        backgroundColor, false /* isIconGenerated */, false /* forceNavigation */);
+        WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
+                WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+                themeColor, backgroundColor, SPLASH_SCREEN_URL, false /* isIconGenerated */,
+                false /* forceNavigation */);
         Assert.assertEquals(themeColor, info.themeColor());
         Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
@@ -166,8 +168,8 @@ public class WebappInfoTest {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false /* isIconGenerated */,
-                false /* forceNavigation */);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, SPLASH_SCREEN_URL,
+                false /* isIconGenerated */, false /* forceNavigation */);
         Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
         Assert.assertEquals(
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
@@ -219,6 +221,22 @@ public class WebappInfoTest {
         intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
         WebappInfo info = WebappInfo.create(intent);
         Assert.assertEquals(ScreenOrientationValues.LANDSCAPE, info.orientation());
+    }
+
+    @Test
+    public void testSplashScreenUrl() {
+        Intent intent = createIntentWithUrlAndId();
+        {
+            WebappInfo info = WebappInfo.create(intent);
+            Assert.assertFalse(info.hasSplashScreenUri());
+        }
+
+        intent.putExtra(ShortcutHelper.EXTRA_SPLASH_SCREEN_URL, SPLASH_SCREEN_URL);
+        {
+            WebappInfo info = WebappInfo.create(intent);
+            Assert.assertTrue(info.hasSplashScreenUri());
+            Assert.assertEquals(SPLASH_SCREEN_URL, info.splashScreenUri().toString());
+        }
     }
 
     @Test

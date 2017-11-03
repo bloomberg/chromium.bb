@@ -76,6 +76,7 @@ struct ShortcutInfo {
   Source source;
   int64_t theme_color;
   int64_t background_color;
+  GURL splash_screen_url;
   int ideal_splash_image_size_in_px;
   int minimum_splash_image_size_in_px;
   GURL splash_image_url;
