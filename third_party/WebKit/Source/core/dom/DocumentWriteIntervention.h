@@ -5,10 +5,7 @@
 #ifndef DocumentWriteIntervention_h
 #define DocumentWriteIntervention_h
 
-#include "core/loader/resource/ScriptResource.h"
-#include "platform/heap/SelfKeepAlive.h"
 #include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceOwner.h"
 
 // document.write() intervention may
 // - block network loading of a script inserted by document.write() and
@@ -24,50 +21,25 @@
 namespace blink {
 
 class Document;
+class Resource;
+class ScriptFetchOptions;
 
-// Created and AddClient()ed if the script MAY BE blocked, and when
-// NotifyFinished(), outputs console errors/warnings depending on whether
-// the script is actually blocked or not, and sends an asynchronous GET
-// request with an interventions header if blocked.
-// Note that this might occur just before or just after the corresponding
-// <script>'s execution/onload/onerror.
-class FetchBlockedDocWriteScriptClient
-    : public GarbageCollectedFinalized<FetchBlockedDocWriteScriptClient>,
-      public ResourceOwner<ScriptResource> {
-  USING_GARBAGE_COLLECTED_MIXIN(FetchBlockedDocWriteScriptClient);
-
- public:
-  FetchBlockedDocWriteScriptClient(Document& document,
-                                   const FetchParameters& params)
-      : document_(&document), params_(params) {}
-
-  void SetResource(ScriptResource*);
-
-  void Trace(Visitor*) override;
-
- private:
-  void NotifyFinished(Resource*) override;
-  String DebugName() const override {
-    return "FetchBlockedDocWriteScriptClient";
-  }
-
-  WeakMember<Document> document_;
-  FetchParameters params_;
-  SelfKeepAlive<FetchBlockedDocWriteScriptClient> keep_alive_;
-};
-
-// Returns non-null if the fetch should be blocked due to the document.write
+// Returns true if the fetch should be blocked due to the document.write
 // intervention. In that case, the request's cache policy is set to
-// kReturnCacheDataDontLoad to ensure a network request is not generated.
-// This function may also set an Intervention header, log the intervention in
-// the console, etc.
-//
-// This only affects scripts added via document.write() in the main frame.
+// kReturnCacheDataDontLoad to ensure a network request is not generated. This
+// function may also set an Intervention header, log the intervention in the
+// console, etc.
 //
 // The caller should call SetResource() for the returned client.
-FetchBlockedDocWriteScriptClient* MaybeDisallowFetchForDocWrittenScript(
-    FetchParameters&,
-    Document&);
+bool MaybeDisallowFetchForDocWrittenScript(FetchParameters&, Document&);
+
+// Outputs console errors/warnings depending on whether the script is actually
+// blocked or not, and sends an asynchronous GET request with an interventions
+// header if blocked. Should be called when NotifyFinished() if
+// MaybeDisallowFetchForDocWrittenScript() returns true.
+void PossiblyFetchBlockedDocWriteScript(const Resource*,
+                                        Document&,
+                                        const ScriptFetchOptions&);
 
 }  // namespace blink
 
