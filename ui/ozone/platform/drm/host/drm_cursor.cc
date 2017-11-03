@@ -187,7 +187,6 @@ void DrmCursor::MoveCursor(const gfx::Vector2dF& delta) {
   if (window_ == gfx::kNullAcceleratedWidget)
     return;
 
-  gfx::Point location;
 #if defined(OS_CHROMEOS)
   gfx::Vector2dF transformed_delta = delta;
   ui::CursorController::GetInstance()->ApplyCursorConfigForWindow(
