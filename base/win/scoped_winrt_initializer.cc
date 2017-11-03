@@ -19,6 +19,8 @@ ScopedWinrtInitializer::ScopedWinrtInitializer()
 #if DCHECK_IS_ON()
   if (SUCCEEDED(hr_))
     AssertComApartmentType(ComApartmentType::MTA);
+  else
+    DCHECK_NE(RPC_E_CHANGED_MODE, hr_) << "Invalid COM thread model change";
 #endif
 }
 
