@@ -86,8 +86,7 @@ void AppBannerManagerDesktop::ShowBannerUi() {
   // the InfoBarService to show the banner. On desktop, an InfoBar class
   // is not required, and the delegate calls the InfoBarService.
   infobars::InfoBar* infobar = AppBannerInfoBarDelegateDesktop::Create(
-      contents, GetWeakPtr(), bookmark_app_helper_.get(), manifest_url_,
-      manifest_);
+      contents, GetWeakPtr(), bookmark_app_helper_.get(), manifest_);
   if (infobar) {
     RecordDidShowBanner("AppBanner.WebApp.Shown");
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_CREATED);
