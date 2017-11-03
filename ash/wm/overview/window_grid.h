@@ -117,6 +117,8 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // when it is dragged.
   void SetSelectionWidgetVisibility(bool visible);
 
+  void UpdateCannotSnapWarningVisibility();
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 

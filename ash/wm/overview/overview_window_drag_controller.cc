@@ -115,6 +115,7 @@ void OverviewWindowDragController::CompleteDrag(
     } else {
       split_view_controller_->EndSplitView();
       window_selector_->SelectWindow(item_);
+      split_view_controller_->ShowAppCannotSnapToast();
     }
   } else {
     did_move_ = false;

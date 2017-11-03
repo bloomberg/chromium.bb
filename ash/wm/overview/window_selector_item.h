@@ -109,6 +109,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Called when the window is minimized or unminimized.
   void OnMinimizedStateChanged();
 
+  // Shows the cannot snap warning if currently in splitview, and the associated
+  // window cannot be snapped.
+  void UpdateCannotSnapWarningVisibility();
+
   // Sets if the item is dimmed in the overview. Changing the value will also
   // change the visibility of the transform windows.
   void SetDimmed(bool dimmed);
@@ -132,6 +136,8 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   class CaptionContainerView;
   class RoundedContainerView;
   friend class WindowSelectorTest;
+  FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
+                           OverviewUnsnappableIndicatorVisibility);
 
   enum class HeaderFadeInMode {
     ENTER,
@@ -219,6 +225,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   // A View for the text label above the window owned by the |background_view_|.
   views::Label* label_view_;
+
+  // A View for the text label in the center of the window warning users that
+  // this window cannot be snapped for splitview. Owned by a container in
+  // |background_view_|.
+  views::Label* cannot_snap_label_view_;
 
   // A close button for the window in this item owned by the |background_view_|.
   OverviewCloseButton* close_button_;
