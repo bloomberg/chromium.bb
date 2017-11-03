@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/profiles/avatar_button.h"
 
 AvatarButtonManager::AvatarButtonManager(BrowserNonClientFrameView* frame_view)
     : frame_view_(frame_view), view_(nullptr) {}
@@ -43,17 +42,18 @@ void AvatarButtonManager::Update(AvatarButtonStyle style) {
   }
 }
 
-void AvatarButtonManager::ButtonPressed(views::Button* sender,
-                                        const ui::Event& event) {
+void AvatarButtonManager::OnMenuButtonClicked(views::MenuButton* sender,
+                                              const gfx::Point& point,
+                                              const ui::Event* event) {
   DCHECK_EQ(view_, sender);
   BrowserWindow::AvatarBubbleMode mode =
       BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
-  if ((event.IsMouseEvent() &&
-       static_cast<const ui::MouseEvent&>(event).IsRightMouseButton()) ||
-      (event.type() == ui::ET_GESTURE_LONG_PRESS)) {
+  if ((event->IsMouseEvent() && event->AsMouseEvent()->IsRightMouseButton()) ||
+      (event->type() == ui::ET_GESTURE_LONG_PRESS)) {
     return;
   }
   frame_view_->browser_view()->ShowAvatarBubbleFromAvatarButton(
       mode, signin::ManageAccountsParams(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, false);
+  view_->OnAvatarButtonPressed(event);
 }
