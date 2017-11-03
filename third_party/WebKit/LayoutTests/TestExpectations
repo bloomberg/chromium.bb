@@ -102,7 +102,7 @@ crbug.com/726075 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Time
 crbug.com/774567 [ Win Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_remove_cue_while_paused.html [ Failure ]
 
 # Fails because the manual test hasn't been automated yet
-crbug.com/762054 external/wpt/cssom-view/overscrollBehavior-manual.html [ Skip ]
+crbug.com/762054 external/wpt/css/cssom-view/overscrollBehavior-manual.html [ Skip ]
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
@@ -1925,7 +1925,7 @@ crbug.com/626703 external/wpt/css/css-text/line-break/line-break-anywhere-002.ht
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-010.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-021.html [ Failure ]
-crbug.com/626703 external/wpt/cssom-view/matchMedia.xht [ Timeout ]
+crbug.com/626703 external/wpt/css/cssom-view/matchMedia.xht [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
@@ -3207,12 +3207,12 @@ crbug.com/755405 [ Android ] external/wpt/css/css-align/content-distribution/pla
 crbug.com/755405 [ Android ] external/wpt/css/css-align/content-distribution/place-content-shorthand-003.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/css/css-align/default-alignment/place-items-shorthand-001.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/css/css-display/display-contents-computed-style.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/css-typed-om/CSSMatrixComponent-DOMMatrix-mutable.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/css-typed-om/declared-styleMap-accepts-inherit.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/cssom/cssom-cssText-serialize.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/cssom/medialist-interfaces-004.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/cssom-view/cssom-view-window-screen-interface.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/cssom-view/cssom-view/media-query-list-interface.xht [ Failure ]
+crbug.com/755405 [ Android ] external/wpt/css/css-typed-om/CSSMatrixComponent-DOMMatrix-mutable.html [ Failure ]
+crbug.com/755405 [ Android ] external/wpt/css/css-typed-om/declared-styleMap-accepts-inherit.html [ Failure ]
+crbug.com/755405 [ Android ] external/wpt/css/cssom/cssom-cssText-serialize.html [ Failure ]
+crbug.com/755405 [ Android ] external/wpt/css/cssom/medialist-interfaces-004.html [ Failure ]
+crbug.com/755405 [ Android ] external/wpt/css/cssom-view/cssom-view-window-screen-interface.html [ Failure ]
+crbug.com/755405 [ Android ] external/wpt/css/cssom-view/cssom-view/media-query-list-interface.xht [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/custom-elements/HTMLElement-constructor.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/custom-elements/parser/parser-constructs-custom-element-in-document-write.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/custom-elements/parser/parser-constructs-custom-elements.html [ Failure ]
