@@ -250,9 +250,9 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
 
   if target_os in (host_os, host_os + '-noasm', 'android') and not config_only:
     libraries = [
-        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 57)),
-        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 57)),
-        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 55)),
+        os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 58)),
+        os.path.join('libavformat', GetDsoName(target_os, 'avformat', 58)),
+        os.path.join('libavutil', GetDsoName(target_os, 'avutil', 56)),
     ]
     PrintAndCheckCall(
         ['make', '-j%d' % parallel_jobs] + libraries, cwd=config_dir)
@@ -373,6 +373,9 @@ def main(argv):
       # Disable usage of Linux Performance API. Not used in production code, but
       # missing system headers break some Android builds.
       '--disable-linux-perf',
+
+      # Force usage of yasm
+      '--x86asmexe=yasm',
   ])
 
   if target_os == 'android':
@@ -409,13 +412,9 @@ def main(argv):
       ])
       # Android ia32 can't handle textrels and ffmpeg can't compile without
       # them.  http://crbug.com/559379
-      if target_os != 'android':
+      if target_os == 'android':
         configure_flags['Common'].extend([
-          '--enable-yasm',
-        ])
-      else:
-        configure_flags['Common'].extend([
-          '--disable-yasm',
+          '--disable-x86asm',
         ])
     elif target_arch == 'arm' or target_arch == 'arm-neon':
       # TODO(ihf): ARM compile flags are tricky. The final options
@@ -564,20 +563,15 @@ def main(argv):
     ])
 
   if 'win' not in target_os:
-    configure_flags['Common'].append('--enable-pic')
-
-  # Chromium builds with Clang on all platforms, except Windows, so configure
-  # FFmpeg using Clang, for consistency.
-  if 'win' not in target_os:
     configure_flags['Common'].extend([
+        '--enable-pic',
         '--cc=clang',
         '--cxx=clang++',
         '--ld=clang',
     ])
-
-    # Clang Linux will use the first 'ld' it finds on the path, which will typically
-    # be the system one, so explicitly configure use of Clang's ld.lld, to ensure
-    # that things like cross-compilation and LTO work.
+    # Clang Linux will use the first 'ld' it finds on the path, which will
+    # typically be the system one, so explicitly configure use of Clang's
+    # ld.lld, to ensure that things like cross-compilation and LTO work.
     if target_os == 'linux':
       configure_flags['Common'].append('--extra-ldflags=-fuse-ld=lld')
 
@@ -614,8 +608,6 @@ def main(argv):
 
     configure_flags['Common'].extend([
         '--toolchain=msvc',
-        '--cpu=opteron',  # Enable HAVE_FAST_CMOV and disable HAVE_FAST_CLZ.
-        '--enable-yasm',
         '--extra-cflags=-I' + os.path.join(FFMPEG_DIR, 'chromium/include/win'),
     ])
 
