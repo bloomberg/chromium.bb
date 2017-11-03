@@ -68,102 +68,25 @@ static const uint8_t extend_modes[INTRA_MODES] = {
 static const uint16_t orders_128x128[1] = { 0 };
 static const uint16_t orders_128x64[2] = { 0, 1 };
 static const uint16_t orders_64x128[2] = { 0, 1 };
-static const uint16_t orders_64x64[4] = {
-  0, 1, 2, 3,
-};
-static const uint16_t orders_64x32[8] = {
-  0, 2, 1, 3, 4, 6, 5, 7,
-};
-static const uint16_t orders_32x64[8] = {
-  0, 1, 2, 3, 4, 5, 6, 7,
-};
-static const uint16_t orders_32x32[16] = {
-  0, 1, 4, 5, 2, 3, 6, 7, 8, 9, 12, 13, 10, 11, 14, 15,
-};
-static const uint16_t orders_32x16[32] = {
-  0,  2,  8,  10, 1,  3,  9,  11, 4,  6,  12, 14, 5,  7,  13, 15,
-  16, 18, 24, 26, 17, 19, 25, 27, 20, 22, 28, 30, 21, 23, 29, 31,
-};
-static const uint16_t orders_16x32[32] = {
-  0,  1,  2,  3,  8,  9,  10, 11, 4,  5,  6,  7,  12, 13, 14, 15,
-  16, 17, 18, 19, 24, 25, 26, 27, 20, 21, 22, 23, 28, 29, 30, 31,
-};
+static const uint16_t orders_64x64[4] = { 0, 1, 2, 3 };
+static const uint16_t orders_64x32[8] = { 0, 2, 1, 3, 4, 6, 5, 7 };
+static const uint16_t orders_32x64[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static const uint16_t orders_32x32[16] = { 0, 1, 4,  5,  2,  3,  6,  7,
+                                           8, 9, 12, 13, 10, 11, 14, 15 };
+static const uint16_t orders_32x16[32] = { 0,  2,  8,  10, 1,  3,  9,  11,
+                                           4,  6,  12, 14, 5,  7,  13, 15,
+                                           16, 18, 24, 26, 17, 19, 25, 27,
+                                           20, 22, 28, 30, 21, 23, 29, 31 };
+static const uint16_t orders_16x32[32] = { 0,  1,  2,  3,  8,  9,  10, 11,
+                                           4,  5,  6,  7,  12, 13, 14, 15,
+                                           16, 17, 18, 19, 24, 25, 26, 27,
+                                           20, 21, 22, 23, 28, 29, 30, 31 };
 static const uint16_t orders_16x16[64] = {
   0,  1,  4,  5,  16, 17, 20, 21, 2,  3,  6,  7,  18, 19, 22, 23,
   8,  9,  12, 13, 24, 25, 28, 29, 10, 11, 14, 15, 26, 27, 30, 31,
   32, 33, 36, 37, 48, 49, 52, 53, 34, 35, 38, 39, 50, 51, 54, 55,
-  40, 41, 44, 45, 56, 57, 60, 61, 42, 43, 46, 47, 58, 59, 62, 63,
+  40, 41, 44, 45, 56, 57, 60, 61, 42, 43, 46, 47, 58, 59, 62, 63
 };
-
-static const uint16_t orders_64x16[16] = {
-  0, 4, 1, 5, 2, 6, 3, 7, 8, 12, 9, 13, 10, 14, 11, 15,
-};
-static const uint16_t orders_16x64[16] = {
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-};
-static const uint16_t orders_32x8[64] = {
-  0,  4,  16, 20, 1,  5,  17, 21, 2,  6,  18, 22, 3,  7,  19, 23,
-  8,  12, 24, 28, 9,  13, 25, 29, 10, 14, 26, 30, 11, 15, 27, 31,
-  32, 36, 48, 52, 33, 37, 49, 53, 34, 38, 50, 54, 35, 39, 51, 55,
-  40, 44, 56, 60, 41, 45, 57, 61, 42, 46, 58, 62, 43, 47, 59, 63,
-};
-static const uint16_t orders_8x32[64] = {
-  0,  1,  2,  3,  4,  5,  6,  7,  16, 17, 18, 19, 20, 21, 22, 23,
-  8,  9,  10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31,
-  32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
-  40, 41, 42, 43, 44, 45, 46, 47, 56, 57, 58, 59, 60, 61, 62, 63,
-};
-
-#if CONFIG_EXT_PARTITION
-static const uint16_t orders_16x4[256] = {
-  0,   4,   16,  20,  64,  68,  80,  84,  1,   5,   17,  21,  65,  69,  81,
-  85,  2,   6,   18,  22,  66,  70,  82,  86,  3,   7,   19,  23,  67,  71,
-  83,  87,  8,   12,  24,  28,  72,  76,  88,  92,  9,   13,  25,  29,  73,
-  77,  89,  93,  10,  14,  26,  30,  74,  78,  90,  94,  11,  15,  27,  31,
-  75,  79,  91,  95,  32,  36,  48,  52,  96,  100, 112, 116, 33,  37,  49,
-  53,  97,  101, 113, 117, 34,  38,  50,  54,  98,  102, 114, 118, 35,  39,
-  51,  55,  99,  103, 115, 119, 40,  44,  56,  60,  104, 108, 120, 124, 41,
-  45,  57,  61,  105, 109, 121, 125, 42,  46,  58,  62,  106, 110, 122, 126,
-  43,  47,  59,  63,  107, 111, 123, 127, 128, 132, 144, 148, 192, 196, 208,
-  212, 129, 133, 145, 149, 193, 197, 209, 213, 130, 134, 146, 150, 194, 198,
-  210, 214, 131, 135, 147, 151, 195, 199, 211, 215, 136, 140, 152, 156, 200,
-  204, 216, 220, 137, 141, 153, 157, 201, 205, 217, 221, 138, 142, 154, 158,
-  202, 206, 218, 222, 139, 143, 155, 159, 203, 207, 219, 223, 160, 164, 176,
-  180, 224, 228, 240, 244, 161, 165, 177, 181, 225, 229, 241, 245, 162, 166,
-  178, 182, 226, 230, 242, 246, 163, 167, 179, 183, 227, 231, 243, 247, 168,
-  172, 184, 188, 232, 236, 248, 252, 169, 173, 185, 189, 233, 237, 249, 253,
-  170, 174, 186, 190, 234, 238, 250, 254, 171, 175, 187, 191, 235, 239, 251,
-  255,
-};
-static const uint16_t orders_4x16[256] = {
-  0,   1,   2,   3,   4,   5,   6,   7,   16,  17,  18,  19,  20,  21,  22,
-  23,  64,  65,  66,  67,  68,  69,  70,  71,  80,  81,  82,  83,  84,  85,
-  86,  87,  8,   9,   10,  11,  12,  13,  14,  15,  24,  25,  26,  27,  28,
-  29,  30,  31,  72,  73,  74,  75,  76,  77,  78,  79,  88,  89,  90,  91,
-  92,  93,  94,  95,  32,  33,  34,  35,  36,  37,  38,  39,  48,  49,  50,
-  51,  52,  53,  54,  55,  96,  97,  98,  99,  100, 101, 102, 103, 112, 113,
-  114, 115, 116, 117, 118, 119, 40,  41,  42,  43,  44,  45,  46,  47,  56,
-  57,  58,  59,  60,  61,  62,  63,  104, 105, 106, 107, 108, 109, 110, 111,
-  120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134,
-  135, 144, 145, 146, 147, 148, 149, 150, 151, 192, 193, 194, 195, 196, 197,
-  198, 199, 208, 209, 210, 211, 212, 213, 214, 215, 136, 137, 138, 139, 140,
-  141, 142, 143, 152, 153, 154, 155, 156, 157, 158, 159, 200, 201, 202, 203,
-  204, 205, 206, 207, 216, 217, 218, 219, 220, 221, 222, 223, 160, 161, 162,
-  163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183, 224, 225,
-  226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247, 168,
-  169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191,
-  232, 233, 234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254,
-  255,
-};
-#endif
-
-static const uint16_t orders_32x128[4] = {
-  0, 1, 2, 3,
-};
-static const uint16_t orders_128x32[4] = {
-  0, 1, 2, 3,
-};
-
 static const uint16_t orders_16x8[128] = {
   0,  2,  8,  10, 32,  34,  40,  42,  1,  3,  9,  11, 33,  35,  41,  43,
   4,  6,  12, 14, 36,  38,  44,  46,  5,  7,  13, 15, 37,  39,  45,  47,
@@ -172,7 +95,7 @@ static const uint16_t orders_16x8[128] = {
   64, 66, 72, 74, 96,  98,  104, 106, 65, 67, 73, 75, 97,  99,  105, 107,
   68, 70, 76, 78, 100, 102, 108, 110, 69, 71, 77, 79, 101, 103, 109, 111,
   80, 82, 88, 90, 112, 114, 120, 122, 81, 83, 89, 91, 113, 115, 121, 123,
-  84, 86, 92, 94, 116, 118, 124, 126, 85, 87, 93, 95, 117, 119, 125, 127,
+  84, 86, 92, 94, 116, 118, 124, 126, 85, 87, 93, 95, 117, 119, 125, 127
 };
 static const uint16_t orders_8x16[128] = {
   0,  1,  2,  3,  8,  9,  10, 11, 32,  33,  34,  35,  40,  41,  42,  43,
@@ -182,7 +105,7 @@ static const uint16_t orders_8x16[128] = {
   64, 65, 66, 67, 72, 73, 74, 75, 96,  97,  98,  99,  104, 105, 106, 107,
   68, 69, 70, 71, 76, 77, 78, 79, 100, 101, 102, 103, 108, 109, 110, 111,
   80, 81, 82, 83, 88, 89, 90, 91, 112, 113, 114, 115, 120, 121, 122, 123,
-  84, 85, 86, 87, 92, 93, 94, 95, 116, 117, 118, 119, 124, 125, 126, 127,
+  84, 85, 86, 87, 92, 93, 94, 95, 116, 117, 118, 119, 124, 125, 126, 127
 };
 static const uint16_t orders_8x8[256] = {
   0,   1,   4,   5,   16,  17,  20,  21,  64,  65,  68,  69,  80,  81,  84,
@@ -202,7 +125,7 @@ static const uint16_t orders_8x8[256] = {
   166, 167, 178, 179, 182, 183, 226, 227, 230, 231, 242, 243, 246, 247, 168,
   169, 172, 173, 184, 185, 188, 189, 232, 233, 236, 237, 248, 249, 252, 253,
   170, 171, 174, 175, 186, 187, 190, 191, 234, 235, 238, 239, 250, 251, 254,
-  255,
+  255
 };
 #if CONFIG_EXT_PARTITION
 static const uint16_t orders_4x8[512] = {
@@ -240,9 +163,8 @@ static const uint16_t orders_4x8[512] = {
   465, 466, 467, 472, 473, 474, 475, 496, 497, 498, 499, 504, 505, 506, 507,
   340, 341, 342, 343, 348, 349, 350, 351, 372, 373, 374, 375, 380, 381, 382,
   383, 468, 469, 470, 471, 476, 477, 478, 479, 500, 501, 502, 503, 508, 509,
-  510, 511,
+  510, 511
 };
-
 static const uint16_t orders_8x4[512] = {
   0,   2,   8,   10,  32,  34,  40,  42,  128, 130, 136, 138, 160, 162, 168,
   170, 1,   3,   9,   11,  33,  35,  41,  43,  129, 131, 137, 139, 161, 163,
@@ -278,9 +200,8 @@ static const uint16_t orders_8x4[512] = {
   339, 345, 347, 369, 371, 377, 379, 465, 467, 473, 475, 497, 499, 505, 507,
   340, 342, 348, 350, 372, 374, 380, 382, 468, 470, 476, 478, 500, 502, 508,
   510, 341, 343, 349, 351, 373, 375, 381, 383, 469, 471, 477, 479, 501, 503,
-  509, 511,
+  509, 511
 };
-
 static const uint16_t orders_4x4[1024] = {
   0,    1,    4,    5,    16,   17,   20,   21,   64,   65,   68,   69,   80,
   81,   84,   85,   256,  257,  260,  261,  272,  273,  276,  277,  320,  321,
@@ -360,15 +281,139 @@ static const uint16_t orders_4x4[1024] = {
   765,  936,  937,  940,  941,  952,  953,  956,  957,  1000, 1001, 1004, 1005,
   1016, 1017, 1020, 1021, 682,  683,  686,  687,  698,  699,  702,  703,  746,
   747,  750,  751,  762,  763,  766,  767,  938,  939,  942,  943,  954,  955,
-  958,  959,  1002, 1003, 1006, 1007, 1018, 1019, 1022, 1023,
+  958,  959,  1002, 1003, 1006, 1007, 1018, 1019, 1022, 1023
+};
+#endif
+
+#if CONFIG_EXT_PARTITION_TYPES
+static const uint16_t orders_128x32[4] = { 0, 1, 2, 3 };
+static const uint16_t orders_64x16[16] = { 0, 4,  1, 5,  2,  6,  3,  7,
+                                           8, 12, 9, 13, 10, 14, 11, 15 };
+static const uint16_t orders_32x128[4] = { 0, 1, 2, 3 };
+static const uint16_t orders_32x8[64] = {
+  0,  4,  16, 20, 1,  5,  17, 21, 2,  6,  18, 22, 3,  7,  19, 23,
+  8,  12, 24, 28, 9,  13, 25, 29, 10, 14, 26, 30, 11, 15, 27, 31,
+  32, 36, 48, 52, 33, 37, 49, 53, 34, 38, 50, 54, 35, 39, 51, 55,
+  40, 44, 56, 60, 41, 45, 57, 61, 42, 46, 58, 62, 43, 47, 59, 63
+};
+static const uint16_t orders_8x32[64] = {
+  0,  1,  2,  3,  4,  5,  6,  7,  16, 17, 18, 19, 20, 21, 22, 23,
+  8,  9,  10, 11, 12, 13, 14, 15, 24, 25, 26, 27, 28, 29, 30, 31,
+  32, 33, 34, 35, 36, 37, 38, 39, 48, 49, 50, 51, 52, 53, 54, 55,
+  40, 41, 42, 43, 44, 45, 46, 47, 56, 57, 58, 59, 60, 61, 62, 63
+};
+static const uint16_t orders_16x64[16] = { 0, 1, 2,  3,  4,  5,  6,  7,
+                                           8, 9, 10, 11, 12, 13, 14, 15 };
+#if CONFIG_EXT_PARTITION
+static const uint16_t orders_16x4[256] = {
+  0,   4,   16,  20,  64,  68,  80,  84,  1,   5,   17,  21,  65,  69,  81,
+  85,  2,   6,   18,  22,  66,  70,  82,  86,  3,   7,   19,  23,  67,  71,
+  83,  87,  8,   12,  24,  28,  72,  76,  88,  92,  9,   13,  25,  29,  73,
+  77,  89,  93,  10,  14,  26,  30,  74,  78,  90,  94,  11,  15,  27,  31,
+  75,  79,  91,  95,  32,  36,  48,  52,  96,  100, 112, 116, 33,  37,  49,
+  53,  97,  101, 113, 117, 34,  38,  50,  54,  98,  102, 114, 118, 35,  39,
+  51,  55,  99,  103, 115, 119, 40,  44,  56,  60,  104, 108, 120, 124, 41,
+  45,  57,  61,  105, 109, 121, 125, 42,  46,  58,  62,  106, 110, 122, 126,
+  43,  47,  59,  63,  107, 111, 123, 127, 128, 132, 144, 148, 192, 196, 208,
+  212, 129, 133, 145, 149, 193, 197, 209, 213, 130, 134, 146, 150, 194, 198,
+  210, 214, 131, 135, 147, 151, 195, 199, 211, 215, 136, 140, 152, 156, 200,
+  204, 216, 220, 137, 141, 153, 157, 201, 205, 217, 221, 138, 142, 154, 158,
+  202, 206, 218, 222, 139, 143, 155, 159, 203, 207, 219, 223, 160, 164, 176,
+  180, 224, 228, 240, 244, 161, 165, 177, 181, 225, 229, 241, 245, 162, 166,
+  178, 182, 226, 230, 242, 246, 163, 167, 179, 183, 227, 231, 243, 247, 168,
+  172, 184, 188, 232, 236, 248, 252, 169, 173, 185, 189, 233, 237, 249, 253,
+  170, 174, 186, 190, 234, 238, 250, 254, 171, 175, 187, 191, 235, 239, 251,
+  255
+};
+static const uint16_t orders_4x16[256] = {
+  0,   1,   2,   3,   4,   5,   6,   7,   16,  17,  18,  19,  20,  21,  22,
+  23,  64,  65,  66,  67,  68,  69,  70,  71,  80,  81,  82,  83,  84,  85,
+  86,  87,  8,   9,   10,  11,  12,  13,  14,  15,  24,  25,  26,  27,  28,
+  29,  30,  31,  72,  73,  74,  75,  76,  77,  78,  79,  88,  89,  90,  91,
+  92,  93,  94,  95,  32,  33,  34,  35,  36,  37,  38,  39,  48,  49,  50,
+  51,  52,  53,  54,  55,  96,  97,  98,  99,  100, 101, 102, 103, 112, 113,
+  114, 115, 116, 117, 118, 119, 40,  41,  42,  43,  44,  45,  46,  47,  56,
+  57,  58,  59,  60,  61,  62,  63,  104, 105, 106, 107, 108, 109, 110, 111,
+  120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134,
+  135, 144, 145, 146, 147, 148, 149, 150, 151, 192, 193, 194, 195, 196, 197,
+  198, 199, 208, 209, 210, 211, 212, 213, 214, 215, 136, 137, 138, 139, 140,
+  141, 142, 143, 152, 153, 154, 155, 156, 157, 158, 159, 200, 201, 202, 203,
+  204, 205, 206, 207, 216, 217, 218, 219, 220, 221, 222, 223, 160, 161, 162,
+  163, 164, 165, 166, 167, 176, 177, 178, 179, 180, 181, 182, 183, 224, 225,
+  226, 227, 228, 229, 230, 231, 240, 241, 242, 243, 244, 245, 246, 247, 168,
+  169, 170, 171, 172, 173, 174, 175, 184, 185, 186, 187, 188, 189, 190, 191,
+  232, 233, 234, 235, 236, 237, 238, 239, 248, 249, 250, 251, 252, 253, 254,
+  255
 };
 #endif  // CONFIG_EXT_PARTITION
+#endif  // CONFIG_EXT_PARTITION_TYPES
 
+#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+static const uint16_t orders_vert_128x128[1] = { 0 };
+static const uint16_t orders_vert_64x64[4] = { 0, 2, 1, 3 };
+static const uint16_t orders_vert_32x32[16] = { 0, 2,  4,  6,  1, 3,  5,  7,
+                                                8, 10, 12, 14, 9, 11, 13, 15 };
+static const uint16_t orders_vert_16x16[64] = {
+  0,  2,  4,  6,  16, 18, 20, 22, 1,  3,  5,  7,  17, 19, 21, 23,
+  8,  10, 12, 14, 24, 26, 28, 30, 9,  11, 13, 15, 25, 27, 29, 31,
+  32, 34, 36, 38, 48, 50, 52, 54, 33, 35, 37, 39, 49, 51, 53, 55,
+  40, 42, 44, 46, 56, 58, 60, 62, 41, 43, 45, 47, 57, 59, 61, 63
+};
+#if CONFIG_EXT_PARTITION
+static const uint16_t orders_vert_8x8[256] = {
+  0,   2,   4,   6,   16,  18,  20,  22,  64,  66,  68,  70,  80,  82,  84,
+  86,  1,   3,   5,   7,   17,  19,  21,  23,  65,  67,  69,  71,  81,  83,
+  85,  87,  8,   10,  12,  14,  24,  26,  28,  30,  72,  74,  76,  78,  88,
+  90,  92,  94,  9,   11,  13,  15,  25,  27,  29,  31,  73,  75,  77,  79,
+  89,  91,  93,  95,  32,  34,  36,  38,  48,  50,  52,  54,  96,  98,  100,
+  102, 112, 114, 116, 118, 33,  35,  37,  39,  49,  51,  53,  55,  97,  99,
+  101, 103, 113, 115, 117, 119, 40,  42,  44,  46,  56,  58,  60,  62,  104,
+  106, 108, 110, 120, 122, 124, 126, 41,  43,  45,  47,  57,  59,  61,  63,
+  105, 107, 109, 111, 121, 123, 125, 127, 128, 130, 132, 134, 144, 146, 148,
+  150, 192, 194, 196, 198, 208, 210, 212, 214, 129, 131, 133, 135, 145, 147,
+  149, 151, 193, 195, 197, 199, 209, 211, 213, 215, 136, 138, 140, 142, 152,
+  154, 156, 158, 200, 202, 204, 206, 216, 218, 220, 222, 137, 139, 141, 143,
+  153, 155, 157, 159, 201, 203, 205, 207, 217, 219, 221, 223, 160, 162, 164,
+  166, 176, 178, 180, 182, 224, 226, 228, 230, 240, 242, 244, 246, 161, 163,
+  165, 167, 177, 179, 181, 183, 225, 227, 229, 231, 241, 243, 245, 247, 168,
+  170, 172, 174, 184, 186, 188, 190, 232, 234, 236, 238, 248, 250, 252, 254,
+  169, 171, 173, 175, 185, 187, 189, 191, 233, 235, 237, 239, 249, 251, 253,
+  255
+};
+#endif  // CONFIG_EXT_PARTITION
+#endif  // CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+
+// The orders_* tables encode the order in which we visit blocks of the given
+// size. For example, orders_32x32 has (128/32)^2 = 4^2 = 16 entries that
+// correspond to the 32x32 blocks in a 128x128 superblock (in raster order). If
+// an entry at position i is less than the entry at position j, that means that
+// the block at position i is visited before that at position j if the
+// superblock is divided by repeated PARTITION_SPLITs down to 32x32 blocks.
+//
+// The other tables are similar. Those for non-square block sizes assume that
+// the superblock was partition with PARTITION_SPLIT until the square block size
+// with the larger of their dimensions, then there was a horizontal or vertical
+// partition to generate their size. For example, the orders_16x32 table assumes
+// that the superblock was divided by PARTITION_SPLIT down to 32x32 blocks, then
+// each was partitioned by a PARTITION_VERT into two 16x32 blocks.
+//
+// These tables can be used to calculate whether one block has been decoded
+// before another. Since PARTITION_SPLIT is the only recursive partitioning
+// operation, it doesn't actually matter whether the other block is the same
+// size as the current one: comparing entries in the table will still correctly
+// answer the question "has the other one been decode already?".
+//
+// Also note that this works correctly for the mixed horizontal partitions
+// (PARTITION_HORZ_A and PARTITION_HORZ_B): if you look up the smaller square
+// block size, the rectangle will be treated as two blocks that are decoded
+// consecutively (before or after this block). If you look up the rectangle, the
+// two squares will be treated as a single rectangle and, again, they were
+// decoded together before or after this block.
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
   // 2X2,         2X4,            4X2
-  orders_4x4,     orders_4x4,     orders_4x4,
+  NULL,           NULL,           NULL,
   //                              4X4
                                   orders_4x4,
   // 4X8,         8X4,            8X8
@@ -381,19 +426,28 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
   orders_32x64,   orders_64x32,   orders_64x64,
   // 64x128,      128x64,         128x128
   orders_64x128,  orders_128x64,  orders_128x128,
+#if CONFIG_EXT_PARTITION_TYPES
   // 4x16,        16x4,           8x32
   orders_4x16,    orders_16x4,    orders_8x32,
   // 32x8,        16x64,          64x16
   orders_32x8,    orders_16x64,   orders_64x16,
   // 32x128,      128x32
   orders_32x128,  orders_128x32
+#else
+  // 4x16,        16x4,           8x32
+  NULL,           NULL,           NULL,
+  // 32x8,        16x64,          64x16
+  NULL,           NULL,           NULL,
+  // 32x128,      128x32
+  NULL,           NULL
+#endif
 };
 /* clang-format on */
 #else
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
   // 2X2,         2X4,            4X2
-  orders_8x8,     orders_8x8,     orders_8x8,
+  NULL,           NULL,           NULL,
   //                              4X4
                                   orders_8x8,
   // 4X8,         8X4,            8X8
@@ -404,95 +458,94 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
   orders_32x64,   orders_64x32,   orders_64x64,
   // 32X64,       64X32,          64X64
   orders_64x128,  orders_128x64,  orders_128x128,
+#if CONFIG_EXT_PARTITION_TYPES
   // 4x16,        16x4,           8x32
   orders_8x32,    orders_32x8,    orders_16x64,
   // 32x8,        16x64,          64x16
   orders_64x16,   orders_32x128,  orders_128x32
+#else
+  // 4x16,        16x4,           8x32
+  NULL,           NULL,           NULL,
+  // 32x8,        16x64,          64x16
+  NULL,           NULL,           NULL
+#endif
 };
 /* clang-format on */
 #endif  // CONFIG_EXT_PARTITION
 
 #if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
-static const uint16_t orders_verta_64x64[4] = {
-  0, 2, 1, 2,
-};
-static const uint16_t orders_verta_32x32[16] = {
-  0, 2, 4, 6, 1, 2, 5, 6, 8, 10, 12, 14, 9, 10, 13, 14,
-};
-static const uint16_t orders_verta_16x16[64] = {
-  0,  2,  4,  6,  16, 18, 20, 22, 1,  2,  5,  6,  17, 18, 21, 22,
-  8,  10, 12, 14, 24, 26, 28, 30, 9,  10, 13, 14, 25, 26, 29, 30,
-  32, 34, 36, 38, 48, 50, 52, 54, 33, 34, 37, 38, 49, 50, 53, 54,
-  40, 42, 44, 46, 56, 58, 60, 62, 41, 42, 45, 46, 57, 58, 61, 62,
-};
-static const uint16_t orders_verta_8x8[256] = {
-  0,   2,   4,   6,   16,  18,  20,  22,  64,  66,  68,  70,  80,  82,  84,
-  86,  1,   2,   5,   6,   17,  18,  21,  22,  65,  66,  69,  70,  81,  82,
-  85,  86,  8,   10,  12,  14,  24,  26,  28,  30,  72,  74,  76,  78,  88,
-  90,  92,  94,  9,   10,  13,  14,  25,  26,  29,  30,  73,  74,  77,  78,
-  89,  90,  93,  94,  32,  34,  36,  38,  48,  50,  52,  54,  96,  98,  100,
-  102, 112, 114, 116, 118, 33,  34,  37,  38,  49,  50,  53,  54,  97,  98,
-  101, 102, 113, 114, 117, 118, 40,  42,  44,  46,  56,  58,  60,  62,  104,
-  106, 108, 110, 120, 122, 124, 126, 41,  42,  45,  46,  57,  58,  61,  62,
-  105, 106, 109, 110, 121, 122, 125, 126, 128, 130, 132, 134, 144, 146, 148,
-  150, 192, 194, 196, 198, 208, 210, 212, 214, 129, 130, 133, 134, 145, 146,
-  149, 150, 193, 194, 197, 198, 209, 210, 213, 214, 136, 138, 140, 142, 152,
-  154, 156, 158, 200, 202, 204, 206, 216, 218, 220, 222, 137, 138, 141, 142,
-  153, 154, 157, 158, 201, 202, 205, 206, 217, 218, 221, 222, 160, 162, 164,
-  166, 176, 178, 180, 182, 224, 226, 228, 230, 240, 242, 244, 246, 161, 162,
-  165, 166, 177, 178, 181, 182, 225, 226, 229, 230, 241, 242, 245, 246, 168,
-  170, 172, 174, 184, 186, 188, 190, 232, 234, 236, 238, 248, 250, 252, 254,
-  169, 170, 173, 174, 185, 186, 189, 190, 233, 234, 237, 238, 249, 250, 253,
-  254,
-};
-
+// The orders_vert_* tables are like the orders_* tables above, but describe the
+// order we visit square blocks when doing a PARTITION_VERT_A or
+// PARTITION_VERT_B. This is the same order as normal except for on the last
+// split where we go vertically (TL, BL, TR, BR). We treat the rectangular block
+// as a pair of squares, which means that these tables work correctly for both
+// mixed vertical partition types.
+//
+// There are tables for each of the square sizes. Vertical rectangles (like
+// BLOCK_16X32) use their respective "non-vert" table
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
-static const uint16_t *const orders_verta[BLOCK_SIZES] = {
-  // 2X2,           2X4,              4X2
-  orders_4x4,       orders_4x4,       orders_4x4,
-  //                                  4X4
-                                      orders_verta_8x8,
-  // 4X8,           8X4,              8X8
-  orders_verta_8x8, orders_verta_8x8, orders_verta_8x8,
-  // 8X16,          16X8,             16X16
-  orders_8x16,      orders_16x8,      orders_verta_16x16,
-  // 16X32,         32X16,            32X32
-  orders_16x32,     orders_32x16,     orders_verta_32x32,
-  // 32X64,         64X32,            64X64
-  orders_32x64,     orders_64x32,     orders_verta_64x64,
-  // 64x128,        128x64,           128x128
-  orders_64x128,    orders_128x64,    orders_128x128,
-  // Note: We can't get 4:1 shaped blocks from a VERT_A type partition
+static const uint16_t *const orders_vert[BLOCK_SIZES] = {
+  // 2X2,        2X4,    4X2
+  NULL,          NULL,   NULL,
+  //                     4X4
+                         NULL,
+  // 4X8,        8X4,    8X8
+  NULL,          NULL,   orders_vert_8x8,
+  // 8X16,       16X8,   16X16
+  orders_8x16,   NULL,   orders_vert_16x16,
+  // 16X32,      32X16,  32X32
+  orders_16x32,  NULL,   orders_vert_32x32,
+  // 32X64,      64X32,  64X64
+  orders_32x64,  NULL,   orders_vert_64x64,
+  // 64x128,     128x64, 128x128
+  orders_64x128, NULL,   orders_vert_128x128,
 };
 /* clang-format on */
 #else
 /* clang-format off */
-static const uint16_t *const orders_verta[BLOCK_SIZES] = {
-  // 2X2,             2X4,                4X2
-  orders_verta_8x8,   orders_verta_8x8,   orders_verta_8x8,
-  //                                      4X4
-                                          orders_verta_8x8,
-  // 4X8,             8X4,                8X8
-  orders_verta_8x8,   orders_verta_8x8,   orders_verta_16x16,
-  // 8X16,            16X8,               16X16
-  orders_16x32,       orders_32x16,       orders_verta_32x32,
-  // 16X32,           32X16,              32X32
-  orders_32x64,       orders_64x32,       orders_verta_64x64,
-  // 32X64,           64X32,              64X64
-  orders_64x128,      orders_128x64,      orders_128x128,
-  // Note: We can't get 4:1 shaped blocks from a VERT_A type partition
+static const uint16_t *const orders_vert[BLOCK_SIZES] = {
+  // 2X2,        2X4,    4X2
+  NULL,          NULL,   NULL,
+  //                     4X4
+                         NULL,
+  // 4X8,        8X4,    8X8
+  NULL,          NULL,   orders_vert_16x16,
+  // 8X16,       16X8,   16X16
+  orders_16x32,  NULL,   orders_vert_32x32,
+  // 16X32,      32X16,  32X32
+  orders_32x64,  NULL,   orders_vert_64x64,
+  // 32X64,      64X32,  64X64
+  orders_64x128, NULL,   orders_vert_128x128,
 };
 /* clang-format on */
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
 
+static const uint16_t *get_order_table(PARTITION_TYPE partition,
+                                       BLOCK_SIZE bsize) {
+  const uint16_t *ret = NULL;
+#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+  // If this is a mixed vertical partition, look up bsize in orders_vert.
+  if (partition == PARTITION_VERT_A || partition == PARTITION_VERT_B) {
+    assert(bsize < BLOCK_SIZES);
+    ret = orders_vert[bsize];
+  } else {
+    ret = orders[bsize];
+  }
+#else
+  (void)partition;
+  ret = orders[bsize];
+#endif  // CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+
+  assert(ret);
+  return ret;
+}
+
 static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
                          int mi_col, int top_available, int right_available,
-#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
-                         PARTITION_TYPE partition,
-#endif  // CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
-                         TX_SIZE txsz, int row_off, int col_off, int ss_x) {
+                         PARTITION_TYPE partition, TX_SIZE txsz, int row_off,
+                         int col_off, int ss_x) {
   if (!top_available || !right_available) return 0;
 
   const int bw_unit = block_size_wide[bsize] >> tx_size_wide_log2[0];
@@ -526,11 +579,7 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
 
     // General case (neither top row nor rightmost column): check if the
     // top-right block is coded before the current block.
-    const uint16_t *const order =
-#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
-        (partition == PARTITION_VERT_A) ? orders_verta[bsize] :
-#endif  // CONFIG_EXT_PARTITION_TYPES
-                                        orders[bsize];
+    const uint16_t *const order = get_order_table(partition, bsize);
     const int this_blk_index =
         ((blk_row_in_sb + 0) << (MAX_MIB_SIZE_LOG2 - bw_in_mi_log2)) +
         blk_col_in_sb + 0;
@@ -545,7 +594,8 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
 
 static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
                            int mi_col, int bottom_available, int left_available,
-                           TX_SIZE txsz, int row_off, int col_off, int ss_y) {
+                           PARTITION_TYPE partition, TX_SIZE txsz, int row_off,
+                           int col_off, int ss_y) {
   if (!bottom_available || !left_available) return 0;
 
   if (col_off > 0) {
@@ -585,7 +635,7 @@ static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
 
     // General case (neither leftmost column nor bottom row): check if the
     // bottom-left block is coded before the current block.
-    const uint16_t *const order = orders[bsize];
+    const uint16_t *const order = get_order_table(partition, bsize);
     const int this_blk_index =
         ((blk_row_in_sb + 0) << (MAX_MIB_SIZE_LOG2 - bw_in_mi_log2)) +
         blk_col_in_sb + 0;
@@ -2164,8 +2214,11 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
                                         (MI_SIZE_LOG2 - tx_size_wide_log2[0])) <
                               xd->tile.mi_col_end;
   const int bottom_available = (yd > 0);
-#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
+
+#if CONFIG_EXT_PARTITION_TYPES
   const PARTITION_TYPE partition = xd->mi[0]->mbmi.partition;
+#else
+  const PARTITION_TYPE partition = PARTITION_NONE;
 #endif
 
   // force 4x4 chroma component block size.
@@ -2173,13 +2226,10 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
 
   const int have_top_right =
       has_top_right(cm, bsize, mi_row, mi_col, have_top, right_available,
-#if CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
-                    partition,
-#endif  // CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
-                    tx_size, row_off, col_off, pd->subsampling_x);
+                    partition, tx_size, row_off, col_off, pd->subsampling_x);
   const int have_bottom_left =
       has_bottom_left(cm, bsize, mi_row, mi_col, bottom_available, have_left,
-                      tx_size, row_off, col_off, pd->subsampling_y);
+                      partition, tx_size, row_off, col_off, pd->subsampling_y);
   if (xd->mi[0]->mbmi.palette_mode_info.palette_size[plane != 0] > 0) {
     const int stride = wpx;
     int r, c;
