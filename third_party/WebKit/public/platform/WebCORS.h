@@ -28,19 +28,18 @@
 #define WebCORS_h
 
 #include "base/optional.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "public/platform/WebHTTPHeaderMap.h"
 #include "public/platform/WebHTTPHeaderSet.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "services/network/public/interfaces/cors.mojom-shared.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
 
 class WebURLResponse;
 class WebSecurityOrigin;
+struct ResourceLoaderOptions;
 
 namespace WebCORS {
 
