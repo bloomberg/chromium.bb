@@ -23,7 +23,6 @@ class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
       const blink::WebMediaStreamTrack& track) override;
   void DidDisableMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
-  void DidStopLocalMediaStream(const blink::WebMediaStream& stream) override;
   bool DidStopMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
   blink::WebAudioSourceProvider* CreateWebAudioSourceFromMediaStreamTrack(

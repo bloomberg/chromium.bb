@@ -46,19 +46,6 @@ void MockWebMediaStreamCenter::DidDisableMediaStreamTrack(
   track.Source().SetReadyState(blink::WebMediaStreamSource::kReadyStateMuted);
 }
 
-void MockWebMediaStreamCenter::DidStopLocalMediaStream(
-    const blink::WebMediaStream& stream) {
-  blink::WebVector<blink::WebMediaStreamTrack> tracks;
-  stream.AudioTracks(tracks);
-  for (size_t i = 0; i < tracks.size(); ++i)
-    tracks[i].Source().SetReadyState(
-        blink::WebMediaStreamSource::kReadyStateEnded);
-  stream.VideoTracks(tracks);
-  for (size_t i = 0; i < tracks.size(); ++i)
-    tracks[i].Source().SetReadyState(
-        blink::WebMediaStreamSource::kReadyStateEnded);
-}
-
 bool MockWebMediaStreamCenter::DidStopMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   track.Source().SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);

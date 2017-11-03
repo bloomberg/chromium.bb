@@ -68,7 +68,6 @@ class PLATFORM_EXPORT MediaStreamCenter final
       MediaStreamComponent*);
 
   void DidCreateMediaStreamAndTracks(MediaStreamDescriptor*);
-  void DidStopLocalMediaStream(MediaStreamDescriptor*);
 
   void DidStopMediaStreamSource(MediaStreamSource*);
 

@@ -46,8 +46,6 @@ class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
   void DidDisableMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
-  void DidStopLocalMediaStream(const blink::WebMediaStream& stream) override;
-
   bool DidStopMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
