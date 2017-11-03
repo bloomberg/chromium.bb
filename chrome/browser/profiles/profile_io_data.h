@@ -341,6 +341,7 @@ class ProfileIOData {
     std::unique_ptr<net::ProxyConfigService> proxy_config_service;
 
 #if defined(OS_CHROMEOS)
+    std::unique_ptr<policy::PolicyCertVerifier> policy_cert_verifier;
     std::string username_hash;
     bool use_system_key_slot;
     std::unique_ptr<chromeos::CertificateProvider> certificate_provider;
@@ -578,10 +579,6 @@ class ProfileIOData {
 
   mutable std::unique_ptr<ChromeExpectCTReporter> expect_ct_reporter_;
 #if defined(OS_CHROMEOS)
-  // Set to |cert_verifier_| if it references a PolicyCertVerifier. In that
-  // case, the verifier is owned by  |cert_verifier_|. Otherwise, set to NULL.
-  mutable std::unique_ptr<net::CertVerifier> cert_verifier_;
-  mutable policy::PolicyCertVerifier* policy_cert_verifier_;
   mutable std::string username_hash_;
   mutable bool use_system_key_slot_;
   mutable std::unique_ptr<chromeos::CertificateProvider> certificate_provider_;
