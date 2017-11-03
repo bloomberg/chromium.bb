@@ -52,7 +52,10 @@ struct ShortcutInfo {
     // Used for WebAPK PWAs whose install source info was lost.
     SOURCE_WEBAPK_UNKNOWN = 11,
 
-    SOURCE_COUNT = 12
+    // Used for Trusted Web Activities launched from third party Android apps.
+    SOURCE_TRUSTED_WEB_ACTIVITY = 12,
+
+    SOURCE_COUNT = 13
   };
 
   explicit ShortcutInfo(const GURL& shortcut_url);

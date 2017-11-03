@@ -697,7 +697,7 @@ public class CustomTabsConnection {
     /**
      * See {@link ClientManager#canSessionLaunchInTrustedWebActivity(CustomTabsSessionToken, Uri)}
      */
-    protected boolean canSessionLaunchInTrustedWebActivity(
+    public boolean canSessionLaunchInTrustedWebActivity(
             CustomTabsSessionToken session, Uri origin) {
         return mClientManager.canSessionLaunchInTrustedWebActivity(session, origin);
     }
