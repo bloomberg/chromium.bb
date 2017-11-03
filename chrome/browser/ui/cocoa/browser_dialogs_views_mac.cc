@@ -120,17 +120,21 @@ bool IsZoomBubbleViewsShown() {
   return ZoomBubbleView::GetZoomBubble() != nullptr;
 }
 
-void ContentSettingBubbleViewsBridge::Show(gfx::NativeView parent_view,
-                                           ContentSettingBubbleModel* model,
-                                           content::WebContents* web_contents,
-                                           const gfx::Point& anchor,
-                                           LocationBarDecoration* decoration) {
+gfx::NativeWindow ContentSettingBubbleViewsBridge::Show(
+    gfx::NativeView parent_view,
+    ContentSettingBubbleModel* model,
+    content::WebContents* web_contents,
+    const gfx::Point& anchor,
+    LocationBarDecoration* decoration) {
   ContentSettingBubbleContents* contents = new ContentSettingBubbleContents(
       model, web_contents, nullptr, views::BubbleBorder::Arrow::TOP_RIGHT);
   contents->set_parent_window(parent_view);
   contents->SetAnchorRect(gfx::Rect(anchor, gfx::Size()));
-  views::BubbleDialogDelegateView::CreateBubble(contents)->Show();
+  views::Widget* widget =
+      views::BubbleDialogDelegateView::CreateBubble(contents);
+  widget->Show();
   KeepBubbleAnchored(contents, decoration);
+  return widget->GetNativeWindow();
 }
 
 void ShowUpdateChromeDialogViews(gfx::NativeWindow parent) {

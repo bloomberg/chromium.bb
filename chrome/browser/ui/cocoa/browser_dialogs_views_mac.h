@@ -82,11 +82,11 @@ bool IsZoomBubbleViewsShown();
 // which allows it to call SetAnchorRect().
 class ContentSettingBubbleViewsBridge {
  public:
-  static void Show(gfx::NativeView parent_view,
-                   ContentSettingBubbleModel* model,
-                   content::WebContents* web_contents,
-                   const gfx::Point& anchor,
-                   LocationBarDecoration* decoration);
+  static gfx::NativeWindow Show(gfx::NativeView parent_view,
+                                ContentSettingBubbleModel* model,
+                                content::WebContents* web_contents,
+                                const gfx::Point& anchor,
+                                LocationBarDecoration* decoration);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleViewsBridge);
