@@ -2748,7 +2748,7 @@ void data_device_set_selection(wl_client* client,
                                wl_resource* data_source,
                                uint32_t serial) {
   GetUserDataAs<DataDevice>(resource)->SetSelection(
-      GetUserDataAs<DataSource>(data_source), serial);
+      data_source ? GetUserDataAs<DataSource>(data_source) : nullptr, serial);
 }
 
 void data_device_release(wl_client* client, wl_resource* resource) {
