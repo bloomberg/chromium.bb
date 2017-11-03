@@ -33,7 +33,7 @@ class ScopedBrowserMainEvent {
 int BrowserMain(const MainFunctionParams& parameters) {
   ScopedBrowserMainEvent scoped_browser_main_event;
 
-  base::trace_event::TraceLog::GetInstance()->SetProcessName("Browser");
+  base::trace_event::TraceLog::GetInstance()->set_process_name("Browser");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 

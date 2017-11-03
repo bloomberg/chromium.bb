@@ -186,7 +186,7 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 // Main function for starting the Gpu process.
 int GpuMain(const MainFunctionParams& parameters) {
   TRACE_EVENT0("gpu", "GpuMain");
-  base::trace_event::TraceLog::GetInstance()->SetProcessName("GPU Process");
+  base::trace_event::TraceLog::GetInstance()->set_process_name("GPU Process");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventGpuProcessSortIndex);
 

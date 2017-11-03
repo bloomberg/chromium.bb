@@ -227,7 +227,8 @@ int HeadlessContentMainDelegate::RunProcess(
   if (!process_type.empty())
     return -1;
 
-  base::trace_event::TraceLog::GetInstance()->SetProcessName("HeadlessBrowser");
+  base::trace_event::TraceLog::GetInstance()->set_process_name(
+      "HeadlessBrowser");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventBrowserProcessSortIndex);
 

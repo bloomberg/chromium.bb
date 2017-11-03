@@ -23,7 +23,7 @@ int PpapiBrokerMain(const MainFunctionParams& parameters) {
 
   base::MessageLoop main_message_loop;
   base::PlatformThread::SetName("CrPPAPIBrokerMain");
-  base::trace_event::TraceLog::GetInstance()->SetProcessName(
+  base::trace_event::TraceLog::GetInstance()->set_process_name(
       "PPAPI Broker Process");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventPpapiBrokerProcessSortIndex);

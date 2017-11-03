@@ -96,7 +96,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   // expect synchronous events around the main loop of a thread.
   TRACE_EVENT_ASYNC_BEGIN0("startup", "RendererMain", 0);
 
-  base::trace_event::TraceLog::GetInstance()->SetProcessName("Renderer");
+  base::trace_event::TraceLog::GetInstance()->set_process_name("Renderer");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
       kTraceEventRendererProcessSortIndex);
 
