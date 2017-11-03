@@ -3571,7 +3571,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "OPR6.170623.012",
+              "device_os": "OPR3.170623.008",
               "device_type": "marlin"
             }
           ],
@@ -3600,7 +3600,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "OPR6.170623.012",
+              "device_os": "OPR3.170623.008",
               "device_type": "marlin"
             }
           ],
