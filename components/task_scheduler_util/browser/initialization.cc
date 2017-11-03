@@ -29,8 +29,10 @@ GetBrowserTaskSchedulerInitParamsFromVariations() {
       GetTaskSchedulerInitParams(
           "", variation_params, base::SchedulerBackwardCompatibility::DISABLED);
 #if defined(OS_WIN)
-  init_params->shared_worker_pool_environment =
-      base::TaskScheduler::InitParams::SharedWorkerPoolEnvironment::COM_MTA;
+  if (init_params) {
+    init_params->shared_worker_pool_environment =
+        base::TaskScheduler::InitParams::SharedWorkerPoolEnvironment::COM_MTA;
+  }
 #endif  // defined(OS_WIN)
   return init_params;
 }
