@@ -564,7 +564,7 @@
     },
     {
       name: "MediaCapabilities",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "MediaCapture",
