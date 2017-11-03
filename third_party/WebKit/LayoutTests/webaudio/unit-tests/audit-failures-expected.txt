@@ -27,7 +27,7 @@ FAIL < [basic-failure] 19 out of 19 assertions were failed. assert_true: expecte
 PASS > [numerical-failures] Testing numerical assertion failures.
 FAIL X 0 is not close to 0.1 within a relative error of 0 (RelErr=1). Got 0. assert_true: expected true got false
 FAIL X The measured decibel is not close to 62 within a relative error of 0.01 (RelErr=0.04838709677419355). Got 59. assert_true: expected true got false
-FAIL X Expected 5 for all values but found 7 unexpected values: 
+FAIL X Test array: Expected 5 for all values but found 7 unexpected values: 
 	Index	Actual
 	[0]	1
 	[1]	8
