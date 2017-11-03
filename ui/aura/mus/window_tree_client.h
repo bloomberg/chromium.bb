@@ -118,6 +118,12 @@ class AURA_EXPORT WindowTreeClient
   // See mojom for details on |automatically_create_display_roots|.
   void ConnectAsWindowManager(bool automatically_create_display_roots = true);
 
+  // Connects to mus such that a single WindowTreeHost is created. This blocks
+  // until the WindowTreeHost is obtained and calls
+  // WindowTreeClientDelegate::OnEmbed() with the WindowTreeHost. This entry
+  // point is mostly useful for testing and examples.
+  void ConnectViaWindowTreeHostFactory();
+
   void DisableDragDropClient() { install_drag_drop_client_ = false; }
 
   service_manager::Connector* connector() { return connector_; }
