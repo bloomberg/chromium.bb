@@ -42,7 +42,7 @@ FilterGroup::~FilterGroup() = default;
 
 void FilterGroup::Initialize(int output_samples_per_second) {
   output_samples_per_second_ = output_samples_per_second;
-  post_processing_pipeline_->SetSampleRate(output_samples_per_second);
+  CHECK(post_processing_pipeline_->SetSampleRate(output_samples_per_second));
 }
 
 bool FilterGroup::CanProcessInput(StreamMixer::InputQueue* input) {
@@ -115,23 +115,8 @@ float FilterGroup::MixAndFilter(int chunk_size) {
     }
   }
 
-  bool is_silence = (volume == 0.0f);
-
-  // Allow paused streams to "ring out" at the last valid volume.
-  // If the stream volume is actually 0, this doesn't matter, since the
-  // data is 0's anyway.
-  if (!is_silence) {
-    last_volume_ = volume;
-    if (loudest_content_type != loudest_content_type_) {
-      loudest_content_type_ = loudest_content_type;
-      post_processing_pipeline_->SetContentType(loudest_content_type_);
-    }
-  }
-
-  delay_frames_ = post_processing_pipeline_->ProcessFrames(
-      interleaved(), chunk_size, last_volume_, is_silence);
-
-  // Copy the active channel to all channels.
+  // Copy the active channel to all channels. Only used in the "linearize"
+  // instance.
   if (playout_channel_ != kChannelAll) {
     DCHECK_GE(playout_channel_, 0);
     DCHECK_LT(playout_channel_, num_channels_);
@@ -143,7 +128,22 @@ float FilterGroup::MixAndFilter(int chunk_size) {
     }
   }
 
-  // Mono mixing after all processing if needed.
+  // Allow paused streams to "ring out" at the last valid volume.
+  // If the stream volume is actually 0, this doesn't matter, since the
+  // data is 0's anyway.
+  bool is_silence = (volume == 0.0f);
+  if (!is_silence) {
+    last_volume_ = volume;
+    if (loudest_content_type != loudest_content_type_) {
+      loudest_content_type_ = loudest_content_type;
+      post_processing_pipeline_->SetContentType(loudest_content_type_);
+    }
+  }
+
+  delay_frames_ = post_processing_pipeline_->ProcessFrames(
+      interleaved(), chunk_size, last_volume_, is_silence);
+
+  // Mono mixing if needed. Only used in the "Mix" instance.
   if (mix_to_mono_) {
     for (int frame = 0; frame < chunk_size; ++frame) {
       float sum = 0;
