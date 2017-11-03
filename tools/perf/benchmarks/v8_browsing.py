@@ -316,6 +316,10 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
             'browse:news:cnn',
             [story.expectations.ALL_MOBILE],
             'crbug.com/767970')
+        self.DisableStory(
+             'browse:news:globo',
+             [story.expectations.ALL_ANDROID],
+             'crbug.com/714650')
         # TODO(rnephew): This disabling should move to CanRunOnBrowser.
         self.DisableStory(
              'browse:chrome:omnibox',
