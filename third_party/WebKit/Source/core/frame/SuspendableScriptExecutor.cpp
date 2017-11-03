@@ -16,7 +16,6 @@
 #include "core/frame/LocalFrame.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
-#include "public/platform/WebVector.h"
 #include "public/web/WebScriptExecutionCallback.h"
 
 namespace blink {

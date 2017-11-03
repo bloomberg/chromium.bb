@@ -15,7 +15,6 @@
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
-#include "public/platform/WebVector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

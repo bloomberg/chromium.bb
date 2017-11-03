@@ -15,7 +15,6 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebVector.h"
 
 namespace blink {
 

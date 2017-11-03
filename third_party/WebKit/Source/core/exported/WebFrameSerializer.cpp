@@ -71,7 +71,6 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
-#include "public/platform/WebVector.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebDocumentLoader.h"
 #include "public/web/WebFrame.h"

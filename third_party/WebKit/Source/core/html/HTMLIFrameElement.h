@@ -29,7 +29,6 @@
 #include "core/html/HTMLIFrameElementSandbox.h"
 #include "platform/Supplementable.h"
 #include "public/platform/WebFeaturePolicy.h"
-#include "public/platform/WebVector.h"
 
 namespace blink {
 

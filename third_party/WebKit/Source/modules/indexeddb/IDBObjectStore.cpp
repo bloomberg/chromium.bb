@@ -48,7 +48,6 @@
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebData.h"
-#include "public/platform/WebVector.h"
 #include "public/platform/modules/indexeddb/WebIDBKey.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
 #include "v8/include/v8.h"
@@ -57,7 +56,6 @@ using blink::WebBlobInfo;
 using blink::WebIDBCallbacks;
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
-using blink::WebVector;
 
 namespace blink {
 

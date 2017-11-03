@@ -6,7 +6,6 @@
 #define ColorBehavior_h
 
 #include "platform/PlatformExport.h"
-#include "public/platform/WebVector.h"
 #include "ui/gfx/color_space.h"
 
 namespace blink {

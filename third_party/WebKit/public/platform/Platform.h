@@ -56,7 +56,6 @@
 #include "WebURLError.h"
 #include "WebURLLoader.h"
 #include "WebURLLoaderFactory.h"
-#include "WebVector.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/time/time.h"
 #include "components/viz/common/quads/shared_bitmap.h"
