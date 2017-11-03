@@ -3,8 +3,8 @@
 # This file acts as a blacklist; directories and files not listed here will
 # automatically be found and imported.
 #
-# Directories that are imported but not run are listed in NeverFixTests. This
-# can be used to make it easier to work on getting them running and passing.
+# Tests that are imported but not run are listed in NeverFixTests. This can be
+# used to make it easier to work on getting them running and passing.
 #
 # Further documentation:
 # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_expectations.md

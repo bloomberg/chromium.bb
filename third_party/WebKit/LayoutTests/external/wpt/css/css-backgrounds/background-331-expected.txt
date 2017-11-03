@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS background_initial_image
+PASS background_initial_position
+PASS background_initial_size
+PASS background_initial_repeat
+PASS background_initial_attachment
+PASS background_initial_origin
+PASS background_initial_clip
+FAIL background_initial_color assert_equals: background initial value for background-color expected "transparent" but got "rgba(0, 0, 0, 0)"
+Harness: the test ran to completion.
+

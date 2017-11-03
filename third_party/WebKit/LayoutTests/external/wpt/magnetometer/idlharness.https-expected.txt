@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+PASS Test IDL implementation of Magnetometer Sensor
 PASS Sensor interface: existence and properties of interface object
 PASS Sensor interface object length
 PASS Sensor interface object name
