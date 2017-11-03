@@ -240,6 +240,8 @@ bool PPB_Graphics3D_Impl::InitRaw(
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (!render_thread)
     return false;
+  if (render_thread->IsGpuCompositingDisabled())
+    return false;
 
   scoped_refptr<gpu::GpuChannelHost> channel =
       render_thread->EstablishGpuChannelSync();

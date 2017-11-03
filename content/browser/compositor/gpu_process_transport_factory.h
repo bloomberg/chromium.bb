@@ -22,6 +22,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
 #include "ui/compositor/compositor.h"
 
 namespace base {
@@ -128,6 +129,15 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
 
   // viz::ContextLostObserver implementation.
   void OnContextLost() override;
+
+  scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextCommon(
+      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+      gpu::SurfaceHandle surface_handle,
+      bool need_alpha_channel,
+      bool need_stencil_bits,
+      bool support_locking,
+      ui::ContextProviderCommandBuffer* shared_context_provider,
+      ui::command_buffer_metrics::ContextType type);
 
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
 
