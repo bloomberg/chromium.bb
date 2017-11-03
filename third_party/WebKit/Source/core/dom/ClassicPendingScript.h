@@ -119,6 +119,9 @@ class CORE_EXPORT ClassicPendingScript final
   ReadyState ready_state_;
   bool integrity_failure_;
 
+  // The request is intervened by document.write() intervention.
+  bool intervened_ = false;
+
   Member<ScriptStreamer> streamer_;
   WTF::Closure streamer_done_;
 

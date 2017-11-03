@@ -26,68 +26,30 @@ ClassicPendingScript* ClassicPendingScript::Fetch(
     const WTF::TextEncoding& encoding,
     ScriptElementBase* element,
     FetchParameters::DeferOption defer) {
-  // Step 1. Let request be the result of creating a potential-CORS request
-  // given url, ... [spec text]
-  ResourceRequest resource_request(url);
-
-  // Step 1. ... "script", ... [spec text]
-  ResourceLoaderOptions resource_loader_options;
-  resource_loader_options.initiator_info.name = "script";
-  FetchParameters params(resource_request, resource_loader_options);
-
-  // Step 1. ... and CORS setting. [spec text]
-  //
-  // Instead of using CrossOriginAttributeValue that corresponds to |CORS
-  // setting|, we use ScriptFetchOptions::CredentialsMode().
-  // We shouldn't call SetCrossOriginAccessControl() if CredentialsMode() is
-  // kFetchCredentialsModeOmit, because in that case the request should be
-  // no-cors, while SetCrossOriginAccessControl(kFetchCredentialsModeOmit)
-  // would result in a cors request.
-  if (options.CredentialsMode() !=
-      network::mojom::FetchCredentialsMode::kOmit) {
-    params.SetCrossOriginAccessControl(element_document.GetSecurityOrigin(),
-                                       options.CredentialsMode());
-  }
-
-  // Step 3. Set up the classic script request given request and options. [spec
-  // text]
-  //
-  // https://html.spec.whatwg.org/multipage/webappapis.html#set-up-the-classic-script-request
-  // Set request's cryptographic nonce metadata to options's cryptographic
-  // nonce, [spec text]
-  params.SetContentSecurityPolicyNonce(options.Nonce());
-
-  // its integrity metadata to options's integrity metadata, [spec text]
-  params.SetIntegrityMetadata(options.GetIntegrityMetadata());
-  params.MutableResourceRequest().SetFetchIntegrity(
-      options.GetIntegrityAttributeValue());
-
-  // and its parser metadata to options's parser metadata. [spec text]
-  params.SetParserDisposition(options.ParserState());
-
-  params.SetCharset(encoding);
-
-  // This DeferOption logic is only for classic scripts, as we always set
-  // |kLazyLoad| for module scripts in ModuleScriptLoader.
-  params.SetDefer(defer);
-
-  // [Intervention]
-  // For users on slow connections, we want to avoid blocking the parser in
-  // the main frame on script loads inserted via document.write, since it can
-  // add significant delays before page content is displayed on the screen.
-  auto* client_for_intervention =
-      MaybeDisallowFetchForDocWrittenScript(params, element_document);
+  FetchParameters params = options.CreateFetchParameters(
+      url, element_document.GetSecurityOrigin(), encoding, defer);
 
   ClassicPendingScript* pending_script = new ClassicPendingScript(
       element, TextPosition(), options, true /* is_external */);
+
+  // [Intervention]
+  // For users on slow connections, we want to avoid blocking the parser in
+  // the main frame on script loads inserted via document.write, since it
+  // can add significant delays before page content is displayed on the
+  // screen.
+  pending_script->intervened_ =
+      MaybeDisallowFetchForDocWrittenScript(params, element_document);
+
+  // https://html.spec.whatwg.org/#fetch-a-classic-script
+  // Step 2. Set request's client to settings object. [spec text]
+  //
+  // Note: |element_document| corresponds to the settings object.
   ScriptResource* resource =
       ScriptResource::Fetch(params, element_document.Fetcher());
   if (!resource)
     return nullptr;
   pending_script->SetResource(resource);
   pending_script->CheckState();
-  if (client_for_intervention)
-    client_for_intervention->SetResource(resource);
   return pending_script;
 }
 
@@ -231,6 +193,11 @@ void ClassicPendingScript::NotifyFinished(Resource* resource) {
       integrity_failure_ = GetResource()->IntegrityDisposition() !=
                            ResourceIntegrityDisposition::kPassed;
     }
+  }
+
+  if (intervened_) {
+    PossiblyFetchBlockedDocWriteScript(resource, element->GetDocument(),
+                                       options_);
   }
 
   // We are now waiting for script streaming to finish.
