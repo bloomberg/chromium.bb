@@ -558,7 +558,7 @@ def PrintPakAnalysis(apk_filename, min_pak_resource_size, out_dir):
         f.write(apk.read(i.filename))
         f.flush()
         paks.append(Pak(i.filename, i.compress_size, i.file_size,
-                        data_pack.DataPack.ReadDataPack(f.name).resources))
+                        data_pack.ReadDataPack(f.name).resources))
   finally:
     apk.close()
 

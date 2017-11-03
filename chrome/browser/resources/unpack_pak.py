@@ -25,7 +25,7 @@ def unpack(pak_path, out_path):
   pak_dir = os.path.dirname(pak_path)
   pak_id = os.path.splitext(os.path.basename(pak_path))[0]
 
-  data = data_pack.DataPack.ReadDataPack(pak_path)
+  data = data_pack.ReadDataPack(pak_path)
 
   # Associate numerical grit IDs to strings.
   # For example 120045 -> 'IDR_SETTINGS_ABOUT_PAGE_HTML'
