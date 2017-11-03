@@ -123,6 +123,10 @@ Profile* FakeProfile::GetOriginalProfile() {
   return this;
 }
 
+const Profile* FakeProfile::GetOriginalProfile() const {
+  return this;
+}
+
 bool FakeProfile::IsSupervised() const {
   return false;
 }

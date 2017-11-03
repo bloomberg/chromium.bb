@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
@@ -42,6 +44,12 @@ namespace {
 
 constexpr char kTestProfileName[] = "user@gmail.com";
 constexpr char kTestGaiaId[] = "1234567890";
+
+void SetProfileIsManagedForTesting(Profile* profile) {
+  policy::ProfilePolicyConnector* const connector =
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+  connector->OverrideIsManagedForTesting(true);
+}
 
 class ScopedLogIn {
  public:
@@ -569,6 +577,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedDefault_ManagedGaiaUser) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
+  SetProfileIsManagedForTesting(profile());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   EXPECT_FALSE(IsArcMigrationAllowedByPolicyForProfile(profile()));
@@ -580,6 +589,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedDefault_ActiveDirectoryUser) {
       GetFakeUserManager(),
       AccountId::AdFromObjGuid("f04557de-5da2-40ce-ae9d-b8874d8da96e"),
       user_manager::USER_TYPE_ACTIVE_DIRECTORY);
+  SetProfileIsManagedForTesting(profile());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   EXPECT_TRUE(IsArcMigrationAllowedByPolicyForProfile(profile()));
@@ -589,6 +599,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedForbiddenByPolicy) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::AdFromUserEmailObjGuid(
                         profile()->GetProfileUserName(), kTestGaiaId));
+  SetProfileIsManagedForTesting(profile());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   profile()->GetTestingPrefService()->SetManagedPref(
@@ -600,6 +611,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedMigrate) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::AdFromUserEmailObjGuid(
                         profile()->GetProfileUserName(), kTestGaiaId));
+  SetProfileIsManagedForTesting(profile());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   profile()->GetTestingPrefService()->SetManagedPref(
@@ -611,6 +623,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedWipe) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::AdFromUserEmailObjGuid(
                         profile()->GetProfileUserName(), kTestGaiaId));
+  SetProfileIsManagedForTesting(profile());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   profile()->GetTestingPrefService()->SetManagedPref(
@@ -622,6 +635,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedAskUser) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::AdFromUserEmailObjGuid(
                         profile()->GetProfileUserName(), kTestGaiaId));
+  SetProfileIsManagedForTesting(profile());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   profile()->GetTestingPrefService()->SetManagedPref(
@@ -633,6 +647,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedMinimalMigration) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::AdFromUserEmailObjGuid(
                         profile()->GetProfileUserName(), kTestGaiaId));
+  SetProfileIsManagedForTesting(profile());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   profile()->GetTestingPrefService()->SetManagedPref(
@@ -644,6 +659,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedCachedValueForbidden) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::AdFromUserEmailObjGuid(
                         profile()->GetProfileUserName(), kTestGaiaId));
+  SetProfileIsManagedForTesting(profile());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   profile()->GetTestingPrefService()->SetManagedPref(
@@ -662,6 +678,7 @@ TEST_F(ArcMigrationTest, IsMigrationAllowedCachedValueAllowed) {
   ScopedLogIn login(GetFakeUserManager(),
                     AccountId::AdFromUserEmailObjGuid(
                         profile()->GetProfileUserName(), kTestGaiaId));
+  SetProfileIsManagedForTesting(profile());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kArcEnabled, std::make_unique<base::Value>(true));
   profile()->GetTestingPrefService()->SetManagedPref(
@@ -700,6 +717,7 @@ TEST_P(ArcMigrationAskForEcryptfsArcUsersTest,
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kArcTransitionMigrationRequired);
   }
+  SetProfileIsManagedForTesting(profile());
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kEcryptfsMigrationStrategy, std::make_unique<base::Value>(5));
   profile()->GetTestingPrefService()->SetManagedPref(

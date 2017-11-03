@@ -318,6 +318,10 @@ Profile* OffTheRecordProfileImpl::GetOriginalProfile() {
   return profile_;
 }
 
+const Profile* OffTheRecordProfileImpl::GetOriginalProfile() const {
+  return profile_;
+}
+
 ExtensionSpecialStoragePolicy*
     OffTheRecordProfileImpl::GetExtensionSpecialStoragePolicy() {
   return GetOriginalProfile()->GetExtensionSpecialStoragePolicy();
