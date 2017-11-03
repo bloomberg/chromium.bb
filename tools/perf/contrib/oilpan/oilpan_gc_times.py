@@ -147,6 +147,14 @@ class _OilpanGCTimesBase(legacy_page_test.LegacyPageTest):
   def ValidateAndMeasurePage(self, page, tab, results):
     del page  # unused
     timeline_data = tab.browser.platform.tracing_controller.StopTracing()
+
+    # TODO(charliea): This is part of a three-sided Chromium/Telemetry patch
+    # where we're changing the return type of StopTracing from a TraceValue to a
+    # (TraceValue, nonfatal_exception_list) tuple. Once the tuple return value
+    # lands in Chromium, the non-tuple logic should be deleted.
+    if isinstance(timeline_data, tuple):
+      timeline_data = timeline_data[0]
+
     timeline_model = TimelineModel(timeline_data)
     threads = timeline_model.GetAllThreads()
     for thread in threads:

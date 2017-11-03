@@ -54,6 +54,13 @@ class TimelineController(object):
     # Stop tracing.
     timeline_data = tab.browser.platform.tracing_controller.StopTracing()
 
+    # TODO(charliea): This is part of a three-sided Chromium/Telemetry patch
+    # where we're changing the return type of StopTracing from a TraceValue to a
+    # (TraceValue, nonfatal_exception_list) tuple. Once the tuple return value
+    # lands in Chromium, the non-tuple logic should be deleted.
+    if isinstance(timeline_data, tuple):
+      timeline_data = timeline_data[0]
+
     # TODO(#763375): Rely on results.telemetry_info.trace_local_path/etc.
     kwargs = {}
     if hasattr(results.telemetry_info, 'trace_local_path'):
