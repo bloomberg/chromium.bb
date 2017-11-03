@@ -263,6 +263,10 @@ const char kDisableRendererBackgrounding[]  = "disable-renderer-backgrounding";
 // useful for tests that want to force disabling.
 const char kDisableResizeLock[] = "disable-resize-lock";
 
+// Whether the ResourceScheduler is disabled.  Note this is only useful for C++
+// Headless embedders who need to implement their own resource scheduling.
+const char kDisableResourceScheduler[] = "disable-resource-scheduler";
+
 // Disable shared workers.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 

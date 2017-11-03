@@ -85,6 +85,9 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   if (browser_->options()->disable_sandbox)
     command_line->AppendSwitch(switches::kNoSandbox);
 
+  if (!browser_->options()->enable_resource_scheduler)
+    command_line->AppendSwitch(switches::kDisableResourceScheduler);
+
 #if defined(USE_OZONE)
   // The headless backend is automatically chosen for a headless build, but also
   // adding it here allows us to run in a non-headless build too.
