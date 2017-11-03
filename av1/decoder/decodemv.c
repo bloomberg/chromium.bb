@@ -2484,7 +2484,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
                         mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
                         &mbmi->wm_params[0], mi_row, mi_col)) {
-#if DEC_MISMATCH_DEBUG
+#if WARPED_MOTION_DEBUG
       printf("Warning: unexpected warped model from aomenc\n");
 #endif
       mbmi->wm_params[0].invalid = 1;

@@ -28,6 +28,8 @@
 #define LEAST_SQUARES_SAMPLES_MAX_BITS 3
 #define LEAST_SQUARES_SAMPLES_MAX (1 << LEAST_SQUARES_SAMPLES_MAX_BITS)
 
+#define WARPED_MOTION_DEBUG 0
+
 #if CONFIG_EXT_WARPED_MOTION
 // Search 1 row on the top and 1 column on the left, 1 upper-left block,
 // 1 upper-right block. In worst case, the samples are (MAX_MIB_SIZE * 2 + 2).

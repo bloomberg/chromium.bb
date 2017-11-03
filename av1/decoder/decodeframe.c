@@ -2613,9 +2613,12 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
                                  : &cm->prev_frame->global_motion[frame];
     int good_params = read_global_motion_params(
         &cm->global_motion[frame], ref_params, rb, cm->allow_high_precision_mv);
-    if (!good_params)
-      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                         "Invalid shear parameters for global motion.");
+    if (!good_params) {
+#if WARPED_MOTION_DEBUG
+      printf("Warning: unexpected global motion shear params from aomenc\n");
+#endif
+      cm->global_motion[frame].invalid = 1;
+    }
 
     // TODO(sarahparker, debargha): The logic in the commented out code below
     // does not work currently and causes mismatches when resize is on. Fix it
