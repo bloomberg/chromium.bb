@@ -27,8 +27,18 @@
 
 ChromeStabilityMetricsProvider::ChromeStabilityMetricsProvider(
     PrefService* local_state)
-    : helper_(local_state) {
+    :
+#if defined(OS_ANDROID)
+      scoped_observer_(this),
+#endif  // defined(OS_ANDROID)
+      helper_(local_state) {
   BrowserChildProcessObserver::Add(this);
+
+#if defined(OS_ANDROID)
+  auto* crash_manager = breakpad::CrashDumpManager::GetInstance();
+  DCHECK(crash_manager);
+  scoped_observer_.Add(crash_manager);
+#endif  // defined(OS_ANDROID)
 }
 
 ChromeStabilityMetricsProvider::~ChromeStabilityMetricsProvider() {
@@ -127,3 +137,19 @@ void ChromeStabilityMetricsProvider::BrowserChildProcessCrashed(
 
   helper_.BrowserChildProcessCrashed();
 }
+
+#if defined(OS_ANDROID)
+void ChromeStabilityMetricsProvider::OnCrashDumpProcessed(
+    const breakpad::CrashDumpManager::CrashDumpDetails& details) {
+  // There is a delay for OOM flag to be removed when app goes to background, so
+  // we can't just check for OOM_PROTECTED flag.
+  if (details.process_type == content::PROCESS_TYPE_RENDERER &&
+      details.termination_status == base::TERMINATION_STATUS_OOM_PROTECTED &&
+      (details.app_state ==
+           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
+       details.app_state ==
+           base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES)) {
+    helper_.IncreaseRendererCrashCount();
+  }
+}
+#endif  // defined(OS_ANDROID)

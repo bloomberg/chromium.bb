@@ -52,3 +52,15 @@ source_set("browser") {
     deps += [ "//components/crash/android:jni_headers" ]
   }
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "crash_dump_manager_android_unittest.cc",
+  ]
+  deps = [
+    ":browser",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}

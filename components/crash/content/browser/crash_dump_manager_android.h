@@ -11,8 +11,11 @@
 #include "base/files/file_path.h"
 #include "base/files/platform_file.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted.h"
+#include "base/observer_list_threadsafe.h"
 #include "base/process/kill.h"
 #include "base/synchronization/lock.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
 
 namespace breakpad {
@@ -29,10 +32,59 @@ namespace breakpad {
 // terminates.
 class CrashDumpManager {
  public:
+  // This enum is used to back a UMA histogram, and must be treated as
+  // append-only.
+  enum ExitStatus {
+    EMPTY_MINIDUMP_WHILE_RUNNING,
+    EMPTY_MINIDUMP_WHILE_PAUSED,
+    EMPTY_MINIDUMP_WHILE_BACKGROUND,
+    VALID_MINIDUMP_WHILE_RUNNING,
+    VALID_MINIDUMP_WHILE_PAUSED,
+    VALID_MINIDUMP_WHILE_BACKGROUND,
+    MINIDUMP_STATUS_COUNT
+  };
+
+  enum class CrashDumpStatus {
+    // The dump for this process did not have a path set. This can happen if the
+    // dump was already processed or if crash dump generation is not turned on.
+    kNoDump,
+
+    // The crash dump was empty.
+    kEmptyDump,
+
+    // The crash dump is valid.
+    kValidDump,
+  };
+  struct CrashDumpDetails {
+    CrashDumpDetails(int process_host_id,
+                     content::ProcessType process_type,
+                     base::TerminationStatus termination_status,
+                     base::android::ApplicationState app_state);
+    CrashDumpDetails();
+    ~CrashDumpDetails();
+    CrashDumpDetails(const CrashDumpDetails& other);
+
+    int process_host_id = content::ChildProcessHost::kInvalidUniqueID;
+
+    content::ProcessType process_type = content::PROCESS_TYPE_UNKNOWN;
+    base::TerminationStatus termination_status;
+    base::android::ApplicationState app_state;
+    int64_t file_size = 0;
+    CrashDumpStatus status = CrashDumpStatus::kNoDump;
+  };
+
+  class Observer {
+   public:
+    virtual void OnCrashDumpProcessed(const CrashDumpDetails& details) {}
+  };
+
   static CrashDumpManager* GetInstance();
 
-  // Returns the condition whether we should write the crash to stability proto.
-  bool ProcessMinidumpFileFromChild(base::FilePath crash_dump_dir,
+  // Can be called on any thread.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  void ProcessMinidumpFileFromChild(base::FilePath crash_dump_dir,
                                     int process_host_id,
                                     content::ProcessType process_type,
                                     base::TerminationStatus termination_status,
@@ -46,23 +98,16 @@ class CrashDumpManager {
   CrashDumpManager();
   ~CrashDumpManager();
 
-  typedef std::map<int, base::FilePath> ChildProcessIDToMinidumpPath;
+  void NotifyObservers(const CrashDumpDetails& details);
 
-  // This enum is used to back a UMA histogram, and must be treated as
-  // append-only.
-  enum ExitStatus {
-    EMPTY_MINIDUMP_WHILE_RUNNING,
-    EMPTY_MINIDUMP_WHILE_PAUSED,
-    EMPTY_MINIDUMP_WHILE_BACKGROUND,
-    VALID_MINIDUMP_WHILE_RUNNING,
-    VALID_MINIDUMP_WHILE_PAUSED,
-    VALID_MINIDUMP_WHILE_BACKGROUND,
-    MINIDUMP_STATUS_COUNT
-  };
+  typedef std::map<int, base::FilePath> ChildProcessIDToMinidumpPath;
 
   void SetMinidumpPath(int process_host_id,
                        const base::FilePath& minidump_path);
   bool GetMinidumpPath(int process_host_id, base::FilePath* minidump_path);
+
+  scoped_refptr<base::ObserverListThreadSafe<CrashDumpManager::Observer>>
+      async_observers_;
 
   // This map should only be accessed with its lock aquired as it is accessed
   // from the PROCESS_LAUNCHER and UI threads.

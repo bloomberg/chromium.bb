@@ -8,11 +8,17 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/process/kill.h"
+#include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+
+#if defined(OS_ANDROID)
+#include "components/crash/content/browser/crash_dump_manager_android.h"
+#endif  // defined(OS_ANDROID)
 
 class PrefService;
 
@@ -21,6 +27,9 @@ class PrefService;
 class ChromeStabilityMetricsProvider
     : public metrics::MetricsProvider,
       public content::BrowserChildProcessObserver,
+#if defined(OS_ANDROID)
+      public breakpad::CrashDumpManager::Observer,
+#endif
       public content::NotificationObserver {
  public:
   explicit ChromeStabilityMetricsProvider(PrefService* local_state);
@@ -48,6 +57,16 @@ class ChromeStabilityMetricsProvider
   void BrowserChildProcessCrashed(
       const content::ChildProcessData& data,
       int exit_code) override;
+
+#if defined(OS_ANDROID)
+  // breakpad::CrashDumpManager::Observer:
+  void OnCrashDumpProcessed(
+      const breakpad::CrashDumpManager::CrashDumpDetails& details) override;
+
+  ScopedObserver<breakpad::CrashDumpManager,
+                 breakpad::CrashDumpManager::Observer>
+      scoped_observer_;
+#endif  // defined(OS_ANDROID)
 
   metrics::StabilityMetricsHelper helper_;
 

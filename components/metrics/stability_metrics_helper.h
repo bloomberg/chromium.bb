@@ -49,7 +49,7 @@ class StabilityMetricsHelper {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Increments the RendererCrash pref.
-  static void IncreaseRendererCrashCount(PrefService* local_state);
+  void IncreaseRendererCrashCount();
 
  private:
   // Increments an Integer pref value specified by |path|.
