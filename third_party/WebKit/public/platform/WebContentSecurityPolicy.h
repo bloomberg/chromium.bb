@@ -32,7 +32,6 @@
 #define WebContentSecurityPolicy_h
 
 #include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
 
 namespace blink {
 
