@@ -162,7 +162,8 @@ class DepsChecker(DepsBuilder):
     """
     return self.CheckIncludesAndImports(
         added_imports,
-        java_checker.JavaChecker(self.base_directory, self.verbose))
+        java_checker.JavaChecker(self.base_directory, self.verbose,
+                                 added_imports))
 
   def CheckAddedProtoImports(self, added_imports):
     """This is used from PRESUBMIT.py to check new #import statements added in

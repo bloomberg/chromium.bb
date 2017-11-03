@@ -37,11 +37,21 @@ class JavaChecker(object):
   # statements.
   _EXTRACT_IMPORT_PATH = re.compile('^import\s+(?:static\s+)?([\w\.]+)\s*;')
 
-  def __init__(self, base_directory, verbose):
+  def __init__(self, base_directory, verbose, added_imports=None):
     self._base_directory = base_directory
     self._verbose = verbose
     self._classmap = {}
-    self._PrescanFiles()
+    if added_imports:
+      added_classset = self._PrescanImportFiles(added_imports)
+      self._PrescanFiles(added_classset)
+
+  def _GetClassFullName(self, filepath):
+    """Get the full class name of a file with package name."""
+    with codecs.open(filepath, encoding='utf-8') as f:
+      short_class_name, _ = os.path.splitext(os.path.basename(filepath))
+      for line in f:
+        for package in re.findall('^package\s+([\w\.]+);', line):
+          return package + '.' + short_class_name
 
   def _IgnoreDir(self, d):
     # Skip hidden directories.
@@ -59,7 +69,7 @@ class JavaChecker(object):
       return True
     return False
 
-  def _PrescanFiles(self):
+  def _PrescanFiles(self, added_classset):
     for root, dirs, files in os.walk(self._base_directory):
       # Skip unwanted subdirectories. TODO(husky): it would be better to do
       # this via the skip_child_includes flag in DEPS files. Maybe hoist this
@@ -67,27 +77,48 @@ class JavaChecker(object):
       dirs[:] = [d for d in dirs if not self._IgnoreDir(d)]
       for f in files:
         if f.endswith('.java'):
-          self._PrescanFile(os.path.join(root, f))
+          self._PrescanFile(os.path.join(root, f), added_classset)
 
-  def _PrescanFile(self, filepath):
+  def _PrescanImportFiles(self, added_imports):
+    """Build a set of fully-qualified class affected by this patch.
+
+    Prescan imported files and build classset to collect full class names
+    with package name. This includes both changed files as well as changed imports.
+
+    Args:
+      added_imports : ((file_path, (import_line, import_line, ...), ...)
+
+    Return:
+      A set of full class names with package name of imported files.
+    """
+    classset = set()
+    for filepath, changed_lines in (added_imports or []):
+      if not self.ShouldCheck(filepath):
+        continue
+      full_class_name = self._GetClassFullName(filepath)
+      if full_class_name:
+        classset.add(full_class_name)
+      for line in changed_lines:
+        found_item = self._EXTRACT_IMPORT_PATH.match(line)
+        if found_item:
+          classset.add(found_item.group(1))
+    return classset
+
+  def _PrescanFile(self, filepath, added_classset):
     if self._verbose:
       print 'Prescanning: ' + filepath
-    with codecs.open(filepath, encoding='utf-8') as f:
-      short_class_name, _ = os.path.splitext(os.path.basename(filepath))
-      for line in f:
-        for package in re.findall('^package\s+([\w\.]+);', line):
-          full_class_name = package + '.' + short_class_name
-          if full_class_name in self._classmap:
-            if self._verbose:
-              print 'WARNING: multiple definitions of %s:' % full_class_name
-              print '    ' + filepath
-              print '    ' + self._classmap[full_class_name]
-              print
-          else:
-            self._classmap[full_class_name] = filepath
-          return
-      if self._verbose:
-        print 'WARNING: no package definition found in %s' % filepath
+    full_class_name = self._GetClassFullName(filepath)
+    if full_class_name:
+      if full_class_name in self._classmap:
+        if self._verbose or full_class_name in added_classset:
+          print 'WARNING: multiple definitions of %s:' % full_class_name
+          print '    ' + filepath
+          print '    ' + self._classmap[full_class_name]
+          print
+      else:
+        self._classmap[full_class_name] = filepath
+    elif self._verbose:
+      print 'WARNING: no package definition found in %s' % filepath
 
   def CheckLine(self, rules, line, filepath, fail_on_temp_allow=False):
     """Checks the given line with the given rule set.
