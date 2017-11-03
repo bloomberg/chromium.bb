@@ -1880,30 +1880,12 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   #
   # Create toolchain tryjob builders.
   #
-  toolchain_tryjob_boards = frozenset([
-      'caroline',
-      'daisy',
-      'eve',
-      'gale',
-      'kevin',
-      'lakitu',
-      'link',
-      'lumpy',
-      'nyan_big',
-      'peach_pit',
-      'peppy',
-      'pyro',
-      'sentry',
-      'swanky',
-      'terra',
-      'whirlwind',
-  ])
-  site_config.AddForBoards(
-      'gcc-toolchain',
-      toolchain_tryjob_boards,
-      board_configs,
-      site_config.templates.gcc_toolchain,
-  )
+  builder_to_boards_dict = config_lib.GroupBoardsByBuilder(
+      ge_build_config[config_lib.CONFIG_TEMPLATE_BOARDS])
+
+  toolchain_tryjob_boards = builder_to_boards_dict[
+      config_lib.CONFIG_TEMPLATE_RELEASE]
+
   site_config.AddForBoards(
       'llvm-toolchain',
       toolchain_tryjob_boards,

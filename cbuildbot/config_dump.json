@@ -539,58 +539,6 @@
             "trybot_list": true,
             "usepkg_build_packages": false
         },
-        "gcc_toolchain": {
-            "_template": "gcc_toolchain",
-            "afdo_use": true,
-            "archive_build_debug": true,
-            "build_timeout": 57000,
-            "build_type": "toolchain",
-            "chrome_sdk": true,
-            "description": "Full release build with next minor GCC toolchain revision",
-            "display_label": "toolchain",
-            "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
-            "hw_tests": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"security\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"kernel_daily_regression\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"kernel_daily_benchmarks\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-            ],
-            "hw_tests_override": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"security\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"kernel_daily_regression\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"kernel_daily_benchmarks\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-            ],
-            "image_test": true,
-            "images": [
-                "base",
-                "test",
-                "recovery"
-            ],
-            "internal": true,
-            "latest_toolchain": true,
-            "manifest": "official.xml",
-            "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-            "manifest_version": true,
-            "overlays": "both",
-            "useflags": [
-                "-cros-debug",
-                "-tests_cheets_SELinuxTest",
-                "-tests_network_VPNConnect.l2tpipsec_psk",
-                "-tests_network_VPNConnect.l2tpipsec_xauth",
-                "-tests_platform_SyncCrash",
-                "-tests_power_DarkResumeDisplay",
-                "-tests_power_DarkResumeShutdownServer",
-                "-tests_security_OpenFDs",
-                "-tests_security_SMMLocked",
-                "chrome_internal",
-                "next_gcc"
-            ],
-            "usepkg_build_packages": false,
-            "vm_tests": []
-        },
         "incremental": {
             "_template": "incremental",
             "build_type": "binary",
@@ -1285,6 +1233,18 @@
         ],
         "vm_tests": []
     },
+    "amd64-generic-cheets-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "amd64-generic-cheets"
+        ]
+    },
+    "amd64-generic-cheets-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "amd64-generic-cheets"
+        ]
+    },
     "amd64-generic-cheets-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -1504,6 +1464,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "amd64-generic-goofy-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "amd64-generic-goofy"
+        ]
+    },
+    "amd64-generic-goofy-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "amd64-generic-goofy"
+        ]
     },
     "amd64-generic-goofy-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -1789,6 +1761,24 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "arkham-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "arkham"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
+    },
+    "arkham-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "arkham"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
     },
     "arkham-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -2172,6 +2162,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "asuka-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "asuka"
+        ]
+    },
+    "asuka-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "asuka"
+        ]
     },
     "asuka-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -2563,6 +2565,18 @@
         ],
         "vm_tests": []
     },
+    "auron_paine-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "auron_paine"
+        ]
+    },
+    "auron_paine-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "auron_paine"
+        ]
+    },
     "auron_paine-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -2764,6 +2778,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "auron_yuna-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "auron_yuna"
+        ]
+    },
+    "auron_yuna-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "auron_yuna"
+        ]
     },
     "auron_yuna-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -2975,6 +3001,18 @@
         ],
         "vm_tests": []
     },
+    "banjo-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "banjo"
+        ]
+    },
+    "banjo-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "banjo"
+        ]
+    },
     "banjo-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -3170,6 +3208,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "banon-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "banon"
+        ]
+    },
+    "banon-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "banon"
+        ]
     },
     "banon-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -3376,6 +3426,34 @@
         "trybot_list": true,
         "vm_tests": []
     },
+    "beaglebone-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "beaglebone"
+        ],
+        "chrome_sdk": false,
+        "image_test": false,
+        "images": [
+            "base"
+        ],
+        "rootfs_verification": false,
+        "sync_chrome": false
+    },
+    "beaglebone-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "beaglebone"
+        ],
+        "chrome_sdk": false,
+        "image_test": false,
+        "images": [
+            "base"
+        ],
+        "rootfs_verification": false,
+        "sync_chrome": false
+    },
     "beaglebone-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -3531,6 +3609,34 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "beaglebone_servo-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "beaglebone_servo"
+        ],
+        "chrome_sdk": false,
+        "image_test": false,
+        "images": [
+            "base"
+        ],
+        "rootfs_verification": false,
+        "sync_chrome": false
+    },
+    "beaglebone_servo-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "beaglebone_servo"
+        ],
+        "chrome_sdk": false,
+        "image_test": false,
+        "images": [
+            "base"
+        ],
+        "rootfs_verification": false,
+        "sync_chrome": false
     },
     "beaglebone_servo-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -3689,6 +3795,18 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
+        ]
+    },
+    "betty-arc64-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "betty-arc64"
+        ]
+    },
+    "betty-arc64-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "betty-arc64"
         ]
     },
     "betty-arc64-no-vmtest-pre-cq": {
@@ -3954,6 +4072,18 @@
         ],
         "vm_tests_override": [
             "{\n    \"test_type\": \"vmtest_informational_suite\",\n    \"timeout\": 43200\n}"
+        ]
+    },
+    "betty-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "betty"
+        ]
+    },
+    "betty-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "betty"
         ]
     },
     "betty-no-vmtest-pre-cq": {
@@ -4255,6 +4385,18 @@
         ],
         "vm_tests": []
     },
+    "bob-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "bob"
+        ]
+    },
+    "bob-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "bob"
+        ]
+    },
     "bob-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -4500,6 +4642,18 @@
         ],
         "vm_tests": []
     },
+    "buddy-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "buddy"
+        ]
+    },
+    "buddy-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "buddy"
+        ]
+    },
     "buddy-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -4695,6 +4849,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "butterfly-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "butterfly"
+        ]
+    },
+    "butterfly-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "butterfly"
+        ]
     },
     "butterfly-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -4893,6 +5059,18 @@
         ],
         "vm_tests": []
     },
+    "candy-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "candy"
+        ]
+    },
+    "candy-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "candy"
+        ]
+    },
     "candy-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -5060,6 +5238,18 @@
         ],
         "vm_tests": []
     },
+    "caroline-arc64-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "caroline-arc64"
+        ]
+    },
+    "caroline-arc64-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "caroline-arc64"
+        ]
+    },
     "caroline-arc64-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -5136,6 +5326,18 @@
         ],
         "vm_tests": []
     },
+    "caroline-arcnext-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "caroline-arcnext"
+        ]
+    },
+    "caroline-arcnext-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "caroline-arcnext"
+        ]
+    },
     "caroline-arcnext-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -5211,6 +5413,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "caroline-bertha-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "caroline-bertha"
+        ]
+    },
+    "caroline-bertha-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "caroline-bertha"
+        ]
     },
     "caroline-bertha-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -5317,12 +5531,6 @@
         ],
         "vm_tests": []
     },
-    "caroline-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "caroline"
-        ]
-    },
     "caroline-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
         "boards": [
@@ -5362,6 +5570,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "caroline-ndktranslation-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "caroline-ndktranslation"
+        ]
+    },
+    "caroline-ndktranslation-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "caroline-ndktranslation"
+        ]
     },
     "caroline-ndktranslation-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -5604,6 +5824,18 @@
         ],
         "vm_tests": []
     },
+    "caroline-userdebug-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "caroline-userdebug"
+        ]
+    },
+    "caroline-userdebug-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "caroline-userdebug"
+        ]
+    },
     "caroline-userdebug-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -5708,6 +5940,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "cave-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "cave"
+        ]
+    },
+    "cave-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "cave"
+        ]
     },
     "cave-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -5907,6 +6151,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "celes-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "celes"
+        ]
+    },
+    "celes-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "celes"
+        ]
     },
     "celes-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -6125,6 +6381,18 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
         "vm_tests": []
+    },
+    "chell-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "chell"
+        ]
+    },
+    "chell-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "chell"
+        ]
     },
     "chell-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -6394,6 +6662,18 @@
         ],
         "vm_tests": []
     },
+    "clapper-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "clapper"
+        ]
+    },
+    "clapper-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "clapper"
+        ]
+    },
     "clapper-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -6587,6 +6867,40 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "cobblepot-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "cobblepot"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "cobblepot-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "cobblepot"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "cobblepot-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -6985,6 +7299,18 @@
         ],
         "vm_tests": []
     },
+    "cyan-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "cyan"
+        ]
+    },
+    "cyan-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "cyan"
+        ]
+    },
     "cyan-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -7208,12 +7534,6 @@
             "-chrome_internal"
         ],
         "vm_tests": []
-    },
-    "daisy-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "daisy"
-        ]
     },
     "daisy-incremental": {
         "_template": "incremental",
@@ -7448,6 +7768,18 @@
         ],
         "vm_tests": []
     },
+    "daisy_skate-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "daisy_skate"
+        ]
+    },
+    "daisy_skate-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "daisy_skate"
+        ]
+    },
     "daisy_skate-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -7643,6 +7975,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "daisy_spring-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "daisy_spring"
+        ]
+    },
+    "daisy_spring-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "daisy_spring"
+        ]
     },
     "daisy_spring-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -7840,6 +8184,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "edgar-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "edgar"
+        ]
+    },
+    "edgar-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "edgar"
+        ]
     },
     "edgar-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -8040,6 +8396,18 @@
         ],
         "vm_tests": []
     },
+    "elm-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "elm"
+        ]
+    },
+    "elm-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "elm"
+        ]
+    },
     "elm-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -8239,6 +8607,18 @@
         ],
         "vm_tests": []
     },
+    "enguarde-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "enguarde"
+        ]
+    },
+    "enguarde-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "enguarde"
+        ]
+    },
     "enguarde-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -8406,6 +8786,18 @@
         ],
         "vm_tests": []
     },
+    "eve-arcnext-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "eve-arcnext"
+        ]
+    },
+    "eve-arcnext-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "eve-arcnext"
+        ]
+    },
     "eve-arcnext-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -8481,6 +8873,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "eve-bertha-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "eve-bertha"
+        ]
+    },
+    "eve-bertha-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "eve-bertha"
+        ]
     },
     "eve-bertha-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -8587,12 +8991,6 @@
         ],
         "vm_tests": []
     },
-    "eve-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "eve"
-        ]
-    },
     "eve-kvm-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
@@ -8620,6 +9018,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "eve-kvm-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "eve-kvm"
+        ]
+    },
+    "eve-kvm-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "eve-kvm"
+        ]
     },
     "eve-kvm-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -8848,6 +9258,18 @@
         ],
         "vm_tests": []
     },
+    "eve-userdebug-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "eve-userdebug"
+        ]
+    },
+    "eve-userdebug-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "eve-userdebug"
+        ]
+    },
     "eve-userdebug-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -8952,6 +9374,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "expresso-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "expresso"
+        ]
+    },
+    "expresso-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "expresso"
+        ]
     },
     "expresso-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -9175,6 +9609,18 @@
         "vm_tests": [],
         "vm_tests_override": null
     },
+    "falco-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "falco"
+        ]
+    },
+    "falco-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "falco"
+        ]
+    },
     "falco-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -9376,6 +9822,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "falco_li-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "falco_li"
+        ]
+    },
+    "falco_li-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "falco_li"
+        ]
     },
     "falco_li-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -9767,15 +10225,6 @@
         ],
         "vm_tests": []
     },
-    "gale-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "afdo_use": false,
-        "boards": [
-            "gale"
-        ],
-        "chrome_sdk": false,
-        "sync_chrome": false
-    },
     "gale-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
         "afdo_use": false,
@@ -9938,6 +10387,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "gandof-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "gandof"
+        ]
+    },
+    "gandof-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "gandof"
+        ]
     },
     "gandof-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -10328,6 +10789,18 @@
         ],
         "vm_tests": []
     },
+    "glimmer-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "glimmer"
+        ]
+    },
+    "glimmer-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "glimmer"
+        ]
+    },
     "glimmer-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -10524,6 +10997,18 @@
         ],
         "vm_tests": []
     },
+    "gnawty-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "gnawty"
+        ]
+    },
+    "gnawty-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "gnawty"
+        ]
+    },
     "gnawty-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -10719,6 +11204,40 @@
         ],
         "vm_tests": []
     },
+    "gonzo-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "gonzo"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "gonzo-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "gonzo"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
     "gonzo-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -10873,6 +11392,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "gru-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "gru"
+        ]
+    },
+    "gru-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "gru"
+        ]
     },
     "gru-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -11069,6 +11600,18 @@
         ],
         "vm_tests": []
     },
+    "grunt-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "grunt"
+        ]
+    },
+    "grunt-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "grunt"
+        ]
+    },
     "grunt-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -11247,6 +11790,22 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "guado-accelerator-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "guado-accelerator"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
+    },
+    "guado-accelerator-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "guado-accelerator"
+        ],
+        "chrome_sdk": false,
+        "sync_chrome": false
     },
     "guado-accelerator-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -11443,6 +12002,18 @@
         ],
         "vm_tests": []
     },
+    "guado-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "guado"
+        ]
+    },
+    "guado-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "guado"
+        ]
+    },
     "guado-macrophage-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
@@ -11470,6 +12041,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "guado-macrophage-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "guado-macrophage"
+        ]
+    },
+    "guado-macrophage-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "guado-macrophage"
+        ]
     },
     "guado-macrophage-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -11714,6 +12297,18 @@
         ],
         "vm_tests": []
     },
+    "guado_labstation-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "guado_labstation"
+        ]
+    },
+    "guado_labstation-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "guado_labstation"
+        ]
+    },
     "guado_labstation-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -11918,6 +12513,20 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "guado_moblab-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "guado_moblab"
+        ],
+        "image_test": false
+    },
+    "guado_moblab-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "guado_moblab"
+        ],
+        "image_test": false
     },
     "guado_moblab-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -12144,6 +12753,18 @@
         ],
         "vm_tests": []
     },
+    "hana-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "hana"
+        ]
+    },
+    "hana-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "hana"
+        ]
+    },
     "hana-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -12356,6 +12977,18 @@
         ],
         "vm_tests": []
     },
+    "heli-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "heli"
+        ]
+    },
+    "heli-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "heli"
+        ]
+    },
     "heli-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -12552,6 +13185,18 @@
         ],
         "vm_tests": []
     },
+    "jadeite-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "jadeite"
+        ]
+    },
+    "jadeite-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "jadeite"
+        ]
+    },
     "jadeite-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -12745,6 +13390,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "jecht-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "jecht"
+        ]
+    },
+    "jecht-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "jecht"
+        ]
     },
     "jecht-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -13147,6 +13804,18 @@
         ],
         "vm_tests": []
     },
+    "kefka-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "kefka"
+        ]
+    },
+    "kefka-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "kefka"
+        ]
+    },
     "kefka-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -13314,6 +13983,18 @@
         ],
         "vm_tests": []
     },
+    "kevin-arcnext-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "kevin-arcnext"
+        ]
+    },
+    "kevin-arcnext-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "kevin-arcnext"
+        ]
+    },
     "kevin-arcnext-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -13389,6 +14070,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "kevin-bertha-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "kevin-bertha"
+        ]
+    },
+    "kevin-bertha-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "kevin-bertha"
+        ]
     },
     "kevin-bertha-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -13494,12 +14187,6 @@
             "-chrome_internal"
         ],
         "vm_tests": []
-    },
-    "kevin-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "kevin"
-        ]
     },
     "kevin-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
@@ -13711,6 +14398,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "kip-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "kip"
+        ]
+    },
+    "kip-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "kip"
+        ]
     },
     "kip-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -14123,22 +14822,6 @@
             "-chrome_internal"
         ]
     },
-    "lakitu-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "afdo_use": false,
-        "boards": [
-            "lakitu"
-        ],
-        "chrome_sdk": false,
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "hw_tests": [],
-        "hw_tests_override": [],
-        "image_test": false,
-        "sync_chrome": false
-    },
     "lakitu-gpu-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -14225,6 +14908,38 @@
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
+    },
+    "lakitu-gpu-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu-gpu"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "sync_chrome": false
+    },
+    "lakitu-gpu-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu-gpu"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "sync_chrome": false
     },
     "lakitu-gpu-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -14483,6 +15198,38 @@
         "useflags": [
             "-chrome_internal"
         ]
+    },
+    "lakitu-nc-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu-nc"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "sync_chrome": false
+    },
+    "lakitu-nc-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu-nc"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "sync_chrome": false
     },
     "lakitu-nc-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -14818,6 +15565,38 @@
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
+    "lakitu-st-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu-st"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "sync_chrome": false
+    },
+    "lakitu-st-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu-st"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "sync_chrome": false
+    },
     "lakitu-st-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -15061,6 +15840,38 @@
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
+    "lakitu_next-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu_next"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "sync_chrome": false
+    },
+    "lakitu_next-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lakitu_next"
+        ],
+        "chrome_sdk": false,
+        "disk_layout": "base",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "sync_chrome": false
+    },
     "lakitu_next-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -15252,6 +16063,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "lars-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "lars"
+        ]
+    },
+    "lars-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "lars"
+        ]
     },
     "lars-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -15447,6 +16270,40 @@
         ],
         "vm_tests": []
     },
+    "lasilla-ground-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lasilla-ground"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "lasilla-ground-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lasilla-ground"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
     "lasilla-ground-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -15601,6 +16458,40 @@
         ],
         "vm_tests": []
     },
+    "lasilla-sky-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lasilla-sky"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "lasilla-sky-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "lasilla-sky"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
     "lasilla-sky-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -15730,6 +16621,28 @@
         ],
         "vm_tests": []
     },
+    "lassen-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "lassen"
+        ],
+        "chrome_sdk": false,
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "sync_chrome": false
+    },
+    "lassen-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "lassen"
+        ],
+        "chrome_sdk": false,
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "sync_chrome": false
+    },
     "lassen-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -15851,6 +16764,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "leon-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "leon"
+        ]
+    },
+    "leon-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "leon"
+        ]
     },
     "leon-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -16068,12 +16993,6 @@
         ],
         "vm_tests": []
     },
-    "link-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "link"
-        ]
-    },
     "link-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
         "boards": [
@@ -16285,6 +17204,18 @@
         ],
         "vm_tests": []
     },
+    "lulu-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "lulu"
+        ]
+    },
+    "lulu-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "lulu"
+        ]
+    },
     "lulu-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -16494,12 +17425,6 @@
             "-chrome_internal"
         ],
         "vm_tests": []
-    },
-    "lumpy-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "lumpy"
-        ]
     },
     "lumpy-incremental-paladin": {
         "_template": "paladin",
@@ -16733,6 +17658,40 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "macchiato-ground-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "macchiato-ground"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "macchiato-ground-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "macchiato-ground"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "macchiato-ground-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -17235,6 +18194,18 @@
         ],
         "vm_tests": []
     },
+    "mccloud-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "mccloud"
+        ]
+    },
+    "mccloud-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "mccloud"
+        ]
+    },
     "mccloud-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -17583,6 +18554,18 @@
         ],
         "vm_tests": []
     },
+    "monroe-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "monroe"
+        ]
+    },
+    "monroe-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "monroe"
+        ]
+    },
     "monroe-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -17779,6 +18762,18 @@
         ],
         "vm_tests": []
     },
+    "nautilus-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "nautilus"
+        ]
+    },
+    "nautilus-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "nautilus"
+        ]
+    },
     "nautilus-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -17949,6 +18944,18 @@
         ],
         "vm_tests": []
     },
+    "nefario-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "nefario"
+        ]
+    },
+    "nefario-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "nefario"
+        ]
+    },
     "nefario-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -18052,6 +19059,18 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
+        ]
+    },
+    "newbie-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "newbie"
+        ]
+    },
+    "newbie-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "newbie"
         ]
     },
     "newbie-no-vmtest-pre-cq": {
@@ -18238,6 +19257,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "ninja-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "ninja"
+        ]
+    },
+    "ninja-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "ninja"
+        ]
     },
     "ninja-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -18435,6 +19466,18 @@
             "-chrome_internal"
         ]
     },
+    "novato-arc64-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "novato-arc64"
+        ]
+    },
+    "novato-arc64-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "novato-arc64"
+        ]
+    },
     "novato-arc64-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -18618,6 +19661,18 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
+        ]
+    },
+    "novato-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "novato"
+        ]
+    },
+    "novato-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "novato"
         ]
     },
     "novato-no-vmtest-pre-cq": {
@@ -19025,12 +20080,6 @@
         ],
         "vm_tests": []
     },
-    "nyan_big-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "nyan_big"
-        ]
-    },
     "nyan_big-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
         "boards": [
@@ -19241,6 +20290,18 @@
         ],
         "vm_tests": []
     },
+    "nyan_blaze-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "nyan_blaze"
+        ]
+    },
+    "nyan_blaze-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "nyan_blaze"
+        ]
+    },
     "nyan_blaze-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -19436,6 +20497,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "nyan_kitty-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "nyan_kitty"
+        ]
+    },
+    "nyan_kitty-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "nyan_kitty"
+        ]
     },
     "nyan_kitty-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -19637,6 +20710,18 @@
         ],
         "vm_tests": []
     },
+    "oak-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "oak"
+        ]
+    },
+    "oak-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "oak"
+        ]
+    },
     "oak-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -19831,6 +20916,40 @@
         ],
         "vm_tests": []
     },
+    "octavius-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "octavius"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "octavius-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "octavius"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
     "octavius-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -19985,6 +21104,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "orco-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "orco"
+        ]
+    },
+    "orco-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "orco"
+        ]
     },
     "orco-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -20181,6 +21312,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "panther-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "panther"
+        ]
+    },
+    "panther-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "panther"
+        ]
     },
     "panther-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -20392,6 +21535,18 @@
         ],
         "vm_tests": []
     },
+    "parrot-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "parrot"
+        ]
+    },
+    "parrot-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "parrot"
+        ]
+    },
     "parrot-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -20588,6 +21743,18 @@
         ],
         "vm_tests": []
     },
+    "parrot_ivb-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "parrot_ivb"
+        ]
+    },
+    "parrot_ivb-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "parrot_ivb"
+        ]
+    },
     "parrot_ivb-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -20783,6 +21950,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "peach_pi-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "peach_pi"
+        ]
+    },
+    "peach_pi-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "peach_pi"
+        ]
     },
     "peach_pi-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -20985,12 +22164,6 @@
             "-chrome_internal"
         ],
         "vm_tests": []
-    },
-    "peach_pit-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "peach_pit"
-        ]
     },
     "peach_pit-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
@@ -21214,12 +22387,6 @@
         ],
         "vm_tests": []
     },
-    "peppy-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "peppy"
-        ]
-    },
     "peppy-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
         "boards": [
@@ -21436,6 +22603,18 @@
         ],
         "vm_tests": []
     },
+    "plaso-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "plaso"
+        ]
+    },
+    "plaso-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "plaso"
+        ]
+    },
     "plaso-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -21629,6 +22808,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "poppy-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "poppy"
+        ]
+    },
+    "poppy-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "poppy"
+        ]
     },
     "poppy-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -21859,12 +23050,6 @@
         ],
         "vm_tests": []
     },
-    "pyro-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "pyro"
-        ]
-    },
     "pyro-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
         "boards": [
@@ -22073,6 +23258,18 @@
         ],
         "vm_tests": []
     },
+    "quawks-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "quawks"
+        ]
+    },
+    "quawks-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "quawks"
+        ]
+    },
     "quawks-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -22242,6 +23439,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "rainier-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "rainier"
+        ]
+    },
+    "rainier-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "rainier"
+        ]
     },
     "rainier-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -22556,6 +23765,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "reef-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "reef"
+        ]
+    },
+    "reef-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "reef"
+        ]
     },
     "reef-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -22987,6 +24208,18 @@
         ],
         "vm_tests": []
     },
+    "reks-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "reks"
+        ]
+    },
+    "reks-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "reks"
+        ]
+    },
     "reks-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -23189,6 +24422,18 @@
         ],
         "vm_tests": []
     },
+    "relm-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "relm"
+        ]
+    },
+    "relm-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "relm"
+        ]
+    },
     "relm-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -23385,6 +24630,18 @@
         ],
         "vm_tests": []
     },
+    "rikku-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "rikku"
+        ]
+    },
+    "rikku-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "rikku"
+        ]
+    },
     "rikku-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -23579,6 +24836,40 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "romer-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "romer"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "romer-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "romer"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
     },
     "romer-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -23950,6 +25241,18 @@
         ],
         "vm_tests": []
     },
+    "samus-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "samus"
+        ]
+    },
+    "samus-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "samus"
+        ]
+    },
     "samus-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -24162,6 +25465,18 @@
         ],
         "vm_tests": []
     },
+    "sand-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "sand"
+        ]
+    },
+    "sand-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "sand"
+        ]
+    },
     "sand-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -24357,6 +25672,18 @@
         ],
         "vm_tests": []
     },
+    "scarlet-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "scarlet"
+        ]
+    },
+    "scarlet-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "scarlet"
+        ]
+    },
     "scarlet-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -24550,12 +25877,6 @@
             "-chrome_internal"
         ],
         "vm_tests": []
-    },
-    "sentry-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "sentry"
-        ]
     },
     "sentry-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
@@ -24767,6 +26088,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "setzer-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "setzer"
+        ]
+    },
+    "setzer-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "setzer"
+        ]
     },
     "setzer-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -25444,6 +26777,18 @@
         ],
         "vm_tests": []
     },
+    "snappy-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "snappy"
+        ]
+    },
+    "snappy-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "snappy"
+        ]
+    },
     "snappy-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -25654,6 +26999,18 @@
         ],
         "vm_tests": []
     },
+    "soraka-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "soraka"
+        ]
+    },
+    "soraka-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "soraka"
+        ]
+    },
     "soraka-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -25854,6 +27211,18 @@
         ],
         "vm_tests": []
     },
+    "squawks-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "squawks"
+        ]
+    },
+    "squawks-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "squawks"
+        ]
+    },
     "squawks-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -26050,6 +27419,18 @@
         ],
         "vm_tests": []
     },
+    "stout-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "stout"
+        ]
+    },
+    "stout-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "stout"
+        ]
+    },
     "stout-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -26244,6 +27625,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "stumpy-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "stumpy"
+        ]
+    },
+    "stumpy-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "stumpy"
+        ]
     },
     "stumpy-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -26450,6 +27843,18 @@
         ],
         "vm_tests": []
     },
+    "sumo-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "sumo"
+        ]
+    },
+    "sumo-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "sumo"
+        ]
+    },
     "sumo-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -26645,12 +28050,6 @@
             "-chrome_internal"
         ],
         "vm_tests": []
-    },
-    "swanky-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "swanky"
-        ]
     },
     "swanky-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
@@ -27169,12 +28568,6 @@
         ],
         "vm_tests": []
     },
-    "terra-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "boards": [
-            "terra"
-        ]
-    },
     "terra-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
         "boards": [
@@ -27416,6 +28809,18 @@
         ],
         "vm_tests": []
     },
+    "tidus-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "tidus"
+        ]
+    },
+    "tidus-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "tidus"
+        ]
+    },
     "tidus-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -27621,6 +29026,18 @@
         ],
         "vm_tests": []
     },
+    "tricky-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "tricky"
+        ]
+    },
+    "tricky-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "tricky"
+        ]
+    },
     "tricky-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -27822,6 +29239,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "ultima-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "ultima"
+        ]
+    },
+    "ultima-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "ultima"
+        ]
     },
     "ultima-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -28212,6 +29641,18 @@
         ],
         "vm_tests": []
     },
+    "veyron_fievel-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "veyron_fievel"
+        ]
+    },
+    "veyron_fievel-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "veyron_fievel"
+        ]
+    },
     "veyron_fievel-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -28407,6 +29848,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "veyron_jaq-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "veyron_jaq"
+        ]
+    },
+    "veyron_jaq-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "veyron_jaq"
+        ]
     },
     "veyron_jaq-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -28621,6 +30074,18 @@
         ],
         "vm_tests": []
     },
+    "veyron_jerry-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "veyron_jerry"
+        ]
+    },
+    "veyron_jerry-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "veyron_jerry"
+        ]
+    },
     "veyron_jerry-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -28831,6 +30296,18 @@
         ],
         "vm_tests": []
     },
+    "veyron_mickey-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "veyron_mickey"
+        ]
+    },
+    "veyron_mickey-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "veyron_mickey"
+        ]
+    },
     "veyron_mickey-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -29026,6 +30503,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "veyron_mighty-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "veyron_mighty"
+        ]
+    },
+    "veyron_mighty-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "veyron_mighty"
+        ]
     },
     "veyron_mighty-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -29229,6 +30718,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "veyron_minnie-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "veyron_minnie"
+        ]
+    },
+    "veyron_minnie-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "veyron_minnie"
+        ]
     },
     "veyron_minnie-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -29644,6 +31145,18 @@
         ],
         "vm_tests": []
     },
+    "veyron_rialto-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "veyron_rialto"
+        ]
+    },
+    "veyron_rialto-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "veyron_rialto"
+        ]
+    },
     "veyron_rialto-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -29839,6 +31352,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "veyron_speedy-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "veyron_speedy"
+        ]
+    },
+    "veyron_speedy-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "veyron_speedy"
+        ]
     },
     "veyron_speedy-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -30065,6 +31590,18 @@
         ],
         "vm_tests": []
     },
+    "veyron_tiger-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "veyron_tiger"
+        ]
+    },
+    "veyron_tiger-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "veyron_tiger"
+        ]
+    },
     "veyron_tiger-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -30245,15 +31782,6 @@
         ],
         "vm_tests": []
     },
-    "whirlwind-gcc-toolchain": {
-        "_template": "gcc_toolchain",
-        "afdo_use": false,
-        "boards": [
-            "whirlwind"
-        ],
-        "chrome_sdk": false,
-        "sync_chrome": false
-    },
     "whirlwind-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
         "afdo_use": false,
@@ -30422,6 +31950,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "winky-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "winky"
+        ]
+    },
+    "winky-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "winky"
+        ]
     },
     "winky-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -30636,6 +32176,18 @@
         ],
         "vm_tests": []
     },
+    "wizpig-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "wizpig"
+        ]
+    },
+    "wizpig-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "wizpig"
+        ]
+    },
     "wizpig-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -30834,6 +32386,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "wolf-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "wolf"
+        ]
+    },
+    "wolf-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "wolf"
+        ]
     },
     "wolf-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -31059,6 +32623,40 @@
         ],
         "vm_tests": []
     },
+    "wooten-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "wooten"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
+    "wooten-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "afdo_use": false,
+        "boards": [
+            "wooten"
+        ],
+        "chrome_sdk": false,
+        "hw_tests": [],
+        "hw_tests_override": [],
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
+        "sync_chrome": false,
+        "upload_hw_test_artifacts": false
+    },
     "wooten-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -31198,6 +32796,24 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "x30evb-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "x30evb"
+        ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false
+    },
+    "x30evb-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "x30evb"
+        ],
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false
     },
     "x30evb-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -32494,6 +34110,18 @@
         ],
         "vm_tests": []
     },
+    "zako-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "zako"
+        ]
+    },
+    "zako-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "zako"
+        ]
+    },
     "zako-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -32689,6 +34317,18 @@
             "-chrome_internal"
         ],
         "vm_tests": []
+    },
+    "zoombini-llvm-next-toolchain": {
+        "_template": "llvm_next_toolchain",
+        "boards": [
+            "zoombini"
+        ]
+    },
+    "zoombini-llvm-toolchain": {
+        "_template": "llvm_toolchain",
+        "boards": [
+            "zoombini"
+        ]
     },
     "zoombini-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
