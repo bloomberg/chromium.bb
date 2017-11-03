@@ -97,8 +97,8 @@ bool ParseAccessControlAllowList(const std::string& string, SetType& set) {
 WebCORSPreflightResultCacheItem::WebCORSPreflightResultCacheItem(
     network::mojom::FetchCredentialsMode credentials_mode)
     : absolute_expiry_time_(0),
-      credentials_(
-          FetchUtils::ShouldTreatCredentialsModeAsInclude(credentials_mode)) {}
+      credentials_(credentials_mode ==
+                   network::mojom::FetchCredentialsMode::kInclude) {}
 
 // static
 std::unique_ptr<WebCORSPreflightResultCacheItem>
@@ -208,7 +208,7 @@ bool WebCORSPreflightResultCacheItem::AllowsRequest(
   if (absolute_expiry_time_ < CurrentTime())
     return false;
   if (!credentials_ &&
-      FetchUtils::ShouldTreatCredentialsModeAsInclude(credentials_mode)) {
+      credentials_mode == network::mojom::FetchCredentialsMode::kInclude) {
     return false;
   }
   if (!AllowsCrossOriginMethod(method, ignored_explanation))

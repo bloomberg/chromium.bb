@@ -94,7 +94,6 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   http_header_fields_.Adopt(std::move(data->http_headers_));
 
   SetHTTPBody(data->http_body_);
-  SetAttachedCredential(data->attached_credential_);
   SetAllowStoredCredentials(data->allow_stored_credentials_);
   SetReportUploadProgress(data->report_upload_progress_);
   SetHasUserGesture(data->has_user_gesture_);
@@ -144,8 +143,6 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
 
   if (http_body_)
     data->http_body_ = http_body_->DeepCopy();
-  if (attached_credential_)
-    data->attached_credential_ = attached_credential_->DeepCopy();
   data->allow_stored_credentials_ = allow_stored_credentials_;
   data->report_upload_progress_ = report_upload_progress_;
   data->has_user_gesture_ = has_user_gesture_;
@@ -299,15 +296,6 @@ EncodedFormData* ResourceRequest::HttpBody() const {
 
 void ResourceRequest::SetHTTPBody(scoped_refptr<EncodedFormData> http_body) {
   http_body_ = std::move(http_body);
-}
-
-EncodedFormData* ResourceRequest::AttachedCredential() const {
-  return attached_credential_.get();
-}
-
-void ResourceRequest::SetAttachedCredential(
-    scoped_refptr<EncodedFormData> attached_credential) {
-  attached_credential_ = std::move(attached_credential);
 }
 
 bool ResourceRequest::AllowStoredCredentials() const {

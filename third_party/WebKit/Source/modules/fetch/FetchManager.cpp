@@ -724,8 +724,6 @@ void FetchManager::Loader::PerformHTTPFetch() {
       request_->Method() != HTTPNames::HEAD) {
     if (request_->Buffer())
       request.SetHTTPBody(request_->Buffer()->DrainAsFormData());
-    if (request_->AttachedCredential())
-      request.SetAttachedCredential(request_->AttachedCredential());
   }
   request.SetCacheMode(request_->CacheMode());
   request.SetFetchRedirectMode(request_->Redirect());

@@ -161,9 +161,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   EncodedFormData* HttpBody() const;
   void SetHTTPBody(scoped_refptr<EncodedFormData>);
 
-  EncodedFormData* AttachedCredential() const;
-  void SetAttachedCredential(scoped_refptr<EncodedFormData>);
-
   bool AllowStoredCredentials() const;
   void SetAllowStoredCredentials(bool allow_credentials);
 
@@ -350,7 +347,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   AtomicString http_method_;
   HTTPHeaderMap http_header_fields_;
   scoped_refptr<EncodedFormData> http_body_;
-  scoped_refptr<EncodedFormData> attached_credential_;
   bool allow_stored_credentials_ : 1;
   bool report_upload_progress_ : 1;
   bool report_raw_headers_ : 1;
@@ -415,7 +411,6 @@ struct CrossThreadResourceRequestData {
   String http_method_;
   std::unique_ptr<CrossThreadHTTPHeaderMapData> http_headers_;
   scoped_refptr<EncodedFormData> http_body_;
-  scoped_refptr<EncodedFormData> attached_credential_;
   bool allow_stored_credentials_;
   bool report_upload_progress_;
   bool has_user_gesture_;

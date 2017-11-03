@@ -354,7 +354,6 @@ bool ResourceLoader::WillFollowRedirect(
         allow_stored_credentials = !options.cors_flag;
         break;
       case network::mojom::FetchCredentialsMode::kInclude:
-      case network::mojom::FetchCredentialsMode::kPassword:
         allow_stored_credentials = true;
         break;
     }

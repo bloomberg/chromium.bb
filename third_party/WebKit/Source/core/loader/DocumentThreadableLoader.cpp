@@ -1299,7 +1299,6 @@ void DocumentThreadableLoader::LoadRequest(
       allow_stored_credentials = !cors_flag_ || suborigin_force_credentials_;
       break;
     case network::mojom::FetchCredentialsMode::kInclude:
-    case network::mojom::FetchCredentialsMode::kPassword:
       allow_stored_credentials = true;
       break;
   }

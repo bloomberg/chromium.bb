@@ -197,7 +197,7 @@ base::Optional<CORSError> CheckAccess(
   if (allow_origin_header_value == "*") {
     // A wildcard Access-Control-Allow-Origin can not be used if credentials are
     // to be sent, even with Access-Control-Allow-Credentials set to true.
-    if (!FetchUtils::ShouldTreatCredentialsModeAsInclude(credentials_mode))
+    if (credentials_mode != network::mojom::FetchCredentialsMode::kInclude)
       return base::nullopt;
     // TODO(hintzed): Is the following a sound substitute for
     // blink::ResourceResponse::IsHTTP()?
@@ -217,7 +217,7 @@ base::Optional<CORSError> CheckAccess(
     return CORSError::kAllowOriginMismatch;
   }
 
-  if (FetchUtils::ShouldTreatCredentialsModeAsInclude(credentials_mode)) {
+  if (credentials_mode == network::mojom::FetchCredentialsMode::kInclude) {
     const WebString& allow_credentials_header_value =
         response_header.Get(HTTPNames::Access_Control_Allow_Credentials);
     if (allow_credentials_header_value != "true")

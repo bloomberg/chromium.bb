@@ -26,14 +26,8 @@ enum FetchCredentialsMode {
   kSameOrigin,
   kInclude,
 
-  // "password" mode is not defined in the Fetch spec, but can be seen in
-  // an example code for the Credential Management Level 1.
-  // https://w3c.github.io/webappsec-credential-management/#passwords
-  // TODO(battre): Remove kPassword. http://crbug.com/778536.
-  kPassword,
-
   // Update kLast if a new type is appended.
-  kLast = kPassword
+  kLast = kInclude
 };
 
 // Corresponds to response types from the Fetch spec:

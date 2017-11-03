@@ -14,7 +14,6 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
-#include "bindings/modules/v8/V8PasswordCredential.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
@@ -195,22 +194,7 @@ void RequestInit::SetUpCredentials(ExecutionContext* context,
                                    v8::Isolate* isolate,
                                    v8::Local<v8::Value> v8_credentials,
                                    ExceptionState& exception_state) {
-  if (V8PasswordCredential::hasInstance(v8_credentials, isolate)) {
-    Deprecation::CountDeprecation(context,
-                                  WebFeature::kCredentialManagerCustomFetch);
-    // TODO(mkwst): According to the spec, we'd serialize this once we touch
-    // the network. We're serializing it here, ahead of time, because lifetime
-    // issues around ResourceRequest make it pretty difficult to pass a
-    // PasswordCredential around at the platform level, and the hop between
-    // the browser and renderer processes to deal with service workers is
-    // equally painful. There should be no developer-visible difference in
-    // behavior with this option, except that the `Content-Type` header will
-    // be set early. That seems reasonable.
-    PasswordCredential* credential =
-        V8PasswordCredential::ToImpl(v8_credentials.As<v8::Object>());
-    attached_credential_ = credential->EncodeFormData(content_type_);
-    credentials_ = "password";
-  } else if (v8_credentials->IsString()) {
+  if (v8_credentials->IsString()) {
     credentials_ = ToUSVString(isolate, v8_credentials, exception_state);
     if (exception_state.HadException())
       return;
@@ -221,7 +205,7 @@ void RequestInit::SetUpBody(ExecutionContext* context,
                             v8::Isolate* isolate,
                             v8::Local<v8::Value> v8_body,
                             ExceptionState& exception_state) {
-  if (attached_credential_ || v8_body->IsNull())
+  if (v8_body->IsNull())
     return;
 
   if (v8_body->IsArrayBuffer()) {

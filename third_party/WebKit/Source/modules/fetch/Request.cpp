@@ -45,7 +45,6 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetMode(original->Mode());
   request->SetCredentials(original->Credentials());
   request->SetCacheMode(original->CacheMode());
-  request->SetAttachedCredential(original->AttachedCredential());
   request->SetRedirect(original->Redirect());
   request->SetIntegrity(original->Integrity());
   return request;
@@ -244,16 +243,6 @@ Request* Request::CreateRequestWithRequestOrString(
     request->SetCredentials(network::mojom::FetchCredentialsMode::kSameOrigin);
   } else if (init.Credentials() == "include") {
     request->SetCredentials(network::mojom::FetchCredentialsMode::kInclude);
-  } else if (init.Credentials() == "password") {
-    if (!init.AttachedCredential().get()) {
-      exception_state.ThrowTypeError(
-          "Cannot construct a Request with a credential mode of 'password' "
-          "without a PasswordCredential.");
-      return nullptr;
-    }
-    request->SetCredentials(network::mojom::FetchCredentialsMode::kPassword);
-    request->SetAttachedCredential(init.AttachedCredential());
-    request->SetRedirect(WebURLRequest::kFetchRedirectModeManual);
   } else {
     if (!input_request)
       request->SetCredentials(network::mojom::FetchCredentialsMode::kOmit);
@@ -352,32 +341,11 @@ Request* Request::CreateRequestWithRequestOrString(
 
   // "If either |init|'s body member is present or |temporaryBody| is
   // non-null, and |request|'s method is `GET` or `HEAD`, throw a TypeError.
-  if (init.GetBody() || temporary_body ||
-      request->Credentials() ==
-          network::mojom::FetchCredentialsMode::kPassword) {
+  if (init.GetBody() || temporary_body) {
     if (request->Method() == HTTPNames::GET ||
         request->Method() == HTTPNames::HEAD) {
       exception_state.ThrowTypeError(
           "Request with GET/HEAD method cannot have body.");
-      return nullptr;
-    }
-  }
-
-  // TODO(mkwst): See the comment in RequestInit about serializing the attached
-  // credential prior to hitting the Service Worker machinery.
-  if (request->Credentials() ==
-      network::mojom::FetchCredentialsMode::kPassword) {
-    r->getHeaders()->append(HTTPNames::Content_Type, init.ContentType(),
-                            exception_state);
-
-    const OriginAccessEntry access_entry =
-        OriginAccessEntry(r->url().Protocol(), r->url().Host(),
-                          OriginAccessEntry::kAllowRegisterableDomains);
-    if (access_entry.MatchesDomain(*origin) ==
-        OriginAccessEntry::kDoesNotMatchOrigin) {
-      exception_state.ThrowTypeError(
-          "Credentials may only be submitted to endpoints on the same "
-          "registrable domain.");
       return nullptr;
     }
   }
@@ -651,8 +619,6 @@ String Request::credentials() const {
       return "same-origin";
     case network::mojom::FetchCredentialsMode::kInclude:
       return "include";
-    case network::mojom::FetchCredentialsMode::kPassword:
-      return "password";
   }
   NOTREACHED();
   return "";
