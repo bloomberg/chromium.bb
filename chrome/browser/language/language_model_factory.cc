@@ -12,6 +12,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/language/core/browser/baseline_language_model.h"
+#include "components/language/core/browser/heuristic_language_model.h"
 
 // static
 LanguageModelFactory* LanguageModelFactory::GetInstance() {
@@ -34,14 +35,17 @@ LanguageModelFactory::~LanguageModelFactory() {}
 
 KeyedService* LanguageModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* const browser_context) const {
-  if (base::FeatureList::IsEnabled(language::kUseBaselineLanguageModel)) {
-    Profile* const profile = Profile::FromBrowserContext(browser_context);
-    return new language::BaselineLanguageModel(
+  Profile* const profile = Profile::FromBrowserContext(browser_context);
+
+  if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
+    return new language::HeuristicLanguageModel(
         profile->GetPrefs(), g_browser_process->GetApplicationLocale(),
-        prefs::kAcceptLanguages);
+        prefs::kAcceptLanguages, prefs::kUserLanguageProfile);
   }
 
-  return nullptr;
+  return new language::BaselineLanguageModel(
+      profile->GetPrefs(), g_browser_process->GetApplicationLocale(),
+      prefs::kAcceptLanguages);
 }
 
 content::BrowserContext* LanguageModelFactory::GetBrowserContextToUse(
