@@ -226,8 +226,6 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
     if (counts) ++counts->refmv_mode[mode_ctx][1];
     return NEARMV;
   }
-  // Invalid prediction mode.
-  assert(0);
 }
 
 static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
