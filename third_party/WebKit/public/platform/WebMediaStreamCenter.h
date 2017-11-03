@@ -35,16 +35,12 @@
 namespace blink {
 
 class WebAudioSourceProvider;
-class WebMediaStream;
 class WebMediaStreamTrack;
 class WebMediaStreamSource;
 
 class WebMediaStreamCenter {
  public:
   virtual ~WebMediaStreamCenter() {}
-
-  // Stream functionality.
-  virtual void DidStopLocalMediaStream(const WebMediaStream&) = 0;
 
   // Track functionality.
   virtual void DidCreateMediaStreamTrack(const WebMediaStreamTrack&) {}

@@ -182,23 +182,6 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
   return new WebRtcLocalAudioSourceProvider(track);
 }
 
-void MediaStreamCenter::DidStopLocalMediaStream(
-    const blink::WebMediaStream& stream) {
-  DVLOG(1) << "MediaStreamCenter::didStopLocalMediaStream";
-
-  // TODO(perkj): MediaStream::Stop is being deprecated. But for the moment we
-  // need to support both MediaStream::Stop and MediaStreamTrack::Stop.
-  blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
-  stream.AudioTracks(audio_tracks);
-  for (size_t i = 0; i < audio_tracks.size(); ++i)
-    DidStopMediaStreamTrack(audio_tracks[i]);
-
-  blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
-  stream.VideoTracks(video_tracks);
-  for (size_t i = 0; i < video_tracks.size(); ++i)
-    DidStopMediaStreamTrack(video_tracks[i]);
-}
-
 void MediaStreamCenter::DidStopMediaStreamSource(
     const blink::WebMediaStreamSource& web_source) {
   if (web_source.IsNull())
