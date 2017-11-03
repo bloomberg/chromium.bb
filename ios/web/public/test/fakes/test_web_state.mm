@@ -247,6 +247,17 @@ void TestWebState::OnRenderProcessGone() {
     observer.RenderProcessGone(this);
 }
 
+void TestWebState::OnFormActivity(const std::string& form_name,
+                                  const std::string& field_name,
+                                  const std::string& type,
+                                  const std::string& value,
+                                  bool input_missing) {
+  for (auto& observer : observers_) {
+    observer.FormActivityRegistered(this, form_name, field_name, type, value,
+                                    input_missing);
+  }
+}
+
 void TestWebState::ShowTransientContentView(CRWContentView* content_view) {
   if (content_view) {
     transient_content_view_ = content_view;
