@@ -268,6 +268,10 @@ class SmoothnessKeySilkCases(_Smoothness):
             'inbox_app.html?slide_drawer', [story_module.expectations.ALL],
             'Story contains multiple interaction records. Not supported in '
             'smoothness benchmarks.')
+        self.DisableStory(
+            'https://polymer-topeka.appspot.com/',
+            [story_module.expectations.ALL],
+            'crbug.com/780525')
     return StoryExpectations()
 
 
