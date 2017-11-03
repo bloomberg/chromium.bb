@@ -2948,16 +2948,20 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                                  pc_tree->partitioning == PARTITION_SPLIT);
     vertab_partition_allowed &= (pc_tree->partitioning == PARTITION_VERT ||
                                  pc_tree->partitioning == PARTITION_SPLIT);
+    horz_rd[0] = (horz_rd[0] < INT64_MAX ? horz_rd[0] : 0);
+    horz_rd[1] = (horz_rd[1] < INT64_MAX ? horz_rd[1] : 0);
+    vert_rd[0] = (vert_rd[0] < INT64_MAX ? vert_rd[0] : 0);
+    vert_rd[1] = (vert_rd[1] < INT64_MAX ? vert_rd[1] : 0);
+    split_rd[0] = (split_rd[0] < INT64_MAX ? split_rd[0] : 0);
+    split_rd[1] = (split_rd[1] < INT64_MAX ? split_rd[1] : 0);
+    split_rd[2] = (split_rd[2] < INT64_MAX ? split_rd[2] : 0);
+    split_rd[3] = (split_rd[3] < INT64_MAX ? split_rd[3] : 0);
   }
   int horza_partition_allowed = horzab_partition_allowed;
   int horzb_partition_allowed = horzab_partition_allowed;
   if (cpi->sf.prune_ext_partition_types_search) {
-    const int64_t horz_a_rd = (horz_rd[1] < INT64_MAX ? horz_rd[1] : 0) +
-                              (split_rd[0] < INT64_MAX ? split_rd[0] : 0) +
-                              (split_rd[1] < INT64_MAX ? split_rd[1] : 0);
-    const int64_t horz_b_rd = (horz_rd[0] < INT64_MAX ? horz_rd[0] : 0) +
-                              (split_rd[2] < INT64_MAX ? split_rd[2] : 0) +
-                              (split_rd[3] < INT64_MAX ? split_rd[3] : 0);
+    const int64_t horz_a_rd = horz_rd[1] + split_rd[0] + split_rd[1];
+    const int64_t horz_b_rd = horz_rd[0] + split_rd[2] + split_rd[3];
     horza_partition_allowed &= (horz_a_rd / 16 * 15 < best_rdc.rdcost);
     horzb_partition_allowed &= (horz_b_rd / 16 * 15 < best_rdc.rdcost);
   }
@@ -3013,12 +3017,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   int verta_partition_allowed = vertab_partition_allowed;
   int vertb_partition_allowed = vertab_partition_allowed;
   if (cpi->sf.prune_ext_partition_types_search) {
-    const int64_t vert_a_rd = (vert_rd[1] < INT64_MAX ? vert_rd[1] : 0) +
-                              (split_rd[0] < INT64_MAX ? split_rd[0] : 0) +
-                              (split_rd[2] < INT64_MAX ? split_rd[2] : 0);
-    const int64_t vert_b_rd = (vert_rd[0] < INT64_MAX ? vert_rd[0] : 0) +
-                              (split_rd[1] < INT64_MAX ? split_rd[1] : 0) +
-                              (split_rd[3] < INT64_MAX ? split_rd[3] : 0);
+    const int64_t vert_a_rd = vert_rd[1] + split_rd[0] + split_rd[2];
+    const int64_t vert_b_rd = vert_rd[0] + split_rd[1] + split_rd[3];
     verta_partition_allowed &= (vert_a_rd / 16 * 15 < best_rdc.rdcost);
     vertb_partition_allowed &= (vert_b_rd / 16 * 15 < best_rdc.rdcost);
   }
@@ -3077,7 +3077,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     horz4_partition_allowed &= (pc_tree->partitioning == PARTITION_HORZ ||
                                 pc_tree->partitioning == PARTITION_HORZ_A ||
                                 pc_tree->partitioning == PARTITION_HORZ_B ||
-                                pc_tree->partitioning == PARTITION_NONE ||
                                 pc_tree->partitioning == PARTITION_SPLIT);
   }
   if (horz4_partition_allowed && !force_horz_split &&
@@ -3117,7 +3116,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     vert4_partition_allowed &= (pc_tree->partitioning == PARTITION_VERT ||
                                 pc_tree->partitioning == PARTITION_VERT_A ||
                                 pc_tree->partitioning == PARTITION_VERT_B ||
-                                pc_tree->partitioning == PARTITION_NONE ||
                                 pc_tree->partitioning == PARTITION_SPLIT);
   }
   if (vert4_partition_allowed && !force_vert_split &&
