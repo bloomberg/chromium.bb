@@ -502,6 +502,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               IPC::Message* reply_msg) override;
   void RunFileChooser(RenderFrameHost* render_frame_host,
                       const FileChooserParams& params) override;
+  void DidCancelLoading() override;
   void DidAccessInitialDocument() override;
   void DidChangeName(RenderFrameHost* render_frame_host,
                      const std::string& name) override;
@@ -586,7 +587,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                        const GURL& url) override;
   void Close(RenderViewHost* render_view_host) override;
   void RequestMove(const gfx::Rect& new_bounds) override;
-  void DidCancelLoading() override;
   void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) override;
   void RouteCloseEvent(RenderViewHost* rvh) override;
   bool DidAddMessageToConsole(int32_t level,
@@ -938,6 +938,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            IframeBeforeUnloadParentHang);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            BeforeUnloadDialogRequiresGesture);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
+                           CancelBeforeUnloadResetsURL);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, JavaScriptDialogNotifications);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, JavaScriptDialogInterop);
   FRIEND_TEST_ALL_PREFIXES(DevToolsProtocolTest, BeforeUnloadDialog);

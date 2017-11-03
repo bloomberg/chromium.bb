@@ -130,6 +130,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void RunFileChooser(RenderFrameHost* render_frame_host,
                               const FileChooserParams& params) {}
 
+  // The pending page load was canceled, so the address bar should be updated.
+  virtual void DidCancelLoading() {}
+
   // Another page accessed the top-level initial empty document, which means it
   // is no longer safe to display a pending URL without risking a URL spoof.
   virtual void DidAccessInitialDocument() {}

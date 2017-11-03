@@ -5696,6 +5696,9 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
       controller_.DiscardNonCommittedEntries();
     }
 
+    // Update the URL display either way, to avoid showing a stale URL.
+    NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
+
     for (auto& observer : observers_)
       observer.BeforeUnloadDialogCancelled();
   }
