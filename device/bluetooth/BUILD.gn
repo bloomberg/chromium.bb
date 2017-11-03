@@ -199,6 +199,7 @@ component("bluetooth") {
     "//device/bluetooth/uribeacon",
     "//ipc",
     "//net",
+    "//third_party/re2",
     "//ui/base",
   ]
 
