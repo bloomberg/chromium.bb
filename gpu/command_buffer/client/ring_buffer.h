@@ -31,8 +31,11 @@ class GPU_EXPORT RingBuffer {
   //   size: The size of the buffer in bytes.
   //   helper: A CommandBufferHelper for dealing with tokens.
   //   base: The physical address that corresponds to base_offset.
-  RingBuffer(unsigned int alignment, Offset base_offset,
-             unsigned int size, CommandBufferHelper* helper, void* base);
+  RingBuffer(unsigned int alignment,
+             Offset base_offset,
+             size_t size,
+             CommandBufferHelper* helper,
+             void* base);
 
   ~RingBuffer();
 

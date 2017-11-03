@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -36,7 +37,7 @@ bool ProcessVersionString(const std::string& version_string,
   // we split it into the order of "yyyy", "mm", "dd".
   if (splitter == '-') {
     std::string year = version->back();
-    for (int i = version->size() - 1; i > 0; --i) {
+    for (size_t i = version->size() - 1; i > 0; --i) {
       (*version)[i] = (*version)[i - 1];
     }
     (*version)[0] = year;
@@ -553,7 +554,7 @@ std::set<int32_t> GpuControlList::MakeDecision(GpuControlList::OsType os,
       }
 
       if (!needs_more_info_main)
-        active_entries_.push_back(ii);
+        active_entries_.push_back(base::checked_cast<uint32_t>(ii));
     }
   }
 

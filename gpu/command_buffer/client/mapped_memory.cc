@@ -13,6 +13,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -35,7 +36,9 @@ MemoryChunk::MemoryChunk(int32_t shm_id,
                          CommandBufferHelper* helper)
     : shm_id_(shm_id),
       shm_(shm),
-      allocator_(shm->size(), helper, shm->memory()) {}
+      allocator_(base::checked_cast<unsigned int>(shm->size()),
+                 helper,
+                 shm->memory()) {}
 
 MemoryChunk::~MemoryChunk() {}
 
