@@ -72,8 +72,6 @@ TEST(GLContextGLXTest, DoNotDestroyOnFailedMakeCurrent) {
            GLXContext context) -> int { return 0; };
     EXPECT_FALSE(context->MakeCurrent(surface.get()));
     g_driver_glx.fn.glXMakeContextCurrentFn = real_fn;
-  } else {
-    EXPECT_TRUE(error_tracker.FoundNewError());
   }
   // At this point, MakeCurrent() failed. Make sure the GLContextGLX still was
   // not destroyed.
