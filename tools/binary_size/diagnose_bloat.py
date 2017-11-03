@@ -271,7 +271,11 @@ class _BuildHelper(object):
     self.target = self.target if self.IsAndroid() else 'chrome'
 
   def _GenGnCmd(self):
-    gn_args = 'is_official_build=true symbol_level=1'
+    gn_args = 'is_official_build=true'
+    gn_args += ' symbol_level=1'
+    # Variables often become unused when experimenting with macros to reduce
+    # size, so don't fail on warnings.
+    gn_args += ' treat_warnings_as_errors=false'
     gn_args += ' use_goma=%s' % str(self.use_goma).lower()
     gn_args += ' target_os="%s"' % self.target_os
     if self.IsAndroid():
