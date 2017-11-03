@@ -29,8 +29,8 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -51,7 +51,7 @@ import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.test.util.UiDisableIf;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -81,6 +81,7 @@ public class BookmarkTest {
     private static final String TEST_PAGE_TITLE_FOO = "Foo";
     private static final String TEST_FOLDER_TITLE = "Test folder";
 
+    private BookmarkManager mManager;
     private BookmarkModel mBookmarkModel;
     protected RecyclerView mItemsContainer;
     private String mTestPage;
@@ -124,6 +125,10 @@ public class BookmarkTest {
             mActivityTestRule.loadUrl(UrlConstants.BOOKMARKS_URL);
             mItemsContainer =
                     (RecyclerView) mActivityTestRule.getActivity().findViewById(R.id.recycler_view);
+            mManager = ((BookmarkPage) mActivityTestRule.getActivity()
+                                .getActivityTab()
+                                .getNativePage())
+                               .getManagerForTesting();
         } else {
             // phone
             mBookmarkActivity = ActivityUtils.waitForActivity(
@@ -131,6 +136,7 @@ public class BookmarkTest {
                     new MenuUtils.MenuActivityTrigger(InstrumentationRegistry.getInstrumentation(),
                             mActivityTestRule.getActivity(), R.id.all_bookmarks_menu_id));
             mItemsContainer = (RecyclerView) mBookmarkActivity.findViewById(R.id.recycler_view);
+            mManager = mBookmarkActivity.getManagerForTesting();
         }
     }
 
@@ -228,9 +234,8 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    // https://crbug.com/779518
-    @DisableIf.Device(type = {UiDisableIf.TABLET, UiDisableIf.LARGETABLET})
-    public void testFolderNavigation() throws InterruptedException, ExecutionException {
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    public void testFolderNavigation_Phone() throws InterruptedException, ExecutionException {
         BookmarkId testFolder = addFolder(TEST_FOLDER_TITLE);
         openBookmarkManager();
         final BookmarkDelegate delegate =
@@ -274,6 +279,9 @@ public class BookmarkTest {
                 toolbar.getNavigationButtonForTests());
         Assert.assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
     }
+
+    // TODO(twellington): Write a folder navigation test for tablets that waits for the Tab hosting
+    //                    the native page to update its url after navigations.
 
     @Test
     @MediumTest
@@ -360,8 +368,7 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    // https://crbug.com/779518
-    @DisableIf.Device(type = {UiDisableIf.TABLET, UiDisableIf.LARGETABLET})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE}) // Tablets don't have a close button.
     public void testCloseBookmarksWhileStillLoading() throws Exception {
         BookmarkManager.preventLoadingForTesting(true);
 
@@ -375,8 +382,7 @@ public class BookmarkTest {
             }
         }, mBookmarkActivity);
 
-        final BookmarkActionBar toolbar =
-                mBookmarkActivity.getManagerForTesting().getToolbarForTests();
+        final BookmarkActionBar toolbar = mManager.getToolbarForTests();
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> { toolbar.onMenuItemClick(toolbar.getMenu().findItem(R.id.close_menu_id)); });
@@ -388,15 +394,12 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    // https://crbug.com/779518
-    @DisableIf.Device(type = {UiDisableIf.TABLET, UiDisableIf.LARGETABLET})
     public void testEditHiddenWhileStillLoading() throws Exception {
         BookmarkManager.preventLoadingForTesting(true);
 
         openBookmarkManager();
 
-        final BookmarkActionBar toolbar =
-                mBookmarkActivity.getManagerForTesting().getToolbarForTests();
+        BookmarkActionBar toolbar = mManager.getToolbarForTests();
         Assert.assertFalse(toolbar.getMenu().findItem(R.id.edit_menu_id).isVisible());
 
         BookmarkManager.preventLoadingForTesting(false);
