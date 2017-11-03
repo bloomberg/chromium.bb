@@ -1572,6 +1572,7 @@ public class UndoTabModelTest {
     @MediumTest
     @MinAndroidSdkLevel(24)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)
     public void testOpenRecentlyClosedTabMultiWindow() throws InterruptedException {
         final ChromeTabbedActivity2 secondActivity =
                 MultiWindowUtilsTest.createSecondChromeTabbedActivity(
@@ -1652,6 +1653,7 @@ public class UndoTabModelTest {
     @MediumTest
     @MinAndroidSdkLevel(24)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_TAB_MERGING_FOR_TESTING)
     public void testOpenRecentlyClosedTabMultiWindowFallback() throws InterruptedException {
         final ChromeTabbedActivity2 secondActivity =
                 MultiWindowUtilsTest.createSecondChromeTabbedActivity(
