@@ -8,8 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -18,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -338,7 +337,10 @@ using WebFeature = blink::mojom::WebFeature;
 
 class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
-  PageLoadMetricsBrowserTest() {}
+  PageLoadMetricsBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
+  }
+
   ~PageLoadMetricsBrowserTest() override {}
 
  protected:
@@ -346,12 +348,6 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::PreRunTestOnMainThread();
 
     test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    ukm::kUkmFeature.name);
   }
 
   // Force navigation to a new page, so the currently tracked page load runs its
@@ -379,6 +375,7 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
     return base::MakeUnique<PageLoadMetricsWaiter>(web_contents);
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
