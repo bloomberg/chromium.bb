@@ -895,6 +895,9 @@ extern const char kUiPartialSwapDescription[];
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
 
+extern const char kUseModernMediaControlsName[];
+extern const char kUseModernMediaControlsDescription[];
+
 extern const char kUserActivationV2Name[];
 extern const char kUserActivationV2Description[];
 

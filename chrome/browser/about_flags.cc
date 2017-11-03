@@ -3617,8 +3617,13 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_CHROMEOS)
     {"native-samba", flag_descriptions::kNativeSambaName,
      flag_descriptions::kNativeSambaDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNativeSamba)}
+     FEATURE_VALUE_TYPE(features::kNativeSamba)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"enable-modern-media-controls",
+     flag_descriptions::kUseModernMediaControlsName,
+     flag_descriptions::kUseModernMediaControlsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kUseModernMediaControls)}
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
