@@ -520,8 +520,6 @@ TEST_F(TabletPowerButtonControllerTest, IgnoreSpuriousEventsForAcceleration) {
   // Vectors with varying amounts of acceleration beyond gravity.
   static constexpr gfx::Vector3dF kVector0 = {
       0, 0, TabletPowerButtonController::kGravity};
-  static constexpr gfx::Vector3dF kVector3 = {
-      0, 0, TabletPowerButtonController::kGravity + 3};
   static constexpr gfx::Vector3dF kVector5 = {
       0, 0, TabletPowerButtonController::kGravity + 5};
   static constexpr gfx::Vector3dF kVector9 = {

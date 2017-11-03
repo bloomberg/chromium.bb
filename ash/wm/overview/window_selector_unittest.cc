@@ -2065,7 +2065,6 @@ TEST_F(SplitViewWindowSelectorTest, DragOverviewWindowToSnap) {
   // Drag |window2| selector item to snap to left.
   WindowSelectorItem* selector_item2 =
       GetWindowItemForWindow(grid_index, window2.get());
-  const gfx::Point end_location2(0, 0);
   DragWindowTo(selector_item2, gfx::Point(0, 0));
 
   EXPECT_EQ(split_view_controller()->state(),

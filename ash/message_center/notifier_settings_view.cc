@@ -569,7 +569,6 @@ gfx::Size NotifierSettingsView::GetMinimumSize() const {
 }
 
 gfx::Size NotifierSettingsView::CalculatePreferredSize() const {
-  gfx::Size preferred_size;
   gfx::Size header_size = header_view_->GetPreferredSize();
   gfx::Size content_size = scroller_->contents()->GetPreferredSize();
   int no_notifiers_height = 0;
