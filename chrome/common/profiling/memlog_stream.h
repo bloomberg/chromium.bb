@@ -11,6 +11,9 @@
 
 namespace profiling {
 
+// These values should be kept in sync with
+// chrome/profiling/memlog_stream_fuzzer.dict to ensure efficient fuzzer
+// coverage of the stream parser.
 constexpr uint32_t kStreamSignature = 0xF6103B71;
 
 constexpr uint32_t kAllocPacketType = 0xA1A1A1A1;

@@ -1,0 +1,5 @@
+# These values are obtained from chrome/common/profiling//memlog_stream.h.
+stream_signature="\xF6\x10\x3B\x71"
+alloc_packet="\xA1\xA1\xA1\xA1"
+free_packet="\xFE\xFE\xFE\xFE"
+barrier_packet="\xBA\xBA\xBA\xBA"

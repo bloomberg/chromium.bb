@@ -63,3 +63,14 @@ service_manifest("manifest") {
   name = "profiling"
   source = "profiling_manifest.json"
 }
+
+fuzzer_test("profiling_fuzzer") {
+  sources = [
+    "memlog_stream_fuzzer.cc",
+  ]
+  deps = [
+    ":profiling",
+  ]
+  libfuzzer_options = [ "max_len = 64000" ]
+  dict = "memlog_stream_fuzzer.dict"
+}

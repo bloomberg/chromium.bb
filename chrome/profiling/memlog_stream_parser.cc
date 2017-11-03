@@ -72,9 +72,6 @@ bool MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
         status = ParseBarrier();
         break;
       default:
-        // Temporary debugging for https://crbug.com/765836.
-        LOG(ERROR) << "Memlog debugging: bad packet type: " << msg_type;
-
         // Invalid message type.
         status = READ_ERROR;
         break;
@@ -154,8 +151,6 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseHeader() {
     return READ_NO_DATA;
 
   if (header.signature != kStreamSignature) {
-    // Temporary debugging for https://crbug.com/765836.
-    LOG(ERROR) << "Memlog error parsing signature: " << header.signature;
     return READ_ERROR;
   }
 
@@ -174,11 +169,6 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseAlloc() {
   if (alloc_packet.stack_len > kMaxStackEntries ||
       alloc_packet.context_byte_len > kMaxContextLen ||
       alloc_packet.allocator >= AllocatorType::kCount) {
-    // Temporary debugging for https://crbug.com/765836.
-    LOG(ERROR) << "Memlog error validating data. Stack length: "
-               << alloc_packet.stack_len
-               << ". Context byte length: " << alloc_packet.context_byte_len
-               << ". Allocator: " << static_cast<int>(alloc_packet.allocator);
     return READ_ERROR;
   }
 
