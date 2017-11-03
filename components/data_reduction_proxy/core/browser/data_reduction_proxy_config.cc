@@ -101,6 +101,22 @@ void RecordSecureProxyCheckFetchResult(
       data_reduction_proxy::SECURE_PROXY_CHECK_FETCH_RESULT_COUNT);
 }
 
+enum class WarmupURLFetchAttemptEvent {
+  kFetchInitiated = 0,
+  kConnectionTypeNone = 1,
+  kProxyNotEnabledByUser = 2,
+  kWarmupURLFetchingDisabled = 3,
+  kCount
+};
+
+void RecordWarmupURLFetchAttemptEvent(
+    WarmupURLFetchAttemptEvent warmup_url_fetch_event) {
+  DCHECK_GT(WarmupURLFetchAttemptEvent::kCount, warmup_url_fetch_event);
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.WarmupURL.FetchAttemptEvent",
+                            warmup_url_fetch_event,
+                            WarmupURLFetchAttemptEvent::kCount);
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -334,9 +350,8 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
   enabled_by_user_ = enabled;
   ReloadConfig();
 
-  if (enabled) {
+  if (enabled_by_user_) {
     HandleCaptivePortal();
-    FetchWarmupURL();
 
     // Check if the proxy has been restricted explicitly by the carrier.
     // It is safe to use base::Unretained here, since it gets executed
@@ -346,6 +361,7 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
         base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
                    base::Unretained(this)));
   }
+  FetchWarmupURL();
 }
 
 void DataReductionProxyConfig::HandleCaptivePortal() {
@@ -429,9 +445,6 @@ void DataReductionProxyConfig::OnNetworkChanged(
   connection_type_ = type;
   RecordNetworkChangeEvent(NETWORK_CHANGED);
 
-  if (connection_type_ == net::NetworkChangeNotifier::CONNECTION_NONE)
-    return;
-
   FetchWarmupURL();
 }
 
@@ -495,11 +508,25 @@ void DataReductionProxyConfig::SecureProxyCheck(
 void DataReductionProxyConfig::FetchWarmupURL() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!enabled_by_user_ || !params::FetchWarmupURLEnabled())
+  if (!enabled_by_user_) {
+    RecordWarmupURLFetchAttemptEvent(
+        WarmupURLFetchAttemptEvent::kProxyNotEnabledByUser);
     return;
+  }
 
-  if (connection_type_ == net::NetworkChangeNotifier::CONNECTION_NONE)
+  if (!params::FetchWarmupURLEnabled()) {
+    RecordWarmupURLFetchAttemptEvent(
+        WarmupURLFetchAttemptEvent::kWarmupURLFetchingDisabled);
     return;
+  }
+
+  if (connection_type_ == net::NetworkChangeNotifier::CONNECTION_NONE) {
+    RecordWarmupURLFetchAttemptEvent(
+        WarmupURLFetchAttemptEvent::kConnectionTypeNone);
+    return;
+  }
+
+  RecordWarmupURLFetchAttemptEvent(WarmupURLFetchAttemptEvent::kFetchInitiated);
 
   warmup_url_fetcher_->FetchWarmupURL();
 }
