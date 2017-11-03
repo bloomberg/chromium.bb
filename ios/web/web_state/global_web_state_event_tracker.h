@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
+#include "ios/web/public/web_state/web_state_observer.h"
 
 namespace base {
 template <typename T>
@@ -20,7 +22,7 @@ namespace web {
 
 // This singleton serves as the mechanism via which GlobalWebStateObservers get
 // informed of relevant events from all WebState instances.
-class GlobalWebStateEventTracker {
+class GlobalWebStateEventTracker : public WebStateObserver {
  public:
   // Returns the instance of GlobalWebStateEventTracker.
   static GlobalWebStateEventTracker* GetInstance();
@@ -37,20 +39,25 @@ class GlobalWebStateEventTracker {
   // Should be called whenever a WebState instance is created.
   void OnWebStateCreated(WebState* web_state);
 
-  // Forward to the registered observers.
-  void NavigationItemsPruned(WebState* web_state, size_t pruned_item_count);
-  void NavigationItemChanged(WebState* web_state);
-  void NavigationItemCommitted(WebState* web_state,
-                               const LoadCommittedDetails& load_details);
-  void WebStateDidStartLoading(WebState* web_state);
-  void WebStateDidStopLoading(WebState* web_state);
+  // WebStateObserver implementation.
+  void NavigationItemsPruned(WebState* web_state,
+                             size_t pruned_item_count) override;
+  void NavigationItemChanged(WebState* web_state) override;
+  void NavigationItemCommitted(
+      WebState* web_state,
+      const LoadCommittedDetails& load_details) override;
+  void DidStartLoading(WebState* web_state) override;
+  void DidStopLoading(WebState* web_state) override;
   void PageLoaded(WebState* web_state,
-                  PageLoadCompletionStatus load_completion_status);
-  void RenderProcessGone(WebState* web_state);
-  void WebStateDestroyed(WebState* web_state);
+                  PageLoadCompletionStatus load_completion_status) override;
+  void RenderProcessGone(WebState* web_state) override;
+  void WebStateDestroyed(WebState* web_state) override;
 
   GlobalWebStateEventTracker();
-  ~GlobalWebStateEventTracker();
+  ~GlobalWebStateEventTracker() override;
+
+  // ScopedObserver used to track registration with WebState.
+  ScopedObserver<WebState, WebStateObserver> scoped_observer_;
 
   // List of observers currently registered with the tracker.
   base::ObserverList<GlobalWebStateObserver, true> observer_list_;
