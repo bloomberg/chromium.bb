@@ -26,6 +26,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
       frame_origin_(frame_origin),
       spec_(spec),
       stored_payment_app_info_(std::move(stored_payment_app_info)),
+      delegate_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(browser_context_);
   DCHECK(top_level_origin_.is_valid());
