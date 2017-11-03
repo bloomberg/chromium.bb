@@ -145,4 +145,12 @@ void WebSecurityOrigin::GrantLoadLocalResources() const {
   Get()->GrantLoadLocalResources();
 }
 
+WebSecurityOrigin::WebSecurityOrigin(const url::Origin& origin) {
+  *this = SecurityOrigin::CreateFromUrlOrigin(origin);
+}
+
+WebSecurityOrigin::operator url::Origin() const {
+  return Get()->ToUrlOrigin();
+}
+
 }  // namespace blink

@@ -42,6 +42,7 @@
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/text/WTFString.h"
 #include "url/url_canon.h"
 #include "url/url_canon_ip.h"
 
@@ -194,6 +195,32 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateUnique() {
   scoped_refptr<SecurityOrigin> origin = WTF::AdoptRef(new SecurityOrigin());
   DCHECK(origin->IsUnique());
   return origin;
+}
+
+scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
+    const url::Origin& origin) {
+  if (origin.unique())
+    return CreateUnique();
+
+  DCHECK(String::FromUTF8(origin.scheme().c_str()).ContainsOnlyASCII());
+  DCHECK(String::FromUTF8(origin.host().c_str()).ContainsOnlyASCII());
+  DCHECK(String::FromUTF8(origin.suborigin().c_str()).ContainsOnlyASCII());
+
+  return Create(String::FromUTF8(origin.scheme().c_str()),
+                String::FromUTF8(origin.host().c_str()), origin.port(),
+                String::FromUTF8(origin.suborigin().c_str()));
+}
+
+url::Origin SecurityOrigin::ToUrlOrigin() const {
+  return IsUnique()
+             ? url::Origin()
+             : url::Origin::CreateFromNormalizedTupleWithSuborigin(
+                   StringUTF8Adaptor(protocol_).AsStringPiece().as_string(),
+                   StringUTF8Adaptor(host_).AsStringPiece().as_string(),
+                   effective_port_,
+                   StringUTF8Adaptor(suborigin_.GetName())
+                       .AsStringPiece()
+                       .as_string());
 }
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::IsolatedCopy() const {

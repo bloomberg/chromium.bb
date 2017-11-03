@@ -36,6 +36,7 @@
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/text/WTFString.h"
+#include "url/origin.h"
 
 namespace blink {
 
@@ -57,6 +58,8 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
                                               const String& host,
                                               int port,
                                               const String& suborigin);
+  static scoped_refptr<SecurityOrigin> CreateFromUrlOrigin(const url::Origin&);
+  url::Origin ToUrlOrigin() const;
 
   static void SetMap(URLSecurityOriginMap*);
 
