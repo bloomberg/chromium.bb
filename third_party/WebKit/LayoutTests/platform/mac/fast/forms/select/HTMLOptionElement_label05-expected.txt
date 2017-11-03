@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         text run at (0,0) width 680: "In the list box below, the text \"This text should appear\" should be shown as the first entry into the list box."
       LayoutBR {BR} at (679,14) size 1x0
       LayoutText {#text} at (0,0) size 0x0
-layer at (8,26) size 139x73 clip at (9,27) size 126x71
-  LayoutListBox {SELECT} at (0,18) size 138.81x72.94 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
-    LayoutBlockFlow {OPTION} at (1,1) size 125.81x14.19
-      LayoutText {#text} at (2,0) size 122x13
-        text run at (2,0) width 122: "This text should appear"
+layer at (8,26) size 140x73 clip at (9,27) size 127x71
+  LayoutListBox {SELECT} at (0,18) size 140.30x72.94 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 127.30x14.19
+      LayoutText {#text} at (2,0) size 124x13
+        text run at (2,0) width 124: "This text should appear"

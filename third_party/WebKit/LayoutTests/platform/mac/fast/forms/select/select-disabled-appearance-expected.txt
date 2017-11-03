@@ -16,14 +16,14 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (711,0) size 5x18
           text run at (711,0) width 5: "."
       LayoutBlockFlow {P} at (0,34) size 784x18
-        LayoutMenuList {SELECT} at (0,0) size 156x18 [color=#808080] [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 156x18
-            LayoutText (anonymous) at (8,2) size 125x13
-              text run at (8,2) width 125: "This text should be gray"
+        LayoutMenuList {SELECT} at (0,0) size 158x18 [color=#808080] [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 158x18
+            LayoutText (anonymous) at (8,2) size 127x13
+              text run at (8,2) width 127: "This text should be gray"
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,68) size 784x18
-        LayoutMenuList {SELECT} at (0,0) size 161x18 [bgcolor=#F8F8F8]
-          LayoutBlockFlow (anonymous) at (0,0) size 161x18
-            LayoutText (anonymous) at (8,2) size 130x13
-              text run at (8,2) width 130: "This text should be black"
+        LayoutMenuList {SELECT} at (0,0) size 163x18 [bgcolor=#F8F8F8]
+          LayoutBlockFlow (anonymous) at (0,0) size 163x18
+            LayoutText (anonymous) at (8,2) size 132x13
+              text run at (8,2) width 132: "This text should be black"
         LayoutText {#text} at (0,0) size 0x0

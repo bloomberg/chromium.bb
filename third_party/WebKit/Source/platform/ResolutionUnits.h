@@ -35,6 +35,7 @@ const double kPicasPerInch = 6;
 // The constant CSS pixels per inch value is needed in platform/ for font size
 // calculations.
 const double kCssPixelsPerInch = 96;
+const double kCssPixelsPerPoint = kCssPixelsPerInch / kPointsPerInch;
 
 }  // namespace blink
 

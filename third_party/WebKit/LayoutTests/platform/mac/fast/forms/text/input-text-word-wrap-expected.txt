@@ -14,7 +14,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,34) size 784x33
         LayoutTextControl {INPUT} at (0,0) size 131x33 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-layer at (11,52) size 125x13 scrollWidth 253
+layer at (11,52) size 125x13 scrollWidth 256
   LayoutBlockFlow {DIV} at (3,10) size 125x13
-    LayoutText {#text} at (0,0) size 252x13
-      text run at (0,0) width 252: "This sentence should not wrap into the next line."
+    LayoutText {#text} at (0,0) size 255x13
+      text run at (0,0) width 255: "This sentence should not wrap into the next line."

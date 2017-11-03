@@ -90,9 +90,9 @@ layer at (20,414) size 194x13
       text run at (0,0) width 60: "width 100%"
 layer at (20,529) size 64x13
   LayoutBlockFlow {DIV} at (3,3) size 64x13
-    LayoutText {#text} at (0,0) size 50x13
-      text run at (0,0) width 50: "max 70px"
+    LayoutText {#text} at (0,0) size 51x13
+      text run at (0,0) width 51: "max 70px"
 layer at (20,616) size 125x13 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-    LayoutText {#text} at (0,0) size 87x13
-      text run at (0,0) width 87: "min-width 100px"
+    LayoutText {#text} at (0,0) size 88x13
+      text run at (0,0) width 88: "min-width 100px"
