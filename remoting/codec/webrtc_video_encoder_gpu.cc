@@ -40,6 +40,15 @@ void ArgbToI420(const webrtc::DesktopFrame& frame,
                      v_data, uv_stride, video_frame->visible_rect().width(),
                      video_frame->visible_rect().height());
 }
+
+gpu::GpuPreferences CreateGpuPreferences() {
+  gpu::GpuPreferences gpu_preferences;
+#if defined(OS_WIN)
+  gpu_preferences.enable_media_foundation_vea_on_windows7 = true;
+#endif
+  return gpu_preferences;
+}
+
 }  // namespace
 
 namespace remoting {
@@ -202,15 +211,11 @@ void WebrtcVideoEncoderGpu::BeginInitialization() {
   // Currently we set the bitrate to 8M bits / 1M bytes per frame, and 30 frames
   // per second.
   uint32_t initial_bitrate = kTargetFrameRate * 1024 * 1024 * 8;
-  gpu::GpuPreferences gpu_preferences;
-#if defined(OS_WIN)
-  gpu_preferences.enable_media_foundation_vea_on_windows7 = true;
-#endif
 
   video_encode_accelerator_ =
       media::GpuVideoEncodeAcceleratorFactory::CreateVEA(
           input_format, input_visible_size_, codec_profile_, initial_bitrate,
-          this, gpu_preferences);
+          this, CreateGpuPreferences());
 
   if (!video_encode_accelerator_) {
     LOG(ERROR) << "Could not create VideoEncodeAccelerator";
@@ -251,7 +256,7 @@ bool WebrtcVideoEncoderGpu::IsSupportedByH264(
     const WebrtcVideoEncoderSelector::Profile& profile) {
   media::VideoEncodeAccelerator::SupportedProfiles profiles =
       media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
-          gpu::GpuPreferences());
+          CreateGpuPreferences());
   for (const auto& supported_profile : profiles) {
     if (supported_profile.profile != kH264Profile) {
       continue;
