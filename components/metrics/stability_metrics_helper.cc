@@ -166,12 +166,8 @@ void StabilityMetricsHelper::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
 }
 
-// static
-void StabilityMetricsHelper::IncreaseRendererCrashCount(
-    PrefService* local_state) {
-  // It doesn't use IncrementPrefValue() because the function is static.
-  int value = local_state->GetInteger(prefs::kStabilityRendererCrashCount);
-  local_state->SetInteger(prefs::kStabilityRendererCrashCount, value + 1);
+void StabilityMetricsHelper::IncreaseRendererCrashCount() {
+  IncrementPrefValue(prefs::kStabilityRendererCrashCount);
 }
 
 void StabilityMetricsHelper::BrowserChildProcessCrashed() {
