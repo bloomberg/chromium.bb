@@ -437,7 +437,7 @@ class TabManager : public TabStripModelObserver,
 
   void OnSessionRestoreStartedLoadingTabs();
   void OnSessionRestoreFinishedLoadingTabs();
-  void OnWillRestoreTab(content::WebContents* web_contents);
+  void OnWillRestoreTab(content::WebContents* contents);
 
   // Returns true if it is in BackgroundTabOpening session, which is defined as
   // the duration from the time when the browser starts to load background tabs

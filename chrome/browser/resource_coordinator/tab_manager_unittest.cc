@@ -26,6 +26,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/sessions/tab_loader.h"
+#include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_impl.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/common/chrome_features.h"
@@ -224,6 +225,7 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<NavigationHandle> CreateTabAndNavigation(const char* url) {
     content::TestWebContents* web_contents =
         content::TestWebContents::Create(profile(), nullptr);
+    TabUIHelper::CreateForWebContents(web_contents);
     return content::NavigationHandle::CreateNavigationHandleForTesting(
         GURL(url), web_contents->GetMainFrame());
   }
