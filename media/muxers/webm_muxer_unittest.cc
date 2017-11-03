@@ -12,8 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +36,8 @@ using ::testing::WithArgs;
 namespace media {
 
 struct TestParams {
-  VideoCodec codec;
+  VideoCodec video_codec;
+  AudioCodec audio_codec;
   size_t num_video_tracks;
   size_t num_audio_tracks;
 };
@@ -43,7 +46,8 @@ class WebmMuxerTest : public TestWithParam<TestParams> {
  public:
   WebmMuxerTest()
       : webm_muxer_(
-            GetParam().codec,
+            GetParam().video_codec,
+            GetParam().audio_codec,
             GetParam().num_video_tracks,
             GetParam().num_audio_tracks,
             base::Bind(&WebmMuxerTest::WriteCallback, base::Unretained(this))),
@@ -313,15 +317,17 @@ TEST_P(WebmMuxerTest, VideoIsStoredWhileWaitingForAudio) {
 }
 
 const TestParams kTestCases[] = {
-    {kCodecVP8, 1 /* num_video_tracks */, 0 /*num_audio_tracks*/},
-    {kCodecVP8, 0, 1},
-    {kCodecVP8, 1, 1},
-    {kCodecVP9, 1, 0},
-    {kCodecVP9, 0, 1},
-    {kCodecVP9, 1, 1},
-    {kCodecH264, 1, 0},
-    {kCodecH264, 0, 1},
-    {kCodecH264, 1, 1},
+    {kCodecVP8, kCodecOpus, 1 /* num_video_tracks */, 0 /*num_audio_tracks*/},
+    {kCodecVP8, kCodecOpus, 0, 1},
+    {kCodecVP8, kCodecOpus, 1, 1},
+    {kCodecVP9, kCodecOpus, 1, 0},
+    {kCodecVP9, kCodecOpus, 0, 1},
+    {kCodecVP9, kCodecOpus, 1, 1},
+    {kCodecH264, kCodecOpus, 1, 0},
+    {kCodecH264, kCodecOpus, 0, 1},
+    {kCodecH264, kCodecOpus, 1, 1},
+    {kCodecVP8, kCodecPCM, 0, 1},
+    {kCodecVP8, kCodecPCM, 1, 1},
 };
 
 INSTANTIATE_TEST_CASE_P(, WebmMuxerTest, ValuesIn(kTestCases));

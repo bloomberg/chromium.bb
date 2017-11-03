@@ -218,7 +218,8 @@ bool MediaRecorderHandler::Start(int timeslice) {
   }
 
   webm_muxer_.reset(new media::WebmMuxer(
-      CodecIdToMediaVideoCodec(codec_id_), use_video_tracks, use_audio_tracks,
+      CodecIdToMediaVideoCodec(codec_id_), media::kCodecOpus, use_video_tracks,
+      use_audio_tracks,
       base::Bind(&MediaRecorderHandler::WriteData,
                  weak_factory_.GetWeakPtr())));
 
