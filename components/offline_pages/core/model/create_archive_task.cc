@@ -43,6 +43,7 @@ void CreateArchiveTask::CreateArchive() {
   proposed_page.offline_id = save_page_params_.proposed_offline_id;
   proposed_page.client_id = save_page_params_.client_id;
   proposed_page.creation_time = clock_->Now();
+  proposed_page.last_access_time = clock_->Now();
   proposed_page.request_origin = save_page_params_.request_origin;
 
   // Don't record the original URL if it is identical to the final URL. This is

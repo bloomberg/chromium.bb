@@ -54,9 +54,6 @@ PageInfo::PageInfo(const PageInfo& other) = default;
 const double kOfflinePageStorageLimit = 0.3;
 // The target % of storage usage we try to reach below when expiring pages.
 const double kOfflinePageStorageClearThreshold = 0.1;
-// The time that the storage cleanup will be triggered again since the last
-// one.
-const base::TimeDelta kClearStorageInterval = base::TimeDelta::FromMinutes(30);
 
 // Make sure this is in sync with |PAGE_INFO_PROJECTION| above.
 PageInfo MakePageInfo(sql::Statement* statement) {
@@ -70,24 +67,6 @@ PageInfo MakePageInfo(sql::Statement* statement) {
   page_info.file_path =
       store_utils::FromDatabaseFilePath(statement->ColumnString(5));
   return page_info;
-}
-
-bool ShouldClearPages(const base::Time& last_start_time,
-                      const base::Time& start_time,
-                      const ArchiveManager::StorageStats& storage_stats) {
-  int64_t total_size = storage_stats.temporary_archives_size;
-  int64_t free_space = storage_stats.free_disk_space;
-  if (total_size == 0)
-    return false;
-
-  // If the size of all offline pages is more than limit, or it's larger than a
-  // specified percentage of all available storage space on the disk we'll clear
-  // offline pages until we reach below the limit.
-  if (total_size >= (total_size + free_space) * kOfflinePageStorageLimit)
-    return true;
-  // If it's been more than the pre-defined interval since the last time we
-  // clear the storage, we should clear pages.
-  return (start_time - last_start_time >= kClearStorageInterval);
 }
 
 std::unique_ptr<std::vector<PageInfo>> GetAllTemporaryPageInfos(
@@ -124,6 +103,13 @@ std::unique_ptr<std::vector<PageInfo>> GetPageInfosToClear(
   auto page_infos_to_delete = base::MakeUnique<std::vector<PageInfo>>();
   std::vector<PageInfo> pages_remaining;
   int64_t remaining_size = 0;
+
+  // If the cached pages exceed the storage limit, we need to clear more than
+  // just expired pages to make the storage usage below the threshold.
+  bool quota_based_clearing =
+      stats.temporary_archives_size >=
+      (stats.temporary_archives_size + stats.free_disk_space) *
+          kOfflinePageStorageLimit;
   int64_t max_allowed_size =
       (stats.temporary_archives_size + stats.free_disk_space) *
       kOfflinePageStorageClearThreshold;
@@ -164,7 +150,8 @@ std::unique_ptr<std::vector<PageInfo>> GetPageInfosToClear(
     }
 
     // If there's no quota, remove the pages.
-    if (remaining_size + page_info.file_size > max_allowed_size) {
+    if (quota_based_clearing &&
+        remaining_size + page_info.file_size > max_allowed_size) {
       page_infos_to_delete->push_back(page_info);
       continue;
     }
@@ -202,6 +189,9 @@ std::pair<size_t, DeletePageResult> ClearPagesSync(
   auto page_infos =
       GetPageInfosToClear(temp_namespace_policy_map, start_time, stats, db);
 
+  if (page_infos->empty())
+    return std::make_pair(pages_cleared, result);
+
   for (const auto& page_info : *page_infos) {
     if (!base::PathExists(page_info.file_path) ||
         DeleteArchiveSync(page_info.file_path)) {
@@ -230,14 +220,12 @@ std::map<std::string, LifetimePolicy> GetTempNamespacePolicyMap(
 ClearStorageTask::ClearStorageTask(OfflinePageMetadataStoreSQL* store,
                                    ArchiveManager* archive_manager,
                                    ClientPolicyController* policy_controller,
-                                   const base::Time& last_start_time,
                                    const base::Time& clearup_time,
                                    ClearStorageCallback callback)
     : store_(store),
       archive_manager_(archive_manager),
       policy_controller_(policy_controller),
       callback_(std::move(callback)),
-      last_start_time_(last_start_time),
       clearup_time_(clearup_time),
       weak_ptr_factory_(this) {}
 
@@ -251,10 +239,6 @@ void ClearStorageTask::Run() {
 
 void ClearStorageTask::OnGetStorageStatsDone(
     const ArchiveManager::StorageStats& stats) {
-  if (!ShouldClearPages(last_start_time_, clearup_time_, stats)) {
-    InformClearStorageDone(0, ClearStorageResult::UNNECESSARY);
-    return;
-  }
   std::map<std::string, LifetimePolicy> temp_namespace_policy_map =
       GetTempNamespacePolicyMap(policy_controller_);
   store_->Execute(base::BindOnce(&ClearPagesSync, temp_namespace_policy_map,
@@ -265,6 +249,11 @@ void ClearStorageTask::OnGetStorageStatsDone(
 
 void ClearStorageTask::OnClearPagesDone(
     std::pair<size_t, DeletePageResult> result) {
+  if (result.first == 0 && result.second == DeletePageResult::SUCCESS) {
+    InformClearStorageDone(result.first, ClearStorageResult::UNNECESSARY);
+    return;
+  }
+
   ClearStorageResult clear_result = ClearStorageResult::SUCCESS;
   if (result.second != DeletePageResult::SUCCESS)
     clear_result = ClearStorageResult::DELETE_FAILURE;

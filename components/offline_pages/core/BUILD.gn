@@ -136,6 +136,7 @@ source_set("unit_tests") {
     "model/delete_page_task_unittest.cc",
     "model/get_pages_task_unittest.cc",
     "model/mark_page_accessed_task_unittest.cc",
+    "model/offline_page_model_taskified_unittest.cc",
     "model/temporary_pages_consistency_check_task_unittest.cc",
     "offline_event_logger_unittest.cc",
     "offline_page_feature_unittest.cc",
@@ -162,6 +163,7 @@ source_set("unit_tests") {
     "//components/ukm:test_support",
     "//services/metrics/public/cpp:ukm_builders",
     "//sql:sql",
+    "//testing/gmock",
     "//testing/gtest",
     "//url",
   ]

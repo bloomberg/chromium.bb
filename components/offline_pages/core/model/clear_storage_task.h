@@ -23,8 +23,7 @@ class ClientPolicyController;
 class OfflinePageMetadataStoreSQL;
 
 // This task is responsible for clearing expired temporary pages from metadata
-// store and disk. The task needs to be provided with a |last_start_time| in
-// order to decide if it's going to do the clearing.
+// store and disk.
 // The callback will provide the time when the task starts, how many pages are
 // cleared and a ClearStorageResult.
 class ClearStorageTask : public Task {
@@ -32,7 +31,7 @@ class ClearStorageTask : public Task {
   // The name of histogram enum is OfflinePagesClearStorageResult.
   enum class ClearStorageResult {
     SUCCESS,                                // Cleared successfully.
-    UNNECESSARY,                            // No expired pages.
+    UNNECESSARY,                            // Tried but no page was deleted.
     DEPRECATED_EXPIRE_FAILURE,              // Expiration failed. (DEPRECATED)
     DELETE_FAILURE,                         // Deletion failed.
     DEPRECATED_EXPIRE_AND_DELETE_FAILURES,  // Both expiration and deletion
@@ -52,7 +51,6 @@ class ClearStorageTask : public Task {
   ClearStorageTask(OfflinePageMetadataStoreSQL* store,
                    ArchiveManager* archive_manager,
                    ClientPolicyController* policy_controller,
-                   const base::Time& last_start_time,
                    const base::Time& clearup_time,
                    ClearStorageCallback callback);
   ~ClearStorageTask() override;
@@ -74,7 +72,6 @@ class ClearStorageTask : public Task {
   // cleared. Not owned.
   ClientPolicyController* policy_controller_;
   ClearStorageCallback callback_;
-  base::Time last_start_time_;
   base::Time clearup_time_;
 
   base::WeakPtrFactory<ClearStorageTask> weak_ptr_factory_;

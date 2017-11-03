@@ -15,6 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/offline_pages/core/model/clear_storage_task.h"
+#include "components/offline_pages/core/offline_page_archiver.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_model_event_logger.h"
 #include "components/offline_pages/core/offline_page_types.h"
@@ -113,6 +115,49 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   OfflinePageMetadataStoreSQL* GetStoreForTesting() { return store_.get(); }
 
  private:
+  friend class OfflinePageModelTaskifiedTest;
+
+  // Callbacks for saving pages.
+  void InformSavePageDone(const SavePageCallback& calback,
+                          SavePageResult result,
+                          const OfflinePageItem& page);
+  void OnAddPageForSavePageDone(const SavePageCallback& callback,
+                                const OfflinePageItem& page_attempted,
+                                AddPageResult add_page_result,
+                                int64_t offline_id);
+  void OnCreateArchiveDone(const SavePageCallback& callback,
+                           OfflinePageItem proposed_page,
+                           OfflinePageArchiver* archiver,
+                           OfflinePageArchiver::ArchiverResult archiver_result,
+                           const GURL& saved_url,
+                           const base::FilePath& file_path,
+                           const base::string16& title,
+                           int64_t file_size);
+
+  // Callback for adding pages.
+  void OnAddPageDone(const OfflinePageItem& page,
+                     const AddPageCallback& callback,
+                     AddPageResult result);
+
+  // Callbacks for deleting pages.
+  void InformDeletePageDone(const DeletePageCallback& callback,
+                            DeletePageResult result);
+  void OnDeleteDone(
+      const DeletePageCallback& callback,
+      DeletePageResult result,
+      const std::vector<OfflinePageModel::DeletedPageInfo>& infos);
+
+  // Callbacks for clearing temporary pages.
+  void PostClearCachedPagesTask(bool is_initializing);
+  void ClearCachedPages();
+  void OnClearCachedPagesDone(base::Time start_time,
+                              size_t deleted_page_count,
+                              ClearStorageTask::ClearStorageResult result);
+
+  // Other utility methods.
+  void RemovePagesMatchingUrlAndNamespace(const OfflinePageItem& page);
+  void CreateArchivesDirectoryIfNeeded();
+
   // Persistent store for offline page metadata.
   std::unique_ptr<OfflinePageMetadataStoreSQL> store_;
 
@@ -122,8 +167,24 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   // Controller of the client policies.
   std::unique_ptr<ClientPolicyController> policy_controller_;
 
+  // The observers.
+  base::ObserverList<Observer> observers_;
+
+  // Pending archivers owned by this model.
+  // This is above the definition of |task_queue_|. Since the queue may hold raw
+  // pointers to the pending archivers, and the pending archivers are better
+  // destructed after the |task_queue_|.
+  std::vector<std::unique_ptr<OfflinePageArchiver>> pending_archivers_;
+
+  // The task queue used for executing various tasks.
+  TaskQueue task_queue_;
+
   // Logger to facilitate recording of events.
   OfflinePageModelEventLogger offline_event_logger_;
+
+  // Time of when the most recent cached pages clearing happened. The value will
+  // not persist across Chrome restarts.
+  base::Time last_clear_cached_pages_time_;
 
   base::WeakPtrFactory<OfflinePageModelTaskified> weak_ptr_factory_;
 

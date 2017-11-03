@@ -29,9 +29,6 @@ namespace {
 const GURL kTestUrl("http://example.com");
 const int64_t kTestFileSize = 1 << 19;              // Make a page 512KB.
 const int64_t kFreeSpaceNormal = 1000 * (1 << 20);  // 1000MB free space.
-// The interval is in anonymous namespace, so keep this updated with the
-// kClearStorageInterval in clear_storage_task.cc.
-const base::TimeDelta kClearStorageInterval = base::TimeDelta::FromMinutes(30);
 
 enum TestOptions {
   DEFAULT = 1 << 0,
@@ -108,7 +105,6 @@ class ClearStorageTaskTest
   ArchiveManager* archive_manager() { return archive_manager_.get(); }
   const base::FilePath& temp_dir_path() { return temp_dir_.GetPath(); }
   base::SimpleTestClock* clock() { return clock_; }
-  const base::Time& last_start_time() { return last_start_time_; }
   size_t last_cleared_page_count() { return last_cleared_page_count_; }
   int total_cleared_times() { return total_cleared_times_; }
   ClearStorageResult last_clear_storage_result() {
@@ -127,7 +123,6 @@ class ClearStorageTaskTest
   base::ScopedTempDir temp_dir_;
   base::SimpleTestClock* clock_;
 
-  base::Time last_start_time_;
   size_t last_cleared_page_count_;
   int total_cleared_times_;
   ClearStorageResult last_clear_storage_result_;
@@ -200,12 +195,10 @@ void ClearStorageTaskTest::AddPages(const PageSettings& setting,
 
 void ClearStorageTaskTest::RunClearStorageTask(const base::Time& start_time) {
   auto task = base::MakeUnique<ClearStorageTask>(
-      store(), archive_manager(), policy_controller(), last_start_time(),
-      start_time,
+      store(), archive_manager(), policy_controller(), start_time,
       base::Bind(&ClearStorageTaskTest::OnClearStorageDone, AsWeakPtr()));
 
   runner()->RunTask(std::move(task));
-  last_start_time_ = start_time;
 }
 
 TEST_F(ClearStorageTaskTest, ClearPagesLessThanLimit) {
@@ -222,7 +215,6 @@ TEST_F(ClearStorageTaskTest, ClearPagesLessThanLimit) {
   // In total there're 2 expired pages so they'll be cleared successfully.
   // There will be 2 pages remaining in the store, and make sure their files
   // weren't cleared.
-  EXPECT_EQ(start_time, last_start_time());
   EXPECT_EQ(2UL, last_cleared_page_count());
   EXPECT_EQ(1, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
@@ -244,7 +236,6 @@ TEST_F(ClearStorageTaskTest, ClearPagesMoreFreshPages) {
   // In total there's 1 expired page so it'll be cleared successfully.
   // There will be (30 + 100) pages remaining in the store, and make sure their
   // files weren't cleared.
-  EXPECT_EQ(start_time, last_start_time());
   EXPECT_EQ(1UL, last_cleared_page_count());
   EXPECT_EQ(1, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
@@ -264,10 +255,9 @@ TEST_F(ClearStorageTaskTest, TryClearPersistentPages) {
 
   // There's 20 pages and the clock advances for more than a year.
   // No pages should be deleted since they're all persistent pages.
-  EXPECT_EQ(start_time, last_start_time());
   EXPECT_EQ(0UL, last_cleared_page_count());
   EXPECT_EQ(1, total_cleared_times());
-  EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
+  EXPECT_EQ(ClearStorageResult::UNNECESSARY, last_clear_storage_result());
   EXPECT_EQ(20LL, store_test_util()->GetPageCount());
   EXPECT_EQ(20LL, GetFileCountInDir(temp_dir_path()));
 }
@@ -286,63 +276,8 @@ TEST_F(ClearStorageTaskTest, TryClearPersistentPagesWithStoragePressure) {
 
   // There're 20 pages and the clock advances for more than a year.
   // No pages should be deleted since they're all persistent pages.
-  EXPECT_EQ(start_time, last_start_time());
   EXPECT_EQ(0UL, last_cleared_page_count());
   EXPECT_EQ(1, total_cleared_times());
-  EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
-  EXPECT_EQ(20LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(20LL, GetFileCountInDir(temp_dir_path()));
-}
-
-TEST_F(ClearStorageTaskTest, TestClearStorageInterval) {
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
-  clock->SetNow(base::Time::Now());
-  Initialize({{kBookmarkNamespace, 10, 10}, {kLastNNamespace, 10, 10}},
-             clock.get());
-
-  clock->Advance(base::TimeDelta::FromMinutes(30));
-  base::Time start_time = clock->Now();
-
-  RunClearStorageTask(start_time);
-
-  // There're 20 expired pages, and they should be cleared.
-  // There will be 20 pages remaining after the clearing.
-  EXPECT_EQ(start_time, last_start_time());
-  EXPECT_EQ(20UL, last_cleared_page_count());
-  EXPECT_EQ(1, total_cleared_times());
-  EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
-  EXPECT_EQ(20LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(20LL, GetFileCountInDir(temp_dir_path()));
-
-  // Advance clock so we go over the gap, but no pages become expired.
-  clock->SetNow(last_start_time());
-  clock->Advance(kClearStorageInterval + base::TimeDelta::FromMinutes(1));
-  start_time = clock->Now();
-
-  RunClearStorageTask(start_time);
-
-  // There will be another clearing attempt but since there's no newly expired
-  // pages, no pages will be cleared.
-  EXPECT_EQ(start_time, last_start_time());
-  EXPECT_EQ(0UL, last_cleared_page_count());
-  EXPECT_EQ(2, total_cleared_times());
-  EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
-  EXPECT_EQ(20LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(20LL, GetFileCountInDir(temp_dir_path()));
-
-  // Advance the clock but we're still in the gap, so there should be no
-  // clearing attempt.
-  clock->SetNow(last_start_time());
-  clock->Advance(kClearStorageInterval - base::TimeDelta::FromMinutes(1));
-  start_time = clock->Now();
-
-  RunClearStorageTask(start_time);
-
-  // There will be another clearing attempt but since there's no newly expired
-  // pages, no pages will be cleared.
-  EXPECT_EQ(start_time, last_start_time());
-  EXPECT_EQ(0UL, last_cleared_page_count());
-  EXPECT_EQ(3, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::UNNECESSARY, last_clear_storage_result());
   EXPECT_EQ(20LL, store_test_util()->GetPageCount());
   EXPECT_EQ(20LL, GetFileCountInDir(temp_dir_path()));
@@ -366,14 +301,13 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
 
   // There's only 1 expired pages, so it will be cleared. There will be (30 +
   // 20 + 40) pages remaining.
-  EXPECT_EQ(start_time, last_start_time());
   EXPECT_EQ(1UL, last_cleared_page_count());
   EXPECT_EQ(1, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(90LL, store_test_util()->GetPageCount());
   EXPECT_EQ(90LL, GetFileCountInDir(temp_dir_path()));
 
-  clock->SetNow(last_start_time());
+  clock->SetNow(start_time);
   // Advance the clock by the expiration period of last_n namespace, all pages
   // left in that namespace should be expired.
   LifetimePolicy last_n_policy =
@@ -385,14 +319,13 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
 
   // All pages in last_n namespace should be cleared. And only 70 pages
   // remaining after the clearing.
-  EXPECT_EQ(start_time, last_start_time());
   EXPECT_EQ(20UL, last_cleared_page_count());
   EXPECT_EQ(2, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(70LL, store_test_util()->GetPageCount());
   EXPECT_EQ(70LL, GetFileCountInDir(temp_dir_path()));
 
-  clock->SetNow(last_start_time());
+  clock->SetNow(start_time);
   // Advance the clock by 1 ms, there's no change in pages so the attempt to
   // clear storage should be unnecessary.
   clock->Advance(base::TimeDelta::FromMilliseconds(1));
@@ -401,14 +334,13 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   RunClearStorageTask(start_time);
 
   // The clearing attempt is unnecessary.
-  EXPECT_EQ(start_time, last_start_time());
   EXPECT_EQ(0UL, last_cleared_page_count());
   EXPECT_EQ(3, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::UNNECESSARY, last_clear_storage_result());
   EXPECT_EQ(70LL, store_test_util()->GetPageCount());
   EXPECT_EQ(70LL, GetFileCountInDir(temp_dir_path()));
 
-  clock->SetNow(last_start_time());
+  clock->SetNow(start_time);
   // Adding more fresh pages in bookmark namespace to make storage usage exceed
   // limit, so even if only 5 minutes passed from last clearing, this will still
   // clear some pages.
@@ -426,14 +358,13 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
 
   // All pages in last_n namespace should be cleared. And only 70 pages
   // remaining after the clearing.
-  EXPECT_EQ(start_time, last_start_time());
   EXPECT_EQ(163UL, last_cleared_page_count());
   EXPECT_EQ(4, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
   EXPECT_EQ(107LL, store_test_util()->GetPageCount());
   EXPECT_EQ(107LL, GetFileCountInDir(temp_dir_path()));
 
-  clock->SetNow(last_start_time());
+  clock->SetNow(start_time);
   // Advance the clock by 300 days, in order to expire all temporary pages. Only
   // 67 temporary pages are left from the last clearing.
   clock->Advance(base::TimeDelta::FromDays(300));
@@ -442,7 +373,6 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
   RunClearStorageTask(start_time);
 
   // All temporary pages should be cleared by now.
-  EXPECT_EQ(start_time, last_start_time());
   EXPECT_EQ(67UL, last_cleared_page_count());
   EXPECT_EQ(5, total_cleared_times());
   EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
