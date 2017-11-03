@@ -40743,6 +40743,50 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="6" label="Regular Supervised"/>
 </enum>
 
+<enum name="V8CacheBehaviour">
+  <int value="0" label="kProduceCodeCache">
+    The compilation produced a code cache
+  </int>
+  <int value="1" label="kHitIsolateCache">
+    The compilation hit V8's isolate's compilation cache
+  </int>
+  <int value="2" label="kConsumeCodeCache">
+    The compilation consumed a code cache
+  </int>
+  <int value="3" label="kConsumeCodeCacheFailed">
+    The compilation tried to consume a code cache, but failed (see
+    V8.CodeCacheRejectReason)
+  </int>
+  <int value="4" label="kNoCacheBecauseInlineScript">
+    Blink did not request a code cache because this is an inline script
+  </int>
+  <int value="5" label="kNoCacheBecauseScriptTooSmall">
+    Blink did not request a code cache because this script is too small
+  </int>
+  <int value="6" label="kNoCacheBecauseCacheTooCold">
+    Blink did not request a code cache because the cached resource is too cold
+  </int>
+  <int value="7" label="kNoCacheNoReason">
+    Blink did not request a code cache but gave no reason
+  </int>
+  <int value="8" label="kNoCacheBecauseNoResource">
+    Blink did not request a code cache because there is no resource
+  </int>
+  <int value="9" label="kNoCacheBecauseInspector">
+    Blink did not request a code cache because the script came from the
+    inspector
+  </int>
+  <int value="10" label="kNoCacheBecauseCachingDisabled">
+    Blink did not request a code cache because caching is disabled
+  </int>
+  <int value="11" label="kNoCacheBecauseModule">
+    Blink did not request a code cache because the script is a module
+  </int>
+  <int value="12" label="kNoCacheBecauseStreamingSource">
+    Blink did not request a code cache because this is a streaming source
+  </int>
+</enum>
+
 <enum name="V8CodeCacheRejectReason">
   <int value="1" label="MAGIC_NUMBER_MISMATCH">
     Reject due to magic number mismatch

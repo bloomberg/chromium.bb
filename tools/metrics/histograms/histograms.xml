@@ -89912,6 +89912,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.CompileHeuristicsDecision" enum="CompileHeuristicsDecision">
+  <obsolete>
+    This histogram has been replaced by V8.CompileTime.CacheBehaviour.
+  </obsolete>
   <owner>kouhei@chromium.org</owner>
   <summary>
     V8 script compile function variant which was picked. This contains
@@ -89921,6 +89924,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.CompileInlineScriptMicroSeconds" units="microseconds">
+  <obsolete>
+    This histogram has been replaced by
+    V8.CompileTimeMicroSeconds.NoCache.InlineScript.
+  </obsolete>
   <owner>yangguo@chromium.org</owner>
   <summary>Time spent compiling an inline script.</summary>
 </histogram>
@@ -89947,6 +89954,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="V8.CompileNoncacheableMicroSeconds" units="microseconds">
+  <obsolete>
+    This histogram has been replaced by the subcategories of
+    V8.CompileTimeMicroSeconds.NoCache
+  </obsolete>
   <owner>yangguo@chromium.org</owner>
   <summary>
     Time spent compiling a script that cannot be subject to caching.
@@ -89963,10 +89974,91 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="V8.CompileScript.CacheBehaviour" enum="V8CacheBehaviour">
+  <owner>leszeks@chromium.org</owner>
+  <summary>
+    The cache behaviour of compiling a V8 script, including whether we produced
+    or consumed a code cache, whether we hit V8's isolate's cache, and if we
+    didn't use the code cache, the reason why not.
+  </summary>
+</histogram>
+
 <histogram name="V8.CompileScriptMicroSeconds" units="microseconds">
   <owner>yangguo@chromium.org</owner>
   <summary>
     Total time spent in compiling a script (incl. parsing/caching).
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileScriptMicroSeconds.CompilationCacheHit"
+    units="microseconds">
+  <owner>leszeks@chromium.org</owner>
+  <summary>
+    Total time spent in compiling a script (incl. parsing/caching) in the case
+    where the V8 in-memory compilation cache is hit.
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileScriptMicroSeconds.ConsumeCache"
+    units="microseconds">
+  <owner>leszeks@chromium.org</owner>
+  <summary>
+    Total time spent in compiling a script when the 'compilation' is
+    deserializing it from the code cache.
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileScriptMicroSeconds.ConsumeCache.Failed"
+    units="microseconds">
+  <owner>leszeks@chromium.org</owner>
+  <summary>
+    Total time spent in compiling a script  (incl. parsing/caching) when the
+    compilation tried to deserialize it from the code cache, but failed.
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileScriptMicroSeconds.NoCache.CacheTooCold"
+    units="microseconds">
+  <owner>leszeks@chromium.org</owner>
+  <summary>
+    Total time spent in compiling a script (incl. parsing) when the cache is too
+    cold to use.
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileScriptMicroSeconds.NoCache.InlineScript"
+    units="microseconds">
+  <owner>leszeks@chromium.org</owner>
+  <summary>
+    Total time spent in compiling a script (incl. parsing) when the script is an
+    inline script.
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileScriptMicroSeconds.NoCache.Other"
+    units="microseconds">
+  <owner>leszeks@chromium.org</owner>
+  <summary>
+    Total time spent in compiling a script (incl. parsing) when we do not want
+    to cache it.
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileScriptMicroSeconds.NoCache.ScriptTooSmall"
+    units="microseconds">
+  <owner>leszeks@chromium.org</owner>
+  <summary>
+    Total time spent in compiling a script (incl. parsing) when the script is
+    too small to be cached.
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileScriptMicroSeconds.ProduceCache"
+    units="microseconds">
+  <owner>leszeks@chromium.org</owner>
+  <summary>
+    Total time spent in compiling a script (incl. parsing) and serializing it
+    for the code cache.
   </summary>
 </histogram>
 
