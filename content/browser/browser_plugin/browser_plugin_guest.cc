@@ -703,8 +703,10 @@ void BrowserPluginGuest::RenderViewReady() {
   if (attached()) {
     RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
         web_contents()->GetRenderWidgetHostView());
-    SendMessageToEmbedder(std::make_unique<BrowserPluginMsg_GuestReady>(
-        browser_plugin_instance_id(), rwhv->GetFrameSinkId()));
+    if (rwhv) {
+      SendMessageToEmbedder(std::make_unique<BrowserPluginMsg_GuestReady>(
+          browser_plugin_instance_id(), rwhv->GetFrameSinkId()));
+    }
   }
 
   RenderWidgetHostImpl::From(rvh->GetWidget())
