@@ -61,6 +61,18 @@ class PreviewsUIService {
   // testing.
   virtual void OnBlacklistCleared(base::Time time);
 
+  // Change the status of whether to ignored or consider PreviewsBlackList
+  // decisions in |io_data_|. This method is called when users interact with the
+  // UI (i.e. click on the "Ignore Blacklist" button). Virtualized in testing.
+  virtual void SetIgnorePreviewsBlacklistDecision(bool ignored);
+
+  // Notifies |logger_| whether PreviewsBlackList decisions are ignored or not.
+  // This method is listening for notification from PreviewsIOData for when the
+  // blacklist ignore status is changed so that |logger_| can update all
+  // PreviewsLoggerObservers so that multiple instances of the page have the
+  // same status. Virtualized in testing.
+  virtual void OnIgnoreBlacklistDecisionStatusChanged(bool ignored);
+
   // Log the navigation to PreviewsLogger. Virtualized in testing.
   virtual void LogPreviewNavigation(const GURL& url,
                                     PreviewsType type,

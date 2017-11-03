@@ -32,7 +32,9 @@ class TestPreviewsLoggerObserver : public PreviewsLoggerObserver {
   TestPreviewsLoggerObserver()
       : host_blacklisted_called_(false),
         user_status_change_calls_(0),
-        blacklist_cleared_called_(false) {}
+        blacklist_cleared_called_(false),
+        blacklist_ignored_(false),
+        last_removed_notified_(false) {}
 
   ~TestPreviewsLoggerObserver() override {}
 
@@ -54,6 +56,10 @@ class TestPreviewsLoggerObserver : public PreviewsLoggerObserver {
     blacklist_cleared_called_ = true;
     blacklist_cleared_time_ = time;
   }
+  void OnIgnoreBlacklistDecisionStatusChanged(bool ignored) override {
+    blacklist_ignored_ = ignored;
+  }
+  void OnLastObserverRemove() override { last_removed_notified_ = true; }
 
   // Expose the passed in MessageLog for testing.
   PreviewsLogger::MessageLog* message() const { return message_.get(); }
@@ -73,6 +79,13 @@ class TestPreviewsLoggerObserver : public PreviewsLoggerObserver {
   bool user_blacklisted() const { return user_blacklisted_; }
   base::Time blacklist_cleared_time() const { return blacklist_cleared_time_; }
 
+  // Expose whether PreviewsBlackList decisions are ignored or not.
+  bool blacklist_ignored() const { return blacklist_ignored_; }
+
+  // Expose whether observer is notified that it is the last observer to be
+  // removed for testing.
+  bool last_removed_notified() { return last_removed_notified_; }
+
  private:
   // Received messages.
   std::vector<PreviewsLogger::MessageLog> messages_;
@@ -87,6 +100,12 @@ class TestPreviewsLoggerObserver : public PreviewsLoggerObserver {
   bool host_blacklisted_called_;
   size_t user_status_change_calls_;
   bool blacklist_cleared_called_;
+
+  // BlacklistPreviews decision is ignored or not.
+  bool blacklist_ignored_;
+
+  // Whether |this| is the last observer to be removed.
+  bool last_removed_notified_;
 };
 
 class PreviewsLoggerTest : public testing::Test {
@@ -509,6 +528,48 @@ TEST_F(PreviewsLoggerTest, ObserverNotifiedOfUserBlacklistedStateWhenAdded) {
   EXPECT_EQ(expected_size, observer.blacklisted_hosts().size());
   EXPECT_EQ(time0, observer.blacklisted_hosts().find(host0)->second);
   EXPECT_EQ(time1, observer.blacklisted_hosts().find(host1)->second);
+}
+
+TEST_F(PreviewsLoggerTest, NotifyObserversBlacklistIgnoredUpdate) {
+  TestPreviewsLoggerObserver observers[3];
+  const size_t number_of_obs = 3;
+  for (size_t i = 0; i < number_of_obs; i++) {
+    logger_->AddAndNotifyObserver(&observers[i]);
+  }
+
+  for (size_t i = 0; i < number_of_obs; i++) {
+    EXPECT_FALSE(observers[i].blacklist_ignored());
+  }
+
+  const size_t removed_observer = 1;
+  logger_->RemoveObserver(&observers[removed_observer]);
+  logger_->OnIgnoreBlacklistDecisionStatusChanged(true /* ignored */);
+  for (size_t i = 0; i < number_of_obs; i++) {
+    if (i != removed_observer) {
+      EXPECT_TRUE(observers[i].blacklist_ignored());
+    }
+  }
+  EXPECT_FALSE(observers[removed_observer].blacklist_ignored());
+}
+
+TEST_F(PreviewsLoggerTest, ObserverNotifiedOfBlacklistIgnoreStatusOnAdd) {
+  logger_->OnIgnoreBlacklistDecisionStatusChanged(true /* ignored */);
+  TestPreviewsLoggerObserver observer;
+  EXPECT_FALSE(observer.blacklist_ignored());
+  logger_->AddAndNotifyObserver(&observer);
+  EXPECT_TRUE(observer.blacklist_ignored());
+}
+
+TEST_F(PreviewsLoggerTest, LastObserverRemovedIsNotified) {
+  TestPreviewsLoggerObserver observers[3];
+  const size_t number_of_obs = 3;
+  for (size_t i = 0; i < number_of_obs; i++) {
+    logger_->AddAndNotifyObserver(&observers[i]);
+  }
+  for (size_t i = 0; i < number_of_obs; i++) {
+    logger_->RemoveObserver(&observers[i]);
+  }
+  EXPECT_TRUE(observers[number_of_obs - 1].last_removed_notified());
 }
 
 }  // namespace

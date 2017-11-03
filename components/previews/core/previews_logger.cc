@@ -75,13 +75,15 @@ PreviewsLogger::MessageLog::MessageLog(const MessageLog& other)
       url(other.url),
       time(other.time) {}
 
-PreviewsLogger::PreviewsLogger() {}
+PreviewsLogger::PreviewsLogger() : blacklist_ignored_(false) {}
 
 PreviewsLogger::~PreviewsLogger() {}
 
 void PreviewsLogger::AddAndNotifyObserver(PreviewsLoggerObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.AddObserver(observer);
+  // Notify the status of blacklist decisions ingored.
+  observer->OnIgnoreBlacklistDecisionStatusChanged(blacklist_ignored_);
 
   // Merge navigation logs and decision logs in chronological order, and push
   // them to |observer|.
@@ -119,6 +121,10 @@ void PreviewsLogger::AddAndNotifyObserver(PreviewsLoggerObserver* observer) {
 void PreviewsLogger::RemoveObserver(PreviewsLoggerObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.RemoveObserver(observer);
+  if (observer_list_.begin() == observer_list_.end()) {
+    // |observer_list_| is empty.
+    observer->OnLastObserverRemove();
+  }
 }
 
 void PreviewsLogger::LogMessage(const std::string& event_type,
@@ -193,6 +199,14 @@ void PreviewsLogger::OnBlacklistCleared(base::Time time) {
     observer.OnBlacklistCleared(time);
   }
   blacklisted_hosts_.clear();
+}
+
+void PreviewsLogger::OnIgnoreBlacklistDecisionStatusChanged(bool ignored) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  blacklist_ignored_ = ignored;
+  for (auto& observer : observer_list_) {
+    observer.OnIgnoreBlacklistDecisionStatusChanged(ignored);
+  }
 }
 
 }  // namespace previews

@@ -14,8 +14,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
 #include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_io_data.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_logger_observer.h"
+#include "components/previews/core/previews_ui_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,6 +41,11 @@ void MockGetPreviewsEnabledCallback(
   passed_in_map = std::move(params);
 }
 
+// Dummy method for creating TestPreviewsUIService.
+bool MockedPreviewsIsEnabled(previews::PreviewsType type) {
+  return true;
+}
+
 // Mock class that would be pass into the InterventionsInternalsPageHandler by
 // calling its SetClientPage method. Used to test that the PageHandler
 // actually invokes the page's LogNewMessage method with the correct message.
@@ -47,7 +54,7 @@ class TestInterventionsInternalsPage
  public:
   TestInterventionsInternalsPage(
       mojom::InterventionsInternalsPageRequest request)
-      : binding_(this, std::move(request)) {}
+      : binding_(this, std::move(request)), blacklist_ignored_(false) {}
 
   ~TestInterventionsInternalsPage() override {}
 
@@ -70,6 +77,9 @@ class TestInterventionsInternalsPage
     // TODO(thanhdle): Add integration test to test behavior of the pipeline end
     // to end. crbug.com/777936
   }
+  void OnIgnoreBlacklistDecisionStatusChanged(bool ignored) override {
+    blacklist_ignored_ = ignored;
+  }
 
   // Expose passed in message in LogNewMessage for testing.
   mojom::MessageLogPtr* message() const { return message_.get(); }
@@ -79,6 +89,9 @@ class TestInterventionsInternalsPage
   int64_t host_blacklisted_time() const { return host_blacklisted_time_; }
   bool user_blacklisted() const { return user_blacklisted_; }
   int64_t blacklist_cleared_time() const { return blacklist_cleared_time_; }
+
+  // Expose the passed in blacklist ignore status for testing.
+  bool blacklist_ignored() const { return blacklist_ignored_; }
 
  private:
   mojo::Binding<mojom::InterventionsInternalsPage> binding_;
@@ -91,6 +104,9 @@ class TestInterventionsInternalsPage
   int64_t host_blacklisted_time_;
   int64_t user_blacklisted_;
   int64_t blacklist_cleared_time_;
+
+  // Whether to ignore previews blacklist decisions.
+  bool blacklist_ignored_;
 };
 
 // Mock class to test interaction between the PageHandler and the
@@ -110,6 +126,46 @@ class TestPreviewsLogger : public previews::PreviewsLogger {
   bool remove_is_called_;
 };
 
+// A dummy class to setup PreviewsUIService.
+class TestPreviewsIOData : public previews::PreviewsIOData {
+ public:
+  TestPreviewsIOData() : PreviewsIOData(nullptr, nullptr) {}
+
+  // previews::PreviewsIOData:
+  void Initialize(
+      base::WeakPtr<previews::PreviewsUIService> previews_ui_service,
+      std::unique_ptr<previews::PreviewsOptOutStore> opt_out_store,
+      const previews::PreviewsIsEnabledCallback& is_enabled_callback) override {
+    // Do nothing.
+  }
+};
+
+// Mocked TestPreviewsService for testing InterventionsInternalsPageHandler.
+class TestPreviewsUIService : public previews::PreviewsUIService {
+ public:
+  TestPreviewsUIService(TestPreviewsIOData* io_data,
+                        std::unique_ptr<previews::PreviewsLogger> logger)
+      : PreviewsUIService(io_data,
+                          nullptr, /* io_task_runner */
+                          nullptr, /* previews_opt_out_store */
+                          base::Bind(&MockedPreviewsIsEnabled),
+                          std::move(logger)),
+        blacklist_ignored_(false) {}
+  ~TestPreviewsUIService() override {}
+
+  // previews::PreviewsUIService:
+  void SetIgnorePreviewsBlacklistDecision(bool ignored) override {
+    blacklist_ignored_ = ignored;
+  }
+
+  // Exposed blacklist ignored state.
+  bool blacklist_ignored() const { return blacklist_ignored_; }
+
+ private:
+  // Whether the blacklist decisions are ignored or not.
+  bool blacklist_ignored_;
+};
+
 class InterventionsInternalsPageHandlerTest : public testing::Test {
  public:
   InterventionsInternalsPageHandlerTest()
@@ -120,12 +176,17 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
 
   void SetUp() override {
     scoped_task_environment_.RunUntilIdle();
-    logger_ = base::MakeUnique<TestPreviewsLogger>();
+    TestPreviewsIOData io_data;
+    std::unique_ptr<TestPreviewsLogger> logger =
+        base::MakeUnique<TestPreviewsLogger>();
+    logger_ = logger.get();
+    previews_ui_service_ =
+        base::MakeUnique<TestPreviewsUIService>(&io_data, std::move(logger));
 
     mojom::InterventionsInternalsPageHandlerPtr page_handler_ptr;
     handler_request_ = mojo::MakeRequest(&page_handler_ptr);
     page_handler_ = base::MakeUnique<InterventionsInternalsPageHandler>(
-        std::move(handler_request_), logger_.get());
+        std::move(handler_request_), previews_ui_service_.get());
 
     mojom::InterventionsInternalsPagePtr page_ptr;
     page_request_ = mojo::MakeRequest(&page_ptr);
@@ -140,7 +201,8 @@ class InterventionsInternalsPageHandlerTest : public testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  std::unique_ptr<TestPreviewsLogger> logger_;
+  TestPreviewsLogger* logger_;
+  std::unique_ptr<TestPreviewsUIService> previews_ui_service_;
 
   // InterventionsInternalPageHandler's variables.
   mojom::InterventionsInternalsPageHandlerRequest handler_request_;
@@ -307,6 +369,33 @@ TEST_F(InterventionsInternalsPageHandlerTest, OnBlacklistClearedPostToPage) {
 
     EXPECT_EQ(expected_time.ToJavaTime(), page_->blacklist_cleared_time());
   }
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       SetIgnorePreviewsBlacklistDecisionCallsUIServiceCorrectly) {
+  page_handler_->SetIgnorePreviewsBlacklistDecision(true /* ignored */);
+  EXPECT_TRUE(previews_ui_service_->blacklist_ignored());
+
+  page_handler_->SetIgnorePreviewsBlacklistDecision(false /* ignored */);
+  EXPECT_FALSE(previews_ui_service_->blacklist_ignored());
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       PageUpdateOnBlacklistIgnoredChange) {
+  page_handler_->OnIgnoreBlacklistDecisionStatusChanged(true /* ignored */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(page_->blacklist_ignored());
+
+  page_handler_->OnIgnoreBlacklistDecisionStatusChanged(false /* ignored */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(page_->blacklist_ignored());
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest,
+       IgnoreBlacklistReversedOnLastObserverRemovedCalled) {
+  page_handler_->OnLastObserverRemove();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(page_->blacklist_ignored());
 }
 
 }  // namespace

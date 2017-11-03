@@ -34,6 +34,11 @@ interface InterventionsInternalsPageHandler {
 
   // Inject the client side page object.
   SetClientPage(InterventionsInternalsPage page);
+
+  // Change the status of ignoring blacklist to |ignored|. |ignored| will
+  // indicate whether the blacklist decision would be ignored when deciding if a
+  // preview should be shown or not.
+  SetIgnorePreviewsBlacklistDecision(bool ignored);
 };
 
 interface InterventionsInternalsPage {
@@ -61,4 +66,9 @@ interface InterventionsInternalsPage {
   // This is called by InterventionsInternalsPageHandler when the estimate
   // network quality changes.
   OnEffectiveConnectionTypeChanged(string type);
+
+  // Notify the page on whether the blacklist decision is considered or ignored.
+  // This method is called by InterventionsInternalsPageHandler when the status
+  // of ignore blacklist decision is updated to |ignored|.
+  OnIgnoreBlacklistDecisionStatusChanged(bool ignored);
 };

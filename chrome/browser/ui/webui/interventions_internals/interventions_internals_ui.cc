@@ -43,7 +43,7 @@ content::WebUIDataSource* GetUnsupportedSource() {
 }  // namespace
 
 InterventionsInternalsUI::InterventionsInternalsUI(content::WebUI* web_ui)
-    : MojoWebUIController(web_ui), logger_(nullptr) {
+    : MojoWebUIController(web_ui), previews_ui_service_(nullptr) {
   // Set up the chrome://interventions-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
 
@@ -55,7 +55,7 @@ InterventionsInternalsUI::InterventionsInternalsUI(content::WebUI* web_ui)
     return;
   }
   content::WebUIDataSource::Add(profile, GetSource());
-  logger_ = previews_service->previews_ui_service()->previews_logger();
+  previews_ui_service_ = previews_service->previews_ui_service();
   ui_nqe_service_ =
       UINetworkQualityEstimatorServiceFactory::GetForProfile(profile);
 }
@@ -69,9 +69,9 @@ InterventionsInternalsUI::~InterventionsInternalsUI() {
 
 void InterventionsInternalsUI::BindUIHandler(
     mojom::InterventionsInternalsPageHandlerRequest request) {
-  DCHECK(logger_);
+  DCHECK(previews_ui_service_);
   DCHECK(ui_nqe_service_);
-  page_handler_.reset(
-      new InterventionsInternalsPageHandler(std::move(request), logger_));
+  page_handler_.reset(new InterventionsInternalsPageHandler(
+      std::move(request), previews_ui_service_));
   ui_nqe_service_->AddEffectiveConnectionTypeObserver(page_handler_.get());
 }

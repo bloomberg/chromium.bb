@@ -107,7 +107,8 @@ class TestPreviewsUIService : public PreviewsUIService {
                           std::move(previews_opt_out_store),
                           is_enabled_callback,
                           std::move(logger)),
-        user_blacklisted_(false) {}
+        user_blacklisted_(false),
+        blacklist_ignored_(false) {}
 
   // PreviewsUIService:
   void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
@@ -119,6 +120,9 @@ class TestPreviewsUIService : public PreviewsUIService {
   }
   void OnBlacklistCleared(base::Time time) override {
     blacklist_cleared_time_ = time;
+  }
+  void OnIgnoreBlacklistDecisionStatusChanged(bool ignored) override {
+    blacklist_ignored_ = ignored;
   }
 
   // Expose passed in LogPreviewDecision parameters.
@@ -150,6 +154,9 @@ class TestPreviewsUIService : public PreviewsUIService {
   base::Time host_blacklisted_time() const { return host_blacklisted_time_; }
   bool user_blacklisted() const { return user_blacklisted_; }
   base::Time blacklist_cleared_time() const { return blacklist_cleared_time_; }
+
+  // Expose the status of blacklist decisions ignored.
+  bool blacklist_ignored() const { return blacklist_ignored_; }
 
  private:
   // PreviewsUIService:
@@ -190,6 +197,9 @@ class TestPreviewsUIService : public PreviewsUIService {
   std::vector<bool> navigation_opt_outs_;
   std::vector<base::Time> navigation_times_;
   std::vector<PreviewsType> navigation_types_;
+
+  // Whether the blacklist decisions are ignored or not.
+  bool blacklist_ignored_;
 };
 
 class TestPreviewsIOData : public PreviewsIOData {
@@ -695,7 +705,7 @@ TEST_F(PreviewsIODataTest, BlacklistNotAvailableLogDecisionMade) {
               ::testing::Contains(expected_type));
 }
 
-TEST_F(PreviewsIODataTest, BlacklistStatusesLogDecisionMade) {
+TEST_F(PreviewsIODataTest, BlacklistStatusesLogDecisionMadeDefault) {
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled", {});
 
@@ -716,6 +726,42 @@ TEST_F(PreviewsIODataTest, BlacklistStatusesLogDecisionMade) {
     io_data()->ShouldAllowPreviewAtECT(*CreateRequest(), expected_type,
                                        net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
                                        {});
+    base::RunLoop().RunUntilIdle();
+    // Testing correct log method is called.
+    EXPECT_THAT(ui_service()->decision_reasons(),
+                ::testing::Contains(expected_reason));
+    EXPECT_THAT(ui_service()->decision_types(),
+                ::testing::Contains(expected_type));
+  }
+}
+
+TEST_F(PreviewsIODataTest, BlacklistStatusesLogDecisionMadeIgnore) {
+  InitializeUIService();
+  CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled", {});
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  auto expected_reason = PreviewsEligibilityReason::ALLOWED;
+  auto expected_type = PreviewsType::LOFI;
+
+  PreviewsEligibilityReason blacklist_decisions[] = {
+      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
+      PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
+      PreviewsEligibilityReason::USER_BLACKLISTED,
+      PreviewsEligibilityReason::HOST_BLACKLISTED,
+  };
+
+  io_data()->SetIgnorePreviewsBlacklistDecision(true /* ignored */);
+
+  for (auto blacklist_decision : blacklist_decisions) {
+    std::unique_ptr<TestPreviewsBlackList> blacklist =
+        base::MakeUnique<TestPreviewsBlackList>(blacklist_decision, io_data());
+    io_data()->InjectTestBlacklist(std::move(blacklist));
+
+    io_data()->ShouldAllowPreviewAtECT(
+        *CreateRequest(), expected_type,
+        params::EffectiveConnectionTypeThresholdForClientLoFi(),
+        params::GetBlackListedHostsForClientLoFiFieldTrial());
+
     base::RunLoop().RunUntilIdle();
     // Testing correct log method is called.
     EXPECT_THAT(ui_service()->decision_reasons(),
@@ -893,6 +939,18 @@ TEST_F(PreviewsIODataTest, OnBlacklistClearedCallsUIMethodCorrectly) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(expected_time, ui_service()->blacklist_cleared_time());
+}
+
+TEST_F(PreviewsIODataTest,
+       OnIgnoreBlacklistDecisionStatusChangedCalledCorrect) {
+  InitializeUIService();
+  io_data()->SetIgnorePreviewsBlacklistDecision(true /* ignored */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(ui_service()->blacklist_ignored());
+
+  io_data()->SetIgnorePreviewsBlacklistDecision(false /* ignored */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(ui_service()->blacklist_ignored());
 }
 
 }  // namespace

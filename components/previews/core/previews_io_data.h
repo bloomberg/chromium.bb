@@ -76,6 +76,10 @@ class PreviewsIOData : public PreviewsDecider,
   // both inclusive.
   void ClearBlackList(base::Time begin_time, base::Time end_time);
 
+  // Change the status of whether to ignore the decisions made by
+  // PreviewsBlackList to |ignored|. Virtualized in testing.
+  virtual void SetIgnorePreviewsBlacklistDecision(bool ignored);
+
   // The previews black list that decides whether a navigation can use previews.
   PreviewsBlackList* black_list() const { return previews_black_list_.get(); }
 
@@ -104,6 +108,11 @@ class PreviewsIOData : public PreviewsDecider,
   base::WeakPtr<PreviewsUIService> previews_ui_service_;
 
   std::unique_ptr<PreviewsBlackList> previews_black_list_;
+
+  // Whether the decisions made by PreviewsBlackList should be ignored or not.
+  // This can be changed by chrome://interventions-internals to test/debug the
+  // behavior of Previews decisions.
+  bool blacklist_ignored_;
 
   // The UI and IO thread task runners. |ui_task_runner_| is used to post
   // tasks to |previews_ui_service_|, and |io_task_runner_| is used to post from

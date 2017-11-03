@@ -75,6 +75,18 @@ void PreviewsUIService::OnBlacklistCleared(base::Time time) {
   logger_->OnBlacklistCleared(time);
 }
 
+void PreviewsUIService::SetIgnorePreviewsBlacklistDecision(bool ignored) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  io_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PreviewsIOData::SetIgnorePreviewsBlacklistDecision,
+                            io_data_, ignored));
+}
+
+void PreviewsUIService::OnIgnoreBlacklistDecisionStatusChanged(bool ignored) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  logger_->OnIgnoreBlacklistDecisionStatusChanged(ignored);
+}
+
 PreviewsLogger* PreviewsUIService::previews_logger() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return logger_.get();
