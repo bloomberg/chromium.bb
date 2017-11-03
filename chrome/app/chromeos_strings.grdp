@@ -4880,6 +4880,9 @@ Battery full
   <message name="IDS_ARC_NOTIFICATION_DISPLAY_SOURCE" desc="Context title of the first-run notification that enables Android apps.">
     Google Play
   </message>
+  <message name="IDS_ARC_PLAYSTORE_SETTING_UP_TITLE" desc="The text tile which is shown when Play Store is initializing.">
+    Setting up Google Play...
+  </message>
   <message name="IDS_ARC_NOTIFICATION_MESSAGE" desc="Description message of the first-run notification that enables Android apps.">
     Install apps and games from Google Play
   </message>
@@ -4914,7 +4917,7 @@ Battery full
     Just a sec...
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_PROGRESS_ANDROID" desc="Name of Android loading progress of the opt-in dialog for Android apps.">
-    This may take up to a minute or so...
+    This may take a minute or so.
   </message>
   <message name="IDS_ARC_OPT_IN_DIALOG_AUTHORIZATION_FAILED" desc="Error message shown when an auth code is not returned by server.">
     Authorization failed
