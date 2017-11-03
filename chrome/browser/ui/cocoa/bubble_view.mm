@@ -17,14 +17,9 @@ const float kWindowEdge = 0.7f;
 
 @implementation BubbleView
 
-// Designated initializer. |provider| is the window from which we get the
-// current theme to draw text and backgrounds. If nil, the current window will
-// be checked. The caller needs to ensure |provider| can't go away as it will
-// not be retained. Defaults to all corners being rounded.
-- (id)initWithFrame:(NSRect)frame themeProvider:(NSWindow*)provider {
+- (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
     cornerFlags_ = kRoundedAllCorners;
-    themeProvider_ = provider;
   }
   return self;
 }

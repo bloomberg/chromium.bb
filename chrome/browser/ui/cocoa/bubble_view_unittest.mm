@@ -13,7 +13,8 @@ class BubbleViewTest : public CocoaTest {
   BubbleViewTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 50);
     base::scoped_nsobject<BubbleView> view(
-        [[BubbleView alloc] initWithFrame:frame themeProvider:test_window()]);
+        [[BubbleView alloc] initWithFrame:frame]);
+    [view setThemeProvider:test_window()];
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
     [view_ setContent:@"Hi there, I'm a bubble view"];
@@ -24,11 +25,11 @@ class BubbleViewTest : public CocoaTest {
 
 TEST_VIEW(BubbleViewTest, view_);
 
-// Test a nil themeProvider in init.
+// Test with no themeProvider.
 TEST_F(BubbleViewTest, NilThemeProvider) {
   NSRect frame = NSMakeRect(0, 0, 50, 50);
   base::scoped_nsobject<BubbleView> view(
-      [[BubbleView alloc] initWithFrame:frame themeProvider:nil]);
+      [[BubbleView alloc] initWithFrame:frame]);
   [[test_window() contentView] addSubview:view.get()];
   [view display];
 }

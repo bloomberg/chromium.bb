@@ -150,6 +150,14 @@ const CGFloat kExpansionDurationSeconds = 0.125;
 
 // Mac implementation of the status bubble.
 //
+// TODO(crbug.com/780521): The comment below no longer applies and should be
+// cleaned up along with all of the code it refers to. Setting the bubble's
+// collectionBehavior lets it be removed from the screen with orderOut: instead
+// of just made very small and invisible. Full screen low power will shortly
+// depend on this (crrev.com/c/739185).
+//
+// - - -
+//
 // Child windows interact with Spaces in interesting ways, so this code has to
 // follow these rules:
 //
@@ -187,7 +195,6 @@ StatusBubbleMac::StatusBubbleMac(NSWindow* parent, id delegate)
       expand_timer_factory_(this),
       completion_handler_factory_(this) {
   Create();
-  Attach();
 }
 
 StatusBubbleMac::~StatusBubbleMac() {
@@ -209,23 +216,8 @@ void StatusBubbleMac::SetURL(const GURL& url) {
   url_ = url;
 
   CGFloat bubble_width = NSWidth([window_ frame]);
-  if (state_ == kBubbleHidden) {
-    // TODO(rohitrao): The window size is expected to be (1,1) whenever the
-    // window is hidden, but the GPU bots are hitting cases where this is not
-    // true.  Instead of enforcing this invariant with a DCHECK, add temporary
-    // logging to try and debug it and fix up the window size if needed.
-    // This logging is temporary and should be removed: crbug.com/467998
-    NSRect frame = [window_ frame];
-    if (!CGSizeEqualToSize(frame.size, ui::kWindowSizeDeterminedLater.size)) {
-      LOG(ERROR) << "Window size should be (1,1), but is instead ("
-                 << frame.size.width << "," << frame.size.height << ")";
-      LOG(ERROR) << base::debug::StackTrace().ToString();
-      frame.size = ui::kWindowSizeDeterminedLater.size;
-      [window_ setFrame:frame display:NO];
-    }
+  if (state_ == kBubbleHidden)
     bubble_width = NSWidth(CalculateWindowFrame(/*expand=*/false));
-  }
-
   int text_width = static_cast<int>(bubble_width -
                                     kBubbleViewTextPositionX -
                                     kTextPadding);
@@ -457,18 +449,15 @@ void StatusBubbleMac::Create() {
                 styleMask:NSBorderlessWindowMask
                   backing:NSBackingStoreBuffered
                     defer:NO];
+  [window_ setCollectionBehavior:[window_ collectionBehavior] |
+                                 NSWindowCollectionBehaviorTransient];
   [window_ setMovableByWindowBackground:NO];
   [window_ setBackgroundColor:[NSColor clearColor]];
-  [window_ setLevel:NSNormalWindowLevel];
   [window_ setOpaque:NO];
   [window_ setHasShadow:NO];
 
-  // We do not need to worry about the bubble outliving |parent_| because our
-  // teardown sequence in BWC guarantees that |parent_| outlives the status
-  // bubble and that the StatusBubble is torn down completely prior to the
-  // window going away.
   base::scoped_nsobject<BubbleView> view(
-      [[BubbleView alloc] initWithFrame:NSZeroRect themeProvider:parent_]);
+      [[BubbleView alloc] initWithFrame:NSZeroRect]);
   [window_ setContentView:view];
 
   [window_ setAlphaValue:0.0];
@@ -482,7 +471,8 @@ void StatusBubbleMac::Create() {
 }
 
 void StatusBubbleMac::Attach() {
-  DCHECK(!is_attached());
+  if (is_attached())
+    return;
 
   [window_ orderFront:nil];
   [parent_ addChildWindow:window_ ordered:NSWindowAbove];
@@ -491,7 +481,8 @@ void StatusBubbleMac::Attach() {
 }
 
 void StatusBubbleMac::Detach() {
-  DCHECK(is_attached());
+  if (!is_attached())
+    return;
 
   // Magic setFrame: See http://crbug.com/58506 and http://crrev.com/3564021 .
   // TODO(rohitrao): Does the frame size actually matter here?  Can we always
@@ -528,17 +519,9 @@ void StatusBubbleMac::SetState(StatusBubbleState state) {
 
   if (state == kBubbleHidden) {
     is_expanded_ = false;
-
-    // When hidden (with alpha of 0), make the window have the minimum size,
-    // while still keeping the same origin. It's important to not set the
-    // origin to 0,0 as that will cause the window to use more space in
-    // Expose/Mission Control. See http://crbug.com/81969.
-    //
-    // Also, doing it this way instead of detaching the window avoids bugs with
-    // Spaces and Cmd-`. See http://crbug.com/31821 and http://crbug.com/61629.
-    NSRect frame = [window_ frame];
-    frame.size = ui::kWindowSizeDeterminedLater.size;
-    [window_ setFrame:frame display:YES];
+    Detach();
+  } else {
+    Attach();
   }
 
   if ([delegate_ respondsToSelector:@selector(statusBubbleWillEnterState:)])
@@ -775,29 +758,8 @@ void StatusBubbleMac::UpdateSizeAndPosition() {
     return;
 
   // There is no need to update the size if the bubble is hidden.
-  if (state_ == kBubbleHidden) {
-    // Verify that hidden bubbles always have size equal to
-    // ui::kWindowSizeDeterminedLater.
-
-    // TODO(rohitrao): The GPU bots are hitting cases where this is not true.
-    // Instead of enforcing this invariant with a DCHECK, add temporary logging
-    // to try and debug it and fix up the window size if needed.
-    // This logging is temporary and should be removed: crbug.com/467998
-    NSRect frame = [window_ frame];
-    if (!CGSizeEqualToSize(frame.size, ui::kWindowSizeDeterminedLater.size)) {
-      LOG(ERROR) << "Window size should be (1,1), but is instead ("
-                 << frame.size.width << "," << frame.size.height << ")";
-      LOG(ERROR) << base::debug::StackTrace().ToString();
-      frame.size = ui::kWindowSizeDeterminedLater.size;
-    }
-
-    // During the fullscreen animation, the parent window's origin may change
-    // without updating the status bubble.  To avoid animation glitches, always
-    // update the bubble's origin to match the parent's, even when hidden.
-    frame.origin = [parent_ frame].origin;
-    [window_ setFrame:frame display:NO];
+  if (state_ == kBubbleHidden)
     return;
-  }
 
   SetFrameAvoidingMouse(CalculateWindowFrame(/*expand=*/false),
                         GetMouseLocation());
@@ -805,8 +767,6 @@ void StatusBubbleMac::UpdateSizeAndPosition() {
 
 void StatusBubbleMac::SwitchParentWindow(NSWindow* parent) {
   DCHECK(parent);
-  DCHECK(is_attached());
-
   Detach();
   parent_ = parent;
   Attach();
