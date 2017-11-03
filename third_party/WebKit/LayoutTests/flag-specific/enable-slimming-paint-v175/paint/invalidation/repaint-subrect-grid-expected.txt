@@ -18,16 +18,6 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-          "rect": [-10, 18, 20, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='mask'",
-          "rect": [-10, 18, 20, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='mask'",
           "rect": [36, 36, 19, 19],
           "reason": "geometry"
         },
@@ -105,6 +95,16 @@
           "object": "LayoutBlockFlow (positioned) DIV id='mask'",
           "rect": [0, 0, 19, 19],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='mask'",
+          "rect": [0, 18, 10, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='mask'",
+          "rect": [0, 18, 10, 19],
+          "reason": "geometry"
         }
       ]
     }

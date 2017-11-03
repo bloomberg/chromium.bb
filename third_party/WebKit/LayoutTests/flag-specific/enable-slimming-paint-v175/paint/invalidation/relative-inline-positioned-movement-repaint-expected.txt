@@ -15,7 +15,7 @@
         {
           "object": "LayoutInline (relative positioned) DIV id='block'",
           "rect": [0, 0, 365, 21],
-          "reason": "full layer"
+          "reason": "paint property change"
         }
       ]
     }

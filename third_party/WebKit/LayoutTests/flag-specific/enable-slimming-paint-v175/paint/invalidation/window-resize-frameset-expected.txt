@@ -8,13 +8,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutFrameSet FRAMESET",
-          "rect": [0, 0, 600, 500],
+          "rect": [0, 0, 600, 250],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [0, 250, 600, 250],
-          "reason": "incremental"
         }
       ]
     }
@@ -52,13 +47,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutFrameSet FRAMESET",
-          "rect": [0, 0, 600, 250],
+          "rect": [0, 0, 400, 250],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [400, 0, 200, 250],
-          "reason": "incremental"
         }
       ]
     }

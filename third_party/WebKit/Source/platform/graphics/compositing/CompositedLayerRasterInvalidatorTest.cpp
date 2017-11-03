@@ -58,9 +58,9 @@ class CompositedLayerRasterInvalidatorTest
   }
 
   static IntRect ChunkRectToLayer(const FloatRect& rect,
-                                  const IntPoint& layer_offset) {
+                                  const IntPoint& chunk_offset_from_layer) {
     FloatRect r = rect;
-    r.MoveBy(-layer_offset);
+    r.MoveBy(chunk_offset_from_layer);
     return EnclosingIntRect(r);
   }
 
@@ -68,13 +68,14 @@ class CompositedLayerRasterInvalidatorTest
       const Vector<RasterInvalidationInfo>& invalidations,
       size_t index,
       const PaintChunk& chunk,
-      const IntPoint& layer_offset = kDefaultLayerBounds.Location()) {
+      const IntPoint& chunk_offset_from_layer =
+          -kDefaultLayerBounds.Location()) {
     for (size_t i = 0; i < chunk.raster_invalidation_rects.size(); ++i) {
       SCOPED_TRACE(index + i);
       const auto& info = invalidations[index + i];
-      EXPECT_EQ(
-          ChunkRectToLayer(chunk.raster_invalidation_rects[i], layer_offset),
-          info.rect);
+      EXPECT_EQ(ChunkRectToLayer(chunk.raster_invalidation_rects[i],
+                                 chunk_offset_from_layer),
+                info.rect);
       EXPECT_EQ(&chunk.id.client, info.client);
       EXPECT_EQ(chunk.raster_invalidation_tracking[i].reason, info.reason);
     }
@@ -85,7 +86,7 @@ class CompositedLayerRasterInvalidatorTest
       size_t index,
       const PaintChunk& chunk,
       PaintInvalidationReason reason,
-      const IntPoint& layer_offset = kDefaultLayerBounds.Location()) {
+      const IntPoint& layer_offset = -kDefaultLayerBounds.Location()) {
     SCOPED_TRACE(index);
     const auto& info = invalidations[index];
     EXPECT_EQ(ChunkRectToLayer(chunk.bounds, layer_offset), info.rect);
@@ -114,19 +115,21 @@ TEST_F(CompositedLayerRasterInvalidatorTest, LayerBounds) {
   // No raster invalidations needed for a new layer.
   EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
 
-  invalidator.Generate(
-      IntRect(kDefaultLayerBounds.Location(), IntSize(1234, 2345)), chunks,
-      DefaultPropertyTreeState());
+  invalidator.Generate(kDefaultLayerBounds, chunks, DefaultPropertyTreeState());
   // No raster invalidations needed if layer origin doesn't change.
   EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
 
-  invalidator.Generate(IntRect(-555, -666, 777, 888), chunks,
-                       DefaultPropertyTreeState());
-  // Invalidate the whole layer on layer origin change.
+  auto new_layer_bounds = kDefaultLayerBounds;
+  new_layer_bounds.Move(66, 77);
+  invalidator.Generate(new_layer_bounds, chunks, DefaultPropertyTreeState());
+  // Change of layer origin causes change of chunk0's transform to layer.
   const auto& invalidations = TrackedRasterInvalidations(invalidator);
-  ASSERT_EQ(1u, invalidations.size());
-  EXPECT_EQ(IntRect(0, 0, 777, 888), invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kFullLayer, invalidations[0].reason);
+  ASSERT_EQ(2u, invalidations.size());
+  ExpectChunkInvalidation(invalidations, 0, *chunks[0],
+                          PaintInvalidationReason::kPaintProperty);
+  ExpectChunkInvalidation(invalidations, 1, *chunks[0],
+                          PaintInvalidationReason::kPaintProperty,
+                          -new_layer_bounds.Location());
 }
 
 TEST_F(CompositedLayerRasterInvalidatorTest, ReorderChunks) {
@@ -258,7 +261,7 @@ TEST_F(CompositedLayerRasterInvalidatorTest, UncacheableChunks) {
                           PaintInvalidationReason::kChunkUncacheable);
 }
 
-TEST_F(CompositedLayerRasterInvalidatorTest, PaintPropertyChange) {
+TEST_F(CompositedLayerRasterInvalidatorTest, ClipPropertyChange) {
   CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
   CHUNKS(chunks, Chunk(0), Chunk(1), Chunk(2));
   FloatRoundedRect clip_rect(-100000, -100000, 200000, 200000);
@@ -289,6 +292,7 @@ TEST_F(CompositedLayerRasterInvalidatorTest, PaintPropertyChange) {
   new_chunks_array[1].properties = chunks[1]->properties;
   new_chunks_array[2].properties = chunks[2]->properties;
 
+  GeometryMapperTransformCache::ClearCache();
   invalidator.Generate(kDefaultLayerBounds, new_chunks, layer_state);
   const auto& invalidations = TrackedRasterInvalidations(invalidator);
   ASSERT_EQ(1u, invalidations.size());
@@ -312,14 +316,105 @@ TEST_F(CompositedLayerRasterInvalidatorTest, PaintPropertyChange) {
   ExpectChunkInvalidation(invalidations1, 0, *new_chunks1[1],
                           PaintInvalidationReason::kPaintProperty);
   invalidator.SetTracksRasterInvalidations(false);
+}
 
-  // Change of layer state invalidates the whole layer.
+TEST_F(CompositedLayerRasterInvalidatorTest, TransformPropertyChange) {
+  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+  CHUNKS(chunks, Chunk(0), Chunk(1));
+
+  auto layer_transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), TransformationMatrix().Scale(5),
+      FloatPoint3D());
+  auto transform0 = TransformPaintPropertyNode::Create(
+      layer_transform, TransformationMatrix().Translate(10, 20),
+      FloatPoint3D());
+  auto transform1 = TransformPaintPropertyNode::Create(
+      transform0, TransformationMatrix().Translate(-50, -60), FloatPoint3D());
+
+  PropertyTreeState layer_state(layer_transform.get(),
+                                ClipPaintPropertyNode::Root(),
+                                EffectPaintPropertyNode::Root());
+  chunks_array[0].properties = PaintChunkProperties(
+      PropertyTreeState(transform0.get(), ClipPaintPropertyNode::Root(),
+                        EffectPaintPropertyNode::Root()));
+  chunks_array[1].properties = PaintChunkProperties(
+      PropertyTreeState(transform1.get(), ClipPaintPropertyNode::Root(),
+                        EffectPaintPropertyNode::Root()));
+
+  GeometryMapperTransformCache::ClearCache();
   invalidator.SetTracksRasterInvalidations(true);
-  invalidator.Generate(kDefaultLayerBounds, new_chunks1,
-                       DefaultPropertyTreeState());
-  const auto& invalidations2 = TrackedRasterInvalidations(invalidator);
-  ASSERT_EQ(1u, invalidations2.size());
-  EXPECT_EQ(PaintInvalidationReason::kFullLayer, invalidations2[0].reason);
+  invalidator.Generate(kDefaultLayerBounds, chunks, layer_state);
+  EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
+
+  // Change layer_transform should not cause raster invalidation in the layer.
+  CHUNKS(new_chunks, Chunk(0), Chunk(1));
+  layer_transform->Update(layer_transform->Parent(),
+                          TransformationMatrix().Scale(10), FloatPoint3D());
+  new_chunks_array[0].properties = chunks[0]->properties;
+  new_chunks_array[1].properties = chunks[1]->properties;
+
+  GeometryMapperTransformCache::ClearCache();
+  invalidator.Generate(kDefaultLayerBounds, new_chunks, layer_state);
+  EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
+
+  // Inserting another node between layer_transform and transform0 and letting
+  // the new node become the transform of the layer state should not cause
+  // raster invalidation in the layer. This simulates a composited layer is
+  // scrolled from its original location.
+  CHUNKS(new_chunks1, Chunk(0), Chunk(1));
+  auto new_layer_transform = TransformPaintPropertyNode::Create(
+      layer_transform, TransformationMatrix().Translate(-100, -200),
+      FloatPoint3D());
+  layer_state = PropertyTreeState(new_layer_transform.get(),
+                                  ClipPaintPropertyNode::Root(),
+                                  EffectPaintPropertyNode::Root());
+  transform0->Update(new_layer_transform, transform0->Matrix(), FloatPoint3D());
+  new_chunks1_array[0].properties = chunks[0]->properties;
+  new_chunks1_array[1].properties = chunks[1]->properties;
+
+  GeometryMapperTransformCache::ClearCache();
+  invalidator.Generate(kDefaultLayerBounds, new_chunks1, layer_state);
+  EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
+
+  // Removing transform nodes above the layer state should not cause raster
+  // invalidation in the layer.
+  CHUNKS(new_chunks2, Chunk(0), Chunk(1));
+  layer_state = DefaultPropertyTreeState();
+  transform0->Update(layer_state.Transform(), transform0->Matrix(),
+                     FloatPoint3D());
+  new_chunks2_array[0].properties = chunks[0]->properties;
+  new_chunks2_array[1].properties = chunks[1]->properties;
+
+  GeometryMapperTransformCache::ClearCache();
+  invalidator.Generate(kDefaultLayerBounds, new_chunks2, layer_state);
+  EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
+
+  // Change transform0 and transform1, while keeping the combined transform0
+  // and transform1 unchanged for chunk 2. We should invalidate only chunk 0
+  // for changed paint property.
+  CHUNKS(new_chunks3, Chunk(0), Chunk(1));
+  transform0->Update(
+      layer_state.Transform(),
+      TransformationMatrix(transform0->Matrix()).Translate(20, 30),
+      FloatPoint3D());
+  transform1->Update(
+      transform0,
+      TransformationMatrix(transform1->Matrix()).Translate(-20, -30),
+      FloatPoint3D());
+  new_chunks3_array[0].properties = new_chunks2[0]->properties;
+  new_chunks3_array[1].properties = new_chunks2[1]->properties;
+
+  GeometryMapperTransformCache::ClearCache();
+  invalidator.Generate(kDefaultLayerBounds, new_chunks3, layer_state);
+  const auto& invalidations = TrackedRasterInvalidations(invalidator);
+  ASSERT_EQ(2u, invalidations.size());
+  ExpectChunkInvalidation(invalidations, 0, *new_chunks3[0],
+                          PaintInvalidationReason::kPaintProperty,
+                          -kDefaultLayerBounds.Location() + IntSize(10, 20));
+  ExpectChunkInvalidation(invalidations, 1, *new_chunks3[0],
+                          PaintInvalidationReason::kPaintProperty,
+                          -kDefaultLayerBounds.Location() + IntSize(30, 50));
+  invalidator.SetTracksRasterInvalidations(false);
 }
 
 }  // namespace blink

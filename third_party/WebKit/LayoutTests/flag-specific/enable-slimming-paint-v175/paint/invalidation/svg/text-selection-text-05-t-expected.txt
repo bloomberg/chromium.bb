@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox '$Revision: 1.8 $'",
-          "rect": [-1, -1, 802, 602],
+          "rect": [0, 0, 800, 600],
           "reason": "disappeared"
         },
         {
           "object": "LayoutSVGText text id='revision'",
-          "rect": [-1, -1, 802, 602],
+          "rect": [0, 0, 800, 600],
           "reason": "appeared"
         },
         {

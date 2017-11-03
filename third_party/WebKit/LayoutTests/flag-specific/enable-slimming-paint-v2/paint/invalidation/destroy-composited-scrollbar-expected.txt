@@ -16,7 +16,7 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [0, 0, 200, 200],
-          "reason": "full layer"
+          "reason": "paint property change"
         }
       ]
     }

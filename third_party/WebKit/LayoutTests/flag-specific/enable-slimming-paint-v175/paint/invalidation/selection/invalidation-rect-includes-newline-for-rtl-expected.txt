@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'xx'",
-          "rect": [-8, 8, 48, 33],
+          "rect": [0, 8, 40, 33],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'y'",
-          "rect": [-8, 8, 48, 33],
+          "rect": [0, 8, 40, 33],
           "reason": "geometry"
         }
       ]

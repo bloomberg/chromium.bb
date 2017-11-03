@@ -17,12 +17,17 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
           "rect": [0, 0, 20, 70],
-          "reason": "full layer"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
           "rect": [0, 0, 10, 60],
           "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='composited-box'",
+          "rect": [0, 0, 10, 60],
+          "reason": "paint property change"
         }
       ]
     },

@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutBlockFlow DIV id='rel' class='rotated'",
-          "rect": [20, -64, 196, 214],
+          "rect": [20, 0, 196, 150],
           "reason": "disappeared"
         }
       ]

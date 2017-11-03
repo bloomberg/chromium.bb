@@ -24,12 +24,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='text'",
-          "rect": [-1, 999, 207, 24],
+          "rect": [0, 999, 205, 23],
           "reason": "appeared"
         },
         {
           "object": "LayoutTextControl INPUT id='text'",
-          "rect": [-1, 999, 207, 24],
+          "rect": [0, 999, 205, 23],
           "reason": "subtree"
         },
         {

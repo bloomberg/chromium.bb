@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 250, 600, 250],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 0, 300, 125],
           "reason": "geometry"
@@ -42,11 +37,6 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [0, 0, 300, 63],
           "reason": "geometry"
-        },
-        {
-          "object": "LayoutView #document",
-          "rect": [400, 0, 200, 250],
-          "reason": "incremental"
         }
       ]
     }

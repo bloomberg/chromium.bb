@@ -15,7 +15,22 @@
         {
           "object": "LayoutBlockFlow DIV id='scroller'",
           "rect": [0, 0, 302, 302],
-          "reason": "full layer"
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='scroller'",
+          "rect": [1, 201, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [1, 201, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [1, 201, 100, 100],
+          "reason": "appeared"
         }
       ]
     }

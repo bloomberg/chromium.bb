@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutInline SPAN",
-          "rect": [210, -5, 50, 20],
+          "rect": [210, 0, 50, 15],
           "reason": "outline"
         },
         {

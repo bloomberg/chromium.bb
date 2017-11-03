@@ -9,12 +9,27 @@
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 939, 235],
-          "reason": "full layer"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 7, 920, 213],
+          "reason": "paint property change"
         },
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 600, 500],
           "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 600, 500],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [168, 8, 423, 482],
+          "reason": "paint property change"
         }
       ],
       "transform": 1
@@ -126,7 +141,12 @@
         {
           "object": "LayoutView #document",
           "rect": [0, 0, 939, 235],
-          "reason": "full layer"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 7, 920, 213],
+          "reason": "paint property change"
         }
       ],
       "transform": 1
@@ -237,8 +257,23 @@
         },
         {
           "object": "LayoutView #document",
+          "rect": [0, 0, 939, 235],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 7, 920, 213],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutView #document",
           "rect": [0, 0, 400, 600],
-          "reason": "full layer"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [39, 7, 352, 563],
+          "reason": "paint property change"
         }
       ]
     }
