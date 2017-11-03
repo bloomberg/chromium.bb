@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL Check the existence of transform. assert_not_equals: expect transform is not undefined got disallowed value undefined
+PASS Check the existence of transform-origin.
+PASS Check the existence of transform-style.
+PASS Check the existence of perspective.
+PASS Check the existence of perspective-origin.
+PASS Check the existence of backface-visibility.
+Harness: the test ran to completion.
+
