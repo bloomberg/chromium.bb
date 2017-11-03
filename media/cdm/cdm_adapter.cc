@@ -39,6 +39,13 @@ namespace media {
 
 namespace {
 
+// Constants for UMA reporting of file size (in KB) via
+// UMA_HISTOGRAM_CUSTOM_COUNTS. Note that the histogram is log-scaled (rather
+// than linear).
+constexpr int kSizeKBMin = 1;
+constexpr int kSizeKBMax = 512 * 1024;  // 512MB
+constexpr int kSizeKBBuckets = 100;
+
 cdm::HdcpVersion ToCdmHdcpVersion(HdcpVersion hdcp_version) {
   switch (hdcp_version) {
     case media::HdcpVersion::kHdcpVersionNone:
@@ -881,9 +888,16 @@ void CdmAdapter::OnRejectPromise(uint32_t promise_id,
                                  const char* error_message,
                                  uint32_t error_message_size) {
   // This is the central place for library CDM promise rejection. Cannot report
-  // this is more generic classes like CdmPromise or CdmPromiseAdapter because
+  // this in more generic classes like CdmPromise or CdmPromiseAdapter because
   // they may be used multiple times in one promise chain that involves IPC.
   ReportSystemCodeUMA(key_system_, system_code);
+
+  // UMA to help track file related errors. See http://crbug.com/410630
+  if (system_code == 0x27) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Media.EME.CdmFileIO.FileSizeKBOnError",
+                                last_read_file_size_kb_, kSizeKBMin, kSizeKBMax,
+                                kSizeKBBuckets);
+  }
 
   DCHECK(task_runner_->BelongsToCurrentThread());
   cdm_promise_adapter_.RejectPromise(
@@ -1131,7 +1145,8 @@ void CdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  std::unique_ptr<CdmFileIO> file_io = helper_->CreateCdmFileIO(client);
+  std::unique_ptr<CdmFileIO> file_io = helper_->CreateCdmFileIO(
+      client, base::Bind(&CdmAdapter::OnFileRead, weak_factory_.GetWeakPtr()));
 
   // The CDM owns the returned object and must call FileIO::Close()
   // to release it.
@@ -1205,6 +1220,19 @@ bool CdmAdapter::AudioFramesDataToAudioFrames(
   } while (bytes_left > 0);
 
   return true;
+}
+
+void CdmAdapter::OnFileRead(int file_size_bytes) {
+  DCHECK_GE(file_size_bytes, 0);
+  last_read_file_size_kb_ = file_size_bytes / 1024;
+
+  if (file_size_uma_reported_)
+    return;
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Media.EME.CdmFileIO.FileSizeKBOnFirstRead",
+                              last_read_file_size_kb_, kSizeKBMin, kSizeKBMax,
+                              kSizeKBBuckets);
+  file_size_uma_reported_ = true;
 }
 
 }  // namespace media

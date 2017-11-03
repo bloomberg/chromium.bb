@@ -19,11 +19,13 @@ MojoCdmHelper::MojoCdmHelper(
 MojoCdmHelper::~MojoCdmHelper() {}
 
 std::unique_ptr<CdmFileIO> MojoCdmHelper::CreateCdmFileIO(
-    cdm::FileIOClient* client) {
+    cdm::FileIOClient* client,
+    CdmFileIO::FileReadCB file_read_cb) {
   ConnectToCdmStorage();
 
   // Pass a reference to CdmStorage so that MojoCdmFileIO can open a file.
-  return std::make_unique<MojoCdmFileIO>(client, cdm_storage_ptr_.get());
+  return std::make_unique<MojoCdmFileIO>(client, cdm_storage_ptr_.get(),
+                                         std::move(file_read_cb));
 }
 
 cdm::Buffer* MojoCdmHelper::CreateCdmBuffer(size_t capacity) {

@@ -12,6 +12,13 @@ MockCdmAuxiliaryHelper::MockCdmAuxiliaryHelper(
 
 MockCdmAuxiliaryHelper::~MockCdmAuxiliaryHelper() {}
 
+std::unique_ptr<CdmFileIO> MockCdmAuxiliaryHelper::CreateCdmFileIO(
+    cdm::FileIOClient* client,
+    CdmFileIO::FileReadCB) {
+  NOTREACHED();
+  return nullptr;
+}
+
 cdm::Buffer* MockCdmAuxiliaryHelper::CreateCdmBuffer(size_t capacity) {
   return allocator_->CreateCdmBuffer(capacity);
 }

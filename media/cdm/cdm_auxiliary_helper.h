@@ -37,7 +37,9 @@ class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
 
   // Given |client|, create a CdmFileIO object and return it. Caller owns the
   // returned object, and should only destroy it after Close() has been called.
-  virtual std::unique_ptr<CdmFileIO> CreateCdmFileIO(cdm::FileIOClient* client);
+  virtual std::unique_ptr<CdmFileIO> CreateCdmFileIO(
+      cdm::FileIOClient* client,
+      CdmFileIO::FileReadCB file_read_cb);
 
   // CdmAllocator implementation.
   cdm::Buffer* CreateCdmBuffer(size_t capacity) override;

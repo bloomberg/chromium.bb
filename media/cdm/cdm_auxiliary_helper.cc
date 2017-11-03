@@ -12,7 +12,8 @@ CdmAuxiliaryHelper::CdmAuxiliaryHelper() {}
 CdmAuxiliaryHelper::~CdmAuxiliaryHelper() {}
 
 std::unique_ptr<CdmFileIO> CdmAuxiliaryHelper::CreateCdmFileIO(
-    cdm::FileIOClient* client) {
+    cdm::FileIOClient* client,
+    CdmFileIO::FileReadCB file_read_cb) {
   return nullptr;
 }
 

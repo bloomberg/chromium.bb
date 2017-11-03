@@ -209,6 +209,10 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   void ReportOutputProtectionQueryResult(uint32_t link_mask,
                                          uint32_t protection_mask);
 
+  // Callback to report |file_size_bytes| of the file successfully read by
+  // cdm::FileIO.
+  void OnFileRead(int file_size_bytes);
+
   const std::string key_system_;
   const CdmConfig cdm_config_;
 
@@ -244,6 +248,10 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   // unprotected external link) have been reported to UMA.
   bool uma_for_output_protection_query_reported_ = false;
   bool uma_for_output_protection_positive_result_reported_ = false;
+
+  // Tracks CDM file IO related states.
+  int last_read_file_size_kb_ = 0;
+  bool file_size_uma_reported_ = false;
 
   // Used to keep track of promises while the CDM is processing the request.
   CdmPromiseAdapter cdm_promise_adapter_;
