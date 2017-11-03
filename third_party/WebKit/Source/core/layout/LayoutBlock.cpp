@@ -587,8 +587,7 @@ void LayoutBlock::UpdateBlockChildDirtyBitsBeforeLayout(bool relayout_children,
   if (relayout_children || (has_relative_logical_height && !IsLayoutView()) ||
       (height_available_to_children_changed_ &&
        ChangeInAvailableLogicalHeightAffectsChild(this, child)) ||
-      (child.IsListMarker() && IsListItem() &&
-       ToLayoutBlockFlow(this)->ContainsFloats())) {
+      (child.IsListMarker() && IsListItem())) {
     child.SetChildNeedsLayout(kMarkOnlyThis);
   }
 }
