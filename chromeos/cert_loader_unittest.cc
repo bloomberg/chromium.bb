@@ -116,9 +116,9 @@ class CertLoaderTest : public testing::Test,
 
   // CertLoader::Observer:
   // The test keeps count of times the observer method was called.
-  void OnCertificatesLoaded(const net::ScopedCERTCertificateList& cert_list,
-                            bool initial_load) override {
-    EXPECT_TRUE(certificates_loaded_events_count_ == 0 || !initial_load);
+  void OnCertificatesLoaded(
+      const net::ScopedCERTCertificateList& cert_list) override {
+    EXPECT_TRUE(certificates_loaded_events_count_ == 0);
     certificates_loaded_events_count_++;
   }
 
@@ -222,11 +222,13 @@ class CertLoaderTest : public testing::Test,
 TEST_F(CertLoaderTest, BasicOnlyUserDB) {
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_FALSE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
 
   CreateCertDatabase(&primary_db_, &primary_certdb_);
   cert_loader_->SetUserNSSDB(primary_certdb_.get());
 
   EXPECT_FALSE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_TRUE(cert_loader_->all_certs().empty());
   EXPECT_TRUE(cert_loader_->system_certs().empty());
@@ -236,6 +238,7 @@ TEST_F(CertLoaderTest, BasicOnlyUserDB) {
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
+  EXPECT_TRUE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
 
   // Default CA cert roots should get loaded.
@@ -246,11 +249,13 @@ TEST_F(CertLoaderTest, BasicOnlyUserDB) {
 TEST_F(CertLoaderTest, BasicOnlySystemDB) {
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_FALSE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
 
   CreateCertDatabase(&system_db_, &system_certdb_);
   cert_loader_->SetSystemNSSDB(system_certdb_.get());
 
   EXPECT_FALSE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_TRUE(cert_loader_->all_certs().empty());
 
@@ -259,6 +264,7 @@ TEST_F(CertLoaderTest, BasicOnlySystemDB) {
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
 
   // Default CA cert roots should get loaded.
@@ -282,10 +288,12 @@ TEST_F(CertLoaderTest, SystemAndUnaffiliatedUserDB) {
 
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_FALSE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
 
   cert_loader_->SetSystemNSSDB(system_certdb_.get());
 
   EXPECT_FALSE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_TRUE(cert_loader_->all_certs().empty());
   EXPECT_TRUE(cert_loader_->system_certs().empty());
@@ -295,6 +303,7 @@ TEST_F(CertLoaderTest, SystemAndUnaffiliatedUserDB) {
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
 
   EXPECT_TRUE(IsCertInCertificateList(system_token_cert.get(),
@@ -305,6 +314,7 @@ TEST_F(CertLoaderTest, SystemAndUnaffiliatedUserDB) {
   cert_loader_->SetUserNSSDB(primary_certdb_.get());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_FALSE(cert_loader_->all_certs().empty());
   EXPECT_FALSE(cert_loader_->system_certs().empty());
@@ -314,6 +324,7 @@ TEST_F(CertLoaderTest, SystemAndUnaffiliatedUserDB) {
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
+  EXPECT_TRUE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
 
   EXPECT_FALSE(IsCertInCertificateList(user_token_cert.get(),
@@ -340,10 +351,12 @@ TEST_F(CertLoaderTest, SystemAndAffiliatedUserDB) {
 
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_FALSE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
 
   cert_loader_->SetSystemNSSDB(system_certdb_.get());
 
   EXPECT_FALSE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_TRUE(cert_loader_->all_certs().empty());
   EXPECT_TRUE(cert_loader_->system_certs().empty());
@@ -353,6 +366,7 @@ TEST_F(CertLoaderTest, SystemAndAffiliatedUserDB) {
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
 
   EXPECT_TRUE(IsCertInCertificateList(system_token_cert.get(),
@@ -363,6 +377,7 @@ TEST_F(CertLoaderTest, SystemAndAffiliatedUserDB) {
   cert_loader_->SetUserNSSDB(primary_certdb_.get());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
+  EXPECT_FALSE(cert_loader_->user_cert_database_load_finished());
   EXPECT_TRUE(cert_loader_->initial_load_of_any_database_running());
   EXPECT_FALSE(cert_loader_->all_certs().empty());
   EXPECT_FALSE(cert_loader_->system_certs().empty());
@@ -372,6 +387,7 @@ TEST_F(CertLoaderTest, SystemAndAffiliatedUserDB) {
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
 
   EXPECT_TRUE(cert_loader_->initial_load_finished());
+  EXPECT_TRUE(cert_loader_->user_cert_database_load_finished());
   EXPECT_FALSE(cert_loader_->initial_load_of_any_database_running());
 
   EXPECT_FALSE(IsCertInCertificateList(user_token_cert.get(),

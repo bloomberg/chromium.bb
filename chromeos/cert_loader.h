@@ -39,12 +39,9 @@ class CHROMEOS_EXPORT CertLoader {
   class Observer {
    public:
     // Called when the certificates, passed for convenience as |all_certs|,
-    // have completed loading. |initial_load| is true the first time this
-    // is called. It will be false if this is called because another slot has
-    // been added to CertLoader's data sources.
+    // have completed loading.
     virtual void OnCertificatesLoaded(
-        const net::ScopedCERTCertificateList& all_certs,
-        bool initial_load) = 0;
+        const net::ScopedCERTCertificateList& all_certs) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -108,6 +105,9 @@ class CHROMEOS_EXPORT CertLoader {
   // from the first (usually system) database have been loaded.
   bool initial_load_finished() const;
 
+  // Returns true if certificates from a user NSS database have been loaded.
+  bool user_cert_database_load_finished() const;
+
   // Returns all certificates. This will be empty until certificates_loaded() is
   // true.
   const net::ScopedCERTCertificateList& all_certs() const {
@@ -140,11 +140,7 @@ class CHROMEOS_EXPORT CertLoader {
   void UpdateCertificates(net::ScopedCERTCertificateList all_certs,
                           net::ScopedCERTCertificateList system_certs);
 
-  void NotifyCertificatesLoaded(bool initial_load);
-
-  // True if the initial load of CertLoader is still pending. This is used to
-  // set the |initial_load| parameter when calling Observers.
-  bool pending_initial_load_;
+  void NotifyCertificatesLoaded();
 
   base::ObserverList<Observer> observers_;
 

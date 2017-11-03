@@ -353,7 +353,7 @@ void VPNConfigView::OnPerformAction(views::Combobox* combobox) {
   UpdateCanLogin();
 }
 
-void VPNConfigView::OnCertificatesLoaded(bool initial_load) {
+void VPNConfigView::OnCertificatesLoaded() {
   Refresh();
 }
 

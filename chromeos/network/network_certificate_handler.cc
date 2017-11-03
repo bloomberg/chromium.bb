@@ -59,7 +59,7 @@ NetworkCertificateHandler::Certificate::Certificate(const Certificate& other) =
 NetworkCertificateHandler::NetworkCertificateHandler() {
   CertLoader::Get()->AddObserver(this);
   if (CertLoader::Get()->initial_load_finished())
-    OnCertificatesLoaded(CertLoader::Get()->all_certs(), true);
+    OnCertificatesLoaded(CertLoader::Get()->all_certs());
 }
 
 NetworkCertificateHandler::~NetworkCertificateHandler() {
@@ -77,8 +77,7 @@ void NetworkCertificateHandler::RemoveObserver(
 }
 
 void NetworkCertificateHandler::OnCertificatesLoaded(
-    const net::ScopedCERTCertificateList& cert_list,
-    bool /* initial_load */) {
+    const net::ScopedCERTCertificateList& cert_list) {
   ProcessCertificates(cert_list);
 }
 

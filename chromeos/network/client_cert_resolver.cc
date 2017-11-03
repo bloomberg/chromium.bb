@@ -430,8 +430,7 @@ void ClientCertResolver::NetworkConnectionStateChanged(
 }
 
 void ClientCertResolver::OnCertificatesLoaded(
-    const net::ScopedCERTCertificateList& cert_list,
-    bool initial_load) {
+    const net::ScopedCERTCertificateList& cert_list) {
   VLOG(2) << "OnCertificatesLoaded.";
   if (!ClientCertificatesLoaded())
     return;
