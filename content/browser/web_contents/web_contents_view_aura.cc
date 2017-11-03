@@ -20,6 +20,7 @@
 #include "content/browser/download/drag_download_util.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/mus_util.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -32,6 +33,7 @@
 #include "content/browser/web_contents/aura/overscroll_navigation_overlay.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -526,7 +528,9 @@ void WebContentsViewAura::InstallCreateHookForTests(
 
 WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
                                          WebContentsViewDelegate* delegate)
-    : web_contents_(web_contents),
+    : is_mus_browser_plugin_guest_(
+          web_contents->GetBrowserPluginGuest() != nullptr && IsUsingMus()),
+      web_contents_(web_contents),
       delegate_(delegate),
       current_drag_op_(blink::kWebDragOperationNone),
       drag_dest_delegate_(nullptr),
@@ -635,7 +639,7 @@ void WebContentsViewAura::InstallOverscrollControllerDelegate(
     return;
   }
   view->overscroll_controller()->set_delegate(this);
-  if (!navigation_overlay_) {
+  if (!navigation_overlay_ && !is_mus_browser_plugin_guest_) {
     navigation_overlay_.reset(
         new OverscrollNavigationOverlay(web_contents_, window_.get()));
   }
@@ -681,17 +685,32 @@ bool WebContentsViewAura::IsValidDragTarget(
 // WebContentsViewAura, WebContentsView implementation:
 
 gfx::NativeView WebContentsViewAura::GetNativeView() const {
-  return window_.get();
+  if (!is_mus_browser_plugin_guest_)
+    return window_.get();
+  DCHECK(web_contents_->GetOuterWebContents());
+  return web_contents_->GetOuterWebContents()->GetView()->GetNativeView();
 }
 
 gfx::NativeView WebContentsViewAura::GetContentNativeView() const {
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
-  return rwhv ? rwhv->GetNativeView() : nullptr;
+  if (!is_mus_browser_plugin_guest_) {
+    RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+    return rwhv ? rwhv->GetNativeView() : nullptr;
+  }
+  DCHECK(web_contents_->GetOuterWebContents());
+  return web_contents_->GetOuterWebContents()
+      ->GetView()
+      ->GetContentNativeView();
 }
 
 gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
-  gfx::NativeWindow window = window_->GetToplevelWindow();
-  return window ? window : delegate_->GetNativeWindow();
+  if (!is_mus_browser_plugin_guest_) {
+    gfx::NativeWindow window = window_->GetToplevelWindow();
+    return window ? window : delegate_->GetNativeWindow();
+  }
+  DCHECK(web_contents_->GetOuterWebContents());
+  return web_contents_->GetOuterWebContents()
+      ->GetView()
+      ->GetTopLevelNativeWindow();
 }
 
 namespace {
@@ -733,11 +752,11 @@ void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
 }
 
 void WebContentsViewAura::GetScreenInfo(ScreenInfo* screen_info) const {
-  GetScreenInfoForWindow(screen_info, window_.get());
+  GetScreenInfoForWindow(screen_info, GetNativeView());
 }
 
-void WebContentsViewAura::GetContainerBounds(gfx::Rect *out) const {
-  *out = window_->GetBoundsInScreen();
+void WebContentsViewAura::GetContainerBounds(gfx::Rect* out) const {
+  *out = GetNativeView()->GetBoundsInScreen();
 }
 
 void WebContentsViewAura::SizeContents(const gfx::Size& size) {
@@ -791,19 +810,12 @@ DropData* WebContentsViewAura::GetDropData() const {
 }
 
 gfx::Rect WebContentsViewAura::GetViewBounds() const {
-  return window_->GetBoundsInScreen();
+  return GetNativeView()->GetBoundsInScreen();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// WebContentsViewAura, WebContentsView implementation:
-
-void WebContentsViewAura::CreateView(
-    const gfx::Size& initial_size, gfx::NativeView context) {
-  // NOTE: we ignore |initial_size| since in some cases it's wrong (such as
-  // if the bookmark bar is not shown and you create a new tab). The right
-  // value is set shortly after this, so its safe to ignore.
-
+void WebContentsViewAura::CreateAuraWindow(aura::Window* context) {
   DCHECK(aura::Env::GetInstanceDontCreate());
+  DCHECK(!window_);
   window_ = std::make_unique<aura::Window>(this);
   window_->set_owned_by_parent(false);
   window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
@@ -832,6 +844,19 @@ void WebContentsViewAura::CreateView(
   // 2) guests' window bounds are supposed to come from its embedder.
   if (!BrowserPluginGuest::IsGuest(web_contents_))
     window_observer_.reset(new WindowObserver(this));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// WebContentsViewAura, WebContentsView implementation:
+
+void WebContentsViewAura::CreateView(const gfx::Size& initial_size,
+                                     gfx::NativeView context) {
+  // NOTE: we ignore |initial_size| since in some cases it's wrong (such as
+  // if the bookmark bar is not shown and you create a new tab). The right
+  // value is set shortly after this, so its safe to ignore.
+
+  if (!is_mus_browser_plugin_guest_)
+    CreateAuraWindow(context);
 
   // delegate_->GetDragDestDelegate() creates a new delegate on every call.
   // Hence, we save a reference to it locally. Similar model is used on other
@@ -858,7 +883,8 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
           ? g_create_render_widget_host_view(render_widget_host,
                                              is_guest_view_hack)
           : new RenderWidgetHostViewAura(render_widget_host, is_guest_view_hack,
-                                         enable_surface_synchronization_);
+                                         enable_surface_synchronization_,
+                                         is_mus_browser_plugin_guest_);
   view->InitAsChild(GetRenderWidgetHostViewParent());
 
   RenderWidgetHostImpl* host_impl =
@@ -866,6 +892,9 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
 
   if (!host_impl->is_hidden())
     view->Show();
+
+  if (is_mus_browser_plugin_guest_)
+    return view;
 
   // We listen to drag drop events in the newly created view's window.
   aura::client::SetDragDropDelegate(view->GetNativeView(), this);
@@ -881,12 +910,17 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
 
 RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForPopupWidget(
     RenderWidgetHost* render_widget_host) {
+  // Popups are not created as embedded windows in mus, so
+  // |is_mus_browser_plugin_guest| is always false for them.
+  const bool is_mus_browser_plugin_guest = false;
   return new RenderWidgetHostViewAura(render_widget_host, false,
-                                      enable_surface_synchronization_);
+                                      enable_surface_synchronization_,
+                                      is_mus_browser_plugin_guest);
 }
 
 void WebContentsViewAura::SetPageTitle(const base::string16& title) {
-  window_->SetTitle(title);
+  if (!is_mus_browser_plugin_guest_)
+    window_->SetTitle(title);
 }
 
 void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
@@ -907,8 +941,14 @@ void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
   if (!enabled) {
     navigation_overlay_.reset();
   } else if (!navigation_overlay_) {
-    navigation_overlay_.reset(
-        new OverscrollNavigationOverlay(web_contents_, window_.get()));
+    if (is_mus_browser_plugin_guest_) {
+      // |is_mus_browser_plugin_guest_| implies this WebContentsViewAura is
+      // held inside a WebContentsViewGuest, which does not forward this call.
+      NOTREACHED();
+    } else {
+      navigation_overlay_.reset(
+          new OverscrollNavigationOverlay(web_contents_, window_.get()));
+    }
   }
 }
 

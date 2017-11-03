@@ -19,6 +19,7 @@
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/mus_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -41,6 +42,7 @@
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/ui_events_helper.h"
+#include "ui/aura/env.h"
 #endif
 
 namespace content {
@@ -87,7 +89,7 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
       // |guest| is NULL during test.
       guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
       platform_view_(platform_view),
-      should_forward_text_selection_(false) {
+      weak_ptr_factory_(this) {
   // In tests |guest_| and therefore |owner| can be null.
   auto* owner = GetOwnerRenderWidgetHostView();
   if (owner)
@@ -371,6 +373,19 @@ void RenderWidgetHostViewGuest::SetTooltipText(
     guest_->SetTooltipText(tooltip_text);
 }
 
+void RenderWidgetHostViewGuest::Init() {
+  RenderWidgetHostViewChildFrame::Init();
+
+#if defined(USE_AURA)
+  if (IsUsingMus()) {
+    aura::Env::GetInstance()->ScheduleEmbed(
+        GetWindowTreeClientFromRenderer(),
+        base::BindOnce(&RenderWidgetHostViewGuest::OnGotEmbedToken,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+#endif
+}
+
 void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(
     const viz::SurfaceInfo& surface_info,
     const viz::SurfaceSequence& sequence) {
@@ -549,7 +564,7 @@ bool RenderWidgetHostViewGuest::LockMouse() {
 }
 
 void RenderWidgetHostViewGuest::UnlockMouse() {
-  return platform_view_->UnlockMouse();
+  platform_view_->UnlockMouse();
 }
 
 viz::LocalSurfaceId RenderWidgetHostViewGuest::GetLocalSurfaceId() const {
@@ -816,5 +831,17 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
 bool RenderWidgetHostViewGuest::HasEmbedderChanged() {
   return guest_ && guest_->has_attached_since_surface_set();
 }
+
+#if defined(USE_AURA)
+void RenderWidgetHostViewGuest::OnGotEmbedToken(
+    const base::UnguessableToken& token) {
+  if (!guest_)
+    return;
+
+  guest_->SendMessageToEmbedder(
+      base::MakeUnique<BrowserPluginMsg_SetMusEmbedToken>(
+          guest_->browser_plugin_instance_id(), token));
+}
+#endif
 
 }  // namespace content

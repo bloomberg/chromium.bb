@@ -32,6 +32,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/mus_util.h"
 #include "content/browser/renderer_host/cursor_manager.h"
 #include "content/browser/renderer_host/delegated_frame_host_client_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
@@ -379,9 +380,6 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
   DISALLOW_COPY_AND_ASSIGN(WindowAncestorObserver);
 };
 
-bool IsMus() {
-  return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, public:
@@ -389,9 +387,11 @@ bool IsMus() {
 RenderWidgetHostViewAura::RenderWidgetHostViewAura(
     RenderWidgetHost* host,
     bool is_guest_view_hack,
-    bool enable_surface_synchronization)
+    bool enable_surface_synchronization,
+    bool is_mus_browser_plugin_guest)
     : host_(RenderWidgetHostImpl::From(host)),
       enable_surface_synchronization_(enable_surface_synchronization),
+      is_mus_browser_plugin_guest_(is_mus_browser_plugin_guest),
       window_(nullptr),
       in_shutdown_(false),
       in_bounds_changed_(false),
@@ -412,8 +412,9 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       is_guest_view_hack_(is_guest_view_hack),
       device_scale_factor_(0.0f),
       event_handler_(new RenderWidgetHostViewEventHandler(host_, this, this)),
-      frame_sink_id_(IsMus() ? viz::FrameSinkId()
-                             : host_->AllocateFrameSinkId(is_guest_view_hack_)),
+      frame_sink_id_(IsUsingMus()
+                         ? viz::FrameSinkId()
+                         : host_->AllocateFrameSinkId(is_guest_view_hack_)),
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
     host_->SetView(this);
@@ -444,8 +445,10 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, RenderWidgetHostView implementation:
 
-void RenderWidgetHostViewAura::InitAsChild(
-    gfx::NativeView parent_view) {
+void RenderWidgetHostViewAura::InitAsChild(gfx::NativeView parent_view) {
+  if (is_mus_browser_plugin_guest_)
+    return;
+
   CreateDelegatedFrameHostClient();
 
   CreateAuraWindow(aura::client::WINDOW_TYPE_CONTROL);
@@ -459,6 +462,8 @@ void RenderWidgetHostViewAura::InitAsChild(
 void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& bounds_in_screen) {
+  // Popups never have |is_mus_browser_plugin_guest_| set to true.
+  DCHECK(!is_mus_browser_plugin_guest_);
   CreateDelegatedFrameHostClient();
 
   popup_parent_host_view_ =
@@ -507,6 +512,9 @@ void RenderWidgetHostViewAura::InitAsPopup(
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
+  // Webview Fullscreen doesn't go through InitAsFullscreen(), so
+  // |is_mus_browser_plugin_guest_| is always false.
+  DCHECK(!is_mus_browser_plugin_guest_);
   is_fullscreen_ = true;
   CreateDelegatedFrameHostClient();
   CreateAuraWindow(aura::client::WINDOW_TYPE_NORMAL);
@@ -535,16 +543,23 @@ RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewAura::Show() {
+  if (is_mus_browser_plugin_guest_)
+    return;
+
   window_->Show();
   WasUnOccluded();
 }
 
 void RenderWidgetHostViewAura::Hide() {
+  if (is_mus_browser_plugin_guest_)
+    return;
+
   window_->Hide();
   WasOccluded();
 }
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
+  DCHECK(!is_mus_browser_plugin_guest_);
   // For a SetSize operation, we don't care what coordinate system the origin
   // of the window is in, it's only important to make sure that the origin
   // remains constant after the operation.
@@ -552,6 +567,7 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
+  DCHECK(!is_mus_browser_plugin_guest_);
   gfx::Point relative_origin(rect.origin());
 
   // RenderWidgetHostViewAura::SetBounds() takes screen coordinates, but
@@ -574,6 +590,7 @@ gfx::Vector2dF RenderWidgetHostViewAura::GetLastScrollOffset() const {
 }
 
 gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
+  DCHECK(!is_mus_browser_plugin_guest_);
   return window_;
 }
 
@@ -1727,7 +1744,7 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
 void RenderWidgetHostViewAura::ScheduleEmbed(
     ui::mojom::WindowTreeClientPtr client,
     base::OnceCallback<void(const base::UnguessableToken&)> callback) {
-  DCHECK(IsMus());
+  DCHECK(IsUsingMus());
   aura::Env::GetInstance()->ScheduleEmbed(std::move(client),
                                           std::move(callback));
 }
@@ -1907,6 +1924,7 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
 
 void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   DCHECK(!window_);
+  DCHECK(!is_mus_browser_plugin_guest_);
   window_ = new aura::Window(this);
   window_->SetName("RenderWidgetHostViewAura");
   window_->SetProperty(aura::client::kEmbedType,
@@ -1923,7 +1941,7 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   window_->Init(ui::LAYER_SOLID_COLOR);
   window_->layer()->SetColor(background_color_);
 
-  if (!IsMus())
+  if (!IsUsingMus())
     return;
 
   // Embed the renderer into the Window.
@@ -1937,7 +1955,7 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
 }
 
 void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
-  if (IsMus())
+  if (IsUsingMus())
     return;
 
   // Tests may set |delegated_frame_host_client_|.
@@ -1967,6 +1985,9 @@ void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
+  if (is_mus_browser_plugin_guest_)
+    return;
+
   if (host_->GetProcess()->FastShutdownStarted())
     return;
 

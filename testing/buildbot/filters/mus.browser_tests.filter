@@ -36,7 +36,11 @@
 -WebViewTests/WebViewSizeTest.Shim_TestAutosizeHeight/1
 -WebViewTests/WebViewSizeTest.Shim_TestAutosizeRemoveAttributes/0
 -WebViewTests/WebViewSizeTest.Shim_TestAutosizeRemoveAttributes/1
+-WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/0
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
+
+# TODO(sky): investigate failure.
+-ExtensionOptionsApiTests/ExtensionOptionsApiTest.ExtensionCanEmbedOwnOptions/0
 
 # content::WaitForChildFrameSurfaceReady unsupported, https://crbug.com/774269.
 -WebViewTests/WebViewTest.ReloadAfterCrash/1

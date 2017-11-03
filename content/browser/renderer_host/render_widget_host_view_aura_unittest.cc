@@ -444,7 +444,8 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
                                bool enable_surface_synchronization)
       : RenderWidgetHostViewAura(widget,
                                  is_guest_view_hack,
-                                 enable_surface_synchronization),
+                                 enable_surface_synchronization,
+                                 false /* is_mus_browser_plugin_guest */),
         delegated_frame_host_client_(
             new FakeDelegatedFrameHostClientAura(this)) {
     InstallDelegatedFrameHostClient(
@@ -674,8 +675,10 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     parent_host_ = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
                                                     process_host_, routing_id);
     delegates_.back()->set_widget_host(parent_host_);
+    const bool is_mus_browser_plugin_guest = false;
     parent_view_ = new RenderWidgetHostViewAura(
-        parent_host_, is_guest_view_hack_, enable_surface_synchronization);
+        parent_host_, is_guest_view_hack_, enable_surface_synchronization,
+        is_mus_browser_plugin_guest);
     parent_view_->InitAsChild(nullptr);
     aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
                                           aura_test_helper_->root_window(),
@@ -5883,7 +5886,8 @@ class RenderWidgetHostViewAuraWithViewHarnessTest
     // This instance is destroyed in the TearDown method below.
     view_ = new RenderWidgetHostViewAura(
         contents()->GetRenderViewHost()->GetWidget(), false,
-        false /* enable_surface_synchronization */);
+        false /* enable_surface_synchronization */,
+        false /* is_mus_browser_plugin_guest */);
   }
 
   void TearDown() override {

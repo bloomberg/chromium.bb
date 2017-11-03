@@ -303,8 +303,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // using CSS.
   bool CanBecomeVisible();
 
-  static bool IsUsingMus();
-
   using FrameSwappedCallbackList =
       base::circular_deque<std::unique_ptr<base::Closure>>;
   // Since frame-drawn callbacks are "fire once", we use base::circular_deque

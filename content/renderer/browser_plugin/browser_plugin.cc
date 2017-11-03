@@ -32,6 +32,7 @@
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/cursor_utils.h"
 #include "content/renderer/drop_data_builder.h"
+#include "content/renderer/mash_util.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/sad_plugin.h"
 #include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
@@ -46,6 +47,11 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+
+#if defined(USE_AURA)
+#include "content/renderer/mus/mus_embedded_frame.h"
+#include "content/renderer/mus/renderer_window_tree_client.h"
+#endif
 
 using blink::WebPluginContainer;
 using blink::WebPoint;
@@ -122,6 +128,9 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
                         OnResizeDueToAutoResize)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
+#if defined(USE_AURA)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMusEmbedToken, OnSetMusEmbedToken)
+#endif
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetTooltipText, OnSetTooltipText)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
                         OnShouldAcceptTouchEvents)
@@ -135,7 +144,7 @@ void BrowserPlugin::OnSetChildFrameSurface(
     int browser_plugin_instance_id,
     const viz::SurfaceInfo& surface_info,
     const viz::SurfaceSequence& sequence) {
-  if (!attached())
+  if (!attached() || IsRunningInMash())
     return;
 
   if (!enable_surface_synchronization_)
@@ -176,6 +185,14 @@ void BrowserPlugin::Attach() {
             ->GetDocument()
             .IsPluginDocument();
   }
+#if defined(USE_AURA)
+  if (pending_embed_token_) {
+    base::Optional<base::UnguessableToken> embed_token =
+        std::move(pending_embed_token_);
+    CreateMusWindowAndEmbed(*embed_token);
+  }
+#endif
+
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_Attach(
       render_frame_routing_id_,
       browser_plugin_instance_id_,
@@ -215,6 +232,24 @@ void BrowserPlugin::Detach() {
 void BrowserPlugin::DidCommitCompositorFrame() {
 }
 
+#if defined(USE_AURA)
+void BrowserPlugin::CreateMusWindowAndEmbed(
+    const base::UnguessableToken& embed_token) {
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_routing_id_);
+  if (!render_frame) {
+    pending_embed_token_ = embed_token;
+    return;
+  }
+  RendererWindowTreeClient* renderer_window_tree_client =
+      RendererWindowTreeClient::Get(
+          render_frame->GetRenderWidget()->routing_id());
+  DCHECK(renderer_window_tree_client);
+  mus_embedded_frame_ =
+      renderer_window_tree_client->CreateMusEmbeddedFrame(this, embed_token);
+}
+#endif
+
 void BrowserPlugin::WasResized() {
   bool size_changed = !sent_resize_params_ ||
                       sent_resize_params_->frame_rect.size() !=
@@ -230,13 +265,9 @@ void BrowserPlugin::WasResized() {
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
 
   if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
-    RenderWidget* render_widget =
-        RenderFrameImpl::FromWebFrame(Container()->GetDocument().GetFrame())
-            ->GetRenderWidget();
-    float device_scale_factor = render_widget->GetOriginalDeviceScaleFactor();
     viz::SurfaceInfo surface_info(
-        viz::SurfaceId(frame_sink_id_, local_surface_id_), device_scale_factor,
-        gfx::ScaleToCeiledSize(frame_rect().size(), device_scale_factor));
+        viz::SurfaceId(frame_sink_id_, local_surface_id_),
+        GetDeviceScaleFactor(), FrameRectInPixels().size());
     compositing_helper_->SetPrimarySurfaceInfo(surface_info);
   }
 
@@ -258,6 +289,13 @@ void BrowserPlugin::WasResized() {
 
   if (resize_params_changed && attached())
     sent_resize_params_ = pending_resize_params_;
+
+#if defined(USE_AURA)
+  if (IsRunningInMash() && mus_embedded_frame_) {
+    mus_embedded_frame_->SetWindowBounds(local_surface_id_,
+                                         FrameRectInPixels());
+  }
+#endif
 }
 
 void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
@@ -315,6 +353,20 @@ void BrowserPlugin::OnSetMouseLock(int browser_plugin_instance_id,
   }
 }
 
+#if defined(USE_AURA)
+void BrowserPlugin::OnSetMusEmbedToken(
+    int instance_id,
+    const base::UnguessableToken& embed_token) {
+  DCHECK(IsRunningInMash());
+  if (!attached_) {
+    pending_embed_token_ = embed_token;
+  } else {
+    pending_embed_token_.reset();
+    CreateMusWindowAndEmbed(embed_token);
+  }
+}
+#endif
+
 void BrowserPlugin::OnSetTooltipText(int instance_id,
                                      const base::string16& tooltip_text) {
   // Show tooltip text by setting the BrowserPlugin's |title| attribute.
@@ -328,6 +380,19 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int browser_plugin_instance_id,
         accept ? WebPluginContainer::kTouchEventRequestTypeRaw
                : WebPluginContainer::kTouchEventRequestTypeNone);
   }
+}
+
+gfx::Rect BrowserPlugin::FrameRectInPixels() const {
+  const float device_scale_factor = GetDeviceScaleFactor();
+  return gfx::Rect(
+      gfx::ScaleToFlooredPoint(frame_rect().origin(), device_scale_factor),
+      gfx::ScaleToCeiledSize(frame_rect().size(), device_scale_factor));
+}
+
+float BrowserPlugin::GetDeviceScaleFactor() const {
+  return RenderFrameImpl::FromWebFrame(Container()->GetDocument().GetFrame())
+      ->GetRenderWidget()
+      ->GetOriginalDeviceScaleFactor();
 }
 
 void BrowserPlugin::UpdateInternalInstanceId() {
@@ -692,5 +757,21 @@ bool BrowserPlugin::HandleMouseLockedInputEvent(
                                                 &event));
   return true;
 }
+
+#if defined(USE_AURA)
+void BrowserPlugin::OnMusEmbeddedFrameSurfaceChanged(
+    const viz::SurfaceInfo& surface_info) {
+  if (!attached_)
+    return;
+
+  compositing_helper_->SetFallbackSurfaceInfo(surface_info,
+                                              viz::SurfaceSequence());
+}
+
+void BrowserPlugin::OnMusEmbeddedFrameSinkIdAllocated(
+    const viz::FrameSinkId& frame_sink_id) {
+  OnGuestReady(browser_plugin_instance_id_, frame_sink_id);
+}
+#endif
 
 }  // namespace content
