@@ -70,8 +70,7 @@ class MEDIA_MOJO_EXPORT MojoCdmFileIO : public CdmFileIO {
   void DoRead(int64_t num_bytes);
 
   // Called when a temporary file has been opened for writing.
-  void OnFileOpenedForWriting(const std::vector<uint8_t>& data,
-                              base::File temporary_file);
+  void DoWrite(const std::vector<uint8_t>& data, base::File temporary_file);
 
   // Called after the write has been committed and replaces the original file.
   void OnWriteCommitted(base::File reopened_file);
