@@ -49,7 +49,6 @@ static_library("common") {
     "//base",
     "//base:i18n",
     "//components/variations",
-    "//third_party/re2",
     "//url",
   ]
 
