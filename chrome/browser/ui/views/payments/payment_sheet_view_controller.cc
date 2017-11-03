@@ -809,10 +809,6 @@ PaymentSheetViewController::CreateContactInfoRow() {
       l10n_util::GetStringUTF16(IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME));
   builder.Tag(PaymentSheetViewControllerTags::SHOW_CONTACT_INFO_BUTTON);
 
-  static constexpr autofill::ServerFieldType kLabelFields[] = {
-      autofill::NAME_FULL, autofill::PHONE_HOME_WHOLE_NUMBER,
-      autofill::EMAIL_ADDRESS};
-
   if (state()->selected_contact_profile()) {
     base::string16 accessible_content;
     std::unique_ptr<views::View> content =
@@ -831,16 +827,18 @@ PaymentSheetViewController::CreateContactInfoRow() {
     } else if (state()->contact_profiles().size() == 1) {
       base::string16 truncated_content =
           state()->contact_profiles()[0]->ConstructInferredLabel(
-              kLabelFields, arraysize(kLabelFields), arraysize(kLabelFields),
-              state()->GetApplicationLocale());
+              {autofill::NAME_FULL, autofill::PHONE_HOME_WHOLE_NUMBER,
+               autofill::EMAIL_ADDRESS},
+              3, state()->GetApplicationLocale());
       return builder.CreateWithButton(truncated_content,
                                       l10n_util::GetStringUTF16(IDS_CHOOSE),
                                       /*button_enabled=*/true);
     } else {
       base::string16 preview =
           state()->contact_profiles()[0]->ConstructInferredLabel(
-              kLabelFields, arraysize(kLabelFields), arraysize(kLabelFields),
-              state()->GetApplicationLocale());
+              {autofill::NAME_FULL, autofill::PHONE_HOME_WHOLE_NUMBER,
+               autofill::EMAIL_ADDRESS},
+              6, state()->GetApplicationLocale());
       base::string16 format = l10n_util::GetPluralStringFUTF16(
           IDS_PAYMENT_REQUEST_CONTACTS_PREVIEW,
           state()->contact_profiles().size() - 1);
