@@ -305,12 +305,13 @@ html[dir=rtl] #fakebox-cursor {
 #fakebox-microphone {
   background: url(googlemic_clr_24px.svg) no-repeat center;
   background-size: 24px 24px;
+  bottom: 0;
   cursor: pointer;
-  height: 21px;
   padding: 22px 12px 0;
   position: absolute;
   right: 0;
-  width: 17px;
+  top: 0;
+  width: 41px;
 }
 
 html[dir=rtl] #fakebox-microphone {
