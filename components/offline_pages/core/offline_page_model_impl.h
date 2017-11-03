@@ -177,7 +177,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                            const GURL& saved_url,
                            const base::FilePath& file_path,
                            const base::string16& title,
-                           int64_t file_size);
+                           int64_t file_size,
+                           const std::string& file_hash);
   void OnAddSavedPageDone(const OfflinePageItem& offline_page,
                           const SavePageCallback& callback,
                           AddPageResult add_result,

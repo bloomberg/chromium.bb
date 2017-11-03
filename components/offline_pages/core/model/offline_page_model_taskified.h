@@ -132,7 +132,8 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                            const GURL& saved_url,
                            const base::FilePath& file_path,
                            const base::string16& title,
-                           int64_t file_size);
+                           int64_t file_size,
+                           const std::string& digest);
 
   // Callback for adding pages.
   void OnAddPageDone(const OfflinePageItem& page,

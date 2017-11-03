@@ -249,7 +249,8 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, this, ArchiverResult::SUCCESSFULLY_CREATED, url_,
-                   archive_file_path_, base::string16(), archive_file_size_));
+                   archive_file_path_, base::string16(), archive_file_size_,
+                   std::string()));
   }
 
  private:

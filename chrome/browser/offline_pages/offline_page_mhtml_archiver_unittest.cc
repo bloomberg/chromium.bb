@@ -13,22 +13,29 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/common/chrome_paths.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
 
 namespace {
 
-const char kTestURL[] = "http://example.com/";
-const base::FilePath::CharType kTestFilePath[] = FILE_PATH_LITERAL(
-    "/archive_dir/offline_page.mhtml");
-const int64_t kTestFileSize = 123456LL;
+const char kTestURL[] = "http://example.com/hello.mhtml";
+const char kNonExistentURL[] = "http://example.com/non_existent.mhtml";
+// Size of chrome/test/data/offline_pages/hello.mhtml
+const int64_t kTestFileSize = 450LL;
 const base::string16 kTestTitle = base::UTF8ToUTF16("a title");
+// SHA256 Hash of chrome/test/data/offline_pages/hello.mhtml
+const std::string kTestDigest(
+    "\x90\x64\xF9\x7C\x94\xE5\x9E\x91\x83\x3D\x41\xB0\x36\x90\x0A\xDF\xB3\xB1"
+    "\x5C\x13\xBE\xB8\x35\x8C\xF6\x5B\xC4\xB5\x5A\xFC\x3A\xCC",
+    32);
 
 class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
  public:
@@ -78,11 +85,12 @@ void TestMHTMLArchiver::GenerateMHTML(
     return;
   }
 
+  base::FilePath archive_file_path =
+      archives_dir.AppendASCII(url_.ExtractFileName());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestMHTMLArchiver::OnGenerateMHTMLDone,
-                 base::Unretained(this), url_, base::FilePath(kTestFilePath),
-                 kTestTitle, kTestFileSize));
+      FROM_HERE, base::Bind(&TestMHTMLArchiver::OnGenerateMHTMLDone,
+                            base::Unretained(this), url_, archive_file_path,
+                            kTestTitle, kTestFileSize));
 }
 
 bool TestMHTMLArchiver::HasConnectionSecurityError() {
@@ -104,6 +112,8 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
   OfflinePageMHTMLArchiverTest();
   ~OfflinePageMHTMLArchiverTest() override;
 
+  void SetUp() override;
+
   // Creates an archiver for testing scenario and uses it to create an archive.
   std::unique_ptr<TestMHTMLArchiver> CreateArchive(
       const GURL& url,
@@ -111,9 +121,10 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
 
   // Test tooling methods.
   void PumpLoop();
+  void WaitForAsyncOperation();
 
-  base::FilePath GetTestFilePath() const {
-    return base::FilePath(kTestFilePath);
+  base::FilePath GetTestFilePath(const GURL& url) const {
+    return archive_dir_path_.AppendASCII(url.ExtractFileName());
   }
 
   const OfflinePageArchiver* last_archiver() const { return last_archiver_; }
@@ -122,6 +133,7 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
   }
   const base::FilePath& last_file_path() const { return last_file_path_; }
   int64_t last_file_size() const { return last_file_size_; }
+  const std::string& last_digest() const { return last_digest_; }
 
   const OfflinePageArchiver::CreateArchiveCallback callback() {
     return base::Bind(&OfflinePageMHTMLArchiverTest::OnCreateArchiveDone,
@@ -134,30 +146,37 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
                            const GURL& url,
                            const base::FilePath& file_path,
                            const base::string16& title,
-                           int64_t file_size);
+                           int64_t file_size,
+                           const std::string& digest);
 
+  content::TestBrowserThreadBundle thread_bundle_;
+  base::FilePath archive_dir_path_;
   OfflinePageArchiver* last_archiver_;
   OfflinePageArchiver::ArchiverResult last_result_;
   GURL last_url_;
   base::FilePath last_file_path_;
   int64_t last_file_size_;
-
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
+  std::string last_digest_;
+  bool async_operation_completed_ = false;
+  base::Closure async_operation_completed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageMHTMLArchiverTest);
 };
 
 OfflinePageMHTMLArchiverTest::OfflinePageMHTMLArchiverTest()
-    : last_archiver_(nullptr),
-      last_result_(OfflinePageArchiver::ArchiverResult::
-                       ERROR_ARCHIVE_CREATION_FAILED),
-      last_file_size_(0L),
-      task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {
-}
+    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      last_archiver_(nullptr),
+      last_result_(
+          OfflinePageArchiver::ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED),
+      last_file_size_(0L) {}
 
 OfflinePageMHTMLArchiverTest::~OfflinePageMHTMLArchiverTest() {
+}
+
+void OfflinePageMHTMLArchiverTest::SetUp() {
+  base::FilePath test_data_dir_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path));
+  archive_dir_path_ = test_data_dir_path.AppendASCII("offline_pages");
 }
 
 std::unique_ptr<TestMHTMLArchiver> OfflinePageMHTMLArchiverTest::CreateArchive(
@@ -165,7 +184,7 @@ std::unique_ptr<TestMHTMLArchiver> OfflinePageMHTMLArchiverTest::CreateArchive(
     TestMHTMLArchiver::TestScenario scenario) {
   std::unique_ptr<TestMHTMLArchiver> archiver(
       new TestMHTMLArchiver(url, scenario));
-  archiver->CreateArchive(GetTestFilePath(),
+  archiver->CreateArchive(archive_dir_path_,
                           OfflinePageArchiver::CreateArchiveParams(),
                           callback());
   PumpLoop();
@@ -178,16 +197,31 @@ void OfflinePageMHTMLArchiverTest::OnCreateArchiveDone(
     const GURL& url,
     const base::FilePath& file_path,
     const base::string16& title,
-    int64_t file_size) {
+    int64_t file_size,
+    const std::string& digest) {
+  DCHECK(!async_operation_completed_);
+  async_operation_completed_ = true;
   last_url_ = url;
   last_archiver_ = archiver;
   last_result_ = result;
   last_file_path_ = file_path;
   last_file_size_ = file_size;
+  last_digest_ = digest;
+  if (!async_operation_completed_callback_.is_null())
+    async_operation_completed_callback_.Run();
 }
 
 void OfflinePageMHTMLArchiverTest::PumpLoop() {
-  task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+}
+
+void OfflinePageMHTMLArchiverTest::WaitForAsyncOperation() {
+  // No need to wait if async operation is not needed.
+  if (async_operation_completed_)
+    return;
+  base::RunLoop run_loop;
+  async_operation_completed_callback_ = run_loop.QuitClosure();
+  run_loop.Run();
 }
 
 // Tests that creation of an archiver fails when web contents is missing.
@@ -253,18 +287,34 @@ TEST_F(OfflinePageMHTMLArchiverTest, InterstitialPage) {
   EXPECT_EQ(0LL, last_file_size());
 }
 
+// Tests for failing to compute digest for archive file.
+TEST_F(OfflinePageMHTMLArchiverTest, DigestError) {
+  GURL page_url = GURL(kNonExistentURL);
+  std::unique_ptr<TestMHTMLArchiver> archiver(
+      CreateArchive(page_url, TestMHTMLArchiver::TestScenario::SUCCESS));
+  WaitForAsyncOperation();
+
+  EXPECT_EQ(archiver.get(), last_archiver());
+  EXPECT_EQ(
+      OfflinePageArchiver::ArchiverResult::ERROR_DIGEST_CALCULATION_FAILED,
+      last_result());
+  EXPECT_EQ(base::FilePath(), last_file_path());
+  EXPECT_EQ(0LL, last_file_size());
+}
+
 // Tests for successful creation of the offline page archive.
 TEST_F(OfflinePageMHTMLArchiverTest, SuccessfullyCreateOfflineArchive) {
   GURL page_url = GURL(kTestURL);
   std::unique_ptr<TestMHTMLArchiver> archiver(
       CreateArchive(page_url, TestMHTMLArchiver::TestScenario::SUCCESS));
-  PumpLoop();
+  WaitForAsyncOperation();
 
   EXPECT_EQ(archiver.get(), last_archiver());
   EXPECT_EQ(OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
             last_result());
-  EXPECT_EQ(GetTestFilePath(), last_file_path());
+  EXPECT_EQ(GetTestFilePath(page_url), last_file_path());
   EXPECT_EQ(kTestFileSize, last_file_size());
+  EXPECT_EQ(kTestDigest, last_digest());
 }
 
 }  // namespace offline_pages

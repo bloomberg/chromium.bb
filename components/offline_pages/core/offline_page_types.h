@@ -38,6 +38,8 @@ enum class SavePageResult {
   ERROR_PAGE,
   // Returned when we detect trying to save a chrome interstitial page.
   INTERSTITIAL_PAGE,
+  // Failed to compute digest for the archive file.
+  DIGEST_CALCULATION_FAILED,
   // NOTE: always keep this entry at the end. Add new result types only
   // immediately above this line. Make sure to update the corresponding
   // histogram enum accordingly.

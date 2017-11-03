@@ -83,6 +83,10 @@ SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
       break;
     case ArchiverResult::ERROR_INTERSTITIAL_PAGE:
       result = SavePageResult::INTERSTITIAL_PAGE;
+      break;
+    case ArchiverResult::ERROR_DIGEST_CALCULATION_FAILED:
+      result = SavePageResult::DIGEST_CALCULATION_FAILED;
+      break;
     default:
       NOTREACHED();
       result = SavePageResult::CONTENT_UNAVAILABLE;
@@ -723,7 +727,8 @@ void OfflinePageModelImpl::OnCreateArchiveDone(
     const GURL& saved_url,
     const base::FilePath& file_path,
     const base::string16& title,
-    int64_t file_size) {
+    int64_t file_size,
+    const std::string& file_hash) {
   DeletePendingArchiver(archiver);
 
   if (archiver_result != ArchiverResult::SUCCESSFULLY_CREATED) {

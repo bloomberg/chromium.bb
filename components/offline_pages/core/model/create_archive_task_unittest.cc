@@ -55,7 +55,8 @@ class CreateArchiveTaskTest
                            const GURL& saved_url,
                            const base::FilePath& file_path,
                            const base::string16& title,
-                           int64_t file_size);
+                           int64_t file_size,
+                           const std::string& file_hash);
   std::unique_ptr<OfflinePageTestArchiver> BuildArchiver(const GURL& url,
                                                          ArchiverResult result);
   void CreateArchiveWithParams(const SavePageParams& save_page_params,
@@ -140,7 +141,8 @@ void CreateArchiveTaskTest::OnCreateArchiveDone(OfflinePageItem offline_page,
                                                 const GURL& saved_url,
                                                 const base::FilePath& file_path,
                                                 const base::string16& title,
-                                                int64_t file_size) {
+                                                int64_t file_size,
+                                                const std::string& file_hash) {
   last_page_of_archive_ = offline_page;
   last_saved_archiver_ = archiver;
   last_create_archive_result_ = result;

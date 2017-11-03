@@ -57,7 +57,7 @@ void OfflinePageTestArchiver::CompleteCreateArchive() {
   observer_->SetLastPathCreatedByArchiver(archive_path);
   task_runner_->PostTask(
       FROM_HERE, base::Bind(callback_, this, result_, url_, archive_path,
-                            result_title_, size_to_report_));
+                            result_title_, size_to_report_, std::string()));
 }
 
 }  // namespace offline_pages

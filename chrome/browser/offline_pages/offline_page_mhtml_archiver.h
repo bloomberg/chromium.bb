@@ -66,6 +66,11 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
                            const base::FilePath& file_path,
                            const base::string16& title,
                            int64_t file_size);
+  void OnComputeDigestDone(const GURL& url,
+                           const base::FilePath& file_path,
+                           const base::string16& title,
+                           int64_t file_size,
+                           const std::string& digest);
 
   // Checks whether the page to be saved has security error when loaded over
   // HTTPS. Saving a page will fail if that is the case. HTTP connections are
@@ -79,6 +84,9 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   void ReportFailure(ArchiverResult result);
 
  private:
+  void DeleteFileAndReportFailure(const base::FilePath& file_path,
+                                  ArchiverResult result);
+
   // Contents of the web page to be serialized. Not owned.
   content::WebContents* web_contents_;
 
