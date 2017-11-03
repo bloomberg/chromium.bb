@@ -50,17 +50,6 @@
 #endif
 
 namespace content {
-namespace {
-
-bool IsUsingMus() {
-#if defined(USE_AURA)
-  return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
-#else
-  return false;
-#endif
-}
-
-}  // namespace
 
 // static
 RenderWidgetHostViewChildFrame* RenderWidgetHostViewChildFrame::Create(
@@ -1050,6 +1039,15 @@ bool RenderWidgetHostViewChildFrame::CanBecomeVisible() {
 
   return static_cast<RenderWidgetHostViewChildFrame*>(parent_view)
       ->CanBecomeVisible();
+}
+
+// static
+bool RenderWidgetHostViewChildFrame::IsUsingMus() {
+#if defined(USE_AURA)
+  return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
+#else
+  return false;
+#endif
 }
 
 }  // namespace content
