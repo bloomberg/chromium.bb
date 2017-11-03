@@ -362,7 +362,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     CGFloat overlapping_tip_height =
         [info_bar_container_controller overlappingTipHeight];
     LocationBarViewMac* location_bar_view = [controller() locationBarBridge];
-    NSPoint icon_bottom = location_bar_view->GetPageInfoBubblePoint();
+    NSPoint icon_bottom = location_bar_view->GetInfoBarAnchorPoint();
 
     NSPoint info_bar_top = NSMakePoint(0,
         NSHeight([info_bar_container_controller view].frame) -
