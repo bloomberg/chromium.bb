@@ -218,7 +218,7 @@
 #include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
-#include "chrome/browser/ui/views/try_chrome_dialog.h"
+#include "chrome/browser/ui/views/try_chrome_dialog_win/try_chrome_dialog.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_select_file_dialog_factory.h"
 #include "chrome/install_static/install_util.h"
