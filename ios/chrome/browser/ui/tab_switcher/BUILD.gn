@@ -127,6 +127,27 @@ source_set("utils") {
   ]
 }
 
+source_set("egtest_support") {
+  testonly = true
+  sources = [
+    "tab_switcher_egtest_util.h",
+    "tab_switcher_egtest_util.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/tools_menu",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing:ios_test_support",
+    "//ios/third_party/earl_grey:earl_grey+link",
+    "//ui/base",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -154,6 +175,7 @@ source_set("eg_tests") {
     "tab_switcher_controller_egtest.mm",
   ]
   deps = [
+    ":egtest_support",
     ":tab_switcher",
     "//base",
     "//base/test:test_support",
@@ -161,7 +183,6 @@ source_set("eg_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing:ios_test_support",
