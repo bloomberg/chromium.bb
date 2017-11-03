@@ -632,6 +632,15 @@ NativeWidgetMacNSWindow* NativeWidgetMac::CreateNSWindow(
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:
 
+// static
+void Widget::CloseAllSecondaryWidgets() {
+  for (NSWindow* window in [NSApp windows]) {
+    Widget* widget = GetWidgetForNativeWindow(window);
+    if (widget && widget->is_secondary_widget())
+      [window close];
+  }
+}
+
 bool Widget::ConvertRect(const Widget* source,
                          const Widget* target,
                          gfx::Rect* rect) {

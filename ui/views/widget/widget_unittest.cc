@@ -2202,6 +2202,22 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
   EXPECT_EQ(widget_observer.bounds(), bounds);
 }
 
+// Test Widget::CloseAllSecondaryWidgets works as expected across platforms.
+// ChromeOS doesn't implement or need CloseAllSecondaryWidgets() since
+// everything is under a single root window.
+#if !defined(OS_CHROMEOS)
+TEST_F(WidgetTest, CloseAllSecondaryWidgets) {
+  Widget* widget1 = CreateNativeDesktopWidget();
+  Widget* widget2 = CreateNativeDesktopWidget();
+  TestWidgetObserver observer1(widget1);
+  TestWidgetObserver observer2(widget2);
+  widget1->Show();  // Just show the first one.
+  Widget::CloseAllSecondaryWidgets();
+  EXPECT_TRUE(observer1.widget_closed());
+  EXPECT_TRUE(observer2.widget_closed());
+}
+#endif
+
 // Test that the NativeWidget is still valid during OnNativeWidgetDestroying(),
 // and properties that depend on it are valid, when closed via CloseNow().
 TEST_F(WidgetTest, ValidDuringOnNativeWidgetDestroyingFromCloseNow) {
