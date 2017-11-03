@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 
 #include <errno.h>
 
@@ -21,21 +21,21 @@ static const int kFSDeniedErrno = EPERM;
 
 }  // namespace.
 
-SandboxBPFBasePolicy::SandboxBPFBasePolicy()
+BPFBasePolicy::BPFBasePolicy()
     : baseline_policy_(new sandbox::BaselinePolicy(kFSDeniedErrno)) {}
-SandboxBPFBasePolicy::~SandboxBPFBasePolicy() {}
+BPFBasePolicy::~BPFBasePolicy() {}
 
-ResultExpr SandboxBPFBasePolicy::EvaluateSyscall(int system_call_number) const {
+ResultExpr BPFBasePolicy::EvaluateSyscall(int system_call_number) const {
   DCHECK(baseline_policy_);
   return baseline_policy_->EvaluateSyscall(system_call_number);
 }
 
-ResultExpr SandboxBPFBasePolicy::InvalidSyscall() const {
+ResultExpr BPFBasePolicy::InvalidSyscall() const {
   DCHECK(baseline_policy_);
   return baseline_policy_->InvalidSyscall();
 }
 
-int SandboxBPFBasePolicy::GetFSDeniedErrno() {
+int BPFBasePolicy::GetFSDeniedErrno() {
   return kFSDeniedErrno;
 }
 

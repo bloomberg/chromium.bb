@@ -6,12 +6,12 @@
 #define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_PPAPI_POLICY_LINUX_H_
 
 #include "base/macros.h"
-#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 
 namespace service_manager {
 
 // Policy for Pepper plugins such as Flash.
-class PpapiProcessPolicy : public SandboxBPFBasePolicy {
+class PpapiProcessPolicy : public BPFBasePolicy {
  public:
   PpapiProcessPolicy();
   ~PpapiProcessPolicy() override;

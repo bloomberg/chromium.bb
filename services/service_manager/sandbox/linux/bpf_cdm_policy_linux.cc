@@ -49,7 +49,7 @@ ResultExpr CdmProcessPolicy::EvaluateSyscall(int sysno) const {
       return sandbox::RestrictSchedTarget(GetPolicyPid(), sysno);
     default:
       // Default on the content baseline policy.
-      return SandboxBPFBasePolicy::EvaluateSyscall(sysno);
+      return BPFBasePolicy::EvaluateSyscall(sysno);
   }
 }
 

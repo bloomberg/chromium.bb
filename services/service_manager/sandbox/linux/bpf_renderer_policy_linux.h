@@ -6,12 +6,12 @@
 #define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_RENDERER_POLICY_LINUX_H_
 
 #include "base/macros.h"
-#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 
 namespace service_manager {
 
 // This policy can be used by both renderer and worker processes.
-class RendererProcessPolicy : public SandboxBPFBasePolicy {
+class RendererProcessPolicy : public BPFBasePolicy {
  public:
   RendererProcessPolicy();
   ~RendererProcessPolicy() override;

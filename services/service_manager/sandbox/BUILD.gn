@@ -25,6 +25,8 @@ component("sandbox") {
   ]
   if (is_linux) {
     sources += [
+      "linux/bpf_base_policy_linux.cc",
+      "linux/bpf_base_policy_linux.h",
       "linux/bpf_cdm_policy_linux.cc",
       "linux/bpf_cdm_policy_linux.h",
       "linux/bpf_cros_amd_gpu_policy_linux.cc",
@@ -41,8 +43,6 @@ component("sandbox") {
       "linux/bpf_renderer_policy_linux.h",
       "linux/bpf_utility_policy_linux.cc",
       "linux/bpf_utility_policy_linux.h",
-      "linux/sandbox_bpf_base_policy_linux.cc",
-      "linux/sandbox_bpf_base_policy_linux.h",
       "linux/sandbox_debug_handling_linux.cc",
       "linux/sandbox_debug_handling_linux.h",
       "linux/sandbox_linux.cc",

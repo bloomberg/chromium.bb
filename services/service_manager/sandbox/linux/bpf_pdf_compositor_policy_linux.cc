@@ -48,7 +48,7 @@ ResultExpr PdfCompositorProcessPolicy::EvaluateSyscall(int sysno) const {
       return Allow();
     default:
       // Default on the content baseline policy.
-      return SandboxBPFBasePolicy::EvaluateSyscall(sysno);
+      return BPFBasePolicy::EvaluateSyscall(sysno);
   }
 }
 

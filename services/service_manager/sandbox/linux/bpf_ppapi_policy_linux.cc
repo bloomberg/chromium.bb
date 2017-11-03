@@ -43,7 +43,7 @@ ResultExpr PpapiProcessPolicy::EvaluateSyscall(int sysno) const {
       return Error(ENOTTY);  // Flash Access.
     default:
       // Default on the baseline policy.
-      return SandboxBPFBasePolicy::EvaluateSyscall(sysno);
+      return BPFBasePolicy::EvaluateSyscall(sysno);
   }
 }
 

@@ -104,7 +104,7 @@ ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
       return sandbox::RestrictPrlimit(GetPolicyPid());
     default:
       // Default on the content baseline policy.
-      return SandboxBPFBasePolicy::EvaluateSyscall(sysno);
+      return BPFBasePolicy::EvaluateSyscall(sysno);
   }
 }
 

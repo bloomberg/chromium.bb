@@ -6,12 +6,12 @@
 #define SERVICES_SERVICE_MANAGER_SANDBOX_LINUX_BPF_CDM_POLICY_LINUX_H_
 
 #include "base/macros.h"
-#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 
 namespace service_manager {
 
 // This policy can be used by the process hosting a Content Decryption Module.
-class CdmProcessPolicy : public SandboxBPFBasePolicy {
+class CdmProcessPolicy : public BPFBasePolicy {
  public:
   CdmProcessPolicy();
   ~CdmProcessPolicy() override;

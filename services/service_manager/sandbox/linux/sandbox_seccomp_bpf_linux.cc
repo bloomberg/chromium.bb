@@ -31,6 +31,7 @@
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+#include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_cdm_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_cros_amd_gpu_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_cros_arm_gpu_policy_linux.h"
@@ -39,7 +40,6 @@
 #include "services/service_manager/sandbox/linux/bpf_ppapi_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_renderer_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_utility_policy_linux.h"
-#include "services/service_manager/sandbox/linux/sandbox_bpf_base_policy_linux.h"
 
 using sandbox::BaselinePolicy;
 using sandbox::SandboxBPF;
@@ -77,7 +77,7 @@ void StartSandboxWithPolicy(std::unique_ptr<sandbox::bpf_dsl::Policy> policy,
 
 #if !defined(OS_NACL_NONSFI)
 
-class BlacklistDebugAndNumaPolicy : public SandboxBPFBasePolicy {
+class BlacklistDebugAndNumaPolicy : public BPFBasePolicy {
  public:
   BlacklistDebugAndNumaPolicy() {}
   ~BlacklistDebugAndNumaPolicy() override {}
@@ -95,7 +95,7 @@ ResultExpr BlacklistDebugAndNumaPolicy::EvaluateSyscall(int sysno) const {
   return Allow();
 }
 
-class AllowAllPolicy : public SandboxBPFBasePolicy {
+class AllowAllPolicy : public BPFBasePolicy {
  public:
   AllowAllPolicy() {}
   ~AllowAllPolicy() override {}
@@ -154,7 +154,7 @@ void RunSandboxSanityChecks(service_manager::SandboxType sandbox_type) {
       // open() must be restricted.
       syscall_ret = open("/etc/passwd", O_RDONLY);
       CHECK_EQ(-1, syscall_ret);
-      CHECK_EQ(SandboxBPFBasePolicy::GetFSDeniedErrno(), errno);
+      CHECK_EQ(BPFBasePolicy::GetFSDeniedErrno(), errno);
 
       // We should never allow the creation of netlink sockets.
       syscall_ret = socket(AF_NETLINK, SOCK_DGRAM, 0);
@@ -168,7 +168,7 @@ void RunSandboxSanityChecks(service_manager::SandboxType sandbox_type) {
   }
 }
 
-std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox(
+std::unique_ptr<BPFBasePolicy> GetGpuProcessSandbox(
     bool use_amd_specific_policies) {
   if (IsChromeOS()) {
     if (IsArchitectureArm()) {
@@ -187,7 +187,7 @@ bool StartBPFSandbox(service_manager::SandboxType sandbox_type,
                      base::ScopedFD proc_fd,
                      SandboxSeccompBPF::PreSandboxHook hook,
                      const SandboxSeccompBPF::Options& options) {
-  std::unique_ptr<SandboxBPFBasePolicy> policy;
+  std::unique_ptr<BPFBasePolicy> policy;
   switch (sandbox_type) {
     case service_manager::SANDBOX_TYPE_GPU:
       policy = GetGpuProcessSandbox(options.use_amd_specific_policies);
