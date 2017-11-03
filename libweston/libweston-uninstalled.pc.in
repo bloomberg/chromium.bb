@@ -1,0 +1,9 @@
+libdir=@abs_top_builddir@/.libs
+includedir=@abs_top_srcdir@
+
+Name: libweston API, uninstalled
+Description: Header files for libweston compositors development (not installed)
+Version: @WESTON_VERSION@
+Requires.private: wayland-server pixman-1 xkbcommon
+Cflags: -I${includedir}/libweston -I${includedir}/shared
+Libs: -L${libdir} -lweston-@LIBWESTON_MAJOR@
