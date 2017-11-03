@@ -137,6 +137,8 @@ class BrowserProcessImpl : public BrowserProcess,
       override;
   subresource_filter::ContentRulesetService*
   subresource_filter_ruleset_service() override;
+  optimization_guide::OptimizationGuideService* optimization_guide_service()
+      override;
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   void StartAutoupdateTimer() override;
@@ -179,6 +181,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateSafeBrowsingService();
   void CreateSafeBrowsingDetectionService();
   void CreateSubresourceFilterRulesetService();
+  void CreateOptimizationGuideService();
   void CreateStatusTray();
   void CreateBackgroundModeManager();
   void CreateGCMDriver();
@@ -267,6 +270,10 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_subresource_filter_ruleset_service_;
   std::unique_ptr<subresource_filter::ContentRulesetService>
       subresource_filter_ruleset_service_;
+
+  bool created_optimization_guide_service_;
+  std::unique_ptr<optimization_guide::OptimizationGuideService>
+      optimization_guide_service_;
 
   bool shutting_down_;
 
