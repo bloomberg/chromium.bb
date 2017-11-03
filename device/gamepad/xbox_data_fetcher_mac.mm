@@ -21,229 +21,6 @@ namespace device {
 
 namespace {
 
-const int kVendorMicrosoft = 0x045e;
-const int kProductXbox360Controller = 0x028e;
-const int kProductXboxOneController2013 = 0x02d1;
-const int kProductXboxOneController2015 = 0x02dd;
-const int kProductXboxOneEliteController = 0x02e3;
-const int kProductXboxOneSController = 0x02ea;
-
-const int kXbox360ReadEndpoint = 1;
-const int kXbox360ControlEndpoint = 2;
-
-const int kXboxOneReadEndpoint = 2;
-const int kXboxOneControlEndpoint = 1;
-
-enum {
-  STATUS_MESSAGE_BUTTONS = 0,
-  STATUS_MESSAGE_LED = 1,
-
-  // Apparently this message tells you if the rumble pack is disabled in the
-  // controller. If the rumble pack is disabled, vibration control messages
-  // have no effect.
-  STATUS_MESSAGE_RUMBLE = 3,
-};
-
-enum {
-  XBOX_ONE_STATUS_MESSAGE_BUTTONS = 0x20,
-  XBOX_ONE_STATUS_MESSAGE_GUIDE = 0x07
-};
-
-enum {
-  CONTROL_MESSAGE_SET_RUMBLE = 0,
-  CONTROL_MESSAGE_SET_LED = 1,
-};
-
-#pragma pack(push, 1)
-struct Xbox360ButtonData {
-  bool dpad_up : 1;
-  bool dpad_down : 1;
-  bool dpad_left : 1;
-  bool dpad_right : 1;
-
-  bool start : 1;
-  bool back : 1;
-  bool stick_left_click : 1;
-  bool stick_right_click : 1;
-
-  bool bumper_left : 1;
-  bool bumper_right : 1;
-  bool guide : 1;
-  bool dummy1 : 1;  // Always 0.
-
-  bool a : 1;
-  bool b : 1;
-  bool x : 1;
-  bool y : 1;
-
-  uint8_t trigger_left;
-  uint8_t trigger_right;
-
-  int16_t stick_left_x;
-  int16_t stick_left_y;
-  int16_t stick_right_x;
-  int16_t stick_right_y;
-
-  // Always 0.
-  uint32_t dummy2;
-  uint16_t dummy3;
-};
-
-struct XboxOneButtonData {
-  bool sync : 1;
-  bool dummy1 : 1;  // Always 0.
-  bool start : 1;
-  bool back : 1;
-
-  bool a : 1;
-  bool b : 1;
-  bool x : 1;
-  bool y : 1;
-
-  bool dpad_up : 1;
-  bool dpad_down : 1;
-  bool dpad_left : 1;
-  bool dpad_right : 1;
-
-  bool bumper_left : 1;
-  bool bumper_right : 1;
-  bool stick_left_click : 1;
-  bool stick_right_click : 1;
-
-  uint16_t trigger_left;
-  uint16_t trigger_right;
-
-  int16_t stick_left_x;
-  int16_t stick_left_y;
-  int16_t stick_right_x;
-  int16_t stick_right_y;
-};
-
-struct XboxOneEliteButtonData {
-  // The Xbox One Elite controller supports button remapping and exposes both
-  // the mapped and unmapped data in the button state report.
-  XboxOneButtonData button_data;
-  XboxOneButtonData true_button_data;
-  int8_t paddle;
-};
-
-struct XboxOneGuideData {
-  uint8_t down;
-  uint8_t dummy1;
-};
-#pragma pack(pop)
-
-static_assert(sizeof(Xbox360ButtonData) == 18, "xbox button data wrong size");
-static_assert(sizeof(XboxOneButtonData) == 14, "xbox button data wrong size");
-static_assert(sizeof(XboxOneEliteButtonData) == 29,
-              "xbox button data wrong size");
-static_assert(sizeof(XboxOneGuideData) == 2, "xbox button data wrong size");
-
-// From MSDN:
-// http://msdn.microsoft.com/en-us/library/windows/desktop/ee417001(v=vs.85).aspx#dead_zone
-const int16_t kLeftThumbDeadzone = 7849;
-const int16_t kRightThumbDeadzone = 8689;
-const uint8_t kXbox360TriggerDeadzone = 30;
-const uint16_t kXboxOneTriggerMax = 1023;
-const uint16_t kXboxOneTriggerDeadzone = 120;
-
-void NormalizeAxis(int16_t x,
-                   int16_t y,
-                   int16_t deadzone,
-                   float* x_out,
-                   float* y_out) {
-  float x_val = x;
-  float y_val = y;
-
-  // Determine how far the stick is pushed.
-  float real_magnitude = std::sqrt(x_val * x_val + y_val * y_val);
-
-  // Check if the controller is outside a circular dead zone.
-  if (real_magnitude > deadzone) {
-    // Clip the magnitude at its expected maximum value.
-    float magnitude = std::min(32767.0f, real_magnitude);
-
-    // Adjust magnitude relative to the end of the dead zone.
-    magnitude -= deadzone;
-
-    // Normalize the magnitude with respect to its expected range giving a
-    // magnitude value of 0.0 to 1.0
-    float ratio = (magnitude / (32767 - deadzone)) / real_magnitude;
-
-    // Y is negated because xbox controllers have an opposite sign from
-    // the 'standard controller' recommendations.
-    *x_out = x_val * ratio;
-    *y_out = -y_val * ratio;
-  } else {
-    // If the controller is in the deadzone zero out the magnitude.
-    *x_out = *y_out = 0.0f;
-  }
-}
-
-float NormalizeTrigger(uint8_t value) {
-  return value < kXbox360TriggerDeadzone
-             ? 0
-             : static_cast<float>(value - kXbox360TriggerDeadzone) /
-                   (std::numeric_limits<uint8_t>::max() -
-                    kXbox360TriggerDeadzone);
-}
-
-float NormalizeXboxOneTrigger(uint16_t value) {
-  return value < kXboxOneTriggerDeadzone
-             ? 0
-             : static_cast<float>(value - kXboxOneTriggerDeadzone) /
-                   (kXboxOneTriggerMax - kXboxOneTriggerDeadzone);
-}
-
-void NormalizeXbox360ButtonData(const Xbox360ButtonData& data,
-                                XboxController::Data* normalized_data) {
-  normalized_data->buttons[0] = data.a;
-  normalized_data->buttons[1] = data.b;
-  normalized_data->buttons[2] = data.x;
-  normalized_data->buttons[3] = data.y;
-  normalized_data->buttons[4] = data.bumper_left;
-  normalized_data->buttons[5] = data.bumper_right;
-  normalized_data->buttons[6] = data.back;
-  normalized_data->buttons[7] = data.start;
-  normalized_data->buttons[8] = data.stick_left_click;
-  normalized_data->buttons[9] = data.stick_right_click;
-  normalized_data->buttons[10] = data.dpad_up;
-  normalized_data->buttons[11] = data.dpad_down;
-  normalized_data->buttons[12] = data.dpad_left;
-  normalized_data->buttons[13] = data.dpad_right;
-  normalized_data->buttons[14] = data.guide;
-  normalized_data->triggers[0] = NormalizeTrigger(data.trigger_left);
-  normalized_data->triggers[1] = NormalizeTrigger(data.trigger_right);
-  NormalizeAxis(data.stick_left_x, data.stick_left_y, kLeftThumbDeadzone,
-                &normalized_data->axes[0], &normalized_data->axes[1]);
-  NormalizeAxis(data.stick_right_x, data.stick_right_y, kRightThumbDeadzone,
-                &normalized_data->axes[2], &normalized_data->axes[3]);
-}
-
-void NormalizeXboxOneButtonData(const XboxOneButtonData& data,
-                                XboxController::Data* normalized_data) {
-  normalized_data->buttons[0] = data.a;
-  normalized_data->buttons[1] = data.b;
-  normalized_data->buttons[2] = data.x;
-  normalized_data->buttons[3] = data.y;
-  normalized_data->buttons[4] = data.bumper_left;
-  normalized_data->buttons[5] = data.bumper_right;
-  normalized_data->buttons[6] = data.back;
-  normalized_data->buttons[7] = data.start;
-  normalized_data->buttons[8] = data.stick_left_click;
-  normalized_data->buttons[9] = data.stick_right_click;
-  normalized_data->buttons[10] = data.dpad_up;
-  normalized_data->buttons[11] = data.dpad_down;
-  normalized_data->buttons[12] = data.dpad_left;
-  normalized_data->buttons[13] = data.dpad_right;
-  normalized_data->triggers[0] = NormalizeXboxOneTrigger(data.trigger_left);
-  normalized_data->triggers[1] = NormalizeXboxOneTrigger(data.trigger_right);
-  NormalizeAxis(data.stick_left_x, data.stick_left_y, kLeftThumbDeadzone,
-                &normalized_data->axes[0], &normalized_data->axes[1]);
-  NormalizeAxis(data.stick_right_x, data.stick_right_y, kRightThumbDeadzone,
-                &normalized_data->axes[2], &normalized_data->axes[3]);
-}
-
 void CopyNSStringAsUTF16LittleEndian(NSString* src,
                                      UChar* dest,
                                      size_t dest_len) {
@@ -252,435 +29,7 @@ void CopyNSStringAsUTF16LittleEndian(NSString* src,
   [as16 getBytes:dest length:dest_len - sizeof(UChar)];
 }
 
-XboxController::ControllerType ControllerTypeFromIds(int vendor_id,
-                                                     int product_id) {
-  if (vendor_id == kVendorMicrosoft) {
-    switch (product_id) {
-      case kProductXbox360Controller:
-        return XboxController::XBOX_360_CONTROLLER;
-      case kProductXboxOneController2013:
-        return XboxController::XBOX_ONE_CONTROLLER_2013;
-      case kProductXboxOneController2015:
-        return XboxController::XBOX_ONE_CONTROLLER_2015;
-      case kProductXboxOneEliteController:
-        return XboxController::XBOX_ONE_ELITE_CONTROLLER;
-      case kProductXboxOneSController:
-        return XboxController::XBOX_ONE_S_CONTROLLER;
-      default:
-        break;
-    }
-  }
-  return XboxController::UNKNOWN_CONTROLLER;
-}
-
 }  // namespace
-
-XboxController::XboxController(Delegate* delegate)
-    : device_(NULL),
-      interface_(NULL),
-      device_is_open_(false),
-      interface_is_open_(false),
-      read_buffer_size_(0),
-      led_pattern_(LED_NUM_PATTERNS),
-      location_id_(0),
-      delegate_(delegate),
-      controller_type_(UNKNOWN_CONTROLLER),
-      read_endpoint_(0),
-      control_endpoint_(0) {}
-
-XboxController::~XboxController() {
-  if (source_)
-    CFRunLoopSourceInvalidate(source_);
-  if (interface_ && interface_is_open_)
-    (*interface_)->USBInterfaceClose(interface_);
-  if (device_ && device_is_open_)
-    (*device_)->USBDeviceClose(device_);
-}
-
-bool XboxController::OpenDevice(io_service_t service) {
-  IOCFPlugInInterface** plugin;
-  SInt32 score;  // Unused, but required for IOCreatePlugInInterfaceForService.
-  kern_return_t kr = IOCreatePlugInInterfaceForService(
-      service, kIOUSBDeviceUserClientTypeID, kIOCFPlugInInterfaceID, &plugin,
-      &score);
-  if (kr != KERN_SUCCESS)
-    return false;
-  base::mac::ScopedIOPluginInterface<IOCFPlugInInterface> plugin_ref(plugin);
-
-  HRESULT res = (*plugin)->QueryInterface(
-      plugin, CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID320),
-      (LPVOID*)&device_);
-  if (!SUCCEEDED(res) || !device_)
-    return false;
-
-  UInt16 vendor_id;
-  kr = (*device_)->GetDeviceVendor(device_, &vendor_id);
-  if (kr != KERN_SUCCESS)
-    return false;
-
-  UInt16 product_id;
-  kr = (*device_)->GetDeviceProduct(device_, &product_id);
-  if (kr != KERN_SUCCESS)
-    return false;
-
-  controller_type_ = ControllerTypeFromIds(vendor_id, product_id);
-
-  IOUSBFindInterfaceRequest request;
-  switch (controller_type_) {
-    case XBOX_360_CONTROLLER:
-      read_endpoint_ = kXbox360ReadEndpoint;
-      control_endpoint_ = kXbox360ControlEndpoint;
-      request.bInterfaceClass = 255;
-      request.bInterfaceSubClass = 93;
-      request.bInterfaceProtocol = 1;
-      request.bAlternateSetting = kIOUSBFindInterfaceDontCare;
-      break;
-    case XBOX_ONE_CONTROLLER_2013:
-    case XBOX_ONE_CONTROLLER_2015:
-    case XBOX_ONE_ELITE_CONTROLLER:
-    case XBOX_ONE_S_CONTROLLER:
-      read_endpoint_ = kXboxOneReadEndpoint;
-      control_endpoint_ = kXboxOneControlEndpoint;
-      request.bInterfaceClass = 255;
-      request.bInterfaceSubClass = 71;
-      request.bInterfaceProtocol = 208;
-      request.bAlternateSetting = kIOUSBFindInterfaceDontCare;
-      break;
-    default:
-      return false;
-  }
-
-  // Open the device and configure it.
-  kr = (*device_)->USBDeviceOpen(device_);
-  if (kr != KERN_SUCCESS)
-    return false;
-  device_is_open_ = true;
-
-  // Xbox controllers have one configuration option which has configuration
-  // value 1. Try to set it and fail if it couldn't be configured.
-  IOUSBConfigurationDescriptorPtr config_desc;
-  kr = (*device_)->GetConfigurationDescriptorPtr(device_, 0, &config_desc);
-  if (kr != KERN_SUCCESS)
-    return false;
-  kr = (*device_)->SetConfiguration(device_, config_desc->bConfigurationValue);
-  if (kr != KERN_SUCCESS)
-    return false;
-
-  // The device has 4 interfaces. They are as follows:
-  // Protocol 1:
-  //  - Endpoint 1 (in) : Controller events, including button presses.
-  //  - Endpoint 2 (out): Rumble pack and LED control
-  // Protocol 2 has a single endpoint to read from a connected ChatPad device.
-  // Protocol 3 is used by a connected headset device.
-  // The device also has an interface on subclass 253, protocol 10 with no
-  // endpoints.  It is unused.
-  //
-  // We don't currently support the ChatPad or headset, so protocol 1 is the
-  // only protocol we care about.
-  //
-  // For more detail, see
-  // https://github.com/Grumbel/xboxdrv/blob/master/PROTOCOL
-  io_iterator_t iter;
-  kr = (*device_)->CreateInterfaceIterator(device_, &request, &iter);
-  if (kr != KERN_SUCCESS)
-    return false;
-  base::mac::ScopedIOObject<io_iterator_t> iter_ref(iter);
-
-  // There should be exactly one USB interface which matches the requested
-  // settings.
-  io_service_t usb_interface = IOIteratorNext(iter);
-  if (!usb_interface)
-    return false;
-
-  // We need to make an InterfaceInterface to communicate with the device
-  // endpoint. This is the same process as earlier: first make a
-  // PluginInterface from the io_service then make the InterfaceInterface from
-  // that.
-  IOCFPlugInInterface** plugin_interface;
-  kr = IOCreatePlugInInterfaceForService(
-      usb_interface, kIOUSBInterfaceUserClientTypeID, kIOCFPlugInInterfaceID,
-      &plugin_interface, &score);
-  if (kr != KERN_SUCCESS || !plugin_interface)
-    return false;
-  base::mac::ScopedIOPluginInterface<IOCFPlugInInterface> interface_ref(
-      plugin_interface);
-
-  // Release the USB interface, and any subsequent interfaces returned by the
-  // iterator. (There shouldn't be any, but in case a future device does
-  // contain more interfaces, this will serve to avoid memory leaks.)
-  do {
-    IOObjectRelease(usb_interface);
-  } while ((usb_interface = IOIteratorNext(iter)));
-
-  // Actually create the interface.
-  res = (*plugin_interface)
-            ->QueryInterface(plugin_interface,
-                             CFUUIDGetUUIDBytes(kIOUSBInterfaceInterfaceID300),
-                             (LPVOID*)&interface_);
-
-  if (!SUCCEEDED(res) || !interface_)
-    return false;
-
-  // Actually open the interface.
-  kr = (*interface_)->USBInterfaceOpen(interface_);
-  if (kr != KERN_SUCCESS)
-    return false;
-  interface_is_open_ = true;
-
-  CFRunLoopSourceRef source_ref;
-  kr = (*interface_)->CreateInterfaceAsyncEventSource(interface_, &source_ref);
-  if (kr != KERN_SUCCESS || !source_ref)
-    return false;
-  source_.reset(source_ref);
-  CFRunLoopAddSource(CFRunLoopGetCurrent(), source_, kCFRunLoopDefaultMode);
-
-  // The interface should have two pipes. Pipe 1 with direction kUSBIn and pipe
-  // 2 with direction kUSBOut. Both pipes should have type kUSBInterrupt.
-  uint8_t num_endpoints;
-  kr = (*interface_)->GetNumEndpoints(interface_, &num_endpoints);
-  if (kr != KERN_SUCCESS || num_endpoints < 2)
-    return false;
-
-  for (int i = 1; i <= 2; i++) {
-    uint8_t direction;
-    uint8_t number;
-    uint8_t transfer_type;
-    uint16_t max_packet_size;
-    uint8_t interval;
-
-    kr = (*interface_)
-             ->GetPipeProperties(interface_, i, &direction, &number,
-                                 &transfer_type, &max_packet_size, &interval);
-    if (kr != KERN_SUCCESS || transfer_type != kUSBInterrupt) {
-      return false;
-    }
-    if (i == read_endpoint_) {
-      if (direction != kUSBIn)
-        return false;
-      read_buffer_.reset(new uint8_t[max_packet_size]);
-      read_buffer_size_ = max_packet_size;
-      QueueRead();
-    } else if (i == control_endpoint_) {
-      if (direction != kUSBOut)
-        return false;
-      if (controller_type_ == XBOX_ONE_CONTROLLER_2013 ||
-          controller_type_ == XBOX_ONE_CONTROLLER_2015 ||
-          controller_type_ == XBOX_ONE_ELITE_CONTROLLER ||
-          controller_type_ == XBOX_ONE_S_CONTROLLER)
-        WriteXboxOneInit();
-    }
-  }
-
-  // The location ID is unique per controller, and can be used to track
-  // controllers through reconnections (though if a controller is detached from
-  // one USB hub and attached to another, the location ID will change).
-  kr = (*device_)->GetLocationID(device_, &location_id_);
-  if (kr != KERN_SUCCESS)
-    return false;
-
-  return true;
-}
-
-void XboxController::SetLEDPattern(LEDPattern pattern) {
-  led_pattern_ = pattern;
-  const UInt8 length = 3;
-
-  // This buffer will be released in WriteComplete when WritePipeAsync
-  // finishes.
-  UInt8* buffer = new UInt8[length];
-  buffer[0] = static_cast<UInt8>(CONTROL_MESSAGE_SET_LED);
-  buffer[1] = length;
-  buffer[2] = static_cast<UInt8>(pattern);
-  kern_return_t kr =
-      (*interface_)
-          ->WritePipeAsync(interface_, control_endpoint_, buffer,
-                           (UInt32)length, WriteComplete, buffer);
-  if (kr != KERN_SUCCESS) {
-    delete[] buffer;
-    IOError();
-    return;
-  }
-}
-
-int XboxController::GetVendorId() const {
-  switch (controller_type_) {
-    case XBOX_360_CONTROLLER:
-    case XBOX_ONE_CONTROLLER_2013:
-    case XBOX_ONE_CONTROLLER_2015:
-    case XBOX_ONE_ELITE_CONTROLLER:
-    case XBOX_ONE_S_CONTROLLER:
-      return kVendorMicrosoft;
-    default:
-      return 0;
-  }
-}
-
-int XboxController::GetProductId() const {
-  switch (controller_type_) {
-    case XBOX_360_CONTROLLER:
-      return kProductXbox360Controller;
-    case XBOX_ONE_CONTROLLER_2013:
-      return kProductXboxOneController2013;
-    case XBOX_ONE_CONTROLLER_2015:
-      return kProductXboxOneController2015;
-    case XBOX_ONE_ELITE_CONTROLLER:
-      return kProductXboxOneEliteController;
-    case XBOX_ONE_S_CONTROLLER:
-      return kProductXboxOneSController;
-    default:
-      return 0;
-  }
-}
-
-XboxController::ControllerType XboxController::GetControllerType() const {
-  return controller_type_;
-}
-
-void XboxController::WriteComplete(void* context, IOReturn result, void* arg0) {
-  UInt8* buffer = static_cast<UInt8*>(context);
-  delete[] buffer;
-
-  // Ignoring any errors sending data, because they will usually only occur
-  // when the device is disconnected, in which case it really doesn't matter if
-  // the data got to the controller or not.
-  if (result != kIOReturnSuccess)
-    return;
-}
-
-void XboxController::GotData(void* context, IOReturn result, void* arg0) {
-  size_t bytes_read = reinterpret_cast<size_t>(arg0);
-  XboxController* controller = static_cast<XboxController*>(context);
-
-  if (result != kIOReturnSuccess) {
-    // This will happen if the device was disconnected. The gamepad has
-    // probably been destroyed by a meteorite.
-    controller->IOError();
-    return;
-  }
-
-  if (controller->GetControllerType() == XBOX_360_CONTROLLER)
-    controller->ProcessXbox360Packet(bytes_read);
-  else
-    controller->ProcessXboxOnePacket(bytes_read);
-
-  // Queue up another read.
-  controller->QueueRead();
-}
-
-void XboxController::ProcessXbox360Packet(size_t length) {
-  if (length < 2)
-    return;
-  DCHECK(length <= read_buffer_size_);
-  if (length > read_buffer_size_) {
-    IOError();
-    return;
-  }
-  uint8_t* buffer = read_buffer_.get();
-
-  if (buffer[1] != length)
-    // Length in packet doesn't match length reported by USB.
-    return;
-
-  uint8_t type = buffer[0];
-  buffer += 2;
-  length -= 2;
-  switch (type) {
-    case STATUS_MESSAGE_BUTTONS: {
-      if (length != sizeof(Xbox360ButtonData))
-        return;
-      Xbox360ButtonData* data = reinterpret_cast<Xbox360ButtonData*>(buffer);
-      Data normalized_data;
-      NormalizeXbox360ButtonData(*data, &normalized_data);
-      delegate_->XboxControllerGotData(this, normalized_data);
-      break;
-    }
-    case STATUS_MESSAGE_LED:
-      if (length != 3)
-        return;
-      // The controller sends one of these messages every time the LED pattern
-      // is set, as well as once when it is plugged in.
-      if (led_pattern_ == LED_NUM_PATTERNS && buffer[0] < LED_NUM_PATTERNS)
-        led_pattern_ = static_cast<LEDPattern>(buffer[0]);
-      break;
-    default:
-      // Unknown packet: ignore!
-      break;
-  }
-}
-
-void XboxController::ProcessXboxOnePacket(size_t length) {
-  if (length < 2)
-    return;
-  DCHECK(length <= read_buffer_size_);
-  if (length > read_buffer_size_) {
-    IOError();
-    return;
-  }
-  uint8_t* buffer = read_buffer_.get();
-
-  uint8_t type = buffer[0];
-  buffer += 4;
-  length -= 4;
-  switch (type) {
-    case XBOX_ONE_STATUS_MESSAGE_BUTTONS: {
-      if (length != sizeof(XboxOneButtonData) &&
-          length != sizeof(XboxOneEliteButtonData))
-        return;
-      XboxOneButtonData* data = reinterpret_cast<XboxOneButtonData*>(buffer);
-      Data normalized_data;
-      NormalizeXboxOneButtonData(*data, &normalized_data);
-      delegate_->XboxControllerGotData(this, normalized_data);
-      break;
-    }
-    case XBOX_ONE_STATUS_MESSAGE_GUIDE: {
-      if (length != sizeof(XboxOneGuideData))
-        return;
-      XboxOneGuideData* data = reinterpret_cast<XboxOneGuideData*>(buffer);
-      delegate_->XboxControllerGotGuideData(this, data->down);
-      break;
-    }
-    default:
-      // Unknown packet: ignore!
-      break;
-  }
-}
-
-void XboxController::QueueRead() {
-  kern_return_t kr =
-      (*interface_)
-          ->ReadPipeAsync(interface_, read_endpoint_, read_buffer_.get(),
-                          read_buffer_size_, GotData, this);
-  if (kr != KERN_SUCCESS)
-    IOError();
-}
-
-void XboxController::IOError() {
-  delegate_->XboxControllerError(this);
-}
-
-void XboxController::WriteXboxOneInit() {
-  const UInt8 length = 5;
-
-  // This buffer will be released in WriteComplete when WritePipeAsync
-  // finishes.
-  UInt8* buffer = new UInt8[length];
-  buffer[0] = 0x05;
-  buffer[1] = 0x20;
-  buffer[2] = 0x00;
-  buffer[3] = 0x01;
-  buffer[4] = 0x00;
-  kern_return_t kr =
-      (*interface_)
-          ->WritePipeAsync(interface_, control_endpoint_, buffer,
-                           (UInt32)length, WriteComplete, buffer);
-  if (kr != KERN_SUCCESS) {
-    delete[] buffer;
-    IOError();
-    return;
-  }
-}
-
-//-----------------------------------------------------------------------------
 
 XboxDataFetcher::XboxDataFetcher() : listening_(false), source_(NULL) {}
 
@@ -713,7 +62,7 @@ void XboxDataFetcher::DeviceAdded(void* context, io_iterator_t iterator) {
   io_service_t ref;
   while ((ref = IOIteratorNext(iterator))) {
     base::mac::ScopedIOObject<io_service_t> scoped_ref(ref);
-    XboxController* controller = new XboxController(fetcher);
+    XboxControllerMac* controller = new XboxControllerMac(fetcher);
     if (controller->OpenDevice(ref)) {
       fetcher->AddController(controller);
     } else {
@@ -751,31 +100,36 @@ bool XboxDataFetcher::RegisterForNotifications() {
 
   listening_ = true;
 
-  if (!RegisterForDeviceNotifications(kVendorMicrosoft,
-                                      kProductXboxOneEliteController,
-                                      &xbox_one_elite_device_added_iter_,
-                                      &xbox_one_elite_device_removed_iter_))
-    return false;
-
-  if (!RegisterForDeviceNotifications(kVendorMicrosoft,
-                                      kProductXboxOneController2013,
-                                      &xbox_one_2013_device_added_iter_,
-                                      &xbox_one_2013_device_removed_iter_))
-    return false;
-
-  if (!RegisterForDeviceNotifications(kVendorMicrosoft,
-                                      kProductXboxOneController2015,
-                                      &xbox_one_2015_device_added_iter_,
-                                      &xbox_one_2015_device_removed_iter_))
+  if (!RegisterForDeviceNotifications(
+          XboxControllerMac::kVendorMicrosoft,
+          XboxControllerMac::kProductXboxOneEliteController,
+          &xbox_one_elite_device_added_iter_,
+          &xbox_one_elite_device_removed_iter_))
     return false;
 
   if (!RegisterForDeviceNotifications(
-          kVendorMicrosoft, kProductXboxOneSController,
+          XboxControllerMac::kVendorMicrosoft,
+          XboxControllerMac::kProductXboxOneController2013,
+          &xbox_one_2013_device_added_iter_,
+          &xbox_one_2013_device_removed_iter_))
+    return false;
+
+  if (!RegisterForDeviceNotifications(
+          XboxControllerMac::kVendorMicrosoft,
+          XboxControllerMac::kProductXboxOneController2015,
+          &xbox_one_2015_device_added_iter_,
+          &xbox_one_2015_device_removed_iter_))
+    return false;
+
+  if (!RegisterForDeviceNotifications(
+          XboxControllerMac::kVendorMicrosoft,
+          XboxControllerMac::kProductXboxOneSController,
           &xbox_one_s_device_added_iter_, &xbox_one_s_device_removed_iter_))
     return false;
 
   if (!RegisterForDeviceNotifications(
-          kVendorMicrosoft, kProductXbox360Controller,
+          XboxControllerMac::kVendorMicrosoft,
+          XboxControllerMac::kProductXbox360Controller,
           &xbox_360_device_added_iter_, &xbox_360_device_removed_iter_))
     return false;
 
@@ -833,8 +187,8 @@ void XboxDataFetcher::UnregisterFromNotifications() {
   port_.reset();
 }
 
-XboxController* XboxDataFetcher::ControllerForLocation(UInt32 location_id) {
-  for (std::set<XboxController*>::iterator i = controllers_.begin();
+XboxControllerMac* XboxDataFetcher::ControllerForLocation(UInt32 location_id) {
+  for (std::set<XboxControllerMac*>::iterator i = controllers_.begin();
        i != controllers_.end(); ++i) {
     if ((*i)->location_id() == location_id)
       return *i;
@@ -842,7 +196,7 @@ XboxController* XboxDataFetcher::ControllerForLocation(UInt32 location_id) {
   return NULL;
 }
 
-void XboxDataFetcher::AddController(XboxController* controller) {
+void XboxDataFetcher::AddController(XboxControllerMac* controller) {
   DCHECK(!ControllerForLocation(controller->location_id()))
       << "Controller with location ID " << controller->location_id()
       << " already exists in the set of controllers.";
@@ -854,13 +208,13 @@ void XboxDataFetcher::AddController(XboxController* controller) {
 
   controllers_.insert(controller);
 
-  controller->SetLEDPattern((XboxController::LEDPattern)(
-      XboxController::LED_FLASH_TOP_LEFT + controller->location_id()));
+  controller->SetLEDPattern((XboxControllerMac::LEDPattern)(
+      XboxControllerMac::LED_FLASH_TOP_LEFT + controller->location_id()));
 
   NSString* ident = [NSString
       stringWithFormat:@"%@ (STANDARD GAMEPAD Vendor: %04x Product: %04x)",
                        controller->GetControllerType() ==
-                               XboxController::XBOX_360_CONTROLLER
+                               XboxControllerMac::XBOX_360_CONTROLLER
                            ? @"Xbox 360 Controller"
                            : @"Xbox One Controller",
                        controller->GetVendorId(), controller->GetProductId()];
@@ -879,14 +233,14 @@ void XboxDataFetcher::AddController(XboxController* controller) {
   state->button_mask = 0;
 }
 
-void XboxDataFetcher::RemoveController(XboxController* controller) {
+void XboxDataFetcher::RemoveController(XboxControllerMac* controller) {
   controllers_.erase(controller);
   delete controller;
 }
 
 void XboxDataFetcher::RemoveControllerByLocationID(uint32_t location_id) {
-  XboxController* controller = NULL;
-  for (std::set<XboxController*>::iterator i = controllers_.begin();
+  XboxControllerMac* controller = NULL;
+  for (std::set<XboxControllerMac*>::iterator i = controllers_.begin();
        i != controllers_.end(); ++i) {
     if ((*i)->location_id() == location_id) {
       controller = *i;
@@ -897,8 +251,9 @@ void XboxDataFetcher::RemoveControllerByLocationID(uint32_t location_id) {
     RemoveController(controller);
 }
 
-void XboxDataFetcher::XboxControllerGotData(XboxController* controller,
-                                            const XboxController::Data& data) {
+void XboxDataFetcher::XboxControllerGotData(
+    XboxControllerMac* controller,
+    const XboxControllerMac::Data& data) {
   PadState* state = GetPadState(controller->location_id());
   if (!state)
     return;  // No available slot for this device
@@ -917,7 +272,8 @@ void XboxDataFetcher::XboxControllerGotData(XboxController* controller,
     pad.buttons[i].pressed = data.buttons[i - 2];
     pad.buttons[i].value = data.buttons[i - 2] ? 1.0f : 0.0f;
   }
-  if (controller->GetControllerType() == XboxController::XBOX_360_CONTROLLER) {
+  if (controller->GetControllerType() ==
+      XboxControllerMac::XBOX_360_CONTROLLER) {
     pad.buttons[16].pressed = data.buttons[14];
     pad.buttons[16].value = data.buttons[14] ? 1.0f : 0.0f;
   }
@@ -928,7 +284,7 @@ void XboxDataFetcher::XboxControllerGotData(XboxController* controller,
   pad.timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
 }
 
-void XboxDataFetcher::XboxControllerGotGuideData(XboxController* controller,
+void XboxDataFetcher::XboxControllerGotGuideData(XboxControllerMac* controller,
                                                  bool guide) {
   PadState* state = GetPadState(controller->location_id());
   if (!state)
@@ -942,7 +298,7 @@ void XboxDataFetcher::XboxControllerGotGuideData(XboxController* controller,
   pad.timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
 }
 
-void XboxDataFetcher::XboxControllerError(XboxController* controller) {
+void XboxDataFetcher::XboxControllerError(XboxControllerMac* controller) {
   RemoveController(controller);
 }
 
