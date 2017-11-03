@@ -4,7 +4,6 @@
 
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -492,11 +491,6 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 // Tests that touch-dragging a window does not lock the mouse cursor
 // and therefore shows the cursor on a mousemove.
 TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
-  // TODO: fails because mash doesn't support CursorManager.
-  // http://crbug.com/631103.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   window_->SetBounds(gfx::Rect(0, 300, 400, 300));
   window2_->SetBounds(gfx::Rect(400, 200, 100, 200));
 
@@ -794,11 +788,6 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottom) {
 
 // Makes sure we don't allow dragging on the work area with multidisplay.
 TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
-  // TODO: SetLayoutForCurrentDisplays() needs to ported to mash.
-  // http://crbug.com/698043.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   UpdateDisplay("800x600,800x600");
   ASSERT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
 

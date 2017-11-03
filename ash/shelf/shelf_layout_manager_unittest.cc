@@ -845,7 +845,6 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
 // boundary between the primary and the secondary display.
 TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
   UpdateDisplay("800x600,800x600");
-  // TODO(crbug.com/698043): Port SetLayoutForCurrentDisplays() to mash.
   Shell::Get()->display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
                                          display::DisplayPlacement::RIGHT, 0));
