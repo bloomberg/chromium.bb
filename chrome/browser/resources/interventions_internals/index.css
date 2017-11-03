@@ -89,3 +89,9 @@ th {
 .error-message {
   font-style: italic;
 }
+
+#blacklist-ignored-status {
+  color: red;
+  font-style: italic;
+  font-weight: bold;
+}

@@ -53,7 +53,10 @@ class TestPreviewsUIService : public PreviewsUIService {
 // Mock class of PreviewsLogger for checking passed in parameters.
 class TestPreviewsLogger : public PreviewsLogger {
  public:
-  TestPreviewsLogger() : navigation_opt_out_(false), user_blacklisted_(false) {}
+  TestPreviewsLogger()
+      : navigation_opt_out_(false),
+        user_blacklisted_(false),
+        blacklist_ignored_(false) {}
 
   // PreviewsLogger:
   void LogPreviewNavigation(const GURL& url,
@@ -89,6 +92,10 @@ class TestPreviewsLogger : public PreviewsLogger {
     blacklist_cleared_time_ = time;
   }
 
+  void OnIgnoreBlacklistDecisionStatusChanged(bool ignored) override {
+    blacklist_ignored_ = ignored;
+  }
+
   // Return the passed in LogPreviewDecision parameters.
   PreviewsEligibilityReason decision_reason() const { return decision_reason_; }
   GURL decision_url() const { return decision_url_; }
@@ -106,6 +113,9 @@ class TestPreviewsLogger : public PreviewsLogger {
   base::Time host_blacklisted_time() const { return host_blacklisted_time_; }
   bool user_blacklisted() const { return user_blacklisted_; }
   base::Time blacklist_cleared_time() const { return blacklist_cleared_time_; }
+
+  // Return the status of blacklist ignored.
+  bool blacklist_ignored() const { return blacklist_ignored_; }
 
  private:
   // Passed in LogPreviewDecision parameters.
@@ -125,6 +135,31 @@ class TestPreviewsLogger : public PreviewsLogger {
   base::Time host_blacklisted_time_;
   bool user_blacklisted_;
   base::Time blacklist_cleared_time_;
+
+  // Passed in blacklist ignored status.
+  bool blacklist_ignored_;
+};
+
+class TestPreviewsIOData : public PreviewsIOData {
+ public:
+  TestPreviewsIOData(
+      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+      : PreviewsIOData(ui_task_runner, io_task_runner),
+        blacklist_ignored_(false) {}
+
+  // PreviewsIOData:
+  void SetIgnorePreviewsBlacklistDecision(bool ignored) override {
+    blacklist_ignored_ = ignored;
+  }
+
+  // Exposed the status of blacklist decisions ignored for testing
+  // PreviewsUIService.
+  bool blacklist_ignored() const { return blacklist_ignored_; }
+
+ private:
+  // Whether the blacklist decisions are ignored or not.
+  bool blacklist_ignored_;
 };
 
 class PreviewsUIServiceTest : public testing::Test {
@@ -140,23 +175,14 @@ class PreviewsUIServiceTest : public testing::Test {
     // Use to testing logger data.
     logger_ptr_ = logger.get();
 
-    set_io_data(base::WrapUnique(
-        new PreviewsIOData(loop_.task_runner(), loop_.task_runner())));
-    set_ui_service(base::WrapUnique(new TestPreviewsUIService(
-        io_data(), loop_.task_runner(), nullptr, std::move(logger))));
+    io_data_ = base::MakeUnique<TestPreviewsIOData>(loop_.task_runner(),
+                                                    loop_.task_runner());
+    ui_service_ = base::MakeUnique<TestPreviewsUIService>(
+        io_data(), loop_.task_runner(), nullptr, std::move(logger));
     base::RunLoop().RunUntilIdle();
   }
 
-  void set_io_data(std::unique_ptr<PreviewsIOData> io_data) {
-    io_data_ = std::move(io_data);
-  }
-
-  PreviewsIOData* io_data() { return io_data_.get(); }
-
-  void set_ui_service(std::unique_ptr<TestPreviewsUIService> ui_service) {
-    ui_service_ = std::move(ui_service);
-  }
-
+  TestPreviewsIOData* io_data() { return io_data_.get(); }
   TestPreviewsUIService* ui_service() { return ui_service_.get(); }
 
  protected:
@@ -165,7 +191,7 @@ class PreviewsUIServiceTest : public testing::Test {
   TestPreviewsLogger* logger_ptr_;
 
  private:
-  std::unique_ptr<PreviewsIOData> io_data_;
+  std::unique_ptr<TestPreviewsIOData> io_data_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
 };
 
@@ -253,6 +279,25 @@ TEST_F(PreviewsUIServiceTest, TestOnBlacklistClearedPassesCorrectParams) {
   ui_service()->OnBlacklistCleared(expected_time);
 
   EXPECT_EQ(expected_time, logger_ptr_->blacklist_cleared_time());
+}
+
+TEST_F(PreviewsUIServiceTest,
+       TestSetIgnorePreviewsBlacklistDecisionPassesCorrectParams) {
+  ui_service()->SetIgnorePreviewsBlacklistDecision(true /* ignored */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(io_data()->blacklist_ignored());
+
+  ui_service()->SetIgnorePreviewsBlacklistDecision(false /* ignored */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(io_data()->blacklist_ignored());
+}
+
+TEST_F(PreviewsUIServiceTest, TestOnIgnoreBlacklistDecisionStatusChanged) {
+  ui_service()->OnIgnoreBlacklistDecisionStatusChanged(true /* ignored */);
+  EXPECT_TRUE(logger_ptr_->blacklist_ignored());
+
+  ui_service()->OnIgnoreBlacklistDecisionStatusChanged(false /* ignored */);
+  EXPECT_FALSE(logger_ptr_->blacklist_ignored());
 }
 
 }  // namespace previews

@@ -63,7 +63,8 @@ bool AllowedOnReload(PreviewsType type) {
 PreviewsIOData::PreviewsIOData(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-    : ui_task_runner_(ui_task_runner),
+    : blacklist_ignored_(false),
+      ui_task_runner_(ui_task_runner),
       io_task_runner_(io_task_runner),
       weak_factory_(this) {}
 
@@ -156,6 +157,15 @@ void PreviewsIOData::ClearBlackList(base::Time begin_time,
   previews_black_list_->ClearBlackList(begin_time, end_time);
 }
 
+void PreviewsIOData::SetIgnorePreviewsBlacklistDecision(bool ignored) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  blacklist_ignored_ = ignored;
+  ui_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PreviewsUIService::OnIgnoreBlacklistDecisionStatusChanged,
+                 previews_ui_service_, blacklist_ignored_));
+}
+
 bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
                                         PreviewsType type) const {
   return ShouldAllowPreviewAtECT(request, type,
@@ -181,13 +191,15 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
   if (!is_enabled_callback_.Run(type))
     return false;
 
-  // The blacklist will disallow certain hosts for periods of time based on
-  // user's opting out of the preview.
-  PreviewsEligibilityReason status =
-      previews_black_list_->IsLoadedAndAllowed(request.url(), type);
-  if (status != PreviewsEligibilityReason::ALLOWED) {
-    LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type);
-    return false;
+  if (!blacklist_ignored_) {
+    // The blacklist will disallow certain hosts for periods of time based on
+    // user's opting out of the preview.
+    PreviewsEligibilityReason status =
+        previews_black_list_->IsLoadedAndAllowed(request.url(), type);
+    if (status != PreviewsEligibilityReason::ALLOWED) {
+      LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type);
+      return false;
+    }
   }
 
   if (effective_connection_type_threshold !=

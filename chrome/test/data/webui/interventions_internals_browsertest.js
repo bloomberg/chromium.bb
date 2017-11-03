@@ -286,3 +286,20 @@ TEST_F('InterventionsInternalsUITest', 'OnECTChanged', function() {
 
   mocha.run();
 });
+
+TEST_F('InterventionsInternalsUITest', 'OnBlacklistIgnoreChange', function() {
+  test('OnBlacklistIgnoreChangeDisable', () => {
+    let pageImpl = new InterventionsInternalPageImpl(null);
+    pageImpl.onIgnoreBlacklistDecisionStatusChanged(true /* ignored */);
+    expectEquals('Enable Blacklist', $('ignore-blacklist-button').textContent);
+    expectEquals(
+        'Blacklist decisions are ignored.',
+        $('blacklist-ignored-status').textContent);
+
+    pageImpl.onIgnoreBlacklistDecisionStatusChanged(false /* ignored */);
+    expectEquals('Ignore Blacklist', $('ignore-blacklist-button').textContent);
+    expectEquals('', $('blacklist-ignored-status').textContent);
+  });
+
+  mocha.run();
+});

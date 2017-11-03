@@ -9,7 +9,10 @@
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_page_handler.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_controller.h"
-#include "components/previews/core/previews_logger.h"
+
+namespace previews {
+class PreviewsUIService;
+}  // namespace previews
 
 class UINetworkQualityEstimatorService;
 
@@ -25,8 +28,8 @@ class InterventionsInternalsUI
   void BindUIHandler(
       mojom::InterventionsInternalsPageHandlerRequest request) override;
 
-  // The PreviewsLogger that this handler is listening to.
-  previews::PreviewsLogger* logger_;
+  // The PreviewsUIService associated with this UI.
+  previews::PreviewsUIService* previews_ui_service_;
 
   // The network quality estimator service for getting the estimate effective
   // conntection type.

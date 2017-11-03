@@ -94,12 +94,20 @@ class PreviewsLogger {
   // testing.
   virtual void OnBlacklistCleared(base::Time time);
 
+  // Notify observers that the status of whether blacklist decisions are ignored
+  // or not. Virtualized in testing.
+  virtual void OnIgnoreBlacklistDecisionStatusChanged(bool ignored);
+
  private:
   // Keeping track of all blacklisted host to notify new observers.
   std::unordered_map<std::string, base::Time> blacklisted_hosts_;
 
   // The current user blacklisted status.
   bool user_blacklisted_status_;
+
+  // The current status of whether PreviewsBlackList decisions are ignored or
+  // not.
+  bool blacklist_ignored_;
 
   // Collection of recorded navigation log messages.
   std::list<MessageLog> navigations_logs_;
