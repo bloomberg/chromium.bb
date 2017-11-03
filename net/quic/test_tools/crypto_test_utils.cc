@@ -598,7 +598,6 @@ uint64_t LeafCertHashForTesting() {
   bool ok = false;
   proof_source->GetProof(
       server_address, "", "", AllSupportedTransportVersions().front(), "",
-      QuicTagVector(),
       std::unique_ptr<ProofSource::Callback>(new Callback(&ok, &chain)));
   if (!ok || chain->certs.empty()) {
     DCHECK(false) << "Proof generation failed";

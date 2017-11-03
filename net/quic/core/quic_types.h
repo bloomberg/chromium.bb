@@ -163,7 +163,7 @@ enum QuicPacketPublicFlags {
   // Bit 1: Is this packet a public reset packet?
   PACKET_PUBLIC_FLAGS_RST = 1 << 1,
 
-  // Bit 2: indicates the that public header includes a nonce.
+  // Bit 2: indicates the header includes a nonce.
   PACKET_PUBLIC_FLAGS_NONCE = 1 << 2,
 
   // Bit 3: indicates whether a ConnectionID is included.

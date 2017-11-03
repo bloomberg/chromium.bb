@@ -18,7 +18,6 @@ class FailingProofSource : public ProofSource {
                 const std::string& server_config,
                 QuicTransportVersion transport_version,
                 QuicStringPiece chlo_hash,
-                const QuicTagVector& connection_options,
                 std::unique_ptr<Callback> callback) override;
 
   QuicReferenceCountedPointer<Chain> GetCertChain(

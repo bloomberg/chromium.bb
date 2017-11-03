@@ -437,9 +437,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
 
   // Close the connection by sending public reset packet.
   QuicPublicResetPacket packet;
-  packet.public_header.connection_id = connection_id;
-  packet.public_header.reset_flag = true;
-  packet.public_header.version_flag = false;
+  packet.connection_id = connection_id;
   packet.nonce_proof = 132232;
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       QuicFramer::BuildPublicResetPacket(packet));

@@ -345,7 +345,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       QuicCompressedCertsCache* compressed_certs_cache,
       const QuicCryptoNegotiatedParameters& params,
       const CachedNetworkParameters* cached_network_params,
-      const QuicTagVector& connection_options,
       std::unique_ptr<BuildServerConfigUpdateMessageResultCallback> cb) const;
 
   // SetEphemeralKeySource installs an object that can cache ephemeral keys for

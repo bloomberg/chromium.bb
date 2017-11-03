@@ -228,16 +228,6 @@ void QuicUnackedPacketMap::RemoveFromInFlight(QuicPacketNumber packet_number) {
   RemoveFromInFlight(info);
 }
 
-void QuicUnackedPacketMap::RestoreToInFlight(QuicPacketNumber packet_number) {
-  DCHECK_GE(packet_number, least_unacked_);
-  DCHECK_LT(packet_number, least_unacked_ + unacked_packets_.size());
-  QuicTransmissionInfo* info =
-      &unacked_packets_[packet_number - least_unacked_];
-  DCHECK(!info->is_unackable);
-  bytes_in_flight_ += info->bytes_sent;
-  info->in_flight = true;
-}
-
 void QuicUnackedPacketMap::CancelRetransmissionsForStream(
     QuicStreamId stream_id) {
   QuicPacketNumber packet_number = least_unacked_;

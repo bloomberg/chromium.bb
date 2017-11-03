@@ -245,14 +245,10 @@ QuicConnection::QuicConnection(
           &arena_)),
       visitor_(nullptr),
       debug_visitor_(nullptr),
-      packet_generator_(connection_id_,
-                        &framer_,
-                        random_generator_,
-                        this),
+      packet_generator_(connection_id_, &framer_, random_generator_, this),
       idle_network_timeout_(QuicTime::Delta::Infinite()),
       handshake_timeout_(QuicTime::Delta::Infinite()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
-      time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       last_send_for_timeout_(clock_->ApproximateNow()),
       sent_packet_manager_(
           perspective,
@@ -263,7 +259,7 @@ QuicConnection::QuicConnection(
       version_negotiation_state_(START_NEGOTIATION),
       perspective_(perspective),
       connected_(true),
-      can_truncate_connection_ids_(true),
+      can_truncate_connection_ids_(perspective == Perspective::IS_SERVER),
       mtu_discovery_target_(0),
       mtu_probe_count_(0),
       packets_between_mtu_probes_(kPacketsBetweenMtuProbesBase),
@@ -397,6 +393,10 @@ void QuicConnection::SetMaxPacingRate(QuicBandwidth max_pacing_rate) {
   sent_packet_manager_.SetMaxPacingRate(max_pacing_rate);
 }
 
+QuicBandwidth QuicConnection::MaxPacingRate() const {
+  return sent_packet_manager_.MaxPacingRate();
+}
+
 void QuicConnection::SetNumOpenStreams(size_t num_streams) {
   sent_packet_manager_.SetNumOpenStreams(num_streams);
 }
@@ -437,7 +437,7 @@ void QuicConnection::OnPublicResetPacket(const QuicPublicResetPacket& packet) {
   // Check that any public reset packet with a different connection ID that was
   // routed to this QuicConnection has been redirected before control reaches
   // here.  (Check for a bug regression.)
-  DCHECK_EQ(connection_id_, packet.public_header.connection_id);
+  DCHECK_EQ(connection_id_, packet.connection_id);
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnPublicResetPacket(packet);
   }
@@ -561,7 +561,7 @@ void QuicConnection::OnVersionNegotiationPacket(
 }
 
 bool QuicConnection::OnUnauthenticatedPublicHeader(
-    const QuicPacketPublicHeader& header) {
+    const QuicPacketHeader& header) {
   if (header.connection_id == connection_id_) {
     return true;
   }
@@ -588,7 +588,7 @@ bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   // Check that any public reset packet with a different connection ID that was
   // routed to this QuicConnection has been redirected before control reaches
   // here.
-  DCHECK_EQ(connection_id_, header.public_header.connection_id);
+  DCHECK_EQ(connection_id_, header.connection_id);
 
   if (!packet_generator_.IsPendingPacketEmpty()) {
     // Incoming packets may change a queued ACK frame.
@@ -799,18 +799,17 @@ bool QuicConnection::OnPingFrame(const QuicPingFrame& frame) {
 }
 
 const char* QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
-  if (incoming_ack.largest_observed > packet_generator_.packet_number()) {
+  if (LargestAcked(incoming_ack) > packet_generator_.packet_number()) {
     QUIC_DLOG(WARNING) << ENDPOINT << "Peer's observed unsent packet:"
-                       << incoming_ack.largest_observed << " vs "
+                       << LargestAcked(incoming_ack) << " vs "
                        << packet_generator_.packet_number();
     // We got an error for data we have not sent.  Error out.
     return "Largest observed too high.";
   }
 
-  if (incoming_ack.largest_observed <
-      sent_packet_manager_.GetLargestObserved()) {
+  if (LargestAcked(incoming_ack) < sent_packet_manager_.GetLargestObserved()) {
     QUIC_LOG(INFO) << ENDPOINT << "Peer's largest_observed packet decreased:"
-                   << incoming_ack.largest_observed << " vs "
+                   << LargestAcked(incoming_ack) << " vs "
                    << sent_packet_manager_.GetLargestObserved()
                    << " packet_number:" << last_header_.packet_number
                    << " largest seen with ack:" << largest_seen_packet_with_ack_
@@ -820,12 +819,14 @@ const char* QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
     return "Largest observed too low.";
   }
 
+  // TODO(wub): Remove this check along with
+  // FLAGS_quic_reloadable_flag_quic_deprecate_largest_observed.
   if (!incoming_ack.packets.Empty() &&
-      incoming_ack.packets.Max() != incoming_ack.largest_observed) {
+      incoming_ack.packets.Max() != LargestAcked(incoming_ack)) {
     QUIC_BUG << ENDPOINT
              << "Peer last received packet: " << incoming_ack.packets.Max()
              << " which is not equal to largest observed: "
-             << incoming_ack.largest_observed;
+             << incoming_ack.deprecated_largest_observed;
     return "Last received packet not equal to largest observed.";
   }
 
@@ -943,7 +944,7 @@ void QuicConnection::OnPacketComplete() {
   }
 
   QUIC_DVLOG(1) << ENDPOINT << "Got packet " << last_header_.packet_number
-                << " for " << last_header_.public_header.connection_id;
+                << " for " << last_header_.connection_id;
 
   // An ack will be sent if a missing retransmittable packet was received;
   const bool was_missing =
@@ -1117,6 +1118,13 @@ void QuicConnection::SendRstStream(QuicStreamId id,
     // All data for streams which are reset with QUIC_STREAM_NO_ERROR must
     // be received by the peer.
     return;
+  }
+  // Flush stream frames of reset stream.
+  if (FLAGS_quic_reloadable_flag_quic_remove_on_stream_frame_discarded &&
+      packet_generator_.HasPendingStreamFramesOfStream(id)) {
+    QUIC_FLAG_COUNT_N(
+        quic_reloadable_flag_quic_remove_on_stream_frame_discarded, 2, 2);
+    packet_generator_.FlushAllQueuedFrames();
   }
 
   sent_packet_manager_.CancelRetransmissionsForStream(id);
@@ -1369,7 +1377,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
 
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {
     if (perspective_ == Perspective::IS_SERVER) {
-      if (!header.public_header.version_flag) {
+      if (!header.version_flag) {
         // Packets should have the version flag till version negotiation is
         // done.
         string error_details =
@@ -1380,8 +1388,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
                         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
         return false;
       } else {
-        DCHECK_EQ(1u, header.public_header.versions.size());
-        DCHECK_EQ(header.public_header.versions[0], transport_version());
+        DCHECK_EQ(header.version, transport_version());
         version_negotiation_state_ = NEGOTIATED_VERSION;
         visitor_->OnSuccessfulVersionNegotiation(transport_version());
         if (debug_visitor_ != nullptr) {
@@ -1389,7 +1396,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
         }
       }
     } else {
-      DCHECK(!header.public_header.version_flag);
+      DCHECK(!header.version_flag);
       // If the client gets a packet without the version flag from the server
       // it should stop sending version since the version negotiation is done.
       packet_generator_.StopSendingVersion();
@@ -1579,6 +1586,9 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
   }
 
   if (result.status == WRITE_STATUS_BLOCKED) {
+    // Ensure the writer is still write blocked, otherwise QUIC may continue
+    // trying to write when it will not be able to.
+    DCHECK(writer_->IsWriteBlocked());
     visitor_->OnWriteBlocked();
     // If the socket buffers the data, then the packet should not
     // be queued and sent again, which would result in an unnecessary
@@ -1616,9 +1626,6 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
     debug_visitor_->OnPacketSent(*packet, packet->original_packet_number,
                                  packet->transmission_type, packet_send_time);
   }
-  if (packet->transmission_type == NOT_RETRANSMISSION) {
-    time_of_last_sent_new_packet_ = packet_send_time;
-  }
   // Only adjust the last sent time (for the purpose of tracking the idle
   // timeout) if this is the first retransmittable packet sent after a
   // packet is received. If it were updated on every sent packet, then
@@ -1642,7 +1649,7 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
 
   // The packet number length must be updated after OnPacketSent, because it
   // may change the packet number length in packet.
-  packet_generator_.UpdateSequenceNumberLength(
+  packet_generator_.UpdatePacketNumberLength(
       sent_packet_manager_.GetLeastUnacked(),
       sent_packet_manager_.EstimateMaxPacketsInFlight(max_packet_length()));
 
@@ -2119,8 +2126,17 @@ void QuicConnection::CheckForTimeout() {
   if (idle_duration >= idle_network_timeout_) {
     const string error_details = "No recent network activity.";
     QUIC_DVLOG(1) << ENDPOINT << error_details;
-    CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, error_details,
-                    idle_timeout_connection_close_behavior_);
+    if (FLAGS_quic_reloadable_flag_quic_explicit_close_after_tlp &&
+        (sent_packet_manager_.GetConsecutiveTlpCount() > 0 ||
+         sent_packet_manager_.GetConsecutiveRtoCount() > 0 ||
+         visitor_->HasOpenDynamicStreams())) {
+      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_explicit_close_after_tlp);
+      CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, error_details,
+                      ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    } else {
+      CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, error_details,
+                      idle_timeout_connection_close_behavior_);
+    }
     return;
   }
 
@@ -2144,8 +2160,6 @@ void QuicConnection::CheckForTimeout() {
 
 void QuicConnection::SetTimeoutAlarm() {
   QuicTime time_of_last_packet =
-      std::max(time_of_last_received_packet_, time_of_last_sent_new_packet_);
-  time_of_last_packet =
       std::max(time_of_last_received_packet_, last_send_for_timeout_);
 
   QuicTime deadline = time_of_last_packet + idle_network_timeout_;

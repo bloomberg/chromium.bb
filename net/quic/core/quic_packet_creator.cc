@@ -366,6 +366,15 @@ bool QuicPacketCreator::HasPendingRetransmittableFrames() const {
   return !packet_.retransmittable_frames.empty();
 }
 
+bool QuicPacketCreator::HasPendingStreamFramesOfStream(QuicStreamId id) const {
+  for (const auto& frame : packet_.retransmittable_frames) {
+    if (frame.type == STREAM_FRAME && frame.stream_frame->stream_id == id) {
+      return true;
+    }
+  }
+  return false;
+}
+
 size_t QuicPacketCreator::ExpansionOnNewFrame() const {
   // If the last frame in the packet is a stream frame, then it will expand to
   // include the stream_length field when a new frame is added.
@@ -470,18 +479,18 @@ SerializedPacket QuicPacketCreator::NoPacket() {
 }
 
 void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
-  header->public_header.connection_id = connection_id_;
-  header->public_header.connection_id_length = connection_id_length_;
-  header->public_header.reset_flag = false;
-  header->public_header.version_flag = send_version_in_packet_;
+  header->connection_id = connection_id_;
+  header->connection_id_length = connection_id_length_;
+  header->reset_flag = false;
+  header->version_flag = send_version_in_packet_;
   if (IncludeNonceInPublicHeader()) {
     DCHECK_EQ(Perspective::IS_SERVER, framer_->perspective());
-    header->public_header.nonce = &diversification_nonce_;
+    header->nonce = &diversification_nonce_;
   } else {
-    header->public_header.nonce = nullptr;
+    header->nonce = nullptr;
   }
   header->packet_number = ++packet_.packet_number;
-  header->public_header.packet_number_length = packet_.packet_number_length;
+  header->packet_number_length = packet_.packet_number_length;
 }
 
 bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {
@@ -536,7 +545,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
 
   if (frame.type == ACK_FRAME) {
     packet_.has_ack = true;
-    packet_.largest_acked = frame.ack_frame->largest_observed;
+    packet_.largest_acked = LargestAcked(*frame.ack_frame);
   }
   if (frame.type == STOP_WAITING_FRAME) {
     packet_.has_stop_waiting = true;
@@ -569,7 +578,6 @@ void QuicPacketCreator::MaybeAddPadding() {
     packet_.num_padding_bytes =
         std::min<int16_t>(pending_padding_bytes_, BytesFree());
     pending_padding_bytes_ -= packet_.num_padding_bytes;
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_random_padding);
   }
 
   bool success =
@@ -593,6 +601,12 @@ bool QuicPacketCreator::StreamFrameStartsWithChlo(
     return false;
   }
   return framer_->StartsWithChlo(frame.stream_id, frame.offset);
+}
+
+void QuicPacketCreator::SetConnectionIdLength(QuicConnectionIdLength length) {
+  DCHECK(framer_->perspective() == Perspective::IS_SERVER ||
+         length != PACKET_0BYTE_CONNECTION_ID);
+  connection_id_length_ = length;
 }
 
 }  // namespace net

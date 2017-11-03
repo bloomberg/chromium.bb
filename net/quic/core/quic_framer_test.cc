@@ -26,9 +26,9 @@
 #include "net/quic/test_tools/simple_data_producer.h"
 
 using std::string;
+using testing::_;
 using testing::Return;
 using testing::Truly;
-using testing::_;
 
 namespace net {
 namespace test {
@@ -160,9 +160,8 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header) override {
-    public_header_.reset(new QuicPacketPublicHeader(header));
+  bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override {
+    header_.reset(new QuicPacketHeader(header));
     return accept_public_header_;
   }
 
@@ -248,7 +247,6 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
   bool accept_public_header_;
 
   std::unique_ptr<QuicPacketHeader> header_;
-  std::unique_ptr<QuicPacketPublicHeader> public_header_;
   std::unique_ptr<QuicPublicResetPacket> public_reset_packet_;
   std::unique_ptr<QuicVersionNegotiationPacket> version_negotiation_packet_;
   std::vector<std::unique_ptr<QuicStreamFrame>> stream_frames_;
@@ -594,7 +592,7 @@ TEST_P(QuicFramerTest, LargePacket) {
 
   ASSERT_TRUE(visitor_.header_.get());
   // Make sure we've parsed the packet header, so we can send an error.
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
   // Make sure the correct error is propagated.
   EXPECT_EQ(QUIC_PACKET_TOO_LARGE, framer_.error());
 }
@@ -635,9 +633,9 @@ TEST_P(QuicFramerTest, PacketHeader) {
   EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
-  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
-  EXPECT_FALSE(visitor_.header_->public_header.version_flag);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
+  EXPECT_FALSE(visitor_.header_->reset_flag);
+  EXPECT_FALSE(visitor_.header_->version_flag);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
 
   CheckFramingBoundaries(fragments, QUIC_INVALID_PACKET_HEADER);
@@ -677,9 +675,9 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
   EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
-  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
-  EXPECT_FALSE(visitor_.header_->public_header.version_flag);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
+  EXPECT_FALSE(visitor_.header_->reset_flag);
+  EXPECT_FALSE(visitor_.header_->version_flag);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
 
   CheckFramingBoundaries(fragments, QUIC_INVALID_PACKET_HEADER);
@@ -725,10 +723,10 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
   EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
-  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
-  EXPECT_TRUE(visitor_.header_->public_header.version_flag);
-  EXPECT_EQ(GetParam(), visitor_.header_->public_header.versions[0]);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
+  EXPECT_FALSE(visitor_.header_->reset_flag);
+  EXPECT_TRUE(visitor_.header_->version_flag);
+  EXPECT_EQ(GetParam(), visitor_.header_->version);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
 
   CheckFramingBoundaries(fragments, QUIC_INVALID_PACKET_HEADER);
@@ -770,9 +768,9 @@ TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
   EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
-  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
-  EXPECT_FALSE(visitor_.header_->public_header.version_flag);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
+  EXPECT_FALSE(visitor_.header_->reset_flag);
+  EXPECT_FALSE(visitor_.header_->version_flag);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
 
   CheckFramingBoundaries(fragments, QUIC_INVALID_PACKET_HEADER);
@@ -814,11 +812,10 @@ TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
   EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
-  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
-  EXPECT_FALSE(visitor_.header_->public_header.version_flag);
-  EXPECT_EQ(PACKET_2BYTE_PACKET_NUMBER,
-            visitor_.header_->public_header.packet_number_length);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
+  EXPECT_FALSE(visitor_.header_->reset_flag);
+  EXPECT_FALSE(visitor_.header_->version_flag);
+  EXPECT_EQ(PACKET_2BYTE_PACKET_NUMBER, visitor_.header_->packet_number_length);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
 
   CheckFramingBoundaries(fragments, QUIC_INVALID_PACKET_HEADER);
@@ -845,11 +842,11 @@ TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
   EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
   EXPECT_EQ(QUIC_MISSING_PAYLOAD, framer_.error());
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
-  EXPECT_FALSE(visitor_.header_->public_header.reset_flag);
-  EXPECT_FALSE(visitor_.header_->public_header.version_flag);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
+  EXPECT_FALSE(visitor_.header_->reset_flag);
+  EXPECT_FALSE(visitor_.header_->version_flag);
   EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
-            visitor_.header_->public_header.packet_number_length);
+            visitor_.header_->packet_number_length);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
 
 
@@ -860,9 +857,9 @@ TEST_P(QuicFramerTest, PacketNumberDecreasesThenIncreases) {
   // Test the case when a packet is received from the past and future packet
   // numbers are still calculated relative to the largest received packet.
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber - 2;
 
   QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
@@ -872,45 +869,45 @@ TEST_P(QuicFramerTest, PacketNumberDecreasesThenIncreases) {
   QuicEncryptedPacket encrypted(data->data(), data->length(), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
   EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
-            visitor_.header_->public_header.packet_number_length);
+            visitor_.header_->packet_number_length);
   EXPECT_EQ(kPacketNumber - 2, visitor_.header_->packet_number);
 
   // Receive a 1 byte packet number.
   header.packet_number = kPacketNumber;
-  header.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
   data.reset(BuildDataPacket(header, frames));
   QuicEncryptedPacket encrypted1(data->data(), data->length(), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted1));
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
   EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
-            visitor_.header_->public_header.packet_number_length);
+            visitor_.header_->packet_number_length);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
 
   // Process a 2 byte packet number 256 packets ago.
   header.packet_number = kPacketNumber - 256;
-  header.public_header.packet_number_length = PACKET_2BYTE_PACKET_NUMBER;
+  header.packet_number_length = PACKET_2BYTE_PACKET_NUMBER;
   data.reset(BuildDataPacket(header, frames));
   QuicEncryptedPacket encrypted2(data->data(), data->length(), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted2));
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
   EXPECT_EQ(PACKET_2BYTE_PACKET_NUMBER,
-            visitor_.header_->public_header.packet_number_length);
+            visitor_.header_->packet_number_length);
   EXPECT_EQ(kPacketNumber - 256, visitor_.header_->packet_number);
 
   // Process another 1 byte packet number and ensure it works.
   header.packet_number = kPacketNumber - 1;
-  header.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
   data.reset(BuildDataPacket(header, frames));
   QuicEncryptedPacket encrypted3(data->data(), data->length(), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted3));
   ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_EQ(kConnectionId, visitor_.header_->public_header.connection_id);
+  EXPECT_EQ(kConnectionId, visitor_.header_->connection_id);
   EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
-            visitor_.header_->public_header.packet_number_length);
+            visitor_.header_->packet_number_length);
   EXPECT_EQ(kPacketNumber - 1, visitor_.header_->packet_number);
 }
 
@@ -959,9 +956,9 @@ TEST_P(QuicFramerTest, PacketWithDiversificationNonce) {
       arraysize(packet), false);
   QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-  ASSERT_TRUE(visitor_.public_header_->nonce != nullptr);
+  ASSERT_TRUE(visitor_.header_->nonce != nullptr);
   for (char i = 0; i < 32; ++i) {
-    EXPECT_EQ(i, (*visitor_.public_header_->nonce)[static_cast<size_t>(i)]);
+    EXPECT_EQ(i, (*visitor_.header_->nonce)[static_cast<size_t>(i)]);
   }
   EXPECT_EQ(1u, visitor_.padding_frames_.size());
   EXPECT_EQ(5, visitor_.padding_frames_[0]->num_padding_bytes);
@@ -1991,8 +1988,8 @@ TEST_P(QuicFramerTest, RejectPublicHeader) {
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.public_header_.get());
-  ASSERT_FALSE(visitor_.header_.get());
+  ASSERT_TRUE(visitor_.header_.get());
+  EXPECT_EQ(0u, visitor_.header_->packet_number);
 }
 
 TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
@@ -2097,7 +2094,7 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
-  EXPECT_EQ(kSmallLargestObserved, frame.largest_observed);
+  EXPECT_EQ(kSmallLargestObserved, LargestAcked(frame));
   ASSERT_EQ(4660u, frame.packets.NumPacketsSlow());
 
   CheckFramingBoundaries(fragments, QUIC_INVALID_ACK_DATA);
@@ -2309,7 +2306,7 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlockMaxLength) {
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
-  EXPECT_EQ(kPacketNumber, frame.largest_observed);
+  EXPECT_EQ(kPacketNumber, LargestAcked(frame));
   ASSERT_EQ(4660u, frame.packets.NumPacketsSlow());
 
   CheckFramingBoundaries(fragments, QUIC_INVALID_ACK_DATA);
@@ -2540,7 +2537,7 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
   const QuicAckFrame& frame = *visitor_.ack_frames_[0];
-  EXPECT_EQ(kSmallLargestObserved, frame.largest_observed);
+  EXPECT_EQ(kSmallLargestObserved, LargestAcked(frame));
   ASSERT_EQ(4254u, frame.packets.NumPacketsSlow());
   EXPECT_EQ(4u, frame.packets.NumIntervals());
 
@@ -3113,10 +3110,7 @@ TEST_P(QuicFramerTest, PublicResetPacketV33) {
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
   ASSERT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.public_reset_packet_.get());
-  EXPECT_EQ(kConnectionId,
-            visitor_.public_reset_packet_->public_header.connection_id);
-  EXPECT_TRUE(visitor_.public_reset_packet_->public_header.reset_flag);
-  EXPECT_FALSE(visitor_.public_reset_packet_->public_header.version_flag);
+  EXPECT_EQ(kConnectionId, visitor_.public_reset_packet_->connection_id);
   EXPECT_EQ(kNonceProof, visitor_.public_reset_packet_->nonce_proof);
   EXPECT_EQ(
       IpAddressFamily::IP_UNSPEC,
@@ -3166,10 +3160,7 @@ TEST_P(QuicFramerTest, PublicResetPacket) {
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
   ASSERT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.public_reset_packet_.get());
-  EXPECT_EQ(kConnectionId,
-            visitor_.public_reset_packet_->public_header.connection_id);
-  EXPECT_TRUE(visitor_.public_reset_packet_->public_header.reset_flag);
-  EXPECT_FALSE(visitor_.public_reset_packet_->public_header.version_flag);
+  EXPECT_EQ(kConnectionId, visitor_.public_reset_packet_->connection_id);
   EXPECT_EQ(kNonceProof, visitor_.public_reset_packet_->nonce_proof);
   EXPECT_EQ(
       IpAddressFamily::IP_UNSPEC,
@@ -3261,10 +3252,7 @@ TEST_P(QuicFramerTest, PublicResetPacketWithClientAddress) {
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
   ASSERT_EQ(QUIC_NO_ERROR, framer_.error());
   ASSERT_TRUE(visitor_.public_reset_packet_.get());
-  EXPECT_EQ(kConnectionId,
-            visitor_.public_reset_packet_->public_header.connection_id);
-  EXPECT_TRUE(visitor_.public_reset_packet_->public_header.reset_flag);
-  EXPECT_FALSE(visitor_.public_reset_packet_->public_header.version_flag);
+  EXPECT_EQ(kConnectionId, visitor_.public_reset_packet_->connection_id);
   EXPECT_EQ(kNonceProof, visitor_.public_reset_packet_->nonce_proof);
   EXPECT_EQ("4.31.198.44",
             visitor_.public_reset_packet_->client_address.host().ToString());
@@ -3345,9 +3333,9 @@ TEST_P(QuicFramerTest, OldVersionNegotiationPacket) {
 
 TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
@@ -3404,9 +3392,9 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithNewPaddingFrame) {
     return;
   }
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
@@ -3519,10 +3507,10 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithNewPaddingFrame) {
 
 TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
-  header.public_header.packet_number_length = PACKET_4BYTE_PACKET_NUMBER;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number_length = PACKET_4BYTE_PACKET_NUMBER;
   header.packet_number = kPacketNumber;
 
   QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
@@ -3574,10 +3562,10 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
 
 TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
-  header.public_header.packet_number_length = PACKET_2BYTE_PACKET_NUMBER;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number_length = PACKET_2BYTE_PACKET_NUMBER;
   header.packet_number = kPacketNumber;
 
   QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
@@ -3629,10 +3617,10 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
 
 TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
-  header.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
+  header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
   header.packet_number = kPacketNumber;
 
   QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
@@ -3667,9 +3655,9 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
 
 TEST_P(QuicFramerTest, BuildStreamFramePacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
@@ -3761,9 +3749,9 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
 
 TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = true;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = true;
   header.packet_number = kPacketNumber;
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
@@ -3870,16 +3858,14 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
 
 TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   // Use kSmallLargestObserved to make this test finished in a short time.
-  QuicAckFrame ack_frame;
-  ack_frame.largest_observed = kSmallLargestObserved;
+  QuicAckFrame ack_frame = InitAckFrame(kSmallLargestObserved);
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
-  ack_frame.packets.AddRange(1, kSmallLargestObserved + 1);
 
   QuicFrames frames = {QuicFrame(&ack_frame)};
 
@@ -3963,16 +3949,14 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
 
 TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlockMaxLength) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
-  QuicAckFrame ack_frame;
-  FLAGS_quic_reloadable_flag_quic_frames_deque2 = true;
-  ack_frame.largest_observed = kPacketNumber;
+  QuicAckFrame ack_frame = InitAckFrame(kPacketNumber);
+  FLAGS_quic_reloadable_flag_quic_frames_deque3 = true;
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
-  ack_frame.packets.AddRange(1, kPacketNumber + 1);
 
   QuicFrames frames = {QuicFrame(&ack_frame)};
 
@@ -4058,20 +4042,18 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlockMaxLength) {
 
 TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   // Use kSmallLargestObserved to make this test finished in a short time.
-  QuicAckFrame ack_frame;
-  ack_frame.largest_observed = kSmallLargestObserved;
+  QuicAckFrame ack_frame =
+      InitAckFrame({{1, 5},
+                    {10, 500},
+                    {900, kSmallMissingPacket},
+                    {kSmallMissingPacket + 1, kSmallLargestObserved + 1}});
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
-  ack_frame.packets.AddRange(1, 5);
-  ack_frame.packets.AddRange(10, 500);
-  ack_frame.packets.AddRange(900, kSmallMissingPacket);
-  ack_frame.packets.AddRange(kSmallMissingPacket + 1,
-                             kSmallLargestObserved + 1);
 
   QuicFrames frames = {QuicFrame(&ack_frame)};
 
@@ -4210,14 +4192,14 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
 
 TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   // Use kSmallLargestObservedto make this test finished in a short time.
   QuicAckFrame ack_frame;
-  ack_frame.largest_observed = kSmallLargestObserved;
+  ack_frame.deprecated_largest_observed = kSmallLargestObserved;
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
   // 300 ack blocks.
   for (size_t i = 2; i < 2 * 300; i += 2) {
@@ -4524,9 +4506,9 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
 
 TEST_P(QuicFramerTest, BuildNewStopWaitingPacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicStopWaitingFrame stop_waiting_frame;
@@ -4578,9 +4560,9 @@ TEST_P(QuicFramerTest, BuildNewStopWaitingPacket) {
 
 TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicRstStreamFrame rst_frame;
@@ -4670,9 +4652,9 @@ TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
 
 TEST_P(QuicFramerTest, BuildCloseFramePacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicConnectionCloseFrame close_frame;
@@ -4739,9 +4721,9 @@ TEST_P(QuicFramerTest, BuildCloseFramePacket) {
 
 TEST_P(QuicFramerTest, BuildGoAwayPacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicGoAwayFrame goaway_frame;
@@ -4813,9 +4795,9 @@ TEST_P(QuicFramerTest, BuildGoAwayPacket) {
 
 TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicWindowUpdateFrame window_update_frame;
@@ -4874,9 +4856,9 @@ TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
 
 TEST_P(QuicFramerTest, BuildBlockedPacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicBlockedFrame blocked_frame;
@@ -4928,9 +4910,9 @@ TEST_P(QuicFramerTest, BuildBlockedPacket) {
 
 TEST_P(QuicFramerTest, BuildPingPacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicFrames frames = {QuicFrame(QuicPingFrame())};
@@ -4976,9 +4958,9 @@ TEST_P(QuicFramerTest, BuildPingPacket) {
 // Test that the MTU discovery packet is serialized correctly as a PING packet.
 TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicFrames frames = {QuicFrame(QuicMtuDiscoveryFrame())};
@@ -5023,9 +5005,7 @@ TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
 
 TEST_P(QuicFramerTest, BuildPublicResetPacket) {
   QuicPublicResetPacket reset_packet;
-  reset_packet.public_header.connection_id = kConnectionId;
-  reset_packet.public_header.reset_flag = true;
-  reset_packet.public_header.version_flag = false;
+  reset_packet.connection_id = kConnectionId;
   reset_packet.nonce_proof = kNonceProof;
 
   // clang-format off
@@ -5058,9 +5038,7 @@ TEST_P(QuicFramerTest, BuildPublicResetPacket) {
 
 TEST_P(QuicFramerTest, BuildPublicResetPacketWithClientAddress) {
   QuicPublicResetPacket reset_packet;
-  reset_packet.public_header.connection_id = kConnectionId;
-  reset_packet.public_header.reset_flag = true;
-  reset_packet.public_header.version_flag = false;
+  reset_packet.connection_id = kConnectionId;
   reset_packet.nonce_proof = kNonceProof;
   reset_packet.client_address =
       QuicSocketAddress(QuicIpAddress::Loopback4(), 0x1234);
@@ -5207,9 +5185,9 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
 
 TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   QuicAckFrame ack_frame;
@@ -5230,7 +5208,7 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
       QuicEncryptedPacket(buffer, encrypted_length, false)));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
   QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
-  EXPECT_EQ(600u, processed_ack_frame.largest_observed);
+  EXPECT_EQ(600u, LargestAcked(processed_ack_frame));
   ASSERT_EQ(256u, processed_ack_frame.packets.NumPacketsSlow());
   EXPECT_EQ(90u, processed_ack_frame.packets.Min());
   EXPECT_EQ(600u, processed_ack_frame.packets.Max());
@@ -5238,9 +5216,9 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
 
 TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
   // Create a packet with just the ack.
@@ -5262,7 +5240,7 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
       QuicEncryptedPacket(buffer, encrypted_length, false)));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
   QuicAckFrame& processed_ack_frame = *visitor_.ack_frames_[0];
-  EXPECT_EQ(600u, processed_ack_frame.largest_observed);
+  EXPECT_EQ(600u, LargestAcked(processed_ack_frame));
   ASSERT_EQ(239u, processed_ack_frame.packets.NumPacketsSlow());
   EXPECT_EQ(124u, processed_ack_frame.packets.Min());
   EXPECT_EQ(600u, processed_ack_frame.packets.Max());
@@ -5270,14 +5248,12 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
 
 TEST_P(QuicFramerTest, CleanTruncation) {
   QuicPacketHeader header;
-  header.public_header.connection_id = kConnectionId;
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
+  header.connection_id = kConnectionId;
+  header.reset_flag = false;
+  header.version_flag = false;
   header.packet_number = kPacketNumber;
 
-  QuicAckFrame ack_frame;
-  ack_frame.largest_observed = 201;
-  ack_frame.packets.AddRange(1, ack_frame.largest_observed);
+  QuicAckFrame ack_frame = InitAckFrame(201);
 
   // Create a packet with just the ack.
   QuicFrames frames = {QuicFrame(&ack_frame)};

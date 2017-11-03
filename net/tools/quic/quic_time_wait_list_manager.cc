@@ -201,9 +201,7 @@ void QuicTimeWaitListManager::SendPublicReset(
     const QuicSocketAddress& client_address,
     QuicConnectionId connection_id) {
   QuicPublicResetPacket packet;
-  packet.public_header.connection_id = connection_id;
-  packet.public_header.reset_flag = true;
-  packet.public_header.version_flag = false;
+  packet.connection_id = connection_id;
   // TODO(satyamshekhar): generate a valid nonce for this connection_id.
   packet.nonce_proof = 1010101;
   packet.client_address = client_address;

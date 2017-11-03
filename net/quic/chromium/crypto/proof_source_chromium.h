@@ -38,7 +38,6 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public ProofSource {
                 const std::string& server_config,
                 QuicTransportVersion quic_version,
                 QuicStringPiece chlo_hash,
-                const QuicTagVector& connection_options,
                 std::unique_ptr<Callback> callback) override;
 
   QuicReferenceCountedPointer<Chain> GetCertChain(
@@ -58,7 +57,6 @@ class NET_EXPORT_PRIVATE ProofSourceChromium : public ProofSource {
                      const std::string& server_config,
                      QuicTransportVersion quic_version,
                      QuicStringPiece chlo_hash,
-                     const QuicTagVector& connection_options,
                      QuicReferenceCountedPointer<ProofSource::Chain>* out_chain,
                      QuicCryptoProof* proof);
 

@@ -189,18 +189,22 @@ void QuicSentPacketManager::SetMaxPacingRate(QuicBandwidth max_pacing_rate) {
   pacing_sender_.set_max_pacing_rate(max_pacing_rate);
 }
 
+QuicBandwidth QuicSentPacketManager::MaxPacingRate() const {
+  return pacing_sender_.max_pacing_rate();
+}
+
 void QuicSentPacketManager::SetHandshakeConfirmed() {
   handshake_confirmed_ = true;
 }
 
 void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
                                           QuicTime ack_receive_time) {
-  DCHECK_LE(ack_frame.largest_observed, unacked_packets_.largest_sent_packet());
+  DCHECK_LE(LargestAcked(ack_frame), unacked_packets_.largest_sent_packet());
   QuicByteCount prior_in_flight = unacked_packets_.bytes_in_flight();
   UpdatePacketInformationReceivedByPeer(ack_frame);
   bool rtt_updated = MaybeUpdateRTT(ack_frame, ack_receive_time);
-  DCHECK_GE(ack_frame.largest_observed, unacked_packets_.largest_observed());
-  unacked_packets_.IncreaseLargestObserved(ack_frame.largest_observed);
+  DCHECK_GE(LargestAcked(ack_frame), unacked_packets_.largest_observed());
+  unacked_packets_.IncreaseLargestObserved(LargestAcked(ack_frame));
 
   HandleAckForSentPackets(ack_frame);
   InvokeLossDetection(ack_receive_time);
@@ -222,7 +226,7 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
     if (consecutive_rto_count_ > 0) {
       // If the ack acknowledges data sent prior to the RTO,
       // the RTO was spurious.
-      if (ack_frame.largest_observed < first_rto_transmission_) {
+      if (LargestAcked(ack_frame) < first_rto_transmission_) {
         // Replace SRTT with latest_rtt and increase the variance to prevent
         // a spurious RTO from happening again.
         rtt_stats_.ExpireSmoothedMetrics();
@@ -248,7 +252,7 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
 void QuicSentPacketManager::UpdatePacketInformationReceivedByPeer(
     const QuicAckFrame& ack_frame) {
   if (ack_frame.packets.Empty()) {
-    least_packet_awaited_by_peer_ = ack_frame.largest_observed + 1;
+    least_packet_awaited_by_peer_ = LargestAcked(ack_frame) + 1;
   } else {
     least_packet_awaited_by_peer_ = ack_frame.packets.Min();
   }
@@ -283,7 +287,7 @@ void QuicSentPacketManager::HandleAckForSentPackets(
   QuicPacketNumber packet_number = unacked_packets_.GetLeastUnacked();
   for (QuicUnackedPacketMap::iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it, ++packet_number) {
-    if (packet_number > ack_frame.largest_observed) {
+    if (packet_number > LargestAcked(ack_frame)) {
       // These packets are still in flight.
       break;
     }
@@ -421,11 +425,7 @@ QuicPendingRetransmission QuicSentPacketManager::NextPendingRetransmission() {
   DCHECK(!transmission_info.retransmittable_frames.empty());
 
   return QuicPendingRetransmission(packet_number, transmission_type,
-                                   transmission_info.retransmittable_frames,
-                                   transmission_info.has_crypto_handshake,
-                                   transmission_info.num_padding_bytes,
-                                   transmission_info.encryption_level,
-                                   transmission_info.packet_number_length);
+                                   transmission_info);
 }
 
 QuicPacketNumber QuicSentPacketManager::GetNewestRetransmission(
@@ -687,17 +687,17 @@ bool QuicSentPacketManager::MaybeUpdateRTT(const QuicAckFrame& ack_frame,
   // only update rtt when the largest observed gets acked.
   // NOTE: If ack is a truncated ack, then the largest observed is in fact
   // unacked, and may cause an RTT sample to be taken.
-  if (!unacked_packets_.IsUnacked(ack_frame.largest_observed)) {
+  if (!unacked_packets_.IsUnacked(LargestAcked(ack_frame))) {
     return false;
   }
   // We calculate the RTT based on the highest ACKed packet number, the lower
   // packet numbers will include the ACK aggregation delay.
   const QuicTransmissionInfo& transmission_info =
-      unacked_packets_.GetTransmissionInfo(ack_frame.largest_observed);
+      unacked_packets_.GetTransmissionInfo(LargestAcked(ack_frame));
   // Ensure the packet has a valid sent time.
   if (transmission_info.sent_time == QuicTime::Zero()) {
     QUIC_BUG << "Acked packet has zero sent time, largest_observed:"
-             << ack_frame.largest_observed;
+             << LargestAcked(ack_frame);
     return false;
   }
 

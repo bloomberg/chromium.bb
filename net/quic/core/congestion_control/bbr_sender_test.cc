@@ -425,6 +425,60 @@ TEST_F(BbrSenderTest, SimpleTransferAckDecimation4) {
   ExpectApproxEq(kTestRtt, rtt_stats_->min_rtt(), 0.1f);
 }
 
+// Test a simple long data transfer with 2 rtts of aggregation.
+TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
+  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
+  FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_window = true;
+  CreateDefaultSetup();
+  SetConnectionOption(kBBR4);
+  // 2 RTTs of aggregation, with a max of 10kb.
+  EnableAggregation(10 * 1024, 2 * kTestRtt);
+
+  // Transfer 12MB.
+  DoSimpleTransfer(12 * 1024 * 1024, QuicTime::Delta::FromSeconds(35));
+  EXPECT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
+  // It's possible to read a bandwidth as much as 50% too high with aggregation.
+  EXPECT_LE(kTestLinkBandwidth * 0.99f,
+            sender_->ExportDebugState().max_bandwidth);
+  // TODO(ianswett): Tighten this bound once we understand why BBR is
+  // overestimating bandwidth with aggregation. b/36022633
+  EXPECT_GE(kTestLinkBandwidth * 1.5f,
+            sender_->ExportDebugState().max_bandwidth);
+  // TODO(ianswett): Expect 0 packets are lost once BBR no longer measures
+  // bandwidth higher than the link rate.
+  // The margin here is high, because the aggregation greatly increases
+  // smoothed rtt.
+  EXPECT_GE(kTestRtt * 4, rtt_stats_->smoothed_rtt());
+  ExpectApproxEq(kTestRtt, rtt_stats_->min_rtt(), 0.12f);
+}
+
+// Test a simple long data transfer with 2 rtts of aggregation.
+TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes40RTTWindow) {
+  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
+  FLAGS_quic_reloadable_flag_quic_bbr_ack_aggregation_window = true;
+  CreateDefaultSetup();
+  SetConnectionOption(kBBR5);
+  // 2 RTTs of aggregation, with a max of 10kb.
+  EnableAggregation(10 * 1024, 2 * kTestRtt);
+
+  // Transfer 12MB.
+  DoSimpleTransfer(12 * 1024 * 1024, QuicTime::Delta::FromSeconds(35));
+  EXPECT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
+  // It's possible to read a bandwidth as much as 50% too high with aggregation.
+  EXPECT_LE(kTestLinkBandwidth * 0.99f,
+            sender_->ExportDebugState().max_bandwidth);
+  // TODO(ianswett): Tighten this bound once we understand why BBR is
+  // overestimating bandwidth with aggregation. b/36022633
+  EXPECT_GE(kTestLinkBandwidth * 1.5f,
+            sender_->ExportDebugState().max_bandwidth);
+  // TODO(ianswett): Expect 0 packets are lost once BBR no longer measures
+  // bandwidth higher than the link rate.
+  // The margin here is high, because the aggregation greatly increases
+  // smoothed rtt.
+  EXPECT_GE(kTestRtt * 4, rtt_stats_->smoothed_rtt());
+  ExpectApproxEq(kTestRtt, rtt_stats_->min_rtt(), 0.12f);
+}
+
 // Test the number of losses incurred by the startup phase in a situation when
 // the buffer is less than BDP.
 TEST_F(BbrSenderTest, PacketLossOnSmallBufferStartup) {
@@ -478,6 +532,99 @@ TEST_F(BbrSenderTest, RecoveryStates) {
         return sender_->ExportDebugState().recovery_state != BbrSender::GROWTH;
       },
       timeout);
+
+  ASSERT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
+  ASSERT_EQ(BbrSender::NOT_IN_RECOVERY,
+            sender_->ExportDebugState().recovery_state);
+  ASSERT_TRUE(simulator_result);
+}
+
+// Ensures the code transitions loss recovery states correctly when in STARTUP
+// and the BBS2 connection option is used.
+// (NOT_IN_RECOVERY -> CONSERVATION -> GROWTH -> NOT_IN_RECOVERY).
+TEST_F(BbrSenderTest, StartupMediumRecoveryStates) {
+  // Set seed to the position where the gain cycling causes the sender go
+  // into conservation upon entering PROBE_BW.
+  //
+  // TODO(vasilvv): there should be a better way to test this.
+  random_.set_seed(UINT64_C(14719894707049085006));
+
+  const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(10);
+  bool simulator_result;
+  CreateSmallBufferSetup();
+  FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup = true;
+  SetConnectionOption(kBBS2);
+
+  bbr_sender_.AddBytesToTransfer(100 * 1024 * 1024);
+  ASSERT_EQ(BbrSender::NOT_IN_RECOVERY,
+            sender_->ExportDebugState().recovery_state);
+
+  simulator_result = simulator_.RunUntilOrTimeout(
+      [this]() {
+        return sender_->ExportDebugState().recovery_state !=
+               BbrSender::NOT_IN_RECOVERY;
+      },
+      timeout);
+  ASSERT_TRUE(simulator_result);
+  ASSERT_EQ(BbrSender::MEDIUM_GROWTH,
+            sender_->ExportDebugState().recovery_state);
+
+  simulator_result = simulator_.RunUntilOrTimeout(
+      [this]() {
+        return sender_->ExportDebugState().recovery_state !=
+               BbrSender::MEDIUM_GROWTH;
+      },
+      timeout);
+  ASSERT_TRUE(simulator_result);
+  ASSERT_EQ(BbrSender::GROWTH, sender_->ExportDebugState().recovery_state);
+
+  simulator_result = simulator_.RunUntilOrTimeout(
+      [this]() {
+        return sender_->ExportDebugState().recovery_state != BbrSender::GROWTH;
+      },
+      timeout);
+
+  ASSERT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
+  ASSERT_EQ(BbrSender::NOT_IN_RECOVERY,
+            sender_->ExportDebugState().recovery_state);
+  ASSERT_TRUE(simulator_result);
+}
+
+// Ensures the code transitions loss recovery states correctly when in STARTUP
+// and the BBS3 connection option is used.
+// (NOT_IN_RECOVERY -> GROWTH -> NOT_IN_RECOVERY).
+TEST_F(BbrSenderTest, StartupGrowthRecoveryStates) {
+  // Set seed to the position where the gain cycling causes the sender go
+  // into conservation upon entering PROBE_BW.
+  //
+  // TODO(vasilvv): there should be a better way to test this.
+  random_.set_seed(UINT64_C(14719894707049085006));
+
+  const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(10);
+  bool simulator_result;
+  CreateSmallBufferSetup();
+  FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup = true;
+  SetConnectionOption(kBBS3);
+
+  bbr_sender_.AddBytesToTransfer(100 * 1024 * 1024);
+  ASSERT_EQ(BbrSender::NOT_IN_RECOVERY,
+            sender_->ExportDebugState().recovery_state);
+
+  simulator_result = simulator_.RunUntilOrTimeout(
+      [this]() {
+        return sender_->ExportDebugState().recovery_state !=
+               BbrSender::NOT_IN_RECOVERY;
+      },
+      timeout);
+  ASSERT_TRUE(simulator_result);
+  ASSERT_EQ(BbrSender::GROWTH, sender_->ExportDebugState().recovery_state);
+
+  simulator_result = simulator_.RunUntilOrTimeout(
+      [this]() {
+        return sender_->ExportDebugState().recovery_state != BbrSender::GROWTH;
+      },
+      timeout);
+  ASSERT_TRUE(simulator_result);
 
   ASSERT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
   ASSERT_EQ(BbrSender::NOT_IN_RECOVERY,
@@ -816,6 +963,36 @@ TEST_F(BbrSenderTest, SimpleTransferSlowerStartup) {
   ASSERT_TRUE(simulator_result);
   EXPECT_EQ(BbrSender::DRAIN, sender_->ExportDebugState().mode);
   EXPECT_GE(3u, sender_->ExportDebugState().round_trip_count - max_bw_round);
+  EXPECT_EQ(3u, sender_->ExportDebugState().rounds_without_bandwidth_gain);
+  EXPECT_NE(0u, bbr_sender_.connection()->GetStats().packets_lost);
+  EXPECT_FALSE(sender_->ExportDebugState().last_sample_is_app_limited);
+}
+
+// Ensures no change in congestion window in STARTUP after loss.
+TEST_F(BbrSenderTest, SimpleTransferNoConservationInStartup) {
+  // Adding TSO CWND causes packet loss before exiting startup.
+  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
+  FLAGS_quic_reloadable_flag_quic_bbr_conservation_in_startup = true;
+  CreateSmallBufferSetup();
+
+  SetConnectionOption(kBBS1);
+
+  // Run until the full bandwidth is reached and check how many rounds it was.
+  bbr_sender_.AddBytesToTransfer(12 * 1024 * 1024);
+  bool used_conservation_cwnd = false;
+  bool simulator_result = simulator_.RunUntilOrTimeout(
+      [this, &used_conservation_cwnd]() {
+        if (!sender_->ExportDebugState().is_at_full_bandwidth &&
+            sender_->GetCongestionWindow() <
+                sender_->ExportDebugState().congestion_window) {
+          used_conservation_cwnd = true;
+        }
+        return sender_->ExportDebugState().is_at_full_bandwidth;
+      },
+      QuicTime::Delta::FromSeconds(5));
+  ASSERT_TRUE(simulator_result);
+  EXPECT_FALSE(used_conservation_cwnd);
+  EXPECT_EQ(BbrSender::DRAIN, sender_->ExportDebugState().mode);
   EXPECT_EQ(3u, sender_->ExportDebugState().rounds_without_bandwidth_gain);
   EXPECT_NE(0u, bbr_sender_.connection()->GetStats().packets_lost);
   EXPECT_FALSE(sender_->ExportDebugState().last_sample_is_app_limited);

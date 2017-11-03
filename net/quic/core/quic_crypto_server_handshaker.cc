@@ -276,9 +276,6 @@ void QuicCryptoServerHandshaker::SendServerConfigUpdate(
       GetClientAddress().host(), session()->connection()->clock(),
       session()->connection()->random_generator(), compressed_certs_cache_,
       *crypto_negotiated_params_, cached_network_params,
-      (session()->config()->HasReceivedConnectionOptions()
-           ? session()->config()->ReceivedConnectionOptions()
-           : QuicTagVector()),
       std::move(cb));
 }
 

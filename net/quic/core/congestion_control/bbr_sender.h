@@ -57,6 +57,8 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
     NOT_IN_RECOVERY,
     // Allow an extra outstanding byte for each byte acknowledged.
     CONSERVATION,
+    // Allow 1.5 extra outstanding bytes for each byte acknowledged.
+    MEDIUM_GROWTH,
     // Allow two extra outstanding bytes for each byte acknowledged (slow
     // start).
     GROWTH
@@ -319,8 +321,17 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
 
   // When true, recovery is rate based rather than congestion window based.
   bool rate_based_recovery_;
+
   // When true, pace at 1.5x and disable packet conservation in STARTUP.
   bool slower_startup_;
+  // When true, disables packet conservation in STARTUP.
+  bool rate_based_startup_;
+  // Used as the initial packet conservation mode when first entering recovery.
+  RecoveryState initial_conservation_in_startup_;
+
+  // If true, will not exit low gain mode until bytes_in_flight drops below BDP
+  // or it's time for high gain mode.
+  bool fully_drain_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(BbrSender);
 };

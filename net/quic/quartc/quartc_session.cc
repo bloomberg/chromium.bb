@@ -37,7 +37,6 @@ class DummyProofSource : public ProofSource {
                 const string& server_config,
                 QuicTransportVersion transport_version,
                 QuicStringPiece chlo_hash,
-                const QuicTagVector& connection_options,
                 std::unique_ptr<Callback> callback) override {
     QuicReferenceCountedPointer<ProofSource::Chain> chain;
     QuicCryptoProof proof;

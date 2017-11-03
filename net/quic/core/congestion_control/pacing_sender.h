@@ -43,6 +43,8 @@ class QUIC_EXPORT_PRIVATE PacingSender {
     max_pacing_rate_ = max_pacing_rate;
   }
 
+  QuicBandwidth max_pacing_rate() const { return max_pacing_rate_; }
+
   void OnCongestionEvent(bool rtt_updated,
                          QuicByteCount bytes_in_flight,
                          QuicTime event_time,

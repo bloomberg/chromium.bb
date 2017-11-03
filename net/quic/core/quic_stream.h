@@ -361,6 +361,10 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
   // Latched value of FLAGS_quic_buffered_data_threshold.
   const QuicByteCount buffered_data_threshold_;
 
+  // Latched value of
+  // FLAGS_quic_reloadable_flag_quic_remove_on_stream_frame_discarded.
+  const bool remove_on_stream_frame_discarded_;
+
   DISALLOW_COPY_AND_ASSIGN(QuicStream);
 };
 

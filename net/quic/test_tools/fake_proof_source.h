@@ -36,7 +36,6 @@ class FakeProofSource : public ProofSource {
                 const std::string& server_config,
                 QuicTransportVersion transport_version,
                 QuicStringPiece chlo_hash,
-                const QuicTagVector& connection_options,
                 std::unique_ptr<ProofSource::Callback> callback) override;
   QuicReferenceCountedPointer<Chain> GetCertChain(
       const QuicSocketAddress& server_address,
@@ -72,7 +71,6 @@ class FakeProofSource : public ProofSource {
                std::string server_config,
                QuicTransportVersion transport_version,
                std::string chlo_hash,
-               const QuicTagVector& connection_options,
                std::unique_ptr<ProofSource::Callback> callback,
                ProofSource* delegate);
     ~GetProofOp() override;
@@ -85,7 +83,6 @@ class FakeProofSource : public ProofSource {
     std::string server_config_;
     QuicTransportVersion transport_version_;
     std::string chlo_hash_;
-    QuicTagVector connection_options_;
     std::unique_ptr<ProofSource::Callback> callback_;
     ProofSource* delegate_;
   };

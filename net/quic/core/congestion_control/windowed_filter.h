@@ -75,6 +75,11 @@ class WindowedFilter {
                    Sample(zero_value_, zero_time),
                    Sample(zero_value_, zero_time)} {}
 
+  // Changes the window length.  Does not update any current samples.
+  void SetWindowLength(TimeDeltaT window_length) {
+    window_length_ = window_length;
+  }
+
   // Updates best estimates with |sample|, and expires and updates best
   // estimates as necessary.
   void Update(T new_sample, TimeT new_time) {

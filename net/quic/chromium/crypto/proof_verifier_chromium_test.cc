@@ -150,7 +150,7 @@ class ProofVerifierChromiumTest : public ::testing::Test {
         GetTestCertsDirectory().AppendASCII("quic_test.example.com.key.sct"));
     std::string signature;
     source.GetProof(QuicSocketAddress(), kTestHostname, kTestConfig,
-                    QUIC_VERSION_35, kTestChloHash, QuicTagVector(),
+                    QUIC_VERSION_35, kTestChloHash,
                     std::make_unique<SignatureSaver>(&signature));
     return signature;
   }

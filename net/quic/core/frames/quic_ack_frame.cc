@@ -57,14 +57,15 @@ bool IsAwaitingPacket(const QuicAckFrame& ack_frame,
 }
 
 QuicAckFrame::QuicAckFrame()
-    : largest_observed(0), ack_delay_time(QuicTime::Delta::Infinite()) {}
+    : deprecated_largest_observed(0),
+      ack_delay_time(QuicTime::Delta::Infinite()) {}
 
 QuicAckFrame::QuicAckFrame(const QuicAckFrame& other) = default;
 
 QuicAckFrame::~QuicAckFrame() {}
 
 std::ostream& operator<<(std::ostream& os, const QuicAckFrame& ack_frame) {
-  os << "{ largest_observed: " << ack_frame.largest_observed
+  os << "{ largest_acked: " << LargestAcked(ack_frame)
      << ", ack_delay_time: " << ack_frame.ack_delay_time.ToMicroseconds()
      << ", packets: [ " << ack_frame.packets << " ]"
      << ", received_packets: [ ";
@@ -75,10 +76,28 @@ std::ostream& operator<<(std::ostream& os, const QuicAckFrame& ack_frame) {
   os << " ] }\n";
   return os;
 }
+
+QuicPacketNumber LargestAcked(const QuicAckFrame& frame) {
+  if (!FLAGS_quic_reloadable_flag_quic_deprecate_largest_observed) {
+    return frame.deprecated_largest_observed;
+  }
+
+  QUIC_FLAG_COUNT(quic_reloadable_flag_quic_deprecate_largest_observed);
+
+  if (!frame.packets.Empty() &&
+      frame.packets.Max() != frame.deprecated_largest_observed) {
+    QUIC_BUG << "Peer last received packet: " << frame.packets.Max()
+             << " which is not equal to largest observed: "
+             << frame.deprecated_largest_observed;
+  }
+
+  return frame.packets.Empty() ? 0 : frame.packets.Max();
+}
+
 PacketNumberQueue::PacketNumberQueue()
-    : use_deque_(FLAGS_quic_reloadable_flag_quic_frames_deque2) {
+    : use_deque_(FLAGS_quic_reloadable_flag_quic_frames_deque3) {
   if (use_deque_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_frames_deque2);
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_frames_deque3);
   }
 }
 
@@ -202,25 +221,9 @@ void PacketNumberQueue::AddRange(QuicPacketNumber lower,
           Interval<QuicPacketNumber>(lower, higher));
 
     } else {
-      // Iterating through the interval and adding packets one by one
-      QUIC_BUG << "In the slowpath of AddRange. Adding [" << lower << ", "
-               << higher << "), in a deque of size "
-               << packet_number_deque_.size() << ", whose largest element is "
-               << back.max() << " and smallest " << front.min() << ".\n";
-      // Check if the first and/or the last interval of the deque can be
-      // extended, which would reduce the compexity of the following for loop.
-      if (higher >= back.max()) {
-        packet_number_deque_.back().SetMax(higher);
-        higher = max(lower, back.min());
-      }
-      if (lower < front.min()) {
-        packet_number_deque_.front().SetMin(lower);
-        lower = min(higher, front.max());
-      }
-
-      for (size_t i = lower; i < higher; i++) {
-        PacketNumberQueue::Add(i);
-      }
+      // Ranges must be above or below all existing ranges.
+      QUIC_BUG << "AddRange only supports adding packets above or below the "
+               << "current min:" << Min() << " and max:" << Max();
     }
   } else {
     packet_number_intervals_.Add(lower, higher);

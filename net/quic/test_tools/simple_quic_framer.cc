@@ -38,8 +38,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     version_negotiation_packet_.reset(new QuicVersionNegotiationPacket(packet));
   }
 
-  bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header) override {
+  bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override {
     return true;
   }
   bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override {

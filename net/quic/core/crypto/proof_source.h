@@ -118,7 +118,6 @@ class QUIC_EXPORT_PRIVATE ProofSource {
                         const std::string& server_config,
                         QuicTransportVersion transport_version,
                         QuicStringPiece chlo_hash,
-                        const QuicTagVector& connection_options,
                         std::unique_ptr<Callback> callback) = 0;
 
   // Returns the certificate chain for |hostname| in leaf-first order.

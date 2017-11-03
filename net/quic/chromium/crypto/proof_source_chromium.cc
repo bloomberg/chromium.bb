@@ -82,7 +82,6 @@ bool ProofSourceChromium::GetProofInner(
     const string& server_config,
     QuicTransportVersion quic_version,
     QuicStringPiece chlo_hash,
-    const QuicTagVector& /* connection_options */,
     QuicReferenceCountedPointer<ProofSource::Chain>* out_chain,
     QuicCryptoProof* proof) {
   DCHECK(proof != nullptr);
@@ -138,7 +137,6 @@ void ProofSourceChromium::GetProof(const QuicSocketAddress& server_addr,
                                    const std::string& server_config,
                                    QuicTransportVersion quic_version,
                                    QuicStringPiece chlo_hash,
-                                   const QuicTagVector& connection_options,
                                    std::unique_ptr<Callback> callback) {
   // As a transitional implementation, just call the synchronous version of
   // GetProof, then invoke the callback with the results and destroy it.
@@ -147,9 +145,8 @@ void ProofSourceChromium::GetProof(const QuicSocketAddress& server_addr,
   string leaf_cert_sct;
   QuicCryptoProof out_proof;
 
-  const bool ok =
-      GetProofInner(server_addr, hostname, server_config, quic_version,
-                    chlo_hash, connection_options, &chain, &out_proof);
+  const bool ok = GetProofInner(server_addr, hostname, server_config,
+                                quic_version, chlo_hash, &chain, &out_proof);
   callback->Run(ok, chain, out_proof, nullptr /* details */);
 }
 

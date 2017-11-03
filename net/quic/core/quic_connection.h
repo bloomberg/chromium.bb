@@ -342,6 +342,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Called by the Session when a max pacing rate for the connection is needed.
   virtual void SetMaxPacingRate(QuicBandwidth max_pacing_rate);
 
+  // Returns the max pacing rate for the connection.
+  QuicBandwidth MaxPacingRate() const;
+
   // Sets the number of active streams on the connection for congestion control.
   void SetNumOpenStreams(size_t num_streams);
 
@@ -445,8 +448,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override;
   void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) override;
-  bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header) override;
+  bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override;
   bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
   void OnDecryptedPacket(EncryptionLevel level) override;
   bool OnPacketHeader(const QuicPacketHeader& header) override;
@@ -580,8 +582,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
 
   // SetNonceForPublicHeader sets the nonce that will be transmitted in the
-  // public header of each packet encrypted at the initial encryption level
-  // decrypted. This should only be called on the server side.
+  // header of each packet encrypted at the initial encryption level decrypted.
+  // This should only be called on the server side.
   void SetDiversificationNonce(const DiversificationNonce& nonce);
 
   // SetDefaultEncryptionLevel sets the encryption level that will be applied
@@ -1018,10 +1020,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // The time that we got a packet for this connection.
   // This is used for timeouts, and does not indicate the packet was processed.
   QuicTime time_of_last_received_packet_;
-
-  // The last time this connection began sending a new (non-retransmitted)
-  // packet.
-  QuicTime time_of_last_sent_new_packet_;
 
   // The the send time of the first retransmittable packet sent after
   // |time_of_last_received_packet_|.
