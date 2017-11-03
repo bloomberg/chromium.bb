@@ -3119,12 +3119,13 @@ bool PaintLayer::AttemptDirectCompositingUpdate(
   // To cut off almost all the work in the compositing update for
   // this case, we treat inline transforms has having assumed overlap
   // (similar to how we treat animated transforms). Notice that we read
-  // CompositingReasonInlineTransform from the m_compositingReasons, which
+  // CompositingReasonInlineTransform from the compositing_reasons, which
   // means that the inline transform actually triggered assumed overlap in
   // the overlap map.
+  CompositingReasons current_reasons =
+      rare_data_ ? rare_data_->compositing_reasons : kCompositingReasonNone;
   if (diff.TransformChanged() &&
-      (!rare_data_ ||
-       !(rare_data_->compositing_reasons & kCompositingReasonInlineTransform)))
+      !OverlapSkippedDueToInlineTransform(current_reasons))
     return false;
 
   // We composite transparent Layers differently from non-transparent

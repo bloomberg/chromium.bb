@@ -559,12 +559,10 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     bool is_composited_clipping_layer =
         can_be_composited &&
         (reasons_to_composite & kCompositingReasonClipsCompositingDescendants);
-    bool is_composited_with_inline_transform =
-        reasons_to_composite & kCompositingReasonInlineTransform;
     if ((!child_recursion_data.testing_overlap_ &&
          !is_composited_clipping_layer) ||
         layer->GetLayoutObject().Style()->HasCurrentTransformAnimation() ||
-        is_composited_with_inline_transform)
+        layer->OverlapSkippedDueToInlineTransform(reasons_to_composite))
       current_recursion_data.testing_overlap_ = false;
 
     if (child_recursion_data.compositing_ancestor_ == layer)
