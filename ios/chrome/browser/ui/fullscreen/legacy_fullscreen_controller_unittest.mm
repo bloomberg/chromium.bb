@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
 
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
@@ -23,13 +23,13 @@ CGFloat kContentHeight = 5000.0;
 CGFloat kHeaderHeight = 42.0;
 }
 
-@interface MockFullScreenControllerDelegate
-    : NSObject<FullScreenControllerDelegate>
+@interface MockLegacyFullscreenControllerDelegate
+    : NSObject<LegacyFullscreenControllerDelegate>
 @property(nonatomic, readonly) float currentPosition;
 @property(nonatomic, assign) BOOL fakeIsTabWithIDCurrentFlag;
 @end
 
-@implementation MockFullScreenControllerDelegate
+@implementation MockLegacyFullscreenControllerDelegate
 @synthesize currentPosition = currentPosition_;
 @synthesize fakeIsTabWithIDCurrentFlag = fakeIsTabWithIDCurrentFlag_;
 
@@ -41,13 +41,13 @@ CGFloat kHeaderHeight = 42.0;
   return self;
 }
 
-- (void)fullScreenController:(FullScreenController*)fullscreenController
+- (void)fullScreenController:(LegacyFullscreenController*)fullscreenController
     drawHeaderViewFromOffset:(CGFloat)headerOffset
                      animate:(BOOL)animate {
   currentPosition_ = headerOffset;
 }
 
-- (void)fullScreenController:(FullScreenController*)fullScreenController
+- (void)fullScreenController:(LegacyFullscreenController*)fullScreenController
     drawHeaderViewFromOffset:(CGFloat)headerOffset
               onWebViewProxy:(id<CRWWebViewProxy>)webViewProxy
      changeTopContentPadding:(BOOL)changeTopContentPadding
@@ -88,7 +88,7 @@ class FullscreenControllerTest : public PlatformTest {
     scrollview_.contentSize = contentSize.size;
     mockWebController_ =
         [OCMockObject niceMockForClass:[CRWWebController class]];
-    mockDelegate_ = [[MockFullScreenControllerDelegate alloc] init];
+    mockDelegate_ = [[MockLegacyFullscreenControllerDelegate alloc] init];
     mockWebView_ = [[UIView alloc] init];
     mockContentView_ =
         [[TestWebViewContentView alloc] initWithMockWebView:mockWebView_
@@ -98,9 +98,9 @@ class FullscreenControllerTest : public PlatformTest {
     [webViewProxy_ setContentView:mockContentView_];
     webViewScrollViewProxy_ = [webViewProxy_ scrollViewProxy];
     controller_ =
-        [[FullScreenController alloc] initWithDelegate:mockDelegate_
-                                     navigationManager:NULL
-                                             sessionID:kFakeSessionId];
+        [[LegacyFullscreenController alloc] initWithDelegate:mockDelegate_
+                                           navigationManager:NULL
+                                                   sessionID:kFakeSessionId];
     DCHECK(controller_);
     [webViewScrollViewProxy_ addObserver:controller_];
     // Simulate a CRWWebControllerObserver callback.
@@ -154,8 +154,8 @@ class FullscreenControllerTest : public PlatformTest {
   // Adds |view| as a sub view to the underlying |scrollview_|.
   void AddSubViewToScrollView(UIView* view) { [scrollview_ addSubview:view]; }
 
-  FullScreenController* controller_;
-  MockFullScreenControllerDelegate* mockDelegate_;
+  LegacyFullscreenController* controller_;
+  MockLegacyFullscreenControllerDelegate* mockDelegate_;
   CRWWebViewScrollViewProxy* webViewScrollViewProxy_;
   id mockWebView_;
   id mockWebController_;

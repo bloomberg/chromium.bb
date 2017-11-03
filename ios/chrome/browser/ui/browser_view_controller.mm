@@ -135,8 +135,8 @@
 #import "ios/chrome/browser/ui/external_search/external_search_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
 #import "ios/chrome/browser/ui/history_popup/tab_history_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
@@ -280,7 +280,7 @@ UIColor* StatusBarBackgroundColor() {
 }
 
 // Duration of the toolbar animation.
-const NSTimeInterval kFullScreenControllerToolbarAnimationDuration = 0.3;
+const NSTimeInterval kLegacyFullscreenControllerToolbarAnimationDuration = 0.3;
 
 const CGFloat kVoiceSearchBarHeight = 59.0;
 
@@ -376,7 +376,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     CRWNativeContentProvider,
                                     CRWWebStateDelegate,
                                     DialogPresenterDelegate,
-                                    FullScreenControllerDelegate,
+                                    LegacyFullscreenControllerDelegate,
                                     KeyCommandsPlumbing,
                                     NetExportTabHelperDelegate,
                                     ManageAccountsDelegate,
@@ -849,7 +849,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // |completed| should indicate if the animation finished completely or was
 // interrupted. |offset| should indicate the header offset after the animation.
 // |dragged| should indicate if the header moved due to the user dragging.
-- (void)fullScreenController:(FullScreenController*)controller
+- (void)fullScreenController:(LegacyFullscreenController*)controller
     headerAnimationCompleted:(BOOL)completed
                       offset:(CGFloat)offset;
 // Performs a search with the image at the given url. The referrer is used to
@@ -1918,7 +1918,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     self.tabStripCoordinator.tabModel = _model;
     self.tabStripCoordinator.presentationProvider = self;
     self.tabStripCoordinator.animationWaitDuration =
-        kFullScreenControllerToolbarAnimationDuration;
+        kLegacyFullscreenControllerToolbarAnimationDuration;
     [self.tabStripCoordinator start];
   }
 
@@ -2480,7 +2480,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   tab.snapshotOverlayProvider = self;
   tab.passKitDialogProvider = self;
   if (!base::FeatureList::IsEnabled(features::kNewFullscreen)) {
-    tab.fullScreenControllerDelegate = self;
+    tab.legacyFullscreenControllerDelegate = self;
   }
   if (!IsIPadIdiom()) {
     tab.overscrollActionsControllerDelegate = self;
@@ -2524,7 +2524,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   tab.snapshotOverlayProvider = nil;
   tab.passKitDialogProvider = nil;
   if (!base::FeatureList::IsEnabled(features::kNewFullscreen)) {
-    tab.fullScreenControllerDelegate = nil;
+    tab.legacyFullscreenControllerDelegate = nil;
   }
   if (!IsIPadIdiom()) {
     tab.overscrollActionsControllerDelegate = nil;
@@ -3074,7 +3074,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                       completionHandler:handler];
 }
 
-#pragma mark - FullScreenControllerDelegate methods
+#pragma mark - LegacyFullscreenControllerDelegate methods
 
 - (CGFloat)headerOffset {
   if (IsIPadIdiom())
@@ -3180,7 +3180,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return std::ceil(CGRectGetHeight(self.view.bounds) - footerHeight + offset);
 }
 
-- (void)fullScreenController:(FullScreenController*)controller
+- (void)fullScreenController:(LegacyFullscreenController*)controller
     headerAnimationCompleted:(BOOL)completed
                       offset:(CGFloat)offset {
   if (completed)
@@ -3199,7 +3199,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
-- (void)fullScreenController:(FullScreenController*)fullScreenController
+- (void)fullScreenController:(LegacyFullscreenController*)fullScreenController
     drawHeaderViewFromOffset:(CGFloat)headerOffset
                      animate:(BOOL)animate {
   if ([_sideSwipeController inSwipe])
@@ -3225,18 +3225,19 @@ bubblePresenterForFeature:(const base::Feature&)feature
                           offset:headerOffset];
   };
   if (animate) {
-    [UIView animateWithDuration:kFullScreenControllerToolbarAnimationDuration
-                          delay:0.0
-                        options:UIViewAnimationOptionBeginFromCurrentState
-                     animations:block
-                     completion:completion];
+    [UIView
+        animateWithDuration:kLegacyFullscreenControllerToolbarAnimationDuration
+                      delay:0.0
+                    options:UIViewAnimationOptionBeginFromCurrentState
+                 animations:block
+                 completion:completion];
   } else {
     block();
     completion(YES);
   }
 }
 
-- (void)fullScreenController:(FullScreenController*)fullScreenController
+- (void)fullScreenController:(LegacyFullscreenController*)fullScreenController
     drawHeaderViewFromOffset:(CGFloat)headerOffset
               onWebViewProxy:(id<CRWWebViewProxy>)webViewProxy
      changeTopContentPadding:(BOOL)changeTopContentPadding
@@ -3269,11 +3270,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
                           offset:headerOffset];
   };
 
-  [UIView animateWithDuration:kFullScreenControllerToolbarAnimationDuration
-                        delay:0.0
-                      options:UIViewAnimationOptionBeginFromCurrentState
-                   animations:block
-                   completion:completion];
+  [UIView
+      animateWithDuration:kLegacyFullscreenControllerToolbarAnimationDuration
+                    delay:0.0
+                  options:UIViewAnimationOptionBeginFromCurrentState
+               animations:block
+               completion:completion];
 }
 
 #pragma mark - VoiceSearchBarOwner
