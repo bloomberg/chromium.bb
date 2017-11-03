@@ -20084,6 +20084,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Latency.Scroll.Wheel.TimeToHandled2"
+    units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between initial creation of a wheel event and the generated
+    ScrollUpdate gesture event is handled on main/impl thread (specified by
+    suffix). If no swap was induced by the ScrollUpdate gesture event, no
+    recording is made. Unlike Event.Latency.ScrollUpdate.Wheel.TimeToHandled2
+    this metric includes the first GSU of every scrolling sequence as well.
+
+    Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.Scroll.Wheel.TimeToScrollUpdateSwapBegin2"
+    units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between initial creation of a wheel event and start of the frame swap
+    on the GPU service caused by the generated ScrollUpdate gesture event. If no
+    swap was induced by the event, no recording is made. Unlike
+    Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin2 this metric
+    includes the first GSU of every scrolling sequence as well.
+
+    Team: input-dev@chromium.org.
+  </summary>
+</histogram>
+
 <histogram
     name="Event.Latency.ScrollBegin.Touch.BrowserNotifiedToBeforeGpuSwap2"
     units="microseconds">
@@ -20472,7 +20500,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Time between initial creation of a wheel event and the generated
     ScrollUpdate gesture event is handled on main/impl thread (specified by
     suffix). If no swap was induced by the ScrollUpdate gesture event, no
-    recording is made.
+    recording is made. The first GSU of every scrolling sequence is excluded
+    from this metric.
 
     Team: input-dev@chromium.org.
   </summary>
@@ -105970,6 +105999,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="ScrollUpdateHandledThread" separator="_">
+  <affected-histogram name="Event.Latency.Scroll.Wheel.TimeToHandled2"/>
   <suffix name="Main" label="ScrollUpdate handled on main thread"/>
   <suffix name="Impl" label="ScrollUpdate handled on impl thread"/>
   <affected-histogram
