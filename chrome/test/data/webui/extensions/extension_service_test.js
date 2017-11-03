@@ -82,6 +82,11 @@ cr.define('extension_service_tests', function() {
     /** @type {extensions.Manager} */
     var manager;
 
+    /** @param {string} viewElement */
+    function assertViewActive(tagName) {
+      expectTrue(!!manager.$.viewManager.querySelector(`${tagName}.active`));
+    }
+
     var getItemData = function(id) {
       var elMatches = function(el) {
         return el.id == id;
@@ -159,6 +164,10 @@ cr.define('extension_service_tests', function() {
     });
 
     test(assert(TestNames.Uninstall), function(done) {
+      extensions.navigation.navigateTo(
+          {page: Page.DETAILS, extensionId: kExtensionId});
+      Polymer.dom.flush();
+      assertViewActive('extensions-detail-view');
       var item = getItemData(kExtensionId);
       assertTrue(!!item);
       var uninstallListener =
@@ -168,6 +177,7 @@ cr.define('extension_service_tests', function() {
       });
       uninstallListener.onUpdate.then(function() {
         expectFalse(!!getItemData(kExtensionId));
+        assertViewActive('extensions-item-list');
         done();
       });
     });
