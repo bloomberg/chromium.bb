@@ -15,6 +15,8 @@
 
 namespace {
 
+const int kIgnoreCommitsDurationInMilliseconds = 100;
+
 ui::IMEEngineHandlerInterface* GetEngine() {
   if (ui::IMEBridge::Get())
     return ui::IMEBridge::Get()->GetCurrentEngineHandler();
@@ -30,7 +32,6 @@ InputMethodAuraLinux::InputMethodAuraLinux(
     : text_input_type_(TEXT_INPUT_TYPE_NONE),
       is_sync_mode_(false),
       composition_changed_(false),
-      suppress_next_result_(false),
       weak_ptr_factory_(this) {
   SetDelegate(delegate);
   context_ =
@@ -79,7 +80,7 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
     return details;
   }
 
-  suppress_next_result_ = false;
+  suppress_non_key_input_until_ = base::TimeTicks::UnixEpoch();
   composition_changed_ = false;
   result_text_.clear();
 
@@ -303,9 +304,15 @@ void InputMethodAuraLinux::ResetContext() {
   if (!GetTextInputClient())
     return;
 
-  // To prevent any text from being committed when resetting the |context_|;
   is_sync_mode_ = true;
-  suppress_next_result_ = true;
+
+  if (!composition_.text.empty()) {
+    // If the IME has an open composition, ignore non-synchronous attempts to
+    // commit text for a brief duration of time.
+    suppress_non_key_input_until_ =
+        base::TimeTicks::Now() +
+        base::TimeDelta::FromMilliseconds(kIgnoreCommitsDurationInMilliseconds);
+  }
 
   context_->Reset();
   context_simple_->Reset();
@@ -323,6 +330,11 @@ void InputMethodAuraLinux::ResetContext() {
   composition_changed_ = false;
 }
 
+bool InputMethodAuraLinux::IgnoringNonKeyInput() const {
+  return !is_sync_mode_ &&
+         base::TimeTicks::Now() < suppress_non_key_input_until_;
+}
+
 bool InputMethodAuraLinux::IsCandidatePopupOpen() const {
   // There seems no way to detect candidate windows or any popups.
   return false;
@@ -331,10 +343,8 @@ bool InputMethodAuraLinux::IsCandidatePopupOpen() const {
 // Overriden from ui::LinuxInputMethodContextDelegate
 
 void InputMethodAuraLinux::OnCommit(const base::string16& text) {
-  if (suppress_next_result_ || !GetTextInputClient()) {
-    suppress_next_result_ = false;
+  if (IgnoringNonKeyInput() || !GetTextInputClient())
     return;
-  }
 
   if (is_sync_mode_) {
     // Append the text to the buffer, because commit signal might be fired
@@ -355,7 +365,7 @@ void InputMethodAuraLinux::OnCommit(const base::string16& text) {
 
 void InputMethodAuraLinux::OnPreeditChanged(
     const CompositionText& composition_text) {
-  if (suppress_next_result_ || IsTextInputTypeNone())
+  if (IgnoringNonKeyInput() || IsTextInputTypeNone())
     return;
 
   if (is_sync_mode_) {
@@ -374,7 +384,7 @@ void InputMethodAuraLinux::OnPreeditChanged(
 }
 
 void InputMethodAuraLinux::OnPreeditEnd() {
-  if (suppress_next_result_ || IsTextInputTypeNone())
+  if (IgnoringNonKeyInput() || IsTextInputTypeNone())
     return;
 
   if (is_sync_mode_) {
