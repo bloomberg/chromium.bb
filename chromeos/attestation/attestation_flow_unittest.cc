@@ -540,40 +540,5 @@ TEST_F(AttestationFlowTest, GetCertificate_AlreadyExists) {
   RunUntilIdle();
 }
 
-TEST_F(AttestationFlowTest, AlternatePCA) {
-  // Strategy: Create a ServerProxy mock which reports ALTERNATE_PCA and check
-  // that all calls to the AsyncMethodCaller reflect this PCA type.
-  std::unique_ptr<MockServerProxy> proxy(new NiceMock<MockServerProxy>());
-  proxy->DeferToFake(true);
-  EXPECT_CALL(*proxy, GetType()).WillRepeatedly(Return(ALTERNATE_PCA));
-
-  chromeos::FakeCryptohomeClient client;
-  client.set_tpm_attestation_is_enrolled(false);
-  client.set_tpm_attestation_is_prepared(true);
-
-  NiceMock<cryptohome::MockAsyncMethodCaller> async_caller;
-  async_caller.SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(async_caller,
-              AsyncTpmAttestationCreateEnrollRequest(ALTERNATE_PCA, _))
-      .Times(AtLeast(1));
-  EXPECT_CALL(async_caller,
-              AsyncTpmAttestationEnroll(ALTERNATE_PCA, _, _))
-      .Times(AtLeast(1));
-  EXPECT_CALL(async_caller,
-              AsyncTpmAttestationCreateCertRequest(ALTERNATE_PCA, _, _, _, _))
-      .Times(AtLeast(1));
-
-  NiceMock<MockObserver> observer;
-  AttestationFlow::CertificateCallback mock_callback = base::Bind(
-      &MockObserver::MockCertificateCallback,
-      base::Unretained(&observer));
-
-  std::unique_ptr<ServerProxy> proxy_interface(proxy.release());
-  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
-  flow.GetCertificate(PROFILE_ENTERPRISE_USER_CERTIFICATE, EmptyAccountId(), "",
-                      true, mock_callback);
-  RunUntilIdle();
-}
-
 }  // namespace attestation
 }  // namespace chromeos
