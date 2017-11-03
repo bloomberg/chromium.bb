@@ -365,30 +365,31 @@ void ShowBrowserSignin(Browser* browser,
   SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(original_profile);
   DCHECK(manager->IsSigninAllowed());
-  // If the browser's profile is an incognito profile, make sure to use
-  // a browser window from the original profile.  The user cannot sign in
-  // from an incognito window.
-  bool switched_browser = false;
-  std::unique_ptr<ScopedTabbedBrowserDisplayer> displayer;
-  if (browser->profile()->IsOffTheRecord()) {
-    switched_browser = true;
-    displayer.reset(new ScopedTabbedBrowserDisplayer(original_profile));
-    browser = displayer->browser();
-  }
 
-  // Since the extension is a separate application, it might steal focus
-  // away from Chrome, and accidentally close the avatar bubble. The same will
-  // happen if we had to switch browser windows to show the sign in page. In
-  // this case, fallback to the full-tab signin page.
-  bool show_avatar_bubble =
-      access_point != signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS &&
-      !switched_browser;
+  // If the browser's profile is an incognito profile, make sure to use
+  // a browser window from the original profile. The user cannot sign in
+  // from an incognito window.
+  auto displayer =
+      base::MakeUnique<ScopedTabbedBrowserDisplayer>(original_profile);
+  browser = displayer->browser();
+
 #if defined(OS_CHROMEOS)
   // ChromeOS doesn't have the avatar bubble.
-  show_avatar_bubble = false;
-#endif
+  const bool can_show_avatar_bubble = false;
+#else
+  // The sign-in modal dialog is presented as a tab-modal dialog (which is
+  // automatically dismissed when the page navigates). Displaying the dialog on
+  // a new tab that loads any page will lead to it being dismissed as soon as
+  // the new tab is loaded. So the sign-in dialog must only be presented on top
+  // of an existing tab.
+  //
+  // If ScopedTabbedBrowserDisplayer had to create a (non-incognito) Browser*,
+  // it won't have any tabs yet. Fallback to the full-tab sign-in flow in this
+  // case.
+  const bool can_show_avatar_bubble = !browser->tab_strip_model()->empty();
+#endif  // defined(OS_CHROMEOS)
 
-  if (show_avatar_bubble) {
+  if (can_show_avatar_bubble) {
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
         signin::ManageAccountsParams(), access_point, false);
