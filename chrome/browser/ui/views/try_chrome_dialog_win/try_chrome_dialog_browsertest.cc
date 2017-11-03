@@ -4,6 +4,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -26,7 +27,7 @@ using ::testing::Range;
 // will be improved to support this so we can get coverage on other platforms.
 // See http://crbug.com/45115 for details.
 #if defined(OS_WIN)
-#include "chrome/browser/ui/views/try_chrome_dialog.h"
+#include "chrome/browser/ui/views/try_chrome_dialog_win/try_chrome_dialog.h"
 
 #include "ui/aura/window.h"
 #include "ui/gfx/win/singleton_hwnd.h"
@@ -91,8 +92,7 @@ class TryChromeDialogBrowserTestBase : public InProcessBrowserTest {
     MOCK_METHOD0(InteractionComplete, void());
   };
 
-  explicit TryChromeDialogBrowserTestBase(int group = 0)
-      : dialog_(group, &delegate_) {
+  explicit TryChromeDialogBrowserTestBase(int group = 0) : group_(group) {
     // Configure the delegate to exit the modal loop when the dialog is shown
     // and again when it has finished its work.
     ON_CALL(delegate_, SetToastLocation(_))
@@ -103,14 +103,20 @@ class TryChromeDialogBrowserTestBase : public InProcessBrowserTest {
             this, &TryChromeDialogBrowserTestBase::QuitModalLoop));
   }
 
+  // content:BrowserTestBase:
+  void SetUpOnMainThread() override {
+    dialog_ = base::WrapUnique(new TryChromeDialog(group_, &delegate_));
+  }
+  void TearDownInProcessBrowserTestFixture() override { dialog_.reset(); }
+
   MockDelegate& delegate() { return delegate_; }
 
   // Returns the result of showing the dialog.
-  TryChromeDialog::Result result() const { return dialog_.result(); }
+  TryChromeDialog::Result result() const { return dialog_->result(); }
 
   // Returns the HWND housing the dialog.
   HWND dialog_hwnd() {
-    return dialog_.widget()
+    return dialog_->widget()
         ->GetNativeWindow()
         ->GetHost()
         ->GetAcceleratedWidget();
@@ -119,7 +125,7 @@ class TryChromeDialogBrowserTestBase : public InProcessBrowserTest {
   // Fires off the task(s) to show the dialog, breaking out of the message loop
   // once the dialog has been shown.
   void ShowDialogSync() {
-    dialog_.ShowDialogAsync();
+    dialog_->ShowDialogAsync();
     RunUntilQuit();
   }
 
@@ -128,7 +134,7 @@ class TryChromeDialogBrowserTestBase : public InProcessBrowserTest {
   void PostRendezvousTask() {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&TryChromeDialog::OnProcessNotification,
-                              base::Unretained(&dialog_)));
+                              base::Unretained(dialog_.get())));
   }
 
   // Runs a loop until it is quit via either the dialog being shown (by way of
@@ -144,8 +150,9 @@ class TryChromeDialogBrowserTestBase : public InProcessBrowserTest {
   }
 
  private:
+  const int group_;
   ::testing::NiceMock<MockDelegate> delegate_;
-  TryChromeDialog dialog_;
+  std::unique_ptr<TryChromeDialog> dialog_;
   base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TryChromeDialogBrowserTestBase);

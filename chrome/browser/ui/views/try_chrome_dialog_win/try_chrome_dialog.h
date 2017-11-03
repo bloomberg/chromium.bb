@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TRY_CHROME_DIALOG_H_
-#define CHROME_BROWSER_UI_VIEWS_TRY_CHROME_DIALOG_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TRY_CHROME_DIALOG_WIN_TRY_CHROME_DIALOG_H_
+#define CHROME_BROWSER_UI_VIEWS_TRY_CHROME_DIALOG_WIN_TRY_CHROME_DIALOG_H_
 
 #include <stddef.h>
 
@@ -14,8 +14,6 @@
 #include "base/sequence_checker.h"
 #include "chrome/installer/util/experiment_metrics.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -26,7 +24,7 @@ class SingletonHwndObserver;
 namespace views {
 class View;
 class Widget;
-}
+}  // namespace views
 
 // This class displays a modal dialog using the views system. The dialog asks
 // the user to give Chrome another try. This class only handles the UI so the
@@ -70,6 +68,8 @@ class TryChromeDialog : public views::ButtonListener,
   // The dialog does not steal focus and does not have an entry in the taskbar.
   static Result Show(size_t group, ActiveModalDialogListener listener);
 
+  ~TryChromeDialog() override;
+
  private:
   class Delegate {
    public:
@@ -90,6 +90,7 @@ class TryChromeDialog : public views::ButtonListener,
     virtual ~Delegate() {}
   };
 
+  class Context;
   class ModalShowDelegate;
 
   friend class TryChromeDialogBrowserTestBase;
@@ -99,28 +100,17 @@ class TryChromeDialog : public views::ButtonListener,
   // which must outlive the instance, is notified of relevant details throughout
   // the interaction.
   TryChromeDialog(size_t group, Delegate* delegate);
-  ~TryChromeDialog() override;
 
   // Starts the process of presenting the dialog by initiating an asychronous
-  // search for Chrome's taskbar icon.
+  // search for Chrome's taskbar icon via the encapsulated context object.
   void ShowDialogAsync();
 
-  // Receives the bounds of Chrome's taskbar icon in |icon_rect|. The
-  // interaction is completed immediately in case of rendezvous to allow
-  // browser startup to continue. Otherwise, the dialog is shown to the user.
-  // The delegate's SetToastLocation method is called with the location.
-  void OnTaskbarIconRect(const gfx::Rect& icon_rect);
-
-  // Returns the bounding rectangle of a popup of size |size| centered "over"
-  // |icon_rect|, taking into account the orientation of the taskbar. Returns an
-  // empty rect if |icon_rect| is empty or in case of error.
-  gfx::Rect ComputePopupBoundsOverTaskbarIcon(const gfx::Size& size,
-                                              const gfx::Rect& icon_rect);
-
-  // Returns the bounding rectangle of a popup of size |size| to be positioned
-  // over the notification area of the screen, taking into account LTR vs RTL
-  // text orientation.
-  gfx::Rect ComputePopupBoundsOverNoficationArea(const gfx::Size& size);
+  // Continues work to show the toast following asynchronous context
+  // initialization. The interaction is completed immediately in case of
+  // rendezvous to allow browser startup to continue. Otherwise, the dialog is
+  // shown to the user. The delegate's SetToastLocation method is called with
+  // the location.
+  void OnContextInitialized();
 
   // Notifies the delegate of the final experiment state and that the
   // interaction has completed.
@@ -158,6 +148,8 @@ class TryChromeDialog : public views::ButtonListener,
   const size_t group_;
   Delegate* const delegate_;
 
+  std::unique_ptr<Context> context_;
+
   // A closure to run when the interaction has completed.
   base::Closure on_complete_;
 
@@ -187,4 +179,4 @@ class TryChromeDialog : public views::ButtonListener,
   DISALLOW_COPY_AND_ASSIGN(TryChromeDialog);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TRY_CHROME_DIALOG_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TRY_CHROME_DIALOG_WIN_TRY_CHROME_DIALOG_H_
