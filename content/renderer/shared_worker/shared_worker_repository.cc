@@ -25,7 +25,6 @@ void SharedWorkerRepository::Connect(
     blink::WebContentSecurityPolicyType content_security_policy_type,
     blink::WebAddressSpace creation_address_space,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
-    bool data_saver_enabled,
     blink::MessagePortChannel channel,
     std::unique_ptr<blink::WebSharedWorkerConnectListener> listener) {
   // Lazy bind the connector.
@@ -34,8 +33,7 @@ void SharedWorkerRepository::Connect(
 
   mojom::SharedWorkerInfoPtr info(mojom::SharedWorkerInfo::New(
       url, name.Utf8(), content_security_policy.Utf8(),
-      content_security_policy_type, creation_address_space,
-      data_saver_enabled));
+      content_security_policy_type, creation_address_space));
 
   mojom::SharedWorkerClientPtr client;
   AddWorker(document_id,

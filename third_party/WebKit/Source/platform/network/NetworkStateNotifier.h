@@ -61,6 +61,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     Optional<TimeDelta> http_rtt;
     Optional<TimeDelta> transport_rtt;
     Optional<double> downlink_throughput_mbps;
+    bool save_data = false;
   };
 
   class NetworkStateObserver {
@@ -72,7 +73,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
         WebEffectiveConnectionType,
         const Optional<TimeDelta>& http_rtt,
         const Optional<TimeDelta>& transport_rtt,
-        const Optional<double>& downlink_throughput_mbps) {}
+        const Optional<double>& downlink_throughput_mbps,
+        bool save_data) {}
     virtual void OnLineStateChange(bool on_line) {}
   };
 
@@ -152,6 +154,14 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     return state.downlink_throughput_mbps;
   }
 
+  bool SaveDataEnabled() const {
+    MutexLocker locker(mutex_);
+    const NetworkState& state = has_override_ ? override_ : state_;
+    // TODO (tbansal): Add a DCHECK to check that |state.on_line_initialized| is
+    // true once https://crbug.com/728771 is fixed.
+    return state.save_data;
+  }
+
   void SetOnLine(bool);
 
   // Can be called on any thread.
@@ -195,6 +205,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
                          TimeDelta http_rtt,
                          TimeDelta transport_rtt,
                          int downlink_throughput_kbps);
+  void SetSaveDataEnabled(bool enabled);
 
   // When called, successive setWebConnectionType/setOnLine calls are stored,
   // and supplied overridden values are used instead until clearOverride() is
@@ -209,6 +220,7 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   void SetNetworkQualityInfoOverride(WebEffectiveConnectionType effective_type,
                                      unsigned long transport_rtt_msec,
                                      double downlink_throughput_mbps);
+  void SetSaveDataEnabledOverride(bool enabled);
   void ClearOverride();
 
   // Must be called on the given task runner. An added observer must be removed

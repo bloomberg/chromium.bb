@@ -31,8 +31,6 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   void WillSendRequest(blink::WebURLRequest&) override;
   bool IsControlledByServiceWorker() const override;
-  void SetDataSaverEnabled(bool enabled) override;
-  bool IsDataSaverEnabled() const override;
   blink::WebURL SiteForCookies() const override;
 
  private:
@@ -44,8 +42,6 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
   scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter_;
-
-  bool is_data_saver_enabled_ = false;
 };
 
 }  // namespace content

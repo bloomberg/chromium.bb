@@ -17,7 +17,6 @@ SharedWorkerInstance::SharedWorkerInstance(
     ResourceContext* resource_context,
     const WorkerStoragePartitionId& partition_id,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
-    bool data_saver_enabled,
     const base::UnguessableToken& devtools_worker_token)
     : url_(url),
       name_(name),
@@ -27,7 +26,6 @@ SharedWorkerInstance::SharedWorkerInstance(
       resource_context_(resource_context),
       partition_id_(partition_id),
       creation_context_type_(creation_context_type),
-      data_saver_enabled_(data_saver_enabled),
       devtools_worker_token_(devtools_worker_token) {
   DCHECK(resource_context_);
   DCHECK(!devtools_worker_token_.is_empty());

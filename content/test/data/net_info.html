@@ -19,11 +19,15 @@ function getEffectiveType() {
 }
 
 function getRtt() {
-sendValueToTest(navigator.connection.rtt);
+  sendValueToTest(navigator.connection.rtt);
 }
 
 function getDownlink() {
   sendValueToTest(navigator.connection.downlink);
+}
+
+function getSaveData() {
+  sendValueToTest(navigator.connection.saveData);
 }
 
 function sendValueToTest(value) {

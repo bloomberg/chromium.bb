@@ -52,14 +52,6 @@ bool ServiceWorkerFetchContextImpl::IsControlledByServiceWorker() const {
   return false;
 }
 
-void ServiceWorkerFetchContextImpl::SetDataSaverEnabled(bool enabled) {
-  is_data_saver_enabled_ = enabled;
-}
-
-bool ServiceWorkerFetchContextImpl::IsDataSaverEnabled() const {
-  return is_data_saver_enabled_;
-}
-
 blink::WebURL ServiceWorkerFetchContextImpl::SiteForCookies() const {
   // According to the spec, we can use the |worker_script_url_| for
   // SiteForCookies, because "site for cookies" for the service worker is

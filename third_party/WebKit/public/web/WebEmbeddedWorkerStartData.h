@@ -56,15 +56,13 @@ struct WebEmbeddedWorkerStartData {
   // to the same worker.
   WebString instrumentation_token;
   WebSettings::V8CacheOptions v8_cache_options;
-  bool data_saver_enabled;
 
   WebAddressSpace address_space;
 
   WebEmbeddedWorkerStartData()
       : pause_after_download_mode(kDontPauseAfterDownload),
         wait_for_debugger_mode(kDontWaitForDebugger),
-        v8_cache_options(WebSettings::kV8CacheOptionsDefault),
-        data_saver_enabled(false) {}
+        v8_cache_options(WebSettings::kV8CacheOptionsDefault) {}
 };
 
 }  // namespace blink

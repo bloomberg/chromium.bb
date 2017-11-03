@@ -62,7 +62,8 @@ NetworkStateNotifier::ScopedNotifier::~ScopedNotifier() {
        after.effective_type != before_.effective_type ||
        after.http_rtt != before_.http_rtt ||
        after.transport_rtt != before_.transport_rtt ||
-       after.downlink_throughput_mbps != before_.downlink_throughput_mbps) &&
+       after.downlink_throughput_mbps != before_.downlink_throughput_mbps ||
+       after.save_data != before_.save_data) &&
       before_.connection_initialized) {
     notifier_.NotifyObservers(notifier_.connection_observers_,
                               ObserverType::kConnectionType, after);
@@ -146,6 +147,15 @@ NetworkStateNotifier::AddConnectionObserver(
       this, ObserverType::kConnectionType, observer, task_runner);
 }
 
+void NetworkStateNotifier::SetSaveDataEnabled(bool enabled) {
+  DCHECK(IsMainThread());
+  ScopedNotifier notifier(*this);
+  {
+    MutexLocker locker(mutex_);
+    state_.save_data = enabled;
+  }
+}
+
 std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>
 NetworkStateNotifier::AddOnLineObserver(
     NetworkStateObserver* observer,
@@ -188,6 +198,18 @@ void NetworkStateNotifier::SetNetworkQualityInfoOverride(
     override_.downlink_throughput_mbps = base::nullopt;
     if (downlink_throughput_mbps >= 0)
       override_.downlink_throughput_mbps = downlink_throughput_mbps;
+  }
+}
+
+void NetworkStateNotifier::SetSaveDataEnabledOverride(bool enabled) {
+  DCHECK(IsMainThread());
+  ScopedNotifier notifier(*this);
+  {
+    MutexLocker locker(mutex_);
+    has_override_ = true;
+    override_.on_line_initialized = true;
+    override_.connection_initialized = true;
+    override_.save_data = enabled;
   }
 }
 
@@ -242,8 +264,8 @@ void NetworkStateNotifier::NotifyObserversOnTaskRunner(
       case ObserverType::kConnectionType:
         observer_list->observers[i]->ConnectionChange(
             state.type, state.max_bandwidth_mbps, state.effective_type,
-            state.http_rtt, state.transport_rtt,
-            state.downlink_throughput_mbps);
+            state.http_rtt, state.transport_rtt, state.downlink_throughput_mbps,
+            state.save_data);
         continue;
     }
     NOTREACHED();

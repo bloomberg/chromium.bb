@@ -116,6 +116,7 @@
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEventResult.h"
+#include "third_party/WebKit/public/platform/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
@@ -778,7 +779,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::EnableXSLT(prefs.xslt_enabled);
   settings->SetXSSAuditorEnabled(prefs.xss_auditor_enabled);
   settings->SetDNSPrefetchingEnabled(prefs.dns_prefetching_enabled);
-  settings->SetDataSaverEnabled(
+  blink::WebNetworkStateNotifier::SetSaveDataEnabled(
       prefs.data_saver_enabled &&
       !base::FeatureList::IsEnabled(features::kDataSaverHoldback));
   settings->SetLocalStorageEnabled(prefs.local_storage_enabled);

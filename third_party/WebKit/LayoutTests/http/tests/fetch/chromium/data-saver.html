@@ -2,6 +2,13 @@
 <title>Tests for 'Save-Data' header.</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+
+<script> internals.setSaveDataEnabled(false); </script>
+
+<iframe srcdoc="
+<!DOCTYPE html>
+<script src='/resources/testharness.js'></script>
+<script src='/resources/testharnessreport.js'></script>
 <script>
 
 var CHECK_PATH = './resources/check-save-data-header.php';
@@ -9,8 +16,10 @@ var METHODS = ['GET', 'POST', 'PUT'];
 var REQUESTS =
     METHODS.map(method => new Request(CHECK_PATH, {method: method}));
 
-promise_test(t => {
-  window.internals.settings.setDataSaverEnabled(false);
+internals.setSaveDataEnabled(false);
+
+window.top.promise_test(t => {
+  internals.setSaveDataEnabled(false);
   return Promise.all(REQUESTS.map(request => fetch(request.clone())))
     .then(responses => Promise.all(responses.map(response => response.text())))
     .then(texts => {
@@ -23,22 +32,9 @@ promise_test(t => {
       });
 }, 'fetch() from document with Data-Saver disabled.');
 
-promise_test(t => {
-  window.internals.settings.setDataSaverEnabled(true);
-  return Promise.all(REQUESTS.map(request => fetch(request.clone())))
-    .then(responses => Promise.all(responses.map(response => response.text())))
-    .then(texts => {
-        for (var i = 0; i < METHODS.length; ++i) {
-          assert_equals(
-              texts[i], 'Save-Data: on',
-              'Save-Data header should be sent when disabled. method: ' +
-              METHODS[i]);
-        }
-      });
-}, 'fetch() from document with Data-Saver enabled.');
 
-promise_test(t => {
-  window.internals.settings.setDataSaverEnabled(false);
+window.top.promise_test(t => {
+  internals.setSaveDataEnabled(false);
   var worker =
       new Worker('./resources/data-saver-worker.php?dedicated-disabled');
   return new Promise(resolve =>
@@ -58,28 +54,8 @@ promise_test(t => {
        });
 }, 'fetch() from dedicated worker with Data-Saver disabled.');
 
-promise_test(t => {
-  window.internals.settings.setDataSaverEnabled(true);
-  var worker =
-    new Worker('./resources/data-saver-worker.php?dedicated-enabled');
-  return new Promise(resolve =>
-                     worker.addEventListener('message', resolve))
-     .then(msg => {
-         var result = msg.data;
-         assert_equals(
-             result['worker_script_header'], 'Save-Data: on',
-             'Save-Data header should be sent for worker script when enabled.');
-         for (var i = 0; i < METHODS.length; ++i) {
-           assert_equals(
-               result[METHODS[i]], 'Save-Data: on',
-               'Save-Data header should be sent when enabled. method: ' +
-               METHODS[i]);
-         }
-       });
-}, 'fetch() from dedicated worker with Data-Saver enabled.');
-
-promise_test(t => {
-  window.internals.settings.setDataSaverEnabled(false);
+window.top.promise_test(t => {
+  internals.setSaveDataEnabled(false);
   var worker =
       new SharedWorker('./resources/data-saver-worker.php?shared-disabled');
   return new Promise(resolve => {
@@ -101,8 +77,62 @@ promise_test(t => {
        });
 }, 'fetch() from shared worker with Data-Saver disabled.');
 
-promise_test(t => {
-  window.internals.settings.setDataSaverEnabled(true);
+</script>
+"></iframe>
+
+
+<!-- Enable save data header and the JavaScript attribute -->
+<script> internals.setSaveDataEnabled(true); </script>
+
+<iframe srcdoc="
+<!DOCTYPE html>
+<script src='/resources/testharness.js'></script>
+<script src='/resources/testharnessreport.js'></script>
+
+<script>
+internals.setSaveDataEnabled(true);
+
+var CHECK_PATH = './resources/check-save-data-header.php';
+var METHODS = ['GET', 'POST', 'PUT'];
+var REQUESTS =
+    METHODS.map(method => new Request(CHECK_PATH, {method: method}));
+
+window.top.promise_test(t => {
+  internals.setSaveDataEnabled(true);
+  return Promise.all(REQUESTS.map(request => fetch(request.clone())))
+    .then(responses => Promise.all(responses.map(response => response.text())))
+    .then(texts => {
+        for (var i = 0; i < METHODS.length; ++i) {
+          assert_equals(
+              texts[i], 'Save-Data: on',
+              'Save-Data header should be sent when disabled. method: ' +
+              METHODS[i]);
+        }
+      });
+}, 'fetch() from document with Data-Saver enabled.');
+
+window.top.promise_test(t => {
+  internals.setSaveDataEnabled(true);
+  var worker =
+    new Worker('./resources/data-saver-worker.php?dedicated-enabled');
+  return new Promise(resolve =>
+                     worker.addEventListener('message', resolve))
+     .then(msg => {
+         var result = msg.data;
+         assert_equals(
+             result['worker_script_header'], 'Save-Data: on',
+             'Save-Data header should be sent for worker script when enabled.');
+         for (var i = 0; i < METHODS.length; ++i) {
+           assert_equals(
+               result[METHODS[i]], 'Save-Data: on',
+               'Save-Data header should be sent when enabled. method: ' +
+               METHODS[i]);
+         }
+       });
+}, 'fetch() from dedicated worker with Data-Saver enabled.');
+
+window.top.promise_test(t => {
+  internals.setSaveDataEnabled(true);
   var worker =
       new SharedWorker('./resources/data-saver-worker.php?shared-enabled');
   return new Promise(resolve => {
@@ -124,3 +154,6 @@ promise_test(t => {
 }, 'fetch() from shared worker with Data-Saver enabled.');
 
 </script>
+"></iframe>
+
+</html>

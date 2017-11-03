@@ -16871,6 +16871,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2214" label="GeolocationGetCurrentPosition"/>
   <int value="2215" label="GeolocationWatchPosition"/>
   <int value="2216" label="DataUriHasOctothorpe"/>
+  <int value="2217" label="NetInfoSaveData"/>
 </enum>
 
 <enum name="FeedbackSource">

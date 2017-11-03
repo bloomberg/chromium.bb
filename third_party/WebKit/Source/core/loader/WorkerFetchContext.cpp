@@ -16,6 +16,7 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/network/NetworkStateNotifier.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
@@ -88,7 +89,8 @@ WorkerFetchContext::WorkerFetchContext(
     : global_scope_(global_scope),
       web_context_(std::move(web_context)),
       loading_task_runner_(
-          global_scope_->GetTaskRunner(TaskType::kUnspecedLoading)) {
+          global_scope_->GetTaskRunner(TaskType::kUnspecedLoading)),
+      save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   web_context_->InitializeOnWorkerThread(
       loading_task_runner_->ToSingleThreadTaskRunner());
   std::unique_ptr<blink::WebDocumentSubresourceFilter> web_filter =
@@ -257,7 +259,7 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
   if (!request.Url().IsEmpty() && !request.Url().ProtocolIsInHTTPFamily())
     return;
 
-  if (web_context_->IsDataSaverEnabled())
+  if (save_data_enabled_)
     request.SetHTTPHeaderField(HTTPNames::Save_Data, "on");
 }
 

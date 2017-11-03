@@ -577,11 +577,6 @@
       invalidate: "DNSPrefetching",
     },
 
-    {
-      name: "dataSaverEnabled",
-      initial: false,
-    },
-
     // Clients that execute script should call ExecutionContext::canExecuteScripts()
     // instead of this function. ExecutionContext::canExecuteScripts() checks the
     // HTML sandbox, plugin sandboxing, and other important details.

@@ -73,7 +73,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetCursiveFontFamily(const WebString&,
                             UScriptCode = USCRIPT_COMMON) override;
   void SetDNSPrefetchingEnabled(bool) override;
-  void SetDataSaverEnabled(bool) override;
   void SetDOMPasteAllowed(bool) override;
   void SetDefaultFixedFontSize(int) override;
   void SetDefaultFontSize(int) override;

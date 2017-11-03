@@ -41,10 +41,6 @@ class WebWorkerFetchContext {
   // Whether the fetch context is controlled by a service worker.
   virtual bool IsControlledByServiceWorker() const = 0;
 
-  // The flag for Data Saver.
-  virtual void SetDataSaverEnabled(bool) = 0;
-  virtual bool IsDataSaverEnabled() const = 0;
-
   // This flag is used to block all mixed content in subframes.
   virtual void SetIsOnSubframe(bool) {}
   virtual bool IsOnSubframe() const { return false; }

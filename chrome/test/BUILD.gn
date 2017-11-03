@@ -1230,6 +1230,7 @@ test("browser_tests") {
       "../browser/custom_handlers/protocol_handler_registry_browsertest.cc",
       "../browser/data_saver/data_saver_browsertest.cc",
       "../browser/data_saver/data_saver_holdback_browsertest.cc",
+      "../browser/data_saver/data_saver_webapis_browsertest.cc",
       "../browser/devtools/device/adb/adb_client_socket_browsertest.cc",
       "../browser/devtools/device/adb/mock_adb_server.cc",
       "../browser/devtools/device/adb/mock_adb_server.h",

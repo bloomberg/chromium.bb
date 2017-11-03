@@ -173,14 +173,6 @@ bool WorkerFetchContextImpl::IsControlledByServiceWorker() const {
           blink::mojom::kInvalidServiceWorkerVersionId);
 }
 
-void WorkerFetchContextImpl::SetDataSaverEnabled(bool enabled) {
-  is_data_saver_enabled_ = enabled;
-}
-
-bool WorkerFetchContextImpl::IsDataSaverEnabled() const {
-  return is_data_saver_enabled_;
-}
-
 void WorkerFetchContextImpl::SetIsOnSubframe(bool is_on_sub_frame) {
   is_on_sub_frame_ = is_on_sub_frame;
 }

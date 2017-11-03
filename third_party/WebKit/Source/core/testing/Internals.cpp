@@ -3286,6 +3286,10 @@ void Internals::setNetworkQualityInfoOverride(const String& effective_type,
       web_effective_type);
 }
 
+void Internals::setSaveDataEnabled(bool enabled) {
+  GetNetworkStateNotifier().SetSaveDataEnabledOverride(enabled);
+}
+
 void Internals::clearNetworkConnectionInfoOverride() {
   GetNetworkStateNotifier().ClearOverride();
 }

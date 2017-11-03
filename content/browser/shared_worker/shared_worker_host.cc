@@ -93,7 +93,7 @@ void SharedWorkerHost::Start(mojom::SharedWorkerFactoryPtr factory,
   mojom::SharedWorkerInfoPtr info(mojom::SharedWorkerInfo::New(
       instance_->url(), instance_->name(), instance_->content_security_policy(),
       instance_->content_security_policy_type(),
-      instance_->creation_address_space(), instance_->data_saver_enabled()));
+      instance_->creation_address_space()));
 
   factory->CreateSharedWorker(
       std::move(info), pause_on_start, instance_->devtools_worker_token(),

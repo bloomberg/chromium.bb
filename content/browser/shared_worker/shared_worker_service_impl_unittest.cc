@@ -315,10 +315,10 @@ void ConnectToSharedWorker(mojom::SharedWorkerConnectorPtr connector,
                            const std::string& name,
                            MockSharedWorkerClient* client,
                            MessagePortChannel* local_port) {
-  mojom::SharedWorkerInfoPtr info(mojom::SharedWorkerInfo::New(
-      GURL(url), name, std::string(),
-      blink::kWebContentSecurityPolicyTypeReport, blink::kWebAddressSpacePublic,
-      false /* data_saver_enabled */));
+  mojom::SharedWorkerInfoPtr info(
+      mojom::SharedWorkerInfo::New(GURL(url), name, std::string(),
+                                   blink::kWebContentSecurityPolicyTypeReport,
+                                   blink::kWebAddressSpacePublic));
 
   mojo::MessagePipe message_pipe;
   *local_port = MessagePortChannel(std::move(message_pipe.handle0));

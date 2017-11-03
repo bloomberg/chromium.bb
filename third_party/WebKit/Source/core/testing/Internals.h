@@ -510,6 +510,8 @@ class Internals final : public ScriptWrappable {
                                      unsigned long transport_rtt_msec,
                                      double downlink_throughput_mbps,
                                      ExceptionState&);
+  void setSaveDataEnabled(bool);
+
   void clearNetworkConnectionInfoOverride();
 
   unsigned countHitRegions(CanvasRenderingContext*);

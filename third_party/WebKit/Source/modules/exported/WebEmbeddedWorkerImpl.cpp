@@ -144,7 +144,6 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   instrumentation_token_ = data.instrumentation_token;
   shadow_page_ = WTF::MakeUnique<WorkerShadowPage>(this);
   WebSettings* settings = shadow_page_->GetSettings();
-  settings->SetDataSaverEnabled(worker_start_data_.data_saver_enabled);
 
   // Currently we block all mixed-content requests from a ServiceWorker.
   settings->SetStrictMixedContentChecking(true);
@@ -378,10 +377,6 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
         worker_context_client_->CreateServiceWorkerFetchContext();
     DCHECK(web_worker_fetch_context);
-    web_worker_fetch_context->SetDataSaverEnabled(shadow_page_->GetDocument()
-                                                      ->GetFrame()
-                                                      ->GetSettings()
-                                                      ->GetDataSaverEnabled());
     ProvideWorkerFetchContextToWorker(worker_clients,
                                       std::move(web_worker_fetch_context));
   }
