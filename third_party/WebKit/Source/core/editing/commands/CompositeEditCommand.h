@@ -91,9 +91,6 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   //
   void AppendNode(Node*, ContainerNode* parent, EditingState*);
   void ApplyCommandToComposite(EditCommand*, EditingState*);
-  void ApplyCommandToComposite(CompositeEditCommand*,
-                               const SelectionForUndoStep&,
-                               EditingState*);
   void ApplyStyle(const EditingStyle*, EditingState*);
   void ApplyStyle(const EditingStyle*,
                   const Position& start,
