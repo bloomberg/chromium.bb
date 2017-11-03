@@ -159,10 +159,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
     return pending_resize_params_.screen_info;
   }
 
-  uint64_t auto_size_sequence_number() const {
-    return pending_resize_params_.sequence_number;
-  }
-
   void UpdateInternalInstanceId();
 
   // IPC message handlers.
@@ -170,8 +166,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   void OnAdvanceFocus(int instance_id, bool reverse);
   void OnGuestGone(int instance_id);
   void OnGuestReady(int instance_id, const viz::FrameSinkId& frame_sink_id);
-  void OnResizeDueToAutoResize(int browser_plugin_instance_id,
-                               uint64_t sequence_number);
   void OnSetChildFrameSurface(int instance_id,
                               const viz::SurfaceInfo& surface_info,
                               const viz::SurfaceSequence& sequence);
@@ -222,7 +216,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   struct ResizeParams {
     gfx::Rect frame_rect;
     ScreenInfo screen_info;
-    uint64_t sequence_number = 0lu;
   };
 
   // The last ResizeParams sent to the browser process, if any.

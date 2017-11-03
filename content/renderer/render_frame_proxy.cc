@@ -358,7 +358,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
-    IPC_MESSAGE_HANDLER(FrameMsg_ResizeDueToAutoResize, OnResizeDueToAutoResize)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_WillEnterFullscreen, OnWillEnterFullscreen)
     IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGesture,
@@ -483,11 +482,6 @@ void RenderFrameProxy::OnScrollRectToVisible(
   web_frame_->ScrollRectToVisible(rect_to_scroll, properties);
 }
 
-void RenderFrameProxy::OnResizeDueToAutoResize(uint64_t sequence_number) {
-  pending_resize_params_.sequence_number = sequence_number;
-  WasResized();
-}
-
 #if defined(USE_AURA)
 void RenderFrameProxy::SetMusEmbeddedFrame(
     std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame) {
@@ -500,9 +494,7 @@ void RenderFrameProxy::WasResized() {
       !sent_resize_params_ ||
       sent_resize_params_->frame_rect.size() !=
           pending_resize_params_.frame_rect.size() ||
-      sent_resize_params_->screen_info != pending_resize_params_.screen_info ||
-      sent_resize_params_->sequence_number !=
-          pending_resize_params_.sequence_number;
+      sent_resize_params_->screen_info != pending_resize_params_.screen_info;
 
   if (synchronized_params_changed)
     local_surface_id_ = local_surface_id_allocator_.GenerateId();
@@ -527,9 +519,8 @@ void RenderFrameProxy::WasResized() {
 
   if (resize_params_changed) {
     // Let the browser know about the updated view rect.
-    Send(new FrameHostMsg_UpdateResizeParams(
-        routing_id_, frame_rect(), screen_info(), auto_size_sequence_number(),
-        local_surface_id_));
+    Send(new FrameHostMsg_UpdateResizeParams(routing_id_, frame_rect(),
+                                             screen_info(), local_surface_id_));
     sent_resize_params_ = pending_resize_params_;
   }
 }
