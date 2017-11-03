@@ -300,7 +300,7 @@ class MockPostProcessor : public PostProcessingPipeline {
   MOCK_METHOD4(
       ProcessFrames,
       int(float* data, int num_frames, float current_volume, bool is_silence));
-  bool SetSampleRate(int sample_rate) override { return false; }
+  bool SetSampleRate(int sample_rate) override { return true; }
   bool IsRinging() override { return ringing_; }
   int delay() { return rendering_delay_; }
   std::string name() const { return name_; }
