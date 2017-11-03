@@ -90,6 +90,7 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
 
  private:
   class SubRequest;
+  class MockResponseDetails;
 
   // We keep a copy of the original request details to facilitate the
   // Network.modifyRequest command which could potentially change any of these
@@ -111,63 +112,6 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
     const net::URLRequestContext* url_request_context;
   };
 
-  // If the request was either allowed or modified, a SubRequest will be used to
-  // perform the fetch and the results proxied to the original request. This
-  // gives us the flexibility to pretend redirects didn't happen if the user
-  // chooses to mock the response.  Note this SubRequest is ignored by the
-  // interceptor.
-  class SubRequest {
-   public:
-    SubRequest(
-        DevToolsURLInterceptorRequestJob::RequestDetails& request_details,
-        DevToolsURLInterceptorRequestJob* devtools_interceptor_request_job,
-        scoped_refptr<DevToolsURLRequestInterceptor::State>
-            devtools_url_request_interceptor_state);
-    ~SubRequest();
-
-    void Cancel();
-
-    net::URLRequest* request() const { return request_.get(); }
-
-   private:
-    std::unique_ptr<net::URLRequest> request_;
-
-    DevToolsURLInterceptorRequestJob*
-        devtools_interceptor_request_job_;  // NOT OWNED.
-
-    scoped_refptr<DevToolsURLRequestInterceptor::State>
-        devtools_url_request_interceptor_state_;
-    bool fetch_in_progress_;
-  };
-
-  class MockResponseDetails {
-   public:
-    MockResponseDetails(std::string response_bytes,
-                        base::TimeTicks response_time);
-
-    MockResponseDetails(
-        const scoped_refptr<net::HttpResponseHeaders>& response_headers,
-        std::string response_bytes,
-        size_t read_offset,
-        base::TimeTicks response_time);
-
-    ~MockResponseDetails();
-
-    scoped_refptr<net::HttpResponseHeaders>& response_headers() {
-      return response_headers_;
-    }
-
-    base::TimeTicks response_time() const { return response_time_; }
-
-    int ReadRawData(net::IOBuffer* buf, int buf_size);
-
-   private:
-    scoped_refptr<net::HttpResponseHeaders> response_headers_;
-    std::string response_bytes_;
-    size_t read_offset_;
-    base::TimeTicks response_time_;
-  };
-
   // Retrieves the response headers from either the |sub_request_| or the
   // |mock_response_|.  In some cases (e.g. file access) this may be null.
   const net::HttpResponseHeaders* GetHttpResponseHeaders() const;
@@ -182,8 +126,8 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
 
   enum class WaitingForUserResponse {
     NOT_WAITING,
-    WAITING_FOR_INTERCEPTION_RESPONSE,
-    WAITING_FOR_AUTH_RESPONSE,
+    WAITING_FOR_REQUEST_ACK,
+    WAITING_FOR_AUTH_ACK,
   };
 
   scoped_refptr<DevToolsURLRequestInterceptor::State>
