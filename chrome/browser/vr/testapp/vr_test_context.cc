@@ -92,6 +92,13 @@ void VrTestContext::DrawFrame() {
   render_info.left_eye_info.proj_matrix = proj_matrix;
   render_info.left_eye_info.view_proj_matrix = proj_matrix * head_pose_;
 
+  GestureList gesture_list;
+  ReticleModel reticle_model;
+  ui_->input_manager()->HandleInput(base::TimeTicks::Now(),
+                                    last_controller_model_, &reticle_model,
+                                    &gesture_list);
+  ui_->OnControllerUpdated(last_controller_model_, reticle_model);
+
   // Update the render position of all UI elements (including desktop).
   ui_->scene()->OnBeginFrame(current_time, kForwardVector);
   ui_->OnProjMatrixChanged(render_info.left_eye_info.proj_matrix);
@@ -210,8 +217,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
 
   GestureList gesture_list;
   ReticleModel reticle_model;
-  ui_->input_manager()->HandleInput(controller_model, &reticle_model,
-                                    &gesture_list);
+  ui_->input_manager()->HandleInput(base::TimeTicks::Now(), controller_model,
+                                    &reticle_model, &gesture_list);
+  last_controller_model_ = controller_model;
   ui_->OnControllerUpdated(controller_model, reticle_model);
 }
 
