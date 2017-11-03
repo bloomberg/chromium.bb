@@ -234,7 +234,9 @@ DrawImage CreateDiscardableDrawImage(gfx::Size size) {
 
 class ImageControllerTest : public testing::Test {
  public:
-  ImageControllerTest() : task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+  ImageControllerTest()
+      : task_runner_(base::SequencedTaskRunnerHandle::Get()),
+        weak_ptr_factory_(this) {
     image_ = CreateDiscardableDrawImage(gfx::Size(1, 1));
   }
   ~ImageControllerTest() override = default;
@@ -250,6 +252,7 @@ class ImageControllerTest : public testing::Test {
   void TearDown() override {
     controller_.reset();
     worker_task_runner_ = nullptr;
+    weak_ptr_factory_.InvalidateWeakPtrs();
   }
 
   base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
@@ -258,7 +261,7 @@ class ImageControllerTest : public testing::Test {
   const DrawImage& image() const { return image_; }
 
   // Timeout callback, which errors and exits the runloop.
-  static void Timeout(base::RunLoop* run_loop) {
+  void Timeout(base::RunLoop* run_loop) {
     ADD_FAILURE() << "Timeout.";
     run_loop->Quit();
   }
@@ -268,6 +271,7 @@ class ImageControllerTest : public testing::Test {
     task_runner_->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ImageControllerTest::Timeout,
+                       weak_ptr_factory_.GetWeakPtr(),
                        base::Unretained(run_loop)),
         base::TimeDelta::FromSeconds(kDefaultTimeoutSeconds));
     run_loop->Run();
@@ -281,6 +285,8 @@ class ImageControllerTest : public testing::Test {
   TestableCache cache_;
   std::unique_ptr<ImageController> controller_;
   DrawImage image_;
+
+  base::WeakPtrFactory<ImageControllerTest> weak_ptr_factory_;
 };
 
 TEST_F(ImageControllerTest, NullControllerUnrefsImages) {
