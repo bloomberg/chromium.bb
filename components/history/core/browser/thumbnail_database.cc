@@ -735,7 +735,7 @@ bool ThumbnailDatabase::DeleteFavicon(favicon_base::FaviconID id) {
 
 bool ThumbnailDatabase::GetIconMappingsForPageURL(
     const GURL& page_url,
-    int required_icon_types,
+    const favicon_base::IconTypeSet& required_icon_types,
     std::vector<IconMapping>* filtered_mapping_data) {
   std::vector<IconMapping> mapping_data;
   if (!GetIconMappingsForPageURL(page_url, &mapping_data))
@@ -744,7 +744,7 @@ bool ThumbnailDatabase::GetIconMappingsForPageURL(
   bool result = false;
   for (std::vector<IconMapping>::iterator m = mapping_data.begin();
        m != mapping_data.end(); ++m) {
-    if (m->icon_type & required_icon_types) {
+    if (required_icon_types.count(m->icon_type) != 0) {
       result = true;
       if (!filtered_mapping_data)
         return result;

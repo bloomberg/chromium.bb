@@ -160,7 +160,7 @@ class FaviconHandler {
 
   // Returns the supported icon types, inferred from the handler type as passed
   // in the constructor.
-  int icon_types() const { return icon_types_; }
+  const favicon_base::IconTypeSet& icon_types() const { return icon_types_; }
 
   // For testing.
   const std::vector<GURL> GetIconURLs() const;
@@ -200,8 +200,9 @@ class FaviconHandler {
     gfx::Image image;
   };
 
-  // Returns the bit mask of favicon_base::IconType based on the handler's type.
-  static int GetIconTypesFromHandlerType(
+  // Returns the set of relevant favicon_base::IconType values based on the
+  // handler's type.
+  static favicon_base::IconTypeSet GetIconTypesFromHandlerType(
       FaviconDriverObserver::NotificationIconType handler_type);
 
   // Called with the result of looking up cached icon data for the manifest's
@@ -340,7 +341,7 @@ class FaviconHandler {
       image_download_request_;
 
   // The combination of the supported icon types.
-  const int icon_types_;
+  const favicon_base::IconTypeSet icon_types_;
 
   // Whether the largest icon should be downloaded.
   const bool download_largest_icon_;

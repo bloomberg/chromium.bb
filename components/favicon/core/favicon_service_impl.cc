@@ -116,7 +116,7 @@ FaviconServiceImpl::GetFaviconImageForPageURL(
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "FaviconServiceImpl::GetFaviconImageForPageURL");
   return GetFaviconForPageURLImpl(
-      page_url, favicon_base::FAVICON,
+      page_url, {favicon_base::FAVICON},
       GetPixelSizesForFaviconScales(gfx::kFaviconSize),
       base::Bind(&FaviconServiceImpl::RunFaviconImageCallbackWithBitmapResults,
                  base::Unretained(this), callback, gfx::kFaviconSize),
@@ -125,7 +125,7 @@ FaviconServiceImpl::GetFaviconImageForPageURL(
 
 base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetRawFaviconForPageURL(
     const GURL& page_url,
-    int icon_types,
+    const favicon_base::IconTypeSet& icon_types,
     int desired_size_in_pixel,
     const favicon_base::FaviconRawBitmapCallback& callback,
     base::CancelableTaskTracker* tracker) {
@@ -143,7 +143,7 @@ base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetRawFaviconForPageURL(
 base::CancelableTaskTracker::TaskId
 FaviconServiceImpl::GetLargestRawFaviconForPageURL(
     const GURL& page_url,
-    const std::vector<int>& icon_types,
+    const std::vector<favicon_base::IconTypeSet>& icon_types,
     int minimum_size_in_pixels,
     const favicon_base::FaviconRawBitmapCallback& callback,
     base::CancelableTaskTracker* tracker) {
@@ -163,7 +163,7 @@ FaviconServiceImpl::GetLargestRawFaviconForPageURL(
 
 base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetFaviconForPageURL(
     const GURL& page_url,
-    int icon_types,
+    const favicon_base::IconTypeSet& icon_types,
     int desired_size_in_dip,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
@@ -242,7 +242,7 @@ void FaviconServiceImpl::SetFavicons(const base::flat_set<GURL>& page_urls,
 
 void FaviconServiceImpl::CloneFaviconMappingsForPages(
     const GURL& page_url_to_read,
-    int icon_types,
+    const favicon_base::IconTypeSet& icon_types,
     const base::flat_set<GURL>& page_urls_to_write) {
   history_service_->CloneFaviconMappingsForPages(page_url_to_read, icon_types,
                                                  page_urls_to_write);
@@ -276,7 +276,7 @@ void FaviconServiceImpl::ClearUnableToDownloadFavicons() {
 base::CancelableTaskTracker::TaskId
 FaviconServiceImpl::GetFaviconForPageURLImpl(
     const GURL& page_url,
-    int icon_types,
+    const favicon_base::IconTypeSet& icon_types,
     const std::vector<int>& desired_sizes_in_pixel,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {

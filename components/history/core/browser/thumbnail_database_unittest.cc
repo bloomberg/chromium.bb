@@ -518,13 +518,13 @@ TEST_F(ThumbnailDatabaseTest, DeleteIconMappings) {
   ASSERT_EQ(2u, icon_mapping.size());
   EXPECT_EQ(icon_mapping.front().icon_type, favicon_base::TOUCH_ICON);
   EXPECT_TRUE(
-      db.GetIconMappingsForPageURL(url, favicon_base::FAVICON, nullptr));
+      db.GetIconMappingsForPageURL(url, {favicon_base::FAVICON}, nullptr));
 
   db.DeleteIconMappings(url);
 
   EXPECT_FALSE(db.GetIconMappingsForPageURL(url, nullptr));
   EXPECT_FALSE(
-      db.GetIconMappingsForPageURL(url, favicon_base::FAVICON, nullptr));
+      db.GetIconMappingsForPageURL(url, {favicon_base::FAVICON}, nullptr));
 }
 
 TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURL) {
@@ -775,7 +775,7 @@ TEST_F(ThumbnailDatabaseTest, GetIconMappingsForPageURLWithIconTypes) {
   // Only the mappings for FAVICON and TOUCH_ICON should be returned.
   std::vector<IconMapping> icon_mappings;
   EXPECT_TRUE(db.GetIconMappingsForPageURL(
-      kPageUrl, favicon_base::FAVICON | favicon_base::TOUCH_ICON,
+      kPageUrl, {favicon_base::FAVICON, favicon_base::TOUCH_ICON},
       &icon_mappings));
   SortMappingsByIconUrl(&icon_mappings);
 

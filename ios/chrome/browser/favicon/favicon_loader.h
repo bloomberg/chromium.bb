@@ -35,13 +35,15 @@ class FaviconLoader : public KeyedService {
   explicit FaviconLoader(favicon::FaviconService* favicon_service);
   ~FaviconLoader() override;
 
-  // Returns the UIImage for the favicon associated with |url|, if present.
-  // |types| is a bitfield of history::IconType with the acceptable types. If
-  // the icons is not present, will start an asynchronous load with the favicon
-  // service and returns the default favicon (thus it will never return nil).
-  // Calls |block| when the load completes with the image. If |block| is nil,
-  // the load is still performed so a future call will find it in the cache.
-  UIImage* ImageForURL(const GURL& url, int types, ImageCompletionBlock block);
+  // Returns the UIImage for the favicon associated with |url| for any type in
+  // |types|. Ifno icon is present, will start an asynchronous load with the
+  // favicon service and returns the default favicon (thus it will never return
+  // nil). Calls |block| when the load completes with the image. If |block| is
+  // nil, the load is still performed so a future call will find it in the
+  // cache.
+  UIImage* ImageForURL(const GURL& url,
+                       const favicon_base::IconTypeSet& types,
+                       ImageCompletionBlock block);
 
   // Purges the cache, in response to low-memory.
   void PurgeCache();

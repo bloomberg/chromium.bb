@@ -1204,7 +1204,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
 
   std::vector<IconMapping> icon_mappings;
   EXPECT_TRUE(thumbnail_db_.GetIconMappingsForPageURL(
-      row1.url(), favicon_base::FAVICON, &icon_mappings));
+      row1.url(), {favicon_base::FAVICON}, &icon_mappings));
   EXPECT_EQ(1u, icon_mappings.size());
   std::vector<FaviconBitmap> favicon_bitmaps;
   EXPECT_TRUE(thumbnail_db_.GetFaviconBitmaps(icon_mappings[0].icon_id,
@@ -1233,7 +1233,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
               notifier_.favicon_changed()->find(row1.url()));
 
   EXPECT_FALSE(thumbnail_db_.GetIconMappingsForPageURL(
-      row1.url(), favicon_base::FAVICON, NULL));
+      row1.url(), {favicon_base::FAVICON}, NULL));
 }
 
 TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {

@@ -86,7 +86,6 @@ public class FaviconHelper {
             FaviconImageCallback faviconImageCallback) {
         assert mNativeFaviconHelper != 0;
         return nativeGetLocalFaviconImageForURL(mNativeFaviconHelper, profile, pageUrl,
-                FAVICON | TOUCH_ICON | TOUCH_PRECOMPOSED_ICON | WEB_MANIFEST_ICON,
                 desiredSizeInPixel, faviconImageCallback);
     }
 
@@ -134,7 +133,7 @@ public class FaviconHelper {
     private static native long nativeInit();
     private static native void nativeDestroy(long nativeFaviconHelper);
     private static native boolean nativeGetLocalFaviconImageForURL(long nativeFaviconHelper,
-            Profile profile, String pageUrl, int iconTypes, int desiredSizeInDip,
+            Profile profile, String pageUrl, int desiredSizeInDip,
             FaviconImageCallback faviconImageCallback);
     private static native Bitmap nativeGetSyncedFaviconImageForURL(long nativeFaviconHelper,
             Profile profile, String pageUrl);

@@ -110,7 +110,7 @@ void FaviconSource::StartDataRequest(
     }
 
     favicon_service->GetRawFaviconForPageURL(
-        url, favicon_base::FAVICON, desired_size_in_pixel,
+        url, {favicon_base::FAVICON}, desired_size_in_pixel,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this),
                    IconRequest(callback, url, parsed.size_in_dip,

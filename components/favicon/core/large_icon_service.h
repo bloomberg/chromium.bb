@@ -5,11 +5,13 @@
 #ifndef COMPONENTS_FAVICON_CORE_LARGE_ICON_SERVICE_H_
 #define COMPONENTS_FAVICON_CORE_LARGE_ICON_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_callback.h"
+#include "components/favicon_base/favicon_types.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -124,7 +126,7 @@ class LargeIconService : public KeyedService {
   // A pre-populated list of icon types to consider when looking for large
   // icons. This is an optimization over populating an icon type vector on each
   // request.
-  std::vector<int> large_icon_types_;
+  std::vector<favicon_base::IconTypeSet> large_icon_types_;
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 

@@ -218,7 +218,7 @@ class ContentFaviconDriverTest : public InProcessBrowserTest {
     base::CancelableTaskTracker tracker;
     base::RunLoop loop;
     favicon_service()->GetFaviconForPageURL(
-        url, icon_type, /*desired_size_in_dip=*/0,
+        url, {icon_type}, /*desired_size_in_dip=*/0,
         base::Bind(
             [](std::vector<favicon_base::FaviconRawBitmapResult>* save_results,
                base::RunLoop* loop,
@@ -696,8 +696,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
       ui_test_utils::BROWSER_TEST_NONE);
   waiter.Wait();
 
-  EXPECT_NE(nullptr,
-            GetFaviconForPageURL(pushstate_url, favicon_base::WEB_MANIFEST_ICON)
-                .bitmap_data);
+  EXPECT_NE(nullptr, GetFaviconForPageURL(pushstate_url,
+                                          {favicon_base::WEB_MANIFEST_ICON})
+                         .bitmap_data);
 }
 #endif

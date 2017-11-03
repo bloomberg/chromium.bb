@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/containers/flat_set.h"
 #include "base/memory/ref_counted_memory.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
@@ -36,6 +37,8 @@ enum IconType {
   WEB_MANIFEST_ICON = 1 << 3,
   ICON_TYPE_MAX = WEB_MANIFEST_ICON
 };
+
+using IconTypeSet = base::flat_set<IconType>;
 
 // Defines a gfx::Image of size desired_size_in_dip composed of image
 // representations for each of the desired scale factors.

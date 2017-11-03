@@ -203,17 +203,17 @@ FaviconHandler::~FaviconHandler() {
 }
 
 // static
-int FaviconHandler::GetIconTypesFromHandlerType(
+favicon_base::IconTypeSet FaviconHandler::GetIconTypesFromHandlerType(
     FaviconDriverObserver::NotificationIconType handler_type) {
   switch (handler_type) {
     case FaviconDriverObserver::NON_TOUCH_16_DIP:
     case FaviconDriverObserver::NON_TOUCH_LARGEST:
-      return favicon_base::FAVICON;
+      return {favicon_base::FAVICON};
     case FaviconDriverObserver::TOUCH_LARGEST:
-      return favicon_base::TOUCH_ICON | favicon_base::TOUCH_PRECOMPOSED_ICON |
-             favicon_base::WEB_MANIFEST_ICON;
+      return {favicon_base::TOUCH_ICON, favicon_base::TOUCH_PRECOMPOSED_ICON,
+              favicon_base::WEB_MANIFEST_ICON};
   }
-  return 0;
+  return {};
 }
 
 void FaviconHandler::FetchFavicon(const GURL& page_url, bool is_same_document) {
@@ -465,7 +465,8 @@ void FaviconHandler::OnGotFinalIconURLCandidates(
 
   std::vector<FaviconCandidate> sorted_candidates;
   for (const FaviconURL& candidate : candidates) {
-    if (!candidate.icon_url.is_empty() && (candidate.icon_type & icon_types_)) {
+    if (!candidate.icon_url.is_empty() &&
+        (icon_types_.count(candidate.icon_type) != 0)) {
       sorted_candidates.push_back(
           FaviconCandidate::FromFaviconURL(candidate, desired_pixel_sizes));
     }
