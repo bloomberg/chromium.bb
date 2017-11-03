@@ -943,8 +943,9 @@ require special treatment.
 
 @table @code
 @opcode{decpoint, character dots}
-This opcode defines the decimal point. The character operand must have
-only one character. For example, in @file{en-us-g1.ctb} we have: 
+This opcode defines the decimal point. It is useful if your Braille code requires the decimal separator to show as a dot pattern different from the normal representation of this character, i.e. period or comma. In addition, it allows the notation .001 to be translated correctly. This notation is common in some languages instead of 0.001 (no leading 0). When you use the @code{decpoint} opcode, the decimal point will be taken to be part of the number and correctly preceeded by number sign.
+
+The character operand must have only one character. For example, in @file{en-us-g1.ctb} we have: 
 
 @example
 decpoint . 46
