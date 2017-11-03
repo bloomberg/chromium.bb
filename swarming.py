@@ -542,7 +542,7 @@ def retrieve_results(
     if result['state'] in State.STATES_NOT_RUNNING:
       if fetch_stdout:
         out = net.url_read_json(output_url)
-        result['output'] = out.get('output') if out else out
+        result['output'] = out.get('output', '') if out else ''
       # Record the result, try to fetch attached output files (if any).
       if output_collector:
         # TODO(vadimsh): Respect |should_stop| and |deadline| when fetching.
