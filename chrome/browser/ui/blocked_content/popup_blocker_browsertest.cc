@@ -835,6 +835,54 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
+// Verify that if a new tab opens a popup via window.open of its spawning tab,
+// that can't be used to bypass the popunder blocker.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderSpawnerOpen) {
+  GURL url(embedded_test_server()->GetURL(
+      "/popup_blocker/popup-window-spawner-open.html"));
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(url, GURL(), CONTENT_SETTINGS_TYPE_POPUPS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
+
+  // Navigate and wait for a new browser window; that will be the popup.
+  ui_test_utils::BrowserAddedObserver observer;
+  ui_test_utils::NavigateToURL(browser(), url);
+  observer.WaitForSingleNewBrowser();
+
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  Browser* popup_browser = chrome::FindLastActive();
+  ASSERT_NE(popup_browser, browser());
+  ASSERT_TRUE(popup_browser->is_type_popup());
+
+// Showing an alert will raise the tab over the popup.
+#if !defined(OS_MACOSX)
+  // Mac doesn't activate the browser during modal dialogs, see
+  // https://crbug.com/687732 for details.
+  ui_test_utils::BrowserActivationWaiter alert_waiter(browser());
+#endif
+  JavaScriptDialogTabHelper* js_helper =
+      JavaScriptDialogTabHelper::FromWebContents(tab);
+  base::RunLoop dialog_wait;
+  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
+  tab->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16("confirm()"));
+  dialog_wait.Run();
+#if !defined(OS_MACOSX)
+  if (chrome::FindLastActive() != browser())
+    alert_waiter.WaitForActivation();
+#endif
+
+  // Verify that after the dialog is closed, the popup is in front again.
+  ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+  js_helper->HandleJavaScriptDialog(tab, true, nullptr);
+  waiter.WaitForActivation();
+  ASSERT_EQ(popup_browser, chrome::FindLastActive());
+}
+
 // Tests that Ctrl+Enter/Cmd+Enter keys on a link open the backgournd tab.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CtrlEnterKey) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
