@@ -35,7 +35,6 @@ DisplayResourceProvider::DisplayResourceProvider(
 DisplayResourceProvider::~DisplayResourceProvider() {
   while (!children_.empty())
     DestroyChildInternal(children_.begin(), FOR_SHUTDOWN);
-  resource_sk_image_.clear();
 }
 
 #if defined(OS_ANDROID)
