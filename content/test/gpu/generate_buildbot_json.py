@@ -2314,7 +2314,7 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.FYI_AND_OPTIONAL,
-        # Run on the Win/Linux Release NVIDIA bots and Nexus 5X
+        # Run on the Win/Linux Release NVIDIA bots and Nexus 5X and 6P
         'build_configs': ['Release', 'android-chromium'],
         'swarming_dimension_sets': [
           {
@@ -2333,6 +2333,12 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
             'device_type': 'bullhead',
             'device_os': 'M',
             'os': 'Android'
+          },
+          {
+            'device_type': 'angler',
+            'device_os': 'M',
+            'os': 'Android',
+            'pool': 'Chrome-GPU',
           }
         ],
       },
