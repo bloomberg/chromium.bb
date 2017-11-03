@@ -17,6 +17,7 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
+#include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_delegate.h"
@@ -79,39 +80,6 @@ const float kOverviewInsetRatio = 0.05f;
 
 // Additional vertical inset reserved for windows in overview mode.
 const float kOverviewVerticalInset = 0.1f;
-
-// A View having rounded corners and a specified background color which is
-// only painted within the bounds defined by the rounded corners.
-// TODO(varkha): This duplicates code from RoundedImageView. Refactor these
-//               classes and move into ui/views.
-class RoundedRectView : public views::View {
- public:
-  RoundedRectView(int corner_radius, SkColor background)
-      : corner_radius_(corner_radius), background_(background) {}
-
-  ~RoundedRectView() override {}
-
-  void OnPaint(gfx::Canvas* canvas) override {
-    views::View::OnPaint(canvas);
-
-    SkScalar radius = SkIntToScalar(corner_radius_);
-    const SkScalar kRadius[8] = {radius, radius, radius, radius,
-                                 radius, radius, radius, radius};
-    SkPath path;
-    gfx::Rect bounds(size());
-    bounds.set_height(bounds.height() + radius);
-    path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
-
-    canvas->ClipPath(path, true);
-    canvas->DrawColor(background_);
-  }
-
- private:
-  int corner_radius_;
-  SkColor background_;
-
-  DISALLOW_COPY_AND_ASSIGN(RoundedRectView);
-};
 
 // BackgroundWith1PxBorder renders a solid background color, with a one pixel
 // border with rounded corners. This accounts for the scaling of the canvas, so
@@ -588,6 +556,11 @@ void WindowGrid::SetSelectionWidgetVisibility(bool visible) {
     selection_widget_->Show();
   else
     selection_widget_->Hide();
+}
+
+void WindowGrid::UpdateCannotSnapWarningVisibility() {
+  for (auto& window_selector_item : window_list_)
+    window_selector_item->UpdateCannotSnapWarningVisibility();
 }
 
 void WindowGrid::OnWindowDestroying(aura::Window* window) {
