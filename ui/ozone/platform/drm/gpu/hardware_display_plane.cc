@@ -126,7 +126,15 @@ std::vector<uint64_t> HardwareDisplayPlane::ModifiersForFormat(
   DCHECK_LT(format_index, supported_formats_.size());
 
   for (const auto& modifier : supported_format_modifiers_) {
-    if (modifier.formats & (1 << format_index))
+    // modifier.formats is a bitmask of the formats the modifier
+    // applies to, starting at format modifier.offset. That is, if bit
+    // n is set in modifier.formats, the modifier applies to format
+    // modifier.offset + n.  In the expression below, if format_index
+    // is lower than modifier.offset or more than 63 higher than
+    // modifier.offset, the right hand side of the shift is 64 or
+    // above and the result will be 0. That means that the modifier
+    // doesn't apply to this format, which is what we want.
+    if (modifier.formats & (1ull << (format_index - modifier.offset)))
       modifiers.push_back(modifier.modifier);
   }
 
