@@ -83,6 +83,18 @@ and possibly flipped. Possible values are
 \fBpixman-shadow\fR=\fIboolean\fR
 If using the Pixman-renderer, use shadow framebuffers. Defaults to
 .BR true .
+.TP
+\fBsame-as\fR=\fIname\fR
+Make this output (connector) a clone of another. The argument
+.IR name " is the "
+.BR name " value of another output section. The
+referred to output section must exist. When this key is present in an
+output section, all other keys have no effect on the configuration.
+
+NOTE: cms-colord plugin does not work correctly with this option. The plugin
+chooses an arbitrary monitor to load the color profile for, but the
+profile is applied equally to all cloned monitors regardless of their
+properties.
 .
 .\" ***************************************************************
 .SH OPTIONS

@@ -71,9 +71,39 @@ struct wet_output_config {
 };
 
 struct wet_compositor;
+struct wet_layoutput;
 
 struct wet_head_tracker {
 	struct wl_listener head_destroy_listener;
+};
+
+/** User data for each weston_output */
+struct wet_output {
+	struct weston_output *output;
+	struct wl_listener output_destroy_listener;
+	struct wet_layoutput *layoutput;
+	struct wl_list link;	/**< in wet_layoutput::output_list */
+};
+
+#define MAX_CLONE_HEADS 16
+
+struct wet_head_array {
+	struct weston_head *heads[MAX_CLONE_HEADS];	/**< heads to add */
+	unsigned n;				/**< the number of heads */
+};
+
+/** A layout output
+ *
+ * Contains wet_outputs that are all clones (independent CRTCs).
+ * Stores output layout information in the future.
+ */
+struct wet_layoutput {
+	struct wet_compositor *compositor;
+	struct wl_list compositor_link;	/**< in wet_compositor::layoutput_list */
+	struct wl_list output_list;	/**< wet_output::link */
+	char *name;
+	struct weston_config_section *section;
+	struct wet_head_array add;	/**< tmp: heads to add as clones */
 };
 
 struct wet_compositor {
@@ -84,6 +114,7 @@ struct wet_compositor {
 	struct wl_listener heads_changed_listener;
 	int (*simple_output_configure)(struct weston_output *output);
 	bool init_failed;
+	struct wl_list layoutput_list;	/**< wet_layoutput::compositor_link */
 };
 
 static FILE *weston_logfile = NULL;
@@ -1178,12 +1209,6 @@ simple_head_enable(struct wet_compositor *wet, struct weston_head *head)
 	struct weston_output *output;
 	int ret = 0;
 
-	/* Workaround for repeated DRM backend "off" setting.
-	 * For any other case, we should not have an attached head that is not
-	 * enabled. */
-	if (weston_head_get_output(head))
-		return;
-
 	output = weston_compositor_create_output_with_head(wet->compositor,
 							   head);
 	if (!output) {
@@ -1204,10 +1229,6 @@ simple_head_enable(struct wet_compositor *wet, struct weston_head *head)
 
 		return;
 	}
-
-	/* Escape hatch for DRM backend "off" setting. */
-	if (ret > 0)
-		return;
 
 	if (weston_output_enable(output) < 0) {
 		weston_log("Enabling output \"%s\" failed.\n",
@@ -1304,32 +1325,29 @@ configure_input_device(struct weston_compositor *compositor,
 }
 
 static int
-drm_backend_output_configure(struct weston_output *output)
+drm_backend_output_configure(struct weston_output *output,
+			     struct weston_config_section *section)
 {
-	struct weston_config *wc = wet_get_config(output->compositor);
 	struct wet_compositor *wet = to_wet_compositor(output->compositor);
-	struct weston_config_section *section;
-	const struct weston_drm_output_api *api = weston_drm_output_get_api(output->compositor);
+	const struct weston_drm_output_api *api;
 	enum weston_drm_backend_output_mode mode =
 		WESTON_DRM_BACKEND_OUTPUT_PREFERRED;
-
 	char *s;
 	char *modeline = NULL;
 	char *gbm_format = NULL;
 	char *seat = NULL;
 
+	api = weston_drm_output_get_api(output->compositor);
 	if (!api) {
 		weston_log("Cannot use weston_drm_output_api.\n");
 		return -1;
 	}
 
-	section = weston_config_get_section(wc, "output", "name", output->name);
 	weston_config_section_get_string(section, "mode", &s, "preferred");
 
 	if (strcmp(s, "off") == 0) {
-		weston_output_disable(output);
-		free(s);
-		return 1;
+		assert(0 && "off was supposed to be pruned");
+		return -1;
 	} else if (wet->drm_use_current_mode || strcmp(s, "current") == 0) {
 		mode = WESTON_DRM_BACKEND_OUTPUT_CURRENT;
 	} else if (strcmp(s, "preferred") != 0) {
@@ -1360,6 +1378,434 @@ drm_backend_output_configure(struct weston_output *output)
 	free(seat);
 
 	return 0;
+}
+
+/* Find the output section to use for configuring the output with the
+ * named head. If an output section with the given name contains
+ * a "same-as" key, ignore all other settings in the output section and
+ * instead find an output section named by the "same-as". Do this
+ * recursively.
+ */
+static struct weston_config_section *
+drm_config_find_controlling_output_section(struct weston_config *config,
+					   const char *head_name)
+{
+	struct weston_config_section *section;
+	char *same_as;
+	int depth = 0;
+
+	same_as = strdup(head_name);
+	do {
+		section = weston_config_get_section(config, "output",
+						    "name", same_as);
+		if (!section && depth > 0)
+			weston_log("Configuration error: "
+				   "output section referred to with "
+				   "'same-as=%s' not found.\n", same_as);
+
+		free(same_as);
+
+		if (!section)
+			return NULL;
+
+		if (++depth > 10) {
+			weston_log("Configuration error: "
+				   "'same-as' nested too deep for output '%s'.\n",
+				   head_name);
+			return NULL;
+		}
+
+		weston_config_section_get_string(section, "same-as",
+						 &same_as, NULL);
+	} while (same_as);
+
+	return section;
+}
+
+static struct wet_layoutput *
+wet_compositor_create_layoutput(struct wet_compositor *compositor,
+				const char *name,
+				struct weston_config_section *section)
+{
+	struct wet_layoutput *lo;
+
+	lo = zalloc(sizeof *lo);
+	if (!lo)
+		return NULL;
+
+	lo->compositor = compositor;
+	wl_list_insert(compositor->layoutput_list.prev, &lo->compositor_link);
+	wl_list_init(&lo->output_list);
+	lo->name = strdup(name);
+	lo->section = section;
+
+	return lo;
+}
+
+static void
+wet_layoutput_destroy(struct wet_layoutput *lo)
+{
+	wl_list_remove(&lo->compositor_link);
+	assert(wl_list_empty(&lo->output_list));
+	free(lo->name);
+	free(lo);
+}
+
+static void
+wet_output_handle_destroy(struct wl_listener *listener, void *data)
+{
+	struct wet_output *output;
+
+	output = wl_container_of(listener, output, output_destroy_listener);
+	assert(output->output == data);
+
+	output->output = NULL;
+	wl_list_remove(&output->output_destroy_listener.link);
+}
+
+static struct wet_output *
+wet_layoutput_create_output(struct wet_layoutput *lo, const char *name)
+{
+	struct wet_output *output;
+
+	output = zalloc(sizeof *output);
+	if (!output)
+		return NULL;
+
+	output->output =
+		weston_compositor_create_output(lo->compositor->compositor,
+						name);
+	if (!output) {
+		free(output);
+		return NULL;
+	}
+
+	output->layoutput = lo;
+	wl_list_insert(lo->output_list.prev, &output->link);
+	output->output_destroy_listener.notify = wet_output_handle_destroy;
+	weston_output_add_destroy_listener(output->output,
+					   &output->output_destroy_listener);
+
+	return output;
+}
+
+static struct wet_output *
+wet_output_from_weston_output(struct weston_output *base)
+{
+	struct wl_listener *lis;
+
+	lis = weston_output_get_destroy_listener(base,
+						 wet_output_handle_destroy);
+	if (!lis)
+		return NULL;
+
+	return container_of(lis, struct wet_output, output_destroy_listener);
+}
+
+static void
+wet_output_destroy(struct wet_output *output)
+{
+	if (output->output)
+		weston_output_destroy(output->output);
+
+	wl_list_remove(&output->link);
+	free(output);
+}
+
+static struct wet_layoutput *
+wet_compositor_find_layoutput(struct wet_compositor *wet, const char *name)
+{
+	struct wet_layoutput *lo;
+
+	wl_list_for_each(lo, &wet->layoutput_list, compositor_link)
+		if (strcmp(lo->name, name) == 0)
+			return lo;
+
+	return NULL;
+}
+
+static void
+wet_compositor_layoutput_add_head(struct wet_compositor *wet,
+				  const char *output_name,
+				  struct weston_config_section *section,
+				  struct weston_head *head)
+{
+	struct wet_layoutput *lo;
+
+	lo = wet_compositor_find_layoutput(wet, output_name);
+	if (!lo) {
+		lo = wet_compositor_create_layoutput(wet, output_name, section);
+		if (!lo)
+			return;
+	}
+
+	if (lo->add.n + 1 >= ARRAY_LENGTH(lo->add.heads))
+		return;
+
+	lo->add.heads[lo->add.n++] = head;
+}
+
+static void
+wet_compositor_destroy_layout(struct wet_compositor *wet)
+{
+	struct wet_layoutput *lo, *lo_tmp;
+	struct wet_output *output, *output_tmp;
+
+	wl_list_for_each_safe(lo, lo_tmp,
+			      &wet->layoutput_list, compositor_link) {
+		wl_list_for_each_safe(output, output_tmp,
+				      &lo->output_list, link) {
+			wet_output_destroy(output);
+		}
+		wet_layoutput_destroy(lo);
+	}
+}
+
+static void
+drm_head_prepare_enable(struct wet_compositor *wet,
+			struct weston_head *head)
+{
+	const char *name = weston_head_get_name(head);
+	struct weston_config_section *section;
+	char *output_name = NULL;
+	char *mode = NULL;
+
+	section = drm_config_find_controlling_output_section(wet->config, name);
+	if (section) {
+		/* skip outputs that are explicitly off, the backend turns
+		 * them off automatically.
+		 */
+		weston_config_section_get_string(section, "mode", &mode, NULL);
+		if (mode && strcmp(mode, "off") == 0) {
+			free(mode);
+			return;
+		}
+		free(mode);
+
+		weston_config_section_get_string(section, "name",
+						 &output_name, NULL);
+		assert(output_name);
+
+		wet_compositor_layoutput_add_head(wet, output_name,
+						  section, head);
+		free(output_name);
+	} else {
+		wet_compositor_layoutput_add_head(wet, name, NULL, head);
+	}
+}
+
+static void
+drm_try_attach(struct weston_output *output,
+	       struct wet_head_array *add,
+	       struct wet_head_array *failed)
+{
+	unsigned i;
+
+	/* try to attach all heads, this probably succeeds */
+	for (i = 0; i < add->n; i++) {
+		if (!add->heads[i])
+			continue;
+
+		if (weston_output_attach_head(output, add->heads[i]) < 0) {
+			assert(failed->n < ARRAY_LENGTH(failed->heads));
+
+			failed->heads[failed->n++] = add->heads[i];
+			add->heads[i] = NULL;
+		}
+	}
+}
+
+static int
+drm_try_enable(struct weston_output *output,
+	       struct wet_head_array *undo,
+	       struct wet_head_array *failed)
+{
+	/* Try to enable, and detach heads one by one until it succeeds. */
+	while (!output->enabled) {
+		if (weston_output_enable(output) == 0)
+			return 0;
+
+		/* the next head to drop */
+		while (undo->n > 0 && undo->heads[--undo->n] == NULL)
+			;
+
+		/* No heads left to undo and failed to enable. */
+		if (undo->heads[undo->n] == NULL)
+			return -1;
+
+		assert(failed->n < ARRAY_LENGTH(failed->heads));
+
+		/* undo one head */
+		weston_head_detach(undo->heads[undo->n]);
+		failed->heads[failed->n++] = undo->heads[undo->n];
+		undo->heads[undo->n] = NULL;
+	}
+
+	return 0;
+}
+
+static int
+drm_try_attach_enable(struct weston_output *output, struct wet_layoutput *lo)
+{
+	struct wet_head_array failed = {};
+	unsigned i;
+
+	assert(!output->enabled);
+
+	drm_try_attach(output, &lo->add, &failed);
+	if (drm_backend_output_configure(output, lo->section) < 0)
+		return -1;
+
+	if (drm_try_enable(output, &lo->add, &failed) < 0)
+		return -1;
+
+	/* For all successfully attached/enabled heads */
+	for (i = 0; i < lo->add.n; i++)
+		if (lo->add.heads[i])
+			wet_head_tracker_create(lo->compositor,
+						lo->add.heads[i]);
+
+	/* Push failed heads to the next round. */
+	lo->add = failed;
+
+	return 0;
+}
+
+static int
+drm_process_layoutput(struct wet_compositor *wet, struct wet_layoutput *lo)
+{
+	struct wet_output *output, *tmp;
+	char *name = NULL;
+	int ret;
+
+	/*
+	 *   For each existing wet_output:
+	 *     try attach
+	 *   While heads left to enable:
+	 *     Create output
+	 *     try attach, try enable
+	 */
+
+	wl_list_for_each_safe(output, tmp, &lo->output_list, link) {
+		struct wet_head_array failed = {};
+
+		if (!output->output) {
+			/* Clean up left-overs from destroyed heads. */
+			wet_output_destroy(output);
+			continue;
+		}
+
+		assert(output->output->enabled);
+
+		drm_try_attach(output->output, &lo->add, &failed);
+		lo->add = failed;
+		if (lo->add.n == 0)
+			return 0;
+	}
+
+	if (!weston_compositor_find_output_by_name(wet->compositor, lo->name))
+		name = strdup(lo->name);
+
+	while (lo->add.n > 0) {
+		if (!wl_list_empty(&lo->output_list)) {
+			weston_log("Error: independent-CRTC clone mode is not implemented.\n");
+			return -1;
+		}
+
+		if (!name) {
+			ret = asprintf(&name, "%s:%s", lo->name,
+				       weston_head_get_name(lo->add.heads[0]));
+			if (ret < 0)
+				return -1;
+		}
+		output = wet_layoutput_create_output(lo, name);
+		free(name);
+		name = NULL;
+
+		if (!output)
+			return -1;
+
+		if (drm_try_attach_enable(output->output, lo) < 0) {
+			wet_output_destroy(output);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+static int
+drm_process_layoutputs(struct wet_compositor *wet)
+{
+	struct wet_layoutput *lo;
+	int ret = 0;
+
+	wl_list_for_each(lo, &wet->layoutput_list, compositor_link) {
+		if (lo->add.n == 0)
+			continue;
+
+		if (drm_process_layoutput(wet, lo) < 0) {
+			lo->add = (struct wet_head_array){};
+			ret = -1;
+		}
+	}
+
+	return ret;
+}
+
+static void
+drm_head_disable(struct weston_head *head)
+{
+	struct weston_output *output_base;
+	struct wet_output *output;
+	struct wet_head_tracker *track;
+
+	track = wet_head_tracker_from_head(head);
+	if (track)
+		wet_head_tracker_destroy(track);
+
+	output_base = weston_head_get_output(head);
+	assert(output_base);
+	output = wet_output_from_weston_output(output_base);
+	assert(output && output->output == output_base);
+
+	weston_head_detach(head);
+	if (count_remaining_heads(output->output, NULL) == 0)
+		wet_output_destroy(output);
+}
+
+static void
+drm_heads_changed(struct wl_listener *listener, void *arg)
+{
+	struct weston_compositor *compositor = arg;
+	struct wet_compositor *wet = to_wet_compositor(compositor);
+	struct weston_head *head = NULL;
+	bool connected;
+	bool enabled;
+	bool changed;
+
+	/* We need to collect all cloned heads into outputs before enabling the
+	 * output.
+	 */
+	while ((head = weston_compositor_iterate_heads(compositor, head))) {
+		connected = weston_head_is_connected(head);
+		enabled = weston_head_is_enabled(head);
+		changed = weston_head_is_device_changed(head);
+
+		if (connected && !enabled) {
+			drm_head_prepare_enable(wet, head);
+		} else if (!connected && enabled) {
+			drm_head_disable(head);
+		} else if (enabled && changed) {
+			weston_log("Detected a monitor change on head '%s', "
+				   "not bothering to do anything about it.\n",
+				   weston_head_get_name(head));
+		}
+		weston_head_reset_device_changed(head);
+	}
+
+	if (drm_process_layoutputs(wet) < 0)
+		wet->init_failed = true;
 }
 
 static int
@@ -1397,7 +1843,9 @@ load_drm_backend(struct weston_compositor *c,
 	config.base.struct_size = sizeof(struct weston_drm_backend_config);
 	config.configure_device = configure_input_device;
 
-	wet_set_simple_head_configurator(c, drm_backend_output_configure);
+	wet->heads_changed_listener.notify = drm_heads_changed;
+	weston_compositor_add_heads_changed_listener(c,
+						&wet->heads_changed_listener);
 
 	ret = weston_compositor_load_backend(c, WESTON_BACKEND_DRM,
 					     &config.base);
@@ -1936,6 +2384,8 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_BOOLEAN, "wait-for-debugger", 0, &wait_for_debugger },
 	};
 
+	wl_list_init(&wet.layoutput_list);
+
 	if (os_fd_set_cloexec(fileno(stdin))) {
 		printf("Unable to set stdin as close on exec().\n");
 		return EXIT_FAILURE;
@@ -2123,6 +2573,8 @@ int main(int argc, char *argv[])
 	ret = wet.compositor->exit_code;
 
 out:
+	wet_compositor_destroy_layout(&wet);
+
 	/* free(NULL) is valid, and it won't be NULL if it's used */
 	free(wet.parsed_options);
 
