@@ -45,8 +45,8 @@ class CHROMEOS_EXPORT NetworkConnectionHandlerImpl
   void LoggedInStateChanged() override;
 
   // CertLoader::Observer
-  void OnCertificatesLoaded(const net::ScopedCERTCertificateList& cert_list,
-                            bool initial_load) override;
+  void OnCertificatesLoaded(
+      const net::ScopedCERTCertificateList& cert_list) override;
 
  protected:
   void Init(NetworkStateHandler* network_state_handler,

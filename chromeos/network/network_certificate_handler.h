@@ -77,8 +77,8 @@ class CHROMEOS_EXPORT NetworkCertificateHandler : public CertLoader::Observer {
 
  private:
   // CertLoader::Observer
-  void OnCertificatesLoaded(const net::ScopedCERTCertificateList& cert_list,
-                            bool initial_load) override;
+  void OnCertificatesLoaded(
+      const net::ScopedCERTCertificateList& cert_list) override;
 
   void ProcessCertificates(const net::ScopedCERTCertificateList& cert_list);
 

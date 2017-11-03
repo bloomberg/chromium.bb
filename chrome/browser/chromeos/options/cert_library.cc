@@ -195,8 +195,7 @@ int CertLibrary::GetUserCertIndexByPkcs11Id(
 }
 
 void CertLibrary::OnCertificatesLoaded(
-    const net::ScopedCERTCertificateList& cert_list,
-    bool initial_load) {
+    const net::ScopedCERTCertificateList& cert_list) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "CertLibrary::OnCertificatesLoaded: " << cert_list.size();
   certs_.clear();
@@ -248,7 +247,7 @@ void CertLibrary::OnCertificatesLoaded(
   VLOG(1) << "server_ca_certs_: " << server_ca_certs_.size();
 
   for (auto& observer : observer_list_)
-    observer.OnCertificatesLoaded(initial_load);
+    observer.OnCertificatesLoaded();
 }
 
 CERTCertificate* CertLibrary::GetCertificateAt(CertType type, int index) const {

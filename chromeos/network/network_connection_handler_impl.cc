@@ -175,8 +175,7 @@ void NetworkConnectionHandlerImpl::LoggedInStateChanged() {
 }
 
 void NetworkConnectionHandlerImpl::OnCertificatesLoaded(
-    const net::ScopedCERTCertificateList& cert_list,
-    bool initial_load) {
+    const net::ScopedCERTCertificateList& cert_list) {
   certificates_loaded_ = true;
   NET_LOG_EVENT("Certificates Loaded", "");
   if (queued_connect_)

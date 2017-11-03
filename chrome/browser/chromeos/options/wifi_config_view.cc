@@ -662,7 +662,7 @@ void WifiConfigView::OnPerformAction(views::Combobox* combobox) {
   UpdateErrorLabel();
 }
 
-void WifiConfigView::OnCertificatesLoaded(bool initial_load) {
+void WifiConfigView::OnCertificatesLoaded() {
   RefreshEapFields();
   UpdateDialogButtons();
   UpdateErrorLabel();

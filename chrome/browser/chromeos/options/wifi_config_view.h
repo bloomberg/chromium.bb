@@ -72,7 +72,7 @@ class WifiConfigView : public ChildNetworkConfigView,
   void OnPerformAction(views::Combobox* combobox) override;
 
   // CertLibrary::Observer
-  void OnCertificatesLoaded(bool initial_load) override;
+  void OnCertificatesLoaded() override;
 
   // ChildNetworkConfigView
   base::string16 GetTitle() const override;

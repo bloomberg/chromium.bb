@@ -27,8 +27,7 @@ class CertLibrary : public CertLoader::Observer {
     virtual ~Observer() {}
 
     // Called for any Observers whenever the certificates are loaded.
-    // |initial_load| is true the first time this is called.
-    virtual void OnCertificatesLoaded(bool initial_load) = 0;
+    virtual void OnCertificatesLoaded() = 0;
 
    protected:
     Observer() {}
@@ -79,8 +78,7 @@ class CertLibrary : public CertLoader::Observer {
   int GetUserCertIndexByPkcs11Id(const std::string& pkcs11_id) const;
 
   // CertLoader::Observer
-  void OnCertificatesLoaded(const net::ScopedCERTCertificateList&,
-                            bool initial_load) override;
+  void OnCertificatesLoaded(const net::ScopedCERTCertificateList&) override;
 
  private:
   CertLibrary();
