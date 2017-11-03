@@ -14,6 +14,8 @@ _STATUS_VERIFIED = 2
 SRC_ROOT = os.path.dirname(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
+_SAMPLE_TOOL_SUFFIX = 'readelf'
+
 
 class LazyPaths(object):
   def __init__(self, tool_prefix=None, output_directory=None,
@@ -57,9 +59,10 @@ class LazyPaths(object):
     if self._tool_prefix_status < _STATUS_VERIFIED:
       self._tool_prefix_status = _STATUS_VERIFIED
       if os.path.sep not in tool_prefix:
-        full_path = distutils.spawn.find_executable(tool_prefix + 'c++filt')
+        full_path = distutils.spawn.find_executable(
+            tool_prefix + _SAMPLE_TOOL_SUFFIX)
       else:
-        full_path = tool_prefix + 'c++filt'
+        full_path = tool_prefix + _SAMPLE_TOOL_SUFFIX
 
       if not full_path or not os.path.isfile(full_path):
         raise Exception('Bad --tool-prefix. Path not found: %s' % full_path)
@@ -96,9 +99,9 @@ class LazyPaths(object):
         if tool_prefix.endswith(os.path.sep):
           ret += os.path.sep
         # Check for output directories that have a stale build_vars.txt.
-        if os.path.isfile(ret + 'c++filt'):
+        if os.path.isfile(ret + _SAMPLE_TOOL_SUFFIX):
           return ret
-    from_path = distutils.spawn.find_executable('c++filt')
+    from_path = distutils.spawn.find_executable(_SAMPLE_TOOL_SUFFIX)
     if from_path:
       return from_path[:-7]
     return None
@@ -118,3 +121,21 @@ def ToSrcRootRelative(path):
   if path.endswith(os.path.sep):
     ret += os.path.sep
   return ret
+
+
+def GetCppFiltPath(tool_prefix):
+  if tool_prefix[-5:] == 'llvm-':
+    return tool_prefix + 'cxxfilt'
+  return tool_prefix + 'c++filt'
+
+
+def GetNmPath(tool_prefix):
+  return tool_prefix + 'nm'
+
+
+def GetObjDumpPath(tool_prefix):
+  return tool_prefix + 'objdump'
+
+
+def GetReadElfPath(tool_prefix):
+  return tool_prefix + 'readelf'

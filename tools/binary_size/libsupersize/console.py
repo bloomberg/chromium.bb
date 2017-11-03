@@ -217,7 +217,7 @@ class _Session(object):
     orig_tool_prefix = size_info.metadata.get(models.METADATA_TOOL_PREFIX)
     if orig_tool_prefix:
       orig_tool_prefix = path_util.FromSrcRootRelative(orig_tool_prefix)
-      if os.path.exists(orig_tool_prefix + 'objdump'):
+      if os.path.exists(path_util.GetObjDumpPath(orig_tool_prefix)):
         tool_prefix = orig_tool_prefix
 
     # TODO(agrieve): Would be even better to use objdump --info to check that
@@ -309,7 +309,7 @@ class _Session(object):
     elf_path, tool_prefix = self._ElfPathAndToolPrefixForSymbol(
         size_info, elf_path)
 
-    args = [tool_prefix + 'objdump', '--disassemble', '--source',
+    args = [path_util.GetObjDumpPath(tool_prefix), '--disassemble', '--source',
             '--line-numbers', '--demangle',
             '--start-address=0x%x' % symbol.address,
             '--stop-address=0x%x' % symbol.end_address, elf_path]

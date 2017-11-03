@@ -57,6 +57,7 @@ import sys
 import threading
 
 import concurrent
+import path_util
 
 _MSG_ANALYZE_PATHS = 1
 _MSG_SORT_PATHS = 2
@@ -135,8 +136,8 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
 
   # About 60mb of output, but piping takes ~30s, and loading it into RAM
   # directly takes 3s.
-  args = [tool_prefix + 'nm', '--no-sort', '--defined-only', '--demangle',
-          elf_path]
+  args = [path_util.GetNmPath(tool_prefix), '--no-sort', '--defined-only',
+          '--demangle', elf_path]
   output = subprocess.check_output(args)
   for line in output.splitlines():
     space_idx = line.find(' ')
@@ -183,7 +184,7 @@ def _LookupStringSectionPositions(target, tool_prefix, output_directory):
     target: An archive path string (e.g., "foo.a") or a list of object paths.
   """
   is_archive = isinstance(target, basestring)
-  args = [tool_prefix + 'readelf', '-S', '--wide']
+  args = [path_util.GetReadElfPath(tool_prefix), '-S', '--wide']
   if is_archive:
     args.append(target)
   else:
@@ -228,7 +229,7 @@ def _LookupStringSectionPositions(target, tool_prefix, output_directory):
 
 def LookupElfRodataInfo(elf_path, tool_prefix):
   """Returns (address, offset, size) for the .rodata section."""
-  args = [tool_prefix + 'readelf', '-S', '--wide', elf_path]
+  args = [path_util.GetReadElfPath(tool_prefix), '-S', '--wide', elf_path]
   output = subprocess.check_output(args)
   lines = output.splitlines()
   for line in lines:
@@ -460,7 +461,8 @@ def _RunNmOnIntermediates(target, tool_prefix, output_directory):
     target: Either a single path to a .a (as a string), or a list of .o paths.
   """
   is_archive = isinstance(target, basestring)
-  args = [tool_prefix + 'nm', '--no-sort', '--defined-only', '--demangle']
+  args = [path_util.GetNmPath(tool_prefix), '--no-sort', '--defined-only',
+          '--demangle']
   if is_archive:
     args.append(target)
   else:
