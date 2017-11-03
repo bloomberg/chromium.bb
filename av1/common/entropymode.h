@@ -444,7 +444,19 @@ extern const aom_cdf_prob default_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES]
                                                [CDF_SIZE(INTRA_MODES)];
 #endif
 
-#define USE_1D_16X16 1
+// Decides what set to assign to 16x16 transforms.
+// Set 0:
+//        Inter: All 16 txfms
+//        Intra: Discrete Trig transforms w/0 flip (4) + Identity (1) +
+//               1D Hor/vert DCT (2)
+// Set 1:
+//        Inter: Discrete Trig transforms w/ flip (9) + Identity (1) +
+//               1D Hor/Ver DCT (2)
+//        Intra: Discrete Trig transforms w/0 flip (4) + Identity (1)
+// Set 2:
+//        Inter: Discrete Trig transforms w/ flip (9) + Identity (1)
+//        Intra: Discrete Trig transforms w/0 flip (4) + Identity (1)
+#define EXT_TX_16X16_SET 1
 static const int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES] = {
   {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -459,10 +471,16 @@ static const int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES] = {
       1, 5, 6, 4, 0, 0, 0, 0, 0, 0, 2, 3, 0, 0, 0, 0,
   },
   {
+      1, 5, 6, 4, 0, 0, 0, 0, 0, 0, 2, 3, 0, 0, 0, 0,
+  },
+  {
       1, 2, 3, 6, 4, 5, 7, 8, 9, 0, 0, 0, 0, 0, 0, 0,
   },
   {
       3, 4, 5, 8, 6, 7, 9, 10, 11, 0, 1, 2, 0, 0, 0, 0,
+  },
+  {
+      7, 8, 9, 12, 10, 11, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6,
   },
   {
       7, 8, 9, 12, 10, 11, 13, 14, 15, 0, 1, 2, 3, 4, 5, 6,
@@ -483,10 +501,16 @@ static const int av1_ext_tx_inv[EXT_TX_SET_TYPES][TX_TYPES] = {
       9, 0, 10, 11, 3, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   },
   {
+      9, 0, 10, 11, 3, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  },
+  {
       9, 0, 1, 2, 4, 5, 3, 6, 7, 8, 0, 0, 0, 0, 0, 0,
   },
   {
       9, 10, 11, 0, 1, 2, 4, 5, 3, 6, 7, 8, 0, 0, 0, 0,
+  },
+  {
+      9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 4, 5, 3, 6, 7, 8,
   },
   {
       9, 10, 11, 12, 13, 14, 15, 0, 1, 2, 4, 5, 3, 6, 7, 8,
