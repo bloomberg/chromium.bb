@@ -189,7 +189,7 @@ void OfflineInternalsUIMessageHandler::HandleRequestQueueCallback(
       save_page_request->SetString("status", GetStringFromSavePageStatus());
       save_page_request->SetString("namespace",
                                    request->client_id().name_space);
-      save_page_request->SetDouble("lastAttempt",
+      save_page_request->SetDouble("lastAttemptTime",
                                    request->last_attempt_time().ToJsTime());
       save_page_request->SetString("id", std::to_string(request->request_id()));
       save_page_request->SetString("originalUrl",
