@@ -18,7 +18,7 @@ class IVRSystem;
 
 namespace device {
 
-class OpenVRDeviceProvider : public VRDeviceProvider {
+class DEVICE_VR_EXPORT OpenVRDeviceProvider : public VRDeviceProvider {
  public:
   OpenVRDeviceProvider();
   ~OpenVRDeviceProvider() override;

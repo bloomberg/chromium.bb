@@ -21,7 +21,7 @@ void OpenVRDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
     VRDevice* device = new OpenVRDevice(vr_system_);
     devices->push_back(device);
     GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new OpenVRGamepadDataFetcher::Factory(device->id(), vr_system_));
+        new OpenVRGamepadDataFetcher::Factory(device->GetId(), vr_system_));
   }
 }
 

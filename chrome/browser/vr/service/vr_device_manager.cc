@@ -35,7 +35,7 @@ VRDeviceManager* VRDeviceManager::GetInstance() {
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
-    providers.emplace_back(std::make_unique<OpenVRDeviceProvider>());
+    providers.emplace_back(std::make_unique<device::OpenVRDeviceProvider>());
 #endif
     new VRDeviceManager(std::move(providers));
   }

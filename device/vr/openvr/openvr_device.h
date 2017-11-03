@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/threading/simple_thread.h"
+#include "base/single_thread_task_runner.h"
 #include "device/vr/vr_device_base.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -27,22 +27,29 @@ class OpenVRDevice : public VRDeviceBase {
   ~OpenVRDevice() override;
 
   // VRDeviceBase
-  mojom::VRDisplayInfoPtr GetVRDisplayInfo() override;
+  void RequestPresent(
+      VRDisplayImpl* display,
+      mojom::VRSubmitFrameClientPtr submit_client,
+      mojom::VRPresentationProviderRequest request,
+      mojom::VRDisplayHost::RequestPresentCallback callback) override;
+  void ExitPresent() override;
+  void GetPose(mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
 
   void OnPollingEvents();
+
+  void OnRequestPresentResult(
+      mojom::VRDisplayHost::RequestPresentCallback callback,
+      bool result);
 
  private:
   // TODO (BillOrr): This should not be a unique_ptr because the render_loop_
   // binds to VRVSyncProvider requests, so its lifetime should be tied to the
   // lifetime of that binding.
   std::unique_ptr<OpenVRRenderLoop> render_loop_;
-
   mojom::VRSubmitFrameClientPtr submit_client_;
   mojom::VRDisplayInfoPtr display_info_;
-
   vr::IVRSystem* vr_system_;
-
-  bool is_polling_events_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   base::WeakPtrFactory<OpenVRDevice> weak_ptr_factory_;
 
