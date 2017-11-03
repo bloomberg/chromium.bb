@@ -114,6 +114,8 @@ target(link_target_type, "ipc_service_sources") {
   }
   if (is_android) {
     sources += [
+      "gpu_memory_buffer_factory_android_hardware_buffer.cc",
+      "gpu_memory_buffer_factory_android_hardware_buffer.h",
       "image_transport_surface_android.cc",
       "stream_texture_android.cc",
       "stream_texture_android.h",

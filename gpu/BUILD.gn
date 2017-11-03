@@ -352,6 +352,10 @@ test("gpu_unittests") {
     sources += [ "ipc/client/gpu_memory_buffer_impl_dxgi_unittest.cc" ]
   }
 
+  if (is_android) {
+    sources += [ "ipc/client/gpu_memory_buffer_impl_android_hardware_buffer_unittest.cc" ]
+  }
+
   # TODO(geofflang): Run passthrough command decoder unittests on more platforms
   # once initialization of ANGLE's NULL context is supported
   if ((is_win || (is_linux && !use_ozone)) && !is_asan) {

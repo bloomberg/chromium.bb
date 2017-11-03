@@ -190,9 +190,11 @@ struct EnumTraits<gfx::mojom::GpuMemoryBufferType, gfx::GpuMemoryBufferType> {
         return gfx::mojom::GpuMemoryBufferType::NATIVE_PIXMAP;
       case gfx::GpuMemoryBufferType::DXGI_SHARED_HANDLE:
         return gfx::mojom::GpuMemoryBufferType::DXGI_SHARED_HANDLE;
+      case gfx::GpuMemoryBufferType::ANDROID_HARDWARE_BUFFER:
+        return gfx::mojom::GpuMemoryBufferType::ANDROID_HARDWARE_BUFFER;
     }
     NOTREACHED();
-    return gfx::mojom::GpuMemoryBufferType::LAST;
+    return gfx::mojom::GpuMemoryBufferType::EMPTY_BUFFER;
   }
 
   static bool FromMojom(gfx::mojom::GpuMemoryBufferType input,
@@ -212,6 +214,9 @@ struct EnumTraits<gfx::mojom::GpuMemoryBufferType, gfx::GpuMemoryBufferType> {
         return true;
       case gfx::mojom::GpuMemoryBufferType::DXGI_SHARED_HANDLE:
         *out = gfx::GpuMemoryBufferType::DXGI_SHARED_HANDLE;
+        return true;
+      case gfx::mojom::GpuMemoryBufferType::ANDROID_HARDWARE_BUFFER:
+        *out = gfx::GpuMemoryBufferType::ANDROID_HARDWARE_BUFFER;
         return true;
     }
     return false;

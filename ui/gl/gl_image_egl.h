@@ -13,6 +13,7 @@
 
 namespace gl {
 
+// Abstract base class for EGL-based images.
 class GL_EXPORT GLImageEGL : public GLImage {
  public:
   explicit GLImageEGL(const gfx::Size& size);

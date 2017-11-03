@@ -137,6 +137,9 @@ jumbo_component("base") {
     "allocator/allocator_shim.h",
     "allocator/malloc_zone_functions_mac.cc",
     "allocator/malloc_zone_functions_mac.h",
+    "android/android_hardware_buffer_abi.h",
+    "android/android_hardware_buffer_compat.cc",
+    "android/android_hardware_buffer_compat.h",
     "android/animation_frame_time_histogram.cc",
     "android/apk_assets.cc",
     "android/apk_assets.h",
@@ -509,6 +512,7 @@ jumbo_component("base") {
     "memory/shared_memory_android.cc",
     "memory/shared_memory_handle.cc",
     "memory/shared_memory_handle.h",
+    "memory/shared_memory_handle_android.cc",
     "memory/shared_memory_handle_mac.cc",
     "memory/shared_memory_handle_win.cc",
     "memory/shared_memory_helper.cc",
@@ -1118,7 +1122,9 @@ jumbo_component("base") {
     }
   }
 
-  if (!is_mac && is_posix) {
+  # MacOS and Android have their own custom shared memory implementations due
+  # to supporting both POSIX and native handles.
+  if (is_posix && !is_mac && !is_android) {
     sources += [ "memory/shared_memory_handle_posix.cc" ]
   }
 

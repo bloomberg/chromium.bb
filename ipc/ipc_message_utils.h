@@ -23,6 +23,7 @@
 #include "base/containers/stack_container.h"
 #include "base/files/file.h"
 #include "base/format_macros.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -39,7 +40,6 @@ class DictionaryValue;
 class FilePath;
 class ListValue;
 class NullableString16;
-class SharedMemoryHandle;
 class Time;
 class TimeDelta;
 class TimeTicks;
@@ -555,6 +555,18 @@ struct IPC_EXPORT ParamTraits<base::SharedMemoryHandle> {
                    param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
+
+#if defined(OS_ANDROID)
+template <>
+struct IPC_EXPORT ParamTraits<base::SharedMemoryHandle::Type> {
+  typedef base::SharedMemoryHandle::Type param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+#endif
 
 #if defined(OS_WIN)
 template <>

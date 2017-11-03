@@ -49,7 +49,7 @@ enum GpuMemoryBufferType {
   IO_SURFACE_BUFFER,
   NATIVE_PIXMAP,
   DXGI_SHARED_HANDLE,
-  LAST = DXGI_SHARED_HANDLE
+  ANDROID_HARDWARE_BUFFER,
 };
 
 // gfx::GpuMemoryBufferId

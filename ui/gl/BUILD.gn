@@ -187,6 +187,13 @@ component("gl") {
         "gl_image_native_pixmap.h",
       ]
     }
+
+    if (is_android) {
+      sources += [
+        "gl_image_ahardwarebuffer.cc",
+        "gl_image_ahardwarebuffer.h",
+      ]
+    }
   }
   if (is_android || is_linux) {
     sources += [
@@ -419,6 +426,10 @@ test("gl_unittests") {
       "gl_image_dxgi_unittest.cc",
       "wgl_api_unittest.cc",
     ]
+  }
+
+  if (is_android) {
+    sources += [ "gl_image_ahardwarebuffer_unittest.cc" ]
   }
 
   include_dirs = [ "//third_party/khronos" ]
