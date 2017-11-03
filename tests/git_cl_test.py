@@ -12,6 +12,7 @@ import logging
 import os
 import StringIO
 import sys
+import tempfile
 import unittest
 import urlparse
 
@@ -29,6 +30,28 @@ def callError(code=1, cmd='', cwd='', stdout='', stderr=''):
 
 
 CERR1 = callError(1)
+
+
+def MakeNamedTemporaryFileMock(expected_content):
+  class NamedTemporaryFileMock(object):
+    def __init__(self, *args, **kwargs):
+      self.name = '/tmp/named'
+      self.expected_content = expected_content
+
+    def __enter__(self):
+      return self
+
+    def __exit__(self, _type, _value, _tb):
+      pass
+
+    def write(self, content):
+      if self.expected_content:
+        assert content == self.expected_content
+
+    def close(self):
+      pass
+
+  return NamedTemporaryFileMock
 
 
 class ChangelistMock(object):
@@ -90,8 +113,6 @@ class RietveldMock(object):
   @staticmethod
   def add_comment(_issue, _comment):
     return 'Commented'
-
-
 
 
 class GitCheckoutMock(object):
@@ -160,6 +181,7 @@ def CookiesAuthenticatorMockFactory(hosts_with_creds=None, same_auth=False):
         return same_auth
       return (hosts_with_creds or {}).get(host)
   return CookiesAuthenticatorMock
+
 
 class MockChangelistWithBranchAndIssue():
   def __init__(self, branch, issue):
@@ -1541,7 +1563,7 @@ class TestGitCl(TestCase):
         ((['git', 'rev-parse', 'HEAD:'],),  # `HEAD:` means HEAD's tree hash.
          '0123456789abcdef'),
         ((['git', 'commit-tree', '0123456789abcdef', '-p', parent,
-           '-m', description],),
+           '-F', '/tmp/named'],),
          ref_to_push),
       ]
     else:
@@ -1693,6 +1715,9 @@ class TestGitCl(TestCase):
         other_cl_owner=other_cl_owner,
         custom_cl_base=custom_cl_base)
     if fetched_status != 'ABANDONED':
+      self.mock(tempfile, 'NamedTemporaryFile', MakeNamedTemporaryFileMock(
+          expected_content=description))
+      self.mock(os, 'remove', lambda _: True)
       self.calls += self._gerrit_upload_calls(
           description, reviewers, squash,
           squash_mode=squash_mode,

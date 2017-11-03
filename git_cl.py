@@ -27,6 +27,7 @@ import re
 import shutil
 import stat
 import sys
+import tempfile
 import textwrap
 import urllib
 import urllib2
@@ -3004,8 +3005,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       parent = self._ComputeParent(remote, upstream_branch, custom_cl_base,
                                    options.force, change_desc)
       tree = RunGit(['rev-parse', 'HEAD:']).strip()
-      ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
-                            '-m', change_desc.description]).strip()
+      with tempfile.NamedTemporaryFile(delete=False) as desc_tempfile:
+        desc_tempfile.write(change_desc.description)
+        desc_tempfile.close()
+        ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
+                              '-F', desc_tempfile.name]).strip()
+        os.remove(desc_tempfile.name)
     else:
       change_desc = ChangeDescription(
           options.message or CreateDescriptionFromLog(git_diff_args))
