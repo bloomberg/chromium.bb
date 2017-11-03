@@ -385,6 +385,89 @@ std::unique_ptr<base::ListValue> getDisplayInfo() {
   return display_info;
 }
 
+std::string GetProfileName(gpu::VideoCodecProfile profile) {
+  switch (profile) {
+    case gpu::VIDEO_CODEC_PROFILE_UNKNOWN:
+      return "unknown";
+    case gpu::H264PROFILE_BASELINE:
+      return "h264 baseline";
+    case gpu::H264PROFILE_MAIN:
+      return "h264 main";
+    case gpu::H264PROFILE_EXTENDED:
+      return "h264 extended";
+    case gpu::H264PROFILE_HIGH:
+      return "h264 high";
+    case gpu::H264PROFILE_HIGH10PROFILE:
+      return "h264 high 10";
+    case gpu::H264PROFILE_HIGH422PROFILE:
+      return "h264 high 4:2:2";
+    case gpu::H264PROFILE_HIGH444PREDICTIVEPROFILE:
+      return "h264 high 4:4:4 predictive";
+    case gpu::H264PROFILE_SCALABLEBASELINE:
+      return "h264 scalable baseline";
+    case gpu::H264PROFILE_SCALABLEHIGH:
+      return "h264 scalable high";
+    case gpu::H264PROFILE_STEREOHIGH:
+      return "h264 stereo high";
+    case gpu::H264PROFILE_MULTIVIEWHIGH:
+      return "h264 multiview high";
+    case gpu::HEVCPROFILE_MAIN:
+      return "hevc main";
+    case gpu::HEVCPROFILE_MAIN10:
+      return "hevc main 10";
+    case gpu::HEVCPROFILE_MAIN_STILL_PICTURE:
+      return "hevc main still-picture";
+    case gpu::VP8PROFILE_ANY:
+      return "vp8";
+    case gpu::VP9PROFILE_PROFILE0:
+      return "vp9 profile0";
+    case gpu::VP9PROFILE_PROFILE1:
+      return "vp9 profile1";
+    case gpu::VP9PROFILE_PROFILE2:
+      return "vp9 profile2";
+    case gpu::VP9PROFILE_PROFILE3:
+      return "vp9 profile3";
+    case gpu::DOLBYVISION_PROFILE0:
+      return "dolby vision profile 0";
+    case gpu::DOLBYVISION_PROFILE4:
+      return "dolby vision profile 4";
+    case gpu::DOLBYVISION_PROFILE5:
+      return "dolby vision profile 5";
+    case gpu::DOLBYVISION_PROFILE7:
+      return "dolby vision profile 7";
+    case gpu::THEORAPROFILE_ANY:
+      return "theora";
+  }
+  NOTREACHED();
+  return "";
+}
+
+std::unique_ptr<base::ListValue> GetVideoAcceleratorsInfo() {
+  gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
+  auto info = std::make_unique<base::ListValue>();
+
+  for (const auto& profile :
+       gpu_info.video_decode_accelerator_capabilities.supported_profiles) {
+    std::string codec_string = base::StringPrintf(
+        "Decode %s", GetProfileName(profile.profile).c_str());
+    std::string resolution_string = base::StringPrintf(
+        "up to %s pixels", profile.max_resolution.ToString().c_str());
+    info->Append(NewDescriptionValuePair(codec_string, resolution_string));
+  }
+
+  for (const auto& profile :
+       gpu_info.video_encode_accelerator_supported_profiles) {
+    std::string codec_string = base::StringPrintf(
+        "Encode %s", GetProfileName(profile.profile).c_str());
+    std::string resolution_string = base::StringPrintf(
+        "up to %s pixels and/or %.3f fps",
+        profile.max_resolution.ToString().c_str(),
+        static_cast<double>(profile.max_framerate_numerator) /
+            profile.max_framerate_denominator);
+    info->Append(NewDescriptionValuePair(codec_string, resolution_string));
+  }
+  return info;
+}
 // This class receives javascript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
 // this class's methods are expected to run on the UI thread.
@@ -558,6 +641,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   gpu_info_val->Set("compositorInfo", CompositorInfo());
   gpu_info_val->Set("gpuMemoryBufferInfo", GpuMemoryBufferInfo());
   gpu_info_val->Set("displayInfo", getDisplayInfo());
+  gpu_info_val->Set("videoAcceleratorsInfo", GetVideoAcceleratorsInfo());
 
   // Send GPU Info to javascript.
   web_ui()->CallJavascriptFunctionUnsafe("browserBridge.onGpuInfoUpdate",

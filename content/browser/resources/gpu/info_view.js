@@ -244,6 +244,13 @@ cr.define('gpu', function() {
         else
           this.setTable_('display-info', []);
 
+        if (gpuInfo.videoAcceleratorsInfo) {
+          this.setTable_(
+              'video-acceleration-info', gpuInfo.videoAcceleratorsInfo);
+        } else {
+          this.setTable_('video-acceleration-info', []);
+        }
+
         if (gpuInfo.diagnostics) {
           diagnosticsDiv.hidden = false;
           diagnosticsLoadingDiv.hidden = true;
