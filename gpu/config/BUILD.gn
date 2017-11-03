@@ -121,11 +121,7 @@ source_set("config_sources") {
 
   sources += process_json_outputs
 
-  configs += [
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-    "//gpu:gpu_implementation",
-  ]
+  configs += [ "//gpu:gpu_implementation" ]
 
   deps = [
     ":crash_keys",

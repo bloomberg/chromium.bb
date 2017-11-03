@@ -93,8 +93,9 @@ int StringContainsName(
       str, " .,()-_", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (size_t ii = 0; ii < tokens.size(); ++ii) {
     for (size_t name_index = 0; name_index < num_names; ++name_index) {
-      if (tokens[ii] == names[name_index])
-        return name_index;
+      if (tokens[ii] == names[name_index]) {
+        return base::checked_cast<int>(name_index);
+      }
     }
   }
   return -1;
