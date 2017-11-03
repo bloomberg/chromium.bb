@@ -2,27 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui_devtools/views/ui_devtools_overlay_agent.h"
+#include "components/ui_devtools/views/overlay_agent.h"
 
 #include "ui/aura/env.h"
 #include "ui/events/event.h"
 
 namespace ui_devtools {
 
-UIDevToolsOverlayAgent::UIDevToolsOverlayAgent(DOMAgent* dom_agent)
-    : dom_agent_(dom_agent) {
+OverlayAgent::OverlayAgent(DOMAgent* dom_agent) : dom_agent_(dom_agent) {
   DCHECK(dom_agent_);
 }
 
-UIDevToolsOverlayAgent::~UIDevToolsOverlayAgent() {}
+OverlayAgent::~OverlayAgent() {}
 
-void UIDevToolsOverlayAgent::SetPinnedNodeId(int node_id) {
+void OverlayAgent::SetPinnedNodeId(int node_id) {
   pinned_id_ = node_id;
   frontend()->nodeHighlightRequested(pinned_id_);
   dom_agent_->HighlightNode(pinned_id_, true /* show_size */);
 }
 
-ui_devtools::protocol::Response UIDevToolsOverlayAgent::setInspectMode(
+ui_devtools::protocol::Response OverlayAgent::setInspectMode(
     const String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   pinned_id_ = 0;
@@ -33,18 +32,18 @@ ui_devtools::protocol::Response UIDevToolsOverlayAgent::setInspectMode(
   return ui_devtools::protocol::Response::OK();
 }
 
-ui_devtools::protocol::Response UIDevToolsOverlayAgent::highlightNode(
+ui_devtools::protocol::Response OverlayAgent::highlightNode(
     std::unique_ptr<ui_devtools::protocol::Overlay::HighlightConfig>
         highlight_config,
     ui_devtools::protocol::Maybe<int> node_id) {
   return dom_agent_->HighlightNode(node_id.fromJust());
 }
 
-ui_devtools::protocol::Response UIDevToolsOverlayAgent::hideHighlight() {
+ui_devtools::protocol::Response OverlayAgent::hideHighlight() {
   return dom_agent_->hideHighlight();
 }
 
-void UIDevToolsOverlayAgent::OnMouseEvent(ui::MouseEvent* event) {
+void OverlayAgent::OnMouseEvent(ui::MouseEvent* event) {
   // Make sure the element tree has been populated before processing
   // mouse events.
   if (!dom_agent_->window_element_root())
@@ -93,7 +92,7 @@ void UIDevToolsOverlayAgent::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void UIDevToolsOverlayAgent::OnKeyEvent(ui::KeyEvent* event) {
+void OverlayAgent::OnKeyEvent(ui::KeyEvent* event) {
   if (!dom_agent_->window_element_root())
     return;
 
