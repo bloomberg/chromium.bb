@@ -159,5 +159,12 @@ void PostProcessingPipelineImpl::SetPostProcessorConfig(
   }
 }
 
+// Set content type.
+void PostProcessingPipelineImpl::SetContentType(AudioContentType content_type) {
+  for (auto& processor : processors_) {
+    processor.ptr->SetContentType(content_type);
+  }
+}
+
 }  // namespace media
 }  // namespace chromecast
