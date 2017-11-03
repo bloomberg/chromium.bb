@@ -104,7 +104,9 @@ def regenerate(
 
   with open(get_sharding_map_path()) as f:
     sharding_map = json.load(f)
-  sharding_map[u'all_benchmarks'] = [b.Name() for b in benchmarks]
+
+  all_benchmarks = [b.Name() for b in benchmarks]
+  sharding_map[u'all_benchmarks'] = all_benchmarks
 
   for name, config in waterfall_configs.items():
     for builder, tester in config['testers'].items():
@@ -133,6 +135,12 @@ def regenerate(
       continue
 
     for value in builder_values.values():
+      # Remove any deleted benchmarks
+      benchmarks = []
+      for b in value['benchmarks']:
+        if b in all_benchmarks:
+          benchmarks.append(b)
+      value['benchmarks'] = benchmarks
       value['benchmarks'].sort()
 
   if not dry_run:
