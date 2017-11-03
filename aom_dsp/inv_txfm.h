@@ -30,7 +30,7 @@ static INLINE tran_high_t dct_const_round_shift(tran_high_t input) {
 static INLINE tran_high_t check_range(tran_high_t input, int bd) {
 #if CONFIG_DAALA_TX
   // Daala TX coeffs cover a different range from AV1 TX
-  // all depths: 18 bit integer
+  // all depths: 19 bit integer
   const int32_t int_max = (1 << (TX_COEFF_DEPTH + 6)) - 1;
   const int32_t int_min = -int_max - 1;
   (void)bd;

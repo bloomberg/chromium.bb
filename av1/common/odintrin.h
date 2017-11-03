@@ -69,7 +69,7 @@ extern "C" {
    such that the real coefficient depth precision is always TX_CEOFF_DEPTH
    regardless of bitdepth or transform size.
 */
-# define TX_COEFF_DEPTH (11)
+# define TX_COEFF_DEPTH (12)
 
 # define OD_DISABLE_CFL (1)
 # define OD_DISABLE_FILTER (1)
