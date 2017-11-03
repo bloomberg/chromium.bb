@@ -224,10 +224,10 @@ NSButton* EyeIcon(id target, SEL action) {
         base::UTF8ToUTF16(form.federation_origin.host()));
     passwordStaticField_.reset([Label(text) retain]);
   }
-  NSView* textField = passwordStaticField_ ? passwordStaticField_.get()
-                                           : passwordSelectionField_.get();
-  DCHECK(textField);
-  [container addSubview:textField];
+  NSView* passwordField = passwordStaticField_ ? passwordStaticField_.get()
+                                               : passwordSelectionField_.get();
+  DCHECK(passwordField);
+  [container addSubview:passwordField];
 
   NSTextField* usernameText =
       Label(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL));
@@ -243,8 +243,8 @@ NSButton* EyeIcon(id target, SEL action) {
   CGFloat firstColumnSize =
       std::max(NSWidth([usernameText frame]), NSWidth([passwordText_ frame]));
   // Bottow row.
-  CGFloat rowHeight =
-      std::max(NSHeight([textField frame]), NSHeight([passwordText_ frame]));
+  CGFloat rowHeight = std::max(NSHeight([passwordField frame]),
+                               NSHeight([passwordText_ frame]));
   CGFloat curY = (rowHeight - NSHeight([passwordText_ frame])) / 2;
   [passwordText_ setFrameOrigin:NSMakePoint(firstColumnSize -
                                                 NSWidth([passwordText_ frame]),
@@ -255,10 +255,10 @@ NSButton* EyeIcon(id target, SEL action) {
     curY = (rowHeight - NSHeight([passwordSelectionField_ frame])) / 2;
   } else {
     // Password field is top-aligned with the label because it's not editable.
-    curY = NSMaxY([passwordText_ frame]) - NSHeight([textField frame]);
+    curY = NSMaxY([passwordText_ frame]) - NSHeight([passwordField frame]);
   }
-  [textField setFrameOrigin:NSMakePoint(curX, curY)];
-  CGFloat remainingWidth = kDesiredRowWidth - NSMinX([textField frame]);
+  [passwordField setFrameOrigin:NSMakePoint(curX, curY)];
+  CGFloat remainingWidth = kDesiredRowWidth - NSMinX([passwordField frame]);
   if (passwordViewButton_) {
     // The eye icon should be right-aligned.
     curX = kDesiredRowWidth - NSWidth([passwordViewButton_ frame]);
@@ -267,8 +267,8 @@ NSButton* EyeIcon(id target, SEL action) {
     remainingWidth -=
         (NSWidth([passwordViewButton_ frame]) + kItemLabelSpacing);
   }
-  [textField
-      setFrameSize:NSMakeSize(remainingWidth, NSHeight([textField frame]))];
+  [passwordField
+      setFrameSize:NSMakeSize(remainingWidth, NSHeight([passwordField frame]))];
   // Next row.
   CGFloat rowY = rowHeight + kRelatedControlVerticalSpacing;
   rowHeight = std::max(NSHeight([usernameField_ frame]),
@@ -276,7 +276,10 @@ NSButton* EyeIcon(id target, SEL action) {
   curX = firstColumnSize - NSWidth([usernameText frame]);
   curY = (rowHeight - NSHeight([usernameText frame])) / 2 + rowY;
   [usernameText setFrameOrigin:NSMakePoint(curX, curY)];
-  curX = NSMaxX([usernameText frame]) + kItemLabelSpacing;
+  // The username field is left aligned with the password field.
+  curX = NSMinX([usernameField_
+      frameForAlignmentRect:[passwordField
+                                alignmentRectForFrame:[passwordField frame]]]);
   curY = (rowHeight - NSHeight([usernameField_ frame])) / 2 + rowY;
   [usernameField_ setFrameOrigin:NSMakePoint(curX, curY)];
   remainingWidth = kDesiredRowWidth - NSMinX([usernameField_ frame]);
