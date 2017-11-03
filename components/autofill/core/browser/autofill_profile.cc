@@ -580,10 +580,9 @@ void AutofillProfile::CreateInferredLabels(
   // then used to detect which labels need further differentiating fields.
   std::map<base::string16, std::list<size_t> > labels_to_profiles;
   for (size_t i = 0; i < profiles.size(); ++i) {
-    base::string16 label =
-        profiles[i]->ConstructInferredLabel(fields_to_use,
-                                            minimal_fields_shown,
-                                            app_locale);
+    base::string16 label = profiles[i]->ConstructInferredLabel(
+        fields_to_use.data(), fields_to_use.size(), minimal_fields_shown,
+        app_locale);
     labels_to_profiles[label].push_back(i);
   }
 
@@ -604,7 +603,8 @@ void AutofillProfile::CreateInferredLabels(
 }
 
 base::string16 AutofillProfile::ConstructInferredLabel(
-    const std::vector<ServerFieldType>& included_fields,
+    const ServerFieldType* included_fields,
+    const size_t included_fields_size,
     size_t num_fields_to_use,
     const std::string& app_locale) const {
   // TODO(estade): use libaddressinput?
@@ -623,20 +623,17 @@ base::string16 AutofillProfile::ConstructInferredLabel(
   trimmed_profile.set_language_code(language_code());
 
   std::vector<ServerFieldType> remaining_fields;
-  for (std::vector<ServerFieldType>::const_iterator it =
-           included_fields.begin();
-       it != included_fields.end() && num_fields_to_use > 0;
-       ++it) {
+  for (size_t i = 0; i < included_fields_size && num_fields_to_use > 0; ++i) {
     AddressField address_field;
-    if (!i18n::FieldForType(*it, &address_field) ||
-        !::i18n::addressinput::IsFieldUsed(
-            address_field, address_region_code) ||
+    if (!i18n::FieldForType(included_fields[i], &address_field) ||
+        !::i18n::addressinput::IsFieldUsed(address_field,
+                                           address_region_code) ||
         address_field == ::i18n::addressinput::COUNTRY) {
-      remaining_fields.push_back(*it);
+      remaining_fields.push_back(included_fields[i]);
       continue;
     }
 
-    AutofillType autofill_type(*it);
+    AutofillType autofill_type(included_fields[i]);
     base::string16 field_value = GetInfo(autofill_type, app_locale);
     if (field_value.empty())
       continue;
@@ -877,7 +874,7 @@ void AutofillProfile::CreateInferredLabelsHelper(
     }
 
     (*labels)[it] = profile->ConstructInferredLabel(
-        label_fields, label_fields.size(), app_locale);
+        &label_fields[0], label_fields.size(), label_fields.size(), app_locale);
   }
 }
 
