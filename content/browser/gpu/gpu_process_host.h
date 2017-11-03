@@ -90,7 +90,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   using RequestGPUInfoCallback = base::Callback<void(const gpu::GPUInfo&)>;
   using RequestHDRStatusCallback = base::Callback<void(bool)>;
 
-  static bool gpu_enabled() { return gpu_enabled_; }
   static int gpu_crash_count() { return gpu_crash_count_; }
 
   // Creates a new GpuProcessHost (if |force_create| is turned on) or gets an
@@ -288,8 +287,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   base::TimeTicks init_start_time_;
 
   // Master switch for enabling/disabling GPU acceleration for the current
-  // browser session. It does not change the acceleration settings for
-  // existing tabs, just the future ones.
+  // browser session.
   static bool gpu_enabled_;
 
   static bool hardware_gpu_enabled_;
