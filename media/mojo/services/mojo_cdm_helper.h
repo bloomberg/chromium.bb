@@ -34,7 +34,9 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper {
   ~MojoCdmHelper() final;
 
   // CdmAuxiliaryHelper implementation.
-  std::unique_ptr<CdmFileIO> CreateCdmFileIO(cdm::FileIOClient* client) final;
+  std::unique_ptr<CdmFileIO> CreateCdmFileIO(
+      cdm::FileIOClient* client,
+      CdmFileIO::FileReadCB file_read_cb) final;
   cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
   void QueryStatus(QueryStatusCB callback) final;

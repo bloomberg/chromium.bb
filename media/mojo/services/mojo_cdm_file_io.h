@@ -30,7 +30,9 @@ namespace media {
 // Implements a CdmFileIO that communicates with mojom::CdmStorage.
 class MEDIA_MOJO_EXPORT MojoCdmFileIO : public CdmFileIO {
  public:
-  MojoCdmFileIO(cdm::FileIOClient* client, mojom::CdmStorage* cdm_storage);
+  MojoCdmFileIO(cdm::FileIOClient* client,
+                mojom::CdmStorage* cdm_storage,
+                FileReadCB file_read_cb);
   ~MojoCdmFileIO() override;
 
   // CdmFileIO implementation.
@@ -87,6 +89,9 @@ class MEDIA_MOJO_EXPORT MojoCdmFileIO : public CdmFileIO {
   cdm::FileIOClient* client_;
 
   mojom::CdmStorage* cdm_storage_;
+
+  // Callback to report the size of a file that was read.
+  FileReadCB file_read_cb_;
 
   // Keep track of the file being used. As this class can only be used for
   // accessing a single file, once |file_name_| is set it shouldn't be changed.

@@ -78,8 +78,8 @@ class MojoCdmFileIOTest : public testing::Test {
     client_ = std::make_unique<MockFileIOClient>();
     cdm_storage_ = std::make_unique<MockCdmStorage>();
     ASSERT_TRUE(cdm_storage_->SetUp());
-    file_io_ =
-        std::make_unique<MojoCdmFileIO>(client_.get(), cdm_storage_.get());
+    file_io_ = std::make_unique<MojoCdmFileIO>(
+        client_.get(), cdm_storage_.get(), CdmFileIO::FileReadCB());
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;

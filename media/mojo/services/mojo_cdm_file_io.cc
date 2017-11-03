@@ -46,11 +46,16 @@ bool IsValidFileName(const std::string& name) {
 }  // namespace
 
 MojoCdmFileIO::MojoCdmFileIO(cdm::FileIOClient* client,
-                             mojom::CdmStorage* cdm_storage)
-    : client_(client), cdm_storage_(cdm_storage), weak_factory_(this) {
+                             mojom::CdmStorage* cdm_storage,
+                             FileReadCB file_read_cb)
+    : client_(client),
+      cdm_storage_(cdm_storage),
+      file_read_cb_(std::move(file_read_cb)),
+      weak_factory_(this) {
   DVLOG(3) << __func__;
   DCHECK(client_);
   DCHECK(cdm_storage_);
+  // |file_read_cb_| may be null in tests.
 }
 
 MojoCdmFileIO::~MojoCdmFileIO() {
@@ -167,28 +172,30 @@ void MojoCdmFileIO::DoRead(int64_t num_bytes) {
   // file into a buffer and passing it back to |client_|. As these should be
   // small files, we don't worry about breaking it up into chunks to read it.
 
-  // If the file has 0 bytes, no need to read anything.
-  if (num_bytes == 0) {
-    state_ = State::kOpened;
-    client_->OnReadComplete(ClientStatus::kSuccess, nullptr, 0);
-    return;
-  }
-
   // Read the contents of the file. Read() sizes (provided and returned) are
   // type int, so cast appropriately.
   int bytes_to_read = base::checked_cast<int>(num_bytes);
   std::vector<uint8_t> buffer(bytes_to_read);
-  int bytes_read = file_for_reading_.Read(
-      0, reinterpret_cast<char*>(buffer.data()), bytes_to_read);
-  if (bytes_to_read != bytes_read) {
-    // Unable to read the contents of the file. Setting |state_| to kOpened
-    // so that the CDM can write something valid to this file.
-    DVLOG(1) << "Failed to read file " << file_name_ << ". Requested "
-             << bytes_to_read << " bytes, got " << bytes_read;
-    state_ = State::kOpened;
-    OnError(ErrorType::kReadError);
-    return;
+
+  // If the file has 0 bytes, no need to read anything.
+  if (bytes_to_read != 0) {
+    int bytes_read = file_for_reading_.Read(
+        0, reinterpret_cast<char*>(buffer.data()), bytes_to_read);
+    if (bytes_to_read != bytes_read) {
+      // Unable to read the contents of the file. Setting |state_| to kOpened
+      // so that the CDM can write something valid to this file.
+      DVLOG(1) << "Failed to read file " << file_name_ << ". Requested "
+               << bytes_to_read << " bytes, got " << bytes_read;
+      state_ = State::kOpened;
+      OnError(ErrorType::kReadError);
+      return;
+    }
   }
+
+  // Call this before OnReadComplete() so that we always have the latest file
+  // size before CDM fires errors.
+  if (file_read_cb_)
+    file_read_cb_.Run(bytes_to_read);
 
   state_ = State::kOpened;
   client_->OnReadComplete(ClientStatus::kSuccess, buffer.data(), buffer.size());

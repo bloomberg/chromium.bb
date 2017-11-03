@@ -495,13 +495,6 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
     }
   }
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  std::unique_ptr<CdmFileIO> CreateCdmFileIO(cdm::FileIOClient* client) {
-    ADD_FAILURE() << "Should never be called";
-    return nullptr;
-  }
-#endif
-
   // Must be the first member to be initialized first and destroyed last.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 

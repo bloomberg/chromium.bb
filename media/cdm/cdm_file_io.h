@@ -5,6 +5,7 @@
 #ifndef MEDIA_CDM_CDM_FILE_IO_H_
 #define MEDIA_CDM_CDM_FILE_IO_H_
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "media/base/media_export.h"
@@ -16,6 +17,9 @@ namespace media {
 // used with std::unique_ptr.
 class MEDIA_EXPORT CdmFileIO : public cdm::FileIO {
  public:
+  // Callback to report the size of first file read by CdmFileIO.
+  using FileReadCB = base::RepeatingCallback<void(int)>;
+
   ~CdmFileIO() override;
 
  protected:
