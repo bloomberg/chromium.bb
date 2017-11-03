@@ -148,6 +148,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("keyboardShortcuts",
                              IDS_MD_EXTENSIONS_SIDEBAR_KEYBOARD_SHORTCUTS);
   source->AddLocalizedString("guestModeMessage", IDS_MD_EXTENSIONS_GUEST_MODE);
+  source->AddLocalizedString("incognitoInfoWarning",
+                             IDS_EXTENSIONS_INCOGNITO_WARNING);
   source->AddLocalizedString("itemId", IDS_MD_EXTENSIONS_ITEM_ID);
   source->AddLocalizedString("itemInspectViews",
                              IDS_MD_EXTENSIONS_ITEM_INSPECT_VIEWS);

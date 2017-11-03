@@ -184,6 +184,11 @@ cr.define('extensions', function() {
           this.data.id, this.$$('#collect-errors').checked);
     },
 
+    /** @private */
+    onIconClick_: function(e) {
+      e.preventDefault();
+    },
+
     /**
      * @param {!chrome.developerPrivate.DependentExtension} item
      * @private

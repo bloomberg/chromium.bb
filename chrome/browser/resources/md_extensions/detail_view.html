@@ -124,9 +124,9 @@
         cursor: pointer;
       }
 
-      #allow-incognito iron-icon {
+      #allow-incognito cr-tooltip-icon {
         -webkit-margin-start: 20px;
-        @apply --cr-icon-height-width;
+        display: inline;
       }
 
       .inspectable-view {
@@ -317,7 +317,11 @@
                   on-change="onAllowIncognitoChange_">
                 <span>
                   $i18n{itemAllowIncognito}
-                  <iron-icon icon="cr:error-outline"></iron-icon>
+                  <cr-tooltip-icon
+                      icon-class="cr:error-outline"
+                      tooltip-text="$i18n{incognitoInfoWarning}"
+                      on-click="onIconClick_">
+                  </cr-tooltip-icon>
                 </span>
               </extensions-toggle-row>
             </template>
