@@ -39,7 +39,8 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
         weak_socket_(weak_socket),
         socket_(std::move(socket)),
         encoder_(net::WebSocketEncoder::CreateClient(extensions)),
-        response_buffer_(body_head) {
+        response_buffer_(body_head),
+        weak_factory_(this) {
     thread_checker_.DetachFromThread();
   }
 
@@ -65,13 +66,16 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
     SendData(encoded_frame);
   }
 
+  base::WeakPtr<WebSocketImpl> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   void Read(scoped_refptr<net::IOBuffer> io_buffer) {
-    int result = socket_->Read(
-        io_buffer.get(),
-        kBufferSize,
-        base::Bind(&WebSocketImpl::OnBytesRead,
-                   base::Unretained(this), io_buffer));
+    int result =
+        socket_->Read(io_buffer.get(), kBufferSize,
+                      base::Bind(&WebSocketImpl::OnBytesRead,
+                                 weak_factory_.GetWeakPtr(), io_buffer));
     if (result != net::ERR_IO_PENDING)
       OnBytesRead(io_buffer, result);
   }
@@ -131,7 +135,7 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
         new net::StringIOBuffer(request_buffer_);
     result = socket_->Write(buffer.get(), buffer->size(),
                             base::Bind(&WebSocketImpl::SendPendingRequests,
-                                       base::Unretained(this)));
+                                       weak_factory_.GetWeakPtr()));
     if (result != net::ERR_IO_PENDING)
       SendPendingRequests(result);
   }
@@ -152,6 +156,8 @@ class AndroidDeviceManager::AndroidWebSocket::WebSocketImpl {
   std::string request_buffer_;
   base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(WebSocketImpl);
+
+  base::WeakPtrFactory<WebSocketImpl> weak_factory_;
 };
 
 AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
@@ -160,7 +166,7 @@ AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
     const std::string& path,
     Delegate* delegate)
     : device_(device),
-      socket_impl_(nullptr),
+      socket_impl_(nullptr, base::OnTaskRunnerDeleter(device->task_runner_)),
       delegate_(delegate),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -171,11 +177,7 @@ AndroidDeviceManager::AndroidWebSocket::AndroidWebSocket(
       base::Bind(&AndroidWebSocket::Connected, weak_factory_.GetWeakPtr()));
 }
 
-AndroidDeviceManager::AndroidWebSocket::~AndroidWebSocket() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (socket_impl_)
-    device_->task_runner_->DeleteSoon(FROM_HERE, socket_impl_);
-}
+AndroidDeviceManager::AndroidWebSocket::~AndroidWebSocket() = default;
 
 void AndroidDeviceManager::AndroidWebSocket::SendFrame(
     const std::string& message) {
@@ -184,7 +186,7 @@ void AndroidDeviceManager::AndroidWebSocket::SendFrame(
   DCHECK(device_);
   device_->task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WebSocketImpl::SendFrame,
-                                base::Unretained(socket_impl_), message));
+                                socket_impl_->GetWeakPtr(), message));
 }
 
 void AndroidDeviceManager::AndroidWebSocket::Connected(
@@ -197,12 +199,12 @@ void AndroidDeviceManager::AndroidWebSocket::Connected(
     OnSocketClosed();
     return;
   }
-  socket_impl_ = new WebSocketImpl(base::ThreadTaskRunnerHandle::Get(),
-                                   weak_factory_.GetWeakPtr(), extensions,
-                                   body_head, std::move(socket));
-  device_->task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&WebSocketImpl::StartListening,
-                                base::Unretained(socket_impl_)));
+  socket_impl_.reset(new WebSocketImpl(base::ThreadTaskRunnerHandle::Get(),
+                                       weak_factory_.GetWeakPtr(), extensions,
+                                       body_head, std::move(socket)));
+  device_->task_runner_->PostTask(FROM_HERE,
+                                  base::BindOnce(&WebSocketImpl::StartListening,
+                                                 socket_impl_->GetWeakPtr()));
   delegate_->OnSocketOpened();
 }
 

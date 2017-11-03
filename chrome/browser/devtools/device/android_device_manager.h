@@ -100,7 +100,7 @@ class AndroidDeviceManager {
     void OnSocketClosed();
 
     scoped_refptr<Device> device_;
-    WebSocketImpl* socket_impl_;
+    std::unique_ptr<WebSocketImpl, base::OnTaskRunnerDeleter> socket_impl_;
     Delegate* delegate_;
     base::WeakPtrFactory<AndroidWebSocket> weak_factory_;
     DISALLOW_COPY_AND_ASSIGN(AndroidWebSocket);
