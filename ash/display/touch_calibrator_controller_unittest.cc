@@ -9,13 +9,16 @@
 #include "ash/display/touch_calibrator_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/touch/ash_touch_transform_controller.h"
 #include "base/stl_util.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/chromeos/touch_transform_controller_test_api.h"
+#include "ui/display/manager/chromeos/touch_transform_setter.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/touch_device_transform.h"
 #include "ui/events/event_handler.h"
-#include "ui/events/test/device_data_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
 
@@ -100,21 +103,22 @@ class TouchCalibratorControllerTest : public AshTestBase {
   }
 
   ui::TouchscreenDevice InitTouchDevice(int64_t display_id) {
-    ui::DeviceDataManager::CreateInstance();
     ui::TouchscreenDevice touchdevice(
         12, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
         std::string("test touch device"), gfx::Size(1000, 1000), 1);
+    ui::InputDeviceManager::GetInstance()->SetTouchscreenDevicesForTesting(
+        {touchdevice});
 
-    ui::test::DeviceDataManagerTestAPI devices_test_api;
-    devices_test_api.SetTouchscreenDevices({touchdevice});
-
+    // Initialize the root transform for the display.
     std::vector<ui::TouchDeviceTransform> transforms;
     ui::TouchDeviceTransform touch_device_transform;
     touch_device_transform.display_id = display_id;
     touch_device_transform.device_id = touchdevice.id;
     transforms.push_back(touch_device_transform);
-
-    ui::DeviceDataManager::GetInstance()->ConfigureTouchDevices(transforms);
+    TouchTransformControllerTestApi(
+        Shell::Get()->touch_transformer_controller())
+        .touch_transform_setter()
+        ->ConfigureTouchDevices(transforms);
     return touchdevice;
   }
 

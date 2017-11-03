@@ -52,6 +52,7 @@ class DISPLAY_MANAGER_EXPORT TouchTransformController {
 
  private:
   friend class test::TouchTransformControllerTest;
+  friend class TouchTransformControllerTestApi;
 
   // Contains the data that is passed to TouchTransformSetter.
   struct UpdateData {
@@ -108,7 +109,7 @@ class DISPLAY_MANAGER_EXPORT TouchTransformController {
 
   bool is_calibrating_ = false;
 
-  std::unique_ptr<TouchTransformSetter> setter_;
+  std::unique_ptr<TouchTransformSetter> touch_transform_setter_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchTransformController);
 };

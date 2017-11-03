@@ -290,14 +290,15 @@ TouchTransformController::TouchTransformController(
     std::unique_ptr<TouchTransformSetter> setter)
     : display_configurator_(display_configurator),
       display_manager_(display_manager),
-      setter_(std::move(setter)) {}
+      touch_transform_setter_(std::move(setter)) {}
 
 TouchTransformController::~TouchTransformController() {}
 
 void TouchTransformController::UpdateTouchTransforms() const {
   UpdateData update_data;
   UpdateTouchTransforms(&update_data);
-  setter_->ConfigureTouchDevices(update_data.touch_device_transforms);
+  touch_transform_setter_->ConfigureTouchDevices(
+      update_data.touch_device_transforms);
 }
 
 void TouchTransformController::UpdateTouchRadius(
