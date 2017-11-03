@@ -171,7 +171,6 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/broadcaster:unit_tests",
     "//ios/chrome/browser/ui/browser_list:unit_tests",
     "//ios/chrome/browser/ui/bubble:unit_tests",
-    "//ios/chrome/browser/ui/captive_portal:unit_tests",
     "//ios/chrome/browser/ui/collection_view:unit_tests",
     "//ios/chrome/browser/ui/collection_view/cells:unit_tests",
     "//ios/chrome/browser/ui/commands:unit_tests",

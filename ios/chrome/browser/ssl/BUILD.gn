@@ -30,7 +30,6 @@ source_set("ssl") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/interstitials",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui/captive_portal",
     "//ios/chrome/browser/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
