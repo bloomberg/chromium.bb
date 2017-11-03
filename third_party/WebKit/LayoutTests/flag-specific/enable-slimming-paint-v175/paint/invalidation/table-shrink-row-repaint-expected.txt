@@ -7,33 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 850, 785, 200],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutTableCell TD id='resizeMe'",
           "rect": [8, 112, 769, 210],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 982, 769, 60],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 922, 769, 60],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 862, 769, 60],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 802, 769, 60],
           "reason": "geometry"
         },
         {
@@ -137,18 +112,8 @@
           "reason": "geometry"
         },
         {
-          "object": "InlineTextBox '13'",
-          "rect": [13, 1002, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox '12'",
-          "rect": [13, 942, 16, 19],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox '11'",
-          "rect": [13, 882, 16, 19],
+          "object": "LayoutTableCell TD",
+          "rect": [8, 802, 769, 48],
           "reason": "geometry"
         },
         {

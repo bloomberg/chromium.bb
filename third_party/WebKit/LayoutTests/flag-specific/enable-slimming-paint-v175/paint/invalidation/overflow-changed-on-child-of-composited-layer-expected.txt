@@ -12,13 +12,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='parent'",
-          "rect": [0, 0, 745, 102],
-          "reason": "full layer"
+          "rect": [0, 0, 744, 100],
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow DIV id='parent'",
-          "rect": [0, 0, 744, 100],
-          "reason": "full"
+          "rect": [0, 0, 102, 102],
+          "reason": "appeared"
         }
       ],
       "transform": 1

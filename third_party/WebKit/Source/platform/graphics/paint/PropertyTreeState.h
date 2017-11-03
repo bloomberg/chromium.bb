@@ -52,13 +52,6 @@ class PLATFORM_EXPORT PropertyTreeState {
   const CompositorElementId GetCompositorElementId(
       const CompositorElementIdSet& element_ids) const;
 
-  // See PaintPropertyNode::Changed().
-  bool Changed(const PropertyTreeState& relative_to_state) const {
-    return Transform()->Changed(*relative_to_state.Transform()) ||
-           Clip()->Changed(*relative_to_state.Clip()) ||
-           Effect()->Changed(*relative_to_state.Effect());
-  }
-
   void ClearChangedToRoot() const {
     Transform()->ClearChangedToRoot();
     Clip()->ClearChangedToRoot();

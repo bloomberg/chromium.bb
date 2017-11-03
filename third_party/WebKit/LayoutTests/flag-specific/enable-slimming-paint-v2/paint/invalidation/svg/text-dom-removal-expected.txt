@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutSVGRect rect",
-          "rect": [-1, -1, 22, 22],
+          "rect": [0, 0, 21, 21],
           "reason": "disappeared"
         }
       ]

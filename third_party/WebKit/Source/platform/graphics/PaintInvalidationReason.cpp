@@ -54,8 +54,6 @@ const char* PaintInvalidationReasonToString(PaintInvalidationReason reason) {
       return "chunk uncacheable";
     case PaintInvalidationReason::kChunkReordered:
       return "chunk reordered";
-    case PaintInvalidationReason::kFullLayer:
-      return "full layer";
     case PaintInvalidationReason::kPaintProperty:
       return "paint property change";
     case PaintInvalidationReason::kForTesting:

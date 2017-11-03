@@ -15,11 +15,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [0, 0, 402, 542],
-          "reason": "full layer"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 200, 200],
           "reason": "full"
         }

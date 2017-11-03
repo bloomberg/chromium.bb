@@ -12,9 +12,9 @@
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='innerDiv'",
+          "object": "VerticalScrollbar",
           "rect": [762, 8, 15, 300],
-          "reason": "paint property change"
+          "reason": "scroll control"
         }
       ]
     }

@@ -18,7 +18,7 @@
         },
         {
           "object": "LayoutInline A id='link'",
-          "rect": [585, -1, 216, 234],
+          "rect": [585, 0, 215, 233],
           "reason": "appeared"
         },
         {

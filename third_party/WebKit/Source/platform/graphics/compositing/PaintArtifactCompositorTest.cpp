@@ -3228,7 +3228,7 @@ TEST_F(PaintArtifactCompositorTest, CompositedEffectWithNoOutputClip) {
 }
 
 TEST_F(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
-  // The layer's painting is initially not lipped.
+  // The layer's painting is initially not clipped.
   auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
                                             TransformPaintPropertyNode::Root(),
                                             FloatRoundedRect(10, 20, 300, 400));
@@ -3259,7 +3259,7 @@ TEST_F(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
   ASSERT_EQ(1u, ContentLayerCount());
   ASSERT_EQ(layer, ContentLayerAt(0));
 
-  // We invalidate the whole layer because it's origin changed.
+  // Invalidate the first chunk because its transform in layer changed.
   EXPECT_EQ(gfx::Rect(0, 0, 300, 180), layer->update_rect());
   EXPECT_EQ(gfx::Vector2dF(10, 20), layer->offset_to_transform_parent());
   EXPECT_EQ(gfx::Size(300, 180), layer->bounds());

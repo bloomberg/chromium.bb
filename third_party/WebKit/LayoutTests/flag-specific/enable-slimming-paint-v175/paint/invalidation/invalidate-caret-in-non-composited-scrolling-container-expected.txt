@@ -15,12 +15,32 @@
         {
           "object": "LayoutTextControl INPUT id='root'",
           "rect": [0, 0, 66, 24],
-          "reason": "full layer"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutTextControl INPUT id='root'",
           "rect": [0, 0, 64, 22],
           "reason": "full"
+        },
+        {
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 64, 22],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [2, 3, 60, 16],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [3, 4, 59, 16],
+          "reason": "paint property change"
+        },
+        {
+          "object": "Caret",
+          "rect": [61, 4, 1, 16],
+          "reason": "appeared"
         }
       ]
     }

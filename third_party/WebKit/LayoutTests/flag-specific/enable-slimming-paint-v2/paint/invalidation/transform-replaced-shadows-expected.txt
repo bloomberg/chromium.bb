@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutImage IMG id='box'",
-          "rect": [-10, 28, 276, 278],
+          "rect": [0, 28, 266, 278],
           "reason": "paint property change"
         },
         {

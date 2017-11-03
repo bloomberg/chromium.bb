@@ -34,7 +34,6 @@ enum class PaintInvalidationReason : unsigned {
   kImage,
   kChunkUncacheable,
   kChunkReordered,
-  kFullLayer,
   kPaintProperty,
   kForTesting,
   // kDelayedFull means that kFull is needed in order to fully paint the

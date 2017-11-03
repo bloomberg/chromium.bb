@@ -13,12 +13,12 @@
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [-1, -1, 578, 434],
+          "rect": [0, 0, 577, 433],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGRoot svg",
-          "rect": [-1, -1, 482, 362],
+          "rect": [0, 0, 481, 361],
           "reason": "disappeared"
         }
       ]
