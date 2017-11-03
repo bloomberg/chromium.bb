@@ -28,6 +28,7 @@ PACKAGE_FILTER = [
     "libXtst.so",
     "libasound.so",
     "libatk-1.0.so",
+    "libatk-bridge-2.0.so",
     "libc.so",
     "libcairo.so",
     "libcups.so",
