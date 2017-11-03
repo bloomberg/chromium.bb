@@ -164,10 +164,10 @@ class AutofillProfile : public AutofillDataModel {
   // Builds inferred label from the first |num_fields_to_include| non-empty
   // fields in |label_fields|. Uses as many fields as possible if there are not
   // enough non-empty fields.
-  base::string16 ConstructInferredLabel(const ServerFieldType* label_fields,
-                                        const size_t label_fields_size,
-                                        size_t num_fields_to_include,
-                                        const std::string& app_locale) const;
+  base::string16 ConstructInferredLabel(
+      const std::vector<ServerFieldType>& label_fields,
+      size_t num_fields_to_include,
+      const std::string& app_locale) const;
 
   const std::string& language_code() const { return language_code_; }
   void set_language_code(const std::string& language_code) {

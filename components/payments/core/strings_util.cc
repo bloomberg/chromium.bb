@@ -40,7 +40,7 @@ base::string16 GetShippingAddressLabelFormAutofillProfile(
     const std::string& locale) {
   // Name, phone number, and country are not included in the shipping address
   // label.
-  static constexpr autofill::ServerFieldType kLabelFields[] = {
+  static const std::vector<autofill::ServerFieldType> label_fields{
       autofill::COMPANY_NAME,
       autofill::ADDRESS_HOME_STREET_ADDRESS,
       autofill::ADDRESS_HOME_DEPENDENT_LOCALITY,
@@ -50,8 +50,8 @@ base::string16 GetShippingAddressLabelFormAutofillProfile(
       autofill::ADDRESS_HOME_SORTING_CODE,
   };
 
-  return profile.ConstructInferredLabel(kLabelFields, arraysize(kLabelFields),
-                                        arraysize(kLabelFields), locale);
+  return profile.ConstructInferredLabel(label_fields, label_fields.size(),
+                                        locale);
 }
 
 base::string16 GetBillingAddressLabelFromAutofillProfile(
@@ -59,7 +59,7 @@ base::string16 GetBillingAddressLabelFromAutofillProfile(
     const std::string& locale) {
   // Name, company, phone number, and country are not included in the billing
   // address label.
-  static constexpr autofill::ServerFieldType kLabelFields[] = {
+  static const std::vector<autofill::ServerFieldType> label_fields{
       autofill::ADDRESS_HOME_STREET_ADDRESS,
       autofill::ADDRESS_HOME_DEPENDENT_LOCALITY,
       autofill::ADDRESS_HOME_CITY,
@@ -68,8 +68,8 @@ base::string16 GetBillingAddressLabelFromAutofillProfile(
       autofill::ADDRESS_HOME_SORTING_CODE,
   };
 
-  return profile.ConstructInferredLabel(kLabelFields, arraysize(kLabelFields),
-                                        arraysize(kLabelFields), locale);
+  return profile.ConstructInferredLabel(label_fields, label_fields.size(),
+                                        locale);
 }
 
 base::string16 GetShippingAddressSelectorInfoMessage(
