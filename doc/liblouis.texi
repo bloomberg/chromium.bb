@@ -1577,19 +1577,22 @@ are specified by the @code{correct} opcode. If there are no
 @code{correct} opcodes in a table, the pre-translation pass is not used.
 If any back-translation corrections have been specified then they are
 applied in a post-translation (i.e. the very last) pass.
+
+note that like the @opcoderef{context} and multi-pass opcodes, the @code{correct} opcode must be preceeded by @opcoderef{noback} or @opcoderef{nofor}.
+
 The format of the @code{correct} opcode is very similar to that
 of the @opcoderef{context}. The only difference is that in the action
 part strings may be used and dot patterns may not be used. Some
 examples of @code{correct} opcode entries are:
 
 @example
-correct "\\" ? Eliminate backslashes
-correct "cornf" "comf" fix a common "scano"
-correct "cornm" "comm"
-correct "cornp" "comp"
-correct "*" ? Get rid of stray asterisks
-correct "|" ? ditto for vertical bars
-correct "\s?" "?" drop space before question mark
+noback correct "\\" ? Eliminate backslashes
+noback correct "cornf" "comf" fix a common "scano"
+noback correct "cornm" "comm"
+noback correct "cornp" "comp"
+noback correct "*" ? Get rid of stray asterisks
+noback correct "|" ? ditto for vertical bars
+noback correct "\s?" "?" drop space before question mark
 @end example
 
 @end table
