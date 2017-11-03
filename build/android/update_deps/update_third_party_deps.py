@@ -77,7 +77,7 @@ def Upload(arguments):
   bucket_url, local_path = _CheckPaths(arguments.bucket_path,
                                        arguments.local_path)
   file_list = _CheckFileList(local_path, arguments.file_list)
-  upload_to_google_storage.upload_to_google_storage(
+  return upload_to_google_storage.upload_to_google_storage(
       input_filenames=file_list,
       base_url=bucket_url,
       gsutil=arguments.gsutil,
@@ -93,7 +93,7 @@ def Download(arguments):
   bucket_url, local_path = _CheckPaths(arguments.bucket_path,
                                        arguments.local_path)
   _PurgeSymlinks(local_path)
-  download_from_google_storage.download_from_google_storage(
+  return download_from_google_storage.download_from_google_storage(
       local_path,
       bucket_url,
       gsutil=arguments.gsutil,
