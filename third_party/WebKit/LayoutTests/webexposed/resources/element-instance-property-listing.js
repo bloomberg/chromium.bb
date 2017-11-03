@@ -7,7 +7,7 @@ if (!window.internals) {
 
 // FIXME(https://crbug.com/43394):
 // These properties should live in the element prototypes instead of on the individual instances.
-function listElementProperties(type) {
+function listElementProperties(type, createElement) {
     debug('[' + type.toUpperCase() + ' NAMESPACE ELEMENT PROPERTIES]');
     var namespace = internals[type + 'Namespace']();
     debug('namespace ' + namespace);
@@ -15,7 +15,7 @@ function listElementProperties(type) {
     var tagProperties = {};
     var commonProperties = null; // Will be a map containing the intersection of properties across all elements as keys.
     tags.forEach(function(tag) {
-        var element = document.createElement(tag, namespace);
+        var element = createElement(tag);
         // We don't read out the property descriptors here to avoid the test timing out.
         var properties = getAllPropertyNames(element);
         tagProperties[tag] = properties;
@@ -48,7 +48,7 @@ function listElementProperties(type) {
     });
 }
 
-listElementProperties('html');
-listElementProperties('svg');
+listElementProperties('html', function (tag) { return document.createElement(tag); });
+listElementProperties('svg', function (tag) { return document.createElementNS('http://www.w3.org/2000/svg', tag); });
 
 })();
