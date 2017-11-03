@@ -359,8 +359,14 @@ cr.define('extensions', function() {
       const fromPage = this.currentPage_ ? this.currentPage_.page : null;
       const toPage = newPage.page;
       let data;
-      if (newPage.extensionId)
-        data = assert(this.getData_(newPage.extensionId));
+      if (newPage.extensionId) {
+        data = this.getData_(newPage.extensionId);
+        if (!data) {
+          // Attempting to view an invalid (removed?) app or extension ID.
+          extensions.navigation.navigateTo({page: Page.LIST});
+          return;
+        }
+      }
 
       if (toPage == Page.DETAILS)
         this.detailViewItem_ = assert(data);
