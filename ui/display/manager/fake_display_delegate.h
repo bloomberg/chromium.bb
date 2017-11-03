@@ -104,9 +104,8 @@ class DISPLAY_MANAGER_EXPORT FakeDisplayDelegate
   FakeDisplayController* GetFakeDisplayController() override;
 
  protected:
-  // Sets initial display snapshots from command line flag. Returns true if the
-  // spec was parsed successfully.
-  bool InitializeFromSpecString(const std::string& str);
+  // Creates and adds displays based on spec string |str|.
+  void CreateDisplaysFromSpecString(const std::string& str);
 
   // Updates observers when display configuration has changed. Will not update
   // until after |Initialize()| has been called.
