@@ -35,7 +35,6 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebThreadSafeData.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
 #include "WebFrameSerializerCacheControlPolicy.h"
 
 namespace blink {
@@ -43,8 +42,6 @@ namespace blink {
 class WebFrameSerializerClient;
 class WebFrame;
 class WebLocalFrame;
-template <typename T>
-class WebVector;
 
 // Serialization of frame contents into html or mhtml.
 class WebFrameSerializer {

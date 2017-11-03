@@ -38,7 +38,6 @@
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
 
 namespace blink {
 

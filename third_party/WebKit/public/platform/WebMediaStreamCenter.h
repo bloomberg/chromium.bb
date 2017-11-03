@@ -31,7 +31,6 @@
 #ifndef WebMediaStreamCenter_h
 #define WebMediaStreamCenter_h
 
-#include "WebVector.h"
 
 namespace blink {
 

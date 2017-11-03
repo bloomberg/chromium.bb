@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "WebCommon.h"
-#include "WebVector.h"
 
 namespace blink {
 

@@ -10,7 +10,6 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebVector.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace blink {

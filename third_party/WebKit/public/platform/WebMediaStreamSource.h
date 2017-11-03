@@ -36,7 +36,6 @@
 
 #include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
-#include "WebVector.h"
 #if INSIDE_BLINK
 #include "platform/heap/Handle.h"
 #endif

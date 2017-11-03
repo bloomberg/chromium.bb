@@ -15,7 +15,6 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "media/media_features.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognitionHandle.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizer.h"
 

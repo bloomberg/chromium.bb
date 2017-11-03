@@ -32,7 +32,6 @@
 #define WebDevToolsAgent_h
 
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebVector.h"
 
 namespace blink {
 
