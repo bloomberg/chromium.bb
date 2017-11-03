@@ -616,8 +616,10 @@ void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
 
 void SessionsSyncManager::OnFaviconsChanged(const std::set<GURL>& page_urls,
                                             const GURL& /* icon_url */) {
-  for (const GURL& page_url : page_urls)
-    favicon_cache_.OnPageFaviconUpdated(page_url);
+  for (const GURL& page_url : page_urls) {
+    if (page_url.is_valid())
+      favicon_cache_.OnPageFaviconUpdated(page_url);
+  }
 }
 
 void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
