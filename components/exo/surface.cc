@@ -384,6 +384,11 @@ void Surface::PlaceSubSurfaceBelow(Surface* sub_surface, Surface* sibling) {
   sub_surfaces_changed_ = true;
 }
 
+void Surface::OnSubSurfaceCommit() {
+  if (delegate_)
+    delegate_->OnSurfaceCommit();
+}
+
 void Surface::SetViewport(const gfx::Size& viewport) {
   TRACE_EVENT1("exo", "Surface::SetViewport", "viewport", viewport.ToString());
 
@@ -433,9 +438,11 @@ void Surface::Commit() {
 
 gfx::Rect Surface::CommitSurfaceHierarchy(
     std::list<FrameCallback>* frame_callbacks,
-    std::list<PresentationCallback>* presentation_callbacks) {
-  if (needs_commit_surface_) {
+    std::list<PresentationCallback>* presentation_callbacks,
+    bool synchronized) {
+  if (needs_commit_surface_ && (synchronized || !IsSynchronized())) {
     needs_commit_surface_ = false;
+    synchronized = true;
 
     // TODO(penghuang): Make the damage more precise for sub surface changes.
     // https://crbug.com/779704
@@ -533,8 +540,8 @@ gfx::Rect Surface::CommitSurfaceHierarchy(
     gfx::Point origin = sub_surface_entry.second;
     // Synchronously commit all pending state of the sub-surface and its
     // descendants.
-    bounds.Union(sub_surface->CommitSurfaceHierarchy(frame_callbacks,
-                                                     presentation_callbacks) +
+    bounds.Union(sub_surface->CommitSurfaceHierarchy(
+                     frame_callbacks, presentation_callbacks, synchronized) +
                  origin.OffsetFromOrigin());
   }
 

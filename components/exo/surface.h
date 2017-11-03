@@ -118,6 +118,7 @@ class Surface final : public ui::PropertyHandler {
   void SetSubSurfacePosition(Surface* sub_surface, const gfx::Point& position);
   void PlaceSubSurfaceAbove(Surface* sub_surface, Surface* reference);
   void PlaceSubSurfaceBelow(Surface* sub_surface, Surface* sibling);
+  void OnSubSurfaceCommit();
 
   // This sets the surface viewport for scaling.
   void SetViewport(const gfx::Size& viewport);
@@ -144,13 +145,15 @@ class Surface final : public ui::PropertyHandler {
   // CommitSurfaceHierarchy() below.
   void Commit();
 
-  // This will synchronously commit all pending state of the surface and its
-  // descendants by recursively calling CommitSurfaceHierarchy() for each
-  // sub-surface with pending state. Returns the bounding box of the surface
-  // and its descendants, in the local coordinate space of the surface.
+  // This will commit all pending state of the surface and its descendants by
+  // recursively calling CommitSurfaceHierarchy() for each sub-surface. Returns
+  // the bounding box of the surface and its descendants, in the local
+  // coordinate space of the surface. If |synchronized| is set to false, then
+  // synchronized surfaces should not commit pending state.
   gfx::Rect CommitSurfaceHierarchy(
       std::list<FrameCallback>* frame_callbacks,
-      std::list<PresentationCallback>* presentation_callbacks);
+      std::list<PresentationCallback>* presentation_callbacks,
+      bool synchronized);
 
   void AppendSurfaceHierarchyContentsToFrame(
       const gfx::Point& origin,
