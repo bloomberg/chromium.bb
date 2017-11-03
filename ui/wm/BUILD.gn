@@ -106,6 +106,9 @@ static_library("test_support") {
 
   deps = [
     ":wm",
+    "//services/service_manager/public/cpp",
+    "//services/ui/public/cpp/input_devices",
+    "//services/ui/public/interfaces",
     "//skia",
     "//ui/aura",
     "//ui/aura:test_support",

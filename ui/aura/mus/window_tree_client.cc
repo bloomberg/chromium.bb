@@ -29,6 +29,7 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
+#include "services/ui/public/interfaces/window_tree_host.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/transient_window_client.h"
@@ -307,6 +308,18 @@ void WindowTreeClient::ConnectAsWindowManager(
   factory->CreateWindowTree(MakeRequest(&window_tree), std::move(client),
                             automatically_create_display_roots);
   SetWindowTree(std::move(window_tree));
+}
+
+void WindowTreeClient::ConnectViaWindowTreeHostFactory() {
+  ui::mojom::WindowTreeHostFactoryPtr factory;
+  connector_->BindInterface(ui::mojom::kServiceName, &factory);
+
+  ui::mojom::WindowTreeHostPtr window_tree_host;
+  ui::mojom::WindowTreeClientPtr client;
+  binding_.Bind(MakeRequest(&client));
+  factory->CreateWindowTreeHost(MakeRequest(&window_tree_host),
+                                std::move(client));
+  WaitForInitialDisplays();
 }
 
 void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
@@ -1125,6 +1138,7 @@ void WindowTreeClient::OnEmbed(
   tree_ptr_ = std::move(tree);
 
   is_from_embed_ = true;
+  got_initial_displays_ = true;
 
   if (window_manager_delegate_) {
     tree_ptr_->GetWindowManagerClient(

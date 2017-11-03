@@ -13,6 +13,7 @@
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/shell/browser/shell_platform_data_aura.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -333,8 +334,14 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 #if defined(OS_CHROMEOS)
   test_screen_ = aura::TestScreen::Create(gfx::Size());
   display::Screen::SetScreenInstance(test_screen_);
-  wm_test_helper_ = new wm::WMTestHelper(default_window_size,
-                                         GetContextFactory());
+  ui::ContextFactory* ui_context_factory =
+      aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL
+          ? GetContextFactory()
+          : nullptr;
+  wm_test_helper_ = new wm::WMTestHelper(
+      default_window_size,
+      ServiceManagerConnection::GetForProcess()->GetConnector(),
+      ui_context_factory);
 #else
 #if defined(USE_AURA)
   wm_state_ = new wm::WMState;
