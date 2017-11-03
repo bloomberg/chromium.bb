@@ -93,6 +93,9 @@ int ClientLoFiVersion();
 int AMPRedirectionPreviewsVersion();
 int NoScriptPreviewsVersion();
 
+// Whether server optimization hints are enabled.
+bool IsOptimizationHintsEnabled();
+
 // The threshold of EffectiveConnectionType above which Client Lo-Fi previews
 // should not be served.
 net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi();

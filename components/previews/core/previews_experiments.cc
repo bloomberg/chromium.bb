@@ -183,6 +183,10 @@ int NoScriptPreviewsVersion() {
                                           0);
 }
 
+bool IsOptimizationHintsEnabled() {
+  return base::FeatureList::IsEnabled(features::kOptimizationHints);
+}
+
 net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi() {
   return GetParamValueAsECT(kClientLoFiExperimentName,
                             kEffectiveConnectionTypeThreshold,

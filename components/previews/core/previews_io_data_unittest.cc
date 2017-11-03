@@ -92,6 +92,20 @@ class TestPreviewsBlackList : public PreviewsBlackList {
   PreviewsEligibilityReason status_;
 };
 
+// Stub class of PreviewsOptimizationGuide to control IsWhitelisted outcome
+// when testing PreviewsIOData.
+class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
+ public:
+  TestPreviewsOptimizationGuide() {}
+  ~TestPreviewsOptimizationGuide() override {}
+
+  // PreviewsOptimizationGuide:
+  bool IsWhitelisted(const net::URLRequest& request,
+                     PreviewsType type) const override {
+    return request.url().host().compare("whitelisted.example.com") == 0;
+  }
+};
+
 // Stub class of PreviewsUIService to test logging functionalities in
 // PreviewsIOData.
 class TestPreviewsUIService : public PreviewsUIService {
@@ -217,6 +231,13 @@ class TestPreviewsIOData : public PreviewsIOData {
   // |blacklist| into |this|.
   void InjectTestBlacklist(std::unique_ptr<PreviewsBlackList> blacklist) {
     SetPreviewsBlacklistForTesting(std::move(blacklist));
+  }
+
+  // Expose the injecting previews optimization guide method from
+  // PreviewsIOData, and inject |guide| into |this|.
+  void InjectTestPreviewsOptimizationGuide(
+      std::unique_ptr<TestPreviewsOptimizationGuide> guide) {
+    SetPreviewsOptimizationGuideForTesting(std::move(guide));
   }
 
  private:
@@ -646,6 +667,41 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeature) {
           previews::PreviewsType::NOSCRIPT),
       std::vector<std::string>()));
   histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.NoScript",
+      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
+}
+
+TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
+  InitializeUIService();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kNoScriptPreviews, features::kOptimizationHints}, {});
+
+  std::unique_ptr<TestPreviewsOptimizationGuide> guide =
+      base::MakeUnique<TestPreviewsOptimizationGuide>();
+  io_data()->InjectTestPreviewsOptimizationGuide(std::move(guide));
+
+  network_quality_estimator()->set_effective_connection_type(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
+  base::HistogramTester histogram_tester;
+
+  // First verify no preview for non-whitelisted url.
+  EXPECT_FALSE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateHttpsRequest(), PreviewsType::NOSCRIPT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::NOSCRIPT),
+      std::vector<std::string>()));
+
+  // Now verify preview for whitelisted url.
+  EXPECT_TRUE(io_data()->ShouldAllowPreviewAtECT(
+      *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
+      PreviewsType::NOSCRIPT,
+      previews::params::GetECTThresholdForPreview(
+          previews::PreviewsType::NOSCRIPT),
+      std::vector<std::string>()));
+
+  histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.NoScript",
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 }
