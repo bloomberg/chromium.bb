@@ -140,6 +140,8 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
     ALIGN_TRAILING
   };
 
+  bool has_trailing_buttons() const { return has_trailing_buttons_; }
+
   virtual void LayoutNewStyleAvatar(views::View* host);
 
   virtual bool ShouldDrawImageMirrored(views::ImageButton* button,
@@ -201,7 +203,8 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   // The layout of the window icon, if visible.
   gfx::Rect window_icon_bounds_;
 
-  // Whether any of the window control buttons were packed on the leading.
+  // Whether any of the window control buttons were packed on the
+  // leading or trailing sides.
   bool has_leading_buttons_;
   bool has_trailing_buttons_;
 
