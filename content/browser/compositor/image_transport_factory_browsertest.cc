@@ -8,10 +8,10 @@
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "content/browser/compositor/owned_mailbox.h"
+#include "content/public/browser/gpu_data_manager.h"
 #include "content/public/test/content_browser_test.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/config/gpu_feature_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/compositor/compositor.h"
 
@@ -36,16 +36,11 @@ class MockContextFactoryObserver : public ui::ContextFactoryObserver {
 // resources are reset.
 IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest,
                        MAYBE_TestLostContext) {
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-
   // This test doesn't make sense in software compositing mode.
-  scoped_refptr<viz::ContextProvider> context_provider =
-      factory->GetContextFactory()->SharedMainThreadContextProvider();
-  if (context_provider->GetGpuFeatureInfo()
-          .status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] !=
-      gpu::kGpuFeatureStatusEnabled) {
+  if (!GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
     return;
-  }
+
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
 
   scoped_refptr<OwnedMailbox> mailbox =
       new OwnedMailbox(factory->GetGLHelper());
@@ -58,7 +53,9 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest,
   EXPECT_CALL(observer, OnLostResources())
       .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
-  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+  ui::ContextFactory* context_factory = factory->GetContextFactory();
+  gpu::gles2::GLES2Interface* gl =
+      context_factory->SharedMainThreadContextProvider()->ContextGL();
   gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
                           GL_INNOCENT_CONTEXT_RESET_ARB);
 
@@ -100,16 +97,10 @@ class ImageTransportFactoryTearDownBrowserTest : public ContentBrowserTest {
 // called and the created resources are reset.
 IN_PROC_BROWSER_TEST_F(ImageTransportFactoryTearDownBrowserTest,
                        MAYBE_LoseOnTearDown) {
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   // This test doesn't make sense in software compositing mode.
-  scoped_refptr<viz::ContextProvider> context_provider =
-      factory->GetContextFactory()->SharedMainThreadContextProvider();
-  if (context_provider->GetGpuFeatureInfo()
-          .status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] !=
-      gpu::kGpuFeatureStatusEnabled) {
+  if (!GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor())
     return;
-  }
-
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   viz::GLHelper* helper = factory->GetGLHelper();
   ASSERT_TRUE(helper);
   mailbox_ = new OwnedMailbox(helper);
