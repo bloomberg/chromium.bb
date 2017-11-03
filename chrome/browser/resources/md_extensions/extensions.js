@@ -8,5 +8,6 @@ const manager = /** @type {extensions.Manager} */ (
     document.querySelector('extensions-manager'));
 manager.readyPromiseResolver.promise.then(function() {
   extensions.Service.getInstance().managerReady(manager);
+  document.fonts.load('bold 12px Roboto');
 });
 })();
