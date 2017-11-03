@@ -5,13 +5,13 @@
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <unordered_set>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/proto/autofill_sync.pb.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -62,7 +62,7 @@ std::string EscapeIdentifiers(const AutofillSpecifics& specifics) {
 }
 
 std::unique_ptr<EntityData> CreateEntityData(const AutofillEntry& entry) {
-  auto entity_data = base::MakeUnique<EntityData>();
+  auto entity_data = std::make_unique<EntityData>();
   AutofillSpecifics* autofill = entity_data->specifics.mutable_autofill();
   autofill->set_name(base::UTF16ToUTF8(entry.key().name()));
   autofill->set_value(base::UTF16ToUTF8(entry.key().value()));
@@ -281,7 +281,7 @@ void AutocompleteSyncBridge::CreateForWebDataServiceAndBackend(
     AutofillWebDataService* web_data_service,
     AutofillWebDataBackend* web_data_backend) {
   web_data_service->GetDBUserData()->SetUserData(
-      UserDataKey(), base::MakeUnique<AutocompleteSyncBridge>(
+      UserDataKey(), std::make_unique<AutocompleteSyncBridge>(
                          web_data_backend,
                          base::BindRepeating(&ModelTypeChangeProcessor::Create,
                                              base::RepeatingClosure())));
@@ -315,7 +315,7 @@ AutocompleteSyncBridge::~AutocompleteSyncBridge() {
 std::unique_ptr<MetadataChangeList>
 AutocompleteSyncBridge::CreateMetadataChangeList() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return base::MakeUnique<syncer::SyncMetadataStoreChangeList>(
+  return std::make_unique<syncer::SyncMetadataStoreChangeList>(
       GetAutofillTable(), syncer::AUTOFILL);
 }
 
@@ -375,7 +375,7 @@ void AutocompleteSyncBridge::AutocompleteSyncBridge::GetData(
 
   std::unordered_set<std::string> keys_set(storage_keys.begin(),
                                            storage_keys.end());
-  auto batch = base::MakeUnique<MutableDataBatch>();
+  auto batch = std::make_unique<MutableDataBatch>();
   for (const AutofillEntry& entry : entries) {
     std::string key = GetStorageKeyFromModel(entry.key());
     if (keys_set.find(key) != keys_set.end()) {
@@ -395,7 +395,7 @@ void AutocompleteSyncBridge::GetAllData(DataCallback callback) {
     return;
   }
 
-  auto batch = base::MakeUnique<MutableDataBatch>();
+  auto batch = std::make_unique<MutableDataBatch>();
   for (const AutofillEntry& entry : entries) {
     batch->Put(GetStorageKeyFromModel(entry.key()), CreateEntityData(entry));
   }
@@ -409,7 +409,7 @@ void AutocompleteSyncBridge::ActOnLocalChanges(
   }
 
   auto metadata_change_list =
-      base::MakeUnique<syncer::SyncMetadataStoreChangeList>(GetAutofillTable(),
+      std::make_unique<syncer::SyncMetadataStoreChangeList>(GetAutofillTable(),
                                                             syncer::AUTOFILL);
   for (const auto& change : changes) {
     const std::string storage_key = GetStorageKeyFromModel(change.key());
@@ -450,7 +450,7 @@ void AutocompleteSyncBridge::LoadMetadata() {
     return;
   }
 
-  auto batch = base::MakeUnique<syncer::MetadataBatch>();
+  auto batch = std::make_unique<syncer::MetadataBatch>();
   if (!GetAutofillTable()->GetAllSyncMetadata(syncer::AUTOFILL, batch.get())) {
     change_processor()->ReportError(
         FROM_HERE, "Failed reading autofill metadata from WebDatabase.");

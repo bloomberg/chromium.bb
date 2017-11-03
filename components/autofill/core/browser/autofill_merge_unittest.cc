@@ -11,7 +11,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -143,7 +142,7 @@ std::string PersonalDataManagerMock::SaveImportedProfile(
   std::string merged_guid =
       MergeProfile(profile, &profiles_, "en-US", &profiles);
   if (merged_guid == profile.guid())
-    profiles_.push_back(base::MakeUnique<AutofillProfile>(profile));
+    profiles_.push_back(std::make_unique<AutofillProfile>(profile));
   return merged_guid;
 }
 

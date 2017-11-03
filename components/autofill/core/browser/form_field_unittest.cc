@@ -5,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -133,26 +132,26 @@ TEST(FormFieldTest, ParseFormFields) {
 
   field_data.label = ASCIIToUTF16("Address line1");
   fields.push_back(
-      base::MakeUnique<AutofillField>(field_data, field_data.label));
+      std::make_unique<AutofillField>(field_data, field_data.label));
 
   field_data.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
   field_data.label = ASCIIToUTF16("Is PO Box");
   fields.push_back(
-      base::MakeUnique<AutofillField>(field_data, field_data.label));
+      std::make_unique<AutofillField>(field_data, field_data.label));
 
   // reset |is_checkable| to false.
   field_data.check_status = FormFieldData::NOT_CHECKABLE;
 
   field_data.label = ASCIIToUTF16("Address line2");
   fields.push_back(
-      base::MakeUnique<AutofillField>(field_data, field_data.label));
+      std::make_unique<AutofillField>(field_data, field_data.label));
 
   // Does not parse since there are only 2 recognized fields.
   ASSERT_TRUE(FormField::ParseFormFields(fields, true).empty());
 
   field_data.label = ASCIIToUTF16("City");
   fields.push_back(
-      base::MakeUnique<AutofillField>(field_data, field_data.label));
+      std::make_unique<AutofillField>(field_data, field_data.label));
 
   // Checkable element shouldn't interfere with inference of Address line2.
   const FieldCandidatesMap field_candidates_map =
@@ -178,7 +177,7 @@ TEST(FormFieldTest, ParseFormFieldsImmutableForm) {
   field_data.name = ASCIIToUTF16("business_email_address");
 
   std::vector<std::unique_ptr<AutofillField>> fields;
-  fields.push_back(base::MakeUnique<AutofillField>(field_data, unique_name));
+  fields.push_back(std::make_unique<AutofillField>(field_data, unique_name));
 
   const FieldCandidatesMap field_candidates_map =
       FormField::ParseFormFields(fields, true);

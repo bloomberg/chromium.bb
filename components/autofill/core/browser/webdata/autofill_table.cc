@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -16,7 +17,6 @@
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -969,7 +969,7 @@ bool AutofillTable::GetServerProfiles(
   while (s.Step()) {
     int index = 0;
     std::unique_ptr<AutofillProfile> profile =
-        base::MakeUnique<AutofillProfile>(AutofillProfile::SERVER_PROFILE,
+        std::make_unique<AutofillProfile>(AutofillProfile::SERVER_PROFILE,
                                           s.ColumnString(index++));
     profile->set_use_count(s.ColumnInt64(index++));
     profile->set_use_date(
@@ -1244,7 +1244,7 @@ bool AutofillTable::GetServerCreditCards(
                                              : CreditCard::FULL_SERVER_CARD;
     std::string server_id = s.ColumnString(index++);
     std::unique_ptr<CreditCard> card =
-        base::MakeUnique<CreditCard>(record_type, server_id);
+        std::make_unique<CreditCard>(record_type, server_id);
     card->SetRawInfo(CREDIT_CARD_NUMBER,
                      record_type == CreditCard::MASKED_SERVER_CARD
                          ? last_four

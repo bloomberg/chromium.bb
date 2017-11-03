@@ -12,7 +12,6 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -163,12 +162,12 @@ TEST(AutofillProfileTest, PreviewSummaryString) {
 
 TEST(AutofillProfileTest, AdjustInferredLabels) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[0].get(), "John", "", "Doe",
                        "johndoe@hades.com", "Underworld", "666 Erebus St.", "",
                        "Elysium", "CA", "91111", "US", "16502111111");
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "http://www.example.com/"));
   test::SetProfileInfo(profiles[1].get(), "Jane", "", "Doe",
                        "janedoe@tertium.com", "Pluto Inc.", "123 Letha Shore.",
@@ -181,7 +180,7 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
 
   profiles.push_back(
-      base::MakeUnique<AutofillProfile>(base::GenerateGUID(), kSettingsOrigin));
+      std::make_unique<AutofillProfile>(base::GenerateGUID(), kSettingsOrigin));
   test::SetProfileInfo(profiles[2].get(), "John", "", "Doe",
                        "johndoe@tertium.com", "Underworld", "666 Erebus St.",
                        "", "Elysium", "CA", "91111", "US", "16502111111");
@@ -200,7 +199,7 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   profiles.resize(2);
 
   profiles.push_back(
-      base::MakeUnique<AutofillProfile>(base::GenerateGUID(), std::string()));
+      std::make_unique<AutofillProfile>(base::GenerateGUID(), std::string()));
   test::SetProfileInfo(profiles[2].get(), "John", "", "Doe",
                        "johndoe@hades.com", "Underworld", "666 Erebus St.", "",
                        "Elysium", "CO",  // State is different
@@ -216,7 +215,7 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO"), labels[2]);
 
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[3].get(), "John", "", "Doe",
                        "johndoe@hades.com", "Underworld", "666 Erebus St.", "",
@@ -237,7 +236,7 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., CO, 16504444444"),
             labels[3]);
 
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[4].get(), "John", "", "Doe",
                        "johndoe@styx.com",  // E-Mail is different for some.
@@ -264,7 +263,7 @@ TEST(AutofillProfileTest, AdjustInferredLabels) {
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles.back().get(), "H.", "R.", "Giger",
                        "hrgiger@beispiel.com", "Beispiel Inc",
@@ -298,7 +297,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles.back().get(), "Antoine", "", "de Saint-Exupéry",
                        "antoine@exemple.com", "Exemple Inc", "8 Rue de Londres",
@@ -336,7 +335,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles.back().get(), "Park", "", "Jae-sang",
                        "park@yeleul.com", "Yeleul Inc",
@@ -380,7 +379,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles.back().get(), "Miku", "", "Hatsune",
                        "miku@rei.com", "Rei Inc", "Roppongi Hills Mori Tower",
@@ -418,7 +417,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
 
 TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles.back().get(), "ミク", "", "初音",
                        "miku@rei.com", "例", "六本木ヒルズ森タワー",
@@ -452,12 +451,12 @@ TEST(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
 
 TEST(AutofillProfileTest, CreateInferredLabels) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[0].get(), "John", "", "Doe",
                        "johndoe@hades.com", "Underworld", "666 Erebus St.", "",
                        "Elysium", "CA", "91111", "US", "16502111111");
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[1].get(), "Jane", "", "Doe",
                        "janedoe@tertium.com", "Pluto Inc.", "123 Letha Shore.",
@@ -555,11 +554,11 @@ TEST(AutofillProfileTest, CreateInferredLabels) {
 // distinguishing fields, but only if it makes sense given the suggested fields.
 TEST(AutofillProfileTest, CreateInferredLabelsFallsBackToFullName) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[0].get(), "John", "", "Doe", "doe@example.com",
                        "", "88 Nowhere Ave.", "", "", "", "", "", "");
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[1].get(), "Johnny", "K", "Doe",
                        "doe@example.com", "", "88 Nowhere Ave.", "", "", "", "",
@@ -592,11 +591,11 @@ TEST(AutofillProfileTest, CreateInferredLabelsFallsBackToFullName) {
 // Test that we do not show duplicate fields in the labels.
 TEST(AutofillProfileTest, CreateInferredLabelsNoDuplicatedFields) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[0].get(), "John", "", "Doe", "doe@example.com",
                        "", "88 Nowhere Ave.", "", "", "", "", "", "");
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[1].get(), "John", "", "Doe", "dojo@example.com",
                        "", "88 Nowhere Ave.", "", "", "", "", "", "");
@@ -619,15 +618,15 @@ TEST(AutofillProfileTest, CreateInferredLabelsNoDuplicatedFields) {
 // Make sure that empty fields are not treated as distinguishing fields.
 TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[0].get(), "John", "", "Doe", "doe@example.com",
                        "Gogole", "", "", "", "", "", "", "");
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[1].get(), "John", "", "Doe", "doe@example.com",
                        "Ggoole", "", "", "", "", "", "", "");
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[2].get(), "John", "", "Doe",
                        "john.doe@example.com", "Goolge", "", "", "", "", "", "",
@@ -656,7 +655,7 @@ TEST(AutofillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
 // Test that labels that would otherwise have multiline values are flattened.
 TEST(AutofillProfileTest, CreateInferredLabelsFlattensMultiLineValues) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
-  profiles.push_back(base::MakeUnique<AutofillProfile>(
+  profiles.push_back(std::make_unique<AutofillProfile>(
       base::GenerateGUID(), "https://www.example.com/"));
   test::SetProfileInfo(profiles[0].get(), "John", "", "Doe", "doe@example.com",
                        "", "88 Nowhere Ave.", "Apt. 42", "", "", "", "", "");

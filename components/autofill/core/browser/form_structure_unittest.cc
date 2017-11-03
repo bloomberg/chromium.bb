@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -71,9 +70,8 @@ class FormStructureTest : public testing::Test {
  private:
   void EnableAutofillMetadataFieldTrial() {
     field_trial_list_.reset();
-    field_trial_list_.reset(
-        new base::FieldTrialList(
-            base::MakeUnique<metrics::SHA1EntropyProvider>("foo")));
+    field_trial_list_.reset(new base::FieldTrialList(
+        std::make_unique<metrics::SHA1EntropyProvider>("foo")));
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
         "AutofillFieldMetadata", "Enabled");
     field_trial_->group();

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
@@ -90,7 +89,7 @@ class AutofillDriverFactoryTest : public testing::Test {
 
   std::unique_ptr<AutofillDriver> CreateDriver() {
     ++drivers_created_;
-    return base::MakeUnique<CountingAutofillDriver>(instance_counter_.val());
+    return std::make_unique<CountingAutofillDriver>(instance_counter_.val());
   }
 
   base::Callback<std::unique_ptr<AutofillDriver>()> CreateDriverCallback() {

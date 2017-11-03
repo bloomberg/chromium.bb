@@ -8,13 +8,13 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
@@ -481,7 +481,7 @@ FormStructure::FormStructure(const FormData& form)
     base::string16 unique_name =
         field.name + base::ASCIIToUTF16("_") +
         base::SizeTToString16(++unique_names[field.name]);
-    fields_.push_back(base::MakeUnique<AutofillField>(field, unique_name));
+    fields_.push_back(std::make_unique<AutofillField>(field, unique_name));
   }
 
   form_signature_ = autofill::CalculateFormSignature(form);

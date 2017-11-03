@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -95,7 +94,7 @@ void SubKeyRequester::StartRegionSubKeysRequest(const std::string& region_code,
   DCHECK(timeout_seconds >= 0);
 
   std::unique_ptr<SubKeyRequest> request(
-      base::MakeUnique<SubKeyRequest>(region_code, language, timeout_seconds,
+      std::make_unique<SubKeyRequest>(region_code, language, timeout_seconds,
                                       &address_validator_, std::move(cb)));
 
   if (AreRulesLoadedForRegion(region_code)) {

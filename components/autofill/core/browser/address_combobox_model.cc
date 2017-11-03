@@ -4,7 +4,8 @@
 
 #include "components/autofill/core/browser/address_combobox_model.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -27,7 +28,7 @@ AddressComboboxModel::AddressComboboxModel(
     const std::string& default_selected_guid)
     : app_locale_(app_locale), default_selected_guid_(default_selected_guid) {
   for (const auto* profile : personal_data_manager.GetProfilesToSuggest()) {
-    profiles_cache_.push_back(base::MakeUnique<AutofillProfile>(*profile));
+    profiles_cache_.push_back(std::make_unique<AutofillProfile>(*profile));
   }
   UpdateAddresses();
 }
@@ -91,7 +92,7 @@ void AddressComboboxModel::RemoveObserver(ui::ComboboxModelObserver* observer) {
 }
 
 int AddressComboboxModel::AddNewProfile(const AutofillProfile& profile) {
-  profiles_cache_.push_back(base::MakeUnique<AutofillProfile>(profile));
+  profiles_cache_.push_back(std::make_unique<AutofillProfile>(profile));
   UpdateAddresses();
   DCHECK_GT(addresses_.size(), 0UL);
   return addresses_.size() + kNbHeaderEntries - 1;

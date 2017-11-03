@@ -12,7 +12,6 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -95,7 +94,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     {
       std::vector<std::unique_ptr<AutofillProfile>> profiles;
       web_profiles_.swap(profiles);
-      std::unique_ptr<WDTypedResult> result = base::MakeUnique<
+      std::unique_ptr<WDTypedResult> result = std::make_unique<
           WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
           AUTOFILL_PROFILES_RESULT, std::move(profiles));
       OnWebDataServiceRequestDone(pending_profiles_query_, std::move(result));
@@ -103,7 +102,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     {
       std::vector<std::unique_ptr<AutofillProfile>> profiles;
       server_profiles_.swap(profiles);
-      std::unique_ptr<WDTypedResult> result = base::MakeUnique<
+      std::unique_ptr<WDTypedResult> result = std::make_unique<
           WDResult<std::vector<std::unique_ptr<AutofillProfile>>>>(
           AUTOFILL_PROFILES_RESULT, std::move(profiles));
       OnWebDataServiceRequestDone(pending_server_profiles_query_,
@@ -119,7 +118,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       std::vector<std::unique_ptr<CreditCard>> credit_cards;
       local_credit_cards_.swap(credit_cards);
       std::unique_ptr<WDTypedResult> result =
-          base::MakeUnique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
+          std::make_unique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
               AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards));
       OnWebDataServiceRequestDone(pending_creditcards_query_,
                                   std::move(result));
@@ -128,7 +127,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       std::vector<std::unique_ptr<CreditCard>> credit_cards;
       server_credit_cards_.swap(credit_cards);
       std::unique_ptr<WDTypedResult> result =
-          base::MakeUnique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
+          std::make_unique<WDResult<std::vector<std::unique_ptr<CreditCard>>>>(
               AUTOFILL_CREDITCARDS_RESULT, std::move(credit_cards));
       OnWebDataServiceRequestDone(pending_server_creditcards_query_,
                                   std::move(result));
@@ -143,7 +142,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     // form submission.
     web_profiles_.clear();
     for (const auto& profile : *profiles)
-      web_profiles_.push_back(base::MakeUnique<AutofillProfile>(profile));
+      web_profiles_.push_back(std::make_unique<AutofillProfile>(profile));
   }
 
   void set_autofill_enabled(bool autofill_enabled) {
@@ -161,7 +160,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     web_profiles_.clear();
 
     std::unique_ptr<AutofillProfile> profile =
-        base::MakeUnique<AutofillProfile>();
+        std::make_unique<AutofillProfile>();
     test::SetProfileInfo(profile.get(), "Elvis", "Aaron", "Presley",
                          "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
                          "Apt. 10", "Memphis", "Tennessee", "38116", "US",
@@ -180,14 +179,14 @@ class TestPersonalDataManager : public PersonalDataManager {
     local_credit_cards_.clear();
     server_credit_cards_.clear();
     if (include_local_credit_card) {
-      std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>(
+      std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>(
           "10000000-0000-0000-0000-000000000001", std::string());
       test::SetCreditCardInfo(credit_card.get(), nullptr, "4111111111111111",
                               "12", "24", "1");
       local_credit_cards_.push_back(std::move(credit_card));
     }
     if (include_masked_server_credit_card) {
-      std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>(
+      std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>(
           CreditCard::MASKED_SERVER_CARD, "server_id");
       credit_card->set_guid("10000000-0000-0000-0000-000000000002");
       credit_card->SetNetworkForMaskedCard(kDiscoverCard);
@@ -195,7 +194,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       server_credit_cards_.push_back(std::move(credit_card));
     }
     if (include_full_server_credit_card) {
-      std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>(
+      std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>(
           CreditCard::FULL_SERVER_CARD, "server_id");
       credit_card->set_guid("10000000-0000-0000-0000-000000000003");
       server_credit_cards_.push_back(std::move(credit_card));
@@ -208,7 +207,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   void RecreateServerCreditCardsWithBankName() {
     server_credit_cards_.clear();
     std::unique_ptr<CreditCard> credit_card =
-        base::MakeUnique<CreditCard>(CreditCard::FULL_SERVER_CARD, "server_id");
+        std::make_unique<CreditCard>(CreditCard::FULL_SERVER_CARD, "server_id");
     test::SetCreditCardInfo(credit_card.get(), "name", "4111111111111111", "12",
                             "24", "1");
     credit_card->set_guid("10000000-0000-0000-0000-000000000003");
@@ -223,7 +222,7 @@ class TestPersonalDataManager : public PersonalDataManager {
     web_profiles_.clear();
     CreateTestAutofillProfiles(&web_profiles_);
 
-    auto profile = base::MakeUnique<AutofillProfile>();
+    auto profile = std::make_unique<AutofillProfile>();
     test::SetProfileInfo(profile.get(), "John", "Decca", "Public",
                          "john@gmail.com", "Company", "123 Main St.", "unit 7",
                          "Springfield", "Texas", "79401", "US", "2345678901");
@@ -236,14 +235,14 @@ class TestPersonalDataManager : public PersonalDataManager {
   void CreateTestAutofillProfiles(
       std::vector<std::unique_ptr<AutofillProfile>>* profiles) {
     std::unique_ptr<AutofillProfile> profile =
-        base::MakeUnique<AutofillProfile>();
+        std::make_unique<AutofillProfile>();
     test::SetProfileInfo(profile.get(), "Elvis", "Aaron", "Presley",
                          "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
                          "Apt. 10", "Memphis", "Tennessee", "38116", "US",
                          "12345678901");
     profile->set_guid("00000000-0000-0000-0000-000000000001");
     profiles->push_back(std::move(profile));
-    profile = base::MakeUnique<AutofillProfile>();
+    profile = std::make_unique<AutofillProfile>();
     test::SetProfileInfo(profile.get(), "Charles", "Hardin", "Holley",
                          "buddy@gmail.com", "Decca", "123 Apple St.", "unit 6",
                          "Lubbock", "Texas", "79401", "US", "2345678901");
@@ -304,7 +303,7 @@ class TestAutofillManager : public AutofillManager {
     }
 
     std::unique_ptr<TestFormStructure> form_structure =
-        base::MakeUnique<TestFormStructure>(empty_form);
+        std::make_unique<TestFormStructure>(empty_form);
     form_structure->SetFieldTypes(heuristic_types, server_types);
     form_structure->set_form_parsed_timestamp(TimeTicks::Now());
     form_structures()->push_back(std::move(form_structure));
@@ -1302,7 +1301,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
   form.fields.push_back(field);
 
   std::unique_ptr<TestFormStructure> form_structure =
-      base::MakeUnique<TestFormStructure>(form);
+      std::make_unique<TestFormStructure>(form);
   TestFormStructure* form_structure_ptr = form_structure.get();
   form_structure->DetermineHeuristicTypes(nullptr /* ukm_recorder */);
   autofill_manager_->form_structures()->push_back(std::move(form_structure));
@@ -2023,8 +2022,8 @@ TEST_F(AutofillMetricsTest, LogStoredCreditCardMetrics) {
       // Add the cards to the personal data manager in the appropriate way.
       auto& repo =
           (record_type == CreditCard::LOCAL_CARD) ? local_cards : server_cards;
-      repo.push_back(base::MakeUnique<CreditCard>(std::move(card_in_use)));
-      repo.push_back(base::MakeUnique<CreditCard>(std::move(card_in_disuse)));
+      repo.push_back(std::make_unique<CreditCard>(std::move(card_in_use)));
+      repo.push_back(std::make_unique<CreditCard>(std::move(card_in_disuse)));
     }
   }
 
@@ -5971,7 +5970,7 @@ class AutofillMetricsParseQueryResponseTest : public testing::Test {
     checkable_field.check_status = FormFieldData::CHECKABLE_BUT_UNCHECKED;
     form.fields.push_back(checkable_field);
 
-    owned_forms_.push_back(base::MakeUnique<FormStructure>(form));
+    owned_forms_.push_back(std::make_unique<FormStructure>(form));
     forms_.push_back(owned_forms_.back().get());
 
     field.label = ASCIIToUTF16("email");
@@ -5983,7 +5982,7 @@ class AutofillMetricsParseQueryResponseTest : public testing::Test {
     field.form_control_type = "password";
     form.fields.push_back(field);
 
-    owned_forms_.push_back(base::MakeUnique<FormStructure>(form));
+    owned_forms_.push_back(std::make_unique<FormStructure>(form));
     forms_.push_back(owned_forms_.back().get());
   }
 

@@ -11,7 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -178,7 +177,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   form.fields.push_back(field);
 
   std::vector<std::unique_ptr<FormStructure>> form_structures;
-  form_structures.push_back(base::MakeUnique<FormStructure>(form));
+  form_structures.push_back(std::make_unique<FormStructure>(form));
 
   form.fields.clear();
 
@@ -202,7 +201,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  form_structures.push_back(base::MakeUnique<FormStructure>(form));
+  form_structures.push_back(std::make_unique<FormStructure>(form));
 
   form.fields.clear();
 
@@ -221,7 +220,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  form_structures.push_back(base::MakeUnique<FormStructure>(form));
+  form_structures.push_back(std::make_unique<FormStructure>(form));
 
   // Request with id 0.
   base::HistogramTester histogram;
@@ -305,7 +304,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   field.name = ASCIIToUTF16("address2");
   field.form_control_type = "text";
   form.fields.push_back(field);
-  form_structures.push_back(base::MakeUnique<FormStructure>(form));
+  form_structures.push_back(std::make_unique<FormStructure>(form));
 
   // Request with id 4, not successful.
   EXPECT_TRUE(
@@ -353,7 +352,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
   form.fields.push_back(field);
 
   std::vector<std::unique_ptr<FormStructure>> form_structures;
-  form_structures.push_back(base::MakeUnique<FormStructure>(form));
+  form_structures.push_back(std::make_unique<FormStructure>(form));
 
   // Request with id 0.
   base::HistogramTester histogram;
@@ -412,7 +411,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  auto form_structure = base::MakeUnique<FormStructure>(form);
+  auto form_structure = std::make_unique<FormStructure>(form);
 
   // Request with id 0.
   EXPECT_TRUE(download_manager_.StartUploadRequest(
@@ -470,7 +469,7 @@ TEST_F(AutofillDownloadManagerTest, QueryTooManyFieldsTest) {
       field.form_control_type = "text";
       form.fields.push_back(field);
     }
-    form_structures.push_back(base::MakeUnique<FormStructure>(form));
+    form_structures.push_back(std::make_unique<FormStructure>(form));
   }
 
   // Check whether the query is aborted.
@@ -494,7 +493,7 @@ TEST_F(AutofillDownloadManagerTest, QueryNotTooManyFieldsTest) {
       field.form_control_type = "text";
       form.fields.push_back(field);
     }
-    form_structures.push_back(base::MakeUnique<FormStructure>(form));
+    form_structures.push_back(std::make_unique<FormStructure>(form));
   }
 
   // Check that the query is not aborted.
@@ -524,14 +523,14 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
   form.fields.push_back(field);
 
   std::vector<std::unique_ptr<FormStructure>> form_structures0;
-  form_structures0.push_back(base::MakeUnique<FormStructure>(form));
+  form_structures0.push_back(std::make_unique<FormStructure>(form));
 
   // Add a slightly different form, which should result in a different request.
   field.label = ASCIIToUTF16("email");
   field.name = ASCIIToUTF16("email");
   form.fields.push_back(field);
   std::vector<std::unique_ptr<FormStructure>> form_structures1;
-  form_structures1.push_back(base::MakeUnique<FormStructure>(form));
+  form_structures1.push_back(std::make_unique<FormStructure>(form));
 
   // Add another slightly different form, which should also result in a
   // different request.
@@ -539,7 +538,7 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
   field.name = ASCIIToUTF16("email2");
   form.fields.push_back(field);
   std::vector<std::unique_ptr<FormStructure>> form_structures2;
-  form_structures2.push_back(base::MakeUnique<FormStructure>(form));
+  form_structures2.push_back(std::make_unique<FormStructure>(form));
 
   // Limit cache to two forms.
   LimitCache(2);
