@@ -139,7 +139,7 @@ template("catalog") {
   }
 }
 
-# Generates a source_set target which defines a single string contstant
+# Generates a source_set target which defines a single string constant
 # containing the contents of a compiled catalog manifest.
 #
 # Parameters:
