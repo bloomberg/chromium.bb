@@ -25,6 +25,16 @@ TEST(ScopedWinrtInitializer, BasicFunctionality) {
   AssertComApartmentType(ComApartmentType::NONE);
 }
 
+TEST(ScopedWinrtInitializer, ApartmentChangeCheck) {
+  if (GetVersion() < VERSION_WIN8)
+    return;
+
+  ScopedCOMInitializer com_initializer;
+  // ScopedCOMInitializer initialized an STA and the following should be a
+  // failed request for an MTA.
+  EXPECT_DCHECK_DEATH({ ScopedWinrtInitializer scoped_winrt_initializer; });
+}
+
 TEST(ScopedWinrtInitializer, VersionCheck) {
   if (GetVersion() >= VERSION_WIN8)
     return;
