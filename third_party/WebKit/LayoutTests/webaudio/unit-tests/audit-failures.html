@@ -74,7 +74,8 @@
           function(task, should) {
             should(0).beCloseTo(0.1, {threshold: 0});
             should(59, 'The measured decibel').beCloseTo(62, {threshold: 0.01});
-            should([1, 8, 11, 18, 6, 5, 5, 5, 123, 49]).beConstantValueOf(5);
+            should([1, 8, 11, 18, 6, 5, 5, 5, 123, 49], 'Test array')
+                .beConstantValueOf(5);
             should([0, 0, 0]).notBeConstantValueOf(0);
             should([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).beEqualToArray([
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0
