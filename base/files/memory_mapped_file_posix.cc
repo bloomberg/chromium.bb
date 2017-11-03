@@ -102,20 +102,29 @@ bool MemoryMappedFile::MapFileRegionToMemory(
       // Realize the extent of the file so that it can't fail (and crash) later
       // when trying to write to a memory page that can't be created. This can
       // fail if the disk is full and the file is sparse.
-      //
-      // Only Android API>=21 supports the fallocate call. Older versions need
-      // to manually extend the file by writing zeros at block intervals.
-      //
-      // Mac OSX doesn't support this call but the primary filesystem doesn't
-      // support sparse files so is unneeded.
       bool do_manual_extension = false;
 
 #if defined(OS_ANDROID) && __ANDROID_API__ < 21
+      // Only Android API>=21 supports the fallocate call. Older versions need
+      // to manually extend the file by writing zeros at block intervals.
       do_manual_extension = true;
-#elif !defined(OS_MACOSX)
+#elif defined(OS_MACOSX)
+      // MacOS doesn't support fallocate even though their new APFS filesystem
+      // does support sparse files. It does, however, have the functionality
+      // available via fcntl.
+      // See also: https://openradar.appspot.com/32720223
+      fstore_t params = {F_ALLOCATEALL, F_PEOFPOSMODE, region.offset,
+                         region.size, 0};
+      if (fcntl(file_.GetPlatformFile(), F_PREALLOCATE, &params) != 0) {
+        DPLOG(ERROR) << "F_PREALLOCATE";
+        // This can fail because the filesystem doesn't support it so don't
+        // give up just yet. Try the manual method below.
+        do_manual_extension = true;
+      }
+#else
       if (posix_fallocate(file_.GetPlatformFile(), region.offset,
                           region.size) != 0) {
-        DPLOG(ERROR) << "posix_fallocate " << file_.GetPlatformFile();
+        DPLOG(ERROR) << "posix_fallocate";
         // This can fail because the filesystem doesn't support it so don't
         // give up just yet. Try the manual method below.
         do_manual_extension = true;
