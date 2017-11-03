@@ -92,6 +92,7 @@ source_set("unit_tests") {
     "payment_request_state_unittest.cc",
     "payment_response_helper_unittest.cc",
     "service_worker_payment_app_factory_unittest.cc",
+    "service_worker_payment_instrument_unittest.cc",
     "test_content_payment_request_delegate.cc",
     "test_content_payment_request_delegate.h",
     "web_app_manifest_section_table_unittest.cc",

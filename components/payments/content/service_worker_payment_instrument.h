@@ -42,6 +42,8 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   const gfx::ImageSkia* icon_image_skia() const override;
 
  private:
+  friend class ServiceWorkerPaymentInstrumentTest;
+
   void OnPaymentAppInvoked(mojom::PaymentHandlerResponsePtr response);
   mojom::PaymentRequestEventDataPtr CreatePaymentRequestEventData();
 
