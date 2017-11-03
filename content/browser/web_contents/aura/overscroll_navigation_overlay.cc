@@ -62,8 +62,7 @@ void RecordNavigationOverscrollCancelled(NavigationDirection direction,
 }  // namespace
 
 // Responsible for fading out and deleting the layer of the overlay window.
-class OverlayDismissAnimator
-    : public ui::LayerAnimationObserver {
+class OverlayDismissAnimator : public ui::ImplicitAnimationObserver {
  public:
   // Takes ownership of the layer.
   explicit OverlayDismissAnimator(std::unique_ptr<ui::Layer> layer)
@@ -75,29 +74,17 @@ class OverlayDismissAnimator
   // the object deletes itself along with the layer.
   void Animate() {
     DCHECK(layer_.get());
-    ui::LayerAnimator* animator = layer_->GetAnimator();
     // This makes SetOpacity() animate with default duration (which could be
     // zero, e.g. when running tests).
-    ui::ScopedLayerAnimationSettings settings(animator);
-    animator->AddObserver(this);
+    ui::ScopedLayerAnimationSettings settings(layer_->GetAnimator());
+    settings.AddObserver(this);
     layer_->SetOpacity(0);
   }
 
-  // Overridden from ui::LayerAnimationObserver
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
-    delete this;
-  }
-
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {
-    delete this;
-  }
-
-  void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) override {}
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override { delete this; }
 
  private:
-  ~OverlayDismissAnimator() override {}
-
   std::unique_ptr<ui::Layer> layer_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayDismissAnimator);
