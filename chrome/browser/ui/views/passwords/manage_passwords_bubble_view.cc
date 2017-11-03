@@ -598,8 +598,6 @@ void ManagePasswordsBubbleView::PendingView::TogglePasswordVisibility() {
   if (password_dropdown_) {
     static_cast<PasswordDropdownModel*>(password_dropdown_->model())
         ->SetMasked(!password_visible_);
-    // TODO(crbug.com/775496): Remove SchedulePaint once the bug is fixed.
-    password_dropdown_->SchedulePaint();
   } else {
     password_label_->SetObscured(!password_visible_);
   }
