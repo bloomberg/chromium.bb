@@ -258,7 +258,7 @@ void HTMLDocumentParser::PumpTokenizerIfPossible() {
 }
 
 bool HTMLDocumentParser::IsScheduledForResume() const {
-  return parser_scheduler_ && parser_scheduler_->IsScheduledForResume();
+  return parser_scheduler_ && parser_scheduler_->IsScheduledForUnpause();
 }
 
 // Used by HTMLParserScheduler
@@ -371,9 +371,9 @@ void HTMLDocumentParser::NotifyPendingTokenizedChunks() {
 
   if (!IsPaused() && !IsScheduledForResume()) {
     if (tasks_were_suspended_)
-      parser_scheduler_->ForceResumeAfterYield();
+      parser_scheduler_->ForceUnpauseAfterYield();
     else
-      parser_scheduler_->ScheduleForResume();
+      parser_scheduler_->ScheduleForUnpause();
   }
 }
 
@@ -589,13 +589,13 @@ void HTMLDocumentParser::PumpPendingSpeculations() {
   // FIXME: Here should never be reached when there is a blocking script,
   // but it happens in unknown scenarios. See https://crbug.com/440901
   if (IsWaitingForScripts()) {
-    parser_scheduler_->ScheduleForResume();
+    parser_scheduler_->ScheduleForUnpause();
     return;
   }
 
   // Do not allow pumping speculations in nested event loops.
   if (pump_speculations_session_nesting_level_) {
-    parser_scheduler_->ScheduleForResume();
+    parser_scheduler_->ScheduleForUnpause();
     return;
   }
 
@@ -1165,14 +1165,14 @@ void HTMLDocumentParser::SuspendScheduledTasks() {
   DCHECK(!tasks_were_suspended_);
   tasks_were_suspended_ = true;
   if (parser_scheduler_)
-    parser_scheduler_->Suspend();
+    parser_scheduler_->Pause();
 }
 
 void HTMLDocumentParser::ResumeScheduledTasks() {
   DCHECK(tasks_were_suspended_);
   tasks_were_suspended_ = false;
   if (parser_scheduler_)
-    parser_scheduler_->Resume();
+    parser_scheduler_->Unpause();
 }
 
 void HTMLDocumentParser::AppendBytes(const char* data, size_t length) {
