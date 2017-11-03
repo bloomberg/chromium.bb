@@ -18,6 +18,11 @@ const char MediaEngagementScore::kMediaPlaybacksKey[] = "mediaPlaybacks";
 const char MediaEngagementScore::kLastMediaPlaybackTimeKey[] =
     "lastMediaPlaybackTime";
 const char MediaEngagementScore::kHasHighScoreKey[] = "hasHighScore";
+const char MediaEngagementScore::kAudiblePlaybacksKey[] = "audiblePlaybacks";
+const char MediaEngagementScore::kSignificantPlaybacksKey[] =
+    "significantPlaybacks";
+const char MediaEngagementScore::kVisitsWithMediaTagKey[] =
+    "visitsWithMediaTag";
 
 const char MediaEngagementScore::kScoreMinVisitsParamName[] = "min_visits";
 const char MediaEngagementScore::kHighScoreLowerThresholdParamName[] =
@@ -90,6 +95,9 @@ MediaEngagementScore::MediaEngagementScore(
   score_dict_->GetInteger(kVisitsKey, &visits_);
   score_dict_->GetInteger(kMediaPlaybacksKey, &media_playbacks_);
   score_dict_->GetBoolean(kHasHighScoreKey, &is_high_);
+  score_dict_->GetInteger(kAudiblePlaybacksKey, &audible_playbacks_);
+  score_dict_->GetInteger(kSignificantPlaybacksKey, &significant_playbacks_);
+  score_dict_->GetInteger(kVisitsWithMediaTagKey, &visits_with_media_tag_);
 
   double internal_time;
   if (score_dict_->GetDouble(kLastMediaPlaybackTimeKey, &internal_time))
@@ -144,16 +152,27 @@ bool MediaEngagementScore::UpdateScoreDict() {
   int stored_media_playbacks = 0;
   double stored_last_media_playback_internal = 0;
   bool is_high = false;
+  int stored_audible_playbacks = 0;
+  int stored_significant_playbacks = 0;
+  int stored_visits_with_media_tag = 0;
 
   score_dict_->GetInteger(kVisitsKey, &stored_visits);
   score_dict_->GetInteger(kMediaPlaybacksKey, &stored_media_playbacks);
   score_dict_->GetDouble(kLastMediaPlaybackTimeKey,
                          &stored_last_media_playback_internal);
   score_dict_->GetBoolean(kHasHighScoreKey, &is_high);
+  score_dict_->GetInteger(kAudiblePlaybacksKey, &stored_audible_playbacks);
+  score_dict_->GetInteger(kSignificantPlaybacksKey,
+                          &stored_significant_playbacks);
+  score_dict_->GetInteger(kVisitsWithMediaTagKey,
+                          &stored_visits_with_media_tag);
 
   bool changed = stored_visits != visits() ||
                  stored_media_playbacks != media_playbacks() ||
                  is_high_ != is_high ||
+                 stored_audible_playbacks != audible_playbacks() ||
+                 stored_significant_playbacks != significant_playbacks() ||
+                 stored_visits_with_media_tag != visits_with_media_tag() ||
                  stored_last_media_playback_internal !=
                      last_media_playback_time_.ToInternalValue();
   if (!changed)
@@ -164,6 +183,9 @@ bool MediaEngagementScore::UpdateScoreDict() {
   score_dict_->SetDouble(kLastMediaPlaybackTimeKey,
                          last_media_playback_time_.ToInternalValue());
   score_dict_->SetBoolean(kHasHighScoreKey, is_high_);
+  score_dict_->SetInteger(kAudiblePlaybacksKey, audible_playbacks_);
+  score_dict_->SetInteger(kSignificantPlaybacksKey, significant_playbacks_);
+  score_dict_->SetInteger(kVisitsWithMediaTagKey, visits_with_media_tag_);
 
   return true;
 }
