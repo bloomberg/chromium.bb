@@ -352,6 +352,9 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   // InProcessBrowserTest:
   void SetUp() override {
     ASSERT_TRUE(https_server_.InitializeAndListen());
+    // New profiles are not automatically migrated, in order to test the
+    // non-migrated state.
+    AccountReconcilorFactory::GetInstance()->IgnoreNewProfilesForTesting();
     InProcessBrowserTest::SetUp();
   }
 

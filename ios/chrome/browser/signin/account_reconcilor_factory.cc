@@ -49,8 +49,8 @@ std::unique_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
       OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state),
       SigninManagerFactory::GetForBrowserState(chrome_browser_state),
       SigninClientFactory::GetForBrowserState(chrome_browser_state),
-      GaiaCookieManagerServiceFactory::GetForBrowserState(
-          chrome_browser_state)));
+      GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
+      false /* is_new_profile */));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }

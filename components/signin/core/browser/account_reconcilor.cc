@@ -79,7 +79,8 @@ AccountReconcilor::AccountReconcilor(
     ProfileOAuth2TokenService* token_service,
     SigninManagerBase* signin_manager,
     SigninClient* client,
-    GaiaCookieManagerService* cookie_manager_service)
+    GaiaCookieManagerService* cookie_manager_service,
+    bool is_new_profile)
     : token_service_(token_service),
       signin_manager_(signin_manager),
       client_(client),
@@ -96,11 +97,11 @@ AccountReconcilor::AccountReconcilor(
       reconcile_on_unblock_(false) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
   PrefService* prefs = client_->GetPrefs();
-  if (ShouldMigrateToDiceOnStartup()) {
+  if (ShouldMigrateToDiceOnStartup(is_new_profile)) {
     DCHECK(prefs);
     if (!signin::IsDiceEnabledForProfile(prefs))
       VLOG(1) << "Profile is migrating to Dice";
-    signin::MigrateProfileToDice(client->GetPrefs());
+    signin::MigrateProfileToDice(prefs);
     DCHECK(signin::IsDiceEnabledForProfile(prefs));
   }
   UMA_HISTOGRAM_BOOLEAN("Signin.DiceEnabledForProfile",
@@ -753,9 +754,10 @@ void AccountReconcilor::UnblockReconcile() {
   }
 }
 
-bool AccountReconcilor::ShouldMigrateToDiceOnStartup() {
+bool AccountReconcilor::ShouldMigrateToDiceOnStartup(bool is_new_profile) {
   return signin::IsDiceMigrationEnabled() &&
-         client_->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref);
+         (is_new_profile ||
+          client_->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref));
 }
 
 // static

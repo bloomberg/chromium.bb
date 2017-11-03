@@ -86,7 +86,8 @@ MockAccountReconcilor::MockAccountReconcilor(
     : testing::StrictMock<AccountReconcilor>(token_service,
                                              signin_manager,
                                              client,
-                                             cookie_manager_service) {}
+                                             cookie_manager_service,
+                                             false /* is_new_profile */) {}
 
 }  // namespace
 
@@ -855,7 +856,8 @@ TEST_F(AccountReconcilorTest, DiceMigrationAfterNoop) {
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 
   // Migration will happen on next startup.
-  EXPECT_TRUE(reconcilor->ShouldMigrateToDiceOnStartup());
+  EXPECT_TRUE(
+      reconcilor->ShouldMigrateToDiceOnStartup(false /* is_new_profile */));
   EXPECT_FALSE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
   EXPECT_FALSE(reconcilor->IsAccountConsistencyEnforced());
 }
@@ -887,7 +889,8 @@ TEST_F(AccountReconcilorTest, DiceNoMigrationAfterReconcile) {
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 
   // Migration did not happen.
-  EXPECT_FALSE(reconcilor->ShouldMigrateToDiceOnStartup());
+  EXPECT_FALSE(
+      reconcilor->ShouldMigrateToDiceOnStartup(false /* is_new_profile */));
   EXPECT_FALSE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
   EXPECT_FALSE(reconcilor->IsAccountConsistencyEnforced());
 }
@@ -1591,8 +1594,10 @@ TEST(AccountReconcilorMigrationTest, MigrateAtCreation) {
     // Migration does not happen if SetDiceMigrationOnStartup() is not called.
     signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
     EXPECT_FALSE(signin::IsDiceEnabledForProfile(&pref_service));
-    AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr);
-    EXPECT_FALSE(reconcilor.ShouldMigrateToDiceOnStartup());
+    AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr,
+                                 false /* is_new_profile */);
+    EXPECT_FALSE(
+        reconcilor.ShouldMigrateToDiceOnStartup(false /* is_new_profile */));
     EXPECT_FALSE(signin::IsDiceEnabledForProfile(&pref_service));
   }
 
@@ -1601,17 +1606,35 @@ TEST(AccountReconcilorMigrationTest, MigrateAtCreation) {
   {
     // Migration does not happen if Dice is not enabled.
     signin::ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_errors;
-    AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr);
-    EXPECT_FALSE(reconcilor.ShouldMigrateToDiceOnStartup());
+    AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr,
+                                 false /* is_new_profile */);
+    EXPECT_FALSE(
+        reconcilor.ShouldMigrateToDiceOnStartup(false /* is_new_profile */));
     EXPECT_FALSE(signin::IsDiceEnabledForProfile(&pref_service));
   }
 
   {
     // Migration happens.
     signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
-    AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr);
-    EXPECT_TRUE(reconcilor.ShouldMigrateToDiceOnStartup());
+    AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr,
+                                 false /* is_new_profile */);
+    EXPECT_TRUE(
+        reconcilor.ShouldMigrateToDiceOnStartup(false /* is_new_profile */));
     EXPECT_TRUE(signin::IsDiceEnabledForProfile(&pref_service));
   }
+}
+
+// Checks that new profiles are migrated at creation.
+TEST(AccountReconcilorMigrationTest, NewProfile) {
+  signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
+  sync_preferences::TestingPrefServiceSyncable pref_service;
+  AccountReconcilor::RegisterProfilePrefs(pref_service.registry());
+  signin::RegisterAccountConsistencyProfilePrefs(pref_service.registry());
+  TestSigninClient signin_client(&pref_service);
+
+  EXPECT_FALSE(signin::IsDiceEnabledForProfile(&pref_service));
+  AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr,
+                               true /* is_new_profile */);
+  EXPECT_TRUE(signin::IsDiceEnabledForProfile(&pref_service));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)

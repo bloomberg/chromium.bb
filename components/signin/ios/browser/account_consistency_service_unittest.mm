@@ -78,7 +78,7 @@ class FakeAccountConsistencyService : public AccountConsistencyService {
 class MockAccountReconcilor : public AccountReconcilor {
  public:
   MockAccountReconcilor(SigninClient* client)
-      : AccountReconcilor(nullptr, nullptr, client, nullptr) {}
+      : AccountReconcilor(nullptr, nullptr, client, nullptr, false) {}
   MOCK_METHOD1(OnReceivedManageAccountsResponse, void(signin::GAIAServiceType));
 };
 
