@@ -56,8 +56,8 @@ class CONTENT_EXPORT ChildFrameCompositingHelper {
 
   void OnContainerDestroy();
   void SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info);
-  void SetFallbackSurfaceId(const viz::SurfaceId& surface_id,
-                            const viz::SurfaceSequence& sequence);
+  void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info,
+                              const viz::SurfaceSequence& sequence);
   void UpdateVisibility(bool);
   void ChildFrameGone();
 
