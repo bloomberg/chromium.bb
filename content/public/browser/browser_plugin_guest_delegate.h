@@ -56,11 +56,6 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Returns the WebContents that currently owns this guest.
   virtual WebContents* GetOwnerWebContents() const;
 
-  // Notifies that the content size of the guest has changed.
-  // Note: In autosize mode, it is possible that the guest size may not match
-  // the element size.
-  virtual void GuestSizeChanged(const gfx::Size& new_size) {}
-
   // Asks the delegate if the given guest can lock the pointer.
   // Invoking the |callback| synchronously is OK.
   virtual void RequestPointerLockPermission(

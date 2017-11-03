@@ -1949,7 +1949,6 @@ void RenderViewImpl::OnEnableAutoResize(const gfx::Size& min_size,
     return;
 
   auto_resize_mode_ = true;
-  AutoResizeCompositor();
 
   if (IsUseZoomForDSFEnabled()) {
     webview()->EnableAutoResizeMode(
@@ -2219,7 +2218,7 @@ void RenderViewImpl::OnDeviceScaleFactorChanged() {
   RenderWidget::OnDeviceScaleFactorChanged();
   UpdateWebViewWithDeviceScaleFactor();
   if (auto_resize_mode_)
-    AutoResizeCompositor();
+    AutoResizeCompositor(viz::LocalSurfaceId());
 }
 
 void RenderViewImpl::SetScreenMetricsEmulationParameters(

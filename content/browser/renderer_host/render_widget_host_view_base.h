@@ -167,6 +167,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // to nullptr.
   void DidUnregisterFromTextInputManager(TextInputManager* text_input_manager);
 
+  // Informs the view that the renderer has resized to |new_size| because auto-
+  // resize is enabled.
+  virtual void ResizeDueToAutoResize(const gfx::Size& new_size,
+                                     uint64_t sequence_number);
+
   base::WeakPtr<RenderWidgetHostViewBase> GetWeakPtr();
 
   //----------------------------------------------------------------------------

@@ -675,7 +675,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
                               bool width_changed) override;
   void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
-                             const gfx::Size& new_size) override;
+                             const gfx::Size& new_size,
+                             uint64_t sequence_number) override;
   gfx::Size GetAutoResizeSize() override;
   void ResetAutoResizeSize() override;
   void GetScreenInfo(ScreenInfo* screen_info) override;
