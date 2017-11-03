@@ -31,8 +31,9 @@ public class CommandLineInitRule implements TestRule {
     public Statement apply(Statement base, Description description) {
         return new Statement() {
             @Override
-            public void evaluate() {
+            public void evaluate() throws Throwable {
                 CommandLine.init(mArgs);
+                base.evaluate();
             }
         };
     }
