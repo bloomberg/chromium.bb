@@ -93,6 +93,20 @@ zucchini::status::Code MainRead(MainParams params) {
   return status;
 }
 
+zucchini::status::Code MainDetect(MainParams params) {
+  CHECK_EQ(1U, params.file_paths.size());
+  zucchini::MappedFileReader input(params.file_paths[0]);
+  if (!input.IsValid())
+    return zucchini::status::kStatusFileReadError;
+
+  std::vector<zucchini::ConstBufferView> sub_image_list;
+  zucchini::status::Code result = zucchini::DetectAll(
+      {input.data(), input.length()}, params.out, &sub_image_list);
+  if (result != zucchini::status::kStatusSuccess)
+    params.err << "Fatal error found when detecting executables." << std::endl;
+  return result;
+}
+
 zucchini::status::Code MainCrc32(MainParams params) {
   CHECK_EQ(1U, params.file_paths.size());
   zucchini::MappedFileReader image(params.file_paths[0]);

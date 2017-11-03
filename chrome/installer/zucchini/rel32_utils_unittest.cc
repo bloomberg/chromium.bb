@@ -23,7 +23,7 @@ namespace {
 // A trivial AddressTranslator that applies constant shift.
 class TestAddressTranslator : public AddressTranslator {
  public:
-  explicit TestAddressTranslator(offset_t image_size, rva_t rva_begin) {
+  TestAddressTranslator(offset_t image_size, rva_t rva_begin) {
     DCHECK_GE(rva_begin, 0U);
     CHECK_EQ(AddressTranslator::kSuccess,
              Initialize({{0, image_size, rva_begin, image_size}}));

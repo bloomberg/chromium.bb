@@ -39,6 +39,9 @@ zucchini::status::Code MainApply(MainParams params);
 // Command Function: Read and dump references from an executable.
 zucchini::status::Code MainRead(MainParams params);
 
+// Command Function: Scan an archive file and detect executables.
+zucchini::status::Code MainDetect(MainParams params);
+
 // Command Function: Compute CRC-32 of a file.
 zucchini::status::Code MainCrc32(MainParams params);
 
