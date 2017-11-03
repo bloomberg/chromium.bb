@@ -77,8 +77,8 @@ def _UnmangleRemainingSymbols(raw_symbols, tool_prefix):
     return
 
   logging.info('Unmangling %d names', len(to_process))
-  proc = subprocess.Popen([tool_prefix + 'c++filt'], stdin=subprocess.PIPE,
-                          stdout=subprocess.PIPE)
+  proc = subprocess.Popen([path_util.GetCppFiltPath(tool_prefix)],
+                          stdin=subprocess.PIPE, stdout=subprocess.PIPE)
   stdout = proc.communicate('\n'.join(s.full_name for s in to_process))[0]
   assert proc.returncode == 0
 
@@ -733,7 +733,7 @@ def _DetectGitRevision(directory):
 
 
 def BuildIdFromElf(elf_path, tool_prefix):
-  args = [tool_prefix + 'readelf', '-n', elf_path]
+  args = [path_util.GetReadElfPath(tool_prefix), '-n', elf_path]
   stdout = subprocess.check_output(args)
   match = re.search(r'Build ID: (\w+)', stdout)
   assert match, 'Build ID not found from running: ' + ' '.join(args)
@@ -741,7 +741,7 @@ def BuildIdFromElf(elf_path, tool_prefix):
 
 
 def _SectionSizesFromElf(elf_path, tool_prefix):
-  args = [tool_prefix + 'readelf', '-S', '--wide', elf_path]
+  args = [path_util.GetReadElfPath(tool_prefix), '-S', '--wide', elf_path]
   stdout = subprocess.check_output(args)
   section_sizes = {}
   # Matches  [ 2] .hash HASH 00000000006681f0 0001f0 003154 04   A  3   0  8
@@ -752,7 +752,7 @@ def _SectionSizesFromElf(elf_path, tool_prefix):
 
 
 def _ArchFromElf(elf_path, tool_prefix):
-  args = [tool_prefix + 'readelf', '-h', elf_path]
+  args = [path_util.GetReadElfPath(tool_prefix), '-h', elf_path]
   stdout = subprocess.check_output(args)
   machine = re.search('Machine:\s*(.+)', stdout).group(1)
   if machine == 'Intel 80386':
