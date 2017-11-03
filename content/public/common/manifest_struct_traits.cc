@@ -85,6 +85,9 @@ bool StructTraits<blink::mojom::ManifestDataView, content::Manifest>::Read(
   if (!ValidateColor(out->background_color))
     return false;
 
+  if (!data.ReadSplashScreenUrl(&out->splash_screen_url))
+    return false;
+
   if (!data.ReadDisplay(&out->display))
     return false;
 

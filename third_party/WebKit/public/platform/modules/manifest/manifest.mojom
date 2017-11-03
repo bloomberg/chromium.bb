@@ -46,6 +46,9 @@ struct Manifest {
   // A 32 bit color value or kInvalidOrMissingColor if not set.
   int64 background_color;
 
+  // A URL of the HTML splash screen.
+  url.mojom.Url? splash_screen_url;
+
   mojo.common.mojom.String16? gcm_sender_id;
 
   url.mojom.Url? scope;
