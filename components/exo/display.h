@@ -20,10 +20,6 @@
 #include "ui/gfx/native_pixmap_handle.h"
 #endif
 
-namespace gfx {
-class Point;
-}
-
 namespace exo {
 class DataDevice;
 class DataDeviceDelegate;
@@ -69,13 +65,6 @@ class Display {
 
   // Creates a shell surface for an existing surface.
   std::unique_ptr<ShellSurface> CreateShellSurface(Surface* surface);
-
-  // Creates a popup shell surface for an existing surface at |position| and
-  // with |parent|. |position| is in |parent| surface local coordinates.
-  std::unique_ptr<ShellSurface> CreatePopupShellSurface(
-      Surface* surface,
-      ShellSurface* parent,
-      const gfx::Point& position);
 
   // Creates a remote shell surface for an existing surface using |container|.
   // The surface is scaled by 1 / |default_device_scale_factor|.

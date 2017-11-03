@@ -114,30 +114,6 @@ TEST_F(DisplayTest, CreateShellSurface) {
   EXPECT_TRUE(shell_surface2);
 }
 
-TEST_F(DisplayTest, CreatePopupShellSurface) {
-  std::unique_ptr<Display> display(new Display);
-
-  // Create two surfaces.
-  std::unique_ptr<Surface> surface1 = display->CreateSurface();
-  ASSERT_TRUE(surface1);
-  std::unique_ptr<Surface> surface2 = display->CreateSurface();
-  ASSERT_TRUE(surface2);
-
-  // Create a shell surface for surface1.
-  std::unique_ptr<ShellSurface> shell_surface1 =
-      display->CreateShellSurface(surface1.get());
-  EXPECT_TRUE(shell_surface1);
-
-  // Maximize shell surface to ensure it's visible.
-  shell_surface1->Maximize();
-
-  // Create a popup shell surface for surface2 with shell_surface1 as parent.
-  std::unique_ptr<ShellSurface> shell_surface2 =
-      display->CreatePopupShellSurface(surface2.get(), shell_surface1.get(),
-                                       gfx::Point());
-  EXPECT_TRUE(shell_surface2);
-}
-
 TEST_F(DisplayTest, CreateRemoteShellSurface) {
   std::unique_ptr<Display> display(new Display);
 
