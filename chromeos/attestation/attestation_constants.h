@@ -49,7 +49,6 @@ enum AttestationCertificateProfile {
 enum PrivacyCAType {
   DEFAULT_PCA,    // The Google-operated Privacy CA.
   TEST_PCA,       // The test version of the Google-operated Privacy CA.
-  ALTERNATE_PCA,  // An alternate Privacy CA specified by enterprise policy.
 };
 
 // A key name for the Enterprise Machine Key.  This key should always be stored
