@@ -34,6 +34,7 @@
 #include "net/socket/stream_socket.h"
 #include "net/spdy/chromium/buffered_spdy_framer.h"
 #include "net/spdy/chromium/http2_priority_dependencies.h"
+#include "net/spdy/chromium/http2_push_promise_index.h"
 #include "net/spdy/chromium/multiplexed_session.h"
 #include "net/spdy/chromium/server_push_delegate.h"
 #include "net/spdy/chromium/spdy_buffer.h"
@@ -236,61 +237,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
  public:
   // TODO(akalin): Use base::TickClock when it becomes available.
   typedef base::TimeTicks (*TimeFunc)(void);
-
-  // Container class for unclaimed pushed streams on a SpdySession.  Guarantees
-  // that |spdy_session_.pool_| gets notified every time a stream is pushed or
-  // an unclaimed pushed stream is claimed.
-  class UnclaimedPushedStreamContainer {
-   public:
-    struct PushedStreamInfo {
-      PushedStreamInfo() : stream_id(0) {}
-      PushedStreamInfo(SpdyStreamId stream_id, base::TimeTicks creation_time)
-          : stream_id(stream_id), creation_time(creation_time) {}
-      ~PushedStreamInfo() {}
-      size_t EstimateMemoryUsage() const { return 0; }
-
-      SpdyStreamId stream_id;
-      base::TimeTicks creation_time;
-    };
-    using PushedStreamMap = std::map<GURL, PushedStreamInfo>;
-    using iterator = PushedStreamMap::iterator;
-    using const_iterator = PushedStreamMap::const_iterator;
-
-    UnclaimedPushedStreamContainer() = delete;
-    explicit UnclaimedPushedStreamContainer(SpdySession* spdy_session);
-    ~UnclaimedPushedStreamContainer();
-
-    bool empty() const { return streams_.empty(); }
-    size_t size() const { return streams_.size(); }
-    const_iterator begin() const { return streams_.begin(); }
-    const_iterator end() const { return streams_.end(); }
-    const_iterator find(const GURL& url) const { return streams_.find(url); }
-    size_t count(const GURL& url) const { return streams_.count(url); }
-    const_iterator lower_bound(const GURL& url) const {
-      return streams_.lower_bound(url);
-    }
-
-    size_t erase(const GURL& url);
-    iterator erase(const_iterator it);
-
-    // Return true if there was not already an entry with |url|,
-    // in which case the insertion was successful.
-    bool insert(const GURL& url,
-                SpdyStreamId stream_id,
-                const base::TimeTicks& creation_time) WARN_UNUSED_RESULT;
-
-    size_t EstimateMemoryUsage() const;
-
-   private:
-    SpdySession* spdy_session_;
-
-    // (Bijective) map from the URL to the ID of the streams that have
-    // already started to be pushed by the server, but do not have
-    // consumers yet. Contains a subset of |active_streams_|.
-    PushedStreamMap streams_;
-
-    DISALLOW_COPY_AND_ASSIGN(UnclaimedPushedStreamContainer);
-  };
 
   // Returns true if |new_hostname| can be pooled into an existing connection to
   // |old_hostname| associated with |ssl_info|.
@@ -637,6 +583,61 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     WRITE_STATE_IDLE,
     WRITE_STATE_DO_WRITE,
     WRITE_STATE_DO_WRITE_COMPLETE,
+  };
+
+  // Container class for unclaimed pushed streams on a SpdySession.  Guarantees
+  // that |spdy_session_.pool_| gets notified every time a stream is pushed or
+  // an unclaimed pushed stream is claimed.
+  class UnclaimedPushedStreamContainer {
+   public:
+    struct PushedStreamInfo {
+      PushedStreamInfo() : stream_id(0) {}
+      PushedStreamInfo(SpdyStreamId stream_id, base::TimeTicks creation_time)
+          : stream_id(stream_id), creation_time(creation_time) {}
+      ~PushedStreamInfo() {}
+      size_t EstimateMemoryUsage() const { return 0; }
+
+      SpdyStreamId stream_id;
+      base::TimeTicks creation_time;
+    };
+    using PushedStreamMap = std::map<GURL, PushedStreamInfo>;
+    using iterator = PushedStreamMap::iterator;
+    using const_iterator = PushedStreamMap::const_iterator;
+
+    UnclaimedPushedStreamContainer() = delete;
+    explicit UnclaimedPushedStreamContainer(SpdySession* spdy_session);
+    ~UnclaimedPushedStreamContainer();
+
+    bool empty() const { return streams_.empty(); }
+    size_t size() const { return streams_.size(); }
+    const_iterator begin() const { return streams_.begin(); }
+    const_iterator end() const { return streams_.end(); }
+    const_iterator find(const GURL& url) const { return streams_.find(url); }
+    size_t count(const GURL& url) const { return streams_.count(url); }
+    const_iterator lower_bound(const GURL& url) const {
+      return streams_.lower_bound(url);
+    }
+
+    size_t erase(const GURL& url);
+    iterator erase(const_iterator it);
+
+    // Return true if there was not already an entry with |url|,
+    // in which case the insertion was successful.
+    bool insert(const GURL& url,
+                SpdyStreamId stream_id,
+                const base::TimeTicks& creation_time) WARN_UNUSED_RESULT;
+
+    size_t EstimateMemoryUsage() const;
+
+   private:
+    SpdySession* spdy_session_;
+
+    // (Bijective) map from the URL to the ID of the streams that have
+    // already started to be pushed by the server, but do not have
+    // consumers yet. Contains a subset of |active_streams_|.
+    PushedStreamMap streams_;
+
+    DISALLOW_COPY_AND_ASSIGN(UnclaimedPushedStreamContainer);
   };
 
   // Called by SpdyStreamRequest to start a request to create a
