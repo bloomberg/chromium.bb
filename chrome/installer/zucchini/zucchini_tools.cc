@@ -10,7 +10,9 @@
 #include <memory>
 #include <ostream>
 #include <set>
+#include <string>
 
+#include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/installer/zucchini/disassembler.h"
 #include "chrome/installer/zucchini/element_detection.h"
@@ -67,6 +69,47 @@ status::Code ReadReferences(ConstBufferView image,
       }
     }
   }
+
+  return status::kStatusSuccess;
+}
+
+status::Code DetectAll(ConstBufferView image,
+                       std::ostream& out,
+                       std::vector<ConstBufferView>* sub_image_list) {
+  DCHECK_NE(sub_image_list, nullptr);
+  sub_image_list->clear();
+
+  const size_t size = image.size();
+  size_t last_out_pos = 0;
+  size_t total_bytes_found = 0;
+
+  auto print_range = [&out](size_t pos, size_t size, const std::string& msg) {
+    out << "-- " << AsHex<8, size_t>(pos) << " +" << AsHex<8, size_t>(size)
+        << ": " << msg << std::endl;
+  };
+
+  ElementFinder finder(image, base::Bind(DetectElementFromDisassembler));
+  for (auto element = finder.GetNext(); element.has_value();
+       element = finder.GetNext()) {
+    ConstBufferView sub_image = image[element->region()];
+    sub_image_list->push_back(sub_image);
+    size_t pos = sub_image.begin() - image.begin();
+    size_t prog_size = sub_image.size();
+    if (last_out_pos < pos)
+      print_range(last_out_pos, pos - last_out_pos, "?");
+    auto disasm = MakeDisassemblerOfType(sub_image, element->exe_type);
+    print_range(pos, prog_size, disasm->GetExeTypeString());
+    total_bytes_found += prog_size;
+    last_out_pos = pos + prog_size;
+  }
+  if (last_out_pos < size)
+    print_range(last_out_pos, size - last_out_pos, "?");
+  out << std::endl;
+
+  // Print summary, using decimal instead of hexadecimal.
+  out << "Detected " << total_bytes_found << "/" << size << " bytes => ";
+  double percent = total_bytes_found * 100.0 / size;
+  out << base::StringPrintf("%.2f", percent) << "%." << std::endl;
 
   return status::kStatusSuccess;
 }
