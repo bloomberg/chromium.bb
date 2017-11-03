@@ -4,9 +4,7 @@
 
 #include "core/paint/ng/ng_block_flow_painter.h"
 
-#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/ng/ng_box_fragment_painter.h"
 #include "core/paint/ng/ng_paint_fragment.h"
