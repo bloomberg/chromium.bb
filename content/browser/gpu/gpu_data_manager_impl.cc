@@ -165,6 +165,11 @@ bool GpuDataManagerImpl::HardwareAccelerationEnabled() const {
          private_->GpuAccessAllowed(nullptr);
 }
 
+bool GpuDataManagerImpl::CanUseGpuBrowserCompositor() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->CanUseGpuBrowserCompositor();
+}
+
 void GpuDataManagerImpl::GetDisabledExtensions(
     std::string* disabled_extensions) const {
   base::AutoLock auto_lock(lock_);

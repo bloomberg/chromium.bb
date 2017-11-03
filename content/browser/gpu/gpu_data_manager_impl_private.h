@@ -95,6 +95,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void HandleGpuSwitch();
 
+  bool CanUseGpuBrowserCompositor() const;
   bool ShouldDisableAcceleratedVideoDecode(
       const base::CommandLine* command_line) const;
 
