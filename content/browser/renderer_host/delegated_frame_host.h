@@ -204,6 +204,10 @@ class CONTENT_EXPORT DelegatedFrameHost
     request_copy_of_output_callback_for_testing_ = callback;
   }
 
+  gfx::Size CurrentFrameSizeInDipForTesting() const {
+    return current_frame_size_in_dip_;
+  }
+
  private:
   friend class DelegatedFrameHostClient;
   friend class RenderWidgetHostViewAuraCopyRequestTest;
