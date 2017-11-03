@@ -310,14 +310,15 @@ static NSString* gUserAgentProduct = nil;
   CWVNavigationAction* navigationAction =
       [[CWVNavigationAction alloc] initWithRequest:request
                                      userInitiated:initiatedByUser];
-  // TODO(crbug.com/702298): Window created by CWVUIDelegate should be closable.
   CWVWebView* webView = [_UIDelegate webView:self
               createWebViewWithConfiguration:_configuration
                          forNavigationAction:navigationAction];
   if (!webView) {
     return nullptr;
   }
-  return webView->_webState.get();
+  web::WebState* webViewWebState = webView->_webState.get();
+  webViewWebState->SetHasOpener(true);
+  return webViewWebState;
 }
 
 - (void)closeWebState:(web::WebState*)webState {

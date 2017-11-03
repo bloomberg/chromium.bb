@@ -707,6 +707,10 @@ bool WebStateImpl::HasOpener() const {
   return created_with_opener_;
 }
 
+void WebStateImpl::SetHasOpener(bool has_opener) {
+  created_with_opener_ = has_opener;
+}
+
 void WebStateImpl::TakeSnapshot(const SnapshotCallback& callback,
                                 CGSize target_size) const {
   UIView* view = [web_controller_ view];
