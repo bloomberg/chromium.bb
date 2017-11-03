@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DEVTOOLS_OVERLAY_AGENT_H_
-#define COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DEVTOOLS_OVERLAY_AGENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_H_
+#define COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_H_
 
 #include "components/ui_devtools/Overlay.h"
 #include "components/ui_devtools/views/dom_agent.h"
@@ -11,12 +11,12 @@
 
 namespace ui_devtools {
 
-class UIDevToolsOverlayAgent : public ui_devtools::UiDevToolsBaseAgent<
-                                   ui_devtools::protocol::Overlay::Metainfo>,
-                               public ui::EventHandler {
+class OverlayAgent : public ui_devtools::UiDevToolsBaseAgent<
+                         ui_devtools::protocol::Overlay::Metainfo>,
+                     public ui::EventHandler {
  public:
-  explicit UIDevToolsOverlayAgent(DOMAgent* dom_agent);
-  ~UIDevToolsOverlayAgent() override;
+  explicit OverlayAgent(DOMAgent* dom_agent);
+  ~OverlayAgent() override;
   int pinned_id() const { return pinned_id_; };
   void SetPinnedNodeId(int pinned_id);
 
@@ -39,9 +39,9 @@ class UIDevToolsOverlayAgent : public ui_devtools::UiDevToolsBaseAgent<
   DOMAgent* const dom_agent_;
   int pinned_id_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(UIDevToolsOverlayAgent);
+  DISALLOW_COPY_AND_ASSIGN(OverlayAgent);
 };
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DEVTOOLS_OVERLAY_AGENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_OVERLAY_AGENT_H_

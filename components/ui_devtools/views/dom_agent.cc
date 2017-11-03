@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/devtools_server.h"
-#include "components/ui_devtools/views/ui_devtools_overlay_agent.h"
+#include "components/ui_devtools/views/overlay_agent.h"
 #include "components/ui_devtools/views/ui_element.h"
 #include "components/ui_devtools/views/view_element.h"
 #include "components/ui_devtools/views/widget_element.h"
