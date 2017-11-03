@@ -33,6 +33,7 @@
 #import "ui/base/cocoa/touch_bar_forward_declarations.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/ui_base_features.h"
 
 using base::ASCIIToUTF16;
 using bookmarks::BookmarkBubbleObserver;
@@ -84,6 +85,14 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
     edits_ = 0;
   }
 
+  // CocoaProfileTest:
+  void SetUp() override {
+    // This file only tests Cocoa UI and can be deleted when kSecondaryUiMd is
+    // default.
+    scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
+    CocoaProfileTest::SetUp();
+  }
+
   void TearDown() override {
     [controller_ close];
     CocoaProfileTest::TearDown();
@@ -130,6 +139,11 @@ class BookmarkBubbleControllerTest : public CocoaProfileTest {
   bool IsWindowClosing() {
     return [static_cast<InfoBubbleWindow*>([controller_ window]) isClosing];
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleControllerTest);
 };
 
 // static

@@ -5,10 +5,12 @@
 #import "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/test/scoped_feature_list.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "ui/base/ui_base_features.h"
 
 @interface PermissionSelectorButton (Testing)
 - (NSMenu*)permissionMenu;
@@ -22,6 +24,10 @@ const ContentSettingsType kTestPermissionType =
 class PermissionSelectorButtonTest : public CocoaTest {
  public:
   PermissionSelectorButtonTest() {
+    // This file only tests Cocoa UI and can be deleted when kSecondaryUiMd is
+    // default.
+    scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
+
     got_callback_ = false;
     PageInfoUI::PermissionInfo test_info;
     test_info.type = kTestPermissionType;
@@ -49,6 +55,11 @@ class PermissionSelectorButtonTest : public CocoaTest {
 
   bool got_callback_;
   base::scoped_nsobject<PermissionSelectorButton> view_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionSelectorButtonTest);
 };
 
 TEST_VIEW(PermissionSelectorButtonTest, view_);
