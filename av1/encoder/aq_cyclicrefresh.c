@@ -509,8 +509,6 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
     // Clear down the segment map.
     av1_enable_segmentation(&cm->seg);
     av1_clearall_segfeatures(seg);
-    // Select delta coding method.
-    seg->abs_delta = SEGMENT_DELTADATA;
 
     // Note: setting temporal_update has no effect, as the seg-map coding method
     // (temporal or spatial) is determined in

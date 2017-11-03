@@ -57,8 +57,6 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
     av1_enable_segmentation(seg);
     av1_clearall_segfeatures(seg);
 
-    seg->abs_delta = SEGMENT_DELTADATA;
-
     aom_clear_system_state();
 
     for (i = 0; i < MAX_SEGMENTS; ++i) {

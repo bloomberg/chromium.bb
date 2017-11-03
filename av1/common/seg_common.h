@@ -18,9 +18,6 @@
 extern "C" {
 #endif
 
-#define SEGMENT_DELTADATA 0
-#define SEGMENT_ABSDATA 1
-
 #define MAX_SEGMENTS 8
 #define SEG_TREE_PROBS (MAX_SEGMENTS - 1)
 
@@ -62,7 +59,6 @@ struct segmentation {
   uint8_t enabled;
   uint8_t update_map;
   uint8_t update_data;
-  uint8_t abs_delta;
   uint8_t temporal_update;
 
   int16_t feature_data[MAX_SEGMENTS][SEG_LVL_MAX];

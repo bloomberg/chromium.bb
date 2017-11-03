@@ -1089,8 +1089,6 @@ static void setup_segmentation(AV1_COMMON *const cm,
   // Segmentation data update
   seg->update_data = aom_rb_read_bit(rb);
   if (seg->update_data) {
-    seg->abs_delta = aom_rb_read_bit(rb);
-
     av1_clearall_segfeatures(seg);
 
     for (i = 0; i < MAX_SEGMENTS; i++) {

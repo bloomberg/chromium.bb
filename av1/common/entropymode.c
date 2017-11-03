@@ -6110,7 +6110,6 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
 
   int i;
   av1_clearall_segfeatures(&cm->seg);
-  cm->seg.abs_delta = SEGMENT_DELTADATA;
 
   if (cm->last_frame_seg_map && !cm->frame_parallel_decode)
     memset(cm->last_frame_seg_map, 0, (cm->mi_rows * cm->mi_cols));

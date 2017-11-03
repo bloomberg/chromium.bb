@@ -2728,8 +2728,6 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
   // Segmentation data
   aom_wb_write_bit(wb, seg->update_data);
   if (seg->update_data) {
-    aom_wb_write_bit(wb, seg->abs_delta);
-
     for (i = 0; i < MAX_SEGMENTS; i++) {
       for (j = 0; j < SEG_LVL_MAX; j++) {
         const int active = segfeature_active(seg, i, j);
@@ -3942,7 +3940,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
         xd->prev_qindex = cm->base_qindex;
 #if CONFIG_EXT_DELTA_Q
-        assert(cm->seg.abs_delta == SEGMENT_DELTADATA);
         aom_wb_write_bit(wb, cm->delta_lf_present_flag);
         if (cm->delta_lf_present_flag) {
           aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);
@@ -4292,7 +4289,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
         xd->prev_qindex = cm->base_qindex;
 #if CONFIG_EXT_DELTA_Q
-        assert(cm->seg.abs_delta == SEGMENT_DELTADATA);
         aom_wb_write_bit(wb, cm->delta_lf_present_flag);
         if (cm->delta_lf_present_flag) {
           aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);

@@ -74,9 +74,6 @@ void av1_setup_in_frame_q_adj(AV1_COMP *cpi) {
 
     av1_enable_segmentation(seg);
 
-    // Select delta coding method.
-    seg->abs_delta = SEGMENT_DELTADATA;
-
     // Default segment "Q" feature is disabled so it defaults to the baseline Q.
     av1_disable_segfeature(seg, DEFAULT_AQ2_SEG, SEG_LVL_ALT_Q);
 

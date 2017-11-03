@@ -333,8 +333,7 @@ int av1_get_qindex(const struct segmentation *seg, int segment_id,
                    int base_qindex) {
   if (segfeature_active(seg, segment_id, SEG_LVL_ALT_Q)) {
     const int data = get_segdata(seg, segment_id, SEG_LVL_ALT_Q);
-    const int seg_qindex =
-        seg->abs_delta == SEGMENT_ABSDATA ? data : base_qindex + data;
+    const int seg_qindex = base_qindex + data;
     return clamp(seg_qindex, 0, MAXQ);
   } else {
     return base_qindex;
