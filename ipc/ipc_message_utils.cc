@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -568,6 +567,33 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
 }
 #endif  // defined(OS_POSIX)
 
+#if defined(OS_ANDROID)
+void ParamTraits<base::SharedMemoryHandle::Type>::Write(base::Pickle* m,
+                                                        const param_type& p) {
+  DCHECK(static_cast<int>(p) >= 0 && p <= base::SharedMemoryHandle::Type::LAST);
+  m->WriteInt(static_cast<int>(p));
+}
+
+bool ParamTraits<base::SharedMemoryHandle::Type>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  int value;
+  if (!iter->ReadInt(&value))
+    return false;
+  if (value < 0 ||
+      value > static_cast<int>(base::SharedMemoryHandle::Type::LAST))
+    return false;
+  *r = static_cast<param_type>(value);
+  return true;
+}
+
+void ParamTraits<base::SharedMemoryHandle::Type>::Log(const param_type& p,
+                                                      std::string* l) {
+  l->append(base::IntToString(static_cast<int>(p)));
+}
+#endif
+
 void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
                                                   const param_type& p) {
   // This serialization must be kept in sync with
@@ -588,6 +614,12 @@ void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
   HandleFuchsia handle_fuchsia(p.GetHandle());
   WriteParam(m, handle_fuchsia);
 #else
+#if defined(OS_ANDROID)
+  // Android transfers both ashmem and AHardwareBuffer SharedMemoryHandle
+  // subtypes, both are transferred via file descriptor but need to be handled
+  // differently by the receiver. Write the type to distinguish.
+  WriteParam(m, p.GetType());
+#endif
   if (p.OwnershipPassesToIPC()) {
     if (!m->WriteAttachment(new internal::PlatformFileAttachment(
             base::ScopedFD(p.GetHandle()))))
@@ -635,6 +667,13 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &handle_fuchsia))
     return false;
 #else
+#if defined(OS_ANDROID)
+  // Android uses both ashmen and AHardwareBuffer subtypes, get the actual type
+  // for use as a constructor argument alongside the file descriptor.
+  base::SharedMemoryHandle::Type android_subtype;
+  if (!ReadParam(m, iter, &android_subtype))
+    return false;
+#endif
   scoped_refptr<base::Pickle::Attachment> attachment;
   if (!m->ReadAttachment(iter, &attachment))
     return false;
@@ -660,6 +699,14 @@ bool ParamTraits<base::SharedMemoryHandle>::Read(const base::Pickle* m,
 #elif defined(OS_FUCHSIA)
   *r = base::SharedMemoryHandle(handle_fuchsia.get_handle(),
                                 static_cast<size_t>(size), guid);
+#elif defined(OS_ANDROID)
+  *r = base::SharedMemoryHandle(
+      android_subtype,
+      base::FileDescriptor(
+          static_cast<internal::PlatformFileAttachment*>(attachment.get())
+              ->TakePlatformFile(),
+          true),
+      static_cast<size_t>(size), guid);
 #else
   *r = base::SharedMemoryHandle(
       base::FileDescriptor(

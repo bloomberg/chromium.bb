@@ -47,6 +47,12 @@ source_set("ipc_client_sources") {
       "gpu_memory_buffer_impl_native_pixmap.h",
     ]
   }
+  if (is_android) {
+    sources += [
+      "gpu_memory_buffer_impl_android_hardware_buffer.cc",
+      "gpu_memory_buffer_impl_android_hardware_buffer.h",
+    ]
+  }
   configs += [
     "//build/config/compiler:no_size_t_to_int_warning",
     "//gpu:gpu_implementation",

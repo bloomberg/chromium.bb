@@ -47,7 +47,8 @@ StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
              gfx::GpuMemoryBufferHandle>::
     shared_memory_handle(const gfx::GpuMemoryBufferHandle& handle) {
   if (handle.type != gfx::SHARED_MEMORY_BUFFER &&
-      handle.type != gfx::DXGI_SHARED_HANDLE)
+      handle.type != gfx::DXGI_SHARED_HANDLE &&
+      handle.type != gfx::ANDROID_HARDWARE_BUFFER)
     return mojo::ScopedSharedBufferHandle();
   return mojo::WrapSharedMemoryHandle(handle.handle, handle.handle.GetSize(),
                                       false);
@@ -85,7 +86,8 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     return false;
 
   if (out->type == gfx::SHARED_MEMORY_BUFFER ||
-      out->type == gfx::DXGI_SHARED_HANDLE) {
+      out->type == gfx::DXGI_SHARED_HANDLE ||
+      out->type == gfx::ANDROID_HARDWARE_BUFFER) {
     mojo::ScopedSharedBufferHandle handle = data.TakeSharedMemoryHandle();
     if (handle.is_valid()) {
       MojoResult unwrap_result = mojo::UnwrapSharedMemoryHandle(
