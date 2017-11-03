@@ -13110,6 +13110,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.WarmupURL.FetchAttemptEvent"
+    enum="DataReductionProxyWarmupURLFetchAttemptEvent">
+  <owner>tbansal@chromium.org</owner>
+  <summary>Records the result of an attempt to fetch the warmup URL.</summary>
+</histogram>
+
 <histogram name="DataReductionProxy.WarmupURL.FetchInitiated" units="count">
   <owner>tbansal@chromium.org</owner>
   <summary>
