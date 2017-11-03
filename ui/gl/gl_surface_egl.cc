@@ -159,9 +159,9 @@ constexpr size_t kMaxTimestampsSupportable = 9;
 
 struct TraceSwapEventsInitializer {
   TraceSwapEventsInitializer()
-      : value(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
+      : value(*TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
             kSwapEventTraceCategories)) {}
-  const unsigned char* value;
+  const unsigned char& value;
 };
 
 static base::LazyInstance<TraceSwapEventsInitializer>::Leaky
