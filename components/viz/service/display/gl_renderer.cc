@@ -3053,8 +3053,6 @@ void GLRenderer::CleanupSharedObjects() {
 
   if (offscreen_stencil_renderbuffer_id_)
     gl_->DeleteRenderbuffers(1, &offscreen_stencil_renderbuffer_id_);
-
-  ReleaseRenderPassTextures();
 }
 
 void GLRenderer::ReinitializeGLState() {
