@@ -18,9 +18,11 @@ onload = function() {
     if (window.internals) {
         var layers = JSON.parse(internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_DEBUG_INFO))["layers"];
 
+        var willChangeDIVLayer = internals.runtimeFlags.rootLayerScrollingEnabled ? layers[4] : layers[2];
+        var scaleTransformDIVLayer = internals.runtimeFlags.rootLayerScrollingEnabled ? layers[5] : layers[3];
         // Both transformed layers squash together after the will-change layer.
-        assert_true(layers[2].compositingReasons[0] == "Has a will-change compositing hint");
-        assert_true(layers[3].compositingReasons[0] == "Secondary layer, home for a group of squashable content");
+        assert_true(willChangeDIVLayer.compositingReasons[0] == "Has a will-change compositing hint");
+        assert_true(scaleTransformDIVLayer.compositingReasons[0] == "Secondary layer, home for a group of squashable content");
     }
 };
 </script>
