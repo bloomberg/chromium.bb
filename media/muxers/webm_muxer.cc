@@ -69,7 +69,7 @@ static double GetFrameRate(const WebmMuxer::VideoParameters& params) {
 }
 
 static const char kH264CodecId[] = "V_MPEG4/ISO/AVC";
-static const char kPcmCodecId[] = "A_PCM/INT/LIT";
+static const char kPcmCodecId[] = "A_PCM/FLOAT/IEEE";
 
 static const char* MkvCodeIcForMediaVideoCodecId(VideoCodec video_codec) {
   switch (video_codec) {
