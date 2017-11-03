@@ -381,7 +381,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 
   AppToolbarButton* appMenuButton =
       static_cast<AppToolbarButton*>([[bwc toolbarController] appMenuButton]);
-  [appMenuButton animateIfPossible];
+  [appMenuButton animateIfPossibleWithDelay:NO];
 }
 
 - (void)menuDidClose:(NSMenu*)menu {
