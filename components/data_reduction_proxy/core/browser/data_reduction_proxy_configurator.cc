@@ -81,8 +81,7 @@ net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
     return config;
   }
 
-  config.proxy_rules().bypass_rules.ParseFromString(
-      base::JoinString(bypass_rules_, ", "));
+  config.proxy_rules().bypass_rules = bypass_rules_;
   // The ID is set to a bogus value. It cannot be left uninitialized, else the
   // config will return invalid.
   net::ProxyConfig::ID unused_id = 1;
@@ -97,10 +96,10 @@ void DataReductionProxyConfigurator::Disable() {
   config_ = config;
 }
 
-void DataReductionProxyConfigurator::AddHostPatternToBypass(
+void DataReductionProxyConfigurator::SetBypassRules(
     const std::string& pattern) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  bypass_rules_.push_back(pattern);
+  bypass_rules_.ParseFromString(pattern);
 }
 
 const net::ProxyConfig& DataReductionProxyConfigurator::GetProxyConfig() const {

@@ -48,12 +48,12 @@ class DataReductionProxyConfigurator {
   // proxy.
   virtual void Disable();
 
-  // Adds a host pattern to bypass. This should follow the same syntax used
-  // in net::ProxyBypassRules; that is, a hostname pattern, a hostname suffix
-  // pattern, an IP literal, a CIDR block, or the magic string '<local>'.
+  // Sets the host patterns to bypass.
+  //
+  // See net::ProxyBypassRules::ParseFromString for the appropriate syntax.
   // Bypass settings persist for the life of this object and are applied
   // each time the proxy is enabled, but are not updated while it is enabled.
-  virtual void AddHostPatternToBypass(const std::string& pattern);
+  void SetBypassRules(const std::string& patterns);
 
   // Returns the current data reduction proxy config, even if it is not the
   // effective configuration used by the proxy service.
@@ -72,7 +72,7 @@ class DataReductionProxyConfigurator {
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfiguratorTest, TestBypassList);
 
   // Rules for bypassing the Data Reduction Proxy.
-  std::vector<std::string> bypass_rules_;
+  net::ProxyBypassRules bypass_rules_;
 
   // The Data Reduction Proxy's configuration. This contains the list of
   // acceptable data reduction proxies and bypass rules. It should be accessed

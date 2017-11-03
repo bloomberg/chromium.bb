@@ -85,8 +85,7 @@ TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedQuic) {
 }
 
 TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedWithBypassRule) {
-  config_->AddHostPatternToBypass("<local>");
-  config_->AddHostPatternToBypass("*.goo.com");
+  config_->SetBypassRules("<local>, *.goo.com");
   config_->Enable(
       false, false,
       BuildProxyList("https://www.foo.com:443", "http://www.bar.com:80"));
@@ -96,8 +95,7 @@ TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedWithBypassRule) {
 }
 
 TEST_F(DataReductionProxyConfiguratorTest, TestUnrestrictedWithBypassRuleQuic) {
-  config_->AddHostPatternToBypass("<local>");
-  config_->AddHostPatternToBypass("*.goo.com");
+  config_->SetBypassRules("<local>, *.goo.com");
   config_->Enable(
       false, false,
       BuildProxyList("quic://www.foo.com:443", "http://www.bar.com:80"));
@@ -163,18 +161,13 @@ TEST_F(DataReductionProxyConfiguratorTest, TestDisable) {
 }
 
 TEST_F(DataReductionProxyConfiguratorTest, TestBypassList) {
-  config_->AddHostPatternToBypass("http://www.google.com");
-  config_->AddHostPatternToBypass("fefe:13::abc/33");
+  config_->SetBypassRules("http://www.google.com, fefe:13::abc/33");
 
-  std::string expected[] = {
-    "http://www.google.com",
-    "fefe:13::abc/33",
-  };
+  net::ProxyBypassRules expected;
+  expected.AddRuleFromString("http://www.google.com");
+  expected.AddRuleFromString("fefe:13::abc/33");
 
-  ASSERT_EQ(arraysize(expected), config_->bypass_rules_.size());
-  int i = 0;
-  for (const std::string& bypass_rule : config_->bypass_rules_)
-    EXPECT_EQ(expected[i++], bypass_rule);
+  EXPECT_TRUE(expected.Equals(config_->bypass_rules_));
 }
 
 }  // namespace data_reduction_proxy
