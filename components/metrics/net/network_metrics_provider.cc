@@ -115,6 +115,7 @@ NetworkMetricsProvider::NetworkMetricsProvider(
     std::unique_ptr<NetworkQualityEstimatorProvider>
         network_quality_estimator_provider)
     : connection_type_is_ambiguous_(false),
+      network_change_notifier_initialized_(false),
       wifi_phy_layer_protocol_is_ambiguous_(false),
       wifi_phy_layer_protocol_(net::WIFI_PHY_LAYER_PROTOCOL_UNKNOWN),
       total_aborts_(0),
@@ -127,6 +128,9 @@ NetworkMetricsProvider::NetworkMetricsProvider(
       weak_ptr_factory_(this) {
   net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
   connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
+  if (connection_type_ != net::NetworkChangeNotifier::CONNECTION_UNKNOWN)
+    network_change_notifier_initialized_ = true;
+
   ProbeWifiPHYLayerProtocol();
 
   if (network_quality_estimator_provider_) {
@@ -185,6 +189,8 @@ void NetworkMetricsProvider::ProvideCurrentSessionData(
 void NetworkMetricsProvider::ProvideSystemProfileMetrics(
     SystemProfileProto* system_profile) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!connection_type_is_ambiguous_ ||
+         network_change_notifier_initialized_);
   SystemProfileProto::Network* network = system_profile->mutable_network();
   network->set_connection_type_is_ambiguous(connection_type_is_ambiguous_);
   network->set_connection_type(GetConnectionType());
@@ -233,13 +239,26 @@ void NetworkMetricsProvider::OnConnectionTypeChanged(
   // new UMA logging window begins, so users who genuinely transition to offline
   // mode for an extended duration will still be at least partially represented
   // in the metrics logs.
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE) {
+    network_change_notifier_initialized_ = true;
     return;
+  }
+
+  DCHECK(network_change_notifier_initialized_ ||
+         connection_type_ == net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
 
   if (type != connection_type_ &&
-      connection_type_ != net::NetworkChangeNotifier::CONNECTION_NONE) {
+      connection_type_ != net::NetworkChangeNotifier::CONNECTION_NONE &&
+      network_change_notifier_initialized_) {
+    // If |network_change_notifier_initialized_| is false, it implies that this
+    // is the first connection change callback received from network change
+    // notifier, and the previous connection type was CONNECTION_UNKNOWN. In
+    // that case, connection type should not be marked as ambiguous since there
+    // was no actual change in the connection type.
     connection_type_is_ambiguous_ = true;
   }
+
+  network_change_notifier_initialized_ = true;
   connection_type_ = type;
 
   ProbeWifiPHYLayerProtocol();

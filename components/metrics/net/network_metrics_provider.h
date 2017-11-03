@@ -71,6 +71,8 @@ class NetworkMetricsProvider
                            ECTAmbiguousOnConnectionTypeChange);
   FRIEND_TEST_ALL_PREFIXES(NetworkMetricsProviderTest,
                            ECTNotAmbiguousOnOffline);
+  FRIEND_TEST_ALL_PREFIXES(NetworkMetricsProviderTest,
+                           ConnectionTypeIsAmbiguous);
 
   // Listens to the changes in the effective conection type.
   class EffectiveConnectionTypeObserver;
@@ -111,6 +113,8 @@ class NetworkMetricsProvider
   bool connection_type_is_ambiguous_;
   // The connection type according to net::NetworkChangeNotifier.
   net::NetworkChangeNotifier::ConnectionType connection_type_;
+  // True if the network change notifier has been initialized.
+  bool network_change_notifier_initialized_;
 
   // True if |wifi_phy_layer_protocol_| changed during the lifetime of the log.
   bool wifi_phy_layer_protocol_is_ambiguous_;

@@ -234,4 +234,57 @@ TEST_F(NetworkMetricsProviderTest, ECTNotAmbiguousOnOffline) {
   }
 }
 
+// Verifies that the connection type is ambiguous boolean is correctly set.
+TEST_F(NetworkMetricsProviderTest, ConnectionTypeIsAmbiguous) {
+  net::TestNetworkQualityEstimator estimator;
+  std::unique_ptr<NetworkMetricsProvider::NetworkQualityEstimatorProvider>
+      estimator_provider(base::WrapUnique(
+          new TestNetworkQualityEstimatorProvider(&estimator)));
+  SystemProfileProto system_profile;
+  NetworkMetricsProvider network_metrics_provider(
+      std::move(estimator_provider));
+  estimator.RunOneRequest();
+
+  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+            network_metrics_provider.connection_type_);
+  EXPECT_FALSE(network_metrics_provider.connection_type_is_ambiguous_);
+  EXPECT_FALSE(network_metrics_provider.network_change_notifier_initialized_);
+
+  // When a connection type change callback is received, network change notifier
+  // should be marked as initialized.
+  network_metrics_provider.OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::CONNECTION_2G);
+  EXPECT_EQ(net::NetworkChangeNotifier::CONNECTION_2G,
+            network_metrics_provider.connection_type_);
+  // Connection type should not be marked as ambiguous when a delayed connection
+  // type change callback is received due to delayed initialization of the
+  // network change notifier.
+  EXPECT_FALSE(network_metrics_provider.connection_type_is_ambiguous_);
+  EXPECT_TRUE(network_metrics_provider.network_change_notifier_initialized_);
+
+  // On collection of the system profile, |connection_type_is_ambiguous_| should
+  // stay false, and |network_change_notifier_initialized_| should remain true.
+  network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
+  EXPECT_FALSE(network_metrics_provider.connection_type_is_ambiguous_);
+  EXPECT_TRUE(network_metrics_provider.network_change_notifier_initialized_);
+  EXPECT_FALSE(system_profile.network().connection_type_is_ambiguous());
+  EXPECT_EQ(SystemProfileProto::Network::CONNECTION_2G,
+            system_profile.network().connection_type());
+
+  network_metrics_provider.OnConnectionTypeChanged(
+      net::NetworkChangeNotifier::CONNECTION_3G);
+  EXPECT_TRUE(network_metrics_provider.connection_type_is_ambiguous_);
+  EXPECT_TRUE(network_metrics_provider.network_change_notifier_initialized_);
+
+  // On collection of the system profile, |connection_type_is_ambiguous_| should
+  // be reset to false, and |network_change_notifier_initialized_| should remain
+  // true.
+  network_metrics_provider.ProvideSystemProfileMetrics(&system_profile);
+  EXPECT_FALSE(network_metrics_provider.connection_type_is_ambiguous_);
+  EXPECT_TRUE(network_metrics_provider.network_change_notifier_initialized_);
+  EXPECT_TRUE(system_profile.network().connection_type_is_ambiguous());
+  EXPECT_EQ(SystemProfileProto::Network::CONNECTION_3G,
+            system_profile.network().connection_type());
+}
+
 }  // namespace metrics
