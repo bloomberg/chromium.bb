@@ -25,13 +25,14 @@ namespace display {
 namespace {
 
 // The EDID specification marks the top bit of the manufacturer id as reserved.
-const uint16_t kReservedManufacturerID = 1 << 15;
+constexpr uint16_t kReservedManufacturerID = 1 << 15;
 
 // A random product name hash.
 constexpr uint32_t kProductCodeHash = 3692486807;
 
-// Delay for Configure() in milliseconds.
-constexpr int64_t kConfigureDisplayDelayMs = 200;
+// Delay for Configure().
+constexpr base::TimeDelta kConfigureDisplayDelay =
+    base::TimeDelta::FromMilliseconds(200);
 
 }  // namespace
 
@@ -93,18 +94,14 @@ void FakeDisplayDelegate::Initialize() {
   DCHECK(!initialized_);
 
   // The default display will be an internal display with a native resolution
-  // of 1024x768 if --screen-config not specified on the command line.
-  std::string command_str = "1024x768/i";
+  // of 1366x768 if --screen-config not specified on the command line.
+  std::string command_str = "1366x768/i";
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kScreenConfig))
     command_str = command_line->GetSwitchValueASCII(switches::kScreenConfig);
 
-  if (!InitializeFromSpecString(command_str)) {
-    NOTREACHED() << "Bad --" << switches::kScreenConfig << " flag provided.";
-    return;
-  }
-
+  CreateDisplaysFromSpecString(command_str);
   initialized_ = true;
 }
 
@@ -150,9 +147,8 @@ void FakeDisplayDelegate::Configure(const DisplaySnapshot& output,
   // configuration requests then ConfigureDone() will handle starting the
   // next request.
   if (!configure_timer_.IsRunning()) {
-    configure_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kConfigureDisplayDelayMs),
-        this, &FakeDisplayDelegate::ConfigureDone);
+    configure_timer_.Start(FROM_HERE, kConfigureDisplayDelay, this,
+                           &FakeDisplayDelegate::ConfigureDone);
   }
 }
 
@@ -187,10 +183,10 @@ FakeDisplayController* FakeDisplayDelegate::GetFakeDisplayController() {
   return this;
 }
 
-bool FakeDisplayDelegate::InitializeFromSpecString(const std::string& str) {
+void FakeDisplayDelegate::CreateDisplaysFromSpecString(const std::string& str) {
   // Start without any displays.
   if (str == "none")
-    return true;
+    return;
 
   // Split on commas and parse each display string.
   for (const std::string& part : base::SplitString(
@@ -203,12 +199,9 @@ bool FakeDisplayDelegate::InitializeFromSpecString(const std::string& str) {
       AddDisplay(std::move(snapshot));
       next_display_id_++;
     } else {
-      LOG(ERROR) << "Failed to parse display \"" << part << "\"";
-      return false;
+      LOG(FATAL) << "Bad --" << switches::kScreenConfig << " flag provided.";
     }
   }
-
-  return true;
 }
 
 void FakeDisplayDelegate::OnConfigurationChanged() {
@@ -226,9 +219,8 @@ void FakeDisplayDelegate::ConfigureDone() {
 
   // If there are more configuration requests waiting then restart the timer.
   if (!configure_callbacks_.empty()) {
-    configure_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kConfigureDisplayDelayMs),
-        this, &FakeDisplayDelegate::ConfigureDone);
+    configure_timer_.Start(FROM_HERE, kConfigureDisplayDelay, this,
+                           &FakeDisplayDelegate::ConfigureDone);
   }
 }
 
