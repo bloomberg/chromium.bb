@@ -289,6 +289,9 @@ public class NotificationPlatformBridgeTest {
         // renderer process on notification creation.
         Assert.assertTrue(Math.abs(System.currentTimeMillis() - notification.when) < 60 * 1000);
 
+        boolean timestampIsShown = NotificationTestUtil.getExtraShownWhen(notification);
+        Assert.assertTrue("Timestamp should be shown", timestampIsShown);
+
         Assert.assertNotNull(
                 NotificationTestUtil.getLargeIconFromNotification(context, notification));
 

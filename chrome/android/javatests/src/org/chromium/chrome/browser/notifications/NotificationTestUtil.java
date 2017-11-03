@@ -77,4 +77,9 @@ public class NotificationTestUtil {
     static Bitmap getExtraPicture(Notification notification) {
         return (Bitmap) getExtras(notification).get(Notification.EXTRA_PICTURE);
     }
+
+    @SuppressLint("InlinedApi") // Notification.EXTRA_SHOW_WHEN is hidden in Jellybean
+    static boolean getExtraShownWhen(Notification notification) {
+        return getExtras(notification).getBoolean(Notification.EXTRA_SHOW_WHEN);
+    }
 }
