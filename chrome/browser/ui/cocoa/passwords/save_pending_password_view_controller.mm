@@ -180,8 +180,10 @@ NSButton* EyeIcon(id target, SEL action) {
       [[NSView alloc] initWithFrame:NSZeroRect]);
 
   // Create the elements.
-  bool enableUsernameEditing = base::FeatureList::IsEnabled(
-      password_manager::features::kEnableUsernameCorrection);
+  bool enableUsernameEditing =
+      base::FeatureList::IsEnabled(
+          password_manager::features::kEnableUsernameCorrection) &&
+      self.model->enable_editing();
   const autofill::PasswordForm& form = self.model->pending_password();
   if (enableUsernameEditing)
     usernameField_.reset([EditableField(form.username_value) retain]);
