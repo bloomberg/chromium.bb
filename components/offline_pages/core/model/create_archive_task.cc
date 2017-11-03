@@ -91,7 +91,7 @@ void CreateArchiveTask::InformCreateArchiveFailed(
     ArchiverResult result,
     const OfflinePageItem& proposed_page) {
   callback_.Run(proposed_page, archiver_, result, GURL(), base::FilePath(),
-                base::string16(), 0);
+                base::string16(), 0, std::string());
   TaskComplete();
 }
 

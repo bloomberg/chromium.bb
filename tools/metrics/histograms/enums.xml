@@ -29388,6 +29388,9 @@ Called by update_use_counter_css.py.-->
     Save operation failed because an interstitial page (i.e. page warning of
     expired certificates or improper dev signatures) was detected.
   </int>
+  <int value="11" label="Digest calculation failure">
+    Failed to compute the digest of an archive file.
+  </int>
 </enum>
 
 <enum name="OfflinePagesSharedPageWasOffline">

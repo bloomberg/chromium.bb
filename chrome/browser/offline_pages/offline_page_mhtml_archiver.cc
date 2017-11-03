@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -20,11 +21,37 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 #include "net/base/filename_util.h"
 
 namespace offline_pages {
 namespace {
 const base::FilePath::CharType kMHTMLExtension[] = FILE_PATH_LITERAL("mhtml");
+
+std::string ComputeDigest(const base::FilePath& file_path) {
+  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid())
+    return std::string();
+
+  std::unique_ptr<crypto::SecureHash> secure_hash(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+
+  const int kMaxBufferSize = 1024;
+  std::vector<char> buffer(kMaxBufferSize);
+  int bytes_read;
+  do {
+    bytes_read = file.ReadAtCurrentPos(buffer.data(), kMaxBufferSize);
+    if (bytes_read > 0)
+      secure_hash->Update(buffer.data(), bytes_read);
+  } while (bytes_read > 0);
+  if (bytes_read < 0)
+    return std::string();
+
+  std::string result_bytes(crypto::kSHA256Length, 0);
+  secure_hash->Finish(&(result_bytes[0]), result_bytes.size());
+  return result_bytes;
+}
 
 void DeleteFileOnFileThread(const base::FilePath& file_path,
                             const base::Closure& callback) {
@@ -33,6 +60,17 @@ void DeleteFileOnFileThread(const base::FilePath& file_path,
       base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path,
                      false /* recursive */),
       callback);
+}
+
+// Compute a SHA256 digest using a background thread. The computed digest will
+// be returned in the callback parameter. If it is empty, the digest calculation
+// fails.
+void ComputeDigestOnFileThread(
+    const base::FilePath& file_path,
+    const base::Callback<void(const std::string&)>& callback) {
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::Bind(&ComputeDigest, file_path), callback);
 }
 }  // namespace
 
@@ -126,16 +164,35 @@ void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
     const base::string16& title,
     int64_t file_size) {
   if (file_size < 0) {
-    DeleteFileOnFileThread(
-        file_path, base::Bind(&OfflinePageMHTMLArchiver::ReportFailure,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED));
-  } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback_, this, ArchiverResult::SUCCESSFULLY_CREATED, url,
-                   file_path, title, file_size));
+    DeleteFileAndReportFailure(file_path,
+                               ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED);
+    return;
   }
+  // TODO(jianli): if the file is not in internal directory, there may be a
+  // chance that the file gets modified before it has digest computed. So when
+  // we support archiving to public directory, we should first put it in
+  // internal directory, compute digest, and then move to public directory.
+  ComputeDigestOnFileThread(
+      file_path, base::Bind(&OfflinePageMHTMLArchiver::OnComputeDigestDone,
+                            weak_ptr_factory_.GetWeakPtr(), url, file_path,
+                            title, file_size));
+}
+
+void OfflinePageMHTMLArchiver::OnComputeDigestDone(
+    const GURL& url,
+    const base::FilePath& file_path,
+    const base::string16& title,
+    int64_t file_size,
+    const std::string& digest) {
+  if (digest.empty()) {
+    DeleteFileAndReportFailure(file_path,
+                               ArchiverResult::ERROR_DIGEST_CALCULATION_FAILED);
+    return;
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(callback_, this, ArchiverResult::SUCCESSFULLY_CREATED, url,
+                 file_path, title, file_size, digest));
 }
 
 bool OfflinePageMHTMLArchiver::HasConnectionSecurityError() {
@@ -153,11 +210,19 @@ content::PageType OfflinePageMHTMLArchiver::GetPageType() {
   return web_contents_->GetController().GetVisibleEntry()->GetPageType();
 }
 
+void OfflinePageMHTMLArchiver::DeleteFileAndReportFailure(
+    const base::FilePath& file_path,
+    ArchiverResult result) {
+  DeleteFileOnFileThread(file_path,
+                         base::Bind(&OfflinePageMHTMLArchiver::ReportFailure,
+                                    weak_ptr_factory_.GetWeakPtr(), result));
+}
+
 void OfflinePageMHTMLArchiver::ReportFailure(ArchiverResult result) {
   DCHECK(result != ArchiverResult::SUCCESSFULLY_CREATED);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback_, this, result, GURL(), base::FilePath(),
-                            base::string16(), 0));
+                            base::string16(), 0, std::string()));
 }
 
 }  // namespace offline_pages

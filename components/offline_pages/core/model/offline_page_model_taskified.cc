@@ -56,6 +56,8 @@ SavePageResult ArchiverResultToSavePageResult(ArchiverResult archiver_result) {
       return SavePageResult::INTERSTITIAL_PAGE;
     case ArchiverResult::ERROR_SKIPPED:
       return SavePageResult::SKIPPED;
+    case ArchiverResult::ERROR_DIGEST_CALCULATION_FAILED:
+      return SavePageResult::DIGEST_CALCULATION_FAILED;
   }
   NOTREACHED();
   return SavePageResult::CONTENT_UNAVAILABLE;
@@ -219,7 +221,8 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
     const GURL& saved_url,
     const base::FilePath& file_path,
     const base::string16& title,
-    int64_t file_size) {
+    int64_t file_size,
+    const std::string& digest) {
   pending_archivers_.erase(
       std::find_if(pending_archivers_.begin(), pending_archivers_.end(),
                    [archiver](const std::unique_ptr<OfflinePageArchiver>& a) {

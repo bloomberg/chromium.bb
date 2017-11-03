@@ -41,6 +41,7 @@ class CreateArchiveTask : public Task {
   // - The file path to the saved archive,
   // - Title of the saved page,
   // - Size of the saved file.
+  // - Digest of the saved file.
   // TODO(romax): simplify the callback and related interface if possible. The
   // url, path, title and file size can be filled into the OfflinePageItem
   // during archive creation.
@@ -50,7 +51,8 @@ class CreateArchiveTask : public Task {
                               const GURL&,
                               const base::FilePath&,
                               const base::string16&,
-                              int64_t)>
+                              int64_t,
+                              const std::string&)>
       CreateArchiveTaskCallback;
 
   CreateArchiveTask(const base::FilePath& archives_dir,
