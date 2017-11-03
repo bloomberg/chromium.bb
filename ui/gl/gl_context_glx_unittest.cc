@@ -16,14 +16,12 @@
 
 namespace gl {
 
-TEST(GLContextGLXTest, DISABLED_DoNotDesrtroyOnFailedMakeCurrent) {
+TEST(GLContextGLXTest, DoNotDestroyOnFailedMakeCurrent) {
   auto* xdisplay = gfx::GetXDisplay();
   ASSERT_TRUE(xdisplay);
 
   gfx::X11ErrorTracker error_tracker;
 
-  // Turn on sync behaviour, and create the window.
-  XSynchronize(xdisplay, True);
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = 0;
@@ -35,29 +33,53 @@ TEST(GLContextGLXTest, DISABLED_DoNotDesrtroyOnFailedMakeCurrent) {
                                InputOutput,
                                CopyFromParent,  // visual
                                CWBackPixmap | CWOverrideRedirect, &swa);
+  XSelectInput(xdisplay, xwindow, StructureNotifyMask);
+
+  XEvent xevent;
   XMapWindow(xdisplay, xwindow);
+  // Wait until the window is mapped.
+  while (XNextEvent(xdisplay, &xevent) && xevent.type != MapNotify &&
+         xevent.xmap.window != xwindow) {
+  }
 
   GLImageTestSupport::InitializeGL();
   auto surface =
       gl::InitializeGLSurface(base::MakeRefCounted<GLSurfaceGLXX11>(xwindow));
   scoped_refptr<GLContext> context =
       gl::init::CreateGLContext(nullptr, surface.get(), GLContextAttribs());
+
   // Verify that MakeCurrent() is successful.
   ASSERT_TRUE(context->GetHandle());
   ASSERT_TRUE(context->MakeCurrent(surface.get()));
   EXPECT_TRUE(context->GetHandle());
 
-  // Destroy the window. We should get no x11 errors so far.
+  // Destroy the window, and wait until the window is unmapped. There should be
+  // no x11 errors.
   context->ReleaseCurrent(surface.get());
   XDestroyWindow(xdisplay, xwindow);
+  while (XNextEvent(xdisplay, &xevent) && xevent.type != UnmapNotify) {
+  }
   ASSERT_FALSE(error_tracker.FoundNewError());
 
-  // Now that the window is gone, MakeCurrent() should fail. But the context
-  // shouldn't be destroyed, and there should be some x11 errors captured.
-  EXPECT_FALSE(context->MakeCurrent(surface.get()));
+  if (context->MakeCurrent(surface.get())) {
+    // With some drivers, MakeCurrent() does not fail for an already-destroyed
+    // window. In those cases, override the glx api to force MakeCurrent() to
+    // fail.
+    context->ReleaseCurrent(surface.get());
+    auto real_fn = g_driver_glx.fn.glXMakeContextCurrentFn;
+    g_driver_glx.fn.glXMakeContextCurrentFn =
+        [](Display* display, GLXDrawable drawable, GLXDrawable read,
+           GLXContext context) -> int { return 0; };
+    EXPECT_FALSE(context->MakeCurrent(surface.get()));
+    g_driver_glx.fn.glXMakeContextCurrentFn = real_fn;
+  } else {
+    EXPECT_TRUE(error_tracker.FoundNewError());
+  }
+  // At this point, MakeCurrent() failed. Make sure the GLContextGLX still was
+  // not destroyed.
   ASSERT_TRUE(context->GetHandle());
-  EXPECT_TRUE(error_tracker.FoundNewError());
-  XSynchronize(xdisplay, False);
+  surface = nullptr;
+  XSync(xdisplay, True);
 }
 
 }  // namespace gl
