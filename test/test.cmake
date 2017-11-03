@@ -151,16 +151,6 @@ if (NOT BUILD_SHARED_LIBS)
       endif ()
     endif ()
 
-    # Omit 4-tap filter intra predictor test-- currently a 3-tap filter is in
-    # use.
-    #if (CONFIG_FILTER_INTRA)
-    #  if (HAVE_SSE4_1)
-    #    set(AOM_UNIT_TEST_COMMON_SOURCES
-    #        ${AOM_UNIT_TEST_COMMON_SOURCES}
-    #        "${AOM_ROOT}/test/filterintra_predictors_test.cc")
-    #  endif ()
-    #endif ()
-
     if (CONFIG_INTRABC)
         set(AOM_UNIT_TEST_COMMON_SOURCES
             ${AOM_UNIT_TEST_COMMON_SOURCES}

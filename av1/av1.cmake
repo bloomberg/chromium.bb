@@ -313,12 +313,6 @@ endif ()
       ${AOM_AV1_ENCODER_INTRIN_SSE2}
       "${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c")
 
-if (CONFIG_FILTER_INTRA)
-  set(AOM_AV1_COMMON_INTRIN_SSE4_1
-      ${AOM_AV1_COMMON_INTRIN_SSE4_1}
-      "${AOM_ROOT}/av1/common/x86/filterintra_sse4.c")
-endif ()
-
 if (CONFIG_ACCOUNTING)
   set(AOM_AV1_DECODER_SOURCES
       ${AOM_AV1_DECODER_SOURCES}

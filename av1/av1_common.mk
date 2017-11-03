@@ -147,10 +147,6 @@ AV1_COMMON_SRCS-$(HAVE_NEON) += common/arm/neon/iht4x4_add_neon.c
 AV1_COMMON_SRCS-$(HAVE_NEON) += common/arm/neon/iht8x8_add_neon.c
 endif
 
-ifeq ($(CONFIG_FILTER_INTRA),yes)
-AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/filterintra_sse4.c
-endif
-
 AV1_COMMON_SRCS-$(HAVE_SSE2) += common/x86/warp_plane_sse2.c
 AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/x86/warp_plane_ssse3.c
 ifeq ($(CONFIG_HIGHBITDEPTH),yes)

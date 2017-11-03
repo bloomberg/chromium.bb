@@ -1066,7 +1066,6 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_FILTER_INTRA
-#if USE_3TAP_INTRA_FILTER
 static int filter_intra_taps_3[TX_SIZES_ALL][FILTER_INTRA_MODES][3] = {
   {
       { 697, 836, -509 },
@@ -1191,194 +1190,7 @@ static int filter_intra_taps_3[TX_SIZES_ALL][FILTER_INTRA_MODES][3] = {
       { 839, 911, -726 },
   }
 };
-#else
-static int filter_intra_taps_4[TX_SIZES_ALL][FILTER_INTRA_MODES][4] = {
-  {
-      { 735, 881, -537, -54 },
-      { 1005, 519, -488, -11 },
-      { 383, 990, -343, -6 },
-      { 442, 805, -542, 319 },
-      { 658, 616, -133, -116 },
-      { 875, 442, -141, -151 },
-      { 386, 741, -23, -80 },
-      { 390, 1027, -446, 51 },
-      { 679, 606, -523, 262 },
-      { 903, 922, -778, -23 },
-  },
-  {
-      { 648, 803, -444, 16 },
-      { 972, 620, -576, 7 },
-      { 561, 967, -499, -5 },
-      { 585, 762, -468, 144 },
-      { 596, 619, -182, -9 },
-      { 895, 459, -176, -153 },
-      { 557, 722, -126, -129 },
-      { 601, 839, -523, 105 },
-      { 562, 709, -499, 251 },
-      { 803, 872, -695, 43 },
-  },
-  {
-      { 423, 728, -347, 111 },
-      { 963, 685, -665, 23 },
-      { 281, 1024, -480, 216 },
-      { 640, 596, -437, 78 },
-      { 429, 669, -259, 99 },
-      { 740, 646, -415, 23 },
-      { 568, 771, -346, 40 },
-      { 404, 833, -486, 209 },
-      { 398, 712, -423, 307 },
-      { 939, 935, -887, 17 },
-  },
-  {
-      { 477, 737, -393, 150 },
-      { 881, 630, -546, 67 },
-      { 506, 984, -443, -20 },
-      { 114, 459, -270, 528 },
-      { 433, 528, 14, 3 },
-      { 837, 470, -301, -30 },
-      { 181, 777, 89, -107 },
-      { -29, 716, -232, 259 },
-      { 589, 646, -495, 255 },
-      { 740, 884, -728, 77 },
-  },
-#if CONFIG_TX64X64
-  {
-      { 477, 737, -393, 150 },
-      { 881, 630, -546, 67 },
-      { 506, 984, -443, -20 },
-      { 114, 459, -270, 528 },
-      { 433, 528, 14, 3 },
-      { 837, 470, -301, -30 },
-      { 181, 777, 89, -107 },
-      { -29, 716, -232, 259 },
-      { 589, 646, -495, 255 },
-      { 740, 884, -728, 77 },
-  },
-#endif  // CONFIG_TX64X64
-  {
-      { 735, 881, -537, -54 },
-      { 1005, 519, -488, -11 },
-      { 383, 990, -343, -6 },
-      { 442, 805, -542, 319 },
-      { 658, 616, -133, -116 },
-      { 875, 442, -141, -151 },
-      { 386, 741, -23, -80 },
-      { 390, 1027, -446, 51 },
-      { 679, 606, -523, 262 },
-      { 903, 922, -778, -23 },
-  },
-  {
-      { 735, 881, -537, -54 },
-      { 1005, 519, -488, -11 },
-      { 383, 990, -343, -6 },
-      { 442, 805, -542, 319 },
-      { 658, 616, -133, -116 },
-      { 875, 442, -141, -151 },
-      { 386, 741, -23, -80 },
-      { 390, 1027, -446, 51 },
-      { 679, 606, -523, 262 },
-      { 903, 922, -778, -23 },
-  },
-  {
-      { 648, 803, -444, 16 },
-      { 972, 620, -576, 7 },
-      { 561, 967, -499, -5 },
-      { 585, 762, -468, 144 },
-      { 596, 619, -182, -9 },
-      { 895, 459, -176, -153 },
-      { 557, 722, -126, -129 },
-      { 601, 839, -523, 105 },
-      { 562, 709, -499, 251 },
-      { 803, 872, -695, 43 },
-  },
-  {
-      { 648, 803, -444, 16 },
-      { 972, 620, -576, 7 },
-      { 561, 967, -499, -5 },
-      { 585, 762, -468, 144 },
-      { 596, 619, -182, -9 },
-      { 895, 459, -176, -153 },
-      { 557, 722, -126, -129 },
-      { 601, 839, -523, 105 },
-      { 562, 709, -499, 251 },
-      { 803, 872, -695, 43 },
-  },
-  {
-      { 423, 728, -347, 111 },
-      { 963, 685, -665, 23 },
-      { 281, 1024, -480, 216 },
-      { 640, 596, -437, 78 },
-      { 429, 669, -259, 99 },
-      { 740, 646, -415, 23 },
-      { 568, 771, -346, 40 },
-      { 404, 833, -486, 209 },
-      { 398, 712, -423, 307 },
-      { 939, 935, -887, 17 },
-  },
-  {
-      { 423, 728, -347, 111 },
-      { 963, 685, -665, 23 },
-      { 281, 1024, -480, 216 },
-      { 640, 596, -437, 78 },
-      { 429, 669, -259, 99 },
-      { 740, 646, -415, 23 },
-      { 568, 771, -346, 40 },
-      { 404, 833, -486, 209 },
-      { 398, 712, -423, 307 },
-      { 939, 935, -887, 17 },
-  },
-  {
-      { 735, 881, -537, -54 },
-      { 1005, 519, -488, -11 },
-      { 383, 990, -343, -6 },
-      { 442, 805, -542, 319 },
-      { 658, 616, -133, -116 },
-      { 875, 442, -141, -151 },
-      { 386, 741, -23, -80 },
-      { 390, 1027, -446, 51 },
-      { 679, 606, -523, 262 },
-      { 903, 922, -778, -23 },
-  },
-  {
-      { 735, 881, -537, -54 },
-      { 1005, 519, -488, -11 },
-      { 383, 990, -343, -6 },
-      { 442, 805, -542, 319 },
-      { 658, 616, -133, -116 },
-      { 875, 442, -141, -151 },
-      { 386, 741, -23, -80 },
-      { 390, 1027, -446, 51 },
-      { 679, 606, -523, 262 },
-      { 903, 922, -778, -23 },
-  },
-  {
-      { 648, 803, -444, 16 },
-      { 972, 620, -576, 7 },
-      { 561, 967, -499, -5 },
-      { 585, 762, -468, 144 },
-      { 596, 619, -182, -9 },
-      { 895, 459, -176, -153 },
-      { 557, 722, -126, -129 },
-      { 601, 839, -523, 105 },
-      { 562, 709, -499, 251 },
-      { 803, 872, -695, 43 },
-  },
-  {
-      { 648, 803, -444, 16 },
-      { 972, 620, -576, 7 },
-      { 561, 967, -499, -5 },
-      { 585, 762, -468, 144 },
-      { 596, 619, -182, -9 },
-      { 895, 459, -176, -153 },
-      { 557, 722, -126, -129 },
-      { 601, 839, -523, 105 },
-      { 562, 709, -499, 251 },
-      { 803, 872, -695, 43 },
-  }
-};
-#endif
 
-#if USE_3TAP_INTRA_FILTER
 static void filter_intra_predictors_3tap(uint8_t *dst, ptrdiff_t stride,
                                          TX_SIZE tx_size, const uint8_t *above,
                                          const uint8_t *left, int mode) {
@@ -1414,121 +1226,44 @@ static void filter_intra_predictors_3tap(uint8_t *dst, ptrdiff_t stride,
     dst += stride;
   }
 }
-#else
-static void filter_intra_predictors_4tap(uint8_t *dst, ptrdiff_t stride,
-                                         TX_SIZE tx_size, const uint8_t *above,
-                                         const uint8_t *left, int mode) {
-  int r, c;
-  int mean, ipred;
-#if CONFIG_TX64X64
-  int buffer[65][129];
-#else
-  int buffer[33][65];
-#endif  // CONFIG_TX64X64
-  const int c0 = filter_intra_taps_4[tx_size][mode][0];
-  const int c1 = filter_intra_taps_4[tx_size][mode][1];
-  const int c2 = filter_intra_taps_4[tx_size][mode][2];
-  const int c3 = filter_intra_taps_4[tx_size][mode][3];
-  const int bw = tx_size_wide[tx_size];
-  const int bh = tx_size_high[tx_size];
-
-  mean = 0;
-  for (r = 0; r < bh; ++r) {
-    mean += (int)left[r];
-  }
-  for (c = 0; c < bw; ++c) {
-    mean += (int)above[c];
-  }
-  mean = (mean + ((bw + bh) >> 1)) / (bw + bh);
-
-  for (r = 0; r < bh; ++r) buffer[r + 1][0] = (int)left[r] - mean;
-
-  for (c = 0; c < 2 * bw + 1; ++c) buffer[0][c] = (int)above[c - 1] - mean;
-
-  for (r = 1; r < bh + 1; ++r)
-    for (c = 1; c < 2 * bw + 1 - r; ++c) {
-      ipred = c0 * buffer[r - 1][c] + c1 * buffer[r][c - 1] +
-              c2 * buffer[r - 1][c - 1] + c3 * buffer[r - 1][c + 1];
-      buffer[r][c] = ROUND_POWER_OF_TWO_SIGNED(ipred, FILTER_INTRA_PREC_BITS);
-      buffer[r][c] = clip_pixel(buffer[r][c] + mean) - mean;
-    }
-
-  for (r = 0; r < bh; ++r) {
-    for (c = 0; c < bw; ++c) {
-      dst[c] = clip_pixel(buffer[r + 1][c + 1] + mean);
-    }
-    dst += stride;
-  }
-}
-#endif
 
 void av1_dc_filter_predictor_c(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
                                const uint8_t *above, const uint8_t *left) {
-#if USE_3TAP_INTRA_FILTER
   filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                FILTER_DC_PRED);
-#else
-  filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                               FILTER_DC_PRED);
-#endif
 }
 
 void av1_v_filter_predictor_c(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
                               const uint8_t *above, const uint8_t *left) {
-#if USE_3TAP_INTRA_FILTER
   filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                FILTER_V_PRED);
-#else
-  filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                               FILTER_V_PRED);
-#endif
 }
 
 void av1_h_filter_predictor_c(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
                               const uint8_t *above, const uint8_t *left) {
-#if USE_3TAP_INTRA_FILTER
   filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                FILTER_H_PRED);
-#else
-  filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                               FILTER_H_PRED);
-#endif
 }
 
 void av1_d117_filter_predictor_c(uint8_t *dst, ptrdiff_t stride,
                                  TX_SIZE tx_size, const uint8_t *above,
                                  const uint8_t *left) {
-#if USE_3TAP_INTRA_FILTER
   filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                FILTER_D117_PRED);
-#else
-  filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                               FILTER_D117_PRED);
-#endif
 }
 
 void av1_d153_filter_predictor_c(uint8_t *dst, ptrdiff_t stride,
                                  TX_SIZE tx_size, const uint8_t *above,
                                  const uint8_t *left) {
-#if USE_3TAP_INTRA_FILTER
   filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                FILTER_D153_PRED);
-#else
-  filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                               FILTER_D153_PRED);
-#endif
 }
 
 void av1_paeth_filter_predictor_c(uint8_t *dst, ptrdiff_t stride,
                                   TX_SIZE tx_size, const uint8_t *above,
                                   const uint8_t *left) {
-#if USE_3TAP_INTRA_FILTER
   filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                FILTER_PAETH_PRED);
-#else
-  filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                               FILTER_PAETH_PRED);
-#endif
 }
 
 static void filter_intra_predictors(FILTER_INTRA_MODE mode, uint8_t *dst,
@@ -1557,7 +1292,6 @@ static void filter_intra_predictors(FILTER_INTRA_MODE mode, uint8_t *dst,
   }
 }
 #if CONFIG_HIGHBITDEPTH
-#if USE_3TAP_INTRA_FILTER
 static void highbd_filter_intra_predictors_3tap(uint16_t *dst, ptrdiff_t stride,
                                                 TX_SIZE tx_size,
                                                 const uint16_t *above,
@@ -1595,126 +1329,47 @@ static void highbd_filter_intra_predictors_3tap(uint16_t *dst, ptrdiff_t stride,
     dst += stride;
   }
 }
-#else
-static void highbd_filter_intra_predictors_4tap(uint16_t *dst, ptrdiff_t stride,
-                                                TX_SIZE tx_size,
-                                                const uint16_t *above,
-                                                const uint16_t *left, int mode,
-                                                int bd) {
-  int r, c;
-  int mean, ipred;
-#if CONFIG_TX64X64
-  int preds[65][129];
-#else
-  int preds[33][65];
-#endif  // CONFIG_TX64X64
-  const int c0 = filter_intra_taps_4[tx_size][mode][0];
-  const int c1 = filter_intra_taps_4[tx_size][mode][1];
-  const int c2 = filter_intra_taps_4[tx_size][mode][2];
-  const int c3 = filter_intra_taps_4[tx_size][mode][3];
-  const int bw = tx_size_wide[tx_size];
-  const int bh = tx_size_high[tx_size];
-
-  mean = 0;
-  for (r = 0; r < bh; ++r) {
-    mean += (int)left[r];
-  }
-  for (c = 0; c < bw; ++c) {
-    mean += (int)above[c];
-  }
-  mean = (mean + ((bw + bh) >> 1)) / (bw + bh);
-
-  for (r = 0; r < bh; ++r) preds[r + 1][0] = (int)left[r] - mean;
-
-  for (c = 0; c < 2 * bw + 1; ++c) preds[0][c] = (int)above[c - 1] - mean;
-
-  for (r = 1; r < bh + 1; ++r)
-    for (c = 1; c < 2 * bw + 1 - r; ++c) {
-      ipred = c0 * preds[r - 1][c] + c1 * preds[r][c - 1] +
-              c2 * preds[r - 1][c - 1] + c3 * preds[r - 1][c + 1];
-      preds[r][c] = ROUND_POWER_OF_TWO_SIGNED(ipred, FILTER_INTRA_PREC_BITS);
-      preds[r][c] = clip_pixel_highbd(preds[r][c] + mean, bd) - mean;
-    }
-
-  for (r = 0; r < bh; ++r) {
-    for (c = 0; c < bw; ++c) {
-      dst[c] = clip_pixel_highbd(preds[r + 1][c + 1] + mean, bd);
-    }
-    dst += stride;
-  }
-}
-#endif
 
 void av1_highbd_dc_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                       TX_SIZE tx_size, const uint16_t *above,
                                       const uint16_t *left, int bd) {
-#if USE_3TAP_INTRA_FILTER
   highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                       FILTER_DC_PRED, bd);
-#else
-  highbd_filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                                      FILTER_DC_PRED, bd);
-#endif
 }
 
 void av1_highbd_v_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                      TX_SIZE tx_size, const uint16_t *above,
                                      const uint16_t *left, int bd) {
-#if USE_3TAP_INTRA_FILTER
   highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                       FILTER_V_PRED, bd);
-#else
-  highbd_filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                                      FILTER_V_PRED, bd);
-#endif
 }
 
 void av1_highbd_h_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                      TX_SIZE tx_size, const uint16_t *above,
                                      const uint16_t *left, int bd) {
-#if USE_3TAP_INTRA_FILTER
   highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                       FILTER_H_PRED, bd);
-#else
-  highbd_filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                                      FILTER_H_PRED, bd);
-#endif
 }
 
 void av1_highbd_d117_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                         TX_SIZE tx_size, const uint16_t *above,
                                         const uint16_t *left, int bd) {
-#if USE_3TAP_INTRA_FILTER
   highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                       FILTER_D117_PRED, bd);
-#else
-  highbd_filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                                      FILTER_D117_PRED, bd);
-#endif
 }
 
 void av1_highbd_d153_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                         TX_SIZE tx_size, const uint16_t *above,
                                         const uint16_t *left, int bd) {
-#if USE_3TAP_INTRA_FILTER
   highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                       FILTER_D153_PRED, bd);
-#else
-  highbd_filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                                      FILTER_D153_PRED, bd);
-#endif
 }
 
 void av1_highbd_paeth_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
                                          TX_SIZE tx_size, const uint16_t *above,
                                          const uint16_t *left, int bd) {
-#if USE_3TAP_INTRA_FILTER
   highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
                                       FILTER_PAETH_PRED, bd);
-#else
-  highbd_filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                                      FILTER_PAETH_PRED, bd);
-#endif
 }
 
 static void highbd_filter_intra_predictors(FILTER_INTRA_MODE mode,

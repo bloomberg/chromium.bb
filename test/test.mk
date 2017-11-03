@@ -197,12 +197,6 @@ LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += masked_variance_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += masked_sad_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += av1_wedge_utils_test.cc
 
-## Skip the unit test written for 4-tap filter intra predictor, because we
-## revert to 3-tap filter.
-## ifeq ($(CONFIG_FILTER_INTRA),yes)
-## LIBAOM_TEST_SRCS-$(HAVE_SSE4_1) += filterintra_predictors_test.cc
-## endif
-
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += obmc_sad_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += obmc_variance_test.cc
 
