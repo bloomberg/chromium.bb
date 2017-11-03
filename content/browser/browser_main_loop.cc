@@ -920,9 +920,6 @@ int BrowserMainLoop::PreCreateThreads() {
   for (auto origin : origins)
     policy->AddIsolatedOrigin(origin);
 
-  EVP_set_buggy_rsa_parser(
-      base::FeatureList::IsEnabled(features::kBuggyRSAParser));
-
   return result_code_;
 }
 

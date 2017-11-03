@@ -23,6 +23,7 @@ crypto_test_sources = [
   "src/crypto/asn1/asn1_test.cc",
   "src/crypto/base64/base64_test.cc",
   "src/crypto/bio/bio_test.cc",
+  "src/crypto/buf/buf_test.cc",
   "src/crypto/bytestring/bytestring_test.cc",
   "src/crypto/chacha/chacha_test.cc",
   "src/crypto/cipher_extra/aead_test.cc",

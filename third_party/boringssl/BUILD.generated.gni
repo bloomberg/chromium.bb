@@ -537,6 +537,8 @@ crypto_sources_win_x86_64 = [
 ]
 
 fuzzers = [
+  "bn_div",
+  "bn_mod_exp",
   "cert",
   "client",
   "dtls_client",
