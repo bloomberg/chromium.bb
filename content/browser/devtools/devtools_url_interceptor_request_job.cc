@@ -22,6 +22,204 @@
 
 namespace content {
 
+// If the request was either allowed or modified, a SubRequest will be used to
+// perform the fetch and the results proxied to the original request. This
+// gives us the flexibility to pretend redirects didn't happen if the user
+// chooses to mock the response.  Note this SubRequest is ignored by the
+// interceptor.
+class DevToolsURLInterceptorRequestJob::SubRequest {
+ public:
+  SubRequest(DevToolsURLInterceptorRequestJob::RequestDetails& request_details,
+             DevToolsURLInterceptorRequestJob* devtools_interceptor_request_job,
+             scoped_refptr<DevToolsURLRequestInterceptor::State>
+                 devtools_url_request_interceptor_state);
+  ~SubRequest();
+
+  void Cancel();
+
+  net::URLRequest* request() const { return request_.get(); }
+
+ private:
+  std::unique_ptr<net::URLRequest> request_;
+
+  DevToolsURLInterceptorRequestJob*
+      devtools_interceptor_request_job_;  // NOT OWNED.
+
+  scoped_refptr<DevToolsURLRequestInterceptor::State>
+      devtools_url_request_interceptor_state_;
+  bool fetch_in_progress_;
+};
+
+DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
+    DevToolsURLInterceptorRequestJob::RequestDetails& request_details,
+    DevToolsURLInterceptorRequestJob* devtools_interceptor_request_job,
+    scoped_refptr<DevToolsURLRequestInterceptor::State>
+        devtools_url_request_interceptor_state)
+    : devtools_interceptor_request_job_(devtools_interceptor_request_job),
+      devtools_url_request_interceptor_state_(
+          devtools_url_request_interceptor_state),
+      fetch_in_progress_(true) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("devtools_interceptor", R"(
+        semantics {
+          sender: "Developer Tools"
+          description:
+            "When user is debugging a page, all actions resulting in a network "
+            "request are intercepted to enrich the debugging experience."
+          trigger:
+            "User triggers an action that requires network request (like "
+            "navigation, download, etc.) while debugging the page."
+          data:
+            "Any data that user action sends."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled in settings, however it happens "
+            "only when user is debugging a page."
+          chrome_policy {
+            DeveloperToolsDisabled {
+              DeveloperToolsDisabled: true
+            }
+          }
+        })");
+  request_ = request_details.url_request_context->CreateRequest(
+      request_details.url, request_details.priority,
+      devtools_interceptor_request_job_, traffic_annotation);
+  request_->set_method(request_details.method);
+  request_->SetExtraRequestHeaders(request_details.extra_request_headers);
+
+  // Mimic the ResourceRequestInfoImpl of the original request.
+  const ResourceRequestInfoImpl* resource_request_info =
+      static_cast<const ResourceRequestInfoImpl*>(
+          ResourceRequestInfo::ForRequest(
+              devtools_interceptor_request_job->request()));
+  ResourceRequestInfoImpl* extra_data = new ResourceRequestInfoImpl(
+      resource_request_info->requester_info(),
+      resource_request_info->GetRouteID(),
+      resource_request_info->GetFrameTreeNodeId(),
+      resource_request_info->GetOriginPID(),
+      resource_request_info->GetRequestID(),
+      resource_request_info->GetRenderFrameID(),
+      resource_request_info->IsMainFrame(),
+      resource_request_info->GetResourceType(),
+      resource_request_info->GetPageTransition(),
+      resource_request_info->should_replace_current_entry(),
+      resource_request_info->IsDownload(), resource_request_info->is_stream(),
+      resource_request_info->allow_download(),
+      resource_request_info->HasUserGesture(),
+      resource_request_info->is_load_timing_enabled(),
+      resource_request_info->is_upload_progress_enabled(),
+      resource_request_info->do_not_prompt_for_login(),
+      resource_request_info->keepalive(),
+      resource_request_info->GetReferrerPolicy(),
+      resource_request_info->GetVisibilityState(),
+      resource_request_info->GetContext(),
+      resource_request_info->ShouldReportRawHeaders(),
+      resource_request_info->IsAsync(),
+      resource_request_info->GetPreviewsState(), resource_request_info->body(),
+      resource_request_info->initiated_in_secure_context());
+  extra_data->AssociateWithRequest(request_.get());
+
+  if (request_details.post_data)
+    request_->set_upload(std::move(request_details.post_data));
+
+  devtools_url_request_interceptor_state_->RegisterSubRequest(request_.get());
+  request_->Start();
+}
+
+DevToolsURLInterceptorRequestJob::SubRequest::~SubRequest() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  devtools_url_request_interceptor_state_->UnregisterSubRequest(request_.get());
+}
+
+void DevToolsURLInterceptorRequestJob::SubRequest::Cancel() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!fetch_in_progress_)
+    return;
+
+  fetch_in_progress_ = false;
+  request_->Cancel();
+}
+
+class DevToolsURLInterceptorRequestJob::MockResponseDetails {
+ public:
+  MockResponseDetails(std::string response_bytes,
+                      base::TimeTicks response_time);
+
+  MockResponseDetails(
+      const scoped_refptr<net::HttpResponseHeaders>& response_headers,
+      std::string response_bytes,
+      size_t read_offset,
+      base::TimeTicks response_time);
+
+  ~MockResponseDetails();
+
+  scoped_refptr<net::HttpResponseHeaders>& response_headers() {
+    return response_headers_;
+  }
+
+  base::TimeTicks response_time() const { return response_time_; }
+
+  int ReadRawData(net::IOBuffer* buf, int buf_size);
+
+ private:
+  scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  std::string response_bytes_;
+  size_t read_offset_;
+  base::TimeTicks response_time_;
+};
+
+DevToolsURLInterceptorRequestJob::MockResponseDetails::MockResponseDetails(
+    std::string response_bytes,
+    base::TimeTicks response_time)
+    : response_bytes_(std::move(response_bytes)),
+      read_offset_(0),
+      response_time_(response_time) {
+  int header_size = net::HttpUtil::LocateEndOfHeaders(response_bytes_.c_str(),
+                                                      response_bytes_.size());
+  if (header_size == -1) {
+    LOG(WARNING) << "Can't find headers in result";
+    response_headers_ = new net::HttpResponseHeaders("");
+  } else {
+    response_headers_ =
+        new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
+            response_bytes_.c_str(), header_size));
+    read_offset_ = header_size;
+  }
+
+  CHECK_LE(read_offset_, response_bytes_.size());
+}
+
+DevToolsURLInterceptorRequestJob::MockResponseDetails::MockResponseDetails(
+    const scoped_refptr<net::HttpResponseHeaders>& response_headers,
+    std::string response_bytes,
+    size_t read_offset,
+    base::TimeTicks response_time)
+    : response_headers_(response_headers),
+      response_bytes_(std::move(response_bytes)),
+      read_offset_(read_offset),
+      response_time_(response_time) {}
+
+DevToolsURLInterceptorRequestJob::MockResponseDetails::~MockResponseDetails() {}
+
+int DevToolsURLInterceptorRequestJob::MockResponseDetails::ReadRawData(
+    net::IOBuffer* buf,
+    int buf_size) {
+  size_t bytes_available = response_bytes_.size() - read_offset_;
+  size_t bytes_to_copy =
+      std::min(static_cast<size_t>(buf_size), bytes_available);
+  if (bytes_to_copy > 0) {
+    std::memcpy(buf->data(), &response_bytes_.data()[read_offset_],
+                bytes_to_copy);
+    read_offset_ += bytes_to_copy;
+  }
+  return bytes_to_copy;
+}
+
 namespace {
 const char* ResourceTypeToString(ResourceType resource_type) {
   switch (resource_type) {
@@ -251,7 +449,7 @@ void DevToolsURLInterceptorRequestJob::Start() {
                                       devtools_url_request_interceptor_state_));
   } else {
     waiting_for_user_response_ =
-        WaitingForUserResponse::WAITING_FOR_INTERCEPTION_RESPONSE;
+        WaitingForUserResponse::WAITING_FOR_REQUEST_ACK;
     std::unique_ptr<protocol::Network::Request> network_request =
         protocol::NetworkHandler::CreateRequestFromURLRequest(request());
     BrowserThread::PostTask(
@@ -378,8 +576,7 @@ void DevToolsURLInterceptorRequestJob::OnAuthRequired(
   // the auth, provide the credentials or proxy it the original
   // URLRequest::Delegate.
 
-  waiting_for_user_response_ =
-      WaitingForUserResponse::WAITING_FOR_AUTH_RESPONSE;
+  waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_AUTH_ACK;
 
   std::unique_ptr<protocol::Network::Request> network_request =
       protocol::NetworkHandler::CreateRequestFromURLRequest(this->request());
@@ -479,8 +676,7 @@ void DevToolsURLInterceptorRequestJob::OnReceivedRedirect(
   sub_request_->Cancel();
   sub_request_.reset();
 
-  waiting_for_user_response_ =
-      WaitingForUserResponse::WAITING_FOR_INTERCEPTION_RESPONSE;
+  waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_REQUEST_ACK;
 
   std::unique_ptr<protocol::Network::Request> network_request =
       protocol::NetworkHandler::CreateRequestFromURLRequest(this->request());
@@ -504,7 +700,7 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
     case WaitingForUserResponse::NOT_WAITING:
       return;
 
-    case WaitingForUserResponse::WAITING_FOR_INTERCEPTION_RESPONSE:
+    case WaitingForUserResponse::WAITING_FOR_REQUEST_ACK:
       ProcessInterceptionRespose(
           std::make_unique<DevToolsURLRequestInterceptor::Modifications>(
               base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
@@ -514,7 +710,7 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
               false));
       return;
 
-    case WaitingForUserResponse::WAITING_FOR_AUTH_RESPONSE: {
+    case WaitingForUserResponse::WAITING_FOR_AUTH_ACK: {
       std::unique_ptr<protocol::Network::AuthChallengeResponse> auth_response =
           protocol::Network::AuthChallengeResponse::Create()
               .SetResponse(protocol::Network::AuthChallengeResponse::
@@ -549,7 +745,7 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
                              "Response already processed.")));
       break;
 
-    case WaitingForUserResponse::WAITING_FOR_INTERCEPTION_RESPONSE:
+    case WaitingForUserResponse::WAITING_FOR_REQUEST_ACK:
       if (modifications->auth_challenge_response.isJust()) {
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
@@ -566,7 +762,7 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
                          base::Passed(std::move(callback))));
       break;
 
-    case WaitingForUserResponse::WAITING_FOR_AUTH_RESPONSE:
+    case WaitingForUserResponse::WAITING_FOR_AUTH_ACK:
       if (!modifications->auth_challenge_response.isJust()) {
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
@@ -737,147 +933,5 @@ DevToolsURLInterceptorRequestJob::RequestDetails::RequestDetails(
       url_request_context(url_request_context) {}
 
 DevToolsURLInterceptorRequestJob::RequestDetails::~RequestDetails() {}
-
-DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
-    DevToolsURLInterceptorRequestJob::RequestDetails& request_details,
-    DevToolsURLInterceptorRequestJob* devtools_interceptor_request_job,
-    scoped_refptr<DevToolsURLRequestInterceptor::State>
-        devtools_url_request_interceptor_state)
-    : devtools_interceptor_request_job_(devtools_interceptor_request_job),
-      devtools_url_request_interceptor_state_(
-          devtools_url_request_interceptor_state),
-      fetch_in_progress_(true) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("devtools_interceptor", R"(
-        semantics {
-          sender: "Developer Tools"
-          description:
-            "When user is debugging a page, all actions resulting in a network "
-            "request are intercepted to enrich the debugging experience."
-          trigger:
-            "User triggers an action that requires network request (like "
-            "navigation, download, etc.) while debugging the page."
-          data:
-            "Any data that user action sends."
-          destination: WEBSITE
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "user"
-          setting:
-            "This feature cannot be disabled in settings, however it happens "
-            "only when user is debugging a page."
-          chrome_policy {
-            DeveloperToolsDisabled {
-              DeveloperToolsDisabled: true
-            }
-          }
-        })");
-  request_ = request_details.url_request_context->CreateRequest(
-      request_details.url, request_details.priority,
-      devtools_interceptor_request_job_, traffic_annotation);
-  request_->set_method(request_details.method);
-  request_->SetExtraRequestHeaders(request_details.extra_request_headers);
-
-  // Mimic the ResourceRequestInfoImpl of the original request.
-  const ResourceRequestInfoImpl* resource_request_info =
-      static_cast<const ResourceRequestInfoImpl*>(
-          ResourceRequestInfo::ForRequest(
-              devtools_interceptor_request_job->request()));
-  ResourceRequestInfoImpl* extra_data = new ResourceRequestInfoImpl(
-      resource_request_info->requester_info(),
-      resource_request_info->GetRouteID(),
-      resource_request_info->GetFrameTreeNodeId(),
-      resource_request_info->GetOriginPID(),
-      resource_request_info->GetRequestID(),
-      resource_request_info->GetRenderFrameID(),
-      resource_request_info->IsMainFrame(),
-      resource_request_info->GetResourceType(),
-      resource_request_info->GetPageTransition(),
-      resource_request_info->should_replace_current_entry(),
-      resource_request_info->IsDownload(), resource_request_info->is_stream(),
-      resource_request_info->allow_download(),
-      resource_request_info->HasUserGesture(),
-      resource_request_info->is_load_timing_enabled(),
-      resource_request_info->is_upload_progress_enabled(),
-      resource_request_info->do_not_prompt_for_login(),
-      resource_request_info->keepalive(),
-      resource_request_info->GetReferrerPolicy(),
-      resource_request_info->GetVisibilityState(),
-      resource_request_info->GetContext(),
-      resource_request_info->ShouldReportRawHeaders(),
-      resource_request_info->IsAsync(),
-      resource_request_info->GetPreviewsState(), resource_request_info->body(),
-      resource_request_info->initiated_in_secure_context());
-  extra_data->AssociateWithRequest(request_.get());
-
-  if (request_details.post_data)
-    request_->set_upload(std::move(request_details.post_data));
-
-  devtools_url_request_interceptor_state_->RegisterSubRequest(request_.get());
-  request_->Start();
-}
-
-DevToolsURLInterceptorRequestJob::SubRequest::~SubRequest() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  devtools_url_request_interceptor_state_->UnregisterSubRequest(request_.get());
-}
-
-void DevToolsURLInterceptorRequestJob::SubRequest::Cancel() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!fetch_in_progress_)
-    return;
-
-  fetch_in_progress_ = false;
-  request_->Cancel();
-}
-
-DevToolsURLInterceptorRequestJob::MockResponseDetails::MockResponseDetails(
-    std::string response_bytes,
-    base::TimeTicks response_time)
-    : response_bytes_(std::move(response_bytes)),
-      read_offset_(0),
-      response_time_(response_time) {
-  int header_size = net::HttpUtil::LocateEndOfHeaders(response_bytes_.c_str(),
-                                                      response_bytes_.size());
-  if (header_size == -1) {
-    LOG(WARNING) << "Can't find headers in result";
-    response_headers_ = new net::HttpResponseHeaders("");
-  } else {
-    response_headers_ =
-        new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-            response_bytes_.c_str(), header_size));
-    read_offset_ = header_size;
-  }
-
-  CHECK_LE(read_offset_, response_bytes_.size());
-}
-
-DevToolsURLInterceptorRequestJob::MockResponseDetails::MockResponseDetails(
-    const scoped_refptr<net::HttpResponseHeaders>& response_headers,
-    std::string response_bytes,
-    size_t read_offset,
-    base::TimeTicks response_time)
-    : response_headers_(response_headers),
-      response_bytes_(std::move(response_bytes)),
-      read_offset_(read_offset),
-      response_time_(response_time) {}
-
-DevToolsURLInterceptorRequestJob::MockResponseDetails::~MockResponseDetails() {}
-
-int DevToolsURLInterceptorRequestJob::MockResponseDetails::ReadRawData(
-    net::IOBuffer* buf,
-    int buf_size) {
-  size_t bytes_available = response_bytes_.size() - read_offset_;
-  size_t bytes_to_copy =
-      std::min(static_cast<size_t>(buf_size), bytes_available);
-  if (bytes_to_copy > 0) {
-    std::memcpy(buf->data(), &response_bytes_.data()[read_offset_],
-                bytes_to_copy);
-    read_offset_ += bytes_to_copy;
-  }
-  return bytes_to_copy;
-}
 
 }  // namespace content
