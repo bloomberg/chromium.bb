@@ -150,37 +150,6 @@ std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
       ash::kShellWindowId_DefaultContainer);
 }
 
-std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
-    Surface* surface,
-    ShellSurface* parent,
-    const gfx::Point& position) {
-  TRACE_EVENT2("exo", "Display::CreatePopupShellSurface", "surface",
-               surface->AsTracedValue(), "parent", parent->AsTracedValue());
-
-  if (surface->window()->Contains(parent->GetWidget()->GetNativeWindow())) {
-    DLOG(ERROR) << "Parent is contained within surface's hierarchy";
-    return nullptr;
-  }
-
-  if (surface->HasSurfaceDelegate()) {
-    DLOG(ERROR) << "Surface has already been assigned a role";
-    return nullptr;
-  }
-
-  // |position| is relative to the parent's main surface origin, and |origin| is
-  // in screen coordinates.
-  gfx::Point origin = position;
-  wm::ConvertPointToScreen(
-      ShellSurface::GetMainSurface(parent->GetWidget()->GetNativeWindow())
-          ->window(),
-      &origin);
-
-  return std::make_unique<ShellSurface>(
-      surface, parent, ShellSurface::BoundsMode::FIXED, origin,
-      false /* activatable */, false /* can_minimize */,
-      ash::kShellWindowId_DefaultContainer);
-}
-
 std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
     Surface* surface,
     int container,

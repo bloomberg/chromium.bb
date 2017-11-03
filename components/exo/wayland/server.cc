@@ -25,7 +25,6 @@
 #include <vsync-feedback-unstable-v1-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
-#include <xdg-shell-unstable-v5-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include <algorithm>
@@ -1524,13 +1523,6 @@ const struct zxdg_toplevel_v6_interface xdg_toplevel_v6_implementation = {
 ////////////////////////////////////////////////////////////////////////////////
 // xdg_popup_interface:
 
-void xdg_popup_v5_destroy(wl_client* client, wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-const struct xdg_popup_interface xdg_popup_v5_implementation = {
-    xdg_popup_v5_destroy};
-
 void xdg_popup_v6_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
@@ -1547,140 +1539,6 @@ const struct zxdg_popup_v6_interface xdg_popup_v6_implementation = {
 
 ////////////////////////////////////////////////////////////////////////////////
 // xdg_surface_interface:
-
-int XdgSurfaceV5ResizeComponent(uint32_t edges) {
-  switch (edges) {
-    case XDG_SURFACE_RESIZE_EDGE_TOP:
-      return HTTOP;
-    case XDG_SURFACE_RESIZE_EDGE_BOTTOM:
-      return HTBOTTOM;
-    case XDG_SURFACE_RESIZE_EDGE_LEFT:
-      return HTLEFT;
-    case XDG_SURFACE_RESIZE_EDGE_TOP_LEFT:
-      return HTTOPLEFT;
-    case XDG_SURFACE_RESIZE_EDGE_BOTTOM_LEFT:
-      return HTBOTTOMLEFT;
-    case XDG_SURFACE_RESIZE_EDGE_RIGHT:
-      return HTRIGHT;
-    case XDG_SURFACE_RESIZE_EDGE_TOP_RIGHT:
-      return HTTOPRIGHT;
-    case XDG_SURFACE_RESIZE_EDGE_BOTTOM_RIGHT:
-      return HTBOTTOMRIGHT;
-    default:
-      return HTBOTTOMRIGHT;
-  }
-}
-
-void xdg_surface_v5_destroy(wl_client* client, wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-void xdg_surface_v5_set_parent(wl_client* client,
-                               wl_resource* resource,
-                               wl_resource* parent) {
-  if (!parent) {
-    GetUserDataAs<ShellSurface>(resource)->SetParent(nullptr);
-    return;
-  }
-
-  // This is a noop if parent has not been mapped.
-  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(parent);
-  if (shell_surface->GetWidget())
-    GetUserDataAs<ShellSurface>(resource)->SetParent(shell_surface);
-}
-
-void xdg_surface_v5_set_title(wl_client* client,
-                              wl_resource* resource,
-                              const char* title) {
-  GetUserDataAs<ShellSurface>(resource)
-      ->SetTitle(base::string16(base::UTF8ToUTF16(title)));
-}
-
-void xdg_surface_v5_set_add_id(wl_client* client,
-                               wl_resource* resource,
-                               const char* app_id) {
-  GetUserDataAs<ShellSurface>(resource)->SetApplicationId(app_id);
-}
-
-void xdg_surface_v5_show_window_menu(wl_client* client,
-                                     wl_resource* resource,
-                                     wl_resource* seat,
-                                     uint32_t serial,
-                                     int32_t x,
-                                     int32_t y) {
-  NOTIMPLEMENTED();
-}
-
-void xdg_surface_v5_move(wl_client* client,
-                         wl_resource* resource,
-                         wl_resource* seat,
-                         uint32_t serial) {
-  GetUserDataAs<ShellSurface>(resource)->Move();
-}
-
-void xdg_surface_v5_resize(wl_client* client,
-                           wl_resource* resource,
-                           wl_resource* seat,
-                           uint32_t serial,
-                           uint32_t edges) {
-  int component = XdgSurfaceV5ResizeComponent(edges);
-  if (component != HTNOWHERE)
-    GetUserDataAs<ShellSurface>(resource)->Resize(component);
-}
-
-void xdg_surface_v5_ack_configure(wl_client* client,
-                                  wl_resource* resource,
-                                  uint32_t serial) {
-  GetUserDataAs<ShellSurface>(resource)->AcknowledgeConfigure(serial);
-}
-
-void xdg_surface_v5_set_window_geometry(wl_client* client,
-                                        wl_resource* resource,
-                                        int32_t x,
-                                        int32_t y,
-                                        int32_t width,
-                                        int32_t height) {
-  GetUserDataAs<ShellSurface>(resource)
-      ->SetGeometry(gfx::Rect(x, y, width, height));
-}
-
-void xdg_surface_v5_set_maximized(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Maximize();
-}
-
-void xdg_surface_v5_unset_maximized(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Restore();
-}
-
-void xdg_surface_v5_set_fullscreen(wl_client* client,
-                                   wl_resource* resource,
-                                   wl_resource* output) {
-  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(true);
-}
-
-void xdg_surface_v5_unset_fullscreen(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(false);
-}
-
-void xdg_surface_v5_set_minimized(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Minimize();
-}
-
-const struct xdg_surface_interface xdg_surface_v5_implementation = {
-    xdg_surface_v5_destroy,
-    xdg_surface_v5_set_parent,
-    xdg_surface_v5_set_title,
-    xdg_surface_v5_set_add_id,
-    xdg_surface_v5_show_window_menu,
-    xdg_surface_v5_move,
-    xdg_surface_v5_resize,
-    xdg_surface_v5_ack_configure,
-    xdg_surface_v5_set_window_geometry,
-    xdg_surface_v5_set_maximized,
-    xdg_surface_v5_unset_maximized,
-    xdg_surface_v5_set_fullscreen,
-    xdg_surface_v5_unset_fullscreen,
-    xdg_surface_v5_set_minimized};
 
 void xdg_surface_v6_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
@@ -1824,171 +1682,6 @@ const struct zxdg_surface_v6_interface xdg_surface_v6_implementation = {
 
 ////////////////////////////////////////////////////////////////////////////////
 // xdg_shell_interface:
-
-void xdg_shell_v5_destroy(wl_client* client, wl_resource* resource) {
-  // Nothing to do here.
-}
-
-// Currently implemented version of the unstable xdg-shell interface.
-#define XDG_SHELL_VERSION 5
-static_assert(XDG_SHELL_VERSION == XDG_SHELL_VERSION_CURRENT,
-              "Interface version doesn't match implementation version");
-
-void xdg_shell_v5_use_unstable_version(wl_client* client,
-                                       wl_resource* resource,
-                                       int32_t version) {
-  if (version > XDG_SHELL_VERSION) {
-    wl_resource_post_error(resource, 1,
-                           "xdg-shell version not implemented yet.");
-  }
-}
-
-void HandleXdgSurfaceV5CloseCallback(wl_resource* resource) {
-  xdg_surface_send_close(resource);
-  wl_client_flush(wl_resource_get_client(resource));
-}
-
-void AddXdgSurfaceV5State(wl_array* states, xdg_surface_state state) {
-  xdg_surface_state* value = static_cast<xdg_surface_state*>(
-      wl_array_add(states, sizeof(xdg_surface_state)));
-  DCHECK(value);
-  *value = state;
-}
-
-uint32_t HandleXdgSurfaceV5ConfigureCallback(
-    wl_resource* resource,
-    const gfx::Size& size,
-    ash::mojom::WindowStateType state_type,
-    bool resizing,
-    bool activated,
-    const gfx::Vector2d& origin_offset) {
-  wl_array states;
-  wl_array_init(&states);
-  if (state_type == ash::mojom::WindowStateType::MAXIMIZED)
-    AddXdgSurfaceV5State(&states, XDG_SURFACE_STATE_MAXIMIZED);
-  if (state_type == ash::mojom::WindowStateType::FULLSCREEN)
-    AddXdgSurfaceV5State(&states, XDG_SURFACE_STATE_FULLSCREEN);
-  if (resizing)
-    AddXdgSurfaceV5State(&states, XDG_SURFACE_STATE_RESIZING);
-  if (activated)
-    AddXdgSurfaceV5State(&states, XDG_SURFACE_STATE_ACTIVATED);
-  uint32_t serial = wl_display_next_serial(
-      wl_client_get_display(wl_resource_get_client(resource)));
-  xdg_surface_send_configure(resource, size.width(), size.height(), &states,
-                             serial);
-  wl_client_flush(wl_resource_get_client(resource));
-  wl_array_release(&states);
-  return serial;
-}
-
-void xdg_shell_v5_get_xdg_surface(wl_client* client,
-                                  wl_resource* resource,
-                                  uint32_t id,
-                                  wl_resource* surface) {
-  std::unique_ptr<ShellSurface> shell_surface =
-      GetUserDataAs<Display>(resource)->CreateShellSurface(
-          GetUserDataAs<Surface>(surface));
-  if (!shell_surface) {
-    wl_resource_post_error(resource, XDG_SHELL_ERROR_ROLE,
-                           "surface has already been assigned a role");
-    return;
-  }
-
-  wl_resource* xdg_surface_resource =
-      wl_resource_create(client, &xdg_surface_interface, 1, id);
-
-  shell_surface->set_close_callback(
-      base::Bind(&HandleXdgSurfaceV5CloseCallback,
-                 base::Unretained(xdg_surface_resource)));
-
-  shell_surface->set_configure_callback(
-      base::Bind(&HandleXdgSurfaceV5ConfigureCallback,
-                 base::Unretained(xdg_surface_resource)));
-
-  SetImplementation(xdg_surface_resource, &xdg_surface_v5_implementation,
-                    std::move(shell_surface));
-}
-
-void HandleXdgPopupV5CloseCallback(wl_resource* resource) {
-  xdg_popup_send_popup_done(resource);
-  wl_client_flush(wl_resource_get_client(resource));
-}
-
-void xdg_shell_v5_get_xdg_popup(wl_client* client,
-                                wl_resource* resource,
-                                uint32_t id,
-                                wl_resource* surface,
-                                wl_resource* parent,
-                                wl_resource* seat,
-                                uint32_t serial,
-                                int32_t x,
-                                int32_t y) {
-  // Parent widget can be found by locating the closest ancestor with a widget.
-  views::Widget* parent_widget = nullptr;
-  aura::Window* parent_window = GetUserDataAs<Surface>(parent)->window();
-  while (parent_window) {
-    parent_widget = views::Widget::GetWidgetForNativeWindow(parent_window);
-    if (parent_widget)
-      break;
-    parent_window = parent_window->parent();
-  }
-
-  // Early out if parent widget was not found or is not associated with a
-  // shell surface.
-  if (!parent_widget ||
-      !ShellSurface::GetMainSurface(parent_widget->GetNativeWindow())) {
-    wl_resource_post_error(resource, XDG_SHELL_ERROR_INVALID_POPUP_PARENT,
-                           "invalid popup parent surface");
-    return;
-  }
-
-  // TODO(reveman): Automatically close popup when clicking outside the
-  // popup window.
-  std::unique_ptr<ShellSurface> shell_surface =
-      GetUserDataAs<Display>(resource)->CreatePopupShellSurface(
-          GetUserDataAs<Surface>(surface),
-          // Shell surface widget delegate implementation of GetContentsView()
-          // returns a pointer to the shell surface instance.
-          static_cast<ShellSurface*>(
-              parent_widget->widget_delegate()->GetContentsView()),
-          gfx::Point(x, y));
-  if (!shell_surface) {
-    wl_resource_post_error(resource, XDG_SHELL_ERROR_ROLE,
-                           "surface has already been assigned a role");
-    return;
-  }
-
-  wl_resource* xdg_popup_resource =
-      wl_resource_create(client, &xdg_popup_interface, 1, id);
-
-  shell_surface->set_close_callback(base::Bind(
-      &HandleXdgPopupV5CloseCallback, base::Unretained(xdg_popup_resource)));
-
-  SetImplementation(xdg_popup_resource, &xdg_popup_v5_implementation,
-                    std::move(shell_surface));
-}
-
-void xdg_shell_v5_pong(wl_client* client,
-                       wl_resource* resource,
-                       uint32_t serial) {
-  NOTIMPLEMENTED();
-}
-
-const struct xdg_shell_interface xdg_shell_v5_implementation = {
-    xdg_shell_v5_destroy, xdg_shell_v5_use_unstable_version,
-    xdg_shell_v5_get_xdg_surface, xdg_shell_v5_get_xdg_popup,
-    xdg_shell_v5_pong};
-
-void bind_xdg_shell_v5(wl_client* client,
-                       void* data,
-                       uint32_t version,
-                       uint32_t id) {
-  wl_resource* resource =
-      wl_resource_create(client, &xdg_shell_interface, 1, id);
-
-  wl_resource_set_implementation(resource, &xdg_shell_v5_implementation, data,
-                                 nullptr);
-}
 
 void xdg_shell_v6_destroy(wl_client* client, wl_resource* resource) {
   // Nothing to do here.
@@ -4665,8 +4358,6 @@ Server::Server(Display* display)
                    bind_shell);
   wl_global_create(wl_display_.get(), &wl_output_interface, output_version,
                    display_, bind_output);
-  wl_global_create(wl_display_.get(), &xdg_shell_interface, 1, display_,
-                   bind_xdg_shell_v5);
   wl_global_create(wl_display_.get(), &zxdg_shell_v6_interface, 1, display_,
                    bind_xdg_shell_v6);
   wl_global_create(wl_display_.get(), &zcr_vsync_feedback_v1_interface, 1,
