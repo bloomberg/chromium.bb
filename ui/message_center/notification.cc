@@ -76,7 +76,8 @@ RichNotificationData::RichNotificationData(const RichNotificationData& other)
       accessible_name(other.accessible_name),
       accent_color(other.accent_color),
       use_image_as_icon(other.use_image_as_icon),
-      settings_button_handler(other.settings_button_handler) {
+      settings_button_handler(other.settings_button_handler),
+      fullscreen_visibility(other.fullscreen_visibility) {
 }
 
 RichNotificationData::~RichNotificationData() = default;

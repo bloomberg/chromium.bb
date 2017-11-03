@@ -38,14 +38,6 @@ void WebNotificationDelegate::DisableNotification() {
   DesktopNotificationProfileUtil::DenyPermission(profile_, origin_);
 }
 
-bool WebNotificationDelegate::ShouldDisplayOverFullscreen() const {
-  NotificationDisplayService* display_service =
-      NotificationDisplayServiceFactory::GetForProfile(profile_);
-
-  return display_service->ShouldDisplayOverFullscreen(origin_,
-                                                      notification_type_);
-}
-
 void WebNotificationDelegate::Close(bool by_user) {
   auto* display_service =
       NotificationDisplayServiceFactory::GetForProfile(profile_);

@@ -65,11 +65,6 @@ class NotificationDisplayService : public KeyedService {
                                     const base::Optional<base::string16>& reply,
                                     const base::Optional<bool>& by_user);
 
-  // Return whether a notification of |notification_type| should be displayed
-  // for |origin| when the browser is in full screen mode.
-  bool ShouldDisplayOverFullscreen(const GURL& origin,
-                                   NotificationCommon::Type notification_type);
-
   // Returns the notification handler that was registered for the given type.
   // May return null.
   NotificationHandler* GetNotificationHandler(

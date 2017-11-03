@@ -28,8 +28,8 @@ bool FullscreenNotificationBlocker::ShouldShowNotificationAsPopup(
     const message_center::Notification& notification) const {
   bool enabled =
       !should_block_ ||
-      (notification.delegate() &&
-       notification.delegate()->ShouldDisplayOverFullscreen()) ||
+      (notification.fullscreen_visibility() !=
+       message_center::FullscreenVisibility::NONE) ||
       system_notifier::ShouldAlwaysShowPopups(notification.notifier_id());
 
   if (enabled && !should_block_) {

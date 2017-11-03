@@ -425,7 +425,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayNormal) {
 
   // If the app hasn't created a fullscreen window, then its notifications
   // shouldn't be displayed when a window is fullscreen.
-  ASSERT_FALSE(notification->delegate()->ShouldDisplayOverFullscreen());
+  EXPECT_EQ(message_center::FullscreenVisibility::NONE,
+            notification->fullscreen_visibility());
 }
 
 // Full screen related tests don't run on Mac as native notifications full
@@ -453,7 +454,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayFullscreen) {
 
   // If the app has created a fullscreen window, then its notifications should
   // be displayed when a window is fullscreen.
-  ASSERT_TRUE(notification->delegate()->ShouldDisplayOverFullscreen());
+  EXPECT_EQ(message_center::FullscreenVisibility::OVER_USER,
+            notification->fullscreen_visibility());
 }
 
 // The Fake OSX fullscreen window doesn't like drawing a second fullscreen
@@ -464,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayMultiFullscreen) {
   // not the app actually displaying on the screen.
   ExtensionTestMessageListener notification_created_listener("created", false);
   const Extension* extension1 = LoadAppWithWindowState(
-      "notifications/api/basic_app", WindowState::FULLSCREEN);
+      "notifications/api/notification_on_blur", WindowState::FULLSCREEN);
   ASSERT_TRUE(extension1) << message_;
 
   ExtensionTestMessageListener window_visible_listener("visible", false);
@@ -472,8 +474,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayMultiFullscreen) {
       "notifications/api/other_app", WindowState::FULLSCREEN);
   ASSERT_TRUE(extension2) << message_;
 
-  ASSERT_TRUE(notification_created_listener.WaitUntilSatisfied());
   ASSERT_TRUE(window_visible_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(notification_created_listener.WaitUntilSatisfied());
 
   // We start by making sure the window is actually focused.
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
@@ -485,11 +487,12 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayMultiFullscreen) {
 
   // The first app window is superseded by the second window, so its
   // notification shouldn't be displayed.
-  ASSERT_FALSE(notification->delegate()->ShouldDisplayOverFullscreen());
+  EXPECT_EQ(message_center::FullscreenVisibility::NONE,
+            notification->fullscreen_visibility());
 }
 
 // Verify that a notification is actually displayed when the app window that
-// creates it is fullscreen with the fullscreen notification flag turned on.
+// creates it is fullscreen.
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest,
                        TestShouldDisplayPopupNotification) {
   ExtensionTestMessageListener notification_created_listener("created", false);
@@ -513,6 +516,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest,
 
   // The extension's window is being shown and focused, so its expected that
   // the notification displays on top of it.
-  ASSERT_TRUE(notification->delegate()->ShouldDisplayOverFullscreen());
+  EXPECT_EQ(message_center::FullscreenVisibility::OVER_USER,
+            notification->fullscreen_visibility());
 }
 #endif  // !defined(OS_MACOSX)

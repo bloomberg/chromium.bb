@@ -29,6 +29,11 @@
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
@@ -85,6 +90,42 @@ void ReportNotificationImageOnIOThread(
     return;
   safe_browsing_service->ping_manager()->ReportNotificationImage(
       profile, safe_browsing_service->database_manager(), origin, image);
+}
+
+// Whether a web notification should be displayed when chrome is in full
+// screen mode.
+static bool ShouldDisplayWebNotificationOnFullScreen(Profile* profile,
+                                                     const GURL& origin) {
+#if defined(OS_ANDROID)
+  NOTIMPLEMENTED();
+  return false;
+#endif  // defined(OS_ANDROID)
+
+  // Check to see if this notification comes from a webpage that is displaying
+  // fullscreen content.
+  for (auto* browser : *BrowserList::GetInstance()) {
+    // Only consider the browsers for the profile that created the notification
+    if (browser->profile() != profile)
+      continue;
+
+    const content::WebContents* active_contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    if (!active_contents)
+      continue;
+
+    // Check to see if
+    //  (a) the active tab in the browser shares its origin with the
+    //      notification.
+    //  (b) the browser is fullscreen
+    //  (c) the browser has focus.
+    if (active_contents->GetURL().GetOrigin() == origin &&
+        browser->exclusive_access_manager()->context()->IsFullscreen() &&
+        browser->window()->IsActive()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -449,6 +490,10 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
   notification.set_timestamp(notification_data.timestamp);
   notification.set_renotify(notification_data.renotify);
   notification.set_silent(notification_data.silent);
+  if (ShouldDisplayWebNotificationOnFullScreen(profile, origin)) {
+    notification.set_fullscreen_visibility(
+        message_center::FullscreenVisibility::OVER_USER);
+  }
 
   if (!notification_resources.image.drawsNothing()) {
     notification.set_type(message_center::NOTIFICATION_TYPE_IMAGE);

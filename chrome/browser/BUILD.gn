@@ -814,7 +814,6 @@ split_static_library("browser") {
     "notifications/notification_display_service.h",
     "notifications/notification_display_service_factory.cc",
     "notifications/notification_display_service_factory.h",
-    "notifications/notification_handler.cc",
     "notifications/notification_handler.h",
     "notifications/notification_permission_context.cc",
     "notifications/notification_permission_context.h",
