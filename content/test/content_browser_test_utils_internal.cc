@@ -387,19 +387,16 @@ UpdateResizeParamsMessageFilter::~UpdateResizeParamsMessageFilter() {}
 void UpdateResizeParamsMessageFilter::OnUpdateResizeParams(
     const gfx::Rect& rect,
     const ScreenInfo& screen_info,
-    uint64_t sequence_number,
     const viz::LocalSurfaceId& local_surface_id) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&UpdateResizeParamsMessageFilter::OnUpdateResizeParamsOnUI,
-                     this, rect, screen_info, sequence_number,
-                     local_surface_id));
+                     this, rect, screen_info, local_surface_id));
 }
 
 void UpdateResizeParamsMessageFilter::OnUpdateResizeParamsOnUI(
     const gfx::Rect& rect,
     const ScreenInfo& screen_info,
-    uint64_t sequence_number,
     const viz::LocalSurfaceId& local_surface_id) {
   last_rect_ = rect;
   if (!frame_rect_received_) {

@@ -188,11 +188,11 @@ int BrowserPluginGuest::LoadURLWithParams(
   return GetGuestProxyRoutingID();
 }
 
-void BrowserPluginGuest::ResizeDueToAutoResize(const gfx::Size& new_size,
-                                               uint64_t sequence_number) {
-  SendMessageToEmbedder(
-      base::MakeUnique<BrowserPluginMsg_ResizeDueToAutoResize>(
-          browser_plugin_instance_id_, sequence_number));
+void BrowserPluginGuest::GuestResizeDueToAutoResize(const gfx::Size& new_size) {
+  if (last_seen_view_size_ != new_size) {
+    delegate_->GuestSizeChanged(new_size);
+    last_seen_view_size_ = new_size;
+  }
 }
 
 void BrowserPluginGuest::SizeContents(const gfx::Size& new_size) {
@@ -1068,7 +1068,6 @@ void BrowserPluginGuest::OnUpdateResizeParams(
     int browser_plugin_instance_id,
     const gfx::Rect& frame_rect,
     const ScreenInfo& screen_info,
-    uint64_t sequence_number,
     const viz::LocalSurfaceId& local_surface_id) {
   if ((frame_rect_.size() != frame_rect.size() ||
        screen_info_ != screen_info) &&
@@ -1083,22 +1082,12 @@ void BrowserPluginGuest::OnUpdateResizeParams(
   screen_info_ = screen_info;
   frame_rect_ = frame_rect;
   GetWebContents()->SendScreenRects();
-  local_surface_id_ = local_surface_id;
-
-  RenderWidgetHostView* view = web_contents()->GetRenderWidgetHostView();
-  if (!view)
-    return;
-
-  RenderWidgetHostImpl* render_widget_host =
-      RenderWidgetHostImpl::From(view->GetRenderWidgetHost());
-  DCHECK(render_widget_host);
-
-  if (render_widget_host->auto_resize_enabled()) {
-    render_widget_host->DidAllocateLocalSurfaceIdForAutoResize(sequence_number);
-    return;
+  if (local_surface_id_ != local_surface_id) {
+    local_surface_id_ = local_surface_id;
+    RenderWidgetHostView* view = web_contents()->GetRenderWidgetHostView();
+    if (view)
+      view->GetRenderWidgetHost()->WasResized();
   }
-
-  render_widget_host->WasResized();
 }
 
 void BrowserPluginGuest::OnHasTouchEventHandlers(bool accept) {

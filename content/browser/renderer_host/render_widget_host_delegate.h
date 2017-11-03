@@ -75,8 +75,7 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // The contents auto-resized and the container should match it.
   virtual void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
-                                     const gfx::Size& new_size,
-                                     uint64_t sequence_number) {}
+                                     const gfx::Size& new_size) {}
 
   // The screen info has changed.
   virtual void ScreenInfoChanged() {}

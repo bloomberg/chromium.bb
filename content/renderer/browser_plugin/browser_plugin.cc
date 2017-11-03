@@ -118,8 +118,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestReady, OnGuestReady)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_ResizeDueToAutoResize,
-                        OnResizeDueToAutoResize)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetTooltipText, OnSetTooltipText)
@@ -216,11 +214,9 @@ void BrowserPlugin::DidCommitCompositorFrame() {
 }
 
 void BrowserPlugin::WasResized() {
-  bool size_changed = !sent_resize_params_ ||
-                      sent_resize_params_->frame_rect.size() !=
-                          pending_resize_params_.frame_rect.size() ||
-                      sent_resize_params_->sequence_number !=
-                          pending_resize_params_.sequence_number;
+  bool size_changed =
+      !sent_resize_params_ || sent_resize_params_->frame_rect.size() !=
+                                  pending_resize_params_.frame_rect.size();
 
   bool synchronized_params_changed =
       !sent_resize_params_ || size_changed ||
@@ -248,9 +244,9 @@ void BrowserPlugin::WasResized() {
   if (resize_params_changed && attached()) {
     // Let the browser know about the updated view rect.
     BrowserPluginManager::Get()->Send(
-        new BrowserPluginHostMsg_UpdateResizeParams(
-            browser_plugin_instance_id_, frame_rect(), screen_info(),
-            auto_size_sequence_number(), local_surface_id_));
+        new BrowserPluginHostMsg_UpdateResizeParams(browser_plugin_instance_id_,
+                                                    frame_rect(), screen_info(),
+                                                    local_surface_id_));
   }
 
   if (delegate_ && size_changed)
@@ -280,12 +276,6 @@ void BrowserPlugin::OnGuestReady(int browser_plugin_instance_id,
   guest_crashed_ = false;
   frame_sink_id_ = frame_sink_id;
   sent_resize_params_ = base::nullopt;
-  WasResized();
-}
-
-void BrowserPlugin::OnResizeDueToAutoResize(int browser_plugin_instance_id,
-                                            uint64_t sequence_number) {
-  pending_resize_params_.sequence_number = sequence_number;
   WasResized();
 }
 

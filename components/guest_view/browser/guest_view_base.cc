@@ -447,6 +447,10 @@ WebContents* GuestViewBase::GetOwnerWebContents() const {
   return owner_web_contents_;
 }
 
+void GuestViewBase::GuestSizeChanged(const gfx::Size& new_size) {
+  UpdateGuestSize(new_size, auto_size_enabled_);
+}
+
 const GURL& GuestViewBase::GetOwnerSiteURL() const {
   return owner_web_contents()->GetLastCommittedURL();
 }
@@ -652,7 +656,7 @@ content::ColorChooser* GuestViewBase::OpenColorChooser(
 
 void GuestViewBase::ResizeDueToAutoResize(WebContents* web_contents,
                                           const gfx::Size& new_size) {
-  UpdateGuestSize(new_size, auto_size_enabled_);
+  guest_host_->GuestResizeDueToAutoResize(new_size);
 }
 
 void GuestViewBase::RunFileChooser(content::RenderFrameHost* render_frame_host,

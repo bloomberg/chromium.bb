@@ -926,11 +926,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_PostMessageEvent, FrameMsg_PostMessage_Params)
 // Tells the RenderFrame to clear the focused element (if any).
 IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocusedElement)
 
-// Informs the parent renderer that the child would like a new
-// viz::LocalSurfaceId in response to an auto-resize.
-IPC_MESSAGE_ROUTED1(FrameMsg_ResizeDueToAutoResize,
-                    uint64_t /* sequence_number */)
-
 #if defined(OS_ANDROID)
 // Request the distance to the nearest find result in a frame from the point at
 // (x, y), defined in fractions of the content document's width and height. The
@@ -1470,10 +1465,9 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_BeforeUnload_ACK,
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SwapOut_ACK)
 
 // Tells the browser that a child's resize parameters have changed.
-IPC_MESSAGE_ROUTED4(FrameHostMsg_UpdateResizeParams,
+IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateResizeParams,
                     gfx::Rect /* frame_rect */,
                     content::ScreenInfo /* screen_info */,
-                    uint64_t /* sequence_number */,
                     viz::LocalSurfaceId /* local_surface_id */)
 
 // Sent by a parent frame to update its child's viewport intersection rect for
