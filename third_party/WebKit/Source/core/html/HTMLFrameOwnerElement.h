@@ -63,8 +63,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   Document* getSVGDocument(ExceptionState&) const;
 
-  virtual bool LoadedNonEmptyDocument() const { return false; }
-  virtual void DidLoadNonEmptyDocument() {}
+  bool LoadedNonEmptyDocument() const { return did_load_non_empty_document_; }
+  void DidLoadNonEmptyDocument() { did_load_non_empty_document_ = true; }
 
   void SetEmbeddedContentView(EmbeddedContentView*);
   EmbeddedContentView* ReleaseEmbeddedContentView();
@@ -169,6 +169,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   Member<Frame> content_frame_;
   Member<EmbeddedContentView> embedded_content_view_;
   SandboxFlags sandbox_flags_;
+  bool did_load_non_empty_document_;
 
   WebParsedFeaturePolicy container_policy_;
 };
