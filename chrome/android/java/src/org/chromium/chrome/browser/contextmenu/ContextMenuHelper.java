@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextmenu;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.util.Pair;
@@ -19,7 +20,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareParams;
@@ -150,7 +150,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             menuUi.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback, mOnMenuShown,
                     mOnMenuClosed);
             if (mCurrentContextMenuParams.isImage()) {
-                getThumbnail(new Callback<Bitmap>() {
+                getThumbnail(menuUi, new Callback<Bitmap>() {
                     @Override
                     public void onResult(Bitmap result) {
                         menuUi.onImageThumbnailRetrieved(result);
@@ -228,24 +228,31 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                 ShareHelper.shareImage(activity, result, name);
             }
         };
-        nativeRetrieveImageForShare(mNativeContextMenuHelper, callback, MAX_SHARE_DIMEN_PX);
+        nativeRetrieveImageForShare(
+                mNativeContextMenuHelper, callback, MAX_SHARE_DIMEN_PX, MAX_SHARE_DIMEN_PX);
     }
 
     /**
      * Gets the thumbnail of the current image that triggered the context menu.
      * @param callback Called once the the thumbnail is received.
      */
-    private void getThumbnail(final Callback<Bitmap> callback) {
+    private void getThumbnail(TabularContextMenuUi menuUi, final Callback<Bitmap> callback) {
         if (mNativeContextMenuHelper == 0) return;
-        int maxSizePx = mActivity.getResources().getDimensionPixelSize(
-                R.dimen.context_menu_header_image_max_size);
+
+        Resources res = mActivity.getResources();
+
+        int maxWidthPx = menuUi.getMaxThumbnailWidthPx(res);
+        int maxHeightPx = menuUi.getMaxThumbnailHeightPx(res);
+
         Callback<Bitmap> bitmapCallback = new Callback<Bitmap>() {
             @Override
             public void onResult(Bitmap result) {
                 callback.onResult(result);
             }
+
         };
-        nativeRetrieveImageForContextMenu(mNativeContextMenuHelper, bitmapCallback, maxSizePx);
+        nativeRetrieveImageForContextMenu(
+                mNativeContextMenuHelper, bitmapCallback, maxWidthPx, maxHeightPx);
     }
 
     @Override
@@ -273,9 +280,9 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     private native void nativeOnStartDownload(
             long nativeContextMenuHelper, boolean isLink, boolean isDataReductionProxyEnabled);
     private native void nativeSearchForImage(long nativeContextMenuHelper);
-    private native void nativeRetrieveImageForShare(
-            long nativeContextMenuHelper, Callback<byte[]> callback, int maxSizePx);
-    private native void nativeRetrieveImageForContextMenu(
-            long nativeContextMenuHelper, Callback<Bitmap> callback, int maxSizePx);
+    private native void nativeRetrieveImageForShare(long nativeContextMenuHelper,
+            Callback<byte[]> callback, int maxWidthPx, int maxHeightPx);
+    private native void nativeRetrieveImageForContextMenu(long nativeContextMenuHelper,
+            Callback<Bitmap> callback, int maxWidthPx, int maxHeightPx);
     private native void nativeOnContextMenuClosed(long nativeContextMenuHelper);
 }

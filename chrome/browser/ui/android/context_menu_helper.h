@@ -54,17 +54,20 @@ class ContextMenuHelper
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jcallback,
-      jint max_dimen_px);
+      jint max_width_px,
+      jint max_height_px);
   void RetrieveImageForContextMenu(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& jcallback,
-      jint max_dimen_px);
+      jint max_width_px,
+      jint max_height_px);
   void RetrieveImageInternal(
       JNIEnv* env,
       const ImageRetrieveCallback& retrieve_callback,
       const base::android::JavaParamRef<jobject>& jcallback,
-      jint max_dimen_px);
+      jint max_width_px,
+      jint max_height_px);
   void SearchForImage(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
 
