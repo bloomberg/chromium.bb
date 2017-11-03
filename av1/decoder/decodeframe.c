@@ -1478,6 +1478,11 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     int num_bits_width = cm->seq_params.num_bits_width;
     int num_bits_height = cm->seq_params.num_bits_height;
     av1_read_frame_size(rb, num_bits_width, num_bits_height, &width, &height);
+    if (width > cm->seq_params.max_frame_width ||
+        height > cm->seq_params.max_frame_height) {
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                         "Frame dimensions are larger than the maximum values");
+    }
   } else {
     width = cm->seq_params.max_frame_width;
     height = cm->seq_params.max_frame_height;

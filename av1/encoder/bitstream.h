@@ -21,8 +21,7 @@ extern "C" {
 struct aom_write_bit_buffer;
 
 #if CONFIG_REFERENCE_BUFFER
-void write_sequence_header(AV1_COMMON *const cm,
-                           struct aom_write_bit_buffer *wb);
+void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb);
 #endif
 
 #if CONFIG_OBU
