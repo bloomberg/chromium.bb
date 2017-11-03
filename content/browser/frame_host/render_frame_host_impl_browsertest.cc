@@ -181,7 +181,8 @@ namespace {
 class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                                     public WebContentsDelegate {
  public:
-  TestJavaScriptDialogManager() : message_loop_runner_(new MessageLoopRunner) {}
+  TestJavaScriptDialogManager()
+      : message_loop_runner_(new MessageLoopRunner), url_invalidate_count_(0) {}
   ~TestJavaScriptDialogManager() override {}
 
   void Wait() {
@@ -223,11 +224,25 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 
   void CancelDialogs(WebContents* web_contents, bool reset_state) override {}
 
+  // Keep track of whether the tab has notified us of a navigation state change
+  // which invalidates the displayed URL.
+  void NavigationStateChanged(WebContents* source,
+                              InvalidateTypes changed_flags) override {
+    if (changed_flags & INVALIDATE_TYPE_URL)
+      url_invalidate_count_++;
+  }
+
+  int url_invalidate_count() { return url_invalidate_count_; }
+  void reset_url_invalidate_count() { url_invalidate_count_ = 0; }
+
  private:
   DialogClosedCallback callback_;
 
   // The MessageLoopRunner used to spin the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  // The number of times NavigationStateChanged has been called.
+  int url_invalidate_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
 };
@@ -335,6 +350,43 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // there should be no beforeunload dialog.
   shell()->LoadURL(GURL("about:blank"));
   EXPECT_TRUE(WaitForLoadStop(wc));
+
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
+// Test for crbug.com/80401.  Canceling a beforeunload dialog should reset
+// the URL to the previous page's URL.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       CancelBeforeUnloadResetsURL) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestJavaScriptDialogManager dialog_manager;
+  wc->SetDelegate(&dialog_manager);
+
+  GURL url(GetTestUrl("render_frame_host", "beforeunload.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  PrepContentsForBeforeUnloadTest(wc);
+
+  // Navigate to a page that triggers a cross-site transition.
+  GURL url2(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  shell()->LoadURL(url2);
+  dialog_manager.Wait();
+
+  // Cancel the dialog.
+  dialog_manager.reset_url_invalidate_count();
+  std::move(dialog_manager.callback()).Run(false, base::string16());
+  EXPECT_FALSE(wc->IsLoading());
+
+  // Verify there are no pending history items after the dialog is cancelled.
+  // (see crbug.com/93858)
+  NavigationEntry* entry = wc->GetController().GetPendingEntry();
+  EXPECT_EQ(nullptr, entry);
+  EXPECT_EQ(url, wc->GetVisibleURL());
+
+  // There should have been at least one NavigationStateChange event for
+  // invalidating the URL in the address bar, to avoid leaving the stale URL
+  // visible.
+  EXPECT_GE(dialog_manager.url_invalidate_count(), 1);
 
   wc->SetDelegate(nullptr);
   wc->SetJavaScriptDialogManagerForTesting(nullptr);
