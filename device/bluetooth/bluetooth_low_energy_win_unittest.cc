@@ -10,29 +10,21 @@
 #include <memory>
 #include <utility>
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-const char kValidDeviceInstanceId[] =
-    "BTHLE\\DEV_BC6A29AB5FB0\\8&31038925&0&BC6A29AB5FB0";
+const char kValidDeviceAddress[] = "BC6A29AB5FB0";
+const char kShortDeviceAddress[] = "BC6A29AB5FB";
 
-const char kInvalidDeviceInstanceId[] =
-    "BTHLE\\BC6A29AB5FB0_DEV_\\8&31038925&0&BC6A29AB5FB0";
-
-}  // namespace
-
-namespace device {
-
-class BluetoothLowEnergyWinTest : public testing::Test {};
-
-TEST_F(BluetoothLowEnergyWinTest, ExtractValidBluetoothAddress) {
+void ExtractValidBluetoothAddress(const char* format) {
   BLUETOOTH_ADDRESS btha;
   std::string error;
   bool success =
       device::win::ExtractBluetoothAddressFromDeviceInstanceIdForTesting(
-          kValidDeviceInstanceId, &btha, &error);
+          base::StringPrintf(format, kValidDeviceAddress), &btha, &error);
 
   EXPECT_TRUE(success);
   EXPECT_TRUE(error.empty());
@@ -44,15 +36,47 @@ TEST_F(BluetoothLowEnergyWinTest, ExtractValidBluetoothAddress) {
   EXPECT_EQ(0xb0, btha.rgBytes[0]);
 }
 
-TEST_F(BluetoothLowEnergyWinTest, ExtractInvalidBluetoothAddress) {
+void ExtractInvalidBluetoothAddress(const char* format, const char* address) {
   BLUETOOTH_ADDRESS btha;
   std::string error;
   bool success =
       device::win::ExtractBluetoothAddressFromDeviceInstanceIdForTesting(
-          kInvalidDeviceInstanceId, &btha, &error);
+          base::StringPrintf(format, address), &btha, &error);
 
   EXPECT_FALSE(success);
   EXPECT_FALSE(error.empty());
+}
+
+}  // namespace
+
+namespace device {
+
+class BluetoothLowEnergyWinTest : public testing::Test {};
+
+TEST_F(BluetoothLowEnergyWinTest, ExtractBluetoothAddress_Valid) {
+  // Short form
+  ExtractValidBluetoothAddress(R"(BTHLE\DEV_%s\8&31038925&0&BC6A29AB5FB0)");
+  // Long form
+  ExtractValidBluetoothAddress(
+      R"(BTHLEDEVICE\{0000180F-0000-1000-8000-00805F9B34FB}_DEV_VID&)"
+      R"(01000A_PID&014C_REV&0100_%s\8&4C387F7&0&0020)");
+}
+
+TEST_F(BluetoothLowEnergyWinTest, ExtractBluetoothAddress_Invalid) {
+  // No opening underscore
+  ExtractInvalidBluetoothAddress(R"(%s\)", kValidDeviceAddress);
+  // No trailing slash
+  ExtractInvalidBluetoothAddress(R"(_%s)", kValidDeviceAddress);
+  // An extra character
+  ExtractInvalidBluetoothAddress(R"(_%sA\)", kValidDeviceAddress);
+  // A missing character
+  ExtractInvalidBluetoothAddress(R"(_%s\)", kShortDeviceAddress);
+  // A lowercase character
+  ExtractInvalidBluetoothAddress(R"(_%sa\)", kShortDeviceAddress);
+  // A non-hex character
+  ExtractInvalidBluetoothAddress(R"(_%sG\)", kShortDeviceAddress);
+  // A non-alphanumeric character
+  ExtractInvalidBluetoothAddress(R"(_%s?\)", kShortDeviceAddress);
 }
 
 TEST_F(BluetoothLowEnergyWinTest, DeviceRegistryPropertyValueAsString) {
