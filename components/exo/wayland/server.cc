@@ -651,7 +651,6 @@ void linux_buffer_params_add(wl_client* client,
   if (!inserted.second) {  // The plane was already there.
     wl_resource_post_error(resource, ZWP_LINUX_BUFFER_PARAMS_V1_ERROR_PLANE_SET,
                            "plane already set");
-    return;
   }
 }
 
@@ -836,7 +835,8 @@ void linux_dmabuf_create_params(wl_client* client,
       std::make_unique<LinuxBufferParams>(GetUserDataAs<Display>(resource));
 
   wl_resource* linux_buffer_params_resource =
-      wl_resource_create(client, &zwp_linux_buffer_params_v1_interface, 2, id);
+      wl_resource_create(client, &zwp_linux_buffer_params_v1_interface,
+                         wl_resource_get_version(resource), id);
 
   SetImplementation(linux_buffer_params_resource,
                     &linux_buffer_params_implementation,
@@ -846,12 +846,15 @@ void linux_dmabuf_create_params(wl_client* client,
 const struct zwp_linux_dmabuf_v1_interface linux_dmabuf_implementation = {
     linux_dmabuf_destroy, linux_dmabuf_create_params};
 
+const uint32_t linux_dmabuf_version = 2;
+
 void bind_linux_dmabuf(wl_client* client,
                        void* data,
                        uint32_t version,
                        uint32_t id) {
   wl_resource* resource =
-      wl_resource_create(client, &zwp_linux_dmabuf_v1_interface, version, id);
+      wl_resource_create(client, &zwp_linux_dmabuf_v1_interface,
+                         std::min(version, linux_dmabuf_version), id);
 
   wl_resource_set_implementation(resource, &linux_dmabuf_implementation, data,
                                  nullptr);
@@ -4100,9 +4103,12 @@ class WaylandKeyboardDeviceConfigurationDelegate
     }
   }
 
+  // Overridden from KeyboardObserver:
   void OnKeyboardDestroying(Keyboard* keyboard) override {
     keyboard_ = nullptr;
   }
+
+  // Overridden from KeyboardDeviceConfigurationDelegate:
   void OnKeyboardTypeChanged(bool is_physical) override {
     zcr_keyboard_device_configuration_v1_send_type_change(
         resource_,
@@ -4146,7 +4152,8 @@ void keyboard_configuration_get_keyboard_device_configuration(
   }
 
   wl_resource* keyboard_device_configuration_resource = wl_resource_create(
-      client, &zcr_keyboard_device_configuration_v1_interface, 1, id);
+      client, &zcr_keyboard_device_configuration_v1_interface,
+      wl_resource_get_version(resource), id);
 
   SetImplementation(
       keyboard_device_configuration_resource,
@@ -4159,12 +4166,15 @@ const struct zcr_keyboard_configuration_v1_interface
     keyboard_configuration_implementation = {
         keyboard_configuration_get_keyboard_device_configuration};
 
+const uint32_t keyboard_configuration_version = 2;
+
 void bind_keyboard_configuration(wl_client* client,
                                  void* data,
                                  uint32_t version,
                                  uint32_t id) {
-  wl_resource* resource = wl_resource_create(
-      client, &zcr_keyboard_configuration_v1_interface, version, id);
+  wl_resource* resource =
+      wl_resource_create(client, &zcr_keyboard_configuration_v1_interface,
+                         std::min(version, keyboard_configuration_version), id);
   wl_resource_set_implementation(
       resource, &keyboard_configuration_implementation, data, nullptr);
 }
@@ -4349,8 +4359,8 @@ Server::Server(Display* display)
                    compositor_version, display_, bind_compositor);
   wl_global_create(wl_display_.get(), &wl_shm_interface, 1, display_, bind_shm);
 #if defined(USE_OZONE)
-  wl_global_create(wl_display_.get(), &zwp_linux_dmabuf_v1_interface, 2,
-                   display_, bind_linux_dmabuf);
+  wl_global_create(wl_display_.get(), &zwp_linux_dmabuf_v1_interface,
+                   linux_dmabuf_version, display_, bind_linux_dmabuf);
 #endif
   wl_global_create(wl_display_.get(), &wl_subcompositor_interface, 1, display_,
                    bind_subcompositor);
@@ -4388,7 +4398,8 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &zwp_pointer_gestures_v1_interface, 1,
                    display_, bind_pointer_gestures);
   wl_global_create(wl_display_.get(), &zcr_keyboard_configuration_v1_interface,
-                   2, display_, bind_keyboard_configuration);
+                   keyboard_configuration_version, display_,
+                   bind_keyboard_configuration);
   wl_global_create(wl_display_.get(), &zcr_stylus_tools_v1_interface, 1,
                    display_, bind_stylus_tools);
   wl_global_create(wl_display_.get(), &zcr_keyboard_extension_v1_interface, 1,
