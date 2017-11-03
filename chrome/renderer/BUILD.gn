@@ -91,10 +91,6 @@ static_library("renderer") {
     "sandbox_status_extension_android.h",
     "searchbox/search_bouncer.cc",
     "searchbox/search_bouncer.h",
-    "searchbox/searchbox.cc",
-    "searchbox/searchbox.h",
-    "searchbox/searchbox_extension.cc",
-    "searchbox/searchbox_extension.h",
     "security_filter_peer.cc",
     "security_filter_peer.h",
     "tts_dispatcher.cc",
@@ -394,6 +390,15 @@ static_library("renderer") {
       "resources/extensions/file_browser_handler_custom_bindings.js",
       "resources/extensions/file_manager_private_custom_bindings.js",
       "resources/extensions/file_system_provider_custom_bindings.js",
+    ]
+  }
+
+  if (!is_android) {
+    sources += [
+      "searchbox/searchbox.cc",
+      "searchbox/searchbox.h",
+      "searchbox/searchbox_extension.cc",
+      "searchbox/searchbox_extension.h",
     ]
   }
 }
