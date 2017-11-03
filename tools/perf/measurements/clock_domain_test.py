@@ -26,6 +26,14 @@ class ClockDomainTest(tab_test_case.TabTestCase):
     tracing_controller.StartTracing(options)
 
     full_trace = tracing_controller.StopTracing()
+
+    # TODO(charliea): This is part of a three-sided Chromium/Telemetry patch
+    # where we're changing the return type of StopTracing from a TraceValue to a
+    # (TraceValue, nonfatal_exception_list) tuple. Once the tuple return value
+    # lands in Chromium, the non-tuple logic should be deleted.
+    if isinstance(full_trace, tuple):
+      full_trace = full_trace[0]
+
     chrome_sync = GetSyncEvents(
         full_trace.GetTraceFor(trace_data.CHROME_TRACE_PART)['traceEvents'])
     telemetry_sync = GetSyncEvents(
