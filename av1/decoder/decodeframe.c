@@ -3094,9 +3094,12 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       cm->interp_filter = read_frame_interp_filter(rb);
 #if CONFIG_TEMPMV_SIGNALING
       if (frame_might_use_prev_frame_mvs(cm))
-        cm->use_prev_frame_mvs = aom_rb_read_bit(rb);
+        cm->use_ref_frame_mvs = aom_rb_read_bit(rb);
       else
-        cm->use_prev_frame_mvs = 0;
+        cm->use_ref_frame_mvs = 0;
+
+      cm->use_prev_frame_mvs =
+          cm->use_ref_frame_mvs && frame_can_use_prev_frame_mvs(cm);
 #endif
       for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         RefBuffer *const ref_buf = &cm->frame_refs[i];

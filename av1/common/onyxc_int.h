@@ -350,6 +350,8 @@ typedef struct AV1Common {
   // Whether to use previous frame's motion vectors for prediction.
   int use_prev_frame_mvs;
 
+  int use_ref_frame_mvs;
+
   // Persistent mb segment id map used in prediction.
   int seg_map_idx;
   int prev_seg_map_idx;

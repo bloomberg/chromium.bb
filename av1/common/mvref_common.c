@@ -720,7 +720,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     ref_mv_stack[idx].weight += REF_CAT_LEVEL;
 
 #if CONFIG_MFMV
-  if (cm->use_prev_frame_mvs) {
+  if (cm->use_ref_frame_mvs) {
     int blk_row, blk_col;
     int coll_blk_count = 0;
     int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
