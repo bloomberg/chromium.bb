@@ -10,7 +10,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "expiration": 7200
+          "expiration": 10800
         },
         "test": "base_unittests"
       },
@@ -23,7 +23,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
           "shards": 14
         },
         "test": "chrome_public_test_apk"
@@ -37,7 +37,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
           "shards": 10
         },
         "test": "content_browsertests"
@@ -51,7 +51,21 @@
               "device_type": "hammerhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
+          "shards": 3
+        },
+        "test": "content_shell_test_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "expiration": 10800,
           "shards": 3
         },
         "test": "content_unittests"
@@ -65,7 +79,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
           "shards": 4
         },
         "test": "net_unittests"
@@ -79,7 +93,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
           "shards": 5
         },
         "test": "unit_tests"
@@ -93,7 +107,7 @@
               "device_type": "hammerhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
           "shards": 7
         },
         "test": "webview_instrumentation_test_apk"
@@ -111,7 +125,7 @@
               "device_type": "bullhead"
             }
           ],
-          "expiration": 7200
+          "expiration": 10800
         },
         "test": "base_unittests"
       },
@@ -124,7 +138,7 @@
               "device_type": "bullhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
           "shards": 15
         },
         "test": "chrome_public_test_apk"
@@ -138,7 +152,7 @@
               "device_type": "bullhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
           "shards": 10
         },
         "test": "content_browsertests"
@@ -152,7 +166,21 @@
               "device_type": "bullhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
+          "shards": 3
+        },
+        "test": "content_shell_test_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_type": "bullhead"
+            }
+          ],
+          "expiration": 10800,
           "shards": 4
         },
         "test": "content_unittests"
@@ -166,7 +194,7 @@
               "device_type": "bullhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
           "shards": 4
         },
         "test": "net_unittests"
@@ -180,7 +208,7 @@
               "device_type": "bullhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
           "shards": 8
         },
         "test": "unit_tests"
@@ -194,7 +222,7 @@
               "device_type": "bullhead"
             }
           ],
-          "expiration": 7200,
+          "expiration": 10800,
           "shards": 7
         },
         "test": "webview_instrumentation_test_apk"
