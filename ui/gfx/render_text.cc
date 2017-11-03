@@ -828,13 +828,19 @@ Rect RenderText::GetCursorBounds(const SelectionModel& caret,
       insert_mode ? caret.caret_affinity() : CURSOR_FORWARD;
   int x = 0, width = 1;
   Size size = GetStringSize();
-  if (caret_pos == (caret_affinity == CURSOR_BACKWARD ? 0 : text().length())) {
-    // The caret is attached to the boundary. Always return a 1-dip width caret,
-    // since there is nothing to overtype.
-    if ((GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT)
-        == (caret_pos == 0)) {
+
+  // Check whether the caret is attached to a boundary. Always return a 1-dip
+  // width caret at the boundary. Avoid calling IndexOfAdjacentGrapheme(), since
+  // it is slow and can impact browser startup here.
+  // In insert mode, index 0 is always a boundary. The end, however, is not at a
+  // boundary when the string ends in RTL text and there is LTR text around it.
+  const bool at_boundary =
+      (insert_mode && caret_pos == 0) ||
+      caret_pos == (caret_affinity == CURSOR_BACKWARD ? 0 : text().length());
+  if (at_boundary) {
+    const bool rtl = GetDisplayTextDirection() == base::i18n::RIGHT_TO_LEFT;
+    if (rtl == (caret_pos == 0))
       x = size.width();
-    }
   } else {
     // Find the next grapheme continuing in the current direction. This
     // determines the substring range that should be highlighted.
