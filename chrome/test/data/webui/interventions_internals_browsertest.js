@@ -104,6 +104,10 @@ TEST_F('InterventionsInternalsUITest', 'DisplayCorrectStatuses', function() {
   test('DisplayCorrectStatuses', () => {
     // Setup testPageHandler behavior.
     let testMap = new Map();
+    testMap.set('params1', {
+      description: 'Params 1',
+      enabled: true,
+    });
     testMap.set('params2', {
       description: 'Params 2',
       enabled: false,
@@ -111,10 +115,6 @@ TEST_F('InterventionsInternalsUITest', 'DisplayCorrectStatuses', function() {
     testMap.set('params3', {
       description: 'Param 3',
       enabled: false,
-    });
-    testMap.set('params1', {
-      description: 'Params 1',
-      enabled: true,
     });
 
     window.testPageHandler.setTestingMap(testMap);
@@ -131,12 +131,6 @@ TEST_F('InterventionsInternalsUITest', 'DisplayCorrectStatuses', function() {
             let actual = document.querySelector('#' + key).textContent;
             expectEquals(expected, actual);
           });
-
-          // Test correct order of statuses displayed on page.
-          let statuses = document.querySelectorAll('.previews-status-value');
-          for (let i = 1; i < statuses.length; i++) {
-            expectGE(statuses[i].textContent, statuses[i - 1].textContent);
-          }
         });
   });
 
