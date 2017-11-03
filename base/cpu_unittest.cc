@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/cpu.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if _MSC_VER >= 1700
@@ -124,4 +124,11 @@ TEST(CPU, RunExtendedInstructions) {
 #endif  // _MSC_VER >= 1700
 #endif  // defined(COMPILER_GCC)
 #endif  // defined(ARCH_CPU_X86_FAMILY)
+}
+
+// For https://crbug.com/249713
+TEST(CPU, BrandAndVendorContainsNoNUL) {
+  base::CPU cpu;
+  EXPECT_FALSE(base::ContainsValue(cpu.cpu_brand(), '\0'));
+  EXPECT_FALSE(base::ContainsValue(cpu.vendor_name(), '\0'));
 }

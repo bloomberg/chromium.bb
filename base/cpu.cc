@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -127,12 +128,16 @@ std::string* CpuInfoBrand() {
 #endif  // defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) ||
         // defined(OS_LINUX))
 
-}  // anonymous namespace
+}  // namespace
 
 void CPU::Initialize() {
 #if defined(ARCH_CPU_X86_FAMILY)
   int cpu_info[4] = {-1};
-  char cpu_string[48];
+  // This array is used to temporarily hold the vendor name and then the brand
+  // name. Thus it has to be big enough for both use cases. There are
+  // static_asserts below for each of the use cases to make sure this array is
+  // big enough.
+  char cpu_string[sizeof(cpu_info) * 3 + 1];
 
   // __cpuid with an InfoType argument of 0 returns the number of
   // valid Ids in CPUInfo[0] and the CPU identification string in
@@ -140,12 +145,16 @@ void CPU::Initialize() {
   // not in linear order. The code below arranges the information
   // in a human readable form. The human readable order is CPUInfo[1] |
   // CPUInfo[3] | CPUInfo[2]. CPUInfo[2] and CPUInfo[3] are swapped
-  // before using memcpy to copy these three array elements to cpu_string.
+  // before using memcpy() to copy these three array elements to |cpu_string|.
   __cpuid(cpu_info, 0);
   int num_ids = cpu_info[0];
   std::swap(cpu_info[2], cpu_info[3]);
-  memcpy(cpu_string, &cpu_info[1], 3 * sizeof(cpu_info[1]));
-  cpu_vendor_.assign(cpu_string, 3 * sizeof(cpu_info[1]));
+  static constexpr size_t kVendorNameSize = 3 * sizeof(cpu_info[1]);
+  static_assert(kVendorNameSize < arraysize(cpu_string),
+                "cpu_string too small");
+  memcpy(cpu_string, &cpu_info[1], kVendorNameSize);
+  cpu_string[kVendorNameSize] = '\0';
+  cpu_vendor_ = cpu_string;
 
   // Interpret CPU feature information.
   if (num_ids > 0) {
@@ -191,28 +200,33 @@ void CPU::Initialize() {
 
   // Get the brand string of the cpu.
   __cpuid(cpu_info, 0x80000000);
-  const int parameter_end = 0x80000004;
-  int max_parameter = cpu_info[0];
+  const int max_parameter = cpu_info[0];
 
-  if (cpu_info[0] >= parameter_end) {
-    char* cpu_string_ptr = cpu_string;
+  static constexpr int kParameterStart = 0x80000002;
+  static constexpr int kParameterEnd = 0x80000004;
+  static constexpr int kParameterSize = kParameterEnd - kParameterStart + 1;
+  static_assert(kParameterSize * sizeof(cpu_info) + 1 == arraysize(cpu_string),
+                "cpu_string has wrong size");
 
-    for (int parameter = 0x80000002; parameter <= parameter_end &&
-         cpu_string_ptr < &cpu_string[sizeof(cpu_string)]; parameter++) {
+  if (max_parameter >= kParameterEnd) {
+    size_t i = 0;
+    for (int parameter = kParameterStart; parameter <= kParameterEnd;
+         ++parameter) {
       __cpuid(cpu_info, parameter);
-      memcpy(cpu_string_ptr, cpu_info, sizeof(cpu_info));
-      cpu_string_ptr += sizeof(cpu_info);
+      memcpy(&cpu_string[i], cpu_info, sizeof(cpu_info));
+      i += sizeof(cpu_info);
     }
-    cpu_brand_.assign(cpu_string, cpu_string_ptr - cpu_string);
+    cpu_string[i] = '\0';
+    cpu_brand_ = cpu_string;
   }
 
-  const int parameter_containing_non_stop_time_stamp_counter = 0x80000007;
-  if (max_parameter >= parameter_containing_non_stop_time_stamp_counter) {
-    __cpuid(cpu_info, parameter_containing_non_stop_time_stamp_counter);
+  static constexpr int kParameterContainingNonStopTimeStampCounter = 0x80000007;
+  if (max_parameter >= kParameterContainingNonStopTimeStampCounter) {
+    __cpuid(cpu_info, kParameterContainingNonStopTimeStampCounter);
     has_non_stop_time_stamp_counter_ = (cpu_info[3] & (1 << 8)) != 0;
   }
 #elif defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
-  cpu_brand_.assign(*CpuInfoBrand());
+  cpu_brand_ = *CpuInfoBrand();
 #endif
 }
 
