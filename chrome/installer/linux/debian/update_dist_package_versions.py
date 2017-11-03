@@ -38,6 +38,7 @@ PACKAGE_FILTER = set([
     "gconf-service",
     "libasound2",
     "libatk1.0-0",
+    "libatk-bridge2.0-0",
     "libc6",
     "libcairo2",
     "libcups2",
