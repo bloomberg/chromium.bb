@@ -1,6 +1,8 @@
 # liblouis: Swiss German Grade 0 Braille
 #
 # -----------
+#-name: Schweizerdeutsche Basisschrift
+#
 #+locale:de-CH
 #+type:literary
 #+contraction:no

@@ -1,3 +1,5 @@
+#-name: U.S. English 8-dot computer braille for Windows
+
 #+locale:en-US
 #+type:computer
 #+dots:8

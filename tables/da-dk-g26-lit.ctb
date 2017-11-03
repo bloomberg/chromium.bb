@@ -23,6 +23,8 @@
 
 ### Table Metadata
 
+#-name: Dansk forkortet 6-punkt
+
 #+locale: da
 #+type: literary
 #+contraction: full

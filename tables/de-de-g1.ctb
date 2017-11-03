@@ -1,6 +1,8 @@
 # liblouis: German Grade 1 Braille
 #
 # -----------
+#-name: Deutsche Vollschrift
+#
 #+locale:de
 #+type:literary
 #+contraction:partial

@@ -27,6 +27,8 @@
 
 ### Table Metadata
 
+#-name: Dansk computer
+
 #+locale: da
 #+type: computer
 #+contraction: no

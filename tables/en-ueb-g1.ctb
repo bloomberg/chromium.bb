@@ -1,6 +1,8 @@
 # liblouis: Unified English Braille Code (Grade 1)
 #
 # -----------
+#-name: Unified English braille, grade 1
+#
 #+locale:en
 #+type:literary
 #+contraction:no

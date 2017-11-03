@@ -1,6 +1,8 @@
 # liblouis: English, U.S. grade 1 (EBAE) table
 #
 # -----------
+#-name: U.S. English grade 1 (EBAE)
+#
 #+locale:en-US
 #+type:literary
 #+contraction:no

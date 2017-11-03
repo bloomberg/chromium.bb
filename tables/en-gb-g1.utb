@@ -1,6 +1,8 @@
 # liblouis: U.K. English Grade 1 table
 #
 # ------------
+#-name: British English grade 1
+#
 #+locale:en-GB
 #+type:literary
 #+contraction:no

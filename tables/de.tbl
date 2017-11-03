@@ -1,3 +1,5 @@
+#-name: Deutsche Kurzschrift
+
 #+locale:de
 #+type:literary
 #+contraction:full

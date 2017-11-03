@@ -1,3 +1,5 @@
+#-name: Schweizerdeutsche Kurzschrift
+
 #+locale:de-CH
 #+type:literary
 #+contraction:full

@@ -1,6 +1,8 @@
 # liblouis: German Grade 0 Braille
 #
 # -----------
+#-name: Deutsche Basisschrift
+#
 #+locale:de
 #+type:literary
 #+contraction:no

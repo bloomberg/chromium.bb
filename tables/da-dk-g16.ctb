@@ -22,6 +22,8 @@
 
 ### Table Metadata
 
+#-name: Dansk fuldskrift 6-punkt
+
 #+locale: da
 #+type: literary
 #+contraction: no
