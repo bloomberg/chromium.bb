@@ -78,6 +78,9 @@ target(link_target_type, "libc++") {
     "//build/config/gcc:no_exceptions",
     "//build/config/coverage:default_coverage",
   ]
+  if (is_android && !libcpp_is_static) {
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+  }
   configs += [
     ":config",
     "//build/config/compiler:no_chromium_code",
