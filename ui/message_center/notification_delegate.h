@@ -48,10 +48,6 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
   // Called when the user attempts to disable the notification.
   virtual void DisableNotification();
 
-  // Indicates whether this notification should be displayed when there is
-  // fullscreen content being displayed.
-  virtual bool ShouldDisplayOverFullscreen() const;
-
  protected:
   virtual ~NotificationDelegate() {}
 

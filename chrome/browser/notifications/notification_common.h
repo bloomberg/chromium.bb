@@ -51,10 +51,6 @@ class NotificationCommon {
   // is updated.
   static void OpenNotificationSettings(
       content::BrowserContext* browser_context);
-
-  // Whether a web notification should be displayed when chrome is in full
-  // screen mode.
-  static bool ShouldDisplayOnFullScreen(Profile* profile, const GURL& origin);
 };
 
 // Metadata for PERSISTENT notifications.

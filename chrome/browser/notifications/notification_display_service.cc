@@ -82,11 +82,3 @@ void NotificationDisplayService::ProcessNotificationOperation(
       break;
   }
 }
-
-bool NotificationDisplayService::ShouldDisplayOverFullscreen(
-    const GURL& origin,
-    NotificationCommon::Type notification_type) {
-  NotificationHandler* handler = GetNotificationHandler(notification_type);
-  DCHECK(handler);
-  return handler->ShouldDisplayOnFullScreen(profile_, origin.spec());
-}

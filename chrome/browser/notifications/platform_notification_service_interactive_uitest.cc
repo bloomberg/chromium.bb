@@ -243,7 +243,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       KeepAliveOrigin::PENDING_NOTIFICATION_CLICK_EVENT));
 #endif
 
-  EXPECT_FALSE(notifications[0].delegate()->ShouldDisplayOverFullscreen());
+  EXPECT_EQ(message_center::FullscreenVisibility::NONE,
+            notifications[0].fullscreen_visibility());
 
   ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
   EXPECT_EQ("action_none", script_result);
@@ -692,11 +693,6 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        TestShouldDisplayFullscreen) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
-  std::string script_result;
-  ASSERT_TRUE(RunScript(
-      "DisplayPersistentNotification('display_normal')", &script_result));
-  EXPECT_EQ("ok", script_result);
-
   // Set the page fullscreen
   browser()->exclusive_access_manager()->fullscreen_controller()->
       ToggleBrowserFullscreenMode();
@@ -712,11 +708,17 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   ASSERT_TRUE(browser()->window()->IsActive())
       << "Browser is active after going fullscreen";
 
+  std::string script_result;
+  ASSERT_TRUE(RunScript("DisplayPersistentNotification('display_normal')",
+                        &script_result));
+  EXPECT_EQ("ok", script_result);
+
   std::vector<message_center::Notification> notifications =
       GetDisplayedNotifications(true /* is_persistent */);
   ASSERT_EQ(1u, notifications.size());
 
-  EXPECT_TRUE(notifications[0].delegate()->ShouldDisplayOverFullscreen());
+  EXPECT_EQ(message_center::FullscreenVisibility::OVER_USER,
+            notifications[0].fullscreen_visibility());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
@@ -758,7 +760,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       GetDisplayedNotifications(true /* is_persistent */);
   ASSERT_EQ(1u, notifications.size());
 
-  EXPECT_FALSE(notifications[0].delegate()->ShouldDisplayOverFullscreen());
+  EXPECT_EQ(message_center::FullscreenVisibility::NONE,
+            notifications[0].fullscreen_visibility());
 }
 
 #endif  // defined(OS_MACOSX)

@@ -20,8 +20,6 @@ class FullscreenNotificationBlocker
       message_center::MessageCenter* message_center);
   ~FullscreenNotificationBlocker() override;
 
-  bool is_fullscreen_mode() const { return is_fullscreen_mode_; }
-
   // message_center::NotificationBlocker overrides:
   void CheckState() override;
   bool ShouldShowNotificationAsPopup(

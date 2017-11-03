@@ -39,12 +39,6 @@ class NotificationHandler {
 
   // Open notification settings.
   virtual void OpenSettings(Profile* profile) {}
-
-  // Whether a notification should be displayed if in full screen. This is
-  // ignored by native notifications since the decision is made by the
-  // underlying OS in that case.
-  virtual bool ShouldDisplayOnFullScreen(Profile* profile,
-                                         const std::string& origin);
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_HANDLER_H_

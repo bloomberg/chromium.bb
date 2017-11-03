@@ -588,10 +588,10 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayNormal) {
   message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
 
-  // Because the webpage is not fullscreen, ShouldDisplayOverFullscreen will be
-  // false.
-  EXPECT_FALSE(
-      (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
+  // Because the webpage is not fullscreen, there will be no special fullscreen
+  // visibility tagged on the notification.
+  EXPECT_EQ(message_center::FullscreenVisibility::NONE,
+            (*notifications.rbegin())->fullscreen_visibility());
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
@@ -600,12 +600,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
 #endif
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  // Creates a simple notification.
   AllowAllOrigins();
   ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
-
-  std::string result = CreateSimpleNotification(browser(), true);
-  EXPECT_NE("-1", result);
 
   // Set the page fullscreen
   browser()->exclusive_access_manager()->fullscreen_controller()->
@@ -621,13 +617,16 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
 
   ASSERT_TRUE(browser()->window()->IsActive());
 
+  // Creates a simple notification.
+  std::string result = CreateSimpleNotification(browser(), true);
+  EXPECT_NE("-1", result);
   ASSERT_EQ(1, GetNotificationCount());
   message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
 
-  // Because the webpage is fullscreen, ShouldDisplayOverFullscreen will be true
-  EXPECT_TRUE(
-      (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
+  // Because the webpage is fullscreen, the fullscreen bit will be set.
+  EXPECT_EQ(message_center::FullscreenVisibility::OVER_USER,
+            (*notifications.rbegin())->fullscreen_visibility());
 }
 
 // The Fake OSX fullscreen window doesn't like drawing a second fullscreen
@@ -671,10 +670,10 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
   ASSERT_EQ(1, GetNotificationCount());
   message_center::NotificationList::Notifications notifications =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
-  // Because the second page is the top-most fullscreen,
-  // ShouldDisplayOverFullscreen will be false
-  EXPECT_FALSE(
-      (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
+  // Because the second page is the top-most fullscreen, the fullscreen bit
+  // won't be set.
+  EXPECT_EQ(message_center::FullscreenVisibility::NONE,
+            (*notifications.rbegin())->fullscreen_visibility());
 }
 #endif
 
