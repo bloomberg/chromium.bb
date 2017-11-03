@@ -295,10 +295,10 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceInfo(
       static_cast<cc_blink::WebLayerImpl*>(web_layer_.get())->layer());
 }
 
-void ChildFrameCompositingHelper::SetFallbackSurfaceId(
-    const viz::SurfaceId& surface_id,
+void ChildFrameCompositingHelper::SetFallbackSurfaceInfo(
+    const viz::SurfaceInfo& surface_info,
     const viz::SurfaceSequence& sequence) {
-  fallback_surface_id_ = surface_id;
+  fallback_surface_id_ = surface_info.id();
   // The RWHV creates a destruction dependency on the surface that needs to be
   // satisfied. The reference factory will satisfy it when a new reference has
   // been created.
@@ -314,7 +314,12 @@ void ChildFrameCompositingHelper::SetFallbackSurfaceId(
     }
   }
 
-  surface_layer_->SetFallbackSurfaceId(surface_id);
+  if (!surface_layer_) {
+    SetPrimarySurfaceInfo(surface_info);
+    return;
+  }
+
+  surface_layer_->SetFallbackSurfaceId(surface_info.id());
 }
 
 void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {

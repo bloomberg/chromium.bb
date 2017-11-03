@@ -184,6 +184,9 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
+  void ResizeDueToAutoResize(const gfx::Size& new_size,
+                             uint64_t sequence_number);
+
   // WebContentsObserver implementation.
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
@@ -196,7 +199,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // GuestHost implementation.
   int LoadURLWithParams(
       const NavigationController::LoadURLParams& load_params) override;
-  void GuestResizeDueToAutoResize(const gfx::Size& new_size) override;
   void SizeContents(const gfx::Size& new_size) override;
   void WillDestroy() override;
 
@@ -350,6 +352,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnUpdateResizeParams(int instance_id,
                             const gfx::Rect& frame_rect,
                             const ScreenInfo& screen_info,
+                            uint64_t sequence_number,
                             const viz::LocalSurfaceId& local_surface_id);
 
   void OnTextInputStateChanged(const TextInputState& params);
@@ -433,9 +436,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // prior to attachment if it is created via a call to window.open and
   // maintains a JavaScript reference to its opener.
   bool has_render_view_;
-
-  // Last seen size of guest contents (by SwapCompositorFrame).
-  gfx::Size last_seen_view_size_;
 
   bool is_in_destruction_;
 
