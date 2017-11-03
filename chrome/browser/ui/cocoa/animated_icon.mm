@@ -37,6 +37,10 @@ void AnimatedIcon::PaintIcon(NSRect frame) {
   canvas.Restore();
 }
 
+bool AnimatedIcon::IsAnimating() const {
+  return animation_->is_animating();
+}
+
 void AnimatedIcon::AnimationEnded(const gfx::Animation* animation) {}
 
 void AnimatedIcon::AnimationProgressed(const gfx::Animation* animation) {

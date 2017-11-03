@@ -1555,7 +1555,7 @@ bool IsTabDetachingInFullscreenEnabled() {
   if (inForeground) {
     AppToolbarButton* appMenuButton =
         static_cast<AppToolbarButton*>([toolbarController_ appMenuButton]);
-    [appMenuButton animateIfPossible];
+    [appMenuButton animateIfPossibleWithDelay:YES];
   }
 }
 

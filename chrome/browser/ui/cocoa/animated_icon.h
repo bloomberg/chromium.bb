@@ -30,11 +30,15 @@ class AnimatedIcon : public gfx::AnimationDelegate {
   void set_color(SkColor color) { color_ = color; }
 
   // Animates the icon. Restart from the beginning if it's already running.
-  void Animate();
+  // Virtual for testing.
+  virtual void Animate();
 
   // Paints the icon on the current drawing context, centered in |frame|.
   // Requires a NSGraphicsContext to be present.
   void PaintIcon(NSRect frame);
+
+  // Returns true if |animation_| is currently animating. Virtual for testing.
+  virtual bool IsAnimating() const;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
