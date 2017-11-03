@@ -824,6 +824,10 @@ Profile* ProfileImpl::GetOriginalProfile() {
   return this;
 }
 
+const Profile* ProfileImpl::GetOriginalProfile() const {
+  return this;
+}
+
 bool ProfileImpl::IsSupervised() const {
   return !GetPrefs()->GetString(prefs::kSupervisedUserId).empty();
 }

@@ -50,6 +50,12 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
       content::BrowserContext* context,
       bool force_immediate_load);
 
+  // Returns true if |context| is a managed profile. CHECK-fails if the profile
+  // does not have a ProfilePolicyConnector yet (i.e. if
+  // ProfilePolicyConnectorFactory::CreateForBrowserContext has not been called
+  // for it yet).
+  static bool IsProfileManaged(const content::BrowserContext* context);
+
   // Overrides the |connector| for the given |context|; use only in tests.
   // Once this class becomes a proper BCKS then it can reuse the testing
   // methods of BrowserContextKeyedServiceFactory.
@@ -68,7 +74,7 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
   ~ProfilePolicyConnectorFactory() override;
 
   ProfilePolicyConnector* GetForBrowserContextInternal(
-      content::BrowserContext* context);
+      const content::BrowserContext* context) const;
 
   std::unique_ptr<ProfilePolicyConnector> CreateForBrowserContextInternal(
       content::BrowserContext* context,
@@ -81,7 +87,7 @@ class ProfilePolicyConnectorFactory : public BrowserContextKeyedBaseFactory {
   bool HasTestingFactory(content::BrowserContext* context) override;
   void CreateServiceNow(content::BrowserContext* context) override;
 
-  typedef std::map<content::BrowserContext*, ProfilePolicyConnector*>
+  typedef std::map<const content::BrowserContext*, ProfilePolicyConnector*>
       ConnectorMap;
   ConnectorMap connectors_;
   std::list<ConfigurationPolicyProvider*> test_providers_;

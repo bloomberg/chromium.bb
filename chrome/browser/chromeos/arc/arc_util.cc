@@ -230,18 +230,8 @@ bool IsArcAllowedForProfile(const Profile* profile) {
 
 bool IsArcMigrationAllowedByPolicyForProfile(const Profile* profile) {
   // Always allow migration for unmanaged users.
-  // We're checking if kArcEnabled is managed to find out if the profile is
-  // managed. This is equivalent, because kArcEnabled is marked
-  // 'default_for_enterprise_users': False in policy_templates.json).
-  // Also note that IsArcPlayStoreEnabledPreferenceManagedForProfile cannot be
-  // used here due to function call chain (it calls IsArcAllowedForProfile
-  // again).
-  // TODO(pmarko): crbug.com/771666: Figure out a nicer way to do this on a
-  // const Profile*.
-  if (!profile ||
-      !profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled)) {
+  if (!profile || !policy_util::IsAccountManaged(profile))
     return true;
-  }
 
   // Use the profile path as unique identifier for profile.
   const base::FilePath path = profile->GetPath();

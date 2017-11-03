@@ -37,7 +37,7 @@ constexpr size_t kEcryptfsMigrationActionMaxValue =
     static_cast<size_t>(EcryptfsMigrationAction::kAskForEcryptfsArcUsers);
 
 // Returns true if the account is managed. Otherwise false.
-bool IsAccountManaged(Profile* profile);
+bool IsAccountManaged(const Profile* profile);
 
 // Returns true if ARC is disabled by --enterprise-diable-arc flag.
 bool IsArcDisabledForEnterprise();

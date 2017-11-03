@@ -726,6 +726,12 @@ Profile* TestingProfile::GetOriginalProfile() {
   return this;
 }
 
+const Profile* TestingProfile::GetOriginalProfile() const {
+  if (original_profile_)
+    return original_profile_;
+  return this;
+}
+
 void TestingProfile::SetSupervisedUserId(const std::string& id) {
   supervised_user_id_ = id;
   if (!id.empty())

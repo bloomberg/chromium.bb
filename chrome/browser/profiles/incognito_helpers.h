@@ -15,6 +15,10 @@ namespace chrome {
 content::BrowserContext* GetBrowserContextRedirectedInIncognito(
     content::BrowserContext* context);
 
+// Returns the original browser context even for Incognito contexts.
+const content::BrowserContext* GetBrowserContextRedirectedInIncognito(
+    const content::BrowserContext* context);
+
 // Returns non-NULL even for Incognito contexts so that a separate
 // instance of a service is created for the Incognito context.
 content::BrowserContext* GetBrowserContextOwnInstanceInIncognito(

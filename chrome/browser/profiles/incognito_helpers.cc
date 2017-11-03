@@ -13,6 +13,11 @@ content::BrowserContext* GetBrowserContextRedirectedInIncognito(
   return static_cast<Profile*>(context)->GetOriginalProfile();
 }
 
+const content::BrowserContext* GetBrowserContextRedirectedInIncognito(
+    const content::BrowserContext* context) {
+  return static_cast<const Profile*>(context)->GetOriginalProfile();
+}
+
 content::BrowserContext* GetBrowserContextOwnInstanceInIncognito(
     content::BrowserContext* context) {
   return context;
