@@ -25,7 +25,7 @@ var OfflinePage;
  *   creationTime: number,
  *   id: string,
  *   namespace: string,
- *   lastAttempt: number,
+ *   lastAttemptTime: number,
  *   requestOrigin: string
  * }}
  */

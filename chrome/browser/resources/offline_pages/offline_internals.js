@@ -35,18 +35,18 @@ cr.define('offlineInternals', function() {
 
     var template = $('stored-pages-table-row');
     var td = template.content.querySelectorAll('td');
-    for (var i = 0; i < pages.length; i++) {
+    for (let page of pages) {
       var checkbox = td[0].querySelector('input');
-      checkbox.setAttribute('value', pages[i].id);
+      checkbox.setAttribute('value', page.id);
 
       var link = td[1].querySelector('a');
-      link.setAttribute('href', pages[i].onlineUrl);
-      link.textContent = pages[i].onlineUrl;
+      link.setAttribute('href', page.onlineUrl);
+      link.textContent = page.onlineUrl;
 
-      td[2].textContent = pages[i].namespace;
-      td[3].textContent = Math.round(pages[i].size / 1024);
-      td[4].textContent = pages[i].isExpired;
-      td[5].textContent = pages[i].requestOrigin;
+      td[2].textContent = page.namespace;
+      td[3].textContent = Math.round(page.size / 1024);
+      td[4].textContent = page.isExpired;
+      td[5].textContent = page.requestOrigin;
 
       var row = document.importNode(template.content, true);
       storedPagesTable.appendChild(row);
@@ -65,14 +65,14 @@ cr.define('offlineInternals', function() {
 
     var template = $('request-queue-table-row');
     var td = template.content.querySelectorAll('td');
-    for (var i = 0; i < requests.length; i++) {
+    for (let request of requests) {
       var checkbox = td[0].querySelector('input');
-      checkbox.setAttribute('value', requests[i].id);
+      checkbox.setAttribute('value', request.id);
 
-      td[1].textContent = requests[i].onlineUrl;
-      td[2].textContent = new Date(requests[i].creationTime);
-      td[3].textContent = requests[i].status;
-      td[4].textContent = requests[i].requestOrigin;
+      td[1].textContent = request.onlineUrl;
+      td[2].textContent = new Date(request.creationTime);
+      td[3].textContent = request.status;
+      td[4].textContent = request.requestOrigin;
 
       var row = document.importNode(template.content, true);
       requestQueueTable.appendChild(row);
@@ -171,21 +171,26 @@ cr.define('offlineInternals', function() {
 
   /**
    * Downloads all the stored page and request queue information into a file.
+   * Also translates all the fields representing datetime into human-readable
+   * date strings.
    * TODO(chili): Create a CSV writer that can abstract out the line joining.
    */
   function dumpAsJson() {
     var json = JSON.stringify(
-        {offlinePages: offlinePages, savePageRequests: savePageRequests}, null,
+        {offlinePages: offlinePages, savePageRequests: savePageRequests},
+        function(key, value) {
+          return key.endsWith('Time') ? new Date(value).toString() : value;
+        },
         2);
 
     $('dump-box').value = json;
     $('dump-info').textContent = '';
-    $('dump').showModal();
+    $('dump-modal').showModal();
     $('dump-box').select();
   }
 
   function closeDump() {
-    $('dump').close();
+    $('dump-modal').close();
     $('dump-box').value = '';
   }
 
