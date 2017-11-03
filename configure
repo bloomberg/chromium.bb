@@ -314,7 +314,6 @@ EXPERIMENT_LIST="
     smooth_hv
     lgt
     lgt_from_pred
-    ncobmc_adapt_weight
     bgsprite
     var_tx_no_tx_mode
     simplify_tx_mode

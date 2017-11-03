@@ -218,17 +218,8 @@ typedef struct frame_contexts {
                                   [CDF_SIZE(INTERINTRA_MODES)];
   aom_prob motion_mode_prob[BLOCK_SIZES_ALL][MOTION_MODES - 1];
   aom_cdf_prob motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)];
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  aom_prob ncobmc_mode_prob[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES - 1];
-  aom_cdf_prob ncobmc_mode_cdf[ADAPT_OVERLAP_BLOCKS]
-                              [CDF_SIZE(MAX_NCOBMC_MODES)];
-#endif
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  aom_prob ncobmc_prob[BLOCK_SIZES_ALL][OBMC_FAMILY_MODES - 1];
-  aom_cdf_prob ncobmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(OBMC_FAMILY_MODES)];
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   aom_prob obmc_prob[BLOCK_SIZES_ALL];
-#if CONFIG_NEW_MULTISYMBOL || CONFIG_NCOBMC_ADAPT_WEIGHT
+#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)];
 #endif  // CONFIG_NEW_MULTISYMBOL
   aom_prob intra_inter_prob[INTRA_INTER_CONTEXTS];
@@ -449,12 +440,6 @@ typedef struct FRAME_COUNTS {
   unsigned int wedge_interintra[BLOCK_SIZES_ALL][2];
   unsigned int compound_interinter[BLOCK_SIZES_ALL][COMPOUND_TYPES];
   unsigned int motion_mode[BLOCK_SIZES_ALL][MOTION_MODES];
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  unsigned int ncobmc_mode[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES];
-#endif
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  unsigned int ncobmc[BLOCK_SIZES_ALL][OBMC_FAMILY_MODES];
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   unsigned int obmc[BLOCK_SIZES_ALL][2];
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
   unsigned int comp_inter[COMP_INTER_CONTEXTS][2];
@@ -603,10 +588,6 @@ extern const aom_tree_index
 extern const aom_tree_index av1_ext_tx_tree[EXT_TX_SET_TYPES]
                                            [TREE_SIZE(TX_TYPES)];
 extern const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)];
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-extern const aom_tree_index av1_ncobmc_mode_tree[TREE_SIZE(MAX_NCOBMC_MODES)];
-extern const aom_tree_index av1_ncobmc_tree[TREE_SIZE(OBMC_FAMILY_MODES)];
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #if CONFIG_LOOP_RESTORATION
 #define RESTORE_NONE_SGRPROJ_PROB 64
 #define RESTORE_NONE_WIENER_PROB 64

@@ -278,7 +278,7 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
 static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                     MODE_INFO *mi, aom_reader *r) {
   MB_MODE_INFO *mbmi = &mi->mbmi;
-#if CONFIG_NEW_MULTISYMBOL || CONFIG_NCOBMC_ADAPT_WEIGHT
+#if CONFIG_NEW_MULTISYMBOL
   (void)cm;
 #endif
 
@@ -288,19 +288,7 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
   FRAME_COUNTS *counts = xd->counts;
 
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return SIMPLE_TRANSLATION;
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  if (last_motion_mode_allowed == NCOBMC_ADAPT_WEIGHT) {
-    motion_mode = aom_read_symbol(r, xd->tile_ctx->ncobmc_cdf[mbmi->sb_type],
-                                  OBMC_FAMILY_MODES, ACCT_STR);
-    if (counts) ++counts->ncobmc[mbmi->sb_type][motion_mode];
-    return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
-  } else if (last_motion_mode_allowed == OBMC_CAUSAL) {
-    motion_mode =
-        aom_read_symbol(r, xd->tile_ctx->obmc_cdf[mbmi->sb_type], 2, ACCT_STR);
-    if (counts) ++counts->obmc[mbmi->sb_type][motion_mode];
-    return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
-  } else {
-#else
+
   if (last_motion_mode_allowed == OBMC_CAUSAL) {
 #if CONFIG_NEW_MULTISYMBOL
     motion_mode =
@@ -311,7 +299,6 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
     if (counts) ++counts->obmc[mbmi->sb_type][motion_mode];
     return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
   } else {
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
     motion_mode =
         aom_read_symbol(r, xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
                         MOTION_MODES, ACCT_STR);
@@ -319,26 +306,6 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
     return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
   }
 }
-
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-static void read_ncobmc_mode(MACROBLOCKD *xd, MODE_INFO *mi,
-                             NCOBMC_MODE ncobmc_mode[2], aom_reader *r) {
-  MB_MODE_INFO *mbmi = &mi->mbmi;
-  FRAME_COUNTS *counts = xd->counts;
-  ADAPT_OVERLAP_BLOCK ao_block = adapt_overlap_block_lookup[mbmi->sb_type];
-  if (mbmi->motion_mode != NCOBMC_ADAPT_WEIGHT) return;
-
-  ncobmc_mode[0] = aom_read_symbol(r, xd->tile_ctx->ncobmc_mode_cdf[ao_block],
-                                   MAX_NCOBMC_MODES, ACCT_STR);
-  if (counts) ++counts->ncobmc_mode[ao_block][ncobmc_mode[0]];
-
-  if (mi_size_wide[mbmi->sb_type] != mi_size_high[mbmi->sb_type]) {
-    ncobmc_mode[1] = aom_read_symbol(r, xd->tile_ctx->ncobmc_mode_cdf[ao_block],
-                                     MAX_NCOBMC_MODES, ACCT_STR);
-    if (counts) ++counts->ncobmc_mode[ao_block][ncobmc_mode[1]];
-  }
-}
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 
 static PREDICTION_MODE read_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                                 aom_reader *r, int16_t ctx) {
@@ -2522,10 +2489,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   if (mbmi->ref_frame[1] != INTRA_FRAME)
     mbmi->motion_mode = read_motion_mode(cm, xd, mi, r);
-
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  read_ncobmc_mode(xd, mi, mbmi->ncobmc_mode, r);
-#endif
 
 #if CONFIG_COMPOUND_SINGLEREF
   if (is_singleref_comp_mode) assert(mbmi->motion_mode == SIMPLE_TRANSLATION);

@@ -388,23 +388,13 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                                NULL);
     }
     for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-      av1_cost_tokens_from_cdf(x->motion_mode_cost2[i], fc->ncobmc_cdf[i],
-                               NULL);
-#endif
-#if CONFIG_NEW_MULTISYMBOL || CONFIG_NCOBMC_ADAPT_WEIGHT
+#if CONFIG_NEW_MULTISYMBOL
       av1_cost_tokens_from_cdf(x->motion_mode_cost1[i], fc->obmc_cdf[i], NULL);
 #else
       x->motion_mode_cost1[i][0] = av1_cost_bit(fc->obmc_prob[i], 0);
       x->motion_mode_cost1[i][1] = av1_cost_bit(fc->obmc_prob[i], 1);
 #endif
     }
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-    for (i = ADAPT_OVERLAP_BLOCK_8X8; i < ADAPT_OVERLAP_BLOCKS; ++i) {
-      av1_cost_tokens_from_cdf(x->ncobmc_mode_cost[i], fc->ncobmc_mode_cdf[i],
-                               NULL);
-    }
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   }
 }
 

@@ -70,17 +70,6 @@ static INLINE int is_inter_mode(PREDICTION_MODE mode) {
   return mode >= NEARESTMV && mode <= NEW_NEWMV;
 }
 
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-typedef struct superblock_mi_boundaries {
-  int mi_row_begin;
-  int mi_col_begin;
-  int mi_row_end;
-  int mi_col_end;
-} SB_MI_BD;
-
-typedef struct { int16_t KERNEL[4][MAX_SB_SIZE][MAX_SB_SIZE]; } NCOBMC_KERNELS;
-#endif
-
 typedef struct {
   uint8_t *plane[MAX_MB_PLANE];
   int stride[MAX_MB_PLANE];
@@ -367,13 +356,6 @@ typedef struct MB_MODE_INFO {
   SEG_MASK_TYPE mask_type;
   MOTION_MODE motion_mode;
   int overlappable_neighbors[2];
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  // Applying different weighting kernels in ncobmc
-  // In current implementation, interpolation modes only defined for squared
-  // blocks. A rectangular block is divided into two squared blocks and each
-  // squared block has an interpolation mode.
-  NCOBMC_MODE ncobmc_mode[2];
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   int_mv mv[2];
   int_mv pred_mv[2];
   uint8_t ref_mv_idx;
@@ -765,12 +747,6 @@ typedef struct macroblockd {
 
 #if CONFIG_CFL
   CFL_CTX *cfl;
-#endif
-
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  uint8_t *ncobmc_pred_buf[MAX_MB_PLANE];
-  int ncobmc_pred_buf_stride[MAX_MB_PLANE];
-  SB_MI_BD sb_mi_bd;
 #endif
 } MACROBLOCKD;
 
@@ -1376,14 +1352,6 @@ static INLINE int check_num_overlappable_neighbors(const MB_MODE_INFO *mbmi) {
   return !(mbmi->overlappable_neighbors[0] == 0 &&
            mbmi->overlappable_neighbors[1] == 0);
 }
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-static INLINE NCOBMC_MODE ncobmc_mode_allowed_bsize(BLOCK_SIZE bsize) {
-  if (bsize < BLOCK_8X8 || bsize >= BLOCK_64X64)
-    return NO_OVERLAP;
-  else
-    return MAX_NCOBMC_MODES;
-}
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 
 static INLINE MOTION_MODE
 motion_mode_allowed(int block, const WarpedMotionParams *gm_params,
@@ -1410,13 +1378,7 @@ motion_mode_allowed(int block, const WarpedMotionParams *gm_params,
 #endif
       return WARPED_CAUSAL;
     }
-
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-    if (ncobmc_mode_allowed_bsize(mbmi->sb_type) < NO_OVERLAP)
-      return NCOBMC_ADAPT_WEIGHT;
-    else
-#endif
-      return OBMC_CAUSAL;
+    return OBMC_CAUSAL;
   } else {
     return SIMPLE_TRANSLATION;
   }

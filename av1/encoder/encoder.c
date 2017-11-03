@@ -49,9 +49,6 @@
 #include "av1/encoder/hash_motion.h"
 #endif
 #include "av1/encoder/mbgraph.h"
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-#include "av1/common/ncobmc_kernels.h"
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #include "av1/encoder/picklpf.h"
 #if CONFIG_LOOP_RESTORATION
 #include "av1/encoder/pickrst.h"
@@ -2571,10 +2568,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   cm->alloc_mi = enc_alloc_mi;
   cm->free_mi = enc_free_mi;
   cm->setup_mi = enc_setup_mi;
-
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  get_default_ncobmc_kernels(cm);
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 
   CHECK_MEM_ERROR(cm, cm->fc,
                   (FRAME_CONTEXT *)aom_memalign(32, sizeof(*cm->fc)));

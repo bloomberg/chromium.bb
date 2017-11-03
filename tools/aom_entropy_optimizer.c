@@ -524,29 +524,6 @@ int main(int argc, const char **argv) {
   optimize_cdf_table(&fc.obmc[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob "
                      "default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)]");
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  cts_each_dim[0] = ADAPT_OVERLAP_BLOCKS;
-  cts_each_dim[1] = MAX_NCOBMC_MODES;
-  optimize_entropy_table(
-      &fc.ncobmc_mode[0][0], probsfile, 2, cts_each_dim, av1_ncobmc_mode_tree,
-      0,
-      "static const aom_prob default_ncobmc_mode_prob[ADAPT_OVERLAP_BLOCKS]"
-      "[MAX_NCOBMC_MODES - 1]");
-  optimize_cdf_table(&fc.ncobmc_mode[0][0], probsfile, 2, cts_each_dim,
-                     "static const aom_cdf_prob\n"
-                     "default_ncobmc_mode_cdf[ADAPT_OVERLAP_BLOCKS]"
-                     "[CDF_SIZE(MAX_NCOBMC_MODES)]");
-  cts_each_dim[0] = BLOCK_SIZES_ALL;
-  cts_each_dim[1] = OBMC_FAMILY_MODES;
-  optimize_entropy_table(
-      &fc.ncobmc[0][0], probsfile, 2, cts_each_dim, av1_ncobmc_tree, 0,
-      "static const aom_prob default_ncobmc_prob[BLOCK_SIZES_ALL]"
-      "[OBMC_FAMILY_MODES - 1]");
-  optimize_cdf_table(&fc.ncobmc[0][0], probsfile, 2, cts_each_dim,
-                     "static const aom_cdf_prob\n"
-                     "default_ncobmc_cdf[BLOCK_SIZES_ALL]"
-                     "[CDF_SIZE(OBMC_FAMILY_MODES)]");
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 
   /* Intra/inter flag */
   cts_each_dim[0] = INTRA_INTER_CONTEXTS;

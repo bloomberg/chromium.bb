@@ -480,94 +480,6 @@ static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
 }
 
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-static void set_mode_info_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
-                                  int mi_row, int mi_col) {
-  const int offset = mi_row * cm->mi_stride + mi_col;
-  xd->mi = cm->mi_grid_visible + offset;
-  xd->mi[0] = &cm->mi[offset];
-}
-
-static void get_ncobmc_recon(AV1_COMMON *const cm, MACROBLOCKD *xd, int mi_row,
-                             int mi_col, int bsize, int mode) {
-  uint8_t *pred_buf[4][MAX_MB_PLANE];
-  int pred_stride[MAX_MB_PLANE] = { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE };
-  // target block in pxl
-  int pxl_row = mi_row << MI_SIZE_LOG2;
-  int pxl_col = mi_col << MI_SIZE_LOG2;
-
-  int plane;
-#if CONFIG_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    int len = sizeof(uint16_t);
-    ASSIGN_ALIGNED_PTRS_HBD(pred_buf[0], cm->ncobmcaw_buf[0], MAX_SB_SQUARE,
-                            len);
-    ASSIGN_ALIGNED_PTRS_HBD(pred_buf[1], cm->ncobmcaw_buf[1], MAX_SB_SQUARE,
-                            len);
-    ASSIGN_ALIGNED_PTRS_HBD(pred_buf[2], cm->ncobmcaw_buf[2], MAX_SB_SQUARE,
-                            len);
-    ASSIGN_ALIGNED_PTRS_HBD(pred_buf[3], cm->ncobmcaw_buf[3], MAX_SB_SQUARE,
-                            len);
-  } else {
-#endif  // CONFIG_HIGHBITDEPTH
-    ASSIGN_ALIGNED_PTRS(pred_buf[0], cm->ncobmcaw_buf[0], MAX_SB_SQUARE);
-    ASSIGN_ALIGNED_PTRS(pred_buf[1], cm->ncobmcaw_buf[1], MAX_SB_SQUARE);
-    ASSIGN_ALIGNED_PTRS(pred_buf[2], cm->ncobmcaw_buf[2], MAX_SB_SQUARE);
-    ASSIGN_ALIGNED_PTRS(pred_buf[3], cm->ncobmcaw_buf[3], MAX_SB_SQUARE);
-#if CONFIG_HIGHBITDEPTH
-  }
-#endif
-  av1_get_ext_blk_preds(cm, xd, bsize, mi_row, mi_col, pred_buf, pred_stride);
-  av1_get_ori_blk_pred(cm, xd, bsize, mi_row, mi_col, pred_buf[3], pred_stride);
-  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-    build_ncobmc_intrpl_pred(cm, xd, plane, pxl_row, pxl_col, bsize, pred_buf,
-                             pred_stride, mode);
-  }
-}
-
-static void av1_get_ncobmc_recon(AV1_COMMON *const cm, MACROBLOCKD *const xd,
-                                 int bsize, const int mi_row, const int mi_col,
-                                 const NCOBMC_MODE modes) {
-  const int mi_width = mi_size_wide[bsize];
-  const int mi_height = mi_size_high[bsize];
-
-  assert(bsize >= BLOCK_8X8);
-
-  reset_xd_boundary(xd, mi_row, mi_height, mi_col, mi_width, cm->mi_rows,
-                    cm->mi_cols);
-  get_ncobmc_recon(cm, xd, mi_row, mi_col, bsize, modes);
-}
-
-static void recon_ncobmc_intrpl_pred(AV1_COMMON *const cm,
-                                     MACROBLOCKD *const xd, int mi_row,
-                                     int mi_col, BLOCK_SIZE bsize) {
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const int mi_width = mi_size_wide[bsize];
-  const int mi_height = mi_size_high[bsize];
-  const int hbs = AOMMAX(mi_size_wide[bsize] / 2, mi_size_high[bsize] / 2);
-  const BLOCK_SIZE sqr_blk = bsize_2_sqr_bsize[bsize];
-  if (mi_width > mi_height) {
-    // horizontal partition
-    av1_get_ncobmc_recon(cm, xd, sqr_blk, mi_row, mi_col, mbmi->ncobmc_mode[0]);
-    xd->mi += hbs;
-    av1_get_ncobmc_recon(cm, xd, sqr_blk, mi_row, mi_col + hbs,
-                         mbmi->ncobmc_mode[1]);
-  } else if (mi_height > mi_width) {
-    // vertical partition
-    av1_get_ncobmc_recon(cm, xd, sqr_blk, mi_row, mi_col, mbmi->ncobmc_mode[0]);
-    xd->mi += hbs * xd->mi_stride;
-    av1_get_ncobmc_recon(cm, xd, sqr_blk, mi_row + hbs, mi_col,
-                         mbmi->ncobmc_mode[1]);
-  } else {
-    av1_get_ncobmc_recon(cm, xd, sqr_blk, mi_row, mi_col, mbmi->ncobmc_mode[0]);
-  }
-  set_mode_info_offsets(cm, xd, mi_row, mi_col);
-  // restore dst buffer and mode info
-  av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
-                       mi_col);
-}
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
-
 static void decode_token_and_recon_block(AV1Decoder *const pbi,
                                          MACROBLOCKD *const xd, int mi_row,
                                          int mi_col, aom_reader *r,
@@ -695,15 +607,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 #endif
     }
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-    if (mbmi->motion_mode == NCOBMC_ADAPT_WEIGHT) {
-      int plane;
-      recon_ncobmc_intrpl_pred(cm, xd, mi_row, mi_col, bsize);
-      for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-        get_pred_from_intrpl_buf(xd, mi_row, mi_col, bsize, plane);
-      }
-    }
-#endif
     // Reconstruction
     if (!mbmi->skip) {
       int eobtotal = 0;
@@ -2433,10 +2336,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
         for (mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
              mi_col += cm->mib_size) {
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-          alloc_ncobmc_pred_buffer(&td->xd);
-          set_sb_mi_boundaries(cm, &td->xd, mi_row, mi_col);
-#endif
 #if CONFIG_SYMBOLRATE
           av1_record_superblock(td->xd.counts);
 #endif
@@ -2445,9 +2344,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #if NC_MODE_INFO
           detoken_and_recon_sb(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
                                cm->sb_size);
-#endif
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-          free_ncobmc_pred_buffer(&td->xd);
 #endif
 #if CONFIG_LPF_SB
           if (USE_LOOP_FILTER_SUPERBLOCK) {
@@ -3493,10 +3389,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.compound_interinter)));
   assert(!memcmp(cm->counts.motion_mode, zero_counts.motion_mode,
                  sizeof(cm->counts.motion_mode)));
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  assert(!memcmp(cm->counts.ncobmc_mode, zero_counts.ncobmc_mode,
-                 sizeof(cm->counts.ncobmc_mode)));
-#endif
   assert(!memcmp(cm->counts.intra_inter, zero_counts.intra_inter,
                  sizeof(cm->counts.intra_inter)));
 #if CONFIG_COMPOUND_SINGLEREF

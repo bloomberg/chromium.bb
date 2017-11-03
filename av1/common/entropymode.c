@@ -928,158 +928,6 @@ static const aom_cdf_prob
     };
 #endif  // CONFIG_NEW_MULTISYMBOL
 
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-#ifdef TWO_MODE
-const aom_tree_index av1_ncobmc_mode_tree[TREE_SIZE(MAX_NCOBMC_MODES)] = {
-  -NCOBMC_MODE_0, -NCOBMC_MODE_1
-};
-#else
-const aom_tree_index av1_ncobmc_mode_tree[TREE_SIZE(MAX_NCOBMC_MODES)] = {
-  -NCOBMC_MODE_0, 2,
-  -NCOBMC_MODE_1, 4,
-  -NCOBMC_MODE_2, 6,
-  -NCOBMC_MODE_3, 8,
-  -NCOBMC_MODE_4, 10,
-  -NCOBMC_MODE_5, 12,
-  -NCOBMC_MODE_6, -NCOBMC_MODE_7
-};
-#endif  // TWO_MODE
-
-// TODO(weitinglin): find default prob
-//                   right now setting the first mode with probability 1/255,
-//                   the last eight modes with equal probabilities
-static const aom_prob
-    default_ncobmc_mode_prob[ADAPT_OVERLAP_BLOCKS][MAX_NCOBMC_MODES - 1] = {
-#ifdef TWO_MODE
-      { 127 }, { 127 }, { 127 }, { 127 }
-#else
-      { 32, 36, 43, 51, 64, 85, 128 },  // 8x8
-      { 32, 36, 43, 51, 64, 85, 128 },  // 16X16
-      { 32, 36, 43, 51, 64, 85, 128 },  // 32X32
-      { 32, 36, 43, 51, 64, 85, 128 }   // 64X64
-#endif  // TWO_MODE
-    };
-static const aom_cdf_prob
-    default_ncobmc_mode_cdf[ADAPT_OVERLAP_BLOCKS][CDF_SIZE(MAX_NCOBMC_MODES)] =
-#ifdef TWO_MODE
-        { { AOM_ICDF(16256), AOM_ICDF(32768), 0 },
-          { AOM_ICDF(16256), AOM_ICDF(32768), 0 },
-          { AOM_ICDF(16256), AOM_ICDF(32768), 0 },
-          { AOM_ICDF(16256), AOM_ICDF(32768), 0 } };
-#else
-        { { AOM_ICDF(4096), AOM_ICDF(8192), AOM_ICDF(12288), AOM_ICDF(16384),
-            AOM_ICDF(20480), AOM_ICDF(24576), AOM_ICDF(28672), AOM_ICDF(32768),
-            0 },
-          { AOM_ICDF(4096), AOM_ICDF(8192), AOM_ICDF(12288), AOM_ICDF(16384),
-            AOM_ICDF(20480), AOM_ICDF(24576), AOM_ICDF(28672), AOM_ICDF(32768),
-            0 },
-          { AOM_ICDF(4096), AOM_ICDF(8192), AOM_ICDF(12288), AOM_ICDF(16384),
-            AOM_ICDF(20480), AOM_ICDF(24576), AOM_ICDF(28672), AOM_ICDF(32768),
-            0 },
-          { AOM_ICDF(4096), AOM_ICDF(8192), AOM_ICDF(12288), AOM_ICDF(16384),
-            AOM_ICDF(20480), AOM_ICDF(24576), AOM_ICDF(28672), AOM_ICDF(32768),
-            0 } };
-#endif  // TWO_MODEE
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
-// Change this section appropriately once warped motion is supported
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
-  -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, 4, -NCOBMC_ADAPT_WEIGHT, -WARPED_CAUSAL
-};
-
-static const aom_prob default_motion_mode_prob[BLOCK_SIZES_ALL][MOTION_MODES -
-                                                                1] = {
-  { 128, 128, 255 }, { 128, 128, 128 }, { 128, 128, 128 }, { 128, 128, 128 },
-  { 128, 128, 128 }, { 128, 128, 128 }, { 62, 115, 128 },  { 39, 131, 128 },
-  { 39, 132, 128 },  { 118, 94, 128 },  { 77, 125, 128 },  { 100, 121, 128 },
-  { 190, 66, 128 },  { 207, 102, 128 }, { 197, 100, 128 }, { 239, 76, 128 },
-#if CONFIG_EXT_PARTITION
-  { 252, 200, 128 }, { 252, 200, 128 }, { 252, 200, 128 },
-#endif  // CONFIG_EXT_PARTITION
-  { 208, 200, 128 }, { 208, 200, 128 }, { 208, 200, 128 }, { 208, 200, 128 }
-};
-static const aom_cdf_prob
-    default_motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)] = {
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      /** Only these nine block sizes allow ncobmc_adapt_weight **/
-      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(8192), AOM_ICDF(16384), AOM_ICDF(24576), AOM_ICDF(32768), 0 },
-      /***********************************************************/
-      { AOM_ICDF(30592), AOM_ICDF(31238), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-#if CONFIG_EXT_PARTITION
-      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-#endif
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(32640), AOM_ICDF(32740), AOM_ICDF(32767), AOM_ICDF(32768), 0 }
-    };
-
-const aom_tree_index av1_ncobmc_tree[TREE_SIZE(OBMC_FAMILY_MODES)] = {
-  -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, -NCOBMC_ADAPT_WEIGHT
-};
-
-static const aom_prob
-    default_ncobmc_prob[BLOCK_SIZES_ALL][OBMC_FAMILY_MODES - 1] = {
-      { 128, 255 }, { 128, 255 }, { 128, 255 }, { 128, 255 },
-      { 128, 255 }, { 128, 255 }, { 45, 255 },  { 79, 255 },
-      { 75, 255 },  { 130, 255 }, { 141, 255 }, { 144, 255 },
-      { 208, 255 }, { 201, 255 }, { 186, 255 }, { 231, 255 },
-#if CONFIG_EXT_PARTITION
-      { 252, 255 }, { 252, 255 }, { 252, 255 },
-#endif  // CONFIG_EXT_PARTITION
-      { 208, 255 }, { 208, 255 }, { 208, 255 }, { 208, 255 }
-    };
-
-static const aom_cdf_prob
-    default_ncobmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(OBMC_FAMILY_MODES)] = {
-      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(128 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      /** Only these nine block sizes allow ncobmc_adapt_weight **/
-      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(10922), AOM_ICDF(21845), AOM_ICDF(32768), 0 },
-      /***********************************************************/
-      { AOM_ICDF(231 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-#if CONFIG_EXT_PARTITION
-      { AOM_ICDF(252 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(252 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(252 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-#endif  // CONFIG_EXT_PARTITION
-      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(208 * 128), AOM_ICDF(32767), AOM_ICDF(32768), 0 }
-    };
-#else
 const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
   -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, -WARPED_CAUSAL,
 };
@@ -1133,7 +981,7 @@ static const aom_cdf_prob
       { AOM_ICDF(32256), AOM_ICDF(32656), AOM_ICDF(32768), 0 },
 #endif
     };
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
+
 // Probability for the case that only 1 additional motion mode is allowed
 static const aom_prob default_obmc_prob[BLOCK_SIZES_ALL] = {
   128, 128, 128, 128, 128, 128, 45, 79, 75, 130, 141, 144, 208, 201, 186, 231,
@@ -1146,7 +994,7 @@ static const aom_prob default_obmc_prob[BLOCK_SIZES_ALL] = {
 #endif  // CONFIG_EXT_PARTITION
 };
 
-#if CONFIG_NEW_MULTISYMBOL || CONFIG_NCOBMC_ADAPT_WEIGHT
+#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
   { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
   { AOM_ICDF(128 * 128), AOM_ICDF(32768), 0 },
@@ -5958,18 +5806,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif
   av1_copy(fc->motion_mode_prob, default_motion_mode_prob);
   av1_copy(fc->motion_mode_cdf, default_motion_mode_cdf);
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  av1_copy(fc->ncobmc_mode_prob, default_ncobmc_mode_prob);
-  av1_copy(fc->ncobmc_mode_cdf, default_ncobmc_mode_cdf);
-#endif
   av1_copy(fc->obmc_prob, default_obmc_prob);
-#if CONFIG_NEW_MULTISYMBOL || CONFIG_NCOBMC_ADAPT_WEIGHT
+#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->obmc_cdf, default_obmc_cdf);
 #endif
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  av1_copy(fc->ncobmc_prob, default_ncobmc_prob);
-  av1_copy(fc->ncobmc_cdf, default_ncobmc_cdf);
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   av1_copy(fc->inter_compound_mode_probs, default_inter_compound_mode_probs);
   av1_copy(fc->inter_compound_mode_cdf, default_inter_compound_mode_cdf);
 #if CONFIG_COMPOUND_SINGLEREF
@@ -6115,14 +5955,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; ++i)
     aom_tree_merge_probs(av1_motion_mode_tree, pre_fc->motion_mode_prob[i],
                          counts->motion_mode[i], fc->motion_mode_prob[i]);
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  for (i = 0; i < ADAPT_OVERLAP_BLOCKS; ++i)
-    aom_tree_merge_probs(av1_ncobmc_mode_tree, pre_fc->ncobmc_mode_prob[i],
-                         counts->ncobmc_mode[i], fc->ncobmc_mode_prob[i]);
-  for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; ++i)
-    aom_tree_merge_probs(av1_ncobmc_tree, pre_fc->ncobmc_prob[i],
-                         counts->ncobmc[i], fc->ncobmc_prob[i]);
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; ++i)
     fc->obmc_prob[i] =
         av1_mode_mv_merge_probs(pre_fc->obmc_prob[i], counts->obmc[i]);
