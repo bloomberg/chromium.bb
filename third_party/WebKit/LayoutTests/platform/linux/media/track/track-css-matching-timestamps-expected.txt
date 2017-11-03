@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Test that cues are being matched properly by :past and :future pseudo classes.
-Harness: the test ran to completion.
-
