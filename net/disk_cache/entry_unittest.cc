@@ -4510,6 +4510,36 @@ TEST_F(DiskCacheEntryTest, SimpleCacheConvertToSparseStream2LeftOver) {
   entry->Close();
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheLazyStream2CreateFailure) {
+  // Testcase for what happens when lazy-creation of stream 2 fails.
+  const int kSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+
+  // Synchronous ops, for ease of disk state;
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char kKey[] = "a key";
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+
+  // Create _1 file for stream 2; this should inject a failure when the cache
+  // tries to create it itself.
+  base::FilePath entry_file1_path = cache_path_.AppendASCII(
+      disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(kKey, 1));
+  base::File entry_file1(entry_file1_path,
+                         base::File::FLAG_WRITE | base::File::FLAG_CREATE);
+  ASSERT_TRUE(entry_file1.IsValid());
+  entry_file1.Close();
+
+  EXPECT_EQ(net::ERR_CACHE_WRITE_FAILURE,
+            WriteData(entry, /* index = */ 2, /* offset = */ 0, buffer.get(),
+                      kSize, /* truncate = */ false));
+  entry->Close();
+}
+
 class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
  public:
   DiskCacheSimplePrefetchTest()
