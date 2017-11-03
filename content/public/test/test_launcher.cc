@@ -611,6 +611,15 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   params.argv = const_cast<const char**>(argv);
 #endif  // defined(OS_WIN)
 
+#if !defined(OS_ANDROID)
+  // This needs to be before trying to run tests as otherwise utility processes
+  // end up being launched as a test, which leads to rerunning the test.
+  if (command_line->HasSwitch(switches::kProcessType) ||
+      command_line->HasSwitch(kLaunchAsBrowser)) {
+    return ContentMain(params);
+  }
+#endif
+
   if (command_line->HasSwitch(kSingleProcessTestsFlag) ||
       (command_line->HasSwitch(switches::kSingleProcess) &&
        command_line->HasSwitch(base::kGTestFilterFlag)) ||
@@ -619,13 +628,6 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     g_params = &params;
     return launcher_delegate->RunTestSuite(argc, argv);
   }
-
-#if !defined(OS_ANDROID)
-  if (command_line->HasSwitch(switches::kProcessType) ||
-      command_line->HasSwitch(kLaunchAsBrowser)) {
-    return ContentMain(params);
-  }
-#endif
 
   base::AtExitManager at_exit;
   testing::InitGoogleTest(&argc, argv);
