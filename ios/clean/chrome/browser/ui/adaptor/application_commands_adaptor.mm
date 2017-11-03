@@ -76,8 +76,8 @@
   [self showAlert:@"showSignin"];
 }
 
-- (void)showAddAccount {
-  [self showAlert:@"showAddAccount"];
+- (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
+  [self showAlert:@"showAddAccountFromViewController:"];
 }
 
 #pragma mark - ApplicationSettingsCommands

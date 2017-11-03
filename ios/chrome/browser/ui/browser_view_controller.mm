@@ -5320,7 +5320,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
       ios::AccountReconcilorFactory::GetForBrowserState(self.browserState)
           ->GetState());
-  [self.dispatcher showAddAccount];
+  [self.dispatcher showAddAccountFromViewController:self];
 }
 
 - (void)onGoIncognito:(const GURL&)url {
