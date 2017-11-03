@@ -15,15 +15,23 @@ def main():
   parser = ArgumentParser()
   parser.add_argument('-s', '--sources', nargs='*', default=[],
                       help='List of js source files')
+  parser.add_argument('-e', '--externs', nargs='*', default=[],
+                      help='List of js source files')
   parser.add_argument('-o', '--output', help='Write list to output')
   parser.add_argument('-d', '--deps', nargs='*', default=[],
                       help='List of js_library dependencies')
   args = parser.parse_args()
 
   with open(args.output, 'w') as out:
-    out.write('sources:\n%s\ndeps:\n%s' % ('\n'.join(args.sources),
-                                           '\n'.join(args.deps)))
-
+    out.write('sources:\n')
+    for s in args.sources:
+      out.write('%s\n' % s)
+    out.write('deps:\n')
+    for d in args.deps:
+      out.write('%s\n' % d)
+    out.write('externs:\n')
+    for e in args.externs:
+      out.write('%s\n' % e)
 
 if __name__ == '__main__':
   main()
