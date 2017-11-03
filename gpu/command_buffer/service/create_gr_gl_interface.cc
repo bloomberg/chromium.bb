@@ -153,6 +153,7 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
   functions->fGetQueryObjectui64v = gl->glGetQueryObjectui64vFn;
   functions->fQueryCounter = gl->glQueryCounterFn;
   functions->fGetQueryiv = gl->glGetQueryivFn;
+  functions->fGetProgramBinary = gl->glGetProgramBinaryFn;
   functions->fGetProgramInfoLog = gl->glGetProgramInfoLogFn;
   functions->fGetProgramiv = gl->glGetProgramivFn;
   functions->fGetShaderInfoLog = gl->glGetShaderInfoLogFn;
@@ -175,6 +176,8 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
 
   functions->fPixelStorei = gl->glPixelStoreiFn;
   functions->fPolygonMode = gl->glPolygonModeFn;
+  functions->fProgramBinary = gl->glProgramBinaryFn;
+  functions->fProgramParameteri = gl->glProgramParameteriFn;
 
   // GL_EXT_raster_multisample
   // functions->fRasterSamples = gl->glRasterSamplesEXTFn;
