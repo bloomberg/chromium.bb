@@ -48,14 +48,20 @@ id<GREYMatcher> TabletTabSwitcherNewIncognitoTabButton() {
                     grey_sufficientlyVisible(), nil);
 }
 
-id<GREYMatcher> TabletTabSwitcherHeaderPanelButton() {
+id<GREYMatcher> TabletTabSwitcherCloseTabButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_TOOLS_MENU_CLOSE_TAB);
+}
+
+id<GREYMatcher> TabletTabSwitcherOpenTabsPanelButton() {
   NSString* accessibility_label = l10n_util::GetNSStringWithFixup(
       IDS_IOS_TAB_SWITCHER_HEADER_NON_INCOGNITO_TABS);
   return grey_accessibilityLabel(accessibility_label);
 }
 
-id<GREYMatcher> TabletTabSwitcherCloseTabButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_TOOLS_MENU_CLOSE_TAB);
+id<GREYMatcher> TabletTabSwitcherIncognitoTabsPanelButton() {
+  NSString* accessibility_label = l10n_util::GetNSStringWithFixup(
+      IDS_IOS_TAB_SWITCHER_HEADER_INCOGNITO_TABS);
+  return grey_accessibilityLabel(accessibility_label);
 }
 
 }  // namespace chrome_test_util

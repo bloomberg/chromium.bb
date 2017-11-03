@@ -33,11 +33,11 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::StaticTextWithAccessibilityLabelId;
 using chrome_test_util::TabletTabSwitcherCloseButton;
 using chrome_test_util::TabletTabSwitcherCloseTabButton;
-using chrome_test_util::TabletTabSwitcherHeaderPanelButton;
 using chrome_test_util::TabletTabSwitcherIncognitoButton;
 using chrome_test_util::TabletTabSwitcherNewIncognitoTabButton;
 using chrome_test_util::TabletTabSwitcherNewTabButton;
 using chrome_test_util::TabletTabSwitcherOpenButton;
+using chrome_test_util::TabletTabSwitcherOpenTabsPanelButton;
 using chrome_test_util::TabletTabSwitcherOtherDevicesButton;
 using web::test::HttpServer;
 
@@ -160,7 +160,7 @@ using web::test::HttpServer;
   [self assertTabSwitcherIsActive];
 
   // Switch to the non incognito panel.
-  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherHeaderPanelButton()]
+  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenTabsPanelButton()]
       performAction:grey_tap()];
 
   // Press the :: icon to exit the tab switcher.

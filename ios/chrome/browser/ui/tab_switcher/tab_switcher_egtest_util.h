@@ -29,12 +29,16 @@ id<GREYMatcher> TabletTabSwitcherNewTabButton();
 // within the tab switcher.
 id<GREYMatcher> TabletTabSwitcherNewIncognitoTabButton();
 
-// Returns the GREYMatcher for the button to go to the non incognito panel in
-// the tab switcher.
-id<GREYMatcher> TabletTabSwitcherHeaderPanelButton();
-
 // Returns the GREYMatcher for the button that closes tabs on iPad.
 id<GREYMatcher> TabletTabSwitcherCloseTabButton();
+
+// Returns the GREYMatcher for the button to go to the non incognito panel in
+// the tab switcher.
+id<GREYMatcher> TabletTabSwitcherOpenTabsPanelButton();
+
+// Returns the GREYMatcher for the button to go to the incognito panel in
+// the tab switcher.
+id<GREYMatcher> TabletTabSwitcherIncognitoTabsPanelButton();
 
 }  // namespace chrome_test_util
 
