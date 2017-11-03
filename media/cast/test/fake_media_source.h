@@ -28,6 +28,7 @@
 
 struct AVCodecContext;
 struct AVFormatContext;
+struct AVFrame;
 
 namespace media {
 
@@ -36,6 +37,7 @@ class AudioConverter;
 class AudioFifo;
 class AudioTimestampHelper;
 class FFmpegGlue;
+class FFmpegDecodingLoop;
 class InMemoryUrlProtocol;
 class VideoFrame;
 
@@ -105,7 +107,9 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   ScopedAVPacket DemuxOnePacket(bool* audio);
 
   void DecodeAudio(ScopedAVPacket packet);
+  bool OnNewAudioFrame(AVFrame* frame);
   void DecodeVideo(ScopedAVPacket packet);
+  bool OnNewVideoFrame(AVFrame* frame);
   void Decode(bool decode_audio);
 
   // media::AudioConverter::InputCallback implementation.
@@ -142,11 +146,13 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
 
   int audio_stream_index_;
   std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> av_audio_context_;
+  std::unique_ptr<FFmpegDecodingLoop> audio_decoding_loop_;
   AudioParameters source_audio_params_;
   double playback_rate_;
 
   int video_stream_index_;
   std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> av_video_context_;
+  std::unique_ptr<FFmpegDecodingLoop> video_decoding_loop_;
   int video_frame_rate_numerator_;
   int video_frame_rate_denominator_;
 

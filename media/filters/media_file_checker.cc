@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "media/ffmpeg/ffmpeg_common.h"
+#include "media/ffmpeg/ffmpeg_decoding_loop.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
 #include "media/filters/blocking_url_protocol.h"
 #include "media/filters/ffmpeg_glue.h"
@@ -25,6 +26,15 @@ static const int64_t kMaxCheckTimeInSeconds = 5;
 static void OnError(bool* called) {
   *called = false;
 }
+
+static bool DoNothingWithFrame(AVFrame* frame) {
+  return true;
+}
+
+struct Decoder {
+  std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> context;
+  std::unique_ptr<FFmpegDecodingLoop> loop;
+};
 
 MediaFileChecker::MediaFileChecker(base::File file) : file_(std::move(file)) {}
 
@@ -44,30 +54,32 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
     return false;
 
   // Remember the codec context for any decodable audio or video streams.
-  std::map<int, std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext>>
-      stream_contexts;
+  bool found_streams = false;
+  std::vector<Decoder> stream_contexts(format_context->nb_streams);
   for (size_t i = 0; i < format_context->nb_streams; ++i) {
     AVCodecParameters* cp = format_context->streams[i]->codecpar;
 
     if (cp->codec_type == AVMEDIA_TYPE_AUDIO ||
         cp->codec_type == AVMEDIA_TYPE_VIDEO) {
-      std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> c(
-          AVStreamToAVCodecContext(format_context->streams[i]));
-      if (!c)
+      auto context = AVStreamToAVCodecContext(format_context->streams[i]);
+      if (!context)
         continue;
       AVCodec* codec = avcodec_find_decoder(cp->codec_id);
-      if (codec && avcodec_open2(c.get(), codec, nullptr) >= 0)
-        stream_contexts[i] = std::move(c);
+      if (codec && avcodec_open2(context.get(), codec, nullptr) >= 0) {
+        auto loop = std::make_unique<FFmpegDecodingLoop>(context.get());
+        stream_contexts[i] = {std::move(context), std::move(loop)};
+        found_streams = true;
+      }
     }
   }
 
-  if (stream_contexts.size() == 0)
+  if (!found_streams)
     return false;
 
   AVPacket packet;
-  std::unique_ptr<AVFrame, media::ScopedPtrAVFreeFrame> frame(av_frame_alloc());
   int result = 0;
 
+  auto do_nothing_cb = base::BindRepeating(&DoNothingWithFrame);
   const base::TimeTicks deadline =
       base::TimeTicks::Now() +
       std::min(check_time,
@@ -77,35 +89,14 @@ bool MediaFileChecker::Start(base::TimeDelta check_time) {
     if (result < 0)
       break;
 
-    std::map<int, std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext>>::
-        const_iterator it = stream_contexts.find(packet.stream_index);
-    if (it == stream_contexts.end()) {
-      av_packet_unref(&packet);
-      continue;
+    auto& decoder = stream_contexts[packet.stream_index];
+    if (decoder.loop) {
+      result = decoder.loop->DecodePacket(&packet, do_nothing_cb) ==
+                       FFmpegDecodingLoop::DecodeStatus::kOkay
+                   ? 0
+                   : -1;
     }
-    AVCodecContext* av_context = it->second.get();
 
-    int frame_decoded = 0;
-    if (av_context->codec_type == AVMEDIA_TYPE_AUDIO) {
-      // A shallow copy of packet so we can slide packet.data as frames are
-      // decoded; otherwise av_packet_unref() will corrupt memory.
-      AVPacket temp_packet = packet;
-      do {
-        result = avcodec_decode_audio4(av_context, frame.get(), &frame_decoded,
-                                       &temp_packet);
-        if (result < 0)
-          break;
-        av_frame_unref(frame.get());
-        temp_packet.size -= result;
-        temp_packet.data += result;
-        frame_decoded = 0;
-      } while (temp_packet.size > 0);
-    } else if (av_context->codec_type == AVMEDIA_TYPE_VIDEO) {
-      result = avcodec_decode_video2(av_context, frame.get(), &frame_decoded,
-                                     &packet);
-      if (result >= 0 && frame_decoded)
-        av_frame_unref(frame.get());
-    }
     av_packet_unref(&packet);
   } while (base::TimeTicks::Now() < deadline && read_ok && result >= 0);
 

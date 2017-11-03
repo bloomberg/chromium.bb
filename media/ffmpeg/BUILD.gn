@@ -23,6 +23,8 @@ source_set("ffmpeg") {
   sources = [
     "ffmpeg_common.cc",
     "ffmpeg_common.h",
+    "ffmpeg_decoding_loop.cc",
+    "ffmpeg_decoding_loop.h",
     "ffmpeg_deleters.h",
   ]
   deps = [

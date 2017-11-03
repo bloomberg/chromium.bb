@@ -9,12 +9,15 @@
 #include <cmath>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
 #include "media/ffmpeg/ffmpeg_common.h"
+#include "media/ffmpeg/ffmpeg_decoding_loop.h"
 
 namespace media {
 
@@ -108,8 +111,8 @@ bool AudioFileReader::OpenDecoder() {
 
   // Verify the channel layout is supported by Chrome.  Acts as a sanity check
   // against invalid files.  See http://crbug.com/171962
-  if (ChannelLayoutToChromeChannelLayout(
-          codec_context_->channel_layout, codec_context_->channels) ==
+  if (ChannelLayoutToChromeChannelLayout(codec_context_->channel_layout,
+                                         codec_context_->channels) ==
       CHANNEL_LAYOUT_UNSUPPORTED) {
     return false;
   }
@@ -133,91 +136,23 @@ void AudioFileReader::Close() {
 
 int AudioFileReader::Read(
     std::vector<std::unique_ptr<AudioBus>>* decoded_audio_packets) {
-  DCHECK(glue_.get() && codec_context_)
+  DCHECK(glue_ && codec_context_)
       << "AudioFileReader::Read() : reader is not opened!";
-  size_t bytes_per_sample = av_get_bytes_per_sample(codec_context_->sample_fmt);
 
-  // Holds decoded audio.
-  std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame(av_frame_alloc());
+  FFmpegDecodingLoop decode_loop(codec_context_.get());
+
+  int total_frames = 0;
+  auto frame_ready_cb =
+      base::BindRepeating(&AudioFileReader::OnNewFrame, base::Unretained(this),
+                          &total_frames, decoded_audio_packets);
 
   AVPacket packet;
-  int total_frames = 0;
-  bool continue_decoding = true;
-
-  while (continue_decoding && ReadPacket(&packet)) {
-    // Make a shallow copy of packet so we can slide packet.data as frames are
-    // decoded from the packet; otherwise av_packet_unref() will corrupt memory.
-    AVPacket packet_temp = packet;
-    do {
-      // Reset frame to default values.
-      av_frame_unref(av_frame.get());
-
-      int frame_decoded = 0;
-      int result = avcodec_decode_audio4(codec_context_.get(), av_frame.get(),
-                                         &frame_decoded, &packet_temp);
-
-      if (result < 0) {
-        // Unable to decode this current packet.  We'll skip it and
-        // continue decoding the next packet.
-        DLOG(WARNING)
-            << "AudioFileReader::Read() : error in avcodec_decode_audio4() -"
-            << result;
-        break;
-      }
-
-      // Update packet size and data pointer in case we need to call the decoder
-      // with the remaining bytes from this packet.
-      packet_temp.size -= result;
-      packet_temp.data += result;
-
-      if (!frame_decoded)
-        continue;
-
-      // Determine the number of sample-frames we just decoded.  Check overflow.
-      int frames_read = av_frame->nb_samples;
-      if (frames_read < 0) {
-        continue_decoding = false;
-        break;
-      }
-
-      int channels = av_frame->channels;
-      if (av_frame->sample_rate != sample_rate_ || channels != channels_ ||
-          av_frame->format != av_sample_format_) {
-        DLOG(ERROR) << "Unsupported midstream configuration change!"
-                    << " Sample Rate: " << av_frame->sample_rate << " vs "
-                    << sample_rate_ << ", Channels: " << channels << " vs "
-                    << channels_ << ", Sample Format: " << av_frame->format
-                    << " vs " << av_sample_format_;
-
-        // This is an unrecoverable error, so bail out.  We'll return
-        // whatever we've decoded up to this point.
-        continue_decoding = false;
-        break;
-      }
-
-      // Deinterleave each channel and convert to 32bit floating-point with
-      // nominal range -1.0 -> +1.0.  If the output is already in float planar
-      // format, just copy it into the AudioBus.
-      decoded_audio_packets->emplace_back(
-          AudioBus::Create(channels, frames_read));
-      AudioBus* audio_bus = decoded_audio_packets->back().get();
-
-      if (codec_context_->sample_fmt == AV_SAMPLE_FMT_FLT) {
-        audio_bus->FromInterleaved<Float32SampleTypeTraits>(
-            reinterpret_cast<float*>(av_frame->data[0]), frames_read);
-      } else if (codec_context_->sample_fmt == AV_SAMPLE_FMT_FLTP) {
-        for (int ch = 0; ch < audio_bus->channels(); ++ch) {
-          memcpy(audio_bus->channel(ch), av_frame->extended_data[ch],
-                 sizeof(float) * frames_read);
-        }
-      } else {
-        audio_bus->FromInterleaved(av_frame->data[0], frames_read,
-                                   bytes_per_sample);
-      }
-
-      total_frames += frames_read;
-    } while (packet_temp.size > 0);
+  while (ReadPacket(&packet)) {
+    const auto status = decode_loop.DecodePacket(&packet, frame_ready_cb);
     av_packet_unref(&packet);
+
+    if (status != FFmpegDecodingLoop::DecodeStatus::kOkay)
+      break;
   }
 
   return total_frames;
@@ -237,10 +172,10 @@ base::TimeDelta AudioFileReader::GetDuration() const {
     // throughout the decoded buffer. Thus we add the priming frames and the
     // remainder frames to the estimation.
     // (See: crbug.com/513178)
-    estimated_duration_us +=
-        ceil(1000000.0 * static_cast<double>(kAACPrimingFrameCount +
-                                             kAACRemainderFrameCount) /
-             sample_rate());
+    estimated_duration_us += ceil(
+        1000000.0 *
+        static_cast<double>(kAACPrimingFrameCount + kAACRemainderFrameCount) /
+        sample_rate());
   } else {
     // Add one microsecond to avoid rounding-down errors which can occur when
     // |duration| has been calculated from an exact number of sample-frames.
@@ -274,6 +209,52 @@ bool AudioFileReader::ReadPacket(AVPacket* output_packet) {
     return true;
   }
   return false;
+}
+
+bool AudioFileReader::OnNewFrame(
+    int* total_frames,
+    std::vector<std::unique_ptr<AudioBus>>* decoded_audio_packets,
+    AVFrame* frame) {
+  const int frames_read = frame->nb_samples;
+  if (frames_read < 0)
+    return false;
+
+  const int channels = frame->channels;
+  if (frame->sample_rate != sample_rate_ || channels != channels_ ||
+      frame->format != av_sample_format_) {
+    DLOG(ERROR) << "Unsupported midstream configuration change!"
+                << " Sample Rate: " << frame->sample_rate << " vs "
+                << sample_rate_ << ", Channels: " << channels << " vs "
+                << channels_ << ", Sample Format: " << frame->format << " vs "
+                << av_sample_format_;
+
+    // This is an unrecoverable error, so bail out.  We'll return
+    // whatever we've decoded up to this point.
+    return false;
+  }
+
+  // Deinterleave each channel and convert to 32bit floating-point with
+  // nominal range -1.0 -> +1.0.  If the output is already in float planar
+  // format, just copy it into the AudioBus.
+  decoded_audio_packets->emplace_back(AudioBus::Create(channels, frames_read));
+  AudioBus* audio_bus = decoded_audio_packets->back().get();
+
+  if (codec_context_->sample_fmt == AV_SAMPLE_FMT_FLT) {
+    audio_bus->FromInterleaved<Float32SampleTypeTraits>(
+        reinterpret_cast<float*>(frame->data[0]), frames_read);
+  } else if (codec_context_->sample_fmt == AV_SAMPLE_FMT_FLTP) {
+    for (int ch = 0; ch < audio_bus->channels(); ++ch) {
+      memcpy(audio_bus->channel(ch), frame->extended_data[ch],
+             sizeof(float) * frames_read);
+    }
+  } else {
+    audio_bus->FromInterleaved(
+        frame->data[0], frames_read,
+        av_get_bytes_per_sample(codec_context_->sample_fmt));
+  }
+
+  (*total_frames) += frames_read;
+  return true;
 }
 
 bool AudioFileReader::SeekForTesting(base::TimeDelta seek_time) {

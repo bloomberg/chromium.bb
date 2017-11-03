@@ -15,6 +15,7 @@
 #include "media/filters/ffmpeg_glue.h"
 
 struct AVCodecContext;
+struct AVFrame;
 struct AVPacket;
 struct AVStream;
 
@@ -89,6 +90,9 @@ class MEDIA_EXPORT AudioFileReader {
   bool OpenDemuxer();
   bool OpenDecoder();
   bool ReadPacket(AVPacket* output_packet);
+  bool OnNewFrame(int* total_frames,
+                  std::vector<std::unique_ptr<AudioBus>>* decoded_audio_packets,
+                  AVFrame* frame);
 
   // Destruct |glue_| after |codec_context_|.
   std::unique_ptr<FFmpegGlue> glue_;

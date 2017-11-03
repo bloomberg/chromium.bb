@@ -23,6 +23,7 @@ struct AVFrame;
 namespace media {
 
 class DecoderBuffer;
+class FFmpegDecodingLoop;
 class MediaLog;
 
 class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
@@ -62,16 +63,16 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
     kError
   };
 
-  // Handles decoding an unencrypted encoded buffer.
-  bool FFmpegDecode(const scoped_refptr<DecoderBuffer>& buffer,
-                    bool* has_produced_frame);
+  // Handles decoding of an unencrypted encoded buffer. A return value of false
+  // indicates that an error has occurred.
+  bool FFmpegDecode(const scoped_refptr<DecoderBuffer>& buffer);
+  bool OnNewFrame(AVFrame* frame);
 
   // Handles (re-)initializing the decoder with a (new) config.
   // Returns true if initialization was successful.
   bool ConfigureDecoder(const VideoDecoderConfig& config, bool low_delay);
 
-  // Releases resources associated with |codec_context_| and |av_frame_|
-  // and resets them to NULL.
+  // Releases resources associated with |codec_context_|.
   void ReleaseFFmpegResources();
 
   base::ThreadChecker thread_checker_;
@@ -83,13 +84,14 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
 
   // FFmpeg structures owned by this object.
   std::unique_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
-  std::unique_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   VideoDecoderConfig config_;
 
   VideoFramePool frame_pool_;
 
   bool decode_nalus_;
+
+  std::unique_ptr<FFmpegDecodingLoop> decoding_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecoder);
 };
