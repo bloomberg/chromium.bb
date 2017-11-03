@@ -288,6 +288,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
                           "TimeToScrollUpdateSwapBegin2",
                           1));
       EXPECT_TRUE(
+          HistogramSizeEq("Event.Latency.Scroll.Wheel."
+                          "TimeToScrollUpdateSwapBegin2",
+                          1));
+      EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
                           "TimeToScrollUpdateSwapBegin2",
                           0));
@@ -296,6 +300,12 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
                           rendering_on_main ? 1 : 0));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel.TimeToHandled2_Impl",
+                          rendering_on_main ? 0 : 1));
+      EXPECT_TRUE(
+          HistogramSizeEq("Event.Latency.Scroll.Wheel.TimeToHandled2_Main",
+                          rendering_on_main ? 1 : 0));
+      EXPECT_TRUE(
+          HistogramSizeEq("Event.Latency.Scroll.Wheel.TimeToHandled2_Impl",
                           rendering_on_main ? 0 : 1));
       EXPECT_TRUE(HistogramSizeEq(
           "Event.Latency.ScrollBegin.Wheel.HandledToRendererSwap2_Main",
@@ -399,6 +409,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
                           "TimeToScrollUpdateSwapBegin2",
                           0));
       EXPECT_TRUE(
+          HistogramSizeEq("Event.Latency.Scroll.Wheel."
+                          "TimeToScrollUpdateSwapBegin2",
+                          1));
+      EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
                           "TimeToScrollUpdateSwapBegin2",
                           1));
@@ -428,6 +442,12 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
       EXPECT_TRUE(HistogramSizeEq(
           "Event.Latency.ScrollUpdate.Wheel.TimeToHandled2_Impl",
           rendering_on_main ? 0 : 1));
+      EXPECT_TRUE(
+          HistogramSizeEq("Event.Latency.Scroll.Wheel.TimeToHandled2_Main",
+                          rendering_on_main ? 1 : 0));
+      EXPECT_TRUE(
+          HistogramSizeEq("Event.Latency.Scroll.Wheel.TimeToHandled2_Impl",
+                          rendering_on_main ? 0 : 1));
       EXPECT_TRUE(HistogramSizeEq(
           "Event.Latency.ScrollUpdate.Wheel.HandledToRendererSwap2_Main",
           rendering_on_main ? 1 : 0));
