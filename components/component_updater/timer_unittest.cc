@@ -29,7 +29,7 @@ class ComponentUpdaterTimerTest : public testing::Test {
 TEST_F(ComponentUpdaterTimerTest, Start) {
   class TimerClientFake {
    public:
-    TimerClientFake(int max_count, base::Closure quit_closure)
+    TimerClientFake(int max_count, base::OnceClosure quit_closure)
         : max_count_(max_count),
           quit_closure_(std::move(quit_closure)),
           count_(0) {}

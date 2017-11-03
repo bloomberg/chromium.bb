@@ -5,6 +5,8 @@
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -251,8 +253,8 @@ std::vector<std::string> PnaclComponentInstallerPolicy::GetMimeTypes() const {
 void RegisterPnaclComponent(ComponentUpdateService* cus) {
   // |cus| will take ownership of |installer| during installer->Register(cus).
   ComponentInstaller* installer =
-      new ComponentInstaller(base::MakeUnique<PnaclComponentInstallerPolicy>());
-  installer->Register(cus, base::Closure());
+      new ComponentInstaller(std::make_unique<PnaclComponentInstallerPolicy>());
+  installer->Register(cus, base::OnceClosure());
 }
 
 }  // namespace component_updater

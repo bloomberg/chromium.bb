@@ -28,7 +28,7 @@
 //  ...
 //  component_updater::CrOSComponent::LoadComponent(
 //            name,
-//            base::Bind(&LoadCallback));
+//            base::BindOnce(&LoadCallback));
 //
 namespace component_updater {
 

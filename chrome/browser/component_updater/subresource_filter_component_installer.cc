@@ -151,11 +151,11 @@ void RegisterSubresourceFilterComponent(ComponentUpdateService* cus) {
           subresource_filter::kSafeBrowsingSubresourceFilter)) {
     return;
   }
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new SubresourceFilterComponentInstallerPolicy());
+  std::unique_ptr<ComponentInstallerPolicy> policy =
+      std::make_unique<SubresourceFilterComponentInstallerPolicy>();
   // |cus| will take ownership of |installer| during installer->Register(cus).
   ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
-  installer->Register(cus, base::Closure());
+  installer->Register(cus, base::OnceClosure());
 }
 
 }  // namespace component_updater

@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,15 +39,15 @@ void LoadProtoFromDisk(const base::FilePath& pb_path) {
     DVLOG(1) << "Failed reading from " << pb_path.value();
     return;
   }
-  auto proto = base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  auto proto = std::make_unique<chrome_browser_ssl::SSLErrorAssistantConfig>();
   if (!proto->ParseFromString(binary_pb)) {
     DVLOG(1) << "Failed parsing proto " << pb_path.value();
     return;
   }
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&SSLErrorHandler::SetErrorAssistantProto,
-                     base::Passed(std::move(proto))));
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&SSLErrorHandler::SetErrorAssistantProto,
+                                base::Passed(std::move(proto))));
 }
 
 }  // namespace
@@ -127,11 +126,11 @@ void RegisterSSLErrorAssistantComponent(ComponentUpdateService* cus,
                                         const base::FilePath& user_data_dir) {
   DVLOG(1) << "Registering SSL Error Assistant component.";
 
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new SSLErrorAssistantComponentInstallerPolicy());
+  std::unique_ptr<ComponentInstallerPolicy> policy =
+      std::make_unique<SSLErrorAssistantComponentInstallerPolicy>();
   // |cus| takes ownership of |installer|.
   ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
-  installer->Register(cus, base::Closure());
+  installer->Register(cus, base::OnceClosure());
 }
 
 }  // namespace component_updater
