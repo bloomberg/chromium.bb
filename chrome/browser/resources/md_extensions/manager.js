@@ -318,6 +318,12 @@ cr.define('extensions', function() {
       // We should never try and remove a non-existent item.
       assert(index >= 0);
       this.splice(listId, index, 1);
+      if ((this.currentPage_.page == Page.DETAILS ||
+           this.currentPage_.page == Page.ERRORS) &&
+          this.currentPage_.extensionId == item.id) {
+        // Leave the details page (the 'list' page is a fine choice).
+        extensions.navigation.navigateTo({page: Page.LIST});
+      }
     },
 
     /**
