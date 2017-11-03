@@ -271,9 +271,22 @@ class VaapiVideoDecodeAccelerator::VaapiVP9Accelerator
   DISALLOW_COPY_AND_ASSIGN(VaapiVP9Accelerator);
 };
 
-VaapiVideoDecodeAccelerator::InputBuffer::InputBuffer() = default;
+class VaapiVideoDecodeAccelerator::InputBuffer {
+ public:
+  InputBuffer() = default;
+  InputBuffer(uint32_t id, std::unique_ptr<SharedMemoryRegion> shm)
+      : id_(id), shm_(std::move(shm)) {}
+  ~InputBuffer() = default;
 
-VaapiVideoDecodeAccelerator::InputBuffer::~InputBuffer() = default;
+  // Indicates this is a dummy buffer for flush request.
+  bool IsFlushRequest() const { return shm_ == nullptr; }
+  int32_t id() const { return id_; }
+  SharedMemoryRegion* shm() const { return shm_.get(); }
+
+ private:
+  const int32_t id_ = -1;
+  const std::unique_ptr<SharedMemoryRegion> shm_;
+};
 
 void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
   if (!task_runner_->BelongsToCurrentThread()) {
@@ -310,12 +323,12 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb)
     : state_(kUninitialized),
+      num_stream_bufs_at_decoder_(0),
       input_ready_(&lock_),
       surfaces_available_(&lock_),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VaapiDecoderThread"),
       num_frames_at_client_(0),
-      num_stream_bufs_at_decoder_(0),
       finish_flush_pending_(false),
       awaiting_va_surfaces_recycle_(false),
       requested_num_pics_(0),
@@ -481,14 +494,11 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
   } else {
     std::unique_ptr<SharedMemoryRegion> shm(
         new SharedMemoryRegion(bitstream_buffer, true));
-
     RETURN_AND_NOTIFY_ON_FAILURE(shm->Map(), "Failed to map input buffer",
                                  UNREADABLE_INPUT, );
 
-    linked_ptr<InputBuffer> input_buffer(new InputBuffer());
-    input_buffer->shm = std::move(shm);
-    input_buffer->id = bitstream_buffer.id();
-    input_buffers_.push(input_buffer);
+    input_buffers_.push(make_linked_ptr(
+        new InputBuffer(bitstream_buffer.id(), std::move(shm))));
     ++num_stream_bufs_at_decoder_;
     TRACE_COUNTER1("Video Decoder", "Stream buffers at decoder",
                    num_stream_bufs_at_decoder_);
@@ -545,16 +555,16 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
       curr_input_buffer_ = input_buffers_.front();
       input_buffers_.pop();
 
-      if (curr_input_buffer_->is_flush()) {
+      if (curr_input_buffer_->IsFlushRequest()) {
         VLOGF(4) << "New flush buffer";
       } else {
         VLOGF(4) << "New current bitstream buffer, id: "
-                 << curr_input_buffer_->id
-                 << " size: " << curr_input_buffer_->shm->size();
+                 << curr_input_buffer_->id()
+                 << " size: " << curr_input_buffer_->shm()->size();
 
         decoder_->SetStream(
-            static_cast<uint8_t*>(curr_input_buffer_->shm->memory()),
-            curr_input_buffer_->shm->size());
+            static_cast<uint8_t*>(curr_input_buffer_->shm()->memory()),
+            curr_input_buffer_->shm()->size());
       }
       return true;
 
@@ -570,7 +580,7 @@ void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(curr_input_buffer_.get());
 
-  int32_t id = curr_input_buffer_->id;
+  const int32_t id = curr_input_buffer_->id();
   curr_input_buffer_.reset();
   VLOGF(4) << "End of input buffer " << id;
   task_runner_->PostTask(
@@ -613,7 +623,7 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
   while (GetInputBuffer_Locked()) {
     DCHECK(curr_input_buffer_.get());
 
-    if (curr_input_buffer_->is_flush()) {
+    if (curr_input_buffer_->IsFlushRequest()) {
       FlushTask();
       break;
     }
@@ -905,7 +915,7 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
 
 void VaapiVideoDecodeAccelerator::FlushTask() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-  DCHECK(curr_input_buffer_.get() && curr_input_buffer_->is_flush());
+  DCHECK(curr_input_buffer_.get() && curr_input_buffer_->IsFlushRequest());
 
   VLOGF(2) << "Flush task";
 
@@ -999,10 +1009,10 @@ void VaapiVideoDecodeAccelerator::Reset() {
   // Drop all remaining input buffers, if present.
   while (!input_buffers_.empty()) {
     const auto& input_buffer = input_buffers_.front();
-    if (!input_buffer->is_flush()) {
+    if (!input_buffer->IsFlushRequest()) {
       task_runner_->PostTask(
           FROM_HERE, base::Bind(&Client::NotifyEndOfBitstreamBuffer, client_,
-                                input_buffer->id));
+                                input_buffer->id()));
       --num_stream_bufs_at_decoder_;
     }
     input_buffers_.pop();
@@ -1153,7 +1163,7 @@ VaapiVideoDecodeAccelerator::CreateSurface() {
   available_va_surfaces_.pop_front();
 
   scoped_refptr<VaapiDecodeSurface> dec_surface =
-      new VaapiDecodeSurface(curr_input_buffer_->id, va_surface);
+      new VaapiDecodeSurface(curr_input_buffer_->id(), va_surface);
 
   return dec_surface;
 }
