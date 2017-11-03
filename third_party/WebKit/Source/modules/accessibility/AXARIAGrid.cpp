@@ -46,10 +46,13 @@ AXARIAGrid* AXARIAGrid::Create(LayoutObject* layout_object,
 }
 
 bool AXARIAGrid::AddRow(AXObject* possible_row) {
-  if (!possible_row || possible_row->RoleValue() != kRowRole)
+  // This does not yet handle the case where the row is not an AXARIAGridRow or
+  // AXTable row because it is in a canvas or is a virtual node, as those
+  // do not have a layout object, cannot be an AXARIAGridRow, and cannot
+  // currently implement the rest of our table logic.
+  if (!possible_row || !possible_row->IsTableRow())
     return false;
 
-  DCHECK(possible_row->IsTableRow());
   AXTableRow* row = ToAXTableRow(possible_row);
   row->SetRowIndex(static_cast<int>(rows_.size()));
   rows_.push_back(possible_row);
