@@ -138,7 +138,8 @@ def main():
       cmd = [options.aapt_path, 'package', '-f', '-F', f.name,
              '-M', options.out_manifest, '-I', options.android_sdk_jar,
              '-I', options.in_apk, '--replace-version',
-             '--version-code', version_code, '--version-name', version_name]
+             '--version-code', version_code, '--version-name', version_name,
+             '--debug-mode']
       subprocess.check_call(cmd)
       with zipfile.ZipFile(f.name, 'a') as z:
         build_utils.MergeZips(
