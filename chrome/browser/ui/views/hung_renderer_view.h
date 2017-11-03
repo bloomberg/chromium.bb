@@ -26,10 +26,13 @@ class Label;
 // Provides functionality to display information about a hung renderer.
 class HungPagesTableModel : public ui::TableModel {
  public:
-  // The Delegate is notified any time a WebContents the model is listening to
-  // is destroyed.
   class Delegate {
    public:
+    // Notification when the model is updated (eg. new location) yet
+    // still hung.
+    virtual void TabUpdated() = 0;
+
+    // Notification when the model is destroyed.
     virtual void TabDestroyed() = 0;
 
    protected:
@@ -68,6 +71,8 @@ class HungPagesTableModel : public ui::TableModel {
 
     // WebContentsObserver overrides:
     void RenderProcessGone(base::TerminationStatus status) override;
+    void RenderViewHostChanged(content::RenderViewHost* old_host,
+                               content::RenderViewHost* new_host) override;
     void WebContentsDestroyed() override;
 
    private:
@@ -79,6 +84,10 @@ class HungPagesTableModel : public ui::TableModel {
   // Invoked when a WebContents is destroyed. Cleans up |tab_observers_| and
   // notifies the observer and delegate.
   void TabDestroyed(WebContentsObserverImpl* tab);
+
+  // Invoked when a WebContents have been updated. The title or location of
+  // the WebContents may have changed.
+  void TabUpdated(WebContentsObserverImpl* tab);
 
   std::vector<std::unique_ptr<WebContentsObserverImpl>> tab_observers_;
 
@@ -126,6 +135,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   bool ShouldUseCustomFrame() const override;
 
   // HungPagesTableModel::Delegate overrides:
+  void TabUpdated() override;
   void TabDestroyed() override;
 
  protected:
@@ -141,6 +151,9 @@ class HungRendererDialogView : public views::DialogDelegateView,
  private:
   // Initialize the controls in this dialog.
   void Init();
+
+  // Restart the hang timer, giving the page more time.
+  void RestartHangTimer();
 
   static void InitClass();
 
