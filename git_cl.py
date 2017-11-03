@@ -4865,7 +4865,7 @@ def cleanup_list(l):
   return sorted(filter(None, stripped_items))
 
 
-@subcommand.usage('[args to "git diff"]')
+@subcommand.usage('[flags]')
 def CMDupload(parser, args):
   """Uploads the current changelist to codereview.
 
