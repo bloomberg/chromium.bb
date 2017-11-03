@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
 
 #include <cmath>
 
@@ -46,7 +46,7 @@ CGFloat kPrecision = 0.00001;
 
 // Duration for the delay before showing the omnibox.
 const double kShowOmniboxDelaySeconds = 0.5;
-// Indicates if the FullScreenController returns nil from |init|. Used for
+// Indicates if the LegacyFullscreenController returns nil from |init|. Used for
 // testing purposes.
 BOOL gEnabledForTests = YES;
 
@@ -60,14 +60,14 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 
 }  // anonymous namespace.
 
-@interface FullScreenController ()<UIGestureRecognizerDelegate> {
+@interface LegacyFullscreenController ()<UIGestureRecognizerDelegate> {
   // Used to detect movement in the scrollview produced by this class.
   int selfTriggered_;
   // Used to detect if the keyboard is visible.
   BOOL keyboardIsVisible_;
   // Used to detect that the OverscrollActionsController is displaying its UI.
-  // The FullScreenController is disabled when the OverscrollActionsController's
-  // UI is displayed.
+  // The LegacyFullscreenController is disabled when the
+  // OverscrollActionsController's UI is displayed.
   BOOL overscrollActionsInProgress_;
   // Counter used to keep track of the number of actions currently disabling
   // full screen.
@@ -86,9 +86,10 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
     UITapGestureRecognizer* userInteractionGestureRecognizer;
 // The delegate responsible for providing the header height and moving the
 // header.
-@property(weak, nonatomic, readonly) id<FullScreenControllerDelegate> delegate;
+@property(weak, nonatomic, readonly) id<LegacyFullscreenControllerDelegate>
+    delegate;
 // Current height of the header, in points. This is a pass-through method that
-// fetches the header height from the FullScreenControllerDelegate.
+// fetches the header height from the LegacyFullscreenControllerDelegate.
 @property(nonatomic, readonly) CGFloat headerHeight;
 // |top| field of UIScrollView.contentInset value caused by header.
 // Always 0 for WKWebView, as it does not support contentInset.
@@ -176,7 +177,7 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 - (void)moveHeaderToRestingPosition:(BOOL)visible animate:(BOOL)animate;
 @end
 
-@implementation FullScreenController
+@implementation LegacyFullscreenController
 
 @synthesize delegate = delegate_;
 @synthesize navigationManager = navigationManager_;
@@ -192,7 +193,7 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 @synthesize userInteractionGestureRecognizer =
     userInteractionGestureRecognizer_;
 
-- (id)initWithDelegate:(id<FullScreenControllerDelegate>)delegate
+- (id)initWithDelegate:(id<LegacyFullscreenControllerDelegate>)delegate
      navigationManager:(NavigationManager*)navigationManager
              sessionID:(NSString*)sessionID {
   if (!gEnabledForTests)
@@ -463,7 +464,7 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
   if (self.isFullScreenDisabled)
     return;
 
-  // Another FullScreenController is in control.
+  // Another LegacyFullscreenController is in control.
   if (![self isScrollViewForCurrentTab])
     return;
 
@@ -483,9 +484,9 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 
 - (void)decrementFullScreenLock {
   // The corresponding notification for incrementing the lock may have been
-  // posted before the FullScreenController was initialized. This can occur
-  // when entering a URL or search query from the NTP since the CRWWebController
-  // begins loading the page before the keyboard is dismissed.
+  // posted before the LegacyFullscreenController was initialized. This can
+  // occur when entering a URL or search query from the NTP since the
+  // CRWWebController begins loading the page before the keyboard is dismissed.
   if (fullScreenLock_ > 0)
     fullScreenLock_--;
 }

@@ -1,17 +1,17 @@
 specific_include_rules = {
   # TODO(crbug.com/620139): Remove this exception.
-  "^fullscreen_controller\.mm$": [
+  "^legacy_fullscreen_controller\.mm$": [
     "+ios/web/web_state/ui/crw_web_controller.h",
   ],
 
   # TODO(crbug.com/620143): Remove these exceptions.
-  "^fullscreen_controller_unittest\.mm$": [
+  "^legacy_fullscreen_controller_unittest\.mm$": [
     "+ios/web/web_state/ui/crw_web_view_proxy_impl.h",
     "+ios/web/web_state/ui/crw_web_controller.h",
   ],
 
   # TODO(crbug.com/620139): Remove these exceptions.
-  "^fullscreen_controller_unittest\.mm$": [
+  "^legacy_fullscreen_controller_unittest\.mm$": [
     "+ios/web/web_state/ui/crw_web_view_proxy_impl.h",
     "+ios/web/web_state/ui/crw_web_controller.h",
   ],

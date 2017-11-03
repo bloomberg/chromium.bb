@@ -17,8 +17,8 @@ source_set("fullscreen") {
 
 source_set("legacy_fullscreen") {
   sources = [
-    "fullscreen_controller.h",
-    "fullscreen_controller.mm",
+    "legacy_fullscreen_controller.h",
+    "legacy_fullscreen_controller.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -40,7 +40,7 @@ source_set("legacy_fullscreen") {
 source_set("legacy_unit_tests") {
   testonly = true
   sources = [
-    "fullscreen_controller_unittest.mm",
+    "legacy_fullscreen_controller_unittest.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

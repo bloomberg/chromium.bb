@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_FULLSCREEN_LEGACY_FULLSCREEN_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_FULLSCREEN_LEGACY_FULLSCREEN_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
 
@@ -11,7 +11,7 @@
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 
 @class CRWWebViewScrollViewProxy;
-@class FullScreenController;
+@class LegacyFullscreenController;
 
 namespace web {
 class NavigationManager;
@@ -20,7 +20,7 @@ class NavigationManager;
 // Notification when the application is set up for testing.
 extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 
-@protocol FullScreenControllerDelegate<NSObject>
+@protocol LegacyFullscreenControllerDelegate<NSObject>
 
 @required
 // Called every time the header view needs to be moved in place according to
@@ -29,7 +29,7 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 // delegate to slide the view in place instead of simply snapping it there. If
 // animate is NO the view tracks touches on the screen and as such should be
 // immediate.
-- (void)fullScreenController:(FullScreenController*)fullscreenController
+- (void)fullScreenController:(LegacyFullscreenController*)fullscreenController
     drawHeaderViewFromOffset:(CGFloat)headerOffset
                      animate:(BOOL)animate;
 
@@ -38,7 +38,7 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 // Only happens during a call to -setHeaderHeight:visible:onScrollView:. If
 // |changeTopContentPadding| is YES, then in addition to scrolling, delegate
 // should also update webViewProxy's topContentPadding.
-- (void)fullScreenController:(FullScreenController*)fullScreenController
+- (void)fullScreenController:(LegacyFullscreenController*)fullScreenController
     drawHeaderViewFromOffset:(CGFloat)headerOffset
               onWebViewProxy:(id<CRWWebViewProxy>)webViewProxy
      changeTopContentPadding:(BOOL)changeTopContentPadding
@@ -60,13 +60,13 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 
 // This class will track a scrollview to make a header disappear on scroll down
 // and reappear on scroll up. This class expects the scrollview to have the
-// FullScreenController instance set as an observer right after the call to
-// -initWithDelegate:scrollView:
+// LegacyFullscreenController instance set as an observer right after the call
+// to -initWithDelegate:scrollView:
 //
 // It also assumes the header is a view rendering itself on top of the scroll
 // view, the delegate will simply move it out of view as needed. The delegate is
 // called every time the header view needs to be moved.
-@interface FullScreenController
+@interface LegacyFullscreenController
     : NSObject<CRWWebControllerObserver, CRWWebViewScrollViewProxyObserver>
 
 // If set to YES this slightly alters the behaviour on drag down to pull the
@@ -75,7 +75,7 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 @property(nonatomic, assign) BOOL immediateDragDown;
 
 // Designated initializer.
-- (id)initWithDelegate:(id<FullScreenControllerDelegate>)delegate
+- (id)initWithDelegate:(id<LegacyFullscreenControllerDelegate>)delegate
      navigationManager:(web::NavigationManager*)navigationManager
              sessionID:(NSString*)sessionID;
 
@@ -110,11 +110,11 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 - (void)moveContentBelowHeader;
 @end
 
-@interface FullScreenController (UsedForTesting)
-// Enables/Disables the FullScreenController in tests. The unit tests do not set
-// the delegate which is crucial for methods to work on the controller.
+@interface LegacyFullscreenController (UsedForTesting)
+// Enables/Disables the LegacyFullscreenController in tests. The unit tests do
+// not set the delegate which is crucial for methods to work on the controller.
 // This a temporary solution.
 + (void)setEnabledForTests:(BOOL)enabled;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_LEGACY_FULLSCREEN_CONTROLLER_H_
