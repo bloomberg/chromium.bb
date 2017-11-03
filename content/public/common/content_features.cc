@@ -49,13 +49,6 @@ const base::Feature kBrotliEncoding{"brotli-encoding",
 const base::Feature kBrowserSideNavigation{"browser-side-navigation",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Toggles whether the buggy RSA parser is used.
-//
-// TODO(davidben): Remove this after Chrome 61 is released to
-// stable. https://crbug.com/735616.
-const base::Feature kBuggyRSAParser{"BuggyRSAParser",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kCanvas2DImageChromium {
