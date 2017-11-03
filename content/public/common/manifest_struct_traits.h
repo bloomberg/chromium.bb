@@ -67,6 +67,10 @@ struct StructTraits<blink::mojom::ManifestDataView, content::Manifest> {
     return m.background_color;
   }
 
+  static const GURL& splash_screen_url(const content::Manifest& m) {
+    return m.splash_screen_url;
+  }
+
   static const std::vector<content::Manifest::Icon>& icons(
       const content::Manifest& m) {
     return m.icons;

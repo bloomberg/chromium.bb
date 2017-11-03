@@ -75,6 +75,7 @@ void ManifestParser::Parse() {
       ParsePreferRelatedApplications(*dictionary);
   manifest_.theme_color = ParseThemeColor(*dictionary);
   manifest_.background_color = ParseBackgroundColor(*dictionary);
+  manifest_.splash_screen_url = ParseSplashScreenURL(*dictionary);
   manifest_.gcm_sender_id = ParseGCMSenderID(*dictionary);
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
@@ -155,15 +156,32 @@ int64_t ManifestParser::ParseColor(
 
 GURL ManifestParser::ParseURL(const base::DictionaryValue& dictionary,
                               const std::string& key,
-                              const GURL& base_url) {
+                              const GURL& base_url,
+                              ParseURLOriginRestrictions origin_restriction) {
   base::NullableString16 url_str = ParseString(dictionary, key, NoTrim);
   if (url_str.is_null())
     return GURL();
 
   GURL resolved = base_url.Resolve(url_str.string());
-  if (!resolved.is_valid())
+  if (!resolved.is_valid()) {
     AddErrorInfo("property '" + key + "' ignored, URL is invalid.");
-  return resolved;
+    return GURL();
+  }
+
+  switch (origin_restriction) {
+    case ParseURLOriginRestrictions::kSameOriginOnly:
+      if (resolved.GetOrigin() != document_url_.GetOrigin()) {
+        AddErrorInfo("property '" + key +
+                     "' ignored, should be same origin as document.");
+        return GURL();
+      }
+      return resolved;
+    case ParseURLOriginRestrictions::kNoRestrictions:
+      return resolved;
+  }
+
+  NOTREACHED();
+  return GURL();
 }
 
 base::NullableString16 ManifestParser::ParseName(
@@ -177,43 +195,28 @@ base::NullableString16 ManifestParser::ParseShortName(
 }
 
 GURL ManifestParser::ParseStartURL(const base::DictionaryValue& dictionary) {
-  GURL start_url = ParseURL(dictionary, "start_url", manifest_url_);
-  if (!start_url.is_valid())
-    return GURL();
-
-  if (start_url.GetOrigin() != document_url_.GetOrigin()) {
-    AddErrorInfo("property 'start_url' ignored, should be "
-                 "same origin as document.");
-    return GURL();
-  }
-
-  return start_url;
+  return ParseURL(dictionary, "start_url", manifest_url_,
+                  ParseURLOriginRestrictions::kSameOriginOnly);
 }
 
 GURL ManifestParser::ParseScope(const base::DictionaryValue& dictionary,
                                 const GURL& start_url) {
-  GURL scope = ParseURL(dictionary, "scope", manifest_url_);
-  if (!scope.is_valid()) {
-    return GURL();
-  }
+  GURL scope = ParseURL(dictionary, "scope", manifest_url_,
+                        ParseURLOriginRestrictions::kSameOriginOnly);
 
-  if (scope.GetOrigin() != document_url_.GetOrigin()) {
-    AddErrorInfo("property 'scope' ignored, should be "
-                 "same origin as document.");
-    return GURL();
-  }
-
-  // According to the spec, if the start_url cannot be parsed, the document URL
-  // should be used as the start URL. If the start_url could not be parsed,
-  // check that the document URL is within scope.
-  GURL check_in_scope = start_url.is_empty() ? document_url_ : start_url;
-  if (check_in_scope.GetOrigin() != scope.GetOrigin() ||
-      !base::StartsWith(check_in_scope.path(), scope.path(),
-                        base::CompareCase::SENSITIVE)) {
-    AddErrorInfo(
-        "property 'scope' ignored. Start url should be within scope "
-        "of scope URL.");
-    return GURL();
+  if (!scope.is_empty()) {
+    // According to the spec, if the start_url cannot be parsed, the document
+    // URL should be used as the start URL. If the start_url could not be
+    // parsed, check that the document URL is within scope.
+    GURL check_in_scope = start_url.is_empty() ? document_url_ : start_url;
+    if (check_in_scope.GetOrigin() != scope.GetOrigin() ||
+        !base::StartsWith(check_in_scope.path(), scope.path(),
+                          base::CompareCase::SENSITIVE)) {
+      AddErrorInfo(
+          "property 'scope' ignored. Start url should be within scope "
+          "of scope URL.");
+      return GURL();
+    }
   }
   return scope;
 }
@@ -248,7 +251,8 @@ blink::WebScreenOrientationLockType ManifestParser::ParseOrientation(
 }
 
 GURL ManifestParser::ParseIconSrc(const base::DictionaryValue& icon) {
-  return ParseURL(icon, "src", manifest_url_);
+  return ParseURL(icon, "src", manifest_url_,
+                  ParseURLOriginRestrictions::kNoRestrictions);
 }
 
 base::string16 ManifestParser::ParseIconType(
@@ -371,7 +375,8 @@ base::NullableString16 ManifestParser::ParseRelatedApplicationPlatform(
 
 GURL ManifestParser::ParseRelatedApplicationURL(
     const base::DictionaryValue& application) {
-  return ParseURL(application, "url", manifest_url_);
+  return ParseURL(application, "url", manifest_url_,
+                  ParseURLOriginRestrictions::kNoRestrictions);
 }
 
 base::NullableString16 ManifestParser::ParseRelatedApplicationId(
@@ -437,6 +442,12 @@ int64_t ManifestParser::ParseThemeColor(
 int64_t ManifestParser::ParseBackgroundColor(
     const base::DictionaryValue& dictionary) {
   return ParseColor(dictionary, "background_color");
+}
+
+GURL ManifestParser::ParseSplashScreenURL(
+    const base::DictionaryValue& dictionary) {
+  return ParseURL(dictionary, "splash_screen_url", manifest_url_,
+                  ParseURLOriginRestrictions::kSameOriginOnly);
 }
 
 base::NullableString16 ManifestParser::ParseGCMSenderID(

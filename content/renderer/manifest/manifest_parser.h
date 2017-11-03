@@ -51,6 +51,12 @@ class CONTENT_EXPORT ManifestParser {
     NoTrim
   };
 
+  // Indicate whether a parsed URL should be restricted to document origin.
+  enum class ParseURLOriginRestrictions {
+    kNoRestrictions = 0,
+    kSameOriginOnly,
+  };
+
   // Helper function to parse booleans present on a given |dictionary| in a
   // given field identified by its |key|.
   // Returns the parsed boolean if any, or |default_value| if parsing failed.
@@ -74,11 +80,14 @@ class CONTENT_EXPORT ManifestParser {
 
   // Helper function to parse URLs present on a given |dictionary| in a given
   // field identified by its |key|. The URL is first parsed as a string then
-  // resolved using |base_url|.
-  // Returns a GURL. If the parsing failed, the GURL will not be valid.
+  // resolved using |base_url|. |enforce_document_origin| specified whether to
+  // enforce matching of the document's and parsed URL's origins.
+  // Returns a GURL. If the parsing failed or origin matching was enforced but
+  // not present, the returned GURL will be empty.
   GURL ParseURL(const base::DictionaryValue& dictionary,
                 const std::string& key,
-                const GURL& base_url);
+                const GURL& base_url,
+                ParseURLOriginRestrictions origin_restriction);
 
   // Parses the 'name' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-name-member
@@ -203,6 +212,10 @@ class CONTENT_EXPORT ManifestParser {
   // Returns the parsed background color if any,
   // Manifest::kInvalidOrMissingColor if the parsing failed.
   int64_t ParseBackgroundColor(const base::DictionaryValue& dictionary);
+
+  // Parses the 'splash_screen_url' field of the manifest.
+  // Returns the parsed GURL if any, an empty GURL if the parsing failed.
+  GURL ParseSplashScreenURL(const base::DictionaryValue& dictionary);
 
   // Parses the 'gcm_sender_id' field of the manifest.
   // This is a proprietary extension of the Web Manifest specification.

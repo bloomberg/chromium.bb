@@ -150,6 +150,10 @@ struct CONTENT_EXPORT Manifest {
   // present.
   int64_t background_color;
 
+  // A URL of the HTML splash screen.
+  // Empty if the parsing failed or the field was not present.
+  GURL splash_screen_url;
+
   // This is a proprietary extension of the web Manifest, double-check that it
   // is okay to use this entry.
   // Null if parsing failed or the field was not present.
