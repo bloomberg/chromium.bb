@@ -419,26 +419,26 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
 
   int32_t output_id = picture->picture_buffer_id();
 
-  TRACE_EVENT2("Video Decoder", "VAVDA::OutputSurface", "input_id", input_id,
-               "output_id", output_id);
-
   VLOGF(4) << "Outputting VASurface " << va_surface->id()
            << " into pixmap bound to picture buffer id " << output_id;
-
-  RETURN_AND_NOTIFY_ON_FAILURE(picture->DownloadFromSurface(va_surface),
-                               "Failed putting surface into pixmap",
-                               PLATFORM_FAILURE, );
-
+  {
+    TRACE_EVENT2("Video Decoder", "VAVDA::DownloadFromSurface", "input_id",
+                 input_id, "output_id", output_id);
+    RETURN_AND_NOTIFY_ON_FAILURE(picture->DownloadFromSurface(va_surface),
+                                 "Failed putting surface into pixmap",
+                                 PLATFORM_FAILURE, );
+  }
   // Notify the client a picture is ready to be displayed.
   ++num_frames_at_client_;
   TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
   VLOGF(4) << "Notifying output picture id " << output_id << " for input "
            << input_id
            << " is ready. visible rect: " << visible_rect.ToString();
-  // TODO(hubbe): Use the correct color space.  http://crbug.com/647725
-  if (client_)
+  if (client_) {
+    // TODO(hubbe): Use the correct color space.  http://crbug.com/647725
     client_->PictureReady(Picture(output_id, input_id, visible_rect,
                                   gfx::ColorSpace(), picture->AllowOverlay()));
+  }
 }
 
 void VaapiVideoDecodeAccelerator::TryOutputSurface() {
@@ -600,7 +600,6 @@ bool VaapiVideoDecodeAccelerator::WaitForSurfaces_Locked() {
 
 void VaapiVideoDecodeAccelerator::DecodeTask() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT0("Video Decoder", "VAVDA::DecodeTask");
   base::AutoLock auto_lock(lock_);
 
   if (state_ != kDecoding)
@@ -627,6 +626,7 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
       // the lock for its duration would be fine, it would defeat the purpose
       // of having a separate decoder thread.
       base::AutoUnlock auto_unlock(lock_);
+      TRACE_EVENT0("Video Decoder", "VAVDA::Decode");
       res = decoder_->Decode();
     }
 
