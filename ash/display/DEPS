@@ -10,9 +10,4 @@ specific_include_rules = {
   "screen_orientation_controller_(chromeos|test_api)\.h": [
     "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
   ],
-  # TODO(mash): Touch calibration should move to //services/ui.
-  # http://crbug.com/734812
-  "touch_calibrator_controller(|_unittest)\.cc": [
-    "+ui/events/devices/device_data_manager.h",
-  ]
 }

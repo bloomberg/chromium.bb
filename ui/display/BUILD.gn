@@ -106,6 +106,8 @@ static_library("test_support") {
     "manager/chromeos/test/test_display_layout_manager.h",
     "manager/chromeos/test/test_native_display_delegate.cc",
     "manager/chromeos/test/test_native_display_delegate.h",
+    "manager/chromeos/touch_transform_controller_test_api.cc",
+    "manager/chromeos/touch_transform_controller_test_api.h",
     "test/display_matchers.cc",
     "test/display_matchers.h",
     "test/display_test_util.h",

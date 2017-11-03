@@ -11,7 +11,7 @@
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/screen.h"
-#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 
@@ -22,13 +22,13 @@ void InitInternalTouchDeviceIds(std::set<int>& internal_touch_device_ids) {
   if (!display::Display::HasInternalDisplay())
     return;
 
-  DCHECK(ui::DeviceDataManager::GetInstance()
+  DCHECK(ui::InputDeviceManager::GetInstance()
              ->AreTouchscreenTargetDisplaysValid());
 
   internal_touch_device_ids.clear();
 
   const std::vector<ui::TouchscreenDevice>& device_list =
-      ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices();
+      ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices();
   int64_t internal_display_id = display::Display::InternalDisplayId();
 
   for (const auto& touchscreen_device : device_list) {
@@ -137,7 +137,7 @@ void TouchCalibratorController::CompleteCalibration(
       display::TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier();
 
   const std::vector<ui::TouchscreenDevice>& device_list =
-      ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices();
+      ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices();
   for (const auto& device : device_list) {
     if (device.id == touch_device_id_) {
       touch_device_identifier =
