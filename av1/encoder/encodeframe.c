@@ -3671,6 +3671,115 @@ static int refs_are_one_sided(const AV1_COMMON *cm) {
     one_sided_refs = 0;
   return one_sided_refs;
 }
+
+// Enforce the number of references for each arbitrary frame limited to
+// (INTER_REFS_PER_FRAME - 1)
+static void enforce_max_ref_frames(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  static const int flag_list[TOTAL_REFS_PER_FRAME] = { 0,
+                                                       AOM_LAST_FLAG,
+                                                       AOM_LAST2_FLAG,
+                                                       AOM_LAST3_FLAG,
+                                                       AOM_GOLD_FLAG,
+                                                       AOM_BWD_FLAG,
+                                                       AOM_ALT2_FLAG,
+                                                       AOM_ALT_FLAG };
+  MV_REFERENCE_FRAME ref_frame;
+  int total_valid_refs = 0;
+
+  (void)flag_list;
+
+  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    if (cpi->ref_frame_flags & flag_list[ref_frame]) total_valid_refs++;
+  }
+
+  // NOTE(zoeliu): When all the possible reference frames are availble, we
+  // reduce the number of reference frames by 1, following the rules of:
+  // (1) Retain GOLDEN_FARME/ALTEF_FRAME;
+  // (2) Check the earliest 2 remaining reference frames, and remove the one
+  //     with the lower quality factor, otherwise if both have been coded at
+  //     the same quality level, remove the earliest reference frame.
+
+  if (total_valid_refs == INTER_REFS_PER_FRAME) {
+    unsigned int min_ref_offset = UINT_MAX;
+    unsigned int second_min_ref_offset = UINT_MAX;
+    MV_REFERENCE_FRAME earliest_ref_frames[2] = { LAST3_FRAME, LAST2_FRAME };
+    int earliest_buf_idxes[2] = { 0 };
+
+    // Locate the earliest two reference frames except GOLDEN/ALTREF.
+    for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+      // Retain GOLDEN/ALTERF
+      if (ref_frame == GOLDEN_FRAME || ref_frame == ALTREF_FRAME) continue;
+
+      const int buf_idx = cm->frame_refs[ref_frame - LAST_FRAME].idx;
+      if (buf_idx >= 0) {
+        const unsigned int ref_offset =
+            cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset;
+
+        if (min_ref_offset == UINT_MAX) {
+          min_ref_offset = ref_offset;
+          earliest_ref_frames[0] = ref_frame;
+          earliest_buf_idxes[0] = buf_idx;
+        } else {
+          if (ref_offset < min_ref_offset) {
+            second_min_ref_offset = min_ref_offset;
+            earliest_ref_frames[1] = earliest_ref_frames[0];
+            earliest_buf_idxes[1] = earliest_buf_idxes[0];
+
+            min_ref_offset = ref_offset;
+            earliest_ref_frames[0] = ref_frame;
+            earliest_buf_idxes[0] = buf_idx;
+          } else if (ref_offset < second_min_ref_offset) {
+            second_min_ref_offset = ref_offset;
+            earliest_ref_frames[1] = ref_frame;
+            earliest_buf_idxes[1] = buf_idx;
+          }
+        }
+      }
+    }
+    // Check the coding quality factors of the two earliest reference frames.
+    RATE_FACTOR_LEVEL ref_rf_level[2];
+    double ref_rf_deltas[2];
+    for (int i = 0; i < 2; ++i) {
+      ref_rf_level[i] = cpi->frame_rf_level[earliest_buf_idxes[i]];
+      ref_rf_deltas[i] = rate_factor_deltas[ref_rf_level[i]];
+    }
+    (void)ref_rf_level;
+    (void)ref_rf_deltas;
+
+#define USE_RF_LEVEL_TO_ENFORCE 1
+#if USE_RF_LEVEL_TO_ENFORCE
+    // If both earliest two reference frames are coded using the same rate-
+    // factor, disable the earliest reference frame; Otherwise disable the
+    // reference frame that uses a lower rate-factor delta.
+    const MV_REFERENCE_FRAME ref_frame_to_disable =
+        (ref_rf_deltas[0] <= ref_rf_deltas[1]) ? earliest_ref_frames[0]
+                                               : earliest_ref_frames[1];
+#else
+    // Always disable the earliest reference frame
+    const MV_REFERENCE_FRAME ref_frame_to_disable = earliest_ref_frames[0];
+#endif  // USE_RF_LEVEL_TO_ENFORCE
+#undef USE_RF_LEVEL_TO_ENFORCE
+
+#if 0
+    printf("===Enforce: Frame_offset=%d, earliest refs: %d-%d(%d,%4.2f) and "
+           "%d-%d(%d,%4.2f), ref_frame_to_disable=%d\n",
+           cm->frame_offset, earliest_ref_frames[0], min_ref_offset,
+           ref_rf_level[0], ref_rf_deltas[0], earliest_ref_frames[1],
+           second_min_ref_offset, ref_rf_level[1], ref_rf_deltas[1],
+           ref_frame_to_disable);
+#endif  // 0
+
+    switch (ref_frame_to_disable) {
+      case LAST_FRAME: cpi->ref_frame_flags &= ~AOM_LAST_FLAG; break;
+      case LAST2_FRAME: cpi->ref_frame_flags &= ~AOM_LAST2_FLAG; break;
+      case LAST3_FRAME: cpi->ref_frame_flags &= ~AOM_LAST3_FLAG; break;
+      case BWDREF_FRAME: cpi->ref_frame_flags &= ~AOM_BWD_FLAG; break;
+      case ALTREF2_FRAME: cpi->ref_frame_flags &= ~AOM_ALT2_FLAG; break;
+      default: break;
+    }
+  }
+}
 #endif  // CONFIG_FRAME_MARKER
 
 static void encode_frame_internal(AV1_COMP *cpi) {
@@ -4055,6 +4164,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
     cm->frame_offset = cm->current_video_frame;
   }
   av1_setup_frame_buf_refs(cm);
+  if (cpi->sf.selective_ref_frame >= 2) enforce_max_ref_frames(cpi);
 #if CONFIG_FRAME_SIGN_BIAS
   av1_setup_frame_sign_bias(cm);
 #endif  // CONFIG_FRAME_SIGN_BIAS

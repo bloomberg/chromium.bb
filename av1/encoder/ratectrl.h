@@ -38,6 +38,15 @@ typedef enum {
   RATE_FACTOR_LEVELS = 6
 } RATE_FACTOR_LEVEL;
 
+static const double rate_factor_deltas[RATE_FACTOR_LEVELS] = {
+  1.00,  // INTER_NORMAL
+  0.80,  // INTER_LOW
+  1.50,  // INTER_HIGH
+  1.25,  // GF_ARF_LOW
+  2.00,  // GF_ARF_STD
+  2.00,  // KF_STD
+};
+
 typedef struct {
   int resize_width;
   int resize_height;

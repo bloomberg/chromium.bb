@@ -921,14 +921,6 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi, int width,
 }
 
 int av1_frame_type_qdelta(const AV1_COMP *cpi, int rf_level, int q) {
-  static const double rate_factor_deltas[RATE_FACTOR_LEVELS] = {
-    1.00,  // INTER_NORMAL
-    0.80,  // INTER_LOW
-    1.50,  // INTER_HIGH
-    1.25,  // GF_ARF_LOW
-    2.00,  // GF_ARF_STD
-    2.00,  // KF_STD
-  };
   static const FRAME_TYPE frame_type[RATE_FACTOR_LEVELS] = {
     INTER_FRAME, INTER_FRAME, INTER_FRAME, INTER_FRAME, INTER_FRAME, KEY_FRAME
   };

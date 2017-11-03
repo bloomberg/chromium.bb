@@ -5239,8 +5239,11 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
         (buf_idx >= 0)
             ? (int)cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset
             : -1;
-    printf(" %d(%c)", ref_offset,
-           (cpi->ref_frame_flags & flag_list[ref_frame]) ? 'Y' : 'N');
+    printf(
+        " %d(%c-%d-%4.2f)", ref_offset,
+        (cpi->ref_frame_flags & flag_list[ref_frame]) ? 'Y' : 'N',
+        (buf_idx >= 0) ? (int)cpi->frame_rf_level[buf_idx] : -1,
+        (buf_idx >= 0) ? rate_factor_deltas[cpi->frame_rf_level[buf_idx]] : -1);
   }
   printf(" ]\n");
 #endif  // CONFIG_FRAME_MARKER
@@ -6526,6 +6529,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cm->new_fb_idx = get_free_fb(cm);
 
   if (cm->new_fb_idx == INVALID_IDX) return -1;
+
+#if CONFIG_FRAME_MARKER
+  // Retain the RF_LEVEL for the current newly coded frame.
+  cpi->frame_rf_level[cm->new_fb_idx] =
+      cpi->twopass.gf_group.rf_level[cpi->twopass.gf_group.index];
+#endif  // CONFIG_FRAME_MARKER
 
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
 #if CONFIG_HIGHBITDEPTH
