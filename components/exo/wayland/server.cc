@@ -2765,7 +2765,7 @@ void data_device_manager_create_data_source(wl_client* client,
                                             wl_resource* resource,
                                             uint32_t id) {
   wl_resource* data_source_resource = wl_resource_create(
-      client, &wl_data_device_interface, wl_resource_get_version(resource), id);
+      client, &wl_data_source_interface, wl_resource_get_version(resource), id);
   SetImplementation(data_source_resource, &data_source_implementation,
                     std::make_unique<DataSource>(
                         new WaylandDataSourceDelegate(data_source_resource)));
