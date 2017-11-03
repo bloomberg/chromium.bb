@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -26,7 +27,8 @@ namespace lock_screen_apps {
 // Manager that can be used on a lock screen note app to show a first run
 // dialog informing the user about the app that's been launched from the lock
 // screen.
-class FirstAppRunToastManager : public aura::WindowObserver,
+class FirstAppRunToastManager : public extensions::AppWindowRegistry::Observer,
+                                public aura::WindowObserver,
                                 public views::WidgetObserver {
  public:
   explicit FirstAppRunToastManager(Profile* profile);
@@ -47,7 +49,12 @@ class FirstAppRunToastManager : public aura::WindowObserver,
   void OnWidgetDestroyed(views::Widget* widget) override;
 
   // aura::WindowObserver:
-  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+
+  // extensions::AppWindowRegistry::Observer:
+  void OnAppWindowActivated(extensions::AppWindow* app_window) override;
 
   views::Widget* widget() { return toast_widget_; }
 
@@ -61,6 +68,13 @@ class FirstAppRunToastManager : public aura::WindowObserver,
   // The manager will mark the first run dialog as handled for the app.
   void ToastDialogDismissed();
 
+  // Adjust toast dialog's bounds relative to the bounds of the app window for
+  // which the toast dialog is shown - the dialog position is
+  //  * horizontally - centered
+  //  * vertically - at the bottom, with additional vertical offset (so a
+  //        portion of the dialog is rendered outside the app window bounds).
+  void AdjustToastWidgetBounds();
+
   Profile* const profile_;
 
   // If set, the app window for which the manager is being run.
@@ -70,7 +84,11 @@ class FirstAppRunToastManager : public aura::WindowObserver,
   views::Widget* toast_widget_ = nullptr;
 
   ScopedObserver<views::Widget, views::WidgetObserver> toast_widget_observer_;
-  ScopedObserver<aura::Window, aura::WindowObserver> app_window_observer_;
+  ScopedObserver<extensions::AppWindowRegistry,
+                 extensions::AppWindowRegistry::Observer>
+      app_window_observer_;
+  ScopedObserver<aura::Window, aura::WindowObserver>
+      native_app_window_observer_;
 
   base::WeakPtrFactory<FirstAppRunToastManager> weak_ptr_factory_;
 

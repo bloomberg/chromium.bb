@@ -7,9 +7,15 @@
 #include <memory>
 #include <utility>
 
-#include "chrome/browser/ui/ash/system_tray_client.h"
+#include "ash/public/cpp/config.h"
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
+#include "ash/wm/window_util.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -25,8 +31,6 @@ namespace {
 
 constexpr int kDialogWidthDp = 292;
 
-constexpr int kDialogMarginBottomDp = 28;
-
 constexpr int kDialogMessageMarginTopDp = 0;
 constexpr int kDialogMessageMarginStartDp = 16;
 constexpr int kDialogMessageMarginBottomDp = 18;
@@ -37,18 +41,6 @@ constexpr int kDialogTitleMarginTopDp = 14;
 constexpr int kDialogTitleMarginStartDp = 16;
 constexpr int kDialogTitleMarginBottomDp = 5;
 constexpr int kDialogTitleMarginEndDp = 0;
-
-// Adjust the dialog bounds inside the parent window, so the dialog overlaps
-// the system shelf.
-void AdjustDialogBounds(views::Widget* widget) {
-  gfx::Rect bounds = widget->GetNativeView()->GetBoundsInScreen();
-  gfx::Rect parent_bounds =
-      widget->GetNativeView()->parent()->GetBoundsInScreen();
-  widget->SetBounds(gfx::Rect(
-      parent_bounds.x() + (parent_bounds.width() - bounds.width()) / 2,
-      parent_bounds.bottom() - bounds.height() - kDialogMarginBottomDp,
-      bounds.width(), bounds.height()));
-}
 
 }  // namespace
 
@@ -86,13 +78,27 @@ ToastDialogView::ToastDialogView(const base::string16& app_name,
 ToastDialogView::~ToastDialogView() = default;
 
 void ToastDialogView::Show() {
-  views::Widget* widget = SystemTrayClient::CreateUnownedDialogWidget(this);
-  AdjustDialogBounds(widget);
+  views::Widget::InitParams params =
+      GetDialogWidgetInitParams(this, nullptr, nullptr, gfx::Rect());
+
+  const int container_id = ash::kShellWindowId_SettingBubbleContainer;
+  if (ash_util::IsRunningInMash()) {
+    using ui::mojom::WindowManager;
+    params.mus_properties[WindowManager::kContainerId_InitProperty] =
+        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
+  } else {
+    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                             container_id);
+  }
+
+  views::Widget* widget = new views::Widget;  // owned by native widget
+  widget->Init(params);
+  widget->AddObserver(this);
   widget->Show();
 }
 
 ui::ModalType ToastDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_SYSTEM;
+  return ui::MODAL_TYPE_NONE;
 }
 
 base::string16 ToastDialogView::GetWindowTitle() const {

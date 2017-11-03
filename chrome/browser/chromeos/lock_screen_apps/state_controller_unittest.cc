@@ -12,7 +12,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/session/test_session_controller_client.h"
-#include "ash/test/ash_test_helper.h"
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
@@ -589,8 +588,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     SetFirstRunCompletedIfNeeded(app_->id());
 
     session_manager_->SetSessionState(session_manager::SessionState::LOCKED);
-    ash_test_helper()->test_session_controller_client()->SetSessionState(
-        session_manager::SessionState::LOCKED);
 
     if (app_manager_->state() != TestAppManager::State::kStarted) {
       ADD_FAILURE() << "Lock app manager Start not invoked.";
@@ -1727,6 +1724,10 @@ TEST_F(LockScreenAppStateTest, ToastDialogShownOnFirstAppRun) {
 
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
                                       true /* enable_app_launch */));
+  // Make sure that the app window is activated, because the toast dialog is
+  // shown only after lock screen app window activation.
+  app_window()->window()->OnNativeWindowActivated();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(state_controller()->first_app_run_toast_manager()->widget());
   EXPECT_TRUE(
@@ -1735,6 +1736,11 @@ TEST_F(LockScreenAppStateTest, ToastDialogShownOnFirstAppRun) {
   // The toast should be shown again after app re-launch, as the toast widget
   // was not dismissed by the user.
   ASSERT_TRUE(RelaunchLockScreenApp());
+  // Make sure that the app window is activated, because the toast dialog is
+  // shown only after lock screen app window activation.
+  app_window()->window()->OnNativeWindowActivated();
+  base::RunLoop().RunUntilIdle();
+
   ASSERT_TRUE(state_controller()->first_app_run_toast_manager()->widget());
   EXPECT_TRUE(
       state_controller()->first_app_run_toast_manager()->widget()->IsVisible());
@@ -1745,5 +1751,10 @@ TEST_F(LockScreenAppStateTest, ToastDialogShownOnFirstAppRun) {
   // Relaunch the note taking app - this time the toast bubble should not have
   // been shown.
   ASSERT_TRUE(RelaunchLockScreenApp());
+  // Make sure that the app window is activated, because the toast dialog is
+  // shown only after lock screen app window activation.
+  app_window()->window()->OnNativeWindowActivated();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(state_controller()->first_app_run_toast_manager()->widget());
 }
