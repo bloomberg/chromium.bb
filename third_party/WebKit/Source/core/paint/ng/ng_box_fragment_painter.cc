@@ -17,6 +17,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintPhase.h"
+#include "core/paint/ng/ng_fragment_painter.h"
 #include "core/paint/ng/ng_paint_fragment.h"
 #include "core/paint/ng/ng_text_fragment_painter.h"
 #include "platform/geometry/LayoutRectOutsets.h"
@@ -149,9 +150,8 @@ void NGBoxFragmentPainter::PaintObject(const PaintInfo& paint_info,
       paint_phase == PaintPhase::kTextClip)
     PaintFloats(contents_paint_info, paint_offset);
 
-  // TODO(eae): Implement outline painting.
-  // if (ShouldPaintSelfOutline(paint_phase))
-  //  ObjectPainter(box_fragment_).PaintOutline(paint_info, paint_offset);
+  if (ShouldPaintSelfOutline(paint_phase))
+    NGFragmentPainter(box_fragment_).PaintOutline(paint_info, paint_offset);
 
   // TODO(layout-dev): Implement once we have selections in LayoutNG.
   // If the caret's node's layout object's containing block is this block, and
