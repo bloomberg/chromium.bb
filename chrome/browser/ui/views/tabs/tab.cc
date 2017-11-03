@@ -96,11 +96,6 @@ const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
 
 const char kTabCloseButtonName[] = "TabCloseButton";
 
-bool ShouldShowThrobber(TabRendererData::NetworkState state) {
-  return state != TabRendererData::NETWORK_STATE_NONE &&
-         state != TabRendererData::NETWORK_STATE_ERROR;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Drawing and utility functions
 
@@ -394,7 +389,7 @@ void Tab::ThrobberView::ResetStartTimes() {
 
 void Tab::ThrobberView::OnPaint(gfx::Canvas* canvas) {
   const TabRendererData::NetworkState state = owner_->data().network_state;
-  CHECK(ShouldShowThrobber(state));
+  CHECK(owner_->ShouldShowThrobber());
 
   const ui::ThemeProvider* tp = GetThemeProvider();
   const gfx::Rect bounds = GetLocalBounds();
@@ -541,7 +536,7 @@ void Tab::SetData(const TabRendererData& data) {
 
   base::string16 title = data_.title;
   if (title.empty()) {
-    title = ShouldShowThrobber(data_.network_state)
+    title = ShouldShowThrobber()
                 ? l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE)
                 : CoreTabHelper::GetDefaultTitle();
   } else {
@@ -1333,7 +1328,7 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
 }
 
 void Tab::UpdateThrobber(const TabRendererData& old) {
-  const bool should_show = ShouldShowThrobber(data_.network_state);
+  const bool should_show = ShouldShowThrobber();
   const bool is_showing = throbber_->visible();
 
   if (!is_showing && !should_show)
@@ -1343,7 +1338,7 @@ void Tab::UpdateThrobber(const TabRendererData& old) {
 }
 
 void Tab::RefreshThrobber() {
-  if (!ShouldShowThrobber(data().network_state)) {
+  if (!ShouldShowThrobber()) {
     throbber_->ResetStartTimes();
     throbber_->SetVisible(false);
     ScheduleIconPaint();
@@ -1391,6 +1386,14 @@ int Tab::IconCapacity() const {
   const int padding = controller_->ShouldHideCloseButtonForInactiveTabs() ?
       0 : kExtraLeftPaddingToBalanceCloseButtonPadding;
   return (available_width - padding) / icon_width;
+}
+
+bool Tab::ShouldShowThrobber() const {
+  if (data().should_hide_throbber)
+    return false;
+
+  return data().network_state != TabRendererData::NETWORK_STATE_NONE &&
+         data().network_state != TabRendererData::NETWORK_STATE_ERROR;
 }
 
 bool Tab::ShouldShowIcon() const {

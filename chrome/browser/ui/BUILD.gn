@@ -196,6 +196,8 @@ split_static_library("ui") {
     "tab_helpers.cc",
     "tab_helpers.h",
     "tab_modal_confirm_dialog.h",
+    "tab_ui_helper.cc",
+    "tab_ui_helper.h",
     "toolbar/chrome_toolbar_model_delegate.cc",
     "toolbar/chrome_toolbar_model_delegate.h",
     "translate/language_combobox_model.cc",

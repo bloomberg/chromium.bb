@@ -50,6 +50,7 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
   bool blocked = false;
   bool app = false;
   TabAlertState alert_state = TabAlertState::NONE;
+  bool should_hide_throbber = false;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_RENDERER_DATA_H_
