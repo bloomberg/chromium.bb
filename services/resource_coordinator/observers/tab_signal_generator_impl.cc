@@ -56,7 +56,7 @@ void TabSignalGeneratorImpl::OnProcessPropertyChanged(
         continue;
       auto* page_cu = frame_cu->GetPageCoordinationUnit();
       int64_t duration;
-      if (!page_cu->GetExpectedTaskQueueingDuration(&duration))
+      if (!page_cu || !page_cu->GetExpectedTaskQueueingDuration(&duration))
         continue;
       DISPATCH_TAB_SIGNAL(observers_, SetExpectedTaskQueueingDuration,
                           page_cu->id(),
