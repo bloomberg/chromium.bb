@@ -5,6 +5,7 @@
 #import "ios/web/public/test/web_test_with_web_state.h"
 
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -60,8 +61,8 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
   // Sets MIME type to "text/html" once navigation is committed.
   class MimeTypeUpdater : public WebStateObserver {
    public:
-    explicit MimeTypeUpdater(WebState* web_state)
-        : WebStateObserver(web_state) {}
+    MimeTypeUpdater() = default;
+
     // WebStateObserver overrides:
     void NavigationItemCommitted(WebState* web_state,
                                  const LoadCommittedDetails&) override {
@@ -72,8 +73,16 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
       // checking if MIME type is in fact HTML.
       static_cast<WebStateImpl*>(web_state)->SetContentsMimeType("text/html");
     }
+    void WebStateDestroyed(WebState* web_state) override { NOTREACHED(); }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(MimeTypeUpdater);
   };
-  MimeTypeUpdater mime_type_updater(web_state());
+
+  MimeTypeUpdater mime_type_updater;
+  ScopedObserver<WebState, WebStateObserver> scoped_observer(
+      &mime_type_updater);
+  scoped_observer.Add(web_state());
 
   // Initiate asynchronous HTML load.
   CRWWebController* web_controller = GetWebController(web_state());
