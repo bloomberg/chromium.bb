@@ -309,7 +309,13 @@ void RenderWidgetHostViewBase::FocusedNodeTouched(
 }
 
 void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
-  *screen_info = ScreenInfo();
+  RenderWidgetHostImpl* host =
+      RenderWidgetHostImpl::From(GetRenderWidgetHost());
+  if (!host || !host->delegate()) {
+    *screen_info = ScreenInfo();
+    return;
+  }
+  host->delegate()->GetScreenInfo(screen_info);
 }
 
 uint32_t RenderWidgetHostViewBase::RendererFrameNumber() {
