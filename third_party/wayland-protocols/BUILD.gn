@@ -203,11 +203,8 @@ config("stylus_protocol_config") {
 
 source_set("stylus_protocol") {
   sources = [
-    "include/protocol/stylus-unstable-v1-client-protocol.h",
-    "include/protocol/stylus-unstable-v1-server-protocol.h",
     "include/protocol/stylus-unstable-v2-client-protocol.h",
     "include/protocol/stylus-unstable-v2-server-protocol.h",
-    "protocol/stylus-protocol-v1.c",
     "protocol/stylus-protocol-v2.c",
   ]
 

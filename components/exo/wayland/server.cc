@@ -19,7 +19,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stylus-tools-unstable-v1-server-protocol.h>
-#include <stylus-unstable-v1-server-protocol.h>
 #include <stylus-unstable-v2-server-protocol.h>
 #include <viewporter-server-protocol.h>
 #include <vsync-feedback-unstable-v1-server-protocol.h>
@@ -4043,47 +4042,6 @@ void bind_pointer_gestures(wl_client* client,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// pointer_stylus interface (deprecated)
-// TODO(denniskempin): Remove once client no longer depends on this interface.
-
-void pointer_stylus_destroy_DEPRECATED(wl_client* client,
-                                       wl_resource* resource) {
-  wl_resource_destroy(resource);
-}
-
-const struct zcr_pointer_stylus_v1_interface
-    pointer_stylus_implementation_DEPRECATED = {
-        pointer_stylus_destroy_DEPRECATED};
-
-////////////////////////////////////////////////////////////////////////////////
-// stylus_v1 interface (deprecated):
-// TODO(denniskempin): Remove once client no longer depends on this interface.
-
-void stylus_get_pointer_stylus_DEPRECATED(wl_client* client,
-                                          wl_resource* resource,
-                                          uint32_t id,
-                                          wl_resource* pointer_resource) {
-  wl_resource* stylus_resource =
-      wl_resource_create(client, &zcr_pointer_stylus_v1_interface, 1, id);
-  wl_resource_set_implementation(stylus_resource,
-                                 &pointer_stylus_implementation_DEPRECATED,
-                                 nullptr, nullptr);
-}
-
-const struct zcr_stylus_v1_interface stylus_v1_implementation_DEPRECATED = {
-    stylus_get_pointer_stylus_DEPRECATED};
-
-void bind_stylus_v1_DEPRECATED(wl_client* client,
-                               void* data,
-                               uint32_t version,
-                               uint32_t id) {
-  wl_resource* resource =
-      wl_resource_create(client, &zcr_stylus_v1_interface, version, id);
-  wl_resource_set_implementation(resource, &stylus_v1_implementation_DEPRECATED,
-                                 data, nullptr);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // keyboard_device_configuration interface:
 
 class WaylandKeyboardDeviceConfigurationDelegate
@@ -4391,8 +4349,6 @@ Server::Server(Display* display)
                    bind_aura_shell);
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v2_interface, 1,
                    display_, bind_gaming_input);
-  wl_global_create(wl_display_.get(), &zcr_stylus_v1_interface, 2, display_,
-                   bind_stylus_v1_DEPRECATED);
   wl_global_create(wl_display_.get(), &zcr_stylus_v2_interface, 1, display_,
                    bind_stylus_v2);
   wl_global_create(wl_display_.get(), &zwp_pointer_gestures_v1_interface, 1,

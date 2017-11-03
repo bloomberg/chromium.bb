@@ -49,9 +49,6 @@ To import a new snapshot of wayland-protocols:
     wayland-scanner code < unstable/gaming-input/gaming-input-unstable-v2.xml > protocol/gaming-input-protocol-v2.c
     wayland-scanner server-header < unstable/gaming-input/gaming-input-unstable-v2.xml > include/protocol/gaming-input-unstable-v2-server-protocol.h
     wayland-scanner client-header < unstable/gaming-input/gaming-input-unstable-v2.xml > include/protocol/gaming-input-unstable-v2-client-protocol.h
-    wayland-scanner code < unstable/stylus/stylus-unstable-v1.xml > protocol/stylus-protocol-v1.c
-    wayland-scanner server-header < unstable/stylus/stylus-unstable-v1.xml > include/protocol/stylus-unstable-v1-server-protocol.h
-    wayland-scanner client-header < unstable/stylus/stylus-unstable-v1.xml > include/protocol/stylus-unstable-v1-client-protocol.h
     wayland-scanner code < unstable/stylus/stylus-unstable-v2.xml > protocol/stylus-protocol-v2.c
     wayland-scanner server-header < unstable/stylus/stylus-unstable-v2.xml > include/protocol/stylus-unstable-v2-server-protocol.h
     wayland-scanner client-header < unstable/stylus/stylus-unstable-v2.xml > include/protocol/stylus-unstable-v2-client-protocol.h
