@@ -199,22 +199,19 @@ gfx::Size LabelButton::CalculatePreferredSize() const {
   }
 
   // Calculate the required size.
-  const gfx::Size image_size(image_->GetPreferredSize());
-  gfx::Size size(label.GetPreferredSize());
-  if (image_size.width() > 0 && size.width() > 0)
-    size.Enlarge(image_label_spacing_, 0);
-  size.SetToMax(gfx::Size(0, image_size.height()));
-  const gfx::Insets insets(GetInsets());
-  size.Enlarge(image_size.width() + insets.width(), insets.height());
+  const gfx::Size preferred_label_size = label.GetPreferredSize();
+  gfx::Size size = GetUnclampedSizeWithoutLabel();
+  size.Enlarge(preferred_label_size.width(), 0);
 
-  // Make the size at least as large as the minimum size needed by the border.
-  size.SetToMax(border() ? border()->GetMinimumSize() : gfx::Size());
+  // Increase the height of the label (with insets) if larger.
+  size.set_height(std::max(preferred_label_size.height() + GetInsets().height(),
+                           size.height()));
 
   // Increase the minimum size monotonically with the preferred size.
   size.SetToMax(min_size_);
   min_size_ = size;
 
-  // Return the largest known size clamped to the maximum size (if valid).
+  // Clamp size to max size (if valid).
   if (max_size_.width() > 0)
     size.set_width(std::min(max_size_.width(), size.width()));
   if (max_size_.height() > 0)
@@ -226,20 +223,24 @@ gfx::Size LabelButton::CalculatePreferredSize() const {
   return cached_preferred_size_;
 }
 
-int LabelButton::GetHeightForWidth(int w) const {
-  w -= GetInsets().width();
-  const gfx::Size image_size(image_->GetPreferredSize());
-  w -= image_size.width();
-  if (image_size.width() > 0 && !GetText().empty())
-    w -= image_label_spacing_;
+int LabelButton::GetHeightForWidth(int width) const {
+  const gfx::Size size_without_label = GetUnclampedSizeWithoutLabel();
+  // Get label height for the remaining width.
+  const int label_height_with_insets =
+      label_->GetHeightForWidth(width - size_without_label.width()) +
+      GetInsets().height();
 
-  int height = std::max(image_size.height(), label_->GetHeightForWidth(w));
-  if (border())
-    height = std::max(height, border()->GetMinimumSize().height());
+  // Height is the larger of size without label and label height with insets.
+  int height = std::max(size_without_label.height(), label_height_with_insets);
 
-  height = std::max(height, min_size_.height());
+  // Make sure height respects min_size_.
+  if (height < min_size_.height())
+    height = min_size_.height();
+
+  // Clamp height to the maximum height (if valid).
   if (max_size_.height() > 0)
-    height = std::min(height, max_size_.height());
+    return std::min(max_size_.height(), height);
+
   return height;
 }
 
@@ -542,6 +543,23 @@ ui::NativeTheme::State LabelButton::GetForegroundThemeState(
 void LabelButton::ResetCachedPreferredSize() {
   cached_preferred_size_valid_ = false;
   cached_preferred_size_ = gfx::Size();
+}
+
+gfx::Size LabelButton::GetUnclampedSizeWithoutLabel() const {
+  const gfx::Size image_size = image_->GetPreferredSize();
+  gfx::Size size = image_size;
+  const gfx::Insets insets(GetInsets());
+  size.Enlarge(insets.width(), insets.height());
+
+  // Accommodate for spacing between image and text if both are present.
+  if (!GetText().empty() && image_size.width() > 0)
+    size.Enlarge(image_label_spacing_, 0);
+
+  // Make the size at least as large as the minimum size needed by the border.
+  if (border())
+    size.SetToMax(border()->GetMinimumSize());
+
+  return size;
 }
 
 void LabelButton::ResetLabelEnabledColor() {

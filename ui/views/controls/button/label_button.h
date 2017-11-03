@@ -179,6 +179,15 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // as false.
   void ResetCachedPreferredSize();
 
+  // Gets the preferred size (without respecting min_size_ or max_size_), but
+  // does not account for the label. This is shared between GetHeightForWidth
+  // and CalculatePreferredSize. GetHeightForWidth will subtract the width
+  // returned from this method to get width available for the label while
+  // CalculatePreferredSize will just add the preferred width from the label.
+  // Both methods will then use the max of inset height + label height and this
+  // height as total height, and clamp to min/max sizes as appropriate.
+  gfx::Size GetUnclampedSizeWithoutLabel() const;
+
   // Updates additional state related to focus or default status, rather than
   // merely the Button::state(). E.g. ensures the label text color is
   // correct for the current background.
