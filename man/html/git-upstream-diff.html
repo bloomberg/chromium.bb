@@ -755,7 +755,7 @@ git-upstream-diff(1) Manual Page
 <h2 id="_synopsis">SYNOPSIS</h2>
 <div class="sectionbody">
 <div class="verseblock">
-<pre class="content"><em>git upstream-diff</em> [--wordwise] [&lt;extra args for git-diff&gt;*]</pre>
+<pre class="content"><em>git upstream-diff</em> [--wordwise] [branch] [&lt;extra args for git-diff&gt;*]</pre>
 <div class="attribution">
 </div></div>
 </div>
@@ -763,11 +763,10 @@ git-upstream-diff(1) Manual Page
 <div class="sect1">
 <h2 id="_description">DESCRIPTION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Shows a diff between your current branch and it&#8217;s upstream. This is <em>roughly</em> the
-same as:</p></div>
+<div class="paragraph"><p>Shows a diff between a branch and its upstream. If the branch is omitted, the tool shows the diff for the current branch. This is <em>roughly</em> the same as:</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>git diff --patience -C -C HEAD@{upstream}  <b>&lt;1&gt;</b> <b>&lt;2&gt;</b></code></pre>
+<pre><code>git diff --patience -C -C branch@{upstream}  <b>&lt;1&gt;</b> <b>&lt;2&gt;</b></code></pre>
 </div></div>
 <div class="colist arabic"><ol>
 <li>
@@ -782,7 +781,7 @@ same as:</p></div>
 </p>
 </li>
 </ol></div>
-<div class="paragraph"><p>The difference is that <code>HEAD@{upstream}</code> is actually the tagged merge base of
+<div class="paragraph"><p>The difference is that <code>branch@{upstream}</code> is actually the tagged merge base of
 your branch (See <a href="git-rebase-update.html">git-rebase-update(1)</a>). This means that if your upstream
 branch was rebased, but you haven&#8217;t yet rebased the current branch on top of it,
 you&#8217;ll still see an accurate diff compared to just diffing against
@@ -803,6 +802,11 @@ so it is disabled by default.</p></div>
 <p>
   Print a colorized word-wise diff instead of a line-wise diff.
 </p>
+<div class="literalblock">
+<div class="content">
+<pre><code>Show a diff between the specified branch and its upstream, instead of using
+the current branch.</code></pre>
+</div></div>
 </dd>
 <dt class="hdlist1">
 &lt;extra args for git-diff&gt;
@@ -891,7 +895,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2017-02-27 13:47:35 PST
+Last updated 2017-11-03 14:35:37 PDT
 </div>
 </div>
 </body>
