@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<title>Reference test for track-webvtt-non-snap-to-lines.html.</title>
+<script src="../media-file.js"></script>
+<style>
+.container {
+  position: relative;
+  display: inline-block;
+}
+.cue {
+  position: absolute;
+  top: 48px;
+  font-family: sans-serif;
+  background: green;
+  color: rgba(255, 255, 255, 1);
+  font-size: 12px;
+  padding: 0px 2px;
+}
+</style>
+<div class="container">
+  <video>
+    <script>
+    document.currentScript.parentNode.src = findMediaFile('video', '../content/test');
+    </script>
+  </video>
+  <span class="cue">Bear is Coming!!!!!</div>
+</div>
