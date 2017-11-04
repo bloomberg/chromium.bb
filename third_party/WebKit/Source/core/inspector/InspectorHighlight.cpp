@@ -6,6 +6,7 @@
 
 #include "core/dom/PseudoElement.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/VisualViewport.h"
 #include "core/geometry/DOMRect.h"
 #include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/layout/LayoutBox.h"
@@ -13,6 +14,7 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
+#include "core/page/Page.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/PlatformChromeClient.h"
 #include "platform/graphics/Path.h"
@@ -149,11 +151,21 @@ Path QuadToPath(const FloatQuad& quad) {
   return quad_path;
 }
 
+FloatPoint ContentsPointToViewport(const LocalFrameView* view,
+                                   FloatPoint point_in_contents) {
+  LayoutPoint point_in_frame =
+      view->ContentsToFrame(LayoutPoint(point_in_contents));
+  FloatPoint point_in_root_frame =
+      FloatPoint(view->ConvertToRootFrame(point_in_frame));
+  return FloatPoint(view->GetPage()->GetVisualViewport().RootFrameToViewport(
+      point_in_root_frame));
+}
+
 void ContentsQuadToViewport(const LocalFrameView* view, FloatQuad& quad) {
-  quad.SetP1(view->ContentsToViewport(RoundedIntPoint(quad.P1())));
-  quad.SetP2(view->ContentsToViewport(RoundedIntPoint(quad.P2())));
-  quad.SetP3(view->ContentsToViewport(RoundedIntPoint(quad.P3())));
-  quad.SetP4(view->ContentsToViewport(RoundedIntPoint(quad.P4())));
+  quad.SetP1(ContentsPointToViewport(view, quad.P1()));
+  quad.SetP2(ContentsPointToViewport(view, quad.P2()));
+  quad.SetP3(ContentsPointToViewport(view, quad.P3()));
+  quad.SetP4(ContentsPointToViewport(view, quad.P4()));
 }
 
 const ShapeOutsideInfo* ShapeOutsideInfoForNode(Node* node,
@@ -448,6 +460,17 @@ bool InspectorHighlight::GetBoxModel(
   FloatQuad content, padding, border, margin;
   if (!BuildNodeQuads(node, &content, &padding, &border, &margin))
     return false;
+
+  AdjustForAbsoluteZoom::AdjustFloatQuad(content, *layout_object);
+  AdjustForAbsoluteZoom::AdjustFloatQuad(padding, *layout_object);
+  AdjustForAbsoluteZoom::AdjustFloatQuad(border, *layout_object);
+  AdjustForAbsoluteZoom::AdjustFloatQuad(margin, *layout_object);
+
+  float scale = 1 / view->GetPage()->GetVisualViewport().Scale();
+  content.Scale(scale, scale);
+  padding.Scale(scale, scale);
+  border.Scale(scale, scale);
+  margin.Scale(scale, scale);
 
   IntRect bounding_box =
       view->ContentsToRootFrame(layout_object->AbsoluteBoundingBoxRect());
