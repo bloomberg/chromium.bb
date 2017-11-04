@@ -49,19 +49,13 @@ struct combination {
 	uint64_t use_flags;
 };
 
-struct combinations {
-	struct combination *data;
-	uint32_t size;
-	uint32_t allocations;
-};
-
 struct driver {
 	int fd;
 	const struct backend *backend;
 	void *priv;
 	void *buffer_table;
 	struct drv_array *mappings;
-	struct combinations combos;
+	struct drv_array *combos;
 	pthread_mutex_t driver_lock;
 };
 

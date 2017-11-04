@@ -136,18 +136,14 @@ struct driver *drv_create(int fd)
 	if (!drv->mappings)
 		goto free_buffer_table;
 
-	/* Start with a power of 2 number of allocations. */
-	drv->combos.allocations = 2;
-	drv->combos.size = 0;
-
-	drv->combos.data = calloc(drv->combos.allocations, sizeof(struct combination));
-	if (!drv->combos.data)
+	drv->combos = drv_array_init(sizeof(struct combination));
+	if (!drv->combos)
 		goto free_mappings;
 
 	if (drv->backend->init) {
 		ret = drv->backend->init(drv);
 		if (ret) {
-			free(drv->combos.data);
+			drv_array_destroy(drv->combos);
 			goto free_mappings;
 		}
 	}
@@ -174,8 +170,7 @@ void drv_destroy(struct driver *drv)
 
 	drmHashDestroy(drv->buffer_table);
 	drv_array_destroy(drv->mappings);
-
-	free(drv->combos.data);
+	drv_array_destroy(drv->combos);
 
 	pthread_mutex_unlock(&drv->driver_lock);
 	pthread_mutex_destroy(&drv->driver_lock);
@@ -202,8 +197,8 @@ struct combination *drv_get_combination(struct driver *drv, uint32_t format, uin
 
 	best = NULL;
 	uint32_t i;
-	for (i = 0; i < drv->combos.size; i++) {
-		curr = &drv->combos.data[i];
+	for (i = 0; i < drv_array_size(drv->combos); i++) {
+		curr = drv_array_at_idx(drv->combos, i);
 		if ((format == curr->format) && use_flags == (curr->use_flags & use_flags))
 			if (!best || best->metadata.priority < curr->metadata.priority)
 				best = curr;

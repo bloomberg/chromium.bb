@@ -58,8 +58,8 @@ static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
 	 * Older hardware can't scanout Y-tiled formats. Newer devices can, and
 	 * report this functionality via format modifiers.
 	 */
-	for (i = 0; i < drv->combos.size; i++) {
-		combo = &drv->combos.data[i];
+	for (i = 0; i < drv_array_size(drv->combos); i++) {
+		combo = (struct combination *)drv_array_at_idx(drv->combos, i);
 		if (combo->format != item->format)
 			continue;
 
@@ -84,8 +84,8 @@ static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
 static int i915_add_combinations(struct driver *drv)
 {
 	int ret;
-	uint32_t i, num_items;
-	struct kms_item *items;
+	uint32_t i;
+	struct drv_array *kms_items;
 	struct format_metadata metadata;
 	uint64_t render_use_flags, texture_use_flags;
 
@@ -151,19 +151,19 @@ static int i915_add_combinations(struct driver *drv)
 			     ARRAY_SIZE(tileable_texture_source_formats), &metadata,
 			     texture_use_flags);
 
-	items = drv_query_kms(drv, &num_items);
-	if (!items || !num_items)
+	kms_items = drv_query_kms(drv);
+	if (!kms_items)
 		return 0;
 
-	for (i = 0; i < num_items; i++) {
-		ret = i915_add_kms_item(drv, &items[i]);
+	for (i = 0; i < drv_array_size(kms_items); i++) {
+		ret = i915_add_kms_item(drv, (struct kms_item *)drv_array_at_idx(kms_items, i));
 		if (ret) {
-			free(items);
+			drv_array_destroy(kms_items);
 			return ret;
 		}
 	}
 
-	free(items);
+	drv_array_destroy(kms_items);
 	return 0;
 }
 

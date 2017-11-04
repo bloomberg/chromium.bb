@@ -76,14 +76,13 @@ static int afbc_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 
 static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item)
 {
-	int ret;
 	uint32_t i, j;
 	uint64_t use_flags;
 	struct combination *combo;
 	struct format_metadata metadata;
 
-	for (i = 0; i < drv->combos.size; i++) {
-		combo = &drv->combos.data[i];
+	for (i = 0; i < drv_array_size(drv->combos); i++) {
+		combo = (struct combination *)drv_array_at_idx(drv->combos, i);
 		if (combo->format == item->format) {
 			if (item->modifier == DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
 				use_flags = BO_USE_RENDERING | BO_USE_SCANOUT | BO_USE_TEXTURE;
@@ -96,10 +95,7 @@ static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item
 						use_flags &= ~BO_USE_RENDERING;
 				}
 
-				ret =
-				    drv_add_combination(drv, item[i].format, &metadata, use_flags);
-				if (ret)
-					return ret;
+				drv_add_combinations(drv, &item->format, 1, &metadata, use_flags);
 			} else {
 				combo->use_flags |= item->use_flags;
 			}
@@ -112,8 +108,8 @@ static int rockchip_add_kms_item(struct driver *drv, const struct kms_item *item
 static int rockchip_init(struct driver *drv)
 {
 	int ret;
-	uint32_t i, num_items;
-	struct kms_item *items;
+	uint32_t i;
+	struct drv_array *kms_items;
 	struct format_metadata metadata;
 
 	metadata.tiling = 0;
@@ -139,19 +135,19 @@ static int rockchip_init(struct driver *drv)
 	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
 
-	items = drv_query_kms(drv, &num_items);
-	if (!items || !num_items)
+	kms_items = drv_query_kms(drv);
+	if (!kms_items)
 		return 0;
 
-	for (i = 0; i < num_items; i++) {
-		ret = rockchip_add_kms_item(drv, &items[i]);
+	for (i = 0; i < drv_array_size(kms_items); i++) {
+		ret = rockchip_add_kms_item(drv, (struct kms_item *)drv_array_at_idx(kms_items, i));
 		if (ret) {
-			free(items);
+			drv_array_destroy(kms_items);
 			return ret;
 		}
 	}
 
-	free(items);
+	drv_array_destroy(kms_items);
 	return 0;
 }
 

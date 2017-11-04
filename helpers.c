@@ -421,35 +421,18 @@ uint32_t drv_log_base2(uint32_t value)
 	return ret;
 }
 
-int drv_add_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
-			uint64_t use_flags)
-{
-	struct combinations *combos = &drv->combos;
-	if (combos->size >= combos->allocations) {
-		struct combination *new_data;
-		combos->allocations *= 2;
-		new_data = realloc(combos->data, combos->allocations * sizeof(*combos->data));
-		if (!new_data)
-			return -ENOMEM;
-
-		combos->data = new_data;
-	}
-
-	combos->data[combos->size].format = format;
-	combos->data[combos->size].metadata.priority = metadata->priority;
-	combos->data[combos->size].metadata.tiling = metadata->tiling;
-	combos->data[combos->size].metadata.modifier = metadata->modifier;
-	combos->data[combos->size].use_flags = use_flags;
-	combos->size++;
-	return 0;
-}
-
 void drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats,
 			  struct format_metadata *metadata, uint64_t use_flags)
 {
 	uint32_t i;
-	for (i = 0; i < num_formats; i++)
-		drv_add_combination(drv, formats[i], metadata, use_flags);
+
+	for (i = 0; i < num_formats; i++) {
+		struct combination combo = { .format = formats[i],
+					     .metadata = *metadata,
+					     .use_flags = use_flags };
+
+		drv_array_append(drv->combos, &combo);
+	}
 }
 
 void drv_modify_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,
@@ -458,30 +441,27 @@ void drv_modify_combination(struct driver *drv, uint32_t format, struct format_m
 	uint32_t i;
 	struct combination *combo;
 	/* Attempts to add the specified flags to an existing combination. */
-	for (i = 0; i < drv->combos.size; i++) {
-		combo = &drv->combos.data[i];
+	for (i = 0; i < drv_array_size(drv->combos); i++) {
+		combo = (struct combination *)drv_array_at_idx(drv->combos, i);
 		if (combo->format == format && combo->metadata.tiling == metadata->tiling &&
 		    combo->metadata.modifier == metadata->modifier)
 			combo->use_flags |= use_flags;
 	}
 }
 
-struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
+struct drv_array *drv_query_kms(struct driver *drv)
 {
-	struct kms_item *items;
+	struct drv_array *kms_items;
 	uint64_t plane_type, use_flag;
-	uint32_t i, j, k, allocations, item_size;
+	uint32_t i, j, k;
 
 	drmModePlanePtr plane;
 	drmModePropertyPtr prop;
 	drmModePlaneResPtr resources;
 	drmModeObjectPropertiesPtr props;
 
-	/* Start with a power of 2 number of allocations. */
-	allocations = 2;
-	item_size = 0;
-	items = calloc(allocations, sizeof(*items));
-	if (!items)
+	kms_items = drv_array_init(sizeof(struct kms_item));
+	if (!kms_items)
 		goto out;
 
 	/*
@@ -532,32 +512,22 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 
 		for (j = 0; j < plane->count_formats; j++) {
 			bool found = false;
-			for (k = 0; k < item_size; k++) {
-				if (items[k].format == plane->formats[j] &&
-				    items[k].modifier == DRM_FORMAT_MOD_INVALID) {
-					items[k].use_flags |= use_flag;
+			for (k = 0; k < drv_array_size(kms_items); k++) {
+				struct kms_item *item = drv_array_at_idx(kms_items, k);
+				if (item->format == plane->formats[j] &&
+				    item->modifier == DRM_FORMAT_MOD_INVALID) {
+					item->use_flags |= use_flag;
 					found = true;
 					break;
 				}
 			}
 
-			if (!found && item_size >= allocations) {
-				struct kms_item *new_data = NULL;
-				allocations *= 2;
-				new_data = realloc(items, allocations * sizeof(*items));
-				if (!new_data) {
-					item_size = 0;
-					goto out;
-				}
-
-				items = new_data;
-			}
-
 			if (!found) {
-				items[item_size].format = plane->formats[j];
-				items[item_size].modifier = DRM_FORMAT_MOD_INVALID;
-				items[item_size].use_flags = use_flag;
-				item_size++;
+				struct kms_item item = { .format = plane->formats[j],
+							 .modifier = DRM_FORMAT_MOD_INVALID,
+							 .use_flags = use_flag };
+
+				drv_array_append(kms_items, &item);
 			}
 		}
 
@@ -567,20 +537,20 @@ struct kms_item *drv_query_kms(struct driver *drv, uint32_t *num_items)
 
 	drmModeFreePlaneResources(resources);
 out:
-	if (items && item_size == 0) {
-		free(items);
-		items = NULL;
+	if (kms_items && !drv_array_size(kms_items)) {
+		drv_array_destroy(kms_items);
+		return NULL;
 	}
 
-	*num_items = item_size;
-	return items;
+	return kms_items;
 }
 
 int drv_modify_linear_combinations(struct driver *drv)
 {
-	uint32_t i, j, num_items;
-	struct kms_item *items;
+	uint32_t i, j;
+	struct kms_item *item;
 	struct combination *combo;
+	struct drv_array *kms_items;
 
 	/*
 	 * All current drivers can scanout linear XRGB8888/ARGB8888 as a primary
@@ -594,19 +564,20 @@ int drv_modify_linear_combinations(struct driver *drv)
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &LINEAR_METADATA,
 			       BO_USE_CURSOR | BO_USE_SCANOUT);
 
-	items = drv_query_kms(drv, &num_items);
-	if (!items || !num_items)
+	kms_items = drv_query_kms(drv);
+	if (!kms_items)
 		return 0;
 
-	for (i = 0; i < num_items; i++) {
-		for (j = 0; j < drv->combos.size; j++) {
-			combo = &drv->combos.data[j];
-			if (items[i].format == combo->format)
+	for (i = 0; i < drv_array_size(kms_items); i++) {
+		item = (struct kms_item *)drv_array_at_idx(kms_items, i);
+		for (j = 0; j < drv_array_size(drv->combos); j++) {
+			combo = drv_array_at_idx(drv->combos, j);
+			if (item->format == combo->format)
 				combo->use_flags |= BO_USE_SCANOUT;
 		}
 	}
 
-	free(items);
+	drv_array_destroy(kms_items);
 	return 0;
 }
 
