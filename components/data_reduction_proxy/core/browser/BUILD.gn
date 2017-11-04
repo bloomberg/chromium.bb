@@ -48,8 +48,8 @@ browser_sources = [
   "data_usage_store.h",
   "db_data_owner.cc",
   "db_data_owner.h",
-  "network_property.cc",
-  "network_property.h",
+  "network_properties_manager.cc",
+  "network_properties_manager.h",
   "secure_proxy_checker.cc",
   "secure_proxy_checker.h",
   "warmup_url_fetcher.cc",
@@ -180,7 +180,7 @@ source_set("unit_tests") {
     "data_reduction_proxy_request_options_unittest.cc",
     "data_reduction_proxy_settings_unittest.cc",
     "data_usage_store_unittest.cc",
-    "network_property_unittest.cc",
+    "network_properties_manager_unittest.cc",
     "warmup_url_fetcher_unittest.cc",
   ]
 

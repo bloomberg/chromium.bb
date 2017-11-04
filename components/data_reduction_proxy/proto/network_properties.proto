@@ -1,0 +1,22 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package data_reduction_proxy;
+
+// State of proxies of a specific scheme on a given network.
+message ProxyFlags {
+  optional bool disallowed_due_to_warmup_probe_failure = 1;
+}
+
+// State of different proxy schemes on a given network.
+message NetworkProperties {
+  optional bool secure_proxy_disallowed_by_carrier = 1;
+  optional bool has_captive_portal = 2;
+  optional ProxyFlags secure_proxy_flags = 3;
+  optional ProxyFlags insecure_proxy_flags = 4;
+}
