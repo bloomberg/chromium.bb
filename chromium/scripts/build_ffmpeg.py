@@ -189,15 +189,16 @@ def SetupAndroidToolchain(target_arch):
 
   sysroot = (NDK_ROOT_DIR + '/platforms/android-' + toolchain_level +
              '/arch-' + sysroot_arch)
-  cross_prefix = (NDK_ROOT_DIR + '/toolchains/' + toolchain_dir_prefix + '-' +
-                  toolchain_version + '/prebuilt/linux-x86_64/bin/' +
-                  toolchain_bin_prefix + '-')
+  gcc_toolchain = (NDK_ROOT_DIR + '/toolchains/' + toolchain_dir_prefix + '-' +
+                   toolchain_version + '/prebuilt/linux-x86_64/')
 
   return [
       '--enable-cross-compile',
       '--sysroot=' + sysroot,
-      '--cross-prefix=' + cross_prefix,
-      '--target-os=linux',
+      '--extra-cflags=--target=' + toolchain_bin_prefix,
+      '--extra-ldflags=--target=' + toolchain_bin_prefix,
+      '--extra-ldflags=--gcc-toolchain=' + gcc_toolchain,
+      '--target-os=android',
   ]
 
 
@@ -275,6 +276,11 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
         os.path.join(config_dir, 'config.h'),
         r'(#define HAVE_VFP_ARGS [01])',
         (r'/* \1 -- softfp/hardfp selection is done by the chrome build */'))
+  if target_os == 'win':
+    RewriteFile(
+        os.path.join(config_dir, 'config.h'),
+        r'(#define HAVE_INLINE_ASM [01])',
+        (r'/* \1 -- inline asm selection is done by the chrome build */'))
 
 
 def main(argv):
@@ -380,8 +386,8 @@ def main(argv):
 
   if target_os == 'android':
     configure_flags['Common'].extend([
-        # --optflags doesn't append multiple entries, so set all at once.
-        '--optflags="-Os"',
+        # This replaces --optflags="-Os" since it implies it and since if it is
+        # also specified, configure ends up dropping all optflags :/
         '--enable-small',
     ])
 
@@ -410,12 +416,6 @@ def main(argv):
           '--extra-cflags="-m32"',
           '--extra-ldflags="-m32"',
       ])
-      # Android ia32 can't handle textrels and ffmpeg can't compile without
-      # them.  http://crbug.com/559379
-      if target_os == 'android':
-        configure_flags['Common'].extend([
-          '--disable-x86asm',
-        ])
     elif target_arch == 'arm' or target_arch == 'arm-neon':
       # TODO(ihf): ARM compile flags are tricky. The final options
       # overriding everything live in chroot /build/*/etc/make.conf
@@ -487,10 +487,7 @@ def main(argv):
       configure_flags['Common'].extend([
           '--arch=aarch64',
           '--enable-armv8',
-          '--extra-cflags=--target=aarch64-linux-gnu',
-          '--extra-ldflags=--target=aarch64-linux-gnu',
-          '--sysroot=' + os.path.join(CHROMIUM_ROOT_DIR,
-              'build/linux/debian_jessie_arm64-sysroot'),
+          '--extra-cflags=-march=armv8-a',
       ])
     elif target_arch == 'mipsel':
       if target_os != 'android':
@@ -569,10 +566,12 @@ def main(argv):
         '--cxx=clang++',
         '--ld=clang',
     ])
+
     # Clang Linux will use the first 'ld' it finds on the path, which will
     # typically be the system one, so explicitly configure use of Clang's
     # ld.lld, to ensure that things like cross-compilation and LTO work.
-    if target_os == 'linux':
+    # This does not work for ia32 targets, so only apply for x64.
+    if target_os == 'linux' or target_os == 'linux-noasm' or target_os == 'android':
       configure_flags['Common'].append('--extra-ldflags=-fuse-ld=lld')
 
   # Should be run on Mac.
