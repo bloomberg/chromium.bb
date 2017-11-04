@@ -1247,8 +1247,8 @@ class TestCreateDisjointTransactions(_Base):
       expected_plans = [txn[:max_txn_length] for txn in txns]
 
     pool = MakePool(candidates=patches)
-    plans = pool.CreateDisjointTransactions(None, pool.candidates,
-                                            max_txn_length=max_txn_length)
+    plans, failed = pool.CreateDisjointTransactions(
+        None, pool.candidates, max_txn_length=max_txn_length)
 
     # If the dependencies are circular, the order of the patches is not
     # guaranteed, so compare them in sorted order.
@@ -1259,6 +1259,7 @@ class TestCreateDisjointTransactions(_Base):
     # Verify the plans match, and that no changes were rejected.
     self.assertEqual(set(map(str, plans)), set(map(str, expected_plans)))
     self.assertEqual(0, remove.call_count)
+    self.assertEqual([], failed)
 
   def testPlans(self, max_txn_length=None):
     """Verify that independent sets are distinguished."""
@@ -1272,10 +1273,12 @@ class TestCreateDisjointTransactions(_Base):
                               'SendNotification')
     remove = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
     pool = MakePool(candidates=changes)
-    plans = pool.CreateDisjointTransactions(None, changes,
-                                            max_txn_length=max_txn_length)
+    plans, failed = pool.CreateDisjointTransactions(
+        None, changes, max_txn_length=max_txn_length)
+
     self.assertEqual(plans, [])
     self.assertEqual(remove.call_count, notify.call_count)
+    self.assertEqual(len(failed), remove.call_count)
     return remove.call_count
 
   def testUnresolvedPlan(self):

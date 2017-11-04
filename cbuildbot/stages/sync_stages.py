@@ -1534,10 +1534,14 @@ class PreCQLauncherStage(SyncStage):
     # Create a list of disjoint transactions to test.
     manifest = git.ManifestCheckout.Cached(self._build_root)
     logging.info('Creating disjoint transactions.')
-    plans = pool.CreateDisjointTransactions(
+    plans, failed = pool.CreateDisjointTransactions(
         manifest, screened_changes,
         max_txn_length=self.MAX_PATCHES_PER_TRYBOT_RUN)
     logging.info('Created %s disjoint transactions.', len(plans))
+    # TODO(crbug.com/781481) mark failed CLs as pre-cq-failed.
+    # Note: |failed| is a list of cros_patch.PatchException instances.
+    logging.info('Failed to apply %s CLs (these will fail-loop, see '
+                 'crbug.com/781481).', len(failed))
     for plan in plans:
       # If any of the CLs in the plan is not yet screened, wait for them to
       # be screened.
