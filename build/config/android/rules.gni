@@ -1729,31 +1729,31 @@ if (enable_java_templates) {
 
     assert(defined(invoker.final_apk_path) || defined(invoker.apk_name))
     assert(defined(invoker.android_manifest))
-    gen_dir = "$target_gen_dir/$target_name"
-    base_path = "$gen_dir/$target_name"
+    _gen_dir = "$target_gen_dir/$target_name"
+    _base_path = "$_gen_dir/$target_name"
     _build_config = "$target_gen_dir/$target_name.build_config"
 
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
     _resources_zip_rebased_path = rebase_path(target_gen_dir, root_gen_dir)
-    resources_zip_path = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
-    _all_resources_zip_path = "$base_path.resources.all.zip"
-    _jar_path = "$base_path.jar"
-    _lib_dex_path = "$base_path.dex.jar"
+    _resources_zip_path = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
+    _all_resources_zip_path = "$_base_path.resources.all.zip"
+    _jar_path = "$_base_path.jar"
+    _lib_dex_path = "$_base_path.dex.jar"
     _rebased_lib_dex_path = rebase_path(_lib_dex_path, root_build_dir)
     _template_name = target_name
     if (defined(invoker.java_files)) {
-      _java_sources_file = "$base_path.sources"
+      _java_sources_file = "$_base_path.sources"
     }
 
-    enable_multidex =
+    _enable_multidex =
         defined(invoker.enable_multidex) && invoker.enable_multidex
-    if (enable_multidex) {
-      final_dex_path = "$gen_dir/classes.dex.zip"
+    if (_enable_multidex) {
+      _final_dex_path = "$_gen_dir/classes.dex.zip"
     } else {
-      final_dex_path = "$gen_dir/classes.dex"
+      _final_dex_path = "$_gen_dir/classes.dex"
     }
-    final_dex_target_name = "${_template_name}__final_dex"
+    _final_dex_target_name = "${_template_name}__final_dex"
 
     if (defined(invoker.final_apk_path)) {
       _final_apk_path = invoker.final_apk_path
@@ -1765,6 +1765,11 @@ if (enable_java_templates) {
                               "{{source_dir}}/{{source_name_part}}")
     _final_apk_path_no_ext = _final_apk_path_no_ext_list[0]
     assert(_final_apk_path_no_ext != "")  # Mark as used.
+
+    # resource_sizes.py needs to be able to find the unpacked resources.arsc file based on apk name.
+    _packaged_resources_path =
+        "$root_gen_dir/arsc/" +
+        rebase_path(_final_apk_path_no_ext, root_build_dir) + ".ap_"
 
     _incremental_install_json_path =
         "$target_gen_dir/$target_name.incremental.json"
@@ -1922,6 +1927,23 @@ if (enable_java_templates) {
         defined(invoker.create_density_splits) && invoker.create_density_splits
     _create_language_splits =
         defined(invoker.language_splits) && invoker.language_splits != []
+
+    _density_splits = []
+    if (_create_density_splits) {
+      _density_splits = [
+        "hdpi",
+        "xhdpi",
+        "xxhdpi",
+        "xxxhdpi",
+        "tvdpi",
+      ]
+    }
+
+    _language_splits = []
+    if (_create_language_splits) {
+      _language_splits = invoker.language_splits
+    }
+
     _generate_buildconfig_java = !defined(invoker.apk_under_test)
     if (defined(invoker.generate_buildconfig_java)) {
       _generate_buildconfig_java = invoker.generate_buildconfig_java
@@ -1933,24 +1955,24 @@ if (enable_java_templates) {
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
     if (_proguard_enabled) {
-      _proguard_output_jar_path = "$base_path.proguard.jar"
+      _proguard_output_jar_path = "$_base_path.proguard.jar"
     }
 
     _emma_never_instrument = defined(invoker.testonly) && invoker.testonly
     _incremental_allowed =
         !(defined(invoker.never_incremental) && invoker.never_incremental)
 
-    build_config_target = "${_template_name}__build_config"
-    write_build_config(build_config_target) {
+    _build_config_target = "${_template_name}__build_config"
+    write_build_config(_build_config_target) {
       forward_variables_from(invoker, [ "apk_under_test" ])
       type = "android_apk"
       jar_path = _jar_path
-      dex_path = final_dex_path
+      dex_path = _final_dex_path
       apk_path = _final_apk_path
       incremental_allowed = _incremental_allowed
       incremental_apk_path = "${_final_apk_path_no_ext}_incremental.apk"
       incremental_install_json_path = _incremental_install_json_path
-      resources_zip = resources_zip_path
+      resources_zip = _resources_zip_path
       build_config = _build_config
       android_manifest = _android_root_manifest
 
@@ -1992,8 +2014,8 @@ if (enable_java_templates) {
 
     _android_manifest =
         "$target_gen_dir/${_template_name}_manifest/AndroidManifest.xml"
-    android_manifest_target = "${_template_name}__merge_manifests"
-    action(android_manifest_target) {
+    _android_manifest_target = "${_template_name}__merge_manifests"
+    action(_android_manifest_target) {
       script = "//build/android/gyp/merge_manifest.py"
       depfile = "$target_gen_dir/$target_name.d"
 
@@ -2018,18 +2040,18 @@ if (enable_java_templates) {
         "@FileArg($_rebased_build_config:extra_android_manifests)",
       ]
 
-      deps = _android_root_manifest_deps + [ ":$build_config_target" ]
+      deps = _android_root_manifest_deps + [ ":$_build_config_target" ]
     }
 
     _final_deps = []
 
-    if (enable_multidex) {
+    if (_enable_multidex) {
       _generated_proguard_main_dex_config =
-          "$base_path.resources.main-dex-proguard.txt"
+          "$_base_path.resources.main-dex-proguard.txt"
     }
-    _generated_proguard_config = "$base_path.resources.proguard.txt"
-    process_resources_target = "${_template_name}__process_resources"
-    process_resources(process_resources_target) {
+    _generated_proguard_config = "$_base_path.resources.proguard.txt"
+    _process_resources_target = "${_template_name}__process_resources"
+    process_resources(_process_resources_target) {
       forward_variables_from(invoker,
                              [
                                "alternative_android_sdk_jar",
@@ -2041,24 +2063,54 @@ if (enable_java_templates) {
       r_text_out_path = "${target_gen_dir}/${target_name}_R.txt"
       android_manifest = _android_manifest
       resource_dirs = [ "//build/android/empty" ]
-      zip_path = resources_zip_path
+      zip_path = _resources_zip_path
       all_resources_zip_path = _all_resources_zip_path
       generate_constant_ids = true
       proguard_file = _generated_proguard_config
-      if (enable_multidex) {
+      if (_enable_multidex) {
         proguard_file_main_dex = _generated_proguard_main_dex_config
       }
 
       build_config = _build_config
       deps = [
-        ":$android_manifest_target",
-        ":$build_config_target",
+        ":$_android_manifest_target",
+        ":$_build_config_target",
       ]
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }
     }
-    _srcjar_deps += [ ":$process_resources_target" ]
+    _srcjar_deps += [ ":$_process_resources_target" ]
+    _package_resources_target = "${target_name}__package_resources"
+    package_resources(_package_resources_target) {
+      forward_variables_from(invoker,
+                             [
+                               "aapt_locale_whitelist",
+                               "alternative_android_sdk_jar",
+                               "app_as_shared_lib",
+                               "exclude_xxxhdpi",
+                               "png_to_webp",
+                               "shared_resources",
+                               "xxxhdpi_whitelist",
+                             ])
+      deps = [
+        ":$_android_manifest_target",
+        ":$_process_resources_target",
+      ]
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+      }
+      android_manifest = _android_manifest
+      version_code = _version_code
+      version_name = _version_name
+      if (defined(invoker.post_process_package_resources_script)) {
+        post_process_script = invoker.post_process_package_resources_script
+      }
+      resources_zip = _all_resources_zip_path
+      output = _packaged_resources_path
+      density_splits = _density_splits
+      language_splits = _language_splits
+    }
 
     if (_native_libs_deps != []) {
       _enable_chromium_linker_tests = false
@@ -2075,7 +2127,7 @@ if (enable_java_templates) {
       # not need this manual sorting step.
       action(_ordered_libraries_target) {
         script = "//build/android/gyp/write_ordered_libraries.py"
-        deps = _native_libs_deps + [ ":$build_config_target" ]
+        deps = _native_libs_deps + [ ":$_build_config_target" ]
         outputs = [
           _ordered_libraries_json,
         ]
@@ -2128,11 +2180,11 @@ if (enable_java_templates) {
           "//base/android/java/templates/BuildConfig.template",
         ]
         deps = [
-          ":$build_config_target",
+          ":$_build_config_target",
         ]
 
         defines = []
-        if (enable_multidex) {
+        if (_enable_multidex) {
           defines += [ "ENABLE_MULTIDEX" ]
         }
         if (is_java_debug || dcheck_always_on) {
@@ -2162,8 +2214,8 @@ if (enable_java_templates) {
       requires_android = true
       override_build_config = _build_config
       deps = [
-               ":$android_manifest_target",
-               ":$build_config_target",
+               ":$_android_manifest_target",
+               ":$_build_config_target",
              ] + _build_hooks_android_impl_deps
 
       android_manifest = _android_manifest
@@ -2199,7 +2251,7 @@ if (enable_java_templates) {
         ]
         use_interface_jars = true
         deps = [
-          ":$build_config_target",
+          ":$_build_config_target",
           ":$java_target",
         ]
       }
@@ -2210,7 +2262,7 @@ if (enable_java_templates) {
       if (defined(invoker.proguard_configs)) {
         _proguard_configs += invoker.proguard_configs
       }
-      if (enable_multidex) {
+      if (_enable_multidex) {
         _proguard_configs += [ "//build/android/multidex.flags" ]
       }
       assert(_proguard_configs != [])  # Mark as used.
@@ -2226,9 +2278,9 @@ if (enable_java_templates) {
           deps = []
         }
         deps += [
-          ":$build_config_target",
+          ":$_build_config_target",
+          ":$_process_resources_target",
           ":$java_target",
-          ":$process_resources_target",
         ]
         inputs = [
                    _build_config,
@@ -2279,7 +2331,7 @@ if (enable_java_templates) {
         ]
       }
     } else {
-      if (enable_multidex) {
+      if (_enable_multidex) {
         _dex_sources = [ _jar_path ]
       } else {
         _dex_sources = [ _lib_dex_path ]
@@ -2287,20 +2339,21 @@ if (enable_java_templates) {
       _dex_deps = [ ":$java_target" ]
     }
 
-    dex("$final_dex_target_name") {
-      deps = _dex_deps + [ ":$build_config_target" ]
+    dex("$_final_dex_target_name") {
+      deps = _dex_deps + [ ":$_build_config_target" ]
       inputs = [
         _build_config,
       ]
       sources = _dex_sources
-      output = final_dex_path
+      output = _final_dex_path
+      enable_multidex = _enable_multidex
 
       # All deps are already included in _dex_sources when proguard is used.
       if (!_proguard_enabled) {
-        if (enable_multidex) {
+        if (_enable_multidex) {
           _dex_arg_key = "${_rebased_build_config}:dist_jar:dependency_jars"
           extra_main_dex_proguard_config = _generated_proguard_main_dex_config
-          deps += [ ":$process_resources_target" ]
+          deps += [ ":$_process_resources_target" ]
         } else {
           _dex_arg_key =
               "${_rebased_build_config}:final_dex:dependency_dex_files"
@@ -2312,9 +2365,9 @@ if (enable_java_templates) {
       use_pool = true
     }
 
-    _native_libs_file_arg_dep = ":$build_config_target"
+    _native_libs_file_arg_dep = ":$_build_config_target"
     _native_libs_file_arg = "@FileArg($_rebased_build_config:native:libraries)"
-    _secondary_abi_native_libs_file_arg_dep = ":$build_config_target"
+    _secondary_abi_native_libs_file_arg_dep = ":$_build_config_target"
     _secondary_abi_native_libs_file_arg =
         "@FileArg($_rebased_build_config:native:secondary_abi_libraries)"
     assert(_secondary_abi_native_libs_file_arg != "" &&
@@ -2322,7 +2375,7 @@ if (enable_java_templates) {
 
     if (_native_libs_deps != [] && _pack_relocations) {
       _prepare_native_target_name = "${_template_name}__prepare_native"
-      _native_libs_json = "$gen_dir/packed-libs/filelist.json"
+      _native_libs_json = "$_gen_dir/packed-libs/filelist.json"
       _rebased_native_libs_json = rebase_path(_native_libs_json, root_build_dir)
       _native_libs_file_arg_dep = ":$_prepare_native_target_name"
       _native_libs_file_arg = "@FileArg($_rebased_native_libs_json:files)"
@@ -2341,13 +2394,13 @@ if (enable_java_templates) {
         ]
 
         deps += _native_libs_deps
-        deps += [ ":$build_config_target" ]
+        deps += [ ":$_build_config_target" ]
       }
       if (_secondary_abi_native_libs_deps != []) {
         _prepare_native_target_name =
             "${_template_name}_secondary_abi__prepare_native"
         _native_libs_json =
-            "$gen_dir/packed-libs/$android_secondary_abi_cpu/filelist.json"
+            "$_gen_dir/packed-libs/$android_secondary_abi_cpu/filelist.json"
         _rebased_native_libs_json =
             rebase_path(_native_libs_json, root_build_dir)
         _secondary_abi_native_libs_file_arg_dep =
@@ -2368,7 +2421,7 @@ if (enable_java_templates) {
           ]
 
           deps += _secondary_abi_native_libs_deps
-          deps += [ ":$build_config_target" ]
+          deps += [ ":$_build_config_target" ]
         }
       }
     }
@@ -2404,53 +2457,46 @@ if (enable_java_templates) {
     create_apk("${_template_name}__create") {
       forward_variables_from(invoker,
                              [
-                               "aapt_locale_whitelist",
                                "alternative_android_sdk_jar",
-                               "app_as_shared_lib",
-                               "deps",
-                               "exclude_xxxhdpi",
-                               "language_splits",
-                               "png_to_webp",
-                               "post_process_package_resources_script",
                                "public_deps",
                                "secondary_native_libs",
                                "shared_resources",
                                "uncompress_shared_libraries",
                                "write_asset_list",
-                               "xxxhdpi_whitelist",
                              ])
-      if (!defined(deps)) {
-        deps = []
-      }
+      packaged_resources_path = _packaged_resources_path
+      density_splits = _density_splits
+      language_splits = _language_splits
       apk_path = _final_apk_path
       android_manifest = _android_manifest
       assets_build_config = _build_config
-      resources_zip = _all_resources_zip_path
-      dex_path = final_dex_path
+      base_path = _base_path
+      dex_path = _final_dex_path
       load_library_from_apk = _load_library_from_apk
-      create_density_splits = _create_density_splits
-
-      version_code = _version_code
-      version_name = _version_name
 
       keystore_name = _keystore_name
       keystore_path = _keystore_path
       keystore_password = _keystore_password
 
       # Incremental apk does not use native libs nor final dex.
-      incremental_deps = deps + [
-                           ":$android_manifest_target",
-                           ":$build_config_target",
-                           ":$process_resources_target",
-                         ]
+      incremental_deps = [
+        ":$_android_manifest_target",
+        ":$_build_config_target",
+        ":$_package_resources_target",
+      ]
 
       # This target generates the input file _all_resources_zip_path.
-      deps += [
-        ":$android_manifest_target",
-        ":$build_config_target",
-        ":$final_dex_target_name",
-        ":$process_resources_target",
+      deps = [
+        ":$_android_manifest_target",
+        ":$_build_config_target",
+        ":$_final_dex_target_name",
+        ":$_package_resources_target",
       ]
+
+      if (defined(invoker.deps)) {
+        deps += invoker.deps
+        incremental_deps += invoker.deps
+      }
 
       if ((_native_libs_deps != [] ||
            _extra_native_libs_even_when_incremental != []) &&
@@ -2476,49 +2522,53 @@ if (enable_java_templates) {
 
     if ((_native_libs_deps != [] ||
          _extra_native_libs_even_when_incremental != []) && _create_abi_split) {
-      _manifest_rule =
-          "${_template_name}__split_manifest_abi_${android_app_abi}"
-      generate_split_manifest(_manifest_rule) {
+      _apk_rule = "${_template_name}__split_apk_abi_${android_app_abi}"
+      _final_deps += [ ":$_apk_rule" ]
+      _split_manifest_path =
+          "$_gen_dir/splits/${android_app_abi}/AndroidManifest.xml"
+      _split_packaged_resources_path = "$_gen_dir/splits/${android_app_abi}.ap_"
+
+      generate_split_manifest("${_apk_rule}__generate_manifest") {
         main_manifest = _android_manifest
-        out_manifest =
-            "$gen_dir/split-manifests/${android_app_abi}/AndroidManifest.xml"
+        out_manifest = _split_manifest_path
         split_name = "abi_${android_app_abi}"
         deps = [
-          ":$android_manifest_target",
+          ":$_android_manifest_target",
         ]
       }
 
-      _apk_rule = "${_template_name}__split_apk_abi_${android_app_abi}"
-      _final_deps += [ ":$_apk_rule" ]
-
-      create_apk(_apk_rule) {
-        apk_path = "${_final_apk_path_no_ext}-abi-${android_app_abi}.apk"
-        base_path = "$gen_dir/$_apk_rule"
-
-        manifest_outputs = get_target_outputs(":${_manifest_rule}")
-        android_manifest = manifest_outputs[1]
-        load_library_from_apk = _load_library_from_apk
-
+      package_resources("${_apk_rule}__process_resources") {
+        deps = [
+          ":${_apk_rule}__generate_manifest",
+        ]
+        android_manifest = _split_manifest_path
         version_code = _version_code
         version_name = _version_name
+        output = _split_packaged_resources_path
+      }
+      create_apk(_apk_rule) {
+        apk_path = "${_final_apk_path_no_ext}-abi-${android_app_abi}.apk"
+        base_path = "$_gen_dir/$_apk_rule"
+
+        android_manifest = _split_manifest_path
+        load_library_from_apk = _load_library_from_apk
+        packaged_resources_path = _split_packaged_resources_path
 
         keystore_name = _keystore_name
         keystore_path = _keystore_path
         keystore_password = _keystore_password
 
-        # Placeholders necessary for some older devices.
-        # http://crbug.com/395038
-        deps = []
         forward_variables_from(invoker,
                                [
                                  "alternative_android_sdk_jar",
-                                 "deps",
                                  "native_lib_placeholders",
                                  "public_deps",
                                ])
 
-        incremental_deps = deps + [ ":$_manifest_rule" ]
-        deps = []
+        incremental_deps = [ ":$_split_manifest_rule" ]
+        if (defined(invoker.deps)) {
+          incremental_deps += invoker.deps
+        }
         deps = incremental_deps + _native_libs_deps + _extra_native_libs_deps +
                [ _native_libs_file_arg_dep ]
         native_libs_filearg = _native_libs_file_arg
