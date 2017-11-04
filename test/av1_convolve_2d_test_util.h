@@ -31,18 +31,10 @@ typedef void (*convolve_2d_func)(const uint8_t *src, int src_stride,
                                  const int subpel_x_q4, const int subpel_y_q4,
                                  ConvolveParams *conv_params);
 
-#if CONFIG_JNT_COMP
-typedef std::tr1::tuple<int, int, convolve_2d_func, convolve_2d_func>
-    Convolve2DParam;
-
-::testing::internal::ParamGenerator<Convolve2DParam> BuildParams(
-    convolve_2d_func filter, convolve_2d_func filter2);
-#else
 typedef std::tr1::tuple<int, int, convolve_2d_func> Convolve2DParam;
 
 ::testing::internal::ParamGenerator<Convolve2DParam> BuildParams(
     convolve_2d_func filter);
-#endif  // CONFIG_JNT_COMP
 
 class AV1Convolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
  public:
@@ -53,12 +45,24 @@ class AV1Convolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
 
  protected:
   void RunCheckOutput(convolve_2d_func test_impl);
-#if CONFIG_JNT_COMP
-  void RunCheckOutput2(convolve_2d_func test_impl);
-#endif
 
   libaom_test::ACMRandom rnd_;
 };
+
+#if CONFIG_JNT_COMP
+class AV1JntConvolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
+ public:
+  virtual ~AV1JntConvolve2DTest();
+  virtual void SetUp();
+
+  virtual void TearDown();
+
+ protected:
+  void RunCheckOutput(convolve_2d_func test_impl);
+
+  libaom_test::ACMRandom rnd_;
+};
+#endif  // CONFIG_JNT_COMP
 
 }  // namespace AV1Convolve2D
 
@@ -89,6 +93,22 @@ class AV1HighbdConvolve2DTest
 
   libaom_test::ACMRandom rnd_;
 };
+
+#if CONFIG_JNT_COMP
+class AV1HighbdJntConvolve2DTest
+    : public ::testing::TestWithParam<HighbdConvolve2DParam> {
+ public:
+  virtual ~AV1HighbdJntConvolve2DTest();
+  virtual void SetUp();
+
+  virtual void TearDown();
+
+ protected:
+  void RunCheckOutput(highbd_convolve_2d_func test_impl);
+
+  libaom_test::ACMRandom rnd_;
+};
+#endif  // CONFIG_JNT_COMP
 
 }  // namespace AV1HighbdConvolve2D
 #endif  // CONFIG_HIGHBITDEPTH
