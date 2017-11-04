@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_POWER_ARC_POWER_BRIDGE_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -14,11 +15,16 @@
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace content {
 class BrowserContext;
 }  // namespace content
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace arc {
 
@@ -40,6 +46,14 @@ class ArcPowerBridge : public KeyedService,
                  ArcBridgeService* bridge_service);
   ~ArcPowerBridge() override;
 
+  void set_connector_for_test(service_manager::Connector* connector) {
+    connector_for_test_ = connector;
+  }
+
+  // Runs the message loop until replies have been received for all pending
+  // device service requests in |wake_lock_requestors_|.
+  void FlushWakeLocksForTesting();
+
   // InstanceHolder<mojom::PowerInstance>::Observer overrides.
   void OnInstanceReady() override;
   void OnInstanceClosed() override;
@@ -59,18 +73,26 @@ class ArcPowerBridge : public KeyedService,
   void OnScreenBrightnessUpdateRequest(double percent) override;
 
  private:
+  class WakeLockRequestor;
+
+  // Returns the WakeLockRequestor for |type|, creating one if needed.
+  WakeLockRequestor* GetWakeLockRequestor(device::mojom::WakeLockType type);
+
   // Called on PowerManagerClient::GetScreenBrightnessPercent() completion.
   void OnGetScreenBrightnessPercent(base::Optional<double> percent);
 
-  void ReleaseAllDisplayWakeLocks();
   void UpdateAndroidScreenBrightness(double percent);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojo::Binding<mojom::PowerHost> binding_;
 
-  // Stores a mapping of type -> wake lock ID for all wake locks
-  // held by ARC.
-  std::multimap<mojom::DisplayWakeLockType, int> wake_locks_;
+  // If non-null, used instead of the process-wide connector to fetch services.
+  service_manager::Connector* connector_for_test_ = nullptr;
+
+  // Used to track Android wake lock requests and acquire and release device
+  // service wake locks as needed.
+  std::map<device::mojom::WakeLockType, std::unique_ptr<WakeLockRequestor>>
+      wake_lock_requestors_;
 
   // Last time that the power manager notified about a brightness change.
   base::TimeTicks last_brightness_changed_time_;
