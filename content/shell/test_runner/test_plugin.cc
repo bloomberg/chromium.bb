@@ -113,9 +113,11 @@ blink::WebPluginContainer::TouchEventRequestType ParseTouchEventRequestType(
 }  // namespace
 
 TestPlugin::TestPlugin(const blink::WebPluginParams& params,
-                       WebTestDelegate* delegate)
+                       WebTestDelegate* delegate,
+                       blink::WebLocalFrame* frame)
     : delegate_(delegate),
       container_(nullptr),
+      web_local_frame_(frame),
       gl_(nullptr),
       color_texture_(0),
       mailbox_changed_(false),
@@ -547,12 +549,16 @@ blink::WebInputEventResult TestPlugin::HandleInputEvent(
                           "\n");
   if (print_event_details_)
     PrintEventDetails(delegate_, event);
-  if (print_user_gesture_status_)
-    delegate_->PrintMessage(
-        std::string("* ") +
-        (blink::WebUserGestureIndicator::IsProcessingUserGesture() ? ""
-                                                                   : "not ") +
-        "handling user gesture\n");
+
+  if (print_user_gesture_status_) {
+    bool has_user_gesture =
+        blink::WebUserGestureIndicator::IsProcessingUserGesture(
+            web_local_frame_);
+    delegate_->PrintMessage(std::string("* ") +
+                            (has_user_gesture ? "" : "not ") +
+                            "handling user gesture\n");
+  }
+
   if (is_persistent_)
     delegate_->PrintMessage(std::string("TestPlugin: isPersistent\n"));
   return blink::WebInputEventResult::kNotHandled;
@@ -587,8 +593,9 @@ bool TestPlugin::HandleDragStatusUpdate(
 }
 
 TestPlugin* TestPlugin::Create(const blink::WebPluginParams& params,
-                               WebTestDelegate* delegate) {
-  return new TestPlugin(params, delegate);
+                               WebTestDelegate* delegate,
+                               blink::WebLocalFrame* frame) {
+  return new TestPlugin(params, delegate, frame);
 }
 
 const blink::WebString& TestPlugin::MimeType() {

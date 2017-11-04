@@ -3811,10 +3811,11 @@ void RenderFrameImpl::DidStartProvisionalLoad(
       document_state->navigation_state());
   bool is_top_most = !frame_->Parent();
   if (is_top_most) {
-    render_view_->set_navigation_gesture(
-        WebUserGestureIndicator::IsProcessingUserGesture()
+    auto navigation_gesture =
+        WebUserGestureIndicator::IsProcessingUserGesture(frame_)
             ? NavigationGestureUser
-            : NavigationGestureAuto);
+            : NavigationGestureAuto;
+    render_view_->set_navigation_gesture(navigation_gesture);
   } else if (document_loader->ReplacesCurrentHistoryItem()) {
     // Subframe navigations that don't add session history items must be
     // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
@@ -4687,7 +4688,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   // don't register this id on the browser side, since the download manager
   // expects to find a RenderViewHost based off the id.
   request.SetRequestorID(render_view_->GetRoutingID());
-  request.SetHasUserGesture(WebUserGestureIndicator::IsProcessingUserGesture());
+  request.SetHasUserGesture(
+      WebUserGestureIndicator::IsProcessingUserGesture(frame_));
 
   // StartNavigationParams should only apply to navigational requests (and not
   // to subresource requests).  For example - Content-Type header provided via
@@ -5035,14 +5037,14 @@ void RenderFrameImpl::SuddenTerminationDisablerChanged(
 void RenderFrameImpl::RegisterProtocolHandler(const WebString& scheme,
                                               const WebURL& url,
                                               const WebString& title) {
-  bool user_gesture = WebUserGestureIndicator::IsProcessingUserGesture();
+  bool user_gesture = WebUserGestureIndicator::IsProcessingUserGesture(frame_);
   Send(new FrameHostMsg_RegisterProtocolHandler(routing_id_, scheme.Utf8(), url,
                                                 title.Utf16(), user_gesture));
 }
 
 void RenderFrameImpl::UnregisterProtocolHandler(const WebString& scheme,
                                                 const WebURL& url) {
-  bool user_gesture = WebUserGestureIndicator::IsProcessingUserGesture();
+  bool user_gesture = WebUserGestureIndicator::IsProcessingUserGesture(frame_);
   Send(new FrameHostMsg_UnregisterProtocolHandler(routing_id_, scheme.Utf8(),
                                                   url, user_gesture));
 }
@@ -6217,7 +6219,8 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
     params.should_replace_current_entry = info.replaces_current_history_item &&
                                           render_view_->history_list_length_;
   }
-  params.user_gesture = WebUserGestureIndicator::IsProcessingUserGesture();
+  params.user_gesture =
+      WebUserGestureIndicator::IsProcessingUserGesture(frame_);
   if (GetContentClient()->renderer()->AllowPopup())
     params.user_gesture = true;
 
@@ -6225,7 +6228,7 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
       policy == blink::kWebNavigationPolicyNewForegroundTab ||
       policy == blink::kWebNavigationPolicyNewWindow ||
       policy == blink::kWebNavigationPolicyNewPopup) {
-    WebUserGestureIndicator::ConsumeUserGesture();
+    WebUserGestureIndicator::ConsumeUserGesture(frame_);
   }
 
   if (is_history_navigation_in_new_child)

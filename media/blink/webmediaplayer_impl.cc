@@ -557,7 +557,7 @@ void WebMediaPlayerImpl::Play() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // User initiated play unlocks background video playback.
-  if (blink::WebUserGestureIndicator::IsProcessingUserGesture())
+  if (blink::WebUserGestureIndicator::IsProcessingUserGesture(frame_))
     video_locked_when_paused_when_hidden_ = false;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
@@ -606,7 +606,7 @@ void WebMediaPlayerImpl::Pause() {
   paused_when_hidden_ = false;
 
   // User initiated pause locks background videos.
-  if (blink::WebUserGestureIndicator::IsProcessingUserGesture())
+  if (blink::WebUserGestureIndicator::IsProcessingUserGesture(frame_))
     video_locked_when_paused_when_hidden_ = true;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
