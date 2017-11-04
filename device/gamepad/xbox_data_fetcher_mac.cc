@@ -16,17 +16,20 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace device {
 
 namespace {
 
-void CopyNSStringAsUTF16LittleEndian(NSString* src,
-                                     UChar* dest,
-                                     size_t dest_len) {
-  NSData* as16 = [src dataUsingEncoding:NSUTF16LittleEndianStringEncoding];
-  memset(dest, 0, dest_len);
-  [as16 getBytes:dest length:dest_len - sizeof(UChar)];
+void CopyToUString(UChar* dest, size_t dest_length, base::string16 src) {
+  static_assert(sizeof(base::string16::value_type) == sizeof(UChar),
+                "Mismatched string16/WebUChar size.");
+
+  const size_t str_to_copy = std::min(src.size(), dest_length - 1);
+  src.copy(dest, str_to_copy);
+  std::fill(dest + str_to_copy, dest + dest_length, 0);
 }
 
 }  // namespace
@@ -211,18 +214,10 @@ void XboxDataFetcher::AddController(XboxControllerMac* controller) {
   controller->SetLEDPattern((XboxControllerMac::LEDPattern)(
       XboxControllerMac::LED_FLASH_TOP_LEFT + controller->location_id()));
 
-  NSString* ident = [NSString
-      stringWithFormat:@"%@ (STANDARD GAMEPAD Vendor: %04x Product: %04x)",
-                       controller->GetControllerType() ==
-                               XboxControllerMac::XBOX_360_CONTROLLER
-                           ? @"Xbox 360 Controller"
-                           : @"Xbox One Controller",
-                       controller->GetVendorId(), controller->GetProductId()];
-  CopyNSStringAsUTF16LittleEndian(ident, state->data.id,
-                                  sizeof(state->data.id));
-
-  CopyNSStringAsUTF16LittleEndian(@"standard", state->data.mapping,
-                                  sizeof(state->data.mapping));
+  CopyToUString(state->data.id, arraysize(state->data.id),
+                base::UTF8ToUTF16(controller->GetIdString()));
+  CopyToUString(state->data.mapping, arraysize(state->data.mapping),
+                base::UTF8ToUTF16("standard"));
 
   state->data.connected = true;
   state->data.axes_length = 4;
