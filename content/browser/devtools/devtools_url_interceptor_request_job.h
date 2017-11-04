@@ -25,8 +25,7 @@ namespace content {
 
 // A URLRequestJob that allows programmatic request blocking / modification or
 // response mocking.  This class should only be accessed on the IO thread.
-class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
-                                         public net::URLRequest::Delegate {
+class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
  public:
   DevToolsURLInterceptorRequestJob(
       scoped_refptr<DevToolsURLRequestInterceptor::State>
@@ -58,21 +57,6 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
 
   void SetAuth(const net::AuthCredentials& credentials) override;
   void CancelAuth() override;
-
-  // net::URLRequest::Delegate methods:
-  void OnAuthRequired(net::URLRequest* request,
-                      net::AuthChallengeInfo* auth_info) override;
-  void OnCertificateRequested(
-      net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) override;
-  void OnSSLCertificateError(net::URLRequest* request,
-                             const net::SSLInfo& ssl_info,
-                             bool fatal) override;
-  void OnResponseStarted(net::URLRequest* request, int net_error) override;
-  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
-  void OnReceivedRedirect(net::URLRequest* request,
-                          const net::RedirectInfo& redirect_info,
-                          bool* defer_redirect) override;
 
   // Must be called on IO thread.
   void StopIntercepting();
@@ -112,6 +96,13 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
     const net::URLRequestContext* url_request_context;
   };
 
+  // Callbacks from SubRequest.
+  void OnSubRequestAuthRequired(net::AuthChallengeInfo* auth_info);
+  void OnSubRequestRedirectReceived(const net::URLRequest& request,
+                                    const net::RedirectInfo& redirectinfo,
+                                    bool* defer_redirect);
+  void OnSubRequestResponseStarted(const net::Error& net_error);
+
   // Retrieves the response headers from either the |sub_request_| or the
   // |mock_response_|.  In some cases (e.g. file access) this may be null.
   const net::HttpResponseHeaders* GetHttpResponseHeaders() const;
@@ -138,7 +129,6 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
   std::unique_ptr<net::RedirectInfo> redirect_;
   WaitingForUserResponse waiting_for_user_response_;
   bool intercepting_requests_;
-  bool killed_;
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
 
   const std::string interception_id_;

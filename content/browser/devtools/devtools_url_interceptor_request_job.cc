@@ -27,13 +27,29 @@ namespace content {
 // gives us the flexibility to pretend redirects didn't happen if the user
 // chooses to mock the response.  Note this SubRequest is ignored by the
 // interceptor.
-class DevToolsURLInterceptorRequestJob::SubRequest {
+class DevToolsURLInterceptorRequestJob::SubRequest
+    : public net::URLRequest::Delegate {
  public:
   SubRequest(DevToolsURLInterceptorRequestJob::RequestDetails& request_details,
              DevToolsURLInterceptorRequestJob* devtools_interceptor_request_job,
              scoped_refptr<DevToolsURLRequestInterceptor::State>
                  devtools_url_request_interceptor_state);
-  ~SubRequest();
+  ~SubRequest() override;
+
+  // net::URLRequest::Delegate methods:
+  void OnAuthRequired(net::URLRequest* request,
+                      net::AuthChallengeInfo* auth_info) override;
+  void OnCertificateRequested(
+      net::URLRequest* request,
+      net::SSLCertRequestInfo* cert_request_info) override;
+  void OnSSLCertificateError(net::URLRequest* request,
+                             const net::SSLInfo& ssl_info,
+                             bool fatal) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
+  void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
+  void OnReceivedRedirect(net::URLRequest* request,
+                          const net::RedirectInfo& redirect_info,
+                          bool* defer_redirect) override;
 
   void Cancel();
 
@@ -87,8 +103,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
           }
         })");
   request_ = request_details.url_request_context->CreateRequest(
-      request_details.url, request_details.priority,
-      devtools_interceptor_request_job_, traffic_annotation);
+      request_details.url, request_details.priority, this, traffic_annotation);
   request_->set_method(request_details.method);
   request_->SetExtraRequestHeaders(request_details.extra_request_headers);
 
@@ -133,6 +148,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
 
 DevToolsURLInterceptorRequestJob::SubRequest::~SubRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  fetch_in_progress_ = false;
   devtools_url_request_interceptor_state_->UnregisterSubRequest(request_.get());
 }
 
@@ -143,6 +159,54 @@ void DevToolsURLInterceptorRequestJob::SubRequest::Cancel() {
 
   fetch_in_progress_ = false;
   request_->Cancel();
+}
+
+void DevToolsURLInterceptorRequestJob::SubRequest::OnAuthRequired(
+    net::URLRequest* request,
+    net::AuthChallengeInfo* auth_info) {
+  devtools_interceptor_request_job_->OnSubRequestAuthRequired(auth_info);
+}
+
+void DevToolsURLInterceptorRequestJob::SubRequest::OnCertificateRequested(
+    net::URLRequest* request,
+    net::SSLCertRequestInfo* cert_request_info) {
+  devtools_interceptor_request_job_->NotifyCertificateRequested(
+      cert_request_info);
+}
+
+void DevToolsURLInterceptorRequestJob::SubRequest::OnSSLCertificateError(
+    net::URLRequest* request,
+    const net::SSLInfo& ssl_info,
+    bool fatal) {
+  devtools_interceptor_request_job_->NotifySSLCertificateError(ssl_info, fatal);
+}
+
+void DevToolsURLInterceptorRequestJob::SubRequest::OnResponseStarted(
+    net::URLRequest* request,
+    int net_error) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
+  devtools_interceptor_request_job_->OnSubRequestResponseStarted(
+      static_cast<net::Error>(net_error));
+}
+
+void DevToolsURLInterceptorRequestJob::SubRequest::OnReadCompleted(
+    net::URLRequest* request,
+    int bytes_read) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_NE(bytes_read, net::ERR_IO_PENDING);
+  // OnReadCompleted may get called while canceling the subrequest, in that
+  // event theres no need to call ReadRawDataComplete.
+  if (fetch_in_progress_)
+    devtools_interceptor_request_job_->ReadRawDataComplete(bytes_read);
+}
+
+void DevToolsURLInterceptorRequestJob::SubRequest::OnReceivedRedirect(
+    net::URLRequest* request,
+    const net::RedirectInfo& redirectinfo,
+    bool* defer_redirect) {
+  devtools_interceptor_request_job_->OnSubRequestRedirectReceived(
+      *request, redirectinfo, defer_redirect);
 }
 
 class DevToolsURLInterceptorRequestJob::MockResponseDetails {
@@ -407,7 +471,6 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
                        original_request->context()),
       waiting_for_user_response_(WaitingForUserResponse::NOT_WAITING),
       intercepting_requests_(true),
-      killed_(false),
       interception_id_(interception_id),
       devtools_token_(devtools_token),
       target_id_(target_id),
@@ -462,7 +525,6 @@ void DevToolsURLInterceptorRequestJob::Start() {
 }
 
 void DevToolsURLInterceptorRequestJob::Kill() {
-  killed_ = true;
   if (sub_request_)
     sub_request_->Cancel();
 
@@ -557,11 +619,8 @@ void DevToolsURLInterceptorRequestJob::CancelAuth() {
   auth_info_ = nullptr;
 }
 
-void DevToolsURLInterceptorRequestJob::OnAuthRequired(
-    net::URLRequest* request,
+void DevToolsURLInterceptorRequestJob::OnSubRequestAuthRequired(
     net::AuthChallengeInfo* auth_info) {
-  DCHECK(sub_request_);
-  DCHECK_EQ(request, sub_request_->request());
   auth_info_ = auth_info;
 
   if (!intercepting_requests_) {
@@ -598,61 +657,25 @@ void DevToolsURLInterceptorRequestJob::OnAuthRequired(
                      base::Passed(&auth_challenge)));
 }
 
-void DevToolsURLInterceptorRequestJob::OnCertificateRequested(
-    net::URLRequest* request,
-    net::SSLCertRequestInfo* cert_request_info) {
-  DCHECK(sub_request_);
-  DCHECK_EQ(request, sub_request_->request());
-  NotifyCertificateRequested(cert_request_info);
-}
-
-void DevToolsURLInterceptorRequestJob::OnSSLCertificateError(
-    net::URLRequest* request,
-    const net::SSLInfo& ssl_info,
-    bool fatal) {
-  DCHECK(sub_request_);
-  DCHECK_EQ(request, sub_request_->request());
-  NotifySSLCertificateError(ssl_info, fatal);
-}
-
-void DevToolsURLInterceptorRequestJob::OnResponseStarted(
-    net::URLRequest* request,
-    int net_error) {
+void DevToolsURLInterceptorRequestJob::OnSubRequestResponseStarted(
+    const net::Error& net_error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(sub_request_);
-  DCHECK_EQ(request, sub_request_->request());
-  DCHECK_NE(net::ERR_IO_PENDING, net_error);
-
   if (net_error != net::OK) {
     sub_request_->Cancel();
-
-    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                           static_cast<net::Error>(net_error)));
+    NotifyStartError(
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, net_error));
     return;
   }
 
   NotifyHeadersComplete();
 }
 
-void DevToolsURLInterceptorRequestJob::OnReadCompleted(net::URLRequest* request,
-                                                       int num_bytes) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(sub_request_);
-  DCHECK_EQ(request, sub_request_->request());
-
-  // OnReadCompleted may get called while canceling the subrequest, in that
-  // event theres no need to call ReadRawDataComplete.
-  if (!killed_)
-    ReadRawDataComplete(num_bytes);
-}
-
-void DevToolsURLInterceptorRequestJob::OnReceivedRedirect(
-    net::URLRequest* request,
+void DevToolsURLInterceptorRequestJob::OnSubRequestRedirectReceived(
+    const net::URLRequest& request,
     const net::RedirectInfo& redirectinfo,
     bool* defer_redirect) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(sub_request_);
-  DCHECK_EQ(request, sub_request_->request());
   // If we're not intercepting results then just exit.
   if (!intercepting_requests_) {
     *defer_redirect = false;
@@ -667,8 +690,8 @@ void DevToolsURLInterceptorRequestJob::OnReceivedRedirect(
   std::string header_value;
   std::unique_ptr<protocol::DictionaryValue> headers_dict(
       protocol::DictionaryValue::create());
-  while (request->response_headers()->EnumerateHeaderLines(&iter, &header_name,
-                                                           &header_value)) {
+  while (request.response_headers()->EnumerateHeaderLines(&iter, &header_name,
+                                                          &header_value)) {
     headers_dict->setString(header_name, header_value);
   }
 
