@@ -115,6 +115,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // passing from browser process.
   GetGpuInfoFromCommandLine(*command_line, &gpu_info_);
 #endif  // OS_ANDROID
+
+  // Set keys for crash logging based on preliminary gpu info, in case we
+  // crash during feature collection.
+  gpu::SetKeysForCrashLogging(gpu_info_);
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (gpu_info_.gpu.vendor_id == 0x10de &&  // NVIDIA
       gpu_info_.driver_vendor == "NVIDIA" && !CanAccessNvidiaDeviceFile())
