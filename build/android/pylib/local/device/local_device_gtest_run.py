@@ -473,6 +473,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
                   timeout=timeout, retries=0)
           logmon.Close()
 
+        logging.info('Logcat saved to %s', logcat_file.Link())
+
         if self._test_instance.enable_xml_result_parsing:
           try:
             gtest_xml = device.ReadFile(
