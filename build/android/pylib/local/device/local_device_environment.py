@@ -127,15 +127,13 @@ class LocalDeviceEnvironment(environment.Environment):
       self.EnableTracing()
 
   def _InitDevices(self):
-    device_arg = 'default'
+    device_arg = []
     if self._device_serials:
       device_arg = self._device_serials
 
     self._devices = device_utils.DeviceUtils.HealthyDevices(
         self._blacklist, enable_device_files_cache=self._enable_device_cache,
         default_retries=self._max_tries - 1, device_arg=device_arg)
-    if not self._devices:
-      raise device_errors.NoDevicesError('No devices were available')
 
     if self._logcat_output_file:
       self._logcat_output_dir = tempfile.mkdtemp()
