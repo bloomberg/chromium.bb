@@ -343,6 +343,10 @@ typedef struct SPEED_FEATURES {
   int prune_ext_partition_types_search;
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
+#if CONFIG_CDEF
+  int fast_cdef_search;
+#endif  // CONFIG_CDEF
+
   // Skip rectangular partition test when partition type none gives better
   // rd than partition type split.
   int less_rectangular_check;

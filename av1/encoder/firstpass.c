@@ -1151,7 +1151,7 @@ static int get_twopass_worst_quality(const AV1_COMP *cpi,
                             : cpi->common.MBs;
     const int active_mbs = AOMMAX(1, num_mbs - (int)(num_mbs * inactive_zone));
     const double av_err_per_mb = section_err / active_mbs;
-    const double speed_term = 1.0 + 0.04 * oxcf->speed;
+    const double speed_term = 1.0;
     double ediv_size_correction;
     const int target_norm_bits_per_mb =
         (int)((uint64_t)section_target_bandwidth << BPER_MB_NORMBITS) /

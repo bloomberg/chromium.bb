@@ -28,7 +28,7 @@ static MESH_PATTERN
       { { 64, 16 }, { 24, 8 }, { 12, 4 }, { 7, 1 } },
     };
 static unsigned char good_quality_max_mesh_pct[MAX_MESH_SPEED + 1] = {
-  50, 25, 15, 5, 1, 1
+  50, 50, 25, 15, 5, 1
 };
 
 #if CONFIG_INTRABC
@@ -36,9 +36,9 @@ static unsigned char good_quality_max_mesh_pct[MAX_MESH_SPEED + 1] = {
 // each speed setting
 static MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
   { { 256, 1 }, { 256, 1 }, { 0, 0 }, { 0, 0 } },
+  { { 256, 1 }, { 256, 1 }, { 0, 0 }, { 0, 0 } },
   { { 64, 1 }, { 64, 1 }, { 0, 0 }, { 0, 0 } },
   { { 64, 1 }, { 64, 1 }, { 0, 0 }, { 0, 0 } },
-  { { 64, 4 }, { 16, 1 }, { 0, 0 }, { 0, 0 } },
   { { 64, 4 }, { 16, 1 }, { 0, 0 }, { 0, 0 } },
   { { 64, 4 }, { 16, 1 }, { 0, 0 }, { 0, 0 } },
 };
@@ -110,9 +110,9 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
   }
 
   // If this is a two pass clip that fits the criteria for animated or
-  // graphics content then reset disable_split_mask for speeds 1-4.
+  // graphics content then reset disable_split_mask for speeds 2+.
   // Also if the image edge is internal to the coded area.
-  if ((speed >= 1) && (cpi->oxcf.pass == 2) &&
+  if ((speed >= 2) && (cpi->oxcf.pass == 2) &&
       ((cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION) ||
        (av1_internal_image_edge(cpi)))) {
     sf->disable_split_mask = DISABLE_COMPOUND_SPLIT;
@@ -156,6 +156,9 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     } else {
       sf->use_square_partition_only = !frame_is_intra_only(cm);
     }
+#if CONFIG_CDEF
+    sf->fast_cdef_search = 1;
+#endif  // CONFIG_CDEF
 
     sf->less_rectangular_check = 1;
 
@@ -445,6 +448,9 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 #if CONFIG_EXT_PARTITION_TYPES
   sf->prune_ext_partition_types_search = 0;
 #endif  // CONFIG_EXT_PARTITION_TYPES
+#if CONFIG_CDEF
+  sf->fast_cdef_search = 0;
+#endif  // CONFIG_CDEF
 
   // Set this at the appropriate speed levels
   sf->use_transform_domain_distortion = 0;
