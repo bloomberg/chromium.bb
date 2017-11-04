@@ -34,8 +34,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "device/geolocation/geoposition.h"
 #include "device/geolocation/network_location_request.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -44,7 +44,8 @@
 namespace {
 
 std::string GetErrorCodePermissionDenied() {
-  return base::IntToString(device::Geoposition::ERROR_CODE_PERMISSION_DENIED);
+  return base::IntToString(static_cast<int>(
+      device::mojom::Geoposition::ErrorCode::PERMISSION_DENIED));
 }
 
 std::string RunScript(content::RenderFrameHost* render_frame_host,

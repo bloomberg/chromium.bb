@@ -79,6 +79,7 @@ source_set("browser") {
     "//device/bluetooth",
     "//device/gamepad",
     "//device/geolocation",
+    "//device/geolocation/public/cpp",
     "//device/geolocation/public/interfaces",
     "//device/screen_orientation/public/interfaces",
     "//device/vr:mojo_bindings",

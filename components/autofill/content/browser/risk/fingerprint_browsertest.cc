@@ -18,7 +18,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/geoposition.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -188,14 +188,14 @@ class AutofillRiskFingerprintTest : public content::ContentBrowserTest {
 
 // Test that getting a fingerprint works on some basic level.
 IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
-  device::Geoposition position;
+  device::mojom::Geoposition position;
   position.latitude = kLatitude;
   position.longitude = kLongitude;
   position.altitude = kAltitude;
   position.accuracy = kAccuracy;
-  position.timestamp =
-      base::Time::UnixEpoch() +
-      base::TimeDelta::FromMilliseconds(kGeolocationTime);
+  position.timestamp = (base::Time::UnixEpoch() +
+                        base::TimeDelta::FromMilliseconds(kGeolocationTime))
+                           .ToDoubleT();
   device::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
       position);
 

@@ -19,8 +19,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "device/geolocation/geoposition.h"
 #include "device/geolocation/location_arbitrator.h"
+#include "device/geolocation/public/cpp/geoposition.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -91,14 +91,14 @@ void GetLocationFromResponse(bool http_post_result,
                              const std::string& response_body,
                              const base::Time& wifi_timestamp,
                              const GURL& server_url,
-                             Geoposition* position);
+                             mojom::Geoposition* position);
 
 // Parses the server response body. Returns true if parsing was successful.
 // Sets |*position| to the parsed location if a valid fix was received,
 // otherwise leaves it unchanged.
 bool ParseServerResponse(const std::string& response_body,
                          const base::Time& wifi_timestamp,
-                         Geoposition* position);
+                         mojom::Geoposition* position);
 void AddWifiData(const WifiData& wifi_data,
                  int age_milliseconds,
                  base::DictionaryValue* request);
@@ -172,7 +172,7 @@ void NetworkLocationRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   int response_code = source->GetResponseCode();
   RecordUmaResponseCode(response_code);
 
-  Geoposition position;
+  mojom::Geoposition position;
   std::string data;
   source->GetResponseAsString(&data);
   GetLocationFromResponse(status.is_success(), response_code, data,
@@ -282,8 +282,8 @@ void AddWifiData(const WifiData& wifi_data,
 
 void FormatPositionError(const GURL& server_url,
                          const std::string& message,
-                         Geoposition* position) {
-  position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+                         mojom::Geoposition* position) {
+  position->error_code = mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
   position->error_message = "Network location provider at '";
   position->error_message += server_url.GetOrigin().spec();
   position->error_message += "' : ";
@@ -298,7 +298,7 @@ void GetLocationFromResponse(bool http_post_result,
                              const std::string& response_body,
                              const base::Time& wifi_timestamp,
                              const GURL& server_url,
-                             Geoposition* position) {
+                             mojom::Geoposition* position) {
   DCHECK(position);
 
   // HttpPost can fail for a number of reasons. Most likely this is because
@@ -325,7 +325,7 @@ void GetLocationFromResponse(bool http_post_result,
   }
   // The response was successfully parsed, but it may not be a valid
   // position fix.
-  if (!position->Validate()) {
+  if (!ValidateGeoposition(*position)) {
     FormatPositionError(server_url, "Did not provide a good position fix",
                         position);
     RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_RESPONSE_INVALID_FIX);
@@ -356,10 +356,10 @@ bool GetAsDouble(const base::DictionaryValue& object,
 
 bool ParseServerResponse(const std::string& response_body,
                          const base::Time& wifi_timestamp,
-                         Geoposition* position) {
+                         mojom::Geoposition* position) {
   DCHECK(position);
-  DCHECK(!position->Validate());
-  DCHECK(position->error_code == Geoposition::ERROR_CODE_NONE);
+  DCHECK(!ValidateGeoposition(*position));
+  DCHECK(position->error_code == mojom::Geoposition::ErrorCode::NONE);
   DCHECK(!wifi_timestamp.is_null());
 
   if (response_body.empty()) {
@@ -420,7 +420,7 @@ bool ParseServerResponse(const std::string& response_body,
   // All error paths covered: now start actually modifying postion.
   position->latitude = latitude;
   position->longitude = longitude;
-  position->timestamp = wifi_timestamp;
+  position->timestamp = wifi_timestamp.ToDoubleT();
 
   // Other fields are optional.
   GetAsDouble(*response_object, kAccuracyString, &position->accuracy);

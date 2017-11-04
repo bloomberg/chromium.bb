@@ -13,7 +13,6 @@
 #include "content/test/mock_permission_manager.h"
 #include "content/test/test_render_frame_host.h"
 #include "device/geolocation/geolocation_context.h"
-#include "device/geolocation/geoposition.h"
 #include "device/geolocation/public/interfaces/geolocation.mojom.h"
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -23,7 +22,6 @@
 using base::test::ScopedFeatureList;
 using blink::mojom::PermissionStatus;
 using device::GeolocationContext;
-using device::Geoposition;
 using device::mojom::GeolocationPtr;
 using device::mojom::GeopositionPtr;
 using blink::mojom::GeolocationService;
@@ -152,7 +150,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedPolicyViolation) {
   geolocation->QueryNextPosition(base::BindOnce([](GeopositionPtr geoposition) {
     ADD_FAILURE() << "Position updated unexpectedly";
   }));
-  auto mock_geoposition = std::make_unique<Geoposition>();
+  auto mock_geoposition = device::mojom::Geoposition::New();
   mock_geoposition->latitude = kMockLatitude;
   mock_geoposition->longitude = kMockLongitude;
   context()->SetOverride(std::move(mock_geoposition));
@@ -184,7 +182,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedNoPolicyViolation) {
         callback.Run();
       },
       loop.QuitClosure()));
-  auto mock_geoposition = std::make_unique<Geoposition>();
+  auto mock_geoposition = device::mojom::Geoposition::New();
   mock_geoposition->latitude = kMockLatitude;
   mock_geoposition->longitude = kMockLongitude;
   context()->SetOverride(std::move(mock_geoposition));
@@ -211,7 +209,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedSync) {
         callback.Run();
       },
       loop.QuitClosure()));
-  auto mock_geoposition = std::make_unique<Geoposition>();
+  auto mock_geoposition = device::mojom::Geoposition::New();
   mock_geoposition->latitude = kMockLatitude;
   mock_geoposition->longitude = kMockLongitude;
   context()->SetOverride(std::move(mock_geoposition));
@@ -233,7 +231,7 @@ TEST_F(GeolocationServiceTest, PermissionDeniedSync) {
   geolocation->QueryNextPosition(base::BindOnce([](GeopositionPtr geoposition) {
     ADD_FAILURE() << "Position updated unexpectedly";
   }));
-  auto mock_geoposition = std::make_unique<Geoposition>();
+  auto mock_geoposition = device::mojom::Geoposition::New();
   mock_geoposition->latitude = kMockLatitude;
   mock_geoposition->longitude = kMockLongitude;
   context()->SetOverride(std::move(mock_geoposition));
@@ -266,7 +264,7 @@ TEST_F(GeolocationServiceTest, PermissionGrantedAsync) {
         callback.Run();
       },
       loop.QuitClosure()));
-  auto mock_geoposition = std::make_unique<Geoposition>();
+  auto mock_geoposition = device::mojom::Geoposition::New();
   mock_geoposition->latitude = kMockLatitude;
   mock_geoposition->longitude = kMockLongitude;
   context()->SetOverride(std::move(mock_geoposition));
@@ -294,7 +292,7 @@ TEST_F(GeolocationServiceTest, PermissionDeniedAsync) {
   geolocation->QueryNextPosition(base::BindOnce([](GeopositionPtr geoposition) {
     ADD_FAILURE() << "Position updated unexpectedly";
   }));
-  auto mock_geoposition = std::make_unique<Geoposition>();
+  auto mock_geoposition = device::mojom::Geoposition::New();
   mock_geoposition->latitude = kMockLatitude;
   mock_geoposition->longitude = kMockLongitude;
   context()->SetOverride(std::move(mock_geoposition));
@@ -317,7 +315,7 @@ TEST_F(GeolocationServiceTest, ServiceClosedBeforePermissionResponse) {
   geolocation->QueryNextPosition(base::BindOnce([](GeopositionPtr geoposition) {
     ADD_FAILURE() << "Position updated unexpectedly";
   }));
-  auto mock_geoposition = std::make_unique<Geoposition>();
+  auto mock_geoposition = device::mojom::Geoposition::New();
   mock_geoposition->latitude = kMockLatitude;
   mock_geoposition->longitude = kMockLongitude;
   context()->SetOverride(std::move(mock_geoposition));

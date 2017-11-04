@@ -15,14 +15,14 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/url_constants.h"
 #include "device/geolocation/geolocation_context.h"
-#include "device/geolocation/geoposition.h"
+#include "device/geolocation/public/cpp/geoposition.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
 namespace content {
 namespace protocol {
 
 using GeolocationContext = device::GeolocationContext;
-using Geoposition = device::Geoposition;
 
 namespace {
 
@@ -98,16 +98,18 @@ Response EmulationHandler::SetGeolocationOverride(
 
   GeolocationContext* geolocation_context =
       GetWebContents()->GetGeolocationContext();
-  std::unique_ptr<Geoposition> geoposition(new Geoposition());
+  auto geoposition = device::mojom::Geoposition::New();
   if (latitude.isJust() && longitude.isJust() && accuracy.isJust()) {
     geoposition->latitude = latitude.fromJust();
     geoposition->longitude = longitude.fromJust();
     geoposition->accuracy = accuracy.fromJust();
-    geoposition->timestamp = base::Time::Now();
-    if (!geoposition->Validate())
+    geoposition->timestamp = base::Time::Now().ToDoubleT();
+
+    if (!device::ValidateGeoposition(*geoposition))
       return Response::Error("Invalid geolocation");
   } else {
-    geoposition->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+    geoposition->error_code =
+        device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
   }
   geolocation_context->SetOverride(std::move(geoposition));
   return Response::OK();

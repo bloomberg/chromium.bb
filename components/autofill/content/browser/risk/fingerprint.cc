@@ -39,7 +39,8 @@
 #include "content/public/common/screen_info.h"
 #include "content/public/common/webplugininfo.h"
 #include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/geoposition.h"
+#include "device/geolocation/public/cpp/geoposition.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "gpu/config/gpu_info.h"
 #include "ppapi/features/features.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -199,7 +200,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   // Callbacks for asynchronously loaded data.
   void OnGotFonts(std::unique_ptr<base::ListValue> fonts);
   void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
-  void OnGotGeoposition(const device::Geoposition& geoposition);
+  void OnGotGeoposition(const device::mojom::Geoposition& geoposition);
 
   // If all of the asynchronous data has been loaded, calls |callback_| with
   // the fingerprint data.
@@ -233,7 +234,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
   std::unique_ptr<base::ListValue> fonts_;
   std::vector<content::WebPluginInfo> plugins_;
   bool waiting_on_plugins_;
-  device::Geoposition geoposition_;
+  device::mojom::Geoposition geoposition_;
 
   // Timer to enforce a maximum timeout before the |callback_| is called, even
   // if not all asynchronous data has been loaded.
@@ -339,12 +340,13 @@ void FingerprintDataLoader::OnGotPlugins(
 }
 
 void FingerprintDataLoader::OnGotGeoposition(
-    const device::Geoposition& geoposition) {
-  DCHECK(!geoposition_.Validate());
+    const device::mojom::Geoposition& geoposition) {
+  DCHECK(!device::ValidateGeoposition(geoposition_));
 
   geoposition_ = geoposition;
-  DCHECK(geoposition_.Validate() ||
-         geoposition_.error_code != device::Geoposition::ERROR_CODE_NONE);
+  DCHECK(device::ValidateGeoposition(geoposition_) ||
+         geoposition_.error_code !=
+             device::mojom::Geoposition::ErrorCode::NONE);
   geolocation_subscription_.reset();
 
   MaybeFillFingerprint();
@@ -357,8 +359,9 @@ void FingerprintDataLoader::MaybeFillFingerprint() {
       ((!gpu_data_manager_->GpuAccessAllowed(nullptr) ||
         gpu_data_manager_->IsEssentialGpuInfoAvailable()) &&
        fonts_ && !waiting_on_plugins_ &&
-       (geoposition_.Validate() ||
-        geoposition_.error_code != device::Geoposition::ERROR_CODE_NONE))) {
+       (device::ValidateGeoposition(geoposition_) ||
+        geoposition_.error_code !=
+            device::mojom::Geoposition::ErrorCode::NONE))) {
     FillFingerprint();
     delete this;
   }
@@ -407,16 +410,17 @@ void FingerprintDataLoader::FillFingerprint() {
   // available to JS.
 
   // TODO(isherman): Record more user behavior data.
-  if (geoposition_.Validate() &&
-      geoposition_.error_code == device::Geoposition::ERROR_CODE_NONE) {
+  if (device::ValidateGeoposition(geoposition_) &&
+      geoposition_.error_code == device::mojom::Geoposition::ErrorCode::NONE) {
     Fingerprint::UserCharacteristics::Location* location =
         fingerprint->mutable_user_characteristics()->mutable_location();
     location->set_altitude(geoposition_.altitude);
     location->set_latitude(geoposition_.latitude);
     location->set_longitude(geoposition_.longitude);
     location->set_accuracy(geoposition_.accuracy);
-    location->set_time_in_ms(
-        (geoposition_.timestamp - base::Time::UnixEpoch()).InMilliseconds());
+    location->set_time_in_ms((base::Time::FromDoubleT(geoposition_.timestamp) -
+                              base::Time::UnixEpoch())
+                                 .InMilliseconds());
   }
 
   Fingerprint::Metadata* metadata = fingerprint->mutable_metadata();

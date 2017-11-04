@@ -18,9 +18,9 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "device/geolocation/geolocation_export.h"
-#include "device/geolocation/geoposition.h"
 #include "device/geolocation/location_provider.h"
 #include "device/geolocation/network_location_request.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "device/geolocation/wifi_data_provider_manager.h"
 
 namespace device {
@@ -40,12 +40,13 @@ class NetworkLocationProvider : public LocationProvider {
     // WiFi data. In the case of the cache exceeding kMaximumSize this will
     // evict old entries in FIFO orderer of being added.
     // Returns true on success, false otherwise.
-    bool CachePosition(const WifiData& wifi_data, const Geoposition& position);
+    bool CachePosition(const WifiData& wifi_data,
+                       const mojom::Geoposition& position);
 
     // Searches for a cached position response for the current set of data.
     // Returns NULL if the position is not in the cache, or the cached
     // position if available. Ownership remains with the cache.
-    const Geoposition* FindPosition(const WifiData& wifi_data);
+    const mojom::Geoposition* FindPosition(const WifiData& wifi_data);
 
    private:
     // Makes the key for the map of cached positions, using a set of
@@ -55,7 +56,7 @@ class NetworkLocationProvider : public LocationProvider {
     // The cache of positions. This is stored as a map keyed on a string that
     // represents a set of data, and a list to provide
     // least-recently-added eviction.
-    typedef std::map<base::string16, Geoposition> CacheMap;
+    typedef std::map<base::string16, mojom::Geoposition> CacheMap;
     CacheMap cache_;
     typedef std::list<CacheMap::iterator> CacheAgeList;
     CacheAgeList cache_age_list_;  // Oldest first.
@@ -70,7 +71,7 @@ class NetworkLocationProvider : public LocationProvider {
   void SetUpdateCallback(const LocationProviderUpdateCallback& cb) override;
   void StartProvider(bool high_accuracy) override;
   void StopProvider() override;
-  const Geoposition& GetPosition() override;
+  const mojom::Geoposition& GetPosition() override;
   void OnPermissionGranted() override;
 
  private:
@@ -83,7 +84,7 @@ class NetworkLocationProvider : public LocationProvider {
 
   bool IsStarted() const;
 
-  void OnLocationResponse(const Geoposition& position,
+  void OnLocationResponse(const mojom::Geoposition& position,
                           bool server_error,
                           const WifiData& wifi_data);
 
@@ -101,7 +102,7 @@ class NetworkLocationProvider : public LocationProvider {
   base::Time wifi_timestamp_;
 
   // The current best position estimate.
-  Geoposition position_;
+  mojom::Geoposition position_;
 
   LocationProvider::LocationProviderUpdateCallback
       location_provider_update_callback_;

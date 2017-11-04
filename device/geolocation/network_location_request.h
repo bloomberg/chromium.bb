@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "device/geolocation/geolocation_export.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "device/geolocation/wifi_data_provider.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -24,7 +25,6 @@ struct PartialNetworkTrafficAnnotationTag;
 }
 
 namespace device {
-struct Geoposition;
 
 // Takes wifi data and sends it to a server to get a position fix.
 // It performs formatting of the request and interpretation of the response.
@@ -36,7 +36,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   // Called when a new geo position is available. The second argument indicates
   // whether there was a server error or not. It is true when there was a
   // server or network error - either no response or a 500 error code.
-  typedef base::Callback<void(const Geoposition& /* position */,
+  typedef base::Callback<void(const mojom::Geoposition& /* position */,
                               bool /* server_error */,
                               const WifiData& /* wifi_data */)>
       LocationResponseCallback;

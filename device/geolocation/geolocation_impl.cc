@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "device/geolocation/geolocation_context.h"
+#include "device/geolocation/public/cpp/geoposition.h"
 
 namespace device {
 
@@ -36,19 +37,19 @@ enum GeopositionErrorCode {
   GEOPOSITION_ERROR_CODE_COUNT = 4
 };
 
-void RecordGeopositionErrorCode(Geoposition::ErrorCode error_code) {
+void RecordGeopositionErrorCode(mojom::Geoposition::ErrorCode error_code) {
   GeopositionErrorCode code = GEOPOSITION_ERROR_CODE_NONE;
   switch (error_code) {
-    case Geoposition::ERROR_CODE_NONE:
+    case mojom::Geoposition::ErrorCode::NONE:
       code = GEOPOSITION_ERROR_CODE_NONE;
       break;
-    case Geoposition::ERROR_CODE_PERMISSION_DENIED:
+    case mojom::Geoposition::ErrorCode::PERMISSION_DENIED:
       code = GEOPOSITION_ERROR_CODE_PERMISSION_DENIED;
       break;
-    case Geoposition::ERROR_CODE_POSITION_UNAVAILABLE:
+    case mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE:
       code = GEOPOSITION_ERROR_CODE_POSITION_UNAVAILABLE;
       break;
-    case Geoposition::ERROR_CODE_TIMEOUT:
+    case mojom::Geoposition::ErrorCode::TIMEOUT:
       code = GEOPOSITION_ERROR_CODE_TIMEOUT;
       break;
   }
@@ -72,7 +73,7 @@ GeolocationImpl::GeolocationImpl(mojo::InterfaceRequest<Geolocation> request,
 GeolocationImpl::~GeolocationImpl() {
   // Make sure to respond to any pending callback even without a valid position.
   if (!position_callback_.is_null()) {
-    if (!current_position_.valid) {
+    if (ValidateGeoposition(current_position_)) {
       current_position_.error_code = mojom::Geoposition::ErrorCode(
           GEOPOSITION_ERROR_CODE_POSITION_UNAVAILABLE);
       current_position_.error_message.clear();
@@ -86,7 +87,7 @@ void GeolocationImpl::PauseUpdates() {
 }
 
 void GeolocationImpl::ResumeUpdates() {
-  if (position_override_.Validate()) {
+  if (ValidateGeoposition(position_override_)) {
     OnLocationUpdate(position_override_);
     return;
   }
@@ -108,7 +109,7 @@ void GeolocationImpl::SetHighAccuracy(bool high_accuracy) {
       high_accuracy);
   high_accuracy_ = high_accuracy;
 
-  if (position_override_.Validate()) {
+  if (ValidateGeoposition(position_override_)) {
     OnLocationUpdate(position_override_);
     return;
   }
@@ -129,11 +130,11 @@ void GeolocationImpl::QueryNextPosition(QueryNextPositionCallback callback) {
     ReportCurrentPosition();
 }
 
-void GeolocationImpl::SetOverride(const Geoposition& position) {
+void GeolocationImpl::SetOverride(const mojom::Geoposition& position) {
   if (!position_callback_.is_null())
     ReportCurrentPosition();
   position_override_ = position;
-  if (!position_override_.Validate())
+  if (!ValidateGeoposition(position_override_))
     ResumeUpdates();
 
   geolocation_subscription_.reset();
@@ -142,7 +143,7 @@ void GeolocationImpl::SetOverride(const Geoposition& position) {
 }
 
 void GeolocationImpl::ClearOverride() {
-  position_override_ = Geoposition();
+  position_override_ = mojom::Geoposition();
   StartListeningForUpdates();
 }
 
@@ -153,23 +154,12 @@ void GeolocationImpl::OnConnectionError() {
   // return.
 }
 
-void GeolocationImpl::OnLocationUpdate(const Geoposition& position) {
+void GeolocationImpl::OnLocationUpdate(const mojom::Geoposition& position) {
   RecordGeopositionErrorCode(position.error_code);
   DCHECK(context_);
 
-  current_position_.valid = position.Validate();
-  current_position_.latitude = position.latitude;
-  current_position_.longitude = position.longitude;
-  current_position_.altitude = position.altitude;
-  current_position_.accuracy = position.accuracy;
-  current_position_.altitude_accuracy = position.altitude_accuracy;
-  current_position_.heading = position.heading;
-  current_position_.speed = position.speed;
-  current_position_.timestamp = position.timestamp.ToDoubleT();
-  current_position_.error_code =
-      mojom::Geoposition::ErrorCode(position.error_code);
-  current_position_.error_message = position.error_message;
-
+  current_position_ = position;
+  current_position_.valid = ValidateGeoposition(position);
   has_position_to_report_ = true;
 
   if (!position_callback_.is_null())

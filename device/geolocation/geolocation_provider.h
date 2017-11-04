@@ -9,11 +9,11 @@
 
 #include "base/callback_list.h"
 #include "device/geolocation/geolocation_export.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace device {
 class GeolocationDelegate;
-struct Geoposition;
 
 // This is the main API to the geolocation subsystem. The application will hold
 // a single instance of this class and can register multiple clients to be
@@ -51,8 +51,9 @@ class GeolocationProvider {
   // Call before using Init() on the singleton GetInstance().
   DEVICE_GEOLOCATION_EXPORT static void SetApiKey(const std::string& api_key);
 
-  typedef base::Callback<void(const Geoposition&)> LocationUpdateCallback;
-  typedef base::CallbackList<void(const Geoposition&)>::Subscription
+  typedef base::Callback<void(const mojom::Geoposition&)>
+      LocationUpdateCallback;
+  typedef base::CallbackList<void(const mojom::Geoposition&)>::Subscription
       Subscription;
 
   // |enable_high_accuracy| is used as a 'hint' for the provider preferences for
@@ -80,7 +81,8 @@ class GeolocationProvider {
   // singleton geolocation stack in the background and manipulates it to report
   // a fake location. Neither step can be undone, breaking unit test isolation
   // (crbug.com/125931).
-  virtual void OverrideLocationForTesting(const Geoposition& position) = 0;
+  virtual void OverrideLocationForTesting(
+      const mojom::Geoposition& position) = 0;
 
  protected:
   virtual ~GeolocationProvider() {}

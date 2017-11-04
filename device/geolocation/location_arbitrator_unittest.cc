@@ -12,7 +12,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "device/geolocation/fake_location_provider.h"
 #include "device/geolocation/geolocation_delegate.h"
-#include "device/geolocation/geoposition.h"
+#include "device/geolocation/public/cpp/geoposition.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,18 +28,18 @@ class MockLocationObserver {
   virtual ~MockLocationObserver() {}
   void InvalidateLastPosition() {
     last_position_.latitude = 100;
-    last_position_.error_code = Geoposition::ERROR_CODE_NONE;
-    ASSERT_FALSE(last_position_.Validate());
+    last_position_.error_code = mojom::Geoposition::ErrorCode::NONE;
+    ASSERT_FALSE(ValidateGeoposition(last_position_));
   }
   void OnLocationUpdate(const LocationProvider* provider,
-                        const Geoposition& position) {
+                        const mojom::Geoposition& position) {
     last_position_ = position;
   }
 
-  Geoposition last_position() { return last_position_; }
+  mojom::Geoposition last_position() { return last_position_; }
 
  private:
-  Geoposition last_position_;
+  mojom::Geoposition last_position_;
 };
 
 double g_fake_time_now_secs = 1;
@@ -55,13 +56,13 @@ void SetPositionFix(FakeLocationProvider* provider,
                     double latitude,
                     double longitude,
                     double accuracy) {
-  Geoposition position;
-  position.error_code = Geoposition::ERROR_CODE_NONE;
+  mojom::Geoposition position;
+  position.error_code = mojom::Geoposition::ErrorCode::NONE;
   position.latitude = latitude;
   position.longitude = longitude;
   position.accuracy = accuracy;
-  position.timestamp = GetTimeNowForTest();
-  ASSERT_TRUE(position.Validate());
+  position.timestamp = GetTimeNowForTest().ToDoubleT();
+  ASSERT_TRUE(ValidateGeoposition(position));
   provider->HandlePositionChanged(position);
 }
 
@@ -182,8 +183,8 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   void CheckLastPositionInfo(double latitude,
                              double longitude,
                              double accuracy) {
-    Geoposition geoposition = observer_->last_position();
-    EXPECT_TRUE(geoposition.Validate());
+    mojom::Geoposition geoposition = observer_->last_position();
+    EXPECT_TRUE(ValidateGeoposition(geoposition));
     EXPECT_DOUBLE_EQ(latitude, geoposition.latitude);
     EXPECT_DOUBLE_EQ(longitude, geoposition.longitude);
     EXPECT_DOUBLE_EQ(accuracy, geoposition.accuracy);
@@ -241,15 +242,15 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_TRUE(gps());
   EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, cell()->state_);
   EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, gps()->state_);
-  EXPECT_FALSE(observer_->last_position().Validate());
-  EXPECT_EQ(Geoposition::ERROR_CODE_NONE,
+  EXPECT_FALSE(ValidateGeoposition(observer_->last_position()));
+  EXPECT_EQ(mojom::Geoposition::ErrorCode::NONE,
             observer_->last_position().error_code);
 
   SetReferencePosition(cell());
 
-  EXPECT_TRUE(observer_->last_position().Validate() ||
+  EXPECT_TRUE(ValidateGeoposition(observer_->last_position()) ||
               observer_->last_position().error_code !=
-                  Geoposition::ERROR_CODE_NONE);
+                  mojom::Geoposition::ErrorCode::NONE);
   EXPECT_EQ(cell()->GetPosition().latitude,
             observer_->last_position().latitude);
 
@@ -279,15 +280,15 @@ TEST_F(GeolocationLocationArbitratorTest, CustomSystemProviderOnly) {
   ASSERT_TRUE(fake_delegate->mock_location_provider());
   EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY,
             fake_delegate->mock_location_provider()->state_);
-  EXPECT_FALSE(observer_->last_position().Validate());
-  EXPECT_EQ(Geoposition::ERROR_CODE_NONE,
+  EXPECT_FALSE(ValidateGeoposition(observer_->last_position()));
+  EXPECT_EQ(mojom::Geoposition::ErrorCode::NONE,
             observer_->last_position().error_code);
 
   SetReferencePosition(fake_delegate->mock_location_provider());
 
-  EXPECT_TRUE(observer_->last_position().Validate() ||
+  EXPECT_TRUE(ValidateGeoposition(observer_->last_position()) ||
               observer_->last_position().error_code !=
-                  Geoposition::ERROR_CODE_NONE);
+                  mojom::Geoposition::ErrorCode::NONE);
   EXPECT_EQ(fake_delegate->mock_location_provider()->GetPosition().latitude,
             observer_->last_position().latitude);
 
@@ -321,15 +322,15 @@ TEST_F(GeolocationLocationArbitratorTest,
   EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY,
             fake_delegate->mock_location_provider()->state_);
   EXPECT_EQ(FakeLocationProvider::LOW_ACCURACY, cell()->state_);
-  EXPECT_FALSE(observer_->last_position().Validate());
-  EXPECT_EQ(Geoposition::ERROR_CODE_NONE,
+  EXPECT_FALSE(ValidateGeoposition(observer_->last_position()));
+  EXPECT_EQ(mojom::Geoposition::ErrorCode::NONE,
             observer_->last_position().error_code);
 
   SetReferencePosition(cell());
 
-  EXPECT_TRUE(observer_->last_position().Validate() ||
+  EXPECT_TRUE(ValidateGeoposition(observer_->last_position()) ||
               observer_->last_position().error_code !=
-                  Geoposition::ERROR_CODE_NONE);
+                  mojom::Geoposition::ErrorCode::NONE);
   EXPECT_EQ(cell()->GetPosition().latitude,
             observer_->last_position().latitude);
 
@@ -374,7 +375,7 @@ TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
   SetPositionFix(cell(), 1, 2, 150);
 
   // First position available
-  EXPECT_TRUE(observer_->last_position().Validate());
+  EXPECT_TRUE(ValidateGeoposition(observer_->last_position()));
   CheckLastPositionInfo(1, 2, 150);
 
   SetPositionFix(gps(), 3, 4, 50);

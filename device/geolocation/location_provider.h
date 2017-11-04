@@ -7,7 +7,8 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "device/geolocation/geoposition.h"
+#include "device/geolocation/geolocation_export.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 
 namespace device {
 
@@ -16,7 +17,8 @@ class DEVICE_GEOLOCATION_EXPORT LocationProvider {
  public:
   virtual ~LocationProvider() {}
 
-  typedef base::Callback<void(const LocationProvider*, const Geoposition&)>
+  typedef base::Callback<void(const LocationProvider*,
+                              const mojom::Geoposition&)>
       LocationProviderUpdateCallback;
 
   // This callback will be used to notify when a new Geoposition becomes
@@ -37,7 +39,7 @@ class DEVICE_GEOLOCATION_EXPORT LocationProvider {
   virtual void StopProvider() = 0;
 
   // Gets the current best position estimate.
-  virtual const Geoposition& GetPosition() = 0;
+  virtual const mojom::Geoposition& GetPosition() = 0;
 
   // Called everytime permission is granted to a page for using geolocation.
   // This may either be through explicit user action (e.g. responding to the

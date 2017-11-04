@@ -27,8 +27,6 @@ component("geolocation") {
     "geolocation_provider.h",
     "geolocation_provider_impl.cc",
     "geolocation_provider_impl.h",
-    "geoposition.cc",
-    "geoposition.h",
     "location_api_adapter_android.cc",
     "location_api_adapter_android.h",
     "location_arbitrator.cc",
@@ -69,6 +67,7 @@ component("geolocation") {
     "//ui/gfx",
   ]
   public_deps = [
+    "//device/geolocation/public/cpp",
     "//device/geolocation/public/interfaces",
   ]
   if (is_android) {
@@ -185,6 +184,8 @@ source_set("unittests") {
     ":test_support",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//device/geolocation/public/cpp",
+    "//device/geolocation/public/interfaces",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
