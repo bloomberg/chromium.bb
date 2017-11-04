@@ -68,7 +68,7 @@ void test_cdef(int bsize, int iterations, cdef_filter_block_func cdef,
 
   for (boundary = 0; boundary < 16; boundary++) {
     for (depth = 8; depth <= 12; depth += 2) {
-      const unsigned int max_pos = size * size >> (depth == 8);
+      const unsigned int max_pos = size * size >> static_cast<int>(depth == 8);
       for (pridamping = 3 + depth - 8;
            pridamping < 7 - 3 * !!boundary + depth - 8; pridamping++) {
         for (secdamping = 3 + depth - 8;
