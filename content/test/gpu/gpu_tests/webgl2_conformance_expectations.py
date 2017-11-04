@@ -142,7 +142,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
         ['win', ('nvidia', 0x1cb3), 'd3d11'], bug=728670)
 
-    # Win / NVIDIA / OpenGL
+    # WIN / OpenGL / NVIDIA failures
+    self.Fail('conformance/limits/gl-max-texture-dimensions.html',
+        ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=715001)
+    self.Fail('conformance/textures/misc/texture-size.html',
+        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
         ['win', 'nvidia', 'opengl'], bug=693090)
     self.Fail('conformance2/glsl3/' +
