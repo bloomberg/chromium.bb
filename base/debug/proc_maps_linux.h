@@ -31,9 +31,6 @@ struct MappedMemoryRegion {
   // Byte offset into |path| of the range mapped into memory.
   unsigned long long offset;
 
-  // Image base, if this mapping corresponds to an ELF image.
-  uintptr_t base;
-
   // Bitmask of read/write/execute/private/shared permissions.
   uint8_t permissions;
 
