@@ -1567,6 +1567,14 @@ should be able to be added at any place in this file.
   <description>Promo banner for an instant app has been displayed.</description>
 </action>
 
+<action name="Android.InstantApps.InstantAppsEligiblePageLoaded">
+  <owner>mariakhomenko@chromium.org</owner>
+  <description>
+    A page finished loading in Chrome that could have been loaded in an Instant
+    App.
+  </description>
+</action>
+
 <action name="Android.InstantApps.LaunchedByDefault" not_user_triggered="true">
   <owner>mariakhomenko@chromium.org</owner>
   <description>
@@ -1579,6 +1587,14 @@ should be able to be added at any place in this file.
   <owner>tedchoc@chromium.org</owner>
   <description>
     An instant app was launched from the page info popup.
+  </description>
+</action>
+
+<action name="Android.InstantApps.OpenInstantAppButtonShown">
+  <owner>mariakhomenko@chromium.org</owner>
+  <description>
+    Recorded when the user opened PageInfo dialog and saw a button to launch an
+    Instant App there.
   </description>
 </action>
 
