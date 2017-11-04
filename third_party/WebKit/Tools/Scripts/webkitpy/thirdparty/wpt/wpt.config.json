@@ -28,6 +28,10 @@
       "local-dir": "../../../../../../LayoutTests/resources"
     },
     {
+      "url-path": "/resources/testdriver-vendor.js",
+      "local-dir": "../../../../../../LayoutTests/resources"
+    },
+    {
       "url-path": "/common/vendor-prefix.js",
       "local-dir": "../../../../../../LayoutTests/resources"
     }

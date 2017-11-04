@@ -169,6 +169,7 @@ external/wpt/webgl [ Skip ]
 
 # wpt.config.json overrides the following files with LayoutTests/resources
 # files. Having unused files would be confusing.
+external/wpt/resources/testdriver-vendor.js [ Skip ]
 external/wpt/resources/testharnessreport.js [ Skip ]
 external/wpt/common/vendor-prefix.js [ Skip ]
 
