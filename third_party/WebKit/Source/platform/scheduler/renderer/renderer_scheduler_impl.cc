@@ -596,17 +596,21 @@ void RendererSchedulerImpl::SetRendererHidden(bool hidden) {
 }
 
 void RendererSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
-  if (backgrounded) {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererSchedulerImpl::OnRendererBackgrounded");
-  } else {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererSchedulerImpl::OnRendererForegrounded");
-  }
   helper_.CheckOnValidThread();
   if (helper_.IsShutdown() ||
       main_thread_only().renderer_backgrounded == backgrounded)
     return;
+  if (backgrounded) {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererSchedulerImpl::OnRendererBackgrounded");
+    RendererMetricsHelper::RecordBackgroundedTransition(
+        BackgroundedRendererTransition::BACKGROUNDED);
+  } else {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererSchedulerImpl::OnRendererForegrounded");
+    RendererMetricsHelper::RecordBackgroundedTransition(
+        BackgroundedRendererTransition::FOREGROUNDED);
+  }
 
   main_thread_only().renderer_backgrounded = backgrounded;
 
@@ -1024,12 +1028,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   main_thread_only().longest_jank_free_task_duration =
       longest_jank_free_task_duration;
 
-  bool loading_tasks_seem_expensive = false;
-  bool timer_tasks_seem_expensive = false;
-  loading_tasks_seem_expensive =
+  bool loading_tasks_seem_expensive =
       main_thread_only().loading_task_cost_estimator.expected_task_duration() >
       longest_jank_free_task_duration;
-  timer_tasks_seem_expensive =
+  bool timer_tasks_seem_expensive =
       main_thread_only().timer_task_cost_estimator.expected_task_duration() >
       longest_jank_free_task_duration;
 
@@ -1276,6 +1278,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     if (main_thread_only().stopped_when_backgrounded !=
         previously_stopped_when_backgrounded) {
       SetStoppedInBackground(main_thread_only().stopped_when_backgrounded);
+      RendererMetricsHelper::RecordBackgroundedTransition(
+          main_thread_only().stopped_when_backgrounded
+              ? BackgroundedRendererTransition::STOPPED_AFTER_DELAY
+              : BackgroundedRendererTransition::RESUMED);
     }
   }
 

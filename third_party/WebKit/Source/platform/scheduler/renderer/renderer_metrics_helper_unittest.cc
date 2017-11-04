@@ -109,6 +109,8 @@ class RendererMetricsHelperTest : public ::testing::Test {
     return base::TimeTicks() + base::TimeDelta::FromMilliseconds(milliseconds);
   }
 
+  void ForceUpdatePolicy() { scheduler_->ForceUpdatePolicy(); }
+
   std::unique_ptr<base::SimpleTestTickClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   scoped_refptr<SchedulerTqmDelegate> delegate_;
@@ -236,6 +238,58 @@ TEST_F(RendererMetricsHelperTest, GetFrameTypeTest) {
       false, false, WebFrameScheduler::FrameType::kMainFrame, false, true);
   DCHECK_EQ(GetFrameType(&frame5),
             FrameType::MAIN_FRAME_BACKGROUND_EXEMPT_SELF);
+}
+
+TEST_F(RendererMetricsHelperTest, BackgroundedRendererTransition) {
+  scheduler_->SetStoppingWhenBackgroundedEnabled(true);
+  scheduler_->SetRendererBackgrounded(true);
+  typedef BackgroundedRendererTransition Transition;
+
+  EXPECT_THAT(histogram_tester_->GetAllSamples(
+                  "RendererScheduler.BackgroundedRendererTransition"),
+              UnorderedElementsAre(
+                  Bucket(static_cast<int>(Transition::BACKGROUNDED), 1)));
+
+  scheduler_->SetRendererBackgrounded(false);
+  EXPECT_THAT(histogram_tester_->GetAllSamples(
+                  "RendererScheduler.BackgroundedRendererTransition"),
+              UnorderedElementsAre(
+                  Bucket(static_cast<int>(Transition::BACKGROUNDED), 1),
+                  Bucket(static_cast<int>(Transition::FOREGROUNDED), 1)));
+
+  scheduler_->SetRendererBackgrounded(true);
+  EXPECT_THAT(histogram_tester_->GetAllSamples(
+                  "RendererScheduler.BackgroundedRendererTransition"),
+              UnorderedElementsAre(
+                  Bucket(static_cast<int>(Transition::BACKGROUNDED), 2),
+                  Bucket(static_cast<int>(Transition::FOREGROUNDED), 1)));
+
+  // Waste 5+ minutes so that the delayed stop is triggered
+  RunTask(QueueType::DEFAULT, Milliseconds(1),
+          base::TimeDelta::FromSeconds(5 * 61));
+  // Firing ForceUpdatePolicy multiple times to make sure that the metric is
+  // only recorded upon an actual change.
+  ForceUpdatePolicy();
+  ForceUpdatePolicy();
+  ForceUpdatePolicy();
+  EXPECT_THAT(
+      histogram_tester_->GetAllSamples(
+          "RendererScheduler.BackgroundedRendererTransition"),
+      UnorderedElementsAre(
+          Bucket(static_cast<int>(Transition::BACKGROUNDED), 2),
+          Bucket(static_cast<int>(Transition::FOREGROUNDED), 1),
+          Bucket(static_cast<int>(Transition::STOPPED_AFTER_DELAY), 1)));
+
+  scheduler_->SetRendererBackgrounded(false);
+  ForceUpdatePolicy();
+  ForceUpdatePolicy();
+  EXPECT_THAT(histogram_tester_->GetAllSamples(
+                  "RendererScheduler.BackgroundedRendererTransition"),
+              UnorderedElementsAre(
+                  Bucket(static_cast<int>(Transition::BACKGROUNDED), 2),
+                  Bucket(static_cast<int>(Transition::FOREGROUNDED), 2),
+                  Bucket(static_cast<int>(Transition::STOPPED_AFTER_DELAY), 1),
+                  Bucket(static_cast<int>(Transition::RESUMED), 1)));
 }
 
 // TODO(crbug.com/754656): Add tests for NthMinute and AfterNthMinute

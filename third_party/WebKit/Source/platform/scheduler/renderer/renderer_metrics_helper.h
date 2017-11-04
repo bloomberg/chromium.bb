@@ -87,12 +87,32 @@ enum class FrameType {
   COUNT = 23
 };
 
+// This enum is used for histogram and should not be renumbered.
+// It tracks the following possible transitions:
+// -> BACKGROUNDED (-> [STOPPED_* -> RESUMED])? -> FOREGROUNDED
+enum class BackgroundedRendererTransition {
+  // Renderer is backgrounded
+  BACKGROUNDED = 0,
+  // Renderer is stopped after being backgrounded for a while
+  STOPPED_AFTER_DELAY = 1,
+  // Renderer is stopped due to critical resources, reserved for future use.
+  STOPPED_DUE_TO_CRITICAL_RESOURCES = 2,
+  // Renderer is resumed after being stopped
+  RESUMED = 3,
+  // Renderer is foregrounded
+  FOREGROUNDED = 4,
+  COUNT = 5
+};
+
 PLATFORM_EXPORT FrameType GetFrameType(WebFrameScheduler* frame_scheduler);
 
 // Helper class to take care of metrics on behalf of RendererScheduler.
 // This class should be used only on the main thread.
 class PLATFORM_EXPORT RendererMetricsHelper {
  public:
+  static void RecordBackgroundedTransition(
+      BackgroundedRendererTransition transition);
+
   RendererMetricsHelper(RendererSchedulerImpl* renderer_scheduler,
                         base::TimeTicks now,
                         bool renderer_backgrounded);
