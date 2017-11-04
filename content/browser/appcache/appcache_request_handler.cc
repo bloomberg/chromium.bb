@@ -51,7 +51,8 @@ AppCacheRequestHandler::AppCacheRequestHandler(
       old_host_id_(kAppCacheNoHostId),
       cache_id_(kAppCacheNoCacheId),
       service_(host_->service()),
-      request_(std::move(request)) {
+      request_(std::move(request)),
+      weak_factory_(this) {
   DCHECK(host_);
   DCHECK(service_);
   host_->AddObserver(this);
@@ -470,6 +471,18 @@ void AppCacheRequestHandler::OnMainResponseFound(
   }
 }
 
+// NetworkService loading:
+void AppCacheRequestHandler::RunLoaderCallbackForMainResource(
+    LoaderCallback callback,
+    StartLoaderCallback start_loader_callback) {
+  // For now let |this| always also return the subresource loader
+  // if (and only if) this returns a non-null |start_loader_callback|
+  // for handling the main resource.
+  if (start_loader_callback)
+    should_create_subresource_loader_ = true;
+  std::move(callback).Run(std::move(start_loader_callback));
+}
+
 // Sub-resource handling ----------------------------------------------
 
 std::unique_ptr<AppCacheJob> AppCacheRequestHandler::MaybeLoadSubResource(
@@ -570,7 +583,9 @@ void AppCacheRequestHandler::MaybeCreateLoader(
     const ResourceRequest& resource_request,
     ResourceContext* resource_context,
     LoaderCallback callback) {
-  loader_callback_ = std::move(callback);
+  loader_callback_ =
+      base::BindOnce(&AppCacheRequestHandler::RunLoaderCallbackForMainResource,
+                     weak_factory_.GetWeakPtr(), std::move(callback));
   request_->AsURLLoaderRequest()->set_request(resource_request);
   MaybeLoadResource(nullptr);
   // If a job is created, the job assumes ownership of the callback and
@@ -613,6 +628,9 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
 
 base::Optional<SubresourceLoaderParams>
 AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
+  if (!should_create_subresource_loader_)
+    return base::nullopt;
+
   // The factory is destroyed when the renderer drops the connection.
   mojom::URLLoaderFactoryPtr factory_ptr;
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
