@@ -81,9 +81,11 @@ static_library("arc") {
     "//components/signin/core/account_id",
     "//components/url_formatter",
     "//components/user_manager",
+    "//content/public/common",
     "//device/bluetooth",
     "//google_apis",
     "//mojo/edk/system",
+    "//services/device/public/interfaces",
     "//skia",
     "//third_party/re2:re2",
     "//ui/aura",
@@ -260,6 +262,7 @@ source_set("unit_tests") {
     "intent_helper/intent_filter_unittest.cc",
     "intent_helper/link_handler_model_unittest.cc",
     "intent_helper/page_transition_util_unittest.cc",
+    "power/arc_power_bridge_unittest.cc",
   ]
 
   deps = [
@@ -273,8 +276,12 @@ source_set("unit_tests") {
     "//components/signin/core/account_id",
     "//components/user_manager",
     "//components/user_manager:test_support",
+    "//content/public/common",
     "//device/bluetooth",
     "//mojo/public/cpp/system:system",
+    "//services/device/public/cpp/test:test_support",
+    "//services/device/public/interfaces:interfaces",
+    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura",
