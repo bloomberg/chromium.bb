@@ -4959,47 +4959,45 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 static int get_ref_frame_flags(const AV1_COMP *cpi) {
   const int *const map = cpi->common.ref_frame_map;
 
+  // No.1 Priority: LAST_FRAME
   const int last2_is_last =
       map[cpi->lst_fb_idxes[1]] == map[cpi->lst_fb_idxes[0]];
   const int last3_is_last =
       map[cpi->lst_fb_idxes[2]] == map[cpi->lst_fb_idxes[0]];
   const int gld_is_last = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[0]];
-#if CONFIG_ONE_SIDED_COMPOUND && !CONFIG_EXT_COMP_REFS
-  const int alt_is_last = map[cpi->alt_fb_idx] == map[cpi->lst_fb_idxes[0]];
-  const int last3_is_last2 =
-      map[cpi->lst_fb_idxes[2]] == map[cpi->lst_fb_idxes[1]];
-  const int gld_is_last2 = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[1]];
-  const int gld_is_last3 = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[2]];
-#else   // !CONFIG_ONE_SIDED_COMPOUND || CONFIG_EXT_COMP_REFS
   const int bwd_is_last = map[cpi->bwd_fb_idx] == map[cpi->lst_fb_idxes[0]];
+  const int alt2_is_last = map[cpi->alt2_fb_idx] == map[cpi->lst_fb_idxes[0]];
   const int alt_is_last = map[cpi->alt_fb_idx] == map[cpi->lst_fb_idxes[0]];
 
-  const int last3_is_last2 =
-      map[cpi->lst_fb_idxes[2]] == map[cpi->lst_fb_idxes[1]];
-  const int gld_is_last2 = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[1]];
-  const int bwd_is_last2 = map[cpi->bwd_fb_idx] == map[cpi->lst_fb_idxes[1]];
-
-  const int gld_is_last3 = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[2]];
-  const int bwd_is_last3 = map[cpi->bwd_fb_idx] == map[cpi->lst_fb_idxes[2]];
-
-  const int bwd_is_gld = map[cpi->bwd_fb_idx] == map[cpi->gld_fb_idx];
-#endif  // CONFIG_ONE_SIDED_COMPOUND && !CONFIG_EXT_COMP_REFS
-
-  const int alt2_is_last = map[cpi->alt2_fb_idx] == map[cpi->lst_fb_idxes[0]];
-  const int alt2_is_last2 = map[cpi->alt2_fb_idx] == map[cpi->lst_fb_idxes[1]];
-  const int alt2_is_last3 = map[cpi->alt2_fb_idx] == map[cpi->lst_fb_idxes[2]];
-  const int alt2_is_gld = map[cpi->alt2_fb_idx] == map[cpi->gld_fb_idx];
-  const int alt2_is_bwd = map[cpi->alt2_fb_idx] == map[cpi->bwd_fb_idx];
-
+  // No.2 Priority: ALTREF_FRAME
   const int last2_is_alt = map[cpi->lst_fb_idxes[1]] == map[cpi->alt_fb_idx];
   const int last3_is_alt = map[cpi->lst_fb_idxes[2]] == map[cpi->alt_fb_idx];
   const int gld_is_alt = map[cpi->gld_fb_idx] == map[cpi->alt_fb_idx];
   const int bwd_is_alt = map[cpi->bwd_fb_idx] == map[cpi->alt_fb_idx];
   const int alt2_is_alt = map[cpi->alt2_fb_idx] == map[cpi->alt_fb_idx];
 
-  int flags = AOM_REFFRAME_ALL;
+  // No.3 Priority: LAST2_FRAME
+  const int last3_is_last2 =
+      map[cpi->lst_fb_idxes[2]] == map[cpi->lst_fb_idxes[1]];
+  const int gld_is_last2 = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[1]];
+  const int bwd_is_last2 = map[cpi->bwd_fb_idx] == map[cpi->lst_fb_idxes[1]];
+  const int alt2_is_last2 = map[cpi->alt2_fb_idx] == map[cpi->lst_fb_idxes[1]];
 
-  if (gld_is_last || gld_is_alt) flags &= ~AOM_GOLD_FLAG;
+  // No.4 Priority: LAST3_FRAME
+  const int gld_is_last3 = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idxes[2]];
+  const int bwd_is_last3 = map[cpi->bwd_fb_idx] == map[cpi->lst_fb_idxes[2]];
+  const int alt2_is_last3 = map[cpi->alt2_fb_idx] == map[cpi->lst_fb_idxes[2]];
+
+  // No.5 Priority: GOLDEN_FRAME
+  const int bwd_is_gld = map[cpi->bwd_fb_idx] == map[cpi->gld_fb_idx];
+  const int alt2_is_gld = map[cpi->alt2_fb_idx] == map[cpi->gld_fb_idx];
+
+  // No.6 Priority: BWDREF_FRAME
+  const int alt2_is_bwd = map[cpi->alt2_fb_idx] == map[cpi->bwd_fb_idx];
+
+  // No.7 Priority: ALTREF2_FRAME
+
+  int flags = AOM_REFFRAME_ALL;
 
   if (cpi->rc.frames_till_gf_update_due == INT_MAX) flags &= ~AOM_GOLD_FLAG;
 
@@ -5007,23 +5005,18 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
 
   if (last2_is_last || last2_is_alt) flags &= ~AOM_LAST2_FLAG;
 
-  if (last3_is_last || last3_is_last2 || last3_is_alt) flags &= ~AOM_LAST3_FLAG;
+  if (last3_is_last || last3_is_alt || last3_is_last2) flags &= ~AOM_LAST3_FLAG;
 
-  if (gld_is_last2 || gld_is_last3) flags &= ~AOM_GOLD_FLAG;
+  if (gld_is_last || gld_is_alt || gld_is_last2 || gld_is_last3)
+    flags &= ~AOM_GOLD_FLAG;
 
-#if CONFIG_ONE_SIDED_COMPOUND && \
-    !CONFIG_EXT_COMP_REFS  // Changes LL & HL bitstream
-  /* Allow biprediction between two identical frames (e.g. bwd_is_last = 1) */
-  if (bwd_is_alt && (flags & AOM_BWD_FLAG)) flags &= ~AOM_BWD_FLAG;
-#else   // !CONFIG_ONE_SIDED_COMPOUND || CONFIG_EXT_COMP_REFS
-  if ((bwd_is_last || bwd_is_last2 || bwd_is_last3 || bwd_is_gld ||
-       bwd_is_alt) &&
+  if ((bwd_is_last || bwd_is_alt || bwd_is_last2 || bwd_is_last3 ||
+       bwd_is_gld) &&
       (flags & AOM_BWD_FLAG))
     flags &= ~AOM_BWD_FLAG;
-#endif  // CONFIG_ONE_SIDED_COMPOUND && !CONFIG_EXT_COMP_REFS
 
-  if ((alt2_is_last || alt2_is_last2 || alt2_is_last3 || alt2_is_gld ||
-       alt2_is_bwd || alt2_is_alt) &&
+  if ((alt2_is_last || alt2_is_alt || alt2_is_last2 || alt2_is_last3 ||
+       alt2_is_gld || alt2_is_bwd) &&
       (flags & AOM_ALT2_FLAG))
     flags &= ~AOM_ALT2_FLAG;
 
