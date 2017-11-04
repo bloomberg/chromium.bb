@@ -777,7 +777,8 @@ void AutofillAgent::HidePopup() {
 }
 
 bool AutofillAgent::IsUserGesture() const {
-  return WebUserGestureIndicator::IsProcessingUserGesture();
+  return WebUserGestureIndicator::IsProcessingUserGesture(
+      render_frame()->GetWebFrame());
 }
 
 void AutofillAgent::DidAssociateFormControlsDynamically() {

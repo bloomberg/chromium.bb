@@ -60,7 +60,8 @@ void PageClickTracker::FocusedNodeChanged(const WebNode& node) {
   was_focused_before_now_ = false;
 
   if (IsKeyboardAccessoryEnabled() &&
-      WebUserGestureIndicator::IsProcessingUserGesture()) {
+      WebUserGestureIndicator::IsProcessingUserGesture(
+          node.GetDocument().GetFrame())) {
     focused_node_was_last_clicked_ = true;
     DoFocusChangeComplete();
   }

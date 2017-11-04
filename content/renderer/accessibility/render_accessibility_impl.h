@@ -112,9 +112,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // versions. If any have moved, send an IPC with the new locations.
   void SendLocationChanges();
 
-  // The RenderFrameImpl that owns us.
-  RenderFrameImpl* render_frame_;
-
  private:
   // RenderFrameObserver implementation.
   void OnDestruct() override;
@@ -130,6 +127,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnGetImageData(const blink::WebAXObject& obj, const gfx::Size& max_size);
   void AddPluginTreeToUpdate(AXContentTreeUpdate* update);
   void ScrollPlugin(int id_to_make_visible);
+
+  // The RenderFrameImpl that owns us.
+  RenderFrameImpl* render_frame_;
 
   // Events from Blink are collected until they are ready to be
   // sent to the browser.

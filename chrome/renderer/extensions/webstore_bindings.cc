@@ -166,7 +166,7 @@ bool WebstoreBindings::GetWebstoreItemIdFromFrame(
     return false;
   }
 
-  if (!WebUserGestureIndicator::IsProcessingUserGesture()) {
+  if (!WebUserGestureIndicator::IsProcessingUserGesture(frame)) {
     *error = kNotUserGestureError;
     return false;
   }

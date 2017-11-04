@@ -1168,7 +1168,8 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       // Allow the user gesture to be pending after the plugin handles the
       // event. This allows out-of-process plugins to respond to the user
       // gesture after processing has finished here.
-      if (WebUserGestureIndicator::IsProcessingUserGesture()) {
+      if (WebUserGestureIndicator::IsProcessingUserGesture(
+              render_frame_->GetWebFrame())) {
         pending_user_gesture_ =
             ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
         pending_user_gesture_token_ =
@@ -2753,7 +2754,7 @@ void PepperPluginInstanceImpl::SetTickmarks(PP_Instance instance,
     tickmark.Scale(1 / viewport_to_dip_scale_);
     tickmarks_converted[i] = blink::WebRect(gfx::ToEnclosedRect(tickmark));
   }
-  blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
+  WebLocalFrame* frame = render_frame_->GetWebFrame();
   frame->SetTickmarks(tickmarks_converted);
 }
 

@@ -1361,7 +1361,8 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(
   ui::PageTransition type = navigation_state->GetTransitionType();
   if (ui::PageTransitionIsWebTriggerable(type) &&
       ui::PageTransitionIsNewNavigation(type) &&
-      !blink::WebUserGestureIndicator::IsProcessingUserGesture()) {
+      !blink::WebUserGestureIndicator::IsProcessingUserGesture(
+          navigated_frame)) {
     // If onsubmit has been called, try and save that form.
     if (provisionally_saved_form_.IsSet()) {
       if (logger) {

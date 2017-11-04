@@ -351,7 +351,8 @@ bool ChromeClientImpl::OpenJavaScriptAlertDelegate(LocalFrame* frame,
   NotifyPopupOpeningObservers();
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
-    if (WebUserGestureIndicator::IsProcessingUserGesture())
+    // (TODO(mustaq): why is it going through the web layer? crbug.com/781328
+    if (WebUserGestureIndicator::IsProcessingUserGesture(webframe))
       WebUserGestureIndicator::DisableTimeout();
     webframe->Client()->RunModalAlertDialog(message);
     return true;
@@ -365,7 +366,8 @@ bool ChromeClientImpl::OpenJavaScriptConfirmDelegate(LocalFrame* frame,
   NotifyPopupOpeningObservers();
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
-    if (WebUserGestureIndicator::IsProcessingUserGesture())
+    // (TODO(mustaq): why is it going through the web layer? crbug.com/781328
+    if (WebUserGestureIndicator::IsProcessingUserGesture(webframe))
       WebUserGestureIndicator::DisableTimeout();
     return webframe->Client()->RunModalConfirmDialog(message);
   }
@@ -380,7 +382,8 @@ bool ChromeClientImpl::OpenJavaScriptPromptDelegate(LocalFrame* frame,
   NotifyPopupOpeningObservers();
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->Client()) {
-    if (WebUserGestureIndicator::IsProcessingUserGesture())
+    // (TODO(mustaq): why is it going through the web layer?
+    if (WebUserGestureIndicator::IsProcessingUserGesture(webframe))
       WebUserGestureIndicator::DisableTimeout();
     WebString actual_value;
     bool ok = webframe->Client()->RunModalPromptDialog(message, default_value,

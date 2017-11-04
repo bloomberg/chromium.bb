@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -53,7 +54,8 @@ class WebTestDelegate;
 class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
  public:
   static TestPlugin* Create(const blink::WebPluginParams& params,
-                            WebTestDelegate* delegate);
+                            WebTestDelegate* delegate,
+                            blink::WebLocalFrame* frame);
   ~TestPlugin() override;
 
   static const blink::WebString& MimeType();
@@ -95,7 +97,9 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
       std::unique_ptr<viz::SingleReleaseCallback>* release_callback) override;
 
  private:
-  TestPlugin(const blink::WebPluginParams& params, WebTestDelegate* delegate);
+  TestPlugin(const blink::WebPluginParams& params,
+             WebTestDelegate* delegate,
+             blink::WebLocalFrame* frame);
 
   enum Primitive { PrimitiveNone, PrimitiveTriangle };
 
@@ -145,6 +149,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
 
   WebTestDelegate* delegate_;
   blink::WebPluginContainer* container_;
+  blink::WebLocalFrame* web_local_frame_;
 
   blink::WebRect rect_;
   std::unique_ptr<blink::WebGraphicsContext3DProvider> context_provider_;

@@ -1328,7 +1328,8 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
                                     WebSandboxFlags sandbox_flags) {
   RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   mojom::CreateNewWindowParamsPtr params = mojom::CreateNewWindowParams::New();
-  params->user_gesture = WebUserGestureIndicator::IsProcessingUserGesture();
+  params->user_gesture =
+      WebUserGestureIndicator::IsProcessingUserGesture(creator);
   if (GetContentClient()->renderer()->AllowPopup())
     params->user_gesture = true;
   params->window_container_type = WindowFeaturesToContainerType(features);
@@ -1374,7 +1375,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   DCHECK_NE(MSG_ROUTING_NONE, reply->main_frame_route_id);
   DCHECK_NE(MSG_ROUTING_NONE, reply->main_frame_widget_route_id);
 
-  WebUserGestureIndicator::ConsumeUserGesture();
+  WebUserGestureIndicator::ConsumeUserGesture(creator);
 
   // While this view may be a background extension page, it can spawn a visible
   // render view. So we just assume that the new one is not another background
@@ -1671,7 +1672,13 @@ void RenderViewImpl::DidFocus() {
   // TODO(jcivelli): when https://bugs.webkit.org/show_bug.cgi?id=33389 is fixed
   //                 we won't have to test for user gesture anymore and we can
   //                 move that code back to render_widget.cc
-  if (WebUserGestureIndicator::IsProcessingUserGesture() &&
+  WebFrame* main_frame = webview() ? webview()->MainFrame() : nullptr;
+  bool is_processing_user_gesture =
+      WebUserGestureIndicator::IsProcessingUserGesture(
+          main_frame && main_frame->IsWebLocalFrame()
+              ? main_frame->ToWebLocalFrame()
+              : nullptr);
+  if (is_processing_user_gesture &&
       !RenderThreadImpl::current()->layout_test_mode()) {
     Send(new ViewHostMsg_Focus(GetRoutingID()));
   }

@@ -100,7 +100,7 @@ void WebUIExtension::Send(gin::Arguments* args) {
 
   if (base::EndsWith(message, "RequiringGesture",
                      base::CompareCase::SENSITIVE) &&
-      !blink::WebUserGestureIndicator::IsProcessingUserGesture()) {
+      !blink::WebUserGestureIndicator::IsProcessingUserGesture(frame)) {
     NOTREACHED();
     return;
   }

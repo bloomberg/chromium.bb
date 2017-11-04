@@ -44,31 +44,31 @@ TEST(WebUserGestureTokenTest, Basic) {
 
   {
     WebScopedUserGesture indicator(token);
-    EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture());
+    EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture(nullptr));
   }
 
   {
     std::unique_ptr<UserGestureIndicator> indicator =
         Frame::NotifyUserActivation(nullptr, UserGestureToken::kNewGesture);
-    EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture());
+    EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture(nullptr));
     token = WebUserGestureIndicator::CurrentUserGestureToken();
   }
 
   EXPECT_TRUE(token.HasGestures());
-  EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture());
+  EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture(nullptr));
 
   {
     WebScopedUserGesture indicator(token);
-    EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture());
-    WebUserGestureIndicator::ConsumeUserGesture();
-    EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture());
+    EXPECT_TRUE(WebUserGestureIndicator::IsProcessingUserGesture(nullptr));
+    WebUserGestureIndicator::ConsumeUserGesture(nullptr);
+    EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture(nullptr));
   }
 
   EXPECT_FALSE(token.HasGestures());
 
   {
     WebScopedUserGesture indicator(token);
-    EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture());
+    EXPECT_FALSE(WebUserGestureIndicator::IsProcessingUserGesture(nullptr));
   }
 }
 

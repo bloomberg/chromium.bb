@@ -42,15 +42,21 @@ class WebUserGestureIndicator {
  public:
   // Returns true if a user gesture is currently being processed. Must be called
   // on the main thread.
-  BLINK_EXPORT static bool IsProcessingUserGesture();
+  //
+  // TODO(mustaq): remove the default value when all callers have been fixed.
+  BLINK_EXPORT static bool IsProcessingUserGesture(WebLocalFrame* = nullptr);
+
   // Can be called from any thread. Note that this is slower than the non
   // thread-safe version due to thread id lookups. Prefer the non thread-safe
   // version for code that will only execute on the main thread.
-  BLINK_EXPORT static bool IsProcessingUserGestureThreadSafe();
+  //
+  // TODO(mustaq): remove the default value when all callers have been fixed.
+  BLINK_EXPORT static bool IsProcessingUserGestureThreadSafe(
+      WebLocalFrame* = nullptr);
 
   // Returns true if a consumable gesture exists and has been successfully
   // consumed.
-  BLINK_EXPORT static bool ConsumeUserGesture();
+  BLINK_EXPORT static bool ConsumeUserGesture(WebLocalFrame*);
 
   // Returns true if a user gesture was processed on the provided frame since
   // the time the frame was loaded.

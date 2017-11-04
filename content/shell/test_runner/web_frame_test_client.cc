@@ -61,10 +61,10 @@ void PrintFrameDescription(WebTestDelegate* delegate,
 }
 
 void PrintFrameuserGestureStatus(WebTestDelegate* delegate,
-                                 blink::WebFrame* frame,
+                                 blink::WebLocalFrame* frame,
                                  const char* msg) {
   bool is_user_gesture =
-      blink::WebUserGestureIndicator::IsProcessingUserGesture();
+      blink::WebUserGestureIndicator::IsProcessingUserGesture(frame);
   delegate->PrintMessage(std::string("Frame with user gesture \"") +
                          (is_user_gesture ? "true" : "false") + "\"" + msg);
 }
@@ -371,8 +371,9 @@ void WebFrameTestClient::DidChangeSelection(bool is_empty_callback) {
 
 blink::WebPlugin* WebFrameTestClient::CreatePlugin(
     const blink::WebPluginParams& params) {
+  blink::WebLocalFrame* frame = web_frame_test_proxy_base_->web_frame();
   if (TestPlugin::IsSupportedMimeType(params.mime_type))
-    return TestPlugin::Create(params, delegate_);
+    return TestPlugin::Create(params, delegate_, frame);
   return delegate_->CreatePluginPlaceholder(params);
 }
 
