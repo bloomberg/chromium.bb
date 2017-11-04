@@ -69,34 +69,6 @@ enum class AOMRelationListProperty;
 
 typedef unsigned AXID;
 
-enum AccessibilityTextSource {
-  kAlternativeText,
-  kChildrenText,
-  kSummaryText,
-  kHelpText,
-  kVisibleText,
-  kTitleTagText,
-  kPlaceholderText,
-  kLabelByElementText,
-};
-
-class AccessibilityText final
-    : public GarbageCollectedFinalized<AccessibilityText> {
-  WTF_MAKE_NONCOPYABLE(AccessibilityText);
-
- public:
-  void Trace(blink::Visitor* visitor) { visitor->Trace(text_element_); }
-
- private:
-  AccessibilityText(const String& text,
-                    const AccessibilityTextSource& source,
-                    AXObject* element)
-      : text_(text), text_element_(element) {}
-
-  String text_;
-  Member<AXObject> text_element_;
-};
-
 enum AXObjectInclusion {
   kIncludeObject,
   kIgnoreObject,
@@ -114,12 +86,6 @@ enum AccessibilityOptionalBool {
   kOptionalBoolUndefined = 0,
   kOptionalBoolTrue,
   kOptionalBoolFalse
-};
-
-enum TextUnderElementMode {
-  kTextUnderElementAll,
-  kTextUnderElementAny  // If the text is unimportant, just whether or not it's
-                        // present
 };
 
 class AXSparseAttributeClient {
