@@ -15,6 +15,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import time
 import uuid
 
 
@@ -494,8 +495,9 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
     # Deploy the boot image to the device.
     bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
     bootserver_command = [bootserver_path, '-1', kernel_path,
-                          bootfs_data.bootfs, '--', '-o',
-                          'zircon.nodename=%s' % INSTANCE_ID]
+                          bootfs_data.bootfs, '--',
+                          '-o', 'zircon.nodename=%s' % INSTANCE_ID,
+                          '-o', 'devmgr.epoch=%d' % time.time()]
     _RunAndCheck(dry_run, bootserver_command)
 
     # Start listening for logging lines.
