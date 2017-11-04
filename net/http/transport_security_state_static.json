@@ -40386,6 +40386,7 @@
       "expect_ct": true,
       "expect_ct_report_uri": "https://history.report-uri.io/r/default/ct/reportOnly"
     },
+    { "name": "connect.facebook.net", "include_subdomains": true, "mode": "force-https" },
     // END OF MANUAL CUSTOM ENTRIES
 
     // TODO(lgarron): hstspreload.org can't scan IPv6-only sites due to Google
