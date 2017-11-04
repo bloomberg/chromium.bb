@@ -130,8 +130,9 @@ const char kForceClamshellPowerButton[] = "force-clamshell-power-button";
 // Whether this device has an internal stylus.
 const char kHasInternalStylus[] = "has-internal-stylus";
 
-// If true, the views-based md login and lock screens will be shown.
-const char kShowMdLogin[] = "show-md-login";
+// If true, the webui lock screen wil be shown. This is deprecated and will be
+// removed in the future.
+const char kShowWebUiLock[] = "show-webui-lock";
 
 // Number of recent accelerometer samples to examine to determine if a power
 // button event was spurious.
@@ -174,8 +175,8 @@ bool IsNightLightEnabled() {
       kAshEnableNightLight);
 }
 
-bool IsUsingMdLogin() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShowMdLogin);
+bool IsUsingWebUiLock() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLock);
 }
 
 }  // namespace switches
