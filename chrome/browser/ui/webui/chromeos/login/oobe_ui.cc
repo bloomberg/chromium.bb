@@ -534,8 +534,8 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
                                chromeos::switches::kDisableMdErrorScreen)
                                ? "off"
                                : "on");
-  localized_strings->SetString("showMdLogin",
-                               ash::switches::IsUsingMdLogin() ? "on" : "off");
+  localized_strings->SetString(
+      "showMdLogin", ash::switches::IsUsingWebUiLock() ? "off" : "on");
 }
 
 void OobeUI::AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler) {
