@@ -22,7 +22,7 @@
 #include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/test/mock_background_sync_controller.h"
 #include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/geoposition.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
@@ -46,12 +46,12 @@ LayoutTestBrowserContext::~LayoutTestBrowserContext() {
 
 void LayoutTestBrowserContext::Init() {
   // Fake geolocation coordinates for testing.
-  device::Geoposition position;
+  device::mojom::Geoposition position;
   position.latitude = 0;
   position.longitude = 0;
   position.altitude = 0;
   position.accuracy = 0;
-  position.timestamp = base::Time::Now();
+  position.timestamp = base::Time::Now().ToDoubleT();
   device::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
       position);
 }

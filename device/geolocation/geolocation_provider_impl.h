@@ -15,8 +15,8 @@
 #include "base/threading/thread.h"
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/geoposition.h"
 #include "device/geolocation/location_provider.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 
 namespace base {
 template <typename Type>
@@ -36,11 +36,11 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
       bool enable_high_accuracy) override;
   void UserDidOptIntoLocationServices() override;
   bool HighAccuracyLocationInUse() override;
-  void OverrideLocationForTesting(const Geoposition& position) override;
+  void OverrideLocationForTesting(const mojom::Geoposition& position) override;
 
   // Callback from the LocationArbitrator. Public for testing.
   void OnLocationUpdate(const LocationProvider* provider,
-                        const Geoposition& position);
+                        const mojom::Geoposition& position);
 
   // Gets a pointer to the singleton instance of the location relayer, which
   // is in turn bound to the browser's global context objects. This must only be
@@ -79,17 +79,17 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
   void InformProvidersPermissionGranted();
 
   // Notifies all registered clients that a position update is available.
-  void NotifyClients(const Geoposition& position);
+  void NotifyClients(const mojom::Geoposition& position);
 
   // Thread
   void Init() override;
   void CleanUp() override;
 
-  base::CallbackList<void(const Geoposition&)> high_accuracy_callbacks_;
-  base::CallbackList<void(const Geoposition&)> low_accuracy_callbacks_;
+  base::CallbackList<void(const mojom::Geoposition&)> high_accuracy_callbacks_;
+  base::CallbackList<void(const mojom::Geoposition&)> low_accuracy_callbacks_;
 
   bool user_did_opt_into_location_services_;
-  Geoposition position_;
+  mojom::Geoposition position_;
 
   // True only in testing, where we want to use a custom position.
   bool ignore_location_updates_;

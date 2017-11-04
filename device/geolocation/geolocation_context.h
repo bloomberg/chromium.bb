@@ -11,11 +11,11 @@
 #include "base/macros.h"
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/public/interfaces/geolocation.mojom.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 
 namespace device {
 
 class GeolocationImpl;
-struct Geoposition;
 
 // Provides information to a set of GeolocationImpl instances that are
 // associated with a given context. Notably, allows pausing and resuming
@@ -34,7 +34,7 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationContext {
 
   // Enables geolocation override. This method can be used to trigger possible
   // location-specific behavior in a particular context.
-  void SetOverride(std::unique_ptr<Geoposition> geoposition);
+  void SetOverride(mojom::GeopositionPtr geoposition);
 
   // Disables geolocation override.
   void ClearOverride();
@@ -42,7 +42,7 @@ class DEVICE_GEOLOCATION_EXPORT GeolocationContext {
  private:
   std::vector<std::unique_ptr<GeolocationImpl>> impls_;
 
-  std::unique_ptr<Geoposition> geoposition_override_;
+  mojom::GeopositionPtr geoposition_override_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationContext);
 };

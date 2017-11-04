@@ -19,7 +19,7 @@ void GeolocationContext::Bind(mojom::GeolocationRequest request) {
   GeolocationImpl* impl = new GeolocationImpl(std::move(request), this);
   impls_.push_back(base::WrapUnique<GeolocationImpl>(impl));
   if (geoposition_override_)
-    impl->SetOverride(*geoposition_override_.get());
+    impl->SetOverride(*geoposition_override_);
   else
     impl->StartListeningForUpdates();
 }
@@ -33,10 +33,10 @@ void GeolocationContext::OnConnectionError(GeolocationImpl* impl) {
   impls_.erase(it);
 }
 
-void GeolocationContext::SetOverride(std::unique_ptr<Geoposition> geoposition) {
-  geoposition_override_.swap(geoposition);
+void GeolocationContext::SetOverride(mojom::GeopositionPtr geoposition) {
+  geoposition_override_ = std::move(geoposition);
   for (auto& impl : impls_) {
-    impl->SetOverride(*geoposition_override_.get());
+    impl->SetOverride(*geoposition_override_);
   }
 }
 

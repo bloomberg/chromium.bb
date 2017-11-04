@@ -33,7 +33,7 @@ class GeolocationImpl : public mojom::Geolocation {
   void ResumeUpdates();
 
   // Enables and disables geolocation override.
-  void SetOverride(const Geoposition& position);
+  void SetOverride(const mojom::Geoposition& position);
   void ClearOverride();
 
  private:
@@ -43,7 +43,7 @@ class GeolocationImpl : public mojom::Geolocation {
 
   void OnConnectionError();
 
-  void OnLocationUpdate(const Geoposition& position);
+  void OnLocationUpdate(const mojom::Geoposition& position);
   void ReportCurrentPosition();
 
   // The binding between this object and the other end of the pipe.
@@ -58,9 +58,9 @@ class GeolocationImpl : public mojom::Geolocation {
   // The callback passed to QueryNextPosition.
   QueryNextPositionCallback position_callback_;
 
-  // Valid iff SetOverride() has been called and ClearOverride() has not
+  // Valid if SetOverride() has been called and ClearOverride() has not
   // subsequently been called.
-  Geoposition position_override_;
+  mojom::Geoposition position_override_;
 
   mojom::Geoposition current_position_;
 

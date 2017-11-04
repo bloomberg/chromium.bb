@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/location_arbitrator.h"
+#include "device/geolocation/public/cpp/geoposition.h"
 
 namespace device {
 
@@ -65,8 +66,8 @@ GeolocationProviderImpl::AddLocationUpdateCallback(
   }
 
   OnClientsChanged();
-  if (position_.Validate() ||
-      position_.error_code != Geoposition::ERROR_CODE_NONE) {
+  if (ValidateGeoposition(position_) ||
+      position_.error_code != mojom::Geoposition::ErrorCode::NONE) {
     callback.Run(position_);
   }
 
@@ -86,14 +87,15 @@ bool GeolocationProviderImpl::HighAccuracyLocationInUse() {
 }
 
 void GeolocationProviderImpl::OverrideLocationForTesting(
-    const Geoposition& position) {
+    const mojom::Geoposition& position) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   ignore_location_updates_ = true;
   NotifyClients(position);
 }
 
-void GeolocationProviderImpl::OnLocationUpdate(const LocationProvider* provider,
-                                               const Geoposition& position) {
+void GeolocationProviderImpl::OnLocationUpdate(
+    const LocationProvider* provider,
+    const mojom::Geoposition& position) {
   DCHECK(OnGeolocationThread());
   // Will be true only in testing.
   if (ignore_location_updates_)
@@ -142,7 +144,7 @@ void GeolocationProviderImpl::OnClientsChanged() {
     if (!ignore_location_updates_) {
       // We have no more observers, so we clear the cached geoposition so that
       // when the next observer is added we will not provide a stale position.
-      position_ = Geoposition();
+      position_ = mojom::Geoposition();
     }
     task = base::Bind(&GeolocationProviderImpl::StopProviders,
                       base::Unretained(this));
@@ -189,10 +191,11 @@ void GeolocationProviderImpl::InformProvidersPermissionGranted() {
   arbitrator_->OnPermissionGranted();
 }
 
-void GeolocationProviderImpl::NotifyClients(const Geoposition& position) {
+void GeolocationProviderImpl::NotifyClients(
+    const mojom::Geoposition& position) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DCHECK(position.Validate() ||
-         position.error_code != Geoposition::ERROR_CODE_NONE);
+  DCHECK(ValidateGeoposition(position) ||
+         position.error_code != mojom::Geoposition::ErrorCode::NONE);
   position_ = position;
   high_accuracy_callbacks_.Notify(position_);
   low_accuracy_callbacks_.Notify(position_);

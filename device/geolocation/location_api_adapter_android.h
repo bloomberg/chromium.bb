@@ -11,13 +11,13 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
 namespace device {
-struct Geoposition;
 
 // Interacts with JNI and reports back to |on_geoposition_callback_|. This class
 // creates a LocationProvider java object and listens for updates.
@@ -32,7 +32,7 @@ struct Geoposition;
 // one call to Start().
 class LocationApiAdapterAndroid {
  public:
-  using OnGeopositionCB = base::Callback<void(const Geoposition&)>;
+  using OnGeopositionCB = base::Callback<void(const mojom::Geoposition&)>;
 
   // Starts the underlying location provider.
   // Called on |task_runner_|.
@@ -64,7 +64,7 @@ class LocationApiAdapterAndroid {
   ~LocationApiAdapterAndroid();
 
   // Calls |on_geoposition_callback_| with the new location.
-  void NotifyNewGeoposition(const Geoposition& geoposition);
+  void NotifyNewGeoposition(const mojom::Geoposition& geoposition);
 
   base::android::ScopedJavaGlobalRef<jobject> java_location_provider_adapter_;
 

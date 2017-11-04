@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "device/geolocation/geoposition.h"
 #include "device/geolocation/location_provider.h"
+#include "device/geolocation/public/interfaces/geoposition.mojom.h"
 
 namespace device {
 
@@ -24,7 +24,7 @@ class FakeLocationProvider : public LocationProvider {
   ~FakeLocationProvider() override;
 
   // Updates listeners with the new position.
-  void HandlePositionChanged(const Geoposition& position);
+  void HandlePositionChanged(const mojom::Geoposition& position);
 
   State state() const { return state_; }
   bool is_permission_granted() const { return is_permission_granted_; }
@@ -34,14 +34,14 @@ class FakeLocationProvider : public LocationProvider {
       const LocationProviderUpdateCallback& callback) override;
   void StartProvider(bool high_accuracy) override;
   void StopProvider() override;
-  const Geoposition& GetPosition() override;
+  const mojom::Geoposition& GetPosition() override;
   void OnPermissionGranted() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> provider_task_runner_;
 
  private:
   bool is_permission_granted_ = false;
-  Geoposition position_;
+  mojom::Geoposition position_;
   LocationProviderUpdateCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeLocationProvider);

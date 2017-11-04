@@ -34,6 +34,8 @@ static_library("browser") {
     "//content/public/browser",
     "//content/public/common",
     "//device/geolocation",
+    "//device/geolocation/public/cpp",
+    "//device/geolocation/public/interfaces",
     "//gpu/config",
     "//mojo/common:common_base",
     "//net",

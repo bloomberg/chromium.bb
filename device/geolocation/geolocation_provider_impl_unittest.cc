@@ -35,17 +35,17 @@ namespace {
 class GeolocationObserver {
  public:
   virtual ~GeolocationObserver() {}
-  virtual void OnLocationUpdate(const Geoposition& position) = 0;
+  virtual void OnLocationUpdate(const mojom::Geoposition& position) = 0;
 };
 
 class MockGeolocationObserver : public GeolocationObserver {
  public:
-  MOCK_METHOD1(OnLocationUpdate, void(const Geoposition& position));
+  MOCK_METHOD1(OnLocationUpdate, void(const mojom::Geoposition& position));
 };
 
 class AsyncMockGeolocationObserver : public MockGeolocationObserver {
  public:
-  void OnLocationUpdate(const Geoposition& position) override {
+  void OnLocationUpdate(const mojom::Geoposition& position) override {
     MockGeolocationObserver::OnLocationUpdate(position);
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
@@ -53,15 +53,16 @@ class AsyncMockGeolocationObserver : public MockGeolocationObserver {
 
 class MockGeolocationCallbackWrapper {
  public:
-  MOCK_METHOD1(Callback, void(const Geoposition& position));
+  MOCK_METHOD1(Callback, void(const mojom::Geoposition& position));
 };
 
-class GeopositionEqMatcher : public MatcherInterface<const Geoposition&> {
+class GeopositionEqMatcher
+    : public MatcherInterface<const mojom::Geoposition&> {
  public:
-  explicit GeopositionEqMatcher(const Geoposition& expected)
+  explicit GeopositionEqMatcher(const mojom::Geoposition& expected)
       : expected_(expected) {}
 
-  bool MatchAndExplain(const Geoposition& actual,
+  bool MatchAndExplain(const mojom::Geoposition& actual,
                        MatchResultListener* listener) const override {
     return actual.latitude == expected_.latitude &&
            actual.longitude == expected_.longitude &&
@@ -84,17 +85,18 @@ class GeopositionEqMatcher : public MatcherInterface<const Geoposition&> {
   }
 
  private:
-  Geoposition expected_;
+  mojom::Geoposition expected_;
 
   DISALLOW_COPY_AND_ASSIGN(GeopositionEqMatcher);
 };
 
-Matcher<const Geoposition&> GeopositionEq(const Geoposition& expected) {
+Matcher<const mojom::Geoposition&> GeopositionEq(
+    const mojom::Geoposition& expected) {
   return MakeMatcher(new GeopositionEqMatcher(expected));
 }
 
 void DummyFunction(const LocationProvider* provider,
-                   const Geoposition& position) {}
+                   const mojom::Geoposition& position) {}
 
 }  // namespace
 
@@ -117,7 +119,7 @@ class GeolocationProviderTest : public testing::Test {
 
   // Called on test thread.
   bool ProvidersStarted();
-  void SendMockLocation(const Geoposition& position);
+  void SendMockLocation(const mojom::Geoposition& position);
 
  private:
   // Called on provider thread.
@@ -158,7 +160,8 @@ void GeolocationProviderTest::GetProvidersStarted() {
   is_started_ = arbitrator()->state() != FakeLocationProvider::STOPPED;
 }
 
-void GeolocationProviderTest::SendMockLocation(const Geoposition& position) {
+void GeolocationProviderTest::SendMockLocation(
+    const mojom::Geoposition& position) {
   DCHECK(provider()->IsRunning());
   DCHECK(thread_checker_.CalledOnValidThread());
   provider()->task_runner()->PostTask(
@@ -191,11 +194,11 @@ TEST_F(GeolocationProviderTest, StartStop) {
 }
 
 TEST_F(GeolocationProviderTest, StalePositionNotSent) {
-  Geoposition first_position;
+  mojom::Geoposition first_position;
   first_position.latitude = 12;
   first_position.longitude = 34;
   first_position.accuracy = 56;
-  first_position.timestamp = base::Time::Now();
+  first_position.timestamp = base::Time::Now().ToDoubleT();
 
   AsyncMockGeolocationObserver first_observer;
   GeolocationProviderImpl::LocationUpdateCallback first_callback =
@@ -209,11 +212,11 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
 
   subscription.reset();
 
-  Geoposition second_position;
+  mojom::Geoposition second_position;
   second_position.latitude = 13;
   second_position.longitude = 34;
   second_position.accuracy = 56;
-  second_position.timestamp = base::Time::Now();
+  second_position.timestamp = base::Time::Now().ToDoubleT();
 
   AsyncMockGeolocationObserver second_observer;
 
@@ -238,8 +241,8 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
 }
 
 TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
-  Geoposition position;
-  position.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  mojom::Geoposition position;
+  position.error_code = mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
   provider()->OverrideLocationForTesting(position);
   // Adding an observer when the location is overridden should synchronously
   // update the observer with our overridden position.

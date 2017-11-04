@@ -4,10 +4,18 @@
 
 module device.mojom;
 
+// Sentinel values to mark invalid data. (WebKit carries companion is_valid
+// bools for this purpose; we may eventually follow that approach, but
+// sentinels worked OK in the Gears code this is based on.)
+const double kBadLatitudeLongitude = 200;
+// Lowest point on land is at approximately -400 meters.
+const double kBadAltitude = -10000;
+const double kBadAccuracy = -1;  // Accuracy must be non-negative.
+const double kBadHeading = -1;   // Heading must be non-negative.
+const double kBadSpeed = -1;
+
 // A Geoposition represents a position fix. It was originally derived from:
 // http://gears.googlecode.com/svn/trunk/gears/geolocation/geolocation.h
-// TODO(blundell): Investigate killing content::Geoposition in favor of using
-// this struct everywhere.
 struct Geoposition {
   // These values follow the W3C geolocation specification and can be returned
   // to JavaScript without the need for a conversion.
@@ -25,30 +33,27 @@ struct Geoposition {
   // These properties correspond to those of the JavaScript Position object
   // although their types may differ.
   // Latitude in decimal degrees north (WGS84 coordinate frame).
-  double latitude;
+  double latitude = kBadLatitudeLongitude;
   // Longitude in decimal degrees west (WGS84 coordinate frame).
-  double longitude;
+  double longitude = kBadLatitudeLongitude;
   // Altitude in meters (above WGS84 datum).
-  double altitude;
+  double altitude = kBadAltitude;
   // Accuracy of horizontal position in meters.
-  double accuracy;
+  double accuracy = kBadAccuracy;
   // Accuracy of altitude in meters.
-  double altitude_accuracy;
+  double altitude_accuracy = kBadAccuracy;
   // Heading in decimal degrees clockwise from true north.
-  double heading;
+  double heading = kBadHeading;
   // Horizontal component of device velocity in meters per second.
-  double speed;
-  // TODO(blundell): If I need to represent this differently to use this
-  // struct to replace content::Geolocation, I'll need to convert
-  // correctly into seconds-since-epoch when using this in
-  // GeolocationDispatcher::OnLocationUpdate().
+  double speed = kBadSpeed;
   // Time of position measurement in seconds since Epoch in UTC time. This is
   // taken from the host computer's system clock (i.e. from Time::Now(), not the
-  // source device's clock).
+  // source device's clock). It can be converted to base::Time by
+  // FromDoubleT(double dt), see base/time/time.h
   double timestamp;
 
   // Error code, see enum above.
-  ErrorCode error_code;
+  ErrorCode error_code = NONE;
   // Human-readable error message.
   string error_message;
 };

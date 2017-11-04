@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/network_location_provider.h"
+#include "device/geolocation/public/cpp/geoposition.h"
 
 namespace device {
 
@@ -71,8 +72,8 @@ void LocationArbitrator::DoStartProviders() {
   if (providers_.empty()) {
     // If no providers are available, we report an error to avoid
     // callers waiting indefinitely for a reply.
-    Geoposition position;
-    position.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+    mojom::Geoposition position;
+    position.error_code = mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
     arbitrator_update_callback_.Run(this, position);
     return;
   }
@@ -86,7 +87,7 @@ void LocationArbitrator::StopProvider() {
   // so that future starts use fresh locations from
   // the newly constructed providers.
   position_provider_ = nullptr;
-  position_ = Geoposition();
+  position_ = mojom::Geoposition();
 
   providers_.clear();
   is_running_ = false;
@@ -121,10 +122,11 @@ void LocationArbitrator::RegisterSystemProvider() {
   RegisterProvider(std::move(provider));
 }
 
-void LocationArbitrator::OnLocationUpdate(const LocationProvider* provider,
-                                          const Geoposition& new_position) {
-  DCHECK(new_position.Validate() ||
-         new_position.error_code != Geoposition::ERROR_CODE_NONE);
+void LocationArbitrator::OnLocationUpdate(
+    const LocationProvider* provider,
+    const mojom::Geoposition& new_position) {
+  DCHECK(ValidateGeoposition(new_position) ||
+         new_position.error_code != mojom::Geoposition::ErrorCode::NONE);
   if (!IsNewPositionBetter(position_, new_position,
                            provider == position_provider_))
     return;
@@ -133,7 +135,7 @@ void LocationArbitrator::OnLocationUpdate(const LocationProvider* provider,
   arbitrator_update_callback_.Run(this, position_);
 }
 
-const Geoposition& LocationArbitrator::GetPosition() {
+const mojom::Geoposition& LocationArbitrator::GetPosition() {
   return position_;
 }
 
@@ -170,16 +172,17 @@ base::Time LocationArbitrator::GetTimeNow() const {
   return base::Time::Now();
 }
 
-bool LocationArbitrator::IsNewPositionBetter(const Geoposition& old_position,
-                                             const Geoposition& new_position,
-                                             bool from_same_provider) const {
+bool LocationArbitrator::IsNewPositionBetter(
+    const mojom::Geoposition& old_position,
+    const mojom::Geoposition& new_position,
+    bool from_same_provider) const {
   // Updates location_info if it's better than what we currently have,
   // or if it's a newer update from the same provider.
-  if (!old_position.Validate()) {
+  if (!ValidateGeoposition(old_position)) {
     // Older location wasn't locked.
     return true;
   }
-  if (new_position.Validate()) {
+  if (ValidateGeoposition(new_position)) {
     // New location is locked, let's check if it's any better.
     if (old_position.accuracy >= new_position.accuracy) {
       // Accuracy is better.
@@ -187,8 +190,8 @@ bool LocationArbitrator::IsNewPositionBetter(const Geoposition& old_position,
     } else if (from_same_provider) {
       // Same provider, fresher location.
       return true;
-    } else if ((GetTimeNow() - old_position.timestamp).InMilliseconds() >
-               kFixStaleTimeoutMilliseconds) {
+    } else if ((GetTimeNow() - base::Time::FromDoubleT(old_position.timestamp))
+                   .InMilliseconds() > kFixStaleTimeoutMilliseconds) {
       // Existing fix is stale.
       return true;
     }
