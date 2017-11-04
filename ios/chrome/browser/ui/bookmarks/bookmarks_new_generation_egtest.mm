@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -234,7 +235,15 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
 }
 
-- (void)testSwipeToDeleteDisabledInEditMode {
+// TODO(crbug.com/781445): Re-enable this test on 32-bit.
+#if defined(ARCH_CPU_64_BITS)
+#define MAYBE_testSwipeToDeleteDisabledInEditMode \
+  testSwipeToDeleteDisabledInEditMode
+#else
+#define MAYBE_testSwipeToDeleteDisabledInEditMode \
+  FLAKY_testSwipeToDeleteDisabledInEditMode
+#endif
+- (void)MAYBE_testSwipeToDeleteDisabledInEditMode {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
