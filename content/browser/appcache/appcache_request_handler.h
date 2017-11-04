@@ -180,6 +180,16 @@ class CONTENT_EXPORT AppCacheRequestHandler
                            int64_t group_id,
                            const GURL& mainfest_url) override;
 
+  // NetworkService loading:
+  // Called when a |callback| that is originally given to
+  // MaybeCreateLoader() runs for the main resource.
+  // This flips should_create_subresource_loader_ if non-null
+  // |start_loader_callback| is given, and then (always) run
+  // |callback| passing in |start_loader_callback|.
+  void RunLoaderCallbackForMainResource(
+      LoaderCallback callback,
+      StartLoaderCallback start_loader_callback);
+
   // Sub-resource loading -------------------------------------
   // Dedicated worker and all manner of sub-resources are handled here.
 
@@ -254,12 +264,19 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   LoaderCallback loader_callback_;
 
+  // Flipped to true if AppCache wants to handle subresource requests
+  // (i.e. when |loader_callback_| is fired with a non-null callback for
+  // non-error cases.
+  bool should_create_subresource_loader_ = false;
+
   // Points to the getter for the network URL loader.
   scoped_refptr<URLLoaderFactoryGetter> network_url_loader_factory_getter_;
 
   // The AppCache host instance. We pass this to the
   // AppCacheSubresourceURLFactory instance on creation.
   base::WeakPtr<AppCacheHost> appcache_host_;
+
+  base::WeakPtrFactory<AppCacheRequestHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheRequestHandler);
 };
