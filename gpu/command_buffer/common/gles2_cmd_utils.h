@@ -344,7 +344,6 @@ struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   bool own_offscreen_surface = false;
   bool single_buffer = false;
   bool enable_oop_rasterization = false;
-  bool enable_swap_timestamps_if_supported = false;
 
   ContextType context_type = CONTEXT_TYPE_OPENGLES2;
   ColorSpace color_space = COLOR_SPACE_UNSPECIFIED;

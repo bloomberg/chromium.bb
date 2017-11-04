@@ -205,14 +205,6 @@ void GLSurface::SetRelyOnImplicitSync() {
   // It is fine to ignore this call in those cases.
 }
 
-bool GLSurface::SupportsSwapTimestamps() const {
-  return false;
-}
-
-void GLSurface::SetEnableSwapTimestamps() {
-  NOTREACHED();
-}
-
 GLSurface* GLSurface::GetCurrent() {
   return current_surface_.Pointer()->Get();
 }
@@ -423,14 +415,6 @@ void GLSurfaceAdapter::WaitForSnapshotRendering() {
 
 void GLSurfaceAdapter::SetRelyOnImplicitSync() {
   surface_->SetRelyOnImplicitSync();
-}
-
-bool GLSurfaceAdapter::SupportsSwapTimestamps() const {
-  return surface_->SupportsSwapTimestamps();
-}
-
-void GLSurfaceAdapter::SetEnableSwapTimestamps() {
-  return surface_->SetEnableSwapTimestamps();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}

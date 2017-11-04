@@ -703,9 +703,6 @@ gpu::ContextResult GpuCommandBufferStub::Initialize(
       LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create surface.";
       return gpu::ContextResult::kFatalFailure;
     }
-    if (init_params.attribs.enable_swap_timestamps_if_supported &&
-        surface_->SupportsSwapTimestamps())
-      surface_->SetEnableSwapTimestamps();
   }
 
   if (context_group_->use_passthrough_cmd_decoder()) {
