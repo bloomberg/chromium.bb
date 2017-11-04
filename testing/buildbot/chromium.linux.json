@@ -3462,7 +3462,6 @@
       "base_unittests",
       "content_browsertests",
       "content_shell",
-      "content_unittests",
       "gl_unittests",
       "headless_shell",
       "ipc_tests",
@@ -3477,6 +3476,20 @@
       "ui_base_unittests"
     ],
     "gtest_tests": [
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "content_unittests"
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
