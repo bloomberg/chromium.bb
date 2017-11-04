@@ -187,7 +187,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
 
   void SetUp() override {
     FactoryAssociatedRequest request =
-        ::mojo::MakeIsolatedRequest(&idb_mojo_factory_);
+        ::mojo::MakeRequestAssociatedWithDedicatedPipe(&idb_mojo_factory_);
     host_->AddBinding(std::move(request));
   }
 

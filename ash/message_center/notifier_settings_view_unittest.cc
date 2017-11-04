@@ -36,7 +36,7 @@ class TestAshMessageCenterClient : public mojom::AshMessageCenterClient {
 
   mojom::AshMessageCenterClientAssociatedPtrInfo CreateInterfacePtr() {
     mojom::AshMessageCenterClientAssociatedPtr ptr;
-    binding_.Bind(mojo::MakeIsolatedRequest(&ptr));
+    binding_.Bind(mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr));
     return ptr.PassInterface();
   }
 
