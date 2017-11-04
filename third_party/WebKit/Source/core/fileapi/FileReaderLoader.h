@@ -52,6 +52,15 @@ class FileReaderLoaderClient;
 class TextResourceDecoder;
 class ThreadableLoader;
 
+// Reads a Blob's content into memory.
+//
+// Blobs are typically stored on disk, and should be read asynchronously
+// whenever possible. Synchronous loading is implemented to support Web Platform
+// features that we cannot (yet) remove, such as FileReaderSync and synchronous
+// XMLHttpRequest.
+//
+// Each FileReaderLoader instance is only good for reading one Blob, and will
+// leak resources if used multiple times.
 class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   USING_FAST_MALLOC(FileReaderLoader);
 
@@ -152,6 +161,10 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   int64_t memory_usage_reported_to_v8_ = 0;
 
   FileError::ErrorCode error_code_ = FileError::kOK;
+
+#if DCHECK_IS_ON()
+  bool started_loading_ = false;
+#endif  // DCHECK_IS_ON()
 };
 
 }  // namespace blink

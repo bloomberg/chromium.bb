@@ -70,6 +70,11 @@ FileReaderLoader::~FileReaderLoader() {
 void FileReaderLoader::Start(ExecutionContext* execution_context,
                              scoped_refptr<BlobDataHandle> blob_data) {
   DCHECK(execution_context);
+#if DCHECK_IS_ON()
+  DCHECK(!started_loading_) << "FileReaderLoader can only be used once";
+  started_loading_ = true;
+#endif  // DCHECK_IS_ON()
+
   // The blob is read by routing through the request handling layer given a
   // temporary public url.
   url_for_reading_ =
