@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -20,7 +20,8 @@ class AlertIndicatorButtonTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
 
     controller_ = new FakeBaseTabStripController;
-    tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>(controller_));
+    tab_strip_ =
+        new TabStripImpl(std::unique_ptr<TabStripController>(controller_));
     controller_->set_tab_strip(tab_strip_);
     // The tab strip must be added to the view hierarchy for it to create the
     // buttons.
@@ -62,7 +63,7 @@ class AlertIndicatorButtonTest : public views::ViewsTestBase {
   FakeBaseTabStripController* controller_ = nullptr;
   // Owns |tab_strip_|.
   views::View parent_;
-  TabStrip* tab_strip_ = nullptr;
+  TabStripImpl* tab_strip_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
 
  private:

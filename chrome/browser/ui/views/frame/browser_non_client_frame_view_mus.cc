@@ -185,8 +185,10 @@ void BrowserNonClientFrameViewMus::UpdateClientArea() {
                                       immersive_mode_controller->IsRevealed();
   if (browser_view()->IsTabStripVisible() && show_frame_decorations) {
     gfx::Rect tab_strip_bounds(GetBoundsForTabStrip(tab_strip_));
-    if (!tab_strip_bounds.IsEmpty() && tab_strip_->max_x()) {
-      tab_strip_bounds.set_width(tab_strip_->max_x());
+
+    int tab_strip_max_x = tab_strip_->GetMaxX();
+    if (!tab_strip_bounds.IsEmpty() && tab_strip_max_x) {
+      tab_strip_bounds.set_width(tab_strip_max_x);
       if (immersive_mode_controller->IsEnabled()) {
         top_container_offset =
             immersive_mode_controller->GetTopContainerVerticalOffset(

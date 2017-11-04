@@ -13,6 +13,7 @@
 #include "ui/views/widget/widget_observer.h"
 
 class NewTabPromoBubbleView;
+class TabStripImpl;
 
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabButton
@@ -25,7 +26,7 @@ class NewTabButton : public views::ImageButton,
                      public views::MaskedTargeterDelegate,
                      public views::WidgetObserver {
  public:
-  NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener);
+  NewTabButton(TabStripImpl* tab_strip, views::ButtonListener* listener);
   ~NewTabButton() override;
 
   // Set the background offset used to match the background image to the frame
@@ -92,7 +93,7 @@ class NewTabButton : public views::ImageButton,
                  gfx::Canvas* canvas) const;
 
   // Tab strip that contains this button.
-  TabStrip* tab_strip_;
+  TabStripImpl* tab_strip_;
 
   // Promotional UI that appears next to the NewTabButton and encourages its
   // use. Owned by its NativeWidget.

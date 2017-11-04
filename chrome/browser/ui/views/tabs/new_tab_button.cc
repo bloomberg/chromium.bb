@@ -7,9 +7,10 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_features.h"
 #include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
 #include "components/feature_engagement/features.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
@@ -53,7 +54,8 @@ sk_sp<SkDrawLooper> CreateShadowDrawLooper(SkColor color) {
 
 }  // namespace
 
-NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
+NewTabButton::NewTabButton(TabStripImpl* tab_strip,
+                           views::ButtonListener* listener)
     : views::ImageButton(listener),
       tab_strip_(tab_strip),
       new_tab_promo_(nullptr),
@@ -84,14 +86,21 @@ int NewTabButton::GetTopOffset() {
 void NewTabButton::ShowPromoForLastActiveBrowser() {
   BrowserView* browser = static_cast<BrowserView*>(
       BrowserList::GetInstance()->GetLastActive()->window());
-  browser->tabstrip()->new_tab_button()->ShowPromo();
+
+  // The promo depends on the new tab button which only exists on the
+  // TabStripImpl.
+  TabStripImpl* tab_strip_impl = browser->tabstrip()->AsTabStripImpl();
+  if (tab_strip_impl)
+    tab_strip_impl->new_tab_button()->ShowPromo();
 }
 
 // static
 void NewTabButton::CloseBubbleForLastActiveBrowser() {
   BrowserView* browser = static_cast<BrowserView*>(
       BrowserList::GetInstance()->GetLastActive()->window());
-  browser->tabstrip()->new_tab_button()->CloseBubble();
+  TabStripImpl* tab_strip_impl = browser->tabstrip()->AsTabStripImpl();
+  if (tab_strip_impl)
+    tab_strip_impl->new_tab_button()->CloseBubble();
 }
 
 void NewTabButton::ShowPromo() {

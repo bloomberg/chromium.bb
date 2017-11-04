@@ -32,7 +32,7 @@ class ViewTracker;
 class Browser;
 class Tab;
 class TabDragControllerTest;
-class TabStrip;
+class TabStripImpl;
 class TabStripModel;
 class WindowFinder;
 
@@ -81,7 +81,7 @@ class TabDragController : public views::WidgetObserver,
   // |mouse_offset| relative to |source_tab|. |initial_selection_model| is the
   // selection model before the drag started and is only non-empty if
   // |source_tab| was not initially selected.
-  void Init(TabStrip* source_tabstrip,
+  void Init(TabStripImpl* source_tabstrip,
             Tab* source_tab,
             const std::vector<Tab*>& tabs,
             const gfx::Point& mouse_offset,
@@ -94,7 +94,7 @@ class TabDragController : public views::WidgetObserver,
   // |tab_strip|.
   // NOTE: this returns false if the TabDragController is in the process of
   // finishing the drag.
-  static bool IsAttachedTo(const TabStrip* tab_strip);
+  static bool IsAttachedTo(const TabStripImpl* tab_strip);
 
   // Returns true if there is a drag underway.
   static bool IsActive();
@@ -107,7 +107,7 @@ class TabDragController : public views::WidgetObserver,
 
   // See description above fields for details on these.
   bool active() const { return active_; }
-  const TabStrip* attached_tabstrip() const { return attached_tabstrip_; }
+  const TabStripImpl* attached_tabstrip() const { return attached_tabstrip_; }
 
   // Returns true if a drag started.
   bool started_drag() const { return started_drag_; }
@@ -255,7 +255,7 @@ class TabDragController : public views::WidgetObserver,
   // |target_tabstrip| is NULL if the mouse is not over a valid tab strip.  See
   // DragBrowserResultType for details of the return type.
   DragBrowserResultType DragBrowserToNewTabStrip(
-      TabStrip* target_tabstrip,
+      TabStripImpl* target_tabstrip,
       const gfx::Point& point_in_screen);
 
   // Handles dragging for a touch tabstrip when the tabs are stacked. Doesn't
@@ -278,16 +278,16 @@ class TabDragController : public views::WidgetObserver,
 
   // Returns the TabStrip for the specified window, or NULL if one doesn't exist
   // or isn't compatible.
-  TabStrip* GetTabStripForWindow(gfx::NativeWindow window);
+  TabStripImpl* GetTabStripForWindow(gfx::NativeWindow window);
 
   // Returns the compatible TabStrip to drag to at the specified point (screen
   // coordinates), or NULL if there is none.
   Liveness GetTargetTabStripForPoint(const gfx::Point& point_in_screen,
-                                     TabStrip** tab_strip);
+                                     TabStripImpl** tab_strip);
 
   // Returns true if |tabstrip| contains the specified point in screen
   // coordinates.
-  bool DoesTabStripContain(TabStrip* tabstrip,
+  bool DoesTabStripContain(TabStripImpl* tabstrip,
                            const gfx::Point& point_in_screen) const;
 
   // Returns the DetachPosition given the specified location in screen
@@ -295,7 +295,8 @@ class TabDragController : public views::WidgetObserver,
   DetachPosition GetDetachPosition(const gfx::Point& point_in_screen);
 
   // Attach the dragged Tab to the specified TabStrip.
-  void Attach(TabStrip* attached_tabstrip, const gfx::Point& point_in_screen);
+  void Attach(TabStripImpl* attached_tabstrip,
+              const gfx::Point& point_in_screen);
 
   // Detach the dragged Tab from the current TabStrip.
   void Detach(ReleaseCapture release_capture);
@@ -352,7 +353,7 @@ class TabDragController : public views::WidgetObserver,
 
   // Finds the Tabs within the specified TabStrip that corresponds to the
   // WebContents of the dragged tabs. Returns an empty vector if not attached.
-  std::vector<Tab*> GetTabsMatchingDraggedContents(TabStrip* tabstrip);
+  std::vector<Tab*> GetTabsMatchingDraggedContents(TabStripImpl* tabstrip);
 
   // Returns the bounds for the tabs based on the attached tab strip.
   std::vector<gfx::Rect> CalculateBoundsForDraggedTabs();
@@ -414,7 +415,7 @@ class TabDragController : public views::WidgetObserver,
   // such that the tab that was dragged remains under the |point_in_screen|.
   // Offsets |drag_bounds| if necessary when dragging to the right from the
   // source browser.
-  gfx::Rect CalculateDraggedBrowserBounds(TabStrip* source,
+  gfx::Rect CalculateDraggedBrowserBounds(TabStripImpl* source,
                                           const gfx::Point& point_in_screen,
                                           std::vector<gfx::Rect>* drag_bounds);
 
@@ -428,13 +429,13 @@ class TabDragController : public views::WidgetObserver,
                                         std::vector<gfx::Rect>* drag_bounds);
 
   // Creates and returns a new Browser to handle the drag.
-  Browser* CreateBrowserForDrag(TabStrip* source,
+  Browser* CreateBrowserForDrag(TabStripImpl* source,
                                 const gfx::Point& point_in_screen,
                                 gfx::Vector2d* drag_offset,
                                 std::vector<gfx::Rect>* drag_bounds);
 
   // Returns the TabStripModel for the specified tabstrip.
-  TabStripModel* GetModel(TabStrip* tabstrip) const;
+  TabStripModel* GetModel(TabStripImpl* tabstrip) const;
 
   // Returns the location of the cursor. This is either the location of the
   // mouse or the location of the current touch point.
@@ -458,11 +459,11 @@ class TabDragController : public views::WidgetObserver,
   EventSource event_source_;
 
   // The TabStrip the drag originated from.
-  TabStrip* source_tabstrip_;
+  TabStripImpl* source_tabstrip_;
 
   // The TabStrip the dragged Tab is currently attached to, or NULL if the
   // dragged Tab is detached.
-  TabStrip* attached_tabstrip_;
+  TabStripImpl* attached_tabstrip_;
 
   // Whether capture can be released during the drag. When false, capture should
   // not be released when transferring capture between widgets and when starting
@@ -577,7 +578,7 @@ class TabDragController : public views::WidgetObserver,
   bool waiting_for_run_loop_to_exit_;
 
   // The TabStrip to attach to after the move loop completes.
-  TabStrip* tab_strip_to_attach_to_after_exit_;
+  TabStripImpl* tab_strip_to_attach_to_after_exit_;
 
   // Non-null for the duration of RunMoveLoop.
   views::Widget* move_loop_widget_;

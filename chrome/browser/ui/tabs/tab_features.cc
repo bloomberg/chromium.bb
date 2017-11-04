@@ -17,13 +17,21 @@ const base::Feature kExperimentalTabControllerFeature{
     "ExperimentalTabController", base::FEATURE_DISABLED_BY_DEFAULT,
 };
 
+bool IsExperimentalTabStripEnabled() {
+#if defined(OS_WIN)
+  return base::FeatureList::IsEnabled(kExperimentalTabControllerFeature);
+#else
+  return false;
+#endif
+}
+
 std::unique_ptr<TabStripModel> CreateTabStripModel(
     TabStripModelDelegate* delegate,
     Profile* profile) {
   // The experimental controller currently just crashes so don't inflict it on
   // people yet who may have accidentally triggered this feature.
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(kExperimentalTabControllerFeature))
+  if (IsExperimentalTabStripEnabled())
     return base::MakeUnique<TabStripModelExperimental>(delegate, profile);
 #endif
   return base::MakeUnique<TabStripModelImpl>(delegate, profile);

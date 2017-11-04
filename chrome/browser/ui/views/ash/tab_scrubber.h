@@ -17,7 +17,7 @@
 
 class Browser;
 class Tab;
-class TabStrip;
+class TabStripImpl;
 
 namespace gfx {
 class Point;
@@ -35,7 +35,7 @@ class TabScrubber : public ui::EventHandler,
 
   // Returns the virtual position of a swipe starting in the tab at |index|,
   // base on the |direction|.
-  static gfx::Point GetStartPoint(TabStrip* tab_strip,
+  static gfx::Point GetStartPoint(TabStripImpl* tab_strip,
                                   int index,
                                   TabScrubber::Direction direction);
 
@@ -89,7 +89,7 @@ class TabScrubber : public ui::EventHandler,
   // false and there is no pending work.
   Browser* browser_;
   // The TabStrip of the active browser we're scrubbing.
-  TabStrip* tab_strip_;
+  TabStripImpl* tab_strip_;
   // The current accumulated x and y positions of a swipe, in
   // the coordinates of the TabStrip of |browser_|
   float swipe_x_;

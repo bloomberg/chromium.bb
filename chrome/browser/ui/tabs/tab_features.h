@@ -16,6 +16,8 @@ class Profile;
 // Enables the tab controller for experimenting with different behavior.
 extern const base::Feature kExperimentalTabControllerFeature;
 
+bool IsExperimentalTabStripEnabled();
+
 // Creates and returns the correct TabStripModel according to the feature flag.
 std::unique_ptr<TabStripModel> CreateTabStripModel(
     TabStripModelDelegate* delegate,

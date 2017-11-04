@@ -10,11 +10,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_features.h"
 #include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -79,6 +80,10 @@ class NewTabTrackerBrowserTest : public InProcessBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(NewTabTrackerBrowserTest, TestShowPromo) {
+  // This test reaches into the tab strip internals.
+  if (IsExperimentalTabStripEnabled())
+    return;
+
   // Bypassing the 2 hour active session time requirement.
   EXPECT_CALL(*feature_engagement_tracker_,
               NotifyEvent(events::kNewTabSessionTimeMet));
@@ -104,24 +109,22 @@ IN_PROC_BROWSER_TEST_F(NewTabTrackerBrowserTest, TestShowPromo) {
       .WillRepeatedly(::testing::Return(false));
   chrome::FocusLocationBar(browser());
 
-  EXPECT_TRUE(BrowserView::GetBrowserViewForBrowser(browser())
-                  ->tabstrip()
-                  ->new_tab_button()
-                  ->new_tab_promo()
-                  ->GetWidget()
-                  ->IsVisible());
+  // At the top this test should be a no-op if the experimental controller is
+  // used. Otherwise, we know the cast from TabStrip->TabStripImpl is safe.
+  TabStripImpl* tab_strip = BrowserView::GetBrowserViewForBrowser(browser())
+                                ->tabstrip()
+                                ->AsTabStripImpl();
+  ASSERT_TRUE(tab_strip);
+
+  EXPECT_TRUE(
+      tab_strip->new_tab_button()->new_tab_promo()->GetWidget()->IsVisible());
 
   // Tracker::Dismissed() must be invoked when the promo is closed. This will
   // clear the flag for whether there is any in-product help being displayed.
   EXPECT_CALL(*feature_engagement_tracker_,
               Dismissed(IsFeature(kIPHNewTabFeature)));
 
-  BrowserView::GetBrowserViewForBrowser(browser())
-      ->tabstrip()
-      ->new_tab_button()
-      ->new_tab_promo()
-      ->GetWidget()
-      ->Close();
+  tab_strip->new_tab_button()->new_tab_promo()->GetWidget()->Close();
 }
 
 }  // namespace feature_engagement
