@@ -44,7 +44,7 @@ base::LazyInstance<base::Thread, PowerSaveBlockerLazyInstanceTraits>
 class PowerSaveBlocker::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
-  Delegate(PowerSaveBlockerType type, const std::string& description)
+  Delegate(mojom::WakeLockType type, const std::string& description)
       : type_(type),
         description_(description),
         assertion_(kIOPMNullAssertionID) {}
@@ -56,7 +56,7 @@ class PowerSaveBlocker::Delegate
  private:
   friend class base::RefCountedThreadSafe<Delegate>;
   ~Delegate() {}
-  PowerSaveBlockerType type_;
+  mojom::WakeLockType type_;
   std::string description_;
   IOPMAssertionID assertion_;
 };
@@ -69,11 +69,11 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
   // See QA1340 <http://developer.apple.com/library/mac/#qa/qa1340/> for more
   // details.
   switch (type_) {
-    case PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension:
+    case mojom::WakeLockType::PreventAppSuspension:
       level = kIOPMAssertionTypeNoIdleSleep;
       break;
-    case PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep:
-    case PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleepAllowDimming:
+    case mojom::WakeLockType::PreventDisplaySleep:
+    case mojom::WakeLockType::PreventDisplaySleepAllowDimming:
       level = kIOPMAssertionTypeNoDisplaySleep;
       break;
     default:
@@ -102,8 +102,8 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
 }
 
 PowerSaveBlocker::PowerSaveBlocker(
-    PowerSaveBlockerType type,
-    Reason reason,
+    mojom::WakeLockType type,
+    mojom::WakeLockReason reason,
     const std::string& description,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)

@@ -10,44 +10,6 @@
 
 namespace device {
 
-namespace {
-
-PowerSaveBlocker::PowerSaveBlockerType ToPowerSaveBlockerType(
-    mojom::WakeLockType type) {
-  switch (type) {
-    case mojom::WakeLockType::PreventAppSuspension:
-      return PowerSaveBlocker::PowerSaveBlockerType::
-          kPowerSaveBlockPreventAppSuspension;
-    case mojom::WakeLockType::PreventDisplaySleep:
-      return PowerSaveBlocker::PowerSaveBlockerType::
-          kPowerSaveBlockPreventDisplaySleep;
-    case mojom::WakeLockType::PreventDisplaySleepAllowDimming:
-      return PowerSaveBlocker::PowerSaveBlockerType::
-          kPowerSaveBlockPreventDisplaySleepAllowDimming;
-  }
-
-  NOTREACHED();
-  return PowerSaveBlocker::PowerSaveBlockerType::
-      kPowerSaveBlockPreventAppSuspension;
-}
-
-PowerSaveBlocker::Reason ToPowerSaveBlockerReason(
-    mojom::WakeLockReason reason) {
-  switch (reason) {
-    case mojom::WakeLockReason::ReasonAudioPlayback:
-      return PowerSaveBlocker::Reason::kReasonAudioPlayback;
-    case mojom::WakeLockReason::ReasonVideoPlayback:
-      return PowerSaveBlocker::Reason::kReasonVideoPlayback;
-    case mojom::WakeLockReason::ReasonOther:
-      return PowerSaveBlocker::Reason::kReasonOther;
-  }
-
-  NOTREACHED();
-  return PowerSaveBlocker::Reason::kReasonOther;
-}
-
-}  // namespace
-
 WakeLock::WakeLock(mojom::WakeLockRequest request,
                    mojom::WakeLockType type,
                    mojom::WakeLockReason reason,
@@ -150,12 +112,8 @@ void WakeLock::UpdateWakeLock() {
 void WakeLock::CreateWakeLock() {
   DCHECK(!wake_lock_);
 
-  // TODO(heke): Switch PowerSaveBlocker to use mojom::WakeLockType and
-  // mojom::WakeLockReason once all its clients are converted to be the clients
-  // of WakeLock.
   wake_lock_ = base::MakeUnique<PowerSaveBlocker>(
-      ToPowerSaveBlockerType(type_), ToPowerSaveBlockerReason(reason_),
-      *description_, main_task_runner_, file_task_runner_);
+      type_, reason_, *description_, main_task_runner_, file_task_runner_);
 
   if (type_ != mojom::WakeLockType::PreventDisplaySleep)
     return;
@@ -182,11 +140,10 @@ void WakeLock::SwapWakeLock() {
   DCHECK(wake_lock_);
 
   auto new_wake_lock = base::MakeUnique<PowerSaveBlocker>(
-      ToPowerSaveBlockerType(type_), ToPowerSaveBlockerReason(reason_),
-      *description_, main_task_runner_, file_task_runner_);
+      type_, reason_, *description_, main_task_runner_, file_task_runner_);
 
   // Do a swap to ensure that there isn't a brief period where the old
-  // powersaveblocker is unblocked while the new powersaveblocker is not
+  // PowerSaveBlocker is unblocked while the new PowerSaveBlocker is not
   // created.
   wake_lock_.swap(new_wake_lock);
 }

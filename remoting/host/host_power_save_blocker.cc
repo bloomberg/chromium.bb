@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/host_status_monitor.h"
+#include "services/device/public/interfaces/wake_lock.mojom.h"
 
 namespace remoting {
 
@@ -29,8 +30,8 @@ HostPowerSaveBlocker::~HostPowerSaveBlocker() {
 
 void HostPowerSaveBlocker::OnClientConnected(const std::string& jid) {
   blocker_.reset(new device::PowerSaveBlocker(
-      device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-      device::PowerSaveBlocker::kReasonOther, "Remoting session is active",
+      device::mojom::WakeLockType::PreventDisplaySleep,
+      device::mojom::WakeLockReason::ReasonOther, "Remoting session is active",
       ui_task_runner_, file_task_runner_));
 }
 
