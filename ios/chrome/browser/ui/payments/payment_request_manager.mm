@@ -1010,7 +1010,8 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
     (PaymentRequestCoordinator*)coordinator {
   __weak PaymentRequestManager* weakSelf = self;
   ProceduralBlockWithBool callback = ^(BOOL) {
-    [weakSelf.dispatcher showAutofillSettings];
+    [weakSelf.dispatcher
+        showAutofillSettingsFromViewController:_baseViewController];
   };
 
   [self abortPendingRequestWithReason:payments::JourneyLogger::
