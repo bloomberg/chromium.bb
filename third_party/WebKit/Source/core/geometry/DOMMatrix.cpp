@@ -5,6 +5,7 @@
 #include "core/geometry/DOMMatrix.h"
 
 #include "core/dom/ExecutionContext.h"
+#include "platform/transforms/AffineTransform.h"
 
 namespace blink {
 
@@ -296,12 +297,20 @@ DOMMatrix* DOMMatrix::perspectiveSelf(double p) {
 }
 
 DOMMatrix* DOMMatrix::invertSelf() {
-  if (matrix_->IsInvertible()) {
-    matrix_ = TransformationMatrix::Create(matrix_->Inverse());
+  if (is2d_) {
+    AffineTransform affine_transform = matrix_->ToAffineTransform();
+    if (affine_transform.IsInvertible()) {
+      *matrix_ = affine_transform.Inverse();
+      return this;
+    }
   } else {
-    SetNAN();
-    SetIs2D(false);
+    if (matrix_->IsInvertible()) {
+      *matrix_ = matrix_->Inverse();
+      return this;
+    }
   }
+  SetNAN();
+  SetIs2D(false);
   return this;
 }
 
