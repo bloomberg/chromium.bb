@@ -140,12 +140,14 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       std::unique_ptr<NavigationRequestInfo> request_info,
       mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       mojom::URLLoaderFactoryPtrInfo subresource_factory_for_webui,
-      const base::Callback<WebContents*(void)>& web_contents_getter,
+      int frame_tree_node_id,
       std::unique_ptr<service_manager::Connector> connector) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!started_);
+    frame_tree_node_id_ = frame_tree_node_id;
     started_ = true;
-    web_contents_getter_ = web_contents_getter;
+    web_contents_getter_ =
+        base::Bind(&GetWebContentsFromFrameTreeNodeID, frame_tree_node_id);
     const ResourceType resource_type = request_info->is_main_frame
                                            ? RESOURCE_TYPE_MAIN_FRAME
                                            : RESOURCE_TYPE_SUB_FRAME;
@@ -163,7 +165,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           webui_factory_ptr_.get(),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
               web_contents_getter_),
-          0 /* routing_id? */, 0 /* request_id? */, mojom::kURLLoadOptionNone,
+          frame_tree_node_id_, 0 /* request_id? */, mojom::kURLLoadOptionNone,
           *resource_request_, this, kTrafficAnnotation);
       SubresourceLoaderParams params;
       params.loader_factory_info = std::move(subresource_factory_for_webui);
@@ -185,7 +187,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
               request_info->begin_params.skip_service_worker, resource_type,
               request_info->begin_params.request_context_type, frame_type,
               request_info->are_ancestors_secure,
-              request_info->common_params.post_data, web_contents_getter);
+              request_info->common_params.post_data, web_contents_getter_);
       if (service_worker_handler)
         handlers_.push_back(std::move(service_worker_handler));
     }
@@ -230,7 +232,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           std::move(start_loader_callback),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
               web_contents_getter_),
-          *resource_request_, this, kTrafficAnnotation);
+          frame_tree_node_id_, *resource_request_, this, kTrafficAnnotation);
 
       subresource_loader_params_ =
           handler->MaybeCreateSubresourceLoaderParams();
@@ -266,7 +268,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         factory,
         GetContentClient()->browser()->CreateURLLoaderThrottles(
             web_contents_getter_),
-        0 /* routing_id? */, 0 /* request_id? */,
+        frame_tree_node_id_, 0 /* request_id? */,
         mojom::kURLLoadOptionSendSSLInfo | mojom::kURLLoadOptionSniffMimeType,
         *resource_request_, this, kTrafficAnnotation);
   }
@@ -433,6 +435,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   size_t handler_index_ = 0;
 
   std::unique_ptr<ResourceRequest> resource_request_;
+  int frame_tree_node_id_ = 0;
   net::RedirectInfo redirect_info_;
   int redirect_limit_ = kMaxRedirects;
   ResourceContext* resource_context_;
@@ -513,6 +516,10 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   new_request->referrer_policy = request_info->common_params.referrer.policy;
   new_request->headers.AddHeadersFromString(request_info->begin_params.headers);
 
+  new_request->resource_type = request_info->is_main_frame
+                                   ? RESOURCE_TYPE_MAIN_FRAME
+                                   : RESOURCE_TYPE_SUB_FRAME;
+
   int load_flags = request_info->begin_params.load_flags;
   load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (request_info->is_main_frame)
@@ -558,20 +565,19 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
       weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &URLLoaderRequestController::Start,
-          base::Unretained(request_controller_.get()),
-          service_worker_navigation_handle
-              ? service_worker_navigation_handle->core()
-              : nullptr,
-          appcache_handle ? appcache_handle->core() : nullptr,
-          base::Passed(std::move(request_info)),
-          base::Passed(std::move(factory_for_webui)),
-          base::Passed(std::move(subresource_factory_for_webui)),
-          base::Bind(&GetWebContentsFromFrameTreeNodeID, frame_tree_node_id),
-          base::Passed(ServiceManagerConnection::GetForProcess()
-                           ->GetConnector()
-                           ->Clone())));
+      base::BindOnce(&URLLoaderRequestController::Start,
+                     base::Unretained(request_controller_.get()),
+                     service_worker_navigation_handle
+                         ? service_worker_navigation_handle->core()
+                         : nullptr,
+                     appcache_handle ? appcache_handle->core() : nullptr,
+                     base::Passed(std::move(request_info)),
+                     base::Passed(std::move(factory_for_webui)),
+                     base::Passed(std::move(subresource_factory_for_webui)),
+                     frame_tree_node_id,
+                     base::Passed(ServiceManagerConnection::GetForProcess()
+                                      ->GetConnector()
+                                      ->Clone())));
 }
 
 NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {

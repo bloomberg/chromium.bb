@@ -36,7 +36,7 @@ class NetworkServiceURLLoaderFactory : public mojom::URLLoaderFactory {
  private:
   // Not owned.
   NetworkContext* context_;
-  int process_id_;
+  uint32_t process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceURLLoaderFactory);
 };

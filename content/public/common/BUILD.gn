@@ -369,6 +369,7 @@ mojom("interfaces") {
   ]
 
   public_deps = [
+    ":resource_type_bindings",
     "//mojo/common:common_custom_types",
     "//services/network/public/interfaces",
     "//url/mojo:url_mojom_gurl",

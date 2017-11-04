@@ -100,13 +100,15 @@ class SSLManagerSet : public base::SupportsUserData::Data {
 void HandleSSLErrorOnUI(
     const base::Callback<WebContents*(void)>& web_contents_getter,
     const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
+    BrowserThread::ID delegate_thread,
     const ResourceType resource_type,
     const GURL& url,
     const net::SSLInfo& ssl_info,
     bool fatal) {
   content::WebContents* web_contents = web_contents_getter.Run();
-  std::unique_ptr<SSLErrorHandler> handler(new SSLErrorHandler(
-      web_contents, delegate, resource_type, url, ssl_info, fatal));
+  std::unique_ptr<SSLErrorHandler> handler(
+      new SSLErrorHandler(web_contents, delegate, delegate_thread,
+                          resource_type, url, ssl_info, fatal));
 
   if (!web_contents) {
     // Requests can fail to dispatch because they don't have a WebContents. See
@@ -145,12 +147,18 @@ void SSLManager::OnSSLCertificateError(
            << " url: " << url.spec()
            << " cert_status: " << std::hex << ssl_info.cert_status;
 
-  // A certificate error occurred. Construct a SSLErrorHandler object
-  // on the UI thread for processing.
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    HandleSSLErrorOnUI(web_contents_getter, delegate, BrowserThread::UI,
+                       resource_type, url, ssl_info, fatal);
+    return;
+  }
+
+  // TODO(jam): remove the logic to call this from IO thread once the
+  // network service code path is the only one.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&HandleSSLErrorOnUI, web_contents_getter, delegate,
-                     resource_type, url, ssl_info, fatal));
+                     BrowserThread::IO, resource_type, url, ssl_info, fatal));
 }
 
 // static

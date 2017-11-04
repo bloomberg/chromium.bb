@@ -42,7 +42,9 @@ class CONTENT_EXPORT URLLoader : public mojom::URLLoader,
             const ResourceRequest& request,
             bool report_raw_headers,
             mojom::URLLoaderClientPtr url_loader_client,
-            const net::NetworkTrafficAnnotationTag& traffic_annotation);
+            const net::NetworkTrafficAnnotationTag& traffic_annotation,
+            uint32_t process_id,
+            uint32_t routing_id);
   ~URLLoader() override;
 
   // Called when the associated NetworkContext is going away.
@@ -59,6 +61,13 @@ class CONTENT_EXPORT URLLoader : public mojom::URLLoader,
   void OnReceivedRedirect(net::URLRequest* url_request,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
+  void OnAuthRequired(net::URLRequest* request,
+                      net::AuthChallengeInfo* info) override;
+  void OnCertificateRequested(net::URLRequest* request,
+                              net::SSLCertRequestInfo* info) override;
+  void OnSSLCertificateError(net::URLRequest* request,
+                             const net::SSLInfo& info,
+                             bool fatal) override;
   void OnResponseStarted(net::URLRequest* url_request, int net_error) override;
   void OnReadCompleted(net::URLRequest* url_request, int bytes_read) override;
 
@@ -80,9 +89,14 @@ class CONTENT_EXPORT URLLoader : public mojom::URLLoader,
   void UpdateBodyReadBeforePaused();
   void SendUploadProgress(const net::UploadProgress& progress);
   void OnUploadProgressACK();
+  void OnSSLCertificateErrorResponse(const net::SSLInfo& ssl_info,
+                                     int net_error);
 
   NetworkContext* context_;
   int32_t options_;
+  ResourceType resource_type_;
+  uint32_t process_id_;
+  uint32_t routing_id_;
   bool connected_;
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Binding<mojom::URLLoader> binding_;
