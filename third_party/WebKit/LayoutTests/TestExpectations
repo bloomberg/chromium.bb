@@ -1333,9 +1333,6 @@ crbug.com/769357 [ Win7 Debug ] virtual/mojo-loading/http/tests/misc/webtiming-s
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 
-# Needs test_driver.click() implementation.
-crbug.com/781231 external/wpt/uievents/order-of-events/mouse-events/click-cancel.html [ Timeout ]
-
 crbug.com/662010 [ Win7 ] http/tests/csspaint/invalidation-background-image.html [ Skip ]
 
 # These tests are skipped as there is no touch support on Mac.
