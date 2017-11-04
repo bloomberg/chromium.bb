@@ -837,8 +837,7 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(
       supports_post_sub_buffer_(false),
       supports_swap_buffer_with_damage_(false),
       flips_vertically_(false),
-      vsync_provider_external_(std::move(vsync_provider)),
-      use_egl_timestamps_(false) {
+      vsync_provider_external_(std::move(vsync_provider)) {
 #if defined(OS_ANDROID)
   if (window)
     ANativeWindow_acquire(window);
@@ -958,16 +957,6 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
         std::make_unique<EGLSyncControlVSyncProvider>(surface_);
   }
 
-  return true;
-}
-
-bool NativeViewGLSurfaceEGL::SupportsSwapTimestamps() const {
-  return g_driver_egl.ext.b_EGL_ANDROID_get_frame_timestamps;
-}
-
-void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
-  DCHECK(g_driver_egl.ext.b_EGL_ANDROID_get_frame_timestamps);
-
   // If frame timestamps are supported, set the proper attribute to enable the
   // feature and then cache the timestamps supported by the underlying
   // implementation. EGL_DISPLAY_PRESENT_TIME_ANDROID support, in particular,
@@ -976,38 +965,39 @@ void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
   // called twice.
   supported_egl_timestamps_.clear();
   supported_event_names_.clear();
+  if (g_driver_egl.ext.b_EGL_ANDROID_get_frame_timestamps) {
+    eglSurfaceAttrib(GetDisplay(), surface_, EGL_TIMESTAMPS_ANDROID, EGL_TRUE);
 
-  eglSurfaceAttrib(GetDisplay(), surface_, EGL_TIMESTAMPS_ANDROID, EGL_TRUE);
+    static const struct {
+      EGLint egl_name;
+      const char* name;
+    } all_timestamps[kMaxTimestampsSupportable] = {
+        {EGL_REQUESTED_PRESENT_TIME_ANDROID, "Queue"},
+        {EGL_RENDERING_COMPLETE_TIME_ANDROID, "WritesDone"},
+        {EGL_COMPOSITION_LATCH_TIME_ANDROID, "LatchedForDisplay"},
+        {EGL_FIRST_COMPOSITION_START_TIME_ANDROID, "1stCompositeCpu"},
+        {EGL_LAST_COMPOSITION_START_TIME_ANDROID, "NthCompositeCpu"},
+        {EGL_FIRST_COMPOSITION_GPU_FINISHED_TIME_ANDROID, "GpuCompositeDone"},
+        {EGL_DISPLAY_PRESENT_TIME_ANDROID, "ScanOutStart"},
+        {EGL_DEQUEUE_READY_TIME_ANDROID, "DequeueReady"},
+        {EGL_READS_DONE_TIME_ANDROID, "ReadsDone"},
+    };
 
-  static const struct {
-    EGLint egl_name;
-    const char* name;
-  } all_timestamps[kMaxTimestampsSupportable] = {
-      {EGL_REQUESTED_PRESENT_TIME_ANDROID, "Queue"},
-      {EGL_RENDERING_COMPLETE_TIME_ANDROID, "WritesDone"},
-      {EGL_COMPOSITION_LATCH_TIME_ANDROID, "LatchedForDisplay"},
-      {EGL_FIRST_COMPOSITION_START_TIME_ANDROID, "1stCompositeCpu"},
-      {EGL_LAST_COMPOSITION_START_TIME_ANDROID, "NthCompositeCpu"},
-      {EGL_FIRST_COMPOSITION_GPU_FINISHED_TIME_ANDROID, "GpuCompositeDone"},
-      {EGL_DISPLAY_PRESENT_TIME_ANDROID, "ScanOutStart"},
-      {EGL_DEQUEUE_READY_TIME_ANDROID, "DequeueReady"},
-      {EGL_READS_DONE_TIME_ANDROID, "ReadsDone"},
-  };
+    supported_egl_timestamps_.reserve(kMaxTimestampsSupportable);
+    supported_event_names_.reserve(kMaxTimestampsSupportable);
+    for (const auto& ts : all_timestamps) {
+      if (!eglGetFrameTimestampSupportedANDROID(GetDisplay(), surface_,
+                                                ts.egl_name))
+        continue;
 
-  supported_egl_timestamps_.reserve(kMaxTimestampsSupportable);
-  supported_event_names_.reserve(kMaxTimestampsSupportable);
-  for (const auto& ts : all_timestamps) {
-    if (!eglGetFrameTimestampSupportedANDROID(GetDisplay(), surface_,
-                                              ts.egl_name))
-      continue;
-
-    // Stored in separate vectors so we can pass the egl timestamps
-    // directly to the EGL functions.
-    supported_egl_timestamps_.push_back(ts.egl_name);
-    supported_event_names_.push_back(ts.name);
+      // Stored in separate vectors so we can pass the egl timestamps
+      // directly to the EGL functions.
+      supported_egl_timestamps_.push_back(ts.egl_name);
+      supported_event_names_.push_back(ts.name);
+    }
   }
 
-  use_egl_timestamps_ = !supported_egl_timestamps_.empty();
+  return true;
 }
 
 bool NativeViewGLSurfaceEGL::InitializeNativeWindow() {
@@ -1042,7 +1032,7 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers() {
 
   EGLuint64KHR newFrameId = 0;
   bool newFrameIdIsValid = true;
-  if (use_egl_timestamps_) {
+  if (g_driver_egl.ext.b_EGL_ANDROID_get_frame_timestamps) {
     newFrameIdIsValid =
         !!eglGetNextFrameIdANDROID(GetDisplay(), surface_, &newFrameId);
   }
@@ -1053,7 +1043,7 @@ gfx::SwapResult NativeViewGLSurfaceEGL::SwapBuffers() {
     return gfx::SwapResult::SWAP_FAILED;
   }
 
-  if (use_egl_timestamps_) {
+  if (g_driver_egl.ext.b_EGL_ANDROID_get_frame_timestamps) {
     UpdateSwapEvents(newFrameId, newFrameIdIsValid);
   }
 

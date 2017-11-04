@@ -104,8 +104,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   // Implement GLSurface.
   using GLSurfaceEGL::Initialize;
   bool Initialize(GLSurfaceFormat format) override;
-  bool SupportsSwapTimestamps() const override;
-  void SetEnableSwapTimestamps() override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -166,7 +164,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
   // Stored in separate vectors so we can pass the egl timestamps
   // directly to the EGL functions.
-  bool use_egl_timestamps_;
   std::vector<EGLint> supported_egl_timestamps_;
   std::vector<const char*> supported_event_names_;
 
