@@ -1414,16 +1414,17 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                                  completion:nil];
 }
 
-- (void)showAutofillSettings {
+// TODO(crbug.com/779791) : Remove showing settings from MainController.
+- (void)showAutofillSettingsFromViewController:
+    (UIViewController*)baseViewController {
   if (_settingsNavigationController)
     return;
   _settingsNavigationController =
       [SettingsNavigationController newAutofillController:_mainBrowserState
                                                  delegate:self];
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  [baseViewController presentViewController:_settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 - (void)showSavePasswordsSettings {

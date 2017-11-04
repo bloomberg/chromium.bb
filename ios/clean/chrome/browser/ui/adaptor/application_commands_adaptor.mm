@@ -55,8 +55,9 @@
   [self showAlert:@"showClearBrowsingDataSettingsFromViewController:"];
 }
 
-- (void)showAutofillSettings {
-  [self showAlert:@"showAutofillSettings"];
+- (void)showAutofillSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  [self showAlert:@"showAutofillSettingsFromViewController:"];
 }
 
 - (void)showSavePasswordsSettings {

@@ -72,8 +72,10 @@
 - (void)showClearBrowsingDataSettingsFromViewController:
     (UIViewController*)baseViewController;
 
-// Shows the Autofill Settings UI.
-- (void)showAutofillSettings;
+// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// Shows the Autofill Settings UI, presenting from |baseViewController|.
+- (void)showAutofillSettingsFromViewController:
+    (UIViewController*)baseViewController;
 
 // Shows the Save Passwords settings UI.
 - (void)showSavePasswordsSettings;
