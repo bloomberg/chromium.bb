@@ -36,17 +36,28 @@ static LayoutUnit ComputeMarginLogicalSizeForChild(
 
 LayoutUnit GridLayoutUtils::MarginLogicalWidthForChild(const LayoutGrid& grid,
                                                        const LayoutBox& child) {
-  return child.NeedsLayout()
-             ? ComputeMarginLogicalSizeForChild(grid, kInlineDirection, child)
-             : child.MarginLogicalWidth();
+  if (child.NeedsLayout())
+    return ComputeMarginLogicalSizeForChild(grid, kInlineDirection, child);
+  LayoutUnit margin_start = child.StyleRef().MarginStart().IsAuto()
+                                ? LayoutUnit()
+                                : child.MarginStart();
+  LayoutUnit margin_end =
+      child.StyleRef().MarginEnd().IsAuto() ? LayoutUnit() : child.MarginEnd();
+  return margin_start + margin_end;
 }
 
 LayoutUnit GridLayoutUtils::MarginLogicalHeightForChild(
     const LayoutGrid& grid,
     const LayoutBox& child) {
-  return child.NeedsLayout()
-             ? ComputeMarginLogicalSizeForChild(grid, kBlockDirection, child)
-             : child.MarginLogicalHeight();
+  if (child.NeedsLayout())
+    return ComputeMarginLogicalSizeForChild(grid, kBlockDirection, child);
+  LayoutUnit margin_before = child.StyleRef().MarginBefore().IsAuto()
+                                 ? LayoutUnit()
+                                 : child.MarginBefore();
+  LayoutUnit margin_after = child.StyleRef().MarginAfter().IsAuto()
+                                ? LayoutUnit()
+                                : child.MarginAfter();
+  return margin_before + margin_after;
 }
 
 bool GridLayoutUtils::IsOrthogonalChild(const LayoutGrid& grid,

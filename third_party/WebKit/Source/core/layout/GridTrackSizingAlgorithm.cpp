@@ -268,7 +268,8 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::LogicalHeightForChild(
   if (auto baseline_extent = ExtentForBaselineAlignment(child))
     return baseline_extent.value();
 
-  return child.LogicalHeight() + child.MarginLogicalHeight();
+  return child.LogicalHeight() +
+         GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child);
 }
 
 DISABLE_CFI_PERF
@@ -350,7 +351,8 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
 
   return child.ComputeLogicalHeightUsing(kMinSize, child_min_size,
                                          child.IntrinsicLogicalHeight()) +
-         child.MarginLogicalHeight() + child.ScrollbarLogicalHeight();
+         GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child) +
+         child.ScrollbarLogicalHeight();
 }
 
 LayoutUnit GridTrackSizingAlgorithmStrategy::ComputeTrackBasedSize() const {
