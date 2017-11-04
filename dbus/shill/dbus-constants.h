@@ -610,6 +610,7 @@ const char kOpenVPNPingProperty[] = "OpenVPN.Ping";
 const char kOpenVPNPingExitProperty[] = "OpenVPN.PingExit";
 const char kOpenVPNPingRestartProperty[] = "OpenVPN.PingRestart";
 const char kOpenVPNTLSAuthProperty[] = "OpenVPN.TLSAuth";
+const char kOpenVPNTLSVersionMinProperty[] = "OpenVPN.TLSVersionMin";
 const char kOpenVPNTokenProperty[] = "OpenVPN.Token";
 const char kOpenVPNVerbProperty[] = "OpenVPN.Verb";
 const char kOpenVPNVerifyHashProperty[] = "OpenVPN.VerifyHash";
