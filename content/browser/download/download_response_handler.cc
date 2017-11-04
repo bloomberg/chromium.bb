@@ -128,6 +128,7 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
   create_info->response_headers = head.headers;
   create_info->offset = create_info->save_info->offset;
   create_info->mime_type = head.mime_type;
+  create_info->fetch_error_body = fetch_error_body_;
 
   HandleResponseHeaders(head.headers.get(), create_info.get());
   return create_info;
