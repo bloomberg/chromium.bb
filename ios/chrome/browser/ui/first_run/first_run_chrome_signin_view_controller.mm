@@ -11,8 +11,10 @@
 #import "ios/chrome/browser/first_run/first_run_configuration.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -31,7 +33,8 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
     @"SkipButtonAccessibilityIdentifier";
 
 @interface FirstRunChromeSigninViewController ()<
-    ChromeSigninViewControllerDelegate> {
+    ChromeSigninViewControllerDelegate,
+    SyncPresenter> {
   __weak TabModel* _tabModel;
   FirstRunConfiguration* _firstRunConfig;
   __weak ChromeIdentity* _identity;
@@ -99,7 +102,7 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 - (void)finishFirstRunAndDismissWithCompletion:(ProceduralBlock)completion {
   DCHECK(self.presentingViewController);
   FinishFirstRun(self.browserState, [_tabModel currentTab], _firstRunConfig,
-                 self.dispatcher);
+                 self /* id<SyncPresenter> */);
   [self.presentingViewController dismissViewControllerAnimated:YES
                                                     completion:^{
                                                       FirstRunDismissed();
@@ -177,6 +180,24 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
 - (NSString*)skipSigninButtonTitle {
   return l10n_util::GetNSString(
       IDS_IOS_FIRSTRUN_ACCOUNT_CONSISTENCY_SKIP_BUTTON);
+}
+
+#pragma mark - SyncPresenter
+
+- (void)showReauthenticateSignin {
+  [self.dispatcher
+      showSignin:[[ShowSigninCommand alloc]
+                     initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
+                           accessPoint:signin_metrics::AccessPoint::
+                                           ACCESS_POINT_UNKNOWN]];
+}
+
+- (void)showSyncSettings {
+  [self.dispatcher showSyncSettings];
+}
+
+- (void)showSyncPassphraseSettings {
+  [self.dispatcher showSyncPassphraseSettings];
 }
 
 @end

@@ -133,7 +133,7 @@ bool ShouldShowSyncSettings(SyncSetupService::SyncServiceState syncState) {
 
 bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
                        Tab* tab,
-                       id<ApplicationCommands> dispatcher) {
+                       id<SyncPresenter> presenter) {
   // Avoid displaying sync errors on incognito tabs.
   if (browser_state->IsOffTheRecord())
     return false;
@@ -173,7 +173,7 @@ bool DisplaySyncErrors(ios::ChromeBrowserState* browser_state,
       InfoBarManagerImpl::FromWebState(tab.webState);
   DCHECK(infoBarManager);
   return SyncErrorInfoBarDelegate::Create(infoBarManager, browser_state,
-                                          dispatcher);
+                                          presenter);
 }
 
 bool IsTransientSyncError(SyncSetupService::SyncServiceState errorState) {

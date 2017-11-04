@@ -9,6 +9,7 @@ source_set("sync_utils") {
   sources = [
     "sync_error_infobar_delegate.h",
     "sync_error_infobar_delegate.mm",
+    "sync_presenter.h",
     "sync_util.h",
     "sync_util.mm",
   ]
