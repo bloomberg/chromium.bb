@@ -927,7 +927,8 @@ def _CheckFilePermissions(input_api, output_api):
   args = [input_api.python_executable, checkperms_tool,
           '--root', input_api.change.RepositoryRoot()]
   for f in input_api.AffectedFiles():
-    args += ['--file', f.AbsoluteLocalPath()]
+    # checkperms.py file/directory arguments must be relative to the repository.
+    args += ['--file', f.LocalPath()]
   try:
     input_api.subprocess.check_output(args)
     return []
