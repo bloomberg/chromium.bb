@@ -281,8 +281,14 @@ def _Download(resource):
   """Downloads the given GS resource to a temporary file, returning its path."""
   tmp = tempfile.mkstemp(suffix='syzygy_archive')
   os.close(tmp[0])
+  tmp_file = tmp[1]
   url = 'gs://syzygy-archive' + resource
-  _GsUtil('cp', url, tmp[1])
+  if sys.platform == 'cygwin':
+    # Change temporary path to Windows path for gsutil
+    def winpath(path):
+      return subprocess.check_output(['cygpath', '-w', path]).strip()
+    tmp_file = winpath(tmp_file)
+  _GsUtil('cp', url, tmp_file)
   return tmp[1]
 
 
