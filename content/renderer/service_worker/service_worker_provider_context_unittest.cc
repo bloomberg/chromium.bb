@@ -216,7 +216,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     // provider context.
     mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
     mojom::ServiceWorkerContainerAssociatedRequest container_request =
-        mojo::MakeIsolatedRequest(&container_ptr);
+        mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
         kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
         std::move(container_request), nullptr /* host_ptr_info */, dispatcher(),
@@ -254,7 +254,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
 
     mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
     mojom::ServiceWorkerContainerAssociatedRequest container_request =
-        mojo::MakeIsolatedRequest(&container_ptr);
+        mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
     auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
         kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
         std::move(container_request), std::move(host_ptr_info), dispatcher(),
@@ -290,7 +290,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
 
   mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
   mojom::ServiceWorkerContainerAssociatedRequest container_request =
-      mojo::MakeIsolatedRequest(&container_ptr);
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       std::move(container_request), std::move(host_ptr_info), dispatcher(),
@@ -322,7 +322,7 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
 
   mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
   mojom::ServiceWorkerContainerAssociatedRequest container_request =
-      mojo::MakeIsolatedRequest(&container_ptr);
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
       std::move(container_request), std::move(host_ptr_info), dispatcher(),

@@ -201,7 +201,7 @@ class RemoveLocalStorageTester {
     // stores data in the database.
     leveldb::mojom::LevelDBDatabaseAssociatedPtr database_ptr;
     leveldb::mojom::LevelDBDatabaseAssociatedRequest request =
-        MakeIsolatedRequest(&database_ptr);
+        MakeRequestAssociatedWithDedicatedPipe(&database_ptr);
     static_cast<DOMStorageContextWrapper*>(dom_storage_context_)
         ->SetLocalStorageDatabaseForTesting(std::move(database_ptr));
     db_binding_.Bind(std::move(request));

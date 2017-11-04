@@ -89,7 +89,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, OverrideForTesting) {
       ->OnAssociatedInterfaceRequest(
           web_contents->GetMainFrame(),
           mojom::BrowserAssociatedInterfaceTestDriver::Name_,
-          mojo::MakeIsolatedRequest(&override_client).PassHandle());
+          mojo::MakeRequestAssociatedWithDedicatedPipe(&override_client)
+              .PassHandle());
   run_loop.Run();
 }
 
@@ -106,7 +107,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, CloseOnFrameDeletion) {
       ->OnAssociatedInterfaceRequest(
           web_contents->GetMainFrame(),
           mojom::WebContentsFrameBindingSetTest::Name_,
-          mojo::MakeIsolatedRequest(&override_client).PassHandle());
+          mojo::MakeRequestAssociatedWithDedicatedPipe(&override_client)
+              .PassHandle());
 
   base::RunLoop run_loop;
   override_client.set_connection_error_handler(run_loop.QuitClosure());

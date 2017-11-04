@@ -92,9 +92,9 @@ ServiceWorkerRemoteProviderEndpoint::~ServiceWorkerRemoteProviderEndpoint() {}
 void ServiceWorkerRemoteProviderEndpoint::BindWithProviderHostInfo(
     content::ServiceWorkerProviderHostInfo* info) {
   mojom::ServiceWorkerContainerAssociatedPtr client_ptr;
-  client_request_ = mojo::MakeIsolatedRequest(&client_ptr);
+  client_request_ = mojo::MakeRequestAssociatedWithDedicatedPipe(&client_ptr);
   info->client_ptr_info = client_ptr.PassInterface();
-  info->host_request = mojo::MakeIsolatedRequest(&host_ptr_);
+  info->host_request = mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr_);
 }
 
 void ServiceWorkerRemoteProviderEndpoint::BindWithProviderInfo(
@@ -104,7 +104,8 @@ void ServiceWorkerRemoteProviderEndpoint::BindWithProviderInfo(
   registration_object_info_ = std::move(info->registration);
   // To enable the caller end point to make calls safely with no need to pass
   // |registration_object_info_->request| through a message pipe endpoint.
-  mojo::GetIsolatedInterface(registration_object_info_->request.PassHandle());
+  mojo::AssociateWithDisconnectedPipe(
+      registration_object_info_->request.PassHandle());
 }
 
 std::unique_ptr<ServiceWorkerProviderHost> CreateProviderHostForWindow(

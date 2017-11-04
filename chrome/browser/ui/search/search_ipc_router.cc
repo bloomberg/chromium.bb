@@ -43,7 +43,7 @@ class EmbeddedSearchClientFactoryImpl
     DCHECK(web_contents);
     DCHECK(binding);
     // Before we are connected to a frame we throw away all messages.
-    mojo::MakeIsolatedRequest(&embedded_search_client_);
+    mojo::MakeRequestAssociatedWithDedicatedPipe(&embedded_search_client_);
   }
 
   chrome::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() override {
