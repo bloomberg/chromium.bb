@@ -24,7 +24,6 @@ BluetoothRemoteGattServiceMac::BluetoothRemoteGattServiceMac(
     : bluetooth_device_mac_(bluetooth_device_mac),
       service_(service, base::scoped_policy::RETAIN),
       is_primary_(is_primary),
-      is_discovery_complete_(false),
       discovery_pending_count_(0) {
   uuid_ = BluetoothAdapterMac::BluetoothUUIDWithCBUUID([service_ UUID]);
   identifier_ = base::SysNSStringToUTF8(
@@ -80,13 +79,13 @@ BluetoothRemoteGattServiceMac::GetCharacteristic(
 
 void BluetoothRemoteGattServiceMac::DiscoverCharacteristics() {
   VLOG(1) << *this << ": DiscoverCharacteristics.";
-  is_discovery_complete_ = false;
+  SetDiscoveryComplete(false);
   ++discovery_pending_count_;
   [GetCBPeripheral() discoverCharacteristics:nil forService:GetService()];
 }
 
 void BluetoothRemoteGattServiceMac::DidDiscoverCharacteristics() {
-  if (is_discovery_complete_ || discovery_pending_count_ == 0) {
+  if (IsDiscoveryComplete() || discovery_pending_count_ == 0) {
     // This should never happen, just in case it happens with a device, this
     // notification should be ignored.
     VLOG(1)
@@ -142,7 +141,7 @@ void BluetoothRemoteGattServiceMac::DidDiscoverCharacteristics() {
 
 void BluetoothRemoteGattServiceMac::DidDiscoverDescriptors(
     CBCharacteristic* characteristic) {
-  if (is_discovery_complete_) {
+  if (IsDiscoveryComplete()) {
     // This should never happen, just in case it happens with a device, this
     // notification should be ignored.
     VLOG(1) << *this
@@ -157,9 +156,9 @@ void BluetoothRemoteGattServiceMac::DidDiscoverDescriptors(
 }
 
 void BluetoothRemoteGattServiceMac::SendNotificationIfComplete() {
-  DCHECK(!is_discovery_complete_);
+  DCHECK(!IsDiscoveryComplete());
   // Notify when all characteristics have been fully discovered.
-  is_discovery_complete_ =
+  SetDiscoveryComplete(
       discovery_pending_count_ == 0 &&
       std::find_if_not(
           gatt_characteristic_macs_.begin(), gatt_characteristic_macs_.end(),
@@ -167,15 +166,11 @@ void BluetoothRemoteGattServiceMac::SendNotificationIfComplete() {
               const std::string,
               std::unique_ptr<BluetoothRemoteGattCharacteristicMac>>& pair) {
             return pair.second->IsDiscoveryComplete();
-          }) == gatt_characteristic_macs_.end();
-  if (is_discovery_complete_) {
+          }) == gatt_characteristic_macs_.end());
+  if (IsDiscoveryComplete()) {
     VLOG(1) << *this << ": Discovery complete.";
     GetMacAdapter()->NotifyGattServiceChanged(this);
   }
-}
-
-bool BluetoothRemoteGattServiceMac::IsDiscoveryComplete() const {
-  return is_discovery_complete_;
 }
 
 BluetoothAdapterMac* BluetoothRemoteGattServiceMac::GetMacAdapter() const {

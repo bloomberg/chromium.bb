@@ -51,6 +51,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattService
   virtual BluetoothRemoteGattCharacteristic* GetCharacteristic(
       const std::string& identifier) const = 0;
 
+  // Returns true if all the characteristics have been discovered.
+  virtual bool IsDiscoveryComplete() const;
+
+  // Sets characteristic discovery as complete or incomplete.
+  virtual void SetDiscoveryComplete(bool complete);
+
   std::vector<BluetoothRemoteGattCharacteristic*> GetCharacteristicsByUUID(
       const BluetoothUUID& characteristic_uuid);
 
@@ -58,6 +64,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattService
   BluetoothRemoteGattService();
 
  private:
+  // Is true if all the characteristics have been discovered.
+  bool discovery_complete_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattService);
 };
 

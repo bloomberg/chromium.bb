@@ -150,6 +150,19 @@ BluetoothRemoteGattServiceAndroid::GetCharacteristic(
   return iter->second.get();
 }
 
+bool BluetoothRemoteGattServiceAndroid::IsDiscoveryComplete() const {
+  // Not used on Android, because Android sends an event when service discovery
+  // is complete for the entire device.
+  NOTIMPLEMENTED();
+  return true;
+}
+
+void BluetoothRemoteGattServiceAndroid::SetDiscoveryComplete(bool complete) {
+  // Not used on Android, because Android sends an event when service discovery
+  // is complete for the entire device.
+  NOTIMPLEMENTED();
+}
+
 void BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller,

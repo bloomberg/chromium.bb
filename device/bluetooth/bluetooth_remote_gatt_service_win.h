@@ -115,10 +115,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
   // avoid duplicate notification.
   bool discovery_complete_notified_;
 
-  // Flag indicates if asynchronous discovery of included characteristic has
-  // completed.
-  bool included_characteristics_discovered_;
-
   base::WeakPtrFactory<BluetoothRemoteGattServiceWin> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceWin);
 };

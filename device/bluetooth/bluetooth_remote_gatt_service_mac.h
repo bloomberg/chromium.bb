@@ -62,8 +62,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
   // Sends notification if this service is ready with all characteristics
   // discovered.
   void SendNotificationIfComplete();
-  // Returns true if the characteristics has been discovered.
-  bool IsDiscoveryComplete() const;
 
   // Returns the mac adapter.
   BluetoothAdapterMac* GetMacAdapter() const;
@@ -91,9 +89,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
   std::string identifier_;
   // Service UUID.
   BluetoothUUID uuid_;
-  // Is true if the characteristics has been discovered and
-  // discovery_pending_count_ is 0.
-  bool is_discovery_complete_;
   // Increased each time DiscoverCharacteristics() is called. And decreased when
   // DidDiscoverCharacteristics() is called.
   int discovery_pending_count_;
