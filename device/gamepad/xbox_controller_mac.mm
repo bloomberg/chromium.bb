@@ -21,6 +21,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace device {
@@ -524,6 +525,26 @@ int XboxControllerMac::GetProductId() const {
 
 XboxControllerMac::ControllerType XboxControllerMac::GetControllerType() const {
   return controller_type_;
+}
+
+std::string XboxControllerMac::GetControllerTypeString() const {
+  switch (controller_type_) {
+    case XBOX_360_CONTROLLER:
+      return "Xbox 360 Controller";
+    case XBOX_ONE_CONTROLLER_2013:
+    case XBOX_ONE_CONTROLLER_2015:
+    case XBOX_ONE_ELITE_CONTROLLER:
+    case XBOX_ONE_S_CONTROLLER:
+      return "Xbox One Controller";
+    default:
+      return "Unrecognized Controller";
+  }
+}
+
+std::string XboxControllerMac::GetIdString() const {
+  return base::StringPrintf("%s (STANDARD GAMEPAD Vendor: %04x Product: %04x)",
+                            GetControllerTypeString().c_str(), GetVendorId(),
+                            GetProductId());
 }
 
 // static

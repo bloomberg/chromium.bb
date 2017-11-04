@@ -101,6 +101,8 @@ class XboxControllerMac {
   int GetVendorId() const;
   int GetProductId() const;
   ControllerType GetControllerType() const;
+  std::string GetControllerTypeString() const;
+  std::string GetIdString() const;
 
  private:
   static void WriteComplete(void* context, IOReturn result, void* arg0);
