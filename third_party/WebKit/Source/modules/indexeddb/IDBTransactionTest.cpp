@@ -195,6 +195,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
 TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
   V8TestingScope scope;
   std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  EXPECT_CALL(*backend, AckReceivedBlobs(testing::_)).Times(1);
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
@@ -231,6 +232,7 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithQueuedResult) {
 TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
   V8TestingScope scope;
   std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  EXPECT_CALL(*backend, AckReceivedBlobs(testing::_)).Times(2);
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
@@ -274,6 +276,7 @@ TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
 
   V8TestingScope scope;
   std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  EXPECT_CALL(*backend, AckReceivedBlobs(testing::_)).Times(1);
   EXPECT_CALL(*backend, Close()).Times(1);
   BuildTransaction(scope, std::move(backend));
 
