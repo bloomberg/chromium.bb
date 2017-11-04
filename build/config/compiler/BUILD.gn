@@ -1231,6 +1231,7 @@ config("default_warnings") {
       # Don't warn about "maybe" uninitialized. Clang doesn't include this
       # in -Wall but gcc does, and it gives false positives.
       cflags += [ "-Wno-maybe-uninitialized" ]
+      cflags += [ "-Wno-deprecated-declarations" ]
     }
   }
 
