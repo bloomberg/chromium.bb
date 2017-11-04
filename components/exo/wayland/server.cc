@@ -1417,6 +1417,159 @@ int XdgToplevelV6ResizeComponent(uint32_t edges) {
   }
 }
 
+using XdgSurfaceConfigureCallback =
+    base::Callback<void(const gfx::Size& size,
+                        ash::mojom::WindowStateType state_type,
+                        bool resizing,
+                        bool activated)>;
+
+uint32_t HandleXdgSurfaceV6ConfigureCallback(
+    wl_resource* resource,
+    const XdgSurfaceConfigureCallback& callback,
+    const gfx::Size& size,
+    ash::mojom::WindowStateType state_type,
+    bool resizing,
+    bool activated,
+    const gfx::Vector2d& origin_offset) {
+  uint32_t serial = wl_display_next_serial(
+      wl_client_get_display(wl_resource_get_client(resource)));
+  callback.Run(size, state_type, resizing, activated);
+  zxdg_surface_v6_send_configure(resource, serial);
+  wl_client_flush(wl_resource_get_client(resource));
+  return serial;
+}
+
+// Wrapper around shell surface that allows us to handle the case where the
+// xdg surface resource is destroyed before the toplevel resource.
+class WaylandToplevel : public aura::WindowObserver {
+ public:
+  WaylandToplevel(wl_resource* resource, wl_resource* surface_resource)
+      : resource_(resource),
+        shell_surface_(GetUserDataAs<ShellSurface>(surface_resource)),
+        weak_ptr_factory_(this) {
+    shell_surface_->host_window()->AddObserver(this);
+    shell_surface_->set_close_callback(
+        base::Bind(&WaylandToplevel::OnClose, weak_ptr_factory_.GetWeakPtr()));
+    shell_surface_->set_configure_callback(
+        base::Bind(&HandleXdgSurfaceV6ConfigureCallback, surface_resource,
+                   base::Bind(&WaylandToplevel::OnConfigure,
+                              weak_ptr_factory_.GetWeakPtr())));
+  }
+  ~WaylandToplevel() override {
+    if (shell_surface_)
+      shell_surface_->host_window()->RemoveObserver(this);
+  }
+
+  // Overridden from aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    shell_surface_ = nullptr;
+  }
+
+  void SetParent(WaylandToplevel* parent) {
+    if (!shell_surface_)
+      return;
+
+    if (!parent) {
+      shell_surface_->SetParent(nullptr);
+      return;
+    }
+
+    // This is a no-op if parent is not mapped.
+    if (parent->shell_surface_ && parent->shell_surface_->GetWidget())
+      shell_surface_->SetParent(parent->shell_surface_);
+  }
+
+  void SetTitle(const base::string16& title) {
+    if (shell_surface_)
+      shell_surface_->SetTitle(title);
+  }
+
+  void SetApplicationId(const char* application_id) {
+    if (shell_surface_)
+      shell_surface_->SetApplicationId(application_id);
+  }
+
+  void Move() {
+    if (shell_surface_)
+      shell_surface_->Move();
+  }
+
+  void Resize(int component) {
+    if (!shell_surface_)
+      return;
+
+    if (component != HTNOWHERE)
+      shell_surface_->Resize(component);
+  }
+
+  void SetMaximumSize(const gfx::Size& size) {
+    if (shell_surface_)
+      shell_surface_->SetMaximumSize(size);
+  }
+
+  void SetMinimumSize(const gfx::Size& size) {
+    if (shell_surface_)
+      shell_surface_->SetMinimumSize(size);
+  }
+
+  void Maximize() {
+    if (shell_surface_)
+      shell_surface_->Maximize();
+  }
+
+  void Restore() {
+    if (shell_surface_)
+      shell_surface_->Restore();
+  }
+
+  void SetFullscreen(bool fullscreen) {
+    if (shell_surface_)
+      shell_surface_->SetFullscreen(fullscreen);
+  }
+
+  void Minimize() {
+    if (shell_surface_)
+      shell_surface_->Minimize();
+  }
+
+ private:
+  void OnClose() {
+    zxdg_toplevel_v6_send_close(resource_);
+    wl_client_flush(wl_resource_get_client(resource_));
+  }
+
+  static void AddState(wl_array* states, zxdg_toplevel_v6_state state) {
+    zxdg_toplevel_v6_state* value = static_cast<zxdg_toplevel_v6_state*>(
+        wl_array_add(states, sizeof(zxdg_toplevel_v6_state)));
+    DCHECK(value);
+    *value = state;
+  }
+
+  void OnConfigure(const gfx::Size& size,
+                   ash::mojom::WindowStateType state_type,
+                   bool resizing,
+                   bool activated) {
+    wl_array states;
+    wl_array_init(&states);
+    if (state_type == ash::mojom::WindowStateType::MAXIMIZED)
+      AddState(&states, ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED);
+    if (state_type == ash::mojom::WindowStateType::FULLSCREEN)
+      AddState(&states, ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN);
+    if (resizing)
+      AddState(&states, ZXDG_TOPLEVEL_V6_STATE_RESIZING);
+    if (activated)
+      AddState(&states, ZXDG_TOPLEVEL_V6_STATE_ACTIVATED);
+    zxdg_toplevel_v6_send_configure(resource_, size.width(), size.height(),
+                                    &states);
+  }
+
+  wl_resource* const resource_;
+  ShellSurface* shell_surface_;
+  base::WeakPtrFactory<WaylandToplevel> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandToplevel);
+};
+
 void xdg_toplevel_v6_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
@@ -1424,28 +1577,24 @@ void xdg_toplevel_v6_destroy(wl_client* client, wl_resource* resource) {
 void xdg_toplevel_v6_set_parent(wl_client* client,
                                 wl_resource* resource,
                                 wl_resource* parent) {
-  if (!parent) {
-    GetUserDataAs<ShellSurface>(resource)->SetParent(nullptr);
-    return;
-  }
+  WaylandToplevel* parent_surface = nullptr;
+  if (parent)
+    parent_surface = GetUserDataAs<WaylandToplevel>(parent);
 
-  // This is a noop if parent has not been mapped.
-  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(parent);
-  if (shell_surface->GetWidget())
-    GetUserDataAs<ShellSurface>(resource)->SetParent(shell_surface);
+  GetUserDataAs<WaylandToplevel>(resource)->SetParent(parent_surface);
 }
 
 void xdg_toplevel_v6_set_title(wl_client* client,
                                wl_resource* resource,
                                const char* title) {
-  GetUserDataAs<ShellSurface>(resource)->SetTitle(
+  GetUserDataAs<WaylandToplevel>(resource)->SetTitle(
       base::string16(base::UTF8ToUTF16(title)));
 }
 
-void xdg_toplevel_v6_set_add_id(wl_client* client,
+void xdg_toplevel_v6_set_app_id(wl_client* client,
                                 wl_resource* resource,
                                 const char* app_id) {
-  GetUserDataAs<ShellSurface>(resource)->SetApplicationId(app_id);
+  GetUserDataAs<WaylandToplevel>(resource)->SetApplicationId(app_id);
 }
 
 void xdg_toplevel_v6_show_window_menu(wl_client* client,
@@ -1461,7 +1610,7 @@ void xdg_toplevel_v6_move(wl_client* client,
                           wl_resource* resource,
                           wl_resource* seat,
                           uint32_t serial) {
-  GetUserDataAs<ShellSurface>(resource)->Move();
+  GetUserDataAs<WaylandToplevel>(resource)->Move();
 }
 
 void xdg_toplevel_v6_resize(wl_client* client,
@@ -1469,16 +1618,15 @@ void xdg_toplevel_v6_resize(wl_client* client,
                             wl_resource* seat,
                             uint32_t serial,
                             uint32_t edges) {
-  int component = XdgToplevelV6ResizeComponent(edges);
-  if (component != HTNOWHERE)
-    GetUserDataAs<ShellSurface>(resource)->Resize(component);
+  GetUserDataAs<WaylandToplevel>(resource)->Resize(
+      XdgToplevelV6ResizeComponent(edges));
 }
 
 void xdg_toplevel_v6_set_max_size(wl_client* client,
                                   wl_resource* resource,
                                   int32_t width,
                                   int32_t height) {
-  GetUserDataAs<ShellSurface>(resource)->SetMaximumSize(
+  GetUserDataAs<WaylandToplevel>(resource)->SetMaximumSize(
       gfx::Size(width, height));
 }
 
@@ -1486,36 +1634,36 @@ void xdg_toplevel_v6_set_min_size(wl_client* client,
                                   wl_resource* resource,
                                   int32_t width,
                                   int32_t height) {
-  GetUserDataAs<ShellSurface>(resource)->SetMinimumSize(
+  GetUserDataAs<WaylandToplevel>(resource)->SetMinimumSize(
       gfx::Size(width, height));
 }
 
 void xdg_toplevel_v6_set_maximized(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Maximize();
+  GetUserDataAs<WaylandToplevel>(resource)->Maximize();
 }
 
 void xdg_toplevel_v6_unset_maximized(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Restore();
+  GetUserDataAs<WaylandToplevel>(resource)->Restore();
 }
 
 void xdg_toplevel_v6_set_fullscreen(wl_client* client,
                                     wl_resource* resource,
                                     wl_resource* output) {
-  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(true);
+  GetUserDataAs<WaylandToplevel>(resource)->SetFullscreen(true);
 }
 
 void xdg_toplevel_v6_unset_fullscreen(wl_client* client,
                                       wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(false);
+  GetUserDataAs<WaylandToplevel>(resource)->SetFullscreen(false);
 }
 
 void xdg_toplevel_v6_set_minimized(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Minimize();
+  GetUserDataAs<WaylandToplevel>(resource)->Minimize();
 }
 
 const struct zxdg_toplevel_v6_interface xdg_toplevel_v6_implementation = {
     xdg_toplevel_v6_destroy,          xdg_toplevel_v6_set_parent,
-    xdg_toplevel_v6_set_title,        xdg_toplevel_v6_set_add_id,
+    xdg_toplevel_v6_set_title,        xdg_toplevel_v6_set_app_id,
     xdg_toplevel_v6_show_window_menu, xdg_toplevel_v6_move,
     xdg_toplevel_v6_resize,           xdg_toplevel_v6_set_max_size,
     xdg_toplevel_v6_set_min_size,     xdg_toplevel_v6_set_maximized,
@@ -1524,6 +1672,40 @@ const struct zxdg_toplevel_v6_interface xdg_toplevel_v6_implementation = {
 
 ////////////////////////////////////////////////////////////////////////////////
 // xdg_popup_interface:
+
+// Wrapper around shell surface that allows us to handle the case where the
+// xdg surface resource is destroyed before the popup resource.
+class WaylandPopup {
+ public:
+  WaylandPopup(wl_resource* resource, wl_resource* surface_resource)
+      : resource_(resource), weak_ptr_factory_(this) {
+    ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(surface_resource);
+    shell_surface->set_close_callback(
+        base::Bind(&WaylandPopup::OnClose, weak_ptr_factory_.GetWeakPtr()));
+    shell_surface->set_configure_callback(
+        base::Bind(&HandleXdgSurfaceV6ConfigureCallback, surface_resource,
+                   base::Bind(&WaylandPopup::OnConfigure,
+                              weak_ptr_factory_.GetWeakPtr())));
+  }
+
+ private:
+  void OnClose() {
+    zxdg_popup_v6_send_popup_done(resource_);
+    wl_client_flush(wl_resource_get_client(resource_));
+  }
+
+  void OnConfigure(const gfx::Size& size,
+                   ash::mojom::WindowStateType state_type,
+                   bool resizing,
+                   bool activated) {
+    // Nothing to do here as popups don't have additional configure state.
+  }
+
+  wl_resource* const resource_;
+  base::WeakPtrFactory<WaylandPopup> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandPopup);
+};
 
 void xdg_popup_v6_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
@@ -1546,46 +1728,6 @@ void xdg_surface_v6_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
-void HandleXdgToplevelV6CloseCallback(wl_resource* resource) {
-  zxdg_toplevel_v6_send_close(resource);
-  wl_client_flush(wl_resource_get_client(resource));
-}
-
-void AddXdgToplevelV6State(wl_array* states, zxdg_toplevel_v6_state state) {
-  zxdg_toplevel_v6_state* value = static_cast<zxdg_toplevel_v6_state*>(
-      wl_array_add(states, sizeof(zxdg_toplevel_v6_state)));
-  DCHECK(value);
-  *value = state;
-}
-
-uint32_t HandleXdgToplevelV6ConfigureCallback(
-    wl_resource* resource,
-    wl_resource* surface_resource,
-    const gfx::Size& size,
-    ash::mojom::WindowStateType state_type,
-    bool resizing,
-    bool activated,
-    const gfx::Vector2d& origin_offset) {
-  wl_array states;
-  wl_array_init(&states);
-  if (state_type == ash::mojom::WindowStateType::MAXIMIZED)
-    AddXdgToplevelV6State(&states, ZXDG_TOPLEVEL_V6_STATE_MAXIMIZED);
-  if (state_type == ash::mojom::WindowStateType::FULLSCREEN)
-    AddXdgToplevelV6State(&states, ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN);
-  if (resizing)
-    AddXdgToplevelV6State(&states, ZXDG_TOPLEVEL_V6_STATE_RESIZING);
-  if (activated)
-    AddXdgToplevelV6State(&states, ZXDG_TOPLEVEL_V6_STATE_ACTIVATED);
-  zxdg_toplevel_v6_send_configure(resource, size.width(), size.height(),
-                                  &states);
-  uint32_t serial = wl_display_next_serial(
-      wl_client_get_display(wl_resource_get_client(surface_resource)));
-  zxdg_surface_v6_send_configure(surface_resource, serial);
-  wl_client_flush(wl_resource_get_client(resource));
-  wl_array_release(&states);
-  return serial;
-}
-
 void xdg_surface_v6_get_toplevel(wl_client* client,
                                  wl_resource* resource,
                                  uint32_t id) {
@@ -1601,22 +1743,9 @@ void xdg_surface_v6_get_toplevel(wl_client* client,
   wl_resource* xdg_toplevel_resource =
       wl_resource_create(client, &zxdg_toplevel_v6_interface, 1, id);
 
-  shell_surface->set_close_callback(
-      base::Bind(&HandleXdgToplevelV6CloseCallback,
-                 base::Unretained(xdg_toplevel_resource)));
-
-  shell_surface->set_configure_callback(base::Bind(
-      &HandleXdgToplevelV6ConfigureCallback,
-      base::Unretained(xdg_toplevel_resource), base::Unretained(resource)));
-
-  wl_resource_set_implementation(xdg_toplevel_resource,
-                                 &xdg_toplevel_v6_implementation, shell_surface,
-                                 nullptr);
-}
-
-void HandleXdgPopupV6CloseCallback(wl_resource* resource) {
-  zxdg_popup_v6_send_popup_done(resource);
-  wl_client_flush(wl_resource_get_client(resource));
+  SetImplementation(
+      xdg_toplevel_resource, &xdg_toplevel_v6_implementation,
+      std::make_unique<WaylandToplevel>(xdg_toplevel_resource, resource));
 }
 
 void xdg_surface_v6_get_popup(wl_client* client,
@@ -1632,7 +1761,7 @@ void xdg_surface_v6_get_popup(wl_client* client,
   }
 
   ShellSurface* parent = GetUserDataAs<ShellSurface>(parent_resource);
-  if (!parent->enabled()) {
+  if (!parent->GetWidget()) {
     wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_NOT_CONSTRUCTED,
                            "popup parent not constructed");
     return;
@@ -1654,11 +1783,9 @@ void xdg_surface_v6_get_popup(wl_client* client,
   wl_resource* xdg_popup_resource =
       wl_resource_create(client, &zxdg_popup_v6_interface, 1, id);
 
-  shell_surface->set_close_callback(base::Bind(
-      &HandleXdgPopupV6CloseCallback, base::Unretained(xdg_popup_resource)));
-
-  wl_resource_set_implementation(
-      xdg_popup_resource, &xdg_popup_v6_implementation, shell_surface, nullptr);
+  SetImplementation(
+      xdg_popup_resource, &xdg_popup_v6_implementation,
+      std::make_unique<WaylandPopup>(xdg_popup_resource, resource));
 }
 
 void xdg_surface_v6_set_window_geometry(wl_client* client,
@@ -1699,20 +1826,6 @@ void xdg_shell_v6_create_positioner(wl_client* client,
                     std::make_unique<WaylandPositioner>());
 }
 
-uint32_t HandleXdgSurfaceV6ConfigureCallback(
-    wl_resource* resource,
-    const gfx::Size& size,
-    ash::mojom::WindowStateType state_type,
-    bool resizing,
-    bool activated,
-    const gfx::Vector2d& origin_offset) {
-  uint32_t serial = wl_display_next_serial(
-      wl_client_get_display(wl_resource_get_client(resource)));
-  zxdg_surface_v6_send_configure(resource, serial);
-  wl_client_flush(wl_resource_get_client(resource));
-  return serial;
-}
-
 void xdg_shell_v6_get_xdg_surface(wl_client* client,
                                   wl_resource* resource,
                                   uint32_t id,
@@ -1732,10 +1845,6 @@ void xdg_shell_v6_get_xdg_surface(wl_client* client,
 
   wl_resource* xdg_surface_resource =
       wl_resource_create(client, &zxdg_surface_v6_interface, 1, id);
-
-  shell_surface->set_configure_callback(
-      base::Bind(&HandleXdgSurfaceV6ConfigureCallback,
-                 base::Unretained(xdg_surface_resource)));
 
   SetImplementation(xdg_surface_resource, &xdg_surface_v6_implementation,
                     std::move(shell_surface));
