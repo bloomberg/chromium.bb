@@ -120,15 +120,11 @@ static int rockchip_init(struct driver *drv)
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
-	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				   &metadata, BO_USE_RENDER_MASK);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+			     &metadata, BO_USE_RENDER_MASK);
 
-	ret = drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
-				   &metadata, BO_USE_TEXTURE_MASK);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
+			     &metadata, BO_USE_TEXTURE_MASK);
 
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);

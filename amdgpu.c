@@ -273,7 +273,6 @@ static void *amdgpu_addrlib_init(int fd)
 
 static int amdgpu_init(struct driver *drv)
 {
-	int ret;
 	void *addrlib;
 	struct format_metadata metadata;
 	uint64_t use_flags = BO_USE_RENDER_MASK;
@@ -284,10 +283,8 @@ static int amdgpu_init(struct driver *drv)
 
 	drv->priv = addrlib;
 
-	ret = drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
-				   &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
+			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
 
 	/* YUV format for camera */
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
@@ -306,10 +303,8 @@ static int amdgpu_init(struct driver *drv)
 	metadata.priority = 2;
 	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
-	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				   &metadata, use_flags);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+			     &metadata, use_flags);
 
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
@@ -319,10 +314,8 @@ static int amdgpu_init(struct driver *drv)
 	metadata.priority = 3;
 	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
-	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				   &metadata, use_flags);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+			     &metadata, use_flags);
 
 	use_flags &= ~BO_USE_SW_WRITE_OFTEN;
 	use_flags &= ~BO_USE_SW_READ_OFTEN;
@@ -331,10 +324,8 @@ static int amdgpu_init(struct driver *drv)
 	metadata.tiling = ADDR_DISPLAYABLE << 16 | ADDR_TM_2D_TILED_THIN1;
 	metadata.priority = 4;
 
-	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				   &metadata, use_flags);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+			     &metadata, use_flags);
 
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_SCANOUT);
@@ -343,12 +334,10 @@ static int amdgpu_init(struct driver *drv)
 	metadata.tiling = ADDR_NON_DISPLAYABLE << 16 | ADDR_TM_2D_TILED_THIN1;
 	metadata.priority = 5;
 
-	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				   &metadata, use_flags);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+			     &metadata, use_flags);
 
-	return ret;
+	return 0;
 }
 
 static void amdgpu_close(struct driver *drv)

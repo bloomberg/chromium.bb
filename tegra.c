@@ -179,7 +179,6 @@ static void transfer_tiled_memory(struct bo *bo, uint8_t *tiled, uint8_t *untile
 
 static int tegra_init(struct driver *drv)
 {
-	int ret;
 	struct format_metadata metadata;
 	uint64_t use_flags = BO_USE_RENDER_MASK;
 
@@ -187,10 +186,8 @@ static int tegra_init(struct driver *drv)
 	metadata.priority = 1;
 	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 
-	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				   &metadata, use_flags);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+			     &metadata, use_flags);
 
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_CURSOR | BO_USE_SCANOUT);
@@ -202,10 +199,8 @@ static int tegra_init(struct driver *drv)
 	metadata.tiling = NV_MEM_KIND_C32_2CRA;
 	metadata.priority = 2;
 
-	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				   &metadata, use_flags);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+			     &metadata, use_flags);
 
 	drv_modify_combination(drv, DRM_FORMAT_XRGB8888, &metadata, BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_ARGB8888, &metadata, BO_USE_SCANOUT);

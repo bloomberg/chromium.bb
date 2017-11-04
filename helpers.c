@@ -444,18 +444,12 @@ int drv_add_combination(struct driver *drv, uint32_t format, struct format_metad
 	return 0;
 }
 
-int drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats,
-			 struct format_metadata *metadata, uint64_t use_flags)
+void drv_add_combinations(struct driver *drv, const uint32_t *formats, uint32_t num_formats,
+			  struct format_metadata *metadata, uint64_t use_flags)
 {
-	int ret;
 	uint32_t i;
-	for (i = 0; i < num_formats; i++) {
-		ret = drv_add_combination(drv, formats[i], metadata, use_flags);
-		if (ret)
-			return ret;
-	}
-
-	return 0;
+	for (i = 0; i < num_formats; i++)
+		drv_add_combination(drv, formats[i], metadata, use_flags);
 }
 
 void drv_modify_combination(struct driver *drv, uint32_t format, struct format_metadata *metadata,

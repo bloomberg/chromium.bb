@@ -20,16 +20,11 @@ static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU
 
 static int virtio_gpu_init(struct driver *drv)
 {
-	int ret;
-	ret = drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				   &LINEAR_METADATA, BO_USE_RENDER_MASK);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
+			     &LINEAR_METADATA, BO_USE_RENDER_MASK);
 
-	ret = drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
-				   &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
-	if (ret)
-		return ret;
+	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
+			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
 
 	return drv_modify_linear_combinations(drv);
 }
