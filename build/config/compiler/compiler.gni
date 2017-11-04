@@ -208,8 +208,9 @@ if (symbol_level == -1) {
 } else if (symbol_level == 2) {
   if (is_win) {
     # See crbug.com/630074
-    assert(is_win_fastlink || !use_goma,
-           "Goma builds that use symbol_level 2 must use is_win_fastlink.")
+    assert(is_win_fastlink || use_lld || !use_goma,
+           "Goma builds that use symbol_level 2 must use " +
+               "is_win_fastlink or use_lld.")
   }
 }
 
