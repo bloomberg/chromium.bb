@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_GRC_TAB_SIGNAL_OBSERVER_H_
-#define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_GRC_TAB_SIGNAL_OBSERVER_H_
+#ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_PAGE_SIGNAL_RECEIVER_H_
+#define CHROME_BROWSER_RESOURCE_COORDINATOR_PAGE_SIGNAL_RECEIVER_H_
 
 #include "base/macros.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/resource_coordinator/public/interfaces/tab_signal.mojom.h"
+#include "services/resource_coordinator/public/interfaces/page_signal.mojom.h"
 
 namespace content {
 class WebContents;
@@ -16,20 +16,20 @@ class WebContents;
 
 namespace resource_coordinator {
 
-// Implementation of resource_coordinator::mojom::TabSignalObserver,
-// observer constructs a mojo channel to TabSignalGenerator in GRC, passes an
-// interface pointer to TabSignalGenerator, and receives tab scoped signals from
-// TabSignalGenerator once a signal is generated.
-class TabManager::GRCTabSignalObserver : public mojom::TabSignalObserver {
+// Implementation of resource_coordinator::mojom::PageSignalReceiver,
+// observer constructs a mojo channel to PageSignalGenerator in GRC, passes an
+// interface pointer to PageSignalGenerator, and receives page scoped signals
+// from PageSignalGenerator once a signal is generated.
+class TabManager::PageSignalReceiver : public mojom::PageSignalReceiver {
  public:
-  GRCTabSignalObserver();
-  ~GRCTabSignalObserver() override;
+  PageSignalReceiver();
+  ~PageSignalReceiver() override;
 
   static bool IsEnabled();
   // Callers do not take ownership.
-  static GRCTabSignalObserver* GetInstance();
+  static PageSignalReceiver* GetInstance();
 
-  // mojom::TabSignalObserver implementation.
+  // mojom::PageSignalReceiver implementation.
   void NotifyPageAlmostIdle(const CoordinationUnitID& cu_id) override;
   void SetExpectedTaskQueueingDuration(const CoordinationUnitID& cu_id,
                                        base::TimeDelta duration) override;
@@ -41,11 +41,11 @@ class TabManager::GRCTabSignalObserver : public mojom::TabSignalObserver {
   void RemoveCoordinationUnitID(const CoordinationUnitID& cu_id);
 
  private:
-  mojo::Binding<mojom::TabSignalObserver> binding_;
+  mojo::Binding<mojom::PageSignalReceiver> binding_;
   std::map<CoordinationUnitID, content::WebContents*> cu_id_web_contents_map_;
-  DISALLOW_COPY_AND_ASSIGN(GRCTabSignalObserver);
+  DISALLOW_COPY_AND_ASSIGN(PageSignalReceiver);
 };
 
 }  // namespace resource_coordinator
 
-#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_MANAGER_GRC_TAB_SIGNAL_OBSERVER_H_
+#endif  // CHROME_BROWSER_RESOURCE_COORDINATOR_PAGE_SIGNAL_RECEIVER_H_

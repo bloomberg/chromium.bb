@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/resource_coordinator/tab_manager_grc_tab_signal_observer.h"
+#include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "components/ukm/ukm_interface.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -54,11 +54,11 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
   }
 
 #if !defined(OS_ANDROID)
-  if (auto* grc_tab_signal_observer = resource_coordinator::TabManager::
-          GRCTabSignalObserver::GetInstance()) {
+  if (auto* page_signal_receiver =
+          resource_coordinator::TabManager::PageSignalReceiver::GetInstance()) {
     // Gets CoordinationUnitID for this WebContents and adds it to
-    // GRCTabSignalObserver.
-    grc_tab_signal_observer->AssociateCoordinationUnitIDWithWebContents(
+    // PageSignalReceiver.
+    page_signal_receiver->AssociateCoordinationUnitIDWithWebContents(
         page_resource_coordinator_->id(), web_contents);
   }
 #endif
@@ -123,11 +123,11 @@ void ResourceCoordinatorWebContentsObserver::WasHidden() {
 
 void ResourceCoordinatorWebContentsObserver::WebContentsDestroyed() {
 #if !defined(OS_ANDROID)
-  if (auto* grc_tab_signal_observer = resource_coordinator::TabManager::
-          GRCTabSignalObserver::GetInstance()) {
+  if (auto* page_signal_receiver =
+          resource_coordinator::TabManager::PageSignalReceiver::GetInstance()) {
     // Gets CoordinationUnitID for this WebContents and removes it from
-    // GRCTabSignalObserver.
-    grc_tab_signal_observer->RemoveCoordinationUnitID(
+    // PageSignalReceiver.
+    page_signal_receiver->RemoveCoordinationUnitID(
         page_resource_coordinator_->id());
   }
 #endif
