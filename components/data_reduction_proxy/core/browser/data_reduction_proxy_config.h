@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/data_reduction_proxy/core/browser/network_properties_manager.h"
 #include "components/data_reduction_proxy/core/browser/secure_proxy_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/previews/core/previews_experiments.h"
@@ -208,8 +209,8 @@ class DataReductionProxyConfig
 
  protected:
   // Should be called when there is a change in the status of the availability
-  // of the insecure data saver proxies.
-  void OnInsecureProxyAllowedStatusChange(bool insecure_proxies_allowed);
+  // of the insecure data saver proxies triggered due to warmup URL.
+  void OnInsecureProxyWarmupURLProbeStatusChange(bool insecure_proxies_allowed);
 
   virtual base::TimeTicks GetTicksNow() const;
 
@@ -311,9 +312,6 @@ class DataReductionProxyConfig
   // URL fetcher used for fetching the warmup URL.
   std::unique_ptr<WarmupURLFetcher> warmup_url_fetcher_;
 
-  // Indicates if the secure Data Reduction Proxy can be used or not.
-  bool secure_proxy_allowed_;
-
   bool unreachable_;
   bool enabled_by_user_;
 
@@ -342,12 +340,7 @@ class DataReductionProxyConfig
   // The current connection type.
   net::NetworkChangeNotifier::ConnectionType connection_type_;
 
-  // Set to true if the captive portal probe for the current network has been
-  // blocked.
-  bool is_captive_portal_;
-
-  // Set to true if insecure data saver proxies are allowed.
-  bool insecure_proxies_allowed_;
+  NetworkPropertiesManager network_properties_manager_;
 
   base::WeakPtrFactory<DataReductionProxyConfig> weak_factory_;
 
