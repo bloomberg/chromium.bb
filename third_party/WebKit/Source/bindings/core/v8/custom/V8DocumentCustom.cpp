@@ -58,6 +58,16 @@ void V8Document::openMethodCustom(
   Document* document = V8Document::ToImpl(info.Holder());
 
   if (info.Length() > 2) {
+    if (!document->domWindow()) {
+      ExceptionState exception_state(info.GetIsolate(),
+                                     ExceptionState::kExecutionContext,
+                                     "Document", "open");
+      exception_state.ThrowDOMException(kInvalidAccessError,
+                                        "document.open should throw when it "
+                                        "has no window and is called with "
+                                        "three arguments");
+      return;
+    }
     LocalFrame* frame = document->GetFrame();
     if (!frame)
       return;
