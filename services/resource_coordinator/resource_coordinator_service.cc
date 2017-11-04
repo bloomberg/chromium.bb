@@ -8,7 +8,7 @@
 
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 #include "services/resource_coordinator/observers/metrics_collector.h"
-#include "services/resource_coordinator/observers/tab_signal_generator_impl.h"
+#include "services/resource_coordinator/observers/page_signal_generator_impl.h"
 #include "services/resource_coordinator/service_callbacks_impl.h"
 #include "services/resource_coordinator/tracing/agent_registry.h"
 #include "services/resource_coordinator/tracing/coordinator.h"
@@ -44,12 +44,12 @@ void ResourceCoordinatorService::OnStart() {
                  base::Unretained(&introspector_)));
 
   // Register new |CoordinationUnitGraphObserver| implementations here.
-  auto tab_signal_generator_impl = std::make_unique<TabSignalGeneratorImpl>();
+  auto page_signal_generator_impl = std::make_unique<PageSignalGeneratorImpl>();
   registry_.AddInterface(
-      base::Bind(&TabSignalGeneratorImpl::BindToInterface,
-                 base::Unretained(tab_signal_generator_impl.get())));
+      base::Bind(&PageSignalGeneratorImpl::BindToInterface,
+                 base::Unretained(page_signal_generator_impl.get())));
   coordination_unit_manager_.RegisterObserver(
-      std::move(tab_signal_generator_impl));
+      std::move(page_signal_generator_impl));
 
   coordination_unit_manager_.RegisterObserver(
       std::make_unique<MetricsCollector>());

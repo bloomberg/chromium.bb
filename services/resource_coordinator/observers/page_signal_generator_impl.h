@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_TAB_SIGNAL_GENERATOR_IMPL_H_
-#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_TAB_SIGNAL_GENERATOR_IMPL_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PAGE_SIGNAL_GENERATOR_IMPL_H_
+#define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PAGE_SIGNAL_GENERATOR_IMPL_H_
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
-#include "services/resource_coordinator/public/interfaces/tab_signal.mojom.h"
+#include "services/resource_coordinator/public/interfaces/page_signal.mojom.h"
 
 namespace service_manager {
 struct BindSourceInfo;
@@ -17,18 +17,18 @@ struct BindSourceInfo;
 
 namespace resource_coordinator {
 
-// The TabSignalGenerator is a dedicated |CoordinationUnitGraphObserver| for
-// calculating and emitting tab-scoped signals. This observer observes Tab
-// CoordinationUnits and Frame CoordinationUnits, utilize information from the
-// graph and generate tab level signals.
-class TabSignalGeneratorImpl : public CoordinationUnitGraphObserver,
-                               public mojom::TabSignalGenerator {
+// The PageSignalGenerator is a dedicated |CoordinationUnitGraphObserver| for
+// calculating and emitting page-scoped signals. This observer observes
+// ProcessCoordinationUnits and FrameCoordinationUnits, utilize information from
+// the graph and generate page level signals.
+class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
+                                public mojom::PageSignalGenerator {
  public:
-  TabSignalGeneratorImpl();
-  ~TabSignalGeneratorImpl() override;
+  PageSignalGeneratorImpl();
+  ~PageSignalGeneratorImpl() override;
 
   // mojom::SignalGenerator implementation.
-  void AddObserver(mojom::TabSignalObserverPtr observer) override;
+  void AddReceiver(mojom::PageSignalReceiverPtr receiver) override;
 
   // CoordinationUnitGraphObserver implementation.
   bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override;
@@ -40,19 +40,19 @@ class TabSignalGeneratorImpl : public CoordinationUnitGraphObserver,
                                 int64_t value) override;
 
   void BindToInterface(
-      resource_coordinator::mojom::TabSignalGeneratorRequest request,
+      resource_coordinator::mojom::PageSignalGeneratorRequest request,
       const service_manager::BindSourceInfo& source_info);
 
  private:
   void NotifyPageAlmostIdleIfPossible(
       const FrameCoordinationUnitImpl* frame_cu);
 
-  mojo::BindingSet<mojom::TabSignalGenerator> bindings_;
-  mojo::InterfacePtrSet<mojom::TabSignalObserver> observers_;
+  mojo::BindingSet<mojom::PageSignalGenerator> bindings_;
+  mojo::InterfacePtrSet<mojom::PageSignalReceiver> receivers_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabSignalGeneratorImpl);
+  DISALLOW_COPY_AND_ASSIGN(PageSignalGeneratorImpl);
 };
 
 }  // namespace resource_coordinator
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_TAB_SIGNAL_GENERATOR_IMPL_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PAGE_SIGNAL_GENERATOR_IMPL_H_

@@ -84,8 +84,8 @@ struct BrowserInfo {
 class TabManager : public TabStripModelObserver,
                    public chrome::BrowserListObserver {
  public:
-  // Forward declaration of tab signal observer.
-  class GRCTabSignalObserver;
+  // Forward declaration of page signal observer.
+  class PageSignalReceiver;
   // Needs to be public for DEFINE_WEB_CONTENTS_USER_DATA_KEY.
   class WebContentsData;
 

@@ -13,10 +13,10 @@ mojom("interfaces_internal") {
     "coordination_unit_provider.mojom",
     "memory_instrumentation/constants.mojom",
     "memory_instrumentation/memory_instrumentation.mojom",
+    "page_signal.mojom",
     "service_callbacks.mojom",
     "service_constants.mojom",
     "signals.mojom",
-    "tab_signal.mojom",
     "tracing/tracing.mojom",
     "tracing/tracing_constants.mojom",
   ]
