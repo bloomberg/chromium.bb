@@ -5,7 +5,7 @@
 #include "ui/message_center/mojo/notification_struct_traits.h"
 
 #include "mojo/common/common_custom_types_struct_traits.h"
-#include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
+#include "ui/gfx/image/mojo/image_skia_struct_traits.h"
 #include "url/mojo/url_gurl_struct_traits.h"
 
 namespace mojo {
@@ -32,13 +32,10 @@ const base::string16& StructTraits<message_center::mojom::NotificationDataView,
 }
 
 // static
-const SkBitmap& StructTraits<
+gfx::ImageSkia StructTraits<
     message_center::mojom::NotificationDataView,
     message_center::Notification>::icon(const message_center::Notification& n) {
-  // TODO(mhashmi): Remove this when we have a gfx::Image mojom
-  static const SkBitmap kNullSkBitmap;
-  gfx::Image icon = n.icon();
-  return icon.IsEmpty() ? kNullSkBitmap : *icon.ToSkBitmap();
+  return n.icon().AsImageSkia();
 }
 
 // static
@@ -60,15 +57,14 @@ bool StructTraits<message_center::mojom::NotificationDataView,
                   message_center::Notification>::
     Read(message_center::mojom::NotificationDataView data,
          message_center::Notification* out) {
-  SkBitmap icon;
-  if (!data.ReadId(&out->id_) || !data.ReadTitle(&out->title_) ||
-      !data.ReadMessage(&out->message_) ||
-      !data.ReadDisplaySource(&out->display_source_) || !data.ReadIcon(&icon) ||
-      !data.ReadOriginUrl(&out->origin_url_)) {
+  gfx::ImageSkia icon;
+  if (!data.ReadIcon(&icon))
     return false;
-  }
-  out->icon_ = gfx::Image::CreateFrom1xBitmap(icon);
-  return true;
+  out->icon_ = gfx::Image(icon);
+  return data.ReadId(&out->id_) && data.ReadTitle(&out->title_) &&
+         data.ReadMessage(&out->message_) &&
+         data.ReadDisplaySource(&out->display_source_) &&
+         data.ReadOriginUrl(&out->origin_url_);
 }
 
 }  // namespace mojo
