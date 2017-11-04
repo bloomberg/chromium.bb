@@ -16,7 +16,7 @@ struct StructTraits<message_center::mojom::NotificationDataView,
   static const std::string& id(const message_center::Notification& n);
   static const base::string16& title(const message_center::Notification& n);
   static const base::string16& message(const message_center::Notification& n);
-  static const SkBitmap& icon(const message_center::Notification& n);
+  static gfx::ImageSkia icon(const message_center::Notification& n);
   static const base::string16& display_source(
       const message_center::Notification& n);
   static const GURL& origin_url(const message_center::Notification& n);

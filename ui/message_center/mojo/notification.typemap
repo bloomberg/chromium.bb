@@ -6,6 +6,7 @@ mojom = "//ui/message_center/mojo/notification.mojom"
 public_headers = [ "//ui/message_center/notification.h" ]
 traits_headers = [ "//ui/message_center/mojo/notification_struct_traits.h" ]
 deps = [
+  "//ui/gfx/image/mojo:struct_traits",
   "//ui/message_center/mojo:struct_traits",
 ]
 type_mappings =
