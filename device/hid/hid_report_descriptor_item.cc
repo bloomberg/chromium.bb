@@ -37,7 +37,8 @@ HidReportDescriptorItem::HidReportDescriptorItem(
     if (size >= 2)
       payload_size_ = bytes[1];
   } else {
-    payload_size_ = header->size;
+    // As per HID spec, a bSize value of 3 means 4 bytes.
+    payload_size_ = header->size == 0x3 ? 4 : header->size;
     DCHECK(payload_size_ <= sizeof(shortData_));
     if (GetHeaderSize() + payload_size() <= size)
       memcpy(&shortData_, &bytes[GetHeaderSize()], payload_size());

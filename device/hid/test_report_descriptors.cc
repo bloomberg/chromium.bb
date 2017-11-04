@@ -163,6 +163,9 @@ const uint8_t kMonitor[] = {
     0xb2, 0x02, 0x01,  //  Feature (Dat|Arr|Rel|NoWrp|Lin|Prf|NoNull|Buff)
     0x85, 0x03,        //  Report ID (0x3)
     0x05, 0x82,        //  Usage Page (Monitor 2)
+    0x67, 0xE1, 0x00,  //  Unit (System: SI, Lum. Intensity: Candela)
+    0x00, 0x01,        //  ... continuation
+    0x55, 0x0E,        //  Unit Exponent (-2)
     0x95, 0x01,        //  Report Count (1)
     0x75, 0x10,        //  Report Size (16)
     0x26, 0xc8, 0x00,  //  Logical Maximum (200)
