@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "content/common/loader_util.h"
 #include "content/network/network_context.h"
+#include "content/network/network_service_impl.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader_factory.mojom.h"
@@ -268,9 +269,14 @@ URLLoader::URLLoader(NetworkContext* context,
                      const ResourceRequest& request,
                      bool report_raw_headers,
                      mojom::URLLoaderClientPtr url_loader_client,
-                     const net::NetworkTrafficAnnotationTag& traffic_annotation)
+                     const net::NetworkTrafficAnnotationTag& traffic_annotation,
+                     uint32_t process_id,
+                     uint32_t routing_id)
     : context_(context),
       options_(options),
+      resource_type_(request.resource_type),
+      process_id_(process_id),
+      routing_id_(routing_id),
       connected_(true),
       binding_(this, std::move(url_loader_request)),
       url_loader_client_(std::move(url_loader_client)),
@@ -418,6 +424,28 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
     raw_response_headers_ = nullptr;
   }
   url_loader_client_->OnReceiveRedirect(redirect_info, response->head);
+}
+
+void URLLoader::OnAuthRequired(net::URLRequest* unused,
+                               net::AuthChallengeInfo* auth_info) {
+  NOTIMPLEMENTED() << "http://crbug.com/756654";
+  net::URLRequest::Delegate::OnAuthRequired(unused, auth_info);
+}
+
+void URLLoader::OnCertificateRequested(net::URLRequest* unused,
+                                       net::SSLCertRequestInfo* cert_info) {
+  NOTIMPLEMENTED() << "http://crbug.com/756654";
+  net::URLRequest::Delegate::OnCertificateRequested(unused, cert_info);
+}
+
+void URLLoader::OnSSLCertificateError(net::URLRequest* request,
+                                      const net::SSLInfo& ssl_info,
+                                      bool fatal) {
+  context_->network_service()->client()->OnSSLCertificateError(
+      resource_type_, url_request_->url(), process_id_, routing_id_, ssl_info,
+      fatal,
+      base::Bind(&URLLoader::OnSSLCertificateErrorResponse,
+                 weak_ptr_factory_.GetWeakPtr(), ssl_info));
 }
 
 void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
@@ -695,6 +723,20 @@ void URLLoader::SendUploadProgress(const net::UploadProgress& progress) {
 void URLLoader::OnUploadProgressACK() {
   if (upload_progress_tracker_)
     upload_progress_tracker_->OnAckReceived();
+}
+
+void URLLoader::OnSSLCertificateErrorResponse(const net::SSLInfo& ssl_info,
+                                              int net_error) {
+  // The request can be NULL if it was cancelled by the client.
+  if (!url_request_ || !url_request_->is_pending())
+    return;
+
+  if (net_error == net::OK) {
+    url_request_->ContinueDespiteLastError();
+    return;
+  }
+
+  url_request_->CancelWithSSLError(net_error, ssl_info);
 }
 
 }  // namespace content

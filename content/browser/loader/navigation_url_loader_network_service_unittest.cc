@@ -54,7 +54,8 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
     // The URLLoader will delete itself upon completion.
     new URLLoader(context_.get(), std::move(request), 0 /* options */,
                   resource_request, false /* report_raw_headers */,
-                  std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS);
+                  std::move(client), TRAFFIC_ANNOTATION_FOR_TESTS,
+                  0 /* process_id */, 0 /* routing_id */);
   }
 
   bool MaybeCreateLoaderForResponse(

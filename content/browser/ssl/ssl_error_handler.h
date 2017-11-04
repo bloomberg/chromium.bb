@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/resource_type.h"
 #include "net/ssl/ssl_info.h"
@@ -31,8 +32,8 @@ class WebContents;
 // call exactly one of those methods exactly once.
 class SSLErrorHandler {
  public:
-  // SSLErrorHandler's delegate lives on the IO thread, and thus these
-  // delegate methods must be called on the IO thread only.
+  // SSLErrorHandler's delegate lives on the UI or IO thread based on the passed
+  // in |delegate_thread|. The methods will be called on that thread.
   class CONTENT_EXPORT Delegate {
    public:
     // Called when SSLErrorHandler decides to cancel the request because of
@@ -49,6 +50,7 @@ class SSLErrorHandler {
 
   SSLErrorHandler(WebContents* web_contents,
                   const base::WeakPtr<Delegate>& delegate,
+                  BrowserThread::ID delegate_thread,
                   ResourceType resource_type,
                   const GURL& url,
                   const net::SSLInfo& ssl_info,
@@ -83,10 +85,11 @@ class SSLErrorHandler {
   void DenyRequest();
 
  private:
-  // This must not be dereferenced on the UI thread. SSLErrorHandler
-  // simply holds on to the reference to be passed back to the IO thread
-  // to enact a decision about the error once one has been made.
+  // This is called on |delegate_thread_|.
   base::WeakPtr<Delegate> delegate_;
+
+  // The thread that the delegate is called on.
+  BrowserThread::ID delegate_thread_;
 
   // The URL for the request that generated the error.
   const GURL request_url_;

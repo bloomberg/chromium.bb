@@ -154,6 +154,10 @@ void NetworkServiceImpl::DeregisterNetworkContext(
   network_contexts_.erase(network_context);
 }
 
+void NetworkServiceImpl::SetClient(mojom::NetworkServiceClientPtr client) {
+  client_ = std::move(client);
+}
+
 void NetworkServiceImpl::CreateNetworkContext(
     mojom::NetworkContextRequest request,
     mojom::NetworkContextParamsPtr params) {

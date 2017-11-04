@@ -43,7 +43,8 @@ class CONTENT_EXPORT SSLManager {
   // will adjust the security UI and either call |CancelSSLRequest| or
   // |ContinueSSLRequest| of |delegate|.
   //
-  // Called on the IO thread.
+  // This can be called on the UI or IO thread. It will call |delegate| on the
+  // same thread.
   static void OnSSLCertificateError(
       const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
       ResourceType resource_type,
