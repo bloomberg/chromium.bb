@@ -59,9 +59,10 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
 
   void VisitHTTPHeaderFields(WebHTTPHeaderVisitor*) const;
 
+  // There are two ways of representing body: WebHTTPBody or Blob.  Only one
+  // should be used.
   void SetBody(const WebHTTPBody&);
   WebHTTPBody Body() const;
-
   void SetBlob(const WebString& uuid,
                long long size,
                mojo::ScopedMessagePipeHandle);

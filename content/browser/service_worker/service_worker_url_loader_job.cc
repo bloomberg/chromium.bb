@@ -252,10 +252,8 @@ void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
   // ServiceWorker, we have to check the security level of the responses.
   const net::HttpResponseInfo* main_script_http_info =
       version->GetMainScriptHttpResponseInfo();
-  // TODO(kinuko)
-  // Fix this here.
-  if (main_script_http_info)
-    ssl_info_ = main_script_http_info->ssl_info;
+  DCHECK(main_script_http_info);
+  ssl_info_ = main_script_http_info->ssl_info;
 
   std::move(loader_callback_)
       .Run(base::BindOnce(&ServiceWorkerURLLoaderJob::StartResponse,
@@ -295,6 +293,8 @@ void ServiceWorkerURLLoaderJob::StartResponse(
   if (redirect_info) {
     response_head_.encoded_data_length = 0;
     url_loader_client_->OnReceiveRedirect(*redirect_info, response_head_);
+    // Our client is the navigation loader, which will start a new URLLoader for
+    // the redirect rather than calling FollowRedirect(), so we're done here.
     status_ = Status::kCompleted;
     return;
   }
