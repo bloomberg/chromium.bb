@@ -23,6 +23,29 @@ namespace device {
 class BluetoothRemoteGattServiceTest : public BluetoothTest {};
 #endif
 
+// Android is excluded because it fires a single discovery event per device.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+TEST_F(BluetoothRemoteGattServiceTest, IsDiscoveryComplete) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+  SimulateGattServicesDiscovered(
+      device, std::vector<std::string>(
+                  {kTestUUIDGenericAccess, kTestUUIDGenericAccess}));
+  base::RunLoop().RunUntilIdle();
+  BluetoothRemoteGattService* service = device->GetGattServices()[0];
+  EXPECT_TRUE(service->IsDiscoveryComplete());
+}
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
 #if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 TEST_F(BluetoothRemoteGattServiceTest, GetIdentifier) {
   if (!PlatformSupportsLowEnergy()) {

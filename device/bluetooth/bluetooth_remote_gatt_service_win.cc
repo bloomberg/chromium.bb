@@ -31,7 +31,6 @@ BluetoothRemoteGattServiceWin::BluetoothRemoteGattServiceWin(
       parent_service_(parent_service),
       ui_task_runner_(ui_task_runner),
       discovery_complete_notified_(false),
-      included_characteristics_discovered_(false),
       weak_ptr_factory_(this) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!service_path_.empty());
@@ -127,7 +126,7 @@ void BluetoothRemoteGattServiceWin::OnGetIncludedCharacteristics(
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
   UpdateIncludedCharacteristics(characteristics.get(), num);
-  included_characteristics_discovered_ = true;
+  SetDiscoveryComplete(true);
   NotifyGattDiscoveryCompleteForServiceIfNecessary();
 }
 
@@ -173,7 +172,7 @@ void BluetoothRemoteGattServiceWin::UpdateIncludedCharacteristics(
     }
   }
 
-  if (included_characteristics_discovered_)
+  if (IsDiscoveryComplete())
     adapter_->NotifyGattServiceChanged(this);
 }
 
@@ -181,7 +180,7 @@ void BluetoothRemoteGattServiceWin::
     NotifyGattDiscoveryCompleteForServiceIfNecessary() {
   if (discovery_completed_included_charateristics_.size() ==
           included_characteristics_.size() &&
-      included_characteristics_discovered_ && !discovery_complete_notified_) {
+      IsDiscoveryComplete() && !discovery_complete_notified_) {
     adapter_->NotifyGattDiscoveryComplete(this);
     discovery_complete_notified_ = true;
   }

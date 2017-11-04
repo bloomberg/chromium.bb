@@ -27,4 +27,12 @@ BluetoothRemoteGattService::GetCharacteristicsByUUID(
   return result;
 }
 
+bool BluetoothRemoteGattService::IsDiscoveryComplete() const {
+  return discovery_complete_;
+}
+
+void BluetoothRemoteGattService::SetDiscoveryComplete(bool complete) {
+  discovery_complete_ = complete;
+}
+
 }  // namespace device
