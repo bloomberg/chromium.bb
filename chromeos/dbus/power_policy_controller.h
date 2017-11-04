@@ -33,6 +33,9 @@ class CHROMEOS_EXPORT PowerPolicyController
   static PowerPolicyController* Get();
 
   // Reasons why a wake lock may be added.
+  // TODO(derat): Remove this enum in favor of device::mojom::WakeLockReason
+  // once this class has been moved to the device service:
+  // https://crbug.com/702449
   enum WakeLockReason {
     REASON_AUDIO_PLAYBACK,
     REASON_VIDEO_PLAYBACK,
@@ -132,6 +135,9 @@ class CHROMEOS_EXPORT PowerPolicyController
   // SCREEN will also prevent it from dimming. SYSTEM will prevent idle
   // suspends, but the screen will turn off and lock normally.
   struct WakeLock {
+    // TODO(derat): Remove this enum in favor of device::mojom::WakeLockType
+    // once this class has been moved to the device service:
+    // https://crbug.com/702449
     enum Type {
       TYPE_SCREEN,
       TYPE_DIM,

@@ -26,8 +26,8 @@ class PowerSaveBlocker::Delegate
 };
 
 PowerSaveBlocker::PowerSaveBlocker(
-    PowerSaveBlockerType type,
-    Reason reason,
+    mojom::WakeLockType type,
+    mojom::WakeLockReason reason,
     const std::string& description,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)

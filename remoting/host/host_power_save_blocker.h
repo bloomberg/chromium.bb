@@ -44,6 +44,9 @@ class HostPowerSaveBlocker : public HostStatusObserver {
 
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+
+  // The remoting host doesn't have access to the service manager, so it
+  // instantiates device::PowerSaveBlocker directly: https://crbug.com/689423
   std::unique_ptr<device::PowerSaveBlocker> blocker_;
 };
 

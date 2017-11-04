@@ -30,6 +30,10 @@ source_set("power_save_blocker") {
     "power_save_blocker_x11.cc",
   ]
 
+  public_deps = [
+    "//services/device/public/interfaces",
+  ]
+
   deps = [
     "//base",
   ]
@@ -61,9 +65,7 @@ source_set("power_save_blocker") {
 
   if (is_android) {
     deps += [ ":jni_headers" ]
-    public_deps = [
-      "//ui/android",
-    ]
+    public_deps += [ "//ui/android" ]
   }
 
   if (is_chromeos) {

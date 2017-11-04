@@ -62,7 +62,7 @@ void DeletePowerRequest(POWER_REQUEST_TYPE type, HANDLE handle) {
 class PowerSaveBlocker::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
-  Delegate(PowerSaveBlockerType type,
+  Delegate(mojom::WakeLockType type,
            const std::string& description,
            scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
       : type_(type),
@@ -80,7 +80,7 @@ class PowerSaveBlocker::Delegate
   friend class base::RefCountedThreadSafe<Delegate>;
   ~Delegate() {}
 
-  PowerSaveBlockerType type_;
+  mojom::WakeLockType type_;
   const std::string description_;
   base::win::ScopedHandle handle_;
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
@@ -99,8 +99,8 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
 }
 
 POWER_REQUEST_TYPE PowerSaveBlocker::Delegate::RequestType() {
-  if (type_ == kPowerSaveBlockPreventDisplaySleep ||
-      type_ == kPowerSaveBlockPreventDisplaySleepAllowDimming)
+  if (type_ == mojom::WakeLockType::PreventDisplaySleep ||
+      type_ == mojom::WakeLockType::PreventDisplaySleepAllowDimming)
     return PowerRequestDisplayRequired;
 
   if (base::win::GetVersion() == base::win::VERSION_WIN7)
@@ -110,8 +110,8 @@ POWER_REQUEST_TYPE PowerSaveBlocker::Delegate::RequestType() {
 }
 
 PowerSaveBlocker::PowerSaveBlocker(
-    PowerSaveBlockerType type,
-    Reason reason,
+    mojom::WakeLockType type,
+    mojom::WakeLockReason reason,
     const std::string& description,
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)
