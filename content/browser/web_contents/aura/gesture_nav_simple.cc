@@ -42,7 +42,7 @@ const int kArrowSize = 16;
 const SkColor kArrowColor = gfx::kGoogleBlue500;
 const float kArrowFullOpacity = 1.f;
 const float kArrowInitialOpacity = .3f;
-const float kReloadArrowInitialRotation = -90.f;
+const float kReloadArrowInitialRotation = -180.f;
 
 // The arrow opacity remains constant until progress reaches this threshold,
 // then increases quickly as the progress increases beyond the threshold
@@ -394,20 +394,18 @@ void Affordance::UpdateArrowLayer() {
   }
   arrow_.layer()->SetTransform(transform);
 
-  if (mode_ != OVERSCROLL_SOUTH) {
-    // The arrow opacity is fixed before progress reaches
-    // kArrowOpacityProgressThreshold and after that increases linearly to 1;
-    // essentially, making a quick bump at the end.
-    float opacity = kArrowInitialOpacity;
-    if (progress > kArrowOpacityProgressThreshold) {
-      const float max_opacity_bump = kArrowFullOpacity - kArrowInitialOpacity;
-      const float opacity_bump_ratio =
-          std::min(1.f, (progress - kArrowOpacityProgressThreshold) /
-                            (1.f - kArrowOpacityProgressThreshold));
-      opacity += opacity_bump_ratio * max_opacity_bump;
-    }
-    arrow_.layer()->SetOpacity(opacity);
+  // The arrow opacity is fixed before progress reaches
+  // kArrowOpacityProgressThreshold and after that increases linearly to 1;
+  // essentially, making a quick bump at the end.
+  float opacity = kArrowInitialOpacity;
+  if (progress > kArrowOpacityProgressThreshold) {
+    const float max_opacity_bump = kArrowFullOpacity - kArrowInitialOpacity;
+    const float opacity_bump_ratio =
+        std::min(1.f, (progress - kArrowOpacityProgressThreshold) /
+                          (1.f - kArrowOpacityProgressThreshold));
+    opacity += opacity_bump_ratio * max_opacity_bump;
   }
+  arrow_.layer()->SetOpacity(opacity);
 }
 
 void Affordance::UpdateLayers() {
