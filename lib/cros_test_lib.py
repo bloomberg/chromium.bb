@@ -1046,8 +1046,12 @@ class LocalSqlServerTestCase(TempDirTestCase):
         'ping',
     ]
     try:
-      retry_util.RunCommandWithRetries(cmd=cmd, quiet=True, max_retry=5,
-                                       sleep=1, backoff_factor=1.5)
+      # Retry at:
+      # 1 + 2 + 4 + 8 + 16 + 32 + 64 + 128 = 255 seconds total timeout in case
+      # of failure.
+      # Smaller timeouts make this check flaky on heavily loaded builders.
+      retry_util.RunCommandWithRetries(cmd=cmd, quiet=True, max_retry=8,
+                                       sleep=1, backoff_factor=2)
     except Exception as e:
       self.addCleanup(lambda: self._CleanupMysqld(
           'mysqladmin failed to ping mysqld: %s' % e))
