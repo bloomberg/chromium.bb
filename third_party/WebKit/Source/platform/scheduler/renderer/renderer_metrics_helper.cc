@@ -439,5 +439,11 @@ void RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad(
                  load_percentage);
 }
 
+// static
+void RendererMetricsHelper::RecordBackgroundedTransition(
+    BackgroundedRendererTransition transition) {
+  UMA_HISTOGRAM_ENUMERATION("RendererScheduler.BackgroundedRendererTransition",
+                            transition, BackgroundedRendererTransition::COUNT);
+}
 }  // namespace scheduler
 }  // namespace blink

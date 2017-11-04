@@ -2521,6 +2521,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Slow forward navigation"/>
 </enum>
 
+<enum name="BackgroundedRendererTransition">
+  <int value="0" label="Backgrounded"/>
+  <int value="1" label="Stopped after a delay"/>
+  <int value="2" label="Stopped due to critical resources"/>
+  <int value="3" label="Resumed"/>
+  <int value="4" label="Foregrounded"/>
+</enum>
+
 <enum name="BackgroundFetchEventDispatchResult">
   <int value="0" label="Success"/>
   <int value="1" label="Cannot find worker"/>
