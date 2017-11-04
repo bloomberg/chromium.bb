@@ -22,6 +22,7 @@ extern "C" {
 #include <unordered_map>
 
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "ui/base/x/ui_base_x_export.h"
 #include "ui/gfx/x/x11_types.h"
@@ -100,6 +101,8 @@ class UI_BASE_X_EXPORT XVisualManager {
   };
 
   XVisualManager();
+
+  mutable base::Lock lock_;
 
   std::unordered_map<VisualID, std::unique_ptr<XVisualData>> visuals_;
 
