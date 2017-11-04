@@ -5105,15 +5105,48 @@ static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
 static void dump_filtered_recon_frames(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const YV12_BUFFER_CONFIG *recon_buf = cm->frame_to_show;
-  int h;
-  char file_name[256] = "/tmp/enc_filtered_recon.yuv";
-  FILE *f_recon = NULL;
 
-  if (recon_buf == NULL || !cm->show_frame) {
-    printf("Frame %d is not ready or no show to dump.\n",
+  if (recon_buf == NULL) {
+    printf("Frame %d is not ready.\n", cm->current_video_frame);
+    return;
+  }
+
+#if CONFIG_FRAME_MARKER
+  static const int flag_list[TOTAL_REFS_PER_FRAME] = { 0,
+                                                       AOM_LAST_FLAG,
+                                                       AOM_LAST2_FLAG,
+                                                       AOM_LAST3_FLAG,
+                                                       AOM_GOLD_FLAG,
+                                                       AOM_BWD_FLAG,
+                                                       AOM_ALT2_FLAG,
+                                                       AOM_ALT_FLAG };
+  printf(
+      "\n***Frame=%d (frame_offset=%d, show_frame=%d, "
+      "show_existing_frame=%d) "
+      "[LAST LAST2 LAST3 GOLDEN BWD ALT2 ALT]=[",
+      cm->current_video_frame, cm->frame_offset, cm->show_frame,
+      cm->show_existing_frame);
+  for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    const int buf_idx = cm->frame_refs[ref_frame - LAST_FRAME].idx;
+    const int ref_offset =
+        (buf_idx >= 0)
+            ? (int)cm->buffer_pool->frame_bufs[buf_idx].cur_frame_offset
+            : -1;
+    printf(" %d(%c)", ref_offset,
+           (cpi->ref_frame_flags & flag_list[ref_frame]) ? 'Y' : 'N');
+  }
+  printf(" ]\n");
+#endif  // CONFIG_FRAME_MARKER
+
+  if (!cm->show_frame) {
+    printf("Frame %d is a no show frame, so no image dump.\n",
            cm->current_video_frame);
     return;
   }
+
+  int h;
+  char file_name[256] = "/tmp/enc_filtered_recon.yuv";
+  FILE *f_recon = NULL;
 
   if (cm->current_video_frame == 0) {
     if ((f_recon = fopen(file_name, "wb")) == NULL) {
@@ -5247,11 +5280,18 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     cpi->rc.is_bipred_frame = 0;
 
     restore_coding_context(cpi);
+
     // Build the bitstream
     av1_pack_bitstream(cpi, dest, size);
 
     // Set up frame to show to get ready for stats collection.
     cm->frame_to_show = get_frame_new_buffer(cm);
+
+#if CONFIG_FRAME_MARKER
+    // Update current frame offset.
+    cm->frame_offset =
+        cm->buffer_pool->frame_bufs[cm->new_fb_idx].cur_frame_offset;
+#endif  // CONFIG_FRAME_MARKER
 
 #if DUMP_RECON_FRAMES == 1
     // NOTE(zoeliu): For debug - Output the filtered reconstructed video.
@@ -5496,7 +5536,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
 #if DUMP_RECON_FRAMES == 1
   // NOTE(zoeliu): For debug - Output the filtered reconstructed video.
-  if (cm->show_frame) dump_filtered_recon_frames(cpi);
+  dump_filtered_recon_frames(cpi);
 #endif  // DUMP_RECON_FRAMES
 
   if (cm->seg.update_map) update_reference_segmentation_map(cpi);
