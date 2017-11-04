@@ -867,6 +867,21 @@
             ]
         }
     ],
+    "ContextualSearch": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Expected",
+                    "params": {
+                        "enable_ranker_integration": "true"
+                    }
+                }
+            ]
+        }
+    ],
     "CopylessPaste": [
         {
             "platforms": [

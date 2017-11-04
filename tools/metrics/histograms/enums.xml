@@ -24143,6 +24143,7 @@ from previous Chrome versions.
   <int value="-1784788154" label="NewRemotePlaybackPipeline:disabled"/>
   <int value="-1780306716"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:enabled"/>
+  <int value="-1778993296" label="ContextualSearchMlTapSuppression:disabled"/>
   <int value="-1772172557" label="enable-osk-overscroll"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
   <int value="-1751928267" label="disable-icon-ntp"/>
@@ -24959,6 +24960,7 @@ from previous Chrome versions.
   <int value="625273056" label="disable-boot-animation"/>
   <int value="628302973" label="NTPSnippets:enabled"/>
   <int value="628570445" label="AndroidAutofillAccessibility:enabled"/>
+  <int value="629549626" label="ContextualSearchMlTapSuppression:enabled"/>
   <int value="630244477" label="ServiceWorkerPaymentApps:enabled"/>
   <int value="630947363" label="touch-events"/>
   <int value="632340413" label="network-settings-config"/>
