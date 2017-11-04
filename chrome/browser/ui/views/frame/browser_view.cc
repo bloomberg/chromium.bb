@@ -88,7 +88,7 @@
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
@@ -1605,12 +1605,9 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
 
   base::string16 window_title =
       browser_->GetWindowTitleForTab(include_app_name, index);
-  const TabRendererData& data = tabstrip_->tab_at(index)->data();
-
   return chrome::AssembleTabAccessibilityLabel(
-      window_title, data.IsCrashed(),
-      data.network_state == TabRendererData::NETWORK_STATE_ERROR,
-      data.alert_state);
+      window_title, tabstrip_->IsTabCrashed(index),
+      tabstrip_->TabHasNetworkError(index), tabstrip_->GetTabAlertState(index));
 }
 
 void BrowserView::NativeThemeUpdated(const ui::NativeTheme* theme) {
@@ -2119,10 +2116,11 @@ void BrowserView::InitViews() {
   // TabStrip takes ownership of the controller.
   BrowserTabStripController* tabstrip_controller =
       new BrowserTabStripController(browser_->tab_strip_model(), this);
-  tabstrip_ =
-      new TabStrip(std::unique_ptr<TabStripController>(tabstrip_controller));
-  top_container_->AddChildView(tabstrip_);
-  tabstrip_controller->InitFromModel(tabstrip_);
+  TabStripImpl* tab_strip_impl = new TabStripImpl(
+      std::unique_ptr<TabStripController>(tabstrip_controller));
+  tabstrip_ = tab_strip_impl;
+  top_container_->AddChildView(tabstrip_);  // Takes ownership.
+  tabstrip_controller->InitFromModel(tab_strip_impl);
 
   toolbar_ = new ToolbarView(browser_.get());
   top_container_->AddChildView(toolbar_);

@@ -730,7 +730,7 @@ void GlassBrowserFrameView::LayoutProfileSwitcher() {
   // new tab button is on the left, so it can never slide under the avatar
   // button, which is still on the right [http://crbug.com/560619].
   TabStrip* tabstrip = browser_view()->tabstrip();
-  if (tabstrip && !base::i18n::IsRTL() && tabstrip->max_x() >= button_x)
+  if (tabstrip && !base::i18n::IsRTL() && tabstrip->GetMaxX() >= button_x)
     button_height = profile_switcher->GetMinimumSize().height();
 
   profile_switcher->SetBounds(button_x, button_y, button_width, button_height);

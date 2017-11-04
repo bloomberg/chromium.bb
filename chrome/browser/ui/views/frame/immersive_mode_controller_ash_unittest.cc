@@ -18,13 +18,14 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
+#include "chrome/browser/ui/tabs/tab_features.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/webview/webview.h"
@@ -263,7 +264,10 @@ TEST_F(ImmersiveModeControllerAshTest, TabAndBrowserFullscreen) {
 TEST_F(ImmersiveModeControllerAshTest, LayeredSpinners) {
   AddTab(browser(), GURL("about:blank"));
 
-  TabStrip* tabstrip = browser_view()->tabstrip();
+  // This test only works with the TabStripImpl.
+  TabStripImpl* tabstrip = browser_view()->tabstrip()->AsTabStripImpl();
+  if (!tabstrip)
+    return;
 
   // Immersive fullscreen starts out disabled; layers are OK.
   EXPECT_FALSE(browser_view()->GetWidget()->IsFullscreen());

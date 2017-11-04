@@ -12,7 +12,7 @@
 
 class Browser;
 class BrowserList;
-class TabStrip;
+class TabStripImpl;
 class TabStripModel;
 class WindowFinder;
 
@@ -28,7 +28,7 @@ class TabDragControllerTest : public InProcessBrowserTest {
   ~TabDragControllerTest() override;
 
   // Cover for TabStrip::StopAnimating(true).
-  void StopAnimating(TabStrip* tab_strip);
+  void StopAnimating(TabStripImpl* tab_strip);
 
   // Adds a new blank tab to |browser|, stops animations and resets the ids of
   // the tabs in |browser|.
@@ -38,7 +38,7 @@ class TabDragControllerTest : public InProcessBrowserTest {
   // side by side.
   Browser* CreateAnotherWindowBrowserAndRelayout();
 
-  void SetWindowFinderForTabStrip(TabStrip* tab_strip,
+  void SetWindowFinderForTabStrip(TabStripImpl* tab_strip,
                                   std::unique_ptr<WindowFinder> window_finder);
 
   const BrowserList* browser_list;
@@ -54,7 +54,7 @@ class TabDragControllerTest : public InProcessBrowserTest {
 namespace test {
 
 // Returns the TabStrip for |browser|.
-TabStrip* GetTabStripForBrowser(Browser* browser);
+TabStripImpl* GetTabStripForBrowser(Browser* browser);
 
 // Sets the id of |web_contents| to |id|.
 void SetID(content::WebContents* web_contents, int id);

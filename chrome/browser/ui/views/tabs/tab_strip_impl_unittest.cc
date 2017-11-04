@@ -10,8 +10,8 @@
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,7 +98,8 @@ class TabStripTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
 
     controller_ = new FakeBaseTabStripController;
-    tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>(controller_));
+    tab_strip_ =
+        new TabStripImpl(std::unique_ptr<TabStripController>(controller_));
     controller_->set_tab_strip(tab_strip_);
     // Do this to force TabStrip to create the buttons.
     parent_.AddChildView(tab_strip_);
@@ -138,7 +139,7 @@ class TabStripTest : public views::ViewsTestBase {
   FakeBaseTabStripController* controller_ = nullptr;
   // Owns |tab_strip_|.
   views::View parent_;
-  TabStrip* tab_strip_ = nullptr;
+  TabStripImpl* tab_strip_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
 
  private:
@@ -169,11 +170,11 @@ TEST_F(TabStripTest, AddTabAt) {
 // Confirms that TabStripObserver::TabStripDeleted() is sent.
 TEST_F(TabStripTest, TabStripDeleted) {
   FakeBaseTabStripController* controller = new FakeBaseTabStripController;
-  TabStrip* tab_strip =
-      new TabStrip(std::unique_ptr<TabStripController>(controller));
-  controller->set_tab_strip(tab_strip);
-  TestTabStripObserver observer(tab_strip);
-  delete tab_strip;
+  std::unique_ptr<TabStripImpl> tab_strip(
+      new TabStripImpl(std::unique_ptr<TabStripController>(controller)));
+  controller->set_tab_strip(tab_strip.get());
+  TestTabStripObserver observer(tab_strip.get());
+  tab_strip.reset();
   EXPECT_TRUE(observer.tabstrip_deleted());
 }
 
@@ -393,8 +394,8 @@ TEST_F(TabStripTest, GetEventHandlerForOverlappingArea) {
   right_tab->SetBoundsRect(gfx::Rect(gfx::Point(300, 0), gfx::Size(200, 20)));
 
   Tab* most_right_tab = tab_strip_->tab_at(3);
-  most_right_tab->SetBoundsRect(gfx::Rect(gfx::Point(450, 0),
-                                          gfx::Size(200, 20)));
+  most_right_tab->SetBoundsRect(
+      gfx::Rect(gfx::Point(450, 0), gfx::Size(200, 20)));
 
   // Test that active tabs gets events from area in which it overlaps with its
   // left neighbour.
@@ -456,8 +457,8 @@ TEST_F(TabStripTest, GetTooltipHandler) {
   right_tab->SetBoundsRect(gfx::Rect(gfx::Point(300, 0), gfx::Size(200, 20)));
 
   Tab* most_right_tab = tab_strip_->tab_at(3);
-  most_right_tab->SetBoundsRect(gfx::Rect(gfx::Point(450, 0),
-                                          gfx::Size(200, 20)));
+  most_right_tab->SetBoundsRect(
+      gfx::Rect(gfx::Point(450, 0), gfx::Size(200, 20)));
 
   // Test that active_tab handles tooltips from area in which it overlaps with
   // its left neighbour.

@@ -9,10 +9,11 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_features.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_observer.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -258,6 +259,11 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, TitleAndLoadState) {
   content::TestNavigationObserver navigation_watcher(
       contents, 1, content::MessageLoopRunner::QuitMode::DEFERRED);
 
+  // This test only works for the TabStripImpl.
+  TabStripImpl* tab_strip = browser_view()->tabstrip()->AsTabStripImpl();
+  if (!tab_strip)
+    return;
+
   // Navigate without blocking.
   ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       browser(),
@@ -267,15 +273,15 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, TitleAndLoadState) {
       0, WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
   EXPECT_TRUE(browser()->tab_strip_model()->TabsAreLoading());
   EXPECT_EQ(TabRendererData::NETWORK_STATE_WAITING,
-            browser_view()->tabstrip()->tab_at(0)->data().network_state);
+            tab_strip->tab_at(0)->data().network_state);
   EXPECT_EQ(test_title, title_watcher.WaitAndGetTitle());
   EXPECT_TRUE(browser()->tab_strip_model()->TabsAreLoading());
   EXPECT_EQ(TabRendererData::NETWORK_STATE_LOADING,
-            browser_view()->tabstrip()->tab_at(0)->data().network_state);
+            tab_strip->tab_at(0)->data().network_state);
 
   // Now block for the navigation to complete.
   navigation_watcher.Wait();
   EXPECT_FALSE(browser()->tab_strip_model()->TabsAreLoading());
   EXPECT_EQ(TabRendererData::NETWORK_STATE_NONE,
-            browser_view()->tabstrip()->tab_at(0)->data().network_state);
+            tab_strip->tab_at(0)->data().network_state);
 }
