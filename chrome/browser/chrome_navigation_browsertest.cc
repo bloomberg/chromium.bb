@@ -975,3 +975,93 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, CrossSiteRedirectionToPDF) {
                          ->GetActiveWebContents()
                          ->GetLastCommittedURL());
 }
+
+// TODO(csharrison): These tests should become tentative WPT, once the feature
+// is enabled by default.
+class NavigationConsumingTest : public ChromeNavigationBrowserTest {
+  void SetUpCommandLine(base::CommandLine* cmd_line) override {
+    ChromeNavigationBrowserTest::SetUpCommandLine(cmd_line);
+    scoped_feature_.InitFromCommandLine("ConsumeGestureOnNavigation",
+                                        std::string());
+  }
+  base::test::ScopedFeatureList scoped_feature_;
+};
+
+// The fullscreen API is spec'd to require a user activation (aka user gesture),
+// so use that API to test if navigation consumes the activation.
+// https://fullscreen.spec.whatwg.org/#allowed-to-request-fullscreen
+IN_PROC_BROWSER_TEST_F(NavigationConsumingTest,
+                       NavigationConsumesUserGesture_Fullscreen) {
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/navigation_consumes_gesture.html"));
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Normally, fullscreen should work, as long as there is a user gesture.
+  bool is_fullscreen = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents, "document.body.webkitRequestFullscreen();", &is_fullscreen));
+  EXPECT_TRUE(is_fullscreen);
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents, "document.webkitExitFullscreen();", &is_fullscreen));
+  EXPECT_FALSE(is_fullscreen);
+
+  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
+      contents, "document.body.webkitRequestFullscreen();", &is_fullscreen));
+  EXPECT_FALSE(is_fullscreen);
+
+  // However, starting a navigation should consume the gesture. Fullscreen
+  // should not work afterwards. Make sure the navigation is synchronously
+  // started via click().
+  std::string script = R"(
+    document.getElementsByTagName('a')[0].click();
+    document.body.webkitRequestFullscreen();
+  )";
+
+  // Use the TestNavigationManager to ensure the navigation is not finished
+  // before fullscreen can occur.
+  content::TestNavigationManager nav_manager(
+      contents, embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(
+      content::ExecuteScriptAndExtractBool(contents, script, &is_fullscreen));
+  EXPECT_FALSE(is_fullscreen);
+}
+
+// Similar to the fullscreen test above, but checks that popups are successfully
+// blocked if spawned after a navigation.
+IN_PROC_BROWSER_TEST_F(NavigationConsumingTest,
+                       NavigationConsumesUserGesture_Popups) {
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/links.html"));
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Normally, a popup should open fine if it is associated with a user gesture.
+  bool did_open = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents, "window.domAutomationController.send(!!window.open());",
+      &did_open));
+  EXPECT_TRUE(did_open);
+
+  // Starting a navigation should consume a gesture, but make sure that starting
+  // a same-document navigation doesn't do the consuming.
+  std::string same_document_script = R"(
+    document.getElementById("ref").click();
+    window.domAutomationController.send(!!window.open());
+  )";
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents, same_document_script, &did_open));
+  EXPECT_TRUE(did_open);
+
+  // If the navigation is to a different document, the gesture should be
+  // successfully consumed.
+  std::string different_document_script = R"(
+    document.getElementById("title1").click();
+    window.domAutomationController.send(!!window.open());
+  )";
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents, different_document_script, &did_open));
+  EXPECT_FALSE(did_open);
+}

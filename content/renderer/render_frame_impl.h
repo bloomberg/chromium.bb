@@ -1249,6 +1249,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void ShowDeferredContextMenu(const ContextMenuParams& params);
 
+  // Whether or not a navigation in this frame consumes user gestures.
+  bool ConsumeGestureOnNavigation() const;
+
   mojom::URLLoaderFactory* custom_url_loader_factory() {
     return custom_url_loader_factory_.get();
   }

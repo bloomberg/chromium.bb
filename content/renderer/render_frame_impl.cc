@@ -312,6 +312,9 @@ namespace content {
 
 namespace {
 
+const base::Feature kConsumeGestureOnNavigation = {
+    "ConsumeGestureOnNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const int kExtraCharsBeforeAndAfterSelection = 100;
 
 typedef std::map<int, RenderFrameImpl*> RoutingIDFrameMap;
@@ -3836,6 +3839,9 @@ void RenderFrameImpl::DidStartProvisionalLoad(
   std::vector<GURL> redirect_chain;
   GetRedirectChain(document_loader, &redirect_chain);
 
+  if (ConsumeGestureOnNavigation())
+    WebUserGestureIndicator::ConsumeUserGesture(frame_);
+
   Send(new FrameHostMsg_DidStartProvisionalLoad(
       routing_id_, document_loader->GetRequest().Url(), redirect_chain,
       navigation_start));
@@ -6224,7 +6230,8 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
   if (GetContentClient()->renderer()->AllowPopup())
     params.user_gesture = true;
 
-  if (policy == blink::kWebNavigationPolicyNewBackgroundTab ||
+  if (ConsumeGestureOnNavigation() ||
+      policy == blink::kWebNavigationPolicyNewBackgroundTab ||
       policy == blink::kWebNavigationPolicyNewForegroundTab ||
       policy == blink::kWebNavigationPolicyNewWindow ||
       policy == blink::kWebNavigationPolicyNewPopup) {
@@ -7327,6 +7334,11 @@ void RenderFrameImpl::ReportPeakMemoryStats() {
         "MainFrame.PeakDuringLoad",
         peak_memory_metrics_.total_allocated_per_render_view_mb);
   }
+}
+
+bool RenderFrameImpl::ConsumeGestureOnNavigation() const {
+  return is_main_frame_ &&
+         base::FeatureList::IsEnabled(kConsumeGestureOnNavigation);
 }
 
 RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
