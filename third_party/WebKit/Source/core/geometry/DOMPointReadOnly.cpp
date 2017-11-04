@@ -39,6 +39,8 @@ DOMPoint* DOMPointReadOnly::matrixTransform(DOMMatrixInit& other,
                                             ExceptionState& exception_state) {
   DOMMatrixReadOnly* matrix =
       DOMMatrixReadOnly::fromMatrix(other, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
 
   if (matrix->is2D() && z() == 0 && w() == 1) {
     double transformed_x =

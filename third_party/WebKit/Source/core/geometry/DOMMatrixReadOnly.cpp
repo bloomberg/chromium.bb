@@ -94,7 +94,7 @@ bool DOMMatrixReadOnly::ValidateAndFixup(DOMMatrixInit& other,
        other.m43() || other.m14() || other.m24() || other.m34() ||
        other.m33() != 1 || other.m44() != 1)) {
     exception_state.ThrowTypeError(
-        "The is2D member is set to true but the input matrix is 3d matrix.");
+        "The is2D member is set to true but the input matrix is a 3d matrix.");
     return false;
   }
 
