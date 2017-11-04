@@ -617,13 +617,13 @@ def UpdateClang(args):
   os.chdir(LLD_BUILD_DIR)
 
   lld_cmake_args = base_cmake_args + [
-      '-DCMAKE_C_COMPILER=' + cc,
-      '-DCMAKE_CXX_COMPILER=' + cxx,
       '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
       '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
       '-DCMAKE_EXE_LINKER_FLAGS=' + ' '.join(ldflags),
       '-DCMAKE_SHARED_LINKER_FLAGS=' + ' '.join(ldflags),
       '-DCMAKE_MODULE_LINKER_FLAGS=' + ' '.join(ldflags)]
+  if cc is not None:  lld_cmake_args.append('-DCMAKE_C_COMPILER=' + cc)
+  if cxx is not None: lld_cmake_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
 
   if args.lto_lld:
     # Build lld with LTO. That speeds up the linker by ~10%.
