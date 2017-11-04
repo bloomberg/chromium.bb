@@ -1850,10 +1850,12 @@ FilePath IndexedDBBackingStore::GetBlobFileName(int64_t database_id,
 
 bool IndexedDBBackingStore::RemoveBlobFile(int64_t database_id,
                                            int64_t key) const {
+  FilePath path = GetBlobFileName(database_id, key);
 #if DCHECK_IS_ON()
   ++num_blob_files_deleted_;
+  DVLOG(1) << "Deleting blob " << key << " from IndexedDB database "
+           << database_id << " at path " << path.value();
 #endif
-  FilePath path = GetBlobFileName(database_id, key);
   return base::DeleteFile(path, false);
 }
 
