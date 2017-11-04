@@ -32,7 +32,7 @@ public interface ContextualSearchRankerLogger {
         IS_LONG_WORD,
         IS_WORD_EDGE,
         IS_ENTITY,
-        TAP_DURATION
+        TAP_DURATION_MS
     }
 
     /**

@@ -732,12 +732,9 @@ public class ContextualSearchManager
         ContextualSearchUma.logContextualCardsDataShown(receivedContextualCardsEntityData);
         mSearchPanel.getPanelMetrics().setWasContextualCardsDataShown(
                 receivedContextualCardsEntityData);
-
-        if (ContextualSearchFieldTrial.isContextualSearchSingleActionsEnabled()) {
-            ContextualSearchUma.logQuickActionShown(quickActionShown, quickActionCategory);
-            mSearchPanel.getPanelMetrics().setWasQuickActionShown(quickActionShown,
-                    quickActionCategory);
-        }
+        ContextualSearchUma.logQuickActionShown(quickActionShown, quickActionCategory);
+        mSearchPanel.getPanelMetrics().setWasQuickActionShown(
+                quickActionShown, quickActionCategory);
 
         // If there was an error, fall back onto a literal search for the selection.
         // Since we're showing the panel, there must be a selection.

@@ -67,8 +67,6 @@ const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context: ";
 const char kDoPreventPreloadValue[] = "1";
 
 // The version of the Contextual Cards API that we want to invoke.
-const int kContextualCardsBarIntegration = 1;
-const int kContextualCardsSingleAction = 2;
 const int kContextualCardsUrlActions = 3;
 
 }  // namespace
@@ -252,16 +250,7 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
 
-  int contextual_cards_version = kContextualCardsBarIntegration;
-  if (base::FeatureList::IsEnabled(
-          chrome::android::kContextualSearchSingleActions)) {
-    contextual_cards_version = kContextualCardsSingleAction;
-  }
-  if (base::FeatureList::IsEnabled(
-          chrome::android::kContextualSearchUrlActions)) {
-    contextual_cards_version = kContextualCardsUrlActions;
-  }
-
+  int contextual_cards_version = kContextualCardsUrlActions;
   if (field_trial_->GetContextualCardsVersion() != 0) {
     contextual_cards_version = field_trial_->GetContextualCardsVersion();
   }
@@ -487,25 +476,22 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
   dict->GetString(kContextualSearchCaption, caption);
   dict->GetString(kContextualSearchThumbnail, thumbnail_url);
 
-  if (base::FeatureList::IsEnabled(
-          chrome::android::kContextualSearchSingleActions)) {
-    // Contextual Cards V2 Integration.
-    // Get the Single Action data.
-    dict->GetString(kContextualSearchAction, quick_action_uri);
-    std::string quick_action_category_string;
-    dict->GetString(kContextualSearchCategory, &quick_action_category_string);
-    if (!quick_action_category_string.empty()) {
-      if (quick_action_category_string == kActionCategoryAddress) {
-        *quick_action_category = QUICK_ACTION_CATEGORY_ADDRESS;
-      } else if (quick_action_category_string == kActionCategoryEmail) {
-        *quick_action_category = QUICK_ACTION_CATEGORY_EMAIL;
-      } else if (quick_action_category_string == kActionCategoryEvent) {
-        *quick_action_category = QUICK_ACTION_CATEGORY_EVENT;
-      } else if (quick_action_category_string == kActionCategoryPhone) {
-        *quick_action_category = QUICK_ACTION_CATEGORY_PHONE;
-      } else if (quick_action_category_string == kActionCategoryWebsite) {
-        *quick_action_category = QUICK_ACTION_CATEGORY_WEBSITE;
-      }
+  // Contextual Cards V2 Integration.
+  // Get the Single Action data.
+  dict->GetString(kContextualSearchAction, quick_action_uri);
+  std::string quick_action_category_string;
+  dict->GetString(kContextualSearchCategory, &quick_action_category_string);
+  if (!quick_action_category_string.empty()) {
+    if (quick_action_category_string == kActionCategoryAddress) {
+      *quick_action_category = QUICK_ACTION_CATEGORY_ADDRESS;
+    } else if (quick_action_category_string == kActionCategoryEmail) {
+      *quick_action_category = QUICK_ACTION_CATEGORY_EMAIL;
+    } else if (quick_action_category_string == kActionCategoryEvent) {
+      *quick_action_category = QUICK_ACTION_CATEGORY_EVENT;
+    } else if (quick_action_category_string == kActionCategoryPhone) {
+      *quick_action_category = QUICK_ACTION_CATEGORY_PHONE;
+    } else if (quick_action_category_string == kActionCategoryWebsite) {
+      *quick_action_category = QUICK_ACTION_CATEGORY_WEBSITE;
     }
   }
 

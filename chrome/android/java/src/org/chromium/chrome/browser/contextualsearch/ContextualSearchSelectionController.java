@@ -365,7 +365,6 @@ public class ContextualSearchSelectionController {
         // TODO(donnd): Move to be called when the panel closes to work with states that change.
         tapHeuristics.logConditionState();
 
-        tapHeuristics.logRankerTapSuppression(rankerLogger);
         // Tell the manager what it needs in order to log metrics on whether the tap would have
         // been suppressed if each of the heuristics were satisfied.
         mHandler.handleMetricsForWouldSuppressTap(tapHeuristics);
@@ -379,11 +378,16 @@ public class ContextualSearchSelectionController {
             mLastTapState = null;
         }
 
-        // Log features that don't require heuristics.
-        logNonHeuristicFeatures(rankerLogger);
+        // If we're suppressing based on heuristics then Ranker doesn't need to know about it.
+        if (!shouldSuppressTapBasedOnHeuristics
+                && ContextualSearchFieldTrial.isRankerIntegrationOrMlTapSuppressionEnabled()) {
+            tapHeuristics.logRankerTapSuppression(rankerLogger);
+            logNonHeuristicFeatures(rankerLogger);
+        }
 
         // Make the suppression decision and act upon it.
-        boolean shouldSuppressTapBasedOnRanker = rankerLogger.inferUiSuppression();
+        boolean shouldSuppressTapBasedOnRanker = rankerLogger.inferUiSuppression()
+                && ContextualSearchFieldTrial.isContextualSearchMlTapSuppressionEnabled();
         if (shouldSuppressTapBasedOnHeuristics || shouldSuppressTapBasedOnRanker) {
             mHandler.handleSuppressedTap();
         } else {

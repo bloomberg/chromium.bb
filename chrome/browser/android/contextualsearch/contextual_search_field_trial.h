@@ -34,12 +34,13 @@ class ContextualSearchFieldTrial {
   // Gets whether decoding the mentions fields in the Resolve is disabled.
   bool IsDecodeMentionsDisabled();
 
-  // Gets whether Bar integration with Contextual Cards data is enabled.
-  bool IsContextualCardsBarIntegrationEnabled();
-
   // Gets an explicit version to use for Contextual Cards integration, or 0 if
   // not set.
   int GetContextualCardsVersion();
+
+  // Gets whether either the CS Ranker integration param, or the ML Tap
+  // Suppression feature flag is enabled.
+  bool IsRankerIntegrationOrMlTapSuppressionEnabled();
 
   // Disables the cache.
   void DisableCache();
@@ -92,6 +93,9 @@ class ContextualSearchFieldTrial {
 
   bool is_contextual_cards_version_cached_;
   int contextual_cards_version_;
+
+  bool is_ranker_integration_enabled_cached_;
+  bool is_ranker_integration_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchFieldTrial);
 };

@@ -1697,23 +1697,11 @@ const char kContentSuggestionsDebugLogDescription[] =
     "Enable content suggestions debug log accessible through "
     "snippets-internals.";
 
-const char kContextualSearchContextualCardsBarIntegration[] =
-    "Contextual Search - Contextual Cards Integration";
-const char kContextualSearchContextualCardsBarIntegrationDescription[] =
-    "Whether or not integration of Contextual Cards data in the Contextual "
-    "Search Bar is enabled.";
-
-const char kContextualSearchSingleActionsName[] =
-    "Contextual Search - Single Actions";
-const char kContextualSearchSingleActionsDescription[] =
-    "Whether or not single actions using Contextual Cards data in the "
-    "Contextual Search Bar is enabled.";
-
-const char kContextualSearchUrlActionsName[] =
-    "Contextual Search - URL Actions";
-const char kContextualSearchUrlActionsDescription[] =
-    "Whether or not URL actions using Contextual Cards data in the Contextual "
-    "Search Bar is enabled.";
+const char kContextualSearchMlTapSuppressionName[] =
+    "Contextual Search ML tap suppression";
+const char kContextualSearchMlTapSuppressionDescription[] =
+    "Enables tap gestures to be suppressed to improve CTR by applying machine "
+    "learning.";
 
 const char kContextualSearchName[] = "Contextual Search";
 const char kContextualSearchDescription[] =
