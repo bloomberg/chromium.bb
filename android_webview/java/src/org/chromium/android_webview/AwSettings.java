@@ -259,7 +259,8 @@ public class AwSettings {
 
             // By default, scale the text size by the system font scale factor. Embedders
             // may override this by invoking setTextZoom().
-            mTextSizePercent *= context.getResources().getConfiguration().fontScale;
+            mTextSizePercent =
+                    (int) (mTextSizePercent * context.getResources().getConfiguration().fontScale);
 
             mSupportLegacyQuirks = supportsLegacyQuirks;
             mAllowEmptyDocumentPersistence = allowEmptyDocumentPersistence;
@@ -1567,8 +1568,8 @@ public class AwSettings {
      */
     public void setDefaultVideoPosterURL(String url) {
         synchronized (mAwSettingsLock) {
-            if (mDefaultVideoPosterURL != null && !mDefaultVideoPosterURL.equals(url)
-                    || mDefaultVideoPosterURL == null && url != null) {
+            if ((mDefaultVideoPosterURL != null && !mDefaultVideoPosterURL.equals(url))
+                    || (mDefaultVideoPosterURL == null && url != null)) {
                 mDefaultVideoPosterURL = url;
                 mEventHandler.updateWebkitPreferencesLocked();
             }

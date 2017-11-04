@@ -6,7 +6,6 @@ package org.chromium.android_webview.test;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.test.MoreAsserts;
 import android.util.Pair;
 
 import org.junit.After;
@@ -767,8 +766,9 @@ public class CookieManagerTest {
         for (String cookie : cookies) {
             foundCookieNames.add(cookie.substring(0, cookie.indexOf("=")).trim());
         }
-        MoreAsserts.assertEquals(
-                foundCookieNames, new HashSet<String>(Arrays.asList(expectedCookieNames)));
+        List<String> expectedCookieNamesList = Arrays.asList(expectedCookieNames);
+        Assert.assertEquals(foundCookieNames.size(), expectedCookieNamesList.size());
+        Assert.assertTrue(foundCookieNames.containsAll(expectedCookieNamesList));
     }
 
     private String makeExpiringCookie(String cookie, int secondsTillExpiry) {

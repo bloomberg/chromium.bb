@@ -35,10 +35,12 @@ import org.chromium.net.test.util.TestWebServer;
 public class CookieManagerStartupTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule() {
+        @Override
         public boolean needsAwBrowserContextCreated() {
             return false;
         }
 
+        @Override
         public boolean needsBrowserProcessStarted() {
             return false;
         }

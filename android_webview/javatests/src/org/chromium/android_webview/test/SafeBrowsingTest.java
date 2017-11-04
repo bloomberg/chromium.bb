@@ -298,6 +298,7 @@ public class SafeBrowsingTest {
     private static class WhitelistHelper extends CallbackHelper implements Callback<Boolean> {
         public boolean success;
 
+        @Override
         public void onResult(Boolean success) {
             this.success = success;
             notifyCalled();
@@ -1061,6 +1062,7 @@ public class SafeBrowsingTest {
             super(context);
         }
 
+        @Override
         public Context getApplicationContext() {
             mGetApplicationContextWasCalled = true;
             return super.getApplicationContext();
