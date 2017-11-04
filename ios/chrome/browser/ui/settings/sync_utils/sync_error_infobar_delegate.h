@@ -15,8 +15,8 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ui/gfx/image/image.h"
 
-@protocol ApplicationCommands;
 @class GenericChromeCommand;
+@protocol SyncPresenter;
 
 namespace gfx {
 class Image;
@@ -35,13 +35,13 @@ class SyncErrorInfoBarDelegate : public ConfirmInfoBarDelegate,
                                  public syncer::SyncServiceObserver {
  public:
   SyncErrorInfoBarDelegate(ios::ChromeBrowserState* browser_state,
-                           id<ApplicationCommands> dispatcher);
+                           id<SyncPresenter> presenter);
   ~SyncErrorInfoBarDelegate() override;
 
   // Creates a sync error infobar and adds it to |infobar_manager|.
   static bool Create(infobars::InfoBarManager* infobar_manager,
                      ios::ChromeBrowserState* browser_state,
-                     id<ApplicationCommands> dispatcher);
+                     id<SyncPresenter> presenter);
 
   // InfoBarDelegate implementation.
   InfoBarIdentifier GetIdentifier() const override;
@@ -63,7 +63,7 @@ class SyncErrorInfoBarDelegate : public ConfirmInfoBarDelegate,
   base::string16 message_;
   base::string16 button_text_;
   base::scoped_nsobject<GenericChromeCommand> command_;
-  id<ApplicationCommands> dispatcher_;
+  id<SyncPresenter> presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncErrorInfoBarDelegate);
 };

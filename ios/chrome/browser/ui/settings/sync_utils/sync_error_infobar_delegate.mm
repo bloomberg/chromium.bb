@@ -20,8 +20,7 @@
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -31,18 +30,18 @@
 // static
 bool SyncErrorInfoBarDelegate::Create(infobars::InfoBarManager* infobar_manager,
                                       ios::ChromeBrowserState* browser_state,
-                                      id<ApplicationCommands> dispatcher) {
+                                      id<SyncPresenter> presenter) {
   DCHECK(infobar_manager);
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
-      new SyncErrorInfoBarDelegate(browser_state, dispatcher));
+      new SyncErrorInfoBarDelegate(browser_state, presenter));
   return !!infobar_manager->AddInfoBar(
       infobar_manager->CreateConfirmInfoBar(std::move(delegate)));
 }
 
 SyncErrorInfoBarDelegate::SyncErrorInfoBarDelegate(
     ios::ChromeBrowserState* browser_state,
-    id<ApplicationCommands> dispatcher)
-    : browser_state_(browser_state), dispatcher_(dispatcher) {
+    id<SyncPresenter> presenter)
+    : browser_state_(browser_state), presenter_(presenter) {
   DCHECK(!browser_state->IsOffTheRecord());
   icon_ = gfx::Image([UIImage imageNamed:@"infobar_warning"]);
   SyncSetupService* sync_setup_service =
@@ -93,15 +92,11 @@ gfx::Image SyncErrorInfoBarDelegate::GetIcon() const {
 
 bool SyncErrorInfoBarDelegate::Accept() {
   if (ShouldShowSyncSignin(error_state_)) {
-    [dispatcher_
-        showSignin:[[ShowSigninCommand alloc]
-                       initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
-                             accessPoint:signin_metrics::AccessPoint::
-                                             ACCESS_POINT_UNKNOWN]];
+    [presenter_ showReauthenticateSignin];
   } else if (ShouldShowSyncSettings(error_state_)) {
-    [dispatcher_ showSyncSettings];
+    [presenter_ showSyncSettings];
   } else if (ShouldShowSyncPassphraseSettings(error_state_)) {
-    [dispatcher_ showSyncPassphraseSettings];
+    [presenter_ showSyncPassphraseSettings];
   }
   return false;
 }
@@ -124,7 +119,7 @@ void SyncErrorInfoBarDelegate::OnStateChanged(syncer::SyncService* sync) {
     infobars::InfoBarManager* infobar_manager = infobar->owner();
     if (infobar_manager) {
       std::unique_ptr<ConfirmInfoBarDelegate> new_infobar_delegate(
-          new SyncErrorInfoBarDelegate(browser_state_, dispatcher_));
+          new SyncErrorInfoBarDelegate(browser_state_, presenter_));
       infobar_manager->ReplaceInfoBar(infobar,
                                       infobar_manager->CreateConfirmInfoBar(
                                           std::move(new_infobar_delegate)));

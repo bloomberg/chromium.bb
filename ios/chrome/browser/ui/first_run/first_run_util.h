@@ -7,9 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol ApplicationCommands;
 @class FirstRunConfiguration;
 @class Tab;
+@protocol SyncPresenter;
 
 namespace base {
 class TimeTicks;
@@ -47,7 +47,7 @@ void WriteFirstRunSentinelAndRecordMetrics(
 void FinishFirstRun(ios::ChromeBrowserState* browserState,
                     Tab* tab,
                     FirstRunConfiguration* config,
-                    id<ApplicationCommands> dispatcher);
+                    id<SyncPresenter> presenter);
 
 // Records Product tour timing metrics using histogram.
 void RecordProductTourTimingMetrics(NSString* timer_name,

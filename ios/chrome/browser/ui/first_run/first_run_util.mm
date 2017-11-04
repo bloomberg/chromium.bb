@@ -160,7 +160,7 @@ void WriteFirstRunSentinelAndRecordMetrics(
 void FinishFirstRun(ios::ChromeBrowserState* browserState,
                     Tab* tab,
                     FirstRunConfiguration* config,
-                    id<ApplicationCommands> dispatcher) {
+                    id<SyncPresenter> presenter) {
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kChromeFirstRunUIWillFinishNotification
                     object:nil];
@@ -168,7 +168,7 @@ void FinishFirstRun(ios::ChromeBrowserState* browserState,
                                         config.hasSSOAccount);
 
   // Display the sync errors infobar.
-  DisplaySyncErrors(browserState, tab, dispatcher);
+  DisplaySyncErrors(browserState, tab, presenter);
 }
 
 void RecordProductTourTimingMetrics(NSString* timer_name,
