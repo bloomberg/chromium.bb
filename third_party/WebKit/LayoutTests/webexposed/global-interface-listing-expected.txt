@@ -580,6 +580,7 @@ interface CSS
     static method percent
     static method pt
     static method px
+    static method q
     static method rad
     static method registerProperty
     static method rem
