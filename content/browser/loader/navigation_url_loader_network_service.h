@@ -10,6 +10,7 @@
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/url_loader.mojom.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 
 namespace net {
 struct RedirectInfo;
@@ -19,6 +20,7 @@ namespace content {
 
 class ResourceContext;
 class NavigationPostDataHandler;
+class StoragePartition;
 class URLLoaderRequestHandler;
 
 // This is an implementation of NavigationURLLoader used when
@@ -57,6 +59,10 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
 
   bool IsDownload() const;
 
+  void BindNonNetworkURLLoaderFactoryRequest(
+      const GURL& url,
+      mojom::URLLoaderFactoryRequest factory);
+
   NavigationURLLoaderDelegate* delegate_;
 
   scoped_refptr<ResourceResponse> response_;
@@ -67,6 +73,10 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
   std::unique_ptr<URLLoaderRequestController> request_controller_;
 
   bool allow_download_;
+
+  // Factories to handle navigation requests for non-network resources.
+  std::map<std::string, std::unique_ptr<mojom::URLLoaderFactory>>
+      non_network_url_loader_factories_;
 
   base::WeakPtrFactory<NavigationURLLoaderNetworkService> weak_factory_;
 

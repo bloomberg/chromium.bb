@@ -340,6 +340,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // process.
   virtual std::vector<url::Origin> GetOriginsRequiringDedicatedProcess();
 
+  // Indicates whether a file path should be accessible via file URL given a
+  // request from a browser context which lives within |profile_path|.
+  virtual bool IsFileAccessAllowed(const base::FilePath& path,
+                                   const base::FilePath& absolute_path,
+                                   const base::FilePath& profile_path);
+
   // Allows the embedder to pass extra command line flags.
   // switches::kProcessType will already be set at this point.
   virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,

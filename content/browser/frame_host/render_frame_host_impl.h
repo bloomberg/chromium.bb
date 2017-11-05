@@ -1279,6 +1279,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
       PendingNavigation;
   std::unique_ptr<PendingNavigation> pendinging_navigate_;
 
+  // A collection of non-network URLLoaderFactory implementations which are used
+  // to service any supported non-network subresource requests for the currently
+  // committed navigation.
+  std::vector<std::unique_ptr<mojom::URLLoaderFactory>>
+      non_network_url_loader_factories_;
+
   // Bitfield for renderer-side state that blocks fast shutdown of the frame.
   blink::WebSuddenTerminationDisablerType
       sudden_termination_disabler_types_enabled_ = 0;
