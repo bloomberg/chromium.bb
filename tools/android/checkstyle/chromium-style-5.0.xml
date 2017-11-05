@@ -106,6 +106,7 @@
       <property name="separated" value="true"/>
     </module>
     <module name="RegexpSinglelineJava">
+      <property name="id" value="StringBufferCheck"/>
       <property name="severity" value="error"/>
       <property name="format" value="StringBuffer"/>
       <property name="ignoreComments" value="true"/>

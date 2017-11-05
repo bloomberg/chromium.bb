@@ -60,7 +60,8 @@ public final class MainActivityTest {
         Robolectric.buildActivity(MainActivity.class).withIntent(launchIntent).create();
 
         Intent startActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
-        Assert.assertEquals(MainActivity.ACTION_START_WEBAPK, startActivityIntent.getAction());
+        Assert.assertEquals(
+                HostBrowserLauncher.ACTION_START_WEBAPK, startActivityIntent.getAction());
         Assert.assertEquals(
                 expectedStartUrl, startActivityIntent.getStringExtra(WebApkConstants.EXTRA_URL));
     }
@@ -91,7 +92,8 @@ public final class MainActivityTest {
         Robolectric.buildActivity(MainActivity.class).withIntent(launchIntent).create();
 
         Intent startActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
-        Assert.assertEquals(MainActivity.ACTION_START_WEBAPK, startActivityIntent.getAction());
+        Assert.assertEquals(
+                HostBrowserLauncher.ACTION_START_WEBAPK, startActivityIntent.getAction());
         Assert.assertEquals(
                 expectedStartUrl, startActivityIntent.getStringExtra(WebApkConstants.EXTRA_URL));
     }
@@ -122,7 +124,8 @@ public final class MainActivityTest {
         Robolectric.buildActivity(MainActivity.class).withIntent(launchIntent).create();
 
         Intent startActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
-        Assert.assertEquals(MainActivity.ACTION_START_WEBAPK, startActivityIntent.getAction());
+        Assert.assertEquals(
+                HostBrowserLauncher.ACTION_START_WEBAPK, startActivityIntent.getAction());
         Assert.assertEquals(
                 expectedStartUrl, startActivityIntent.getStringExtra(WebApkConstants.EXTRA_URL));
     }
@@ -152,7 +155,8 @@ public final class MainActivityTest {
         Robolectric.buildActivity(MainActivity.class).withIntent(launchIntent).create();
 
         Intent startActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
-        Assert.assertEquals(MainActivity.ACTION_START_WEBAPK, startActivityIntent.getAction());
+        Assert.assertEquals(
+                HostBrowserLauncher.ACTION_START_WEBAPK, startActivityIntent.getAction());
         Assert.assertEquals(
                 intentStartUrl, startActivityIntent.getStringExtra(WebApkConstants.EXTRA_URL));
     }
@@ -185,7 +189,8 @@ public final class MainActivityTest {
         Robolectric.buildActivity(MainActivity.class).withIntent(launchIntent).create();
 
         Intent startActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
-        Assert.assertEquals(MainActivity.ACTION_START_WEBAPK, startActivityIntent.getAction());
+        Assert.assertEquals(
+                HostBrowserLauncher.ACTION_START_WEBAPK, startActivityIntent.getAction());
         Assert.assertEquals(
                 expectedStartUrl, startActivityIntent.getStringExtra(WebApkConstants.EXTRA_URL));
     }

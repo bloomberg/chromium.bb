@@ -7,4 +7,5 @@
        Ref: crbug.com/640248 -->
   <suppress id="AlertDialogCheck"
     files="src/(android_webview|base|build|chromecast|components|content|device|media|mojo|net|printing|services|testing|third_party|tools|ui|url)/"/>
+  <suppress id="StringBufferCheck" files="src/chrome/android/webapk/"/>
 </suppressions>
