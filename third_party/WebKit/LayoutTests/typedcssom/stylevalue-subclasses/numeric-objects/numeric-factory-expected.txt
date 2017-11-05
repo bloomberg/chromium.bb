@@ -16,7 +16,7 @@ PASS CSS.vmin returns a CSSUnitValue with correct value and unit
 PASS CSS.vmax returns a CSSUnitValue with correct value and unit
 PASS CSS.cm returns a CSSUnitValue with correct value and unit
 PASS CSS.mm returns a CSSUnitValue with correct value and unit
-FAIL CSS.q returns a CSSUnitValue with correct value and unit CSS[unit] is not a function
+PASS CSS.q returns a CSSUnitValue with correct value and unit
 PASS CSS.in returns a CSSUnitValue with correct value and unit
 PASS CSS.pt returns a CSSUnitValue with correct value and unit
 PASS CSS.pc returns a CSSUnitValue with correct value and unit

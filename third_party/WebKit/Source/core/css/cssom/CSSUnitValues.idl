@@ -26,13 +26,13 @@
   [NewObject] static CSSUnitValue pt(double value);
   [NewObject] static CSSUnitValue pc(double value);
   [NewObject] static CSSUnitValue px(double value);
+  [NewObject] static CSSUnitValue q(double value);
   // Currently unsupported length units that are specified
   // [NewObject] static CSSUnitValue ic(double value);
   // [NewObject] static CSSUnitValue lh(double value);
   // [NewObject] static CSSUnitValue rlh(double value);
   // [NewObject] static CSSUnitValue vi(double value);
   // [NewObject] static CSSUnitValue vb(double value);
-  // [NewObject] static CSSUnitValue q(double value);
 
   // <angle>
   [NewObject] static CSSUnitValue deg(double value);
