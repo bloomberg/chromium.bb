@@ -231,7 +231,7 @@ class Database(object):
 
   def _read_owners(self, path):
     owners_path = self.os_path.join(self.root, path)
-    if not self.os_path.exists(owners_path):
+    if not (self.os_path.exists(owners_path) or (path in self.override_files)):
       return
 
     if owners_path in self.read_files:
@@ -379,6 +379,9 @@ class Database(object):
       start = self.os_path.dirname(self.os_path.relpath(start, self.root))
       include_path = self.os_path.join(start, path)
 
+    if include_path in self.override_files:
+      return include_path
+
     owners_path = self.os_path.join(self.root, include_path)
     if not self.os_path.exists(owners_path):
       return None
@@ -392,7 +395,11 @@ class Database(object):
     owners = set()
     self._included_files[include_file] = owners
     lineno = 0
-    for line in self.fopen(self.os_path.join(self.root, include_file)):
+    if include_file in self.override_files:
+      file_iter = self.override_files[include_file]
+    else:
+      file_iter = self.fopen(self.os_path.join(self.root, include_file))
+    for line in file_iter:
       lineno += 1
       line = line.strip()
       if (line.startswith('#') or line == '' or

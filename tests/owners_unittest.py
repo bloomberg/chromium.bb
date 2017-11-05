@@ -506,6 +506,10 @@ class ReviewersForTest(_BaseTestCase):
                                 override_files={'content/baz/OWNERS': [jochen]})
       self.assert_reviewers_for(['content/baz/froboz.h'], [[john],[darin]],
                                 override_files={'content/baz/OWNERS': []})
+      self.assert_reviewers_for(
+          ['content/baz/froboz.h'], [[jochen]],
+          override_files={'content/baz/OWNERS': ['file://JOCHEN_OWNERS'],
+                          'JOCHEN_OWNERS': [jochen]})
 
 
 class LowestCostOwnersTest(_BaseTestCase):
