@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL CSS Flexbox: Resolving relative height content within a flex container against flexed size Uncaught ReferenceError: checkLayout is not defined
+Harness: the test ran to completion.
+
