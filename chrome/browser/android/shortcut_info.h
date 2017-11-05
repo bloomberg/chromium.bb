@@ -55,7 +55,10 @@ struct ShortcutInfo {
     // Used for Trusted Web Activities launched from third party Android apps.
     SOURCE_TRUSTED_WEB_ACTIVITY = 12,
 
-    SOURCE_COUNT = 13
+    // Used for WebAPK intents received as a result of share events.
+    SOURCE_WEBAPK_SHARE_TARGET = 13,
+
+    SOURCE_COUNT = 14
   };
 
   explicit ShortcutInfo(const GURL& shortcut_url);

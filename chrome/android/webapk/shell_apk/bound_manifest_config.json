@@ -19,5 +19,15 @@
   "bound_webapk": {
     "runtime_host": "com.google.android.apps.chrome",
     "runtime_host_application_name": "Chromium"
-  }
+  },
+  "share_template": [{
+	  "index": "0",
+	  "title": "Share All",
+	  "url_template": "https://pwa.rocks/share_public?title={title}%26text={text}%26url={url}"
+  },
+  {
+	  "index": "1",
+	  "title": "Share Title",
+	  "url_template": "https://pwa.rocks/share_private?title={title}"
+  }]
 }

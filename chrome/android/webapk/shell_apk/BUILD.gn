@@ -49,10 +49,17 @@ android_library("webapk_java") {
   java_files = [
     "src/org/chromium/webapk/shell_apk/DexLoader.java",
     "src/org/chromium/webapk/shell_apk/HostBrowserClassLoader.java",
+    "src/org/chromium/webapk/shell_apk/HostBrowserLauncher.java",
     "src/org/chromium/webapk/shell_apk/ChooseHostBrowserDialog.java",
     "src/org/chromium/webapk/shell_apk/MainActivity.java",
     "src/org/chromium/webapk/shell_apk/IdentityService.java",
     "src/org/chromium/webapk/shell_apk/InstallHostBrowserDialog.java",
+    "src/org/chromium/webapk/shell_apk/ShareActivity.java",
+    "src/org/chromium/webapk/shell_apk/ShareActivity0.java",
+    "src/org/chromium/webapk/shell_apk/ShareActivity1.java",
+    "src/org/chromium/webapk/shell_apk/ShareActivity2.java",
+    "src/org/chromium/webapk/shell_apk/ShareActivity3.java",
+    "src/org/chromium/webapk/shell_apk/ShareActivity4.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService0.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService1.java",
@@ -89,6 +96,7 @@ template("webapk_tmpl") {
     if (!is_java_debug) {
       proguard_enabled = true
       proguard_configs = [
+        "//chrome/android/webapk/shell_apk/proguard.flags",
         "//chrome/android/java/proguard.flags",
         "//base/android/proguard/chromium_apk.flags",
         "//base/android/proguard/chromium_code.flags",

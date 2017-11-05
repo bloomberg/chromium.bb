@@ -37,6 +37,19 @@
             {{/intent_filters}}
             {{{raw_intent_filters}}}
         </activity>
+        {{#share_template}}
+        <activity android:name="org.chromium.webapk.shell_apk.ShareActivity{{{index}}}"
+                  android:label="{{{title}}}"
+                  android:theme="@android:style/Theme.Translucent.NoTitleBar"
+                  android:excludeFromRecents="true">
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareTemplate" android:value="{{{url_template}}}" />
+          <intent-filter>
+            <action android:name="android.intent.action.SEND" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <data android:mimeType="text/plain" />
+          </intent-filter>
+        </activity>
+        {{/share_template}}
         <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="{{{shell_apk_version}}}" />
         {{#bound_webapk}}
         <meta-data android:name="org.chromium.webapk.shell_apk.runtimeHost" android:value="{{{runtime_host}}}" />
