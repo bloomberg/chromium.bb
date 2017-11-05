@@ -605,7 +605,11 @@ static INLINE void ref_cnt_fb(RefCntBuffer *bufs, int *idx, int new_idx) {
 // function doesn't consider whether prev_frame is actually suitable (see
 // frame_can_use_prev_frame_mvs for that)
 static INLINE int frame_might_use_prev_frame_mvs(const AV1_COMMON *cm) {
-  return !cm->error_resilient_mode && !cm->intra_only;
+  return !cm->error_resilient_mode &&
+#if CONFIG_EXT_TILE
+         !cm->large_scale_tile &&
+#endif  // CONFIG_EXT_TILE
+         !cm->intra_only;
 }
 
 // Returns 1 if this frame really can use MVs from some previous frame.
