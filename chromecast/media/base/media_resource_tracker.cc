@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "chromecast/base/bind_to_task_runner.h"
 #include "chromecast/public/cast_media_shlib.h"
+#include "chromecast/public/volume_control.h"
 
 namespace chromecast {
 namespace media {
@@ -148,10 +149,16 @@ void MediaResourceTracker::CallFinalizeOnMediaThread() {
 void MediaResourceTracker::DoInitializeMediaLib() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   media::CastMediaShlib::Initialize(cmd_line->argv());
+  if (VolumeControl::Initialize) {
+    VolumeControl::Initialize(cmd_line->argv());
+  }
 }
 
 void MediaResourceTracker::DoFinalizeMediaLib() {
   CastMediaShlib::Finalize();
+  if (VolumeControl::Finalize) {
+    VolumeControl::Finalize();
+  }
 }
 
 }  // namespace media

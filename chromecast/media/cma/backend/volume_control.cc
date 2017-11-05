@@ -311,6 +311,7 @@ base::LazyInstance<VolumeControlInternal>::Leaky g_volume_control =
 // static
 void VolumeControl::Initialize(const std::vector<std::string>& argv) {
   chromecast::InitCommandLineShlib(argv);
+  g_volume_control.Get();
 }
 
 // static
