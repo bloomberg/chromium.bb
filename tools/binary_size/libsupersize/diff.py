@@ -79,7 +79,9 @@ def _MatchSymbols(before, after, key_func, padding_by_section_name):
   logging.debug('%s: Matched %d of %d symbols', key_func.__name__,
                 len(delta_symbols), len(after))
 
-  unmatched_before = sum(before_symbols_by_key.itervalues(), [])
+  unmatched_before = []
+  for syms in before_symbols_by_key.itervalues():
+    unmatched_before.extend(syms)
   return delta_symbols, unmatched_before, unmatched_after
 
 
