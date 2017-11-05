@@ -53,4 +53,9 @@ bool IsURLHandledByNetworkStack(const GURL& url) {
   return true;
 }
 
+bool IsURLHandledByNetworkService(const GURL& url) {
+  return url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS() ||
+         url.SchemeIs(url::kFtpScheme) || url.SchemeIs(url::kGopherScheme);
+}
+
 }  // namespace content

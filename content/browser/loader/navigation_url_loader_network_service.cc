@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/file_url_loader_factory.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_resource_handler.h"
@@ -39,6 +41,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader_factory.mojom.h"
+#include "content/public/common/url_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_content_disposition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -279,6 +282,19 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     DCHECK_EQ(handlers_.size(), handler_index_);
     if (resource_request_->url.SchemeIs(url::kBlobScheme)) {
       factory = default_url_loader_factory_getter_->GetBlobFactory()->get();
+    } else if (!IsURLHandledByNetworkService(resource_request_->url) &&
+               !resource_request_->url.SchemeIs(url::kDataScheme)) {
+      mojom::URLLoaderFactoryPtr& non_network_factory =
+          non_network_url_loader_factories_[resource_request_->url.scheme()];
+      if (!non_network_factory.is_bound()) {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&NavigationURLLoaderNetworkService ::
+                               BindNonNetworkURLLoaderFactoryRequest,
+                           owner_, resource_request_->url,
+                           mojo::MakeRequest(&non_network_factory)));
+      }
+      factory = non_network_factory.get();
     } else {
       factory = default_url_loader_factory_getter_->GetNetworkFactory()->get();
       default_loader_used_ = true;
@@ -491,6 +507,11 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   bool started_ = false;
 
+  // Lazily initialized and used in the case of non-network resource
+  // navigations. Keyed by URL scheme.
+  std::map<std::string, mojom::URLLoaderFactoryPtr>
+      non_network_url_loader_factories_;
+
   // The completion status if it has been received. This is needed to handle
   // the case that the response is intercepted by download, and OnComplete() is
   // already called while we are transferring the |url_loader_| and response
@@ -577,12 +598,11 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 
   g_next_request_id--;
 
+  auto* partition = static_cast<StoragePartitionImpl*>(storage_partition);
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_handlers), std::move(new_request), resource_context,
-      static_cast<StoragePartitionImpl*>(storage_partition)
-          ->url_loader_factory_getter(),
-      weak_factory_.GetWeakPtr());
+      partition->url_loader_factory_getter(), weak_factory_.GetWeakPtr());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&URLLoaderRequestController::Start,
@@ -598,6 +618,13 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
                      base::Passed(ServiceManagerConnection::GetForProcess()
                                       ->GetConnector()
                                       ->Clone())));
+
+  non_network_url_loader_factories_[url::kFileScheme] =
+      std::make_unique<FileURLLoaderFactory>(
+          partition->browser_context()->GetPath(),
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 }
 
 NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {
@@ -705,6 +732,17 @@ bool NavigationURLLoaderNetworkService::IsDownload() const {
 
   return (!response_->head.headers ||
           response_->head.headers->response_code() / 100 == 2);
+}
+
+void NavigationURLLoaderNetworkService::BindNonNetworkURLLoaderFactoryRequest(
+    const GURL& url,
+    mojom::URLLoaderFactoryRequest factory) {
+  auto it = non_network_url_loader_factories_.find(url.scheme());
+  if (it == non_network_url_loader_factories_.end()) {
+    DVLOG(1) << "Ignoring request with unknown scheme: " << url.spec();
+    return;
+  }
+  it->second->Clone(std::move(factory));
 }
 
 }  // namespace content

@@ -737,6 +737,8 @@ source_set("browser") {
     "download/url_downloader.h",
     "field_trial_recorder.cc",
     "field_trial_recorder.h",
+    "file_url_loader_factory.cc",
+    "file_url_loader_factory.h",
     "fileapi/browser_file_system_helper.cc",
     "fileapi/browser_file_system_helper.h",
     "fileapi/fileapi_message_filter.cc",

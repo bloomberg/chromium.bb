@@ -52,6 +52,11 @@ class MOJO_CPP_SYSTEM_EXPORT FileDataPipeProducer {
   // previous call to Write() (if any) has returned.
   void WriteFromFile(base::File file, CompletionCallback callback);
 
+  // Like above, but writes at most |max_bytes| bytes from the file to the pipe.
+  void WriteFromFile(base::File file,
+                     size_t max_bytes,
+                     CompletionCallback callback);
+
   // Same as above but takes a FilePath instead of an opened File. Opens the
   // file on an appropriate sequence and then proceeds as WriteFromFile() would.
   void WriteFromPath(const base::FilePath& path, CompletionCallback callback);

@@ -15,8 +15,8 @@
 #include "base/logging.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 
 namespace net {
@@ -95,7 +95,7 @@ DirectoryLister::Core::Core(const base::FilePath& dir,
                             DirectoryLister* lister)
     : dir_(dir),
       type_(type),
-      origin_task_runner_(base::ThreadTaskRunnerHandle::Get().get()),
+      origin_task_runner_(base::SequencedTaskRunnerHandle::Get().get()),
       lister_(lister),
       cancelled_(0) {
   DCHECK(lister_);

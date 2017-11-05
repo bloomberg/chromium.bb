@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <limits>
 #include <string>
 
 #include "base/bind.h"
@@ -107,6 +108,18 @@ class FileDataPipeProducerTest : public testing::Test {
                        std::move(producer)));
   }
 
+  static void WriteFromFileThenCloseWriter(
+      std::unique_ptr<FileDataPipeProducer> producer,
+      base::File file,
+      size_t max_bytes) {
+    FileDataPipeProducer* raw_producer = producer.get();
+    raw_producer->WriteFromFile(
+        std::move(file), max_bytes,
+        base::BindOnce([](std::unique_ptr<FileDataPipeProducer> producer,
+                          MojoResult result) {},
+                       std::move(producer)));
+  }
+
   static void WriteFromPathThenCloseWriter(
       std::unique_ptr<FileDataPipeProducer> producer,
       const base::FilePath& path) {
@@ -146,6 +159,25 @@ TEST_F(FileDataPipeProducerTest, WriteFromFile) {
   loop.Run();
 
   EXPECT_EQ(test_string, reader.data());
+}
+
+TEST_F(FileDataPipeProducerTest, WriteFromFilePartial) {
+  const std::string kTestString = "abcdefghijklmnopqrstuvwxyz";
+  base::FilePath path = CreateTempFileWithContents(kTestString);
+  constexpr size_t kBytesToWrite = 7;
+
+  base::RunLoop loop;
+  DataPipe pipe(static_cast<uint32_t>(kTestString.size()));
+  DataPipeReader reader(std::move(pipe.consumer_handle), kTestString.size(),
+                        loop.QuitClosure());
+
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  WriteFromFileThenCloseWriter(
+      base::MakeUnique<FileDataPipeProducer>(std::move(pipe.producer_handle)),
+      std::move(file), kBytesToWrite);
+  loop.Run();
+
+  EXPECT_EQ(kTestString.substr(0, kBytesToWrite), reader.data());
 }
 
 TEST_F(FileDataPipeProducerTest, WriteFromPath) {

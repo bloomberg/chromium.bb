@@ -5,6 +5,7 @@
 #include "mojo/public/cpp/system/file_data_pipe_producer.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -52,11 +53,11 @@ class FileDataPipeProducer::FileSequenceState
     is_cancelled_ = true;
   }
 
-  void StartFromFile(base::File file) {
+  void StartFromFile(base::File file, size_t max_bytes) {
     file_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&FileSequenceState::StartFromFileOnFileSequence, this,
-                       std::move(file)));
+                       std::move(file), max_bytes));
   }
 
   void StartFromPath(const base::FilePath& path) {
@@ -72,8 +73,9 @@ class FileDataPipeProducer::FileSequenceState
 
   ~FileSequenceState() = default;
 
-  void StartFromFileOnFileSequence(base::File file) {
+  void StartFromFileOnFileSequence(base::File file, size_t max_bytes) {
     file_ = std::move(file);
+    max_bytes_ = max_bytes;
     TransferSomeBytes();
     if (producer_handle_.is_valid()) {
       // If we didn't nail it all on the first transaction attempt, setup a
@@ -88,7 +90,8 @@ class FileDataPipeProducer::FileSequenceState
 
   void StartFromPathOnFileSequence(const base::FilePath& path) {
     StartFromFileOnFileSequence(
-        base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+        base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ),
+        std::numeric_limits<size_t>::max());
   }
 
   void OnHandleReady(MojoResult result, const HandleSignalsState& state) {
@@ -126,9 +129,13 @@ class FileDataPipeProducer::FileSequenceState
       }
 
       // Attempt to read that many bytes from the file, directly into the data
-      // pipe.
+      // pipe. Note that while |max_bytes_remaining| may be very large, the
+      // length we attempt read is bounded by the much smaller
+      // |kDefaultMaxReadSize| via |size|.
       DCHECK(base::IsValueInRangeForNumericType<int>(size));
-      int attempted_read_size = static_cast<int>(size);
+      const size_t max_bytes_remaining = max_bytes_ - bytes_transferred_;
+      int attempted_read_size = static_cast<int>(
+          std::min(static_cast<size_t>(size), max_bytes_remaining));
       int read_size = file_.ReadAtCurrentPos(static_cast<char*>(pipe_buffer),
                                              attempted_read_size);
       producer_handle_->EndWriteData(
@@ -139,9 +146,18 @@ class FileDataPipeProducer::FileSequenceState
         return;
       }
 
+      bytes_transferred_ += read_size;
+      DCHECK_LE(bytes_transferred_, max_bytes_);
+
       if (read_size < attempted_read_size) {
         // ReadAtCurrentPos makes a best effort to read all requested bytes. We
         // reasonably assume if it fails to read what we ask for, we've hit EOF.
+        Finish(MOJO_RESULT_OK);
+        return;
+      }
+
+      if (bytes_transferred_ == max_bytes_) {
+        // We've read as much as we were asked to read.
         Finish(MOJO_RESULT_OK);
         return;
       }
@@ -161,6 +177,8 @@ class FileDataPipeProducer::FileSequenceState
   // State which is effectively owned and used only on the file sequence.
   ScopedDataPipeProducerHandle producer_handle_;
   base::File file_;
+  size_t max_bytes_ = 0;
+  size_t bytes_transferred_ = 0;
   CompletionCallback callback_;
   std::unique_ptr<SimpleWatcher> watcher_;
 
@@ -182,8 +200,15 @@ FileDataPipeProducer::~FileDataPipeProducer() {
 
 void FileDataPipeProducer::WriteFromFile(base::File file,
                                          CompletionCallback callback) {
+  WriteFromFile(std::move(file), std::numeric_limits<size_t>::max(),
+                std::move(callback));
+}
+
+void FileDataPipeProducer::WriteFromFile(base::File file,
+                                         size_t max_bytes,
+                                         CompletionCallback callback) {
   InitializeNewRequest(std::move(callback));
-  file_sequence_state_->StartFromFile(std::move(file));
+  file_sequence_state_->StartFromFile(std::move(file), max_bytes);
 }
 
 void FileDataPipeProducer::WriteFromPath(const base::FilePath& path,

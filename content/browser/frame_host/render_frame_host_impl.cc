@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/process/kill.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -30,6 +31,7 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/mhtml_generation_manager.h"
+#include "content/browser/file_url_loader_factory.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -3458,6 +3460,22 @@ void RenderFrameHostImpl::CommitNavigation(
         mojo::MakeRequest(&blob_factory));
     subresource_loader_factories->RegisterFactory(url::kBlobScheme,
                                                   std::move(blob_factory));
+
+    non_network_url_loader_factories_.clear();
+
+    if (common_params.url.SchemeIsFile()) {
+      // Only file resources can load file subresources
+      auto file_factory = std::make_unique<FileURLLoaderFactory>(
+          GetProcess()->GetBrowserContext()->GetPath(),
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BACKGROUND,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+      mojom::URLLoaderFactoryPtr file_factory_proxy;
+      file_factory->BindRequest(mojo::MakeRequest(&file_factory_proxy));
+      non_network_url_loader_factories_.emplace_back(std::move(file_factory));
+      subresource_loader_factories->RegisterFactory(
+          url::kFileScheme, std::move(file_factory_proxy));
+    }
   }
 
   // It is imperative that cross-document navigations always provide a set of

@@ -24,6 +24,15 @@ CONTENT_EXPORT bool IsSavableURL(const GURL& url);
 // about:blank. In these cases, no request needs to be sent.
 bool CONTENT_EXPORT IsURLHandledByNetworkStack(const GURL& url);
 
+// Helper function to determine if a request for |url| refers to a network
+// resource (as opposed to a local browser resource like files or blobs). Used
+// when the Network Service is enabled.
+//
+// Note that this is not equivalent to the above function, as several
+// non-network schemes are handled by the network stack when the Network Service
+// is disabled.
+bool CONTENT_EXPORT IsURLHandledByNetworkService(const GURL& url);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_URL_UTILS_H_
