@@ -2570,3 +2570,9 @@
 -ExtensionFetchTest.ExtensionCanFetchHostedResourceWithHostPermissions
 -ExtensionFetchTest.ExtensionCannotFetchHostedResourceWithoutHostPermissions
 -ExtensionFetchTest.HostCanFetchWebAccessibleExtensionResource
+
+# crbug.com/781565
+-DownloadTest.DontCloseNewTab3
+-DownloadTest.CloseNewTab1
+-DownloadTest.CloseNewTab2
+-DownloadTest.CloseNewTab3
