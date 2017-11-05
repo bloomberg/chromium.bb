@@ -56,6 +56,11 @@ default_args = {
 
   # Don't include webrtc's builtin task queue implementation.
   rtc_link_task_queue_impl = false
+
+  # Don't include the iLBC audio codec.
+  # TODO(bugs.webrtc.org/8396): Once WebRTC gets rid of its internal
+  # deps on codecs, we can remove this.
+  rtc_include_ilbc = false
 }
 
 # These are the targets to check headers for by default. The files in targets
