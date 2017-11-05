@@ -216,10 +216,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_SMALLRECT_AA
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_UNIFORM_GRADIENTS
-#define SK_SUPPORT_LEGACY_UNIFORM_GRADIENTS
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_TILED_BITMAPS
 #define SK_SUPPORT_LEGACY_TILED_BITMAPS
 #endif
