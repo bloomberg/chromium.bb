@@ -2294,6 +2294,8 @@ crbug.com/666703 external/wpt/html/browsers/sandboxing/sandbox-disallow-same-ori
 crbug.com/626703 external/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
 
+crbug.com/781595 external/wpt/html/dom/documents/resource-metadata-management/document-lastModified-01.html [ Failure ]
+
 crbug.com/655458 external/wpt/workers/constructors/SharedWorker/undefined-arguments.html [ Failure ]
 crbug.com/655458 external/wpt/workers/baseurl/alpha/worker.html [ Failure ]
 crbug.com/655458 external/wpt/workers/interfaces/SharedWorkerGlobalScope/onconnect.html [ Failure ]
