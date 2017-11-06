@@ -13003,6 +13003,22 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
     tile_height = height;
   }
 
+  Buffer* bound_buffer =
+      buffer_manager()->GetBufferInfoForTarget(&state_, GL_PIXEL_UNPACK_BUFFER);
+  if (bound_buffer) {
+    // If an unpack buffer is bound, we need to clear unpack parameters
+    // because they have been applied to the driver.
+    // Note: if it is not bound, we don't need to do anything, since they were
+    // set to 0 in ContextState::UpdateUnpackParameters.
+    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
+    if (state_.unpack_row_length > 0)
+      api()->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, 0);
+    if (state_.unpack_image_height > 0)
+      api()->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, 0);
+    DCHECK_EQ(0, state_.unpack_skip_pixels);
+    DCHECK_EQ(0, state_.unpack_skip_rows);
+    DCHECK_EQ(0, state_.unpack_skip_images);
+  }
   {
     // Add extra scope to destroy zero and the object it owns right
     // after its usage.
@@ -13021,10 +13037,20 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
       y += tile_height;
     }
   }
+  if (bound_buffer) {
+    if (state_.unpack_row_length > 0)
+      api()->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, state_.unpack_row_length);
+    if (state_.unpack_image_height > 0)
+      api()->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT,
+                             state_.unpack_image_height);
+    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, bound_buffer->service_id());
+  }
+
   TextureRef* bound_texture =
       texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
   api()->glBindTextureFn(texture->target(),
                          bound_texture ? bound_texture->service_id() : 0);
+  DCHECK(glGetError() == GL_NO_ERROR);
   return true;
 }
 

@@ -672,6 +672,11 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
   if (gl_info.is_es3 || gl_info.is_desktop_core_profile ||
       gl::HasExtension(extension_set, "GL_EXT_texture_rg") ||
       (gl::HasExtension(extension_set, "GL_ARB_texture_rg"))) {
+#if DCHECK_IS_ON()
+    EXPECT_CALL(*gl, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+#endif
     static const GLuint tx_ids[] = {101, 102};
     static const GLuint fb_ids[] = {103, 104};
     const GLsizei width = 1;
