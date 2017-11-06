@@ -280,11 +280,6 @@ input[type=checkbox]:checked ~ .checkbox::before {
     z-index: 2;
   }
 
-  /* Hide gradient from low color bit depth screens with the ugly dithering. */
-  body.low-color-depth .nav-wrapper {
-    box-shadow: none !important;
-  }
-
   .interstitial-wrapper {
     max-width: 736px;
   }
