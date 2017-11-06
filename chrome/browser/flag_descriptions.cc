@@ -436,6 +436,11 @@ const char kEnableNavigationTracingDescription[] =
     "flag. The trace may include personally identifiable information (PII) "
     "such as the titles and URLs of websites you visit.";
 
+const char kEnableNetworkLoggingToFileName[] = "Enable network logging to file";
+const char kEnableNetworkLoggingToFileDescription[] =
+    "Enables network logging to a file named netlog.json in the user data "
+    "directory. The file can be imported into chrome://net-internals.";
+
 const char kEnableNetworkServiceName[] = "Enable network service";
 const char kEnableNetworkServiceDescription[] =
     "Enables the network service, which makes network requests through a "

@@ -33,9 +33,8 @@ class BrowserProcessImplTest : public ::testing::Test {
         ui_thread_(content::BrowserThread::UI, &loop_),
         io_thread_(new content::TestBrowserThread(content::BrowserThread::IO)),
         command_line_(base::CommandLine::NO_PROGRAM),
-        browser_process_impl_(
-            new BrowserProcessImpl(base::ThreadTaskRunnerHandle::Get().get(),
-                                   command_line_)) {
+        browser_process_impl_(std::make_unique<BrowserProcessImpl>(
+            base::ThreadTaskRunnerHandle::Get().get())) {
     // Create() and StartWithDefaultParams() TaskScheduler in seperate steps to
     // properly simulate the browser process' lifecycle.
     base::TaskScheduler::Create("BrowserProcessImplTest");
@@ -81,6 +80,8 @@ class BrowserProcessImplTest : public ::testing::Test {
     return browser_process_impl_.get();
   }
 
+  base::CommandLine* command_line() { return &command_line_; }
+
  private:
   BrowserProcess* stashed_browser_process_;
   base::MessageLoop loop_;
@@ -101,7 +102,7 @@ class BrowserProcessImplTest : public ::testing::Test {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 TEST_F(BrowserProcessImplTest, LifeCycle) {
   // Setup the BrowserProcessImpl and the threads.
-  browser_process_impl()->PreCreateThreads();
+  browser_process_impl()->PreCreateThreads(*command_line());
   StartSecondaryThreads();
   browser_process_impl()->PreMainMessageLoopRun();
 

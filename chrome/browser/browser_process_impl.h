@@ -69,12 +69,12 @@ class BrowserProcessImpl : public BrowserProcess,
                            public KeepAliveStateObserver {
  public:
   // |local_state_task_runner| must be a shutdown-blocking task runner.
-  BrowserProcessImpl(base::SequencedTaskRunner* local_state_task_runner,
-                     const base::CommandLine& command_line);
+  explicit BrowserProcessImpl(
+      base::SequencedTaskRunner* local_state_task_runner);
   ~BrowserProcessImpl() override;
 
   // Called before the browser threads are created.
-  void PreCreateThreads();
+  void PreCreateThreads(const base::CommandLine& command_line);
 
   // Called after the threads have been created but before the message loops
   // starts running. Allows the browser process to do any initialization that

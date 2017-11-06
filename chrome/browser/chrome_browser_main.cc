@@ -950,8 +950,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   {
     TRACE_EVENT0("startup",
       "ChromeBrowserMainParts::PreCreateThreadsImpl:InitBrowswerProcessImpl");
-    browser_process_.reset(new BrowserProcessImpl(local_state_task_runner.get(),
-                                                  parsed_command_line()));
+    browser_process_ =
+        std::make_unique<BrowserProcessImpl>(local_state_task_runner.get());
   }
 
   local_state_ = InitializeLocalState(
@@ -1155,7 +1155,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before
   // this.
-  browser_process_->PreCreateThreads();
+  browser_process_->PreCreateThreads(parsed_command_line());
 
   // This must occur in PreCreateThreads() because it initializes global state
   // which is then read by all threads without synchronization. It must be after

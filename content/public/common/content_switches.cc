@@ -613,7 +613,9 @@ const char kLoggingLevel[]                  = "log-level";
 // affect which events are logged).
 const char kLogFile[] = "log-file";
 
-// Enables saving net log events to a file and sets the file name to use.
+// Enables saving net log events to a file. If a value is given, it used as the
+// path the the file, otherwise the file is named netlog.json and placed in the
+// user data directory.
 const char kLogNetLog[]                     = "log-net-log";
 
 // Resizes of the main frame are caused by changing between landscape and
