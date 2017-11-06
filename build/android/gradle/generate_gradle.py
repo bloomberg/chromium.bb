@@ -738,7 +738,7 @@ def main():
   parser.add_argument('--canary',
                       action='store_true',
                       help='Generate a project that is compatible with '
-                           'Android Studio 3.0 Canary.')
+                           'Android Studio 3.1 Canary.')
   args = parser.parse_args()
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
@@ -846,8 +846,7 @@ def main():
 
   logging.warning('Project created!')
   logging.warning('Generated projects work with %s',
-                  'Android Studio 3.0' if args.canary
-                      else 'Android Studio 2.3')
+                  'Android Studio ' + '3.1' if args.canary else '3.0')
   logging.warning('For more tips: https://chromium.googlesource.com/chromium'
                   '/src.git/+/master/docs/android_studio.md')
 

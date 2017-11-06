@@ -8,7 +8,7 @@ Make sure you have followed
 [android build instructions](android_build_instructions.md) already.
 
 ```shell
-build/android/gradle/generate_gradle.py [--canary]  # Use --canary for Android Studio 3.0 beta
+build/android/gradle/generate_gradle.py [--canary]  # Use --canary for Android Studio 3.1 canary
 ```
 
 This creates a project at `out/Debug/gradle`. To create elsewhere:
@@ -38,7 +38,7 @@ To import the project:
 
 If you're asked to use Studio's Android SDK:
 
-* No.
+* No. (Always use project's own SDK)
 
 If you're asked to use Studio's Gradle wrapper:
 
@@ -145,11 +145,11 @@ resources, native libraries, etc.
     * Add the line `org.gradle.daemon=true` to `~/.gradle/gradle.properties`,
       creating it if necessary.
 
-## Status (as of Oct, 2017)
+## Status (as of Nov 1, 2017)
 
 ### What works
 
-* Android Studio v2.3, and v3.0 beta with `--canary` flag.
+* Android Studio v3.0 and v3.1 canary with `--canary` flag.
 * Java editing and gradle compile.
 * Instrumentation tests included as androidTest.
 * Symlinks to existing .so files in jniLibs (doesn't generate them).
