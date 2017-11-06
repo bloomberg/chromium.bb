@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Tests that setting an impossible constraint in getUserMedia fails assert_unreached: a Video stream of width 100M cannot be created Reached unreachable code
+FAIL Tests that setting an impossible constraint in getUserMedia fails assert_equals: An impossible constraint triggers a OverconstrainedError expected "OverconstrainedError" but got "ConstraintNotSatisfiedError"
 Harness: the test ran to completion.
 

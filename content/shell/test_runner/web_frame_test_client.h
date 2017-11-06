@@ -50,7 +50,6 @@ class WebFrameTestClient : public blink::WebFrameClient {
   blink::WebPlugin* CreatePlugin(const blink::WebPluginParams& params) override;
   void ShowContextMenu(
       const blink::WebContextMenuData& context_menu_data) override;
-  blink::WebUserMediaClient* UserMediaClient() override;
   void DidAddMessageToConsole(const blink::WebConsoleMessage& message,
                               const blink::WebString& source_name,
                               unsigned source_line,

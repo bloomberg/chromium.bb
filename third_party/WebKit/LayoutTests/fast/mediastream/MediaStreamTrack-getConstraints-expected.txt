@@ -1,0 +1,23 @@
+This is a testharness.js-based test.
+PASS A set constraint is returned on getConstraints
+PASS An unknown constraint is NOT returned on getConstraints
+FAIL All valid keys are returned for complex constraints promise_test: Unhandled rejection with value: object "[object NavigatorUserMediaError]"
+PASS Simple integer
+PASS Ideal integer
+PASS Min/max integer
+PASS Exact unwrapped integer
+PASS Simple double
+PASS Ideal double
+PASS Min/max double
+PASS Exact unwrapped double
+PASS Simple String
+PASS Ideal String
+PASS Multiple String in Brackets
+PASS Multiple Bracketed Naked String
+PASS Single Bracketed string unwrapped
+PASS Both Ideal and Exact string
+PASS Simple boolean
+PASS Ideal boolean
+PASS Exact unwrapped boolean
+Harness: the test ran to completion.
+

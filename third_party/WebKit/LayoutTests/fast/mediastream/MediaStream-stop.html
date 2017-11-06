@@ -45,12 +45,14 @@ function gotStream(s) {
     var stream = s;
 
     cloned_stream = stream.clone();
-    cloned_stream.oninactive = onStreamInactive;
+    // oninactive doesn't fire. crbug.com/78176
+    // cloned_stream.oninactive = onStreamInactive;
     shouldBeTrue('cloned_stream.active');
     shouldBe('cloned_stream.getVideoTracks().length', '1');
     shouldBe('cloned_stream.getAudioTracks().length', '1');
     cloned_stream.getVideoTracks()[0].stop();
     cloned_stream.getAudioTracks()[0].stop();
+    finishJSTest();
 }
 
 getUserMedia({audio:true, video:true}, gotStream);

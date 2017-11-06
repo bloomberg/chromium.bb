@@ -241,14 +241,6 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     return Base::DecidePolicyForNavigation(info);
   }
 
-  blink::WebUserMediaClient* UserMediaClient() override {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kUseFakeUIForMediaStream)) {
-      return Base::UserMediaClient();
-    }
-    return test_client()->UserMediaClient();
-  }
-
   void PostAccessibilityEvent(const blink::WebAXObject& object,
                               blink::WebAXEvent event) override {
     test_client()->PostAccessibilityEvent(object, event);

@@ -97,7 +97,7 @@ promise_test(function() {
     assert_unreached();
   })
       .catch(function(e) {
-    assert_equals(e.name, 'Error');
+    assert_equals(e.name, 'ConstraintNotSatisfiedError');
   });
 }, 'With no fake device, asking for user-facing device rejects');
 
