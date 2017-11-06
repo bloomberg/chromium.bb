@@ -110,6 +110,7 @@ def _CheckForForbiddenChromiumCode(input_api, output_api):
     chromium_allowed_classes = [
         "base::make_span",
         "base::span",
+        "base::SingleThreadTaskRunner",
         "gfx::ColorSpace",
         "gfx::CubicBezier",
         "gfx::ICCProfile",

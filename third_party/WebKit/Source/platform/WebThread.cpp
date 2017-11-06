@@ -4,6 +4,7 @@
 
 #include "public/platform/WebThread.h"
 
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/Assertions.h"
@@ -26,7 +27,8 @@ static_assert(sizeof(blink::PlatformThreadId) >= sizeof(pid_t),
 #error Unexpected platform
 #endif
 
-SingleThreadTaskRunnerRefPtr WebThread::GetSingleThreadTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+WebThread::GetSingleThreadTaskRunner() {
   return GetWebTaskRunner()->ToSingleThreadTaskRunner();
 }
 

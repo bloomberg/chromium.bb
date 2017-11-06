@@ -33,8 +33,12 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "public/platform/WebURLLoader.h"
-#include "public/platform/scheduler/single_thread_task_runner.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace blink {
 
@@ -73,7 +77,7 @@ class WebServiceWorkerNetworkProvider {
   // and only if servicification is enabled.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest& request,
-      SingleThreadTaskRunnerRefPtr task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     return nullptr;
   }
 };

@@ -6,9 +6,9 @@
 #define InterfaceRegistry_h
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "public/platform/WebCommon.h"
-#include "public/platform/scheduler/single_thread_task_runner.h"
 
 #if INSIDE_BLINK
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -16,15 +16,20 @@
 #include "platform/wtf/Functional.h"
 #endif
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace blink {
 
 using InterfaceFactory = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
 
 class BLINK_PLATFORM_EXPORT InterfaceRegistry {
  public:
-  virtual void AddInterface(const char* name,
-                            const InterfaceFactory&,
-                            SingleThreadTaskRunnerRefPtr = nullptr) = 0;
+  virtual void AddInterface(
+      const char* name,
+      const InterfaceFactory&,
+      scoped_refptr<base::SingleThreadTaskRunner> = nullptr) = 0;
 
   static InterfaceRegistry* GetEmptyInterfaceRegistry();
 
@@ -41,7 +46,7 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
   template <typename Interface>
   void AddInterface(WTF::Function<void(mojo::InterfaceRequest<Interface>),
                                   WTF::kCrossThreadAffinity> factory,
-                    SingleThreadTaskRunnerRefPtr task_runner) {
+                    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     AddInterface(Interface::Name_,
                  ConvertToBaseCallback(blink::CrossThreadBind(
                      &InterfaceRegistry::ForwardToInterfaceFactory<

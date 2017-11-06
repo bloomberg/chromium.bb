@@ -2475,7 +2475,7 @@ WebFrameScheduler* WebLocalFrameImpl::Scheduler() const {
   return GetFrame()->FrameScheduler();
 }
 
-SingleThreadTaskRunnerRefPtr WebLocalFrameImpl::GetTaskRunner(
+scoped_refptr<base::SingleThreadTaskRunner> WebLocalFrameImpl::GetTaskRunner(
     TaskType task_type) {
   return GetFrame()->GetTaskRunner(task_type)->ToSingleThreadTaskRunner();
 }
