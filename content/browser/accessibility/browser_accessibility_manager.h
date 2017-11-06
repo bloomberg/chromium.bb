@@ -290,7 +290,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   static BrowserAccessibility* NextInTreeOrder(
       const BrowserAccessibility* object);
   static BrowserAccessibility* PreviousInTreeOrder(
-      const BrowserAccessibility* object);
+      const BrowserAccessibility* object,
+      bool can_wrap_to_last_element);
   static BrowserAccessibility* NextTextOnlyObject(
       const BrowserAccessibility* object);
   static BrowserAccessibility* PreviousTextOnlyObject(

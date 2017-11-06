@@ -108,6 +108,9 @@ class CONTENT_EXPORT OneShotAccessibilityTreeSearch {
   // recurse.
   void SetImmediateDescendantsOnly(bool immediate_descendants_only);
 
+  // If true, wraps to the last element.
+  void SetCanWrapToLastElement(bool can_wrap_to_last_element);
+
   // If true, only considers nodes that aren't invisible or offscreen.
   void SetVisibleOnly(bool visible_only);
 
@@ -138,6 +141,7 @@ class CONTENT_EXPORT OneShotAccessibilityTreeSearch {
   Direction direction_;
   int result_limit_;
   bool immediate_descendants_only_;
+  bool can_wrap_to_last_element_;
   bool visible_only_;
   std::string search_text_;
 
