@@ -648,7 +648,7 @@ namespace crypto {
 
 namespace p224 {
 
-bool Point::SetFromString(const base::StringPiece& in) {
+bool Point::SetFromString(base::StringPiece in) {
   if (in.size() != 2*28)
     return false;
   const uint32_t* inwords = reinterpret_cast<const uint32_t*>(in.data());

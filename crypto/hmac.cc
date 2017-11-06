@@ -53,7 +53,7 @@ bool HMAC::Init(const SymmetricKey* key) {
   return Init(key->key());
 }
 
-bool HMAC::Sign(const base::StringPiece& data,
+bool HMAC::Sign(base::StringPiece data,
                 unsigned char* digest,
                 size_t digest_length) const {
   DCHECK(initialized_);
@@ -65,15 +65,14 @@ bool HMAC::Sign(const base::StringPiece& data,
                   data.size(), result.safe_buffer(), nullptr);
 }
 
-bool HMAC::Verify(const base::StringPiece& data,
-                  const base::StringPiece& digest) const {
+bool HMAC::Verify(base::StringPiece data, base::StringPiece digest) const {
   if (digest.size() != DigestLength())
     return false;
   return VerifyTruncated(data, digest);
 }
 
-bool HMAC::VerifyTruncated(const base::StringPiece& data,
-                           const base::StringPiece& digest) const {
+bool HMAC::VerifyTruncated(base::StringPiece data,
+                           base::StringPiece digest) const {
   if (digest.empty())
     return false;
   size_t digest_length = DigestLength();

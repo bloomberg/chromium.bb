@@ -49,7 +49,7 @@ class ScopedCipherCTX {
 
 /////////////////////////////////////////////////////////////////////////////
 // Encyptor::Counter Implementation.
-Encryptor::Counter::Counter(const base::StringPiece& counter) {
+Encryptor::Counter::Counter(base::StringPiece counter) {
   CHECK(sizeof(counter_) == counter.length());
 
   memcpy(&counter_, counter.data(), sizeof(counter_));
@@ -90,9 +90,7 @@ Encryptor::Encryptor() : key_(nullptr), mode_(CBC) {}
 Encryptor::~Encryptor() {
 }
 
-bool Encryptor::Init(const SymmetricKey* key,
-                     Mode mode,
-                     const base::StringPiece& iv) {
+bool Encryptor::Init(const SymmetricKey* key, Mode mode, base::StringPiece iv) {
   DCHECK(key);
   DCHECK(mode == CBC || mode == CTR);
 
@@ -109,23 +107,21 @@ bool Encryptor::Init(const SymmetricKey* key,
   return true;
 }
 
-bool Encryptor::Encrypt(const base::StringPiece& plaintext,
-                        std::string* ciphertext) {
+bool Encryptor::Encrypt(base::StringPiece plaintext, std::string* ciphertext) {
   CHECK(!plaintext.empty() || (mode_ == CBC));
   return (mode_ == CTR) ?
       CryptCTR(true, plaintext, ciphertext) :
       Crypt(true, plaintext, ciphertext);
 }
 
-bool Encryptor::Decrypt(const base::StringPiece& ciphertext,
-                        std::string* plaintext) {
+bool Encryptor::Decrypt(base::StringPiece ciphertext, std::string* plaintext) {
   CHECK(!ciphertext.empty());
   return (mode_ == CTR) ?
       CryptCTR(false, ciphertext, plaintext) :
       Crypt(false, ciphertext, plaintext);
 }
 
-bool Encryptor::SetCounter(const base::StringPiece& counter) {
+bool Encryptor::SetCounter(base::StringPiece counter) {
   if (mode_ != CTR)
     return false;
   if (counter.length() != 16u)
@@ -136,7 +132,7 @@ bool Encryptor::SetCounter(const base::StringPiece& counter) {
 }
 
 bool Encryptor::Crypt(bool do_encrypt,
-                      const base::StringPiece& input,
+                      base::StringPiece input,
                       std::string* output) {
   DCHECK(key_);  // Must call Init() before En/De-crypt.
   // Work on the result in a local variable, and then only transfer it to
@@ -185,7 +181,7 @@ bool Encryptor::Crypt(bool do_encrypt,
 }
 
 bool Encryptor::CryptCTR(bool do_encrypt,
-                         const base::StringPiece& input,
+                         base::StringPiece input,
                          std::string* output) {
   if (!counter_.get()) {
     LOG(ERROR) << "Counter value not set in CTR mode.";

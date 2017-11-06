@@ -57,7 +57,7 @@ class CRYPTO_EXPORT HMAC {
 
   // Initializes this instance using |key|. Call Init only once. It returns
   // false on the second or later calls.
-  bool Init(const base::StringPiece& key) WARN_UNUSED_RESULT {
+  bool Init(base::StringPiece key) WARN_UNUSED_RESULT {
     return Init(reinterpret_cast<const unsigned char*>(key.data()),
                 key.size());
   }
@@ -65,7 +65,8 @@ class CRYPTO_EXPORT HMAC {
   // Calculates the HMAC for the message in |data| using the algorithm supplied
   // to the constructor and the key supplied to the Init method. The HMAC is
   // returned in |digest|, which has |digest_length| bytes of storage available.
-  bool Sign(const base::StringPiece& data, unsigned char* digest,
+  bool Sign(base::StringPiece data,
+            unsigned char* digest,
             size_t digest_length) const WARN_UNUSED_RESULT;
 
   // Verifies that the HMAC for the message in |data| equals the HMAC provided
@@ -75,14 +76,13 @@ class CRYPTO_EXPORT HMAC {
   // comparisons may result in side-channel disclosures, such as timing, that
   // undermine the cryptographic integrity. |digest| must be exactly
   // |DigestLength()| bytes long.
-  bool Verify(const base::StringPiece& data,
-              const base::StringPiece& digest) const WARN_UNUSED_RESULT;
+  bool Verify(base::StringPiece data,
+              base::StringPiece digest) const WARN_UNUSED_RESULT;
 
   // Verifies a truncated HMAC, behaving identical to Verify(), except
   // that |digest| is allowed to be smaller than |DigestLength()|.
-  bool VerifyTruncated(
-      const base::StringPiece& data,
-      const base::StringPiece& digest) const WARN_UNUSED_RESULT;
+  bool VerifyTruncated(base::StringPiece data,
+                       base::StringPiece digest) const WARN_UNUSED_RESULT;
 
  private:
   HashAlgorithm hash_alg_;

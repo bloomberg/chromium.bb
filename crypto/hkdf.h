@@ -34,18 +34,18 @@ class CRYPTO_EXPORT HKDF {
   // client and server.
   // |subkey_secret_bytes_to_generate|: the number of bytes of subkey secret to
   // generate, shared between client and server.
-  HKDF(const base::StringPiece& secret,
-       const base::StringPiece& salt,
-       const base::StringPiece& info,
+  HKDF(base::StringPiece secret,
+       base::StringPiece salt,
+       base::StringPiece info,
        size_t key_bytes_to_generate,
        size_t iv_bytes_to_generate,
        size_t subkey_secret_bytes_to_generate);
 
   // An alternative constructor that allows the client and server key/IV
   // lengths to be different.
-  HKDF(const base::StringPiece& secret,
-       const base::StringPiece& salt,
-       const base::StringPiece& info,
+  HKDF(base::StringPiece secret,
+       base::StringPiece salt,
+       base::StringPiece info,
        size_t client_key_bytes_to_generate,
        size_t server_key_bytes_to_generate,
        size_t client_iv_bytes_to_generate,

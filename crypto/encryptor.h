@@ -30,7 +30,7 @@ class CRYPTO_EXPORT Encryptor {
   // Only 128-bits counter is supported in this class.
   class CRYPTO_EXPORT Counter {
    public:
-    explicit Counter(const base::StringPiece& counter);
+    explicit Counter(base::StringPiece counter);
     ~Counter();
 
     // Increment the counter value.
@@ -58,11 +58,11 @@ class CRYPTO_EXPORT Encryptor {
   //
   // If |mode| is CBC, |iv| must not be empty; if it is CTR, then |iv| must be
   // empty.
-  bool Init(const SymmetricKey* key, Mode mode, const base::StringPiece& iv);
+  bool Init(const SymmetricKey* key, Mode mode, base::StringPiece iv);
 
   // Encrypts |plaintext| into |ciphertext|.  |plaintext| may only be empty if
   // the mode is CBC.
-  bool Encrypt(const base::StringPiece& plaintext, std::string* ciphertext);
+  bool Encrypt(base::StringPiece plaintext, std::string* ciphertext);
 
   // Decrypts |ciphertext| into |plaintext|.  |ciphertext| must not be empty.
   //
@@ -73,13 +73,13 @@ class CRYPTO_EXPORT Encryptor {
   // must either authenticate the ciphertext before decrypting it, or take
   // care to not report decryption failure. Otherwise it could inadvertently
   // be used as a padding oracle to attack the cryptosystem.
-  bool Decrypt(const base::StringPiece& ciphertext, std::string* plaintext);
+  bool Decrypt(base::StringPiece ciphertext, std::string* plaintext);
 
   // Sets the counter value when in CTR mode. Currently only 128-bits
   // counter value is supported.
   //
   // Returns true only if update was successful.
-  bool SetCounter(const base::StringPiece& counter);
+  bool SetCounter(base::StringPiece counter);
 
   // TODO(albertb): Support streaming encryption.
 
@@ -89,11 +89,9 @@ class CRYPTO_EXPORT Encryptor {
   std::unique_ptr<Counter> counter_;
 
   bool Crypt(bool do_encrypt,  // Pass true to encrypt, false to decrypt.
-             const base::StringPiece& input,
+             base::StringPiece input,
              std::string* output);
-  bool CryptCTR(bool do_encrypt,
-                const base::StringPiece& input,
-                std::string* output);
+  bool CryptCTR(bool do_encrypt, base::StringPiece input, std::string* output);
   std::string iv_;
 };
 
