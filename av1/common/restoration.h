@@ -29,20 +29,20 @@ extern "C" {
 #if CONFIG_STRIPED_LOOP_RESTORATION
 // Filter tile grid offset upwards compared to the superblock grid
 #define RESTORATION_TILE_OFFSET 8
-#endif
+#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
 #define SGRPROJ_BORDER_VERT 3  // Vertical border used for Sgr
 #else
 #define SGRPROJ_BORDER_VERT 3  // Vertical border used for Sgr
-#endif
+#endif                         // CONFIG_STRIPED_LOOP_RESTORATION
 #define SGRPROJ_BORDER_HORZ 3  // Horizontal border used for Sgr
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
 #define WIENER_BORDER_VERT 2  // Vertical border used for Wiener
 #else
 #define WIENER_BORDER_VERT 3  // Vertical border used for Wiener
-#endif
+#endif                        // CONFIG_STRIPED_LOOP_RESTORATION
 #define WIENER_HALFWIN 3
 #define WIENER_BORDER_HORZ (WIENER_HALFWIN)  // Horizontal border for Wiener
 
@@ -72,7 +72,7 @@ extern "C" {
 // Additional pixels to the left and right in above/below buffers
 // It is RESTORATION_BORDER_HORZ rounded up to get nicer buffer alignment
 #define RESTORATION_EXTRA_HORZ 4
-#endif
+#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
 // Pad up to 20 more (may be much less is needed)
 #define RESTORATION_PADDING 20
@@ -95,7 +95,7 @@ extern "C" {
 #define RESTORATION_TILEPELS_MAX                                           \
   ((RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_HORZ + 16) * \
    (RESTORATION_TILESIZE_MAX * 3 / 2 + 2 * RESTORATION_BORDER_VERT))
-#endif
+#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
 // Two 32-bit buffers needed for the restored versions from two filters
 // TODO(debargha, rupert): Refactor to not need the large tilesize to be stored
@@ -230,6 +230,16 @@ typedef struct {
   // stripe.
   uint16_t tmp_save_above[RESTORATION_BORDER][RESTORATION_LINEBUFFER_WIDTH];
   uint16_t tmp_save_below[RESTORATION_BORDER][RESTORATION_LINEBUFFER_WIDTH];
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
+  // Column buffers, for storing 3 pixels at the left/right of each tile
+  // when loopfiltering across tiles is disabled.
+  //
+  // Note: These arrays only need to store the pixels immediately left/right
+  // of each processing unit; the corner pixels (top-left, etc.) are always
+  // stored into the above/below arrays.
+  uint16_t tmp_save_left[RESTORATION_BORDER][RESTORATION_PROC_UNIT_SIZE];
+  uint16_t tmp_save_right[RESTORATION_BORDER][RESTORATION_PROC_UNIT_SIZE];
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 } RestorationLineBuffers;
 
 typedef struct {
@@ -237,7 +247,7 @@ typedef struct {
   uint8_t *stripe_boundary_below;
   int stripe_boundary_stride;
 } RestorationStripeBoundaries;
-#endif
+#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 
 typedef struct {
   RestorationType frame_restoration_type;
@@ -256,7 +266,7 @@ typedef struct {
   RestorationUnitInfo *unit_info;
 #if CONFIG_STRIPED_LOOP_RESTORATION
   RestorationStripeBoundaries boundaries;
-#endif
+#endif  // CONFIG_STRIPED_LOOP_RESTORATION
 } RestorationInfo;
 
 static INLINE void set_default_sgrproj(SgrprojInfo *sgrproj_info) {
@@ -315,7 +325,10 @@ void av1_loop_restoration_filter_unit(
 #if CONFIG_STRIPED_LOOP_RESTORATION
     const RestorationStripeBoundaries *rsb, RestorationLineBuffers *rlbs,
     const AV1PixelRect *tile_rect, int tile_stripe0,
-#endif
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
+    int loop_filter_across_tiles_enabled,
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
+#endif  // CONFIG_STRIPED_LOOP_RESTORATION
     int ss_x, int ss_y, int highbd, int bit_depth, uint8_t *data8, int stride,
     uint8_t *dst8, int dst_stride, int32_t *tmpbuf);
 
@@ -355,7 +368,8 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
                                        int *rrow1, int *tile_tl_idx);
 
 void av1_loop_restoration_save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
-                                              struct AV1Common *cm);
+                                              struct AV1Common *cm,
+                                              int after_cdef);
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -182,6 +182,9 @@ static int64_t try_restoration_tile(const RestSearchCtxt *rsc,
       limits, rui,
 #if CONFIG_STRIPED_LOOP_RESTORATION
       &rsi->boundaries, &rlbs, tile_rect, rsc->tile_stripe0,
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
+      cm->loop_filter_across_tiles_enabled,
+#endif
 #endif
       is_uv && cm->subsampling_x, is_uv && cm->subsampling_y, highbd, bit_depth,
       fts->buffers[plane], fts->strides[is_uv], rsc->dst->buffers[plane],

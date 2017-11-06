@@ -4685,7 +4685,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #if CONFIG_FRAME_SUPERRES && CONFIG_HORZONLY_FRAME_SUPERRES
   if (!av1_superres_unscaled(cm)) aom_extend_frame_borders(cm->frame_to_show);
 #endif
-  av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm);
+  av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm, 0);
 #endif
 
 #if CONFIG_CDEF
@@ -4708,6 +4708,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif  // CONFIG_FRAME_SUPERRES
 
 #if CONFIG_LOOP_RESTORATION
+  av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm, 1);
   av1_pick_filter_restoration(cpi->source, cpi);
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
