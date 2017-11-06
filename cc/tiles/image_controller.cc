@@ -22,7 +22,9 @@ ImageController::ImageController(
     scoped_refptr<base::SequencedTaskRunner> worker_task_runner)
     : worker_task_runner_(std::move(worker_task_runner)),
       origin_task_runner_(origin_task_runner),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
+}
 
 ImageController::~ImageController() {
   StopWorkerTasks();
@@ -63,6 +65,7 @@ void ImageController::StopWorkerTasks() {
   // nothing can start running between wait and this invalidate, since it would
   // only run on the current (compositor) thread.
   weak_ptr_factory_.InvalidateWeakPtrs();
+  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 
   // Now, begin cleanup.
 
@@ -269,7 +272,7 @@ void ImageController::ProcessNextImageDecodeOnWorkerThread() {
   }
   origin_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ImageController::ImageDecodeCompleted,
-                                weak_ptr_factory_.GetWeakPtr(), decode.id));
+                                weak_ptr_, decode.id));
 }
 
 void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {

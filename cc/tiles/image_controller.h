@@ -101,6 +101,8 @@ class CC_EXPORT ImageController {
   void ImageDecodeCompleted(ImageDecodeRequestId id);
   void GenerateTasksForOrphanedRequests();
 
+  base::WeakPtr<ImageController> weak_ptr_;
+
   ImageDecodeCache* cache_ = nullptr;
   std::vector<DrawImage> predecode_locked_images_;
 
