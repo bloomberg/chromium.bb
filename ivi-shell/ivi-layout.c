@@ -153,7 +153,10 @@ ivi_view_destroy(struct ivi_layout_view *ivi_view)
 	wl_list_remove(&ivi_view->pending_link);
 	wl_list_remove(&ivi_view->order_link);
 
-	weston_view_destroy(ivi_view->view);
+	if (weston_surface_is_desktop_surface(ivi_view->ivisurf->surface))
+		weston_desktop_surface_unlink_view(ivi_view->view);
+	else
+		weston_view_destroy(ivi_view->view);
 
 	free(ivi_view);
 }
@@ -170,7 +173,13 @@ ivi_view_create(struct ivi_layout_layer *ivilayer,
 		return NULL;
 	}
 
-	ivi_view->view = weston_view_create(ivisurf->surface);
+	if (weston_surface_is_desktop_surface(ivisurf->surface)) {
+		ivi_view->view = weston_desktop_surface_create_view(
+				ivisurf->weston_desktop_surface);
+	} else {
+		ivi_view->view = weston_view_create(ivisurf->surface);
+	}
+
 	if (ivi_view->view == NULL) {
 		weston_log("fails to allocate memory\n");
 		free(ivi_view);
