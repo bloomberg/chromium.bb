@@ -125,8 +125,11 @@ void OomInterventionTabHelper::DidStartNavigation(
     // Monitoring but near-OOM hasn't been detected.
     RecordNearOomMonitoringEndReason(NearOomMonitoringEndReason::NAVIGATION);
   }
+}
 
-  StartMonitoringIfNeeded();
+void OomInterventionTabHelper::DocumentAvailableInMainFrame() {
+  if (IsLastVisibleWebContents(web_contents()))
+    StartMonitoringIfNeeded();
 }
 
 void OomInterventionTabHelper::WasShown() {
