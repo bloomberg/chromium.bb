@@ -34,6 +34,7 @@ class OomInterventionTabHelper
   void RenderProcessGone(base::TerminationStatus status) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DocumentAvailableInMainFrame() override;
   void WasShown() override;
   void WasHidden() override;
 
