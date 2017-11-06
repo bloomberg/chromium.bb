@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 @class ToolbarController;
+@protocol ToolbarSnapshotProviding;
 
 @protocol ToolbarOwner<NSObject>
 
@@ -19,6 +20,10 @@
 // Reparents the toolbar into its place in the view hierarchy before it was
 // relinquished.
 - (void)reparentToolbarController;
+
+// Snapshot provider for the toolbar owner by this class.
+@property(nonatomic, strong, readonly) id<ToolbarSnapshotProviding>
+    toolbarSnapshotProvider;
 
 @optional
 // Returns the height of the toolbar owned by the implementing class.

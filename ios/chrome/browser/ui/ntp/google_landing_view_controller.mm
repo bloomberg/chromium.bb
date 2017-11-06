@@ -221,6 +221,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 @synthesize canGoBack = _canGoBack;
 @synthesize voiceSearchIsEnabled = _voiceSearchIsEnabled;
 @synthesize leftMargin = _leftMargin;
+@synthesize toolbarSnapshotProvider = _toolbarSnapshotProvider;
 
 - (void)viewDidLoad {
   [super viewDidLoad];

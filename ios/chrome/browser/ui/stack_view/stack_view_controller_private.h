@@ -85,6 +85,9 @@ typedef enum {
 // The toolbar controller used in transition animations.
 @property(nonatomic, strong) ToolbarController* transitionToolbarController;
 
+// Snapshot of the toolbar, used in transition.
+@property(nonatomic, strong) UIView* transitionToolbarSnapshot;
+
 // The dummy view used in the transition animation.
 @property(nonatomic, strong) UIView* dummyToolbarBackgroundView;
 

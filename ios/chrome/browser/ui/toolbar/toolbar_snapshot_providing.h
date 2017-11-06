@@ -13,6 +13,9 @@
 // Snapshot used by the TabSwitcher.
 - (UIView*)snapshotForTabSwitcher;
 
+// Returns a snapshot used by the StackView.
+- (UIView*)snapshotForStackView;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_SNAPSHOT_PROVIDER_H_

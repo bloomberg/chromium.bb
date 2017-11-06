@@ -177,6 +177,10 @@
   return toolbarSnapshotView;
 }
 
+- (UIView*)snapshotForStackView {
+  return [self snapshotForTabSwitcher];
+}
+
 #pragma mark - IncognitoViewControllerDelegate
 
 - (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
