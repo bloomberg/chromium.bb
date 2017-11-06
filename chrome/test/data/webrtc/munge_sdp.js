@@ -55,17 +55,17 @@ function setOpusDtxEnabled(sdp) {
 /**
  * Returns a modified version of |sdp| where the |codec| has been promoted to be
  * the default codec, i.e. the codec whose ID is first in the list of codecs on
- * the 'm=|type|' line, where |type| is 'audio' or 'video'. If |preferHwCodec|
- * is true, it will select the last codec with the given name, and if false, it
- * will select the first codec with the given name, because HW codecs are listed
- * after SW codecs in the SDP list.
+ * the 'm=|type|' line, where |type| is 'audio' or 'video'.
  * @private
  */
 function setSdpDefaultCodec(sdp, type, codec, preferHwCodec) {
   var sdpLines = splitSdpLines(sdp);
 
   // Find codec ID, e.g. 100 for 'VP8' if 'a=rtpmap:100 VP8/9000'.
-  var codecId = findRtpmapId(sdpLines, codec, preferHwCodec);
+  // TODO(magjed): We need a more stable order of the video codecs, e.g. that HW
+  // codecs are always listed before SW codecs.
+  var useLastInstance = !preferHwCodec;
+  var codecId = findRtpmapId(sdpLines, codec, useLastInstance);
   if (codecId === null) {
     failure('setSdpDefaultCodec',
             'Unknown ID for |codec| = \'' + codec + '\'.');
