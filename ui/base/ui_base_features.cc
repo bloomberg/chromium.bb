@@ -15,9 +15,10 @@ const base::Feature kDirectManipulationStylus = {
 // Applies the material design mode to elements throughout Chrome (not just top
 // Chrome).
 const base::Feature kSecondaryUiMd = {"SecondaryUiMd",
-// Enabled by default on Windows and Desktop Linux. http://crbug.com/775847.
-// TODO(tapted): Also enable on Mac when http://crbug.com/780409 is fixed.
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// Enabled by default on Windows, Mac and Desktop Linux.
+// http://crbug.com/775847.
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
                                       base::FEATURE_ENABLED_BY_DEFAULT
 #else
                                       base::FEATURE_DISABLED_BY_DEFAULT

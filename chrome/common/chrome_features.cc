@@ -429,9 +429,9 @@ const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
 
 #if defined(OS_MACOSX)
 // Whether to show all dialogs with toolkit-views on Mac, rather than Cocoa. A
-// subset of "pilot" dialogs can be enabled with kExtendMdToSecondaryUi.
+// subset of "pilot" dialogs can be enabled with kSecondaryUiMd.
 const base::Feature kShowAllDialogsWithViewsToolkit{
-    "ShowAllDialogsWithViewsToolkit", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ShowAllDialogsWithViewsToolkit", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
