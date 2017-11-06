@@ -357,13 +357,18 @@ class SimpleURLLoaderTestBase {
  public:
   SimpleURLLoaderTestBase()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        network_service_(NetworkService::Create()) {
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+    mojom::NetworkServicePtr network_service_ptr;
+    mojom::NetworkServiceRequest network_service_request =
+        mojo::MakeRequest(&network_service_ptr);
+    network_service_ =
+        NetworkService::Create(std::move(network_service_request),
+                               /*netlog=*/nullptr);
     mojom::NetworkContextParamsPtr context_params =
         mojom::NetworkContextParams::New();
     context_params->enable_data_url_support = true;
-    network_service_->CreateNetworkContext(mojo::MakeRequest(&network_context_),
-                                           std::move(context_params));
+    network_service_ptr->CreateNetworkContext(
+        mojo::MakeRequest(&network_context_), std::move(context_params));
 
     network_context_->CreateURLLoaderFactory(
         mojo::MakeRequest(&url_loader_factory_), 0);

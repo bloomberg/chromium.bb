@@ -41,6 +41,7 @@ NetworkConnectionTracker::NetworkConnectionTracker(
               base::ObserverListBase<
                   NetworkConnectionObserver>::NOTIFY_EXISTING_ONLY)),
       binding_(this) {
+  DCHECK(network_service);
   // Get NetworkChangeManagerPtr.
   mojom::NetworkChangeManagerPtr manager_ptr;
   mojom::NetworkChangeManagerRequest request(mojo::MakeRequest(&manager_ptr));

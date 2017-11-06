@@ -60,6 +60,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_quality_observer_factory.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
@@ -299,6 +300,7 @@ IOThread::IOThread(
 #endif
       globals_(nullptr),
       is_quic_allowed_on_init_(true),
+      network_service_request_(mojo::MakeRequest(&ui_thread_network_service_)),
       weak_factory_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
@@ -757,7 +759,17 @@ void IOThread::SetUpProxyConfigService(
   builder->set_proxy_config_service(std::move(proxy_config_service));
 }
 
+content::mojom::NetworkService* IOThread::GetNetworkServiceOnUIThread() {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    return content::GetNetworkService();
+  } else {
+    return ui_thread_network_service_.get();
+  }
+}
+
 void IOThread::ConstructSystemRequestContext() {
+  DCHECK(network_service_request_.is_pending());
+
   std::unique_ptr<content::URLRequestContextBuilderMojo> builder =
       base::MakeUnique<content::URLRequestContextBuilderMojo>();
 
@@ -817,7 +829,8 @@ void IOThread::ConstructSystemRequestContext() {
   SetUpProxyConfigService(builder.get(),
                           std::move(system_proxy_config_service_));
 
-  globals_->network_service = content::NetworkService::Create(net_log_);
+  globals_->network_service = content::NetworkService::Create(
+      std::move(network_service_request_), net_log_);
   if (!is_quic_allowed_on_init_)
     globals_->network_service->DisableQuic();
 

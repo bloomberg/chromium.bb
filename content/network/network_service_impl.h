@@ -42,6 +42,7 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   // TODO(https://crbug.com/767450): Once the NetworkService can always create
   // its own NetLog in production, remove the |net_log| argument.
   NetworkServiceImpl(std::unique_ptr<service_manager::BinderRegistry> registry,
+                     mojom::NetworkServiceRequest request = nullptr,
                      net::NetLog* net_log = nullptr);
 
   ~NetworkServiceImpl() override;

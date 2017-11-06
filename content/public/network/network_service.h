@@ -27,7 +27,9 @@ class CONTENT_EXPORT NetworkService : public mojom::NetworkService {
   //
   // TODO(https://crbug.com/767450): Make it so NetworkService can always create
   // its own NetLog, instead of sharing one.
-  static std::unique_ptr<NetworkService> Create(net::NetLog* net_log = nullptr);
+  static std::unique_ptr<NetworkService> Create(
+      mojom::NetworkServiceRequest request,
+      net::NetLog* net_log = nullptr);
 
   // Can be used to seed a NetworkContext with a consumer-configured
   // URLRequestContextBuilder, which |params| will then be applied to. The
@@ -40,8 +42,8 @@ class CONTENT_EXPORT NetworkService : public mojom::NetworkService {
   // NetworkService, and will be removed once that ships.
   virtual std::unique_ptr<mojom::NetworkContext>
   CreateNetworkContextWithBuilder(
-      content::mojom::NetworkContextRequest request,
-      content::mojom::NetworkContextParamsPtr params,
+      mojom::NetworkContextRequest request,
+      mojom::NetworkContextParamsPtr params,
       std::unique_ptr<net::URLRequestContextBuilder> builder,
       net::URLRequestContext** url_request_context) = 0;
 

@@ -42,6 +42,10 @@ class WatchDogThread;
 class WebRtcLogUploader;
 #endif
 
+namespace content {
+class NetworkConnectionTracker;
+}
+
 namespace safe_browsing {
 class SafeBrowsingService;
 }
@@ -188,6 +192,10 @@ class BrowserProcess {
   // is enabled. When the network service is not enabled, its NetworkContext is
   // backed by the IOThread's URLRequestContext.
   virtual SystemNetworkContextManager* system_network_context_manager() = 0;
+
+  // Returns a NetworkConnectionTracker that can be used to subscribe for
+  // network change events.
+  virtual content::NetworkConnectionTracker* network_connection_tracker() = 0;
 
   // Returns the thread that is used for health check of all browser threads.
   virtual WatchDogThread* watchdog_thread() = 0;

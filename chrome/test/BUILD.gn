@@ -1429,6 +1429,7 @@ test("browser_tests") {
 
       # If this list is used on Android in the future, these browser/speech/*
       # files will probably not be applicable.
+      "../browser/net/network_connection_tracker_browsertest.cc",
       "../browser/speech/extension_api/tts_extension_apitest.cc",
       "../browser/speech/speech_recognition_browsertest.cc",
       "../browser/spellchecker/spellcheck_service_browsertest.cc",
