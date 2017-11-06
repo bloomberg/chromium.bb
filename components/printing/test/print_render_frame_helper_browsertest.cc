@@ -855,6 +855,128 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   VerifyPagesPrinted(false);
 }
 
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
+       PreviewLayoutTriggeredByResize) {
+  // A simple web page with print margins css.
+  const char kHTMLWithPageCss[] =
+      "<!DOCTYPE html>"
+      "<style>"
+      "@media (min-width: 540px) {"
+      "  #container {"
+      "    width: 540px;"
+      "  }"
+      "}"
+      ".testlist {"
+      "  list-style-type: none;"
+      "}"
+      "</style>"
+      "<div id='container'>"
+      "  <ul class='testlist'>"
+      "    <li>"
+      "      <p>"
+      "      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      "      ccccccccccccccccccccccccccccccccccccccc"
+      "      ddddddddddddddddddddddddddddddddddddddd"
+      "      eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      "      fffffffffffffffffffffffffffffffffffffff"
+      "      ggggggggggggggggggggggggggggggggggggggg"
+      "      hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+      "      iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+      "      jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
+      "      kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+      "      lllllllllllllllllllllllllllllllllllllll"
+      "      mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm':"
+      "      </p>"
+      "    </li>"
+      "    <li>"
+      "      <p>"
+      "      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      "      ccccccccccccccccccccccccccccccccccccccc"
+      "      ddddddddddddddddddddddddddddddddddddddd"
+      "      eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      "      fffffffffffffffffffffffffffffffffffffff"
+      "      ggggggggggggggggggggggggggggggggggggggg"
+      "      hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+      "      iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+      "      jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
+      "      kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+      "      lllllllllllllllllllllllllllllllllllllll"
+      "      mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm'"
+      "      </p>"
+      "    </li>"
+      "    <li>"
+      "      <p>"
+      "      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      "      ccccccccccccccccccccccccccccccccccccccc"
+      "      ddddddddddddddddddddddddddddddddddddddd"
+      "      eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      "      fffffffffffffffffffffffffffffffffffffff"
+      "      ggggggggggggggggggggggggggggggggggggggg"
+      "      hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+      "      iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+      "      jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
+      "      kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+      "      lllllllllllllllllllllllllllllllllllllll"
+      "      mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm'"
+      "      </p>"
+      "    </li>"
+      "    <li>"
+      "      <p>"
+      "      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      "      ccccccccccccccccccccccccccccccccccccccc"
+      "      ddddddddddddddddddddddddddddddddddddddd"
+      "      eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      "      fffffffffffffffffffffffffffffffffffffff"
+      "      ggggggggggggggggggggggggggggggggggggggg"
+      "      hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+      "      iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+      "      jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
+      "      kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+      "      lllllllllllllllllllllllllllllllllllllll"
+      "      mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm'"
+      "      </p>"
+      "    </li>"
+      "    <li>"
+      "      <p>"
+      "      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "      bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      "      ccccccccccccccccccccccccccccccccccccccc"
+      "      ddddddddddddddddddddddddddddddddddddddd"
+      "      eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      "      fffffffffffffffffffffffffffffffffffffff"
+      "      ggggggggggggggggggggggggggggggggggggggg"
+      "      hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+      "      iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"
+      "      jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"
+      "      kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk"
+      "      lllllllllllllllllllllllllllllllllllllll"
+      "      mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm'"
+      "      </p>"
+      "    </li>"
+      "  </ul>"
+      "</div>";
+  LoadHTML(kHTMLWithPageCss);
+
+  // Fill in some dummy values.
+  base::DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  dict.SetBoolean(kSettingPrintToPDF, false);
+  dict.SetInteger(kSettingMarginsType, DEFAULT_MARGINS);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(2);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
+}
+
 // Test to verify that print preview honor print margin css when PRINT_TO_PDF
 // is selected and doesn't fit to printer default paper size.
 TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
