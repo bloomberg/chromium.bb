@@ -35,14 +35,16 @@ const char kInputId[] = "id";
 const char kInputType[] = "type";
 const char kPlaceholderContent[] = "placeHolderContent";
 const char kPlacement[] = "placement";
+const char kReminder[] = "reminder";
+const char kScenario[] = "scenario";
 const char kSilent[] = "silent";
 const char kText[] = "text";
 const char kTrue[] = "true";
 const char kUserResponse[] = "userResponse";
 const char kTextElement[] = "text";
 const char kToastElement[] = "toast";
-const char kToastElementLaunchAttribute[] = "launch";
 const char kToastElementDisplayTimestamp[] = "displayTimestamp";
+const char kToastElementLaunchAttribute[] = "launch";
 const char kVisualElement[] = "visual";
 
 // Name of the template used for default Chrome notifications.
@@ -59,12 +61,9 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
   std::unique_ptr<NotificationTemplateBuilder> builder =
       base::WrapUnique(new NotificationTemplateBuilder);
 
-  // TODO(finnur): Can we set <toast scenario="reminder"> for notifications
-  // that have set the never_timeout() flag?
-  builder->StartToastElement(notification.id(), notification.timestamp());
+  builder->StartToastElement(notification.id(), notification);
   builder->StartVisualElement();
 
-  // TODO(finnur): Set the correct binding template based on the |notification|.
   builder->StartBindingElement(kDefaultTemplate);
 
   // Content for the toast template.
@@ -118,19 +117,24 @@ std::string NotificationTemplateBuilder::FormatOrigin(
 
 void NotificationTemplateBuilder::StartToastElement(
     const std::string& notification_id,
-    const base::Time& timestamp) {
+    const message_center::Notification& notification) {
   xml_writer_->StartElement(kToastElement);
   xml_writer_->AddAttribute(kToastElementLaunchAttribute, notification_id);
+  // Note: If the notification doesn't include a button, then Windows will
+  // ignore the Reminder flag.
+  if (notification.never_timeout())
+    xml_writer_->AddAttribute(kScenario, kReminder);
 
-  if (!timestamp.is_null()) {
-    base::Time::Exploded exploded;
-    timestamp.UTCExplode(&exploded);
-    xml_writer_->AddAttribute(
-        kToastElementDisplayTimestamp,
-        base::StringPrintf("%04d-%02d-%02dT%02d:%02d:%02dZ", exploded.year,
-                           exploded.month, exploded.day_of_month, exploded.hour,
-                           exploded.minute, exploded.second));
-  }
+  if (notification.timestamp().is_null())
+    return;
+
+  base::Time::Exploded exploded;
+  notification.timestamp().UTCExplode(&exploded);
+  xml_writer_->AddAttribute(
+      kToastElementDisplayTimestamp,
+      base::StringPrintf("%04d-%02d-%02dT%02d:%02d:%02dZ", exploded.year,
+                         exploded.month, exploded.day_of_month, exploded.hour,
+                         exploded.minute, exploded.second));
 }
 
 void NotificationTemplateBuilder::EndToastElement() {
