@@ -33,12 +33,6 @@ class GURL;
               sourceURL:(const GURL&)sourceURL
             linkClicked:(BOOL)linkClicked;
 
-// This method is invoked whenever the system believes the URL is about to
-// change, or immediately after any unexpected change of the URL, prior to
-// updating the navigation manager's pending entry.
-// Phase will be LOAD_REQUESTED.
-- (void)webWillAddPendingURL:(const GURL&)url
-                  transition:(ui::PageTransition)transition;
 // Called when a placeholder image should be displayed instead of the WebView.
 - (void)webController:(CRWWebController*)webController
     retrievePlaceholderOverlayImage:(void (^)(UIImage*))block;
