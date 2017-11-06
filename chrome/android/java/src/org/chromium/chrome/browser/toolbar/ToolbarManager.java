@@ -1297,7 +1297,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      * Only start showing the progress bar if it is not already started.
      */
     private void startLoadProgress() {
-        android.util.Log.w("mdjones", "TOOLBARMANAGER starting");
         if (mToolbar.isProgressStarted()) return;
         mToolbar.startLoadProgress();
     }
