@@ -540,22 +540,28 @@ TEST_F(NetworkConfigurationHandlerMockTest, GetProperties_TetherNetwork) {
       base::Bind(&ErrorCallback));
 }
 
-TEST_F(NetworkConfigurationHandlerMockTest, SetProperties) {
-  std::string service_path = "/service/1";
-  std::string networkName = "MyNetwork";
-  std::string key = "SSID";
-  std::unique_ptr<base::Value> networkNameValue(new base::Value(networkName));
+TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
+  constexpr char kServicePath[] = "/service/1";
+  constexpr char kNetworkName[] = "MyNetwork";
+
+  GetShillServiceClient()->AddService(
+      kServicePath, std::string() /* guid */, std::string() /* name */,
+      shill::kTypeWifi, std::string() /* state */, true /* visible */);
 
   base::DictionaryValue value;
-  value.SetString(key, networkName);
-  dictionary_value_result_ = &value;
-  EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
-      .WillOnce(
-          Invoke(this, &NetworkConfigurationHandlerMockTest::OnSetProperties));
+  value.SetString(shill::kSSIDProperty, kNetworkName);
   network_configuration_handler_->SetShillProperties(
-      service_path, value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
+      kServicePath, value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
+
+  const base::DictionaryValue* properties =
+      GetShillServiceClient()->GetServiceProperties(kServicePath);
+  ASSERT_TRUE(properties);
+  const base::Value* ssid = properties->FindKeyOfType(
+      shill::kSSIDProperty, base::Value::Type::STRING);
+  ASSERT_TRUE(ssid);
+  EXPECT_EQ(kNetworkName, ssid->GetString());
 }
 
 TEST_F(NetworkConfigurationHandlerMockTest, ClearProperties) {
