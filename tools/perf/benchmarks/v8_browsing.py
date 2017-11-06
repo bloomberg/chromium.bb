@@ -311,7 +311,7 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
         self.DisableStory(
             'browse:shopping:flipkart',
             [story.expectations.ALL_MOBILE],
-            'crbug.com/767970')
+            'crbug.com/767970, crbug.com/708300')
         self.DisableStory(
             'browse:news:cnn',
             [story.expectations.ALL_MOBILE],
@@ -320,6 +320,10 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
              'browse:news:globo',
              [story.expectations.ALL_ANDROID],
              'crbug.com/714650')
+        self.DisableStory(
+             'browse:news:toi',
+             [story.expectations.ALL_ANDROID],
+             'crbug.com/728081')
         # TODO(rnephew): This disabling should move to CanRunOnBrowser.
         self.DisableStory(
              'browse:chrome:omnibox',
