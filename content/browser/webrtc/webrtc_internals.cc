@@ -87,7 +87,7 @@ WebRTCInternals::WebRTCInternals() : WebRTCInternals(500, true) {}
 
 WebRTCInternals::WebRTCInternals(int aggregate_updates_ms,
                                  bool should_block_power_saving)
-    : selection_type_(SelectionType::AudioDebugRecordings),
+    : selection_type_(SelectionType::kAudioDebugRecordings),
       audio_debug_recordings_(false),
       event_log_recordings_(false),
       num_open_connections_(0),
@@ -292,7 +292,7 @@ void WebRTCInternals::EnableAudioDebugRecordings(
 #if defined(OS_ANDROID)
   EnableAudioDebugRecordingsOnAllRenderProcessHosts();
 #else
-  selection_type_ = SelectionType::AudioDebugRecordings;
+  selection_type_ = SelectionType::kAudioDebugRecordings;
   DCHECK(!select_file_dialog_);
   select_file_dialog_ = ui::SelectFileDialog::Create(this, nullptr);
   select_file_dialog_->SelectFile(
@@ -352,7 +352,7 @@ void WebRTCInternals::EnableEventLogRecordings(
 #else
   DCHECK(web_contents);
   DCHECK(!select_file_dialog_);
-  selection_type_ = SelectionType::RtcEventLogs;
+  selection_type_ = SelectionType::kRtcEventLogs;
   select_file_dialog_ = ui::SelectFileDialog::Create(this, nullptr);
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(),
@@ -416,11 +416,11 @@ void WebRTCInternals::FileSelected(const base::FilePath& path,
 #if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (selection_type_) {
-    case SelectionType::RtcEventLogs:
+    case SelectionType::kRtcEventLogs:
       event_log_recordings_file_path_ = path;
       EnableEventLogRecordingsOnAllRenderProcessHosts();
       break;
-    case SelectionType::AudioDebugRecordings:
+    case SelectionType::kAudioDebugRecordings:
       audio_debug_recordings_file_path_ = path;
       EnableAudioDebugRecordingsOnAllRenderProcessHosts();
       break;
@@ -434,10 +434,10 @@ void WebRTCInternals::FileSelectionCanceled(void* params) {
 #if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (selection_type_) {
-    case SelectionType::RtcEventLogs:
+    case SelectionType::kRtcEventLogs:
       SendUpdate("eventLogRecordingsFileSelectionCancelled", nullptr);
       break;
-    case SelectionType::AudioDebugRecordings:
+    case SelectionType::kAudioDebugRecordings:
       SendUpdate("audioDebugRecordingsFileSelectionCancelled", nullptr);
       break;
     default:
