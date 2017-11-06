@@ -812,6 +812,11 @@ void GLES2DecoderTestBase::SetupClearTextureExpectations(GLuint service_id,
   EXPECT_CALL(*gl_, BindTexture(bind_target, old_service_id))
       .Times(1)
       .RetiresOnSaturation();
+#if DCHECK_IS_ON()
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+#endif
 }
 
 void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearing(
