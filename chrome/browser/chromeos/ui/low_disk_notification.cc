@@ -63,18 +63,15 @@ LowDiskNotification::LowDiskNotification()
       notification_interval_(kNotificationInterval),
       weak_ptr_factory_(this) {
   DCHECK(DBusThreadManager::Get()->GetCryptohomeClient());
-  DBusThreadManager::Get()->GetCryptohomeClient()->SetLowDiskSpaceHandler(
-      base::Bind(&LowDiskNotification::OnLowDiskSpace,
-                 weak_ptr_factory_.GetWeakPtr()));
+  DBusThreadManager::Get()->GetCryptohomeClient()->AddObserver(this);
 }
 
 LowDiskNotification::~LowDiskNotification() {
   DCHECK(DBusThreadManager::Get()->GetCryptohomeClient());
-  DBusThreadManager::Get()->GetCryptohomeClient()->SetLowDiskSpaceHandler(
-      CryptohomeClient::LowDiskSpaceHandler());
+  DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
 }
 
-void LowDiskNotification::OnLowDiskSpace(uint64_t free_disk_bytes) {
+void LowDiskNotification::LowDiskSpace(uint64_t free_disk_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // We suppress the low-space notifications when there are multiple users on an
   // enterprise managed device. crbug.com/656788.

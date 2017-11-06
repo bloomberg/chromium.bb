@@ -7,10 +7,13 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "chromeos/dbus/cryptohome_client.h"
 
 namespace message_center {
 class Notification;
@@ -25,19 +28,19 @@ namespace chromeos {
 // This class should be created after DBus has been initialized and destroyed
 // before DBus has been shutdown.
 // This class must be instantiated on the UI thread.
-class LowDiskNotification {
+class LowDiskNotification : public CryptohomeClient::Observer {
  public:
   // Registers this class as the CryptohomeClient LowDiskSpaceHandler.
   LowDiskNotification();
 
   // Resets CryptohomeClient LowDiskSpaceHandler.
-  ~LowDiskNotification();
+  ~LowDiskNotification() override;
 
   // Called when the device is running low on disk space.  This is responsible
   // for deciding whether a notification should be shown or not and showing it
   // if appropriate.  This must be called from the thread that instantiated this
   // object.
-  void OnLowDiskSpace(uint64_t free_disk_bytes);
+  void LowDiskSpace(uint64_t free_disk_bytes) override;
 
  private:
   friend class LowDiskNotificationTest;

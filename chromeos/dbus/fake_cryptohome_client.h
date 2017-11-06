@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -28,11 +29,8 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   ~FakeCryptohomeClient() override;
 
   void Init(dbus::Bus* bus) override;
-  void SetAsyncCallStatusHandlers(
-      const AsyncCallStatusHandler& handler,
-      const AsyncCallStatusWithDataHandler& data_handler) override;
-  void ResetAsyncCallStatusHandlers() override;
-  void SetLowDiskSpaceHandler(const LowDiskSpaceHandler& handler) override;
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) override;
   void IsMounted(DBusMethodCallback<bool> callback) override;
@@ -206,8 +204,6 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
                           const cryptohome::MigrateToDircryptoRequest& request,
                           VoidDBusMethodCallback callback) override;
-  void SetDircryptoMigrationProgressHandler(
-      const DircryptoMigrationProgessHandler& handler) override;
   void RemoveFirmwareManagementParametersFromTpm(
       const cryptohome::RemoveFirmwareManagementParametersRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) override;
@@ -268,9 +264,11 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void SetTpmAttestationDeviceKeyPayload(const std::string& key_name,
                                          const std::string& payload);
 
-  DircryptoMigrationProgessHandler dircrypto_migration_progress_handler() {
-    return dircrypto_migration_progress_handler_;
-  }
+  // Calls DircryptoMigrationProgress() on Observer instances.
+  void NotifyDircryptoMigrationProgress(
+      cryptohome::DircryptoMigrationStatus status,
+      uint64_t current,
+      uint64_t total);
 
  private:
   void ReturnProtobufMethodCallback(
@@ -295,10 +293,21 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   // updates.
   void OnDircryptoMigrationProgressUpdated();
 
+  // Notifies AsyncCallStatus() to Observer instances.
+  void NotifyAsyncCallStatus(int async_id, bool return_status, int return_code);
+
+  // Notifies AsyncCallStatusWithData() to Observer instances.
+  void NotifyAsyncCallStatusWithData(int async_id,
+                                     bool return_status,
+                                     const std::string& data);
+
+  // Notifies LowDiskSpace() to Observer instances.
+  void NotifyLowDiskSpace(uint64_t disk_free_bytes);
+
   bool service_is_available_;
+  base::ObserverList<Observer> observer_list_;
+
   int async_call_id_;
-  AsyncCallStatusHandler async_call_status_handler_;
-  AsyncCallStatusWithDataHandler async_call_status_data_handler_;
   bool unmount_result_;
   std::vector<uint8_t> system_salt_;
 
@@ -322,7 +331,6 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   // Device key payload data mapped by key_name.
   std::map<std::string, std::string> device_key_payload_map_;
 
-  DircryptoMigrationProgessHandler dircrypto_migration_progress_handler_;
   base::RepeatingTimer dircrypto_migration_progress_timer_;
   uint64_t dircrypto_migration_progress_;
 

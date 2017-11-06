@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENCRYPTION_MIGRATION_SCREEN_HANDLER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
@@ -31,6 +33,7 @@ class LoginFeedback;
 // WebUI implementation of EncryptionMigrationScreenView
 class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
                                          public BaseScreenHandler,
+                                         public CryptohomeClient::Observer,
                                          public PowerManagerClient::Observer {
  public:
   EncryptionMigrationScreenHandler();
@@ -112,10 +115,12 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // True if the session is in ARC kiosk mode.
   bool IsArcKiosk() const;
 
+  // CryptohomeClient::Observer implementation:
+  void DircryptoMigrationProgress(cryptohome::DircryptoMigrationStatus status,
+                                  uint64_t current,
+                                  uint64_t total) override;
+
   // Handlers for cryptohome API callbacks.
-  void OnMigrationProgress(cryptohome::DircryptoMigrationStatus status,
-                           uint64_t current,
-                           uint64_t total);
   void OnMigrationRequested(bool success);
 
   // Records UMA about visible screen after delay.

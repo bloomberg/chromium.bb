@@ -276,7 +276,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigration) {
 
   EXPECT_TRUE(
       encryption_migration_screen_handler_->fake_wake_lock()->HasWakeLock());
-  fake_cryptohome_client_->dircrypto_migration_progress_handler().Run(
+  fake_cryptohome_client_->NotifyDircryptoMigrationProgress(
       cryptohome::DircryptoMigrationStatus::DIRCRYPTO_MIGRATION_SUCCESS,
       0 /* current */, 0 /* total */);
 
@@ -299,7 +299,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, ResumeMinimalMigration) {
 
   Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 
-  fake_cryptohome_client_->dircrypto_migration_progress_handler().Run(
+  fake_cryptohome_client_->NotifyDircryptoMigrationProgress(
       cryptohome::DircryptoMigrationStatus::DIRCRYPTO_MIGRATION_SUCCESS,
       0 /* current */, 0 /* total */);
 
@@ -322,7 +322,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationSlow) {
 
   encryption_migration_screen_handler_->testing_tick_clock()->Advance(
       base::TimeDelta::FromMinutes(1));
-  fake_cryptohome_client_->dircrypto_migration_progress_handler().Run(
+  fake_cryptohome_client_->NotifyDircryptoMigrationProgress(
       cryptohome::DircryptoMigrationStatus::DIRCRYPTO_MIGRATION_SUCCESS,
       0 /* current */, 0 /* total */);
 
@@ -347,7 +347,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationFails) {
                   _ /* callback */));
   encryption_migration_screen_handler_->testing_tick_clock()->Advance(
       base::TimeDelta::FromMinutes(1));
-  fake_cryptohome_client_->dircrypto_migration_progress_handler().Run(
+  fake_cryptohome_client_->NotifyDircryptoMigrationProgress(
       cryptohome::DircryptoMigrationStatus::DIRCRYPTO_MIGRATION_FAILED,
       0 /* current */, 0 /* total */);
 

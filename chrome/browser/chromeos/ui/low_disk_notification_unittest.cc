@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -67,7 +69,7 @@ class LowDiskNotificationTest : public testing::Test,
 TEST_F(LowDiskNotificationTest, MediumLevelNotification) {
   base::string16 expected_title =
       l10n_util::GetStringUTF16(IDS_LOW_DISK_NOTIFICATION_TITLE);
-  low_disk_notification_->OnLowDiskSpace(kMediumNotification);
+  low_disk_notification_->LowDiskSpace(kMediumNotification);
   EXPECT_NE(nullptr, last_notification_);
   EXPECT_EQ(expected_title, last_notification_->title());
   EXPECT_EQ(1, notification_count_);
@@ -76,31 +78,31 @@ TEST_F(LowDiskNotificationTest, MediumLevelNotification) {
 TEST_F(LowDiskNotificationTest, HighLevelReplacesMedium) {
   base::string16 expected_title =
       l10n_util::GetStringUTF16(IDS_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE);
-  low_disk_notification_->OnLowDiskSpace(kMediumNotification);
-  low_disk_notification_->OnLowDiskSpace(kHighNotification);
+  low_disk_notification_->LowDiskSpace(kMediumNotification);
+  low_disk_notification_->LowDiskSpace(kHighNotification);
   EXPECT_NE(nullptr, last_notification_);
   EXPECT_EQ(expected_title, last_notification_->title());
   EXPECT_EQ(2, notification_count_);
 }
 
 TEST_F(LowDiskNotificationTest, NotificationsAreThrottled) {
-  low_disk_notification_->OnLowDiskSpace(kHighNotification);
+  low_disk_notification_->LowDiskSpace(kHighNotification);
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));
-  low_disk_notification_->OnLowDiskSpace(kHighNotification);
+  low_disk_notification_->LowDiskSpace(kHighNotification);
   EXPECT_EQ(1, notification_count_);
 }
 
 TEST_F(LowDiskNotificationTest, HighNotificationsAreShownAfterThrottling) {
-  low_disk_notification_->OnLowDiskSpace(kHighNotification);
+  low_disk_notification_->LowDiskSpace(kHighNotification);
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(15));
-  low_disk_notification_->OnLowDiskSpace(kHighNotification);
+  low_disk_notification_->LowDiskSpace(kHighNotification);
   EXPECT_EQ(2, notification_count_);
 }
 
 TEST_F(LowDiskNotificationTest, MediumNotificationsAreNotShownAfterThrottling) {
-  low_disk_notification_->OnLowDiskSpace(kMediumNotification);
+  low_disk_notification_->LowDiskSpace(kMediumNotification);
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(15));
-  low_disk_notification_->OnLowDiskSpace(kMediumNotification);
+  low_disk_notification_->LowDiskSpace(kMediumNotification);
   EXPECT_EQ(1, notification_count_);
 }
 
