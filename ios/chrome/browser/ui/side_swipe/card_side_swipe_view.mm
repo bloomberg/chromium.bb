@@ -47,11 +47,25 @@ const NSTimeInterval kAnimationDuration = 0.15;
 const CGFloat kResizeFactor = 4;
 }  // anonymous namespace
 
+@interface SwipeView ()
+
+@property CGFloat topMargin;
+@property NSLayoutConstraint* toolbarHeightConstraint;
+@property NSLayoutConstraint* toolbarTopConstraint;
+
+@end
+
 @implementation SwipeView
+
+@synthesize topMargin = _topMargin;
+@synthesize toolbarTopConstraint = _toolbarTopConstraint;
+@synthesize toolbarHeightConstraint = _toolbarHeightConstraint;
 
 - (id)initWithFrame:(CGRect)frame topMargin:(CGFloat)topMargin {
   self = [super initWithFrame:frame];
   if (self) {
+    _topMargin = topMargin;
+
     image_.reset([[UIImageView alloc] initWithFrame:CGRectZero]);
     [image_ setClipsToBounds:YES];
     [image_ setContentMode:UIViewContentModeScaleAspectFill];
@@ -74,14 +88,17 @@ const CGFloat kResizeFactor = 4;
                                  constraintEqualToAnchor:self.trailingAnchor]];
     }
 
+    _toolbarTopConstraint =
+        [[toolbarHolder_ topAnchor] constraintEqualToAnchor:self.topAnchor
+                                                   constant:-StatusBarHeight()];
+    _toolbarHeightConstraint = [[toolbarHolder_ heightAnchor]
+        constraintEqualToConstant:topMargin + StatusBarHeight()];
+
     [constraints addObjectsFromArray:@[
       [[image_ topAnchor] constraintEqualToAnchor:self.topAnchor
                                          constant:topMargin],
       [[image_ bottomAnchor] constraintEqualToAnchor:self.bottomAnchor],
-      [[toolbarHolder_ topAnchor] constraintEqualToAnchor:self.topAnchor
-                                                 constant:-StatusBarHeight()],
-      [[toolbarHolder_ heightAnchor]
-          constraintEqualToConstant:topMargin + StatusBarHeight()],
+      _toolbarTopConstraint, _toolbarHeightConstraint,
       [[shadowView_ topAnchor] constraintEqualToAnchor:self.topAnchor
                                               constant:topMargin],
       [[shadowView_ heightAnchor]
@@ -118,6 +135,10 @@ const CGFloat kResizeFactor = 4;
 
 - (void)setToolbarImage:(UIImage*)image isNewTabPage:(BOOL)isNewTabPage {
   [toolbarHolder_ setImage:image];
+  // Update constraints as StatusBarHeight changes depending on orientation.
+  self.toolbarTopConstraint.constant = -StatusBarHeight();
+  self.toolbarHeightConstraint.constant = self.topMargin + StatusBarHeight();
+  [toolbarHolder_ setNeedsLayout];
   [shadowView_ setHidden:isNewTabPage];
 }
 
