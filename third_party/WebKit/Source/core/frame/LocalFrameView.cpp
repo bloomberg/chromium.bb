@@ -4402,41 +4402,30 @@ bool LocalFrameView::AdjustScrollbarExistence(
 }
 
 bool LocalFrameView::NeedsScrollbarReconstruction() const {
-  // We have no scrollbar to reconstruct.
-  if (!HorizontalScrollbar() && !VerticalScrollbar())
+  Scrollbar* scrollbar = HorizontalScrollbar();
+  if (!scrollbar)
+    scrollbar = VerticalScrollbar();
+  if (!scrollbar) {
+    // We have no scrollbar to reconstruct.
     return false;
-
+  }
   Element* style_source = nullptr;
   bool needs_custom = ShouldUseCustomScrollbars(style_source);
-
-  Scrollbar* scrollbars[] = {HorizontalScrollbar(), VerticalScrollbar()};
-
-  for (Scrollbar* scrollbar : scrollbars) {
-    if (!scrollbar)
-      continue;
-
+  bool is_custom = scrollbar->IsCustomScrollbar();
+  if (needs_custom != is_custom) {
     // We have a native scrollbar that should be custom, or vice versa.
-    if (scrollbar->IsCustomScrollbar() != needs_custom)
-      return true;
-
-    if (needs_custom) {
-      DCHECK(scrollbar->IsCustomScrollbar());
-      // We have a custom scrollbar with a stale m_owner.
-      if (ToLayoutScrollbar(scrollbar)->StyleSource() !=
-          style_source->GetLayoutObject())
-        return true;
-
-      // Should use custom scrollbar and nothing should change.
-      continue;
-    }
-
-    // Check if native scrollbar should change.
-    Page* page = frame_->GetPage();
-    DCHECK(page);
-    ScrollbarTheme* current_theme = &page->GetScrollbarTheme();
-
-    if (current_theme != &scrollbar->GetTheme())
-      return true;
+    return true;
+  }
+  if (!needs_custom) {
+    // We have a native scrollbar that should remain native.
+    return false;
+  }
+  DCHECK(needs_custom && is_custom);
+  DCHECK(style_source);
+  if (ToLayoutScrollbar(scrollbar)->StyleSource() !=
+      style_source->GetLayoutObject()) {
+    // We have a custom scrollbar with a stale m_owner.
+    return true;
   }
   return false;
 }
