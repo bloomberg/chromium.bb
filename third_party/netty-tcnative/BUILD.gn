@@ -43,7 +43,6 @@ android_library("netty-tcnative_java") {
     "src/java/io/netty/internal/tcnative/SSL.java",
     "src/java/io/netty/internal/tcnative/SSLContext.java",
   ]
-  run_findbugs_override = false
   deps = [
     "//base:base_java",
   ]

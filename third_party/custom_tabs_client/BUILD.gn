@@ -62,7 +62,6 @@ android_library("custom_tabs_support_java") {
   ]
   srcjar_deps = [ ":chrome_custom_tabs_service_aidl" ]
   chromium_code = true
-  run_findbugs_override = false
 }
 
 android_aidl("chrome_custom_tabs_service_aidl") {

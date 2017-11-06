@@ -901,51 +901,6 @@ if (enable_java_templates) {
     }
   }
 
-  template("findbugs") {
-    action(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "testonly",
-                             ])
-      script = "//build/android/findbugs_diff.py"
-      depfile = "$target_gen_dir/$target_name.d"
-      _result_path = "$target_gen_dir/$target_name/result.xml"
-      _exclusions_file = "//build/android/findbugs_filter/findbugs_exclude.xml"
-
-      _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
-
-      inputs = [
-        "//build/android/pylib/utils/findbugs.py",
-        _exclusions_file,
-        invoker.jar_path,
-        invoker.build_config,
-      ]
-
-      outputs = [
-        _result_path,
-      ]
-
-      args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
-        "--exclude",
-        rebase_path(_exclusions_file, root_build_dir),
-        "--system-jar",
-        rebase_path(android_sdk_jar, root_build_dir),
-        "--auxclasspath-gyp",
-        "@FileArg($_rebased_build_config:javac:classpath)",
-        "--output-file",
-        rebase_path(_result_path, root_build_dir),
-        rebase_path(invoker.jar_path, root_build_dir),
-      ]
-
-      if (findbugs_verbose) {
-        args += [ "-vv" ]
-      }
-    }
-  }
-
   # Generates a script in the build bin directory to run a java binary.
   #
   # Variables
@@ -2642,15 +2597,8 @@ if (enable_java_templates) {
           [ "//build/android/buildhooks:build_hooks_android_java" ]
     }
 
-    if (defined(invoker.run_findbugs_override)) {
-      _run_findbugs = invoker.run_findbugs_override
-    } else {
-      _run_findbugs = run_findbugs  # Default to build arg if not overridden.
-    }
-    assert(_run_findbugs || true)  # Mark as used.
-
-    # Don't enable coverage, lint, findbugs unless the target has some
-    # non-generated files.
+    # Don't enable coverage or lint unless the target has some non-generated
+    # files.
     if (defined(invoker.chromium_code)) {
       _chromium_code = invoker.chromium_code
     } else {
@@ -2848,14 +2796,6 @@ if (enable_java_templates) {
           }
         }
 
-        if (_run_findbugs) {
-          findbugs("${_template_name}__findbugs") {
-            build_config = _build_config
-            jar_path = _jar_path
-            deps = _accumulated_deps
-          }
-        }
-
         # Use an intermediate group() rather as the data_deps target in order to
         # avoid lint artifacts showing up as runtime_deps (while still having lint
         # run in parallel to other targets).
@@ -2863,9 +2803,6 @@ if (enable_java_templates) {
           public_deps = [
             ":${_template_name}__lint",
           ]
-          if (_run_findbugs) {
-            public_deps += [ ":${_template_name}__findbugs" ]
-          }
         }
       }
 
