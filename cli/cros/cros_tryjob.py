@@ -288,6 +288,10 @@ Production Examples (danger, can break production if misused):
     how_group.add_argument(
         '--sanity-check-build', dest='passthrough', action='append_option',
         help='Run the build as a sanity check build.')
+    how_group.add_argument(
+        '--chrome_version', dest='passthrough', action='append_option_value',
+        help='Used with SPEC logic to force a particular '
+             'git revision of chrome rather than the latest.')
 
     # Overrides for the build configs testing behaviors.
     test_group = parser.add_argument_group(
