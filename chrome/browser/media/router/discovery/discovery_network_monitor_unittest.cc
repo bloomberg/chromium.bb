@@ -14,8 +14,8 @@
 namespace media_router {
 namespace {
 
-using testing::Invoke;
 using testing::_;
+using testing::Invoke;
 
 class MockDiscoveryObserver : public DiscoveryNetworkMonitor::Observer {
  public:
@@ -26,7 +26,12 @@ class MockDiscoveryObserver : public DiscoveryNetworkMonitor::Observer {
 
 class DiscoveryNetworkMonitorTest : public testing::Test {
  protected:
-  void SetUp() override { fake_network_info.clear(); }
+  void SetUp() override {
+    fake_network_info.clear();
+    discovery_network_monitor =
+        DiscoveryNetworkMonitor::CreateInstanceForTest(&FakeGetNetworkInfo);
+    scoped_task_environment.RunUntilIdle();
+  }
 
   static std::vector<DiscoveryNetworkInfo> FakeGetNetworkInfo() {
     return fake_network_info;
@@ -45,8 +50,7 @@ class DiscoveryNetworkMonitorTest : public testing::Test {
       base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
 
   static std::vector<DiscoveryNetworkInfo> fake_network_info;
-  std::unique_ptr<DiscoveryNetworkMonitor> discovery_network_monitor =
-      DiscoveryNetworkMonitor::CreateInstanceForTest(&FakeGetNetworkInfo);
+  std::unique_ptr<DiscoveryNetworkMonitor> discovery_network_monitor;
 };
 
 // static
@@ -137,6 +141,8 @@ TEST_F(DiscoveryNetworkMonitorTest, RefreshIndependentOfChangeObserver) {
 }
 
 TEST_F(DiscoveryNetworkMonitorTest, GetNetworkIdWithoutRefresh) {
+  scoped_task_environment.RunUntilIdle();
+
   fake_network_info = fake_ethernet_info;
 
   auto check_network_id = [](const std::string& network_id) {

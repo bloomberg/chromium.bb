@@ -75,6 +75,7 @@ class DiscoveryNetworkMonitor
   friend struct base::LazyInstanceTraitsBase<DiscoveryNetworkMonitor>;
 
   DiscoveryNetworkMonitor();
+  explicit DiscoveryNetworkMonitor(NetworkInfoFunction strategy);
   ~DiscoveryNetworkMonitor() override;
 
   void SetNetworkInfoFunctionForTest(NetworkInfoFunction strategy);
