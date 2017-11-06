@@ -307,9 +307,9 @@ bool SkiaRenderer::IsSoftwareResource(ResourceId resource_id) const {
   switch (resource_provider_->GetResourceType(resource_id)) {
     case cc::ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER:
     case cc::ResourceProvider::RESOURCE_TYPE_GL_TEXTURE:
-      return true;
-    case cc::ResourceProvider::RESOURCE_TYPE_BITMAP:
       return false;
+    case cc::ResourceProvider::RESOURCE_TYPE_BITMAP:
+      return true;
   }
 
   LOG(FATAL) << "Invalid resource type.";
@@ -490,7 +490,7 @@ void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad) {
 }
 
 void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad) {
-  if (!IsSoftwareResource(quad->resource_id())) {
+  if (IsSoftwareResource(quad->resource_id())) {
     DrawUnsupportedQuad(quad);
     return;
   }
@@ -537,7 +537,7 @@ void SkiaRenderer::DrawTileQuad(const TileDrawQuad* quad) {
   // |resource_provider_| can be NULL in resourceless software draws, which
   // should never produce tile quads in the first place.
   DCHECK(resource_provider_);
-  DCHECK(IsSoftwareResource(quad->resource_id()));
+  DCHECK(!IsSoftwareResource(quad->resource_id()));
   cc::DisplayResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
                                                           quad->resource_id());
   if (!lock.sk_image())
@@ -561,7 +561,7 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
       render_pass_textures_[quad->render_pass_id].get();
   DCHECK(content_texture);
   DCHECK(content_texture->id());
-  DCHECK(IsSoftwareResource(content_texture->id()));
+  DCHECK(!IsSoftwareResource(content_texture->id()));
   cc::DisplayResourceProvider::ScopedReadLockSkImage lock(
       resource_provider_, content_texture->id());
   if (!lock.sk_image())
