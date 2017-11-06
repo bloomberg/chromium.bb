@@ -11,6 +11,7 @@
     <structures fallback_to_low_resolution="true">
       <structure type="chrome_html" name="IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_CSS" file="legacyMediaControls.css" flattenhtml="true" compress="gzip" />
       <structure type="chrome_html" name="IDR_UASTYLE_MODERN_MEDIA_CONTROLS_CSS" file="modernMediaControls.css" flattenhtml="true" compress="gzip" />
+      <structure type="chrome_html" name="IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_LOADING_CSS" file="modernMediaControls_loading.css" flattenhtml="true" compress="gzip" />
     </structures>
     <includes>
       <include name="IDR_UASTYLE_LEGACY_MEDIA_CONTROLS_ANDROID_CSS" file="legacyMediaControlsAndroid.css" type="BINDATA" compress="gzip" />

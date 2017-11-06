@@ -81,6 +81,7 @@ const HTMLMediaElement* MediaControlElementsHelper::ToParentMediaElement(
 // static
 HTMLDivElement* MediaControlElementsHelper::CreateDiv(const AtomicString& id,
                                                       ContainerNode* parent) {
+  DCHECK(parent);
   HTMLDivElement* element = HTMLDivElement::Create(parent->GetDocument());
   element->SetShadowPseudoId(id);
   parent->AppendChild(element);
@@ -104,6 +105,17 @@ WebSize MediaControlElementsHelper::GetSizeOrDefault(
     zoom_factor = element.GetDocument().GetLayoutView()->ZoomFactor();
 
   return WebSize(round(width / zoom_factor), round(height / zoom_factor));
+}
+
+// static
+HTMLDivElement* MediaControlElementsHelper::CreateDivWithId(
+    const AtomicString& id,
+    ContainerNode* parent) {
+  DCHECK(parent);
+  HTMLDivElement* element = HTMLDivElement::Create(parent->GetDocument());
+  element->setAttribute("id", id);
+  parent->AppendChild(element);
+  return element;
 }
 
 }  // namespace blink

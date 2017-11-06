@@ -59,6 +59,12 @@ String MediaControlsResourceLoader::GetShadowTimelineStyleSheet() {
   return ResourceBundleHelper::UncompressResourceAsString(
       IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_TIMELINE_CSS);
 };
+
+// static
+String MediaControlsResourceLoader::GetShadowLoadingStyleSheet() {
+  return ResourceBundleHelper::UncompressResourceAsString(
+      IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_LOADING_CSS);
+};
 // Re-enable the warnings.
 #if defined(OS_WIN)
 #pragma warning(default : 4068)
