@@ -132,6 +132,7 @@ VideoRendererImpl::VideoRendererImpl(
       buffering_state_(BUFFERING_HAVE_NOTHING),
       frames_decoded_(0),
       frames_dropped_(0),
+      frames_decoded_power_efficient_(0),
       tick_clock_(new base::DefaultTickClock()),
       was_background_rendering_(false),
       time_progressing_(false),
@@ -685,6 +686,13 @@ void VideoRendererImpl::AddReadyFrame_Locked(
 
   frames_decoded_++;
 
+  bool power_efficient = false;
+  if (frame->metadata()->GetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
+                                    &power_efficient) &&
+      power_efficient) {
+    ++frames_decoded_power_efficient_;
+  }
+
   algorithm_->EnqueueFrame(frame);
 }
 
@@ -740,6 +748,8 @@ void VideoRendererImpl::UpdateStats_Locked() {
   DCHECK_GE(frames_decoded_, 0);
   DCHECK_GE(frames_dropped_, 0);
 
+  // No need to check for `frames_decoded_power_efficient_` because if it is
+  // greater than 0, `frames_decoded_` will too.
   if (frames_decoded_ || frames_dropped_) {
     if (frames_dropped_)
       TRACE_EVENT_INSTANT2("media", "VideoFramesDropped",
@@ -748,6 +758,8 @@ void VideoRendererImpl::UpdateStats_Locked() {
     PipelineStatistics statistics;
     statistics.video_frames_decoded = frames_decoded_;
     statistics.video_frames_dropped = frames_dropped_;
+    statistics.video_frames_decoded_power_efficient =
+        frames_decoded_power_efficient_;
 
     const size_t memory_usage = algorithm_->GetMemoryUsage();
     statistics.video_memory_usage = memory_usage - last_video_memory_usage_;
@@ -760,6 +772,7 @@ void VideoRendererImpl::UpdateStats_Locked() {
                                       weak_factory_.GetWeakPtr(), statistics));
     frames_decoded_ = 0;
     frames_dropped_ = 0;
+    frames_decoded_power_efficient_ = 0;
     last_video_memory_usage_ = memory_usage;
   }
 }

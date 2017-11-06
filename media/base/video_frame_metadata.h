@@ -118,6 +118,9 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // rather than being composited into the framebuffer.
     REQUIRE_OVERLAY,
 
+    // Whether this frame was decoded in a power efficient way.
+    POWER_EFFICIENT,
+
     NUM_KEYS
   };
 

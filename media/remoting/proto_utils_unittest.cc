@@ -132,12 +132,11 @@ TEST_F(ProtoUtilsTest, AudioDecoderConfigConversionTest) {
 
 TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
   PipelineStatistics original;
-  // Note: Fill the structure with non-zero bytes to ensure this test is
-  // initializing *all* fields.
-  memset(&original, 0xcd, sizeof(original));
+  // NOTE: all fields should be initialised here.
   original.audio_bytes_decoded = 123;
   original.video_bytes_decoded = 456;
   original.video_frames_decoded = 789;
+  original.video_frames_decoded_power_efficient = 0;
   original.video_frames_dropped = 21;
   original.audio_memory_usage = 32;
   original.video_memory_usage = 43;
@@ -156,12 +155,14 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
       original.video_frame_duration_average.InMicroseconds());
 
   PipelineStatistics converted;
-  memset(&converted, ~0xcd, sizeof(converted));  // See note above.
+  // NOTE: fields will all be initialized with 0xcd. Forcing the conversion to
+  // properly assigned them.
+  memset(&converted, 0xcd, sizeof(converted));
   ConvertProtoToPipelineStatistics(pb_stats, &converted);
 
   // If this fails, did media::PipelineStatistics add/change fields that are not
   // being set by media::remoting::ConvertProtoToPipelineStatistics()?
-  EXPECT_EQ(0, memcmp(&original, &converted, sizeof(converted)));
+  EXPECT_EQ(original, converted);
 }
 
 TEST_F(ProtoUtilsTest, VideoDecoderConfigConversionTest) {

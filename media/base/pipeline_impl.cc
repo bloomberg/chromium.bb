@@ -646,6 +646,8 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
   shared_state_.statistics.audio_bytes_decoded += stats.audio_bytes_decoded;
   shared_state_.statistics.video_bytes_decoded += stats.video_bytes_decoded;
   shared_state_.statistics.video_frames_decoded += stats.video_frames_decoded;
+  shared_state_.statistics.video_frames_decoded_power_efficient +=
+      stats.video_frames_decoded_power_efficient;
   shared_state_.statistics.video_frames_dropped += stats.video_frames_dropped;
   shared_state_.statistics.audio_memory_usage += stats.audio_memory_usage;
   shared_state_.statistics.video_memory_usage += stats.video_memory_usage;

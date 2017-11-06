@@ -683,6 +683,8 @@ void GpuVideoDecoder::DeliverFrame(
   if (!pending_reset_cb_.is_null())
     return;
 
+  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
+
   output_cb_.Run(frame);
 }
 

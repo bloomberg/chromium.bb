@@ -301,6 +301,9 @@ class MEDIA_EXPORT VideoRendererImpl
   int frames_decoded_;
   int frames_dropped_;
 
+  // Keeps track of the number of power efficient decoded frames.
+  int frames_decoded_power_efficient_;
+
   std::unique_ptr<base::TickClock> tick_clock_;
 
   // Algorithm for selecting which frame to render; manages frames and all
