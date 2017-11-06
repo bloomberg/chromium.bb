@@ -41,8 +41,7 @@ void IOSChromeControllerClient::LaunchDateAndTimeSettings() {
 }
 
 void IOSChromeControllerClient::GoBack() {
-  DCHECK(web_interstitial_);
-  web_interstitial_->DontProceed();
+  web_state_->GetNavigationManager()->GoBack();
 }
 
 bool IOSChromeControllerClient::CanGoBack() {
