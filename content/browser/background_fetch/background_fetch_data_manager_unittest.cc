@@ -46,7 +46,7 @@ void DidCreateRegistration(
     base::Closure quit_closure,
     blink::mojom::BackgroundFetchError* out_error,
     blink::mojom::BackgroundFetchError error,
-    const base::Optional<BackgroundFetchRegistration>& registration) {
+    std::unique_ptr<BackgroundFetchRegistration> registration) {
   *out_error = error;
   quit_closure.Run();
 }

@@ -26,7 +26,7 @@ CreateRegistrationTask::CreateRegistrationTask(
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
-    blink::mojom::BackgroundFetchService::FetchCallback callback)
+    CreateRegistrationCallback callback)
     : DatabaseTask(data_manager),
       registration_id_(registration_id),
       requests_(requests),
@@ -57,13 +57,13 @@ void CreateRegistrationTask::DidGetUniqueId(
       // (completed/failed/aborted) first.
       std::move(callback_).Run(
           blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID,
-          base::nullopt /* registration */);
+          nullptr /* registration */);
       Finished();  // Destroys |this|.
       return;
     case DatabaseStatus::kFailed:
       std::move(callback_).Run(
           blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-          base::nullopt /* registration */);
+          nullptr /* registration */);
       Finished();  // Destroys |this|.
       return;
   }
@@ -87,7 +87,7 @@ void CreateRegistrationTask::StoreRegistration() {
   if (!registration_proto.SerializeToString(&serialized_registration_proto)) {
     // TODO(crbug.com/780025): Log failures to UMA.
     std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-                             base::nullopt /* registration */);
+                             nullptr /* registration */);
     Finished();  // Destroys |this|.
     return;
   }
@@ -124,21 +124,21 @@ void CreateRegistrationTask::DidStoreRegistration(
     case DatabaseStatus::kNotFound:
       std::move(callback_).Run(
           blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-          base::nullopt /* registration */);
+          nullptr /* registration */);
       Finished();  // Destroys |this|.
       return;
   }
 
-  BackgroundFetchRegistration registration;
-  registration.developer_id = registration_id_.developer_id();
-  registration.unique_id = registration_id_.unique_id();
-  registration.icons = options_.icons;
-  registration.title = options_.title;
+  auto registration = std::make_unique<BackgroundFetchRegistration>();
+  registration->developer_id = registration_id_.developer_id();
+  registration->unique_id = registration_id_.unique_id();
+  registration->icons = options_.icons;
+  registration->title = options_.title;
   // TODO(crbug.com/774054): Uploads are not yet supported.
-  registration.upload_total = 0;
-  registration.uploaded = 0;
-  registration.download_total = options_.download_total;
-  registration.downloaded = 0;
+  registration->upload_total = 0;
+  registration->uploaded = 0;
+  registration->download_total = options_.download_total;
+  registration->downloaded = 0;
 
   std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE,
                            std::move(registration));
