@@ -1,0 +1,117 @@
+%{
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "{{class_name}}.h"
+#include "core/css/HashTools.h"
+#include <string.h>
+
+#include "platform/wtf/ASCIICType.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/WTFString.h"
+
+#ifdef _MSC_VER
+// Disable the warnings from casting a 64-bit pointer to 32-bit long
+// warning C4302: 'type cast': truncation from 'char (*)[28]' to 'long'
+// warning C4311: 'type cast': pointer truncation from 'char (*)[18]' to 'long'
+#pragma warning(disable : 4302 4311)
+#endif
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+// TODO(thakis): Remove once we use a gperf that no longer produces "register".
+#pragma clang diagnostic ignored "-Wdeprecated-register"
+#endif
+
+namespace blink {
+static const char propertyNameStringsPool[] = {
+{% for name in property_names %}
+  "{{name}}\0"
+{% endfor %}
+};
+
+static const unsigned short propertyNameStringsOffsets[] = {
+{% for offset in property_offsets %}
+  {{offset}},
+{% endfor %}
+};
+
+%}
+%struct-type
+struct Property;
+%omit-struct-type
+%language=C++
+%readonly-tables
+%global-table
+%compare-strncmp
+%define class-name {{class_name}}Hash
+%define lookup-function-name findPropertyImpl
+%define hash-function-name property_hash_function
+%define slot-name name_offset
+%define word-array-name property_word_list
+%enum
+%%
+{{property_to_enum_map}}
+%%
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
+const Property* FindProperty(const char* str, unsigned int len) {
+  return {{class_name}}Hash::findPropertyImpl(str, len);
+}
+
+const char* getPropertyName(CSSPropertyID id) {
+  DCHECK(isCSSPropertyIDWithName(id));
+  int index = id - firstCSSProperty;
+  return propertyNameStringsPool + propertyNameStringsOffsets[index];
+}
+
+const AtomicString& getPropertyNameAtomicString(CSSPropertyID id) {
+  DCHECK(isCSSPropertyIDWithName(id));
+  int index = id - firstCSSProperty;
+  static AtomicString* propertyStrings =
+      new AtomicString[lastUnresolvedCSSProperty]; // Leaked.
+  AtomicString& propertyString = propertyStrings[index];
+  if (propertyString.IsNull()) {
+    propertyString = AtomicString(propertyNameStringsPool +
+                     propertyNameStringsOffsets[index]);
+  }
+  return propertyString;
+}
+
+String getPropertyNameString(CSSPropertyID id) {
+  // We share the StringImpl with the AtomicStrings.
+  return getPropertyNameAtomicString(id).GetString();
+}
+
+String getJSPropertyName(CSSPropertyID id) {
+  char result[maxCSSPropertyNameLength + 1];
+  const char* cssPropertyName = getPropertyName(id);
+  const char* propertyNamePointer = cssPropertyName;
+  if (!propertyNamePointer)
+    return g_empty_string;
+
+  char* resultPointer = result;
+  while (char character = *propertyNamePointer++) {
+    if (character == '-') {
+      char nextCharacter = *propertyNamePointer++;
+      if (!nextCharacter)
+        break;
+      character = (propertyNamePointer - 2 != cssPropertyName)
+                      ? ToASCIIUpper(nextCharacter) : nextCharacter;
+    }
+    *resultPointer++ = character;
+  }
+  *resultPointer = '\0';
+  return String(result);
+}
+
+CSSPropertyID cssPropertyID(const String& string)
+{
+    return resolveCSSPropertyID(unresolvedCSSPropertyID(string));
+}
+
+} // namespace blink
