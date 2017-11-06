@@ -334,8 +334,10 @@ static_assert(
 
 hb_font_t* HarfBuzzFace::GetScaledFont(
     scoped_refptr<UnicodeRangeSet> range_set) const {
-  platform_data_->SetupPaint(&harf_buzz_font_data_->paint_);
-  harf_buzz_font_data_->paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  PaintFont paint_font;
+  platform_data_->SetupPaintFont(&paint_font);
+  paint_font.SetTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  harf_buzz_font_data_->paint_ = paint_font.ToSkPaint();
   harf_buzz_font_data_->range_set_ = std::move(range_set);
   harf_buzz_font_data_->UpdateSimpleFontData(platform_data_);
 

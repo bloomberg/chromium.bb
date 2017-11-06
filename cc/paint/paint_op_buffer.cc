@@ -1188,7 +1188,7 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
                                      SkCanvas* canvas,
                                      const PlaybackParams& params) {
   SkPaint paint = flags->ToSkPaint();
-  canvas->drawTextBlob(op->blob.get(), op->x, op->y, paint);
+  canvas->drawTextBlob(op->blob->ToSkTextBlob().get(), op->x, op->y, paint);
 }
 
 void RestoreOp::Raster(const RestoreOp* op,
@@ -1382,7 +1382,8 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
       return false;
     case PaintOpType::DrawTextBlob: {
       auto* text_op = static_cast<const DrawTextBlobOp*>(op);
-      *rect = text_op->blob->bounds().makeOffset(text_op->x, text_op->y);
+      *rect = text_op->blob->ToSkTextBlob()->bounds().makeOffset(text_op->x,
+                                                                 text_op->y);
       rect->sort();
       return true;
     }
@@ -1548,11 +1549,11 @@ bool DrawRecordOp::HasDiscardableImages() const {
 
 DrawTextBlobOp::DrawTextBlobOp() = default;
 
-DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
+DrawTextBlobOp::DrawTextBlobOp(scoped_refptr<PaintTextBlob> paint_blob,
                                SkScalar x,
                                SkScalar y,
                                const PaintFlags& flags)
-    : PaintOpWithFlags(flags), blob(std::move(blob)), x(x), y(y) {}
+    : PaintOpWithFlags(flags), blob(std::move(paint_blob)), x(x), y(y) {}
 
 DrawTextBlobOp::~DrawTextBlobOp() = default;
 

@@ -278,11 +278,11 @@ void RecordPaintCanvas::drawBitmap(const SkBitmap& bitmap,
             left, top, flags);
 }
 
-void RecordPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
+void RecordPaintCanvas::drawTextBlob(scoped_refptr<PaintTextBlob> blob,
                                      SkScalar x,
                                      SkScalar y,
                                      const PaintFlags& flags) {
-  list_->push<DrawTextBlobOp>(blob, x, y, flags);
+  list_->push<DrawTextBlobOp>(std::move(blob), x, y, flags);
 }
 
 void RecordPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {

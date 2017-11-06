@@ -5,6 +5,8 @@
 #ifndef CC_PAINT_PAINT_OP_WRITER_H_
 #define CC_PAINT_PAINT_OP_WRITER_H_
 
+#include <unordered_set>
+
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
 
@@ -19,13 +21,8 @@ class PaintShader;
 
 class CC_PAINT_EXPORT PaintOpWriter {
  public:
-  PaintOpWriter(void* memory, size_t size)
-      : memory_(static_cast<char*>(memory) + HeaderBytes()),
-        size_(size),
-        remaining_bytes_(size - HeaderBytes()) {
-    // Leave space for header of type/skip.
-    DCHECK_GE(size, HeaderBytes());
-  }
+  PaintOpWriter(void* memory, size_t size);
+  ~PaintOpWriter();
 
   static size_t constexpr HeaderBytes() { return 4u; }
 
@@ -47,8 +44,8 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const PaintFlags& flags);
   void Write(const PaintImage& image, ImageDecodeCache* cache);
   void Write(const sk_sp<SkData>& data);
-  void Write(const sk_sp<SkTextBlob>& blob);
   void Write(const PaintShader* shader);
+  void Write(const scoped_refptr<PaintTextBlob>& blob);
 
   void Write(SkClipOp op) { Write(static_cast<uint8_t>(op)); }
   void Write(PaintCanvas::AnnotationType type) {
@@ -64,6 +61,10 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void WriteSimple(const T& val);
 
   void WriteFlattenable(const SkFlattenable* val);
+  void Write(const std::vector<PaintTypeface>& typefaces);
+  void Write(const sk_sp<SkTextBlob>& blob);
+
+  static void TypefaceCataloger(SkTypeface* typeface, void* ctx);
 
   // Attempts to align the memory to the given alignment. Returns false if there
   // is unsufficient bytes remaining to do this padding.
@@ -73,6 +74,8 @@ class CC_PAINT_EXPORT PaintOpWriter {
   size_t size_ = 0u;
   size_t remaining_bytes_ = 0u;
   bool valid_ = true;
+  // This is here for DCHECKs.
+  std::unordered_set<SkFontID> last_serialized_typeface_ids_;
 };
 
 }  // namespace cc

@@ -101,8 +101,10 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
 
   SkPaint::FontMetrics metrics;
 
-  platform_data_.SetupPaint(&paint_);
-  paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  PaintFont font;
+  platform_data_.SetupPaintFont(&font);
+  font.SetTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  paint_ = font.ToSkPaint();
   paint_.getFontMetrics(&metrics);
   SkTypeface* face = paint_.getTypeface();
   DCHECK(face);
