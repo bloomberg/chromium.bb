@@ -2503,21 +2503,12 @@ def GeneratePayloads(build_root, target_image_path, archive_dir, full=False,
         '--output', os.path.join(chroot_temp_dir, 'update.gz')
     ]
     if full:
-      cmd_full = cmd
-      cmd_full.extend(['--kern_path',
-                       os.path.join(chroot_temp_dir, 'full_dev_part_KERN.bin'),
-                       '--root_pretruncate_path',
-                       os.path.join(chroot_temp_dir, 'full_dev_part_ROOT.bin')])
-      cros_build_lib.RunCommand(cmd_full, enter_chroot=True, cwd=cwd)
+      cros_build_lib.RunCommand(cmd, enter_chroot=True, cwd=cwd)
       name = '_'.join([prefix, os_version, board, 'full', suffix])
       # Names for full payloads look something like this:
       # chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin
       shutil.move(os.path.join(temp_dir, 'update.gz'),
                   os.path.join(archive_dir, name))
-      for partition in ['KERN', 'ROOT']:
-        source = os.path.join(temp_dir, 'full_dev_part_%s.bin' % partition)
-        dest = os.path.join(archive_dir, 'full_dev_part_%s.bin.gz' % partition)
-        cros_build_lib.CompressFile(source, dest)
 
     cmd.extend(['--src_image', chroot_target])
     if delta:
