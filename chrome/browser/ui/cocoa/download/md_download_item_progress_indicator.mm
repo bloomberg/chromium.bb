@@ -97,8 +97,8 @@ base::ScopedCFTypeRef<CGPathRef> BeginArrowPath() {
 // points matches up with ArrowPath() so that one can morph into the other.
 base::ScopedCFTypeRef<CGPathRef> CheckPath() {
   constexpr CGPoint points[] = {
-      {11.1314, 6.5385}, {13.9697, 9.308}, {12.012, 11.366}, {4.5942, 3.9466},
-      {2.0074, 6.528},   {0.0, 4.6687},    {4.5549, 0.0},
+      {11.1314, 7.5385}, {13.9697, 10.308}, {12.012, 12.366}, {4.5942, 4.9466},
+      {2.0074, 7.528},   {0.0, 5.6687},     {4.5549, 1.0},
   };
   CGMutablePathRef path = CGPathCreateMutable();
   CGPathAddLines(path, nullptr, points, sizeof(points) / sizeof(*points));
