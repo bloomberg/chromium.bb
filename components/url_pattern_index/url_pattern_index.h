@@ -101,13 +101,22 @@ class UrlPatternIndexBuilder {
 // rules, and provides fast matching of network requests against these rules.
 class UrlPatternIndexMatcher {
  public:
+  enum class FindRuleStrategy {
+    // Any rule is returned in case multiple rules match.
+    kAny,
+
+    // If multiple rules match, any of the rules with the highest priority is
+    // returned.
+    kHighestPriority
+  };
+
   // Creates an instance to access the given |flat_index|. If |flat_index| is
   // nullptr, then all requests return no match.
   explicit UrlPatternIndexMatcher(const flat::UrlPatternIndex* flat_index);
   ~UrlPatternIndexMatcher();
 
   // If the index contains one or more UrlRules that match the request, returns
-  // one of them (it is undefined which one). Otherwise, returns nullptr.
+  // one of them, depending on the |strategy|. Otherwise, returns nullptr.
   //
   // Notes on parameters:
   //  - |url| should be valid, otherwise the return value is nullptr.
@@ -129,17 +138,19 @@ class UrlPatternIndexMatcher {
                                  proto::ElementType element_type,
                                  proto::ActivationType activation_type,
                                  bool is_third_party,
-                                 bool disable_generic_rules) const;
+                                 bool disable_generic_rules,
+                                 FindRuleStrategy strategy) const;
 
   // Helper function to work with flat::*Type(s). If the index contains one or
-  // more UrlRules that match the request, returns one of them (it is undefined
-  // which one). Otherwise, returns nullptr.
+  // more UrlRules that match the request, returns one of them depending on
+  // |strategy|. Otherwise, returns nullptr.
   const flat::UrlRule* FindMatch(const GURL& url,
                                  const url::Origin& first_party_origin,
                                  flat::ElementType element_type,
                                  flat::ActivationType activation_type,
                                  bool is_third_party,
-                                 bool disable_generic_rules) const;
+                                 bool disable_generic_rules,
+                                 FindRuleStrategy strategy) const;
 
  private:
   // Must outlive this instance.

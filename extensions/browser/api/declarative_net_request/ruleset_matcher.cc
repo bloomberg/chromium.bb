@@ -82,16 +82,20 @@ bool RulesetMatcher::ShouldBlockRequest(const GURL& url,
                                         const url::Origin& first_party_origin,
                                         flat_rule::ElementType element_type,
                                         bool is_third_party) const {
+  using FindRuleStrategy =
+      url_pattern_index::UrlPatternIndexMatcher::FindRuleStrategy;
+
   SCOPED_UMA_HISTOGRAM_TIMER(
       "DeclarativeNetRequest.ShouldBlockRequestTime.SingleExtension");
 
-  bool success =
-      !!blacklist_matcher_.FindMatch(
-          url, first_party_origin, element_type, flat_rule::ActivationType_NONE,
-          is_third_party, false /*disable_generic_rules*/) &&
-      !whitelist_matcher_.FindMatch(
-          url, first_party_origin, element_type, flat_rule::ActivationType_NONE,
-          is_third_party, false /*disable_generic_rules*/);
+  bool success = !!blacklist_matcher_.FindMatch(
+                     url, first_party_origin, element_type,
+                     flat_rule::ActivationType_NONE, is_third_party,
+                     false /*disable_generic_rules*/, FindRuleStrategy::kAny) &&
+                 !whitelist_matcher_.FindMatch(
+                     url, first_party_origin, element_type,
+                     flat_rule::ActivationType_NONE, is_third_party,
+                     false /*disable_generic_rules*/, FindRuleStrategy::kAny);
   return success;
 }
 

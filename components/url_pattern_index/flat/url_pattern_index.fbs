@@ -104,6 +104,7 @@ table NGramToRules {
   ngram : ulong;
 
   // The list of rules containing |ngram| as a substring of their URL pattern.
+  // Sorted in descending order of rule priority.
   rule_list : [UrlRule];
 }
 
@@ -122,7 +123,8 @@ table UrlPatternIndex {
   ngram_index_empty_slot : NGramToRules;
 
   // A list storing the rules that doesn't contain any valid N-grams in their
-  // URL patterns. Contains all the REGEXP rules as well.
+  // URL patterns. Contains all the REGEXP rules as well. Sorted in descending
+  // order of rule priority.
   // TODO(pkalinnikov): Think about better implementation for the fallback
   // index. Possibly make it a hash map and maybe merge it with the N-gram
   // index, since we can treat any sequence of characters shorter than N as an
