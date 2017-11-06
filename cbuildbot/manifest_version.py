@@ -18,6 +18,7 @@ from xml.dom import minidom
 
 from chromite.cbuildbot import build_status
 from chromite.cbuildbot import repository
+from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -594,7 +595,7 @@ class BuildSpecsManager(object):
       ignore_timeout_exception: Whether to ignore when the timeout exception is
         raised in waiting. Default to True.
     """
-    builders_array = builder_status_lib.FetchCurrentSlaveBuildersArray(
+    builders_array = buildbucket_lib.FetchCurrentSlaveBuilders(
         self.config, self.metadata, builders_array)
     logging.info('Waiting for the following builds to complete: %s',
                  builders_array)

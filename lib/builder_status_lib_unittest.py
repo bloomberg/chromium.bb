@@ -645,6 +645,7 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     self.db = fake_cidb.FakeCIDBConnection()
     self.site_config = config_lib.GetConfig()
     self.config = self.site_config['master-paladin']
+    self.slave_config = self.site_config['lumpy-paladin']
     self.message = 'build message'
     self.metadata = metadata_lib.CBuildbotMetadata()
     self.buildbucket_client = mock.Mock()
@@ -662,16 +663,15 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     config = config or self.config
     metadata = metadata or self.metadata
     buildbucket_client = buildbucket_client or self.buildbucket_client
-    builders_array = builders_array or self.builders_array
-    builde_statuses_fetcher = builder_status_lib.BuilderStatusesFetcher(
+    builders_array = (builders_array if builders_array is not None
+                      else self.builders_array)
+    self.PatchObject(buildbucket_lib, 'FetchCurrentSlaveBuilders',
+                     return_value=builders_array)
+    builder_statuses_fetcher = builder_status_lib.BuilderStatusesFetcher(
         build_id, db, success, message, config, metadata, buildbucket_client,
         builders_array=builders_array, dry_run=dry_run)
 
-    return builde_statuses_fetcher
-
-  def _PatchFetchBuilderStatuses(self):
-    self.PatchObject(builder_status_lib.BuilderStatusesFetcher,
-                     '_FetchBuilderStatuses')
+    return builder_statuses_fetcher
 
   def _PatchesForGetSlaveBuilderStatus(self, status_dict):
     self.PatchObject(builder_status_lib.SlaveBuilderStatus, '__init__',
@@ -688,40 +688,20 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
 
   def testFetchLocalBuilderStatus(self):
     """Test _FetchLocalBuilderStatus."""
-    self._PatchFetchBuilderStatuses()
     fetcher = self.CreateBuilderStatusesFetcher()
 
     local_builder_status = fetcher._FetchLocalBuilderStatus()
     self.assertTrue('master-paladin' in local_builder_status.keys())
 
-  def testFetchSlaveBuilderStatuses(self):
-    """Test _FetchSlaveBuilderStatuses."""
-    self._PatchFetchBuilderStatuses()
-    status_dict = {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2),
-        'build3': build_status_unittest.CIDBStatusInfos.GetInflightBuild(
-            build_id=3)
-    }
-    self._PatchesForGetSlaveBuilderStatus(status_dict)
-
-    fetcher = self.CreateBuilderStatusesFetcher()
-    fetcher.builders_array = None
+  def testFetchSlaveBuilderStatusesWithEmptySlaveList(self):
+    """Test _FetchSlaveBuilderStatuses with an empty slave list."""
+    self._PatchesForGetSlaveBuilderStatus({})
+    fetcher = self.CreateBuilderStatusesFetcher(builders_array=[])
     statuses = fetcher._FetchSlaveBuilderStatuses()
     self.assertEqual(statuses, {})
 
-    fetcher = self.CreateBuilderStatusesFetcher(
-        builders_array=status_dict.keys())
-
-    statuses = fetcher._FetchSlaveBuilderStatuses()
-    self.assertTrue(statuses['build1'].Failed())
-    self.assertTrue(statuses['build2'].Passed())
-    self.assertTrue(statuses['build3'].Inflight())
-
-  def testFetchBuilderStatuses(self):
-    """Test _FetchBuilderStatuses."""
+  def testFetchSlaveBuildersStatusesWithSlaveList(self):
+    """Test _FetchSlaveBuilderStatuses with a slave list."""
     status_dict = {
         'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
             build_id=1),
@@ -732,33 +712,24 @@ class BuilderStatusesFetcherTests(cros_test_lib.MockTestCase):
     }
     self._PatchesForGetSlaveBuilderStatus(status_dict)
     fetcher = self.CreateBuilderStatusesFetcher(
-        builders_array=status_dict.keys())
-
-    statuses = fetcher._FetchBuilderStatuses()
-    self.assertTrue(statuses['master-paladin'].Passed())
+        builders_array=['build1', 'build2', 'build3'])
+    statuses = fetcher._FetchSlaveBuilderStatuses()
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
     self.assertTrue(statuses['build3'].Inflight())
 
-    # Call _FetchBuilderStatuses again with new status.
-    status_dict = {
-        'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=1),
-        'build2': build_status_unittest.CIDBStatusInfos.GetPassedBuild(
-            build_id=2),
-        'build3': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
-            build_id=3)
-    }
-    self._PatchesForGetSlaveBuilderStatus(status_dict)
+  def testGetBuilderStatusesOnSlaves(self):
+    """Test GetBuilderStatuses on slaves."""
+    fetcher = self.CreateBuilderStatusesFetcher(
+        config=self.slave_config, builders_array=[])
 
-    statuses = fetcher._FetchBuilderStatuses()
-    self.assertTrue(statuses['master-paladin'].Passed())
-    self.assertTrue(statuses['build1'].Failed())
-    self.assertTrue(statuses['build2'].Passed())
-    self.assertTrue(statuses['build3'].Failed())
+    important_statuses, experimental_statuses = fetcher.GetBuilderStatuses()
+    self.assertEqual(len(important_statuses), 1)
+    self.assertEqual(len(experimental_statuses), 0)
+    self.assertTrue(important_statuses['lumpy-paladin'].Passed())
 
-  def testGetBuilderStatuses(self):
-    """Test GetBuilderStatuses."""
+  def testGetBuilderStatusesOnMasters(self):
+    """Test GetBuilderStatuses on masters."""
     status_dict = {
         'build1': build_status_unittest.CIDBStatusInfos.GetFailedBuild(
             build_id=1),

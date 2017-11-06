@@ -66,30 +66,6 @@ def CancelBuilds(buildbucket_ids, buildbucket_client,
                         buildbucket_lib.GetErrorReason(result))
 
 
-def FetchCurrentSlaveBuildersArray(config, metadata, builders_array):
-  """Fetch the current important slave builds.
-
-  Args:
-    config: Instance of config_lib.BuildConfig. Config dict of this build.
-    metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
-              build.
-    builders_array: A list of slave build configs to check.
-
-  Returns:
-    An updated list of slave build configs for a master build which uses
-    Buildbucket to schedule slaves; or the origin builders_array for other
-    masters.
-  """
-  if (config is not None and
-      metadata is not None and
-      config_lib.UseBuildbucketScheduler(config)):
-    scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
-        metadata)
-    return scheduled_buildbucket_info_dict.keys()
-  else:
-    return builders_array
-
-
 def GetFailedMessages(statuses, failing):
   """Gathers the BuildFailureMessages from the |failing| builders.
 
@@ -636,11 +612,13 @@ class BuilderStatusesFetcher(object):
     self.db = db
     self.success = success
     self.message = message
-    self.builders_array = builders_array
     self.config = config
     self.metadata = metadata
     self.buildbucket_client = buildbucket_client
     self.dry_run = dry_run
+
+    self.builders_array = buildbucket_lib.FetchCurrentSlaveBuilders(
+        self.config, self.metadata, builders_array, exclude_experimental=False)
 
   def _FetchLocalBuilderStatus(self):
     """Fetch the BuilderStatus of the local build.
@@ -660,7 +638,7 @@ class BuilderStatusesFetcher(object):
       It contains the statuses for builders marked as experimental in the tree
       status.
     """
-    if self.builders_array is None:
+    if not self.builders_array:
       return {}
 
     slave_builder_statuses = SlaveBuilderStatus(
@@ -681,23 +659,6 @@ class BuilderStatusesFetcher(object):
            builder_status.dashboard_url))
     return slave_builder_status_dict
 
-  def _FetchBuilderStatuses(self):
-    """Fetch BuilderStatus of the local build and its slave builds (if any).
-
-    Returns:
-      A dict mapping build names (strings) to their BuilderStatus instances.
-    """
-    statuses = self._FetchLocalBuilderStatus()
-
-    if not self.config.master:
-      # The slave build returns its own status.
-      logging.info('The build is not a master.')
-    else:
-      logging.info('Fetching BuilderStatus of slaves.')
-      statuses.update(self._FetchSlaveBuilderStatuses())
-
-    return statuses
-
   def GetBuilderStatuses(self):
     """Get BuilderStatus of a given build and its slave builds (if any).
 
@@ -707,12 +668,19 @@ class BuilderStatusesFetcher(object):
       not marked experimental in the tree status. experimental_statuses contains
       builds marked as experimental in the tree status.
     """
-    statuses = self._FetchBuilderStatuses()
+    statuses = self._FetchLocalBuilderStatus()
 
     if not self.config.master:
+      # The build returns its own status.
+      logging.info('The build is not a master.')
+
       return statuses, {}
 
-    # Get updated experimental builders from metadata.
+    logging.info('Fetching BuilderStatus of slaves.')
+
+    statuses.update(self._FetchSlaveBuilderStatuses())
+
+    # Get builders marked as experimental in the tree status from metadata.
     experimental_builders = self.metadata.GetValueWithDefault(
         constants.METADATA_EXPERIMENTAL_BUILDERS, [])
 

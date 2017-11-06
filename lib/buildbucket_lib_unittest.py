@@ -450,16 +450,42 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
         constants.METADATA_SCHEDULED_IMPORTANT_SLAVES, slaves)
 
     buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(metadata)
-    self.assertEqual(buildbucket_info_dict['config_1'].retry, 1)
-    self.assertEqual(buildbucket_info_dict['config_1'].buildbucket_id,
-                     'bb_id_2')
+    self.assertEqual(len(buildbucket_info_dict), 2)
+    self.assertEqual(
+        buildbucket_info_dict['config_1'],
+        buildbucket_lib.BuildbucketInfo('bb_id_2', 1, 1, None, None, None))
+    self.assertEqual(
+        buildbucket_info_dict['config_2'],
+        buildbucket_lib.BuildbucketInfo('bb_id_3', 0, 2, None, None, None))
+
+    buildbucket_info_dict_with_experimental = (
+        buildbucket_lib.GetBuildInfoDict(metadata, exclude_experimental=False))
+    self.assertEqual(len(buildbucket_info_dict), 2)
+    self.assertEqual(
+        buildbucket_info_dict_with_experimental['config_1'],
+        buildbucket_lib.BuildbucketInfo('bb_id_2', 1, 1, None, None, None))
+    self.assertEqual(
+        buildbucket_info_dict_with_experimental['config_2'],
+        buildbucket_lib.BuildbucketInfo('bb_id_3', 0, 2, None, None, None))
 
     metadata.UpdateWithDict({
         constants.METADATA_EXPERIMENTAL_BUILDERS: ['config_2']
     })
     buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(metadata)
-    self.assertIn('config_1', buildbucket_info_dict)
-    self.assertNotIn('config_2', buildbucket_info_dict)
+    self.assertEqual(len(buildbucket_info_dict), 1)
+    self.assertEqual(
+        buildbucket_info_dict['config_1'],
+        buildbucket_lib.BuildbucketInfo('bb_id_2', 1, 1, None, None, None))
+
+    buildbucket_info_dict_with_experimental = (
+        buildbucket_lib.GetBuildInfoDict(metadata, exclude_experimental=False))
+    self.assertEqual(len(buildbucket_info_dict_with_experimental), 2)
+    self.assertEqual(
+        buildbucket_info_dict_with_experimental['config_1'],
+        buildbucket_lib.BuildbucketInfo('bb_id_2', 1, 1, None, None, None))
+    self.assertEqual(
+        buildbucket_info_dict_with_experimental['config_2'],
+        buildbucket_lib.BuildbucketInfo('bb_id_3', 0, 2, None, None, None))
 
   def testGetBuildbucketIds(self):
     """Test GetBuildbucketIds with metadata and config."""
