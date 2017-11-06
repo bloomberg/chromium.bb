@@ -39,6 +39,10 @@ CGFloat CurrentScreenWidth();
 // Returns true if the device is an iPhone X.
 bool IsIPhoneX();
 
+// Returns whether the feature to force the toolbar to respect the safe area is
+// enabled.
+bool IsSafeAreaCompatibleToolbarEnabled();
+
 // Returns the height of the status bar, accounting for orientation.
 CGFloat StatusBarHeight();
 

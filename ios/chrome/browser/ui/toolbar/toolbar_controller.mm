@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_tools_menu_button.h"
@@ -154,7 +153,7 @@ using ios::material::TimingFunction;
     }
 
     view_ = [[ToolbarView alloc] initWithFrame:viewFrame];
-    if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    if (IsSafeAreaCompatibleToolbarEnabled()) {
       [view_ setTranslatesAutoresizingMaskIntoConstraints:NO];
     }
 
