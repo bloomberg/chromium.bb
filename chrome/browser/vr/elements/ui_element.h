@@ -303,6 +303,8 @@ class UiElement : public cc::AnimationTarget {
   // then this function should return false.
   virtual bool IsWorldPositioned() const;
 
+  std::string DebugName() const;
+
  protected:
   AnimationPlayer& animation_player() { return animation_player_; }
 

@@ -31,6 +31,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace vr {
 
@@ -47,6 +48,11 @@ constexpr float kViewScaleAdjustmentFactor = 0.2f;
 constexpr gfx::Point3F kLaserOrigin = {0.5f, -0.5f, 0.f};
 constexpr gfx::Vector3dF kLaserLocalOffset = {0.f, -0.0075f, -0.05f};
 constexpr float kControllerScaleFactor = 1.5f;
+
+void RotateToward(const gfx::Vector3dF& fwd, gfx::Transform* transform) {
+  gfx::Quaternion quat(kForwardVector, fwd);
+  transform->PreconcatTransform(gfx::Transform(quat));
+}
 
 }  // namespace
 
@@ -80,23 +86,15 @@ VrTestContext::~VrTestContext() = default;
 void VrTestContext::DrawFrame() {
   base::TimeTicks current_time = base::TimeTicks::Now();
 
-  const gfx::Transform proj_matrix(view_scale_factor_, 0, 0, 0, 0,
-                                   view_scale_factor_, 0, 0, 0, 0, -1, 0, 0, 0,
-                                   -1, 0);
   RenderInfo render_info;
   render_info.head_pose = head_pose_;
   render_info.surface_texture_size = window_size_;
   render_info.left_eye_info.viewport = gfx::Rect(window_size_);
   render_info.left_eye_info.view_matrix = head_pose_;
-  render_info.left_eye_info.proj_matrix = proj_matrix;
-  render_info.left_eye_info.view_proj_matrix = proj_matrix * head_pose_;
+  render_info.left_eye_info.proj_matrix = ProjectionMatrix();
+  render_info.left_eye_info.view_proj_matrix = ViewProjectionMatrix();
 
-  GestureList gesture_list;
-  ReticleModel reticle_model;
-  ui_->input_manager()->HandleInput(base::TimeTicks::Now(),
-                                    last_controller_model_, &reticle_model,
-                                    &gesture_list);
-  ui_->OnControllerUpdated(last_controller_model_, reticle_model);
+  UpdateController();
 
   // Update the render position of all UI elements (including desktop).
   ui_->scene()->OnBeginFrame(current_time, kForwardVector);
@@ -186,40 +184,66 @@ void VrTestContext::HandleInput(ui::Event* event) {
   head_pose_.RotateAboutXAxis(-head_angle_x_degrees_);
   head_pose_.RotateAboutYAxis(-head_angle_y_degrees_);
 
-  // Determine a controller beam angle. Compute the beam angle relative to the
-  // head pose so it's easier to hit something you're looking at.
-  float delta_x = -180.f * ((mouse_event->y() / window_size_.height()) - 0.5f);
-  float delta_y = -180.f * ((mouse_event->x() / window_size_.width()) - 0.5f);
-  gfx::Transform beam_transform;
-  beam_transform.RotateAboutYAxis(head_angle_y_degrees_ + delta_y);
-  beam_transform.RotateAboutXAxis(head_angle_x_degrees_ + delta_x);
-  gfx::Vector3dF controller_direction = {0, 0, -1.f};
-  beam_transform.TransformVector(&controller_direction);
+  last_mouse_point_ = gfx::Point(mouse_event->x(), mouse_event->y());
+  last_controller_model_ = UpdateController();
+}
 
-  gfx::Vector3dF local_offset = kLaserLocalOffset;
-  beam_transform.TransformVector(&local_offset);
-  local_offset.Scale(kControllerScaleFactor);
+ControllerModel VrTestContext::UpdateController() {
+  // We first comput two points behind the mouse position in normalized device
+  // coordinates. The z components are arbitrary.
+  gfx::Point3F mouse_point_far(
+      2.0 * last_mouse_point_.x() / window_size_.width() - 1.0,
+      -2.0 * last_mouse_point_.y() / window_size_.height() + 1.0, 0.8);
+  gfx::Point3F mouse_point_near = mouse_point_far;
+  mouse_point_near.set_z(-0.8);
+
+  // We then convert these points into world space via the inverse view proj
+  // matrix. These points are then used to construct a temporary controller
+  // model that pretends to be shooting through the pixel at the mouse position.
+  gfx::Transform inv_view_proj;
+  CHECK(ViewProjectionMatrix().GetInverse(&inv_view_proj));
+  inv_view_proj.TransformPoint(&mouse_point_near);
+  inv_view_proj.TransformPoint(&mouse_point_far);
 
   ControllerModel controller_model;
   controller_model.touchpad_button_state =
       touchpad_pressed_ ? UiInputManager::DOWN : UiInputManager::UP;
-  controller_model.laser_direction = controller_direction;
-  controller_model.laser_origin = kLaserOrigin + local_offset;
+
+  controller_model.laser_origin = mouse_point_near;
+  controller_model.laser_direction = mouse_point_far - mouse_point_near;
+  CHECK(controller_model.laser_direction.GetNormalized(
+      &controller_model.laser_direction));
 
   controller_model.transform.Translate3d(kLaserOrigin.x(), kLaserOrigin.y(),
                                          kLaserOrigin.z());
-
   controller_model.transform.Scale3d(
       kControllerScaleFactor, kControllerScaleFactor, kControllerScaleFactor);
-  controller_model.transform.RotateAboutYAxis(head_angle_y_degrees_ + delta_y);
-  controller_model.transform.RotateAboutXAxis(head_angle_x_degrees_ + delta_x);
+  RotateToward(controller_model.laser_direction, &controller_model.transform);
 
+  // Hit testing is done in terms of this synthesized controller model.
   GestureList gesture_list;
   ReticleModel reticle_model;
   ui_->input_manager()->HandleInput(base::TimeTicks::Now(), controller_model,
                                     &reticle_model, &gesture_list);
-  last_controller_model_ = controller_model;
+
+  // Now that we have accurate hit information, we use this to construct a
+  // controller model for display.
+  controller_model.laser_direction = reticle_model.target_point - kLaserOrigin;
+
+  controller_model.transform.MakeIdentity();
+  controller_model.transform.Translate3d(kLaserOrigin.x(), kLaserOrigin.y(),
+                                         kLaserOrigin.z());
+  controller_model.transform.Scale3d(
+      kControllerScaleFactor, kControllerScaleFactor, kControllerScaleFactor);
+  RotateToward(controller_model.laser_direction, &controller_model.transform);
+
+  gfx::Vector3dF local_offset = kLaserLocalOffset;
+  controller_model.transform.TransformVector(&local_offset);
+  controller_model.laser_origin = kLaserOrigin + local_offset;
+
   ui_->OnControllerUpdated(controller_model, reticle_model);
+
+  return controller_model;
 }
 
 void VrTestContext::OnGlInitialized(const gfx::Size& window_size) {
@@ -267,6 +291,15 @@ void VrTestContext::CreateFakeOmniboxSuggestions() {
         AutocompleteMatch::Type::VOICE_SUGGEST));
   }
   ui_->SetOmniboxSuggestions(std::move(result));
+}
+
+gfx::Transform VrTestContext::ProjectionMatrix() const {
+  return gfx::Transform(view_scale_factor_, 0, 0, 0, 0, view_scale_factor_, 0,
+                        0, 0, 0, -1, 0, 0, 0, -1, 0.5);
+}
+
+gfx::Transform VrTestContext::ViewProjectionMatrix() const {
+  return ProjectionMatrix() * head_pose_;
 }
 
 void VrTestContext::SetVoiceSearchActive(bool active) {}
