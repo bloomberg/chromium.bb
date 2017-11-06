@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
+#include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -11,8 +11,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_infobar_delegate.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
+#include "chrome/browser/android/search_permissions/search_geolocation_disclosure_infobar_delegate.h"
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -153,8 +153,8 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForValidUrl(
     return;
 
   // And only show disclosure if the DSE geolocation setting is on.
-  SearchGeolocationService* service =
-      SearchGeolocationService::Factory::GetForBrowserContext(GetProfile());
+  SearchPermissionsService* service =
+      SearchPermissionsService::Factory::GetForBrowserContext(GetProfile());
   if (!service->GetDSEGeolocationSetting())
     return;
 
@@ -179,8 +179,8 @@ void SearchGeolocationDisclosureTabHelper::MaybeShowDisclosureForValidUrl(
 
 bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForAPIAccess(
     const GURL& gurl) {
-  SearchGeolocationService* service =
-      SearchGeolocationService::Factory::GetForBrowserContext(GetProfile());
+  SearchPermissionsService* service =
+      SearchPermissionsService::Factory::GetForBrowserContext(GetProfile());
 
   // Check the service first, as we don't want to show the infobar even when
   // testing if it does not exist.
@@ -230,8 +230,8 @@ void SearchGeolocationDisclosureTabHelper::RecordPreDisclosureMetrics(
         static_cast<base::HistogramBase::Sample>(CONTENT_SETTING_NUM_SETTINGS) +
             1);
 
-    SearchGeolocationService* service =
-        SearchGeolocationService::Factory::GetForBrowserContext(GetProfile());
+    SearchPermissionsService* service =
+        SearchPermissionsService::Factory::GetForBrowserContext(GetProfile());
     UMA_HISTOGRAM_BOOLEAN("GeolocationDisclosure.PreDisclosureDSESetting",
                           service->GetDSEGeolocationSetting());
 
@@ -255,8 +255,8 @@ void SearchGeolocationDisclosureTabHelper::RecordPostDisclosureMetrics(
         static_cast<base::HistogramBase::Sample>(CONTENT_SETTING_NUM_SETTINGS) +
             1);
 
-    SearchGeolocationService* service =
-        SearchGeolocationService::Factory::GetForBrowserContext(GetProfile());
+    SearchPermissionsService* service =
+        SearchPermissionsService::Factory::GetForBrowserContext(GetProfile());
     UMA_HISTOGRAM_BOOLEAN("GeolocationDisclosure.PostDisclosureDSESetting",
                           service->GetDSEGeolocationSetting());
 

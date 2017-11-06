@@ -18,7 +18,7 @@ namespace content {
 class WebContents;
 }
 
-class SearchGeolocationService;
+class SearchPermissionsService;
 
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
@@ -64,7 +64,7 @@ class PageInfoPopupAndroid : public PageInfoUI {
   base::android::ScopedJavaGlobalRef<jobject> popup_jobject_;
 
   // Owned by the profile.
-  SearchGeolocationService* search_geolocation_service_;
+  SearchPermissionsService* search_geolocation_service_;
 
   GURL url_;
 

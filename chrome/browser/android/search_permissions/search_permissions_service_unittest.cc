@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
 
 #include <memory>
 #include <utility>
@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
+#include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_result.h"
@@ -40,7 +40,7 @@ url::Origin ToOrigin(const char* url) {
 
 // The test delegate is used to mock out search-engine related functionality.
 class TestSearchEngineDelegate
-    : public SearchGeolocationService::SearchEngineDelegate {
+    : public SearchPermissionsService::SearchEngineDelegate {
  public:
   base::string16 GetDSEName() override {
     if (dse_origin_.host().find("google") != std::string::npos)
@@ -67,7 +67,7 @@ class TestSearchEngineDelegate
 
 }  // namespace
 
-class SearchGeolocationServiceTest : public testing::Test {
+class SearchPermissionsServiceTest : public testing::Test {
  public:
   void SetUp() override {
     profile_.reset(new TestingProfile);
@@ -86,8 +86,8 @@ class SearchGeolocationServiceTest : public testing::Test {
 
   TestSearchEngineDelegate* test_delegate() { return test_delegate_; }
 
-  SearchGeolocationService* GetService() {
-    return SearchGeolocationService::Factory::GetForBrowserContext(profile());
+  SearchPermissionsService* GetService() {
+    return SearchPermissionsService::Factory::GetForBrowserContext(profile());
   }
 
   void SetContentSetting(const std::string& origin_string,
@@ -129,12 +129,12 @@ class SearchGeolocationServiceTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   content::TestBrowserThreadBundle thread_bundle_;
 
-  // This is owned by the SearchGeolocationService which is owned by the
+  // This is owned by the SearchPermissionsService which is owned by the
   // profile.
   TestSearchEngineDelegate* test_delegate_;
 };
 
-TEST_F(SearchGeolocationServiceTest, Initialization) {
+TEST_F(SearchPermissionsServiceTest, Initialization) {
   test_delegate()->SetDSEOrigin(kGoogleURL);
 
   // DSE setting initialized to true if the content setting is ALLOW.
@@ -168,7 +168,7 @@ TEST_F(SearchGeolocationServiceTest, Initialization) {
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kExampleURL)));
 }
 
-TEST_F(SearchGeolocationServiceTest, Migration) {
+TEST_F(SearchPermissionsServiceTest, Migration) {
   // First test migrating when the search engine is Google, and the setting is
   // on.
   test_delegate()->SetDSEOrigin(kGoogleURL);
@@ -217,15 +217,15 @@ TEST_F(SearchGeolocationServiceTest, Migration) {
   // setting was off, as the code paths have been tested by the above cases.
 }
 
-TEST_F(SearchGeolocationServiceTest, OffTheRecord) {
+TEST_F(SearchPermissionsServiceTest, OffTheRecord) {
   // Service isn't constructed for an OTR profile.
   Profile* otr_profile = profile()->GetOffTheRecordProfile();
-  SearchGeolocationService* service =
-      SearchGeolocationService::Factory::GetForBrowserContext(otr_profile);
+  SearchPermissionsService* service =
+      SearchPermissionsService::Factory::GetForBrowserContext(otr_profile);
   EXPECT_EQ(nullptr, service);
 }
 
-TEST_F(SearchGeolocationServiceTest, UseDSEGeolocationSetting) {
+TEST_F(SearchPermissionsServiceTest, UseDSEGeolocationSetting) {
   // True for origin that matches the CCTLD and meets all requirements.
   test_delegate()->SetDSEOrigin(kGoogleURL);
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
@@ -246,7 +246,7 @@ TEST_F(SearchGeolocationServiceTest, UseDSEGeolocationSetting) {
   EXPECT_FALSE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
 }
 
-TEST_F(SearchGeolocationServiceTest, GetDSEGeolocationSetting) {
+TEST_F(SearchPermissionsServiceTest, GetDSEGeolocationSetting) {
   test_delegate()->SetDSEOrigin(kGoogleURL);
 
   // The case where the pref is set to true.
@@ -269,7 +269,7 @@ TEST_F(SearchGeolocationServiceTest, GetDSEGeolocationSetting) {
   EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
 }
 
-TEST_F(SearchGeolocationServiceTest, SetDSEGeolocationSetting) {
+TEST_F(SearchPermissionsServiceTest, SetDSEGeolocationSetting) {
   test_delegate()->SetDSEOrigin(kGoogleURL);
 
   GetService()->SetDSEGeolocationSetting(true);
@@ -298,7 +298,7 @@ TEST_F(SearchGeolocationServiceTest, SetDSEGeolocationSetting) {
   EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
 }
 
-TEST_F(SearchGeolocationServiceTest, DSEChanges) {
+TEST_F(SearchPermissionsServiceTest, DSEChanges) {
   test_delegate()->SetDSEOrigin(kGoogleURL);
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kGoogleURL)));
   EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
@@ -338,7 +338,7 @@ TEST_F(SearchGeolocationServiceTest, DSEChanges) {
   EXPECT_FALSE(GetService()->GetDSEGeolocationSetting());
 }
 
-TEST_F(SearchGeolocationServiceTest, DSEChangesAndDisclosure) {
+TEST_F(SearchPermissionsServiceTest, DSEChangesAndDisclosure) {
   test_delegate()->SetDSEOrigin(kGoogleURL);
   SearchGeolocationDisclosureTabHelper::FakeShowingDisclosureForTests(
       profile());
@@ -363,7 +363,7 @@ TEST_F(SearchGeolocationServiceTest, DSEChangesAndDisclosure) {
       profile()));
 }
 
-TEST_F(SearchGeolocationServiceTest, Embargo) {
+TEST_F(SearchPermissionsServiceTest, Embargo) {
   test_delegate()->SetDSEOrigin(kGoogleURL);
 
   // Place another origin under embargo.

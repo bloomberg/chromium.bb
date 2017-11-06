@@ -8,7 +8,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/stl_util.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -63,7 +63,7 @@ PageInfoPopupAndroid::PageInfoPopupAndroid(JNIEnv* env,
   helper->GetSecurityInfo(&security_info);
 
   search_geolocation_service_ =
-      SearchGeolocationService::Factory::GetForBrowserContext(
+      SearchPermissionsService::Factory::GetForBrowserContext(
           web_contents->GetBrowserContext());
 
   presenter_.reset(new PageInfo(

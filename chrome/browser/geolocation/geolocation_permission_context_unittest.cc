@@ -55,7 +55,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/mock_location_settings.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #include "components/location/android/location_settings_dialog_outcome.h"
 #include "components/prefs/pref_service.h"
@@ -73,7 +73,7 @@ using content::MockRenderProcessHost;
 #if defined(OS_ANDROID)
 // TestSearchEngineDelegate
 class TestSearchEngineDelegate
-    : public SearchGeolocationService::SearchEngineDelegate {
+    : public SearchPermissionsService::SearchEngineDelegate {
  public:
   base::string16 GetDSEName() override { return base::string16(); }
 
@@ -1112,8 +1112,8 @@ TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
   GURL requesting_frame(TestSearchEngineDelegate::kDSETestUrl);
   // The DSE Geolocation setting should be used in incognito if it is BLOCK,
   // but not if it is ALLOW.
-  SearchGeolocationService* geo_service =
-      SearchGeolocationService::Factory::GetForBrowserContext(profile());
+  SearchPermissionsService* geo_service =
+      SearchPermissionsService::Factory::GetForBrowserContext(profile());
   geo_service->SetSearchEngineDelegateForTest(
       base::MakeUnique<TestSearchEngineDelegate>());
 

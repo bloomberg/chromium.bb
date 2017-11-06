@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
 
 #include "base/callback.h"
 #include "base/values.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
+#include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/profiles/profile.h"
@@ -34,7 +34,7 @@ const char kDSENameKey[] = "dse_name";
 // Default implementation of SearchEngineDelegate that is used for production
 // code.
 class SearchEngineDelegateImpl
-    : public SearchGeolocationService::SearchEngineDelegate,
+    : public SearchPermissionsService::SearchEngineDelegate,
       public TemplateURLServiceObserver {
  public:
   explicit SearchEngineDelegateImpl(Profile* profile)
@@ -93,53 +93,53 @@ class SearchEngineDelegateImpl
 
 }  // namespace
 
-struct SearchGeolocationService::PrefValue {
+struct SearchPermissionsService::PrefValue {
   base::string16 dse_name;
   bool setting = false;
 };
 
 // static
-SearchGeolocationService*
-SearchGeolocationService::Factory::GetForBrowserContext(
+SearchPermissionsService*
+SearchPermissionsService::Factory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<SearchGeolocationService*>(GetInstance()
-      ->GetServiceForBrowserContext(context, true));
+  return static_cast<SearchPermissionsService*>(
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
-SearchGeolocationService::Factory*
-SearchGeolocationService::Factory::GetInstance() {
-  return base::Singleton<SearchGeolocationService::Factory>::get();
+SearchPermissionsService::Factory*
+SearchPermissionsService::Factory::GetInstance() {
+  return base::Singleton<SearchPermissionsService::Factory>::get();
 }
 
-SearchGeolocationService::Factory::Factory()
+SearchPermissionsService::Factory::Factory()
     : BrowserContextKeyedServiceFactory(
-          "SearchGeolocationService",
+          "SearchPermissionsService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HostContentSettingsMapFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 
-SearchGeolocationService::Factory::~Factory() {}
+SearchPermissionsService::Factory::~Factory() {}
 
-bool SearchGeolocationService::Factory::ServiceIsCreatedWithBrowserContext()
+bool SearchPermissionsService::Factory::ServiceIsCreatedWithBrowserContext()
     const {
   return true;
 }
 
-KeyedService* SearchGeolocationService::Factory::BuildServiceInstanceFor(
+KeyedService* SearchPermissionsService::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new SearchGeolocationService(Profile::FromBrowserContext(context));
+  return new SearchPermissionsService(Profile::FromBrowserContext(context));
 }
 
-void SearchGeolocationService::Factory::RegisterProfilePrefs(
+void SearchPermissionsService::Factory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kDSEGeolocationSetting);
   registry->RegisterDictionaryPref(
       prefs::kGoogleDSEGeolocationSettingDeprecated);
 }
 
-SearchGeolocationService::SearchGeolocationService(Profile* profile)
+SearchPermissionsService::SearchPermissionsService(Profile* profile)
     : profile_(profile),
       pref_service_(profile_->GetPrefs()),
       host_content_settings_map_(
@@ -149,7 +149,7 @@ SearchGeolocationService::SearchGeolocationService(Profile* profile)
 
   delegate_.reset(new SearchEngineDelegateImpl(profile_));
   delegate_->SetDSEChangedCallback(base::Bind(
-      &SearchGeolocationService::OnDSEChanged, base::Unretained(this)));
+      &SearchPermissionsService::OnDSEChanged, base::Unretained(this)));
 
   InitializeDSEGeolocationSettingIfNeeded();
 
@@ -159,7 +159,7 @@ SearchGeolocationService::SearchGeolocationService(Profile* profile)
   EnsureDSEGeolocationSettingIsValid();
 }
 
-bool SearchGeolocationService::UseDSEGeolocationSetting(
+bool SearchPermissionsService::UseDSEGeolocationSetting(
     const url::Origin& requesting_origin) {
   if (requesting_origin.scheme() != url::kHttpsScheme)
     return false;
@@ -177,7 +177,7 @@ bool SearchGeolocationService::UseDSEGeolocationSetting(
   return true;
 }
 
-bool SearchGeolocationService::GetDSEGeolocationSetting() {
+bool SearchPermissionsService::GetDSEGeolocationSetting() {
   // Make sure the setting is valid, in case enterprise policy has changed.
   // TODO(benwells): Check if enterprise policy can change while Chrome is
   // running. If it can't this call is probably not needed.
@@ -186,7 +186,7 @@ bool SearchGeolocationService::GetDSEGeolocationSetting() {
   return GetDSEGeolocationPref().setting;
 }
 
-void SearchGeolocationService::SetDSEGeolocationSetting(bool setting) {
+void SearchPermissionsService::SetDSEGeolocationSetting(bool setting) {
   PrefValue pref = GetDSEGeolocationPref();
   if (setting == pref.setting)
     return;
@@ -203,20 +203,20 @@ void SearchGeolocationService::SetDSEGeolocationSetting(bool setting) {
   ResetContentSetting();
 }
 
-url::Origin SearchGeolocationService::GetDSEOriginIfEnabled() {
+url::Origin SearchPermissionsService::GetDSEOriginIfEnabled() {
   url::Origin dse_origin = delegate_->GetDSEOrigin();
   if (UseDSEGeolocationSetting(dse_origin))
     return dse_origin;
   return url::Origin();
 }
 
-void SearchGeolocationService::Shutdown() {
+void SearchPermissionsService::Shutdown() {
   delegate_.reset();
 }
 
-SearchGeolocationService::~SearchGeolocationService() {}
+SearchPermissionsService::~SearchPermissionsService() {}
 
-void SearchGeolocationService::OnDSEChanged() {
+void SearchPermissionsService::OnDSEChanged() {
   base::string16 new_dse_name = delegate_->GetDSEName();
   PrefValue pref = GetDSEGeolocationPref();
   ContentSetting content_setting = GetCurrentContentSetting();
@@ -237,7 +237,7 @@ void SearchGeolocationService::OnDSEChanged() {
   SetDSEGeolocationPref(pref);
 }
 
-void SearchGeolocationService::InitializeDSEGeolocationSettingIfNeeded() {
+void SearchPermissionsService::InitializeDSEGeolocationSettingIfNeeded() {
   // Migrate the pref if it hasn't been migrated yet.
   if (pref_service_->HasPrefPath(
           prefs::kGoogleDSEGeolocationSettingDeprecated)) {
@@ -278,7 +278,7 @@ void SearchGeolocationService::InitializeDSEGeolocationSettingIfNeeded() {
   }
 }
 
-void SearchGeolocationService::EnsureDSEGeolocationSettingIsValid() {
+void SearchPermissionsService::EnsureDSEGeolocationSettingIsValid() {
   PrefValue pref = GetDSEGeolocationPref();
   ContentSetting content_setting = GetCurrentContentSetting();
   bool new_setting = pref.setting;
@@ -295,8 +295,8 @@ void SearchGeolocationService::EnsureDSEGeolocationSettingIsValid() {
   }
 }
 
-SearchGeolocationService::PrefValue
-SearchGeolocationService::GetDSEGeolocationPref() {
+SearchPermissionsService::PrefValue
+SearchPermissionsService::GetDSEGeolocationPref() {
   const base::DictionaryValue* dict =
       pref_service_->GetDictionary(prefs::kDSEGeolocationSetting);
 
@@ -312,29 +312,29 @@ SearchGeolocationService::GetDSEGeolocationPref() {
   return pref;
 }
 
-void SearchGeolocationService::SetDSEGeolocationPref(
-    const SearchGeolocationService::PrefValue& pref) {
+void SearchPermissionsService::SetDSEGeolocationPref(
+    const SearchPermissionsService::PrefValue& pref) {
   base::DictionaryValue dict;
   dict.SetString(kDSENameKey, pref.dse_name);
   dict.SetBoolean(kDSESettingKey, pref.setting);
   pref_service_->Set(prefs::kDSEGeolocationSetting, dict);
 }
 
-ContentSetting SearchGeolocationService::GetCurrentContentSetting() {
+ContentSetting SearchPermissionsService::GetCurrentContentSetting() {
   url::Origin origin = delegate_->GetDSEOrigin();
   return host_content_settings_map_->GetContentSetting(
       origin.GetURL(), origin.GetURL(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
       std::string());
 }
 
-void SearchGeolocationService::ResetContentSetting() {
+void SearchPermissionsService::ResetContentSetting() {
   url::Origin origin = delegate_->GetDSEOrigin();
   host_content_settings_map_->SetContentSettingDefaultScope(
       origin.GetURL(), origin.GetURL(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
       std::string(), CONTENT_SETTING_DEFAULT);
 }
 
-bool SearchGeolocationService::IsContentSettingUserSettable() {
+bool SearchPermissionsService::IsContentSettingUserSettable() {
   content_settings::SettingInfo info;
   url::Origin origin = delegate_->GetDSEOrigin();
   std::unique_ptr<base::Value> value =
@@ -344,9 +344,9 @@ bool SearchGeolocationService::IsContentSettingUserSettable() {
   return info.source == content_settings::SETTING_SOURCE_USER;
 }
 
-void SearchGeolocationService::SetSearchEngineDelegateForTest(
+void SearchPermissionsService::SetSearchEngineDelegateForTest(
     std::unique_ptr<SearchEngineDelegate> delegate) {
   delegate_ = std::move(delegate);
   delegate_->SetDSEChangedCallback(base::Bind(
-      &SearchGeolocationService::OnDSEChanged, base::Unretained(this)));
+      &SearchPermissionsService::OnDSEChanged, base::Unretained(this)));
 }

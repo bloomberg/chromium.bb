@@ -17,7 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
@@ -181,8 +181,8 @@ void GetOrigins(JNIEnv* env,
 
   // Add the DSE origin if it allows geolocation.
   if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    SearchGeolocationService* search_helper =
-        SearchGeolocationService::Factory::GetForBrowserContext(
+    SearchPermissionsService* search_helper =
+        SearchPermissionsService::Factory::GetForBrowserContext(
             GetActiveUserProfile(false /* is_incognito */));
     if (search_helper) {
       const url::Origin& dse_origin = search_helper->GetDSEOriginIfEnabled();
@@ -782,8 +782,8 @@ static jboolean ShouldUseDSEGeolocationSetting(
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jorigin,
     jboolean is_incognito) {
-  SearchGeolocationService* search_helper =
-      SearchGeolocationService::Factory::GetForBrowserContext(
+  SearchPermissionsService* search_helper =
+      SearchPermissionsService::Factory::GetForBrowserContext(
           GetActiveUserProfile(is_incognito));
   return search_helper &&
          search_helper->UseDSEGeolocationSetting(
@@ -792,8 +792,8 @@ static jboolean ShouldUseDSEGeolocationSetting(
 
 static jboolean GetDSEGeolocationSetting(JNIEnv* env,
                                          const JavaParamRef<jclass>& clazz) {
-  SearchGeolocationService* search_helper =
-      SearchGeolocationService::Factory::GetForBrowserContext(
+  SearchPermissionsService* search_helper =
+      SearchPermissionsService::Factory::GetForBrowserContext(
           GetActiveUserProfile(false /* is_incognito */));
   return search_helper->GetDSEGeolocationSetting();
 }
@@ -801,8 +801,8 @@ static jboolean GetDSEGeolocationSetting(JNIEnv* env,
 static void SetDSEGeolocationSetting(JNIEnv* env,
                                      const JavaParamRef<jclass>& clazz,
                                      jboolean setting) {
-  SearchGeolocationService* search_helper =
-      SearchGeolocationService::Factory::GetForBrowserContext(
+  SearchPermissionsService* search_helper =
+      SearchPermissionsService::Factory::GetForBrowserContext(
           GetActiveUserProfile(false /* is_incognito */));
   return search_helper->SetDSEGeolocationSetting(setting);
 }
