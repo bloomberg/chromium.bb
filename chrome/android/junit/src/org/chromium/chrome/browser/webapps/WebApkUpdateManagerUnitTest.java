@@ -16,7 +16,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.TextUtils;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,6 +35,7 @@ import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.testing.local.CustomShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -52,7 +52,7 @@ import java.util.Map;
  * Unit tests for WebApkUpdateManager.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
+@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class, ShadowUrlUtilities.class})
 public class WebApkUpdateManagerUnitTest {
     @Rule
     public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
@@ -166,12 +166,6 @@ public class WebApkUpdateManagerUnitTest {
         protected void destroyFetcher() {
             mFetcher = null;
             mDestroyedFetcher = true;
-        }
-
-        // Stubbed out because real implementation uses native.
-        @Override
-        protected boolean urlsMatchIgnoringFragments(String url1, String url2) {
-            return TextUtils.equals(url1, url2);
         }
     }
 
