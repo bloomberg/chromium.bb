@@ -63,7 +63,11 @@ ScriptResource::~ScriptResource() {}
 
 void ScriptResource::DidAddClient(ResourceClient* client) {
   DCHECK(ScriptResourceClient::IsExpectedType(client));
-  Resource::DidAddClient(client);
+  // Don't emulate streaming the data if we dropped the raw buffered data.
+  if (ResourceBuffer())
+    static_cast<ScriptResourceClient*>(client)->NotifyAppendData(this);
+  if (HasClient(client))
+    Resource::DidAddClient(client);
 }
 
 void ScriptResource::AppendData(const char* data, size_t length) {

@@ -651,8 +651,6 @@ static bool TypeNeedsSynchronousCacheHit(Resource::Type type) {
   // behavior for different resource types.
   if (type == Resource::kCSSStyleSheet)
     return true;
-  if (type == Resource::kScript)
-    return true;
   if (type == Resource::kFont)
     return true;
   return false;
