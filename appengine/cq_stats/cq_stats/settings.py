@@ -86,8 +86,8 @@ if os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine'):
   # Running on production AppEngine. Use CloudSQL via unix socket.
   default_database = {
       'ENGINE': 'django.db.backends.mysql',
-      'HOST': '/cloudsql/%s:%s' % (CIDB_PROJECT_NAME,
-                                   CIDB_INSTANCE_NAME),
+      'HOST': '/cloudsql/%s:us-central1:%s' % (CIDB_PROJECT_NAME,
+                                               CIDB_INSTANCE_NAME),
       'NAME': 'cidb',
       'USER': 'annotator',
       'PASSWORD': annotator_password}

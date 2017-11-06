@@ -24,8 +24,8 @@ APP_INSTANCE_NAME = {
     APP_INSTANCE_PROD: 'google.com:chromiumos-build-annotator',
 }
 APP_INSTANCE_CIDB = {
-    APP_INSTANCE_DEBUG: 'debug-cidb',
-    APP_INSTANCE_PROD: 'cidb',
+    APP_INSTANCE_DEBUG: 'debug-cidb-gen2',
+    APP_INSTANCE_PROD: 'cidb-gen2',
 }
 
 

@@ -139,7 +139,7 @@ class BuildRowController(object):
   Unit-test this class please.
   """
 
-  DEFAULT_NUM_BUILDS = 100
+  DEFAULT_NUM_BUILDS = 30
 
   def __init__(self):
     self._latest_build_id = 0
