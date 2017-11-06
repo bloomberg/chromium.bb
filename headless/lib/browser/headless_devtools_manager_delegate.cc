@@ -793,7 +793,7 @@ void HeadlessDevToolsManagerDelegate::SetNetworkConditions(
        it != browser_contexts.end(); ++it) {
     HeadlessBrowserContextImpl* context =
         static_cast<HeadlessBrowserContextImpl*>(*it);
-    context->SetNetworkConditions(HeadlessNetworkConditions());
+    context->SetNetworkConditions(conditions);
   }
 }
 
