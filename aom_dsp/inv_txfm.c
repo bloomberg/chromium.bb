@@ -1180,6 +1180,26 @@ void aom_idct32_c(const tran_low_t *input, tran_low_t *output) {
 }
 
 #if CONFIG_MRC_TX
+void aom_imrc32x32_1_add_c(const tran_low_t *input, uint8_t *dest, int stride,
+                           uint8_t *mask) {
+  int i, j;
+  tran_high_t a1;
+
+  tran_low_t out = WRAPLOW(dct_const_round_shift(input[0] * cospi_16_64));
+  out = WRAPLOW(dct_const_round_shift(out * cospi_16_64));
+  a1 = ROUND_POWER_OF_TWO(out, 6);
+  if (a1 == 0) return;
+
+  for (j = 0; j < 32; ++j) {
+    for (i = 0; i < 32; ++i) {
+      int mask_val = mask[i];
+      dest[i] = mask_val ? clip_pixel_add(dest[i], a1) : dest[i];
+    }
+    mask += 32;
+    dest += stride;
+  }
+}
+
 void aom_imrc32x32_1024_add_c(const tran_low_t *input, uint8_t *dest,
                               int stride, uint8_t *mask) {
   tran_low_t out[32 * 32];

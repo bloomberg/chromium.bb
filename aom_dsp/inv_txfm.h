@@ -44,6 +44,9 @@ static INLINE tran_high_t check_range(tran_high_t input, int bd) {
 
 #if CONFIG_MRC_TX
 // These each perform dct but add coefficients based on a mask
+void aom_imrc32x32_1_add_c(const tran_low_t *input, uint8_t *dest, int stride,
+                           uint8_t *mask);
+
 void aom_imrc32x32_1024_add_c(const tran_low_t *input, uint8_t *dest,
                               int stride, uint8_t *mask);
 
