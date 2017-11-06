@@ -157,7 +157,8 @@ void VideoDecodeStatsReporter::OnShown() {
     // Dropped frames are not reported during background rendering. Start a new
     // record to avoid reporting background stats.
     PipelineStatistics stats = get_pipeline_stats_cb_.Run();
-    StartNewRecord(stats.video_frames_decoded, stats.video_frames_dropped);
+    StartNewRecord(stats.video_frames_decoded, stats.video_frames_dropped,
+                   stats.video_frames_decoded_power_efficient);
   }
 
   if (ShouldBeReporting())
@@ -176,8 +177,10 @@ void VideoDecodeStatsReporter::RunStatsTimerAtInterval(
                         &VideoDecodeStatsReporter::UpdateStats);
 }
 
-void VideoDecodeStatsReporter::StartNewRecord(uint32_t frames_decoded_offset,
-                                              uint32_t frames_dropped_offset) {
+void VideoDecodeStatsReporter::StartNewRecord(
+    uint32_t frames_decoded_offset,
+    uint32_t frames_dropped_offset,
+    uint32_t frames_decoded_power_efficient_offset) {
   DVLOG(2) << __func__ << " "
            << " profile:" << video_config_.profile()
            << " fps:" << last_observed_fps_
@@ -191,8 +194,12 @@ void VideoDecodeStatsReporter::StartNewRecord(uint32_t frames_decoded_offset,
   // These should never move backward.
   DCHECK_GE(frames_decoded_offset, frames_decoded_offset_);
   DCHECK_GE(frames_dropped_offset, frames_dropped_offset_);
+  DCHECK_GE(frames_decoded_power_efficient_offset,
+            frames_decoded_power_efficient_offset_);
   frames_decoded_offset_ = frames_decoded_offset;
   frames_dropped_offset_ = frames_dropped_offset;
+  frames_decoded_power_efficient_offset_ =
+      frames_decoded_power_efficient_offset;
   recorder_ptr_->StartNewRecord(video_config_.profile(), natural_size_,
                                 last_observed_fps_);
 }
@@ -306,7 +313,8 @@ bool VideoDecodeStatsReporter::UpdateFrameRateStability(
 
     // FPS is locked in. Start a new record, and set timer to reporting
     // interval.
-    StartNewRecord(stats.video_frames_decoded, stats.video_frames_dropped);
+    StartNewRecord(stats.video_frames_decoded, stats.video_frames_dropped,
+                   stats.video_frames_decoded_power_efficient);
     RunStatsTimerAtInterval(kRecordingInterval);
   }
   return true;
@@ -321,6 +329,8 @@ void VideoDecodeStatsReporter::UpdateStats() {
   PipelineStatistics stats = get_pipeline_stats_cb_.Run();
   DVLOG(2) << __func__ << " Raw stats -- dropped:" << stats.video_frames_dropped
            << "/" << stats.video_frames_decoded
+           << " power efficient:" << stats.video_frames_decoded_power_efficient
+           << "/" << stats.video_frames_decoded
            << " dur_avg:" << stats.video_frame_duration_average;
 
   // Evaluate decode progress and update various internal state. Bail if decode
@@ -333,17 +343,23 @@ void VideoDecodeStatsReporter::UpdateStats() {
   if (!UpdateFrameRateStability(stats))
     return;
 
-  uint32_t frames_decoded = stats.video_frames_decoded - frames_decoded_offset_;
-  uint32_t frames_dropped = stats.video_frames_dropped - frames_dropped_offset_;
-
   // Don't bother recording the first record immediately after stabilization.
   // Counts of zero don't add value.
   if (stats.video_frames_decoded == frames_decoded_offset_)
     return;
 
+  uint32_t frames_decoded = stats.video_frames_decoded - frames_decoded_offset_;
+  uint32_t frames_dropped = stats.video_frames_dropped - frames_dropped_offset_;
+  uint32_t frames_decoded_power_efficient =
+      stats.video_frames_decoded_power_efficient -
+      frames_decoded_power_efficient_offset_;
+
   DVLOG(2) << __func__ << " Recording -- dropped:" << frames_dropped << "/"
+           << frames_decoded
+           << " power efficient:" << frames_decoded_power_efficient << "/"
            << frames_decoded;
-  recorder_ptr_->UpdateRecord(frames_decoded, frames_dropped);
+  recorder_ptr_->UpdateRecord(frames_decoded, frames_dropped,
+                              frames_decoded_power_efficient);
 }
 
 gfx::Size VideoDecodeStatsReporter::GetSizeBucket(

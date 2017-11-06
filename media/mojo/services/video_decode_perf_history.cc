@@ -106,14 +106,18 @@ void VideoDecodePerfHistory::OnGotStatsForRequest(
   bool is_power_efficient;
   bool is_smooth;
   double percent_dropped = 0;
+  double percent_power_efficient = 0;
 
   if (stats) {
     DCHECK(database_success);
     percent_dropped =
         static_cast<double>(stats->frames_dropped) / stats->frames_decoded;
+    percent_power_efficient =
+        static_cast<double>(stats->frames_decoded_power_efficient) /
+        stats->frames_decoded;
 
-    // TODO(chcunningham): add statistics for power efficiency to database.
-    is_power_efficient = true;
+    is_power_efficient =
+        percent_power_efficient >= kMinPowerEfficientDecodedFramePercent;
     is_smooth = percent_dropped <= kMaxSmoothDroppedFramesPercent;
   } else {
     // TODO(chcunningham/mlamouri): Refactor database API to give us nearby
@@ -134,18 +138,22 @@ void VideoDecodePerfHistory::OnGotStatsForRequest(
                   video_key.size.ToString().c_str(), video_key.frame_rate)
            << (stats.get()
                    ? base::StringPrintf(
-                         "smooth:%d frames_decoded:%" PRIu64 " pcnt_dropped:%f",
-                         is_smooth, stats->frames_decoded, percent_dropped)
+                         "smooth:%d frames_decoded:%" PRIu64 " pcnt_dropped:%f"
+                         " pcnt_power_efficent:%f",
+                         is_smooth, stats->frames_decoded, percent_dropped,
+                         percent_power_efficient)
                    : (database_success ? "no info" : "query FAILED"));
 
   std::move(mojo_cb).Run(is_smooth, is_power_efficient);
 }
 
-void VideoDecodePerfHistory::SavePerfRecord(VideoCodecProfile profile,
-                                            const gfx::Size& natural_size,
-                                            int frame_rate,
-                                            uint32_t frames_decoded,
-                                            uint32_t frames_dropped) {
+void VideoDecodePerfHistory::SavePerfRecord(
+    VideoCodecProfile profile,
+    const gfx::Size& natural_size,
+    int frame_rate,
+    uint32_t frames_decoded,
+    uint32_t frames_dropped,
+    uint32_t frames_decoded_power_efficient) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (db_init_status_ == FAILED) {
@@ -157,14 +165,15 @@ void VideoDecodePerfHistory::SavePerfRecord(VideoCodecProfile profile,
   if (db_init_status_ != COMPLETE) {
     init_deferred_api_calls_.push_back(base::BindOnce(
         &VideoDecodePerfHistory::SavePerfRecord, weak_ptr_factory_.GetWeakPtr(),
-        profile, natural_size, frame_rate, frames_decoded, frames_dropped));
+        profile, natural_size, frame_rate, frames_decoded, frames_dropped,
+        frames_decoded_power_efficient));
     InitDatabase();
     return;
   }
 
   VideoDecodeStatsDB::VideoDescKey video_key(profile, natural_size, frame_rate);
-  VideoDecodeStatsDB::DecodeStatsEntry new_stats(frames_decoded,
-                                                 frames_dropped);
+  VideoDecodeStatsDB::DecodeStatsEntry new_stats(
+      frames_decoded, frames_dropped, frames_decoded_power_efficient);
 
   // Get past perf info and report UKM metrics before saving this record.
   db_->GetDecodeStats(

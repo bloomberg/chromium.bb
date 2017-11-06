@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BLINK_MEDIA_CAPABILITIES_REPORTER_H_
-#define MEDIA_BLINK_MEDIA_CAPABILITIES_REPORTER_H_
+#ifndef MEDIA_BLINK_VIDEO_DECODE_STATS_REPORTER_H_
+#define MEDIA_BLINK_VIDEO_DECODE_STATS_REPORTER_H_
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -104,10 +104,12 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
   void RunStatsTimerAtInterval(base::TimeDelta interval);
 
   // Called to begin a new report following changes to stream metadata (e.g.
-  // natural size). Arguments used to update |freames_decoded_offset_| and
-  // |frames_dropped_offset_| so that frame counts for this report begin at 0.
+  // natural size). Arguments used to update |frames_decoded_offset_|,
+  // |frames_dropped_offset_|, and |frames_decoded_power_efficient_offset| so
+  // that frame counts for this report begin at 0.
   void StartNewRecord(uint32_t frames_decoded_offset,
-                      uint32_t frames_dropped_offset);
+                      uint32_t frames_dropped_offset,
+                      uint32_t frames_decoded_power_efficient_offset);
 
   // Reset frame rate tracking state to force a fresh attempt at detection. When
   // a stable frame rate is successfully detected, UpdateStats() will begin a
@@ -208,6 +210,11 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
   // pipeline frames dropped stats before sending to recorder.
   uint32_t frames_dropped_offset_ = 0;
 
+  // Notes the number of power efficiently decoded frames at the start of the
+  // current video configuration (profile, resolution, fps). Should be
+  // subtracted from pipeline frames decoded stats before sending to recorder.
+  uint32_t frames_decoded_power_efficient_offset_ = 0;
+
   // Set true by OnPlaying(), false by OnPaused(). We should not run the
   // |stats_cb_timer_| when not playing.
   bool is_playing_ = false;
@@ -221,4 +228,4 @@ class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
 
 }  // namespace media
 
-#endif  // MEDIA_BLINK_MEDIA_CAPABILITIES_REPORTER_H_
+#endif  // MEDIA_BLINK_VIDEO_DECODE_STATS_REPORTER_H_

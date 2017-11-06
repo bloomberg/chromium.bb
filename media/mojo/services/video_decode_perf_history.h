@@ -65,7 +65,8 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
                       const gfx::Size& natural_size,
                       int frame_rate,
                       uint32_t frames_decoded,
-                      uint32_t frames_dropped);
+                      uint32_t frames_dropped,
+                      uint32_t frames_decoded_power_efficient);
 
  private:
   friend class VideoDecodePerfHistoryTest;
@@ -82,6 +83,11 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // of dropped frames is less-than-or-equal-to this value. 10% chosen as a
   // lenient value after manual testing.
   static constexpr double kMaxSmoothDroppedFramesPercent = .10;
+
+  // Decode capabilities will be described as "power efficient" whenever the
+  // percentage of power efficient decoded frames is higher-than-or-equal-to
+  // this value.
+  static constexpr double kMinPowerEfficientDecodedFramePercent = .50;
 
   // Create and initialize the database.
   void InitDatabase();

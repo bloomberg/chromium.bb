@@ -37,8 +37,10 @@ std::string KeyToString(const VideoDecodeStatsDB::VideoDescKey& key) {
 // For debug logging.
 std::string EntryToString(const VideoDecodeStatsDB::DecodeStatsEntry& entry) {
   return base::StringPrintf("DecodeStatsEntry {frames decoded:%" PRIu64
-                            ", dropped:%" PRIu64 "}",
-                            entry.frames_decoded, entry.frames_dropped);
+                            ", dropped:%" PRIu64
+                            ", power efficient decoded:%" PRIu64 "}",
+                            entry.frames_decoded, entry.frames_dropped,
+                            entry.frames_decoded_power_efficient);
 }
 
 };  // namespace
@@ -166,20 +168,27 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
     prev_stats_proto.reset(new DecodeStatsProto());
     prev_stats_proto->set_frames_decoded(0);
     prev_stats_proto->set_frames_dropped(0);
+    prev_stats_proto->set_frames_decoded_power_efficient(0);
   }
 
   uint64_t sum_frames_decoded =
       prev_stats_proto->frames_decoded() + entry.frames_decoded;
   uint64_t sum_frames_dropped =
       prev_stats_proto->frames_dropped() + entry.frames_dropped;
+  uint64_t sum_frames_decoded_power_efficient =
+      prev_stats_proto->frames_decoded_power_efficient() +
+      entry.frames_decoded_power_efficient;
 
   prev_stats_proto->set_frames_decoded(sum_frames_decoded);
   prev_stats_proto->set_frames_dropped(sum_frames_dropped);
+  prev_stats_proto->set_frames_decoded_power_efficient(
+      sum_frames_decoded_power_efficient);
 
   DVLOG(3) << __func__ << " Updating " << KeyToString(key) << " with "
            << EntryToString(entry) << " aggregate:"
            << EntryToString(
-                  DecodeStatsEntry(sum_frames_decoded, sum_frames_dropped));
+                  DecodeStatsEntry(sum_frames_decoded, sum_frames_dropped,
+                                   sum_frames_decoded_power_efficient));
 
   using ProtoDecodeStatsEntry = leveldb_proto::ProtoDatabase<DecodeStatsProto>;
   std::unique_ptr<ProtoDecodeStatsEntry::KeyEntryVector> entries =
@@ -208,8 +217,9 @@ void VideoDecodeStatsDBImpl::OnGotDecodeStats(
   std::unique_ptr<DecodeStatsEntry> entry;
   if (stats_proto) {
     DCHECK(success);
-    entry = std::make_unique<DecodeStatsEntry>(stats_proto->frames_decoded(),
-                                               stats_proto->frames_dropped());
+    entry = std::make_unique<DecodeStatsEntry>(
+        stats_proto->frames_decoded(), stats_proto->frames_dropped(),
+        stats_proto->frames_decoded_power_efficient());
   }
 
   DVLOG(3) << __func__ << " read " << (success ? "succeeded" : "FAILED!")

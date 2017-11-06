@@ -87,7 +87,9 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
 
 MATCHER_P(EntryEq, other_entry, "") {
   return arg.frames_decoded == other_entry.frames_decoded &&
-         arg.frames_dropped == other_entry.frames_dropped;
+         arg.frames_dropped == other_entry.frames_dropped &&
+         arg.frames_decoded_power_efficient ==
+             other_entry.frames_decoded_power_efficient;
 }
 
 TEST_F(VideoDecodeStatsDBImplTest, ReadExpectingNothing) {
@@ -110,7 +112,7 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteAndRead) {
   fake_db_->InitCallback(true);
 
   VideoDescKey key(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
-  VideoDecodeStatsDB::DecodeStatsEntry entry(1000, 2);
+  VideoDecodeStatsDB::DecodeStatsEntry entry(1000, 2, 10);
 
   stats_db_->AppendDecodeStats(key, entry);
   fake_db_->GetCallback(true);
@@ -126,7 +128,7 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteAndRead) {
   fake_db_->GetCallback(true);
 
   // Expect to read what was written (2x the initial entry).
-  VideoDecodeStatsDB::DecodeStatsEntry aggregate_entry(2000, 4);
+  VideoDecodeStatsDB::DecodeStatsEntry aggregate_entry(2000, 4, 20);
   EXPECT_CALL(*this,
               MockGetDecodeStatsCb(true, Pointee(EntryEq(aggregate_entry))));
   stats_db_->GetDecodeStats(

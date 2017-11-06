@@ -36,7 +36,9 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
   void StartNewRecord(VideoCodecProfile profile,
                       const gfx::Size& natural_size,
                       int frames_per_sec) override;
-  void UpdateRecord(uint32_t frames_decoded, uint32_t frames_dropped) override;
+  void UpdateRecord(uint32_t frames_decoded,
+                    uint32_t frames_dropped,
+                    uint32_t frames_decoded_power_efficient) override;
 
  private:
   // Save most recent stats values to disk. Called during destruction and upon
@@ -49,6 +51,7 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsRecorder
   int frames_per_sec_ = 0;
   uint32_t frames_decoded_ = 0;
   uint32_t frames_dropped_ = 0;
+  uint32_t frames_decoded_power_efficient_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecodeStatsRecorder);
 };

@@ -16,4 +16,6 @@ message DecodeStatsProto {
   // Required. Count of dropped video frames. Should not exceed
   // |frames_decoded|.
   optional uint64 frames_dropped = 2;
+  // Required. Count of power efficiently decoded frames.
+  optional uint64 frames_decoded_power_efficient = 3 [default = 0];
 }
