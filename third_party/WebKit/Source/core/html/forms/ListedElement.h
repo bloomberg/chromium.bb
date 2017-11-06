@@ -45,7 +45,9 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
  public:
   virtual ~ListedElement();
 
-  static HTMLFormElement* FindAssociatedForm(const HTMLElement*);
+  static HTMLFormElement* FindAssociatedForm(const HTMLElement*,
+                                             const AtomicString& form_id,
+                                             HTMLFormElement* form_ancestor);
   HTMLFormElement* Form() const { return form_.Get(); }
   ValidityState* validity();
 
