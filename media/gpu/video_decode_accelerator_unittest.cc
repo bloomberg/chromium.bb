@@ -729,7 +729,8 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
     return;
 
   gfx::Rect visible_rect = picture.visible_rect();
-  EXPECT_TRUE(visible_rect.IsEmpty() || visible_rect == gfx::Rect(frame_size_));
+  if (!visible_rect.IsEmpty())
+    EXPECT_EQ(gfx::Rect(frame_size_), visible_rect);
 
   base::TimeTicks now = base::TimeTicks::Now();
 
