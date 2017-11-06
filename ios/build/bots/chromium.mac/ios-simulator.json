@@ -1,7 +1,7 @@
 {
   "comments": [
-    "Runs all unit tests on 64-bit iOS 11 unit tests",
-    "that depend on UI scaling on iPad, iPhone, @3x, and @2x."
+    "Runs tests on 64-bit iOS 10 and 11 tests",
+    "on iPad, iPhone, @3x, and @2x on main and CQ ios-simulator."
   ],
   "xcode version": "9.0",
   "gn_args": [
@@ -46,17 +46,17 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPad Air 2",
-      "os": "9.0",
+      "os": "10.0",
       "xcode version": "9.0"
     },
     {
       "include": "common_tests.json",
       "device type": "iPad Air 2",
-      "os": "9.0",
+      "os": "10.0",
       "xcode version": "9.0"
     },
     {
-      "include": "eg_tests.json",
+      "include": "eg_cq_tests.json",
       "device type": "iPhone 6s",
       "os": "11.0",
       "xcode version": "9.0"
