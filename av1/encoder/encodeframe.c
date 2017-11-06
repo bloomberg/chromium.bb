@@ -3077,6 +3077,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     horz4_partition_allowed &= (pc_tree->partitioning == PARTITION_HORZ ||
                                 pc_tree->partitioning == PARTITION_HORZ_A ||
                                 pc_tree->partitioning == PARTITION_HORZ_B ||
+                                pc_tree->partitioning == PARTITION_SPLIT ||
                                 pc_tree->partitioning == PARTITION_NONE);
   }
   if (horz4_partition_allowed && !force_horz_split &&
@@ -3116,6 +3117,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     vert4_partition_allowed &= (pc_tree->partitioning == PARTITION_VERT ||
                                 pc_tree->partitioning == PARTITION_VERT_A ||
                                 pc_tree->partitioning == PARTITION_VERT_B ||
+                                pc_tree->partitioning == PARTITION_SPLIT ||
                                 pc_tree->partitioning == PARTITION_NONE);
   }
   if (vert4_partition_allowed && !force_vert_split &&
