@@ -39,13 +39,17 @@
     }
    </style>
    <script type="text/javascript" charset="utf-8">
-
+    'use strict';
     function testEnded()
     {
-      if (window.testRunner)
-        testRunner.notifyDone();
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          if (window.testRunner)
+            testRunner.notifyDone();
+        });
+      });
     }
-    
+
     function startTest()
     {
       if (window.testRunner)
@@ -54,7 +58,7 @@
       document.getElementById('tester').addEventListener('animationend', testEnded, false);
       document.getElementById('container').className = 'moved';
     }
-    
+
     window.addEventListener('load', startTest, false);
    </script>
 </head>

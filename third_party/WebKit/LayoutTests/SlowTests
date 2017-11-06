@@ -174,8 +174,6 @@ crbug.com/73609 virtual/mojo-loading/http/tests/media/video-play-stall.html [ Sl
 crbug.com/330389 [ Debug ] css-parser/color3_hsl.html [ Slow ]
 
 # Many of the virtual animations tests are slow.
-crbug.com/248938 virtual/threaded/animations/3d/change-transform-in-end-event.html [ Slow ]
-crbug.com/248938 virtual/threaded/animations/3d/state-at-end-event-transform.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/direction-and-fill/animation-direction-reverse-fill-mode-hardware.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/direction-and-fill/animation-direction-reverse-fill-mode.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/direction-and-fill/animation-direction-reverse-hardware.html [ Slow ]
@@ -185,7 +183,6 @@ crbug.com/248938 virtual/threaded/animations/cross-fade-border-image-source.html
 crbug.com/248938 virtual/threaded/animations/cross-fade-webkit-mask-box-image.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/cross-fade-webkit-mask-image.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/missing-values-last-keyframe.html [ Slow ]
-crbug.com/248938 virtual/threaded/animations/3d/replace-filling-transform.html [ Slow ]
 crbug.com/311482 virtual/threaded/animations/prefixed/keyframes-unprefixed-03.html [ Slow ]
 crbug.com/243871 virtual/threaded/fast/scroll-behavior/ [ Slow ]
 crbug.com/243871 virtual/threaded/fast/idle-callback/idle_periods.html [ Slow ]

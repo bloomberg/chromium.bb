@@ -42,12 +42,16 @@
     }
    </style>
    <script type="text/javascript" charset="utf-8">
-
+    'use strict';
     function testEnded()
     {
       document.getElementById('tester').style.transform = 'translateX(150px)';
-      if (window.testRunner)
-        testRunner.notifyDone();
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          if (window.testRunner)
+            testRunner.notifyDone();
+        });
+      });
     }
 
     function startTest()
