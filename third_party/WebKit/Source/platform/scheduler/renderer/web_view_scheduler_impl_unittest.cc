@@ -828,11 +828,6 @@ TEST_F(WebViewSchedulerImplTest, MaxVirtualTimeTaskStarvationCountZero) {
 
 namespace {
 
-using ScopedExpensiveBackgroundTimerThrottlingForTest =
-    ScopedRuntimeEnabledFeatureForTest<
-        RuntimeEnabledFeatures::ExpensiveBackgroundTimerThrottlingEnabled,
-        RuntimeEnabledFeatures::SetExpensiveBackgroundTimerThrottlingEnabled>;
-
 void ExpensiveTestTask(base::SimpleTestTickClock* clock,
                        std::vector<base::TimeTicks>* run_times) {
   run_times->push_back(clock->NowTicks());

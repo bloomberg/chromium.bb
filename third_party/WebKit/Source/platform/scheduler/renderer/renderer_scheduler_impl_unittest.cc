@@ -34,11 +34,6 @@ namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
 namespace renderer_scheduler_impl_unittest {
 
-using ScopedStopLoadingInBackgroundAndroidForTest =
-    ScopedRuntimeEnabledFeatureForTest<
-        RuntimeEnabledFeatures::StopLoadingInBackgroundAndroidEnabled,
-        RuntimeEnabledFeatures::SetStopLoadingInBackgroundAndroidEnabled>;
-
 class FakeInputEvent : public blink::WebInputEvent {
  public:
   explicit FakeInputEvent(blink::WebInputEvent::Type event_type,
