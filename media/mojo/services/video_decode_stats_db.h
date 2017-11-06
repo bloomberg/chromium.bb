@@ -33,9 +33,12 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsDB {
   // DecodeStatsEntry saved to identify the capabilities related to a given
   // |VideoDescKey|.
   struct MEDIA_MOJO_EXPORT DecodeStatsEntry {
-    DecodeStatsEntry(uint64_t frames_decoded, uint64_t frames_dropped);
+    DecodeStatsEntry(uint64_t frames_decoded,
+                     uint64_t frames_dropped,
+                     uint64_t frames_decoded_power_efficient);
     uint64_t frames_decoded;
     uint64_t frames_dropped;
+    uint64_t frames_decoded_power_efficient;
   };
 
   virtual ~VideoDecodeStatsDB() = default;

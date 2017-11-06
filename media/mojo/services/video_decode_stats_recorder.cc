@@ -48,21 +48,28 @@ void VideoDecodeStatsRecorder::StartNewRecord(VideoCodecProfile profile,
   frames_per_sec_ = frames_per_sec;
   frames_decoded_ = 0;
   frames_dropped_ = 0;
+  frames_decoded_power_efficient_ = 0;
 }
 
-void VideoDecodeStatsRecorder::UpdateRecord(uint32_t frames_decoded,
-                                            uint32_t frames_dropped) {
+void VideoDecodeStatsRecorder::UpdateRecord(
+    uint32_t frames_decoded,
+    uint32_t frames_dropped,
+    uint32_t frames_decoded_power_efficient) {
   DVLOG(3) << __func__ << " decoded:" << frames_decoded
            << " dropped:" << frames_dropped;
 
   // Dropped can never exceed decoded.
   DCHECK_LE(frames_dropped, frames_decoded);
+  // Power efficient frames can never exceed decoded frames.
+  DCHECK_LE(frames_decoded_power_efficient, frames_decoded);
   // Should never go backwards.
   DCHECK_GE(frames_decoded, frames_decoded_);
   DCHECK_GE(frames_dropped, frames_dropped_);
+  DCHECK_GE(frames_decoded_power_efficient, frames_decoded_power_efficient_);
 
   frames_decoded_ = frames_decoded;
   frames_dropped_ = frames_dropped;
+  frames_decoded_power_efficient_ = frames_decoded_power_efficient;
 }
 
 void VideoDecodeStatsRecorder::FinalizeRecord() {
@@ -71,10 +78,12 @@ void VideoDecodeStatsRecorder::FinalizeRecord() {
 
   DVLOG(2) << __func__ << " profile: " << profile_
            << " size:" << natural_size_.ToString() << " fps:" << frames_per_sec_
-           << " decoded:" << frames_decoded_ << " dropped:" << frames_dropped_;
+           << " decoded:" << frames_decoded_ << " dropped:" << frames_dropped_
+           << " power efficient decoded:" << frames_decoded_power_efficient_;
 
   perf_history_->SavePerfRecord(profile_, natural_size_, frames_per_sec_,
-                                frames_decoded_, frames_dropped_);
+                                frames_decoded_, frames_dropped_,
+                                frames_decoded_power_efficient_);
 }
 
 }  // namespace media

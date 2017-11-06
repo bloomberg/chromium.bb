@@ -80,8 +80,9 @@ class FakeVideoDecodeStatsRecorder : public mojom::VideoDecodeStatsRecorder {
   void StartNewRecord(VideoCodecProfile profile,
                       const gfx::Size& natural_size,
                       int frames_per_sec) override {}
-  void UpdateRecord(uint32_t frames_decoded, uint32_t frames_dropped) override {
-  }
+  void UpdateRecord(uint32_t frames_decoded,
+                    uint32_t frames_dropped,
+                    uint32_t frames_decoded_power_efficient) override {}
 };
 
 mojom::VideoDecodeStatsRecorderPtr CreateCapabilitiesRecorder() {

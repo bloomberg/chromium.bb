@@ -18,5 +18,7 @@ interface VideoDecodeStatsRecorder {
   // Update stats values for the current record. Each update overrides the
   // previous values. Values should only be considered final when a new
   // record is started or upon IPC disconnect.
-  UpdateRecord(uint32 frames_decoded, uint32 frames_dropped);
+  UpdateRecord(uint32 frames_decoded,
+               uint32 frames_dropped,
+               uint32 frames_decoded_power_efficient);
 };

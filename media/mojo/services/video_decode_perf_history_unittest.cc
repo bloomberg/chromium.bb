@@ -21,6 +21,7 @@ namespace media {
 const bool kIsSmooth = true;
 const bool kIsNotSmooth = false;
 const bool kIsPowerEfficient = true;
+const bool kIsNotPowerEfficient = false;
 
 class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
  public:
@@ -47,7 +48,9 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
       const DecodeStatsEntry& known_entry = entries_.at(key_str);
       entries_.at(key_str) = DecodeStatsEntry(
           known_entry.frames_decoded + new_entry.frames_decoded,
-          known_entry.frames_dropped + new_entry.frames_dropped);
+          known_entry.frames_dropped + new_entry.frames_dropped,
+          known_entry.frames_decoded_power_efficient +
+              new_entry.frames_decoded_power_efficient);
     }
   }
 
@@ -133,6 +136,8 @@ class VideoDecodePerfHistoryTest : public testing::TestWithParam<bool> {
 
   static constexpr double kMaxSmoothDroppedFramesPercent =
       VideoDecodePerfHistory::kMaxSmoothDroppedFramesPercent;
+  static constexpr double kMinPowerEfficientDecodedFramePercent =
+      VideoDecodePerfHistory::kMinPowerEfficientDecodedFramePercent;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -161,6 +166,7 @@ TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_Smooth) {
   const int kSmoothFrameRate = 30;
   const int kNotSmoothFrameRate = 90;
   const int kFramesDecoded = 1000;
+  const int kNotPowerEfficientFramesDecoded = 0;
   // Sets the ratio of dropped frames to barely qualify as smooth.
   const int kSmoothFramesDropped =
       kFramesDecoded * kMaxSmoothDroppedFramesPercent;
@@ -170,19 +176,21 @@ TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_Smooth) {
 
   // Add the entries.
   perf_history_->SavePerfRecord(kKnownProfile, kKownSize, kSmoothFrameRate,
-                                kFramesDecoded, kSmoothFramesDropped);
+                                kFramesDecoded, kSmoothFramesDropped,
+                                kNotPowerEfficientFramesDecoded);
   perf_history_->SavePerfRecord(kKnownProfile, kKownSize, kNotSmoothFrameRate,
-                                kFramesDecoded, kNotSmoothFramesDropped);
+                                kFramesDecoded, kNotSmoothFramesDropped,
+                                kNotPowerEfficientFramesDecoded);
 
   // Verify perf history returns is_smooth = true for the smooth entry.
-  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsNotPowerEfficient));
   perf_history_->GetPerfInfo(
       kKnownProfile, kKownSize, kSmoothFrameRate,
       base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Verify perf history returns is_smooth = false for the NOT smooth entry.
-  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsPowerEfficient));
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsNotPowerEfficient));
   perf_history_->GetPerfInfo(
       kKnownProfile, kKownSize, kNotSmoothFrameRate,
       base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
@@ -190,6 +198,91 @@ TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_Smooth) {
 
   // Verify perf history optimistically returns is_smooth = true when no entry
   // can be found with the given configuration.
+  const VideoCodecProfile kUnknownProfile = VP9PROFILE_PROFILE2;
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
+  perf_history_->GetPerfInfo(
+      kUnknownProfile, kKownSize, kNotSmoothFrameRate,
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+                     base::Unretained(this)));
+
+  // Complete successful deferred DB initialization (see comment at top of test)
+  if (defer_initialize) {
+    database_->CompleteInitialize(true);
+
+    // Allow initialize-deferred API calls to complete.
+    base::RunLoop run_loop;
+    base::PostTask(FROM_HERE, base::BindOnce(run_loop.QuitWhenIdleClosure()));
+    run_loop.Run();
+  }
+}
+
+TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_PowerEfficient) {
+  // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
+  // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
+  // that EXPECT_CALLs arrive in top-to-bottom order.
+  bool defer_initialize = GetParam();
+  testing::InSequence dummy;
+
+  // Complete initialization in advance of API calls when not asked to defer.
+  if (!defer_initialize)
+    PreInitializeDB(/* success */ true);
+
+  // First add 3 records to the history:
+  // - the first has a high number of power efficiently decoded frames;
+  // - the second has a low number of power efficiently decoded frames;
+  // - the third is similar to the first with a high number of dropped frames.
+  const VideoCodecProfile kPowerEfficientProfile = VP9PROFILE_PROFILE0;
+  const VideoCodecProfile kNotPowerEfficientProfile = VP8PROFILE_ANY;
+  const gfx::Size kKownSize(100, 200);
+  const int kSmoothFrameRate = 30;
+  const int kNotSmoothFrameRate = 90;
+  const int kFramesDecoded = 1000;
+  const int kPowerEfficientFramesDecoded =
+      kFramesDecoded * kMinPowerEfficientDecodedFramePercent;
+  const int kNotPowerEfficientFramesDecoded =
+      kFramesDecoded * kMinPowerEfficientDecodedFramePercent - 1;
+  // Sets the ratio of dropped frames to barely qualify as smooth.
+  const int kSmoothFramesDropped =
+      kFramesDecoded * kMaxSmoothDroppedFramesPercent;
+  // Set the ratio of dropped frames to barely qualify as NOT smooth.
+  const int kNotSmoothFramesDropped =
+      kFramesDecoded * kMaxSmoothDroppedFramesPercent + 1;
+
+  // Add the entries.
+  perf_history_->SavePerfRecord(
+      kPowerEfficientProfile, kKownSize, kSmoothFrameRate, kFramesDecoded,
+      kSmoothFramesDropped, kPowerEfficientFramesDecoded);
+  perf_history_->SavePerfRecord(
+      kNotPowerEfficientProfile, kKownSize, kSmoothFrameRate, kFramesDecoded,
+      kSmoothFramesDropped, kNotPowerEfficientFramesDecoded);
+  perf_history_->SavePerfRecord(
+      kPowerEfficientProfile, kKownSize, kNotSmoothFrameRate, kFramesDecoded,
+      kNotSmoothFramesDropped, kPowerEfficientFramesDecoded);
+
+  // Verify perf history returns is_smooth = true, is_power_efficient = true.
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
+  perf_history_->GetPerfInfo(
+      kPowerEfficientProfile, kKownSize, kSmoothFrameRate,
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+                     base::Unretained(this)));
+
+  // Verify perf history returns is_smooth = true, is_power_efficient = false.
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsNotPowerEfficient));
+  perf_history_->GetPerfInfo(
+      kNotPowerEfficientProfile, kKownSize, kSmoothFrameRate,
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+                     base::Unretained(this)));
+
+  // Verify perf history returns is_smooth = false, is_power_efficient = true.
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsPowerEfficient));
+  perf_history_->GetPerfInfo(
+      kPowerEfficientProfile, kKownSize, kNotSmoothFrameRate,
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+                     base::Unretained(this)));
+
+  // Verify perf history optimistically returns is_smooth = true and
+  // is_power_efficient = true when no entry can be found with the given
+  // configuration.
   const VideoCodecProfile kUnknownProfile = VP9PROFILE_PROFILE2;
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
   perf_history_->GetPerfInfo(

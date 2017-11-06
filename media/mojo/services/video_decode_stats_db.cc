@@ -11,8 +11,12 @@ VideoDecodeStatsDB::VideoDescKey::VideoDescKey(VideoCodecProfile codec_profile,
                                                int frame_rate)
     : codec_profile(codec_profile), size(size), frame_rate(frame_rate) {}
 
-VideoDecodeStatsDB::DecodeStatsEntry::DecodeStatsEntry(uint64_t frames_decoded,
-                                                       uint64_t frames_dropped)
-    : frames_decoded(frames_decoded), frames_dropped(frames_dropped) {}
+VideoDecodeStatsDB::DecodeStatsEntry::DecodeStatsEntry(
+    uint64_t frames_decoded,
+    uint64_t frames_dropped,
+    uint64_t frames_decoded_power_efficient)
+    : frames_decoded(frames_decoded),
+      frames_dropped(frames_dropped),
+      frames_decoded_power_efficient(frames_decoded_power_efficient) {}
 
 }  // namespace media
