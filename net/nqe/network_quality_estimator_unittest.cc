@@ -3291,4 +3291,88 @@ TEST(NetworkQualityEstimatorTest,
   EXPECT_EQ(12, estimator.ComputeIncreaseInTransportRTTForTests().value_or(0));
 }
 
+// Verifies that when the cached network qualities from the prefs are available,
+// then estimates from the platform or the external estimate provider are not
+// used.
+TEST(NetworkQualityEstimatorTest,
+     ObservationDiscardedIfCachedEstimateAvailable) {
+  base::HistogramTester histogram_tester;
+
+  // Construct the read prefs.
+  std::map<nqe::internal::NetworkID, nqe::internal::CachedNetworkQuality>
+      read_prefs;
+  read_prefs[nqe::internal::NetworkID(NetworkChangeNotifier::CONNECTION_WIFI,
+                                      "test_2g")] =
+      nqe::internal::CachedNetworkQuality(EFFECTIVE_CONNECTION_TYPE_2G);
+
+  std::map<std::string, std::string> variation_params;
+  variation_params["effective_connection_type_algorithm"] =
+      "TransportRTTOrDownstreamThroughput";
+  variation_params["persistent_cache_reading_enabled"] = "true";
+  variation_params["add_default_platform_observations"] = "false";
+  // Disable default platform values so that the effect of cached estimates
+  // at the time of startup can be studied in isolation.
+  TestNetworkQualityEstimator estimator(
+      std::unique_ptr<net::ExternalEstimateProvider>(), variation_params, true,
+      true, std::make_unique<BoundTestNetLog>());
+
+  // Add observers.
+  TestRTTObserver rtt_observer;
+  TestThroughputObserver throughput_observer;
+  estimator.AddRTTObserver(&rtt_observer);
+  estimator.AddThroughputObserver(&throughput_observer);
+
+  std::string network_name("test_2g");
+
+  estimator.SimulateNetworkChange(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, network_name);
+  EXPECT_EQ(0u, rtt_observer.observations().size());
+  EXPECT_EQ(0u, throughput_observer.observations().size());
+
+  // Simulate reading of prefs.
+  estimator.OnPrefsRead(read_prefs);
+  histogram_tester.ExpectUniqueSample("NQE.Prefs.ReadSize", read_prefs.size(),
+                                      1);
+
+  // Taken from network_quality_estimator_params.cc.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1800),
+            rtt_observer.last_rtt(
+                NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE));
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1500),
+            rtt_observer.last_rtt(
+                NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE));
+
+  // When a cached estimate is available, RTT observations from the external
+  // estimate provider and platform must be discarded.
+  EXPECT_EQ(2u, rtt_observer.observations().size());
+  estimator.AddAndNotifyObserversOfRTT(nqe::internal::Observation(
+      1, base::TimeTicks::Now(), base::Optional<int32_t>(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
+  estimator.AddAndNotifyObserversOfRTT(nqe::internal::Observation(
+      1, base::TimeTicks::Now(), base::Optional<int32_t>(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM));
+  EXPECT_EQ(2u, rtt_observer.observations().size());
+  estimator.AddAndNotifyObserversOfRTT(nqe::internal::Observation(
+      1, base::TimeTicks::Now(), base::Optional<int32_t>(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
+  EXPECT_EQ(3u, rtt_observer.observations().size());
+
+  // When a cached estimate is available, throughput observations from the
+  // external estimate provider and platform must be discarded.
+  EXPECT_EQ(1u, throughput_observer.observations().size());
+  estimator.AddAndNotifyObserversOfThroughput(nqe::internal::Observation(
+      1, base::TimeTicks::Now(), base::Optional<int32_t>(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
+  estimator.AddAndNotifyObserversOfThroughput(nqe::internal::Observation(
+      1, base::TimeTicks::Now(), base::Optional<int32_t>(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM));
+  EXPECT_EQ(1u, throughput_observer.observations().size());
+  estimator.AddAndNotifyObserversOfThroughput(nqe::internal::Observation(
+      1, base::TimeTicks::Now(), base::Optional<int32_t>(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
+  EXPECT_EQ(2u, throughput_observer.observations().size());
+
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace net

@@ -238,6 +238,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       throughput_observations_size_at_last_ect_computation_(0),
       increase_in_transport_rtt_updater_posted_(false),
       effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+      cached_estimate_applied_(false),
       net_log_(NetLogWithSource::Make(
           net_log,
           net::NetLogSourceType::NETWORK_QUALITY_ESTIMATOR)),
@@ -787,6 +788,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   rtt_observations_size_at_last_ect_computation_ = 0;
   throughput_observations_size_at_last_ect_computation_ = 0;
   estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality();
+  cached_estimate_applied_ = false;
 
   GatherEstimatesForNextConnectionType();
   throughput_analyzer_->OnConnectionTypeChanged();
@@ -811,15 +813,21 @@ void NetworkQualityEstimator::MaybeQueryExternalEstimateProvider() const {
   // Query the external estimate provider on certain connection types. Once the
   // updated estimates are available, OnUpdatedEstimateAvailable will be called
   // by |external_estimate_provider_| with updated estimates.
-  if (external_estimate_provider_ &&
-      current_network_id_.type != NetworkChangeNotifier::CONNECTION_NONE &&
-      current_network_id_.type != NetworkChangeNotifier::CONNECTION_UNKNOWN &&
-      current_network_id_.type != NetworkChangeNotifier::CONNECTION_ETHERNET &&
-      current_network_id_.type != NetworkChangeNotifier::CONNECTION_BLUETOOTH) {
-    RecordExternalEstimateProviderMetrics(
-        EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERIED);
-    external_estimate_provider_->Update();
+  if (!external_estimate_provider_ ||
+      current_network_id_.type == NetworkChangeNotifier::CONNECTION_NONE ||
+      current_network_id_.type == NetworkChangeNotifier::CONNECTION_UNKNOWN ||
+      current_network_id_.type == NetworkChangeNotifier::CONNECTION_ETHERNET ||
+      current_network_id_.type == NetworkChangeNotifier::CONNECTION_BLUETOOTH) {
+    return;
   }
+  if (cached_estimate_applied_) {
+    // Do not use external estimate provider if a local cached value is
+    // available.
+    return;
+  }
+  RecordExternalEstimateProviderMetrics(
+      EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERIED);
+  external_estimate_provider_->Update();
 }
 
 void NetworkQualityEstimator::UpdateSignalStrength() {
@@ -1640,6 +1648,11 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfRTT(
             base::TimeDelta::FromMilliseconds(observation.value()));
   DCHECK_GT(NETWORK_QUALITY_OBSERVATION_SOURCE_MAX, observation.source());
 
+  if (!ShouldAddObservation(observation))
+    return;
+
+  MaybeUpdateCachedEstimateApplied(observation);
+
   rtt_ms_observations_.AddObservation(observation);
 
   UMA_HISTOGRAM_ENUMERATION("NQE.RTT.ObservationSource", observation.source(),
@@ -1665,6 +1678,11 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfThroughput(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(nqe::internal::INVALID_RTT_THROUGHPUT, observation.value());
   DCHECK_GT(NETWORK_QUALITY_OBSERVATION_SOURCE_MAX, observation.source());
+
+  if (!ShouldAddObservation(observation))
+    return;
+
+  MaybeUpdateCachedEstimateApplied(observation);
 
   downstream_throughput_kbps_observations_.AddObservation(observation);
 
@@ -1911,6 +1929,33 @@ const char* NetworkQualityEstimator::GetNameForStatistic(int i) const {
   }
   NOTREACHED();
   return "";
+}
+
+void NetworkQualityEstimator::MaybeUpdateCachedEstimateApplied(
+    const Observation& observation) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (observation.source() ==
+          NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE ||
+      observation.source() ==
+          NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE) {
+    cached_estimate_applied_ = true;
+  }
+}
+
+bool NetworkQualityEstimator::ShouldAddObservation(
+    const Observation& observation) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (cached_estimate_applied_ &&
+      (observation.source() ==
+           NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE ||
+       observation.source() ==
+           NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM ||
+       observation.source() ==
+           NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_TRANSPORT_FROM_PLATFORM)) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace net
