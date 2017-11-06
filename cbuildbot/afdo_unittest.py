@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import os
 import time
-import unittest
 
 from chromite.cbuildbot import afdo
 from chromite.lib import cros_test_lib
@@ -72,7 +71,6 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertIn(('chromeos-kernel-4_4-9999.ebuild', '4.4'), ebuilds)
     self.assertIn(('chromeos-kernel-3_8-9999.ebuild', '3.8'), ebuilds)
 
-  @unittest.expectedFailure
   def testProfileAge(self):
     self.assertEqual(
         0,

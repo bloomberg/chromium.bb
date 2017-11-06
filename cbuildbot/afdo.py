@@ -697,5 +697,5 @@ def ProfileAge(profile_version):
   Returns:
     Age of profile_version in days.
   """
-  return (datetime.datetime.now() -
-          datetime.datetime.fromtimestamp(profile_version[3])).days
+  return (datetime.datetime.utcnow() -
+          datetime.datetime.utcfromtimestamp(profile_version[3])).days
