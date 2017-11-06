@@ -16,6 +16,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/runtime_enabled_features.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
@@ -23,14 +24,10 @@
 
 namespace blink {
 
-class FlatTreeTraversalNgTest : public ::testing::Test {
+class FlatTreeTraversalNgTest : public ::testing::Test,
+                                private ScopedIncrementalShadowDOMForTest {
  public:
-  FlatTreeTraversalNgTest() {
-    RuntimeEnabledFeatures::SetIncrementalShadowDOMEnabled(true);
-  }
-  ~FlatTreeTraversalNgTest() {
-    RuntimeEnabledFeatures::SetIncrementalShadowDOMEnabled(false);
-  }
+  FlatTreeTraversalNgTest() : ScopedIncrementalShadowDOMForTest(true) {}
 
  protected:
   Document& GetDocument() const;
