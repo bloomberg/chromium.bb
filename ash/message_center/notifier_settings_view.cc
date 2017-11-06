@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_recorder.h"
@@ -417,7 +418,7 @@ NotifierSettingsView::NotifierSettingsView()
       top_label_(nullptr),
       scroller_(nullptr),
       no_notifiers_view_(nullptr) {
-  SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetBackground(
       views::CreateSolidBackground(message_center_style::kBackgroundColor));
   SetPaintToLayer();
@@ -449,6 +450,8 @@ NotifierSettingsView::NotifierSettingsView()
   quiet_mode_layout->SetFlexForView(quiet_mode_label, 1);
 
   quiet_mode_toggle_ = new views::ToggleButton(this);
+  quiet_mode_toggle_->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
   SetQuietModeState(MessageCenter::Get()->IsQuietMode());
   quiet_mode_view->AddChildView(quiet_mode_toggle_);
   header_view_->AddChildView(quiet_mode_view);
@@ -503,6 +506,12 @@ void NotifierSettingsView::SetQuietModeState(bool is_quiet_mode) {
                               message_center_style::kActionIconSize,
                               message_center_style::kInactiveButtonColor));
   }
+}
+
+void NotifierSettingsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_LIST;
+  node_data->SetName(l10n_util::GetStringUTF16(
+      IDS_ASH_MESSAGE_CENTER_SETTINGS_DIALOG_DESCRIPTION));
 }
 
 void NotifierSettingsView::SetNotifierList(
