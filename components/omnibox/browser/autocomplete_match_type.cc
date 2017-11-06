@@ -7,6 +7,7 @@
 
 // static
 std::string AutocompleteMatchType::ToString(AutocompleteMatchType::Type type) {
+  // clang-format off
   const char* strings[] = {
     "url-what-you-typed",
     "history-url",
@@ -30,8 +31,10 @@ std::string AutocompleteMatchType::ToString(AutocompleteMatchType::Type type) {
     "url-from-clipboard",
     "voice-suggest",
     "physical-web",
-    "physical-web-overflow"
+    "physical-web-overflow",
+    "tab-search",
   };
+  // clang-format on
   static_assert(arraysize(strings) == AutocompleteMatchType::NUM_TYPES,
                 "strings array must have NUM_TYPES elements");
   return strings[type];

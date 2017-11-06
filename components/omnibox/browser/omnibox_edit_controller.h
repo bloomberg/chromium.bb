@@ -31,6 +31,11 @@ class OmniboxEditController {
   virtual ToolbarModel* GetToolbarModel() = 0;
   virtual const ToolbarModel* GetToolbarModel() const = 0;
 
+  // Called to search for a tab with given URL within the profile.  If found,
+  // the tab is switched to if it is not the current tab, the current tab is
+  // closed if requested, and true is returned; returns false if not found.
+  virtual bool SwitchToTabWithURL(const std::string& url, bool close_this);
+
  protected:
   OmniboxEditController();
   virtual ~OmniboxEditController();
