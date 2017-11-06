@@ -106,10 +106,6 @@ void PowerButtonTestBase::SendAccelerometerUpdate(
       power_button_controller_->tablet_power_button_controller_for_test();
   screenshot_controller_ =
       power_button_controller_->screenshot_controller_for_test();
-
-  if (tablet_test_api_ && tablet_test_api_->IsObservingAccelerometerReader(
-                              chromeos::AccelerometerReader::GetInstance()))
-    tablet_controller_->OnAccelerometerUpdated(update);
 }
 
 void PowerButtonTestBase::ForceClamshellPowerButton() {

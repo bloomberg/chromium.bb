@@ -14,15 +14,12 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
-#include "chromeos/accelerometer/accelerometer_types.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace base {
-class CommandLine;
 class TickClock;
 }  // namespace base
 
@@ -34,8 +31,7 @@ class PowerButtonDisplayController;
 // Handles power button events on convertible/tablet device. This class is
 // instantiated and used in PowerButtonController.
 class ASH_EXPORT TabletPowerButtonController
-    : public chromeos::AccelerometerReader::Observer,
-      public chromeos::PowerManagerClient::Observer,
+    : public chromeos::PowerManagerClient::Observer,
       public TabletModeObserver {
  public:
   // Public for tests.
@@ -59,10 +55,6 @@ class ASH_EXPORT TabletPowerButtonController
   // Handles a power button event.
   void OnPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
 
-  // Overridden from chromeos::AccelerometerReader::Observer:
-  void OnAccelerometerUpdated(
-      scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
-
   // Overridden from chromeos::PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
@@ -75,15 +67,6 @@ class ASH_EXPORT TabletPowerButtonController
 
  private:
   friend class TabletPowerButtonControllerTestApi;
-
-  // Parses command-line switches that provide settings used to attempt to
-  // ignore accidental power button presses by looking at accelerometer data.
-  void ParseSpuriousPowerButtonSwitches(const base::CommandLine& command_line);
-
-  // Returns true if the device's accelerometers have reported enough recent
-  // movement that we should consider a power button event that was just
-  // received to be accidental and ignore it.
-  bool IsSpuriousPowerButtonEvent() const;
 
   // Starts |shutdown_timer_| when the power button is pressed while in
   // tablet mode.
@@ -99,16 +82,11 @@ class ASH_EXPORT TabletPowerButtonController
   // True if the screen was off when the power button was pressed.
   bool screen_off_when_power_button_down_ = false;
 
-  // True if the last power button down event was deemed spurious and ignored as
-  // a result.
-  bool power_button_down_was_spurious_ = false;
-
   // Saves the most recent timestamp that powerd is resuming from suspend,
   // updated in SuspendDone().
   base::TimeTicks last_resume_time_;
 
-  // Saves the most recent timestamp that power button is pressed and released.
-  base::TimeTicks last_button_down_time_;
+  // Saves the most recent timestamp that power button is released.
   base::TimeTicks last_button_up_time_;
 
   // True if power button released should force off display.
@@ -125,30 +103,6 @@ class ASH_EXPORT TabletPowerButtonController
 
   // Time source for performed action times.
   base::TickClock* tick_clock_;  // Not owned.
-
-  ScopedObserver<chromeos::AccelerometerReader, TabletPowerButtonController>
-      accelerometer_scoped_observer_;
-
-  // Number of recent screen and keyboard accelerometer samples to retain.
-  size_t max_accelerometer_samples_ = 0;
-
-  // Circular buffer of recent (screen, keyboard) accelerometer samples.
-  std::vector<std::pair<gfx::Vector3dF, gfx::Vector3dF>> accelerometer_samples_;
-  size_t last_accelerometer_sample_index_ = 0;
-
-  // Number of acceleration readings in |accelerometer_samples_| that must
-  // exceed the threshold in order for a power button event to be considered
-  // spurious.
-  size_t spurious_accel_count_ = 0;
-
-  // Thresholds for screen and keyboard accelerations (excluding gravity). See
-  // |spurious_accel_count_|.
-  float spurious_screen_accel_ = 0;
-  float spurious_keyboard_accel_ = 0;
-
-  // Threshold for the lid angle change seen within |accelerometer_samples_|
-  // in order for a power button event to be considered spurious.
-  float spurious_lid_angle_change_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonController);
 };
