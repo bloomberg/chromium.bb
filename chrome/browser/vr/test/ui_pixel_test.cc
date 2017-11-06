@@ -41,7 +41,6 @@ void UiPixelTest::SetUp() {
   ASSERT_EQ(glGetError(), (GLenum)GL_NO_ERROR);
 
   browser_ = base::MakeUnique<MockBrowserInterface>();
-  content_input_delegate_ = base::MakeUnique<MockContentInputDelegate>();
 #endif
 }
 
@@ -57,8 +56,7 @@ void UiPixelTest::TearDown() {
 
 void UiPixelTest::MakeUi(const UiInitialState& ui_initial_state,
                          const ToolbarState& toolbar_state) {
-  ui_ = base::MakeUnique<Ui>(browser_.get(), content_input_delegate_.get(),
-                             ui_initial_state);
+  ui_ = base::MakeUnique<Ui>(browser_.get(), nullptr, ui_initial_state);
   ui_->OnGlInitialized(content_texture_,
                        vr::UiElementRenderer::kTextureLocationLocal);
   ui_->GetBrowserUiWeakPtr()->SetToolbarState(toolbar_state);

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/controller_mesh.h"
+#include "chrome/browser/vr/platform_controller.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -37,11 +38,11 @@ constexpr float kErgoAngleOffset = 0.26f;
 
 using GestureList = std::vector<std::unique_ptr<blink::WebGestureEvent>>;
 
-class VrController {
+class VrController : public vr::PlatformController {
  public:
   // Controller API entry point.
   explicit VrController(gvr_context* gvr_context);
-  ~VrController();
+  ~VrController() override;
 
   // Must be called when the Activity gets OnResume().
   void OnResume();
@@ -78,9 +79,11 @@ class VrController {
 
   bool IsConnected();
 
-  base::TimeTicks GetLastOrientationTimestamp() const;
-  base::TimeTicks GetLastTouchTimestamp() const;
-  base::TimeTicks GetLastButtonTimestamp() const;
+  // PlatformController
+  bool IsButtonDown(vr::PlatformController::ButtonType type) const override;
+  base::TimeTicks GetLastOrientationTimestamp() const override;
+  base::TimeTicks GetLastTouchTimestamp() const override;
+  base::TimeTicks GetLastButtonTimestamp() const override;
 
  private:
   enum GestureDetectorState {

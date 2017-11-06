@@ -10,7 +10,8 @@
 #include "chrome/browser/vr/browser_ui_interface.h"
 #include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/simple_textured_element.h"
-#include "chrome/browser/vr/ui_interface.h"
+#include "chrome/browser/vr/platform_controller.h"
+#include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -125,12 +126,12 @@ class UiSceneManager {
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
   void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason);
 
-  // UiInterface support methods.
   bool ShouldRenderWebVr();
   void OnGlInitialized(unsigned int content_texture_id,
                        UiElementRenderer::TextureLocation content_location);
   void OnAppButtonClicked();
-  void OnAppButtonGesturePerformed(UiInterface::Direction direction);
+  void OnAppButtonGesturePerformed(
+      PlatformController::SwipeDirection direction);
   void OnProjMatrixChanged(const gfx::Transform& proj_matrix);
   void OnWebVrFrameAvailable();
   void OnWebVrTimedOut();
