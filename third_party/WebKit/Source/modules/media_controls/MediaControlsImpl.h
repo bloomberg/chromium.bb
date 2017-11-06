@@ -46,6 +46,7 @@ class MediaControlCastButtonElement;
 class MediaControlCurrentTimeDisplayElement;
 class MediaControlDownloadButtonElement;
 class MediaControlFullscreenButtonElement;
+class MediaControlLoadingPanelElement;
 class MediaControlMuteButtonElement;
 class MediaControlOverflowMenuButtonElement;
 class MediaControlOverflowMenuListElement;
@@ -132,6 +133,30 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   virtual void Trace(blink::Visitor*);
 
+  // Track the state of the controls.
+  enum ControlsState {
+    // There is no video source.
+    kNoSource,
+
+    // Metadata has not been loaded.
+    kNotLoaded,
+
+    // Metadata is being loaded.
+    kLoadingMetadata,
+
+    // Metadata is loaded and the media is ready to play. This can be when the
+    // media is paused, when it has ended or before the media has started
+    // playing.
+    kStopped,
+
+    // The media is playing.
+    kPlaying,
+
+    // Playback has stopped to buffer.
+    kBuffering,
+  };
+  ControlsState State() const;
+
  private:
   // MediaControlsMediaEventListener is a component that is listening to events
   // and calling the appropriate callback on MediaControlsImpl. The object is
@@ -166,30 +191,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Get the HTMLVideoElement that the controls are attached to. The caller must
   // check that the element is a video element first.
   HTMLVideoElement& VideoElement();
-
-  // Track the state of the controls.
-  enum ControlsState {
-    // There is no video source.
-    kNoSource,
-
-    // Metadata has not been loaded.
-    kNotLoaded,
-
-    // Metadata is being loaded.
-    kLoadingMetadata,
-
-    // Metadata is loaded and the media is ready to play. This can be when the
-    // media is paused, when it has ended or before the media has started
-    // playing.
-    kStopped,
-
-    // The media is playing.
-    kPlaying,
-
-    // Playback has stopped to buffer.
-    kBuffering,
-  };
-  ControlsState State() const;
 
   explicit MediaControlsImpl(HTMLMediaElement&);
 
@@ -284,6 +285,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   Member<MediaControlOverflowMenuButtonElement> overflow_menu_;
   Member<MediaControlOverflowMenuListElement> overflow_list_;
   Member<MediaControlButtonPanelElement> media_button_panel_;
+  Member<MediaControlLoadingPanelElement> loading_panel_;
 
   Member<MediaControlCastButtonElement> cast_button_;
   Member<MediaControlFullscreenButtonElement> fullscreen_button_;

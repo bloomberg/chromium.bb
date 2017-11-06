@@ -234,6 +234,12 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
     url(default_100_percent/modern/ic_play_arrow.png) 1x,
     url(default_200_percent/modern/ic_play_arrow.png) 2x);
   background-color: rgba(255, 255, 255, .9);
+
+  transition: opacity cubic-bezier(0.4, 0.0, 0.6, 1) 600ms;
+}
+
+.phase-pre-ready input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
+  transition: none;
 }
 
 .state-playing input[pseudo="-webkit-media-controls-play-button" i],
@@ -503,4 +509,32 @@ audio::-internal-media-controls-overflow-button {
 .use-default-poster div[pseudo="-internal-media-controls-button-panel" i],
 .use-default-poster input[pseudo="-webkit-media-controls-timeline" i] {
   display: none;
+}
+
+/**
+ * Loading spinner
+ */
+
+video::-internal-media-controls-loading-panel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  opacity: .5;
+}
+
+audio::-internal-media-controls-loading-panel {
+  display: none;
+}
+
+.state-loading-metadata div[pseudo="-webkit-media-controls-panel" i] {
+  background-image: none;
+}
+
+.state-loading-metadata div[pseudo="-internal-media-controls-button-panel" i],
+.state-loading-metadata input[pseudo="-webkit-media-controls-timeline" i],
+.state-loading-metadata input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
+  opacity: 0;
 }

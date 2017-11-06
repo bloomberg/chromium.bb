@@ -61,6 +61,7 @@
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
 #include "modules/media_controls/elements/MediaControlFullscreenButtonElement.h"
+#include "modules/media_controls/elements/MediaControlLoadingPanelElement.h"
 #include "modules/media_controls/elements/MediaControlMuteButtonElement.h"
 #include "modules/media_controls/elements/MediaControlOverflowMenuButtonElement.h"
 #include "modules/media_controls/elements/MediaControlOverflowMenuListElement.h"
@@ -297,6 +298,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       text_track_list_(nullptr),
       overflow_list_(nullptr),
       media_button_panel_(nullptr),
+      loading_panel_(nullptr),
       cast_button_(nullptr),
       fullscreen_button_(nullptr),
       download_button_(nullptr),
@@ -367,6 +369,9 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //
 // MediaControlsImpl
 //     (-webkit-media-controls)
+// +-MediaControlLoadingPanelElement
+// |    (-internal-media-controls-loading-panel)
+// |    {if ModernMediaControlsEnabled}
 // +-MediaControlOverlayEnclosureElement
 // |    (-webkit-media-controls-overlay-enclosure)
 // | +-MediaControlOverlayPlayButtonElement
@@ -421,6 +426,11 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //  +-MediaControlTextTrackListItemSubtitles
 //       (-internal-media-controls-text-track-list-kind-subtitles)
 void MediaControlsImpl::InitializeControls() {
+  if (IsModern() && MediaElement().IsHTMLVideoElement()) {
+    loading_panel_ = new MediaControlLoadingPanelElement(*this);
+    AppendChild(loading_panel_);
+  }
+
   overlay_enclosure_ = new MediaControlOverlayEnclosureElement(*this);
 
   if (RuntimeEnabledFeatures::MediaControlsOverlayPlayButtonEnabled() ||
@@ -571,6 +581,9 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
   const AtomicString& classes = builder.ToAtomicString();
   if (getAttribute("class") != classes)
     setAttribute("class", classes);
+
+  if (loading_panel_)
+    loading_panel_->UpdateDisplayState();
 }
 
 MediaControlsImpl::ControlsState MediaControlsImpl::State() const {
@@ -1574,6 +1587,7 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(rotate_to_fullscreen_delegate_);
   visitor->Trace(download_iph_manager_);
   visitor->Trace(media_button_panel_);
+  visitor->Trace(loading_panel_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
 }

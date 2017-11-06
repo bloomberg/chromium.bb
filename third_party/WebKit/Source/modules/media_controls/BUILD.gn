@@ -40,6 +40,8 @@ blink_modules_sources("media_controls") {
     "elements/MediaControlFullscreenButtonElement.h",
     "elements/MediaControlInputElement.cpp",
     "elements/MediaControlInputElement.h",
+    "elements/MediaControlLoadingPanelElement.cpp",
+    "elements/MediaControlLoadingPanelElement.h",
     "elements/MediaControlMuteButtonElement.cpp",
     "elements/MediaControlMuteButtonElement.h",
     "elements/MediaControlOverflowMenuButtonElement.cpp",
