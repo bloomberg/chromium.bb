@@ -38,7 +38,7 @@ base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
   if (!favicon_service)
     return base::CancelableTaskTracker::kBadTaskId;
 
-  if (type == favicon_base::FAVICON) {
+  if (type == favicon_base::IconType::kFavicon) {
     return favicon_service->GetFaviconImageForPageURL(page_url, callback,
                                                       tracker);
   }

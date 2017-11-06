@@ -439,7 +439,7 @@ void OnFetchIconFromGoogleServerComplete(
   // expired (out-of-date), they will be refetched when we visit the original
   // page any time in the future.
   favicon_service->SetOnDemandFavicons(
-      page_url, GURL(original_icon_url), favicon_base::IconType::TOUCH_ICON,
+      page_url, GURL(original_icon_url), favicon_base::IconType::kTouchIcon,
       image, base::Bind(&OnSetOnDemandFaviconComplete, callback));
 }
 
@@ -450,10 +450,10 @@ LargeIconService::LargeIconService(
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : favicon_service_(favicon_service),
       image_fetcher_(std::move(image_fetcher)) {
-  large_icon_types_.push_back({favicon_base::IconType::WEB_MANIFEST_ICON});
-  large_icon_types_.push_back({favicon_base::IconType::FAVICON});
-  large_icon_types_.push_back({favicon_base::IconType::TOUCH_ICON});
-  large_icon_types_.push_back({favicon_base::IconType::TOUCH_PRECOMPOSED_ICON});
+  large_icon_types_.push_back({favicon_base::IconType::kWebManifestIcon});
+  large_icon_types_.push_back({favicon_base::IconType::kFavicon});
+  large_icon_types_.push_back({favicon_base::IconType::kTouchIcon});
+  large_icon_types_.push_back({favicon_base::IconType::kTouchPrecomposedIcon});
   // TODO(jkrcal): Add non-null image_fetcher into remaining unit-tests and add
   // a DCHECK(image_fetcher_) here.
 }

@@ -251,7 +251,7 @@ TEST_F(WebStateObserverBridgeTest, FaviconUrlUpdated) {
   ASSERT_FALSE([observer_ updateFaviconUrlCandidatesInfo]);
 
   web::FaviconURL url(GURL("https://chromium.test/"),
-                      web::FaviconURL::TOUCH_ICON, {gfx::Size(5, 6)});
+                      web::FaviconURL::IconType::kTouchIcon, {gfx::Size(5, 6)});
 
   bridge_->FaviconUrlUpdated(&test_web_state_, {url});
   ASSERT_TRUE([observer_ updateFaviconUrlCandidatesInfo]);

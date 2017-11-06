@@ -29,7 +29,7 @@ ntp_tiles::TileVisualType VisualTypeFromAttributes(
 
 favicon_base::IconType IconTypeFromAttributes(
     const FaviconAttributes* attributes) {
-  favicon_base::IconType icon_type = favicon_base::INVALID_ICON;
+  favicon_base::IconType icon_type = favicon_base::IconType::kInvalid;
   if (attributes.faviconImage) {
     FaviconAttributesWithPayload* favicon_attributes =
         base::mac::ObjCCastStrict<FaviconAttributesWithPayload>(attributes);

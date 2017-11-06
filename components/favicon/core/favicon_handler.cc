@@ -191,7 +191,7 @@ FaviconHandler::FaviconHandler(
           handler_type == FaviconDriverObserver::TOUCH_LARGEST),
       candidates_received_(false),
       error_other_than_404_found_(false),
-      notification_icon_type_(favicon_base::INVALID_ICON),
+      notification_icon_type_(favicon_base::IconType::kInvalid),
       service_(service),
       delegate_(delegate),
       num_image_download_requests_(0),
@@ -208,10 +208,11 @@ favicon_base::IconTypeSet FaviconHandler::GetIconTypesFromHandlerType(
   switch (handler_type) {
     case FaviconDriverObserver::NON_TOUCH_16_DIP:
     case FaviconDriverObserver::NON_TOUCH_LARGEST:
-      return {favicon_base::FAVICON};
+      return {favicon_base::IconType::kFavicon};
     case FaviconDriverObserver::TOUCH_LARGEST:
-      return {favicon_base::TOUCH_ICON, favicon_base::TOUCH_PRECOMPOSED_ICON,
-              favicon_base::WEB_MANIFEST_ICON};
+      return {favicon_base::IconType::kTouchIcon,
+              favicon_base::IconType::kTouchPrecomposedIcon,
+              favicon_base::IconType::kWebManifestIcon};
   }
   return {};
 }
@@ -241,7 +242,7 @@ void FaviconHandler::FetchFavicon(const GURL& page_url, bool is_same_document) {
   non_manifest_original_candidates_.clear();
   candidates_.clear();
   notification_icon_url_ = GURL();
-  notification_icon_type_ = favicon_base::INVALID_ICON;
+  notification_icon_type_ = favicon_base::IconType::kInvalid;
   num_image_download_requests_ = 0;
   current_candidate_index_ = 0u;
   best_favicon_ = DownloadedFavicon();
@@ -303,7 +304,7 @@ void FaviconHandler::MaybeDeleteFaviconMappings() {
   // The order of these conditions is important because we want the feature
   // state to be checked at the very end.
   if (!error_other_than_404_found_ &&
-      notification_icon_type_ != favicon_base::INVALID_ICON &&
+      notification_icon_type_ != favicon_base::IconType::kInvalid &&
       base::FeatureList::IsEnabled(kAllowDeletionOfFaviconMappings)) {
     if (!delegate_->IsOffTheRecord())
       service_->DeleteFaviconMappings(page_urls_, notification_icon_type_);
@@ -311,7 +312,7 @@ void FaviconHandler::MaybeDeleteFaviconMappings() {
     delegate_->OnFaviconDeleted(last_page_url_, handler_type_);
 
     notification_icon_url_ = GURL();
-    notification_icon_type_ = favicon_base::INVALID_ICON;
+    notification_icon_type_ = favicon_base::IconType::kInvalid;
   }
 }
 
@@ -400,7 +401,7 @@ void FaviconHandler::OnUpdateCandidates(
   // See if there is a cached favicon for the manifest. This will update the DB
   // mappings only if the manifest URL is cached.
   GetFaviconAndUpdateMappingsUnlessIncognito(
-      /*icon_url=*/manifest_url_, favicon_base::WEB_MANIFEST_ICON,
+      /*icon_url=*/manifest_url_, favicon_base::IconType::kWebManifestIcon,
       base::Bind(&FaviconHandler::OnFaviconDataForManifestFromFaviconService,
                  base::Unretained(this)));
 }
@@ -420,7 +421,7 @@ void FaviconHandler::OnFaviconDataForManifestFromFaviconService(
 
   if (has_valid_result &&
       (notification_icon_url_ != manifest_url_ ||
-       notification_icon_type_ != favicon_base::WEB_MANIFEST_ICON)) {
+       notification_icon_type_ != favicon_base::IconType::kWebManifestIcon)) {
     // There is a valid favicon. Notify any observers. It is useful to notify
     // the observers even if the favicon is expired or incomplete (incorrect
     // size) because temporarily showing the user an expired favicon or
@@ -581,7 +582,7 @@ void FaviconHandler::OnDidDownloadFavicon(
     // |num_image_download_requests_| can never be 0.
     RecordDownloadAttemptsForHandlerType(handler_type_,
                                          num_image_download_requests_);
-    if (best_favicon_.candidate.icon_type == favicon_base::INVALID_ICON) {
+    if (best_favicon_.candidate.icon_type == favicon_base::IconType::kInvalid) {
       // No valid icon found, so check if mappings should be deleted.
       MaybeDeleteFaviconMappings();
     } else {
@@ -591,8 +592,9 @@ void FaviconHandler::OnDidDownloadFavicon(
       SetFavicon(manifest_url_.is_empty() ? best_favicon_.candidate.icon_url
                                           : manifest_url_,
                  best_favicon_.image,
-                 manifest_url_.is_empty() ? best_favicon_.candidate.icon_type
-                                          : favicon_base::WEB_MANIFEST_ICON);
+                 manifest_url_.is_empty()
+                     ? best_favicon_.candidate.icon_type
+                     : favicon_base::IconType::kWebManifestIcon);
     }
     // Clear download related state.
     current_candidate_index_ = candidates_.size();

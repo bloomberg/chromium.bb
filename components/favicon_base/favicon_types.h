@@ -29,13 +29,13 @@ typedef int64_t FaviconID;
 //
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.favicon
-enum IconType {
-  INVALID_ICON = 0x0,
-  FAVICON = 1 << 0,
-  TOUCH_ICON = 1 << 1,
-  TOUCH_PRECOMPOSED_ICON = 1 << 2,
-  WEB_MANIFEST_ICON = 1 << 3,
-  ICON_TYPE_MAX = WEB_MANIFEST_ICON
+enum class IconType {
+  kInvalid = 0,
+  kFavicon = 1 << 0,
+  kTouchIcon = 1 << 1,
+  kTouchPrecomposedIcon = 1 << 2,
+  kWebManifestIcon = 1 << 3,
+  kMax = kWebManifestIcon
 };
 
 using IconTypeSet = base::flat_set<IconType>;

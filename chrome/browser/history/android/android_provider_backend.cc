@@ -849,8 +849,8 @@ bool AndroidProviderBackend::UpdateFavicon() {
   if (!thumbnail_db_)
     return true;
 
-  if (!thumbnail_db_->InitIconMappingEnumerator(favicon_base::FAVICON,
-                                                &enumerator))
+  if (!thumbnail_db_->InitIconMappingEnumerator(
+          favicon_base::IconType::kFavicon, &enumerator))
     return false;
 
   IconMapping icon_mapping;

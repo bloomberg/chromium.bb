@@ -47,7 +47,7 @@ ntp_tiles::NTPTileImpression MakeNTPTileImpression(int index,
                                                    TileTitleSource title_source,
                                                    TileVisualType visual_type) {
   return ntp_tiles::NTPTileImpression(index, source, title_source, visual_type,
-                                      favicon_base::INVALID_ICON,
+                                      favicon_base::IconType::kInvalid,
                                       /*data_generation_time=*/base::Time(),
                                       /*url_for_rappor=*/GURL());
 }
@@ -854,7 +854,7 @@ TEST(NTPUserDataLoggerTest, ShouldRecordImpressionsAge) {
 
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       0, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL, favicon_base::INVALID_ICON,
+      TileVisualType::THUMBNAIL, favicon_base::IconType::kInvalid,
       base::Time::Now() - kSuggestionAge, GURL()));
 
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);

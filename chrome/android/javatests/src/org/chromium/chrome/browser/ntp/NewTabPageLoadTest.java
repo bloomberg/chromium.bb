@@ -106,7 +106,7 @@ public class NewTabPageLoadTest {
                 public void run() {
                     callback.onLargeIconAvailable(
                             Bitmap.createBitmap(148, 148, Bitmap.Config.ALPHA_8), 0, false,
-                            IconType.INVALID_ICON);
+                            IconType.INVALID);
                 }
             }, 0);
 

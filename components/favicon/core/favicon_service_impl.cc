@@ -72,7 +72,7 @@ base::CancelableTaskTracker::TaskId FaviconServiceImpl::GetFaviconImage(
       base::Bind(&FaviconServiceImpl::RunFaviconImageCallbackWithBitmapResults,
                  base::Unretained(this), callback, gfx::kFaviconSize);
   return history_service_->GetFavicon(
-      icon_url, favicon_base::FAVICON,
+      icon_url, favicon_base::IconType::kFavicon,
       GetPixelSizesForFaviconScales(gfx::kFaviconSize), callback_runner,
       tracker);
 }
@@ -116,7 +116,7 @@ FaviconServiceImpl::GetFaviconImageForPageURL(
     base::CancelableTaskTracker* tracker) {
   TRACE_EVENT0("browser", "FaviconServiceImpl::GetFaviconImageForPageURL");
   return GetFaviconForPageURLImpl(
-      page_url, {favicon_base::FAVICON},
+      page_url, {favicon_base::IconType::kFavicon},
       GetPixelSizesForFaviconScales(gfx::kFaviconSize),
       base::Bind(&FaviconServiceImpl::RunFaviconImageCallbackWithBitmapResults,
                  base::Unretained(this), callback, gfx::kFaviconSize),

@@ -31,7 +31,7 @@ void ExtractManifestIcons(
     const content::Manifest& manifest) {
   std::vector<FaviconURL> candidates;
   for (const content::Manifest::Icon& icon : manifest.icons) {
-    candidates.emplace_back(icon.src, favicon_base::WEB_MANIFEST_ICON,
+    candidates.emplace_back(icon.src, favicon_base::IconType::kWebManifestIcon,
                             icon.sizes);
   }
   callback.Run(candidates);
@@ -72,7 +72,8 @@ void ContentFaviconDriver::SaveFaviconEvenIfInIncognito() {
   }
 
   favicon_service()->SetFavicons({page_url}, favicon_status.url,
-                                 favicon_base::FAVICON, favicon_status.image);
+                                 favicon_base::IconType::kFavicon,
+                                 favicon_status.image);
 }
 
 gfx::Image ContentFaviconDriver::GetFavicon() const {

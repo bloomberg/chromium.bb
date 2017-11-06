@@ -79,7 +79,7 @@ const int kMaxFaviconResolution = 16;
 // TODO(zea): Supporting other favicons types will involve some work in the
 // favicon service and navigation controller. See crbug.com/181068.
 favicon_base::IconTypeSet SupportedFaviconTypes() {
-  return {favicon_base::FAVICON};
+  return {favicon_base::IconType::kFavicon};
 }
 
 // Returns the appropriate IconSize to use for a given gfx::Size pixel

@@ -1295,7 +1295,7 @@ class BookmarkModelFaviconTest : public testing::Test,
       favicon_base::FaviconImageResult image_result;
       image_result.image = image;
       image_result.icon_url = icon_url;
-      model_->OnFaviconDataAvailable(node, favicon_base::IconType::FAVICON,
+      model_->OnFaviconDataAvailable(node, favicon_base::IconType::kFavicon,
                                      image_result);
   }
 

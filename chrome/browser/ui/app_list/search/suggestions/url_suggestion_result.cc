@@ -60,10 +60,10 @@ std::unique_ptr<SearchResult> URLSuggestionResult::Duplicate() const {
 
 void URLSuggestionResult::UpdateIcon() {
   std::vector<favicon_base::IconTypeSet> icon_types = {
-      {favicon_base::IconType::WEB_MANIFEST_ICON},
-      {favicon_base::IconType::FAVICON},
-      {favicon_base::IconType::TOUCH_ICON},
-      {favicon_base::IconType::TOUCH_PRECOMPOSED_ICON}};
+      {favicon_base::IconType::kWebManifestIcon},
+      {favicon_base::IconType::kFavicon},
+      {favicon_base::IconType::kTouchIcon},
+      {favicon_base::IconType::kTouchPrecomposedIcon}};
 
   if (favicon_service_) {
     // NOTE: Favicons with size < kMinimumDesiredSizePixels are still returned.

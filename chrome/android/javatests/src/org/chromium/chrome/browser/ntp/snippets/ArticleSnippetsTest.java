@@ -560,8 +560,8 @@ public class ArticleSnippetsTest {
             // Run the callback asynchronously in case the caller made that assumption.
             ThreadUtils.postOnUiThread(() -> {
                 // Return an arbitrary drawable.
-                callback.onLargeIconAvailable(getBitmap(R.drawable.star_green), largeIconSizePx,
-                        true, IconType.INVALID_ICON);
+                callback.onLargeIconAvailable(
+                        getBitmap(R.drawable.star_green), largeIconSizePx, true, IconType.INVALID);
             });
         }
     }

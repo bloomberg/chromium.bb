@@ -2433,11 +2433,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
       return NO;
     }
     BOOL isAppleTouch = YES;
-    web::FaviconURL::IconType icon_type = web::FaviconURL::FAVICON;
+    web::FaviconURL::IconType icon_type = web::FaviconURL::IconType::kFavicon;
     if (rel == "apple-touch-icon")
-      icon_type = web::FaviconURL::TOUCH_ICON;
+      icon_type = web::FaviconURL::IconType::kTouchIcon;
     else if (rel == "apple-touch-icon-precomposed")
-      icon_type = web::FaviconURL::TOUCH_PRECOMPOSED_ICON;
+      icon_type = web::FaviconURL::IconType::kTouchPrecomposedIcon;
     else
       isAppleTouch = NO;
     GURL url = GURL(href);
@@ -2460,7 +2460,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
         replacements.SetPathStr("/favicon.ico");
         urls.push_back(web::FaviconURL(
             originGURL.ReplaceComponents(replacements),
-            web::FaviconURL::FAVICON, std::vector<gfx::Size>()));
+            web::FaviconURL::IconType::kFavicon, std::vector<gfx::Size>()));
       }
     }
   }

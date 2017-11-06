@@ -28,9 +28,7 @@ constexpr int kTitleTagTitleSource =
 constexpr int kInferredTitleSource =
     static_cast<int>(TileTitleSource::INFERRED);
 
-using favicon_base::INVALID_ICON;
-using favicon_base::TOUCH_ICON;
-using favicon_base::WEB_MANIFEST_ICON;
+using favicon_base::IconType;
 using testing::ElementsAre;
 using testing::IsEmpty;
 
@@ -329,12 +327,14 @@ TEST(RecordTileImpressionTest, ShouldRecordAge) {
 TEST(RecordTileImpressionTest, ShouldRecordUmaForIconType) {
   base::HistogramTester histogram_tester;
 
-  RecordTileImpression(
-      Builder().WithVisualType(ICON_COLOR).WithIconType(TOUCH_ICON).Build(),
-      /*rappor_service=*/nullptr);
+  RecordTileImpression(Builder()
+                           .WithVisualType(ICON_COLOR)
+                           .WithIconType(IconType::kTouchIcon)
+                           .Build(),
+                       /*rappor_service=*/nullptr);
   RecordTileImpression(Builder()
                            .WithVisualType(ICON_REAL)
-                           .WithIconType(WEB_MANIFEST_ICON)
+                           .WithIconType(IconType::kWebManifestIcon)
                            .Build(),
                        /*rappor_service=*/nullptr);
 
@@ -589,11 +589,13 @@ TEST(RecordTileClickTest, ShouldRecordClickAge) {
 TEST(RecordTileClickTest, ShouldRecordClicksForIconType) {
   base::HistogramTester histogram_tester;
 
-  RecordTileClick(
-      Builder().WithVisualType(ICON_COLOR).WithIconType(TOUCH_ICON).Build());
+  RecordTileClick(Builder()
+                      .WithVisualType(ICON_COLOR)
+                      .WithIconType(IconType::kTouchIcon)
+                      .Build());
   RecordTileClick(Builder()
                       .WithVisualType(ICON_REAL)
-                      .WithIconType(WEB_MANIFEST_ICON)
+                      .WithIconType(IconType::kWebManifestIcon)
                       .Build());
 
   EXPECT_THAT(histogram_tester.GetAllSamples(

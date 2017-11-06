@@ -142,19 +142,19 @@ void RecordTileImpression(const NTPTileImpression& impression,
                            tile_type_suffix),
         impression.index, kMaxNumTiles);
 
-    if (impression.icon_type != favicon_base::INVALID_ICON) {
+    if (impression.icon_type != favicon_base::IconType::kInvalid) {
       base::UmaHistogramExactLinear(
           base::StringPrintf("NewTabPage.TileFaviconType.%s", tile_type_suffix),
           favicon_base::GetUmaFaviconType(impression.icon_type),
-          favicon_base::GetUmaFaviconType(favicon_base::ICON_TYPE_MAX) + 1);
+          favicon_base::GetUmaFaviconType(favicon_base::IconType::kMax) + 1);
     }
   }
 
-  if (impression.icon_type != favicon_base::INVALID_ICON) {
+  if (impression.icon_type != favicon_base::IconType::kInvalid) {
     base::UmaHistogramExactLinear(
         "NewTabPage.TileFaviconType",
         favicon_base::GetUmaFaviconType(impression.icon_type),
-        favicon_base::GetUmaFaviconType(favicon_base::ICON_TYPE_MAX) + 1);
+        favicon_base::GetUmaFaviconType(favicon_base::IconType::kMax) + 1);
   }
 }
 
@@ -182,20 +182,20 @@ void RecordTileClick(const NTPTileImpression& impression) {
         base::StringPrintf("NewTabPage.MostVisited.%s", tile_type_suffix),
         impression.index, kMaxNumTiles);
 
-    if (impression.icon_type != favicon_base::INVALID_ICON) {
+    if (impression.icon_type != favicon_base::IconType::kInvalid) {
       base::UmaHistogramExactLinear(
           base::StringPrintf("NewTabPage.TileFaviconTypeClicked.%s",
                              tile_type_suffix),
           favicon_base::GetUmaFaviconType(impression.icon_type),
-          favicon_base::GetUmaFaviconType(favicon_base::ICON_TYPE_MAX) + 1);
+          favicon_base::GetUmaFaviconType(favicon_base::IconType::kMax) + 1);
     }
   }
 
-  if (impression.icon_type != favicon_base::INVALID_ICON) {
+  if (impression.icon_type != favicon_base::IconType::kInvalid) {
     base::UmaHistogramExactLinear(
         "NewTabPage.TileFaviconTypeClicked",
         favicon_base::GetUmaFaviconType(impression.icon_type),
-        favicon_base::GetUmaFaviconType(favicon_base::ICON_TYPE_MAX) + 1);
+        favicon_base::GetUmaFaviconType(favicon_base::IconType::kMax) + 1);
   }
 
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileTitleClicked",

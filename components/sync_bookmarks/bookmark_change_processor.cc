@@ -104,7 +104,8 @@ void BookmarkChangeProcessor::EncodeFavicon(
 
   // Check for empty images.  This can happen if the favicon is
   // still being loaded.  Also avoid syncing touch icons.
-  if (favicon.IsEmpty() || model->GetFaviconType(src) != favicon_base::FAVICON)
+  if (favicon.IsEmpty() ||
+      model->GetFaviconType(src) != favicon_base::IconType::kFavicon)
     return;
 
   // Re-encode the BookmarkNode's favicon as a PNG, and pass the data to the
@@ -949,10 +950,8 @@ void BookmarkChangeProcessor::ApplyBookmarkFavicon(
   // gfx::kFaviconSize in width and height. Store the favicon into history
   // as such.
   gfx::Size pixel_size(gfx::kFaviconSize, gfx::kFaviconSize);
-  favicon_service->MergeFavicon(bookmark_node->url(),
-                                icon_url,
-                                favicon_base::FAVICON,
-                                bitmap_data,
+  favicon_service->MergeFavicon(bookmark_node->url(), icon_url,
+                                favicon_base::IconType::kFavicon, bitmap_data,
                                 pixel_size);
 }
 

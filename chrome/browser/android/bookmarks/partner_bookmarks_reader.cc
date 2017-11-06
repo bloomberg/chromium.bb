@@ -165,7 +165,8 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
     if (profile_ != nullptr && (favicon != nullptr || touchicon != nullptr)) {
       jbyteArray icon = (touchicon != nullptr) ? touchicon : favicon;
       const favicon_base::IconType icon_type =
-          touchicon ? favicon_base::TOUCH_ICON : favicon_base::FAVICON;
+          touchicon ? favicon_base::IconType::kTouchIcon
+                    : favicon_base::IconType::kFavicon;
       const int icon_len = env->GetArrayLength(icon);
       jbyte* icon_bytes = env->GetByteArrayElements(icon, nullptr);
       if (icon_bytes)

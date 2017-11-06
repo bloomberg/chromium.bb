@@ -56,7 +56,7 @@ favicon_base::FaviconRawBitmapResult CreateTestBitmap(int w, int h) {
   result.bitmap_data = data;
   result.pixel_size = gfx::Size(w, h);
   result.icon_url = GURL(kDummyIconUrl);
-  result.icon_type = favicon_base::TOUCH_ICON;
+  result.icon_type = favicon_base::IconType::kTouchIcon;
   CHECK(result.is_valid());
   return result;
 }

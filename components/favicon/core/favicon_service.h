@@ -35,8 +35,8 @@ class FaviconService : public KeyedService {
   // |icon_url| is the URL of the icon itself.
   // (e.g. <http://www.google.com/favicon.ico>)
 
-  // Requests the favicon at |icon_url| of type favicon_base::FAVICON and of
-  // size gfx::kFaviconSize. The returned gfx::Image is populated with
+  // Requests the favicon at |icon_url| of type favicon_base::IconType::kFavicon
+  // and of size gfx::kFaviconSize. The returned gfx::Image is populated with
   // representations for all of the scale factors supported by the platform
   // (e.g. MacOS). If data is unavailable for some or all of the scale factors,
   // the bitmaps with the best matching sizes are resized.
@@ -77,11 +77,11 @@ class FaviconService : public KeyedService {
   // (e.g. <http://www.google.com>)
 
   // Requests the favicon for the page at |page_url| of type
-  // favicon_base::FAVICON and of size gfx::kFaviconSize. The returned
-  // gfx::Image is populated with representations for all of the scale factors
-  // supported by the platform (e.g. MacOS). If data is unavailable for some or
-  // all of the scale factors, the bitmaps with the best matching sizes are
-  // resized.
+  // favicon_base::IconType::kFavicon and of size gfx::kFaviconSize. The
+  // returned gfx::Image is populated with representations for all of the scale
+  // factors supported by the platform (e.g. MacOS). If data is unavailable for
+  // some or all of the scale factors, the bitmaps with the best matching sizes
+  // are resized.
   virtual base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
       const favicon_base::FaviconImageCallback& callback,

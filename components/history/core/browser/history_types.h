@@ -497,7 +497,7 @@ struct IconMapping {
   GURL icon_url;
 
   // The type of icon.
-  favicon_base::IconType icon_type = favicon_base::INVALID_ICON;
+  favicon_base::IconType icon_type = favicon_base::IconType::kInvalid;
 };
 
 // Defines a favicon bitmap and its associated pixel size.

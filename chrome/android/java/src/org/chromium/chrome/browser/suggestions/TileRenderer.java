@@ -167,8 +167,7 @@ public class TileRenderer {
                 if (icon == null) {
                     mImageFetcher.makeLargeIconRequest(siteData.url, mMinIconSize, iconCallback);
                 } else {
-                    iconCallback.onLargeIconAvailable(
-                            icon, Color.BLACK, false, IconType.INVALID_ICON);
+                    iconCallback.onLargeIconAvailable(icon, Color.BLACK, false, IconType.INVALID);
                 }
             }
         };

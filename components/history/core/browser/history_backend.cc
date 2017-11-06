@@ -1875,13 +1875,13 @@ void HistoryBackend::SetImportedFavicons(
 
   for (size_t i = 0; i < favicon_usage.size(); i++) {
     favicon_base::FaviconID favicon_id =
-        thumbnail_db_->GetFaviconIDForFaviconURL(favicon_usage[i].favicon_url,
-                                                 favicon_base::FAVICON);
+        thumbnail_db_->GetFaviconIDForFaviconURL(
+            favicon_usage[i].favicon_url, favicon_base::IconType::kFavicon);
     if (!favicon_id) {
       // This favicon doesn't exist yet, so we create it using the given data.
       // TODO(pkotwicz): Pass in real pixel size.
       favicon_id = thumbnail_db_->AddFavicon(
-          favicon_usage[i].favicon_url, favicon_base::FAVICON,
+          favicon_usage[i].favicon_url, favicon_base::IconType::kFavicon,
           new base::RefCountedBytes(favicon_usage[i].png_data),
           FaviconBitmapType::ON_VISIT, now, gfx::Size());
     }
@@ -1908,7 +1908,7 @@ void HistoryBackend::SetImportedFavicons(
         }
       } else {
         if (!thumbnail_db_->GetIconMappingsForPageURL(
-                *url, {favicon_base::FAVICON}, nullptr)) {
+                *url, {favicon_base::IconType::kFavicon}, nullptr)) {
           // URL is present in history, update the favicon *only* if it is not
           // set already.
           thumbnail_db_->AddIconMapping(*url, favicon_id);
@@ -2226,10 +2226,11 @@ bool HistoryBackend::SetFaviconMappingsForPage(
   bool mappings_changed = false;
 
   // Two icon types are considered 'equivalent' if both types are one of
-  // TOUCH_ICON, TOUCH_PRECOMPOSED_ICON or WEB_MANIFEST_ICON.
+  // kTouchIcon, kTouchPrecomposedIcon or kWebManifestIcon.
   const favicon_base::IconTypeSet equivalent_types = {
-      favicon_base::TOUCH_ICON, favicon_base::TOUCH_PRECOMPOSED_ICON,
-      favicon_base::WEB_MANIFEST_ICON};
+      favicon_base::IconType::kTouchIcon,
+      favicon_base::IconType::kTouchPrecomposedIcon,
+      favicon_base::IconType::kWebManifestIcon};
 
   // Sets the icon mappings from |page_url| for |icon_type| to the favicon
   // with |icon_id|. Mappings for |page_url| to favicons of type |icon_type|

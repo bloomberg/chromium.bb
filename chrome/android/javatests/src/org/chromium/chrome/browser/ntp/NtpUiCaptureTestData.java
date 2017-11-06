@@ -197,7 +197,7 @@ public class NtpUiCaptureTestData {
                     int fallbackColor =
                             colorMap.containsKey(url) ? colorMap.get(url) : DEFAULT_ICON_COLOR;
                     callback.onLargeIconAvailable(
-                            iconMap.get(url), fallbackColor, true, IconType.INVALID_ICON);
+                            iconMap.get(url), fallbackColor, true, IconType.INVALID);
                 });
                 return true;
             }

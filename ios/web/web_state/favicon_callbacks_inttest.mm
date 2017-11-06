@@ -62,7 +62,7 @@ TEST_F(FaviconCallbackTest, ShortcutIconFavicon) {
   const std::vector<FaviconURL>& favicons = observer_->favicon_url_candidates();
   ASSERT_EQ(1U, favicons.size());
   EXPECT_EQ(GURL("http://fav.ico"), favicons[0].icon_url);
-  EXPECT_EQ(FaviconURL::FAVICON, favicons[0].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
 };
 
@@ -78,7 +78,7 @@ TEST_F(FaviconCallbackTest, IconFavicon) {
   const std::vector<FaviconURL>& favicons = observer_->favicon_url_candidates();
   ASSERT_EQ(1U, favicons.size());
   EXPECT_EQ(GURL("http://fav.ico"), favicons[0].icon_url);
-  EXPECT_EQ(FaviconURL::FAVICON, favicons[0].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
 };
 
@@ -95,10 +95,10 @@ TEST_F(FaviconCallbackTest, AppleTouchIconFavicon) {
   const std::vector<FaviconURL>& favicons = observer_->favicon_url_candidates();
   ASSERT_EQ(2U, favicons.size());
   EXPECT_EQ(GURL("http://fav.ico"), favicons[0].icon_url);
-  EXPECT_EQ(FaviconURL::TOUCH_ICON, favicons[0].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kTouchIcon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
   EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[1].icon_url);
-  EXPECT_EQ(FaviconURL::FAVICON, favicons[1].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[1].icon_type);
   ASSERT_TRUE(favicons[1].icon_sizes.empty());
 };
 
@@ -115,10 +115,10 @@ TEST_F(FaviconCallbackTest, AppleTouchIconPrecomposedFavicon) {
   const std::vector<FaviconURL>& favicons = observer_->favicon_url_candidates();
   ASSERT_EQ(2U, favicons.size());
   EXPECT_EQ(GURL("http://fav.ico"), favicons[0].icon_url);
-  EXPECT_EQ(FaviconURL::TOUCH_PRECOMPOSED_ICON, favicons[0].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kTouchPrecomposedIcon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
   EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[1].icon_url);
-  EXPECT_EQ(FaviconURL::FAVICON, favicons[1].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[1].icon_type);
   ASSERT_TRUE(favicons[1].icon_sizes.empty());
 };
 
@@ -134,7 +134,7 @@ TEST_F(FaviconCallbackTest, NoFavicon) {
   const std::vector<FaviconURL>& favicons = observer_->favicon_url_candidates();
   ASSERT_EQ(1U, favicons.size());
   EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[0].icon_url);
-  EXPECT_EQ(FaviconURL::FAVICON, favicons[0].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
 };
 
@@ -153,16 +153,16 @@ TEST_F(FaviconCallbackTest, MultipleFavicons) {
   const std::vector<FaviconURL>& favicons = observer_->favicon_url_candidates();
   ASSERT_EQ(4U, favicons.size());
   EXPECT_EQ(GURL("http://fav.ico"), favicons[0].icon_url);
-  EXPECT_EQ(FaviconURL::FAVICON, favicons[0].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
   EXPECT_EQ(GURL("http://fav1.ico"), favicons[1].icon_url);
-  EXPECT_EQ(FaviconURL::FAVICON, favicons[1].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[1].icon_type);
   ASSERT_TRUE(favicons[1].icon_sizes.empty());
   EXPECT_EQ(GURL("http://fav2.ico"), favicons[2].icon_url);
-  EXPECT_EQ(FaviconURL::TOUCH_ICON, favicons[2].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kTouchIcon, favicons[2].icon_type);
   ASSERT_TRUE(favicons[2].icon_sizes.empty());
   EXPECT_EQ(GURL("http://fav3.ico"), favicons[3].icon_url);
-  EXPECT_EQ(FaviconURL::TOUCH_PRECOMPOSED_ICON, favicons[3].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kTouchPrecomposedIcon, favicons[3].icon_type);
   ASSERT_TRUE(favicons[3].icon_sizes.empty());
 };
 
@@ -179,7 +179,7 @@ TEST_F(FaviconCallbackTest, InvalidFaviconUrl) {
   const std::vector<FaviconURL>& favicons = observer_->favicon_url_candidates();
   ASSERT_EQ(1U, favicons.size());
   EXPECT_EQ(GURL("https://chromium.test/favicon.ico"), favicons[0].icon_url);
-  EXPECT_EQ(FaviconURL::FAVICON, favicons[0].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
 };
 
@@ -196,7 +196,7 @@ TEST_F(FaviconCallbackTest, EmptyFaviconUrl) {
   ASSERT_EQ(1U, favicons.size());
   // TODO(crbug.com/721852): This result is not correct.
   EXPECT_EQ(GURL("https://chromium.test/"), favicons[0].icon_url);
-  EXPECT_EQ(FaviconURL::FAVICON, favicons[0].icon_type);
+  EXPECT_EQ(FaviconURL::IconType::kFavicon, favicons[0].icon_type);
   ASSERT_TRUE(favicons[0].icon_sizes.empty());
 };
 
