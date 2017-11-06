@@ -137,6 +137,19 @@ static_library("libaddressinput") {
   ]
 }
 
+if (is_ios) {
+  bundle_data("countryinfo_test_bundle_data") {
+    testonly = true
+    sources = [
+      "//third_party/libaddressinput/src/testdata/countryinfo.txt",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/" +
+          "{{source_root_relative_dir}}/{{source_file_part}}",
+    ]
+  }
+}
+
 # This target provides utilities for tests of libaddressinput.
 source_set("test_support") {
   testonly = true
@@ -154,11 +167,18 @@ source_set("test_support") {
 
   defines = [ "TEST_DATA_DIR=\"src/third_party/libaddressinput/src/testdata\"" ]
 
+  data = [
+    "//third_party/libaddressinput/src/testdata/",
+  ]
+
   include_dirs = [ "src/cpp/src" ]
 
   deps = [
     ":libaddressinput",
   ]
+  if (is_ios) {
+    deps += [ ":countryinfo_test_bundle_data" ]
+  }
 }
 
 test("libaddressinput_unittests") {

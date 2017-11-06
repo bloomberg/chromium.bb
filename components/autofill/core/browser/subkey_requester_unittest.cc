@@ -6,7 +6,10 @@
 
 #include <utility>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,10 +27,11 @@ using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
 using ::i18n::addressinput::TestdataSource;
 
-const char kLocale[] = "OZ";
+const char kLocale[] = "CA";
 const char kLanguage[] = "en";
 const int kInvalidSize = -1;
-const int kCorrectSize = 2;  // for subkeys = Do, Re
+// For subkeys = "AB~BC~MB~NB~NL~NT~NS~NU~ON~PE~QC~SK~YT"
+const int kExpectedSubkeySize = 13;
 const int kEmptySize = 0;
 
 class SubKeyReceiver : public base::RefCountedThreadSafe<SubKeyReceiver> {
@@ -48,33 +52,6 @@ class SubKeyReceiver : public base::RefCountedThreadSafe<SubKeyReceiver> {
   int subkeys_size_;
 
   DISALLOW_COPY_AND_ASSIGN(SubKeyReceiver);
-};
-
-// Used to load region rules for this test.
-class ChromiumTestdataSource : public TestdataSource {
- public:
-  ChromiumTestdataSource() : TestdataSource(true) {}
-
-  ~ChromiumTestdataSource() override {}
-
-  // For this test, only load the rules for the kLocale.
-  void Get(const std::string& key, const Callback& data_ready) const override {
-    data_ready(
-        true, key,
-        new std::string(
-            "{\"data/OZ\": "
-            "{\"id\":\"data/OZ\",\"key\":\"OZ\",\"name\":\"Oz \", "
-            "\"lang\":\"en\",\"sub_keys\":\"DO~RE\", \"sub_names\":\"Do~Re\"},"
-            "\"data/OZ/DO\": "
-            "{\"id\":\"data/OZ/DO\",\"key\":\"DO\",\"name\":\"Do \", "
-            "\"lang\":\"en\"},"
-            "\"data/OZ/RE\": "
-            "{\"id\":\"data/OZ/RE\",\"key\":\"RE\",\"name\":\"Re \", "
-            "\"lang\":\"en\"}}"));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromiumTestdataSource);
 };
 
 // A test subclass of the SubKeyRequesterImpl. Used to simulate rules not
@@ -108,15 +85,25 @@ class TestSubKeyRequester : public SubKeyRequester {
 
 class SubKeyRequesterTest : public testing::Test {
  protected:
-  SubKeyRequesterTest()
-      : requester_(new TestSubKeyRequester(
-            std::unique_ptr<Source>(new ChromiumTestdataSource),
-            std::unique_ptr<Storage>(new NullStorage))) {}
+  SubKeyRequesterTest() {
+    base::FilePath file_path;
+    CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &file_path));
+    file_path = file_path.Append(FILE_PATH_LITERAL("third_party"))
+                    .Append(FILE_PATH_LITERAL("libaddressinput"))
+                    .Append(FILE_PATH_LITERAL("src"))
+                    .Append(FILE_PATH_LITERAL("testdata"))
+                    .Append(FILE_PATH_LITERAL("countryinfo.txt"));
+
+    requester_ = std::make_unique<TestSubKeyRequester>(
+        std::unique_ptr<Source>(
+            new TestdataSource(true, file_path.AsUTF8Unsafe())),
+        std::unique_ptr<Storage>(new NullStorage));
+  }
 
   ~SubKeyRequesterTest() override {}
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const std::unique_ptr<TestSubKeyRequester> requester_;
+  std::unique_ptr<TestSubKeyRequester> requester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SubKeyRequesterTest);
@@ -150,7 +137,7 @@ TEST_F(SubKeyRequesterTest, StartRequest_RulesLoaded) {
 
   // Since the rules are already loaded, the subkeys should be received
   // synchronously.
-  EXPECT_EQ(subkey_receiver_->subkeys_size(), kCorrectSize);
+  EXPECT_EQ(subkey_receiver_->subkeys_size(), kExpectedSubkeySize);
 }
 
 // Tests that if the rules are not loaded before the request and cannot be
@@ -196,7 +183,7 @@ TEST_F(SubKeyRequesterTest, StartRequest_RulesNotLoaded_WillLoad) {
   // test source is synchronous, the request will happen synchronously
   // too.
   EXPECT_TRUE(requester_->AreRulesLoadedForRegion(kLocale));
-  EXPECT_EQ(subkey_receiver_->subkeys_size(), kCorrectSize);
+  EXPECT_EQ(subkey_receiver_->subkeys_size(), kExpectedSubkeySize);
 }
 
 }  // namespace autofill

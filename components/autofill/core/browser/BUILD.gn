@@ -430,6 +430,7 @@ source_set("unit_tests") {
     "//sql",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libaddressinput:test_support",
     "//third_party/libaddressinput:util",
     "//third_party/libphonenumber",
     "//ui/base",
