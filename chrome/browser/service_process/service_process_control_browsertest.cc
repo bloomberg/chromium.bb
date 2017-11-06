@@ -220,8 +220,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndReconnect) {
 
 // This tests the case when a service process is launched when the browser
 // starts but we try to launch it again while setting up Cloud Print.
-// Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+// Flaky on Mac. Flaky on Windows ASan. http://crbug.com/517420
+#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
 #define MAYBE_LaunchTwice DISABLED_LaunchTwice
 #else
 #define MAYBE_LaunchTwice LaunchTwice
@@ -256,8 +256,8 @@ static void DecrementUntilZero(int* count) {
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
-// Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+// Flaky on Mac and Windows ASan. http://crbug.com/517420
+#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
 #define MAYBE_MultipleLaunchTasks DISABLED_MultipleLaunchTasks
 #else
 #define MAYBE_MultipleLaunchTasks MultipleLaunchTasks
@@ -278,8 +278,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   EXPECT_EQ(0, launch_count);
 }
 
-// Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+// Flaky on Mac and Windows ASan. http://crbug.com/517420
+#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
 #define MAYBE_SameLaunchTask DISABLED_SameLaunchTask
 #else
 #define MAYBE_SameLaunchTask SameLaunchTask
@@ -300,8 +300,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_SameLaunchTask) {
 
 // Tests whether disconnecting from the service IPC causes the service process
 // to die.
-// Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+// Flaky on Mac and Windows ASan. http://crbug.com/517420
+#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
 #define MAYBE_DieOnDisconnect DISABLED_DieOnDisconnect
 #else
 #define MAYBE_DieOnDisconnect DieOnDisconnect
@@ -315,8 +315,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   Disconnect();
 }
 
-// Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+// Flaky on Mac and Windows ASan. http://crbug.com/517420
+#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
 #define MAYBE_ForceShutdown DISABLED_ForceShutdown
 #else
 #define MAYBE_ForceShutdown ForceShutdown
@@ -333,8 +333,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_ForceShutdown) {
   ForceServiceProcessShutdown(version_info::GetVersionNumber(), service_pid);
 }
 
-// Flaky on Mac. http://crbug.com/517420
-#if defined(OS_MACOSX)
+// Flaky on Mac and Windows ASan. http://crbug.com/517420
+#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
 #define MAYBE_CheckPid DISABLED_CheckPid
 #else
 #define MAYBE_CheckPid CheckPid
