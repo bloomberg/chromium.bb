@@ -248,6 +248,7 @@
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'Site Isolation Linux': 'release_trybot',
       'Site Isolation Win': 'release_trybot_x86',
+      'VR Linux': 'vr_release_bot',
       'Win 10 Fast Ring': 'release_trybot',
       'Windows deterministic': 'release_bot_x86_minimal_symbols',
       'Windows Clang deterministic': 'clang_release_bot_minimal_symbols_x86',
@@ -635,6 +636,7 @@
       'linux_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
       'linux_site_isolation': 'release_trybot',
       'linux_upload_clang': 'release_bot',
+      'vr_linux': 'vr_release_trybot',
     },
 
     'tryserver.chromium.mac': {
@@ -1665,6 +1667,14 @@
       'v8_future', 'release_bot',
     ],
 
+    'vr_release_bot': [
+      'vr', 'release_bot', 'ozone',
+    ],
+
+    'vr_release_trybot': [
+      'vr', 'release_trybot', 'ozone',
+    ],
+
     'win_clang_debug_bot': [
       # Now that the default win bots use clang, use a "clang" bot to make sure
       # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
@@ -2011,6 +2021,10 @@
       'gn_args': 'optimize_for_fuzzing=true',
     },
 
+    'ozone': {
+      'gn_args': 'use_ozone=true',
+    },
+
     'ozone_linux': {
       'gn_args': ('ozone_auto_platforms=false ozone_platform_wayland=true '
                   'ozone_platform="x11" '
@@ -2109,6 +2123,10 @@
 
     'v8_heap': {
       'gn_args': 'v8_enable_verify_heap=true',
+    },
+
+    'vr': {
+      'gn_args': 'enable_vr=true',
     },
 
     'win_analyze': {

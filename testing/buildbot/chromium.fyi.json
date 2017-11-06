@@ -7108,6 +7108,20 @@
       }
     ]
   },
+  "VR Linux": {
+    "additional_compile_targets": [
+      "vr_common_perftests",
+      "vr_testapp"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "vr_common_unittests"
+      }
+    ]
+  },
   "WebKit Linux layout_ng Dummy Builder": {
     "isolated_scripts": [
       {
