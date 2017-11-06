@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_infobar_delegate.h"
+#include "chrome/browser/android/search_permissions/search_geolocation_disclosure_infobar_delegate.h"
 
 #include <vector>
 

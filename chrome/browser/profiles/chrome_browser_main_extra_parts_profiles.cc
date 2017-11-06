@@ -132,7 +132,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/data_usage/data_use_ui_tab_model_factory.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #else
 #include "chrome/browser/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/media/router/media_router_ui_service_factory.h"
@@ -332,7 +332,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   ProfileSyncServiceFactory::GetInstance();
   ProtocolHandlerRegistryFactory::GetInstance();
 #if defined(OS_ANDROID)
-  SearchGeolocationService::Factory::GetInstance();
+  SearchPermissionsService::Factory::GetInstance();
 #endif
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   SessionServiceFactory::GetInstance();

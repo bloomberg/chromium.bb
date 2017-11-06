@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/android/infobars/search_geolocation_disclosure_infobar.h"
 
 #include "base/android/jni_string.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_infobar_delegate.h"
+#include "chrome/browser/android/search_permissions/search_geolocation_disclosure_infobar_delegate.h"
 #include "jni/SearchGeolocationDisclosureInfoBar_jni.h"
 
 using base::android::JavaParamRef;

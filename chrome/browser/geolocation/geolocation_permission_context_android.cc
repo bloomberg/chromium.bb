@@ -12,8 +12,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/android/location_settings.h"
 #include "chrome/browser/android/location_settings_impl.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
-#include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
+#include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
+#include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
@@ -109,14 +109,14 @@ ContentSetting GeolocationPermissionContextAndroid::GetPermissionStatusInternal(
     // consulted when the content setting is ASK. In the other cases (ALLOW or
     // BLOCK) checking the setting is redundant, as the setting is kept
     // consistent with the content setting.
-    SearchGeolocationService* search_helper =
-        SearchGeolocationService::Factory::GetForBrowserContext(profile());
+    SearchPermissionsService* search_helper =
+        SearchPermissionsService::Factory::GetForBrowserContext(profile());
 
     // If the user is incognito, use the DSE Geolocation setting from the
     // original profile - but only if it is BLOCK.
     if (!search_helper) {
       DCHECK(profile()->IsOffTheRecord());
-      search_helper = SearchGeolocationService::Factory::GetForBrowserContext(
+      search_helper = SearchPermissionsService::Factory::GetForBrowserContext(
           profile()->GetOriginalProfile());
     }
 
