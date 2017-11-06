@@ -35,14 +35,12 @@ ExtensionThrottleManager::ExtensionThrottleManager()
   url_id_replacements_.ClearQuery();
   url_id_replacements_.ClearRef();
 
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 ExtensionThrottleManager::~ExtensionThrottleManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 
   // Since the manager object might conceivably go away before the
   // entries, detach the entries' back-pointer to the manager.
@@ -168,11 +166,7 @@ net::NetLog* ExtensionThrottleManager::net_log() const {
   return net_log_.net_log();
 }
 
-void ExtensionThrottleManager::OnIPAddressChanged() {
-  OnNetworkChange();
-}
-
-void ExtensionThrottleManager::OnConnectionTypeChanged(
+void ExtensionThrottleManager::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   OnNetworkChange();
 }
