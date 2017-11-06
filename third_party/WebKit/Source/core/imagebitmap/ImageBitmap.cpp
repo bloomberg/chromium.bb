@@ -741,6 +741,12 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
     sk_sp<SkImage> skia_image,
     bool origin_clean,
     std::unique_ptr<ParsedOptions> parsed_options) {
+  if (!skia_image) {
+    resolver->Reject(
+        ScriptValue(resolver->GetScriptState(),
+                    v8::Null(resolver->GetScriptState()->GetIsolate())));
+    return;
+  }
   scoped_refptr<StaticBitmapImage> image =
       StaticBitmapImage::Create(std::move(skia_image));
   DCHECK(IsMainThread());
@@ -788,8 +794,11 @@ void ImageBitmap::RasterizeImageOnBackgroundThread(
   SkImageInfo info = SkImageInfo::MakeS32(dst_rect.Width(), dst_rect.Height(),
                                           kPremul_SkAlphaType);
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
-  paint_record->Playback(surface->getCanvas());
-  sk_sp<SkImage> skia_image = surface->makeImageSnapshot();
+  sk_sp<SkImage> skia_image;
+  if (surface) {
+    paint_record->Playback(surface->getCanvas());
+    skia_image = surface->makeImageSnapshot();
+  }
   scoped_refptr<WebTaskRunner> task_runner =
       Platform::Current()->MainThread()->GetWebTaskRunner();
   task_runner->PostTask(
