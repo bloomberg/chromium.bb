@@ -2574,7 +2574,6 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
 }
 
 #if CONFIG_TX64X64
-#if !CONFIG_DAALA_TX64
 static void fidtx64(const tran_low_t *input, tran_low_t *output) {
   int i;
   for (i = 0; i < 64; ++i)
@@ -2596,6 +2595,7 @@ static void fhalfright64(const tran_low_t *input, tran_low_t *output) {
   // Note overall scaling factor is 2 times unitary
 }
 
+#if !CONFIG_DAALA_TX64
 static void fdct64_col(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
   int i;
@@ -2603,6 +2603,7 @@ static void fdct64_col(const tran_low_t *input, tran_low_t *output) {
   av1_fdct64_new(in, out, fwd_cos_bit_col_dct_64, fwd_stage_range_col_dct_64);
   for (i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
 }
+#endif
 
 static void fdct64_row(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
@@ -2611,7 +2612,6 @@ static void fdct64_row(const tran_low_t *input, tran_low_t *output) {
   av1_fdct64_new(in, out, fwd_cos_bit_row_dct_64, fwd_stage_range_row_dct_64);
   for (i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
 }
-#endif
 
 void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
                     TxfmParam *txfm_param) {
