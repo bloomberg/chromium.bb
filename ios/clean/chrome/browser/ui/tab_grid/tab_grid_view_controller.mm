@@ -94,6 +94,7 @@ const CGFloat kTopInset = 20;
   TabSwitcherPanelOverlayView* overlayView =
       [[TabSwitcherPanelOverlayView alloc] initWithFrame:self.tabs.bounds
                                             browserState:nil
+                                               presenter:nil
                                               dispatcher:nil];
   overlayView.overlayType =
       TabSwitcherPanelOverlayType::OVERLAY_PANEL_USER_NO_OPEN_TABS;

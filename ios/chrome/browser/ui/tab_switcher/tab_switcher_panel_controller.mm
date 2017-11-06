@@ -56,16 +56,19 @@ void FillVectorWithHashesUsingDistantSession(
 
 @synthesize delegate = _delegate;
 @synthesize sessionType = _sessionType;
+@synthesize presenter = _presenter;
 @synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithModel:(TabSwitcherModel*)model
      forDistantSessionWithTag:(std::string const&)sessionTag
                  browserState:(ios::ChromeBrowserState*)browserState
+                    presenter:(id<SyncPresenter>)presenter
                    dispatcher:
                        (id<ApplicationCommands, BrowserCommands>)dispatcher {
   self = [super init];
   if (self) {
     DCHECK(model);
+    _presenter = presenter;
     _dispatcher = dispatcher;
     _sessionType = TabSwitcherSessionType::DISTANT_SESSION;
     _model = model;
@@ -81,11 +84,13 @@ void FillVectorWithHashesUsingDistantSession(
         forLocalSessionOfType:(TabSwitcherSessionType)sessionType
                     withCache:(TabSwitcherCache*)cache
                  browserState:(ios::ChromeBrowserState*)browserState
+                    presenter:(id<SyncPresenter>)presenter
                    dispatcher:
                        (id<ApplicationCommands, BrowserCommands>)dispatcher {
   self = [super init];
   if (self) {
     DCHECK(model);
+    _presenter = presenter;
     _dispatcher = dispatcher;
     _sessionType = sessionType;
     _model = model;
@@ -324,6 +329,7 @@ void FillVectorWithHashesUsingDistantSession(
     _overlayView =
         [[TabSwitcherPanelOverlayView alloc] initWithFrame:[_panelView bounds]
                                               browserState:_browserState
+                                                 presenter:self.presenter
                                                 dispatcher:self.dispatcher];
     [_overlayView
         setOverlayType:
