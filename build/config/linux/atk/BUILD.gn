@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 
@@ -27,6 +28,10 @@ pkg_config("atk_base") {
                                 ],
                             "string")
   defines = [ "ATK_LIB_DIR=\"$atk_lib_dir\"" ]
+  if (use_gtk3) {
+    packages += [ "atk-bridge-2.0" ]
+    defines += [ "USE_ATK_BRIDGE" ]
+  }
 }
 
 # gn orders flags on a target before flags from configs. The default config
