@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"
@@ -141,9 +142,9 @@ void FileStreamForwarder::OnWriteCompleted(bool result) {
 void FileStreamForwarder::NotifyCompleted(bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback_.is_null());
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(std::move(callback_), result));
-  callback_.Reset();  // Not to leave the callback in an undefined state.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(base::ResetAndReturn(&callback_), result));
 }
 
 }  // namespace arc
