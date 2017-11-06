@@ -55,6 +55,7 @@ For Chromium contributors that have different nicks on other domains.
 | jshin             | jshin           | jungshik        |
 | jww               | jww\_\_         | jww             |
 | jyasskin          | jyasskin        | jyasskin        |
+| katie             |                 | katydek         |
 | karen             | kareng          | kareng          |
 | keescook          | kees            | keescook        |
 | koz               |                 | jameskozianski  |
