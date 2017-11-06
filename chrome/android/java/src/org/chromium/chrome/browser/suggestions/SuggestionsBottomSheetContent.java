@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
 import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -206,18 +205,16 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         };
 
         mLocationBar = sheet.findViewById(R.id.location_bar);
-        mView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            @SuppressLint("ClickableViewAccessibility")
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (mLocationBar != null && mLocationBar.isUrlBarFocused()) {
-                    mLocationBar.setUrlBarFocus(false);
-                }
-
-                // Never intercept the touch event.
-                return false;
+        View.OnTouchListener touchListener = (View view, MotionEvent motionEvent) -> {
+            if (mLocationBar != null && mLocationBar.isUrlBarFocused()) {
+                mLocationBar.setUrlBarFocus(false);
             }
-        });
+
+            // Never intercept the touch event.
+            return false;
+        };
+        mView.setOnTouchListener(touchListener);
+        mRecyclerView.setOnTouchListener(touchListener);
 
         mLogoView = mView.findViewById(R.id.search_provider_logo);
         mControlContainerView = (ViewGroup) activity.findViewById(R.id.control_container);
@@ -331,6 +328,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     public void onTemplateURLServiceChanged() {
         updateSearchProviderHasLogo();
         loadSearchProviderLogo();
+        updateSpacing();
         updateLogoTransition();
     }
 
