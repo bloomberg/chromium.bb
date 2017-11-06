@@ -6,7 +6,6 @@
 #include <string>
 
 #include "ash/login_status.h"
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tiles/tiles_default_view.h"
@@ -214,12 +213,6 @@ class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {
  protected:
   ShutdownPolicyLockerTest() : fake_session_manager_client_(nullptr) {}
   ~ShutdownPolicyLockerTest() override {}
-
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kShowWebUiLock);
-    ShutdownPolicyBaseTest::SetUp();
-  }
 
   void SetUpInProcessBrowserTestFixture() override {
     fake_session_manager_client_ = new FakeSessionManagerClient;

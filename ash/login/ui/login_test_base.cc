@@ -6,10 +6,12 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/views/widget/widget.h"
@@ -88,6 +90,12 @@ void LoginTestBase::SetUserCount(size_t count) {
 
   // Notify any listeners that the user count has changed.
   data_dispatcher_.NotifyUsers(users_);
+}
+
+void LoginTestBase::SetUp() {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kShowMdLogin);
+
+  AshTestBase::SetUp();
 }
 
 void LoginTestBase::TearDown() {

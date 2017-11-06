@@ -48,6 +48,7 @@ class LoginTestBase : public AshTestBase {
   LoginDataDispatcher* data_dispatcher() { return &data_dispatcher_; }
 
   // AshTestBase:
+  void SetUp() override;
   void TearDown() override;
 
  private:

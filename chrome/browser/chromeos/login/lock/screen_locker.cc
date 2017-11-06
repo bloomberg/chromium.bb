@@ -201,18 +201,7 @@ void ScreenLocker::Init() {
 
   authenticator_ = UserSessionManager::GetInstance()->CreateAuthenticator(this);
   extended_authenticator_ = ExtendedAuthenticator::Create(this);
-  if (ash::switches::IsUsingWebUiLock()) {
-    web_ui_.reset(new WebUIScreenLocker(this));
-    delegate_ = web_ui_.get();
-    web_ui_->LockScreen();
-
-    // Ownership of |icon_image_source| is passed.
-    screenlock_icon_provider_ = base::MakeUnique<ScreenlockIconProvider>();
-    ScreenlockIconSource* screenlock_icon_source =
-        new ScreenlockIconSource(screenlock_icon_provider_->AsWeakPtr());
-    content::URLDataSource::Add(web_ui_->web_contents()->GetBrowserContext(),
-                                screenlock_icon_source);
-  } else {
+  if (ash::switches::IsUsingMdLogin()) {
     // Create delegate that calls into the views-based lock screen via mojo.
     views_screen_locker_ = base::MakeUnique<ViewsScreenLocker>(this);
     delegate_ = views_screen_locker_.get();
@@ -226,6 +215,17 @@ void ScreenLocker::Init() {
         views_screen_locker_.get()));
 
     views_screen_locker_->Init();
+  } else {
+    web_ui_.reset(new WebUIScreenLocker(this));
+    delegate_ = web_ui_.get();
+    web_ui_->LockScreen();
+
+    // Ownership of |icon_image_source| is passed.
+    screenlock_icon_provider_ = base::MakeUnique<ScreenlockIconProvider>();
+    ScreenlockIconSource* screenlock_icon_source =
+        new ScreenlockIconSource(screenlock_icon_provider_->AsWeakPtr());
+    content::URLDataSource::Add(web_ui_->web_contents()->GetBrowserContext(),
+                                screenlock_icon_source);
   }
 
   // Start locking on ash side.
@@ -479,9 +479,6 @@ void ScreenLocker::ShutDownClass() {
   DCHECK(g_screen_lock_observer);
   delete g_screen_lock_observer;
   g_screen_lock_observer = nullptr;
-
-  // Delete |screen_locker_| if it is being shown.
-  ScheduleDeletion();
 }
 
 // static

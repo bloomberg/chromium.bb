@@ -766,17 +766,17 @@ class LockScreenAppStateNoStylusInputTest : public LockScreenAppStateTest {
 };
 
 // Tests with show-md-login flag set.
-class LockScreenAppStateWebUiLockTest : public LockScreenAppStateTest {
+class LockScreenAppStateMdLoginTest : public LockScreenAppStateTest {
  public:
-  LockScreenAppStateWebUiLockTest() = default;
-  ~LockScreenAppStateWebUiLockTest() override = default;
+  LockScreenAppStateMdLoginTest() = default;
+  ~LockScreenAppStateMdLoginTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(ash::switches::kShowWebUiLock);
+    command_line->AppendSwitch(ash::switches::kShowMdLogin);
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateWebUiLockTest);
+  DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateMdLoginTest);
 };
 
 }  // namespace
@@ -1223,7 +1223,7 @@ TEST_F(LockScreenAppStateTest, HandleActionWithLaunchFailure) {
   EXPECT_EQ(2, app_manager()->launch_count());
 }
 
-TEST_F(LockScreenAppStateWebUiLockTest, LaunchActionWhenStylusGetsRemoved) {
+TEST_F(LockScreenAppStateTest, LaunchActionWhenStylusGetsRemoved) {
   ui::test::DeviceDataManagerTestAPI devices_test_api;
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
                                       true /* enable_app_launch */));
@@ -1248,7 +1248,7 @@ TEST_F(LockScreenAppStateWebUiLockTest, LaunchActionWhenStylusGetsRemoved) {
   EXPECT_EQ(1, app_manager()->launch_count());
 }
 
-TEST_F(LockScreenAppStateTest, LaunchActionWhenStylusGetsRemoved) {
+TEST_F(LockScreenAppStateMdLoginTest, LaunchActionWhenStylusGetsRemoved) {
   ui::test::DeviceDataManagerTestAPI devices_test_api;
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
                                       true /* enable_app_launch */));
@@ -1271,7 +1271,7 @@ TEST_F(LockScreenAppStateTest, LaunchActionWhenStylusGetsRemoved) {
   EXPECT_EQ(1, app_manager()->launch_count());
 }
 
-TEST_F(LockScreenAppStateWebUiLockTest,
+TEST_F(LockScreenAppStateTest,
        LaunchActionWhenStylusRemoved_ActionClosedBeforeAnimationDone) {
   ui::test::DeviceDataManagerTestAPI devices_test_api;
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
