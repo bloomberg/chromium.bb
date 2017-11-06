@@ -2221,7 +2221,11 @@ VisiblePosition AXLayoutObject::VisiblePositionForIndex(int index) const {
 }
 
 void AXLayoutObject::AddInlineTextBoxChildren(bool force) {
-  Settings* settings = GetDocument()->GetSettings();
+  Document* document = GetDocument();
+  if (!document)
+    return;
+
+  Settings* settings = document->GetSettings();
   if (!force &&
       (!settings || !settings->GetInlineTextBoxAccessibilityEnabled()))
     return;
