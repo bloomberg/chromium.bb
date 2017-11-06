@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
@@ -23,6 +24,13 @@ class TestWakeLockProvider : public mojom::WakeLockProvider,
  public:
   TestWakeLockProvider();
   ~TestWakeLockProvider() override;
+
+  void set_wake_lock_requested_callback(const base::RepeatingClosure& cb) {
+    wake_lock_requested_callback_ = cb;
+  }
+  void set_wake_lock_canceled_callback(const base::RepeatingClosure& cb) {
+    wake_lock_canceled_callback_ = cb;
+  }
 
   // Returns the number of active (i.e. currently-requested) wake locks of type
   // |type|.
@@ -54,6 +62,10 @@ class TestWakeLockProvider : public mojom::WakeLockProvider,
   // Locks that have been passed to OnWakeLockRequested and haven't yet been
   // released.
   std::set<const TestWakeLock*> active_wake_locks_;
+
+  // Callbacks to execute when wake locks are requested or canceled.
+  base::RepeatingClosure wake_lock_requested_callback_;
+  base::RepeatingClosure wake_lock_canceled_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWakeLockProvider);
 };
