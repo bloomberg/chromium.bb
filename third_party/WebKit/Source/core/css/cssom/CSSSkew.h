@@ -22,6 +22,7 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
 
  public:
   // Constructor defined in the IDL.
+  static CSSSkew* Create(CSSNumericValue*, CSSNumericValue*, ExceptionState&);
   static CSSSkew* Create(CSSNumericValue* ax, CSSNumericValue* ay) {
     return new CSSSkew(ax, ay);
   }

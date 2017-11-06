@@ -14,6 +14,17 @@
 
 namespace blink {
 
+CSSSkew* CSSSkew::Create(CSSNumericValue* ax,
+                         CSSNumericValue* ay,
+                         ExceptionState& exception_state) {
+  if ((ax->GetType() != CSSStyleValue::StyleValueType::kAngleType) ||
+      (ay->GetType() != CSSStyleValue::StyleValueType::kAngleType)) {
+    exception_state.ThrowTypeError("CSSSkew does not support non-angles");
+    return nullptr;
+  }
+  return new CSSSkew(ax, ay);
+}
+
 void CSSSkew::setAx(CSSNumericValue* value, ExceptionState& exception_state) {
   if (value->GetType() != CSSStyleValue::StyleValueType::kAngleType) {
     exception_state.ThrowTypeError("Must specify an angle unit");
