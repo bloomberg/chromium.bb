@@ -69,6 +69,9 @@ SERVICE_MANAGER_SANDBOX_EXPORT void SetCommandLineFlagsForSandboxType(
 SERVICE_MANAGER_SANDBOX_EXPORT SandboxType
 SandboxTypeFromCommandLine(const base::CommandLine& command_line);
 
+SERVICE_MANAGER_SANDBOX_EXPORT std::string StringFromUtilitySandboxType(
+    SandboxType sandbox_type);
+
 SERVICE_MANAGER_SANDBOX_EXPORT SandboxType
 UtilitySandboxTypeFromString(const std::string& sandbox_string);
 

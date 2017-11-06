@@ -20,13 +20,6 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kRendererProcess);
       break;
-    case SANDBOX_TYPE_UTILITY:
-      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
-             switches::kUtilityProcess);
-      DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
-      command_line->AppendSwitchASCII(switches::kServiceSandboxType,
-                                      switches::kUtilitySandbox);
-      break;
     case SANDBOX_TYPE_GPU:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kGpuProcess);
@@ -41,33 +34,17 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
                switches::kPpapiPluginProcess);
       }
       break;
+    case SANDBOX_TYPE_UTILITY:
     case SANDBOX_TYPE_NETWORK:
-      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
-             switches::kUtilityProcess);
-      DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
-      command_line->AppendSwitchASCII(switches::kServiceSandboxType,
-                                      switches::kNetworkSandbox);
-      break;
     case SANDBOX_TYPE_CDM:
-      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
-             switches::kUtilityProcess);
-      DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
-      command_line->AppendSwitchASCII(switches::kServiceSandboxType,
-                                      switches::kCdmSandbox);
-      break;
     case SANDBOX_TYPE_PDF_COMPOSITOR:
-      DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
-             switches::kUtilityProcess);
-      DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
-      command_line->AppendSwitchASCII(switches::kServiceSandboxType,
-                                      switches::kPdfCompositorSandbox);
-      break;
     case SANDBOX_TYPE_PROFILING:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
       DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
-      command_line->AppendSwitchASCII(switches::kServiceSandboxType,
-                                      switches::kProfilingSandbox);
+      command_line->AppendSwitchASCII(
+          switches::kServiceSandboxType,
+          StringFromUtilitySandboxType(sandbox_type));
       break;
     default:
       break;
@@ -103,6 +80,28 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
 
   // This is a process which we don't know about.
   return SANDBOX_TYPE_INVALID;
+}
+
+std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
+  switch (sandbox_type) {
+    case SANDBOX_TYPE_NO_SANDBOX:
+      return switches::kNoneSandbox;
+    case SANDBOX_TYPE_NETWORK:
+      return switches::kNetworkSandbox;
+    case SANDBOX_TYPE_PPAPI:
+      return switches::kPpapiSandbox;
+    case SANDBOX_TYPE_CDM:
+      return switches::kCdmSandbox;
+    case SANDBOX_TYPE_PDF_COMPOSITOR:
+      return switches::kPdfCompositorSandbox;
+    case SANDBOX_TYPE_PROFILING:
+      return switches::kProfilingSandbox;
+    case SANDBOX_TYPE_UTILITY:
+      return switches::kUtilitySandbox;
+    default:
+      NOTREACHED();
+      return std::string();
+  }
 }
 
 SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
