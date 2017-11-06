@@ -2440,8 +2440,10 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_FILTER_INTRA
   if (!is_inter_block(mbmi) &&
       mbmi->filter_intra_mode_info.use_filter_intra_mode[0] &&
-      !av1_filter_intra_allowed_txsize(tx_size))
+      !av1_filter_intra_allowed_txsize(tx_size)) {
+    rd_stats->rate = INT_MAX;
     return INT64_MAX;
+  }
 #endif
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, tx_size,
                    cpi->sf.use_fast_coef_costing);
@@ -3134,7 +3136,7 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   MB_MODE_INFO *mbmi = &mic->mbmi;
   int filter_intra_selected_flag = 0;
   FILTER_INTRA_MODE mode;
-  TX_SIZE best_tx_size = TX_4X4;
+  TX_SIZE best_tx_size = TX_8X8;
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
   TX_TYPE best_tx_type;
 
@@ -3619,7 +3621,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 
 #if CONFIG_FILTER_INTRA
-  if (beat_best_rd && av1_filter_intra_allowed_bsize(bsize)) {
+  if (beat_best_rd && av1_filter_intra_allowed_bsize(bsize) &&
+      !xd->lossless[mbmi->segment_id]) {
     if (rd_pick_filter_intra_sby(cpi, x, rate, rate_tokenonly, distortion,
                                  skippable, bsize, bmode_costs[DC_PRED],
                                  &best_rd, &best_model_rd,
@@ -9746,7 +9749,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       skippable = rd_stats_y.skip;
 
 #if CONFIG_FILTER_INTRA
-      if (mbmi->mode == DC_PRED) {
+      if (mbmi->mode == DC_PRED && !xd->lossless[mbmi->segment_id] &&
+          av1_filter_intra_allowed_bsize(mbmi->sb_type)) {
         RD_STATS rd_stats_y_fi;
         int filter_intra_selected_flag = 0;
         TX_SIZE best_tx_size = mbmi->tx_size;
