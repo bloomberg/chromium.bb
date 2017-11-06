@@ -91,7 +91,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/android/motion_event_android.h"
-#include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -1864,8 +1863,7 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
       ui::ToWebMouseEventType(motion_event.GetAction());
 
   if (webMouseEventType == blink::WebInputEvent::kMouseDown)
-    UpdateLeftClickCount(action_button, motion_event.GetX(0),
-                         motion_event.GetY(0));
+    UpdateMouseState(action_button, motion_event.GetX(0), motion_event.GetY(0));
 
   int click_count = 0;
 
@@ -1876,12 +1874,7 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
                       : 1;
 
   blink::WebMouseEvent mouse_event = WebMouseEventBuilder::Build(
-      webMouseEventType,
-      ui::EventTimeStampToSeconds(motion_event.GetEventTime()),
-      motion_event.GetX(0), motion_event.GetY(0), motion_event.GetFlags(),
-      click_count, motion_event.GetPointerId(0), motion_event.GetPressure(0),
-      motion_event.GetOrientation(0), motion_event.GetTiltX(0),
-      motion_event.GetTiltY(0), action_button, motion_event.GetToolType(0));
+      motion_event, webMouseEventType, click_count, action_button);
 
   if (!host_ || !host_->delegate())
     return;
@@ -1894,9 +1887,9 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
   }
 }
 
-void RenderWidgetHostViewAndroid::UpdateLeftClickCount(int action_button,
-                                                       float mousedown_x,
-                                                       float mousedown_y) {
+void RenderWidgetHostViewAndroid::UpdateMouseState(int action_button,
+                                                   float mousedown_x,
+                                                   float mousedown_y) {
   if (action_button != ui::MotionEventAndroid::BUTTON_PRIMARY) {
     // Reset state if middle or right button was pressed.
     left_click_count_ = 0;
@@ -2165,9 +2158,7 @@ bool RenderWidgetHostViewAndroid::OnMouseEvent(
 
 bool RenderWidgetHostViewAndroid::OnMouseWheelEvent(
     const ui::MotionEventAndroid& event) {
-  SendMouseWheelEvent(WebMouseWheelEventBuilder::Build(
-      event.ticks_x(), event.ticks_y(), event.GetTickMultiplier(),
-      event.time_sec(), event.GetX(0), event.GetY(0)));
+  SendMouseWheelEvent(WebMouseWheelEventBuilder::Build(event));
   return true;
 }
 

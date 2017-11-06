@@ -378,9 +378,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void CreateOverscrollControllerIfPossible();
 
-  void UpdateLeftClickCount(int action_button,
-                            float mousedown_x,
-                            float mouse_down_y);
+  void UpdateMouseState(int action_button,
+                        float mousedown_x,
+                        float mouse_down_y);
 
   WebContentsAccessibilityAndroid* GetWebContentsAccessibilityAndroid() const;
 
