@@ -231,6 +231,14 @@ PerformanceEntryVector PerformanceBase::getEntriesByName(
       entries.AppendVector(user_timing_->GetMeasures(name));
   }
 
+  if (entry_type.IsNull() || type == PerformanceEntry::kPaint) {
+    if (first_paint_timing_ && first_paint_timing_->name() == name)
+      entries.push_back(first_paint_timing_);
+    if (first_contentful_paint_timing_ &&
+        first_contentful_paint_timing_->name() == name)
+      entries.push_back(first_contentful_paint_timing_);
+  }
+
   std::sort(entries.begin(), entries.end(),
             PerformanceEntry::StartTimeCompareLessThan);
   return entries;
