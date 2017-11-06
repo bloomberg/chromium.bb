@@ -147,10 +147,10 @@ void BackgroundFetchJobController::AbortFromUser() {
   Abort(false /* cancel_download */);
 }
 
-void BackgroundFetchJobController::UpdateJobTitle(const std::string& title) {
+void BackgroundFetchJobController::UpdateUI(const std::string& title) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  delegate_proxy_->UpdateJobTitle(registration_id_.unique_id(), title);
+  delegate_proxy_->UpdateUI(registration_id_.unique_id(), title);
 }
 
 uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {
