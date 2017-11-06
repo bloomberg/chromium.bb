@@ -77,7 +77,7 @@ class UiSceneManagerTest : public testing::Test {
   bool AnimateBy(base::TimeDelta delta);
 
   // A wrapper to call scene_->OnBeginFrame.
-  bool OnBeginFrame();
+  bool OnBeginFrame() const;
 
   void GetBackgroundColor(SkColor* background_color) const;
 

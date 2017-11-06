@@ -73,8 +73,7 @@ void UiSceneManagerTest::MakeAutoPresentedManager() {
 }
 
 bool UiSceneManagerTest::IsVisible(UiElementName name) const {
-  scene_->root_element().UpdateComputedOpacityRecursive();
-  scene_->root_element().UpdateWorldSpaceTransformRecursive();
+  EXPECT_TRUE(OnBeginFrame());
   UiElement* element = scene_->GetUiElementByName(name);
   if (!element || !element->IsVisible())
     return false;
@@ -93,8 +92,7 @@ void UiSceneManagerTest::SetIncognito(bool incognito) {
 void UiSceneManagerTest::VerifyElementsVisible(
     const std::string& trace_context,
     const std::set<UiElementName>& names) const {
-  scene_->root_element().UpdateComputedOpacityRecursive();
-  scene_->root_element().UpdateWorldSpaceTransformRecursive();
+  EXPECT_TRUE(OnBeginFrame());
   SCOPED_TRACE(trace_context);
   for (auto name : names) {
     SCOPED_TRACE(name);
@@ -189,18 +187,17 @@ bool UiSceneManagerTest::AnimateBy(base::TimeDelta delta) {
   base::TimeDelta frame_time = base::TimeDelta::FromSecondsD(1.0 / 60.0);
   bool changed = false;
   for (; current_time_ < target_time; current_time_ += frame_time) {
-    if (scene_->OnBeginFrame(current_time_, gfx::Vector3dF(0.f, 0.f, -1.0f)))
+    if (scene_->OnBeginFrame(current_time_, kForwardVector))
       changed = true;
   }
   current_time_ = target_time;
-  if (scene_->OnBeginFrame(current_time_, gfx::Vector3dF(0.f, 0.f, -1.0f)))
+  if (scene_->OnBeginFrame(current_time_, kForwardVector))
     changed = true;
   return changed;
 }
 
-bool UiSceneManagerTest::OnBeginFrame() {
-  return scene_->OnBeginFrame(base::TimeTicks(),
-                              gfx::Vector3dF(0.f, 0.f, -1.0f));
+bool UiSceneManagerTest::OnBeginFrame() const {
+  return scene_->OnBeginFrame(current_time_, kForwardVector);
 }
 
 void UiSceneManagerTest::GetBackgroundColor(SkColor* background_color) const {

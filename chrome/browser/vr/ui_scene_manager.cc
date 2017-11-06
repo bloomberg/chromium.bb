@@ -156,6 +156,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateBackground();
   CreateViewportAwareRoot();
   CreateContentQuad(content_input_delegate);
+  CreateExitPrompt();
   CreateWebVRExitWarning();
   CreateSystemIndicators();
   CreateUrlBar(model);
@@ -163,7 +164,6 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateWebVrUrlToast();
   CreateCloseButton();
   CreateScreenDimmer();
-  CreateExitPrompt();
   CreateToasts(model);
   CreateSplashScreen(model);
   CreateUnderDevelopmentNotice();
@@ -199,9 +199,11 @@ void UiSceneManager::Create2dBrowsingSubtreeRoots(Model* model) {
   element->set_name(k2dBrowsingContentGroup);
   element->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
   element->SetSize(kContentWidth, kContentHeight);
-  element->SetVisible(true);
   element->set_hit_testable(false);
   element->SetTransitionedProperties({TRANSFORM});
+  element->AddBinding(VR_BIND(bool, UiSceneManager, this,
+                              browsing_mode() && !model->prompting_to_exit(),
+                              UiElement, element.get(), SetVisible(value)));
   scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
 }
 
@@ -296,18 +298,15 @@ void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
   hit_plane->set_draw_phase(kPhaseForeground);
   hit_plane->SetSize(kBackplaneSize, kBackplaneSize);
   hit_plane->SetTranslate(0, 0, -kTextureOffset);
-  content_elements_.push_back(hit_plane.get());
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(hit_plane));
 
   auto main_content = base::MakeUnique<ContentElement>(delegate);
   main_content->set_name(kContentQuad);
   main_content->set_draw_phase(kPhaseForeground);
   main_content->SetSize(kContentWidth, kContentHeight);
-  main_content->SetVisible(false);
   main_content->set_corner_radius(kContentCornerRadius);
   main_content->SetTransitionedProperties({BOUNDS});
   main_content_ = main_content.get();
-  content_elements_.push_back(main_content.get());
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(main_content));
 
   // Limit reticle distance to a sphere based on content distance.
@@ -478,7 +477,6 @@ void UiSceneManager::CreateUnderDevelopmentNotice() {
   text->SetRotate(1, 0, 0, kUnderDevelopmentNoticeRotationRad);
   text->SetVisible(true);
   text->set_y_anchoring(BOTTOM);
-  control_elements_.push_back(text.get());
   scene_->AddUiElement(kUrlBar, std::move(text));
 }
 
@@ -637,9 +635,8 @@ void UiSceneManager::CreateController(Model* model) {
   root->AddBinding(base::MakeUnique<Binding<bool>>(
       base::Bind(
           [](Model* m, UiSceneManager* mgr) {
-            bool browsing_mode =
-                !mgr->web_vr_mode() && !mgr->showing_web_vr_splash_screen();
-            return browsing_mode || m->web_vr_timeout_state == kWebVrTimedOut;
+            return mgr->browsing_mode() ||
+                   m->web_vr_timeout_state == kWebVrTimedOut;
           },
           base::Unretained(model), base::Unretained(this)),
       base::Bind([](UiElement* v, const bool& b) { v->SetVisible(b); },
@@ -706,8 +703,11 @@ void UiSceneManager::CreateUrlBar(Model* model) {
   url_bar->SetTranslate(0, kUrlBarVerticalOffset, -kUrlBarDistance);
   url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
   url_bar->SetSize(kUrlBarWidth, kUrlBarHeight);
+  url_bar->AddBinding(VR_BIND_FUNC(
+      bool, UiSceneManager, this,
+      browsing_mode() && !model->prompting_to_exit() && !model->fullscreen(),
+      UiElement, url_bar.get(), SetVisible));
   url_bar_ = url_bar.get();
-  control_elements_.push_back(url_bar.get());
   scene_->AddUiElement(k2dBrowsingForeground, std::move(url_bar));
 
   auto indicator_bg = base::MakeUnique<Rect>();
@@ -832,9 +832,12 @@ void UiSceneManager::CreateExitPrompt() {
   element->set_name(kExitPrompt);
   element->set_draw_phase(kPhaseForeground);
   element->SetSize(kExitPromptWidth, kExitPromptHeight);
-  element->SetTranslate(0.0, kExitPromptVerticalOffset, kTextureOffset);
-  element->SetVisible(false);
-  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(element));
+  element->SetTranslate(0.0, kContentVerticalOffset + kExitPromptVerticalOffset,
+                        kTextureOffset - kContentDistance);
+  element->AddBinding(VR_BIND(bool, UiSceneManager, this,
+                              browsing_mode() && model->prompting_to_exit(),
+                              UiElement, element.get(), SetVisible(value)));
+  scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
 
   // Place an invisible but hittable plane behind the exit prompt, to keep the
   // reticle roughly planar with the content if near content.
@@ -847,7 +850,6 @@ void UiSceneManager::CreateExitPrompt() {
   element->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
   element->SetTranslate(0.0, 0.0, -kTextureOffset);
   exit_prompt_backplane_ = element.get();
-  content_elements_.push_back(element.get());
   scene_->AddUiElement(kExitPrompt, std::move(element));
 }
 
@@ -856,6 +858,24 @@ void UiSceneManager::CreateToasts(Model* model) {
   exclusive_screen_toast_transient_parent_ =
       AddTransientParent(kExclusiveScreenToastTransientParent,
                          k2dBrowsingForeground, kToastTimeoutSeconds, false);
+  // This binding toggles fullscreen toast's visibility if fullscreen state
+  // changed.
+  exclusive_screen_toast_transient_parent_->AddBinding(
+      VR_BIND_FUNC(bool, UiSceneManager, this, fullscreen(), UiElement,
+                   exclusive_screen_toast_transient_parent_, SetVisible));
+  // This binding makes sure fullscreen toast becomes invisible if entering
+  // webvr mode.
+  exclusive_screen_toast_transient_parent_->AddBinding(
+      base::MakeUnique<Binding<bool>>(
+          base::Bind([](UiSceneManager* mgr) { return mgr->web_vr_mode(); },
+                     base::Unretained(this)),
+          base::Bind(
+              [](UiElement* v, const bool& b) {
+                if (b)
+                  v->SetVisible(false);
+              },
+              base::Unretained(exclusive_screen_toast_transient_parent_))));
+
   auto element = base::MakeUnique<ExclusiveScreenToast>(512);
   element->set_name(kExclusiveScreenToast);
   element->set_draw_phase(kPhaseForeground);
@@ -874,6 +894,22 @@ void UiSceneManager::CreateToasts(Model* model) {
   exclusive_screen_toast_viewport_aware_transient_parent_ =
       AddTransientParent(kExclusiveScreenToastViewportAwareTransientParent,
                          kWebVrViewportAwareRoot, kToastTimeoutSeconds, false);
+  // When we first get a web vr frame, we switch states to
+  // kWebVrNoTimeoutPending, when that happens, we want to SetVisible(true) to
+  // kick the visibility of this element.
+  exclusive_screen_toast_viewport_aware_transient_parent_->AddBinding(
+      base::MakeUnique<Binding<bool>>(
+          base::Bind(
+              [](Model* m, UiSceneManager* mgr) {
+                return m->web_vr_timeout_state == kWebVrNoTimeoutPending &&
+                       mgr->web_vr_mode() && mgr->web_vr_show_toast();
+              },
+              base::Unretained(model), base::Unretained(this)),
+          base::Bind(
+              [](UiElement* v, const bool& b) { v->SetVisible(b); },
+              base::Unretained(
+                  exclusive_screen_toast_viewport_aware_transient_parent_))));
+
   element = base::MakeUnique<ExclusiveScreenToast>(512);
   element->set_name(kExclusiveScreenToastViewportAware);
   element->set_draw_phase(kPhaseOverlayForeground);
@@ -883,24 +919,6 @@ void UiSceneManager::CreateToasts(Model* model) {
   element->SetRotate(1, 0, 0, kWebVrAngleRadians);
   element->SetScale(kWebVrToastDistance, kWebVrToastDistance, 1);
   element->set_hit_testable(false);
-
-  // When we first get a web vr frame, we switch states to
-  // kWebVrNoTimeoutPending, when that happens, we want to SetVisible(true) to
-  // kick the visibility of this element.
-  element->AddBinding(base::MakeUnique<Binding<bool>>(
-      base::Bind(
-          [](Model* m) {
-            return m->web_vr_timeout_state == kWebVrNoTimeoutPending;
-          },
-          base::Unretained(model)),
-      base::Bind(
-          [](UiElement* v, const bool& b) {
-            if (b)
-              v->SetVisible(b);
-          },
-          base::Unretained(
-              exclusive_screen_toast_viewport_aware_transient_parent_))));
-
   scene_->AddUiElement(kExclusiveScreenToastViewportAwareTransientParent,
                        std::move(element));
 }
@@ -920,11 +938,8 @@ void UiSceneManager::SetWebVrMode(bool web_vr, bool show_toast) {
 
   // Because we may be transitioning from and to fullscreen, where the toast is
   // also shown, explicitly kick or end visibility here.
-  if (web_vr) {
+  if (web_vr)
     exclusive_screen_toast_viewport_aware_transient_parent_->RefreshVisible();
-  } else {
-    exclusive_screen_toast_transient_parent_->SetVisible(false);
-  }
 }
 
 void UiSceneManager::OnWebVrFrameAvailable() {
@@ -1013,36 +1028,19 @@ void UiSceneManager::ConfigureScene() {
   exit_warning_->SetVisible(exiting_);
   screen_dimmer_->SetVisible(exiting_);
 
-  bool browsing_mode = !web_vr_mode_ && !showing_web_vr_splash_screen_;
-  scene_->GetUiElementByName(k2dBrowsingRoot)->SetVisible(browsing_mode);
-  scene_->GetUiElementByName(kWebVrRoot)->SetVisible(!browsing_mode);
-
-  // Controls (URL bar, loading progress, voice search button etc).
-  bool controls_visible = browsing_mode && !fullscreen_ && !prompting_to_exit_;
-  for (UiElement* element : control_elements_) {
-    element->SetVisible(controls_visible);
-  }
+  scene_->GetUiElementByName(k2dBrowsingRoot)->SetVisible(browsing_mode());
+  scene_->GetUiElementByName(kWebVrRoot)->SetVisible(!browsing_mode());
 
   // Close button is a special control element that needs to be hidden when in
   // WebVR, but it needs to be visible when in cct or fullscreen.
-  close_button_->SetVisible(browsing_mode && (fullscreen_ || in_cct_));
-
-  // Content elements.
-  for (UiElement* element : content_elements_) {
-    element->SetVisible(browsing_mode && !prompting_to_exit_);
-  }
+  close_button_->SetVisible(browsing_mode() && (fullscreen_ || in_cct_));
 
   // Background elements.
   for (UiElement* element : background_panels_) {
     element->SetVisible(!showing_web_vr_content);
   }
-  floor_->SetVisible(browsing_mode);
-  ceiling_->SetVisible(browsing_mode);
-
-  // Exit prompt.
-  bool showExitPrompt = browsing_mode && prompting_to_exit_;
-  exit_prompt_->SetVisible(showExitPrompt);
-  exit_prompt_backplane_->SetVisible(showExitPrompt);
+  floor_->SetVisible(browsing_mode());
+  ceiling_->SetVisible(browsing_mode());
 
   // Update content quad parameters depending on fullscreen.
   // TODO(http://crbug.com/642937): Animate fullscreen transitions.
@@ -1074,18 +1072,9 @@ void UiSceneManager::ConfigureScene() {
   scene_->set_reticle_rendering_enabled(
       !(web_vr_mode_ || exiting_ || showing_web_vr_splash_screen_));
 
-  ConfigureExclusiveScreenToast();
   ConfigureIndicators();
   ConfigureBackgroundColor();
   scene_->set_dirty();
-}
-
-void UiSceneManager::ConfigureExclusiveScreenToast() {
-  DCHECK(configuring_scene_);
-  exclusive_screen_toast_transient_parent_->SetVisible(fullscreen_ &&
-                                                       !web_vr_mode_);
-  exclusive_screen_toast_viewport_aware_transient_parent_->SetVisible(
-      web_vr_mode_ && web_vr_show_toast_);
 }
 
 void UiSceneManager::ConfigureIndicators() {

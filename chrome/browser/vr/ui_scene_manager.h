@@ -142,9 +142,15 @@ class UiSceneManager {
   // TODO(vollick): these should move to the model.
   const ColorScheme& color_scheme() const;
   bool web_vr_mode() const { return web_vr_mode_; }
+  bool web_vr_show_toast() const { return web_vr_show_toast_; }
   bool showing_web_vr_splash_screen() const {
     return showing_web_vr_splash_screen_;
   }
+  bool browsing_mode() const {
+    return !web_vr_mode_ && !showing_web_vr_splash_screen_;
+  }
+  bool prompting_to_exit() const { return prompting_to_exit_; }
+  bool fullscreen() const { return fullscreen_; }
 
  private:
   void Create2dBrowsingSubtreeRoots(Model* model);
@@ -167,7 +173,6 @@ class UiSceneManager {
   void CreateController(Model* model);
 
   void ConfigureScene();
-  void ConfigureExclusiveScreenToast();
   void ConfigureIndicators();
   void ConfigureBackgroundColor();
   void OnBackButtonClicked();
@@ -236,8 +241,6 @@ class UiSceneManager {
   UiUnsupportedMode exit_vr_prompt_reason_ = UiUnsupportedMode::kCount;
 
   std::vector<Rect*> background_panels_;
-  std::vector<UiElement*> content_elements_;
-  std::vector<UiElement*> control_elements_;
 
   gfx::SizeF last_content_screen_bounds_;
   float last_content_aspect_ratio_ = 0.0f;
