@@ -138,7 +138,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crashpad_tests"
+        "test": "crashpad_util_test"
       },
       {
         "swarming": {
@@ -721,7 +721,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crashpad_tests"
+        "test": "crashpad_util_test"
       },
       {
         "swarming": {
@@ -1276,7 +1276,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crashpad_tests"
+        "test": "crashpad_util_test"
       },
       {
         "swarming": {
@@ -1847,7 +1847,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "crashpad_tests"
+        "test": "crashpad_util_test"
       },
       {
         "swarming": {
