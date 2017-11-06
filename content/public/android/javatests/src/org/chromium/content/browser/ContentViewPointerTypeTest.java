@@ -87,8 +87,8 @@ public class ContentViewPointerTypeTest {
     //@Feature({"Main"})
     @DisabledTest(message = "crbug.com/755112")
     public void testPointerType() throws Throwable {
-        checkPointerTypeForNode("hand", WebCursorInfoType.TYPE_HAND);
-        checkPointerTypeForNode("text", WebCursorInfoType.TYPE_I_BEAM);
-        checkPointerTypeForNode("help", WebCursorInfoType.TYPE_HELP);
+        checkPointerTypeForNode("hand", WebCursorInfoType.HAND);
+        checkPointerTypeForNode("text", WebCursorInfoType.I_BEAM);
+        checkPointerTypeForNode("help", WebCursorInfoType.HELP);
     }
 }

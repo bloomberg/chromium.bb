@@ -153,13 +153,13 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     private static ContextMenuParams createImageContextParams() {
-        return new ContextMenuParams(WebContextMenuMediaType.MEDIA_TYPE_IMAGE, PAGE_URL, "", "",
+        return new ContextMenuParams(WebContextMenuMediaType.IMAGE, PAGE_URL, "", "",
                 IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true, 0, 0,
                 MenuSourceType.MENU_SOURCE_TOUCH);
     }
 
     private static ContextMenuParams createImageLinkContextParams() {
-        return new ContextMenuParams(WebContextMenuMediaType.MEDIA_TYPE_IMAGE, PAGE_URL, PAGE_URL,
+        return new ContextMenuParams(WebContextMenuMediaType.IMAGE, PAGE_URL, PAGE_URL,
                 LINK_URL, IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true, 0, 0,
                 MenuSourceType.MENU_SOURCE_TOUCH);
     }

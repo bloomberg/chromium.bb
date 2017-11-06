@@ -85,10 +85,18 @@ class EnumDefinition(object):
   def _StripPrefix(self):
     prefix_to_strip = self.prefix_to_strip
     if not prefix_to_strip:
-      prefix_to_strip = self.original_enum_name
-      prefix_to_strip = re.sub('(?!^)([A-Z]+)', r'_\1', prefix_to_strip).upper()
-      prefix_to_strip += '_'
-      if not all([w.startswith(prefix_to_strip) for w in self.entries.keys()]):
+      shout_case = self.original_enum_name
+      shout_case = re.sub('(?!^)([A-Z]+)', r'_\1', shout_case).upper()
+      shout_case += '_'
+
+      prefixes = [shout_case, self.original_enum_name,
+                  'k' + self.original_enum_name]
+
+      for prefix in prefixes:
+        if all([w.startswith(prefix) for w in self.entries.keys()]):
+          prefix_to_strip = prefix
+          break
+      else:
         prefix_to_strip = ''
 
     def StripEntries(entries):

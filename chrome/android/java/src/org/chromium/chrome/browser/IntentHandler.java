@@ -487,9 +487,9 @@ public class IntentHandler {
 
     public static @WebReferrerPolicy int getReferrerPolicyFromIntent(Intent intent) {
         int policy = IntentUtils.safeGetIntExtra(
-                intent, EXTRA_REFERRER_POLICY, WebReferrerPolicy.WEB_REFERRER_POLICY_DEFAULT);
-        if (policy < 0 || policy >= WebReferrerPolicy.WEB_REFERRER_POLICY_LAST) {
-            policy = WebReferrerPolicy.WEB_REFERRER_POLICY_DEFAULT;
+                intent, EXTRA_REFERRER_POLICY, WebReferrerPolicy.DEFAULT);
+        if (policy < 0 || policy >= WebReferrerPolicy.LAST) {
+            policy = WebReferrerPolicy.DEFAULT;
         }
         return policy;
     }
@@ -517,7 +517,7 @@ public class IntentHandler {
                                     .authority(authority)
                                     .build()
                                     .toString(),
-                WebReferrerPolicy.WEB_REFERRER_POLICY_DEFAULT);
+                WebReferrerPolicy.DEFAULT);
     }
 
     /**

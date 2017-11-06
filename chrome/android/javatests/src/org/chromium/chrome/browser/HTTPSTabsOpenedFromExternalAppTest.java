@@ -58,7 +58,7 @@ public class HTTPSTabsOpenedFromExternalAppTest {
         try {
             String url = mTestServer.getURL("/chrome/test/data/android/about.html");
             TabsOpenedFromExternalAppTest.launchAndVerifyReferrerWithPolicy(url, mActivityTestRule,
-                    WebReferrerPolicy.WEB_REFERRER_POLICY_DEFAULT, HTTP_REFERRER, HTTP_REFERRER);
+                    WebReferrerPolicy.DEFAULT, HTTP_REFERRER, HTTP_REFERRER);
         } finally {
             if (mTestServer != null) mTestServer.stopAndDestroyServer();
         }

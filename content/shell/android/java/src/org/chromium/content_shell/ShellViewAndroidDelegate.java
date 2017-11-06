@@ -51,7 +51,7 @@ public class ShellViewAndroidDelegate extends ViewAndroidDelegate {
     @Override
     public void onCursorChangedToCustom(Bitmap customCursorBitmap, int hotspotX, int hotspotY) {
         super.onCursorChangedToCustom(customCursorBitmap, hotspotX, hotspotY);
-        mOnCursorUpdateHelper.notifyCalled(WebCursorInfoType.TYPE_CUSTOM);
+        mOnCursorUpdateHelper.notifyCalled(WebCursorInfoType.CUSTOM);
     }
 
     @Override
