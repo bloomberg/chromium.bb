@@ -680,12 +680,6 @@ void RenderWidgetHostViewAndroid::OnShowUnhandledTapUIIfNeeded(int x_dip,
                                                                int y_dip) {
   if (!selection_popup_controller_ || !content_view_core_)
     return;
-  // Validate the coordinates are within the viewport.
-  // TODO(jinsukkim): Get viewport size from ViewAndroid.
-  gfx::Size viewport_size = content_view_core_->GetViewportSizeDip();
-  if (x_dip < 0 || x_dip > viewport_size.width() ||
-      y_dip < 0 || y_dip > viewport_size.height())
-    return;
   selection_popup_controller_->OnShowUnhandledTapUIIfNeeded(
       x_dip, y_dip, view_.GetDipScale());
 }
@@ -2105,9 +2099,10 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     RunAckCallbacks();
     // TODO(yusufo) : Get rid of the below conditions and have a better handling
     // for resizing after crbug.com/628302 is handled.
-    bool is_size_initialized = !content_view_core
-        || content_view_core->GetViewportSizeDip().width() != 0
-        || content_view_core->GetViewportSizeDip().height() != 0;
+    bool is_size_initialized = !content_view_core ||
+                               content_view_core->GetViewSize().width() != 0 ||
+                               content_view_core->GetViewSize().height() != 0;
+
     if (content_view_core_ || is_size_initialized)
       resize = true;
     if (content_view_core_) {

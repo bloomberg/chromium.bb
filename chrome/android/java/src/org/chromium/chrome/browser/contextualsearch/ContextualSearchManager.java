@@ -348,7 +348,7 @@ public class ContextualSearchManager
         return mSearchPanel == null ? null : mSearchPanel.getContentViewCore();
     }
 
-    /** @return The Base Page's {@link ContentViewCore}. */
+    /** @return The Base Page's {@link WebContents}. */
     @Nullable
     private WebContents getBaseWebContents() {
         return mSelectionController.getBaseWebContents();
@@ -1270,6 +1270,10 @@ public class ContextualSearchManager
 
         @Override
         public void showUnhandledTapUIIfNeeded(final int x, final int y) {
+            // Called back from content layer, for which we always have a valid content view
+            // for the base WebContents.
+            View contentView = mActivity.getActivityTab().getContentView();
+            if (x < 0 || y < 0 || contentView.getWidth() < x || contentView.getHeight() < y) return;
             if (!isOverlayVideoMode()) {
                 mSelectionController.handleShowUnhandledTapUIIfNeeded(x, y);
             }

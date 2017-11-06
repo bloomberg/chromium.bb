@@ -241,7 +241,6 @@ class ContentViewCore : public WebContentsObserver {
   // Methods called from native code
   // --------------------------------------------------------------------------
 
-  gfx::Size GetViewportSizeDip() const;
   bool DoBrowserControlsShrinkBlinkSize() const;
   float GetTopControlsHeightDip() const;
   float GetBottomControlsHeightDip() const;
