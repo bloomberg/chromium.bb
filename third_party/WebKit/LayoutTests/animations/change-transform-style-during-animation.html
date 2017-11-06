@@ -37,13 +37,13 @@
 
    <script src="resources/animation-test-helpers.js"></script>
    <script>
+     'use strict';
      if (window.testRunner) {
        testRunner.waitUntilDone();
      }
 
      function animationDone()
      {
-       var animated = document.getElementById('animated');
        var result;
        var expected = "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -200, 0, 200, 1)";
        var computed = getPropertyValue("transform", "animated");
@@ -53,7 +53,12 @@
          result = "FAIL - Computed final position is incorrect. Expected " + expected + ", got " + computed;
        }
        document.getElementById('result').innerHTML = result;
-       testRunner.notifyDone();
+       requestAnimationFrame(function() {
+         requestAnimationFrame(function() {
+           if (window.testRunner)
+             testRunner.notifyDone();
+         });
+       });
      }
 
      function animationStarted()
