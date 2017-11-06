@@ -29,6 +29,11 @@ def _AssertFileExists(path):
       'deployed app' if _IsOnAppEngine() else 'local dev_appserver')
 
 
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+PROJECT_NAME = os.path.basename(os.path.dirname(__file__))
+PROJECT_DIR = os.path.join(BASE_DIR, PROJECT_NAME)
+
+
 if _IsOnAppEngine():
   # Import into our namespace. This only contains auto-generated constants.
   # It only exists on the deployed app.
@@ -43,6 +48,10 @@ else:
   SECRET_KEY = 'PLACEHOLDER_NON_KEY'
   CIDB_PROJECT_NAME = 'cosmic-strategy-646'
   CIDB_INSTANCE_NAME = 'debug-cidb'
+  # dev_appserver.py doesn't pass in any environment variables, so you *must*
+  # create this symlink yourself. :( These credentials must be for the
+  # 'annotator' cidb user for the debug instance of cidb. See go/cros-cidb-admin
+  CIDB_CREDS_DIR = os.path.join(BASE_DIR, 'annotator_cidb_creds')
 
 # ##############################################################################
 # DEPLOY OVERRIDES
@@ -54,15 +63,6 @@ else:
 # DEBUG = True
 # TEMPLATE_DEBUG = True
 # ##############################################################################
-
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-PROJECT_NAME = os.path.basename(os.path.dirname(__file__))
-PROJECT_DIR = os.path.join(BASE_DIR, PROJECT_NAME)
-# dev_appserver.py doesn't pass in any environment variables, so you *must*
-# create this symlink yourself. :(
-# These credentials must be for the 'annotator' cidb user for the debug
-# instance of cidb. See go/cros-cidb-admin
-CIDB_CREDS_DIR = os.path.join(BASE_DIR, 'annotator_cidb_creds.debug')
 
 ANNOTATOR_PASSWORD_PATH = os.path.join(CIDB_CREDS_DIR, 'password.txt')
 _AssertFileExists(ANNOTATOR_PASSWORD_PATH)
