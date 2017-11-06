@@ -80,7 +80,20 @@ void RenderAccessibilityImpl::SnapshotAccessibilityTree(
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source);
   BlinkAXTreeSerializer serializer(&tree_source);
   serializer.set_max_node_count(kMaxSnapshotNodeCount);
-  serializer.SerializeChanges(context.Root(), response);
+
+  if (serializer.SerializeChanges(context.Root(), response))
+    return;
+
+  // It's possible for the page to fail to serialize the first time due to
+  // aria-owns rearranging the page while it's being scanned. Try a second
+  // time.
+  *response = AXContentTreeUpdate();
+  if (serializer.SerializeChanges(context.Root(), response))
+    return;
+
+  // It failed again. Clear the response object because it might have errors.
+  *response = AXContentTreeUpdate();
+  LOG(WARNING) << "Unable to serialize accessibility tree.";
 }
 
 RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
