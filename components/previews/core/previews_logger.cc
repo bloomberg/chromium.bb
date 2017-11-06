@@ -10,16 +10,10 @@
 
 namespace previews {
 
-std::string GetDescriptionForInfoBarDescription(previews::PreviewsType type) {
-  return base::StringPrintf("%s InfoBar shown",
-                            previews::GetStringNameForType(type).c_str());
-}
-
 namespace {
 
-static const char kPreviewDecisionMadeEventType[] = "Decision";
-static const char kPreviewNavigationEventType[] = "Navigation";
-
+const char kPreviewDecisionMade[] = "Decision";
+const char kPreviewNavigationEventType[] = "Navigation";
 const size_t kMaximumNavigationLogs = 10;
 const size_t kMaximumDecisionLogs = 25;
 
@@ -172,15 +166,14 @@ void PreviewsLogger::LogPreviewDecisionMade(PreviewsEligibilityReason reason,
   DCHECK_GE(kMaximumDecisionLogs, decisions_logs_.size());
 
   std::string description = GetDescriptionForPreviewsDecision(reason, type);
-  LogMessage(kPreviewDecisionMadeEventType, description, url, time);
+  LogMessage(kPreviewDecisionMade, description, url, time);
 
   // Pop out the oldest message when the list is full.
   if (decisions_logs_.size() >= kMaximumDecisionLogs) {
     decisions_logs_.pop_front();
   }
 
-  decisions_logs_.emplace_back(kPreviewDecisionMadeEventType, description, url,
-                               time);
+  decisions_logs_.emplace_back(kPreviewDecisionMade, description, url, time);
 }
 
 void PreviewsLogger::OnNewBlacklistedHost(const std::string& host,

@@ -23,9 +23,6 @@
 #include "components/infobars/core/infobar.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/previews/core/previews_features.h"
-#include "components/previews/core/previews_logger.h"
-#include "components/previews/core/previews_ui_service.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,7 +39,6 @@ const char kMinStalenessParamName[] = "min_staleness_in_minutes";
 const char kMaxStalenessParamName[] = "max_staleness_in_minutes";
 const int kMinStalenessParamDefaultValue = 5;
 const int kMaxStalenessParamDefaultValue = 1440;
-static const char kPreviewInfobarEventType[] = "InfoBar";
 
 void RecordPreviewsInfoBarAction(
     previews::PreviewsType previews_type,
@@ -110,8 +106,7 @@ void PreviewsInfoBarDelegate::Create(
     base::Time previews_freshness,
     bool is_data_saver_user,
     bool is_reload,
-    const OnDismissPreviewsInfobarCallback& on_dismiss_callback,
-    previews::PreviewsUIService* previews_ui_service) {
+    const OnDismissPreviewsInfobarCallback& on_dismiss_callback) {
   PreviewsInfoBarTabHelper* infobar_tab_helper =
       PreviewsInfoBarTabHelper::FromWebContents(web_contents);
   InfoBarService* infobar_service =
@@ -137,17 +132,6 @@ void PreviewsInfoBarDelegate::Create(
 #endif
 
   infobar_service->AddInfoBar(std::move(infobar_ptr));
-
-  if (previews_ui_service) {
-    // Not in incognito mode or guest mode.
-    previews_ui_service->previews_logger()->LogMessage(
-        kPreviewInfobarEventType,
-        previews::GetDescriptionForInfoBarDescription(previews_type),
-        web_contents->GetController()
-            .GetLastCommittedEntry()
-            ->GetRedirectChain()[0] /* GURL */,
-        base::Time::Now());
-  }
 
   RecordPreviewsInfoBarAction(previews_type, INFOBAR_SHOWN);
   infobar_tab_helper->set_displayed_preview_infobar(true);
