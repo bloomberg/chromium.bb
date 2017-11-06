@@ -34,4 +34,14 @@ content::PreviewsState DetermineClientPreviewsState(
   return previews_state;
 }
 
+previews::PreviewsType GetMainFramePreviewsType(
+    content::PreviewsState previews_state) {
+  if (previews_state & content::SERVER_LITE_PAGE_ON) {
+    return previews::PreviewsType::LITE_PAGE;
+  } else if (previews_state & content::NOSCRIPT_ON) {
+    return previews::PreviewsType::NOSCRIPT;
+  }
+  return previews::PreviewsType::NONE;
+}
+
 }  // namespace previews
