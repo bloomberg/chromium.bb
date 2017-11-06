@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.ChromeHome;
-import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -50,11 +49,7 @@ public class HomeSheetUiCaptureTest {
 
     @Rule
     public SuggestionsDependenciesRule setupSuggestions() {
-        SuggestionsDependenciesRule.TestFactory depsFactory = NtpUiCaptureTestData.createFactory();
-        FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
-        NtpUiCaptureTestData.registerArticleSamples(suggestionsSource);
-        depsFactory.suggestionsSource = suggestionsSource;
-        return new SuggestionsDependenciesRule(depsFactory);
+        return new SuggestionsDependenciesRule(NtpUiCaptureTestData.createFactory());
     }
 
     @Rule

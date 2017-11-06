@@ -45,18 +45,15 @@ public class HomeSheetCardsUiCaptureTest {
     @Rule
     public SuggestionsBottomSheetTestRule mActivityRule = new SuggestionsBottomSheetTestRule();
 
+    private final TestFactory mDepsFactory = NtpUiCaptureTestData.createFactory();
+
     @Rule
     public SuggestionsDependenciesRule setupSuggestions() {
-        FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
-        NtpUiCaptureTestData.registerArticleSamples(suggestionsSource);
-        mDepsFactory.suggestionsSource = suggestionsSource;
         return new SuggestionsDependenciesRule(mDepsFactory);
     }
 
     @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();
-
-    private final TestFactory mDepsFactory = NtpUiCaptureTestData.createFactory();
 
     @Before
     public void setup() throws InterruptedException {
