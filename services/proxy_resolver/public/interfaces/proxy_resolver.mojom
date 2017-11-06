@@ -52,6 +52,11 @@ interface ProxyResolverRequestClient {
              net.interfaces.HostResolverRequestClient client);
 };
 
+// Creates a ProxyResolver that uses the provided PAC script. The ProxyResolver
+// will remain valid even after the ProxyResolverFactory has been destroyed.
+//
+// Destroying |client| before its ReportResult method is invoked may cancel
+// creation of the ProxyResolverFactory.
 interface ProxyResolverFactory {
   CreateResolver(string pac_script,
                  ProxyResolver& resolver,

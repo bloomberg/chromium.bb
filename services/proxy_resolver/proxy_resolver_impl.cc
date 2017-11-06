@@ -13,6 +13,7 @@
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver_script_data.h"
 #include "net/proxy/proxy_resolver_v8_tracing.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace proxy_resolver {
 
@@ -44,8 +45,9 @@ class ProxyResolverImpl::Job {
 };
 
 ProxyResolverImpl::ProxyResolverImpl(
-    std::unique_ptr<net::ProxyResolverV8Tracing> resolver)
-    : resolver_(std::move(resolver)) {}
+    std::unique_ptr<net::ProxyResolverV8Tracing> resolver,
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
+    : resolver_(std::move(resolver)), service_ref_(std::move(service_ref)) {}
 
 ProxyResolverImpl::~ProxyResolverImpl() {}
 

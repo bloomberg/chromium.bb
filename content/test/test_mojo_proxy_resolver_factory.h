@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "content/public/network/mojo_proxy_resolver_factory.h"
+#include "services/proxy_resolver/proxy_resolver_factory_impl.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace content {
 
@@ -30,6 +32,9 @@ class TestMojoProxyResolverFactory : public MojoProxyResolverFactory {
       override;
 
  private:
+  service_manager::ServiceContextRefFactory service_ref_factory_;
+  proxy_resolver::ProxyResolverFactoryImpl proxy_resolver_factory_impl_;
+
   proxy_resolver::mojom::ProxyResolverFactoryPtr factory_;
 
   bool resolver_created_ = false;

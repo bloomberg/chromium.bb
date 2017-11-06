@@ -8,21 +8,8 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 
 namespace proxy_resolver {
-
-namespace {
-
-void OnProxyResolverFactoryRequest(
-    service_manager::ServiceContextRefFactory* ref_factory,
-    proxy_resolver::mojom::ProxyResolverFactoryRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<ProxyResolverFactoryImpl>(ref_factory->CreateRef()),
-      std::move(request));
-}
-
-}  // namespace
 
 ProxyResolverService::ProxyResolverService() = default;
 
@@ -38,7 +25,8 @@ void ProxyResolverService::OnStart() {
       base::Bind(&service_manager::ServiceContext::RequestQuit,
                  base::Unretained(context())));
   registry_.AddInterface(
-      base::Bind(&OnProxyResolverFactoryRequest, ref_factory_.get()));
+      base::Bind(&ProxyResolverService::OnProxyResolverFactoryRequest,
+                 base::Unretained(this)));
 }
 
 void ProxyResolverService::OnBindInterface(
@@ -46,6 +34,11 @@ void ProxyResolverService::OnBindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   registry_.BindInterface(interface_name, std::move(interface_pipe));
+}
+
+void ProxyResolverService::OnProxyResolverFactoryRequest(
+    proxy_resolver::mojom::ProxyResolverFactoryRequest request) {
+  proxy_resolver_factory_.BindRequest(std::move(request), ref_factory_.get());
 }
 
 }  // namespace proxy_resolver
