@@ -150,7 +150,7 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
     const int is_uv = p > 0;
     const int ss_x = is_uv && cm->subsampling_x;
 
-    const int plane_w = (frame_w + 2 * RESTORATION_EXTRA_HORZ + ss_x) >> ss_x;
+    const int plane_w = ((frame_w + ss_x) >> ss_x) + 2 * RESTORATION_EXTRA_HORZ;
     const int align_bits = 5;  // align for efficiency
     const int stride = ALIGN_POWER_OF_TWO(plane_w, align_bits);
 
