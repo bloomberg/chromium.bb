@@ -157,19 +157,23 @@ TEST(URLCanonTest, UTF) {
     {"\xe4\xbd\xa0\xe5\xa5\xbd", L"\x4f60\x597d", true, "%E4%BD%A0%E5%A5%BD"},
       // Test a character that takes > 16 bits (U+10300 = old italic letter A)
     {"\xF0\x90\x8C\x80", L"\xd800\xdf00", true, "%F0%90%8C%80"},
-      // Non-shortest-form UTF-8 characters are invalid. The bad character
-      // should be replaced with the invalid character (EF BF DB in UTF-8).
-    {"\xf0\x84\xbd\xa0\xe5\xa5\xbd", NULL, false, "%EF%BF%BD%E5%A5%BD"},
+      // Non-shortest-form UTF-8 characters are invalid. The bad bytes should
+      // each be replaced with the invalid character (EF BF DB in UTF-8).
+    {"\xf0\x84\xbd\xa0\xe5\xa5\xbd", NULL, false,
+     "%EF%BF%BD%EF%BF%BD%EF%BF%BD%EF%BF%BD%E5%A5%BD"},
       // Invalid UTF-8 sequences should be marked as invalid (the first
       // sequence is truncated).
     {"\xe4\xa0\xe5\xa5\xbd", L"\xd800\x597d", false, "%EF%BF%BD%E5%A5%BD"},
       // Character going off the end.
     {"\xe4\xbd\xa0\xe5\xa5", L"\x4f60\xd800", false, "%E4%BD%A0%EF%BF%BD"},
       // ...same with low surrogates with no high surrogate.
-    {"\xed\xb0\x80", L"\xdc00", false, "%EF%BF%BD"},
+    {nullptr, L"\xdc00", false, "%EF%BF%BD"},
       // Test a UTF-8 encoded surrogate value is marked as invalid.
       // ED A0 80 = U+D800
-    {"\xed\xa0\x80", NULL, false, "%EF%BF%BD"},
+    {"\xed\xa0\x80", NULL, false, "%EF%BF%BD%EF%BF%BD%EF%BF%BD"},
+      // ...even when paired.
+    {"\xed\xa0\x80\xed\xb0\x80", nullptr, false,
+     "%EF%BF%BD%EF%BF%BD%EF%BF%BD%EF%BF%BD%EF%BF%BD%EF%BF%BD"},
   };
 
   std::string out_str;
@@ -1908,8 +1912,8 @@ TEST(URLCanonTest, CanonicalizeMailtoURL) {
      true, Component(7, 12), Component()},
     // Invalid -- UTF-8 encoded surrogate value.
     {"mailto:\xed\xa0\x80",
-     "mailto:%EF%BF%BD",
-     false, Component(7, 9), Component()},
+     "mailto:%EF%BF%BD%EF%BF%BD%EF%BF%BD",
+     false, Component(7, 27), Component()},
     {"mailto:addr1?",
      "mailto:addr1?",
      true, Component(7, 5), Component(13, 0)},

@@ -30,7 +30,7 @@ TEST(UTFOffsetStringConversionsTest, AdjustOffset) {
     {"", kNpos, kNpos},
     {"\xe4\xbd\xa0\xe5\xa5\xbd", 1, kNpos},
     {"\xe4\xbd\xa0\xe5\xa5\xbd", 3, 1},
-    {"\xed\xb0\x80z", 3, 1},
+    {"\xed\xb0\x80z", 3, 3},
     {"A\xF0\x90\x8C\x80z", 1, 1},
     {"A\xF0\x90\x8C\x80z", 2, kNpos},
     {"A\xF0\x90\x8C\x80z", 5, 3},
