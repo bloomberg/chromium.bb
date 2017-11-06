@@ -75,12 +75,8 @@ bool StackSamplingConfiguration::IsProfilerEnabledForCurrentProcess() const {
     switch (configuration_) {
       case PROFILE_BROWSER_PROCESS:
       case PROFILE_BROWSER_AND_GPU_PROCESS:
-#if !defined(OS_MACOSX)
-      case PROFILE_CONTROL:  // The profiler is disabled for the control group
-                             // on Mac during ramp-up.
-#endif
+      case PROFILE_CONTROL:
         return true;
-
       default:
         return false;
     }
@@ -139,11 +135,8 @@ void StackSamplingConfiguration::AppendCommandLineSwitchForChildProcess(
   DCHECK(IsBrowserProcess());
 
   bool enable = configuration_ == PROFILE_GPU_PROCESS ||
-                configuration_ == PROFILE_BROWSER_AND_GPU_PROCESS;
-#if !defined(OS_MACOSX)
-  // The profiler is disabled for the control group on Mac during ramp-up.
-  enable |= configuration_ == PROFILE_CONTROL;
-#endif
+                configuration_ == PROFILE_BROWSER_AND_GPU_PROCESS ||
+                configuration_ == PROFILE_CONTROL;
   if (enable && process_type == switches::kGpuProcess)
     command_line->AppendSwitch(switches::kStartStackProfiler);
 }
@@ -208,16 +201,16 @@ StackSamplingConfiguration::GenerateConfiguration() {
     case version_info::Channel::CANARY:
       return ChooseConfiguration({{PROFILE_BROWSER_PROCESS, 0},
                                   {PROFILE_GPU_PROCESS, 0},
-                                  {PROFILE_BROWSER_AND_GPU_PROCESS, 50},
-                                  {PROFILE_CONTROL, 50},
-                                  {PROFILE_DISABLED, 0}});
+                                  {PROFILE_BROWSER_AND_GPU_PROCESS, 80},
+                                  {PROFILE_CONTROL, 10},
+                                  {PROFILE_DISABLED, 10}});
 
     case version_info::Channel::DEV:
       return ChooseConfiguration({{PROFILE_BROWSER_PROCESS, 0},
                                   {PROFILE_GPU_PROCESS, 0},
-                                  {PROFILE_BROWSER_AND_GPU_PROCESS, 10},
-                                  {PROFILE_CONTROL, 10},
-                                  {PROFILE_DISABLED, 80}});
+                                  {PROFILE_BROWSER_AND_GPU_PROCESS, 50},
+                                  {PROFILE_CONTROL, 0},
+                                  {PROFILE_DISABLED, 50}});
 #endif
 
     default:
