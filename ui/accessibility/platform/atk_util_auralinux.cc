@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <atk/atk.h>
-#include <glib-2.0/gmodule.h>
 
 #include "base/bind.h"
 #include "base/environment.h"
@@ -18,11 +17,19 @@
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
+#if defined(USE_ATK_BRIDGE)
+#include <atk-bridge.h>
+#else
+#include <glib-2.0/gmodule.h>
+#endif
+
 namespace {
 
 typedef void (*GnomeAccessibilityModuleInitFunc)();
 
 const char kAccessibilityEnabled[] = "ACCESSIBILITY_ENABLED";
+
+#if !defined(USE_ATK_BRIDGE)
 const char kAtkBridgeModule[] = "atk-bridge";
 const char kAtkBridgePath[] = "gtk-2.0/modules/libatk-bridge.so";
 const char kAtkBridgeSymbolName[] = "gnome_accessibility_module_init";
@@ -63,8 +70,12 @@ void FinishAccessibilityInitOnMainThread(
 
   init_func();
 }
+#endif  // !defined(USE_ATK_BRIDGE)
 
 bool PlatformShouldEnableAccessibility() {
+#if defined(USE_ATK_BRIDGE)
+  return false;
+#else
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string gtk_modules;
   if (!env->GetVar(kGtkModules, &gtk_modules))
@@ -77,6 +88,7 @@ bool PlatformShouldEnableAccessibility() {
       return true;
   }
   return false;
+#endif
 }
 
 bool ShouldEnableAccessibility() {
@@ -181,11 +193,19 @@ void AtkUtilAuraLinux::InitializeAsync() {
   if (!ShouldEnableAccessibility())
     return;
 
+#if defined(USE_ATK_BRIDGE)
+  // AT bridge enabling was disabled before loading GTK to avoid
+  // getting GTK implementation ATK root.
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar("NO_AT_BRIDGE", "0");
+  atk_bridge_adaptor_init(nullptr, nullptr);
+#else
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&GetAccessibilityModuleInitFunc),
       base::Bind(&FinishAccessibilityInitOnMainThread));
+#endif
 }
 
 }  // namespace ui
