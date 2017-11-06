@@ -384,11 +384,12 @@ void ProcessMemoryDump::AddOwnershipEdge(const MemoryAllocatorDumpGuid& source,
                                          int importance) {
   // This will either override an existing edge or create a new one.
   auto it = allocator_dumps_edges_.find(source);
+  int max_importance = importance;
   if (it != allocator_dumps_edges_.end()) {
-    DCHECK_EQ(target.ToUint64(),
-              allocator_dumps_edges_[source].target.ToUint64());
+    DCHECK_EQ(target.ToUint64(), it->second.target.ToUint64());
+    max_importance = std::max(importance, it->second.importance);
   }
-  allocator_dumps_edges_[source] = {source, target, importance,
+  allocator_dumps_edges_[source] = {source, target, max_importance,
                                     false /* overridable */};
 }
 

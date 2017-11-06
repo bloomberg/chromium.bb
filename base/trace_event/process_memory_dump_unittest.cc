@@ -311,7 +311,7 @@ TEST(ProcessMemoryDumpTest, OverrideOwnershipEdge) {
   EXPECT_EQ(2, edges.find(shm_dump3->guid())->second.importance);
   EXPECT_FALSE(edges.find(shm_dump3->guid())->second.overridable);
   EXPECT_EQ(shm_dump4->guid(), edges.find(child4_dump->guid())->second.target);
-  EXPECT_EQ(0, edges.find(child4_dump->guid())->second.importance);
+  EXPECT_EQ(4, edges.find(child4_dump->guid())->second.importance);
   EXPECT_FALSE(edges.find(child4_dump->guid())->second.overridable);
 }
 
