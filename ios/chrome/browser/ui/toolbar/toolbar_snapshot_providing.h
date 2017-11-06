@@ -13,8 +13,9 @@
 // Snapshot used by the TabSwitcher.
 - (UIView*)snapshotForTabSwitcher;
 
-// Returns a snapshot used by the StackView.
-- (UIView*)snapshotForStackView;
+// Returns a snapshot used by the StackView after resizing the toolbar to
+// |frame|.
+- (UIView*)snapshotForStackViewWithWidth:(CGFloat)width;
 
 @end
 

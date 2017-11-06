@@ -174,7 +174,7 @@ void AddRoundedBorderShadow(UIView* view, CGFloat radius, UIColor* color) {
 UIImage* CaptureViewWithOption(UIView* view,
                                CGFloat scale,
                                CaptureViewOption option) {
-  UIGraphicsBeginImageContextWithOptions(view.bounds.size, YES /* opaque */,
+  UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO /* not opaque */,
                                          scale);
   if (option != kClientSideRendering) {
     [view drawViewHierarchyInRect:view.bounds

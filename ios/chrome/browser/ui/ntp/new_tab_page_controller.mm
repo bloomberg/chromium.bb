@@ -208,7 +208,6 @@ enum {
 @synthesize homePanel = _homePanel;
 @synthesize contentSuggestionsCoordinator = _contentSuggestionsCoordinator;
 @synthesize headerController = _headerController;
-@synthesize toolbarSnapshotProvider = _toolbarSnapshotProvider;
 
 - (id)initWithUrl:(const GURL&)url
                   loader:(id<UrlLoader>)loader
@@ -792,6 +791,10 @@ enum {
 
 - (void)reparentToolbarController {
   [self.headerController reparentToolbarController];
+}
+
+- (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
+  return self.headerController.toolbarSnapshotProvider;
 }
 
 - (CGFloat)toolbarHeight {

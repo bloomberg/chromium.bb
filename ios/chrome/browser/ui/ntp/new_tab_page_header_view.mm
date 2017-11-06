@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -23,7 +24,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface NewTabPageHeaderView () {
+@interface NewTabPageHeaderView ()<ToolbarSnapshotProviding> {
   NewTabPageToolbarController* _toolbarController;
   UIImageView* _searchBoxBorder;
   UIImageView* _shadow;
@@ -33,7 +34,7 @@
 
 @implementation NewTabPageHeaderView
 
-@synthesize toolbarSnapshotProvider = _toolbarSnapshotProvider;
+#pragma mark - Public
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -46,37 +47,6 @@
 
 - (UIView*)toolBarView {
   return [_toolbarController view];
-}
-
-- (ToolbarController*)relinquishedToolbarController {
-  ToolbarController* relinquishedToolbarController = nil;
-  if ([[_toolbarController view] isDescendantOfView:self]) {
-    // Only relinquish the toolbar controller if it's in the hierarchy.
-    relinquishedToolbarController = _toolbarController;
-  }
-  return relinquishedToolbarController;
-}
-
-- (void)addConstraintsToToolbar {
-  _toolbarController.heightConstraint.constant =
-      ToolbarHeightWithTopOfScreenOffset([_toolbarController statusBarOffset]);
-  _toolbarController.heightConstraint.active = YES;
-  [NSLayoutConstraint activateConstraints:@[
-    [[_toolbarController view].leadingAnchor
-        constraintEqualToAnchor:self.leadingAnchor],
-    [[_toolbarController view].topAnchor
-        constraintEqualToAnchor:self.topAnchor],
-    [[_toolbarController view].trailingAnchor
-        constraintEqualToAnchor:self.trailingAnchor],
-  ]];
-}
-
-- (void)reparentToolbarController {
-  DCHECK(![[_toolbarController view] isDescendantOfView:self]);
-  [self addSubview:[_toolbarController view]];
-  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
-    [self addConstraintsToToolbar];
-  }
 }
 
 - (void)addToolbarWithReadingListModel:(ReadingListModel*)readingListModel
@@ -212,6 +182,70 @@
                    animations:^{
                      [_shadow setAlpha:0];
                    }];
+}
+
+#pragma mark - ToolbarOwner
+
+- (ToolbarController*)relinquishedToolbarController {
+  ToolbarController* relinquishedToolbarController = nil;
+  if ([[_toolbarController view] isDescendantOfView:self]) {
+    // Only relinquish the toolbar controller if it's in the hierarchy.
+    relinquishedToolbarController = _toolbarController;
+  }
+  return relinquishedToolbarController;
+}
+
+- (void)reparentToolbarController {
+  DCHECK(![[_toolbarController view] isDescendantOfView:self]);
+  [self addSubview:[_toolbarController view]];
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    [self addConstraintsToToolbar];
+  }
+}
+
+- (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
+  return self;
+}
+
+#pragma mark - ToolbarSnapshotProviding
+
+- (UIView*)snapshotForTabSwitcher {
+  return nil;
+}
+
+- (UIView*)snapshotForStackViewWithWidth:(CGFloat)width {
+  UIView* toolbar = _toolbarController.view;
+  CGRect oldFrame = toolbar.frame;
+  CGRect newFrame = oldFrame;
+  newFrame.size.width = width;
+  toolbar.frame = newFrame;
+  UIView* toolbarSnapshotView;
+  if ([toolbar window]) {
+    // Take a snapshot only if it has been added to the view hierarchy.
+    toolbarSnapshotView = [toolbar snapshotViewAfterScreenUpdates:NO];
+  } else {
+    toolbarSnapshotView = [[UIView alloc] initWithFrame:toolbar.frame];
+    [toolbarSnapshotView layer].contents = static_cast<id>(
+        CaptureViewWithOption(toolbar, 0, kClientSideRendering).CGImage);
+  }
+  toolbar.frame = oldFrame;
+  return toolbarSnapshotView;
+}
+
+#pragma mark - Private
+
+- (void)addConstraintsToToolbar {
+  _toolbarController.heightConstraint.constant =
+      ToolbarHeightWithTopOfScreenOffset([_toolbarController statusBarOffset]);
+  _toolbarController.heightConstraint.active = YES;
+  [NSLayoutConstraint activateConstraints:@[
+    [[_toolbarController view].leadingAnchor
+        constraintEqualToAnchor:self.leadingAnchor],
+    [[_toolbarController view].topAnchor
+        constraintEqualToAnchor:self.topAnchor],
+    [[_toolbarController view].trailingAnchor
+        constraintEqualToAnchor:self.trailingAnchor],
+  ]];
 }
 
 @end

@@ -172,13 +172,19 @@
   } else {
     toolbarSnapshotView = [[UIView alloc] initWithFrame:self.view.frame];
     [toolbarSnapshotView layer].contents = static_cast<id>(
-        CaptureViewWithOption(self.view, 1, kClientSideRendering).CGImage);
+        CaptureViewWithOption(self.view, 0, kClientSideRendering).CGImage);
   }
   return toolbarSnapshotView;
 }
 
-- (UIView*)snapshotForStackView {
-  return [self snapshotForTabSwitcher];
+- (UIView*)snapshotForStackViewWithWidth:(CGFloat)width {
+  CGRect oldFrame = self.view.frame;
+  CGRect newFrame = oldFrame;
+  newFrame.size.width = width;
+  self.view.frame = newFrame;
+  UIView* toolbarSnapshotView = [self snapshotForTabSwitcher];
+  self.view.frame = oldFrame;
+  return toolbarSnapshotView;
 }
 
 #pragma mark - IncognitoViewControllerDelegate
