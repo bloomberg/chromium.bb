@@ -2472,6 +2472,8 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForRiskyJsFeatures(input_api, output_api))
   results.extend(_CheckForRelativeIncludes(input_api, output_api))
   results.extend(_CheckWATCHLISTS(input_api, output_api))
+  results.extend(input_api.RunTests(
+    input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
