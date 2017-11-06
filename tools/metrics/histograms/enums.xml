@@ -40818,6 +40818,9 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="12" label="kNoCacheBecauseStreamingSource">
     Blink did not request a code cache because this is a streaming source
   </int>
+  <int value="13" label="kNoCacheBecauseExtension">
+    Blink did not request a code cache because it is compiling an extension
+  </int>
 </enum>
 
 <enum name="V8CodeCacheRejectReason">
