@@ -219,11 +219,11 @@ class _FileLineCoverageReport(object):
     files_to_delete = []
     for path in self._coverage:
       should_include = (any(os.path.abspath(path).startswith(
-          os.path.abspath(path))
-                            for path in include_paths))
+          os.path.abspath(include_path))
+                            for include_path in include_paths))
       should_exclude = (any(os.path.abspath(path).startswith(
-          os.path.abspath(path))
-                            for path in exclude_paths))
+          os.path.abspath(exclude_path))
+                            for exclude_path in exclude_paths))
 
       if not should_include or should_exclude:
         files_to_delete.append(path)
