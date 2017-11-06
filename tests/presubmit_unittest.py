@@ -1907,13 +1907,10 @@ class CannedChecksUnittest(PresubmitTestsBase):
     json.load(http_resp).MultipleTimes().AndReturn(http_resp)
 
     mock_cl = self.mox.CreateMock(git_cl.Changelist)
-    mock_cl.GetBranch().AndReturn('test')
-    mock_cl.FetchUpstreamTuple('test').AndReturn((host, branch))
+    mock_cl.GetRemoteBranch().AndReturn(('remote', branch))
+    mock_cl.GetRemoteUrl().AndReturn(host)
     self.mox.StubOutWithMock(git_cl, 'Changelist', use_mock_anything=True)
     git_cl.Changelist().AndReturn(mock_cl)
-
-    self.mox.StubOutWithMock(git, 'get_remote_url')
-    git.get_remote_url(remote=host).AndReturn(host)
 
     change1 = presubmit.Change(
       'foo', 'foo1', self.fake_root_dir, None, 0, 0, None)
