@@ -27,5 +27,4 @@ source_set("toolbar_base_feature") {
   deps = [
     "//base",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }

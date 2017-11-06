@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -61,7 +62,7 @@
 
   [self addSubview:[_toolbarController view]];
 
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [self addConstraintsToToolbar];
   } else {
     CGRect toolbarFrame = self.bounds;
@@ -169,7 +170,7 @@
 
 - (void)safeAreaInsetsDidChange {
   [super safeAreaInsetsDidChange];
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     _toolbarController.heightConstraint.constant =
         ToolbarHeightWithTopOfScreenOffset(
             [_toolbarController statusBarOffset]);
@@ -197,7 +198,7 @@
 - (void)reparentToolbarController {
   DCHECK(![[_toolbarController view] isDescendantOfView:self]);
   [self addSubview:[_toolbarController view]];
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [self addConstraintsToToolbar];
   }
 }

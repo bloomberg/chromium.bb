@@ -59,7 +59,6 @@ source_set("ui_util") {
     "//base",
     "//base:i18n",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/ui/toolbar:feature",
     "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
     "//ios/web",
     "//ui/base",

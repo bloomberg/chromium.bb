@@ -170,6 +170,7 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
@@ -1307,7 +1308,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self installFakeStatusBar];
   [self buildToolbarAndTabStrip];
   [self setUpViewLayout];
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [self addConstraintsToToolbar];
   }
   // If the tab model and browser state are valid, finish initialization.
@@ -1331,7 +1332,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (IsIPhoneX()) {
     [self setUpViewLayout];
   }
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     // TODO(crbug.com/778236): Check if this call can be removed once the
     // Toolbar is a contained ViewController.
     [_toolbarCoordinator.toolbarController viewSafeAreaInsetsDidChange];
@@ -2040,7 +2041,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   CGRect toolbarFrame = [[_toolbarCoordinator view] frame];
   toolbarFrame.origin = CGPointMake(0, minY);
   toolbarFrame.size.width = widthOfView;
-  if (!IsSafeAreaCompatibleToolbarEnabled()) {
+  if (!base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [[_toolbarCoordinator view] setFrame:toolbarFrame];
   }
 
@@ -4788,12 +4789,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
     } else if ([_findBarController isFindInPageShown]) {
       [self.view insertSubview:[_toolbarCoordinator view]
                   belowSubview:[_findBarController view]];
-      if (IsSafeAreaCompatibleToolbarEnabled()) {
+      if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
         [self addConstraintsToToolbar];
       }
     } else {
       [self.view addSubview:[_toolbarCoordinator view]];
-      if (IsSafeAreaCompatibleToolbarEnabled()) {
+      if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
         [self addConstraintsToToolbar];
       }
     }

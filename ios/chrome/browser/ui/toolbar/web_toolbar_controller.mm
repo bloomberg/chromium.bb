@@ -702,7 +702,7 @@ using ios::material::TimingFunction;
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
   if (!IsIPadIdiom()) {
-    if (IsSafeAreaCompatibleToolbarEnabled()) {
+    if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
       // The clipping view's height is supposed to match the toolbar's height.
       // The clipping view can't match the toolbar's height with autoresizing
       // masks because the clipping view is not a direct child of the toolbar.
@@ -2459,7 +2459,7 @@ using ios::material::TimingFunction;
   CGRect frame = [self view].frame;
   CGFloat oldWidth = frame.size.width;
   frame.size.width = width;
-  if (!IsSafeAreaCompatibleToolbarEnabled())
+  if (!base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar))
     [self view].frame = frame;
 
   UIGraphicsBeginImageContextWithOptions(frame.size, NO, 0.0);
@@ -2479,7 +2479,7 @@ using ios::material::TimingFunction;
   DCHECK_EQ(frame.size.height, [self view].frame.size.height);
 
   frame.size.width = oldWidth;
-  if (!IsSafeAreaCompatibleToolbarEnabled()) {
+  if (!base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [self view].frame = frame;
   }
 

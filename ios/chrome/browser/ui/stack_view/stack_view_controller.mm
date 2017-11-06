@@ -767,7 +767,7 @@ NSString* const kTransitionToolbarAnimationKey =
   [[_toolbarController view] setFrame:toolbarFrame];
   [self.view addSubview:[_toolbarController view]];
 
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [[_toolbarController view].leadingAnchor
         constraintEqualToAnchor:self.view.leadingAnchor]
         .active = YES;
@@ -805,7 +805,7 @@ NSString* const kTransitionToolbarAnimationKey =
   }
   [self.view addSubview:_scrollView];
 
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [_scrollView setTranslatesAutoresizingMaskIntoConstraints:NO];
     [NSLayoutConstraint activateConstraints:@[
       [_scrollView.topAnchor
@@ -834,7 +834,7 @@ NSString* const kTransitionToolbarAnimationKey =
 
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [_toolbarController heightConstraint].constant =
         ToolbarHeightWithTopOfScreenOffset(
             [_toolbarController statusBarOffset]);
@@ -1705,7 +1705,7 @@ NSString* const kTransitionToolbarAnimationKey =
   CGRect currentCardFrame =
       AlignRectOriginAndSizeToPixels(LayoutRectGetRect(currentCardLayout));
 
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     // Forces a layout because the views may not yet be positioned correctly
     // due to a screen rotation.
     [self.view layoutIfNeeded];
@@ -2007,7 +2007,7 @@ NSString* const kTransitionToolbarAnimationKey =
   [_activeCardSet.displayView
       insertSubview:self.transitionToolbarController.view
        aboveSubview:_activeCardSet.currentCard.view];
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [self.transitionToolbarController.view.leadingAnchor
         constraintEqualToAnchor:_activeCardSet.displayView.leadingAnchor]
         .active = YES;
