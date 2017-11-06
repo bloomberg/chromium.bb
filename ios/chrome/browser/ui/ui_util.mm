@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_private_base_feature.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/gfx/ios/uikit_util.h"
@@ -61,12 +62,17 @@ bool IsIPhoneX() {
           CGRectGetHeight([[UIScreen mainScreen] nativeBounds]) == 2436);
 }
 
+bool IsSafeAreaCompatibleToolbarEnabled() {
+  return IsIPhoneX() &&
+         base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar);
+}
+
 CGFloat StatusBarHeight() {
   // This is a temporary solution until usage of StatusBarHeight has been
   // replaced with topLayoutGuide.
 
   if (IsIPhoneX()) {
-    if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    if (IsSafeAreaCompatibleToolbarEnabled()) {
       CGRect statusBarFrame = [UIApplication sharedApplication].statusBarFrame;
       return CGRectGetHeight(statusBarFrame);
     } else {
