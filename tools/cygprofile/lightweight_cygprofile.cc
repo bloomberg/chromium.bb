@@ -15,9 +15,21 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 
+// These functions are here to, respectively:
+// 1. Check that functions are ordered
+// 2. Delimit the start of .text
+// 3. Delimit the end of .text
+//
+// (2) and (3) require a suitably constructed orderfile, with these
+// functions at the beginning and end. (1) doesn't need to be in it.
+//
+// Also note that we have "load-bearing" CHECK()s below: they have side-effects.
+// Without any code taking the address of a function, Identical Code Folding
+// would merge these functions with other empty ones, defeating their purpose.
 extern "C" {
 void dummy_function_to_check_ordering() {}
 void dummy_function_to_anchor_text() {}
+void dummy_function_at_the_end_of_text() {}
 }
 
 namespace {
@@ -35,11 +47,12 @@ std::atomic<uint32_t> g_return_offsets[kArraySize];
 // to save a global load in the instrumentation function.
 std::atomic<std::atomic<uint32_t>*> g_enabled_and_array = {g_return_offsets};
 
-// This needs the orderfile to contain this function as the first entry.
 // Used to compute the offset of any return address inside .text, as relative
 // to this function.
 const size_t kStartOfText =
     reinterpret_cast<size_t>(dummy_function_to_anchor_text);
+const size_t kEndOfText =
+    reinterpret_cast<size_t>(dummy_function_at_the_end_of_text);
 
 // Disables the logging and dumps the result after |kDelayInSeconds|.
 class DelayedDumper {
@@ -49,6 +62,10 @@ class DelayedDumper {
     // dummy_function_to_anchor_text() should then be after
     // dummy_function_to_check_ordering() without ordering.
     // This check is thus intended to catch the lack of ordering.
+    CHECK_LT(kStartOfText,
+             reinterpret_cast<size_t>(&dummy_function_to_check_ordering));
+    CHECK_LT(kStartOfText, kEndOfText);
+    CHECK_LT(kEndOfText - kStartOfText, kMaxTextSizeInBytes);
     CHECK_LT(kStartOfText,
              reinterpret_cast<size_t>(&dummy_function_to_check_ordering));
 
@@ -98,7 +115,13 @@ class DelayedDumper {
 DelayedDumper g_dump_later;
 
 extern "C" {
-void __cyg_profile_func_enter(void* unused1, void* unused2) {
+
+// Since this function relies on the return address, if it's not inlined and
+// __cyg_profile_func_enter() is called below, then the return address will
+// be inside __cyg_profile_func_enter(). To prevent that, force inlining.
+// We cannot use ALWAYS_INLINE from src/base/compiler_specific.h, as it doesn't
+// always map to always_inline, for instance when NDEBUG is not defined.
+__attribute__((__always_inline__)) void mcount() {
   // To avoid any risk of infinite recusion, this *must* *never* call any
   // instrumented function.
   auto* array = g_enabled_and_array.load(std::memory_order_relaxed);
@@ -106,14 +129,13 @@ void __cyg_profile_func_enter(void* unused1, void* unused2) {
     return;
 
   size_t return_address = reinterpret_cast<size_t>(__builtin_return_address(0));
-  size_t index = (return_address - kStartOfText) / sizeof(int);
   // Not a CHECK() to avoid the possibility of calling an instrumented function.
-  if (UNLIKELY(return_address < kStartOfText || index / 32 > kArraySize)) {
+  if (UNLIKELY(return_address < kStartOfText || return_address > kEndOfText)) {
     g_enabled_and_array.store(nullptr, std::memory_order_relaxed);
-    LOG(FATAL) << "Return address out of bounds (wrong ordering, "
-               << ".text larger than the max size?)";
+    LOG(FATAL) << "Return address out of bounds (wrong ordering?)";
   }
 
+  size_t index = (return_address - kStartOfText) / sizeof(int);
   // Atomically set the corresponding bit in the array.
   std::atomic<uint32_t>* element = array + (index / 32);
   // First, a racy check. This saves a CAS if the bit is already set, and allows
@@ -133,6 +155,11 @@ void __cyg_profile_func_enter(void* unused1, void* unused2) {
     desired = value | mask;
   } while (element->compare_exchange_weak(value, desired,
                                           std::memory_order_relaxed));
+}
+
+void __cyg_profile_func_enter(void* unused1, void* unused2) {
+  // Requires __always_inline__ on mcount(), see above.
+  mcount();
 }
 
 void __cyg_profile_func_exit(void* unused1, void* unused2) {}
