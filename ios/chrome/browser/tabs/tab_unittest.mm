@@ -216,14 +216,11 @@ class TabTest : public BlockCleanupTest {
   void BrowseTo(const GURL& userUrl, const GURL& redirectUrl, NSString* title) {
     DCHECK_EQ(tab_.webState, web_state_impl_.get());
 
-    [tab_ webWillAddPendingURL:userUrl transition:ui::PAGE_TRANSITION_TYPED];
     std::unique_ptr<web::NavigationContext> context1 =
         web::NavigationContextImpl::CreateNavigationContext(
             web_state_impl_.get(), userUrl,
             ui::PageTransition::PAGE_TRANSITION_TYPED, false);
     web_state_impl_->OnNavigationStarted(context1.get());
-    [tab_ webWillAddPendingURL:redirectUrl
-                    transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT];
 
     web::Referrer empty_referrer;
     [tab_ navigationManagerImpl]->AddPendingItem(

@@ -868,18 +868,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 #pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods.
 
-// This method is invoked whenever the system believes the URL is about to
-// change, or immediately after any unexpected change of the URL. The apparent
-// destination URL is included in the |url| parameter.
-// Warning: because of the present design it is possible for malicious websites
-// to invoke superflous instances of this delegate with artibrary URLs.
-// Ensure there is nothing here that could be a risk to the user beyond mild
-// confusion in that event (e.g. progress bar starting unexpectedly).
-- (void)webWillAddPendingURL:(const GURL&)url
-                  transition:(ui::PageTransition)transition {
-  // TODO(crbug.com/674991): Remove this method.
-}
-
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
   if (!navigation->IsSameDocument() &&

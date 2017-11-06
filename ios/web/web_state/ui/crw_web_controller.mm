@@ -1431,7 +1431,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
-  [_delegate webWillAddPendingURL:requestURL transition:transition];
   // Add or update pending url.
   bool isRendererInitiated = true;
   web::NavigationItem* pendingItem =
