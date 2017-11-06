@@ -138,7 +138,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
       blink::mojom::BackgroundFetchError* out_error,
       const base::Closure& quit_closure,
       blink::mojom::BackgroundFetchError error,
-      const base::Optional<BackgroundFetchRegistration>& registration) {
+      std::unique_ptr<BackgroundFetchRegistration> registration) {
     DCHECK(out_error);
 
     *out_error = error;

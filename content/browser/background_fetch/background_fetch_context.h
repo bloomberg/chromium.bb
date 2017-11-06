@@ -48,6 +48,15 @@ class CONTENT_EXPORT BackgroundFetchContext
       BrowserContext* browser_context,
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
 
+  // Gets the active Background Fetch registration identified by |developer_id|
+  // for the given |service_worker_id| and |origin|. The |callback| will be
+  // invoked with the registration when it has been retrieved.
+  void GetRegistration(
+      int64_t service_worker_registration_id,
+      const url::Origin& origin,
+      const std::string& developer_id,
+      blink::mojom::BackgroundFetchService::GetRegistrationCallback callback);
+
   // Starts a Background Fetch for the |registration_id|. The |requests| will be
   // asynchronously fetched. The |callback| will be invoked when the fetch has
   // been registered, or an error occurred that prevents it from doing so.
@@ -93,13 +102,20 @@ class CONTENT_EXPORT BackgroundFetchContext
                         const BackgroundFetchOptions& options,
                         const BackgroundFetchRegistration& registration);
 
+  // Called when an existing registration has been retrieved from the data
+  // manager. If the registration does not exist then |registration| is nullptr.
+  void DidGetRegistration(
+      blink::mojom::BackgroundFetchService::GetRegistrationCallback callback,
+      blink::mojom::BackgroundFetchError error,
+      std::unique_ptr<BackgroundFetchRegistration> registration);
+
   // Called when a new registration has been created by the data manager.
   void DidCreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
       blink::mojom::BackgroundFetchService::FetchCallback callback,
       blink::mojom::BackgroundFetchError error,
-      const base::Optional<BackgroundFetchRegistration>& registration);
+      std::unique_ptr<BackgroundFetchRegistration> registration);
 
   // Called when the new title has been updated in the data manager.
   void DidUpdateStoredRegistrationUI(

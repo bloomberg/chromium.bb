@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_CREATE_REGISTRATION_TASK_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_CREATE_REGISTRATION_TASK_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -20,12 +21,15 @@ namespace background_fetch {
 // Creates Background Fetch registration entries in the database.
 class CreateRegistrationTask : public DatabaseTask {
  public:
-  CreateRegistrationTask(
-      BackgroundFetchDataManager* data_manager,
-      const BackgroundFetchRegistrationId& registration_id,
-      const std::vector<ServiceWorkerFetchRequest>& requests,
-      const BackgroundFetchOptions& options,
-      blink::mojom::BackgroundFetchService::FetchCallback callback);
+  using CreateRegistrationCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              std::unique_ptr<BackgroundFetchRegistration>)>;
+
+  CreateRegistrationTask(BackgroundFetchDataManager* data_manager,
+                         const BackgroundFetchRegistrationId& registration_id,
+                         const std::vector<ServiceWorkerFetchRequest>& requests,
+                         const BackgroundFetchOptions& options,
+                         CreateRegistrationCallback callback);
 
   ~CreateRegistrationTask() override;
 
@@ -42,7 +46,7 @@ class CreateRegistrationTask : public DatabaseTask {
   BackgroundFetchRegistrationId registration_id_;
   std::vector<ServiceWorkerFetchRequest> requests_;
   BackgroundFetchOptions options_;
-  blink::mojom::BackgroundFetchService::FetchCallback callback_;
+  CreateRegistrationCallback callback_;
 
   base::WeakPtrFactory<CreateRegistrationTask> weak_factory_;  // Keep as last.
 

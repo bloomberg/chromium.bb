@@ -134,10 +134,7 @@ class BackgroundFetchDataManager::RegistrationData {
 
   const BackgroundFetchOptions& options() const { return options_; }
 
-  uint64_t GetDownloaded(BackgroundFetchDatabaseClient* client) {
-    return complete_requests_downloaded_bytes_ +
-           (client ? client->GetInProgressDownloadedBytes() : 0);
-  }
+  uint64_t GetDownloaded() const { return complete_requests_downloaded_bytes_; }
 
   int GetTotalNumberOfRequests() const {
     return pending_requests_.size() + active_requests_.size() +
@@ -147,6 +144,8 @@ class BackgroundFetchDataManager::RegistrationData {
  private:
   BackgroundFetchRegistrationId registration_id_;
   BackgroundFetchOptions options_;
+  // Number of bytes downloaded as part of completed downloads. (In-progress
+  // downloads are tracked elsewhere).
   uint64_t complete_requests_downloaded_bytes_ = 0;
 
   base::queue<scoped_refptr<BackgroundFetchRequestInfo>> pending_requests_;
@@ -219,7 +218,7 @@ void BackgroundFetchDataManager::CreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
-    blink::mojom::BackgroundFetchService::FetchCallback callback) {
+    GetRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -238,8 +237,7 @@ void BackgroundFetchDataManager::CreateRegistration(
 
   if (active_registration_unique_ids_.count(developer_id_tuple)) {
     std::move(callback).Run(
-        blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID,
-        base::nullopt);
+        blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID, nullptr);
     return;
   }
 
@@ -267,7 +265,7 @@ void BackgroundFetchDataManager::GetRegistration(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     const std::string& developer_id,
-    blink::mojom::BackgroundFetchService::GetRegistrationCallback callback) {
+    GetRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto developer_id_tuple =
@@ -276,7 +274,7 @@ void BackgroundFetchDataManager::GetRegistration(
   auto iter = active_registration_unique_ids_.find(developer_id_tuple);
   if (iter == active_registration_unique_ids_.end()) {
     std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID,
-                            base::nullopt /* registration */);
+                            nullptr /* registration */);
     return;
   }
 
@@ -285,26 +283,20 @@ void BackgroundFetchDataManager::GetRegistration(
   DCHECK_EQ(1u, registrations_.count(unique_id));
   RegistrationData* data = registrations_[unique_id].get();
 
-  auto database_clients_iter = database_clients_.find(unique_id);
-  BackgroundFetchDatabaseClient* client =
-      database_clients_iter != database_clients_.end()
-          ? database_clients_iter->second
-          : nullptr;
-
   // Compile the BackgroundFetchRegistration object for the developer.
-  BackgroundFetchRegistration registration;
-  registration.developer_id = developer_id;
-  registration.unique_id = unique_id;
-  registration.icons = data->options().icons;
-  registration.title = data->options().title;
+  auto registration = std::make_unique<BackgroundFetchRegistration>();
+  registration->developer_id = developer_id;
+  registration->unique_id = unique_id;
+  registration->icons = data->options().icons;
+  registration->title = data->options().title;
   // TODO(crbug.com/774054): Uploads are not yet supported.
-  registration.upload_total = 0;
-  registration.uploaded = 0;
-  registration.download_total = data->options().download_total;
-  registration.downloaded = data->GetDownloaded(client);
+  registration->upload_total = 0;
+  registration->uploaded = 0;
+  registration->download_total = data->options().download_total;
+  registration->downloaded = data->GetDownloaded();
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
-                          registration);
+                          std::move(registration));
 }
 
 void BackgroundFetchDataManager::UpdateRegistrationUI(

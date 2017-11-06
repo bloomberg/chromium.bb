@@ -128,9 +128,9 @@ void BackgroundFetchServiceImpl::GetRegistration(
     return;
   }
 
-  background_fetch_context_->data_manager().GetRegistration(
-      service_worker_registration_id, origin, developer_id,
-      std::move(callback));
+  background_fetch_context_->GetRegistration(service_worker_registration_id,
+                                             origin, developer_id,
+                                             std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::GetDeveloperIds(

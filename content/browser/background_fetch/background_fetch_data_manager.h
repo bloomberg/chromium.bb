@@ -50,9 +50,6 @@ class BackgroundFetchDatabaseClient {
       int completed_downloads,
       int total_downloads,
       const std::vector<std::string>& outstanding_guids) = 0;
-
-  // Should return the sum of the bytes downloaded by in progress requests.
-  virtual uint64_t GetInProgressDownloadedBytes() = 0;
 };
 
 // The BackgroundFetchDataManager is a wrapper around persistent storage (the
@@ -77,6 +74,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       bool /* background_fetch_succeeded */,
       std::vector<BackgroundFetchSettledFetch>,
       std::vector<std::unique_ptr<storage::BlobDataHandle>>)>;
+  using GetRegistrationCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              std::unique_ptr<BackgroundFetchRegistration>)>;
 
   BackgroundFetchDataManager(
       BrowserContext* browser_context,
@@ -100,14 +100,13 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       const BackgroundFetchRegistrationId& registration_id,
       const std::vector<ServiceWorkerFetchRequest>& requests,
       const BackgroundFetchOptions& options,
-      blink::mojom::BackgroundFetchService::FetchCallback callback);
+      GetRegistrationCallback callback);
 
   // Get the BackgroundFetchOptions for a registration.
-  void GetRegistration(
-      int64_t service_worker_registration_id,
-      const url::Origin& origin,
-      const std::string& developer_id,
-      blink::mojom::BackgroundFetchService::GetRegistrationCallback callback);
+  void GetRegistration(int64_t service_worker_registration_id,
+                       const url::Origin& origin,
+                       const std::string& developer_id,
+                       GetRegistrationCallback callback);
 
   // Updates the UI values for a Background Fetch registration.
   void UpdateRegistrationUI(
