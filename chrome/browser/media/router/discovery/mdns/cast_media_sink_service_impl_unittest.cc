@@ -103,7 +103,9 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
                                  mock_time_task_runner_.get()) {}
 
   void SetUp() override {
+    content::RunAllTasksUntilIdle();
     fake_network_info_.clear();
+
     auto mock_timer = base::MakeUnique<base::MockTimer>(
         true /*retain_user_task*/, false /*is_repeating*/);
     mock_timer_ = mock_timer.get();
