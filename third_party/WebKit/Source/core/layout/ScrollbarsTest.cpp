@@ -8,6 +8,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/input/EventHandler.h"
+#include "core/inspector/DevToolsEmulator.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayerScrollableArea.h"
@@ -975,6 +976,230 @@ TEST_P(ScrollbarsTest,
 
   // No DCHECK Fails. Issue 676678.
   Compositor().BeginFrame();
+}
+
+// Make sure native scrollbar can change by Emulator.
+TEST_P(ScrollbarsTest, NativeScrollbarChangeToMobileByEmulator) {
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  ScrollbarTheme::SetMockScrollbarsEnabled(false);
+  WebView().Resize(WebSize(200, 200));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style type='text/css'>"
+      "body {"
+      "  height: 10000px;"
+      "  margin: 0;"
+      "}"
+      "#d1 {"
+      "  height: 200px;"
+      "  width: 200px;"
+      "  overflow: auto;"
+      "}"
+      "#d2 {"
+      "  height: 2000px;"
+      "}"
+      "</style>"
+      "<div id='d1'>"
+      "  <div id='d2'/>"
+      "</div>");
+
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  ScrollableArea* root_scrollable =
+      document.View()->LayoutViewportScrollableArea();
+
+  Element* div = document.getElementById("d1");
+
+  ScrollableArea* div_scrollable =
+      ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
+
+  VisualViewport& viewport = WebView().GetPage()->GetVisualViewport();
+
+  DCHECK(root_scrollable->VerticalScrollbar());
+  DCHECK(!root_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+  DCHECK(!root_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
+  DCHECK(!root_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
+
+  DCHECK(!viewport.LayerForHorizontalScrollbar()->Parent());
+
+  DCHECK(div_scrollable->VerticalScrollbar());
+  DCHECK(!div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+  DCHECK(!div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
+  DCHECK(!div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
+
+  // Turn on mobile emulator.
+  WebDeviceEmulationParams params;
+  params.screen_position = WebDeviceEmulationParams::kMobile;
+  WebView().EnableDeviceEmulation(params);
+
+  // For root Scrollbar, mobile emulator will change them to page VisualViewport
+  // scrollbar layer.
+  EXPECT_TRUE(viewport.LayerForHorizontalScrollbar()->Parent());
+
+  // Ensure div scrollbar also change to mobile overlay theme.
+  EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
+
+  ScrollbarThemeOverlay& theme =
+      (ScrollbarThemeOverlay&)div_scrollable->VerticalScrollbar()->GetTheme();
+  EXPECT_TRUE(theme.IsMobileTheme());
+
+  // Turn off mobile emulator.
+  WebView().DisableDeviceEmulation();
+
+  EXPECT_TRUE(root_scrollable->VerticalScrollbar());
+  EXPECT_FALSE(root_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+  EXPECT_FALSE(root_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
+  EXPECT_FALSE(root_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
+
+  DCHECK(!viewport.LayerForHorizontalScrollbar()->Parent());
+
+  EXPECT_TRUE(div_scrollable->VerticalScrollbar());
+  EXPECT_FALSE(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+  EXPECT_FALSE(div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
+  EXPECT_FALSE(div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
+}
+
+// Make sure root custom scrollbar can change by Emulator but div custom
+// scrollbar not.
+TEST_P(ScrollbarsTest, CustomScrollbarChangeToMobileByEmulator) {
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  ScrollbarTheme::SetMockScrollbarsEnabled(false);
+  WebView().Resize(WebSize(200, 200));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style type='text/css'>"
+      "body {"
+      "  height: 10000px;"
+      "  margin: 0;"
+      "}"
+      "#d1 {"
+      "  height: 200px;"
+      "  width: 200px;"
+      "  overflow: auto;"
+      "}"
+      "#d2 {"
+      "  height: 2000px;"
+      "}"
+      "::-webkit-scrollbar {"
+      "  width: 10px;"
+      "}"
+      "</style>"
+      "<div id='d1'>"
+      "  <div id='d2'/>"
+      "</div>");
+
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  ScrollableArea* root_scrollable =
+      document.View()->LayoutViewportScrollableArea();
+
+  Element* div = document.getElementById("d1");
+
+  ScrollableArea* div_scrollable =
+      ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
+
+  VisualViewport& viewport = WebView().GetPage()->GetVisualViewport();
+
+  DCHECK(root_scrollable->VerticalScrollbar());
+  DCHECK(root_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+  DCHECK(!root_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
+  DCHECK(!root_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
+
+  DCHECK(!viewport.LayerForHorizontalScrollbar()->Parent());
+
+  DCHECK(div_scrollable->VerticalScrollbar());
+  DCHECK(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+  DCHECK(!div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
+  DCHECK(!div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
+
+  // Turn on mobile emulator.
+  WebDeviceEmulationParams params;
+  params.screen_position = WebDeviceEmulationParams::kMobile;
+  WebView().EnableDeviceEmulation(params);
+
+  // For root Scrollbar, mobile emulator will change them to page VisualViewport
+  // scrollbar layer.
+  EXPECT_TRUE(viewport.LayerForVerticalScrollbar());
+  EXPECT_FALSE(root_scrollable->VerticalScrollbar());
+
+  EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+
+  // Turn off mobile emulator.
+  WebView().DisableDeviceEmulation();
+
+  EXPECT_TRUE(root_scrollable->VerticalScrollbar());
+  EXPECT_TRUE(root_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+  EXPECT_FALSE(root_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
+  EXPECT_FALSE(root_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
+
+  DCHECK(!viewport.LayerForHorizontalScrollbar()->Parent());
+
+  EXPECT_TRUE(div_scrollable->VerticalScrollbar());
+  EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+  EXPECT_FALSE(div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
+  EXPECT_FALSE(div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
+}
+
+// Ensure custom scrollbar recreate when style owner change,
+TEST_P(ScrollbarsTest, CustomScrollbarWhenStyleOwnerChange) {
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  ScrollbarTheme::SetMockScrollbarsEnabled(false);
+  WebView().Resize(WebSize(200, 200));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style type='text/css'>"
+      "#d1 {"
+      "  height: 200px;"
+      "  width: 200px;"
+      "  overflow: auto;"
+      "}"
+      "#d2 {"
+      "  height: 2000px;"
+      "}"
+      "::-webkit-scrollbar {"
+      "  width: 10px;"
+      "}"
+      ".custom::-webkit-scrollbar {"
+      "  width: 5px;"
+      "}"
+      "</style>"
+      "<div id='d1'>"
+      "  <div id='d2'></div>"
+      "</div>");
+
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* div = document.getElementById("d1");
+
+  ScrollableArea* div_scrollable =
+      ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
+
+  DCHECK(div_scrollable->VerticalScrollbar());
+  DCHECK(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+  DCHECK_EQ(div_scrollable->VerticalScrollbar()->Width(), 10);
+  DCHECK(!div_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
+  DCHECK(!div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
+
+  div->setAttribute(HTMLNames::classAttr, "custom");
+  Compositor().BeginFrame();
+
+  EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
+  EXPECT_EQ(div_scrollable->VerticalScrollbar()->Width(), 5);
 }
 
 // http://crbug.com/633321, Disable since VirtualTime not work for Android.
