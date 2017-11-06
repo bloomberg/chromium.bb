@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "content/public/browser/swap_metrics_driver.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -157,7 +158,7 @@ void TabManagerStatsCollector::RecordSwitchToTab(
       !base::ContainsKey(foreground_contents_switched_to_times_, new_contents));
   if (new_data->tab_loading_state() != TAB_IS_LOADED) {
     foreground_contents_switched_to_times_.insert(
-        std::make_pair(new_contents, base::TimeTicks::Now()));
+        std::make_pair(new_contents, NowTicks()));
   }
 }
 
@@ -316,13 +317,11 @@ void TabManagerStatsCollector::OnDidStopLoading(
   if (is_session_restore_loading_tabs_ && !IsInOverlappedSession()) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         kHistogramSessionRestoreTabSwitchLoadTime,
-        base::TimeTicks::Now() -
-            foreground_contents_switched_to_times_[contents]);
+        NowTicks() - foreground_contents_switched_to_times_[contents]);
   }
   if (is_in_background_tab_opening_session_ && !IsInOverlappedSession()) {
     base::TimeDelta switch_load_time =
-        base::TimeTicks::Now() -
-        foreground_contents_switched_to_times_[contents];
+        NowTicks() - foreground_contents_switched_to_times_[contents];
     UMA_HISTOGRAM_MEDIUM_TIMES(kHistogramBackgroundTabOpeningTabSwitchLoadTime,
                                switch_load_time);
 
