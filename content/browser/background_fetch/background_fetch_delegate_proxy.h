@@ -83,8 +83,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
 
   // Updates the representation of this registration in the user interface to
   // match the given |title|. Called from the Controller (on the IO thread).
-  void UpdateJobTitle(const std::string& job_unique_id,
-                      const std::string& title);
+  void UpdateUI(const std::string& job_unique_id, const std::string& title);
 
   // Aborts in progress downloads for the given registration. Called from the
   // Controller (on the IO thread) after it is aborted, either by the user or

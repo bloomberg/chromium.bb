@@ -129,7 +129,7 @@ void BackgroundFetchContext::AddRegistrationObserver(
   registration_notifier_->AddObserver(unique_id, std::move(observer));
 }
 
-void BackgroundFetchContext::UpdateRegistrationUI(
+void BackgroundFetchContext::UpdateUI(
     const std::string& unique_id,
     const std::string& title,
     blink::mojom::BackgroundFetchService::UpdateUICallback callback) {
@@ -137,12 +137,12 @@ void BackgroundFetchContext::UpdateRegistrationUI(
 
   data_manager_.UpdateRegistrationUI(
       unique_id, title,
-      base::BindOnce(&BackgroundFetchContext::DidUpdateStoredRegistrationUI,
+      base::BindOnce(&BackgroundFetchContext::DidUpdateStoredUI,
                      weak_factory_.GetWeakPtr(), unique_id, title,
                      std::move(callback)));
 }
 
-void BackgroundFetchContext::DidUpdateStoredRegistrationUI(
+void BackgroundFetchContext::DidUpdateStoredUI(
     const std::string& unique_id,
     const std::string& title,
     blink::mojom::BackgroundFetchService::UpdateUICallback callback,
@@ -151,7 +151,7 @@ void BackgroundFetchContext::DidUpdateStoredRegistrationUI(
 
   if (error == blink::mojom::BackgroundFetchError::NONE &&
       job_controllers_.count(unique_id)) {
-    job_controllers_[unique_id]->UpdateJobTitle(title);
+    job_controllers_[unique_id]->UpdateUI(title);
   }
 
   std::move(callback).Run(error);

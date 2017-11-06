@@ -66,9 +66,9 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // Gets the number of bytes downloaded for jobs that are currently running.
   uint64_t GetInProgressDownloadedBytes();
 
-  // Updates the job title that's shown to the user as part of a notification
-  // for instance.
-  void UpdateJobTitle(const std::string& title);
+  // Updates the UI (currently only job title) that's shown to the user as part
+  // of a notification for instance.
+  void UpdateUI(const std::string& title);
 
   // Aborts the job including cancelling any ongoing downloads.
   void Abort();
