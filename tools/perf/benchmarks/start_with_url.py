@@ -47,14 +47,6 @@ class StartWithUrlColdTBM(_StartupPerfBenchmark):
   def Name(cls):
     return 'start_with_url.cold.startup_pages'
 
-  # TODO(rnephew): Test if kapook.com fails on both or just one of the configs.
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory(
-            'http://kapook.com', [story.expectations.ALL], 'crbug.com/667470')
-    return StoryExpectations()
-
 
 @benchmark.Owner(emails=['pasko@chromium.org'])
 class StartWithUrlWarmTBM(_StartupPerfBenchmark):
@@ -74,11 +66,3 @@ class StartWithUrlWarmTBM(_StartupPerfBenchmark):
     # Ignores first results because the first invocation is actualy cold since
     # we are loading the profile for the first time.
     return not is_first_result
-
-  # TODO(rnephew): Test if kapook.com fails on both or just one of the configs.
-  def GetExpectations(self):
-    class StoryExpectations(story.expectations.StoryExpectations):
-      def SetExpectations(self):
-        self.DisableStory(
-            'http://kapook.com', [story.expectations.ALL], 'crbug.com/667470')
-    return StoryExpectations()
