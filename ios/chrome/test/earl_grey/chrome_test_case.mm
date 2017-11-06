@@ -200,7 +200,12 @@ const CFTimeInterval kDrainTimeout = 5;
   if (_isHTTPServerStopped) {
     [[self class] startHTTPServer];
     _isHTTPServerStopped = NO;
+  } else {
+    web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
+    DCHECK(server.IsRunning());
+    server.RemoveAllResponseProviders();
   }
+
   if (_isMockAuthenticationDisabled) {
     [[self class] enableMockAuthentication];
     _isMockAuthenticationDisabled = NO;
