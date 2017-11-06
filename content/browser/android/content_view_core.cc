@@ -529,7 +529,7 @@ void ContentViewCore::DidStopFlinging() {
 }
 
 gfx::Size ContentViewCore::GetViewSize() const {
-  gfx::Size size = GetViewportSizeDip();
+  auto size = gfx::ScaleToCeiledSize(GetViewportSizePix(), 1.0f / dpi_scale());
   if (DoBrowserControlsShrinkBlinkSize())
     size.Enlarge(0, -GetTopControlsHeightDip() - GetBottomControlsHeightDip());
   return size;
@@ -558,10 +558,6 @@ int ContentViewCore::GetBottomControlsHeightPix() const {
   if (j_obj.is_null())
     return 0;
   return Java_ContentViewCore_getBottomControlsHeightPix(env, j_obj);
-}
-
-gfx::Size ContentViewCore::GetViewportSizeDip() const {
-  return gfx::ScaleToCeiledSize(GetViewportSizePix(), 1.0f / dpi_scale());
 }
 
 bool ContentViewCore::DoBrowserControlsShrinkBlinkSize() const {
