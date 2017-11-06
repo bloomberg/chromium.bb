@@ -161,11 +161,13 @@ void SyncSchedulerImpl::OnCredentialsUpdated() {
   }
 }
 
-void SyncSchedulerImpl::OnConnectionStatusChange() {
+void SyncSchedulerImpl::OnConnectionStatusChange(
+    net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (HttpResponse::CONNECTION_UNAVAILABLE ==
-      cycle_context_->connection_manager()->server_status()) {
+  if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
+      HttpResponse::CONNECTION_UNAVAILABLE ==
+          cycle_context_->connection_manager()->server_status()) {
     // Optimistically assume that the connection is fixed and try
     // connecting.
     OnServerConnectionErrorFixed();

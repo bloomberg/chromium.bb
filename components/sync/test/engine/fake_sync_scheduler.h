@@ -39,7 +39,8 @@ class FakeSyncScheduler : public SyncScheduler {
   void SetNotificationsEnabled(bool notifications_enabled) override;
 
   void OnCredentialsUpdated() override;
-  void OnConnectionStatusChange() override;
+  void OnConnectionStatusChange(
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // SyncCycle::Delegate implementation.
   void OnThrottled(const base::TimeDelta& throttle_duration) override;
