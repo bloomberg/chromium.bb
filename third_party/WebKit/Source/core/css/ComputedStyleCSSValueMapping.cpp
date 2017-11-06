@@ -2313,12 +2313,10 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     }
     case CSSPropertyBackgroundClip:
     case CSSPropertyBackgroundOrigin:
-    case CSSPropertyWebkitBackgroundClip:
     case CSSPropertyWebkitBackgroundOrigin:
     case CSSPropertyWebkitMaskClip:
     case CSSPropertyWebkitMaskOrigin: {
       bool is_clip = property_id == CSSPropertyBackgroundClip ||
-                     property_id == CSSPropertyWebkitBackgroundClip ||
                      property_id == CSSPropertyWebkitMaskClip;
       CSSValueList* list = CSSValueList::CreateCommaSeparated();
       const FillLayer* curr_layer = (property_id == CSSPropertyWebkitMaskClip ||

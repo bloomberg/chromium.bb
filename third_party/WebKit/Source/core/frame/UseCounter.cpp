@@ -55,8 +55,8 @@ constexpr int kMaximumCSSSampleId = 588;
 namespace blink {
 
 int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
-    CSSPropertyID css_property_id) {
-  switch (css_property_id) {
+    CSSPropertyID unresolved_property) {
+  switch (unresolved_property) {
     // Begin at 2, because 1 is reserved for totalPagesMeasuredCSSSampleId.
     case CSSPropertyColor:
       return 2;
@@ -382,7 +382,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
     // CSSPropertyWebkitAspectRatio was 176
     case CSSPropertyAliasWebkitBackfaceVisibility:
       return 177;
-    case CSSPropertyWebkitBackgroundClip:
+    case CSSPropertyAliasWebkitBackgroundClip:
       return 178;
     // case CSSPropertyWebkitBackgroundComposite: return 179;
     case CSSPropertyWebkitBackgroundOrigin:

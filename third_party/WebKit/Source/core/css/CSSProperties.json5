@@ -760,7 +760,7 @@
     },
     {
       name: "background-clip",
-      api_class: "CSSPropertyAPIBackgroundBox",
+      api_class: true,
       api_methods: ["ParseSingleValue"],
       api_custom_apply_functions_all: true,
     },
@@ -788,7 +788,7 @@
     },
     {
       name: "background-origin",
-      api_class: "CSSPropertyAPIBackgroundBox",
+      api_class: true,
       api_methods: ["ParseSingleValue"],
       api_custom_apply_functions_all: true,
     },
@@ -3032,12 +3032,6 @@
       api_custom_apply_functions_all: true,
     },
     {
-      name: "-webkit-background-clip",
-      api_class: "CSSPropertyAPIWebkitClip",
-      api_methods: ["ParseSingleValue"],
-      use_handlers_for: "CSSPropertyBackgroundClip",
-    },
-    {
       name: "-webkit-background-origin",
       api_class: "CSSPropertyAPIWebkitOrigin",
       api_methods: ["ParseSingleValue"],
@@ -3361,7 +3355,7 @@
     },
     {
       name: "-webkit-mask-clip",
-      api_class: "CSSPropertyAPIWebkitClip",
+      api_class: true,
       api_methods: ["ParseSingleValue"],
       api_custom_apply_functions_all: true,
     },
@@ -4624,6 +4618,12 @@
     {
       name: "-webkit-backface-visibility",
       alias_for: "backface-visibility",
+    },
+    // -webkit-background-clip accepts "content", "padding", and "border" values
+    // See crbug.com/604023
+    {
+      name: "-webkit-background-clip",
+      alias_for: "background-clip",
     },
     // "-webkit-background-size: 10px" behaves as "background-size: 10px 10px"
     {

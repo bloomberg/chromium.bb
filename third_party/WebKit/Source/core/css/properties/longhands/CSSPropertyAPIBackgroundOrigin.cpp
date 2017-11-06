@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/CSSPropertyAPIBackgroundBox.h"
+#include "core/css/properties/longhands/CSSPropertyAPIBackgroundOrigin.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyBackgroundUtils.h"
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIBackgroundBox::ParseSingleValue(
+const CSSValue* CSSPropertyAPIBackgroundOrigin::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {

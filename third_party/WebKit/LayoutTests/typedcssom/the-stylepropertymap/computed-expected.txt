@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL Computed StylePropertyMap contains every CSS property assert_equals: expected 298 but got 296
+FAIL Computed StylePropertyMap contains every CSS property assert_equals: expected 297 but got 295
 PASS Computed StylePropertyMap contains CSS property declarations in style rules
 FAIL Computed StylePropertyMap contains custom property declarations in style rules Illegal constructor
 PASS Computed StylePropertyMap contains CSS property declarations in inline styles
