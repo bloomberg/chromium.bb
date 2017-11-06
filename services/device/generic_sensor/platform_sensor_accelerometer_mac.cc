@@ -96,7 +96,7 @@ void PlatformSensorAccelerometerMac::PollForData() {
 
   if (IsSignificantlyDifferent(reading_, reading)) {
     reading_ = reading;
-    UpdateSensorReading(reading);
+    UpdateSharedBufferAndNotifyClients(reading);
   }
 }
 

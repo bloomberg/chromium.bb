@@ -5,6 +5,8 @@
 #ifndef SERVICES_DEVICE_GENERIC_SENSOR_FAKE_PLATFORM_SENSOR_AND_PROVIDER_H_
 #define SERVICES_DEVICE_GENERIC_SENSOR_FAKE_PLATFORM_SENSOR_AND_PROVIDER_H_
 
+#include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -53,6 +55,24 @@ class FakePlatformSensorProvider : public PlatformSensorProvider {
                             const CreateSensorCallback& callback) override;
 
   DISALLOW_COPY_AND_ASSIGN(FakePlatformSensorProvider);
+};
+
+// Mock for PlatformSensor's client interface that is used to deliver
+// error and data changes notifications.
+class MockPlatformSensorClient : public PlatformSensor::Client {
+ public:
+  explicit MockPlatformSensorClient(scoped_refptr<PlatformSensor> sensor);
+  ~MockPlatformSensorClient() override;
+
+  // PlatformSensor::Client:
+  MOCK_METHOD1(OnSensorReadingChanged, void(mojom::SensorType type));
+  MOCK_METHOD0(OnSensorError, void());
+  MOCK_METHOD0(IsSuspended, bool());
+
+ private:
+  scoped_refptr<PlatformSensor> sensor_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPlatformSensorClient);
 };
 
 }  // namespace device

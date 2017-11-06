@@ -45,7 +45,7 @@ double PlatformSensorWin::GetMaximumSupportedFrequency() {
 }
 
 void PlatformSensorWin::OnReadingUpdated(const SensorReading& reading) {
-  UpdateSensorReading(reading);
+  UpdateSharedBufferAndNotifyClients(reading);
 }
 
 void PlatformSensorWin::OnSensorError() {

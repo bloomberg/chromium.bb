@@ -82,9 +82,13 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
 
   virtual bool UpdateSensorInternal(const ConfigMap& configurations);
 
-  // Updates shared buffer with new sensor reading data.
+  // Updates shared buffer with new sensor reading data and schedules
+  // NotifySensorReadingChanged invocation on IPC thread.
   // Note: this method is thread-safe.
-  void UpdateSensorReading(const SensorReading& reading);
+  void UpdateSharedBufferAndNotifyClients(const SensorReading& reading);
+
+  // Updates shared buffer with provided SensorReading
+  void UpdateSharedBuffer(const SensorReading& reading);
 
   void NotifySensorReadingChanged();
   void NotifySensorError();

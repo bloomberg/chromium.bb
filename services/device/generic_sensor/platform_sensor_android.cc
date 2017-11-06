@@ -89,7 +89,7 @@ void PlatformSensorAndroid::UpdatePlatformSensorReading(
   reading.raw.values[2] = value3;
   reading.raw.values[3] = value4;
 
-  UpdateSensorReading(reading);
+  UpdateSharedBufferAndNotifyClients(reading);
 }
 
 }  // namespace device

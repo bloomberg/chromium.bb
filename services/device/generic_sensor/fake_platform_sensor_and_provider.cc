@@ -4,6 +4,10 @@
 
 #include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
 
+#include <utility>
+
+using ::testing::Return;
+
 namespace device {
 
 FakePlatformSensor::FakePlatformSensor(mojom::SensorType type,
@@ -18,7 +22,7 @@ bool FakePlatformSensor::StartSensor(
   if (GetType() == mojom::SensorType::AMBIENT_LIGHT) {
     // Set the shared buffer value as frequency for testing purpose.
     reading.als.value = configuration.frequency();
-    UpdateSensorReading(reading);
+    UpdateSharedBufferAndNotifyClients(reading);
   }
   return true;
 }
@@ -58,6 +62,18 @@ void FakePlatformSensorProvider::CreateSensorInternal(
   auto sensor =
       base::MakeRefCounted<FakePlatformSensor>(type, std::move(mapping), this);
   DoCreateSensorInternal(type, std::move(sensor), callback);
+}
+
+MockPlatformSensorClient::MockPlatformSensorClient(
+    scoped_refptr<PlatformSensor> sensor)
+    : sensor_(std::move(sensor)) {
+  DCHECK(sensor_);
+  sensor_->AddClient(this);
+  ON_CALL(*this, IsSuspended()).WillByDefault(Return(false));
+}
+
+MockPlatformSensorClient::~MockPlatformSensorClient() {
+  sensor_->RemoveClient(this);
 }
 
 }  // namespace device
