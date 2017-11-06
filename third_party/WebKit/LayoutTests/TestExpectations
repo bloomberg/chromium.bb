@@ -1847,6 +1847,12 @@ crbug.com/711529 virtual/mojo-loading/http/tests/workers/shared-worker-performan
 
 crbug.com/713587 external/wpt/css/css-ui/caret-color-006.html [ Skip ]
 
+# Tests that will start failing after this WebRTC CL is rolled in: https://webrtc-review.googlesource.com/c/src/+/9020
+crbug.com/780581 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-pranswer.html [ Pass Failure ]
+crbug.com/780581 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-answer.html [ Pass Failure ]
+crbug.com/780581 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-offer.html [ Pass Failure ]
+crbug.com/780581 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-pranswer.html [ Pass Failure ]
+
 # Automatically-added expectations for CSS tests which are temporarily
 # commented-out while the test directory is disabled (see top of file).
 #crbug.com/626703 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-001.xht [ Failure ]
