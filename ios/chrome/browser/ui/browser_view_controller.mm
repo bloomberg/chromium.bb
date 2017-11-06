@@ -5374,7 +5374,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)showSyncSettings {
-  [self.dispatcher showSyncSettings];
+  [self.dispatcher showSyncSettingsFromViewController:self];
 }
 
 - (void)showSyncPassphraseSettings {

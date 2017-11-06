@@ -502,10 +502,9 @@ initWithRootViewController:(UIViewController*)rootViewController
 
 #pragma mark - ApplicationSettingsCommands
 
+// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController {
-  // |baseViewController| is intentionally unused because
-  // this navigation controller is already presented.
   AccountsCollectionViewController* controller =
       [[AccountsCollectionViewController alloc]
                initWithBrowserState:mainBrowserState_
@@ -514,7 +513,9 @@ initWithRootViewController:(UIViewController*)rootViewController
   [self pushViewController:controller animated:YES];
 }
 
-- (void)showSyncSettings {
+// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
+- (void)showSyncSettingsFromViewController:
+    (UIViewController*)baseViewController {
   SyncSettingsCollectionViewController* controller =
       [[SyncSettingsCollectionViewController alloc]
             initWithBrowserState:mainBrowserState_
