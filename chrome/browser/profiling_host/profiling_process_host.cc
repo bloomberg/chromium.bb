@@ -161,6 +161,9 @@ void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
     LOG(ERROR) << "Cannot upload trace file: " << feedback;
     return;
   }
+
+  // The reports is successfully sent. Reports the crash-id to ease debugging.
+  LOG(WARNING) << "slow-reports sent: '" << feedback << '"';
 }
 
 }  // namespace
