@@ -27,17 +27,14 @@
 
 #include <memory>
 #include "core/dom/ExecutionContext.h"
-#include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/speech/SpeechGrammarList.h"
 #include "modules/speech/SpeechRecognition.h"
 #include "modules/speech/SpeechRecognitionError.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
-#include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebSpeechGrammar.h"
 #include "public/web/WebSpeechRecognitionHandle.h"
@@ -59,20 +56,15 @@ void SpeechRecognitionClientProxy::Start(SpeechRecognition* recognition,
                                          const String& lang,
                                          bool continuous,
                                          bool interim_results,
-                                         unsigned long max_alternatives,
-                                         MediaStreamTrack* audio_track) {
+                                         unsigned long max_alternatives) {
   size_t length =
       grammar_list ? static_cast<size_t>(grammar_list->length()) : 0U;
   WebVector<WebSpeechGrammar> web_speech_grammars(length);
   for (unsigned long i = 0; i < length; ++i)
     web_speech_grammars[i] = grammar_list->item(i);
 
-  WebMediaStreamTrack track;
-  if (RuntimeEnabledFeatures::MediaStreamSpeechEnabled() && audio_track)
-    track.Assign(audio_track->Component());
   WebSpeechRecognitionParams params(
       web_speech_grammars, lang, continuous, interim_results, max_alternatives,
-      track,
       WebSecurityOrigin(
           recognition->GetExecutionContext()->GetSecurityOrigin()));
   recognizer_->Start(recognition, params, this);

@@ -27,7 +27,6 @@
 #define WebSpeechRecognitionParams_h
 
 #include "WebSpeechGrammar.h"
-#include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
@@ -43,14 +42,12 @@ class WebSpeechRecognitionParams {
                              bool continuous,
                              bool interim_results,
                              unsigned long max_alternatives,
-                             const WebMediaStreamTrack& audio_track,
                              const WebSecurityOrigin& origin)
       : grammars_(grammars),
         language_(language),
         continuous_(continuous),
         interim_results_(interim_results),
         max_alternatives_(max_alternatives),
-        audio_track_(audio_track),
         origin_(origin) {}
 
   const WebVector<WebSpeechGrammar>& Grammars() const { return grammars_; }
@@ -58,7 +55,6 @@ class WebSpeechRecognitionParams {
   bool Continuous() const { return continuous_; }
   bool InterimResults() const { return interim_results_; }
   unsigned long MaxAlternatives() const { return max_alternatives_; }
-  const WebMediaStreamTrack& AudioTrack() const { return audio_track_; }
   const WebSecurityOrigin& Origin() const { return origin_; }
 
  private:
@@ -67,7 +63,6 @@ class WebSpeechRecognitionParams {
   bool continuous_;
   bool interim_results_;
   unsigned long max_alternatives_;
-  WebMediaStreamTrack audio_track_;
   WebSecurityOrigin origin_;
 };
 

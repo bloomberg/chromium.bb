@@ -39,9 +39,6 @@
     attribute boolean interimResults;
     attribute unsigned long maxAlternatives;
 
-    // Speech Recognition with WebRTC. https://crbug.com/408940
-    [RuntimeEnabled=MediaStreamSpeech] attribute MediaStreamTrack? audioTrack;
-
     // methods to drive the speech interaction
     [RaisesException, Measure] void start();
     [ImplementedAs=stopFunction] void stop();

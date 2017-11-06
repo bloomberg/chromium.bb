@@ -777,8 +777,6 @@ target(link_target_type, "renderer") {
       "media/rtc_peer_connection_handler.cc",
       "media/rtc_peer_connection_handler.h",
       "media/secure_display_link_tracker.h",
-      "media/speech_recognition_audio_sink.cc",
-      "media/speech_recognition_audio_sink.h",
       "media/track_audio_renderer.cc",
       "media/track_audio_renderer.h",
       "media/user_media_client_impl.cc",
