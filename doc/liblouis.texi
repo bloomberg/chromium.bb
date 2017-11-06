@@ -7,7 +7,7 @@
 
 @dircategory Misc
 @direntry
-* Liblouis: (liblouis). A braille translator and back-translator 
+* Liblouis: (liblouis). A braille translator and back-translator
 @end direntry
 
 @finalout
@@ -38,7 +38,7 @@ This opcode is deprecated. Use the @opcoderef{\replacement\} instead.
 @copying
 This manual is for liblouis (version @value{VERSION}, @value{UPDATED}),
 a Braille Translation and Back-Translation Library derived from the
-Linux screen reader @acronym{BRLTTY}. 
+Linux screen reader @acronym{BRLTTY}.
 
 @vskip 10pt
 
@@ -984,7 +984,7 @@ comma. In addition, it allows the notation @samp{.001} to be
 translated correctly. This notation is common in some languages
 instead of @samp{0.001} (no leading 0). When you use the
 @code{decpoint} opcode, the decimal point will be taken to be part of
-the number and correctly preceeded by number sign.
+the number and correctly preceded by number sign.
 
 The character operand must have only one character. For example, in
 @file{en-us-g1.ctb} we have:
@@ -1621,7 +1621,9 @@ are specified by the @code{correct} opcode. If there are no
 If any back-translation corrections have been specified then they are
 applied in a post-translation (i.e. the very last) pass.
 
-note that like the @opcoderef{context} and multi-pass opcodes, the @code{correct} opcode must be preceeded by @opcoderef{noback} or @opcoderef{nofor}.
+Note that like the @opcoderef{context} and multi-pass opcodes, the
+@code{correct} opcode must be preceded by @opcoderef{noback} or
+@opcoderef{nofor}.
 
 The format of the @code{correct} opcode is very similar to that
 of the @opcoderef{context}. The only difference is that in the action
@@ -2639,7 +2641,7 @@ During the transitional phase, @code{lou_logPrint} is registered as default
 callback in @code{lou_registerLogCallback}. @code{lou_logPrint} is overwritten
 by the first call to @code{lou_registerLogCallback} and reattached when
 @code{NULL} is set as callback. Note that calling @code{lou_logPrint} directly
-will not cause an invokation of the registered callback.
+will not cause an invocation of the registered callback.
 
 @node lou_version
 @section lou_version
@@ -3238,8 +3240,8 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  liblouis opcode args BRLTTY ViewPlus Abilitiessoft LGPL lou
 @c  LocalWords:  checktable allround checkhyphens Opcodes Multipass dotsToChar
 @c  LocalWords:  translateString backTranslateString backTranslate charToDots
-@c  LocalWords:  compileString logFile logPrint
-@c  LocalWords:  getTable checkTable readCharFromFile itemx
+@c  LocalWords:  compileString logFile logPrint checkyaml findTable
+@c  LocalWords:  getTable checkTable readCharFromFile itemx charSize
 @c  LocalWords:  README liblouisxml pindex samp kbd opcodes opcoderef numsign
 @c  LocalWords:  FIXME ctb nemeth filename multipass suboperand uplow litdigit
 @c  LocalWords:  begcaps endcaps letsign noletsign largesign typeform
@@ -3265,15 +3267,17 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  tablelist fileName printindex deprecatedopcode setDataPath
 @c  LocalWords:  getDataPath MathML suboperands logEnd liblouisutdml whitespace
 @c  LocalWords:  xhhhh yhhhhh zhhhhhhhh OpenOffice documentencoding
-@c  LocalWords:  YAML JSON logLevels nocontractsign OSX DLL
+@c  LocalWords:  YAML JSON logLevels nocontractsign OSX DLL env
 @c  LocalWords:  MERCHANTABILITY registerLogCallback setLogLevel brf
 @c  LocalWords:  cindex chardefs xhtml pxref dec multi hyph dic Aa al
 @c  LocalWords:  mrow mfrac emphclass transnote subsubsection begemph
 @c  LocalWords:  endemph emphletter begemphword endemphword www cd th
 @c  LocalWords:  lenemphphrase begemphphrase endemphphrase andthe se
 @c  LocalWords:  abrege decrement pre cornf comf scano cornm cornp po
-@c  LocalWords:  h's brl testtrans UCS asis libyaml url yaml
+@c  LocalWords:  h's brl testtrans UCS asis libyaml url yaml formtype
 @c  LocalWords:  testmode iftex unicode ueb xfail eo noContractions
-@c  LocalWords:  dotsIO ucBrl noUndefinedDots partialTrans
+@c  LocalWords:  dotsIO ucBrl noUndefinedDots partialTrans capsletter
 @c  LocalWords:  abc doctest inString enum cp outbufbuf logcallback fprint
-@c  LocalWords:  lbu EOF heckTable fn ispell
+@c  LocalWords:  lbu EOF heckTable fn ispell getTypeformForEmphClass
+@c  LocalWords:  indexTables begcapsword endcapsword typeforms
+@c  LocalWords:  endemphphraseopcode emphClass
