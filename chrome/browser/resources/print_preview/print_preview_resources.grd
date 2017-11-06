@@ -29,6 +29,16 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_HEADER_JS"
                  file="new/header.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_SHARED_CSS_HTML"
+                 file="new/print_preview_shared_css.html"
+                 type="chrome_html"
+                 preprocess="true" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_BUTTON_CSS_HTML"
+                 file="new/button_css.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_STRINGS_HTML"
+                 file="new/strings.html"
+                 type="chrome_html" />
     </structures>
   </release>
 </grit>
