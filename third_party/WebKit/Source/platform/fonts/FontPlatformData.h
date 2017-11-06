@@ -39,6 +39,8 @@
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
+#include "platform/graphics/paint/PaintFont.h"
+#include "platform/graphics/paint/PaintTypeface.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
@@ -102,7 +104,7 @@ class PLATFORM_EXPORT FontPlatformData {
                    FontOrientation,
                    FontVariationSettings*);
 #endif
-  FontPlatformData(sk_sp<SkTypeface>,
+  FontPlatformData(const PaintTypeface&,
                    const char* name,
                    float text_size,
                    bool synthetic_bold,
@@ -160,9 +162,10 @@ class PLATFORM_EXPORT FontPlatformData {
   // FontRenderStyle::NoPreference.
   const FontRenderStyle& GetFontRenderStyle() const { return style_; }
 #endif
-  void SetupPaint(SkPaint*,
-                  float device_scale_factor = 1,
-                  const Font* = 0) const;
+  void SetupPaintFont(PaintFont*,
+                      float device_scale_factor = 1,
+                      const Font* = 0) const;
+  const PaintTypeface& GetPaintTypeface() const;
 
 #if defined(OS_WIN)
   int PaintTextFlags() const { return paint_text_flags_; }
@@ -173,7 +176,7 @@ class PLATFORM_EXPORT FontPlatformData {
   void QuerySystemForRenderStyle();
 #endif
 
-  sk_sp<SkTypeface> typeface_;
+  PaintTypeface paint_typeface_;
 #if !defined(OS_WIN)
   CString family_;
 #endif

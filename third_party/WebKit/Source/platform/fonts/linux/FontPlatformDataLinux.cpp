@@ -35,18 +35,18 @@
 
 namespace blink {
 
-void FontPlatformData::SetupPaint(SkPaint* paint,
-                                  float device_scale_factor,
-                                  const Font*) const {
-  style_.ApplyToPaint(*paint, device_scale_factor);
+void FontPlatformData::SetupPaintFont(PaintFont* font,
+                                      float device_scale_factor,
+                                      const Font*) const {
+  style_.ApplyToPaintFont(*font, device_scale_factor);
 
   const float ts = text_size_ >= 0 ? text_size_ : 12;
-  paint->setTextSize(SkFloatToScalar(ts));
-  paint->setTypeface(typeface_);
-  paint->setFakeBoldText(synthetic_bold_);
-  paint->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+  font->SetTextSize(SkFloatToScalar(ts));
+  font->SetTypeface(paint_typeface_);
+  font->SetFakeBoldText(synthetic_bold_);
+  font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
-  paint->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+  font->SetEmbeddedBitmapText(!avoid_embedded_bitmaps_);
 }
 
 }  // namespace blink

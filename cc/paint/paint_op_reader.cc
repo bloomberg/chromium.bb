@@ -5,6 +5,7 @@
 #include "cc/paint/paint_op_reader.h"
 
 #include <stddef.h>
+#include <algorithm>
 
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer.h"
@@ -17,8 +18,33 @@
 namespace cc {
 namespace {
 
+uint32_t kMaxTypefacesCount = 128;
+size_t kMaxFilenameSize = 1024;
+size_t kMaxFamilyNameSize = 128;
+
 // If we have more than this many colors, abort deserialization.
 const size_t kMaxShaderColorsSupported = 10000;
+
+struct TypefacesCatalog {
+  const std::vector<PaintTypeface>* typefaces;
+  bool had_null = false;
+};
+
+sk_sp<SkTypeface> ResolveTypeface(uint32_t id, void* ctx) {
+  TypefacesCatalog* catalog = static_cast<TypefacesCatalog*>(ctx);
+  auto typeface_it = std::find_if(
+      catalog->typefaces->begin(), catalog->typefaces->end(),
+      [id](const PaintTypeface& typeface) { return typeface.sk_id() == id; });
+  // TODO(vmpstr): The !*typeface check is here because not all typefaces are
+  // supported right now. Instead of making the reader invalid during the
+  // typeface deserialization, which results in an invalid op, instead just make
+  // the textblob be null by setting |had_null| to true.
+  if (typeface_it == catalog->typefaces->end() || !*typeface_it) {
+    catalog->had_null = true;
+    return nullptr;
+  }
+  return typeface_it->ToSkTypeface();
+}
 
 bool IsValidPaintShaderType(PaintShader::Type type) {
   return static_cast<uint8_t>(type) <
@@ -212,8 +238,112 @@ void PaintOpReader::Read(sk_sp<SkData>* data) {
   remaining_bytes_ -= bytes;
 }
 
-void PaintOpReader::Read(sk_sp<SkTextBlob>* blob) {
-  // TODO(enne): implement SkTextBlob serialization: http://crbug.com/737629
+void PaintOpReader::Read(std::vector<PaintTypeface>* typefaces) {
+  uint32_t typefaces_count;
+  ReadSimple(&typefaces_count);
+  if (!valid_ || typefaces_count > kMaxTypefacesCount) {
+    valid_ = false;
+    return;
+  }
+  typefaces->reserve(typefaces_count);
+  for (uint32_t i = 0; i < typefaces_count; ++i) {
+    SkFontID id;
+    uint8_t type;
+    PaintTypeface typeface;
+    ReadSimple(&id);
+    ReadSimple(&type);
+    if (!valid_)
+      return;
+    switch (static_cast<PaintTypeface::Type>(type)) {
+      case PaintTypeface::Type::kTestTypeface:
+        typeface = PaintTypeface::TestTypeface();
+        break;
+      case PaintTypeface::Type::kSkTypeface:
+        // TODO(vmpstr): This shouldn't ever happen once everything is
+        // implemented. So this should be a failure (ie |valid_| = false).
+        break;
+      case PaintTypeface::Type::kFontConfigInterfaceIdAndTtcIndex: {
+        int font_config_interface_id;
+        int ttc_index;
+        ReadSimple(&font_config_interface_id);
+        ReadSimple(&ttc_index);
+        typeface = PaintTypeface::FromFontConfigInterfaceIdAndTtcIndex(
+            font_config_interface_id, ttc_index);
+        break;
+      }
+      case PaintTypeface::Type::kFilenameAndTtcIndex: {
+        size_t size;
+        ReadSimple(&size);
+        if (!valid_ || size > kMaxFilenameSize) {
+          valid_ = false;
+          return;
+        }
+
+        std::unique_ptr<char[]> buffer(new char[size]);
+        ReadData(size, buffer.get());
+        std::string filename(buffer.get(), size);
+
+        int ttc_index;
+        ReadSimple(&ttc_index);
+        typeface = PaintTypeface::FromFilenameAndTtcIndex(filename, ttc_index);
+        break;
+      }
+      case PaintTypeface::Type::kFamilyNameAndFontStyle: {
+        size_t size;
+        ReadSimple(&size);
+        if (!valid_ || size > kMaxFamilyNameSize) {
+          valid_ = false;
+          return;
+        }
+
+        std::unique_ptr<char[]> buffer(new char[size]);
+        ReadData(size, buffer.get());
+        std::string family_name(buffer.get(), size);
+
+        int weight;
+        int width;
+        SkFontStyle::Slant slant;
+        ReadSimple(&weight);
+        ReadSimple(&width);
+        ReadSimple(&slant);
+        typeface = PaintTypeface::FromFamilyNameAndFontStyle(
+            family_name, SkFontStyle(weight, width, slant));
+        break;
+      }
+    }
+    typeface.SetSkId(id);
+    typefaces->emplace_back(std::move(typeface));
+  }
+}
+
+void PaintOpReader::Read(const std::vector<PaintTypeface>& typefaces,
+                         sk_sp<SkTextBlob>* blob) {
+  sk_sp<SkData> data;
+  Read(&data);
+  if (!data || !valid_)
+    return;
+
+  TypefacesCatalog catalog;
+  catalog.typefaces = &typefaces;
+  *blob = SkTextBlob::Deserialize(data->data(), data->size(), &ResolveTypeface,
+                                  &catalog);
+  if (catalog.had_null)
+    *blob = nullptr;
+}
+
+void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
+  std::vector<PaintTypeface> typefaces;
+  sk_sp<SkTextBlob> blob;
+
+  Read(&typefaces);
+  Read(typefaces, &blob);
+  // TODO(vmpstr): If we couldn't serialize |blob|, we should make |paint_blob|
+  // nullptr. However, this causes GL errors right now, because not all
+  // typefaces are serialized. Fix this once we serialize everything. For now
+  // the behavior is that the |paint_blob| op exists and is valid, but
+  // internally it has a nullptr SkTextBlob which skia ignores.
+  *paint_blob = base::MakeRefCounted<PaintTextBlob>(std::move(blob),
+                                                    std::move(typefaces));
 }
 
 void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
