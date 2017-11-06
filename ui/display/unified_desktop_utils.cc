@@ -83,8 +83,14 @@ UnifiedDesktopLayoutMatrix BuildDisplayMatrix(const DisplayLayout& layout) {
     int64_t current_display_id = placement.display_id;
     base::stack<DisplayPlacement> unhandled_displays;
     while (displays_cells.count(current_display_id) == 0) {
-      unhandled_displays.emplace(placement);
-      current_display_id = placement.parent_display_id;
+      auto placement_iter = std::find_if(
+          layout.placement_list.begin(), layout.placement_list.end(),
+          [current_display_id](const DisplayPlacement& p) {
+            return p.display_id == current_display_id;
+          });
+      DCHECK(placement_iter != layout.placement_list.end());
+      unhandled_displays.emplace(*placement_iter);
+      current_display_id = placement_iter->parent_display_id;
     }
 
     // For each unhandled display, find its parent's cell, and use it to deduce

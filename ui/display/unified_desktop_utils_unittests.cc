@@ -146,6 +146,29 @@ TEST(UnifiedDesktopLayoutTests, ValidHorizontalMatrix) {
   EXPECT_EQ(50, matrix[0][3]);
 }
 
+TEST(UnifiedDesktopLayoutTests, ValidHorizontalMatrixReverse) {
+  DisplayLayoutBuilder builder(60);
+  builder.AddDisplayPlacement(50, 60, DisplayPlacement::Position::RIGHT, 0);
+  builder.AddDisplayPlacement(40, 50, DisplayPlacement::Position::RIGHT, 0);
+  builder.AddDisplayPlacement(30, 40, DisplayPlacement::Position::RIGHT, 0);
+  builder.AddDisplayPlacement(20, 30, DisplayPlacement::Position::RIGHT, 0);
+  UnifiedDesktopLayoutMatrix matrix;
+  std::unique_ptr<DisplayLayout> layout = builder.Build();
+  EXPECT_TRUE(
+      BuildUnifiedDesktopMatrix({20, 30, 40, 50, 60}, *layout, &matrix));
+  EXPECT_FALSE(matrix.empty());
+  // 1 x 4 matrix.
+  EXPECT_EQ(1u, matrix.size());
+  EXPECT_EQ(5u, matrix[0].size());
+
+  // [[60, 50, 40, 30, 20]].
+  EXPECT_EQ(60, matrix[0][0]);
+  EXPECT_EQ(50, matrix[0][1]);
+  EXPECT_EQ(40, matrix[0][2]);
+  EXPECT_EQ(30, matrix[0][3]);
+  EXPECT_EQ(20, matrix[0][4]);
+}
+
 TEST(UnifiedDesktopLayoutTests, ValidVerticalMatrix) {
   DisplayLayoutBuilder builder(20);
   builder.AddDisplayPlacement(30, 20, DisplayPlacement::Position::BOTTOM, 0);
