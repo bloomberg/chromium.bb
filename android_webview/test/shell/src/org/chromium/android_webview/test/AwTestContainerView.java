@@ -442,6 +442,7 @@ public class AwTestContainerView extends FrameLayout {
     }
 
     private class NativeDrawGLFunctorFactory implements AwContents.NativeDrawGLFunctorFactory {
+        @Override
         public NativeDrawGLFunctor createFunctor(long context) {
             return new NativeDrawGLFunctor(context);
         }
