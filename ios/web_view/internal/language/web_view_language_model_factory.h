@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_URL_LANGUAGE_HISTOGRAM_FACTORY_H_
-#define IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_URL_LANGUAGE_HISTOGRAM_FACTORY_H_
+#ifndef IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_LANGUAGE_MODEL_FACTORY_H_
+#define IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_LANGUAGE_MODEL_FACTORY_H_
 
 #include <memory>
 
@@ -44,4 +44,4 @@ class WebViewLanguageModelFactory : public BrowserStateKeyedServiceFactory {
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_URL_LANGUAGE_HISTOGRAM_FACTORY_H_
+#endif  // IOS_WEB_VIEW_INTERNAL_LANGUAGE_WEB_VIEW_LANGUAGE_MODEL_FACTORY_H_
