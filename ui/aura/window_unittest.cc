@@ -2902,37 +2902,50 @@ TEST_P(WindowTest, WindowDestroyCompletesAnimations) {
 TEST_P(WindowTest, LocalSurfaceIdChanges) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
+  window.SetBounds(gfx::Rect(300, 300));
+
   std::unique_ptr<cc::LayerTreeFrameSink> frame_sink(
       window.CreateLayerTreeFrameSink());
   viz::LocalSurfaceId local_surface_id1 = window.GetLocalSurfaceId();
   EXPECT_NE(nullptr, frame_sink.get());
   EXPECT_TRUE(local_surface_id1.is_valid());
 
-  window.SetBounds(gfx::Rect(300, 300));
+  // Resize 0x0 to make sure WindowPort* stores the correct window size before
+  // creating the frame sink.
+  window.SetBounds(gfx::Rect(0, 0));
   viz::LocalSurfaceId local_surface_id2 = window.GetLocalSurfaceId();
   EXPECT_TRUE(local_surface_id2.is_valid());
   EXPECT_NE(local_surface_id1, local_surface_id2);
 
-  window.OnDeviceScaleFactorChanged(1.0f, 3.0f);
+  window.SetBounds(gfx::Rect(300, 300));
   viz::LocalSurfaceId local_surface_id3 = window.GetLocalSurfaceId();
   EXPECT_TRUE(local_surface_id3.is_valid());
   EXPECT_NE(local_surface_id1, local_surface_id3);
   EXPECT_NE(local_surface_id2, local_surface_id3);
 
-  window.RecreateLayer();
+  window.OnDeviceScaleFactorChanged(1.0f, 3.0f);
   viz::LocalSurfaceId local_surface_id4 = window.GetLocalSurfaceId();
   EXPECT_TRUE(local_surface_id4.is_valid());
   EXPECT_NE(local_surface_id1, local_surface_id4);
   EXPECT_NE(local_surface_id2, local_surface_id4);
   EXPECT_NE(local_surface_id3, local_surface_id4);
 
-  window.AllocateLocalSurfaceId();
+  window.RecreateLayer();
   viz::LocalSurfaceId local_surface_id5 = window.GetLocalSurfaceId();
   EXPECT_TRUE(local_surface_id5.is_valid());
   EXPECT_NE(local_surface_id1, local_surface_id5);
   EXPECT_NE(local_surface_id2, local_surface_id5);
   EXPECT_NE(local_surface_id3, local_surface_id5);
   EXPECT_NE(local_surface_id4, local_surface_id5);
+
+  window.AllocateLocalSurfaceId();
+  viz::LocalSurfaceId local_surface_id6 = window.GetLocalSurfaceId();
+  EXPECT_TRUE(local_surface_id6.is_valid());
+  EXPECT_NE(local_surface_id1, local_surface_id6);
+  EXPECT_NE(local_surface_id2, local_surface_id6);
+  EXPECT_NE(local_surface_id3, local_surface_id6);
+  EXPECT_NE(local_surface_id4, local_surface_id6);
+  EXPECT_NE(local_surface_id5, local_surface_id6);
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
