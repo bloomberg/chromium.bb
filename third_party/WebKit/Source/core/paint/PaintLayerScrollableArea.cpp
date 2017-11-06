@@ -1269,43 +1269,37 @@ static inline const LayoutObject& ScrollbarStyleSource(
 }
 
 bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
-  if (!HasScrollbar())
-    return false;
-
   const LayoutObject& style_source = ScrollbarStyleSource(Box());
-  bool needs_custom =
+  bool should_use_custom =
       style_source.IsBox() &&
       style_source.StyleRef().HasPseudoStyle(kPseudoIdScrollbar);
+  bool has_any_scrollbar = HasScrollbar();
 
-  Scrollbar* scrollbars[] = {HorizontalScrollbar(), VerticalScrollbar()};
+  bool did_scrollbar_theme_changed = false;
 
-  for (Scrollbar* scrollbar : scrollbars) {
-    if (!scrollbar)
-      continue;
+  if (HasHorizontalScrollbar() &&
+      HorizontalScrollbar()->IsCustomScrollbar() != should_use_custom)
+    did_scrollbar_theme_changed = true;
 
-    // We have a native scrollbar that should be custom, or vice versa.
-    if (scrollbar->IsCustomScrollbar() != needs_custom)
-      return true;
+  if (HasVerticalScrollbar() &&
+      VerticalScrollbar()->IsCustomScrollbar() != should_use_custom)
+    did_scrollbar_theme_changed = true;
 
-    if (needs_custom) {
-      DCHECK(scrollbar->IsCustomScrollbar());
-      // We have a custom scrollbar with a stale m_owner.
-      if (ToLayoutScrollbar(scrollbar)->StyleSource() != style_source)
-        return true;
+  bool did_custom_scrollbar_owner_changed = false;
 
-      // Should use custom scrollbar and nothing should change.
-      continue;
-    }
-
-    // Check if native scrollbar should change.
-    Page* page = Box().GetFrame()->LocalFrameRoot().GetPage();
-    DCHECK(page);
-    ScrollbarTheme* current_theme = &page->GetScrollbarTheme();
-
-    if (current_theme != &scrollbar->GetTheme())
-      return true;
+  if (HasHorizontalScrollbar() && HorizontalScrollbar()->IsCustomScrollbar()) {
+    if (style_source != ToLayoutScrollbar(HorizontalScrollbar())->StyleSource())
+      did_custom_scrollbar_owner_changed = true;
   }
-  return false;
+
+  if (HasVerticalScrollbar() && VerticalScrollbar()->IsCustomScrollbar()) {
+    if (style_source != ToLayoutScrollbar(VerticalScrollbar())->StyleSource())
+      did_custom_scrollbar_owner_changed = true;
+  }
+
+  return has_any_scrollbar &&
+         (did_scrollbar_theme_changed ||
+          (should_use_custom && did_custom_scrollbar_owner_changed));
 }
 
 void PaintLayerScrollableArea::ComputeScrollbarExistence(
