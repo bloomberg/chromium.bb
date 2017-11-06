@@ -11,7 +11,6 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_image.h"
-#include "cc/paint/paint_text_blob.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
@@ -140,7 +139,7 @@ class CC_PAINT_EXPORT PaintCanvas {
     drawBitmap(bitmap, left, top, nullptr);
   }
 
-  virtual void drawTextBlob(scoped_refptr<PaintTextBlob> blob,
+  virtual void drawTextBlob(sk_sp<SkTextBlob> blob,
                             SkScalar x,
                             SkScalar y,
                             const PaintFlags& flags) = 0;

@@ -11,7 +11,6 @@
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "platform/fonts/shaping/CachingWordShaper.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
-#include "platform/graphics/paint/PaintTypeface.h"
 #include "platform/wtf/Optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,8 +24,7 @@ class TestSimpleFontData : public SimpleFontData {
  public:
   static scoped_refptr<TestSimpleFontData> Create(bool force_rotation = false) {
     FontPlatformData platform_data(
-        PaintTypeface::FromSkTypeface(SkTypeface::MakeDefault()), nullptr, 10,
-        false, false,
+        SkTypeface::MakeDefault(), nullptr, 10, false, false,
         force_rotation ? FontOrientation::kVerticalUpright
                        : FontOrientation::kHorizontal);
     scoped_refptr<OpenTypeVerticalData> vertical_data(

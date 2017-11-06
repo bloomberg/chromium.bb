@@ -32,10 +32,10 @@
 
 namespace blink {
 
-void FontPlatformData::SetupPaintFont(PaintFont* font,
-                                      float device_scale_factor,
-                                      const Font*) const {
-  font->SetTypeface(paint_typeface_);
+void FontPlatformData::SetupPaint(SkPaint* paint,
+                                  float device_scale_factor,
+                                  const Font*) const {
+  paint->setTypeface(typeface_);
 }
 
 }  // namespace blink

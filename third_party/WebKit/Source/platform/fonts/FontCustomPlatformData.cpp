@@ -44,7 +44,6 @@
 #endif
 #include "platform/fonts/opentype/FontSettings.h"
 #include "platform/fonts/opentype/VariableFontCheck.h"
-#include "platform/graphics/paint/PaintTypeface.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -140,9 +139,7 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     ReportWebFontInstantiationResult(kSuccessConventionalWebFont);
   }
 
-  // TODO(vmpstr): Handle web fonts PaintTypefaces.
-  PaintTypeface paint_tf = PaintTypeface::FromSkTypeface(return_typeface);
-  return FontPlatformData(std::move(paint_tf), "", size,
+  return FontPlatformData(return_typeface, "", size,
                           bold && !base_typeface_->isBold(),
                           italic && !base_typeface_->isItalic(), orientation);
 }
