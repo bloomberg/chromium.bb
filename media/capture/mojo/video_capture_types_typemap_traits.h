@@ -104,6 +104,35 @@ struct StructTraits<media::mojom::VideoCaptureParamsDataView,
 };
 
 template <>
+struct StructTraits<
+    media::mojom::VideoCaptureDeviceDescriptorCameraCalibrationDataView,
+    media::VideoCaptureDeviceDescriptor::CameraCalibration> {
+  static double focal_length_x(
+      const media::VideoCaptureDeviceDescriptor::CameraCalibration& input) {
+    return input.focal_length_x;
+  }
+
+  static double focal_length_y(
+      const media::VideoCaptureDeviceDescriptor::CameraCalibration& input) {
+    return input.focal_length_y;
+  }
+
+  static double depth_near(
+      const media::VideoCaptureDeviceDescriptor::CameraCalibration& input) {
+    return input.depth_near;
+  }
+
+  static double depth_far(
+      const media::VideoCaptureDeviceDescriptor::CameraCalibration& input) {
+    return input.depth_far;
+  }
+
+  static bool Read(
+      media::mojom::VideoCaptureDeviceDescriptorCameraCalibrationDataView data,
+      media::VideoCaptureDeviceDescriptor::CameraCalibration* output);
+};
+
+template <>
 struct StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
                     media::VideoCaptureDeviceDescriptor> {
   static const std::string& display_name(
@@ -131,6 +160,11 @@ struct StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
     return input.transport_type;
   }
 
+  static base::Optional<media::VideoCaptureDeviceDescriptor::CameraCalibration>
+  camera_calibration(const media::VideoCaptureDeviceDescriptor& input) {
+    return input.camera_calibration;
+  }
+
   static bool Read(media::mojom::VideoCaptureDeviceDescriptorDataView data,
                    media::VideoCaptureDeviceDescriptor* output);
 };
@@ -151,6 +185,6 @@ struct StructTraits<media::mojom::VideoCaptureDeviceInfoDataView,
   static bool Read(media::mojom::VideoCaptureDeviceInfoDataView data,
                    media::VideoCaptureDeviceInfo* output);
 };
-}
+}  // namespace mojo
 
 #endif  // MEDIA_CAPTURE_MOJO_VIDEO_CAPTURE_TYPES_TYPEMAP_TRAITS_H_

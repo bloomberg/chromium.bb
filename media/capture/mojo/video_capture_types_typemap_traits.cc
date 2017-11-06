@@ -236,6 +236,20 @@ bool StructTraits<media::mojom::VideoCaptureParamsDataView,
 }
 
 // static
+bool StructTraits<
+    media::mojom::VideoCaptureDeviceDescriptorCameraCalibrationDataView,
+    media::VideoCaptureDeviceDescriptor::CameraCalibration>::
+    Read(media::mojom::VideoCaptureDeviceDescriptorCameraCalibrationDataView
+             data,
+         media::VideoCaptureDeviceDescriptor::CameraCalibration* output) {
+  output->focal_length_x = data.focal_length_x();
+  output->focal_length_y = data.focal_length_y();
+  output->depth_near = data.depth_near();
+  output->depth_far = data.depth_far();
+  return true;
+}
+
+// static
 bool StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
                   media::VideoCaptureDeviceDescriptor>::
     Read(media::mojom::VideoCaptureDeviceDescriptorDataView data,
@@ -249,6 +263,8 @@ bool StructTraits<media::mojom::VideoCaptureDeviceDescriptorDataView,
   if (!data.ReadCaptureApi(&(output->capture_api)))
     return false;
   if (!data.ReadTransportType(&(output->transport_type)))
+    return false;
+  if (!data.ReadCameraCalibration(&(output->camera_calibration)))
     return false;
   return true;
 }
