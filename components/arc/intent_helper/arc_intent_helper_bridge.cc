@@ -58,15 +58,14 @@ class ArcIntentHelperBridgeFactory
   ~ArcIntentHelperBridgeFactory() override = default;
 };
 
+// Base URL for the Chrome settings pages.
+constexpr char kSettingsPageBaseUrl[] = "chrome://settings";
+
 }  // namespace
 
 // static
 const char ArcIntentHelperBridge::kArcIntentHelperPackageName[] =
     "org.chromium.arc.intent_helper";
-
-// static
-const char ArcIntentHelperBridge::kMultideviceSettingsUrl[] =
-    "chrome://settings/multidevice";
 
 // static
 ArcIntentHelperBridge* ArcIntentHelperBridge::GetForBrowserContext(
@@ -134,9 +133,49 @@ void ArcIntentHelperBridge::OnOpenUrl(const std::string& url) {
   open_url_delegate_->OpenUrl(gurl);
 }
 
-void ArcIntentHelperBridge::OnOpenChromeSettingsMultideviceUrl() {
+void ArcIntentHelperBridge::OnOpenChromeSettings(mojom::SettingsPage page) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  open_url_delegate_->OpenUrl(GURL(kMultideviceSettingsUrl));
+
+  // Mapping from the mojom enum values to the URL components.
+  const char* sub_url = nullptr;
+  switch (page) {
+    case mojom::SettingsPage::MULTIDEVICE:
+      sub_url = "multidevice";
+      break;
+    case mojom::SettingsPage::MAIN:
+      sub_url = "";
+      break;
+    case mojom::SettingsPage::POWER:
+      sub_url = "power";
+      break;
+    case mojom::SettingsPage::BLUETOOTH:
+      sub_url = "bluetoothDevices";
+      break;
+    case mojom::SettingsPage::DATETIME:
+      sub_url = "dateTime";
+      break;
+    case mojom::SettingsPage::DISPLAY:
+      sub_url = "display";
+      break;
+    case mojom::SettingsPage::WIFI:
+      sub_url = "networks/?type=WiFi";
+      break;
+    case mojom::SettingsPage::LANGUAGE:
+      sub_url = "languages";
+      break;
+    case mojom::SettingsPage::PRIVACY:
+      sub_url = "privacy";
+      break;
+    case mojom::SettingsPage::HELP:
+      sub_url = "help";
+      break;
+  }
+
+  if (!sub_url) {
+    LOG(ERROR) << "Invalid settings page: " << page;
+    return;
+  }
+  open_url_delegate_->OpenUrl(GURL(kSettingsPageBaseUrl).Resolve(sub_url));
 }
 
 void ArcIntentHelperBridge::OpenWallpaperPicker() {
