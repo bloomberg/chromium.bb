@@ -19,6 +19,10 @@ struct MediaEngagementScoreDetails {
 
   // Whether the score is considered to be high.
   bool is_high;
+
+  // Data used for experiments.
+  int32 audible_playbacks;
+  int32 significant_playbacks;
 };
 
 struct MediaEngagementConfig {
