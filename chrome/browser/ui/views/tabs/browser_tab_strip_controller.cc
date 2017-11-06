@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -460,19 +459,6 @@ void BrowserTabStripController::TabDetachedAt(WebContents* contents,
   tabstrip_->RemoveTabAt(contents, model_index);
 }
 
-void BrowserTabStripController::ActiveTabChanged(
-    content::WebContents* old_contents,
-    content::WebContents* new_contents,
-    int index,
-    int reason) {
-  // It's possible for |new_contents| to be null when the final tab in a tab
-  // strip is closed.
-  if (new_contents && index != TabStripModel::kNoTab) {
-    TabUIHelper::FromWebContents(new_contents)->set_was_active_at_least_once();
-    SetTabDataAt(new_contents, index);
-  }
-}
-
 void BrowserTabStripController::TabSelectionChanged(
     TabStripModel* tab_strip_model,
     const ui::ListSelectionModel& old_model) {
@@ -532,10 +518,9 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
     int model_index,
     TabRendererData* data,
     TabStatus tab_status) {
-  TabUIHelper* tab_ui_helper = TabUIHelper::FromWebContents(contents);
-  data->favicon = tab_ui_helper->GetFavicon().AsImageSkia();
+  data->favicon = favicon::TabFaviconFromWebContents(contents).AsImageSkia();
   data->network_state = TabContentsNetworkState(contents);
-  data->title = tab_ui_helper->GetTitle();
+  data->title = contents->GetTitle();
   data->url = contents->GetURL();
   data->crashed_status = contents->GetCrashedStatus();
   data->incognito = contents->GetBrowserContext()->IsOffTheRecord();
@@ -544,7 +529,6 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->blocked = model_->IsTabBlocked(model_index);
   data->app = extensions::TabHelper::FromWebContents(contents)->is_app();
   data->alert_state = chrome::GetTabAlertStateForContents(contents);
-  data->should_hide_throbber = tab_ui_helper->ShouldHideThrobber();
 }
 
 void BrowserTabStripController::SetTabDataAt(content::WebContents* web_contents,
