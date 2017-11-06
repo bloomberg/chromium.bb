@@ -271,8 +271,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.TextDecorationColor() == b.TextDecorationColor() &&
              a.VisitedLinkTextDecorationColor() ==
                  b.VisitedLinkTextDecorationColor();
-    case CSSPropertyTextDecorationSkip:
-      return a.GetTextDecorationSkip() == b.GetTextDecorationSkip();
+    case CSSPropertyTextDecorationSkipInk:
+      return a.TextDecorationSkipInk() == b.TextDecorationSkipInk();
     case CSSPropertyTextIndent:
       return a.TextIndent() == b.TextIndent();
     case CSSPropertyTextShadow:

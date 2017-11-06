@@ -149,23 +149,6 @@ enum QuoteType { OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE };
 
 enum EAnimPlayState { kAnimPlayStatePlaying, kAnimPlayStatePaused };
 
-static const size_t kTextDecorationSkipBits = 3;
-enum class TextDecorationSkip { kNone = 0x0, kObjects = 0x1, kInk = 0x2 };
-inline TextDecorationSkip operator&(TextDecorationSkip a,
-                                    TextDecorationSkip b) {
-  return TextDecorationSkip(static_cast<unsigned>(a) &
-                            static_cast<unsigned>(b));
-}
-inline TextDecorationSkip operator|(TextDecorationSkip a,
-                                    TextDecorationSkip b) {
-  return TextDecorationSkip(static_cast<unsigned>(a) |
-                            static_cast<unsigned>(b));
-}
-inline TextDecorationSkip& operator|=(TextDecorationSkip& a,
-                                      TextDecorationSkip b) {
-  return a = a | b;
-}
-
 enum OffsetRotationType { kOffsetRotationAuto, kOffsetRotationFixed };
 
 static const size_t kGridAutoFlowBits = 4;

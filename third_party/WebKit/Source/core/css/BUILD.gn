@@ -601,7 +601,6 @@ blink_core_sources("css") {
     "properties/longhands/CSSPropertyAPITabSize.cpp",
     "properties/longhands/CSSPropertyAPITextDecorationColor.cpp",
     "properties/longhands/CSSPropertyAPITextDecorationLine.cpp",
-    "properties/longhands/CSSPropertyAPITextDecorationSkip.cpp",
     "properties/longhands/CSSPropertyAPITextIndent.cpp",
     "properties/longhands/CSSPropertyAPITextShadow.cpp",
     "properties/longhands/CSSPropertyAPITextSizeAdjust.cpp",

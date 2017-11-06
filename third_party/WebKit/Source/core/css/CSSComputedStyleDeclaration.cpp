@@ -101,7 +101,7 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyTableLayout, CSSPropertyTabSize, CSSPropertyTextAlign,
     CSSPropertyTextAlignLast, CSSPropertyTextDecoration,
     CSSPropertyTextDecorationLine, CSSPropertyTextDecorationStyle,
-    CSSPropertyTextDecorationColor, CSSPropertyTextDecorationSkip,
+    CSSPropertyTextDecorationColor, CSSPropertyTextDecorationSkipInk,
     CSSPropertyTextJustify, CSSPropertyTextUnderlinePosition,
     CSSPropertyTextIndent, CSSPropertyTextRendering, CSSPropertyTextShadow,
     CSSPropertyTextSizeAdjust, CSSPropertyTextOverflow,

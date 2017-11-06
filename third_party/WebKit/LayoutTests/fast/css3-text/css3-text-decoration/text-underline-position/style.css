@@ -6,6 +6,7 @@ div {
     border: 5px double;
     padding: 5px;
     diplay: inline;
+    text-decoration-skip-ink: none;
 }
 
 div.auto {
