@@ -478,8 +478,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCreateCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_GetDriverBugWorkArounds,
-                        OnGetDriverBugWorkArounds)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -657,16 +655,6 @@ void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {
   }
 
   RemoveRoute(route_id);
-}
-
-void GpuChannel::OnGetDriverBugWorkArounds(
-    std::vector<std::string>* gpu_driver_bug_workarounds) {
-  gpu_driver_bug_workarounds->clear();
-#define GPU_OP(type, name)                                     \
-  if (gpu_channel_manager_->gpu_driver_bug_workarounds().name) \
-    gpu_driver_bug_workarounds->push_back(#name);
-  GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
-#undef GPU_OP
 }
 
 void GpuChannel::CacheShader(const std::string& key,

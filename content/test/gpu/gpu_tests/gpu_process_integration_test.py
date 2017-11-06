@@ -118,15 +118,10 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if not tab.EvaluateJavaScript('chrome.gpuBenchmarking.hasGpuChannel()'):
       self.fail('No GPU channel detected')
 
-  def _ValidateDriverBugWorkaroundsImpl(self, process_kind, is_expected,
-                                    workaround_name):
+  def _ValidateDriverBugWorkaroundsImpl(self, is_expected, workaround_name):
     tab = self.tab
-    if process_kind == "browser_process":
-      gpu_driver_bug_workarounds = tab.EvaluateJavaScript(
-        'GetDriverBugWorkarounds()')
-    elif process_kind == "gpu_process":
-      gpu_driver_bug_workarounds = tab.EvaluateJavaScript(
-        'chrome.gpuBenchmarking.getGpuDriverBugWorkarounds()')
+    gpu_driver_bug_workarounds = tab.EvaluateJavaScript(
+      'chrome.gpuBenchmarking.getGpuDriverBugWorkarounds()')
 
     is_present = workaround_name in gpu_driver_bug_workarounds
     failure = False
@@ -140,24 +135,17 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if failure:
       print 'Test failed. Printing page contents:'
       print tab.EvaluateJavaScript('document.body.innerHTML')
-      self.fail('%s %s in %s workarounds: %s'
-                % (workaround_name, error_message, process_kind,
-                   gpu_driver_bug_workarounds))
+      self.fail('%s %s workarounds: %s'
+                % (workaround_name, error_message, gpu_driver_bug_workarounds))
 
   def _ValidateDriverBugWorkarounds(self, expected_workaround,
                                     unexpected_workaround):
     if not expected_workaround and not unexpected_workaround:
       return
     if expected_workaround:
-      self._ValidateDriverBugWorkaroundsImpl(
-        "browser_process", True, expected_workaround)
-      self._ValidateDriverBugWorkaroundsImpl(
-        "gpu_process", True, expected_workaround)
+      self._ValidateDriverBugWorkaroundsImpl(True, expected_workaround)
     if unexpected_workaround:
-      self._ValidateDriverBugWorkaroundsImpl(
-        "browser_process", False, unexpected_workaround)
-      self._ValidateDriverBugWorkaroundsImpl(
-        "gpu_process", False, unexpected_workaround)
+      self._ValidateDriverBugWorkaroundsImpl(False, unexpected_workaround)
 
   # This can only be called from one of the tests, i.e., after the
   # browser's been brought up once.

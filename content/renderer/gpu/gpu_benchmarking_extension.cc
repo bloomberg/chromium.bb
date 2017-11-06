@@ -41,6 +41,7 @@
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
@@ -1073,10 +1074,14 @@ void GpuBenchmarking::GetGpuDriverBugWorkarounds(gin::Arguments* args) {
   std::vector<std::string> gpu_driver_bug_workarounds;
   gpu::GpuChannelHost* gpu_channel =
       RenderThreadImpl::current()->GetGpuChannel();
-  if (!gpu_channel ||
-      !gpu_channel->Send(new GpuChannelMsg_GetDriverBugWorkArounds(
-          &gpu_driver_bug_workarounds))) {
+  if (!gpu_channel)
     return;
+  const std::vector<int32_t>& workarounds =
+      gpu_channel->gpu_feature_info().enabled_gpu_driver_bug_workarounds;
+  for (int32_t workaround : workarounds) {
+    gpu_driver_bug_workarounds.push_back(
+        gpu::GpuDriverBugWorkaroundTypeToString(
+            static_cast<gpu::GpuDriverBugWorkaroundType>(workaround)));
   }
 
   v8::Local<v8::Value> result;

@@ -121,11 +121,6 @@ IPC_MESSAGE_CONTROL1(GpuChannelMsg_FlushCommandBuffers,
 // messages have been received.
 IPC_SYNC_MESSAGE_CONTROL0_0(GpuChannelMsg_Nop)
 
-// Retrieve the current list of gpu driver workarounds effectively running on
-// the gpu process.
-IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_GetDriverBugWorkArounds,
-                            std::vector<std::string> /* workarounds */)
-
 #if defined(OS_ANDROID)
 //------------------------------------------------------------------------------
 // Tells the StreamTexture to send its SurfaceTexture to the browser process,
