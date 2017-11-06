@@ -316,8 +316,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   initialized_ = true;
 
   if (!args->enable_local_sync_backend) {
-    net::NetworkChangeNotifier::AddIPAddressObserver(this);
-    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+    net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
     observing_network_connectivity_changes_ = true;
 
     UpdateCredentials(args->credentials);
@@ -534,8 +533,7 @@ void SyncManagerImpl::ShutdownOnSyncThread(ShutdownReason reason) {
     connection_manager_->RemoveListener(this);
   connection_manager_.reset();
 
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   observing_network_connectivity_changes_ = false;
 
   if (initialized_ && directory()) {
@@ -554,28 +552,15 @@ void SyncManagerImpl::ShutdownOnSyncThread(ShutdownReason reason) {
   weak_handle_this_.Reset();
 }
 
-void SyncManagerImpl::OnIPAddressChanged() {
-  if (!observing_network_connectivity_changes_) {
-    DVLOG(1) << "IP address change dropped.";
-    return;
-  }
-  DVLOG(1) << "IP address change detected.";
-  OnNetworkConnectivityChangedImpl();
-}
-
-void SyncManagerImpl::OnConnectionTypeChanged(
-    net::NetworkChangeNotifier::ConnectionType) {
-  if (!observing_network_connectivity_changes_) {
-    DVLOG(1) << "Connection type change dropped.";
-    return;
-  }
-  DVLOG(1) << "Connection type change detected.";
-  OnNetworkConnectivityChangedImpl();
-}
-
-void SyncManagerImpl::OnNetworkConnectivityChangedImpl() {
+void SyncManagerImpl::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  scheduler_->OnConnectionStatusChange();
+  if (!observing_network_connectivity_changes_) {
+    DVLOG(1) << "Network change dropped.";
+    return;
+  }
+  DVLOG(1) << "Network change detected.";
+  scheduler_->OnConnectionStatusChange(type);
 }
 
 void SyncManagerImpl::OnServerConnectionEvent(

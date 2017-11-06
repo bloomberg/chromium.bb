@@ -42,7 +42,8 @@ void FakeSyncScheduler::SetNotificationsEnabled(bool notifications_enabled) {}
 
 void FakeSyncScheduler::OnCredentialsUpdated() {}
 
-void FakeSyncScheduler::OnConnectionStatusChange() {}
+void FakeSyncScheduler::OnConnectionStatusChange(
+    net::NetworkChangeNotifier::ConnectionType type) {}
 
 void FakeSyncScheduler::OnThrottled(const base::TimeDelta& throttle_duration) {}
 

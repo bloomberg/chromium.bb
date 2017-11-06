@@ -50,8 +50,7 @@ class TypeDebugInfoObserver;
 // same thread.
 class SyncManagerImpl
     : public SyncManager,
-      public net::NetworkChangeNotifier::IPAddressObserver,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver,
+      public net::NetworkChangeNotifier::NetworkChangeObserver,
       public JsBackend,
       public SyncEngineEventListener,
       public ServerConnectionEventListener,
@@ -161,12 +160,9 @@ class SyncManagerImpl
   // Handle explicit requests to fetch updates for the given types.
   void RefreshTypes(ModelTypeSet types) override;
 
-  // These OnYYYChanged() methods are only called by our NetworkChangeNotifier.
-  // Called when IP address of primary interface changes.
-  void OnIPAddressChanged() override;
-  // Called when the connection type of the system has changed.
-  void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType) override;
+  // NetworkChangeNotifier::NetworkChangeObserver implementation.
+  void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // NudgeHandler implementation.
   void NudgeForInitialDownload(ModelType type) override;
@@ -233,9 +229,6 @@ class SyncManagerImpl
                                 const syncable::EntryKernel& original,
                                 bool existed_before,
                                 bool exists_now);
-
-  // Checks for server reachabilty and requests a nudge.
-  void OnNetworkConnectivityChangedImpl();
 
   syncable::Directory* directory();
 

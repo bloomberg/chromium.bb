@@ -14,6 +14,7 @@
 #include "components/sync/base/invalidation_interface.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/nudge_source.h"
+#include "net/base/network_change_notifier.h"
 
 namespace base {
 class Location;
@@ -144,7 +145,8 @@ class SyncScheduler : public SyncCycle::Delegate {
   virtual void OnCredentialsUpdated() = 0;
 
   // Called when the network layer detects a connection status change.
-  virtual void OnConnectionStatusChange() = 0;
+  virtual void OnConnectionStatusChange(
+      net::NetworkChangeNotifier::ConnectionType type) = 0;
 };
 
 }  // namespace syncer
