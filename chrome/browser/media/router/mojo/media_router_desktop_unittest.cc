@@ -67,7 +67,8 @@ class MediaRouterDesktopTest : public MediaRouterMojoTest {
 };
 
 #if defined(OS_WIN)
-TEST_F(MediaRouterDesktopTest, EnableMdnsAfterEachRegister) {
+// TODO: reenable, flaky on windows.https://crbug.com/781412
+TEST_F(MediaRouterDesktopTest, DISABLED_EnableMdnsAfterEachRegister) {
   EXPECT_CALL(mock_extension_provider_,
               UpdateMediaSinks(MediaSourceForDesktop().id()));
   // EnableMdnsDiscovery() is never called except on Windows.
