@@ -1566,6 +1566,19 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
     return true;
   }
 
+  // In ARIA 1.1, default value of scrollbar, separator and slider
+  // for aria-valuemin were changed to 0.
+  switch (AriaRoleAttribute()) {
+    case kScrollBarRole:
+    case kSplitterRole:
+    case kSliderRole: {
+      *out_value = 0.0f;
+      return true;
+    }
+    default:
+      break;
+  }
+
   return false;
 }
 
