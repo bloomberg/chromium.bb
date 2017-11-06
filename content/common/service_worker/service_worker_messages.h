@@ -125,14 +125,6 @@ IPC_STRUCT_TRAITS_END()
 //---------------------------------------------------------------------------
 // Messages sent from the child process to the browser.
 
-// Asks the browser to set navigation preload header value for a registration.
-IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_SetNavigationPreloadHeader,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     int /* provider_id */,
-                     int64_t /* registration_id */,
-                     std::string /* header_value */)
-
 // Sends ExtendableMessageEvent to a service worker (renderer->browser).
 IPC_MESSAGE_CONTROL5(
     ServiceWorkerHostMsg_PostMessageToWorker,
@@ -225,15 +217,6 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      int /* thread_id */,
                      int /* handle_id */,
                      blink::mojom::ServiceWorkerState)
-
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidSetNavigationPreloadHeader,
-                     int /* thread_id */,
-                     int /* request_id */)
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetNavigationPreloadHeaderError,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     blink::mojom::ServiceWorkerErrorType,
-                     std::string /* message */)
 
 // Notifies a client that its controller used a feature, for UseCounter
 // purposes (browser->renderer). |feature| must be one of the values from

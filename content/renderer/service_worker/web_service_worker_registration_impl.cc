@@ -292,17 +292,14 @@ void WebServiceWorkerRegistrationImpl::GetNavigationPreloadState(
 
 void WebServiceWorkerRegistrationImpl::SetNavigationPreloadHeader(
     const blink::WebString& value,
-    blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks) {
-  DCHECK(GetRegistrationObjectHost());
-  WebServiceWorkerProviderImpl* provider_impl =
-      static_cast<WebServiceWorkerProviderImpl*>(provider);
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
-  dispatcher->SetNavigationPreloadHeader(provider_impl->provider_id(),
-                                         RegistrationId(), value.Utf8(),
-                                         std::move(callbacks));
+  DCHECK(state_ == LifecycleState::kAttachedAndBound ||
+         state_ == LifecycleState::kUnbound);
+  GetRegistrationObjectHost()->SetNavigationPreloadHeader(
+      value.Utf8(),
+      base::BindOnce(
+          &WebServiceWorkerRegistrationImpl::OnDidSetNavigationPreloadHeader,
+          base::Unretained(this), std::move(callbacks)));
 }
 
 int64_t WebServiceWorkerRegistrationImpl::RegistrationId() const {
@@ -365,6 +362,19 @@ void WebServiceWorkerRegistrationImpl::OnDidGetNavigationPreloadState(
   }
   callbacks->OnSuccess(blink::WebNavigationPreloadState(
       state->enabled, blink::WebString::FromUTF8(state->header)));
+}
+
+void WebServiceWorkerRegistrationImpl::OnDidSetNavigationPreloadHeader(
+    std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks,
+    blink::mojom::ServiceWorkerErrorType error,
+    const base::Optional<std::string>& error_msg) {
+  if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
+    DCHECK(error_msg);
+    callbacks->OnError(blink::WebServiceWorkerError(
+        error, blink::WebString::FromUTF8(*error_msg)));
+    return;
+  }
+  callbacks->OnSuccess();
 }
 
 // static

@@ -83,8 +83,11 @@ interface ServiceWorkerRegistrationObjectHost {
         string? error_msg,
         blink.mojom.NavigationPreloadState? state);
 
-  // TODO(xiaofeng.zhang): Implement it.
-  // SetNavigationPreloadHeader();
+  // Corresponds to NavigationPreloadManager#setHeaderValue().
+  // On success, |error| is kNone without |error_msg| set.
+  // Otherwise, |error| and |error_msg| describe the failure.
+  SetNavigationPreloadHeader(string value)
+    => (ServiceWorkerErrorType error, string? error_msg);
 };
 
 // This interface lives in the renderer process, it corresponds to one
