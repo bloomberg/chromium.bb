@@ -197,7 +197,7 @@ JobScheduler::JobScheduler(
     queue_[i].reset(new JobQueue(kMaxJobCount[i], NUM_CONTEXT_TYPES,
                                  kMaxBatchCount, kMaxBatchSize));
 
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
 
 JobScheduler::~JobScheduler() {
@@ -208,7 +208,7 @@ JobScheduler::~JobScheduler() {
     num_queued_jobs += queue_[i]->GetNumberOfJobs();
   DCHECK_EQ(num_queued_jobs, job_map_.size());
 
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
 std::vector<JobInfo> JobScheduler::GetJobInfoList() {
@@ -1145,7 +1145,7 @@ void JobScheduler::UpdateProgress(JobID job_id,
   NotifyJobUpdated(job_entry->job_info);
 }
 
-void JobScheduler::OnNetworkChanged(
+void JobScheduler::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
