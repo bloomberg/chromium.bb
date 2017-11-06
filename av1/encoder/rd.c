@@ -542,10 +542,15 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
         av1_cost_tokens_from_cdf(pcost->txb_skip_cost[ctx],
                                  fc->txb_skip_cdf[tx_size][ctx], NULL);
 
+#if CONFIG_LV_MAP_MULTI
+      for (int ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx)
+        av1_cost_tokens_from_cdf(pcost->base_cost[ctx],
+                                 fc->coeff_base_cdf[tx_size][plane][ctx], NULL);
+#else
       for (int ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx)
         av1_cost_tokens_from_cdf(pcost->nz_map_cost[ctx],
                                  fc->nz_map_cdf[tx_size][plane][ctx], NULL);
-
+#endif
       for (int ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx)
         av1_cost_tokens_from_cdf(pcost->eob_cost[ctx],
                                  fc->eob_flag_cdf[tx_size][plane][ctx], NULL);
@@ -558,12 +563,13 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
         av1_cost_tokens_from_cdf(pcost->dc_sign_cost[ctx],
                                  fc->dc_sign_cdf[plane][ctx], NULL);
 
+#if !CONFIG_LV_MAP_MULTI
       for (int layer = 0; layer < NUM_BASE_LEVELS; ++layer)
         for (int ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx)
           av1_cost_tokens_from_cdf(
               pcost->base_cost[layer][ctx],
               fc->coeff_base_cdf[tx_size][plane][layer][ctx], NULL);
-
+#endif
       for (int br = 0; br < BASE_RANGE_SETS; ++br)
         for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
           av1_cost_tokens_from_cdf(pcost->br_cost[br][ctx],

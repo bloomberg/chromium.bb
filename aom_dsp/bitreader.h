@@ -53,6 +53,10 @@
 #if CONFIG_LV_MAP
 #define aom_read_bin(r, cdf, nsymbs, ACCT_STR_NAME) \
   aom_read_bin_(r, cdf, nsymbs ACCT_STR_ARG(ACCT_STR_NAME))
+#if CONFIG_LV_MAP_MULTI
+#define aom_read_symbol4(r, cdf, nsymbs, ACCT_STR_NAME) \
+  aom_read_symbol4_(r, cdf, nsymbs ACCT_STR_ARG(ACCT_STR_NAME))
+#endif
 #endif
 
 #ifdef __cplusplus
@@ -211,8 +215,35 @@ static INLINE int aom_read_bin_(aom_reader *r, aom_cdf_prob *cdf,
   this_cdf[0] = clamp(this_cdf[0], (1 << 8), (127 << 8));
   ret = aom_read_cdf(r, this_cdf, nsymbs, ACCT_STR_NAME);
   if (r->allow_update_cdf) update_bin(cdf, ret, nsymbs);
+  // printf("bin: %d\n", this_cdf[0]);
   return ret;
 }
+
+#if CONFIG_LV_MAP_MULTI
+#define CDF_SYM4_BITS (9)
+static INLINE int aom_read_symbol4_(aom_reader *r, aom_cdf_prob *cdf,
+                                    int nsymbs ACCT_STR_PARAM) {
+  int ret;
+  const int shift = 15 - CDF_SYM4_BITS;
+  const int mask = ~((1 << shift) - 1);
+  const int min_prob = 1 << shift;
+  const int max_prob = 32767 & mask;
+  aom_cdf_prob this_cdf[5];
+  this_cdf[2] = AOMMAX(cdf[2] & mask, min_prob);
+  this_cdf[1] = AOMMAX(cdf[1] & mask, this_cdf[2] + min_prob);
+  this_cdf[0] = AOMMAX(cdf[0] & mask, this_cdf[1] + min_prob);
+  this_cdf[0] = AOMMIN(this_cdf[0], max_prob);
+  this_cdf[1] = AOMMIN(this_cdf[1], this_cdf[0] - min_prob);
+  this_cdf[2] = AOMMIN(this_cdf[2], this_cdf[1] - min_prob);
+  this_cdf[3] = 0;
+  this_cdf[4] = 0;
+  // printf("cdf: %5d %5d %5d\n", cdf[0], cdf[1], cdf[2]);
+  // printf("newcdf: %5d %5d %5d\n", this_cdf[0], this_cdf[1], this_cdf[2]);
+  ret = aom_read_cdf(r, this_cdf, nsymbs, ACCT_STR_NAME);
+  if (r->allow_update_cdf) update_cdf(cdf, ret, nsymbs);
+  return ret;
+}
+#endif
 #endif
 
 static INLINE int aom_read_tree_as_cdf(aom_reader *r,

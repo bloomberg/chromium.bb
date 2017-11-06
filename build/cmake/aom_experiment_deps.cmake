@@ -38,6 +38,12 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
+  if (CONFIG_LV_MAP_MULTI)
+    if (NOT CONFIG_LV_MAP)
+      change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_LV_MAP_MULTI)
+    endif ()
+  endif ()
+
   if (CONFIG_DAALA_TX)
      set(CONFIG_HIGHBITDEPTH 1)
      set(CONFIG_DAALA_TX4 1)

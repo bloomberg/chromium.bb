@@ -1611,7 +1611,6 @@ static void av1_average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
 void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
                                 aom_cdf_prob *cdf_ptr[], int num_tiles) {
   int i, cdf_size;
-
   aom_cdf_prob *fc_cdf_ptr;
 #if CONFIG_SIMPLE_BWD_ADAPT
   assert(num_tiles == 1);
@@ -1619,11 +1618,17 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 
 #if CONFIG_LV_MAP
   AVERAGE_TILE_CDFS(txb_skip_cdf)
+#if CONFIG_LV_MAP_MULTI
+  AVERAGE_TILE_CDFS(coeff_base_cdf)
+#else
   AVERAGE_TILE_CDFS(nz_map_cdf)
+#endif
   AVERAGE_TILE_CDFS(eob_flag_cdf)
   AVERAGE_TILE_CDFS(eob_extra_cdf)
   AVERAGE_TILE_CDFS(dc_sign_cdf)
+#if !CONFIG_LV_MAP_MULTI
   AVERAGE_TILE_CDFS(coeff_base_cdf)
+#endif
   AVERAGE_TILE_CDFS(coeff_lps_cdf)
   AVERAGE_TILE_CDFS(coeff_br_cdf)
 #if CONFIG_CTX1D

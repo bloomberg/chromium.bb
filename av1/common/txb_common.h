@@ -440,7 +440,15 @@ static INLINE int get_nz_map_ctx_from_count(int count,
 static INLINE int get_nz_map_ctx(const uint8_t *const levels,
                                  const int scan_idx, const int16_t *const scan,
                                  const int bwl, const int height,
+#if CONFIG_LV_MAP_MULTI
+                                 const TX_TYPE tx_type, const int is_eob) {
+#else
                                  const TX_TYPE tx_type) {
+#endif
+#if CONFIG_LV_MAP_MULTI
+  if (is_eob)
+    return scan[scan_idx] == 0 ? SIG_COEF_CONTEXTS - 2 : SIG_COEF_CONTEXTS - 1;
+#endif
   const int coeff_idx = scan[scan_idx];
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);

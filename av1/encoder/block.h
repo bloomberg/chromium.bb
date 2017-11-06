@@ -63,11 +63,17 @@ typedef int av1_coeff_cost[PLANE_TYPES][REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
 #if CONFIG_LV_MAP
 typedef struct {
   int txb_skip_cost[TXB_SKIP_CONTEXTS][2];
+#if CONFIG_LV_MAP_MULTI
+  int base_cost[SIG_COEF_CONTEXTS][4];
+#else
   int nz_map_cost[SIG_COEF_CONTEXTS][2];
+#endif
   int eob_cost[EOB_COEF_CONTEXTS][2];
   int eob_extra_cost[EOB_COEF_CONTEXTS][2];
   int dc_sign_cost[DC_SIGN_CONTEXTS][2];
+#if !CONFIG_LV_MAP_MULTI
   int base_cost[NUM_BASE_LEVELS][COEFF_BASE_CONTEXTS][2];
+#endif
   int lps_cost[LEVEL_CONTEXTS][COEFF_BASE_RANGE + 1];
   int br_cost[BASE_RANGE_SETS][LEVEL_CONTEXTS][2];
 #if CONFIG_CTX1D

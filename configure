@@ -299,6 +299,7 @@ EXPERIMENT_LIST="
     palette_throughput
     ref_adapt
     lv_map
+    lv_map_multi 
     ctx1d
     txk_sel
     mv_compress
@@ -536,6 +537,7 @@ post_process_cmdline() {
     soft_enable tmv
 
     # Fix up experiment dependencies
+    enabled lv_map_multi && soft_enable lv_map
     enabled lv_map && disable_feature mrc_tx
     enabled eob_first && enable_feature lv_map
     enabled txk_sel && soft_enable lv_map

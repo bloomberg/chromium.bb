@@ -98,7 +98,7 @@ const int16_t av1_coeff_band_32x32[1024] = {
 
 void av1_init_txb_probs(FRAME_CONTEXT *fc) {
   TX_SIZE tx_size;
-  int plane, ctx, level;
+  int plane, ctx;
 
   // Update probability models for transform block skip flag
   for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
@@ -119,10 +119,11 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
     }
   }
 
+#if !CONFIG_LV_MAP_MULTI
   // Update probability models for non-zero coefficient map and eob flag.
   for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
     for (plane = 0; plane < PLANE_TYPES; ++plane) {
-      for (level = 0; level < NUM_BASE_LEVELS; ++level) {
+      for (int level = 0; level < NUM_BASE_LEVELS; ++level) {
         for (ctx = 0; ctx < COEFF_BASE_CONTEXTS; ++ctx) {
           fc->coeff_base_cdf[tx_size][plane][level][ctx][0] = AOM_ICDF(
               128 * (aom_cdf_prob)fc->coeff_base[tx_size][plane][level][ctx]);
@@ -132,16 +133,27 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
       }
     }
   }
+#endif
 
   for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
     for (plane = 0; plane < PLANE_TYPES; ++plane) {
       for (ctx = 0; ctx < SIG_COEF_CONTEXTS; ++ctx) {
+#if CONFIG_LV_MAP_MULTI
+        int p = fc->nz_map[tx_size][plane][ctx] * 128;
+        fc->coeff_base_cdf[tx_size][plane][ctx][0] = AOM_ICDF(p);
+        p += ((32768 - p) * fc->coeff_base[tx_size][plane][0][ctx]) >> 8;
+        fc->coeff_base_cdf[tx_size][plane][ctx][1] = AOM_ICDF(p);
+        p += ((32768 - p) * fc->coeff_base[tx_size][plane][1][ctx]) >> 8;
+        fc->coeff_base_cdf[tx_size][plane][ctx][2] = AOM_ICDF(p);
+        fc->coeff_base_cdf[tx_size][plane][ctx][3] = AOM_ICDF(32768);
+        fc->coeff_base_cdf[tx_size][plane][ctx][4] = 0;
+#else
         fc->nz_map_cdf[tx_size][plane][ctx][0] =
             AOM_ICDF(128 * (aom_cdf_prob)fc->nz_map[tx_size][plane][ctx]);
         fc->nz_map_cdf[tx_size][plane][ctx][1] = AOM_ICDF(32768);
         fc->nz_map_cdf[tx_size][plane][ctx][2] = 0;
+#endif
       }
-
       for (ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx) {
         fc->eob_flag_cdf[tx_size][plane][ctx][0] =
             AOM_ICDF(128 * (aom_cdf_prob)fc->eob_flag[tx_size][plane][ctx]);
