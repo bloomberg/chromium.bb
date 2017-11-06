@@ -601,7 +601,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                              accessPoint:signin_metrics::AccessPoint::
                                              ACCESS_POINT_UNKNOWN]];
   } else if (ShouldShowSyncSettings(syncState)) {
-    [self.dispatcher showSyncSettings];
+    [self.dispatcher showSyncSettingsFromViewController:self];
   } else if (ShouldShowSyncPassphraseSettings(syncState)) {
     [self.dispatcher showSyncPassphraseSettings];
   }

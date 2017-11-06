@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol ApplicationCommands;
+@protocol SyncPresenter;
 
 namespace ios {
 class ChromeBrowserState;
@@ -19,7 +19,7 @@ class ChromeBrowserState;
 // Designated initializer.
 - (instancetype)initWithFrame:(CGRect)aRect
                  browserState:(ios::ChromeBrowserState*)browserState
-                   dispatcher:(id<ApplicationCommands>)dispatcher
+                    presenter:(id<SyncPresenter>)presenter
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
