@@ -376,10 +376,10 @@ public @interface ClassName {
     definitions = HeaderParser(test_data).ParseDefinitions()
     definition = definitions[0]
     self.assertEqual(
-        collections.OrderedDict([('ENUM_TEST_A', '1'), ('ENUM_TEST_B', '2')]),
+        collections.OrderedDict([('A', '1'), ('B', '2')]),
         definition.entries)
     self.assertEqual(
-        collections.OrderedDict([('ENUM_TEST_B', 'comment for ENUM_TEST_B.')]),
+        collections.OrderedDict([('B', 'comment for B.')]),
         definition.comments)
 
     definition = definitions[1]
@@ -398,7 +398,6 @@ public @interface ClassName {
 
       // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
       // GENERATED_JAVA_CLASS_NAME_OVERRIDE: OverrideName
-      // GENERATED_JAVA_PREFIX_TO_STRIP: kEnumName
       enum EnumName {
         kEnumNameFoo,
         kEnumNameBar

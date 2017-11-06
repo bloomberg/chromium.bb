@@ -1401,7 +1401,7 @@ public class CustomTabsConnection {
         String referrer = getReferrer(session, extrasIntent);
         if (referrer != null && !referrer.isEmpty()) {
             loadParams.setReferrer(
-                    new Referrer(referrer, WebReferrerPolicy.WEB_REFERRER_POLICY_DEFAULT));
+                    new Referrer(referrer, WebReferrerPolicy.DEFAULT));
         }
         mSpeculation = SpeculationParams.forHiddenTab(session, url, tab, referrer, extras);
         mSpeculation.tab.loadUrl(loadParams);

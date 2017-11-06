@@ -144,7 +144,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         // TODO(mastiz): Extend this with support for other categories.
         if (article.mCategory == KnownCategories.ARTICLES) {
             loadUrlParams.setReferrer(new Referrer(CHROME_CONTENT_SUGGESTIONS_REFERRER,
-                    WebReferrerPolicy.WEB_REFERRER_POLICY_ALWAYS));
+                    WebReferrerPolicy.ALWAYS));
         }
 
         Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);

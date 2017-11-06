@@ -177,8 +177,8 @@ public class ContextMenuParams {
         mReferrer = referrer;
 
         mIsAnchor = !TextUtils.isEmpty(linkUrl);
-        mIsImage = mediaType == WebContextMenuMediaType.MEDIA_TYPE_IMAGE;
-        mIsVideo = mediaType == WebContextMenuMediaType.MEDIA_TYPE_VIDEO;
+        mIsImage = mediaType == WebContextMenuMediaType.IMAGE;
+        mIsVideo = mediaType == WebContextMenuMediaType.VIDEO;
         mCanSaveMedia = canSaveMedia;
         mTriggeringTouchXDp = triggeringTouchXDp;
         mTriggeringTouchYDp = triggeringTouchYDp;

@@ -347,7 +347,7 @@ public class TabsOpenedFromExternalAppTest {
     public void testReferrerPolicyHttpsReferrerPolicyOrigin() throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
         launchAndVerifyReferrerWithPolicy(url, mActivityTestRule,
-                WebReferrerPolicy.WEB_REFERRER_POLICY_ORIGIN, HTTPS_REFERRER_WITH_PATH,
+                WebReferrerPolicy.ORIGIN, HTTPS_REFERRER_WITH_PATH,
                 HTTPS_REFERRER);
     }
 
@@ -363,7 +363,7 @@ public class TabsOpenedFromExternalAppTest {
             throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
         launchAndVerifyReferrerWithPolicy(url, mActivityTestRule,
-                WebReferrerPolicy.WEB_REFERRER_POLICY_ORIGIN_WHEN_CROSS_ORIGIN,
+                WebReferrerPolicy.ORIGIN_WHEN_CROSS_ORIGIN,
                 HTTPS_REFERRER_WITH_PATH, HTTPS_REFERRER);
     }
 
@@ -377,7 +377,7 @@ public class TabsOpenedFromExternalAppTest {
     public void testReferrerPolicyHttpsReferrerPolicyStrictOrigin() throws InterruptedException {
         String url = mTestServer.getURL("/chrome/test/data/android/about.html");
         launchAndVerifyReferrerWithPolicy(url, mActivityTestRule,
-                WebReferrerPolicy.WEB_REFERRER_POLICY_STRICT_ORIGIN, HTTPS_REFERRER, "");
+                WebReferrerPolicy.STRICT_ORIGIN, HTTPS_REFERRER, "");
     }
 
     /**
