@@ -232,6 +232,10 @@
   return toolbarSnapshotView;
 }
 
+- (UIColor*)toolbarBackgroundColor {
+  return [UIColor whiteColor];
+}
+
 #pragma mark - Private
 
 - (void)addConstraintsToToolbar {
