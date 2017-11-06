@@ -51,6 +51,9 @@ class WebStateObserver {
   // This corresponds to one NavigationManager item being created
   // (in the case of new navigations) or renavigated to (for back/forward
   // navigations).
+  // DEPRECATED. Use |DidFinishNavigation| to listen for
+  // "navigation item committed" signals.
+  // TODO(crbug.com/720786): Remove this method.
   virtual void NavigationItemCommitted(
       WebState* web_state,
       const LoadCommittedDetails& load_details) {}
