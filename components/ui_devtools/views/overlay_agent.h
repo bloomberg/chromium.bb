@@ -11,8 +11,7 @@
 
 namespace ui_devtools {
 
-class OverlayAgent : public ui_devtools::UiDevToolsBaseAgent<
-                         ui_devtools::protocol::Overlay::Metainfo>,
+class OverlayAgent : public UiDevToolsBaseAgent<protocol::Overlay::Metainfo>,
                      public ui::EventHandler {
  public:
   explicit OverlayAgent(DOMAgent* dom_agent);
@@ -21,15 +20,14 @@ class OverlayAgent : public ui_devtools::UiDevToolsBaseAgent<
   void SetPinnedNodeId(int pinned_id);
 
   // Overlay::Backend:
-  ui_devtools::protocol::Response setInspectMode(
+  protocol::Response setInspectMode(
       const String& in_mode,
       protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig)
       override;
-  ui_devtools::protocol::Response highlightNode(
-      std::unique_ptr<ui_devtools::protocol::Overlay::HighlightConfig>
-          highlight_config,
-      ui_devtools::protocol::Maybe<int> node_id) override;
-  ui_devtools::protocol::Response hideHighlight() override;
+  protocol::Response highlightNode(
+      std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config,
+      protocol::Maybe<int> node_id) override;
+  protocol::Response hideHighlight() override;
 
  private:
   // ui:EventHandler:

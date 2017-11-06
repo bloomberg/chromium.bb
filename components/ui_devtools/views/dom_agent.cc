@@ -453,30 +453,29 @@ DOMAgent::~DOMAgent() {
   Reset();
 }
 
-ui_devtools::protocol::Response DOMAgent::disable() {
+Response DOMAgent::disable() {
   Reset();
-  return ui_devtools::protocol::Response::OK();
+  return Response::OK();
 }
 
-ui_devtools::protocol::Response DOMAgent::getDocument(
-    std::unique_ptr<ui_devtools::protocol::DOM::Node>* out_root) {
+Response DOMAgent::getDocument(std::unique_ptr<DOM::Node>* out_root) {
   *out_root = BuildInitialTree();
-  return ui_devtools::protocol::Response::OK();
+  return Response::OK();
 }
 
-ui_devtools::protocol::Response DOMAgent::hideHighlight() {
+Response DOMAgent::hideHighlight() {
   if (layer_for_highlighting_ && layer_for_highlighting_->visible())
     layer_for_highlighting_->SetVisible(false);
-  return ui_devtools::protocol::Response::OK();
+  return Response::OK();
 }
 
-ui_devtools::protocol::Response DOMAgent::pushNodesByBackendIdsToFrontend(
+Response DOMAgent::pushNodesByBackendIdsToFrontend(
     std::unique_ptr<protocol::Array<int>> backend_node_ids,
     std::unique_ptr<protocol::Array<int>>* result) {
   *result = protocol::Array<int>::create();
   for (size_t index = 0; index < backend_node_ids->length(); ++index)
     (*result)->addItem(backend_node_ids->get(index));
-  return ui_devtools::protocol::Response::OK();
+  return Response::OK();
 }
 
 void DOMAgent::OnUIElementAdded(UIElement* parent, UIElement* child) {
@@ -534,8 +533,7 @@ UIElement* DOMAgent::GetElementFromNodeId(int node_id) {
   return node_id_to_ui_element_[node_id];
 }
 
-ui_devtools::protocol::Response DOMAgent::HighlightNode(int node_id,
-                                                        bool show_size) {
+Response DOMAgent::HighlightNode(int node_id, bool show_size) {
   if (!layer_for_highlighting_) {
     layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
     layer_for_highlighting_->set_name("HighlightingLayer");
@@ -548,7 +546,7 @@ ui_devtools::protocol::Response DOMAgent::HighlightNode(int node_id,
           : std::make_pair<aura::Window*, gfx::Rect>(nullptr, gfx::Rect());
 
   if (!window_and_bounds.first)
-    return ui_devtools::protocol::Response::Error("No node found with that id");
+    return Response::Error("No node found with that id");
 
   highlight_rect_config_ = HighlightRectsConfiguration::NO_DRAW;
   show_size_on_canvas_ = show_size;
@@ -557,7 +555,7 @@ ui_devtools::protocol::Response DOMAgent::HighlightNode(int node_id,
   if (!layer_for_highlighting_->visible())
     layer_for_highlighting_->SetVisible(true);
 
-  return ui_devtools::protocol::Response::OK();
+  return Response::OK();
 }
 
 int DOMAgent::FindElementIdTargetedByPoint(const gfx::Point& p,
@@ -790,7 +788,7 @@ void DOMAgent::OnElementBoundsChanged(UIElement* ui_element) {
     observer.OnElementBoundsChanged(ui_element);
 }
 
-std::unique_ptr<ui_devtools::protocol::DOM::Node> DOMAgent::BuildInitialTree() {
+std::unique_ptr<DOM::Node> DOMAgent::BuildInitialTree() {
   is_building_tree_ = true;
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
 
@@ -806,14 +804,14 @@ std::unique_ptr<ui_devtools::protocol::DOM::Node> DOMAgent::BuildInitialTree() {
     children->addItem(BuildTreeForUIElement(window_element));
     window_element_root_->AddChild(window_element);
   }
-  std::unique_ptr<ui_devtools::protocol::DOM::Node> root_node = BuildNode(
+  std::unique_ptr<DOM::Node> root_node = BuildNode(
       "root", nullptr, std::move(children), window_element_root_->node_id());
   is_building_tree_ = false;
   return root_node;
 }
 
-std::unique_ptr<ui_devtools::protocol::DOM::Node>
-DOMAgent::BuildTreeForUIElement(UIElement* ui_element) {
+std::unique_ptr<DOM::Node> DOMAgent::BuildTreeForUIElement(
+    UIElement* ui_element) {
   if (ui_element->type() == UIElementType::WINDOW) {
     return BuildTreeForWindow(
         ui_element,
@@ -849,7 +847,7 @@ std::unique_ptr<DOM::Node> DOMAgent::BuildTreeForWindow(
     children->addItem(BuildTreeForWindow(window_element, child));
     window_element_root->AddChild(window_element);
   }
-  std::unique_ptr<ui_devtools::protocol::DOM::Node> node =
+  std::unique_ptr<DOM::Node> node =
       BuildNode("Window", GetAttributes(window_element_root),
                 std::move(children), window_element_root->node_id());
   return node;
@@ -866,7 +864,7 @@ std::unique_ptr<DOM::Node> DOMAgent::BuildTreeForRootWidget(
   children->addItem(BuildTreeForView(view_element, widget->GetRootView()));
   widget_element->AddChild(view_element);
 
-  std::unique_ptr<ui_devtools::protocol::DOM::Node> node =
+  std::unique_ptr<DOM::Node> node =
       BuildNode("Widget", GetAttributes(widget_element), std::move(children),
                 widget_element->node_id());
   return node;
@@ -882,7 +880,7 @@ std::unique_ptr<DOM::Node> DOMAgent::BuildTreeForView(UIElement* view_element,
     children->addItem(BuildTreeForView(view_element_child, child));
     view_element->AddChild(view_element_child);
   }
-  std::unique_ptr<ui_devtools::protocol::DOM::Node> node =
+  std::unique_ptr<DOM::Node> node =
       BuildNode("View", GetAttributes(view_element), std::move(children),
                 view_element->node_id());
   return node;

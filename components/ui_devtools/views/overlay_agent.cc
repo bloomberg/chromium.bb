@@ -21,7 +21,7 @@ void OverlayAgent::SetPinnedNodeId(int node_id) {
   dom_agent_->HighlightNode(pinned_id_, true /* show_size */);
 }
 
-ui_devtools::protocol::Response OverlayAgent::setInspectMode(
+protocol::Response OverlayAgent::setInspectMode(
     const String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   pinned_id_ = 0;
@@ -29,17 +29,16 @@ ui_devtools::protocol::Response OverlayAgent::setInspectMode(
     aura::Env::GetInstance()->PrependPreTargetHandler(this);
   else if (in_mode.compare("none") == 0)
     aura::Env::GetInstance()->RemovePreTargetHandler(this);
-  return ui_devtools::protocol::Response::OK();
+  return protocol::Response::OK();
 }
 
-ui_devtools::protocol::Response OverlayAgent::highlightNode(
-    std::unique_ptr<ui_devtools::protocol::Overlay::HighlightConfig>
-        highlight_config,
-    ui_devtools::protocol::Maybe<int> node_id) {
+protocol::Response OverlayAgent::highlightNode(
+    std::unique_ptr<protocol::Overlay::HighlightConfig> highlight_config,
+    protocol::Maybe<int> node_id) {
   return dom_agent_->HighlightNode(node_id.fromJust());
 }
 
-ui_devtools::protocol::Response OverlayAgent::hideHighlight() {
+protocol::Response OverlayAgent::hideHighlight() {
   return dom_agent_->hideHighlight();
 }
 

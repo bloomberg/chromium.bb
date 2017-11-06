@@ -84,9 +84,9 @@ std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(UIElement* ui_element) {
       .build();
 }
 
-ui_devtools::protocol::Response NodeNotFoundError(int node_id) {
-  return ui_devtools::protocol::Response::Error(
-      "Node with id=" + std::to_string(node_id) + " not found");
+Response NodeNotFoundError(int node_id) {
+  return Response::Error("Node with id=" + std::to_string(node_id) +
+                         " not found");
 }
 
 Response ParseProperties(const std::string& style_text,
@@ -126,42 +126,35 @@ CSSAgent::~CSSAgent() {
   disable();
 }
 
-ui_devtools::protocol::Response CSSAgent::enable() {
+Response CSSAgent::enable() {
   dom_agent_->AddObserver(this);
-  return ui_devtools::protocol::Response::OK();
+  return Response::OK();
 }
 
-ui_devtools::protocol::Response CSSAgent::disable() {
+Response CSSAgent::disable() {
   dom_agent_->RemoveObserver(this);
-  return ui_devtools::protocol::Response::OK();
+  return Response::OK();
 }
 
-ui_devtools::protocol::Response CSSAgent::getMatchedStylesForNode(
-    int node_id,
-    ui_devtools::protocol::Maybe<ui_devtools::protocol::CSS::CSSStyle>*
-        inline_style) {
+Response CSSAgent::getMatchedStylesForNode(int node_id,
+                                           Maybe<CSS::CSSStyle>* inline_style) {
   UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
   *inline_style = GetStylesForUIElement(ui_element);
   if (!inline_style)
     return NodeNotFoundError(node_id);
-  return ui_devtools::protocol::Response::OK();
+  return Response::OK();
 }
 
-ui_devtools::protocol::Response CSSAgent::setStyleTexts(
-    std::unique_ptr<ui_devtools::protocol::Array<
-        ui_devtools::protocol::CSS::StyleDeclarationEdit>> edits,
-    std::unique_ptr<
-        ui_devtools::protocol::Array<ui_devtools::protocol::CSS::CSSStyle>>*
-        result) {
-  std::unique_ptr<
-      ui_devtools::protocol::Array<ui_devtools::protocol::CSS::CSSStyle>>
-      updated_styles = ui_devtools::protocol::Array<
-          ui_devtools::protocol::CSS::CSSStyle>::create();
+Response CSSAgent::setStyleTexts(
+    std::unique_ptr<Array<CSS::StyleDeclarationEdit>> edits,
+    std::unique_ptr<Array<CSS::CSSStyle>>* result) {
+  std::unique_ptr<Array<CSS::CSSStyle>> updated_styles =
+      Array<CSS::CSSStyle>::create();
   for (size_t i = 0; i < edits->length(); i++) {
     auto* edit = edits->get(i);
     int node_id;
     if (!base::StringToInt(edit->getStyleSheetId(), &node_id))
-      return ui_devtools::protocol::Response::Error("Invalid node id");
+      return Response::Error("Invalid node id");
 
     UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
     gfx::Rect updated_bounds;
@@ -169,7 +162,7 @@ ui_devtools::protocol::Response CSSAgent::setStyleTexts(
     if (!GetPropertiesForUIElement(ui_element, &updated_bounds, &visible))
       return NodeNotFoundError(node_id);
 
-    ui_devtools::protocol::Response response(
+    Response response(
         ParseProperties(edit->getText(), &updated_bounds, &visible));
     if (!response.isSuccess())
       return response;
@@ -180,15 +173,15 @@ ui_devtools::protocol::Response CSSAgent::setStyleTexts(
       return NodeNotFoundError(node_id);
   }
   *result = std::move(updated_styles);
-  return ui_devtools::protocol::Response::OK();
+  return Response::OK();
 }
 
 void CSSAgent::OnElementBoundsChanged(UIElement* ui_element) {
   InvalidateStyleSheet(ui_element);
 }
 
-std::unique_ptr<ui_devtools::protocol::CSS::CSSStyle>
-CSSAgent::GetStylesForUIElement(UIElement* ui_element) {
+std::unique_ptr<CSS::CSSStyle> CSSAgent::GetStylesForUIElement(
+    UIElement* ui_element) {
   gfx::Rect bounds;
   bool visible = false;
   return GetPropertiesForUIElement(ui_element, &bounds, &visible)

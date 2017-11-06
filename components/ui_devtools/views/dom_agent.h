@@ -43,8 +43,7 @@ class DOMAgentObserver {
   virtual void OnElementBoundsChanged(UIElement* ui_element) = 0;
 };
 
-class DOMAgent : public ui_devtools::UiDevToolsBaseAgent<
-                     ui_devtools::protocol::DOM::Metainfo>,
+class DOMAgent : public UiDevToolsBaseAgent<protocol::DOM::Metainfo>,
                  public UIElementDelegate,
                  public aura::EnvObserver,
                  public ui::LayerDelegate {
@@ -53,11 +52,11 @@ class DOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   ~DOMAgent() override;
 
   // DOM::Backend:
-  ui_devtools::protocol::Response disable() override;
-  ui_devtools::protocol::Response getDocument(
-      std::unique_ptr<ui_devtools::protocol::DOM::Node>* out_root) override;
-  ui_devtools::protocol::Response hideHighlight() override;
-  ui_devtools::protocol::Response pushNodesByBackendIdsToFrontend(
+  protocol::Response disable() override;
+  protocol::Response getDocument(
+      std::unique_ptr<protocol::DOM::Node>* out_root) override;
+  protocol::Response hideHighlight() override;
+  protocol::Response pushNodesByBackendIdsToFrontend(
       std::unique_ptr<protocol::Array<int>> backend_node_ids,
       std::unique_ptr<protocol::Array<int>>* result) override;
 
@@ -77,8 +76,7 @@ class DOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   HighlightRectsConfiguration highlight_rect_config() const {
     return highlight_rect_config_;
   };
-  ui_devtools::protocol::Response HighlightNode(int node_id,
-                                                bool show_size = false);
+  protocol::Response HighlightNode(int node_id, bool show_size = false);
 
   // Return the id of the UI element targeted by an event located at |p|, where
   // |p| is in the local coodinate space of |root_window|. The function
@@ -108,18 +106,17 @@ class DOMAgent : public ui_devtools::UiDevToolsBaseAgent<
   void OnHostInitialized(aura::WindowTreeHost* host) override;
 
   void OnElementBoundsChanged(UIElement* ui_element);
-  std::unique_ptr<ui_devtools::protocol::DOM::Node> BuildInitialTree();
-  std::unique_ptr<ui_devtools::protocol::DOM::Node> BuildTreeForUIElement(
+  std::unique_ptr<protocol::DOM::Node> BuildInitialTree();
+  std::unique_ptr<protocol::DOM::Node> BuildTreeForUIElement(
       UIElement* ui_element);
-  std::unique_ptr<ui_devtools::protocol::DOM::Node> BuildTreeForWindow(
+  std::unique_ptr<protocol::DOM::Node> BuildTreeForWindow(
       UIElement* window_element_root,
       aura::Window* window);
-  std::unique_ptr<ui_devtools::protocol::DOM::Node> BuildTreeForRootWidget(
+  std::unique_ptr<protocol::DOM::Node> BuildTreeForRootWidget(
       UIElement* widget_element,
       views::Widget* widget);
-  std::unique_ptr<ui_devtools::protocol::DOM::Node> BuildTreeForView(
-      UIElement* view_element,
-      views::View* view);
+  std::unique_ptr<protocol::DOM::Node> BuildTreeForView(UIElement* view_element,
+                                                        views::View* view);
   void RemoveDomNode(UIElement* ui_element);
   void Reset();
   void UpdateHighlight(
