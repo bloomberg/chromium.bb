@@ -893,7 +893,7 @@ TEST_F(MCSClientTest, CustomHeartbeatIntervalTooShort) {
   EXPECT_FALSE(hb_manager->HasClientHeartbeatInterval());
 
   const std::string component_1 = "component1";
-  int interval_ms = 30 * 1000;  // 30 seconds, too low.
+  int interval_ms = 15 * 1000;  // 15 seconds, too low.
   mcs_client()->AddHeartbeatInterval(component_1, interval_ms);
   // Setting was too low so it was ignored.
   EXPECT_FALSE(hb_manager->HasClientHeartbeatInterval());
