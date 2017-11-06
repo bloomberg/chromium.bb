@@ -15,10 +15,6 @@
 class GURL;
 class XmlWriter;
 
-namespace base {
-class Time;
-}
-
 namespace message_center {
 struct ButtonInfo;
 class Notification;
@@ -54,7 +50,7 @@ class NotificationTemplateBuilder {
   // Writes the <toast> element with the |notification_id| as the launch string.
   // Also closes the |xml_writer_| for writing as the toast is now complete.
   void StartToastElement(const std::string& notification_id,
-                         const base::Time& timastamp);
+                         const message_center::Notification& notification);
   void EndToastElement();
 
   // Writes the <visual> element.

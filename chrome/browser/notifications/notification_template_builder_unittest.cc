@@ -53,6 +53,7 @@ class NotificationTemplateBuilderTest : public ::testing::Test {
         base::UTF8ToUTF16(kNotificationMessage), gfx::Image() /* icon */,
         base::string16() /* display_source */, origin_url,
         NotifierId(origin_url), RichNotificationData(), nullptr /* delegate */);
+    // Set a fixed timestamp, to avoid having to test against current timestamp.
     base::Time timestamp;
     if (!FixedTime(&timestamp))
       return nullptr;
@@ -238,6 +239,54 @@ TEST_F(NotificationTemplateBuilderTest, Silent) {
   </binding>
  </visual>
  <audio silent="true"/>
+</toast>
+)";
+
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+}
+
+TEST_F(NotificationTemplateBuilderTest, RequireInteraction) {
+  std::unique_ptr<message_center::Notification> notification =
+      InitializeBasicNotification();
+
+  std::vector<message_center::ButtonInfo> buttons;
+  buttons.emplace_back(base::ASCIIToUTF16("Button1"));
+  notification->set_buttons(buttons);
+  notification->set_never_timeout(true);
+
+  const wchar_t kExpectedXml[] =
+      LR"(<toast launch="notification_id" scenario="reminder" displayTimestamp="1998-09-04T01:02:03Z">
+ <visual>
+  <binding template="ToastGeneric">
+   <text>My Title</text>
+   <text>My Message</text>
+   <text placement="attribution">example.com</text>
+  </binding>
+ </visual>
+ <actions>
+  <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
+ </actions>
+</toast>
+)";
+
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+}
+
+TEST_F(NotificationTemplateBuilderTest, NullTimestamp) {
+  std::unique_ptr<message_center::Notification> notification =
+      InitializeBasicNotification();
+  base::Time timestamp;
+  notification->set_timestamp(timestamp);
+
+  const wchar_t kExpectedXml[] =
+      LR"(<toast launch="notification_id">
+ <visual>
+  <binding template="ToastGeneric">
+   <text>My Title</text>
+   <text>My Message</text>
+   <text placement="attribution">example.com</text>
+  </binding>
+ </visual>
 </toast>
 )";
 
