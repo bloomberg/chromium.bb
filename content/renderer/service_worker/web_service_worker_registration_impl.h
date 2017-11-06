@@ -113,7 +113,6 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       override;
   void SetNavigationPreloadHeader(
       const blink::WebString& value,
-      blink::WebServiceWorkerProvider* provider,
       std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks)
       override;
   int64_t RegistrationId() const override;
@@ -217,6 +216,10 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       blink::mojom::ServiceWorkerErrorType error,
       const base::Optional<std::string>& error_msg,
       blink::mojom::NavigationPreloadStatePtr state);
+  void OnDidSetNavigationPreloadHeader(
+      std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks,
+      blink::mojom::ServiceWorkerErrorType error,
+      const base::Optional<std::string>& error_msg);
 
   // |handle_id_| is the key to map with remote
   // content::ServiceWorkerRegistrationHandle.

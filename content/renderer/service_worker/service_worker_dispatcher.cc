@@ -24,7 +24,6 @@
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebNavigationPreloadState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
@@ -42,10 +41,6 @@ base::LazyInstance<ThreadLocalPointer<void>>::Leaky g_dispatcher_tls =
     LAZY_INSTANCE_INITIALIZER;
 
 void* const kHasBeenDeleted = reinterpret_cast<void*>(0x1);
-
-int CurrentWorkerId() {
-  return WorkerThread::GetCurrentId();
-}
 
 }  // namespace
 
@@ -68,28 +63,12 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   // handler in ServiceWorkerMessageFilter to release references passed from
   // the browser process in case we fail to post task to the thread.
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcher, msg)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSetNavigationPreloadHeader,
-                        OnDidSetNavigationPreloadHeader)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetNavigationPreloadHeaderError,
-                        OnSetNavigationPreloadHeaderError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerStateChanged,
                         OnServiceWorkerStateChanged)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_CountFeature, OnCountFeature)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
-}
-
-void ServiceWorkerDispatcher::SetNavigationPreloadHeader(
-    int provider_id,
-    int64_t registration_id,
-    const std::string& value,
-    std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks) {
-  DCHECK(callbacks);
-  int request_id =
-      set_navigation_preload_header_callbacks_.Add(std::move(callbacks));
-  thread_safe_sender_->Send(new ServiceWorkerHostMsg_SetNavigationPreloadHeader(
-      CurrentWorkerId(), request_id, provider_id, registration_id, value));
 }
 
 void ServiceWorkerDispatcher::AddProviderContext(
@@ -251,32 +230,6 @@ ServiceWorkerDispatcher::GetOrCreateRegistrationForServiceWorkerClient(
   registration->SetWaiting(GetOrCreateServiceWorker(std::move(waiting_ref)));
   registration->SetActive(GetOrCreateServiceWorker(std::move(active_ref)));
   return registration;
-}
-
-void ServiceWorkerDispatcher::OnDidSetNavigationPreloadHeader(int thread_id,
-                                                              int request_id) {
-  WebSetNavigationPreloadHeaderCallbacks* callbacks =
-      set_navigation_preload_header_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
-  if (!callbacks)
-    return;
-  callbacks->OnSuccess();
-  set_navigation_preload_header_callbacks_.Remove(request_id);
-}
-
-void ServiceWorkerDispatcher::OnSetNavigationPreloadHeaderError(
-    int thread_id,
-    int request_id,
-    blink::mojom::ServiceWorkerErrorType error_type,
-    const std::string& message) {
-  WebSetNavigationPreloadHeaderCallbacks* callbacks =
-      set_navigation_preload_header_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
-  if (!callbacks)
-    return;
-  callbacks->OnError(
-      WebServiceWorkerError(error_type, blink::WebString::FromUTF8(message)));
-  set_navigation_preload_header_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(

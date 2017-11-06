@@ -24,13 +24,6 @@ ScriptPromise NavigationPreloadManager::disable(ScriptState* script_state) {
 ScriptPromise NavigationPreloadManager::setHeaderValue(
     ScriptState* script_state,
     const String& value) {
-  ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::From(registration_->GetExecutionContext());
-  if (!client || !client->Provider()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError, "No provider."));
-  }
-
   if (!IsValidHTTPHeaderValue(value)) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
@@ -42,18 +35,11 @@ ScriptPromise NavigationPreloadManager::setHeaderValue(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   registration_->WebRegistration()->SetNavigationPreloadHeader(
-      value, client->Provider(),
-      WTF::MakeUnique<SetNavigationPreloadHeaderCallbacks>(resolver));
+      value, WTF::MakeUnique<SetNavigationPreloadHeaderCallbacks>(resolver));
   return promise;
 }
 
 ScriptPromise NavigationPreloadManager::getState(ScriptState* script_state) {
-  ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::From(registration_->GetExecutionContext());
-  if (!client || !client->Provider()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError, "No provider."));
-  }
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   registration_->WebRegistration()->GetNavigationPreloadState(
@@ -67,12 +53,6 @@ NavigationPreloadManager::NavigationPreloadManager(
 
 ScriptPromise NavigationPreloadManager::SetEnabled(bool enable,
                                                    ScriptState* script_state) {
-  ServiceWorkerContainerClient* client =
-      ServiceWorkerContainerClient::From(registration_->GetExecutionContext());
-  if (!client || !client->Provider()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kInvalidStateError, "No provider."));
-  }
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   registration_->WebRegistration()->EnableNavigationPreload(

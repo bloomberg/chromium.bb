@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_worker_modes.h"
+#include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -27,13 +28,17 @@ const char kNoDocumentURLErrorMessage[] =
 const char kShutdownErrorMessage[] = "The Service Worker system has shutdown.";
 const char kUserDeniedPermissionMessage[] =
     "The user denied permission to use Service Worker.";
-const char kGetNavigationPreloadStateErrorPrefix[] =
-    "Failed to get navigation preload state: ";
 const char kEnableNavigationPreloadErrorPrefix[] =
     "Failed to enable or disable navigation preload: ";
+const char kGetNavigationPreloadStateErrorPrefix[] =
+    "Failed to get navigation preload state: ";
+const char kSetNavigationPreloadHeaderErrorPrefix[] =
+    "Failed to set navigation preload header: ";
 const char kInvalidStateErrorMessage[] = "The object is in an invalid state.";
 const char kBadMessageImproperOrigins[] =
     "Origins are not matching, or some cannot access service worker.";
+const char kBadNavigationPreloadHeaderValue[] =
+    "The navigation preload header value is invalid.";
 const char kNoActiveWorkerErrorMessage[] =
     "The registration does not have an active worker.";
 const char kDatabaseErrorMessage[] = "Failed to access storage.";
@@ -193,6 +198,36 @@ void ServiceWorkerRegistrationHandle::GetNavigationPreloadState(
                           registration_->navigation_preload_state().Clone());
 }
 
+void ServiceWorkerRegistrationHandle::SetNavigationPreloadHeader(
+    const std::string& value,
+    SetNavigationPreloadHeaderCallback callback) {
+  if (!CanServeRegistrationObjectHostMethods(
+          &callback, kSetNavigationPreloadHeaderErrorPrefix)) {
+    return;
+  }
+
+  if (!registration_->active_version()) {
+    std::move(callback).Run(
+        blink::mojom::ServiceWorkerErrorType::kState,
+        std::string(kSetNavigationPreloadHeaderErrorPrefix) +
+            std::string(kNoActiveWorkerErrorMessage));
+    return;
+  }
+
+  // TODO(falken): Ideally this would match Blink's isValidHTTPHeaderValue.
+  // Chrome's check is less restrictive: it allows non-latin1 characters.
+  if (!net::HttpUtil::IsValidHeaderValue(value)) {
+    bindings_.ReportBadMessage(kBadNavigationPreloadHeaderValue);
+    return;
+  }
+
+  context_->storage()->UpdateNavigationPreloadHeader(
+      registration_->id(), registration_->pattern().GetOrigin(), value,
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &ServiceWorkerRegistrationHandle::DidUpdateNavigationPreloadHeader,
+          weak_ptr_factory_.GetWeakPtr(), value, std::move(callback))));
+}
+
 void ServiceWorkerRegistrationHandle::UpdateComplete(
     UpdateCallback callback,
     ServiceWorkerStatusCode status,
@@ -242,6 +277,24 @@ void ServiceWorkerRegistrationHandle::DidUpdateNavigationPreloadEnabled(
 
   if (registration_)
     registration_->EnableNavigationPreload(enable);
+  std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
+                          base::nullopt);
+}
+
+void ServiceWorkerRegistrationHandle::DidUpdateNavigationPreloadHeader(
+    const std::string& value,
+    SetNavigationPreloadHeaderCallback callback,
+    ServiceWorkerStatusCode status) {
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(
+        blink::mojom::ServiceWorkerErrorType::kUnknown,
+        std::string(kSetNavigationPreloadHeaderErrorPrefix) +
+            std::string(kDatabaseErrorMessage));
+    return;
+  }
+
+  if (registration_)
+    registration_->SetNavigationPreloadHeader(value);
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
                           base::nullopt);
 }

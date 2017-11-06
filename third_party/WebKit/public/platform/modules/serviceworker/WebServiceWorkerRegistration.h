@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class WebServiceWorkerProvider;
 class WebServiceWorkerRegistrationProxy;
 struct WebNavigationPreloadState;
 
@@ -63,7 +62,6 @@ class WebServiceWorkerRegistration {
       std::unique_ptr<WebGetNavigationPreloadStateCallbacks>) {}
   virtual void SetNavigationPreloadHeader(
       const WebString& value,
-      WebServiceWorkerProvider*,
       std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks>) {}
 };
 

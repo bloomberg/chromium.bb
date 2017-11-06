@@ -69,6 +69,9 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
       EnableNavigationPreloadCallback callback) override;
   void GetNavigationPreloadState(
       GetNavigationPreloadStateCallback callback) override;
+  void SetNavigationPreloadHeader(
+      const std::string& value,
+      SetNavigationPreloadHeaderCallback callback) override;
 
   // Called back from ServiceWorkerContextCore when an update is complete.
   void UpdateComplete(UpdateCallback callback,
@@ -84,6 +87,12 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
   void DidUpdateNavigationPreloadEnabled(
       bool enable,
       EnableNavigationPreloadCallback callback,
+      ServiceWorkerStatusCode status);
+  // Called back from ServiceWorkerStorage when setting navigation preload
+  // header is complete.
+  void DidUpdateNavigationPreloadHeader(
+      const std::string& value,
+      SetNavigationPreloadHeaderCallback callback,
       ServiceWorkerStatusCode status);
 
   // Sets the corresponding version field to the given version or if the given

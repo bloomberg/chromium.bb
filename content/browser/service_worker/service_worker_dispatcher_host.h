@@ -129,11 +129,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
 
   // IPC Message handlers
-  void OnSetNavigationPreloadHeader(int thread_id,
-                                    int request_id,
-                                    int provider_id,
-                                    int64_t registration_id,
-                                    const std::string& value);
   void OnCountFeature(int64_t version_id, uint32_t feature);
   void OnIncrementServiceWorkerRefCount(int handle_id);
   void OnDecrementServiceWorkerRefCount(int handle_id);
@@ -190,12 +185,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   ServiceWorkerProviderHost* GetProviderHostForRequest(
       ProviderStatus* out_status,
       int provider_id);
-
-  void DidUpdateNavigationPreloadHeader(int thread_id,
-                                        int request_id,
-                                        int registration_id,
-                                        const std::string& value,
-                                        ServiceWorkerStatusCode status);
 
   const int render_process_id_;
   ResourceContext* resource_context_;

@@ -47,22 +47,12 @@ class WebServiceWorkerRegistrationImpl;
 // scripts through methods like navigator.registerServiceWorker().
 class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
  public:
-  using WebSetNavigationPreloadHeaderCallbacks = blink::
-      WebServiceWorkerRegistration::WebSetNavigationPreloadHeaderCallbacks;
-
   ServiceWorkerDispatcher(
       ThreadSafeSender* thread_safe_sender,
       base::SingleThreadTaskRunner* main_thread_task_runner);
   ~ServiceWorkerDispatcher() override;
 
   void OnMessageReceived(const IPC::Message& msg);
-
-  // Corresponds to NavigationPreloadManager.setHeaderValue.
-  void SetNavigationPreloadHeader(
-      int provider_id,
-      int64_t registration_id,
-      const std::string& value,
-      std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks);
 
   // Called when a new provider context for a document is created. Usually
   // this happens when a new document is being loaded, and is called much
@@ -118,9 +108,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   }
 
  private:
-  using SetNavigationPreloadHeaderCallbackMap =
-      base::IDMap<std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks>>;
-
   using ProviderClientMap =
       std::map<int, blink::WebServiceWorkerProviderClient*>;
   using ProviderContextMap = std::map<int, ServiceWorkerProviderContext*>;
@@ -136,12 +123,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  void OnDidSetNavigationPreloadHeader(int thread_id, int request_id);
-  void OnSetNavigationPreloadHeaderError(
-      int thread_id,
-      int request_id,
-      blink::mojom::ServiceWorkerErrorType error_type,
-      const std::string& message);
   void OnServiceWorkerStateChanged(int thread_id,
                                    int handle_id,
                                    blink::mojom::ServiceWorkerState state);
@@ -157,9 +138,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       WebServiceWorkerRegistrationImpl* registration);
   void RemoveServiceWorkerRegistration(
       int registration_handle_id);
-
-  SetNavigationPreloadHeaderCallbackMap
-      set_navigation_preload_header_callbacks_;
 
   ProviderClientMap provider_clients_;
   ProviderContextMap provider_contexts_;
