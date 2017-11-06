@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -1252,7 +1251,9 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 - (void)setTabTitle:(TabController*)tab withContents:(WebContents*)contents {
   base::string16 title;
   if (contents)
-    title = TabUIHelper::FromWebContents(contents)->GetTitle();
+    title = contents->GetTitle();
+  if (title.empty())
+    title = l10n_util::GetStringUTF16(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
   [tab setTitle:base::SysUTF16ToNSString(title)];
 
   NSString* toolTip = base::SysUTF16ToNSString(chrome::AssembleTabTooltipText(
@@ -1332,11 +1333,6 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
                previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)modelIndex
                          reason:(int)reason {
-  // It's possible for |newContents| to be null when the final tab in a tab
-  // strip is closed.
-  if (newContents && modelIndex != TabStripModel::kNoTab)
-    TabUIHelper::FromWebContents(newContents)->set_was_active_at_least_once();
-
   // Take closing tabs into account.
   if (oldContents) {
     int oldModelIndex =
@@ -1590,7 +1586,6 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
   TabController* tabController = [tabArray_ objectAtIndex:index];
-  TabUIHelper* tabUIHelper = TabUIHelper::FromWebContents(contents);
 
   bool oldHasIcon = [tabController iconView] != nil;
   bool newHasIcon =
@@ -1622,30 +1617,12 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   if (oldState != newState)
     [tabController setLoadingState:newState];
 
-  // Use TabUIHelper to determine if we would like to hide the throbber and
-  // override the favicon. We want to hide the throbber for 2 cases. 1) when a
-  // new tab is opened in the background and its initial navigation is delayed,
-  // and 2) when a tab is created by session restore. For the 1st one, there is
-  // no favicon available when the WebContents' initial navigation is delayed.
-  // So TabUIHelper will fetch the favicon from history if available and use
-  // that. For the 2nd case, TabUIhelper will return an empty favicon, so the
-  // WebContents' favicon is used.
-  //
-  // When the throbber should be shown, only make changes when the state is
-  // actually changing, to avoid expensive unnecessary view manipulation.
-  // Because while loading, this function is called repeatedly with the same
-  // state. When loading is complete (kTabDone), every call to this function is
-  // significant.
-  if (tabUIHelper->ShouldHideThrobber()) {
-    gfx::Image favicon = tabUIHelper->GetFavicon();
-    if (!favicon.IsEmpty()) {
-      [tabController setIconImage:favicon.AsNSImage()];
-    } else {
-      [tabController
-          setIconImage:[self iconImageForContents:contents atIndex:modelIndex]];
-    }
-  } else if (newState == kTabDone || oldState != newState ||
-             oldHasIcon != newHasIcon) {
+  // While loading, this function is called repeatedly with the same state.
+  // To avoid expensive unnecessary view manipulation, only make changes when
+  // the state is actually changing.  When loading is complete (kTabDone),
+  // every call to this function is significant.
+  if (newState == kTabDone || oldState != newState ||
+      oldHasIcon != newHasIcon) {
     if (newHasIcon) {
       if (newState == kTabDone) {
         [tabController setIconImage:[self iconImageForContents:contents

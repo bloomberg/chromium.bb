@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_constants.h"
@@ -1180,10 +1179,8 @@ TabManager::MaybeThrottleNavigation(BackgroundTabNavigationThrottle* throttle) {
     return content::NavigationThrottle::PROCEED;
   }
 
-  // Notify TabUIHelper that the navigation is delayed, so that the tab UI such
-  // as favicon and title can be updated accordingly.
-  TabUIHelper::FromWebContents(contents)->NotifyInitialNavigationDelayed(true);
-
+  // TODO(zhenw): Try to set the favicon and title from history service if this
+  // navigation will be delayed.
   GetWebContentsData(contents)->SetTabLoadingState(TAB_IS_NOT_LOADING);
   pending_navigations_.push_back(throttle);
   std::stable_sort(pending_navigations_.begin(), pending_navigations_.end(),
@@ -1219,17 +1216,11 @@ bool TabManager::CanLoadNextTab() const {
   return false;
 }
 
-void TabManager::OnWillRestoreTab(WebContents* contents) {
-  WebContentsData* data = GetWebContentsData(contents);
+void TabManager::OnWillRestoreTab(WebContents* web_contents) {
+  WebContentsData* data = GetWebContentsData(web_contents);
   DCHECK(!data->is_in_session_restore());
   data->SetIsInSessionRestore(true);
-  data->SetIsRestoredInForeground(contents->IsVisible());
-
-  // TabUIHelper is initialized in TabHelpers::AttachTabHelpers. But this place
-  // gets called earlier than that. So for restored tabs, also initialize their
-  // TabUIHelper here.
-  TabUIHelper::CreateForWebContents(contents);
-  TabUIHelper::FromWebContents(contents)->set_created_by_session_restore(true);
+  data->SetIsRestoredInForeground(web_contents->IsVisible());
 }
 
 void TabManager::OnDidFinishNavigation(
@@ -1328,11 +1319,10 @@ void TabManager::ResumeTabNavigationIfNeeded(content::WebContents* contents) {
 }
 
 void TabManager::ResumeNavigation(BackgroundTabNavigationThrottle* throttle) {
-  content::WebContents* contents =
-      throttle->navigation_handle()->GetWebContents();
-  GetWebContentsData(contents)->SetTabLoadingState(TAB_IS_LOADING);
-  loading_contents_.insert(contents);
-  TabUIHelper::FromWebContents(contents)->NotifyInitialNavigationDelayed(false);
+  content::NavigationHandle* navigation_handle = throttle->navigation_handle();
+  GetWebContentsData(navigation_handle->GetWebContents())
+      ->SetTabLoadingState(TAB_IS_LOADING);
+  loading_contents_.insert(navigation_handle->GetWebContents());
 
   throttle->ResumeNavigation();
 }
