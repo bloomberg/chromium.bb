@@ -1037,7 +1037,7 @@ enum CellType {
 }
 
 - (void)showSyncPassphraseSettings {
-  [self.dispatcher showSyncPassphraseSettings];
+  [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
 }
 
 @end

@@ -1225,7 +1225,7 @@ enum class SnapshotViewOption {
 }
 
 - (void)showSyncPassphraseSettings {
-  [self.dispatcher showSyncPassphraseSettings];
+  [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
 }
 
 @end

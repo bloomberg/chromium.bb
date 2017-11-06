@@ -22,12 +22,15 @@
     (UIViewController*)baseViewController;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
-// Shows the sync settings UI.
+// Shows the sync settings UI, presenting from |baseViewController|.
 - (void)showSyncSettingsFromViewController:
     (UIViewController*)baseViewController;
 
-// Shows the sync encryption passphrase UI.
-- (void)showSyncPassphraseSettings;
+// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// Shows the sync encryption passphrase UI, presenting from
+// |baseViewController|.
+- (void)showSyncPassphraseSettingsFromViewController:
+    (UIViewController*)baseViewController;
 
 @end
 
