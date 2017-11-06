@@ -11,39 +11,24 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/html_names.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 using namespace HTMLNames;
 
-class AffectedByPseudoTest : public ::testing::Test {
+class AffectedByPseudoTest : public PageTestBase {
  protected:
   struct ElementResult {
     const blink::HTMLQualifiedName tag;
     bool children_or_siblings_affected_by;
   };
 
-  void SetUp() override;
-
-  Document& GetDocument() const { return *document_; }
-
   void SetHtmlInnerHTML(const char* html_content);
   void CheckElementsForFocus(ElementResult expected[],
                              unsigned expected_count) const;
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-
-  Persistent<Document> document_;
 };
-
-void AffectedByPseudoTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-  document_ = &dummy_page_holder_->GetDocument();
-  DCHECK(document_);
-}
 
 void AffectedByPseudoTest::SetHtmlInnerHTML(const char* html_content) {
   GetDocument().documentElement()->SetInnerHTMLFromString(

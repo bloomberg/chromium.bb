@@ -9,23 +9,15 @@
 #include "core/dom/ShadowRootInit.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class ScopedStyleResolverTest : public ::testing::Test {
+class ScopedStyleResolverTest : public PageTestBase {
  protected:
-  void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-  }
-
-  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
   StyleEngine& GetStyleEngine() { return GetDocument().GetStyleEngine(); }
   ShadowRoot& AttachShadow(Element& host);
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 ShadowRoot& ScopedStyleResolverTest::AttachShadow(Element& host) {
