@@ -1495,6 +1495,7 @@ jumbo_component("base") {
     libs = [
       "cfgmgr32.lib",
       "powrprof.lib",
+      "propsys.lib",
       "setupapi.lib",
       "userenv.lib",
       "winmm.lib",

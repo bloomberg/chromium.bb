@@ -138,7 +138,10 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
       (properties.options & ShortcutProperties::PROPERTIES_APP_ID) != 0;
   bool has_dual_mode =
       (properties.options & ShortcutProperties::PROPERTIES_DUAL_MODE) != 0;
-  if (has_app_id || has_dual_mode) {
+  bool has_toast_activator_clsid =
+      (properties.options &
+       ShortcutProperties::PROPERTIES_TOAST_ACTIVATOR_CLSID) != 0;
+  if (has_app_id || has_dual_mode || has_toast_activator_clsid) {
     ComPtr<IPropertyStore> property_store;
     if (FAILED(i_shell_link.CopyTo(property_store.GetAddressOf())) ||
         !property_store.Get())
@@ -153,6 +156,12 @@ bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
         !SetBooleanValueForPropertyStore(property_store.Get(),
                                          PKEY_AppUserModel_IsDualMode,
                                          properties.dual_mode)) {
+      return false;
+    }
+    if (has_toast_activator_clsid &&
+        !SetClsidForPropertyStore(property_store.Get(),
+                                  PKEY_AppUserModel_ToastActivatorCLSID,
+                                  properties.toast_activator_clsid)) {
       return false;
     }
   }
@@ -249,7 +258,8 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
   }
 
   if (options & (ShortcutProperties::PROPERTIES_APP_ID |
-                 ShortcutProperties::PROPERTIES_DUAL_MODE)) {
+                 ShortcutProperties::PROPERTIES_DUAL_MODE |
+                 ShortcutProperties::PROPERTIES_TOAST_ACTIVATOR_CLSID)) {
     ComPtr<IPropertyStore> property_store;
     if (FAILED(i_shell_link.CopyTo(property_store.GetAddressOf())))
       return false;
@@ -288,6 +298,28 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
           break;
         default:
           NOTREACHED() << "Unexpected variant type: " << pv_dual_mode.get().vt;
+          return false;
+      }
+    }
+
+    if (options & ShortcutProperties::PROPERTIES_TOAST_ACTIVATOR_CLSID) {
+      ScopedPropVariant pv_toast_activator_clsid;
+      if (property_store->GetValue(PKEY_AppUserModel_ToastActivatorCLSID,
+                                   pv_toast_activator_clsid.Receive()) !=
+          S_OK) {
+        return false;
+      }
+      switch (pv_toast_activator_clsid.get().vt) {
+        case VT_EMPTY:
+          properties->set_toast_activator_clsid(CLSID_NULL);
+          break;
+        case VT_CLSID:
+          properties->set_toast_activator_clsid(
+              *(pv_toast_activator_clsid.get().puuid));
+          break;
+        default:
+          NOTREACHED() << "Unexpected variant type: "
+                       << pv_toast_activator_clsid.get().vt;
           return false;
       }
     }

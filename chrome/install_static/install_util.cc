@@ -4,7 +4,6 @@
 
 #include "chrome/install_static/install_util.h"
 
-#include <windows.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -376,6 +375,10 @@ std::wstring GetUninstallRegistryPath() {
 
 const wchar_t* GetAppGuid() {
   return InstallDetails::Get().app_guid();
+}
+
+const CLSID& GetToastActivatorClsid() {
+  return InstallDetails::Get().toast_activator_clsid();
 }
 
 std::wstring GetBaseAppName() {

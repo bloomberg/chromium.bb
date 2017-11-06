@@ -38,7 +38,12 @@ const InstallConstants kInstallModes[] = {
         L"Chrome HTML Document",                    // ProgID description.
         L"{8A69D345-D564-463c-AFF1-A69D9E530F96}",  // Active Setup GUID.
         L"{5C65F4B0-3651-4514-B207-D10CB699B14B}",  // CommandExecuteImpl CLSID.
-        L"",  // The empty string means "stable".
+        {0xA2C6CB58,
+         0xC076,
+         0x425C,
+         {0xAC, 0xB7, 0x6D, 0x19, 0xD6, 0x44, 0x28,
+          0xCD}},  // Toast Activator CLSID.
+        L"",       // The empty string means "stable".
         ChannelStrategy::ADDITIONAL_PARAMETERS,
         true,  // Supports system-level installs.
         true,  // Supports in-product set as default browser UX.
@@ -61,7 +66,12 @@ const InstallConstants kInstallModes[] = {
         L"Chrome Beta HTML Document",               // ProgID description.
         L"{8237E44A-0054-442C-B6B6-EA0509993955}",  // Active Setup GUID.
         L"",                                        // CommandExecuteImpl CLSID.
-        L"beta",                                    // Forced channel name.
+        {0xB89B137F,
+         0x96AA,
+         0x4AE2,
+         {0x98, 0xC4, 0x63, 0x73, 0xEA, 0xA1, 0xEA,
+          0x4D}},  // Toast Activator CLSID.
+        L"beta",   // Forced channel name.
         ChannelStrategy::FIXED,
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.
@@ -84,7 +94,12 @@ const InstallConstants kInstallModes[] = {
         L"Chrome Dev HTML Document",                // ProgID description.
         L"{401C381F-E0DE-4B85-8BD8-3F3F14FBDA57}",  // Active Setup GUID.
         L"",                                        // CommandExecuteImpl CLSID.
-        L"dev",                                     // Forced channel name.
+        {0xF01C03EB,
+         0xD431,
+         0x4C83,
+         {0x8D, 0x7A, 0x90, 0x27, 0x71, 0xE7, 0x32,
+          0xFA}},  // Toast Activator CLSID.
+        L"dev",    // Forced channel name.
         ChannelStrategy::FIXED,
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.
@@ -107,7 +122,12 @@ const InstallConstants kInstallModes[] = {
         L"Chrome Canary HTML Document",             // ProgID description.
         L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}",  // Active Setup GUID.
         L"{1BEAC3E3-B852-44F4-B468-8906C062422E}",  // CommandExecuteImpl CLSID.
-        L"canary",                                  // Forced channel name.
+        {0xFA372A6E,
+         0x149F,
+         0x4E95,
+         {0x83, 0x2D, 0x8F, 0x69, 0x8D, 0x40, 0xAD,
+          0x7F}},   // Toast Activator CLSID.
+        L"canary",  // Forced channel name.
         ChannelStrategy::FIXED,
         false,  // Does not support system-level installs.
         false,  // Does not support in-product set as default browser UX.

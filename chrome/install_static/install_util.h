@@ -10,6 +10,8 @@
 #ifndef CHROME_INSTALL_STATIC_INSTALL_UTIL_H_
 #define CHROME_INSTALL_STATIC_INSTALL_UTIL_H_
 
+#include <windows.h>
+
 #include <string>
 #include <vector>
 
@@ -75,6 +77,10 @@ std::wstring GetUninstallRegistryPath();
 // an empty string if this brand does not integrate with Google Update. This is
 // a simple convenience wrapper around InstallDetails.
 const wchar_t* GetAppGuid();
+
+// Returns the toast activator CLSID with which Chrome is registered with the
+// the Windows OS.
+const CLSID& GetToastActivatorClsid();
 
 // Returns the unsuffixed application name of this program. This is the base of
 // the name registered with Default Programs. IMPORTANT: This must only be

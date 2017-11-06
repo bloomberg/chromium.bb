@@ -16,7 +16,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/install_static/install_details.h"
 #include "components/grit/components_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
@@ -36,6 +35,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/version_handler_chromeos.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/install_static/install_details.h"
 #endif
 
 using content::WebUIDataSource;

@@ -5,6 +5,8 @@
 #ifndef CHROME_INSTALL_STATIC_INSTALL_DETAILS_H_
 #define CHROME_INSTALL_STATIC_INSTALL_DETAILS_H_
 
+#include <windows.h>
+
 #include <memory>
 #include <string>
 
@@ -102,6 +104,12 @@ class InstallDetails {
   // The app GUID with which this mode is registered with Google Update, or an
   // empty string if this brand does not integrate with Google Update.
   const wchar_t* app_guid() const { return payload_->mode->app_guid; }
+
+  // The toast activator CLSID with which Chrome is registered with the Windows
+  // OS.
+  const CLSID& toast_activator_clsid() const {
+    return payload_->mode->toast_activator_clsid;
+  }
 
   // Returns the unsuffixed portion of the AppUserModelId. The AppUserModelId is
   // used to group an app's windows together on the Windows taskbar along with

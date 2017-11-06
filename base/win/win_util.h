@@ -96,6 +96,11 @@ BASE_EXPORT bool SetStringValueForPropertyStore(
     const PROPERTYKEY& property_key,
     const wchar_t* property_string_value);
 
+// Sets the CLSID value for a given key in a given IPropertyStore.
+BASE_EXPORT bool SetClsidForPropertyStore(IPropertyStore* property_store,
+                                          const PROPERTYKEY& property_key,
+                                          const CLSID& property_clsid_value);
+
 // Sets the application id in given IPropertyStore. The function is intended
 // for tagging application/chromium shortcut, browser window and jump list for
 // Win7.

@@ -45,6 +45,14 @@ class ShortcutTest : public testing::Test {
       link_properties_.set_icon(link_properties_.target, 4);
       link_properties_.set_app_id(L"Chrome");
       link_properties_.set_dual_mode(false);
+
+      // The CLSID below was randomly selected.
+      static constexpr CLSID toast_activator_clsid = {
+          0x08d401c2,
+          0x3f79,
+          0x41d8,
+          {0x89, 0xd0, 0x99, 0x25, 0xee, 0x16, 0x28, 0x63}};
+      link_properties_.set_toast_activator_clsid(toast_activator_clsid);
     }
 
     // Shortcut 2's properties (all different from properties of shortcut 1).
@@ -62,6 +70,7 @@ class ShortcutTest : public testing::Test {
       link_properties_2_.set_icon(icon_path_2, 0);
       link_properties_2_.set_app_id(L"Chrome.UserLevelCrazySuffix");
       link_properties_2_.set_dual_mode(true);
+      link_properties_2_.set_toast_activator_clsid(CLSID_NULL);
     }
   }
 
@@ -100,6 +109,8 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
   EXPECT_EQ(link_properties_.icon_index, properties_read_1.icon_index);
   EXPECT_EQ(link_properties_.app_id, properties_read_1.app_id);
   EXPECT_EQ(link_properties_.dual_mode, properties_read_1.dual_mode);
+  EXPECT_EQ(link_properties_.toast_activator_clsid,
+            properties_read_1.toast_activator_clsid);
 
   // Test simple shortcut with no special properties set.
   FilePath file_2(temp_dir_.GetPath().Append(L"Link2.lnk"));
@@ -121,6 +132,7 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
   EXPECT_EQ(0, properties_read_2.icon_index);
   EXPECT_EQ(L"", properties_read_2.app_id);
   EXPECT_FALSE(properties_read_2.dual_mode);
+  EXPECT_EQ(CLSID_NULL, properties_read_2.toast_activator_clsid);
 }
 
 TEST_F(ShortcutTest, CreateAndResolveShortcut) {

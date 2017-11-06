@@ -38,7 +38,12 @@ const InstallConstants kInstallModes[] = {
         L"Chromium HTML Document",                  // ProgID description.
         L"{7D2B3E1D-D096-4594-9D8F-A6667F12E0AC}",  // Active Setup GUID.
         L"{A2DF06F9-A21A-44A8-8A99-8B9C84F29160}",  // CommandExecuteImpl CLSID.
-        L"",  // Empty default channel name since no update integration.
+        {0x635EFA6F,
+         0x08D6,
+         0x4EC9,
+         {0xBD, 0x14, 0x8A, 0x0F, 0xDE, 0x97, 0x51,
+          0x59}},  // Toast Activator CLSID.
+        L"",       // Empty default channel name since no update integration.
         ChannelStrategy::UNSUPPORTED,
         true,   // Supports system-level installs.
         true,   // Supports in-product set as default browser UX.

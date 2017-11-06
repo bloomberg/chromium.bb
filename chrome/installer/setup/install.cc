@@ -497,6 +497,10 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
     start_menu_properties.set_pin_to_taskbar(!do_not_create_taskbar_shortcut);
   }
 
+  const CLSID toast_activator_clsid = install_static::GetToastActivatorClsid();
+  if (toast_activator_clsid != CLSID_NULL)
+    start_menu_properties.set_toast_activator_clsid(toast_activator_clsid);
+
   // The attempt below to update the stortcut will fail if it does not already
   // exist at the expected location on disk.  First check if it exists in the
   // previous location (under a subdirectory) and, if so, move it to the new
