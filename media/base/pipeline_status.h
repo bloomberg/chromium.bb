@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
 
 namespace media {
@@ -64,12 +65,22 @@ struct PipelineStatistics {
   uint64_t video_bytes_decoded = 0;
   uint32_t video_frames_decoded = 0;
   uint32_t video_frames_dropped = 0;
+  uint32_t video_frames_decoded_power_efficient = 0;
+
   int64_t audio_memory_usage = 0;
   int64_t video_memory_usage = 0;
   base::TimeDelta video_keyframe_distance_average = kNoTimestamp;
   // NOTE: frame duration should reflect changes to playback rate.
   base::TimeDelta video_frame_duration_average = kNoTimestamp;
+
+  // NOTE: always update operator== implementation in pipeline_status.cc when
+  // adding a field to this struct. Leave this comment at the end.
 };
+
+MEDIA_EXPORT bool operator==(const PipelineStatistics& first,
+                             const PipelineStatistics& second);
+MEDIA_EXPORT bool operator!=(const PipelineStatistics& first,
+                             const PipelineStatistics& second);
 
 // Used for updating pipeline statistics; the passed value should be a delta
 // of all attributes since the last update.

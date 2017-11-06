@@ -524,6 +524,8 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer,
   // We might get a successful VpxDecode but not a frame if only a partial
   // decode happened.
   if (video_frame) {
+    video_frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
+                                        false);
     // Safe to call |output_cb_| here even if we're on the offload thread since
     // it is only set once during Initialize() and never changed.
     output_cb_.Run(video_frame);

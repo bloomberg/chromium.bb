@@ -50,11 +50,6 @@ PipelineStatistics DefaultStats() {
   return stats;
 }
 
-bool IsDefaultStats(const PipelineStatistics& stats) {
-  const PipelineStatistics default_stats = DefaultStats();
-  return memcmp(&stats, &default_stats, sizeof(PipelineStatistics)) == 0;
-}
-
 class RendererClientImpl final : public RendererClient {
  public:
   RendererClientImpl() {
@@ -638,9 +633,9 @@ TEST_F(CourierRendererTest, OnVideoOpacityChange) {
 
 TEST_F(CourierRendererTest, OnStatisticsUpdate) {
   InitializeRenderer();
-  ASSERT_FALSE(IsDefaultStats(render_client_->stats()));
+  EXPECT_NE(DefaultStats(), render_client_->stats());
   IssueStatisticsUpdateRpc();
-  ASSERT_TRUE(IsDefaultStats(render_client_->stats()));
+  EXPECT_EQ(DefaultStats(), render_client_->stats());
 }
 
 TEST_F(CourierRendererTest, OnDurationChange) {
