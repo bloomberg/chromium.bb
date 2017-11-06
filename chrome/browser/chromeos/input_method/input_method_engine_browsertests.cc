@@ -1092,7 +1092,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
     SCOPED_TRACE("Text");
 
     ExtensionTestMessageListener focus_listener(
-        "onFocus:password:false:false:false", false);
+        "onFocus:text:false:false:false", false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
         ui::TEXT_INPUT_FLAG_NONE);
@@ -1115,8 +1115,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
   {
     SCOPED_TRACE("URL");
 
-    ExtensionTestMessageListener focus_listener(
-        "onFocus:password:false:false:false", false);
+    ExtensionTestMessageListener focus_listener("onFocus:url:false:false:false",
+                                                false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_URL, ui::TEXT_INPUT_MODE_DEFAULT,
         ui::TEXT_INPUT_FLAG_NONE);
@@ -1128,7 +1128,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
     SCOPED_TRACE("Search");
 
     ExtensionTestMessageListener focus_listener(
-        "onFocus:password:false:false:false", false);
+        "onFocus:search:false:false:false", false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_SEARCH, ui::TEXT_INPUT_MODE_DEFAULT,
         ui::TEXT_INPUT_FLAG_NONE);
@@ -1140,7 +1140,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
     SCOPED_TRACE("Email");
 
     ExtensionTestMessageListener focus_listener(
-        "onFocus:password:false:false:false", false);
+        "onFocus:email:false:false:false", false);
     ui::IMEEngineHandlerInterface::InputContext context(
         ui::TEXT_INPUT_TYPE_EMAIL, ui::TEXT_INPUT_MODE_DEFAULT,
         ui::TEXT_INPUT_FLAG_NONE);
