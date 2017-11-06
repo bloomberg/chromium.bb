@@ -190,7 +190,7 @@ bool BoxPaintInvalidator::ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
   if (new_layout_overflow.Location() != old_layout_overflow.Location())
     return true;
   if (new_layout_overflow.Width() != old_layout_overflow.Width() &&
-      box_.MustInvalidateFillLayersPaintOnHeightChange(
+      box_.MustInvalidateFillLayersPaintOnWidthChange(
           box_.StyleRef().BackgroundLayers()))
     return true;
   if (new_layout_overflow.Height() != old_layout_overflow.Height() &&
