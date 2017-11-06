@@ -23,7 +23,8 @@ class cros_gralloc_buffer
 	int32_t increase_refcount();
 	int32_t decrease_refcount();
 
-	int32_t lock(uint32_t map_flags, uint8_t *addr[DRV_MAX_PLANES]);
+	int32_t lock(const struct rectangle *rect, uint32_t map_flags,
+		     uint8_t *addr[DRV_MAX_PLANES]);
 	int32_t unlock();
 
       private:

@@ -10,7 +10,6 @@
 #include "drv.h"
 #include "helpers_array.h"
 
-uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane);
 uint32_t drv_size_from_format(uint32_t format, uint32_t stride, uint32_t height, size_t plane);
 int drv_bo_from_format(struct bo *bo, uint32_t stride, uint32_t aligned_height, uint32_t format);
 int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,

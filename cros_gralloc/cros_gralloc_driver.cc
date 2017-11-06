@@ -235,7 +235,8 @@ int32_t cros_gralloc_driver::release(buffer_handle_t handle)
 	return 0;
 }
 
-int32_t cros_gralloc_driver::lock(buffer_handle_t handle, int32_t acquire_fence, uint32_t map_flags,
+int32_t cros_gralloc_driver::lock(buffer_handle_t handle, int32_t acquire_fence,
+				  const struct rectangle *rect, uint32_t map_flags,
 				  uint8_t *addr[DRV_MAX_PLANES])
 {
 	int32_t ret = cros_gralloc_sync_wait(acquire_fence);
@@ -255,7 +256,7 @@ int32_t cros_gralloc_driver::lock(buffer_handle_t handle, int32_t acquire_fence,
 		return -EINVAL;
 	}
 
-	return buffer->lock(map_flags, addr);
+	return buffer->lock(rect, map_flags, addr);
 }
 
 int32_t cros_gralloc_driver::unlock(buffer_handle_t handle, int32_t *release_fence)

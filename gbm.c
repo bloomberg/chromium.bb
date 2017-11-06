@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <xf86drm.h>
 
 #include "drv.h"
@@ -225,15 +226,24 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
 			uint32_t transfer_flags, uint32_t *stride, void **map_data, size_t plane)
 {
+	void *addr;
+	off_t offset;
 	uint32_t map_flags;
+	struct rectangle rect = { .x = x, .y = y, .width = width, .height = height };
 	if (!bo || width == 0 || height == 0 || !stride || !map_data)
 		return NULL;
 
 	*stride = gbm_bo_get_plane_stride(bo, plane);
 	map_flags = (transfer_flags & GBM_BO_TRANSFER_READ) ? BO_MAP_READ : BO_MAP_NONE;
 	map_flags |= (transfer_flags & GBM_BO_TRANSFER_WRITE) ? BO_MAP_WRITE : BO_MAP_NONE;
-	return drv_bo_map(bo->bo, x, y, width, height, map_flags, (struct mapping **)map_data,
-			  plane);
+
+	addr = drv_bo_map(bo->bo, &rect, map_flags, (struct mapping **)map_data, plane);
+	if (addr == MAP_FAILED)
+		return MAP_FAILED;
+
+	offset = gbm_bo_get_plane_stride(bo, plane) * rect.y;
+	offset += drv_stride_from_format(bo->gbm_format, rect.x, plane);
+	return (void *)((uint8_t *)addr + offset);
 }
 
 PUBLIC void gbm_bo_unmap(struct gbm_bo *bo, void *map_data)

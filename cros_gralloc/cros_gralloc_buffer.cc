@@ -44,7 +44,8 @@ int32_t cros_gralloc_buffer::decrease_refcount()
 	return --refcount_;
 }
 
-int32_t cros_gralloc_buffer::lock(uint32_t map_flags, uint8_t *addr[DRV_MAX_PLANES])
+int32_t cros_gralloc_buffer::lock(const struct rectangle *rect, uint32_t map_flags,
+				  uint8_t *addr[DRV_MAX_PLANES])
 {
 	void *vaddr = nullptr;
 
@@ -64,8 +65,7 @@ int32_t cros_gralloc_buffer::lock(uint32_t map_flags, uint8_t *addr[DRV_MAX_PLAN
 			drv_bo_invalidate(bo_, lock_data_[0]);
 			vaddr = lock_data_[0]->vma->addr;
 		} else {
-			vaddr = drv_bo_map(bo_, 0, 0, drv_bo_get_width(bo_), drv_bo_get_height(bo_),
-					   map_flags, &lock_data_[0], 0);
+			vaddr = drv_bo_map(bo_, rect, map_flags, &lock_data_[0], 0);
 		}
 
 		if (vaddr == MAP_FAILED) {

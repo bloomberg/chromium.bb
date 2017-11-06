@@ -87,8 +87,17 @@ struct vma {
 	void *priv;
 };
 
+struct rectangle {
+	uint32_t x;
+	uint32_t y;
+	uint32_t width;
+	uint32_t height;
+};
+
 struct mapping {
 	struct vma *vma;
+	struct rectangle rect;
+	uint32_t refcount;
 };
 
 struct driver *drv_create(int fd);
@@ -114,8 +123,8 @@ void drv_bo_destroy(struct bo *bo);
 
 struct bo *drv_bo_import(struct driver *drv, struct drv_import_fd_data *data);
 
-void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
-		 uint32_t map_flags, struct mapping **map_data, size_t plane);
+void *drv_bo_map(struct bo *bo, const struct rectangle *rect, uint32_t map_flags,
+		 struct mapping **map_data, size_t plane);
 
 int drv_bo_unmap(struct bo *bo, struct mapping *mapping);
 
@@ -146,6 +155,8 @@ uint64_t drv_bo_get_plane_format_modifier(struct bo *bo, size_t plane);
 uint32_t drv_bo_get_format(struct bo *bo);
 
 uint32_t drv_bo_get_stride_in_pixels(struct bo *bo);
+
+uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane);
 
 uint32_t drv_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags);
 

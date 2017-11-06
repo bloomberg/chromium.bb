@@ -382,24 +382,41 @@ destroy_bo:
 	return NULL;
 }
 
-void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t height,
-		 uint32_t map_flags, struct mapping **map_data, size_t plane)
+void *drv_bo_map(struct bo *bo, const struct rectangle *rect, uint32_t map_flags,
+		 struct mapping **map_data, size_t plane)
 {
 	uint32_t i;
 	uint8_t *addr;
-	size_t offset;
 	struct mapping mapping;
 
-	assert(width > 0);
-	assert(height > 0);
-	assert(x + width <= drv_bo_get_width(bo));
-	assert(y + height <= drv_bo_get_height(bo));
+	assert(rect->width >= 0);
+	assert(rect->height >= 0);
+	assert(rect->x + rect->width <= drv_bo_get_width(bo));
+	assert(rect->y + rect->height <= drv_bo_get_height(bo));
 	assert(BO_MAP_READ_WRITE & map_flags);
 	/* No CPU access for protected buffers. */
 	assert(!(bo->use_flags & BO_USE_PROTECTED));
 
 	memset(&mapping, 0, sizeof(mapping));
+	mapping.rect = *rect;
+	mapping.refcount = 1;
+
 	pthread_mutex_lock(&bo->drv->driver_lock);
+
+	for (i = 0; i < drv_array_size(bo->drv->mappings); i++) {
+		struct mapping *prior = (struct mapping *)drv_array_at_idx(bo->drv->mappings, i);
+		if (prior->vma->handle != bo->handles[plane].u32 ||
+		    prior->vma->map_flags != map_flags)
+			continue;
+
+		if (rect->x != prior->rect.x || rect->y != prior->rect.y ||
+		    rect->width != prior->rect.width || rect->height != prior->rect.height)
+			continue;
+
+		prior->refcount++;
+		*map_data = prior;
+		goto exact_match;
+	}
 
 	for (i = 0; i < drv_array_size(bo->drv->mappings); i++) {
 		struct mapping *prior = (struct mapping *)drv_array_at_idx(bo->drv->mappings, i);
@@ -427,14 +444,12 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 	mapping.vma->map_flags = map_flags;
 
 success:
-	drv_bo_invalidate(bo, &mapping);
 	*map_data = drv_array_append(bo->drv->mappings, &mapping);
-	offset = drv_bo_get_plane_stride(bo, plane) * y;
-	offset += drv_stride_from_format(bo->format, x, plane);
-	addr = (uint8_t *)mapping.vma->addr;
-	addr += drv_bo_get_plane_offset(bo, plane) + offset;
+exact_match:
+	drv_bo_invalidate(bo, *map_data);
+	addr = (uint8_t *)((*map_data)->vma->addr);
+	addr += drv_bo_get_plane_offset(bo, plane);
 	pthread_mutex_unlock(&bo->drv->driver_lock);
-
 	return (void *)addr;
 }
 
@@ -446,6 +461,9 @@ int drv_bo_unmap(struct bo *bo, struct mapping *mapping)
 		return ret;
 
 	pthread_mutex_lock(&bo->drv->driver_lock);
+
+	if (--mapping->refcount)
+		goto out;
 
 	if (!--mapping->vma->refcount) {
 		ret = bo->drv->backend->bo_unmap(bo, mapping->vma);
@@ -459,8 +477,8 @@ int drv_bo_unmap(struct bo *bo, struct mapping *mapping)
 		}
 	}
 
+out:
 	pthread_mutex_unlock(&bo->drv->driver_lock);
-
 	return ret;
 }
 
@@ -470,6 +488,7 @@ int drv_bo_invalidate(struct bo *bo, struct mapping *mapping)
 
 	assert(mapping);
 	assert(mapping->vma);
+	assert(mapping->refcount > 0);
 	assert(mapping->vma->refcount > 0);
 
 	if (bo->drv->backend->bo_invalidate)
@@ -484,6 +503,7 @@ int drv_bo_flush(struct bo *bo, struct mapping *mapping)
 
 	assert(mapping);
 	assert(mapping->vma);
+	assert(mapping->refcount > 0);
 	assert(mapping->vma->refcount > 0);
 	assert(!(bo->use_flags & BO_USE_PROTECTED));
 

@@ -297,6 +297,10 @@ static int gralloc0_lock_async(struct gralloc_module_t const *module, buffer_han
 	uint32_t map_flags;
 	uint8_t *addr[DRV_MAX_PLANES];
 	auto mod = (struct gralloc0_module *)module;
+	struct rectangle rect = { .x = static_cast<uint32_t>(l),
+				  .y = static_cast<uint32_t>(t),
+				  .width = static_cast<uint32_t>(w),
+				  .height = static_cast<uint32_t>(h) };
 
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
@@ -309,8 +313,13 @@ static int gralloc0_lock_async(struct gralloc_module_t const *module, buffer_han
 		return -EINVAL;
 	}
 
+	assert(l >= 0);
+	assert(t >= 0);
+	assert(w >= 0);
+	assert(h >= 0);
+
 	map_flags = gralloc0_convert_map_usage(usage);
-	ret = mod->driver->lock(handle, fence_fd, map_flags, addr);
+	ret = mod->driver->lock(handle, fence_fd, &rect, map_flags, addr);
 	*vaddr = addr[0];
 	return ret;
 }
@@ -330,6 +339,10 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 	uint32_t map_flags;
 	uint8_t *addr[DRV_MAX_PLANES] = { nullptr, nullptr, nullptr, nullptr };
 	auto mod = (struct gralloc0_module *)module;
+	struct rectangle rect = { .x = static_cast<uint32_t>(l),
+				  .y = static_cast<uint32_t>(t),
+				  .width = static_cast<uint32_t>(w),
+				  .height = static_cast<uint32_t>(h) };
 
 	auto hnd = cros_gralloc_convert_handle(handle);
 	if (!hnd) {
@@ -344,8 +357,13 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 		return -EINVAL;
 	}
 
+	assert(l >= 0);
+	assert(t >= 0);
+	assert(w >= 0);
+	assert(h >= 0);
+
 	map_flags = gralloc0_convert_map_usage(usage);
-	ret = mod->driver->lock(handle, fence_fd, map_flags, addr);
+	ret = mod->driver->lock(handle, fence_fd, &rect, map_flags, addr);
 	if (ret)
 		return ret;
 
