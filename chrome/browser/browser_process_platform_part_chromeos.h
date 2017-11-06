@@ -37,7 +37,6 @@ class BrowserPolicyConnectorChromeOS;
 }
 
 namespace ui {
-class ImageCursorsSet;
 class InputDeviceControllerClient;
 }
 
@@ -105,15 +104,11 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   chromeos::system::SystemClock* GetSystemClock();
   void DestroySystemClock();
 
-  void DestroyImageCursorsSet();
-
   void AddCompatibleCrOSComponent(const std::string& name);
 
   bool IsCompatibleCrOSComponent(const std::string& name);
 
-#if defined(USE_OZONE)
   ui::InputDeviceControllerClient* GetInputDeviceControllerClient();
-#endif
 
  private:
   void CreateProfileHelper();
@@ -142,9 +137,6 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 
   base::flat_set<std::string> compatible_cros_components_;
-
-  // Used by the UI Service.
-  std::unique_ptr<ui::ImageCursorsSet> image_cursors_set_;
 
 #if defined(USE_OZONE)
   std::unique_ptr<ui::InputDeviceControllerClient>

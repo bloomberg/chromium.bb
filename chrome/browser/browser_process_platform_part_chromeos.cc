@@ -25,7 +25,6 @@
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
-#include "chrome/browser/embedded_ui_service_info_factory.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -35,19 +34,15 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/common/service_manager_connection.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/ui/common/image_cursors_set.h"
-
-#if defined(USE_OZONE)
-#include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#endif
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false) {}
@@ -186,13 +181,6 @@ void BrowserProcessPlatformPart::RegisterInProcessServices(
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
     services->insert(std::make_pair(ash::mojom::kServiceName, info));
   }
-
-  if (chromeos::GetAshConfig() == ash::Config::MUS) {
-    image_cursors_set_ = base::MakeUnique<ui::ImageCursorsSet>();
-    service_manager::EmbeddedServiceInfo info =
-        CreateEmbeddedUIServiceInfo(image_cursors_set_->GetWeakPtr());
-    services->insert(std::make_pair(ui::mojom::kServiceName, info));
-  }
 }
 
 chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {
@@ -205,10 +193,6 @@ void BrowserProcessPlatformPart::DestroySystemClock() {
   system_clock_.reset();
 }
 
-void BrowserProcessPlatformPart::DestroyImageCursorsSet() {
-  image_cursors_set_.reset();
-}
-
 void BrowserProcessPlatformPart::AddCompatibleCrOSComponent(
     const std::string& name) {
   compatible_cros_components_.insert(name);
@@ -219,7 +203,6 @@ bool BrowserProcessPlatformPart::IsCompatibleCrOSComponent(
   return compatible_cros_components_.count(name) > 0;
 }
 
-#if defined(USE_OZONE)
 ui::InputDeviceControllerClient*
 BrowserProcessPlatformPart::GetInputDeviceControllerClient() {
   if (!input_device_controller_client_) {
@@ -234,7 +217,6 @@ BrowserProcessPlatformPart::GetInputDeviceControllerClient() {
   }
   return input_device_controller_client_.get();
 }
-#endif
 
 void BrowserProcessPlatformPart::CreateProfileHelper() {
   DCHECK(!created_profile_helper_ && !profile_helper_);

@@ -163,6 +163,7 @@ source_set("browser") {
     "//ui/accessibility",
     "//ui/accessibility:ax_gen",
     "//ui/base",
+    "//ui/base:ui_features",
     "//ui/base/ime",
     "//ui/display",
     "//ui/display/types",
@@ -2152,6 +2153,7 @@ source_set("browser") {
 
   if (use_aura) {
     deps += [
+      "//services/ui:lib",
       "//services/ui/public/cpp",
       "//services/ui/public/interfaces",
       "//ui/aura",

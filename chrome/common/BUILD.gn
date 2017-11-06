@@ -41,7 +41,6 @@ buildflag_header("features") {
     "ENABLE_HANGOUT_SERVICES_EXTENSION=$enable_hangout_services_extension",
     "ENABLE_ONE_CLICK_SIGNIN=$enable_one_click_signin",
     "ENABLE_NATIVE_NOTIFICATIONS=$enable_native_notifications",
-    "ENABLE_PACKAGE_MASH_SERVICES=$enable_package_mash_services",
     "ENABLE_SERVICE_DISCOVERY=$enable_service_discovery",
     "ENABLE_SESSION_SERVICE=$enable_session_service",
     "ENABLE_SUPERVISED_USERS=$enable_supervised_users",
@@ -565,6 +564,7 @@ static_library("constants") {
     "//extensions/features",
     "//printing/features",
     "//rlz/features",
+    "//ui/base:ui_features",
   ]
   deps = [
     ":channel_info",

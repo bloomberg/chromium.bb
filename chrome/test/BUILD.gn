@@ -1021,7 +1021,7 @@ if (!is_android && !is_fuchsia) {
       "//testing/scripts/run_telemetry_as_googletest.py",
     ]
 
-    if (enable_package_mash_services) {
+    if (enable_mus) {
       deps += [ "//chrome:chrome_test" ]
       data_deps = [
         "//chrome:chrome_test",
@@ -1073,7 +1073,7 @@ static_library("browser_tests_runner") {
     ":test_support",
   ]
 
-  if (is_chromeos && enable_package_mash_services) {
+  if (is_chromeos && enable_mus) {
     sources += [
       "base/browser_tests_main_chromeos.cc",
       "base/mash_browser_tests_main.cc",
@@ -2989,7 +2989,7 @@ group("telemetry_perf_unittests") {
     "//testing/scripts/run_multiple_telemetry_benchmarks_as_googletest.py",
   ]
 
-  if (enable_package_mash_services) {
+  if (enable_mus) {
     deps += [ "//chrome:chrome_test" ]
     data_deps = [
       "//chrome:chrome_test",

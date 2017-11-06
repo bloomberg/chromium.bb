@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/service_manager/common_browser_interfaces.h"
@@ -63,6 +64,7 @@
 #include "services/video_capture/public/cpp/constants.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
+#include "ui/base/ui_features.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -76,6 +78,14 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
+#endif
+
+#if BUILDFLAG(ENABLE_MUS)
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
+#include "content/public/browser/discardable_shared_memory_manager.h"
+#include "services/ui/common/image_cursors_set.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/service.h"
 #endif
 
 namespace content {
@@ -229,6 +239,38 @@ bool ShouldEnableVizService() {
   return false;
 #endif
 }
+
+#if BUILDFLAG(ENABLE_MUS)
+std::unique_ptr<service_manager::Service> CreateEmbeddedUIService(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    base::WeakPtr<ui::ImageCursorsSet> image_cursors_set_weak_ptr,
+    discardable_memory::DiscardableSharedMemoryManager* memory_manager) {
+  ui::Service::InProcessConfig config;
+  config.resource_runner = task_runner;
+  config.image_cursors_set_weak_ptr = image_cursors_set_weak_ptr;
+  config.memory_manager = memory_manager;
+  return base::MakeUnique<ui::Service>(&config);
+}
+
+void RegisterUIServiceInProcessIfNecessary(
+    ServiceManagerConnection* connection) {
+  // Some tests don't create BrowserMainLoop.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("mus") ||
+      !BrowserMainLoop::GetInstance()) {
+    return;
+  }
+
+  service_manager::EmbeddedServiceInfo info;
+  info.factory = base::Bind(
+      &CreateEmbeddedUIService, base::ThreadTaskRunnerHandle::Get(),
+      BrowserMainLoop::GetInstance()->image_cursors_set()->GetWeakPtr(),
+      GetDiscardableSharedMemoryManager());
+  info.use_own_thread = true;
+  info.message_loop_type = base::MessageLoop::TYPE_UI;
+  info.thread_priority = base::ThreadPriority::DISPLAY;
+  connection->AddEmbeddedService(ui::mojom::kServiceName, info);
+}
+#endif
 
 }  // namespace
 
@@ -421,6 +463,10 @@ ServiceManagerContext::ServiceManagerContext() {
     packaged_services_connection_->AddEmbeddedService(entry.first,
                                                       entry.second);
   }
+
+#if BUILDFLAG(ENABLE_MUS)
+  RegisterUIServiceInProcessIfNecessary(packaged_services_connection_.get());
+#endif
 
   // This is safe to assign directly from any thread, because
   // ServiceManagerContext must be constructed before anyone can call

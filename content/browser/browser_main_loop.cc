@@ -129,6 +129,7 @@
 #include "sql/sql_memory_dump_provider.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
 
@@ -235,6 +236,10 @@
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_implementation.h"
+#endif
+
+#if BUILDFLAG(ENABLE_MUS)
+#include "services/ui/common/image_cursors_set.h"
 #endif
 
 // One of the linux specific headers defines this as a macro.
@@ -1228,6 +1233,12 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   if (RenderProcessHost::run_renderer_in_process())
     RenderProcessHostImpl::ShutDownInProcessRenderer();
 
+#if BUILDFLAG(ENABLE_MUS)
+  // NOTE: because of dependencies this has to happen before
+  // PostMainMessageLoopRun().
+  image_cursors_set_.reset();
+#endif
+
   if (parts_) {
     TRACE_EVENT0("shutdown",
                  "BrowserMainLoop::Subsystem:PostMainMessageLoopRun");
@@ -1724,6 +1735,11 @@ bool BrowserMainLoop::InitializeToolkit() {
   // before they can be initialized by the browser.
   env_ = aura::Env::CreateInstance(parameters_.env_mode);
 #endif  // defined(USE_AURA)
+
+#if BUILDFLAG(ENABLE_MUS)
+  if (parsed_command_line_.HasSwitch(switches::kMus))
+    image_cursors_set_ = base::MakeUnique<ui::ImageCursorsSet>();
+#endif
 
   if (parts_)
     parts_->ToolkitInitialized();

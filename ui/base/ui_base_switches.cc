@@ -127,4 +127,10 @@ const char kMangleLocalizedStrings[] = "mangle-localized-strings";
 const char kSlowDownCompositingScaleFactor[] =
     "slow-down-compositing-scale-factor";
 
+#if BUILDFLAG(ENABLE_MUS)
+// Used to enable the mus service (aka the UI service). This makes mus run in
+// process.
+const char kMus[] = "mus";
+#endif
+
 }  // namespace switches

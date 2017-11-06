@@ -41,6 +41,8 @@
 #include "content/public/test/browser_test.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_features.h"
 
 #if defined(OS_POSIX)
 #include "base/files/file_descriptor_watcher_posix.h"
@@ -563,6 +565,13 @@ void WrapperTestLauncherDelegate::GTestCallback(
   DoRunTests(test_launcher, test_names);
 }
 
+void PrepareToRunTestSuite(const base::CommandLine& command_line) {
+#if BUILDFLAG(ENABLE_MUS)
+  if (command_line.HasSwitch(switches::kMus))
+    g_params->env_mode = aura::Env::Mode::MUS;
+#endif
+}
+
 }  // namespace
 
 const char kHelpFlag[]   = "help";
@@ -626,6 +635,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
       command_line->HasSwitch(base::kGTestListTestsFlag) ||
       command_line->HasSwitch(base::kGTestHelpFlag)) {
     g_params = &params;
+    PrepareToRunTestSuite(*command_line);
     return launcher_delegate->RunTestSuite(argc, argv);
   }
 

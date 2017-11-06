@@ -23,6 +23,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/ui.gni")
 import("//services/service_manager/public/service_manifest.gni")
+import("//ui/base/ui_features.gni")
 
 public_app_shared_sources = [
   "content_jni_onload.h",
@@ -43,7 +44,7 @@ public_app_shared_deps = [
   "//services/service_manager/public/cpp",
 ]
 
-if (use_aura) {
+if (enable_mus) {
   public_app_shared_deps += [ "//ui/aura" ]
 }
 
@@ -191,6 +192,10 @@ service_manifest("packaged_services_manifest") {
     "//services/video_capture:manifest",
     "//services/viz:manifest",
   ]
+
+  if (enable_mus) {
+    packaged_services += [ "//services/ui:manifest" ]
+  }
 }
 
 service_manifest("browser_manifest") {

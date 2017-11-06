@@ -292,7 +292,7 @@ if (!is_android && !is_mac) {
             "//build/config/linux:xext",
           ]
         }
-        if (enable_package_mash_services) {
+        if (enable_mus) {
           deps += [ "//mash/common" ]
         }
       }
@@ -332,7 +332,7 @@ if (!is_android && !is_mac) {
 
   # TODO(jonross): remove this once telemetry can differentiate between linux
   # and linux chromiumos.
-  if (enable_package_mash_services) {
+  if (enable_mus) {
     chrome_binary("chrome_test") {
       # Note that the output name needs to end with "chrome", because that's
       # what telemetry test-runner expects.
