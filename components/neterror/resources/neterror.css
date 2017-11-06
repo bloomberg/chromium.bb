@@ -470,13 +470,13 @@ html[subframe] body {
   }
 }
 
-@media (max-width: 360px) and (max-height: 440px) {
+@media (max-width: 360px) and (max-height: 480px) {
   .offline .interstitial-wrapper {
-    padding-top: 70px;
+    padding-top: 60px;
   }
 
   .offline .runner-container {
-    top: 16px;
+    top: 8px;
   }
 }
 
