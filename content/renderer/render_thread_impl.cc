@@ -2019,9 +2019,15 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
     const GURL& url,
     const LayerTreeFrameSinkCallback& callback) {
+  // Misconfigured bots (eg. crbug.com/780757) could run layout tests on a
+  // machine where gpu compositing doesn't work. Don't crash in that case.
+  if (layout_test_mode() && is_gpu_compositing_disabled_) {
+    LOG(FATAL) << "Layout tests require gpu compositing, but it is disabled.";
+    return;
+  }
+
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-
   viz::ClientLayerTreeFrameSink::InitParams params;
   params.enable_surface_synchronization =
       command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
