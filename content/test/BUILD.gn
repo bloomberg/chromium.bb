@@ -1789,7 +1789,6 @@ test("content_unittests") {
       "../renderer/media/peer_connection_tracker_unittest.cc",
       "../renderer/media/rtc_data_channel_handler_unittest.cc",
       "../renderer/media/rtc_peer_connection_handler_unittest.cc",
-      "../renderer/media/speech_recognition_audio_sink_unittest.cc",
       "../renderer/media/user_media_client_impl_unittest.cc",
       "../renderer/media/video_track_adapter_unittest.cc",
       "../renderer/media/webmediaplayer_ms_unittest.cc",

@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class MediaStreamTrack;
 class WebSpeechRecognizer;
 class WebString;
 
@@ -56,8 +55,7 @@ class MODULES_EXPORT SpeechRecognitionClientProxy final
              const String& lang,
              bool continuous,
              bool interim_results,
-             unsigned long max_alternatives,
-             MediaStreamTrack*) override;
+             unsigned long max_alternatives) override;
   void Stop(SpeechRecognition*) override;
   void Abort(SpeechRecognition*) override;
 
@@ -80,7 +78,7 @@ class MODULES_EXPORT SpeechRecognitionClientProxy final
   void DidEnd(const WebSpeechRecognitionHandle&) override;
 
  private:
-  SpeechRecognitionClientProxy(WebSpeechRecognizer*);
+  explicit SpeechRecognitionClientProxy(WebSpeechRecognizer*);
 
   WebSpeechRecognizer* recognizer_;
 };

@@ -41,7 +41,6 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
-class MediaStreamTrack;
 class Page;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
@@ -72,10 +71,6 @@ class MODULES_EXPORT SpeechRecognition final
   unsigned maxAlternatives() { return max_alternatives_; }
   void setMaxAlternatives(unsigned max_alternatives) {
     max_alternatives_ = max_alternatives;
-  }
-  MediaStreamTrack* audioTrack() { return audio_track_; }
-  void setAudioTrack(MediaStreamTrack* audio_track) {
-    audio_track_ = audio_track;
   }
 
   // Callable by the user.
@@ -127,7 +122,6 @@ class MODULES_EXPORT SpeechRecognition final
   SpeechRecognition(Page*, ExecutionContext*);
 
   Member<SpeechGrammarList> grammars_;
-  Member<MediaStreamTrack> audio_track_;
   String lang_;
   bool continuous_;
   bool interim_results_;

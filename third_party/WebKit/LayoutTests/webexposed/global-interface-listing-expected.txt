@@ -9039,7 +9039,6 @@ interface webkitSpeechGrammarList
     method item
 interface webkitSpeechRecognition : EventTarget
     attribute @@toStringTag
-    getter audioTrack
     getter continuous
     getter grammars
     getter interimResults
@@ -9060,7 +9059,6 @@ interface webkitSpeechRecognition : EventTarget
     method constructor
     method start
     method stop
-    setter audioTrack
     setter continuous
     setter grammars
     setter interimResults
