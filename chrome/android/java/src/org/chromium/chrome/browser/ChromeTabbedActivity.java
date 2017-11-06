@@ -505,18 +505,21 @@ public class ChromeTabbedActivity
 
     @Override
     public void onNewIntent(Intent intent) {
+        // The intent to use in maybeDispatchExplicitMainViewIntent(). We're explicitly
+        // adding NEW_TASK flag to make sure backing from CCT brings up the caller activity,
+        // and not Chrome
+        Intent intentForDispatching = new Intent(intent);
+        intentForDispatching.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         @LaunchIntentDispatcher.Action
         int action = maybeDispatchExplicitMainViewIntent(
-                intent, sExplicitMainViewIntentDispatchedOnNewIntent);
+                intentForDispatching, sExplicitMainViewIntentDispatchedOnNewIntent);
         if (action != LaunchIntentDispatcher.Action.CONTINUE) {
-            // Change our position in the activity stack to make sure back button sends user
-            // to the activity that started the custom tab.
-            if ((intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
-                moveTaskToBack(true);
-            }
+            // Pressing back button in CCT should bring user to the caller activity.
+            moveTaskToBack(true);
             // Intent was dispatched to CustomTabActivity, consume it.
             return;
         }
+
         mIntentHandlingTimeMs = SystemClock.uptimeMillis();
         super.onNewIntent(intent);
     }
