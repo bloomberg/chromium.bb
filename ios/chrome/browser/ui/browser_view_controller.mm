@@ -1093,10 +1093,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       _dispatcher);
 }
 
-- (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
-  return _toolbarCoordinator;
-}
-
 - (void)setActive:(BOOL)active {
   if (_active == active) {
     return;
@@ -4804,6 +4800,24 @@ bubblePresenterForFeature:(const base::Feature&)feature
     }
     _isToolbarControllerRelinquished = NO;
   }
+}
+
+- (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
+  id<ToolbarSnapshotProviding> toolbarSnapshotProvider = nil;
+  if ([_toolbarCoordinator view].hidden) {
+    Tab* currentTab = [_model currentTab];
+    if (currentTab.webState &&
+        UrlHasChromeScheme(currentTab.webState->GetLastCommittedURL())) {
+      // Use the native content controller's toolbar when the BVC's is hidden.
+      id nativeController = [self nativeControllerForTab:currentTab];
+      if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
+        toolbarSnapshotProvider = [nativeController toolbarSnapshotProvider];
+      }
+    }
+  } else {
+    toolbarSnapshotProvider = _toolbarCoordinator;
+  }
+  return toolbarSnapshotProvider;
 }
 
 #pragma mark - TabModelObserver methods

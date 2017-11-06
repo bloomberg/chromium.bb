@@ -89,7 +89,6 @@ const CGFloat kHintLabelSidePadding = 12;
 @synthesize commandHandler = _commandHandler;
 @synthesize collectionSynchronizer = _collectionSynchronizer;
 @synthesize readingListModel = _readingListModel;
-@synthesize toolbarSnapshotProvider = _toolbarSnapshotProvider;
 
 @synthesize logoVendor = _logoVendor;
 @synthesize promoCanShow = _promoCanShow;
@@ -380,6 +379,10 @@ const CGFloat kHintLabelSidePadding = 12;
 
 - (void)reparentToolbarController {
   [self.headerView reparentToolbarController];
+}
+
+- (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
+  return self.headerView.toolbarSnapshotProvider;
 }
 
 #pragma mark - LogoAnimationControllerOwnerOwner
