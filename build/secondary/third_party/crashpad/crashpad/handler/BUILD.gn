@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
-
-static_library("handler") {
+static_library("handler_lib") {
   sources = [
     "crash_report_upload_thread.cc",
     "crash_report_upload_thread.h",
@@ -26,47 +24,18 @@ static_library("handler") {
     "win/crash_report_exception_handler.h",
   ]
 
-  public_configs = [ "//third_party/crashpad/crashpad:crashpad_config" ]
+  include_dirs = [ ".." ]
 
   deps = [
+    "../compat",
+    "../minidump",
+    "../snapshot",
+    "../tools:tool_support",
     "//base",
-    "//third_party/crashpad/crashpad/client",
-    "//third_party/crashpad/crashpad/compat",
-    "//third_party/crashpad/crashpad/minidump",
-    "//third_party/crashpad/crashpad/snapshot",
-    "//third_party/crashpad/crashpad/tools:tool_support",
-    "//third_party/crashpad/crashpad/util",
   ]
 
   if (is_win) {
-    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
-  }
-}
-
-source_set("handler_test") {
-  testonly = true
-
-  sources = [
-    "minidump_to_upload_parameters_test.cc",
-  ]
-
-  deps = [
-    ":handler",
-    "//base",
-    "//testing/gtest",
-    "//third_party/crashpad/crashpad/client",
-    "//third_party/crashpad/crashpad/compat",
-    "//third_party/crashpad/crashpad/snapshot",
-    "//third_party/crashpad/crashpad/test",
-    "//third_party/crashpad/crashpad/util",
-  ]
-
-  if (is_win) {
-    sources += [ "crashpad_handler_test.cc" ]
-
-    data_deps = [
-      ":crashpad_handler_test_extended_handler",
-    ]
+    cflags = [ "/wd4201" ]
   }
 }
 
@@ -75,16 +44,18 @@ executable("crashpad_handler") {
     "main.cc",
   ]
 
+  include_dirs = [ ".." ]
+
   deps = [
-    ":handler",
+    ":handler_lib",
+    "../compat",
     "//base",
     "//build/win:default_exe_manifest",
-    "//third_party/crashpad/crashpad/compat",
   ]
 
   if (is_mac && is_component_build) {
-    # The handler is in Chromium.app/Contents/Versions/X/Chromium
-    # Framework.framework/Versions/A/Helpers/ so set rpath up to the base.
+    # The handler is in Chromium.app/Contents/Versions/X/Chromium Framework.framework/Versions/A/Helpers/
+    # so set rpath up to the base.
     ldflags = [
       "-rpath",
       "@loader_path/../../../../../../../..",
@@ -94,54 +65,5 @@ executable("crashpad_handler") {
   if (is_win) {
     configs -= [ "//build/config/win:console" ]
     configs += [ "//build/config/win:windowed" ]
-  }
-}
-
-executable("crashpad_handler_test_extended_handler") {
-  testonly = true
-
-  sources = [
-    "crashpad_handler_test_extended_handler.cc",
-  ]
-
-  deps = [
-    ":handler",
-    "//base",
-    "//build/win:default_exe_manifest",
-    "//third_party/crashpad/crashpad/compat",
-    "//third_party/crashpad/crashpad/minidump:test_support",
-    "//third_party/crashpad/crashpad/tools:tool_support",
-  ]
-}
-
-if (is_win) {
-  executable("crashpad_handler_com") {
-    sources = [
-      "main.cc",
-    ]
-
-    # Avoid .exp, .ilk, and .lib file collisions with crashpad_handler.exe by
-    # having this target produce crashpad_handler_com.com. Don’t use this target
-    # directly. Instead, use crashpad_handler_console.
-    output_extension = "com"
-
-    deps = [
-      ":handler",
-      "//base",
-      "//build/win:default_exe_manifest",
-      "//third_party/crashpad/crashpad/compat",
-    ]
-  }
-
-  copy("crashpad_handler_console") {
-    deps = [
-      ":crashpad_handler_com",
-    ]
-    sources = [
-      "$root_out_dir/crashpad_handler_com.com",
-    ]
-    outputs = [
-      "$root_out_dir/crashpad_handler.com",
-    ]
   }
 }

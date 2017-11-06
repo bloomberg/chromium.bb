@@ -2,9 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
-
 static_library("snapshot") {
+  deps = [
+    "../client",
+    "../compat",
+    "../util",
+    "//base",
+  ]
+
+  include_dirs = [ ".." ]
+
+  if (is_win) {
+    cflags = [ "/wd4201" ]
+    libs = [ "powrprof.lib" ]
+  }
+
   sources = [
     "annotation_snapshot.cc",
     "annotation_snapshot.h",
@@ -113,251 +125,27 @@ static_library("snapshot") {
       "x86/cpuid_reader.h",
     ]
   }
-
-  public_configs = [ "//third_party/crashpad/crashpad:crashpad_config" ]
-
-  deps = [
-    "//base",
-    "//third_party/crashpad/crashpad/client",
-    "//third_party/crashpad/crashpad/compat",
-    "//third_party/crashpad/crashpad/util",
-  ]
-
-  if (is_win) {
-    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
-    libs = [ "powrprof.lib" ]
-  }
 }
 
 if (is_win) {
-  static_library("snapshot_api") {
+  source_set("snapshot_api") {
+    deps = [
+      ":snapshot",
+      "../compat",
+      "../util",
+      "//base",
+    ]
+
+    include_dirs = [ ".." ]
+
+    cflags = [ "/wd4201" ]
+
     sources = [
       "api/module_annotations_win.cc",
       "api/module_annotations_win.h",
     ]
-
-    public_configs = [ "//third_party/crashpad/crashpad:crashpad_config" ]
-
-    cflags = [ "/wd4201" ]
-
-    deps = [
-      ":snapshot",
-      "//base",
-      "//third_party/crashpad/crashpad/compat",
-      "//third_party/crashpad/crashpad/util",
-    ]
   }
 } else {
   group("snapshot_api") {
-  }
-}
-
-static_library("test_support") {
-  testonly = true
-
-  sources = [
-    "test/test_cpu_context.cc",
-    "test/test_cpu_context.h",
-    "test/test_exception_snapshot.cc",
-    "test/test_exception_snapshot.h",
-    "test/test_memory_map_region_snapshot.cc",
-    "test/test_memory_map_region_snapshot.h",
-    "test/test_memory_snapshot.cc",
-    "test/test_memory_snapshot.h",
-    "test/test_module_snapshot.cc",
-    "test/test_module_snapshot.h",
-    "test/test_process_snapshot.cc",
-    "test/test_process_snapshot.h",
-    "test/test_system_snapshot.cc",
-    "test/test_system_snapshot.h",
-    "test/test_thread_snapshot.cc",
-    "test/test_thread_snapshot.h",
-  ]
-
-  public_configs = [ "//third_party/crashpad/crashpad:crashpad_config" ]
-
-  public_deps = [
-    ":snapshot",
-  ]
-
-  deps = [
-    "//base",
-    "//third_party/crashpad/crashpad/compat",
-    "//third_party/crashpad/crashpad/util",
-  ]
-
-  if (is_win) {
-    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
-  }
-}
-
-source_set("snapshot_test") {
-  testonly = true
-
-  sources = [
-    "cpu_context_test.cc",
-    "crashpad_info_client_options_test.cc",
-    "mac/cpu_context_mac_test.cc",
-    "mac/mach_o_image_annotations_reader_test.cc",
-    "mac/mach_o_image_reader_test.cc",
-    "mac/mach_o_image_segment_reader_test.cc",
-    "mac/process_reader_test.cc",
-    "mac/process_types_test.cc",
-    "mac/system_snapshot_mac_test.cc",
-    "minidump/process_snapshot_minidump_test.cc",
-    "win/cpu_context_win_test.cc",
-    "win/exception_snapshot_win_test.cc",
-    "win/extra_memory_ranges_test.cc",
-    "win/pe_image_annotations_reader_test.cc",
-    "win/pe_image_reader_test.cc",
-    "win/process_reader_win_test.cc",
-    "win/process_snapshot_win_test.cc",
-    "win/system_snapshot_win_test.cc",
-  ]
-
-  if (is_win) {
-    sources += [ "api/module_annotations_win_test.cc" ]
-  } else {
-    sources += [ "posix/timezone_test.cc" ]
-  }
-
-  deps = [
-    ":snapshot_api",
-    ":test_support",
-    "//base",
-    "//testing/gtest",
-    "//third_party/crashpad/crashpad/client",
-    "//third_party/crashpad/crashpad/compat",
-    "//third_party/crashpad/crashpad/test",
-    "//third_party/crashpad/crashpad/util",
-  ]
-
-  data_deps = [
-    ":crashpad_snapshot_test_module",
-  ]
-
-  if (is_mac) {
-    libs = [ "OpenCL.framework" ]
-
-    data_deps += [
-      ":crashpad_snapshot_test_module_crashy_initializer",
-      ":crashpad_snapshot_test_no_op",
-    ]
-  }
-
-  if (is_win) {
-    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
-
-    data_deps += [
-      ":crashpad_snapshot_test_annotations",
-      ":crashpad_snapshot_test_crashing_child",
-      ":crashpad_snapshot_test_dump_without_crashing",
-      ":crashpad_snapshot_test_extra_memory_ranges",
-      ":crashpad_snapshot_test_image_reader",
-      ":crashpad_snapshot_test_image_reader_module",
-    ]
-  }
-}
-
-loadable_module("crashpad_snapshot_test_module") {
-  testonly = true
-  sources = [
-    "crashpad_info_client_options_test_module.cc",
-  ]
-  deps = [
-    "//base",
-    "//third_party/crashpad/crashpad/client",
-  ]
-}
-
-if (is_mac) {
-  loadable_module("crashpad_snapshot_test_module_crashy_initializer") {
-    testonly = true
-    sources = [
-      "mac/mach_o_image_annotations_reader_test_module_crashy_initializer.cc",
-    ]
-  }
-
-  executable("crashpad_snapshot_test_no_op") {
-    testonly = true
-    sources = [
-      "mac/mach_o_image_annotations_reader_test_no_op.cc",
-    ]
-  }
-}
-
-if (is_win) {
-  executable("crashpad_snapshot_test_annotations") {
-    testonly = true
-    sources = [
-      "win/crashpad_snapshot_test_annotations.cc",
-    ]
-    deps = [
-      "//base",
-      "//third_party/crashpad/crashpad/client",
-      "//third_party/crashpad/crashpad/compat",
-    ]
-  }
-
-  executable("crashpad_snapshot_test_crashing_child") {
-    testonly = true
-    sources = [
-      "win/crashpad_snapshot_test_crashing_child.cc",
-    ]
-    deps = [
-      "//base",
-      "//third_party/crashpad/crashpad/client",
-      "//third_party/crashpad/crashpad/compat",
-      "//third_party/crashpad/crashpad/util",
-    ]
-  }
-
-  executable("crashpad_snapshot_test_dump_without_crashing") {
-    testonly = true
-    sources = [
-      "win/crashpad_snapshot_test_dump_without_crashing.cc",
-    ]
-    deps = [
-      "//base",
-      "//third_party/crashpad/crashpad/client",
-      "//third_party/crashpad/crashpad/compat",
-      "//third_party/crashpad/crashpad/util",
-    ]
-  }
-
-  executable("crashpad_snapshot_test_extra_memory_ranges") {
-    testonly = true
-    sources = [
-      "win/crashpad_snapshot_test_extra_memory_ranges.cc",
-    ]
-    deps = [
-      "//base",
-      "//third_party/crashpad/crashpad/client",
-      "//third_party/crashpad/crashpad/compat",
-    ]
-  }
-
-  executable("crashpad_snapshot_test_image_reader") {
-    testonly = true
-    sources = [
-      "win/crashpad_snapshot_test_image_reader.cc",
-    ]
-    deps = [
-      "//base",
-      "//third_party/crashpad/crashpad/client",
-      "//third_party/crashpad/crashpad/compat",
-      "//third_party/crashpad/crashpad/util",
-    ]
-  }
-
-  loadable_module("crashpad_snapshot_test_image_reader_module") {
-    testonly = true
-    sources = [
-      "win/crashpad_snapshot_test_image_reader_module.cc",
-    ]
-    deps = [
-      "//base",
-      "//third_party/crashpad/crashpad/client",
-    ]
   }
 }

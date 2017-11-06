@@ -9,10 +9,16 @@ if (is_mac) {
   import("//build/config/sysroot.gni")
 }
 
+# Allows the source set to inject ldflags for targets that link to it.
+config("util_link_config") {
+  if (is_mac) {
+    libs = [ "bsm" ]
+  }
+}
+
 if (is_mac) {
   action_foreach("mig") {
     script = "mach/mig.py"
-
     sources = [
       "$sysroot/usr/include/mach/exc.defs",
       "$sysroot/usr/include/mach/mach_exc.defs",
@@ -254,17 +260,13 @@ static_library("util") {
     ]
   }
 
-  if (is_mac) {
-    sources += get_target_outputs(":mig")
-  }
-
   if (is_win) {
     # There's no ml.exe yet in cross builds, so provide broken-but-not-asm
     # versions of the functions defined in .asm files.
     # CaptureContext() in capture_context_broken.cc just calls CHECK(false).
-    # SafeTerminateProcess() in safe_terminate_process.cc just calls regular
-    # TerminateProcess() without the protection against broken third-party
-    # patching of TerminateProcess().
+    # SafeTerminateProcess() in safe_terminate_process.cc just calls
+    # regular TerminateProcess() without the protection against broken
+    # third-party patching of TerminateProcess().
     # TODO(thakis): Use the .asm file in cross builds somehow, crbug.com/762167
     if (host_os == "win") {
       sources += [
@@ -279,46 +281,45 @@ static_library("util") {
     }
   }
 
-  public_configs = [ "//third_party/crashpad/crashpad:crashpad_config" ]
-
   # Include files from here and generated files starting with "util".
-  include_dirs = [ "$root_gen_dir/third_party/crashpad/crashpad" ]
-
-  public_deps = [
-    "//third_party/crashpad/crashpad/compat",
+  include_dirs = [
+    "..",
+    "$root_gen_dir/third_party/crashpad/crashpad",
   ]
+
+  all_dependent_configs = [ ":util_link_config" ]
 
   deps = [
     "//base",
     "//third_party/crashpad/crashpad/third_party/zlib",
   ]
 
-  if (is_mac) {
-    libs = [
-      "bsm",
-      "CoreFoundation.framework",
-      "Foundation.framework",
-      "IOKit.framework",
-    ]
-    deps += [ ":mig" ]
-  }
+  public_deps = [
+    "//third_party/crashpad/crashpad/compat",
+  ]
 
   if (is_win) {
+    libs = [ "winhttp.lib" ]
     cflags = [
       "/wd4201",  # nonstandard extension used : nameless struct/union.
       "/wd4577",  # 'noexcept' used with no exception handling mode specified.
     ]
-    libs = [ "winhttp.lib" ]
 
     if (current_cpu == "x86") {
       asmflags = [ "/safeseh" ]
     }
+  } else if (is_mac) {
+    sources += get_target_outputs(":mig")
+    deps += [ ":mig" ]
+    libs = [
+      "CoreFoundation.framework",
+      "Foundation.framework",
+      "IOKit.framework",
+    ]
   }
 }
 
-source_set("util_test") {
-  testonly = true
-
+test("crashpad_util_test") {
   sources = [
     "file/delimited_file_reader_test.cc",
     "file/directory_reader_test.cc",
@@ -346,7 +347,6 @@ source_set("util_test") {
     "net/http_body_test_util.h",
     "net/http_multipart_builder_test.cc",
     "net/http_transport_test.cc",
-    "net/url_test.cc",
     "numeric/checked_address_range_test.cc",
     "numeric/checked_range_test.cc",
     "numeric/in_range_cast_test.cc",
@@ -400,12 +400,8 @@ source_set("util_test") {
       "mach/symbolic_constants_mach_test.cc",
       "mach/task_memory_test.cc",
     ]
+    libs = [ "Foundation.framework" ]
   }
-
-  data = [
-    "net/http_transport_test_server.py",
-    "net/testdata/",
-  ]
 
   deps = [
     ":util",
@@ -414,21 +410,25 @@ source_set("util_test") {
     "//testing/gtest",
     "//third_party/crashpad/crashpad/client",
     "//third_party/crashpad/crashpad/compat",
-    "//third_party/crashpad/crashpad/test",
+    "//third_party/crashpad/crashpad/test:crashpad_gmock_main",
+    "//third_party/crashpad/crashpad/test:crashpad_test",
     "//third_party/crashpad/crashpad/third_party/zlib",
   ]
 
-  if (is_mac) {
-    libs = [ "Foundation.framework" ]
-  }
-
   if (is_win) {
-    libs = [ "rpcrt4.lib" ]
     data_deps = [
       ":crashpad_util_test_process_info_test_child",
       ":crashpad_util_test_safe_terminate_process_test_child",
     ]
+    libs = [ "rpcrt4.lib" ]
   }
+
+  include_dirs = [ ".." ]
+
+  data = [
+    "net/http_transport_test_server.py",
+    "net/testdata/",
+  ]
 }
 
 if (is_win) {
@@ -438,8 +438,9 @@ if (is_win) {
       "win/process_info_test_child.cc",
     ]
 
-    # Set an unusually high load address to make sure that the main executable
-    # still appears as the first element in ProcessInfo::Modules().
+    # Set an unusually high load address to make sure that the main
+    # executable still appears as the first element in
+    # ProcessInfo::Modules().
     ldflags = [
       "/BASE:0x78000000",
       "/DYNAMICBASE:NO",

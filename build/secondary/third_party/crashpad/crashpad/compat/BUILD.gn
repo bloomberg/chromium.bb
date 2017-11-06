@@ -18,7 +18,6 @@ config("compat_config") {
 
 static_library("compat") {
   sources = []
-
   if (is_mac) {
     sources += [
       "mac/AvailabilityMacros.h",
@@ -56,17 +55,12 @@ static_library("compat") {
     ]
   }
 
-  public_configs = [
-    ":compat_config",
-    "//third_party/crashpad/crashpad:crashpad_config",
-  ]
+  public_configs = [ ":compat_config" ]
 
   deps = []
-
   if (is_mac) {
     deps += [ "//third_party/crashpad/crashpad/third_party/apple_cctools" ]
-  }
-  if (is_win) {
+  } else if (is_win) {
     deps += [ "//third_party/crashpad/crashpad/third_party/getopt" ]
   }
 }

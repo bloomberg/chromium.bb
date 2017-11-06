@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
+config("client_config") {
+  include_dirs = [ ".." ]
+}
 
 static_library("client") {
   sources = [
@@ -38,7 +40,7 @@ static_library("client") {
     ]
   }
 
-  public_configs = [ "//third_party/crashpad/crashpad:crashpad_config" ]
+  public_configs = [ ":client_config" ]
 
   deps = [
     "//base",
@@ -48,50 +50,6 @@ static_library("client") {
 
   if (is_win) {
     libs = [ "rpcrt4.lib" ]
-    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union
-  }
-}
-
-source_set("client_test") {
-  testonly = true
-
-  sources = [
-    "annotation_list_test.cc",
-    "annotation_test.cc",
-    "crash_report_database_test.cc",
-    "prune_crash_reports_test.cc",
-    "settings_test.cc",
-    "simple_address_range_bag_test.cc",
-    "simple_string_dictionary_test.cc",
-  ]
-
-  if (is_mac) {
-    sources += [
-      "capture_context_mac_test.cc",
-      "simulate_crash_mac_test.cc",
-    ]
-  }
-
-  if (is_win) {
-    sources += [ "crashpad_client_win_test.cc" ]
-  }
-
-  deps = [
-    ":client",
-    "//base",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/crashpad/crashpad/compat",
-    "//third_party/crashpad/crashpad/test",
-    "//third_party/crashpad/crashpad/util",
-  ]
-
-  data_deps = [
-    "//third_party/crashpad/crashpad/handler:crashpad_handler",
-  ]
-
-  if (is_win) {
-    data_deps +=
-        [ "//third_party/crashpad/crashpad/handler:crashpad_handler_console" ]
+    cflags = [ "/wd4201" ]  # nonstandard extension used : nameless struct/union.
   }
 }
