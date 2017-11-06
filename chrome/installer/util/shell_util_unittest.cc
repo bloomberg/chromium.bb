@@ -4,6 +4,7 @@
 
 #include "chrome/installer/util/shell_util.h"
 
+#include <cguid.h>
 #include <stddef.h>
 
 #include <memory>
@@ -98,6 +99,14 @@ class ShellUtilShortcutTest : public testing::Test {
     test_properties_.set_description(L"Makes polar bears dance.");
     test_properties_.set_icon(icon_path, 7);
     test_properties_.set_app_id(L"Polar.Bear");
+
+    // The CLSID below was randomly selected.
+    static constexpr CLSID toast_activator_clsid = {
+        0xb2a1d927,
+        0xacd1,
+        0x484a,
+        {0x82, 0x82, 0xd5, 0xfc, 0x66, 0x56, 0x26, 0x4b}};
+    test_properties_.set_toast_activator_clsid(toast_activator_clsid);
   }
 
   // Returns the expected path of a test shortcut. Returns an empty FilePath on
@@ -183,6 +192,13 @@ class ShellUtilShortcutTest : public testing::Test {
     } else {
       // Tests are always seen as user-level installs in ShellUtil.
       expected_properties.set_app_id(ShellUtil::GetBrowserModelId(true));
+    }
+
+    if (properties.has_toast_activator_clsid()) {
+      expected_properties.set_toast_activator_clsid(
+          properties.toast_activator_clsid);
+    } else {
+      expected_properties.set_toast_activator_clsid(CLSID_NULL);
     }
 
     base::win::ValidateShortcut(expected_path, expected_properties);

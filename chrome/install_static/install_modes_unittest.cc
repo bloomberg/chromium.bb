@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include <cguid.h>
 #include <ctype.h>
 
 #include "testing/gmock/include/gmock/gmock.h"
@@ -89,6 +90,9 @@ TEST(InstallModes, VerifyModes) {
 
     // Every mode must have an Active Setup GUID.
     ASSERT_THAT(mode.active_setup_guid, StrNe(L""));
+
+    // Every mode must have a toast activator CLSID.
+    ASSERT_THAT(mode.toast_activator_clsid, Ne(CLSID_NULL));
 
     // UNSUPPORTED and kUseGoogleUpdateIntegration are mutually exclusive.
     if (kUseGoogleUpdateIntegration)

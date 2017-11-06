@@ -9,6 +9,8 @@
 #ifndef CHROME_INSTALL_STATIC_INSTALL_CONSTANTS_H_
 #define CHROME_INSTALL_STATIC_INSTALL_CONSTANTS_H_
 
+#include <windows.h>
+
 #include <stdint.h>
 
 namespace install_static {
@@ -89,6 +91,11 @@ struct InstallConstants {
   // The legacy CommandExecuteImpl CLSID, or an empty string if this install
   // mode never included a DelegateExecute verb handler.
   const wchar_t* legacy_command_execute_clsid;
+
+  // The CLSID of the COM object registered with the Widnows OS. This is for app
+  // activation via user interaction with a toast notification in the Action
+  // Center.
+  CLSID toast_activator_clsid;
 
   // The default name for this mode's update channel.
   const wchar_t* default_channel_name;

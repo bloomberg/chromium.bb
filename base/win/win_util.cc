@@ -376,6 +376,19 @@ bool SetStringValueForPropertyStore(IPropertyStore* property_store,
                                              property_value);
 }
 
+bool SetClsidForPropertyStore(IPropertyStore* property_store,
+                              const PROPERTYKEY& property_key,
+                              const CLSID& property_clsid_value) {
+  ScopedPropVariant property_value;
+  if (FAILED(InitPropVariantFromCLSID(property_clsid_value,
+                                      property_value.Receive()))) {
+    return false;
+  }
+
+  return SetPropVariantValueForPropertyStore(property_store, property_key,
+                                             property_value);
+}
+
 bool SetAppIdForPropertyStore(IPropertyStore* property_store,
                               const wchar_t* app_id) {
   // App id should be less than 64 chars and contain no space. And recommended
