@@ -59,13 +59,6 @@ void AddPreviewNavigationToBlackListCallback(
 // PreviewsInfoBarDelegate is created, which handles showing Lo-Fi UI.
 void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Retrieve PreviewsUIService* from |web_contents| if available.
-  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  previews::PreviewsUIService* previews_ui_service =
-      previews_service ? previews_service->previews_ui_service() : nullptr;
-
   PreviewsInfoBarDelegate::Create(
       web_contents, previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
@@ -75,11 +68,10 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
                  web_contents->GetController()
                      .GetLastCommittedEntry()
                      ->GetRedirectChain()[0],
-                 previews::PreviewsType::LOFI),
-      previews_ui_service);
+                 previews::PreviewsType::LOFI));
 }
 
-}  // namespace
+} // namespace
 
 std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
 CreateDataReductionProxyChromeIOData(

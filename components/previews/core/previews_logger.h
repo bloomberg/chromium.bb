@@ -19,8 +19,6 @@
 
 namespace previews {
 
-std::string GetDescriptionForInfoBarDescription(previews::PreviewsType type);
-
 class PreviewsLoggerObserver;
 
 // Records information about previews and interventions events. The class only
@@ -64,12 +62,11 @@ class PreviewsLogger {
   virtual void RemoveObserver(PreviewsLoggerObserver* observer);
 
   // Add MessageLog using the given information. Pop out the oldest log if the
-  // size of |log_messages_| grows larger than a threshold. Virtualized in
-  // testing.
-  virtual void LogMessage(const std::string& event_type,
-                          const std::string& event_description,
-                          const GURL& url,
-                          base::Time time);
+  // size of |log_messages_| grows larger than a threshold.
+  void LogMessage(const std::string& event_type,
+                  const std::string& event_description,
+                  const GURL& url,
+                  base::Time time);
 
   // Convert |navigation| to a MessageLog, and add that message to
   // |log_messages_|. Virtualized in testing.
