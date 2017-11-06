@@ -27,7 +27,7 @@ const int kWifiHeartbeatDefaultMs = 1000 * 60 * 15;  // 15 minutes.
 // The default heartbeat ack interval.
 const int kHeartbeatAckDefaultMs = 1000 * 60 * 1;  // 1 minute.
 // Minimum allowed client default heartbeat interval.
-const int kMinClientHeartbeatIntervalMs = 1000 * 60 * 2;  // 2 minutes.
+const int kMinClientHeartbeatIntervalMs = 1000 * 30;  // 30 seconds.
 // Minimum time spent sleeping before we force a new heartbeat.
 const int kMinSuspendTimeMs = 1000 * 10; // 10 seconds.
 
