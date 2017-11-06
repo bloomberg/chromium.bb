@@ -22,8 +22,6 @@ class MockLayerClient : public LayerClient {
       std::unique_ptr<base::trace_event::ConvertableToTraceFormat>(Layer*));
   MOCK_METHOD0(didUpdateMainThreadScrollingReasons, void());
   MOCK_METHOD1(didChangeScrollbarsHidden, void(bool));
-  MOCK_METHOD2(DidChangeLayerOpacity, void(float, float));
-  MOCK_METHOD0(DidChangeLayerTransform, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLayerClient);

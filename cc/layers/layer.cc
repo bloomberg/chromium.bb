@@ -200,20 +200,6 @@ bool Layer::IsPropertyChangeAllowed() const {
   return !layer_tree_host_->in_paint_layer_contents();
 }
 
-void Layer::SetTransformInternal(const gfx::Transform& new_transform) {
-  DCHECK(new_transform != inputs_.transform);
-  inputs_.transform = new_transform;
-  if (inputs_.client)
-    inputs_.client->DidChangeLayerTransform();
-}
-
-void Layer::SetOpacityInternal(float new_opacity) {
-  float old_opacity = inputs_.opacity;
-  inputs_.opacity = new_opacity;
-  if (new_opacity != old_opacity && inputs_.client)
-    inputs_.client->DidChangeLayerOpacity(old_opacity, new_opacity);
-}
-
 sk_sp<SkPicture> Layer::GetPicture() const {
   return nullptr;
 }
@@ -525,7 +511,7 @@ void Layer::SetOpacity(float opacity) {
   // We need to force a property tree rebuild when opacity changes from 1 to a
   // non-1 value or vice-versa as render surfaces can change.
   bool force_rebuild = opacity == 1.f || inputs_.opacity == 1.f;
-  SetOpacityInternal(opacity);
+  inputs_.opacity = opacity;
   SetSubtreePropertyChanged();
   if (layer_tree_host_ && !force_rebuild) {
     PropertyTrees* property_trees = layer_tree_host_->property_trees();
@@ -701,7 +687,7 @@ void Layer::SetTransform(const gfx::Transform& transform) {
     }
   }
 
-  SetTransformInternal(transform);
+  inputs_.transform = transform;
   SetNeedsCommit();
 }
 
@@ -1349,7 +1335,7 @@ void Layer::OnFilterAnimated(const FilterOperations& filters) {
 }
 
 void Layer::OnOpacityAnimated(float opacity) {
-  SetOpacityInternal(opacity);
+  inputs_.opacity = opacity;
 }
 
 TransformNode* Layer::GetTransformNode() const {
@@ -1360,8 +1346,7 @@ TransformNode* Layer::GetTransformNode() const {
 }
 
 void Layer::OnTransformAnimated(const gfx::Transform& transform) {
-  if (transform != inputs_.transform)
-    SetTransformInternal(transform);
+  inputs_.transform = transform;
 }
 
 bool Layer::HasTickingAnimationForTesting() const {

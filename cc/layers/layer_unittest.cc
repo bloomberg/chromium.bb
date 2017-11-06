@@ -22,7 +22,6 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
-#include "cc/test/mock_layer_client.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
@@ -1511,52 +1510,6 @@ TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
   EXPECT_EQ(test_layer, layer_tree_host_->LayerByElementId(other_element_id));
 
   test_layer->SetLayerTreeHost(nullptr);
-}
-
-// Verify that LayerClient is notified when SetTransform() is called and the
-// layer transform changes.
-TEST_F(LayerTest, SetTransformNotifiesClient) {
-  testing::StrictMock<MockLayerClient> client;
-  scoped_refptr<Layer> layer = Layer::Create();
-  layer->SetLayerClient(&client);
-  gfx::Transform target_transform;
-  target_transform.Skew(10.0f, 5.0f);
-  EXPECT_CALL(client, DidChangeLayerTransform())
-      .WillOnce(testing::Invoke([&layer, &target_transform]() {
-        EXPECT_EQ(layer->transform(), target_transform);
-      }));
-  layer->SetTransform(target_transform);
-}
-
-// Verify that LayerClient is not notified when SetTransform() is called but the
-// transform does not change.
-TEST_F(LayerTest, SetTransformNoChangeDoesNotNotifyClient) {
-  testing::StrictMock<MockLayerClient> client;
-  scoped_refptr<Layer> layer = Layer::Create();
-  layer->SetLayerClient(&client);
-  ASSERT_EQ(layer->transform(), gfx::Transform());
-  // Since |client| is a StrictMock, the test will fail if it is notified.
-  layer->SetTransform(gfx::Transform());
-}
-
-// Verify that LayerClient::DidChangeLayerOpacity() is called when
-// Layer::SetOpacity() is called and the opacity changes.
-TEST_F(LayerTest, SetOpacityNotifiesClient) {
-  testing::StrictMock<MockLayerClient> client;
-  scoped_refptr<Layer> layer = Layer::Create();
-  layer->SetLayerClient(&client);
-  EXPECT_CALL(client, DidChangeLayerOpacity(1.0f, 0.5f));
-  layer->SetOpacity(0.5f);
-}
-
-// Verify that LayerClient::DidChangeLayerOpacity() is not called when
-// Layer::SetOpacity() is called but the opacity does not change.
-TEST_F(LayerTest, SetOpacityNoChangeDoesNotNotifyClient) {
-  testing::StrictMock<MockLayerClient> client;
-  scoped_refptr<Layer> layer = Layer::Create();
-  layer->SetLayerClient(&client);
-  // Since |client| is a StrictMock, the test will fail if it is notified.
-  layer->SetOpacity(1.0f);
 }
 
 class LayerTestWithLayerLists : public LayerTest {
