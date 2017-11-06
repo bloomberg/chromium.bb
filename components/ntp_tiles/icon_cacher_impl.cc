@@ -40,8 +40,8 @@ constexpr char kTileIconMinSizePxFieldParam[] = "min_size";
 constexpr char kTileIconDesiredSizePxFieldParam[] = "desired_size";
 
 favicon_base::IconType IconType(const PopularSites::Site& site) {
-  return site.large_icon_url.is_valid() ? favicon_base::TOUCH_ICON
-                                        : favicon_base::FAVICON;
+  return site.large_icon_url.is_valid() ? favicon_base::IconType::kTouchIcon
+                                        : favicon_base::IconType::kFavicon;
 }
 
 const GURL& IconURL(const PopularSites::Site& site) {

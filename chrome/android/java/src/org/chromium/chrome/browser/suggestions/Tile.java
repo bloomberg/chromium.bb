@@ -21,7 +21,7 @@ public class Tile implements OfflinableSuggestion {
     private int mType = TileVisualType.NONE;
 
     @IconType
-    private int mIconType = IconType.INVALID_ICON;
+    private int mIconType = IconType.INVALID;
 
     @Nullable
     private Drawable mIcon;

@@ -740,8 +740,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // largest favicon bitmap with one of the icon types in |icon_types| is
   // returned. If |icon_types| contains multiple icon types and there are
   // several matched icon types in the database, results will only be returned
-  // for a single icon type in the priority of TOUCH_PRECOMPOSED_ICON,
-  // TOUCH_ICON, and FAVICON. See the comment for
+  // for a single icon type in the priority of kTouchPrecomposedIcon,
+  // kTouchIcon, and kFavicon. See the comment for
   // GetFaviconResultsForBestMatch() for more details on how
   // |favicon_bitmap_results| is constructed.
   bool GetFaviconsFromDB(const GURL& page_url,

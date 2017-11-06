@@ -115,8 +115,9 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
 
   favicon_service->GetRawFaviconForPageURL(
       GURL(ConvertJavaStringToUTF16(env, j_page_url)),
-      {favicon_base::FAVICON, favicon_base::TOUCH_ICON,
-       favicon_base::TOUCH_PRECOMPOSED_ICON, favicon_base::WEB_MANIFEST_ICON},
+      {favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
+       favicon_base::IconType::kTouchPrecomposedIcon,
+       favicon_base::IconType::kWebManifestIcon},
       static_cast<int>(j_desired_size_in_pixel), callback_runner,
       cancelable_task_tracker_.get());
 
@@ -172,8 +173,9 @@ void FaviconHelper::EnsureIconIsAvailable(
   DCHECK(web_contents);
   GURL page_url(ConvertJavaStringToUTF8(env, j_page_url));
   GURL icon_url(ConvertJavaStringToUTF8(env, j_icon_url));
-  favicon_base::IconType icon_type =
-      j_is_large_icon ? favicon_base::TOUCH_ICON : favicon_base::FAVICON;
+  favicon_base::IconType icon_type = j_is_large_icon
+                                         ? favicon_base::IconType::kTouchIcon
+                                         : favicon_base::IconType::kFavicon;
 
   // TODO(treib): Optimize this by creating a FaviconService::HasFavicon method
   // so that we don't have to actually get the image.

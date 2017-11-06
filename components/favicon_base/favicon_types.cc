@@ -19,8 +19,7 @@ FaviconImageResult::~FaviconImageResult() {}
 // FaviconRawBitmapResult
 
 FaviconRawBitmapResult::FaviconRawBitmapResult()
-    : expired(false), icon_type(INVALID_ICON) {
-}
+    : expired(false), icon_type(IconType::kInvalid) {}
 
 FaviconRawBitmapResult::FaviconRawBitmapResult(
     const FaviconRawBitmapResult& other) = default;
@@ -55,15 +54,15 @@ int GetUmaFaviconType(IconType icon_type) {
   // These values must stay in sync with the FaviconType enum in
   // histograms/enums.xml.
   switch (icon_type) {
-    case INVALID_ICON:
+    case IconType::kInvalid:
       break;
-    case FAVICON:
+    case IconType::kFavicon:
       return 1;
-    case TOUCH_ICON:
+    case IconType::kTouchIcon:
       return 2;
-    case TOUCH_PRECOMPOSED_ICON:
+    case IconType::kTouchPrecomposedIcon:
       return 3;
-    case WEB_MANIFEST_ICON:
+    case IconType::kWebManifestIcon:
       return 4;
   }
   // Unexpected values including multiple bits (accidentally) being set in the

@@ -494,7 +494,7 @@ public class TileGroupUnitTest {
 
         public void fulfillLargeIconRequests(Bitmap bitmap, int color, boolean isColorDefault) {
             for (LargeIconCallback callback : mCallbackList) {
-                callback.onLargeIconAvailable(bitmap, color, isColorDefault, IconType.INVALID_ICON);
+                callback.onLargeIconAvailable(bitmap, color, isColorDefault, IconType.INVALID);
             }
             mCallbackList.clear();
         }

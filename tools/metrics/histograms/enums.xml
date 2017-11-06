@@ -14594,17 +14594,17 @@ uploading your change for review.  These are checked by presubmit scripts.
   <summary>
     Defines the icon type stored as cached in the history backend.
   </summary>
-  <int value="0" label="INVALID">Not an actual icon.</int>
-  <int value="1" label="FAVICON">
+  <int value="0" label="Invalid">Not an actual icon.</int>
+  <int value="1" label="Favicon">
     Regular favicon (e.g. rel=&quot;icon&quot;).
   </int>
-  <int value="2" label="TOUCH_ICON">
+  <int value="2" label="TouchIcon">
     Touch icon (rel=&quot;apple-touch-icon&quot;).
   </int>
-  <int value="3" label="TOUCH_PRECOMPOSED_ICON">
+  <int value="3" label="TouchPrecomposedIcon">
     Precomposed touch icon (rel=&quot;apple-touch-icon-precomposed&quot;).
   </int>
-  <int value="4" label="WEB_MANIFEST_ICON">Icon listed in a Web Manifest.</int>
+  <int value="4" label="WebManifestIcon">Icon listed in a Web Manifest.</int>
 </enum>
 
 <enum name="FeatureObserver">

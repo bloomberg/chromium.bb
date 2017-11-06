@@ -401,7 +401,8 @@ class RemoveFaviconTester {
     SkBitmap bitmap;
     bitmap.allocN32Pixels(gfx::kFaviconSize, gfx::kFaviconSize);
     bitmap.eraseColor(SK_ColorBLUE);
-    favicon_service_->SetFavicons({page_url}, page_url, favicon_base::FAVICON,
+    favicon_service_->SetFavicons({page_url}, page_url,
+                                  favicon_base::IconType::kFavicon,
                                   gfx::Image::CreateFrom1xBitmap(bitmap));
   }
 
@@ -412,7 +413,7 @@ class RemoveFaviconTester {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     favicon_service_->GetRawFaviconForPageURL(
-        page_url, {favicon_base::FAVICON}, gfx::kFaviconSize,
+        page_url, {favicon_base::IconType::kFavicon}, gfx::kFaviconSize,
         base::Bind(&RemoveFaviconTester::SaveResultAndQuit,
                    base::Unretained(this)),
         &tracker_);

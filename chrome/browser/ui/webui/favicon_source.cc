@@ -82,14 +82,11 @@ void FaviconSource::StartDataRequest(
     // TODO(michaelbai): Change GetRawFavicon to support combination of
     // IconType.
     favicon_service->GetRawFavicon(
-        url,
-        favicon_base::FAVICON,
-        desired_size_in_pixel,
-        base::Bind(
-            &FaviconSource::OnFaviconDataAvailable,
-            base::Unretained(this),
-            IconRequest(
-                callback, url, parsed.size_in_dip, parsed.device_scale_factor)),
+        url, favicon_base::IconType::kFavicon, desired_size_in_pixel,
+        base::Bind(&FaviconSource::OnFaviconDataAvailable,
+                   base::Unretained(this),
+                   IconRequest(callback, url, parsed.size_in_dip,
+                               parsed.device_scale_factor)),
         &cancelable_task_tracker_);
   } else {
     // Intercept requests for prepopulated pages if TopSites exists.
@@ -110,7 +107,7 @@ void FaviconSource::StartDataRequest(
     }
 
     favicon_service->GetRawFaviconForPageURL(
-        url, {favicon_base::FAVICON}, desired_size_in_pixel,
+        url, {favicon_base::IconType::kFavicon}, desired_size_in_pixel,
         base::Bind(&FaviconSource::OnFaviconDataAvailable,
                    base::Unretained(this),
                    IconRequest(callback, url, parsed.size_in_dip,

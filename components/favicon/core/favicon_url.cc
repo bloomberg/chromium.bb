@@ -6,8 +6,7 @@
 
 namespace favicon {
 
-FaviconURL::FaviconURL() : icon_type(favicon_base::INVALID_ICON) {
-}
+FaviconURL::FaviconURL() : icon_type(favicon_base::IconType::kInvalid) {}
 
 FaviconURL::FaviconURL(const GURL& url,
                        favicon_base::IconType type,

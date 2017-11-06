@@ -38,10 +38,10 @@ struct IconTypeAndName {
 };
 
 constexpr std::array<IconTypeAndName, 4> kIconTypesAndNames{{
-    {favicon_base::FAVICON, "FAVICON"},
-    {favicon_base::TOUCH_ICON, "TOUCH_ICON"},
-    {favicon_base::TOUCH_PRECOMPOSED_ICON, "TOUCH_PRECOMPOSED_ICON"},
-    {favicon_base::WEB_MANIFEST_ICON, "WEB_MANIFEST_ICON"},
+    {favicon_base::IconType::kFavicon, "kFavicon"},
+    {favicon_base::IconType::kTouchIcon, "kTouchIcon"},
+    {favicon_base::IconType::kTouchPrecomposedIcon, "kTouchPrecomposedIcon"},
+    {favicon_base::IconType::kWebManifestIcon, "kWebManifestIcon"},
 }};
 
 std::string FormatJson(const base::Value& value) {

@@ -52,7 +52,8 @@ void OnLargeIconAvailable(const JavaRef<jobject>& j_callback,
 
   Java_LargeIconCallback_onLargeIconAvailable(
       env, j_callback, j_bitmap, fallback.background_color,
-      fallback.is_default_background_color, result.bitmap.icon_type);
+      fallback.is_default_background_color,
+      static_cast<int>(result.bitmap.icon_type));
 }
 
 }  // namespace

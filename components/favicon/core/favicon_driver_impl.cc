@@ -26,7 +26,8 @@ const bool kEnableTouchIcon = false;
 
 void RecordCandidateMetrics(const std::vector<FaviconURL>& candidates) {
   const favicon_base::IconTypeSet touch_icon_types = {
-      favicon_base::TOUCH_ICON, favicon_base::TOUCH_PRECOMPOSED_ICON};
+      favicon_base::IconType::kTouchIcon,
+      favicon_base::IconType::kTouchPrecomposedIcon};
   size_t with_defined_touch_icons = 0;
   size_t with_defined_sizes = 0;
   for (const auto& candidate : candidates) {
@@ -96,11 +97,12 @@ void FaviconDriverImpl::OnUpdateCandidates(
   RecordCandidateMetrics(candidates);
   for (const std::unique_ptr<FaviconHandler>& handler : handlers_) {
     // We feed in the Web Manifest URL (if any) to the instance handling type
-    // WEB_MANIFEST_ICON, because those compete which each other (i.e. manifest
+    // kWebManifestIcon, because those compete which each other (i.e. manifest
     // icons override inline touch icons).
     handler->OnUpdateCandidates(
         page_url, candidates,
-        (handler->icon_types().count(favicon_base::WEB_MANIFEST_ICON) != 0)
+        (handler->icon_types().count(
+             favicon_base::IconType::kWebManifestIcon) != 0)
             ? manifest_url
             : GURL::EmptyGURL());
   }

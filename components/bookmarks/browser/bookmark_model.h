@@ -152,7 +152,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   const gfx::Image& GetFavicon(const BookmarkNode* node);
 
   // Returns the type of the favicon for |node|. If the favicon has not yet
-  // been loaded, it returns |favicon_base::INVALID_ICON|.
+  // been loaded, it returns |favicon_base::IconType::kInvalid|.
   favicon_base::IconType GetFaviconType(const BookmarkNode* node);
 
   // Sets the title of |node|.

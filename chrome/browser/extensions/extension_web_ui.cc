@@ -256,7 +256,7 @@ void RunFaviconCallbackAsync(
       bitmap_result.pixel_size = gfx::Size(image_rep.pixel_width(),
                                             image_rep.pixel_height());
       // Leave |bitmap_result|'s icon URL as the default of GURL().
-      bitmap_result.icon_type = favicon_base::FAVICON;
+      bitmap_result.icon_type = favicon_base::IconType::kFavicon;
 
       favicon_bitmap_results->push_back(bitmap_result);
     } else {

@@ -115,7 +115,7 @@ void BookmarkNode::Initialize(int64_t id) {
   id_ = id;
   type_ = url_.is_empty() ? FOLDER : URL;
   date_added_ = base::Time::Now();
-  favicon_type_ = favicon_base::INVALID_ICON;
+  favicon_type_ = favicon_base::IconType::kInvalid;
   favicon_state_ = INVALID_FAVICON;
   favicon_load_task_id_ = base::CancelableTaskTracker::kBadTaskId;
   meta_info_map_.reset();
@@ -125,7 +125,7 @@ void BookmarkNode::Initialize(int64_t id) {
 void BookmarkNode::InvalidateFavicon() {
   icon_url_.reset();
   favicon_ = gfx::Image();
-  favicon_type_ = favicon_base::INVALID_ICON;
+  favicon_type_ = favicon_base::IconType::kInvalid;
   favicon_state_ = INVALID_FAVICON;
 }
 

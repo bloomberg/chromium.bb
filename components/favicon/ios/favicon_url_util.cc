@@ -17,19 +17,19 @@ namespace {
 favicon_base::IconType IconTypeFromWebIconType(
     web::FaviconURL::IconType icon_type) {
   switch (icon_type) {
-    case web::FaviconURL::FAVICON:
-      return favicon_base::FAVICON;
-    case web::FaviconURL::TOUCH_ICON:
-      return favicon_base::TOUCH_ICON;
-    case web::FaviconURL::TOUCH_PRECOMPOSED_ICON:
-      return favicon_base::TOUCH_PRECOMPOSED_ICON;
-    case web::FaviconURL::WEB_MANIFEST_ICON:
-      return favicon_base::WEB_MANIFEST_ICON;
-    case web::FaviconURL::INVALID_ICON:
-      return favicon_base::INVALID_ICON;
+    case web::FaviconURL::IconType::kFavicon:
+      return favicon_base::IconType::kFavicon;
+    case web::FaviconURL::IconType::kTouchIcon:
+      return favicon_base::IconType::kTouchIcon;
+    case web::FaviconURL::IconType::kTouchPrecomposedIcon:
+      return favicon_base::IconType::kTouchPrecomposedIcon;
+    case web::FaviconURL::IconType::kWebManifestIcon:
+      return favicon_base::IconType::kWebManifestIcon;
+    case web::FaviconURL::IconType::kInvalid:
+      return favicon_base::IconType::kInvalid;
   }
   NOTREACHED();
-  return favicon_base::INVALID_ICON;
+  return favicon_base::IconType::kInvalid;
 }
 
 }  // namespace

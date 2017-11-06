@@ -246,6 +246,12 @@ class ThumbnailDatabase {
   // so failure causes any outer transaction to be rolled back.
   bool RetainDataForPageUrls(const std::vector<GURL>& urls_to_keep);
 
+  // For historical reasons, and for backward compatibility, the icon type
+  // values stored in the DB are powers of two. Conversion functions
+  // exposed publicly for testing.
+  static int ToPersistedIconType(favicon_base::IconType icon_type);
+  static favicon_base::IconType FromPersistedIconType(int icon_type);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, RetainDataForPageUrls);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest,

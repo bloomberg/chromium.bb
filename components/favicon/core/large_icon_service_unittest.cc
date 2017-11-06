@@ -91,7 +91,7 @@ favicon_base::FaviconRawBitmapResult CreateTestBitmapResult(int w,
 
   result.pixel_size = gfx::Size(w, h);
   result.icon_url = GURL(kDummyIconUrl);
-  result.icon_type = favicon_base::TOUCH_ICON;
+  result.icon_type = favicon_base::IconType::kTouchIcon;
   CHECK(result.is_valid());
   return result;
 }
@@ -164,7 +164,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
           CreateTestSkBitmap(64, 64, kTestColor))));
   EXPECT_CALL(mock_favicon_service_,
               SetOnDemandFavicons(GURL(kDummyUrl), kExpectedServerUrl,
-                                  favicon_base::IconType::TOUCH_ICON, _, _))
+                                  favicon_base::IconType::kTouchIcon, _, _))
       .WillOnce(PostBoolReply(true));
 
   large_icon_service_
@@ -202,7 +202,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithCustomUrl) {
           CreateTestSkBitmap(64, 64, kTestColor))));
   EXPECT_CALL(mock_favicon_service_,
               SetOnDemandFavicons(GURL(kDummyUrl), kExpectedServerUrl,
-                                  favicon_base::IconType::TOUCH_ICON, _, _))
+                                  favicon_base::IconType::kTouchIcon, _, _))
       .WillOnce(PostBoolReply(true));
 
   large_icon_service_
@@ -233,7 +233,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
           expected_metadata));
   EXPECT_CALL(mock_favicon_service_,
               SetOnDemandFavicons(GURL(kDummyUrl), kExpectedOriginalUrl,
-                                  favicon_base::IconType::TOUCH_ICON, _, _))
+                                  favicon_base::IconType::kTouchIcon, _, _))
       .WillOnce(PostBoolReply(true));
 
   base::MockCallback<favicon_base::GoogleFaviconServerCallback> callback;

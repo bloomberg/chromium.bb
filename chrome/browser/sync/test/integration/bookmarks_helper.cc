@@ -253,8 +253,8 @@ void SetFaviconImpl(Profile* profile,
       FaviconServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS);
   if (favicon_source == bookmarks_helper::FROM_UI) {
-    favicon_service->SetFavicons({node->url()}, icon_url, favicon_base::FAVICON,
-                                 image);
+    favicon_service->SetFavicons({node->url()}, icon_url,
+                                 favicon_base::IconType::kFavicon, image);
     } else {
       browser_sync::ProfileSyncService* pss =
           ProfileSyncServiceFactory::GetForProfile(profile);
@@ -634,7 +634,7 @@ void CheckFaviconExpired(int profile, const GURL& icon_url) {
           ServiceAccessType::EXPLICIT_ACCESS);
   base::CancelableTaskTracker task_tracker;
   favicon_service->GetRawFavicon(
-      icon_url, favicon_base::FAVICON, 0,
+      icon_url, favicon_base::IconType::kFavicon, 0,
       base::Bind(&OnGotFaviconForExpiryCheck, run_loop.QuitClosure()),
       &task_tracker);
 

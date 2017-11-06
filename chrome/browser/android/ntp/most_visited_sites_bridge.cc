@@ -286,7 +286,7 @@ void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(
   ntp_tiles::metrics::RecordTileClick(ntp_tiles::NTPTileImpression(
       index, static_cast<TileSource>(source),
       static_cast<TileTitleSource>(title_source),
-      static_cast<TileVisualType>(tile_type), favicon_base::INVALID_ICON,
+      static_cast<TileVisualType>(tile_type), favicon_base::IconType::kInvalid,
       base::Time::FromJavaTime(jdata_generation_time_ms),
       /*url_for_rappor=*/GURL()));
 }

@@ -191,7 +191,7 @@ class FaviconHandler {
     }
 
     GURL icon_url;
-    favicon_base::IconType icon_type = favicon_base::INVALID_ICON;
+    favicon_base::IconType icon_type = favicon_base::IconType::kInvalid;
     float score = 0;
   };
 

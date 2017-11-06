@@ -71,7 +71,7 @@ favicon_base::FaviconRawBitmapResult CreateTestBitmap() {
   CGFloat scaled_size = [UIScreen mainScreen].scale * kTestFaviconSize;
   result.pixel_size = gfx::Size(scaled_size, scaled_size);
   result.icon_url = GURL(kTestFaviconIconURL);
-  result.icon_type = favicon_base::TOUCH_ICON;
+  result.icon_type = favicon_base::IconType::kTouchIcon;
   CHECK(result.is_valid());
   return result;
 }

@@ -11,7 +11,7 @@ NTPTileImpression::NTPTileImpression()
                         /*source=*/TileSource::TOP_SITES,
                         /*title_source=*/TileTitleSource::UNKNOWN,
                         /*visual_type=*/TileVisualType::UNKNOWN_TILE_TYPE,
-                        /*icon_type=*/favicon_base::INVALID_ICON,
+                        /*icon_type=*/favicon_base::IconType::kInvalid,
                         /*data_generation_time=*/base::Time(),
                         /*url_for_rappor=*/GURL()) {}
 
