@@ -580,4 +580,29 @@ public class DownloadNotificationServiceTest
                 id2, "/path/to/test", "test", 100L, false, false, true, null, null, null);
         Assert.assertTrue(service.hideSummaryNotificationIfNecessary(-1));
     }
+
+    @Test
+    @SmallTest
+    @Feature({"Download"})
+    public void testServiceStopsIfCancelIsCalledWhenServiceIsStopped() {
+        // On versions of Android that use a foreground service, the service will currently die with
+        // the notifications.
+        if (DownloadNotificationService.useForegroundService()) return;
+
+        // Make sure that when the download fails, the service stops.
+        setupService();
+        startNotificationService();
+        DownloadNotificationService service = bindNotificationService();
+        ContentId id = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
+        service.notifyDownloadProgress(id, "/path/to/test", Progress.createIndeterminateProgress(),
+                10L, 1000L, 10L, false, false, false, null);
+        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        service.notifyDownloadFailed(id, "/path/to/test", null);
+        Assert.assertTrue(service.hideSummaryNotificationIfNecessary(-1));
+
+        // In the case of offline pages failures, cancel is called even after the download fails and
+        // the service stops. Confirm that if this happens, the service will still stop.
+        service.notifyDownloadCanceled(id);
+        Assert.assertTrue(service.hideSummaryNotificationIfNecessary(-1));
+    }
 }
