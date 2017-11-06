@@ -127,6 +127,19 @@ TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest, BackwardsWithStartNode) {
 }
 
 TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest,
+       BackwardsWithStartNodeForAndroid) {
+  OneShotAccessibilityTreeSearch search(tree_->GetRoot());
+  search.SetStartNode(tree_->GetFromID(4));
+  search.SetDirection(OneShotAccessibilityTreeSearch::BACKWARDS);
+  search.SetResultLimit(3);
+  search.SetCanWrapToLastElement(true);
+  ASSERT_EQ(3U, search.CountMatches());
+  EXPECT_EQ(3, search.GetMatchAtIndex(0)->GetId());
+  EXPECT_EQ(2, search.GetMatchAtIndex(1)->GetId());
+  EXPECT_EQ(1, search.GetMatchAtIndex(2)->GetId());
+}
+
+TEST_F(MAYBE_OneShotAccessibilityTreeSearchTest,
        ForwardsWithStartNodeAndScope) {
   OneShotAccessibilityTreeSearch search(tree_->GetFromID(4));
   search.SetStartNode(tree_->GetFromID(5));

@@ -303,10 +303,8 @@ bool BrowserAccessibilityAndroid::IsVisibleToUser() const {
 }
 
 bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
-  // The root is not interesting if it doesn't have a title, even
-  // though it's focusable.
   if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && GetText().empty())
-    return false;
+    return true;
 
   // Focusable nodes are always interesting. Note that IsFocusable()
   // already skips over things like iframes and child frames that are
