@@ -17,7 +17,6 @@
 #include "chrome/browser/vr/toolbar_state.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_input_manager.h"
-#include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_manager.h"
@@ -59,7 +58,7 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
 
   base::i18n::InitializeICU();
 
-  ui_ = base::MakeUnique<Ui>(this, this, UiInitialState());
+  ui_ = base::MakeUnique<Ui>(this, nullptr, UiInitialState());
 
   GURL gurl("https://dangerous.com/dir/file.html");
   ToolbarState state(gurl, security_state::SecurityLevel::DANGEROUS,
@@ -269,36 +268,6 @@ void VrTestContext::CreateFakeOmniboxSuggestions() {
   }
   ui_->SetOmniboxSuggestions(std::move(result));
 }
-
-void VrTestContext::OnContentEnter(const gfx::PointF& normalized_hit_point) {}
-
-void VrTestContext::OnContentLeave() {}
-
-void VrTestContext::OnContentMove(const gfx::PointF& normalized_hit_point) {}
-
-void VrTestContext::OnContentDown(const gfx::PointF& normalized_hit_point) {}
-
-void VrTestContext::OnContentUp(const gfx::PointF& normalized_hit_point) {}
-
-void VrTestContext::OnContentFlingStart(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {}
-
-void VrTestContext::OnContentFlingCancel(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {}
-
-void VrTestContext::OnContentScrollBegin(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {}
-
-void VrTestContext::OnContentScrollUpdate(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {}
-
-void VrTestContext::OnContentScrollEnd(
-    std::unique_ptr<blink::WebGestureEvent> gesture,
-    const gfx::PointF& normalized_hit_point) {}
 
 void VrTestContext::SetVoiceSearchActive(bool active) {}
 void VrTestContext::ExitPresent() {}

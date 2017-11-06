@@ -33,8 +33,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/vr/toolbar_helper.h"
-#include "chrome/browser/vr/ui_interface.h"
-#include "chrome/browser/vr/ui_scene_manager.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/web_contents_event_forwarder.h"
 #include "chrome/common/chrome_features.h"

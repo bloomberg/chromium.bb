@@ -6,7 +6,6 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/vr/toolbar_helper.h"
-#include "chrome/browser/vr/ui_interface.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"

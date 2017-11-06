@@ -61,6 +61,20 @@ float DeltaTimeSeconds(int64_t last_timestamp_nanos) {
          kNanoSecondsPerSecond;
 }
 
+gvr::ControllerButton PlatformToGvrButton(
+    vr::PlatformController::ButtonType type) {
+  switch (type) {
+    case vr::PlatformController::kButtonHome:
+      return gvr::kControllerButtonHome;
+    case vr::PlatformController::kButtonMenu:
+      return gvr::kControllerButtonApp;
+    case vr::PlatformController::kButtonSelect:
+      return gvr::kControllerButtonClick;
+    default:
+      return gvr::kControllerButtonNone;
+  }
+}
+
 }  // namespace
 
 VrController::VrController(gvr_context* gvr_context) {
@@ -143,6 +157,10 @@ float VrController::TouchPosX() {
 
 float VrController::TouchPosY() {
   return controller_state_->GetTouchPos().y;
+}
+
+bool VrController::IsButtonDown(vr::PlatformController::ButtonType type) const {
+  return controller_state_->GetButtonState(PlatformToGvrButton(type));
 }
 
 base::TimeTicks VrController::GetLastOrientationTimestamp() const {

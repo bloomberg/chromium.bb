@@ -24,8 +24,7 @@ class Ui;
 
 // This class provides a home for the VR UI in a testapp context, and
 // manipulates the UI according to user input.
-class VrTestContext : public vr::ContentInputDelegate,
-                      public vr::UiBrowserInterface {
+class VrTestContext : public vr::UiBrowserInterface {
  public:
   VrTestContext();
   ~VrTestContext() override;
@@ -33,24 +32,6 @@ class VrTestContext : public vr::ContentInputDelegate,
   void OnGlInitialized(const gfx::Size& window_size);
   void DrawFrame();
   void HandleInput(ui::Event* event);
-
-  // vr::ContentInputDelegate.
-  void OnContentEnter(const gfx::PointF& normalized_hit_point) override;
-  void OnContentLeave() override;
-  void OnContentMove(const gfx::PointF& normalized_hit_point) override;
-  void OnContentDown(const gfx::PointF& normalized_hit_point) override;
-  void OnContentUp(const gfx::PointF& normalized_hit_point) override;
-  void OnContentFlingStart(std::unique_ptr<blink::WebGestureEvent> gesture,
-                           const gfx::PointF& normalized_hit_point) override;
-  void OnContentFlingCancel(std::unique_ptr<blink::WebGestureEvent> gesture,
-                            const gfx::PointF& normalized_hit_point) override;
-  void OnContentScrollBegin(std::unique_ptr<blink::WebGestureEvent> gesture,
-                            const gfx::PointF& normalized_hit_point) override;
-  void OnContentScrollUpdate(std::unique_ptr<blink::WebGestureEvent> gesture,
-                             const gfx::PointF& normalized_hit_point) override;
-  void OnContentScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
-                          const gfx::PointF& normalized_hit_point) override;
-  void SetVoiceSearchActive(bool active) override;
 
   // vr::UiBrowserInterface implementation (UI calling to VrShell).
   void ExitPresent() override;
@@ -61,6 +42,7 @@ class VrTestContext : public vr::ContentInputDelegate,
   void OnExitVrPromptResult(vr::UiUnsupportedMode reason,
                             vr::ExitVrPromptChoice choice) override;
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) override;
+  void SetVoiceSearchActive(bool active) override;
 
  private:
   unsigned int CreateFakeContentTexture();

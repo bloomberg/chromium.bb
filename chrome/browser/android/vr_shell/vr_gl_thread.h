@@ -13,9 +13,9 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr_shell/gl_browser_interface.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
+#include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
-#include "chrome/browser/vr/ui_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace vr_shell {
@@ -24,6 +24,7 @@ class VrShell;
 class VrShellGl;
 
 class VrGLThread : public base::android::JavaHandlerThread,
+                   public vr::ContentInputForwarder,
                    public GlBrowserInterface,
                    public vr::UiBrowserInterface,
                    public vr::BrowserUiInterface {
@@ -43,11 +44,13 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void ContentSurfaceChanged(jobject surface) override;
   void GvrDelegateReady(gvr::ViewerType viewer_type) override;
   void UpdateGamepadData(device::GvrGamepadData) override;
-  void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
-                             int content_id) override;
   void ForceExitVr() override;
   void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;
+
+  // vr::ContentInputForwarder
+  void ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
+                    int content_id) override;
 
   // vr::UiBrowserInterface implementation (UI calling to VrShell).
   void ExitPresent() override;

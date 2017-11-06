@@ -9,7 +9,8 @@
 
 namespace vr {
 
-MockContentInputDelegate::MockContentInputDelegate() {}
+MockContentInputDelegate::MockContentInputDelegate()
+    : ContentInputDelegate(nullptr) {}
 MockContentInputDelegate::~MockContentInputDelegate() {}
 
 }  // namespace vr
