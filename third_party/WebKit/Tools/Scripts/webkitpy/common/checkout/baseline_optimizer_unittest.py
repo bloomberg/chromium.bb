@@ -27,33 +27,86 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
+import logging
+import sys
 
 from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
 from webkitpy.common.host_mock import MockHost
+from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.path_finder import PathFinder
+from webkitpy.layout_tests.builder_list import BuilderList
+
+# Print out useful debug logs in very verbose (-vv) mode.
+_log = logging.getLogger()
+_log.level = logging.DEBUG
+_log.addHandler(logging.StreamHandler(sys.stderr))
 
 
 class BaselineOptimizerTest(unittest.TestCase):
 
-    def _assert_optimization(self, results_by_directory, directory_to_new_results, baseline_dirname='', host=None):
-        host = host or MockHost()
-        fs = host.filesystem
-        layout_tests_dir = PathFinder(fs).layout_tests_dir()
-        baseline_name = 'mock-baseline-expected.txt'
-        fs.write_text_file(
-            fs.join(layout_tests_dir, 'VirtualTestSuites'),
+    def setUp(self):
+        self.host = MockHost()
+        self.fs = MockFileSystem()
+        self.host.filesystem = self.fs
+        # TODO(robertma): Even though we have mocked the builder list (and hence
+        # all_port_names), we are still relying on the knowledge of currently
+        # configured ports and their fallback order. Ideally, we should improve
+        # MockPortFactory and use it.
+        self.host.builders = BuilderList({
+            'Fake Test Win10': {
+                'port_name': 'win-win10',
+                'specifiers': ['Win10', 'Release']
+            },
+            'Fake Test Linux': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Release']
+            },
+            'Fake Test Mac10.12': {
+                'port_name': 'mac-mac10.12',
+                'specifiers': ['Mac10.12', 'Release']
+            },
+            'Fake Test Mac10.11': {
+                'port_name': 'mac-mac10.11',
+                'specifiers': ['Mac10.11', 'Release']
+            },
+            'Fake Test Mac10.10': {
+                'port_name': 'mac-mac10.10',
+                'specifiers': ['Mac10.10', 'Release']
+            },
+        })
+        # Note: this is a pre-assumption of the tests in this file. If this
+        # assertion fails, port configurations are likely changed, and the
+        # tests need to be adjusted accordingly.
+        self.assertEqual(sorted(self.host.port_factory.all_port_names()),
+                         ['linux-trusty', 'mac-mac10.10', 'mac-mac10.11', 'mac-mac10.12', 'win-win10'])
+
+    def _assert_optimization(self, results_by_directory, directory_to_new_results, baseline_dirname=''):
+        layout_tests_dir = PathFinder(self.fs).layout_tests_dir()
+        test_name = 'mock-test.html'
+        baseline_name = 'mock-test-expected.txt'
+        self.fs.write_text_file(
+            self.fs.join(layout_tests_dir, 'VirtualTestSuites'),
             '[{"prefix": "gpu", "base": "fast/canvas", "args": ["--foo"]}]')
 
         for dirname, contents in results_by_directory.items():
-            fs.write_binary_file(fs.join(layout_tests_dir, dirname, baseline_name), contents)
+            self.fs.write_binary_file(self.fs.join(layout_tests_dir, dirname, baseline_name), contents)
 
-        baseline_optimizer = BaselineOptimizer(host, host.port_factory.get(), host.port_factory.all_port_names())
-        self.assertTrue(baseline_optimizer.optimize(fs.join(baseline_dirname, baseline_name)))
+        baseline_optimizer = BaselineOptimizer(self.host, self.host.port_factory.get(), self.host.port_factory.all_port_names())
+        self.assertTrue(baseline_optimizer.optimize(
+            self.fs.join(baseline_dirname, test_name), 'txt'))
 
         for dirname, contents in directory_to_new_results.items():
-            path = fs.join(layout_tests_dir, dirname, baseline_name)
-            if contents is not None:
-                self.assertEqual(fs.read_binary_file(path), contents)
+            path = self.fs.join(layout_tests_dir, dirname, baseline_name)
+            if contents is None:
+                # Check files that are explicitly marked as absent.
+                self.assertFalse(self.fs.exists(path), '%s should not exist after optimization' % path)
+            else:
+                self.assertEqual(self.fs.read_binary_file(path), contents, 'Content of %s != "%s"' % (path, contents))
+
+        for dirname in results_by_directory:
+            path = self.fs.join(layout_tests_dir, dirname, baseline_name)
+            if dirname not in directory_to_new_results or directory_to_new_results[dirname] is None:
+                self.assertFalse(self.fs.exists(path), '%s should not exist after optimization' % path)
 
     def test_linux_redundant_with_win(self):
         self._assert_optimization(
@@ -71,7 +124,6 @@ class BaselineOptimizerTest(unittest.TestCase):
                 'platform/mac': '1',
                 'platform/win': '1',
                 'platform/linux': '1',
-                '': None,
             },
             {
                 '': '1',
@@ -107,7 +159,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             {
                 'platform/mac': '1',
                 'platform/linux': '1',
-                'platform/linux-precise': '1',
+                'platform/mac-mac10.11': '1',
             },
             {
                 'platform/mac': '1',
@@ -115,16 +167,16 @@ class BaselineOptimizerTest(unittest.TestCase):
             })
 
     def test_local_optimization_skipping_a_port_in_the_middle(self):
+        # mac-mac10.10 -> mac-mac10.11 -> mac
         self._assert_optimization(
             {
-                'platform/mac-snowleopard': '1',
-                'platform/win': '1',
+                'platform/mac': '1',
                 'platform/linux': '1',
-                'platform/linux-precise': '1',
+                'platform/mac-mac10.10': '1',
             },
             {
-                'platform/mac-snowleopard': '1',
-                'platform/win': '1',
+                'platform/mac': '1',
+                'platform/linux': '1',
             })
 
     def test_baseline_redundant_with_root(self):
@@ -162,6 +214,41 @@ class BaselineOptimizerTest(unittest.TestCase):
                 'platform/win': '2',
             })
 
+    def test_virtual_baseline_redundant_with_non_virtual(self):
+        self._assert_optimization(
+            {
+                'platform/win/virtual/gpu/fast/canvas': '2',
+                'platform/win/fast/canvas': '2',
+            },
+            {
+                'platform/win/fast/canvas': '2',
+            },
+            baseline_dirname='virtual/gpu/fast/canvas')
+
+    def test_virtual_baseline_redundant_with_non_virtual_fallback(self):
+        # virtual linux -> virtual win -> virtual root -> linux -> win
+        self._assert_optimization(
+            {
+                'platform/linux/virtual/gpu/fast/canvas': '2',
+                'platform/win/fast/canvas': '2',
+            },
+            {
+                'platform/win/virtual/gpu/fast/canvas': None,
+                'platform/win/fast/canvas': '2',
+            },
+            baseline_dirname='virtual/gpu/fast/canvas')
+
+    def test_virtual_baseline_redundant_with_actual_root(self):
+        self._assert_optimization(
+            {
+                'platform/win/virtual/gpu/fast/canvas': '2',
+                'fast/canvas': '2',
+            },
+            {
+                'fast/canvas': '2',
+            },
+            baseline_dirname='virtual/gpu/fast/canvas')
+
     def test_virtual_root_redundant_with_actual_root(self):
         self._assert_optimization(
             {
@@ -169,7 +256,6 @@ class BaselineOptimizerTest(unittest.TestCase):
                 'fast/canvas': '2',
             },
             {
-                'virtual/gpu/fast/canvas': None,
                 'fast/canvas': '2',
             },
             baseline_dirname='virtual/gpu/fast/canvas')
@@ -182,7 +268,6 @@ class BaselineOptimizerTest(unittest.TestCase):
                 'platform/win/fast/canvas': '2',
             },
             {
-                'virtual/gpu/fast/canvas': None,
                 'fast/canvas': '2',
             },
             baseline_dirname='virtual/gpu/fast/canvas')
@@ -199,18 +284,29 @@ class BaselineOptimizerTest(unittest.TestCase):
             },
             baseline_dirname='virtual/gpu/fast/canvas')
 
+    def test_virtual_covers_mac_win_linux(self):
+        self._assert_optimization(
+            {
+                'platform/mac/virtual/gpu/fast/canvas': '1',
+                'platform/win/virtual/gpu/fast/canvas': '1',
+                'platform/linux/virtual/gpu/fast/canvas': '1',
+            },
+            {
+                'virtual/gpu/fast/canvas': '1',
+            },
+            baseline_dirname='virtual/gpu/fast/canvas')
+
     # Tests for protected methods - pylint: disable=protected-access
 
     def test_move_baselines(self):
-        host = MockHost()
-        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
-        host.filesystem.write_binary_file(
+        self.fs.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
+        self.fs.write_binary_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
-        host.filesystem.write_binary_file(
+        self.fs.write_binary_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
-        host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
+        self.fs.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
         baseline_optimizer = BaselineOptimizer(
-            host, host.port_factory.get(), host.port_factory.all_port_names())
+            self.host, self.host.port_factory.get(), self.host.port_factory.all_port_names())
         baseline_optimizer._move_baselines(
             'another/test-expected.txt',
             {
@@ -221,19 +317,20 @@ class BaselineOptimizerTest(unittest.TestCase):
             {
                 '/mock-checkout/third_party/WebKit/LayoutTests': 'aaa',
             })
-        self.assertEqual(host.filesystem.read_binary_file(
-            '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'), 'result A')
+        self.assertEqual(
+            self.fs.read_binary_file(
+                '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'),
+            'result A')
 
     def test_move_baselines_skip_git_commands(self):
-        host = MockHost()
-        host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
-        host.filesystem.write_binary_file(
+        self.fs.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites', '[]')
+        self.fs.write_binary_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/platform/win/another/test-expected.txt', 'result A')
-        host.filesystem.write_binary_file(
+        self.fs.write_binary_file(
             '/mock-checkout/third_party/WebKit/LayoutTests/platform/mac/another/test-expected.txt', 'result A')
-        host.filesystem.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
-        baseline_optimizer = BaselineOptimizer(host, host.port_factory.get(
-        ), host.port_factory.all_port_names())
+        self.fs.write_binary_file('/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt', 'result B')
+        baseline_optimizer = BaselineOptimizer(
+            self.host, self.host.port_factory.get(), self.host.port_factory.all_port_names())
         baseline_optimizer._move_baselines(
             'another/test-expected.txt',
             {
@@ -246,6 +343,6 @@ class BaselineOptimizerTest(unittest.TestCase):
                 '/mock-checkout/third_party/WebKit/LayoutTests': 'aaa',
             })
         self.assertEqual(
-            host.filesystem.read_binary_file(
+            self.fs.read_binary_file(
                 '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'),
             'result A')

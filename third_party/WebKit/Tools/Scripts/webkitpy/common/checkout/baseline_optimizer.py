@@ -28,23 +28,23 @@
 
 import copy
 import logging
-import functools
 
 from webkitpy.common.memoized import memoized
+from webkitpy.layout_tests.controllers.test_result_writer import baseline_name as get_baseline_name
 
 _log = logging.getLogger(__name__)
 
 
 class BaselineOptimizer(object):
 
-    def __init__(self, host, port, port_names):
+    def __init__(self, host, default_port, port_names):
         self._filesystem = host.filesystem
-        self._default_port = port
+        self._default_port = default_port
         self._ports = {}
         for port_name in port_names:
             self._ports[port_name] = host.port_factory.get(port_name)
 
-        self._layout_tests_dir = port.layout_tests_dir()
+        self._layout_tests_dir = default_port.layout_tests_dir()
         self._parent_of_tests = self._filesystem.dirname(self._layout_tests_dir)
         self._layout_tests_dir_name = self._filesystem.relpath(
             self._layout_tests_dir, self._parent_of_tests)
@@ -52,34 +52,52 @@ class BaselineOptimizer(object):
         # Only used by unit tests.
         self.new_results_by_directory = []
 
-    def optimize(self, baseline_name):
-        # The virtual fallback path is the same as the non-virtual one
-        # tacked on to the bottom of the non-virtual path. See
-        # https://docs.google.com/a/chromium.org/drawings/d/1eGdsIKzJ2dxDDBbUaIABrN4aMLD1bqJTfyxNGZsTdmg/edit
-        # for a visual representation of this.
-        # So, we can optimize the virtual path, then the virtual root, and then
-        # the regular path.
-
-        _log.debug('Optimizing regular fallback path.')
-        result = self._optimize_subtree(baseline_name)
+    def optimize(self, test_name, suffix):
+        # TODO(robertma): Link to documentation.
+        # A visualization of baseline fallback:
+        # https://docs.google.com/drawings/d/13l3IUlSE99RoKjDwEWuY1O77simAhhF6Wi0fZdkSaMA/
+        # The virtual and non-virtual subtrees are identical, with the virtual
+        # root being the special node having multiple parents and connecting the
+        # two trees. We patch the virtual subtree to cut its dependencies on the
+        # non-virtual one and optimze the two independently. Finally, we treat
+        # the virtual subtree specially to remove any duplication between the
+        # two subtrees.
+        assert not suffix.startswith('.')
+        baseline_name = get_baseline_name(self._filesystem, test_name, suffix)
         non_virtual_baseline_name = self._virtual_base(baseline_name)
-        if not non_virtual_baseline_name:
-            return result
-
-        self._optimize_virtual_root(baseline_name, non_virtual_baseline_name)
+        succeeded = True
+        if non_virtual_baseline_name:
+            # The baseline belongs to a virtual suite.
+            _log.debug('Optimizing virtual fallback path.')
+            self._patch_virtual_subtree(test_name, suffix, baseline_name)
+            succeeded &= self._optimize_subtree(baseline_name)
+            self._optimize_virtual_root(test_name, suffix, baseline_name)
+        else:
+            # The given baseline is already non-virtual.
+            non_virtual_baseline_name = baseline_name
 
         _log.debug('Optimizing non-virtual fallback path.')
-        result |= self._optimize_subtree(non_virtual_baseline_name)
-        return result
+        succeeded &= self._optimize_subtree(non_virtual_baseline_name)
+
+        if not succeeded:
+            _log.error('Heuristics failed to optimize %s', baseline_name)
+        return succeeded
 
     def write_by_directory(self, results_by_directory, writer, indent):
+        """Logs results_by_directory in a pretty format."""
         for path in sorted(results_by_directory):
             writer('%s%s: %s' % (indent, self._platform(path), results_by_directory[path][0:6]))
 
     def read_results_by_directory(self, baseline_name):
+        """Reads the baselines with the given file name in all directories.
+
+        Returns:
+            A dict from directory names to file content SHA1.
+        """
         results_by_directory = {}
-        directories = functools.reduce(set.union, map(set, [self._relative_baseline_search_paths(
-            port, baseline_name) for port in self._ports.values()]))
+        directories = set()
+        for port in self._ports.values():
+            directories.update(set(self._relative_baseline_search_path(port)))
 
         for directory in directories:
             path = self._join_directory(directory, baseline_name)
@@ -102,8 +120,8 @@ class BaselineOptimizer(object):
             self.new_results_by_directory.append(results_by_directory)
             return True
 
-        if (self._results_by_port_name(results_by_directory, baseline_name) !=
-                self._results_by_port_name(new_results_by_directory, baseline_name)):
+        if (self._results_by_port_name(results_by_directory) !=
+                self._results_by_port_name(new_results_by_directory)):
             # This really should never happen. Just a sanity check to make
             # sure the script fails in the case of bugs instead of committing
             # incorrect baselines.
@@ -159,6 +177,11 @@ class BaselineOptimizer(object):
             _log.debug('    (Nothing to add)')
 
     def _platform(self, filename):
+        """Guesses the platform from a path (absolute or relative).
+
+        Returns:
+            The platform name, or '(generic)' if unable to make a guess.
+        """
         platform_dir = self._layout_tests_dir_name + self._filesystem.sep + 'platform' + self._filesystem.sep
         if filename.startswith(platform_dir):
             return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
@@ -167,93 +190,163 @@ class BaselineOptimizer(object):
             return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
         return '(generic)'
 
-    def _optimize_virtual_root(self, baseline_name, non_virtual_baseline_name):
+    def _port_from_baseline_dir(self, baseline_dir):
+        """Returns a Port object from the given baseline directory."""
+        baseline_dir = self._filesystem.basename(baseline_dir)
+        for port in self._ports.values():
+            if self._filesystem.basename(port.baseline_version_dir()) == baseline_dir:
+                return port
+        raise Exception('Failed to find port for primary baseline %s.' % baseline_dir)
+
+    def _walk_immediate_predecessors_of_virtual_root(self, test_name, suffix, baseline_name, worker_func):
+        """Maps a function onto each immediate predecessor of the virtual root.
+
+        For each immediate predecessor, we call
+            worker_func(virtual_baseline, non_virtual_fallback)
+        where the two arguments are the paths to the virtual platform baseline
+        and the non-virtual fallback respectively.
+        """
+        actual_test_name = self._virtual_base(test_name)
+        assert actual_test_name, '%s is not a virtual test.' % test_name
+
+        # TODO(robertma): Suffixes expected by test_result_writer.baseline_name
+        # and port.expected_filename are inconsitent; the former does not
+        # expect the extension dot, while the latter does.
+        dotted_suffix = '.' + suffix
+
+        for directory in self._directories_immediately_preceding_root():
+            port = self._port_from_baseline_dir(directory)
+            virtual_baseline = self._join_directory(directory, baseline_name)
+            # return_default=False mandates expected_filename() to return None
+            # instead of a non-existing generic path when nothing is found.
+            non_virtual_fallback = port.expected_filename(actual_test_name, dotted_suffix, return_default=False)
+            if not non_virtual_fallback:
+                # Unable to find a non-virtual fallback baseline, skipping.
+                continue
+            worker_func(virtual_baseline, non_virtual_fallback)
+
+    def _patch_virtual_subtree(self, test_name, suffix, baseline_name):
+        # Ensure all immediate predecessors of the root have a baseline for this
+        # virtual suite so that the virtual subtree can be treated completely
+        # independently. If an immediate predecessor is missing a baseline, find
+        # its non-virtual fallback and copy over.
+        _log.debug('Copying non-virtual baselines to the virtual subtree to make it independent.')
         virtual_root_baseline_path = self._filesystem.join(self._layout_tests_dir, baseline_name)
-        if not self._filesystem.exists(virtual_root_baseline_path):
+        if self._filesystem.exists(virtual_root_baseline_path):
             return
+
+        def patcher(virtual_baseline, non_virtual_fallback):
+            if not self._filesystem.exists(virtual_baseline):
+                _log.debug('    Copying (file system): %s -> %s.', non_virtual_fallback, virtual_baseline)
+                self._filesystem.maybe_make_directory(self._filesystem.split(virtual_baseline)[0])
+                self._filesystem.copyfile(non_virtual_fallback, virtual_baseline)
+
+        self._walk_immediate_predecessors_of_virtual_root(test_name, suffix, baseline_name, patcher)
+
+    def _optimize_virtual_root(self, test_name, suffix, baseline_name):
+        virtual_root_baseline_path = self._filesystem.join(self._layout_tests_dir, baseline_name)
+        if self._filesystem.exists(virtual_root_baseline_path):
+            _log.debug('Virtual root baseline found. Checking if we can remove it.')
+            self._try_to_remove_virtual_root(baseline_name, virtual_root_baseline_path)
+        else:
+            _log.debug('Virtual root baseline not found. Searching for virtual baselines redundant with non-virtual ones.')
+            self._unpatch_virtual_subtree(test_name, suffix, baseline_name)
+
+    def _try_to_remove_virtual_root(self, baseline_name, virtual_root_baseline_path):
+        # See if all the successors of the virtual root (i.e. all non-virtual
+        # platforms) have the same baseline as the virtual root. If so, the
+        # virtual root is redundant and can be safely removed.
         root_sha1 = self._filesystem.sha1(virtual_root_baseline_path)
 
-        results_by_directory = self.read_results_by_directory(non_virtual_baseline_name)
-        # See if all the immediate predecessors of the virtual root have the same expected result.
-        for port in self._ports.values():
-            directories = self._relative_baseline_search_paths(port, non_virtual_baseline_name)
-            for directory in directories:
-                if directory not in results_by_directory:
-                    continue
-                if results_by_directory[directory] != root_sha1:
-                    return
-                break
+        # Read the base (non-virtual) results.
+        results_by_directory = self.read_results_by_directory(self._virtual_base(baseline_name))
+        results_by_port_name = self._results_by_port_name(results_by_directory)
 
-        _log.debug('Deleting redundant virtual root expected result.')
+        for port_name in self._ports.keys():
+            if port_name not in results_by_port_name:
+                # No baseline is found for this port. Conservatively abort as it
+                # may be an implicit all-PASS for a testharness.js test.
+                return
+            if results_by_port_name[port_name] != root_sha1:
+                return
+
+        _log.debug('Deleting redundant virtual root baseline.')
         _log.debug('    Deleting (file system): ' + virtual_root_baseline_path)
         self._filesystem.remove(virtual_root_baseline_path)
 
-    def _baseline_root(self, baseline_name):
-        virtual_suite = self._virtual_suite(baseline_name)
-        if virtual_suite:
-            return self._filesystem.join(self._layout_tests_dir_name, virtual_suite.name)
+    def _unpatch_virtual_subtree(self, test_name, suffix, baseline_name):
+        # Check all immediate predecessors of the virtual root and delete those
+        # duplicate with their non-virtual fallback, essentially undoing some
+        # of the work done in _patch_virtual_subtree.
+        def unpatcher(virtual_baseline, non_virtual_fallback):
+            if self._filesystem.exists(virtual_baseline) and \
+                    self._filesystem.sha1(virtual_baseline) == self._filesystem.sha1(non_virtual_fallback):
+                _log.debug('    Deleting (file system): %s (redundant with %s).', virtual_baseline, non_virtual_fallback)
+                self._filesystem.remove(virtual_baseline)
+        self._walk_immediate_predecessors_of_virtual_root(test_name, suffix, baseline_name, unpatcher)
+
+    def _baseline_root(self):
+        """Returns the name of the root (generic) baseline directory."""
         return self._layout_tests_dir_name
 
-    def _baseline_search_path(self, port, baseline_name):
-        virtual_suite = self._virtual_suite(baseline_name)
-        if virtual_suite:
-            return port.virtual_baseline_search_path(baseline_name)
+    def _baseline_search_path(self, port):
+        """Returns the baseline search path (a list of absolute paths) of the
+        given port."""
         return port.baseline_search_path()
 
-    def _virtual_suite(self, baseline_name):
-        return self._default_port.lookup_virtual_suite(baseline_name)
+    @memoized
+    def _relative_baseline_search_path(self, port):
+        """Returns a list of paths to check for baselines in order.
+
+        The generic baseline path is appended to the list. All paths are
+        relative to the parent of the test directory.
+        """
+        baseline_search_path = self._baseline_search_path(port)
+        relative_paths = [self._filesystem.relpath(path, self._parent_of_tests) for path in baseline_search_path]
+        relative_baseline_root = self._baseline_root()
+        return relative_paths + [relative_baseline_root]
 
     def _virtual_base(self, baseline_name):
+        """Returns the base (non-virtual) version of baseline_name, or None if
+        baseline_name is not virtual."""
+        # Note: port.lookup_virtual_test_base in fact expects a test_name,
+        # but baseline_name also works here.
         return self._default_port.lookup_virtual_test_base(baseline_name)
 
-    def _relative_baseline_search_paths(self, port, baseline_name):
-        """Returns a list of paths to check for baselines in order."""
-        baseline_search_path = self._baseline_search_path(port, baseline_name)
-        baseline_root = self._baseline_root(baseline_name)
-        relative_paths = [self._filesystem.relpath(path, self._parent_of_tests) for path in baseline_search_path]
-        return relative_paths + [baseline_root]
-
     def _join_directory(self, directory, baseline_name):
-        # This code is complicated because both the directory name and the
-        # baseline_name have the virtual test suite in the name and the virtual
-        # baseline name is not a strict superset of the non-virtual name.
-        # For example, virtual/gpu/fast/canvas/foo-expected.png corresponds to
-        # fast/canvas/foo-expected.png and the baseline directories are like
-        # platform/mac/virtual/gpu/fast/canvas. So, to get the path to the
-        # baseline in the platform directory, we need to append just
-        # foo-expected.png to the directory.
-        virtual_suite = self._virtual_suite(baseline_name)
-        if virtual_suite:
-            baseline_name_without_virtual = baseline_name[len(virtual_suite.name) + 1:]
-        else:
-            baseline_name_without_virtual = baseline_name
-        return self._filesystem.join(self._parent_of_tests, directory, baseline_name_without_virtual)
+        """Returns the absolute path to the baseline in the given directory."""
+        return self._filesystem.join(self._parent_of_tests, directory, baseline_name)
 
-    def _results_by_port_name(self, results_by_directory, baseline_name):
+    def _results_by_port_name(self, results_by_directory):
+        """Transforms a by-directory result dict to by-port-name."""
         results_by_port_name = {}
         for port_name, port in self._ports.items():
-            for directory in self._relative_baseline_search_paths(port, baseline_name):
+            for directory in self._relative_baseline_search_path(port):
                 if directory in results_by_directory:
                     results_by_port_name[port_name] = results_by_directory[directory]
                     break
         return results_by_port_name
 
     @memoized
-    def _directories_immediately_preceding_root(self, baseline_name):
+    def _directories_immediately_preceding_root(self):
+        """Returns a list of directories immediately preceding the root on
+        search paths."""
         directories = set()
         for port in self._ports.values():
-            directory = self._filesystem.relpath(self._baseline_search_path(port, baseline_name)[-1], self._parent_of_tests)
+            directory = self._filesystem.relpath(self._baseline_search_path(port)[-1], self._parent_of_tests)
             directories.add(directory)
-        return directories
+        return frozenset(directories)
 
-    def _optimize_result_for_root(self, new_results_by_directory, baseline_name):
-        # The root directory (i.e. LayoutTests) is the only one that doesn't correspond
-        # to a specific platform. As such, it's the only one where the baseline in fallback directories
-        # immediately before it can be promoted up, i.e. if win and mac
-        # have the same baseline, then it can be promoted up to be the LayoutTests baseline.
-        # All other baselines can only be removed if they're redundant with a baseline earlier
-        # in the fallback order. They can never promoted up.
-        immediately_preceding_root = self._directories_immediately_preceding_root(baseline_name)
+    def _optimize_result_for_root(self, new_results_by_directory):
+        # The root directory (i.e. LayoutTests) is the only one not
+        # corresponding to a specific platform. As such, baselines in
+        # directories that immediately precede the root on search paths may
+        # be promoted up if they are all the same.
+        # Example: if win and mac have the same baselines, then they can be
+        # promoted up to be the root baseline.
+        # All other baselines can only be removed if they're redundant with a
+        # baseline later on the search path. They can never be promoted up.
+        immediately_preceding_root = self._directories_immediately_preceding_root()
 
         shared_result = None
         root_baseline_unused = False
@@ -269,7 +362,7 @@ class BaselineOptimizer(object):
             elif shared_result != this_result:
                 root_baseline_unused = True
 
-        baseline_root = self._baseline_root(baseline_name)
+        baseline_root = self._baseline_root()
 
         # The root baseline is unused if all the directories immediately preceding the root
         # have a baseline, but have different baselines, so the baselines can't be promoted up.
@@ -284,15 +377,19 @@ class BaselineOptimizer(object):
 
     def _find_optimal_result_placement(self, baseline_name):
         results_by_directory = self.read_results_by_directory(baseline_name)
-        results_by_port_name = self._results_by_port_name(results_by_directory, baseline_name)
+        results_by_port_name = self._results_by_port_name(results_by_directory)
 
         new_results_by_directory = self._remove_redundant_results(
-            results_by_directory, results_by_port_name, baseline_name)
-        self._optimize_result_for_root(new_results_by_directory, baseline_name)
+            results_by_directory, results_by_port_name)
+        self._optimize_result_for_root(new_results_by_directory)
 
         return results_by_directory, new_results_by_directory
 
-    def _remove_redundant_results(self, results_by_directory, results_by_port_name, baseline_name):
+    def _remove_redundant_results(self, results_by_directory, results_by_port_name):
+        # For every port, traverse its search path in the fallback order (from
+        # specific to generic). Remove duplicate baselines until a different
+        # baseline is found (or the root is reached), i.e., keep the most
+        # generic one among duplicate baselines.
         new_results_by_directory = copy.copy(results_by_directory)
         for port_name, port in self._ports.items():
             current_result = results_by_port_name.get(port_name)
@@ -301,25 +398,29 @@ class BaselineOptimizer(object):
             if not current_result:
                 continue
 
-            fallback_path = self._relative_baseline_search_paths(port, baseline_name)
-            current_index, current_directory = self._find_in_fallbackpath(fallback_path, current_result, new_results_by_directory)
-            for index in range(current_index + 1, len(fallback_path)):
-                new_directory = fallback_path[index]
+            search_path = self._relative_baseline_search_path(port)
+            current_index, current_directory = self._find_in_search_path(search_path, current_result, new_results_by_directory)
+            for index in range(current_index + 1, len(search_path)):
+                new_directory = search_path[index]
                 if new_directory not in new_results_by_directory:
-                    # No result for this baseline in this directory.
+                    # No baseline in this directory.
                     continue
                 elif new_results_by_directory[new_directory] == current_result:
-                    # Result for new_directory are redundant with the result earlier in the fallback order.
+                    # The baseline in current_directory is redundant with the
+                    # baseline in new_directory which is later in the search
+                    # path. Remove the earlier one and point current to new.
                     if current_directory in new_results_by_directory:
                         del new_results_by_directory[current_directory]
+                        current_directory = new_directory
                 else:
-                    # The new_directory contains a different result, so stop trying to push results up.
+                    # A different result is found, so stop.
                     break
 
         return new_results_by_directory
 
-    def _find_in_fallbackpath(self, fallback_path, current_result, results_by_directory):
-        for index, directory in enumerate(fallback_path):
+    def _find_in_search_path(self, search_path, current_result, results_by_directory):
+        """Finds the index and the directory of a result on a search path."""
+        for index, directory in enumerate(search_path):
             if directory in results_by_directory and (results_by_directory[directory] == current_result):
                 return index, directory
-        assert False, 'result %s not found in fallback_path %s, %s' % (current_result, fallback_path, results_by_directory)
+        assert False, 'result %s not found in search path %s, %s' % (current_result, search_path, results_by_directory)
