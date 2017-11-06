@@ -214,25 +214,34 @@ GURL ArcNavigationThrottle::GetStartingGURL() const {
   return navigation_handle()->GetStartingSiteInstance()->GetSiteURL();
 }
 
-// Receives the array of app candidates to handle this URL and decides whether a
-// preferred app should be triggered right away or ask the browser to display
-// the intent picker.
 void ArcNavigationThrottle::OnAppCandidatesReceived(
+    std::vector<mojom::IntentHandlerInfoPtr> handlers) {
+  if (FoundPreferredOrVerifiedArcApp(std::move(handlers))) {
+    content::WebContents* tab = navigation_handle()->GetWebContents();
+    if (tab && tab->GetController().IsInitialNavigation())
+      tab->Close();
+    else
+      CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
+  } else {
+    Resume();
+  }
+}
+
+bool ArcNavigationThrottle::FoundPreferredOrVerifiedArcApp(
     std::vector<mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::NavigationHandle* handle = navigation_handle();
   const GURL& url = handle->GetURL();
 
+  bool cancel_navigation = false;
   if (!IsAppAvailable(handlers)) {
     // This scenario shouldn't be accessed as ArcNavigationThrottle is created
     // iff there are ARC apps which can actually handle the given URL.
     DVLOG(1) << "There are no app candidates for this URL: " << url;
     ui_displayed_ = false;
-    Resume();
-    return;
+    // TODO(djacobo): Investigate whether or not to track this via UMA.
+    return cancel_navigation;
   }
-
-  Resume();
 
   // If one of the apps is marked as preferred, use it right away without
   // showing the UI.
@@ -252,17 +261,9 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
 
     if (!instance) {
       close_reason = CloseReason::ERROR;
-    } else {
-      if (!ArcIntentHelperBridge::IsIntentHelperPackage(package_name))
-        instance->HandleUrl(url.spec(), package_name);
-
-      // Make intent picker's icon visible if there are installed apps that can
-      // handle the current URL, this enables the user to still access ARC's
-      // apps even if they marked an app or Chrome as preferred before.
-      Browser* browser =
-          chrome::FindBrowserWithWebContents(handle->GetWebContents());
-      if (browser)
-        chrome::SetIntentPickerViewVisibility(browser, true);
+    } else if (!ArcIntentHelperBridge::IsIntentHelperPackage(package_name)) {
+      instance->HandleUrl(url.spec(), package_name);
+      cancel_navigation = true;
     }
 
     Platform platform = GetDestinationPlatform(package_name, close_reason);
@@ -272,7 +273,7 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
         handle->GetWebContents()->GetBrowserContext());
     if (!intent_helper_bridge) {
       LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
-      return;
+      return cancel_navigation;
     }
     std::vector<ArcIntentHelperBridge::ActivityName> activities;
     for (const auto& handler : handlers)
@@ -284,6 +285,8 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
                    chrome::FindBrowserWithWebContents(handle->GetWebContents()),
                    base::Passed(&handlers), url));
   }
+
+  return cancel_navigation;
 }
 
 // static

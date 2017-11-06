@@ -126,7 +126,15 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override;
 
   NavigationThrottle::ThrottleCheckResult HandleRequest();
+  // Resume/Cancel the current navigation which was put in DEFER. Close the
+  // current tab only if we continue the navigation on ARC and the current tab
+  // was explicitly generated for this navigation.
   void OnAppCandidatesReceived(
+      std::vector<mojom::IntentHandlerInfoPtr> handlers);
+  // Receives the array of app candidates to handle this URL and decides whether
+  // a preferred app should be triggered right away or ask the browser to
+  // display the intent picker.
+  bool FoundPreferredOrVerifiedArcApp(
       std::vector<mojom::IntentHandlerInfoPtr> handlers);
   void OnAppIconsReceived(
       std::vector<mojom::IntentHandlerInfoPtr> handlers,
