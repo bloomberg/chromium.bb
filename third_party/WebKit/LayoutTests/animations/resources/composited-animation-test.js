@@ -147,7 +147,7 @@ class CompositedAnimationTestCommon {
   }
 
   waitForCompositor() {
-    return this.error.animate({opacity: ['1', '1']}, 1).ready;
+    return this.error.animate({opacity: ['1', '1']}, 1).finished;
   }
 
   layoutAndPaint() {

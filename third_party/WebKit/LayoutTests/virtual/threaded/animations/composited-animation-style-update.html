@@ -21,6 +21,7 @@ div {
 <div id="expectation"></div>
 <div id="target"></div>
 <script>
+'use strict';
 target.style.fontSize = "50px";
 var animation = target.animate([
   {transform: "translate(1em, 1em)"},
@@ -32,14 +33,19 @@ var animation = target.animate([
 
 if (window.testRunner)
   testRunner.waitUntilDone();
+
 requestAnimationFrame(function() {
   requestAnimationFrame(function() {
     if (window.internals) {
       var composited = internals.isCompositedAnimation(animation);
       text.textContent = `Animation ${composited ? 'is' : 'is not'} running on the compositor.`;
     }
-    if (window.testRunner)
-      testRunner.notifyDone();
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
+    });
   });
 });
 </script>

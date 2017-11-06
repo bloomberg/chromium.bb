@@ -101,31 +101,29 @@ function runIndividualTest(testIndex) {
 
     clearElementAnimationStyle(element);
 
-    // Unfortunately need to force a style recalculation before testing.
-    requestAnimationFrame(function () {
-        element.style.animation = TEST_INPUTS[testIndex];
+    element.offsetTop; // force style recalc
 
-        // And another forced style recalculation.
-        requestAnimationFrame(function() {
-            var computedStyle = window.getComputedStyle(element);
+    element.style.animation = TEST_INPUTS[testIndex];
 
-            for (var i=0; i < PROPERTIES_TO_TEST.length; i++) {
-                var value = computedStyle[PROPERTIES_TO_TEST[i]];
-                if (value == EXPECTED_VALUES[testIndex][i])
-                    result.innerHTML += "PASS Test " + (numTestsComplete + 1) + ": " + PROPERTIES_TO_TEST[i] + " was " + value + "<br>";
-                else
-                    result.innerHTML += "FAIL Test " + (numTestsComplete + 1) + ": " + PROPERTIES_TO_TEST[i] + " was " + value + " should be " + EXPECTED_VALUES[testIndex][i] + "<br>";
-            }
+    element.offsetTop; // force another style recalc
 
-            numTestsComplete++;
-            if (numTestsComplete < TEST_INPUTS.length)
-                runIndividualTest(numTestsComplete);
-            else {
-                if (window.testRunner)
-                    testRunner.notifyDone();
-            }
-        });
-    });
+    var computedStyle = window.getComputedStyle(element);
+
+    for (var i=0; i < PROPERTIES_TO_TEST.length; i++) {
+        var value = computedStyle[PROPERTIES_TO_TEST[i]];
+        if (value == EXPECTED_VALUES[testIndex][i])
+            result.innerHTML += "PASS Test " + (numTestsComplete + 1) + ": " + PROPERTIES_TO_TEST[i] + " was " + value + "<br>";
+        else
+            result.innerHTML += "FAIL Test " + (numTestsComplete + 1) + ": " + PROPERTIES_TO_TEST[i] + " was " + value + " should be " + EXPECTED_VALUES[testIndex][i] + "<br>";
+    }
+
+    numTestsComplete++;
+    if (numTestsComplete < TEST_INPUTS.length)
+        runIndividualTest(numTestsComplete);
+    else {
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
 }
 
 if (window.testRunner) {
