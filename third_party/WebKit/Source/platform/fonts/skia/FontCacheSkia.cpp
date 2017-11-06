@@ -54,6 +54,20 @@
 #include "public/platform/Platform.h"
 #include "public/platform/linux/WebSandboxSupport.h"
 
+#if !defined(OS_WIN) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#include "SkFontConfigInterface.h"
+
+static sk_sp<SkTypeface> typefaceForFontconfigInterfaceIdAndTtcIndex(
+    int fontconfigInterfaceId,
+    int ttcIndex) {
+  sk_sp<SkFontConfigInterface> fci(SkFontConfigInterface::RefGlobal());
+  SkFontConfigInterface::FontIdentity fontIdentity;
+  fontIdentity.fID = fontconfigInterfaceId;
+  fontIdentity.fTTCIndex = ttcIndex;
+  return fci->makeTypeface(fontIdentity);
+}
+#endif
+
 namespace blink {
 
 AtomicString ToAtomicString(const SkString& str) {
@@ -211,7 +225,7 @@ scoped_refptr<SimpleFontData> FontCache::GetLastResortFallbackFont(
   return FontDataFromFontPlatformData(font_platform_data, should_retain);
 }
 
-PaintTypeface FontCache::CreateTypeface(
+sk_sp<SkTypeface> FontCache::CreateTypeface(
     const FontDescription& font_description,
     const FontFaceCreationParams& creation_params,
     CString& name) {
@@ -219,12 +233,11 @@ PaintTypeface FontCache::CreateTypeface(
   // TODO(fuchsia): Revisit this and other font code for Fuchsia.
 
   if (creation_params.CreationType() == kCreateFontByFciIdAndTtcIndex) {
-    if (Platform::Current()->GetSandboxSupport()) {
-      return PaintTypeface::FromFontConfigInterfaceIdAndTtcIndex(
+    if (Platform::Current()->GetSandboxSupport())
+      return typefaceForFontconfigInterfaceIdAndTtcIndex(
           creation_params.FontconfigInterfaceId(), creation_params.TtcIndex());
-    }
-    return PaintTypeface::FromFilenameAndTtcIndex(
-        creation_params.Filename().data(), creation_params.TtcIndex());
+    return SkTypeface::MakeFromFile(creation_params.Filename().data(),
+                                    creation_params.TtcIndex());
   }
 #endif
 
@@ -240,12 +253,11 @@ PaintTypeface FontCache::CreateTypeface(
   }
 
 #if defined(OS_WIN)
-  // TODO(vmpstr): Deal with paint typeface here.
   if (sideloaded_fonts_) {
     HashMap<String, sk_sp<SkTypeface>>::iterator sideloaded_font =
         sideloaded_fonts_->find(name.data());
     if (sideloaded_font != sideloaded_fonts_->end())
-      return PaintTypeface::FromSkTypeface(sideloaded_font->value);
+      return sideloaded_font->value;
   }
 #endif
 
@@ -254,20 +266,15 @@ PaintTypeface FontCache::CreateTypeface(
   // the embedder provided font Manager rather than calling
   // SkTypeface::CreateFromName which may redirect the call to the default font
   // Manager.  On Windows the font manager is always present.
-  if (font_manager_) {
-    // TODO(vmpstr): Handle creating paint typefaces here directly. We need to
-    // figure out whether it's safe to give |font_manager_| to PaintTypeface and
-    // what that means on the GPU side.
-    auto tf = sk_sp<SkTypeface>(font_manager_->matchFamilyStyle(
+  if (font_manager_)
+    return sk_sp<SkTypeface>(font_manager_->matchFamilyStyle(
         name.data(), font_description.SkiaFontStyle()));
-    return PaintTypeface::FromSkTypeface(std::move(tf));
-  }
 #endif
 
   // FIXME: Use m_fontManager, matchFamilyStyle instead of
   // legacyCreateTypeface on all platforms.
-  return PaintTypeface::FromFamilyNameAndFontStyle(
-      name.data(), font_description.SkiaFontStyle());
+  sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
+  return fm->legacyMakeTypeface(name.data(), font_description.SkiaFontStyle());
 }
 
 #if !defined(OS_WIN)
@@ -277,15 +284,14 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     float font_size,
     AlternateFontName) {
   CString name;
-  PaintTypeface paint_tf =
+  sk_sp<SkTypeface> tf =
       CreateTypeface(font_description, creation_params, name);
-  if (!paint_tf)
+  if (!tf)
     return nullptr;
 
-  const auto& tf = paint_tf.ToSkTypeface();
   std::unique_ptr<FontPlatformData> font_platform_data =
       WTF::WrapUnique(new FontPlatformData(
-          paint_tf, name.data(), font_size,
+          tf, name.data(), font_size,
           (font_description.Weight() >
                FontSelectionValue(200) +
                    FontSelectionValue(tf->fontStyle().weight()) ||

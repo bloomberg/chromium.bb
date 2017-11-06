@@ -111,9 +111,9 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
   return return_font;
 }
 
-void FontPlatformData::SetupPaintFont(PaintFont* paint_font,
-                                      float,
-                                      const Font* font) const {
+void FontPlatformData::SetupPaint(SkPaint* paint,
+                                  float,
+                                  const Font* font) const {
   bool should_smooth_fonts = true;
   bool should_antialias = true;
 
@@ -141,15 +141,15 @@ void FontPlatformData::SetupPaintFont(PaintFont* paint_font,
                        LayoutTestSupport::IsFontAntialiasingEnabledForTest();
   }
 
-  paint_font->SetAntiAlias(should_antialias);
-  paint_font->SetEmbeddedBitmapText(false);
+  paint->setAntiAlias(should_antialias);
+  paint->setEmbeddedBitmapText(false);
   const float ts = text_size_ >= 0 ? text_size_ : 12;
-  paint_font->SetTextSize(SkFloatToScalar(ts));
-  paint_font->SetTypeface(paint_typeface_);
-  paint_font->SetFakeBoldText(synthetic_bold_);
-  paint_font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
-  paint_font->SetLcdRenderText(should_smooth_fonts);
-  paint_font->SetSubpixelText(true);
+  paint->setTextSize(SkFloatToScalar(ts));
+  paint->setTypeface(typeface_);
+  paint->setFakeBoldText(synthetic_bold_);
+  paint->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+  paint->setLCDRenderText(should_smooth_fonts);
+  paint->setSubpixelText(true);
 
   // When rendering using CoreGraphics, disable hinting when
   // webkit-font-smoothing:antialiased or text-rendering:geometricPrecision is
@@ -157,7 +157,7 @@ void FontPlatformData::SetupPaintFont(PaintFont* paint_font,
   if (font &&
       (font->GetFontDescription().FontSmoothing() == kAntialiased ||
        font->GetFontDescription().TextRendering() == kGeometricPrecision))
-    paint_font->SetHinting(SkPaint::kNo_Hinting);
+    paint->setHinting(SkPaint::kNo_Hinting);
 }
 
 FontPlatformData::FontPlatformData(NSFont* ns_font,
@@ -172,14 +172,13 @@ FontPlatformData::FontPlatformData(NSFont* ns_font,
       orientation_(orientation),
       is_hash_table_deleted_value_(false) {
   DCHECK(ns_font);
-  sk_sp<SkTypeface> typeface;
   if (CanLoadInProcess(ns_font)) {
-    typeface.reset(SkCreateTypefaceFromCTFont(toCTFontRef(ns_font)));
+    typeface_.reset(SkCreateTypefaceFromCTFont(toCTFontRef(ns_font)));
   } else {
     // In process loading fails for cases where third party font manager
     // software registers fonts in non system locations such as /Library/Fonts
     // and ~/Library Fonts, see crbug.com/72727 or crbug.com/108645.
-    typeface = LoadFromBrowserProcess(ns_font, size);
+    typeface_ = LoadFromBrowserProcess(ns_font, size);
   }
 
   if (variation_settings && variation_settings->size() < UINT16_MAX) {
@@ -192,12 +191,10 @@ FontPlatformData::FontPlatformData(NSFont* ns_font,
     sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
     // TODO crbug.com/670246: Refactor this to a future Skia API that acccepts
     // axis parameters on system fonts directly.
-    typeface = fm->makeFromStream(
-        typeface->openStream(nullptr)->duplicate(),
+    typeface_ = fm->makeFromStream(
+        typeface_->openStream(nullptr)->duplicate(),
         SkFontArguments().setAxes(axes, variation_settings->size()));
   }
-  // TODO(vmpstr): Save the creation parameters in PaintTypeface instead.
-  paint_typeface_ = PaintTypeface::FromSkTypeface(typeface);
 }
 
 }  // namespace blink

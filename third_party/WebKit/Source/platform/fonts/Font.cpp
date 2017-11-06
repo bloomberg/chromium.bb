@@ -37,7 +37,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintFlags.h"
-#include "platform/graphics/paint/PaintTextBlob.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/Character.h"
 #include "platform/text/TextRun.h"
@@ -297,9 +296,8 @@ unsigned InterceptsFromBlobs(const ShapeResultBloberizer::BlobBuffer& blobs,
     SkScalar* offset_intercepts_buffer = nullptr;
     if (intercepts_buffer)
       offset_intercepts_buffer = &intercepts_buffer[num_intervals];
-    num_intervals +=
-        paint.getTextBlobIntercepts(blob_info.blob->ToSkTextBlob().get(),
-                                    bounds_array, offset_intercepts_buffer);
+    num_intervals += paint.getTextBlobIntercepts(
+        blob_info.blob.get(), bounds_array, offset_intercepts_buffer);
   }
   return num_intervals;
 }
