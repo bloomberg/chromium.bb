@@ -60,10 +60,10 @@ public class ChromeHomeSurveyControllerTest {
     @Test
     public void testInfoBarDisplayedBefore() {
         Assert.assertFalse(mController.hasInfoBarBeenDisplayed());
-        Assert.assertFalse(
-                mSharedPreferences.contains(ChromeHomeSurveyController.SURVEY_INFO_BAR_DISPLAYED));
+        Assert.assertFalse(mSharedPreferences.contains(
+                ChromeHomeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY));
         mSharedPreferences.edit()
-                .putBoolean(ChromeHomeSurveyController.SURVEY_INFO_BAR_DISPLAYED, true)
+                .putBoolean(ChromeHomeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY, true)
                 .apply();
         Assert.assertTrue(mController.hasInfoBarBeenDisplayed());
     }
