@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "services/proxy_resolver/proxy_resolver_factory_impl.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -29,9 +31,14 @@ class ProxyResolverService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
+  void OnProxyResolverFactoryRequest(
+      proxy_resolver::mojom::ProxyResolverFactoryRequest request);
+
   // State needed to manage service lifecycle and lifecycle of bound clients.
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   service_manager::BinderRegistry registry_;
+
+  ProxyResolverFactoryImpl proxy_resolver_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverService);
 };

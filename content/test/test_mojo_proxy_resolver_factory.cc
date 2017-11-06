@@ -4,9 +4,10 @@
 
 #include "content/test/test_mojo_proxy_resolver_factory.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 
 namespace content {
 
@@ -20,10 +21,10 @@ TestMojoProxyResolverFactory::CreateResolver(
   return nullptr;
 }
 
-TestMojoProxyResolverFactory::TestMojoProxyResolverFactory() {
-  mojo::MakeStrongBinding(
-      std::make_unique<proxy_resolver::ProxyResolverFactoryImpl>(),
-      mojo::MakeRequest(&factory_));
+TestMojoProxyResolverFactory::TestMojoProxyResolverFactory()
+    : service_ref_factory_(base::Bind(&base::DoNothing)) {
+  proxy_resolver_factory_impl_.BindRequest(mojo::MakeRequest(&factory_),
+                                           &service_ref_factory_);
 }
 
 TestMojoProxyResolverFactory::~TestMojoProxyResolverFactory() = default;

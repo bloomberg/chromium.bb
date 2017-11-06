@@ -27,6 +27,10 @@ include_rules = [
   "+ui/base/resource/resource_bundle_android.h",
   "+ui/base/resource/resource_handle.h",
   "!v8/include/v8.h",
+
+  # For TestMojoProxyResolverFactory. Remove once it moves to the network
+  # service.
+  "+services/service_manager/public/cpp/service_context_ref.h",
 ]
 
 specific_include_rules = {

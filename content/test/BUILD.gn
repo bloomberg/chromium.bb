@@ -2028,6 +2028,10 @@ test("content_perftests") {
     "//ui/events/blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
+
+    # For TestMojoProxyResolverFactory. Remove once it moves to the network
+    # service.
+    "//services/service_manager/public/cpp",
   ]
 
   if (is_android) {

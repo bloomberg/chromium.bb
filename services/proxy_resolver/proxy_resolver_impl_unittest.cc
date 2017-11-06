@@ -19,6 +19,7 @@
 #include "net/proxy/proxy_server.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -194,15 +195,20 @@ void MockProxyResolverV8Tracing::WaitForCancel() {
 }  // namespace
 
 class ProxyResolverImplTest : public testing::Test {
- protected:
-  void SetUp() override {
-    std::unique_ptr<MockProxyResolverV8Tracing> mock_resolver(
-        new MockProxyResolverV8Tracing);
+ public:
+  ProxyResolverImplTest() {
+    std::unique_ptr<MockProxyResolverV8Tracing> mock_resolver =
+        std::make_unique<MockProxyResolverV8Tracing>();
     mock_proxy_resolver_ = mock_resolver.get();
-    resolver_impl_.reset(new ProxyResolverImpl(std::move(mock_resolver)));
+    resolver_impl_ = std::make_unique<ProxyResolverImpl>(
+        std::move(mock_resolver),
+        std::unique_ptr<service_manager::ServiceContextRef>());
     resolver_ = resolver_impl_.get();
   }
 
+  ~ProxyResolverImplTest() override {}
+
+ protected:
   base::test::ScopedTaskEnvironment task_environment_;
   MockProxyResolverV8Tracing* mock_proxy_resolver_;
 
