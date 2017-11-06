@@ -445,7 +445,7 @@ TEST_F(ExtensionThrottleManagerTest, LocalHostOptedOut) {
 }
 
 TEST_F(ExtensionThrottleManagerTest, ClearOnNetworkChange) {
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 2; ++i) {
     MockExtensionThrottleManager manager;
     scoped_refptr<ExtensionThrottleEntryInterface> entry_before =
         manager.RegisterRequestUrl(GURL("http://www.example.com/"));
@@ -456,14 +456,10 @@ TEST_F(ExtensionThrottleManagerTest, ClearOnNetworkChange) {
 
     switch (i) {
       case 0:
-        manager.OnIPAddressChanged();
+        manager.OnNetworkChanged(NetworkChangeNotifier::CONNECTION_UNKNOWN);
         break;
       case 1:
-        manager.OnConnectionTypeChanged(
-            NetworkChangeNotifier::CONNECTION_UNKNOWN);
-        break;
-      case 2:
-        manager.OnConnectionTypeChanged(NetworkChangeNotifier::CONNECTION_NONE);
+        manager.OnNetworkChanged(NetworkChangeNotifier::CONNECTION_NONE);
         break;
       default:
         FAIL();

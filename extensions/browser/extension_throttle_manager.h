@@ -40,8 +40,7 @@ namespace extensions {
 // clean out outdated entries. URL ID consists of lowercased scheme, host, port
 // and path. All URLs converted to the same ID will share the same entry.
 class ExtensionThrottleManager
-    : public net::NetworkChangeNotifier::IPAddressObserver,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver {
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   ExtensionThrottleManager();
   ~ExtensionThrottleManager() override;
@@ -98,11 +97,8 @@ class ExtensionThrottleManager
   void set_net_log(net::NetLog* net_log);
   net::NetLog* net_log() const;
 
-  // IPAddressObserver interface.
-  void OnIPAddressChanged() override;
-
-  // ConnectionTypeObserver interface.
-  void OnConnectionTypeChanged(
+  // NetworkChangeObserver interface.
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Method that allows us to transform a URL into an ID that can be used in our
