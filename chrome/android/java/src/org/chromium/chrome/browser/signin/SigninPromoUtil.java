@@ -8,9 +8,10 @@ import android.app.Activity;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -26,21 +27,27 @@ public class SigninPromoUtil {
      * @return Whether the signin promo is shown.
      */
     public static boolean launchSigninPromoIfNeeded(final Activity activity) {
-        // The promo is displayed if Chrome is launched directly (i.e., not with the intent to
-        // navigate to and view a URL on startup), the instance is part of the field trial,
-        // and the promo has been marked to display.
         ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
-        if (MultiWindowUtils.getInstance().isLegacyMultiWindow(activity)) return false;
-        if (!preferenceManager.getShowSigninPromo()) return false;
-        preferenceManager.setShowSigninPromo(false);
-
-        String lastSyncName = PrefServiceBridge.getInstance().getSyncLastAccountName();
-        if (ChromeSigninController.get().isSignedIn() || !TextUtils.isEmpty(lastSyncName)) {
+        int lastPromoMajorVersion = preferenceManager.getSigninPromoLastShownVersion();
+        int currentMajorVersion = ChromeVersionInfo.getProductMajorVersion();
+        if (lastPromoMajorVersion == 0) {
+            preferenceManager.setSigninPromoLastShownVersion(currentMajorVersion);
             return false;
         }
 
+        // Don't show if user is signed in or there are no Google accounts on the device.
+        if (ChromeSigninController.get().isSignedIn()) return false;
+        if (AccountManagerFacade.get().tryGetGoogleAccountNames().size() == 0) return false;
+
+        // Don't show if user has manually signed out.
+        String lastSyncAccountName = PrefServiceBridge.getInstance().getSyncLastAccountName();
+        if (TextUtils.isEmpty(lastSyncAccountName)) return false;
+
+        // Promo can be shown at most once every 2 Chrome major versions.
+        if (currentMajorVersion < lastPromoMajorVersion + 2) return false;
+
         AccountSigninActivity.startIfAllowed(activity, SigninAccessPoint.SIGNIN_PROMO);
-        preferenceManager.setSigninPromoShown();
+        preferenceManager.setSigninPromoLastShownVersion(currentMajorVersion);
         return true;
     }
 
