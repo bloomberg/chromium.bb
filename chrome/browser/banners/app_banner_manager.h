@@ -105,6 +105,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // Sets the total engagement required for triggering the banner in testing.
   static void SetTotalEngagementToTrigger(double engagement);
 
+  // Returns whether the new experimental flow and UI is enabled.
+  static bool IsExperimentalAppBannersEnabled();
+
   // Requests an app banner. If |is_debug_mode| is true, any failure in the
   // pipeline will be reported to the devtools console.
   virtual void RequestAppBanner(const GURL& validated_url, bool is_debug_mode);
@@ -258,9 +261,6 @@ class AppBannerManager : public content::WebContentsObserver,
 
  private:
   friend class AppBannerManagerTest;
-
-  // Returns whether the new experimental flow and UI is enabled.
-  static bool IsExperimentalAppBannersEnabled();
 
   // Voids all outstanding service pointers.
   void ResetBindings();
