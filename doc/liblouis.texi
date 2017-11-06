@@ -488,6 +488,26 @@ the translator or back-translator encounters an undefined character in
 its input it produces a succinct error indication in its output, and
 the character is treated as a space.
 
+You may have multiple defiitions of a character using the same or different dot patterns. If you use different dot patterns for the same character, only the first dot pattern will be used during forward translation. However, during back-translation, all the relevant dot patterns will back-translate to the character you defined.
+
+you can also define a character multiple times using the same dot pattern for the character, but using different character classes. The following example would define the character "*" (star) as both @opcoderef{math} and @opcoderef{sign}.
+
+@example
+math * 16
+sign * 16
+@end example
+
+Likewise, you can define multiple characters as the same dot pattern. The characters you define this way will be forward translated to the same dot pattern. However, when back-translating, the dot pattern will always back-translate to the first character that was defined with this pattern.
+
+This technique may be useful when defining characters that have one representation in the Windows character set (CP1252) and another representation in the Unicode character set, e.g. the Euro sign, "€". It may also be of use when you have to define several variants of the same letter with different accents, which may be represented in your Braille code by the same dot pattern. This is a very common practice for accented letters that are foreign to the Braille code. In the following example using the @opcoderef{uplow} opcode, both e acute (é) and e grave (è) are defined as dot 4 followed by dots 1 and 5.
+
+@example
+uplow \x00c9\x00e9 4-15 # E acute
+uplow \x00c8\x00e8 4-15 # E grave
+@end example
+
+In this example, the dot pattern would always back-translate to e acute, since this is the first definition. You could use the @opcoderef{correct} opcode to correct at least the most common errors on that account. However, there is no fail-safe way to know what accented letter to use when you back-translate from a dot pattern representing more than one variant.
+
 @table @code
 @opcode{space, character dots}
 Defines a character as a space and also defines the dot pattern as
@@ -507,11 +527,20 @@ punctuation . 46 dot pattern for period in NAB computer braille
 @end example
 
 @opcode{digit, character dots}
-Associates a digit with a dot pattern and defines the character as a
+Associates a digit with a dot pattern to be used in computer Braille and defines the character as a
 digit. For example:
 
 @example
 digit 0 356 NAB computer braille
+@end example
+
+@opcode{litdigit, digit dots}
+Associates a digit with the dot pattern which should be used to
+represent it in literary Braille, usually with  number sign before the whole number. For example:
+
+@example
+litdigit 0 245
+litdigit 1 1
 @end example
 
 @opcode{uplow, characters dots [@comma{}dots]}
@@ -564,15 +593,6 @@ an uppercase letter. Both the character and the dot pattern have the
 attributes uppercase and letter. @code{lowercase} and @code{uppercase}
 should be used when a letter has only one case. Otherwise use the
 @opcoderef{uplow}.
-
-@opcode{litdigit, digit dots}
-Associates a digit with the dot pattern which should be used to
-represent it in literary texts. For example:
-
-@example
-litdigit 0 245
-litdigit 1 1
-@end example
 
 @opcode{sign, character dots}
 Associates a character with a dot pattern and defines both as a sign.
@@ -931,8 +951,9 @@ require special treatment.
 
 @table @code
 @opcode{decpoint, character dots}
-This opcode defines the decimal point. The character operand must have
-only one character. For example, in @file{en-us-g1.ctb} we have: 
+This opcode defines the decimal point. It is useful if your Braille code requires the decimal separator to show as a dot pattern different from the normal representation of this character, i.e. period or comma. In addition, it allows the notation .001 to be translated correctly. This notation is common in some languages instead of 0.001 (no leading 0). When you use the @code{decpoint} opcode, the decimal point will be taken to be part of the number and correctly preceeded by number sign.
+
+The character operand must have only one character. For example, in @file{en-us-g1.ctb} we have: 
 
 @example
 decpoint . 46
@@ -1565,19 +1586,22 @@ are specified by the @code{correct} opcode. If there are no
 @code{correct} opcodes in a table, the pre-translation pass is not used.
 If any back-translation corrections have been specified then they are
 applied in a post-translation (i.e. the very last) pass.
+
+note that like the @opcoderef{context} and multi-pass opcodes, the @code{correct} opcode must be preceeded by @opcoderef{noback} or @opcoderef{nofor}.
+
 The format of the @code{correct} opcode is very similar to that
 of the @opcoderef{context}. The only difference is that in the action
 part strings may be used and dot patterns may not be used. Some
 examples of @code{correct} opcode entries are:
 
 @example
-correct "\\" ? Eliminate backslashes
-correct "cornf" "comf" fix a common "scano"
-correct "cornm" "comm"
-correct "cornp" "comp"
-correct "*" ? Get rid of stray asterisks
-correct "|" ? ditto for vertical bars
-correct "\s?" "?" drop space before question mark
+noback correct "\\" ? Eliminate backslashes
+noback correct "cornf" "comf" fix a common "scano"
+noback correct "cornm" "comm"
+noback correct "cornp" "comp"
+noback correct "*" ? Get rid of stray asterisks
+noback correct "|" ? ditto for vertical bars
+noback correct "\s?" "?" drop space before question mark
 @end example
 
 @end table
