@@ -22,8 +22,43 @@ using PropertyHandleSet = HashSet<PropertyHandle>;
 class Element;
 class ComputedStyle;
 
-// Represents a user specificed keyframe in a KeyframeEffect.
-// http://w3c.github.io/web-animations/#keyframe
+// A base class representing an animation keyframe.
+//
+// Generically a keyframe is a set of (property, value) pairs. In the
+// web-animations spec keyframes have a few additional properties:
+//
+//   * A possibly-null offset, which represents the keyframe's position relative
+//     to other keyframes in the same effect.
+//   * A possibly-null composite operation, which specifies the operation used
+//     to combine values in this keyframe with an underlying value.
+//   * A non-null timing function, which applies to the period of time between
+//     this keyframe and the next keyframe in the same effect and influences
+//     the interpolation between them.
+//
+// For spec details, refer to: http://w3c.github.io/web-animations/#keyframe
+//
+// Implementation-wise the base Keyframe class captures the offset, composite
+// operation, and timing functions. It is left to subclasses to define and store
+// the set of (property, value) pairs.
+//
+// TODO(smcgruer): Our implementation does not allow for a null composite
+// operation; by the spec we should allow this and use the effect operation.
+// TODO(smcgruer): Our implementation confuses offset and computed offset; the
+// former is user-specified whilst the latter is a computed value.
+//
+// === PropertySpecificKeyframes ===
+//
+// When calculating the effect value of a keyframe effect, the web-animations
+// spec requires that a set of 'property-specific' keyframes are created.
+// Property-specific keyframes resolve any unspecified offsets in the keyframes,
+// calculate computed values for the specified properties, convert shorthand
+// properties to multiple longhand properties, and resolve any conflicting
+// shorthand properties.
+//
+// In this implementation property-specific keyframes are created only once and
+// cached for subsequent calls, rather than re-computing them for every sample
+// from the keyframe effect. See KeyframeEffectModelBase::EnsureKeyframeGroups.
+//
 // FIXME: Make Keyframe immutable
 class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   USING_FAST_MALLOC(Keyframe);
@@ -32,14 +67,18 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
  public:
   virtual ~Keyframe() {}
 
+  // TODO(smcgruer): Once we properly distinguish between offset and computed
+  // offset, the keyframe offset should be immutable.
   void SetOffset(double offset) { offset_ = offset; }
   double Offset() const { return offset_; }
 
+  // TODO(smcgruer): The keyframe composite operation should be immutable.
   void SetComposite(EffectModel::CompositeOperation composite) {
     composite_ = composite;
   }
   EffectModel::CompositeOperation Composite() const { return composite_; }
 
+  // TODO(smcgruer): The keyframe timing function should be immutable.
   void SetEasing(scoped_refptr<TimingFunction> easing) {
     if (easing)
       easing_ = std::move(easing);
@@ -48,9 +87,17 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   }
   TimingFunction& Easing() const { return *easing_; }
 
+  // Returns a set of the properties represented in this keyframe.
   virtual PropertyHandleSet Properties() const = 0;
 
+  // Creates a clone of this keyframe.
+  //
+  // The clone should have the same (property, value) pairs, offset value,
+  // composite operation, and timing function, as well as any other
+  // subclass-specific data.
   virtual scoped_refptr<Keyframe> Clone() const = 0;
+
+  // Helper function to create a clone of this keyframe with a specific offset.
   scoped_refptr<Keyframe> CloneWithOffset(double offset) const {
     scoped_refptr<Keyframe> the_clone = Clone();
     the_clone->SetOffset(offset);
@@ -60,7 +107,8 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   virtual bool IsStringKeyframe() const { return false; }
   virtual bool IsTransitionKeyframe() const { return false; }
 
-  // Represents a property-value pair in a keyframe.
+  // Represents a property-specific keyframe as defined in the spec. Refer to
+  // the Keyframe class-level documentation for more details.
   class PropertySpecificKeyframe : public RefCounted<PropertySpecificKeyframe> {
     USING_FAST_MALLOC(PropertySpecificKeyframe);
     WTF_MAKE_NONCOPYABLE(PropertySpecificKeyframe);
@@ -112,6 +160,8 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     EffectModel::CompositeOperation composite_;
   };
 
+  // Construct and return a property-specific keyframe for this keyframe, for
+  // the given property.
   virtual scoped_refptr<PropertySpecificKeyframe>
   CreatePropertySpecificKeyframe(const PropertyHandle&) const = 0;
 

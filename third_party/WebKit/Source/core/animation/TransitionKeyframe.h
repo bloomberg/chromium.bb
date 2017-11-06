@@ -12,10 +12,17 @@
 
 namespace blink {
 
+// An implementation of Keyframe specifically for CSS Transitions.
+//
+// TransitionKeyframes are a simple form of keyframe, which only have one
+// (property, value) pair. CSS Transitions do not support SVG attributes, so the
+// property will always be a CSSPropertyID (for CSS properties and presentation
+// attributes) or an AtomicString (for custom CSS properties).
 class CORE_EXPORT TransitionKeyframe : public Keyframe {
  public:
   static scoped_refptr<TransitionKeyframe> Create(
       const PropertyHandle& property) {
+    DCHECK(!property.IsSVGAttribute());
     return WTF::AdoptRef(new TransitionKeyframe(property));
   }
   void SetValue(std::unique_ptr<TypedInterpolationValue> value) {
