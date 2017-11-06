@@ -8,13 +8,11 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/devtools_target_registry.h"
 #include "content/browser/devtools/protocol/network.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -27,12 +25,12 @@ class NetworkHandler;
 class BrowserContext;
 class DevToolsTargetRegistry;
 class DevToolsURLInterceptorRequestJob;
-class FrameTreeNode;
 class ResourceRequestInfo;
 
 // An interceptor that creates DevToolsURLInterceptorRequestJobs for requests
 // from pages where interception has been enabled via
 // Network.setRequestInterceptionEnabled.
+// This class is constructed on the UI thread but only accessed on IO thread.
 class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
  public:
   explicit DevToolsURLRequestInterceptor(BrowserContext* browser_context);
@@ -40,24 +38,6 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
 
   using ContinueInterceptedRequestCallback =
       protocol::Network::Backend::ContinueInterceptedRequestCallback;
-
-  // Must be called on UI thread.
-  static DevToolsURLRequestInterceptor* FromBrowserContext(
-      BrowserContext* context);
-
-  // net::URLRequestInterceptor implementation:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override;
-
-  net::URLRequestJob* MaybeInterceptRedirect(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const GURL& location) const override;
-
-  net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override;
 
   struct Modifications {
     Modifications(base::Optional<net::Error> error_reason,
@@ -102,113 +82,88 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
     const base::flat_set<ResourceType> resource_types;
   };
 
-  // The State needs to be accessed on both UI and IO threads.
-  class State : public base::RefCountedThreadSafe<State> {
-   public:
-    State();
+  struct InterceptedPage {
+    InterceptedPage(base::WeakPtr<protocol::NetworkHandler> network_handler,
+                    std::vector<Pattern> intercepted_patterns);
+    ~InterceptedPage();
 
-    // Returns a DevToolsURLInterceptorRequestJob if the request should be
-    // intercepted, otherwise returns nullptr. Must be called on the IO thread.
-    DevToolsURLInterceptorRequestJob*
-    MaybeCreateDevToolsURLInterceptorRequestJob(
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate);
-
-    // Registers a |sub_request| that should not be intercepted.
-    void RegisterSubRequest(const net::URLRequest* sub_request);
-
-    // Unregisters a |sub_request|. Must be called on the IO thread.
-    void UnregisterSubRequest(const net::URLRequest* sub_request);
-
-    // To make the user's life easier we make sure requests in a redirect chain
-    // all have the same id. Must be called on the IO thread.
-    void ExpectRequestAfterRedirect(const net::URLRequest* request,
-                                    std::string id);
-
-    // Must be called on the IO thread.
-    void JobFinished(const std::string& interception_id);
-
-   private:
-    friend class DevToolsURLRequestInterceptor;
-
-    struct InterceptedPage {
-      InterceptedPage(base::WeakPtr<protocol::NetworkHandler> network_handler,
-                      std::vector<Pattern> intercepted_patterns);
-      ~InterceptedPage();
-
-      const base::WeakPtr<protocol::NetworkHandler> network_handler;
-      const std::vector<Pattern> intercepted_patterns;
-    };
-
-    const DevToolsTargetRegistry::TargetInfo* TargetInfoForRequestInfo(
-        const ResourceRequestInfo* request_info);
-
-    void ContinueInterceptedRequestOnIO(
-        std::string interception_id,
-        std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
-            modifications,
-        std::unique_ptr<ContinueInterceptedRequestCallback> callback);
-
-    void StartInterceptingRequestsOnIO(
-        const base::UnguessableToken& target_id,
-        std::unique_ptr<InterceptedPage> interceptedPage);
-
-    void StopInterceptingRequestsOnIO(const base::UnguessableToken& target_id);
-
-    std::string GetIdForRequestOnIO(const net::URLRequest* request,
-                                    bool* is_redirect);
-
-    // Returns a WeakPtr to the DevToolsURLInterceptorRequestJob corresponding
-    // to |interception_id|.  Must be called on the IO thread.
-    DevToolsURLInterceptorRequestJob* GetJob(
-        const std::string& interception_id) const;
-
-    std::unique_ptr<DevToolsTargetRegistry> target_registry_;
-
-    base::flat_map<base::UnguessableToken, std::unique_ptr<InterceptedPage>>
-        target_id_to_intercepted_page_;
-
-    base::flat_map<std::string, DevToolsURLInterceptorRequestJob*>
-        interception_id_to_job_map_;
-
-    // The DevToolsURLInterceptorRequestJob proxies a sub request to actually
-    // fetch the bytes from the network. We don't want to intercept those
-    // requests.
-    base::flat_set<const net::URLRequest*> sub_requests_;
-
-    // To simplify handling of redirect chains for the end user, we arrange for
-    // all requests in the chain to have the same interception id.
-    base::flat_map<const net::URLRequest*, std::string> expected_redirects_;
-    size_t next_id_;
-
-   private:
-    friend class base::RefCountedThreadSafe<State>;
-    ~State();
-    DISALLOW_COPY_AND_ASSIGN(State);
+    const base::WeakPtr<protocol::NetworkHandler> network_handler;
+    const std::vector<Pattern> intercepted_patterns;
   };
 
-  // Must be called on the UI thread.
+  // net::URLRequestInterceptor implementation:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override;
+
+  net::URLRequestJob* MaybeInterceptRedirect(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const GURL& location) const override;
+
+  net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override;
+
+  // Registers a |sub_request| that should not be intercepted.
+  void RegisterSubRequest(const net::URLRequest* sub_request);
+
+  // Unregisters a |sub_request|.
+  void UnregisterSubRequest(const net::URLRequest* sub_request);
+
+  // To make the user's life easier we make sure requests in a redirect chain
+  // all have the same id.
+  void ExpectRequestAfterRedirect(const net::URLRequest* request,
+                                  std::string id);
+
+  void JobFinished(const std::string& interception_id);
   void ContinueInterceptedRequest(
       std::string interception_id,
-      std::unique_ptr<Modifications> modifications,
+      std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
+          modifications,
       std::unique_ptr<ContinueInterceptedRequestCallback> callback);
 
-  // Must be called on the UI thread.
   void StartInterceptingRequests(
-      const FrameTreeNode* target_frame,
-      base::WeakPtr<protocol::NetworkHandler> network_handler,
-      std::vector<Pattern> intercepted_patterns);
+      const base::UnguessableToken& target_id,
+      std::unique_ptr<InterceptedPage> interceptedPage);
 
-  // Must be called on the UI thread.
-  void StopInterceptingRequests(const FrameTreeNode* target_frame);
+  void StopInterceptingRequests(const base::UnguessableToken& target_id);
 
  private:
-  BrowserContext* const browser_context_;
+  net::URLRequestJob* InnerMaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate);
 
-  scoped_refptr<State> state_;
-  base::flat_map<base::UnguessableToken,
-                 DevToolsTargetRegistry::RegistrationHandle>
-      target_handles_;
+  const DevToolsTargetRegistry::TargetInfo* TargetInfoForRequestInfo(
+      const ResourceRequestInfo* request_info) const;
+
+  std::string GetIdForRequest(const net::URLRequest* request,
+                              bool* is_redirect);
+
+  // Returns a WeakPtr to the DevToolsURLInterceptorRequestJob corresponding
+  // to |interception_id|.
+  DevToolsURLInterceptorRequestJob* GetJob(
+      const std::string& interception_id) const;
+
+  std::unique_ptr<DevToolsTargetRegistry::Resolver> target_resolver_;
+
+  base::flat_map<base::UnguessableToken, std::unique_ptr<InterceptedPage>>
+      target_id_to_intercepted_page_;
+
+  base::flat_map<std::string, DevToolsURLInterceptorRequestJob*>
+      interception_id_to_job_map_;
+
+  // The DevToolsURLInterceptorRequestJob proxies a sub request to actually
+  // fetch the bytes from the network. We don't want to intercept those
+  // requests.
+  base::flat_set<const net::URLRequest*> sub_requests_;
+
+  // To simplify handling of redirect chains for the end user, we arrange for
+  // all requests in the chain to have the same interception id.
+  base::flat_map<const net::URLRequest*, std::string> expected_redirects_;
+  size_t next_id_;
+
+  base::WeakPtrFactory<DevToolsURLRequestInterceptor> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsURLRequestInterceptor);
 };
 

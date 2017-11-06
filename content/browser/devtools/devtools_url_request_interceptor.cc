@@ -7,130 +7,30 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
-#include "base/supports_user_data.h"
-#include "content/browser/devtools/devtools_agent_host_impl.h"
+#include "content/browser/devtools/devtools_interceptor_controller.h"
 #include "content/browser/devtools/devtools_url_interceptor_request_job.h"
 #include "content/browser/devtools/protocol/network_handler.h"
-#include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
-#include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
 
-namespace {
-const char kDevToolsURLRequestInterceptorKeyName[] =
-    "DevToolsURLRequestInterceptor";
-
-class DevToolsURLRequestInterceptorUserData
-    : public base::SupportsUserData::Data {
- public:
-  explicit DevToolsURLRequestInterceptorUserData(
-      DevToolsURLRequestInterceptor* devtools_url_request_interceptor)
-      : devtools_url_request_interceptor_(devtools_url_request_interceptor) {}
-
-  DevToolsURLRequestInterceptor* devtools_url_request_interceptor() const {
-    return devtools_url_request_interceptor_;
-  }
-
- private:
-  DevToolsURLRequestInterceptor* devtools_url_request_interceptor_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsURLRequestInterceptorUserData);
-};
-
-}  // namespace
-
 DevToolsURLRequestInterceptor::DevToolsURLRequestInterceptor(
     BrowserContext* browser_context)
-    : browser_context_(browser_context), state_(new State()) {
+    : next_id_(0), weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  browser_context_->SetUserData(
-      kDevToolsURLRequestInterceptorKeyName,
-      std::make_unique<DevToolsURLRequestInterceptorUserData>(this));
+  auto target_registry = std::make_unique<DevToolsTargetRegistry>(
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO));
+  target_resolver_ = target_registry->CreateResolver();
+  DevToolsInterceptorController::SetUserData(
+      browser_context, weak_factory_.GetWeakPtr(), std::move(target_registry));
 }
 
 DevToolsURLRequestInterceptor::~DevToolsURLRequestInterceptor() {
   // The BrowserContext owns us, so we don't need to unregister
   // DevToolsURLRequestInterceptorUserData explicitly.
-}
-
-net::URLRequestJob* DevToolsURLRequestInterceptor::MaybeInterceptRequest(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return state_->MaybeCreateDevToolsURLInterceptorRequestJob(request,
-                                                             network_delegate);
-}
-
-void DevToolsURLRequestInterceptor::StartInterceptingRequests(
-    const FrameTreeNode* target_frame,
-    base::WeakPtr<protocol::NetworkHandler> network_handler,
-    std::vector<Pattern> intercepted_patterns) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  const base::UnguessableToken& target_id =
-      target_frame->devtools_frame_token();
-  target_handles_[target_id] = state_->target_registry_->RegisterWebContents(
-      WebContentsImpl::FromFrameTreeNode(target_frame));
-
-  std::unique_ptr<State::InterceptedPage> intercepted_page(
-      new State::InterceptedPage(std::move(network_handler),
-                                 intercepted_patterns));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &DevToolsURLRequestInterceptor::State::StartInterceptingRequestsOnIO,
-          state_, target_id, std::move(intercepted_page)));
-}
-
-void DevToolsURLRequestInterceptor::StopInterceptingRequests(
-    const FrameTreeNode* target_frame) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const base::UnguessableToken& target_id =
-      target_frame->devtools_frame_token();
-  if (!target_handles_.erase(target_id))
-    return;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &DevToolsURLRequestInterceptor::State::StopInterceptingRequestsOnIO,
-          state_, target_id));
-}
-
-void DevToolsURLRequestInterceptor::ContinueInterceptedRequest(
-    std::string interception_id,
-    std::unique_ptr<Modifications> modifications,
-    std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &DevToolsURLRequestInterceptor::State::ContinueInterceptedRequestOnIO,
-          state_, interception_id, base::Passed(std::move(modifications)),
-          base::Passed(std::move(callback))));
-}
-
-net::URLRequestJob* DevToolsURLRequestInterceptor::MaybeInterceptRedirect(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    const GURL& location) const {
-  return nullptr;
-}
-
-net::URLRequestJob* DevToolsURLRequestInterceptor::MaybeInterceptResponse(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  return nullptr;
 }
 
 DevToolsURLRequestInterceptor::Pattern::Pattern() = default;
@@ -144,25 +44,17 @@ DevToolsURLRequestInterceptor::Pattern::Pattern(
     base::flat_set<ResourceType> resource_types)
     : url_pattern(url_pattern), resource_types(std::move(resource_types)) {}
 
-DevToolsURLRequestInterceptor::State::State()
-    : target_registry_(new DevToolsTargetRegistry(
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO))),
-      next_id_(0) {}
-
-DevToolsURLRequestInterceptor::State::~State() {}
-
 const DevToolsTargetRegistry::TargetInfo*
-DevToolsURLRequestInterceptor::State::TargetInfoForRequestInfo(
-    const ResourceRequestInfo* request_info) {
+DevToolsURLRequestInterceptor::TargetInfoForRequestInfo(
+    const ResourceRequestInfo* request_info) const {
   int frame_node_id = request_info->GetFrameTreeNodeId();
   if (frame_node_id != -1)
-    return target_registry_->GetInfoByFrameTreeNodeId(frame_node_id);
-  return target_registry_->GetInfoByRenderFramePair(
+    return target_resolver_->GetInfoByFrameTreeNodeId(frame_node_id);
+  return target_resolver_->GetInfoByRenderFramePair(
       request_info->GetChildID(), request_info->GetRenderFrameID());
 }
 
-void DevToolsURLRequestInterceptor::State::ContinueInterceptedRequestOnIO(
+void DevToolsURLRequestInterceptor::ContinueInterceptedRequest(
     std::string interception_id,
     std::unique_ptr<Modifications> modifications,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
@@ -182,10 +74,29 @@ void DevToolsURLRequestInterceptor::State::ContinueInterceptedRequestOnIO(
                                   std::move(callback));
 }
 
-DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
-    MaybeCreateDevToolsURLInterceptorRequestJob(
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) {
+net::URLRequestJob* DevToolsURLRequestInterceptor::MaybeInterceptRequest(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return const_cast<DevToolsURLRequestInterceptor*>(this)
+      ->InnerMaybeInterceptRequest(request, network_delegate);
+}
+
+net::URLRequestJob* DevToolsURLRequestInterceptor::MaybeInterceptRedirect(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const GURL& location) const {
+  return nullptr;
+}
+
+net::URLRequestJob* DevToolsURLRequestInterceptor::MaybeInterceptResponse(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return nullptr;
+}
+
+net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Bail out if we're not intercepting anything.
@@ -230,7 +141,7 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
     return nullptr;
 
   bool is_redirect;
-  std::string interception_id = GetIdForRequestOnIO(request, &is_redirect);
+  std::string interception_id = GetIdForRequest(request, &is_redirect);
   DevToolsURLInterceptorRequestJob* job = new DevToolsURLInterceptorRequestJob(
       this, interception_id, request, network_delegate,
       target_info->devtools_token, target_info->devtools_target_id,
@@ -240,7 +151,7 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
   return job;
 }
 
-void DevToolsURLRequestInterceptor::State::StartInterceptingRequestsOnIO(
+void DevToolsURLRequestInterceptor::StartInterceptingRequests(
     const base::UnguessableToken& target_id,
     std::unique_ptr<InterceptedPage> interceptedPage) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -248,7 +159,7 @@ void DevToolsURLRequestInterceptor::State::StartInterceptingRequestsOnIO(
   target_id_to_intercepted_page_[target_id] = std::move(interceptedPage);
 }
 
-void DevToolsURLRequestInterceptor::State::StopInterceptingRequestsOnIO(
+void DevToolsURLRequestInterceptor::StopInterceptingRequests(
     const base::UnguessableToken& target_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -261,28 +172,28 @@ void DevToolsURLRequestInterceptor::State::StopInterceptingRequestsOnIO(
   }
 }
 
-void DevToolsURLRequestInterceptor::State::RegisterSubRequest(
+void DevToolsURLRequestInterceptor::RegisterSubRequest(
     const net::URLRequest* sub_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(sub_requests_.find(sub_request) == sub_requests_.end());
   sub_requests_.insert(sub_request);
 }
 
-void DevToolsURLRequestInterceptor::State::UnregisterSubRequest(
+void DevToolsURLRequestInterceptor::UnregisterSubRequest(
     const net::URLRequest* sub_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(sub_requests_.find(sub_request) != sub_requests_.end());
   sub_requests_.erase(sub_request);
 }
 
-void DevToolsURLRequestInterceptor::State::ExpectRequestAfterRedirect(
+void DevToolsURLRequestInterceptor::ExpectRequestAfterRedirect(
     const net::URLRequest* request,
     std::string id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   expected_redirects_[request] = id;
 }
 
-std::string DevToolsURLRequestInterceptor::State::GetIdForRequestOnIO(
+std::string DevToolsURLRequestInterceptor::GetIdForRequest(
     const net::URLRequest* request,
     bool* is_redirect) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -297,7 +208,7 @@ std::string DevToolsURLRequestInterceptor::State::GetIdForRequestOnIO(
   return id;
 }
 
-DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::GetJob(
+DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::GetJob(
     const std::string& interception_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const auto it = interception_id_to_job_map_.find(interception_id);
@@ -306,22 +217,10 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::GetJob(
   return it->second;
 }
 
-void DevToolsURLRequestInterceptor::State::JobFinished(
+void DevToolsURLRequestInterceptor::JobFinished(
     const std::string& interception_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   interception_id_to_job_map_.erase(interception_id);
-}
-
-// static
-DevToolsURLRequestInterceptor*
-DevToolsURLRequestInterceptor::FromBrowserContext(BrowserContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* interceptor_user_data =
-      static_cast<DevToolsURLRequestInterceptorUserData*>(
-          context->GetUserData(kDevToolsURLRequestInterceptorKeyName));
-  if (!interceptor_user_data)
-    return nullptr;
-  return interceptor_user_data->devtools_url_request_interceptor();
 }
 
 DevToolsURLRequestInterceptor::Modifications::Modifications(
@@ -345,13 +244,12 @@ DevToolsURLRequestInterceptor::Modifications::Modifications(
 
 DevToolsURLRequestInterceptor::Modifications::~Modifications() {}
 
-DevToolsURLRequestInterceptor::State::InterceptedPage::InterceptedPage(
+DevToolsURLRequestInterceptor::InterceptedPage::InterceptedPage(
     base::WeakPtr<protocol::NetworkHandler> network_handler,
     std::vector<Pattern> intercepted_patterns)
     : network_handler(network_handler),
       intercepted_patterns(std::move(intercepted_patterns)) {}
 
-DevToolsURLRequestInterceptor::State::InterceptedPage::~InterceptedPage() =
-    default;
+DevToolsURLRequestInterceptor::InterceptedPage::~InterceptedPage() = default;
 
 }  // namespace content

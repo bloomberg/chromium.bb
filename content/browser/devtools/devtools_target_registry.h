@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
@@ -38,12 +39,18 @@ class DevToolsTargetRegistry {
   };
   using RegistrationHandle = scoped_refptr<ObserverBase>;
 
+  // Impl thread methods
+  class Resolver {
+   public:
+    virtual const TargetInfo* GetInfoByFrameTreeNodeId(int frame_node_id) = 0;
+    virtual const TargetInfo* GetInfoByRenderFramePair(int child_id,
+                                                       int routing_id) = 0;
+    virtual ~Resolver() {}
+  };
+
   // UI thread method
   RegistrationHandle RegisterWebContents(WebContents* web_contents);
-
-  // Impl thread methods
-  const TargetInfo* GetInfoByFrameTreeNodeId(int frame_node_id);
-  const TargetInfo* GetInfoByRenderFramePair(int child_id, int routing_id);
+  std::unique_ptr<Resolver> CreateResolver();
 
   explicit DevToolsTargetRegistry(
       scoped_refptr<base::SequencedTaskRunner> impl_task_runner);
@@ -56,10 +63,11 @@ class DevToolsTargetRegistry {
   class Impl;
 
   scoped_refptr<base::SequencedTaskRunner> impl_task_runner_;
-  std::unique_ptr<Impl, base::OnTaskRunnerDeleter> impl_;
   // Observers are owned by the clients and are cleaned up from this
   // map when destroyed.
   base::flat_map<WebContents*, ContentsObserver*> observers_;
+
+  base::WeakPtr<Impl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsTargetRegistry);
 };

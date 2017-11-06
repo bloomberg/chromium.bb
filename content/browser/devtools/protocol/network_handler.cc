@@ -16,8 +16,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "content/browser/devtools/devtools_interceptor_controller.h"
 #include "content/browser/devtools/devtools_session.h"
-#include "content/browser/devtools/devtools_url_interceptor_request_job.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/browser/devtools/protocol/security.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -1062,10 +1062,10 @@ DispatchResponse NetworkHandler::SetRequestInterception(
   if (!web_contents)
     return Response::InternalError();
 
-  DevToolsURLRequestInterceptor* devtools_url_request_interceptor =
-      DevToolsURLRequestInterceptor::FromBrowserContext(
+  DevToolsInterceptorController* interceptor =
+      DevToolsInterceptorController::FromBrowserContext(
           web_contents->GetBrowserContext());
-  if (!devtools_url_request_interceptor)
+  if (!interceptor)
     return Response::Error("Interception not supported");
 
   FrameTreeNode* frame_tree_node = host_->frame_tree_node();
@@ -1085,12 +1085,12 @@ DispatchResponse NetworkHandler::SetRequestInterception(
           patterns->get(i)->GetUrlPattern("*"), std::move(resource_types)));
     }
 
-    devtools_url_request_interceptor->StartInterceptingRequests(
-        frame_tree_node, weak_factory_.GetWeakPtr(),
-        std::move(interceptor_patterns));
+    interceptor->StartInterceptingRequests(frame_tree_node,
+                                           weak_factory_.GetWeakPtr(),
+                                           std::move(interceptor_patterns));
     interception_enabled_ = true;
   } else {
-    devtools_url_request_interceptor->StopInterceptingRequests(frame_tree_node);
+    interceptor->StopInterceptingRequests(frame_tree_node);
     navigation_requests_.clear();
     canceled_navigation_requests_.clear();
     interception_enabled_ = false;
@@ -1133,10 +1133,10 @@ void NetworkHandler::ContinueInterceptedRequest(
     Maybe<protocol::Network::Headers> headers,
     Maybe<protocol::Network::AuthChallengeResponse> auth_challenge_response,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
-  DevToolsURLRequestInterceptor* devtools_url_request_interceptor =
-      DevToolsURLRequestInterceptor::FromBrowserContext(
+  DevToolsInterceptorController* interceptor =
+      DevToolsInterceptorController::FromBrowserContext(
           process_->GetBrowserContext());
-  if (!devtools_url_request_interceptor) {
+  if (!interceptor) {
     callback->sendFailure(Response::InternalError());
     return;
   }
@@ -1175,7 +1175,7 @@ void NetworkHandler::ContinueInterceptedRequest(
     }
   }
 
-  devtools_url_request_interceptor->ContinueInterceptedRequest(
+  interceptor->ContinueInterceptedRequest(
       interception_id,
       std::make_unique<DevToolsURLRequestInterceptor::Modifications>(
           std::move(error), std::move(raw_response), std::move(url),
