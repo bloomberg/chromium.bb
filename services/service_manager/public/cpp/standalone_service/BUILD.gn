@@ -16,6 +16,7 @@ source_set("standalone_service") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/runner:init",
     "//services/service_manager/runner/common",
+    "//services/service_manager/sandbox",
   ]
 
   public_deps = [
@@ -24,11 +25,6 @@ source_set("standalone_service") {
   ]
 
   if (is_linux && !is_android) {
-    sources += [
-      "sandbox_linux.cc",
-      "sandbox_linux.h",
-    ]
-
     deps += [
       "//sandbox/linux:sandbox",
       "//sandbox/linux:sandbox_services",

@@ -7,9 +7,6 @@
 namespace service_manager {
 namespace switches {
 
-// Enables the sandbox on this process.
-const char kEnableSandbox[] = "enable-sandbox";
-
 // Specified on the command line of service processes to indicate which service
 // should be run. Useful when the service process binary may act as one of many
 // different embedded services.

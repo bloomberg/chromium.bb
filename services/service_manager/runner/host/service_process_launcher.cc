@@ -25,6 +25,7 @@
 #include "services/service_manager/public/cpp/standalone_service/switches.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
+#include "services/service_manager/sandbox/switches.h"
 
 #if defined(OS_LINUX)
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -81,8 +82,9 @@ mojom::ServicePtr ServiceProcessLauncher::Start(
 #endif
 
   if (!IsUnsandboxedSandboxType(sandbox_type_)) {
-    // TODO(tsepez): pass along sandbox information on command line.
-    child_command_line->AppendSwitch(switches::kEnableSandbox);
+    child_command_line->AppendSwitchASCII(
+        switches::kServiceSandboxType,
+        StringFromUtilitySandboxType(sandbox_type_));
   }
   mojo_ipc_channel_.reset(new mojo::edk::PlatformChannelPair);
   mojo_ipc_channel_->PrepareToPassClientHandleToChildProcess(
@@ -97,6 +99,7 @@ mojom::ServicePtr ServiceProcessLauncher::Start(
                  base::Passed(&child_command_line)),
       base::Bind(&ServiceProcessLauncher::DidStart,
                  weak_factory_.GetWeakPtr(), callback));
+
   return client;
 }
 
