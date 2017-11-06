@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
@@ -13,8 +14,8 @@
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/offline_pages/features/features.h"
+#include "components/previews/content/previews_content_util.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "content/public/browser/browser_context.h"
@@ -64,6 +65,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
     return;
+
   // The infobar should only be told if the page was a reload if the previous
   // page displayed a timestamp.
   bool is_reload =
@@ -100,17 +102,28 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-  const net::HttpResponseHeaders* headers =
-      navigation_handle->GetResponseHeaders();
-  if (headers && data_reduction_proxy::IsLitePagePreview(*headers)) {
-    base::Time previews_freshness;
-    headers->GetDateValue(&previews_freshness);
-    PreviewsInfoBarDelegate::Create(
-        web_contents(), previews::PreviewsType::LITE_PAGE, previews_freshness,
-        true /* is_data_saver_user */, is_reload,
-        base::Bind(&AddPreviewNavigationCallback,
-                   web_contents()->GetBrowserContext(),
-                   navigation_handle->GetRedirectChain()[0],
-                   previews::PreviewsType::LITE_PAGE));
+  ChromeNavigationData* nav_data = static_cast<ChromeNavigationData*>(
+      navigation_handle->GetNavigationData());
+  if (nav_data) {
+    previews::PreviewsType main_frame_preview =
+        previews::GetMainFramePreviewsType(nav_data->previews_state());
+    if (main_frame_preview != previews::PreviewsType::NONE) {
+      base::Time previews_freshness;
+      if (main_frame_preview == previews::PreviewsType::LITE_PAGE) {
+        // Get server preview freshness from response header.
+        const net::HttpResponseHeaders* headers =
+            navigation_handle->GetResponseHeaders();
+        if (headers) {
+          headers->GetDateValue(&previews_freshness);
+        }
+      }
+      PreviewsInfoBarDelegate::Create(
+          web_contents(), main_frame_preview, previews_freshness,
+          true /* is_data_saver_user */, is_reload,
+          base::Bind(&AddPreviewNavigationCallback,
+                     web_contents()->GetBrowserContext(),
+                     navigation_handle->GetRedirectChain()[0],
+                     main_frame_preview));
+    }
   }
 }

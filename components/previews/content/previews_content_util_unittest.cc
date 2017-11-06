@@ -109,6 +109,22 @@ TEST_F(PreviewsContentUtilTest, DetermineClientPreviewsState) {
                                          *CreateRequest(), previews_decider()));
 }
 
+TEST_F(PreviewsContentUtilTest, GetMainFramePreviewsType) {
+  // Main frame preview cases:
+  EXPECT_EQ(previews::PreviewsType::LITE_PAGE,
+            previews::GetMainFramePreviewsType(content::SERVER_LITE_PAGE_ON));
+  EXPECT_EQ(previews::PreviewsType::NOSCRIPT,
+            previews::GetMainFramePreviewsType(content::NOSCRIPT_ON));
+
+  // NONE cases:
+  EXPECT_EQ(previews::PreviewsType::NONE,
+            previews::GetMainFramePreviewsType(content::PREVIEWS_UNSPECIFIED));
+  EXPECT_EQ(previews::PreviewsType::NONE,
+            previews::GetMainFramePreviewsType(content::CLIENT_LOFI_ON));
+  EXPECT_EQ(previews::PreviewsType::NONE,
+            previews::GetMainFramePreviewsType(content::SERVER_LOFI_ON));
+}
+
 }  // namespace
 
 }  // namespace previews

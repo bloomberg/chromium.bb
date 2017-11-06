@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
@@ -25,6 +26,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/http/http_util.h"
 
@@ -81,11 +83,18 @@ class PreviewsInfoBarTabHelperUnitTest
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
+  void SetPreviewsState(content::PreviewsState previews_state) {
+    std::unique_ptr<ChromeNavigationData> chrome_nav_data(
+        new ChromeNavigationData());
+    chrome_nav_data->set_previews_state(previews_state);
+    std::unique_ptr<content::NavigationData> nav_data(
+        chrome_nav_data.release());
+    content::WebContentsTester::For(web_contents())
+        ->SetNavigationData(test_handle_.get(), std::move(nav_data));
+  }
+
   void SimulateWillProcessResponse() {
-    std::string headers = base::StringPrintf(
-        "HTTP/1.1 200 OK\n%s: %s\n\n",
-        data_reduction_proxy::chrome_proxy_content_transform_header(),
-        data_reduction_proxy::lite_page_directive());
+    std::string headers("HTTP/1.1 200 OK\n\n");
     test_handle_->CallWillProcessResponseForTesting(
         main_rfh(),
         net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
@@ -109,6 +118,28 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateLitePageInfoBar) {
       PreviewsInfoBarTabHelper::FromWebContents(web_contents());
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
 
+  SetPreviewsState(content::SERVER_LITE_PAGE_ON);
+  SimulateWillProcessResponse();
+  CallDidFinishNavigation();
+
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents());
+  EXPECT_EQ(1U, infobar_service->infobar_count());
+  EXPECT_TRUE(infobar_tab_helper->displayed_preview_infobar());
+
+  // Navigate to reset the displayed state.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+}
+
+TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateNoScriptPreviewsInfoBar) {
+  PreviewsInfoBarTabHelper* infobar_tab_helper =
+      PreviewsInfoBarTabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+
+  SetPreviewsState(content::NOSCRIPT_ON);
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
 
