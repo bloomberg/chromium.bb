@@ -50,6 +50,10 @@ class ArcPowerBridge : public KeyedService,
     connector_for_test_ = connector;
   }
 
+  // If |notify_brightness_timer_| is set, runs it and returns true. Returns
+  // false otherwise.
+  bool TriggerNotifyBrightnessTimerForTesting() WARN_UNUSED_RESULT;
+
   // Runs the message loop until replies have been received for all pending
   // device service requests in |wake_lock_requestors_|.
   void FlushWakeLocksForTesting();

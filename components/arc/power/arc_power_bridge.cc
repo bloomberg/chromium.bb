@@ -133,6 +133,13 @@ ArcPowerBridge::~ArcPowerBridge() {
   arc_bridge_service_->power()->RemoveObserver(this);
 }
 
+bool ArcPowerBridge::TriggerNotifyBrightnessTimerForTesting() {
+  if (!notify_brightness_timer_.IsRunning())
+    return false;
+  notify_brightness_timer_.user_task().Run();
+  return true;
+}
+
 void ArcPowerBridge::FlushWakeLocksForTesting() {
   for (const auto& it : wake_lock_requestors_)
     it.second->FlushForTesting();
@@ -164,6 +171,7 @@ void ArcPowerBridge::OnInstanceClosed() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       RemoveObserver(this);
   wake_lock_requestors_.clear();
+  binding_.Close();
 }
 
 void ArcPowerBridge::SuspendImminent(

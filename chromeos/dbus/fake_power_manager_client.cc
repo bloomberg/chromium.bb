@@ -57,7 +57,9 @@ void FakePowerManagerClient::DecreaseScreenBrightness(bool allow_off) {}
 void FakePowerManagerClient::IncreaseScreenBrightness() {}
 
 void FakePowerManagerClient::SetScreenBrightnessPercent(double percent,
-                                                        bool gradual) {}
+                                                        bool gradual) {
+  screen_brightness_percent_ = percent;
+}
 
 void FakePowerManagerClient::GetScreenBrightnessPercent(
     DBusMethodCallback<double> callback) {

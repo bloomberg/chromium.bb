@@ -4,6 +4,7 @@
 
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -99,11 +100,15 @@ void TestWakeLockProvider::OnBindInterface(
 void TestWakeLockProvider::OnWakeLockRequested(TestWakeLock* wake_lock) {
   DCHECK(!active_wake_locks_.count(wake_lock));
   active_wake_locks_.insert(wake_lock);
+  if (wake_lock_requested_callback_)
+    wake_lock_requested_callback_.Run();
 }
 
 void TestWakeLockProvider::OnWakeLockCanceled(TestWakeLock* wake_lock) {
   DCHECK(active_wake_locks_.count(wake_lock));
   active_wake_locks_.erase(wake_lock);
+  if (wake_lock_canceled_callback_)
+    wake_lock_canceled_callback_.Run();
 }
 
 }  // namespace device
