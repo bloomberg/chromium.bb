@@ -1,15 +1,14 @@
-#<skip - we don't dump table attrs on win yet>
-ROLE_SYSTEM_DOCUMENT name='Table example - th rowheader' READONLY FOCUSABLE
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
 ++ROLE_SYSTEM_TABLE
 ++++ROLE_SYSTEM_ROW
-++++++ROLE_SYSTEM_ROWHEADER
+++++++ROLE_SYSTEM_COLUMNHEADER name='Firstname'
 ++++++++ROLE_SYSTEM_STATICTEXT name='Firstname'
-++++++ROLE_SYSTEM_CELL
-++++++++ROLE_SYSTEM_STATICTEXT name='Jill'
-++++ROLE_SYSTEM_ROW
-++++++ROLE_SYSTEM_ROWHEADER
+++++++ROLE_SYSTEM_COLUMNHEADER name='Lastname'
 ++++++++ROLE_SYSTEM_STATICTEXT name='Lastname'
-++++++ROLE_SYSTEM_CELL
+++++ROLE_SYSTEM_ROW
+++++++ROLE_SYSTEM_CELL name='Jill' column_headers='<Firstname>'
+++++++++ROLE_SYSTEM_STATICTEXT name='Jill'
+++++++ROLE_SYSTEM_CELL name='Smith' column_headers='<Lastname>'
 ++++++++ROLE_SYSTEM_STATICTEXT name='Smith'
 ++++ROLE_SYSTEM_COLUMN
 ++++ROLE_SYSTEM_COLUMN

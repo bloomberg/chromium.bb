@@ -2093,6 +2093,9 @@ STDMETHODIMP AXPlatformNodeWin::get_columnHeaderCells(
     return E_INVALIDARG;
 
   *n_column_header_cells = 0;
+  if (GetData().role != AX_ROLE_CELL)
+    return S_FALSE;
+
   AXPlatformNodeBase* table = GetTable();
   if (!table) {
     return S_FALSE;
@@ -2158,6 +2161,9 @@ STDMETHODIMP AXPlatformNodeWin::get_rowHeaderCells(IUnknown*** cell_accessibles,
     return E_INVALIDARG;
 
   *n_row_header_cells = 0;
+  if (GetData().role != AX_ROLE_CELL)
+    return S_FALSE;
+
   AXPlatformNodeBase* table = GetTable();
   if (!table) {
     return S_FALSE;

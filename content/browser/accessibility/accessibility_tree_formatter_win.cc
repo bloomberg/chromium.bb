@@ -105,6 +105,8 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
                             base::DictionaryValue* dict);
   void AddIA2TableProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                              base::DictionaryValue* dict);
+  void AddIA2TableCellProperties(const Microsoft::WRL::ComPtr<IAccessible>,
+                                 base::DictionaryValue* dict);
   void AddIA2ValueProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                              base::DictionaryValue* dict);
   base::string16 ProcessTreeForOutput(
@@ -184,6 +186,19 @@ static HRESULT QueryIAccessibleTable(IAccessible* accessible,
   if (FAILED(hr))
     return hr;
   return service_provider->QueryService(IID_IAccessibleTable, accessibleTable);
+}
+
+static HRESULT QueryIAccessibleTableCell(
+    IAccessible* accessible,
+    IAccessibleTableCell** accessibleTableCell) {
+  // IA2 Spec dictates that IServiceProvider should be used instead of
+  // QueryInterface when retrieving alternate interfaces.
+  Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
+  HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
+  if (FAILED(hr))
+    return hr;
+  return service_provider->QueryService(IID_IAccessibleTableCell,
+                                        accessibleTableCell);
 }
 
 static HRESULT QueryIAccessibleText(IAccessible* accessible,
@@ -358,6 +373,8 @@ const char* const ALL_ATTRIBUTES[] = {
     "table_columns",
     "row_index",
     "column_index",
+    "row_headers",
+    "column_headers",
     "n_characters",
     "caret_offset",
     "n_selections",
@@ -378,6 +395,7 @@ void AccessibilityTreeFormatterWin::AddProperties(
     AddIA2ActionProperties(node, dict);
     AddIA2HypertextProperties(node, dict);
     AddIA2TableProperties(node, dict);
+    AddIA2TableCellProperties(node, dict);
     AddIA2TextProperties(node, dict);
     AddIA2ValueProperties(node, dict);
   }
@@ -657,6 +675,60 @@ void AccessibilityTreeFormatterWin::AddIA2TableProperties(
   LONG table_columns;
   if (SUCCEEDED(ia2table->get_nColumns(&table_columns)))
     dict->SetInteger("table_columns", table_columns);
+}
+
+static base::string16 ProcessAccessiblesArray(IUnknown** accessibles,
+                                              LONG num_accessibles) {
+  base::string16 related_accessibles_string;
+  if (num_accessibles <= 0)
+    return related_accessibles_string;
+
+  base::win::ScopedVariant variant_self(CHILDID_SELF);
+
+  for (int index = 0; index < num_accessibles; index++) {
+    related_accessibles_string += index > 0 ? L"," : L"<";
+    Microsoft::WRL::ComPtr<IUnknown> unknown = accessibles[index];
+    Microsoft::WRL::ComPtr<IAccessible> accessible;
+    if (SUCCEEDED(unknown.CopyTo(accessible.GetAddressOf()))) {
+      base::win::ScopedBstr temp_bstr;
+      if (S_OK == accessible->get_accName(variant_self, temp_bstr.Receive()))
+        related_accessibles_string += temp_bstr;
+      else
+        related_accessibles_string += L"no name";
+    }
+  }
+
+  return related_accessibles_string + L">";
+}
+
+void AccessibilityTreeFormatterWin::AddIA2TableCellProperties(
+    const Microsoft::WRL::ComPtr<IAccessible> node,
+    base::DictionaryValue* dict) {
+  Microsoft::WRL::ComPtr<IAccessibleTableCell> ia2cell;
+  if (S_OK != QueryIAccessibleTableCell(node.Get(), ia2cell.GetAddressOf()))
+    return;  // No IA2Text, we are finished with this node.
+
+  LONG n_row_header_cells;
+  IUnknown** row_headers;
+  if (SUCCEEDED(
+          ia2cell->get_rowHeaderCells(&row_headers, &n_row_header_cells)) &&
+      n_row_header_cells > 0) {
+    base::string16 accessibles_desc =
+        ProcessAccessiblesArray(row_headers, n_row_header_cells);
+    CoTaskMemFree(row_headers);  // Free the array manually.
+    dict->SetString("row_headers", accessibles_desc);
+  }
+
+  LONG n_column_header_cells;
+  IUnknown** column_headers;
+  if (SUCCEEDED(ia2cell->get_columnHeaderCells(&column_headers,
+                                               &n_column_header_cells)) &&
+      n_column_header_cells > 0) {
+    base::string16 accessibles_desc =
+        ProcessAccessiblesArray(column_headers, n_column_header_cells);
+    CoTaskMemFree(column_headers);  // Free the array manually.
+    dict->SetString("column_headers", accessibles_desc);
+  }
 }
 
 void AccessibilityTreeFormatterWin::AddIA2TextProperties(
