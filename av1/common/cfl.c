@@ -245,7 +245,8 @@ static void cfl_subtract_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
       }
       int avg_q3 = (sum_q3 + (1 << (num_pel_log2 - 1))) >> num_pel_log2;
       // Loss is never more than 1/2 (in Q3)
-      assert(abs((avg_q3 << num_pel_log2) - sum_q3) <= 1 << num_pel_log2 >> 1);
+      assert(abs((avg_q3 * (1 << num_pel_log2)) - sum_q3) <=
+             1 << num_pel_log2 >> 1);
 
       tx_pred_buf_q3 = pred_buf_q3;
       for (int t_j = 0; t_j < tx_height; t_j++) {
