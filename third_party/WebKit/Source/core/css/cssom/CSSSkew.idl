@@ -8,7 +8,8 @@
 [
     Constructor(CSSNumericValue ax, CSSNumericValue ay),
     Exposed=(Window,PaintWorklet),
-    RuntimeEnabled=CSSTypedOM
+    RuntimeEnabled=CSSTypedOM,
+    RaisesException=Constructor
 ] interface CSSSkew : CSSTransformComponent {
     [RaisesException=Setter] attribute CSSNumericValue ax;
     [RaisesException=Setter] attribute CSSNumericValue ay;
