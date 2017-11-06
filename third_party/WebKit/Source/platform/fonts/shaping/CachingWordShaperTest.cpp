@@ -293,6 +293,25 @@ TEST_F(CachingWordShaperTest, SegmentEmojiExtraZWJPrefix) {
   ASSERT_FALSE(iterator.Next(&word_result));
 }
 
+TEST_F(CachingWordShaperTest, SegmentEmojiSubdivisionFlags) {
+  // Subdivision flags for Wales, Scotland, England.
+  const UChar kStr[] = {0xD83C, 0xDFF4, 0xDB40, 0xDC67, 0xDB40, 0xDC62, 0xDB40,
+                        0xDC77, 0xDB40, 0xDC6C, 0xDB40, 0xDC73, 0xDB40, 0xDC7F,
+                        0xD83C, 0xDFF4, 0xDB40, 0xDC67, 0xDB40, 0xDC62, 0xDB40,
+                        0xDC73, 0xDB40, 0xDC63, 0xDB40, 0xDC74, 0xDB40, 0xDC7F,
+                        0xD83C, 0xDFF4, 0xDB40, 0xDC67, 0xDB40, 0xDC62, 0xDB40,
+                        0xDC65, 0xDB40, 0xDC6E, 0xDB40, 0xDC67, 0xDB40, 0xDC7F};
+  TextRun text_run(kStr, ARRAY_SIZE(kStr));
+
+  scoped_refptr<const ShapeResult> word_result;
+  CachingWordShapeIterator iterator(cache.get(), text_run, &font);
+
+  ASSERT_TRUE(iterator.Next(&word_result));
+  EXPECT_EQ(42u, word_result->NumCharacters());
+
+  ASSERT_FALSE(iterator.Next(&word_result));
+}
+
 TEST_F(CachingWordShaperTest, SegmentCJKCommon) {
   const UChar kStr[] = {0xFF08,  // FULLWIDTH LEFT PARENTHESIS (script=common)
                         0xFF08,  // FULLWIDTH LEFT PARENTHESIS (script=common)

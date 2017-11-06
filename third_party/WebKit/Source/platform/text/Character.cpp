@@ -232,6 +232,14 @@ bool Character::CanReceiveTextEmphasis(UChar32 c) {
   return true;
 }
 
+bool Character::IsEmojiFlagSequenceTag(UChar32 c) {
+  // Only allow valid sequences from
+  // http://www.unicode.org/reports/tr51/proposed.html#valid-emoji-tag-sequences
+  return (c >= kTagDigitZero && c <= kTagDigitNine) ||
+         (c >= kTagLatinSmallLetterA && c <= kTagLatinSmallLetterZ) ||
+         c == kCancelTag;
+}
+
 template <typename CharacterType>
 static inline String NormalizeSpacesInternal(const CharacterType* characters,
                                              unsigned length) {
