@@ -27,9 +27,11 @@ import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.test.util.Coordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.TimeoutException;
 
@@ -68,6 +70,8 @@ public class VrShellControllerInputTest {
         EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
         final ContentViewCore cvc =
                 mVrTestRule.getActivity().getActivityTab().getActiveContentViewCore();
+        final WebContents wc = mVrTestRule.getActivity().getActivityTab().getWebContents();
+        Coordinates coord = Coordinates.createFor(wc);
         controller.recenterView();
 
         // Wait for the page to be scrollable
@@ -80,7 +84,7 @@ public class VrShellControllerInputTest {
         }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
 
         // Test that scrolling down works
-        int startScrollPoint = cvc.getNativeScrollYForTest();
+        int startScrollPoint = coord.getScrollXPixInt();
         // Arbitrary, but valid values to scroll smoothly
         int scrollSteps = 20;
         int scrollSpeed = 60;
@@ -88,25 +92,25 @@ public class VrShellControllerInputTest {
         // We need this second scroll down, otherwise the horizontal scrolling becomes flaky
         // TODO(bsheedy): Figure out why this is the case
         controller.scroll(EmulatedVrController.ScrollDirection.DOWN, scrollSteps, scrollSpeed);
-        int endScrollPoint = cvc.getNativeScrollYForTest();
+        int endScrollPoint = coord.getScrollYPixInt();
         Assert.assertTrue("Controller was able to scroll down", startScrollPoint < endScrollPoint);
 
         // Test that scrolling up works
         startScrollPoint = endScrollPoint;
         controller.scroll(EmulatedVrController.ScrollDirection.UP, scrollSteps, scrollSpeed);
-        endScrollPoint = cvc.getNativeScrollYForTest();
+        endScrollPoint = coord.getScrollYPixInt();
         Assert.assertTrue("Controller was able to scroll up", startScrollPoint > endScrollPoint);
 
         // Test that scrolling right works
-        startScrollPoint = cvc.getNativeScrollXForTest();
+        startScrollPoint = coord.getScrollXPixInt();
         controller.scroll(EmulatedVrController.ScrollDirection.RIGHT, scrollSteps, scrollSpeed);
-        endScrollPoint = cvc.getNativeScrollXForTest();
+        endScrollPoint = coord.getScrollXPixInt();
         Assert.assertTrue("Controller was able to scroll right", startScrollPoint < endScrollPoint);
 
         // Test that scrolling left works
         startScrollPoint = endScrollPoint;
         controller.scroll(EmulatedVrController.ScrollDirection.LEFT, scrollSteps, scrollSpeed);
-        endScrollPoint = cvc.getNativeScrollXForTest();
+        endScrollPoint = coord.getScrollXPixInt();
         Assert.assertTrue("Controller was able to scroll left", startScrollPoint > endScrollPoint);
     }
 

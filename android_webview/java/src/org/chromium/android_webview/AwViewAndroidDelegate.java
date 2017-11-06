@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.display.DisplayAndroid;
 
@@ -37,7 +36,7 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
     private final Map<View, Position> mAnchorViews = new LinkedHashMap<>();
 
     private final AwContentsClient mContentsClient;
-    private final RenderCoordinates mRenderCoordinates;
+    private final AwScrollOffsetManager mScrollManager;
 
     /**
      * Represents the position of an anchor view.
@@ -64,10 +63,10 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
 
     @VisibleForTesting
     public AwViewAndroidDelegate(ViewGroup containerView, AwContentsClient contentsClient,
-            RenderCoordinates renderCoordinates) {
+            AwScrollOffsetManager scrollManager) {
         mContainerView = containerView;
         mContentsClient = contentsClient;
-        mRenderCoordinates = renderCoordinates;
+        mScrollManager = scrollManager;
     }
 
     @Override
@@ -124,13 +123,9 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
             super.setViewPosition(anchorView, x, y, width, height, leftMargin, topMargin);
             return;
         }
-        // This fixes the offset due to a difference in
-        // scrolling model of WebView vs. Chrome.
-        // TODO(sgurun) fix this to use mContainerViewAtCreation.getScroll[X/Y]()
-        // as it naturally accounts for scroll differences between
-        // these models.
-        leftMargin += mRenderCoordinates.getScrollXPixInt();
-        topMargin += mRenderCoordinates.getScrollYPixInt();
+        // This fixes the offset due to a difference in scrolling model of WebView vs. Chrome.
+        leftMargin += mScrollManager.getScrollY();
+        topMargin += mScrollManager.getScrollY();
 
         android.widget.AbsoluteLayout.LayoutParams lp =
                 new android.widget.AbsoluteLayout.LayoutParams(

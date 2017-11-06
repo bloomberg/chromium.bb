@@ -103,8 +103,8 @@ public class PopupZoomerTest {
                 Context context = mActivityTestRule.getActivity();
                 WebContents webContents = mActivityTestRule.getContentViewCore().getWebContents();
                 mContentViewCore = new ContentViewCore(context, "");
-                mContentViewCore.setSelectionPopupControllerForTesting(new SelectionPopupController(
-                        context, null, webContents, null, mContentViewCore.getRenderCoordinates()));
+                mContentViewCore.setSelectionPopupControllerForTesting(
+                        new SelectionPopupController(context, null, webContents, null));
                 ViewGroup containerView = mActivityTestRule.getContentViewCore().getContainerView();
                 mContentViewCore.setImeAdapterForTest(new ImeAdapter(webContents, containerView,
                         new TestInputMethodManagerWrapper(mContentViewCore)));

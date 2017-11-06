@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.content.browser.test.util.Coordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -87,17 +88,14 @@ public class PrerenderTestHelper {
      */
     public static ExternalPrerenderHandler prerenderUrl(final String testUrl, Tab tab) {
         final Tab currentTab = tab;
-
+        final Coordinates coord = Coordinates.createFor(currentTab.getWebContents());
         ExternalPrerenderHandler prerenderHandler = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<ExternalPrerenderHandler>() {
                     @Override
                     public ExternalPrerenderHandler call() throws Exception {
                         ExternalPrerenderHandler prerenderHandler = new ExternalPrerenderHandler();
-                        Rect bounds = new Rect(
-                                0, 0, currentTab.getContentViewCore().getRenderCoordinates()
-                                        .getContentWidthPixInt(),
-                                currentTab.getContentViewCore().getRenderCoordinates()
-                                        .getContentHeightPixInt());
+                        Rect bounds = new Rect(0, 0, coord.getContentWidthPixInt(),
+                                coord.getContentHeightPixInt());
                         boolean didPrerender =
                                 prerenderHandler.addPrerender(currentTab.getProfile(),
                                         currentTab.getWebContents(), testUrl, null, bounds, true)

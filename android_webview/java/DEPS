@@ -19,7 +19,6 @@ include_rules = [
   "!content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java",
   "!content/public/android/java/src/org/chromium/content/browser/ContentViewStatics.java",
   "!content/public/android/java/src/org/chromium/content/browser/PositionObserver.java",
-  "!content/public/android/java/src/org/chromium/content/browser/RenderCoordinates.java",
   "!content/public/android/java/src/org/chromium/content/browser/SmartClipProvider.java",
   "!content/public/android/java/src/org/chromium/content/browser/ViewPositionObserver.java",
   "!content/public/android/java/src/org/chromium/content/browser/input/HandleViewResources.java",

@@ -22,6 +22,8 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omaha.VersionNumberGetter;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content.browser.test.util.Coordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -191,7 +193,7 @@ public class ApplicationTestUtils {
     }
 
     /**
-     * Waits till the ContentViewCore receives the expected page scale factor
+     * Waits till the WebContents receives the expected page scale factor
      * from the compositor and asserts that this happens.
      *
      * Proper use of this function requires waiting for a page scale factor that isn't 1.0f because
@@ -202,9 +204,11 @@ public class ApplicationTestUtils {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                if (activity.getCurrentContentViewCore() == null) return false;
+                Tab tab = activity.getActivityTab();
+                if (tab == null) return false;
 
-                float scale = activity.getCurrentContentViewCore().getPageScaleFactor();
+                Coordinates coord = Coordinates.createFor(tab.getWebContents());
+                float scale = coord.getPageScaleFactor();
                 updateFailureReason(
                         "Expecting scale factor of: " + expectedScale + ", got: " + scale);
                 return Math.abs(scale - expectedScale) < FLOAT_EPSILON;
