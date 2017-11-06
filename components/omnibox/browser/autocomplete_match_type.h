@@ -17,6 +17,7 @@ struct AutocompleteMatchType {
   // Automatically generate a corresponding Java enum:
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.omnibox
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: OmniboxSuggestionType
+  // clang-format off
   enum Type {
     URL_WHAT_YOU_TYPED    = 0,  // The input as a URL.
     HISTORY_URL           = 1,  // A past page whose URL contains the input.
@@ -54,8 +55,11 @@ struct AutocompleteMatchType {
     PHYSICAL_WEB                = 21,  // A Physical Web nearby URL.
     PHYSICAL_WEB_OVERFLOW       = 22,  // An item representing multiple
                                        // Physical Web nearby URLs.
+    TAB_SEARCH                  = 23,  // A suggested open tab, based on its
+                                       // URL or title, via HQP.
     NUM_TYPES,
   };
+  // clang-format on
 
   // Converts |type| to a string representation. Used in logging.
   static std::string ToString(AutocompleteMatchType::Type type);

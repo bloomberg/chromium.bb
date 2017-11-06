@@ -91,6 +91,8 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
     template_url_service_ = std::move(service);
   }
 
+  bool IsTabOpenWithURL(const GURL& url) override { return false; }
+
  private:
   std::unique_ptr<ContextualSuggestionsService> contextual_suggestions_service_;
   std::unique_ptr<TemplateURLService> template_url_service_;

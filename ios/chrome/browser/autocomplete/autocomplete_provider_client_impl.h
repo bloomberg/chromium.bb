@@ -62,6 +62,7 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
   void PrefetchImage(const GURL& url) override;
   void OnAutocompleteControllerResultReady(
       AutocompleteController* controller) override;
+  bool IsTabOpenWithURL(const GURL& url) override;
 
  private:
   ios::ChromeBrowserState* browser_state_;
