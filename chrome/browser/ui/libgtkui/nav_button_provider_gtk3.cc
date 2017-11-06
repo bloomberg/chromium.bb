@@ -30,9 +30,8 @@ const char* ButtonStyleClassFromButtonType(
     case chrome::FrameButtonDisplayType::kMinimize:
       return "minimize";
     case chrome::FrameButtonDisplayType::kMaximize:
-      return "maximize";
     case chrome::FrameButtonDisplayType::kRestore:
-      return "restore";
+      return "maximize";
     case chrome::FrameButtonDisplayType::kClose:
       return "close";
     default:
