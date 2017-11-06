@@ -128,6 +128,7 @@ def main(argv):
         '--exclude=ssh_keys',
         '--exclude=contrib',
         '--exclude=.git',
+        '--exclude=venv',
     ]
     cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(chromite_dir))
 

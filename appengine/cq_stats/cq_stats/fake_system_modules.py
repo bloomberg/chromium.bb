@@ -21,11 +21,28 @@ import sys
 
 class Fake(object):
   """A fake class that does nothing."""
-  pass
+
+  def __call__(self, *args, **kwargs):
+    """Allow arbitrary calls, doing nothing."""
+
+  def __iter__(self):
+    return self
+
+  def next(self):
+    """All iterations are 0 lengths."""
+    raise StopIteration()
+
+  def __getattr__(self, key):
+    return Fake()
+
+  def __hasattr__(self, key):
+    return True
+
 
 _FORBIDDEN_MODULES = (
     'ctypes',
     'ctypes.util',
+    'google.protobuf',
     'multiprocessing',
     'multiprocessing.managers',
     'pwd',
@@ -35,6 +52,9 @@ _FORBIDDEN_MODULES = (
 
 for m in _FORBIDDEN_MODULES:
   sys.modules[m] = Fake()
+
+import google
+google.protobuf = Fake()
 
 sys.modules['subprocess'].Popen = Fake
 sys.modules['multiprocessing'].Process = Fake
@@ -64,3 +84,8 @@ fake_signal.signal = Fake()
 fake_signal.SIGUSR1 = 30
 fake_signal.SIGHUP = 1
 sys.modules['signal'] = fake_signal
+
+fake_pkg_resources = Fake()
+fake_pkg_resources.declare_namespace = Fake()
+fake_pkg_resources.fixup_namespace_packages = Fake()
+sys.modules['pkg_resources'] = fake_pkg_resources
