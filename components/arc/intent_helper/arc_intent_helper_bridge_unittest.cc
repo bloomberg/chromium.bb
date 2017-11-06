@@ -300,11 +300,19 @@ TEST_F(ArcIntentHelperTest, TestOnOpenUrl_ChromeScheme) {
   EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
 }
 
-// Tests that OnOpenChromeSettingsMultideviceUrl opens the multidevice settings
-// section in the Chrome browser.
-TEST_F(ArcIntentHelperTest, TestOnOpenChromeSettingsMultideviceUrl) {
-  instance_->OnOpenChromeSettingsMultideviceUrl();
-  EXPECT_EQ(GURL(ArcIntentHelperBridge::kMultideviceSettingsUrl),
+// Tests that OnOpenChromeSettings opens the specified settings section in the
+// Chrome browser.
+TEST_F(ArcIntentHelperTest, TestOnOpenChromeSettings) {
+  instance_->OnOpenChromeSettings(mojom::SettingsPage::MAIN);
+  EXPECT_EQ(GURL("chrome://settings"),
+            test_open_url_delegate_->TakeLastOpenedUrl());
+
+  instance_->OnOpenChromeSettings(mojom::SettingsPage::MULTIDEVICE);
+  EXPECT_EQ(GURL("chrome://settings/multidevice"),
+            test_open_url_delegate_->TakeLastOpenedUrl());
+
+  instance_->OnOpenChromeSettings(mojom::SettingsPage::WIFI);
+  EXPECT_EQ(GURL("chrome://settings/networks/?type=WiFi"),
             test_open_url_delegate_->TakeLastOpenedUrl());
 }
 
