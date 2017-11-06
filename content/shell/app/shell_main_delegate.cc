@@ -241,6 +241,10 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     media::RemoveProprietaryMediaTypesAndCodecsForTests();
 #endif
 
+    // Always run with fake media devices.
+    command_line.AppendSwitch(switches::kUseFakeUIForMediaStream);
+    command_line.AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+
     if (!BlinkTestPlatformInitialize()) {
       *exit_code = 1;
       return true;

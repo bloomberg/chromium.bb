@@ -65,7 +65,10 @@ function onStreamActive() {
 function gotStream3(s) {
     stream3 = s;
     stream1.onactive = onStreamActive;
-    tryAddTrack(stream1, stream3.getAudioTracks()[0]);
+    // onstreamactive doesn't work any more, so this test makes no more sense.
+    // crbug.com/781716
+    // tryAddTrack(stream1, stream3.getAudioTracks()[0]);
+    finishJSTest();
 }
 
 function gotStream2(s) {

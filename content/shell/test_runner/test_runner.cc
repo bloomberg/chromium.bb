@@ -25,7 +25,6 @@
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/test_runner/mock_web_document_subresource_filter.h"
 #include "content/shell/test_runner/mock_web_speech_recognizer.h"
-#include "content/shell/test_runner/mock_web_user_media_client.h"
 #include "content/shell/test_runner/pixel_dump.h"
 #include "content/shell/test_runner/spell_check_client.h"
 #include "content/shell/test_runner/test_common.h"
@@ -2309,12 +2308,6 @@ void TestRunner::SetMockDeviceOrientation(bool has_alpha,
 
 MockScreenOrientationClient* TestRunner::getMockScreenOrientationClient() {
   return mock_screen_orientation_client_.get();
-}
-
-MockWebUserMediaClient* TestRunner::getMockWebUserMediaClient() {
-  if (!user_media_client_.get())
-    user_media_client_.reset(new MockWebUserMediaClient(delegate_));
-  return user_media_client_.get();
 }
 
 MockWebSpeechRecognizer* TestRunner::getMockWebSpeechRecognizer() {

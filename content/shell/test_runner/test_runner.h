@@ -47,7 +47,6 @@ class MockContentSettingsClient;
 class MockCredentialManagerClient;
 class MockScreenOrientationClient;
 class MockWebSpeechRecognizer;
-class MockWebUserMediaClient;
 class SpellCheckClient;
 class TestInterfaces;
 class TestRunnerForSpecificView;
@@ -106,7 +105,6 @@ class TestRunner : public WebTestRunner {
   std::string GetAcceptLanguages() const;
   bool shouldStayOnPageAfterHandlingBeforeUnload() const;
   MockScreenOrientationClient* getMockScreenOrientationClient();
-  MockWebUserMediaClient* getMockWebUserMediaClient();
   MockWebSpeechRecognizer* getMockWebSpeechRecognizer();
   bool isPrinting() const;
   bool shouldDumpAsCustomText() const;
@@ -627,7 +625,6 @@ class TestRunner : public WebTestRunner {
   std::unique_ptr<MockCredentialManagerClient> credential_manager_client_;
   std::unique_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;
   std::unique_ptr<MockWebSpeechRecognizer> speech_recognizer_;
-  std::unique_ptr<MockWebUserMediaClient> user_media_client_;
   std::unique_ptr<SpellCheckClient> spellcheck_;
 
   // Number of currently active color choosers.

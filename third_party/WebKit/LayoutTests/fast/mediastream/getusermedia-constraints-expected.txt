@@ -1,0 +1,17 @@
+CONSOLE WARNING: line 34: Unknown constraint named valid_but_unsupported_1 rejected
+This is a testharness.js-based test.
+PASS getUserMedia() without any media types should fail
+PASS getUserMedia() with audio=true should succeed
+PASS getUserMedia() with unsupported mandatory constraint should fail
+PASS getUserMedia() with empty constraints (neither mandatory nor optional) should fail with Error
+PASS Constraint with unsupported name gets ignored
+PASS Constraint with exact Long value should be parsed
+PASS Constraint with Long naked value should be parsed
+PASS Constraint with boolean value should be parsed
+PASS Constraint with boolean naked value should be parsed
+FAIL Constraint with string value should work on exact with array assert_equals: expected "Error" but got "ConstraintNotSatisfiedError"
+FAIL Constraint with exact string value should work assert_equals: expected "Error" but got "ConstraintNotSatisfiedError"
+PASS Constraint with naked string value should be parsed
+PASS Using both mandatory and height should give TypeError
+Harness: the test ran to completion.
+

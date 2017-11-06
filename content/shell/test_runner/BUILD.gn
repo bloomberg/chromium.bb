@@ -54,8 +54,6 @@ component("test_runner") {
     "mock_web_speech_recognizer.h",
     "mock_web_theme_engine.cc",
     "mock_web_theme_engine.h",
-    "mock_web_user_media_client.cc",
-    "mock_web_user_media_client.h",
     "pixel_dump.cc",
     "pixel_dump.h",
     "spell_check_client.cc",

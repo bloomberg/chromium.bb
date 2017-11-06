@@ -15,7 +15,6 @@
 #include "content/shell/test_runner/event_sender.h"
 #include "content/shell/test_runner/mock_color_chooser.h"
 #include "content/shell/test_runner/mock_screen_orientation_client.h"
-#include "content/shell/test_runner/mock_web_user_media_client.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_plugin.h"
@@ -382,10 +381,6 @@ void WebFrameTestClient::ShowContextMenu(
   delegate_->GetWebWidgetTestProxyBase(web_frame_test_proxy_base_->web_frame())
       ->event_sender()
       ->SetContextMenuData(context_menu_data);
-}
-
-blink::WebUserMediaClient* WebFrameTestClient::UserMediaClient() {
-  return test_runner()->getMockWebUserMediaClient();
 }
 
 void WebFrameTestClient::DownloadURL(const blink::WebURLRequest& request,
