@@ -14,8 +14,17 @@ namespace blink {
 
 class StyleSheetContents;
 
-// A specialization of Keyframe that associates user specified keyframe
-// properties with either CSS properties or SVG attributes.
+// An implementation of Keyframe used for CSS Animations, web-animations, and
+// the HTML <marquee> element.
+//
+// A StringKeyframe instance supports an arbitrary number of (property, value)
+// pairs. The properties can be CSS properties or SVG attributes, mapping to
+// CSSValue or plain String values respectively. CSS properties added to a
+// StringKeyframe are expanded to shorthand and de-duplicated, with newer
+// properties replacing older ones. SVG attributes are similarly de-duplicated.
+//
+// TODO(smcgruer): By the spec, a StringKeyframe should not de-duplicate or
+// expand shorthand properties; that is done for computed keyframes.
 class CORE_EXPORT StringKeyframe : public Keyframe {
  public:
   static scoped_refptr<StringKeyframe> Create() {
