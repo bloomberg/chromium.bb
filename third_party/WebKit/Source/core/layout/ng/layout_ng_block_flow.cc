@@ -55,6 +55,8 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
 
   // This object has already been positioned in legacy layout by our containing
   // block. Copy the position and place the fragment.
+  // TODO(crbug.com/781241): LogicalLeft() is not calculated by the
+  // containing block until after our layout.
   const LayoutBlock* containing_block = ContainingBlock();
   NGPhysicalOffset physical_offset;
   if (containing_block) {
