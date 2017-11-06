@@ -13,6 +13,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol SyncPresenter;
 
 namespace ios {
 class ChromeBrowserState;
@@ -57,6 +58,7 @@ class ChromeBrowserState;
 @property(nonatomic, unsafe_unretained) id<TabSwitcherPanelControllerDelegate>
     delegate;
 @property(nonatomic, readonly) TabSwitcherSessionType sessionType;
+@property(nonatomic, readonly, weak) id<SyncPresenter> presenter;
 @property(nonatomic, readonly, weak) id<ApplicationCommands, BrowserCommands>
     dispatcher;
 
@@ -67,6 +69,7 @@ class ChromeBrowserState;
         forLocalSessionOfType:(TabSwitcherSessionType)type
                     withCache:(TabSwitcherCache*)cache
                  browserState:(ios::ChromeBrowserState*)browserState
+                    presenter:(id<SyncPresenter>)presenter
                    dispatcher:
                        (id<ApplicationCommands, BrowserCommands>)dispatcher;
 
@@ -75,6 +78,7 @@ class ChromeBrowserState;
 - (instancetype)initWithModel:(TabSwitcherModel*)model
      forDistantSessionWithTag:(std::string const&)sessionTag
                  browserState:(ios::ChromeBrowserState*)browserState
+                    presenter:(id<SyncPresenter>)presenter
                    dispatcher:
                        (id<ApplicationCommands, BrowserCommands>)dispatcher;
 

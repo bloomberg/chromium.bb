@@ -28,10 +28,12 @@
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_off_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_on_no_sessions_view.h"
+#import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_cache.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_header_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_model.h"
@@ -87,7 +89,8 @@ enum class SnapshotViewOption {
 
 }  // namespace
 
-@interface TabSwitcherController ()<TabSwitcherModelDelegate,
+@interface TabSwitcherController ()<SyncPresenter,
+                                    TabSwitcherModelDelegate,
                                     TabSwitcherViewDelegate,
                                     TabSwitcherHeaderViewDelegate,
                                     TabSwitcherHeaderViewDataSource,
@@ -219,6 +222,7 @@ enum class SnapshotViewOption {
         forLocalSessionOfType:TabSwitcherSessionType::REGULAR_SESSION
                     withCache:_cache
                  browserState:_browserState
+                    presenter:self
                    dispatcher:passableDispatcher];
     [_onTheRecordSession setDelegate:self];
     _offTheRecordSession = [[TabSwitcherPanelController alloc]
@@ -226,6 +230,7 @@ enum class SnapshotViewOption {
         forLocalSessionOfType:TabSwitcherSessionType::OFF_THE_RECORD_SESSION
                     withCache:_cache
                  browserState:_browserState
+                    presenter:self
                    dispatcher:passableDispatcher];
     [_offTheRecordSession setDelegate:self];
     [_tabSwitcherView addPanelView:[_offTheRecordSession view]
@@ -938,6 +943,7 @@ enum class SnapshotViewOption {
         [[TabSwitcherPanelController alloc] initWithModel:_tabSwitcherModel
                                  forDistantSessionWithTag:tag
                                              browserState:_browserState
+                                                presenter:self
                                                dispatcher:self.dispatcher];
     [panelController setDelegate:self];
     [_tabSwitcherView addPanelView:[panelController view]
@@ -992,6 +998,7 @@ enum class SnapshotViewOption {
     TabSwitcherPanelOverlayView* panelView =
         [[TabSwitcherPanelOverlayView alloc] initWithFrame:CGRectZero
                                               browserState:_browserState
+                                                 presenter:self
                                                 dispatcher:self.dispatcher];
     [panelView setOverlayType:PanelOverlayTypeFromSignInPanelsType(panelType)];
     [_tabSwitcherView addPanelView:panelView atIndex:kSignInPromoPanelIndex];
@@ -1201,6 +1208,24 @@ enum class SnapshotViewOption {
 - (void)tabSwitcherPanelControllerDidUpdateOverlayViewVisibility:
     (TabSwitcherPanelController*)tabSwitcherPanelController {
   [_tabSwitcherView updateOverlayButtonState];
+}
+
+#pragma mark - SyncPresenter
+
+- (void)showReauthenticateSignin {
+  [self.dispatcher
+      showSignin:[[ShowSigninCommand alloc]
+                     initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
+                           accessPoint:signin_metrics::AccessPoint::
+                                           ACCESS_POINT_UNKNOWN]];
+}
+
+- (void)showSyncSettings {
+  [self.dispatcher showSyncSettings];
+}
+
+- (void)showSyncPassphraseSettings {
+  [self.dispatcher showSyncPassphraseSettings];
 }
 
 @end
