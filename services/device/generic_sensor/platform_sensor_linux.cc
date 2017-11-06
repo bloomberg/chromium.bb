@@ -58,7 +58,7 @@ void PlatformSensorLinux::UpdatePlatformSensorReading(SensorReading reading) {
   old_values_ = reading;
   reading.raw.timestamp =
       (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-  UpdateSensorReading(reading);
+  UpdateSharedBufferAndNotifyClients(reading);
 }
 
 void PlatformSensorLinux::NotifyPlatformSensorError() {

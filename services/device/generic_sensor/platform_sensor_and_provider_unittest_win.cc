@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/win/iunknown_impl.h"
 #include "base/win/scoped_propvariant.h"
+#include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
 #include "services/device/generic_sensor/generic_sensor_consts.h"
 #include "services/device/generic_sensor/platform_sensor_provider_win.h"
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
@@ -25,7 +26,6 @@ using ::testing::Invoke;
 using ::testing::IsNull;
 using ::testing::NiceMock;
 using ::testing::NotNull;
-using ::testing::Return;
 using ::testing::WithArgs;
 
 namespace device {
@@ -383,33 +383,6 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
   scoped_refptr<PlatformSensor> platform_sensor_;
   // Inner run loop used to wait for async sensor creation callback.
   std::unique_ptr<base::RunLoop> run_loop_;
-};
-
-// Mock for PlatformSensor's client interface that is used to deliver
-// error and data changes notifications.
-class MockPlatformSensorClient : public PlatformSensor::Client {
- public:
-  MockPlatformSensorClient() = default;
-  explicit MockPlatformSensorClient(scoped_refptr<PlatformSensor> sensor)
-      : sensor_(sensor) {
-    if (sensor_)
-      sensor_->AddClient(this);
-
-    ON_CALL(*this, IsSuspended()).WillByDefault(Return(false));
-  }
-
-  ~MockPlatformSensorClient() override {
-    if (sensor_)
-      sensor_->RemoveClient(this);
-  }
-
-  // PlatformSensor::Client interface.
-  MOCK_METHOD1(OnSensorReadingChanged, void(mojom::SensorType type));
-  MOCK_METHOD0(OnSensorError, void());
-  MOCK_METHOD0(IsSuspended, bool());
-
- private:
-  scoped_refptr<PlatformSensor> sensor_;
 };
 
 // Tests that PlatformSensorManager returns null sensor when sensor

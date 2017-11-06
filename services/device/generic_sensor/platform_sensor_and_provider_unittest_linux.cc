@@ -501,11 +501,12 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckAmbientLightReadings) {
       sensor->GetMaximumSupportedFrequency());
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
   WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
-  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
   EXPECT_THAT(buffer->reading.als.value, sensor_value[0]);
+
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
 // Tests that Accelerometer readings are correctly converted.
@@ -541,7 +542,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
   WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
-  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
@@ -559,6 +559,8 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
   EXPECT_THAT(buffer->reading.accel.z,
               -scaling * (sensor_values[2] + kAccelerometerOffsetValue));
 #endif
+
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
 // Tests that LinearAcceleration sensor is successfully created and works.
@@ -592,7 +594,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckLinearAcceleration) {
   // iterations to isolate gravity properly.
   int kApproximateExpectedAcceleration = 6;
   WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
-  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
@@ -600,6 +601,8 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckLinearAcceleration) {
   EXPECT_THAT(buffer->reading.accel.y, 0.0);
   EXPECT_THAT(static_cast<int>(buffer->reading.accel.z),
               kApproximateExpectedAcceleration);
+
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
 // Tests that Gyroscope readings are correctly converted.
@@ -633,7 +636,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
   WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
-  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
@@ -651,6 +653,8 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
   EXPECT_THAT(buffer->reading.gyro.z,
               scaling * (sensor_values[2] + kGyroscopeOffsetValue));
 #endif
+
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
 // Tests that Magnetometer readings are correctly converted.
@@ -685,7 +689,6 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckMagnetometerReadingConversion) {
   PlatformSensorConfiguration configuration(10);
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
   WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
-  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
@@ -696,6 +699,8 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckMagnetometerReadingConversion) {
               scaling * (sensor_values[1] + kMagnetometerOffsetValue));
   EXPECT_THAT(buffer->reading.magn.z,
               scaling * (sensor_values[2] + kMagnetometerOffsetValue));
+
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
 // Tests that Ambient Light sensor client's OnSensorReadingChanged() is called
@@ -730,11 +735,11 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
 
   WaitOnSensorReadingChangedEvent(client.get(), sensor->GetType());
 
-  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
-
   SensorReadingSharedBuffer* buffer =
       static_cast<SensorReadingSharedBuffer*>(mapping.get());
   EXPECT_THAT(buffer->reading.als.value, sensor_value[0]);
+
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
 }  // namespace device

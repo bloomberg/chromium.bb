@@ -105,17 +105,21 @@ bool PlatformSensor::GetLatestReading(SensorReading* result) {
   return shared_buffer_reader_->GetReading(result);
 }
 
-void PlatformSensor::UpdateSensorReading(const SensorReading& reading) {
+void PlatformSensor::UpdateSharedBufferAndNotifyClients(
+    const SensorReading& reading) {
+  UpdateSharedBuffer(reading);
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&PlatformSensor::NotifySensorReadingChanged,
+                                    weak_factory_.GetWeakPtr()));
+}
+
+void PlatformSensor::UpdateSharedBuffer(const SensorReading& reading) {
   ReadingBuffer* buffer =
       static_cast<ReadingBuffer*>(shared_buffer_mapping_.get());
   auto& seqlock = buffer->seqlock.value();
   seqlock.WriteBegin();
   buffer->reading = reading;
   seqlock.WriteEnd();
-
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&PlatformSensor::NotifySensorReadingChanged,
-                                    weak_factory_.GetWeakPtr()));
 }
 
 void PlatformSensor::NotifySensorReadingChanged() {
@@ -145,6 +149,7 @@ bool PlatformSensor::UpdateSensorInternal(const ConfigMap& configurations) {
 
   if (!optimal_configuration) {
     StopSensor();
+    UpdateSharedBuffer(SensorReading());
     return true;
   }
 

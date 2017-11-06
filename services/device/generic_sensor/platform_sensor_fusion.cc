@@ -88,7 +88,7 @@ void PlatformSensorFusion::OnSensorReadingChanged(mojom::SensorType type) {
   }
 
   reading_ = reading;
-  UpdateSensorReading(reading_);
+  UpdateSharedBufferAndNotifyClients(reading_);
 }
 
 void PlatformSensorFusion::OnSensorError() {

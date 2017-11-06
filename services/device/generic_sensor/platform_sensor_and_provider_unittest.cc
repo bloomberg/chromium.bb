@@ -12,6 +12,7 @@
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::NiceMock;
 
 namespace device {
 
@@ -74,6 +75,36 @@ TEST_F(PlatformSensorProviderTest, ResourcesAreNotFreedOnPendingRequest) {
   provider_->CreateSensor(
       mojom::SensorType::AMBIENT_LIGHT,
       base::Bind([](scoped_refptr<PlatformSensor> s) { NOTREACHED(); }));
+}
+
+// This test verifies that when sensor is stopped, shared buffer contents are
+// filled with default values.
+TEST_F(PlatformSensorProviderTest, SharedBufferCleared) {
+  mojo::ScopedSharedBufferHandle handle = provider_->CloneSharedBufferHandle();
+  mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
+      sizeof(SensorReadingSharedBuffer),
+      SensorReadingSharedBuffer::GetOffset(mojom::SensorType::AMBIENT_LIGHT));
+
+  SensorReadingSharedBuffer* buffer =
+      static_cast<SensorReadingSharedBuffer*>(mapping.get());
+  EXPECT_THAT(buffer->reading.als.value, 0);
+
+  provider_->CreateSensor(
+      mojom::SensorType::AMBIENT_LIGHT,
+      base::Bind([](scoped_refptr<PlatformSensor> sensor) {
+        auto client =
+            base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
+        auto config = PlatformSensorConfiguration(10);
+
+        EXPECT_TRUE(sensor->StartListening(client.get(), config));
+        SensorReading reading;
+        EXPECT_TRUE(sensor->GetLatestReading(&reading));
+        EXPECT_THAT(reading.als.value, 10);
+
+        EXPECT_TRUE(sensor->StopListening(client.get(), config));
+        EXPECT_TRUE(sensor->GetLatestReading(&reading));
+        EXPECT_THAT(reading.als.value, 0);
+      }));
 }
 
 }  // namespace device
