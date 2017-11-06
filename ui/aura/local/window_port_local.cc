@@ -128,8 +128,7 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
   frame_sink->SetSurfaceChangedCallback(base::Bind(
       &WindowPortLocal::OnSurfaceChanged, weak_factory_.GetWeakPtr()));
   frame_sink_ = frame_sink->GetWeakPtr();
-  local_surface_id_ = local_surface_id_allocator_.GenerateId();
-  frame_sink->SetLocalSurfaceId(local_surface_id_);
+  AllocateLocalSurfaceId();
   if (window_->GetRootWindow())
     window_->layer()->GetCompositor()->AddFrameSink(frame_sink_id_);
   return std::move(frame_sink);
@@ -140,17 +139,16 @@ viz::SurfaceId WindowPortLocal::GetSurfaceId() const {
 }
 
 void WindowPortLocal::AllocateLocalSurfaceId() {
+  last_device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
+  last_size_ = window_->bounds().size();
   local_surface_id_ = local_surface_id_allocator_.GenerateId();
   if (frame_sink_)
     frame_sink_->SetLocalSurfaceId(local_surface_id_);
 }
 
 const viz::LocalSurfaceId& WindowPortLocal::GetLocalSurfaceId() {
-  if (!local_surface_id_.is_valid()) {
-    last_device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
-    last_size_ = window_->bounds().size();
-    local_surface_id_ = local_surface_id_allocator_.GenerateId();
-  }
+  if (!local_surface_id_.is_valid())
+    AllocateLocalSurfaceId();
   return local_surface_id_;
 }
 
