@@ -63,6 +63,7 @@ static int hash_block_size_to_index(int block_size) {
     case 16: return 2;
     case 32: return 3;
     case 64: return 4;
+    case 128: return 5;
     default: return -1;
   }
 }
@@ -306,9 +307,11 @@ int av1_hash_is_vertical_perfect(const YV12_BUFFER_CONFIG *picture,
 
 // global buffer for hash value calculation of a block
 // used only in av1_get_block_hash_value()
-static uint32_t hash_value_buffer[2][2][1024];  // [first hash/second hash]
-                                                // [two buffers used ping-pong]
-                                                // [num of 2x2 blocks in 64x64]
+#define AOM_BUFFER_SIZE_FOR_BLOCK_HASH (4096)
+// [first hash/second hash]
+// [two buffers used ping-pong]
+// [num of 2x2 blocks in 128x128]
+static uint32_t hash_value_buffer[2][2][AOM_BUFFER_SIZE_FOR_BLOCK_HASH];
 
 void av1_get_block_hash_value(uint8_t *y_src, int stride, int block_size,
                               uint32_t *hash_value1, uint32_t *hash_value2) {
@@ -325,7 +328,7 @@ void av1_get_block_hash_value(uint8_t *y_src, int stride, int block_size,
       int pos = (y_pos >> 1) * sub_block_in_width + (x_pos >> 1);
       get_pixels_in_1D_char_array_by_block_2x2(y_src + y_pos * stride + x_pos,
                                                stride, pixel_to_hash);
-
+      assert(pos < AOM_BUFFER_SIZE_FOR_BLOCK_HASH);
       hash_value_buffer[0][0][pos] = av1_get_crc_value(
           &crc_calculator1, pixel_to_hash, sizeof(pixel_to_hash));
       hash_value_buffer[1][0][pos] = av1_get_crc_value(
@@ -349,6 +352,10 @@ void av1_get_block_hash_value(uint8_t *y_src, int stride, int block_size,
       for (int x_pos = 0; x_pos < sub_block_in_width; x_pos++) {
         int srcPos = (y_pos << 1) * src_sub_block_in_width + (x_pos << 1);
 
+        assert(srcPos + 1 < AOM_BUFFER_SIZE_FOR_BLOCK_HASH);
+        assert(srcPos + src_sub_block_in_width + 1 <
+               AOM_BUFFER_SIZE_FOR_BLOCK_HASH);
+        assert(dst_pos < AOM_BUFFER_SIZE_FOR_BLOCK_HASH);
         to_hash[0] = hash_value_buffer[0][src_idx][srcPos];
         to_hash[1] = hash_value_buffer[0][src_idx][srcPos + 1];
         to_hash[2] =
@@ -378,3 +385,4 @@ void av1_get_block_hash_value(uint8_t *y_src, int stride, int block_size,
   *hash_value1 = (hash_value_buffer[0][dst_idx][0] & crc_mask) + add_value;
   *hash_value2 = hash_value_buffer[1][dst_idx][0];
 }
+#undef AOM_BUFFER_SIZE_FOR_BLOCK_HASH

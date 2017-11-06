@@ -4053,6 +4053,13 @@ static void encode_frame_internal(AV1_COMP *cpi) {
         &cm->cur_frame->hash_table, block_hash_values[1], is_block_same[1][2],
         pic_width, pic_height, 64);
 
+    av1_generate_block_hash_value(cpi->source, 128, block_hash_values[1],
+                                  block_hash_values[0], is_block_same[1],
+                                  is_block_same[0]);
+    av1_add_to_hash_map_by_row_with_precal_data(
+        &cm->cur_frame->hash_table, block_hash_values[0], is_block_same[0][2],
+        pic_width, pic_height, 128);
+
     for (k = 0; k < 2; k++) {
       for (j = 0; j < 2; j++) {
         aom_free(block_hash_values[k][j]);
