@@ -209,8 +209,8 @@ class CONTENT_EXPORT WebRTCInternals : public RenderProcessHostObserver,
   // For managing select file dialog.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   enum class SelectionType {
-    RtcEventLogs,
-    AudioDebugRecordings
+    kRtcEventLogs,
+    kAudioDebugRecordings
   } selection_type_;
 
   // Diagnostic audio recording state.
