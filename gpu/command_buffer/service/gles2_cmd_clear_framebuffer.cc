@@ -97,7 +97,7 @@ void ClearFramebufferResourceManager::Destroy() {
 
 void ClearFramebufferResourceManager::ClearFramebuffer(
     const gles2::GLES2Decoder* decoder,
-    const gfx::Size& framebuffer_size,
+    const gfx::Size& max_viewport_size,
     GLbitfield mask,
     GLfloat clear_color_red,
     GLfloat clear_color_green,
@@ -177,7 +177,7 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
   glDisable(GL_BLEND);
   glDisable(GL_POLYGON_OFFSET_FILL);
 
-  glViewport(0, 0, framebuffer_size.width(), framebuffer_size.height());
+  glViewport(0, 0, max_viewport_size.width(), max_viewport_size.height());
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
   decoder->RestoreAllAttributes();
