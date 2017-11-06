@@ -27,14 +27,14 @@ class CRYPTO_EXPORT Aead {
 
   void Init(const std::string* key);
 
-  bool Seal(const base::StringPiece& plaintext,
-            const base::StringPiece& nonce,
-            const base::StringPiece& additional_data,
+  bool Seal(base::StringPiece plaintext,
+            base::StringPiece nonce,
+            base::StringPiece additional_data,
             std::string* ciphertext) const;
 
-  bool Open(const base::StringPiece& ciphertext,
-            const base::StringPiece& nonce,
-            const base::StringPiece& additional_data,
+  bool Open(base::StringPiece ciphertext,
+            base::StringPiece nonce,
+            base::StringPiece additional_data,
             std::string* plaintext) const;
 
   size_t KeyLength() const;
