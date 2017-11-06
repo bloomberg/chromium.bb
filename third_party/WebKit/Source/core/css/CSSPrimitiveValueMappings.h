@@ -661,21 +661,6 @@ inline ETableLayout CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline TextDecorationSkip CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueObjects:
-      return TextDecorationSkip::kObjects;
-    case CSSValueInk:
-      return TextDecorationSkip::kInk;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return TextDecorationSkip::kObjects;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EVerticalAlign a)
     : CSSValue(kIdentifierClass) {
   switch (a) {

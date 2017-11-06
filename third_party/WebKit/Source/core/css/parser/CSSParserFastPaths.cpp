@@ -683,6 +683,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueSolid || value_id == CSSValueDouble ||
              value_id == CSSValueDotted || value_id == CSSValueDashed ||
              value_id == CSSValueWavy;
+    case CSSPropertyTextDecorationSkipInk:
+      return value_id == CSSValueAuto || value_id == CSSValueNone;
     case CSSPropertyTextJustify:
       DCHECK(RuntimeEnabledFeatures::CSS3TextEnabled());
       return value_id == CSSValueInterWord || value_id == CSSValueDistribute ||
@@ -923,6 +925,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyTextAnchor:
     case CSSPropertyTextCombineUpright:
     case CSSPropertyTextDecorationStyle:
+    case CSSPropertyTextDecorationSkipInk:
     case CSSPropertyTextJustify:
     case CSSPropertyTextOrientation:
     case CSSPropertyWebkitTextOrientation:

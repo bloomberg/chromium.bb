@@ -390,7 +390,7 @@
         fields_to_diff: ["color", "VisitedLinkColor", "text-decoration-line",
                 "text-decoration-style", "text-decoration-color",
                 "VisitedLinkTextDecorationColor", "TextEmphasisFill",
-                "text-underline-position", "text-decoration-skip", "AppliedTextDecorations"],
+                "text-underline-position", "text-decoration-skip-ink", "AppliedTextDecorations"],
         methods_to_diff: [
           {
             method: "HasSimpleUnderlineInternal()",

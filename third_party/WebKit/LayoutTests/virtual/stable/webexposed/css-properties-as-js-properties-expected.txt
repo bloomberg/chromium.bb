@@ -271,7 +271,7 @@ textCombineUpright
 textDecoration
 textDecorationColor
 textDecorationLine
-textDecorationSkip
+textDecorationSkipInk
 textDecorationStyle
 textIndent
 textOrientation

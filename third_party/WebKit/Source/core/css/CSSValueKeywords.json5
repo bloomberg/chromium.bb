@@ -598,10 +598,10 @@
     "ellipsis",
 
     //
-    // text-decoration-skip
+    // text-decoration-skip-ink
     //
-    "objects",
-    "ink",
+    // auto
+    // none
 
     //
     // -webkit-margin-collapse

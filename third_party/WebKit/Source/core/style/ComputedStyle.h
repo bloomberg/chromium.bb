@@ -804,10 +804,8 @@ class ComputedStyle : public ComputedStyleBase,
     return DataEquivalent(ShapeOutside(), other.ShapeOutside());
   }
 
-  // Text decoration properties.
-  // text-decoration-skip
-  static TextDecorationSkip InitialTextDecorationSkip() {
-    return TextDecorationSkip::kObjects;
+  static ETextDecorationSkipInk InitialTextDecorationSkipInk() {
+    return ETextDecorationSkipInk::kAuto;
   }
 
   // touch-action

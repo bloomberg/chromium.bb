@@ -1253,16 +1253,11 @@ static CSSValue* ValueForTextDecorationStyle(
   return CSSInitialValue::Create();
 }
 
-static CSSValue* ValueForTextDecorationSkip(
-    TextDecorationSkip text_decoration_skip) {
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (EnumHasFlags(text_decoration_skip, TextDecorationSkip::kObjects))
-    list->Append(*CSSIdentifierValue::Create(CSSValueObjects));
-  if (EnumHasFlags(text_decoration_skip, TextDecorationSkip::kInk))
-    list->Append(*CSSIdentifierValue::Create(CSSValueInk));
-
-  DCHECK(list->length());
-  return list;
+static CSSValue* ValueForTextDecorationSkipInk(
+    ETextDecorationSkipInk text_decoration_skip_ink) {
+  if (text_decoration_skip_ink == ETextDecorationSkipInk::kNone)
+    return CSSIdentifierValue::Create(CSSValueNone);
+  return CSSIdentifierValue::Create(CSSValueAuto);
 }
 
 static CSSValue* TouchActionFlagsToCSSValue(TouchAction touch_action) {
@@ -2985,8 +2980,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
                                         allow_visited_style);
     case CSSPropertyTextDecorationLine:
       return RenderTextDecorationFlagsToCSSValue(style.GetTextDecoration());
-    case CSSPropertyTextDecorationSkip:
-      return ValueForTextDecorationSkip(style.GetTextDecorationSkip());
+    case CSSPropertyTextDecorationSkipInk:
+      return ValueForTextDecorationSkipInk(style.TextDecorationSkipInk());
     case CSSPropertyTextDecorationStyle:
       return ValueForTextDecorationStyle(style.TextDecorationStyle());
     case CSSPropertyTextDecorationColor:

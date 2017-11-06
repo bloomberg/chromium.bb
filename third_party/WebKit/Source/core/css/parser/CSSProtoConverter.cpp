@@ -1092,7 +1092,7 @@ const std::string Converter::kPropertyLookupTable[] = {
     "clip-rule",
     "font-family",
     "scroll-snap-type",
-    "text-decoration-skip",
+    "text-decoration-skip-ink",
     "transition",
     "filter",
     "border-right-width",
