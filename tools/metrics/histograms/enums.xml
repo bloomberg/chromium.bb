@@ -20392,21 +20392,26 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="DataUse.MessageSize.AllServices.Downstream.Unknown.NotCellular"/>
   <int value="-1607339868"
       label="DataUse.MessageSize.AllServices.Upstream.Unknown.NotCellular"/>
+  <summary>
+    These numbers are the lower 32 bits of the hash of the metric name.
+  </summary>
+  <int value="-1459119846"
+      label="ServiceWorkerCache.Cache.Scheduler.QueueLength"/>
   <int value="-1390672863"
       label="DataUse.MessageSize.AllServices.Upstream.Background.NotCellular"/>
   <int value="-1286300074"
       label="Network.Shill.Wifi.ExpiredLeaseLengthSeconds"/>
+  <int value="-968816650"
+      label="PasswordManager.Android.PasswordExceptionEntry.Website"/>
   <int value="-847447887"
       label="DataUse.MessageSize.AllServices.Upstream.Foreground.NotCellular"/>
-  <summary>
-    These numbers are the lower 32 bits of the hash of the metric name.
-  </summary>
   <int value="-742109866" label="Stability.BrowserExitCodes"/>
   <int value="-657514887" label="DataUse.MessageSize.AllServices"/>
   <int value="-535820174"
       label="DataUse.MessageSize.AllServices.Downstream.Background.NotCellular"/>
   <int value="-355731177" label="UMA.SamplingRatePerMille"/>
   <int value="-141990989" label="DataUse.AllServices.Background"/>
+  <int value="-48200749" label="DiskCache.0.TotalIOTime"/>
   <int value="0" label="Missing hash value"/>
   <int value="149985012"
       label="DataUse.MessageSize.AllServices.Upstream.Unknown.Cellular"/>
@@ -20419,11 +20424,15 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="Network.Shill.Ethernet.LinkMonitorResponseTimeSample"/>
   <int value="662206917"
       label="Network.Shill.Ethernet.ExpiredLeaseLengthSeconds"/>
+  <int value="705114606"
+      label="PasswordManager.Android.PasswordCredentialEntry.Website"/>
   <int value="757405826"
       label="DataUse.MessageSize.AllServices.Upstream.Foreground.Cellular"/>
   <int value="1370064090"
       label="DataUse.MessageSize.AllServices.Upstream.Background.Cellular"/>
   <int value="1514844119" label="DataUse.Sync.Upload.Bytes"/>
+  <int value="1525608243"
+      label="PasswordManager.Android.PasswordCredentialEntry.Username"/>
   <int value="1753226325"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.Cellular"/>
   <int value="1977321258"
