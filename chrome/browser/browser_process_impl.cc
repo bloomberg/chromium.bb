@@ -209,8 +209,7 @@ rappor::RapporService* GetBrowserRapporService() {
 }
 
 BrowserProcessImpl::BrowserProcessImpl(
-    base::SequencedTaskRunner* local_state_task_runner,
-    const base::CommandLine& command_line)
+    base::SequencedTaskRunner* local_state_task_runner)
     : created_watchdog_thread_(false),
       created_browser_policy_connector_(false),
       created_profile_manager_(false),
@@ -236,13 +235,6 @@ BrowserProcessImpl::BrowserProcessImpl(
 #endif
 
   net_log_ = base::MakeUnique<net_log::ChromeNetLog>();
-
-  if (command_line.HasSwitch(switches::kLogNetLog)) {
-    net_log_->StartWritingToFile(
-        command_line.GetSwitchValuePath(switches::kLogNetLog),
-        GetNetCaptureModeFromCommandLine(command_line),
-        command_line.GetCommandLineString(), chrome::GetChannelString());
-  }
 
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kChromeSearchScheme);
@@ -1071,13 +1063,29 @@ void BrowserProcessImpl::CreateLocalState() {
                    net::HttpNetworkSession::NORMAL_SOCKET_POOL)));
 }
 
-void BrowserProcessImpl::PreCreateThreads() {
+void BrowserProcessImpl::PreCreateThreads(
+    const base::CommandLine& command_line) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // chrome-extension:// URLs are safe to request anywhere, but may only
   // commit (including in iframes) in extension processes.
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeIsolatedScheme(
       extensions::kExtensionScheme, true);
 #endif
+
+  if (command_line.HasSwitch(switches::kLogNetLog)) {
+    base::FilePath log_file =
+        command_line.GetSwitchValuePath(switches::kLogNetLog);
+    if (log_file.empty()) {
+      base::FilePath user_data_dir;
+      bool success =
+          base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+      DCHECK(success);
+      log_file = user_data_dir.AppendASCII("netlog.json");
+    }
+    net_log_->StartWritingToFile(
+        log_file, GetNetCaptureModeFromCommandLine(command_line),
+        command_line.GetCommandLineString(), chrome::GetChannelString());
+  }
 
   // Must be created before the IOThread.
   // TODO(mmenke): Once IOThread class is no longer needed (not the thread

@@ -280,6 +280,9 @@ extern const char kEnableMidiManagerDynamicInstantiationDescription[];
 extern const char kEnableNavigationTracingName[];
 extern const char kEnableNavigationTracingDescription[];
 
+extern const char kEnableNetworkLoggingToFileName[];
+extern const char kEnableNetworkLoggingToFileDescription[];
+
 extern const char kEnableNetworkServiceName[];
 extern const char kEnableNetworkServiceDescription[];
 

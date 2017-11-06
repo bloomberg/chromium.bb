@@ -3621,7 +3621,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-modern-media-controls",
      flag_descriptions::kUseModernMediaControlsName,
      flag_descriptions::kUseModernMediaControlsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(media::kUseModernMediaControls)}
+     FEATURE_VALUE_TYPE(media::kUseModernMediaControls)},
+
+    {"enable-network-logging-to-file",
+     flag_descriptions::kEnableNetworkLoggingToFileName,
+     flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
+     SINGLE_VALUE_TYPE(switches::kLogNetLog)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
