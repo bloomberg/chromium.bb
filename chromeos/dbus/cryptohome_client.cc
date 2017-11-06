@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -48,31 +49,16 @@ void FillIdentificationProtobuf(const cryptohome::Identification& id,
 // The CryptohomeClient implementation.
 class CryptohomeClientImpl : public CryptohomeClient {
  public:
-  CryptohomeClientImpl() : proxy_(NULL), weak_ptr_factory_(this) {}
+  CryptohomeClientImpl() : weak_ptr_factory_(this) {}
 
   // CryptohomeClient override.
-  void SetAsyncCallStatusHandlers(
-      const AsyncCallStatusHandler& handler,
-      const AsyncCallStatusWithDataHandler& data_handler) override {
-    async_call_status_handler_ = handler;
-    async_call_status_data_handler_ = data_handler;
+  void AddObserver(Observer* observer) override {
+    observer_list_.AddObserver(observer);
   }
 
   // CryptohomeClient override.
-  void ResetAsyncCallStatusHandlers() override {
-    async_call_status_handler_.Reset();
-    async_call_status_data_handler_.Reset();
-  }
-
-  // CryptohomeClient override.
-  void SetLowDiskSpaceHandler(const LowDiskSpaceHandler& handler) override {
-    low_disk_space_handler_ = handler;
-  }
-
-  // CryptohomeClient override.
-  void SetDircryptoMigrationProgressHandler(
-      const DircryptoMigrationProgessHandler& handler) override {
-    dircrypto_migration_progress_handler_ = handler;
+  void RemoveObserver(Observer* observer) override {
+    observer_list_.RemoveObserver(observer);
   }
 
   // CryptohomeClient override.
@@ -981,29 +967,29 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
     blocking_method_caller_.reset(new BlockingMethodCaller(bus, proxy_));
 
-    proxy_->ConnectToSignal(cryptohome::kCryptohomeInterface,
-                            cryptohome::kSignalAsyncCallStatus,
-                            base::Bind(&CryptohomeClientImpl::OnAsyncCallStatus,
-                                       weak_ptr_factory_.GetWeakPtr()),
-                            base::Bind(&CryptohomeClientImpl::OnSignalConnected,
-                                       weak_ptr_factory_.GetWeakPtr()));
     proxy_->ConnectToSignal(
-        cryptohome::kCryptohomeInterface,
-        cryptohome::kSignalAsyncCallStatusWithData,
-        base::Bind(&CryptohomeClientImpl::OnAsyncCallStatusWithData,
+        cryptohome::kCryptohomeInterface, cryptohome::kSignalAsyncCallStatus,
+        base::Bind(&CryptohomeClientImpl::AsyncCallStatusReceived,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&CryptohomeClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
-    proxy_->ConnectToSignal(cryptohome::kCryptohomeInterface,
-                            cryptohome::kSignalLowDiskSpace,
-                            base::Bind(&CryptohomeClientImpl::OnLowDiskSpace,
-                                       weak_ptr_factory_.GetWeakPtr()),
-                            base::Bind(&CryptohomeClientImpl::OnSignalConnected,
-                                       weak_ptr_factory_.GetWeakPtr()));
+    proxy_->ConnectToSignal(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kSignalAsyncCallStatusWithData,
+        base::Bind(&CryptohomeClientImpl::AsyncCallStatusWithDataReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CryptohomeClientImpl::OnSignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
+    proxy_->ConnectToSignal(
+        cryptohome::kCryptohomeInterface, cryptohome::kSignalLowDiskSpace,
+        base::Bind(&CryptohomeClientImpl::LowDiskSpaceReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CryptohomeClientImpl::OnSignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
     proxy_->ConnectToSignal(
         cryptohome::kCryptohomeInterface,
         cryptohome::kSignalDircryptoMigrationProgress,
-        base::Bind(&CryptohomeClientImpl::OnDircryptoMigrationProgress,
+        base::Bind(&CryptohomeClientImpl::DircryptoMigrationProgressReceived,
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&CryptohomeClientImpl::OnSignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -1190,7 +1176,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // Handles AsyncCallStatus signal.
-  void OnAsyncCallStatus(dbus::Signal* signal) {
+  void AsyncCallStatusReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     int async_id = 0;
     bool return_status = false;
@@ -1201,12 +1187,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    if (!async_call_status_handler_.is_null())
-      async_call_status_handler_.Run(async_id, return_status, return_code);
+    for (auto& observer : observer_list_)
+      observer.AsyncCallStatus(async_id, return_status, return_code);
   }
 
   // Handles AsyncCallStatusWithData signal.
-  void OnAsyncCallStatusWithData(dbus::Signal* signal) {
+  void AsyncCallStatusWithDataReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     int async_id = 0;
     bool return_status = false;
@@ -1218,30 +1204,26 @@ class CryptohomeClientImpl : public CryptohomeClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    if (!async_call_status_data_handler_.is_null()) {
-      std::string return_data(reinterpret_cast<const char*>(return_data_buffer),
-                              return_data_length);
-      async_call_status_data_handler_.Run(async_id, return_status, return_data);
-    }
+    std::string return_data(reinterpret_cast<const char*>(return_data_buffer),
+                            return_data_length);
+    for (auto& observer : observer_list_)
+      observer.AsyncCallStatusWithData(async_id, return_status, return_data);
   }
 
   // Handles LowDiskSpace signal.
-  void OnLowDiskSpace(dbus::Signal* signal) {
+  void LowDiskSpaceReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     uint64_t disk_free_bytes = 0;
     if (!reader.PopUint64(&disk_free_bytes)) {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    if (!low_disk_space_handler_.is_null())
-      low_disk_space_handler_.Run(disk_free_bytes);
+    for (auto& observer : observer_list_)
+      observer.LowDiskSpace(disk_free_bytes);
   }
 
   // Handles DircryptoMigrationProgess signal.
-  void OnDircryptoMigrationProgress(dbus::Signal* signal) {
-    if (dircrypto_migration_progress_handler_.is_null())
-      return;
-
+  void DircryptoMigrationProgressReceived(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     int status = 0;
     uint64_t current_bytes = 0, total_bytes = 0;
@@ -1250,9 +1232,11 @@ class CryptohomeClientImpl : public CryptohomeClient {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    dircrypto_migration_progress_handler_.Run(
-        static_cast<cryptohome::DircryptoMigrationStatus>(status),
-        current_bytes, total_bytes);
+    for (auto& observer : observer_list_) {
+      observer.DircryptoMigrationProgress(
+          static_cast<cryptohome::DircryptoMigrationStatus>(status),
+          current_bytes, total_bytes);
+    }
   }
 
   // Handles the result of signal connection setup.
@@ -1282,12 +1266,9 @@ class CryptohomeClientImpl : public CryptohomeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  dbus::ObjectProxy* proxy_;
+  dbus::ObjectProxy* proxy_ = nullptr;
+  base::ObserverList<Observer> observer_list_;
   std::unique_ptr<BlockingMethodCaller> blocking_method_caller_;
-  AsyncCallStatusHandler async_call_status_handler_;
-  AsyncCallStatusWithDataHandler async_call_status_data_handler_;
-  LowDiskSpaceHandler low_disk_space_handler_;
-  DircryptoMigrationProgessHandler dircrypto_migration_progress_handler_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

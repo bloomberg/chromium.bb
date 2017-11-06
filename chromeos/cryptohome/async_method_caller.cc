@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 using chromeos::DBusThreadManager;
@@ -23,19 +24,15 @@ namespace {
 AsyncMethodCaller* g_async_method_caller = NULL;
 
 // The implementation of AsyncMethodCaller
-class AsyncMethodCallerImpl : public AsyncMethodCaller {
+class AsyncMethodCallerImpl : public AsyncMethodCaller,
+                              public chromeos::CryptohomeClient::Observer {
  public:
   AsyncMethodCallerImpl() : weak_ptr_factory_(this) {
-    DBusThreadManager::Get()->GetCryptohomeClient()->SetAsyncCallStatusHandlers(
-        base::Bind(&AsyncMethodCallerImpl::HandleAsyncResponse,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&AsyncMethodCallerImpl::HandleAsyncDataResponse,
-                   weak_ptr_factory_.GetWeakPtr()));
+    DBusThreadManager::Get()->GetCryptohomeClient()->AddObserver(this);
   }
 
   ~AsyncMethodCallerImpl() override {
-    DBusThreadManager::Get()->GetCryptohomeClient()->
-        ResetAsyncCallStatusHandlers();
+    DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
   }
 
   void AsyncCheckKey(const Identification& cryptohome_id,
@@ -255,7 +252,9 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   //    "async ID"
   // 4. "HandleAsyncResponse" handles the result signal and call the registered
   //    callback associated with the "async ID".
-  void HandleAsyncResponse(int async_id, bool return_status, int return_code) {
+  void AsyncCallStatus(int async_id,
+                       bool return_status,
+                       int return_code) override {
     const CallbackMap::iterator it = callback_map_.find(async_id);
     if (it == callback_map_.end()) {
       LOG(ERROR) << "Received signal for unknown async_id " << async_id;
@@ -268,9 +267,9 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   }
 
   // Similar to HandleAsyncResponse but for signals with a raw data payload.
-  void HandleAsyncDataResponse(int async_id,
+  void AsyncCallStatusWithData(int async_id,
                                bool return_status,
-                               const std::string& return_data) {
+                               const std::string& return_data) override {
     const DataCallbackMap::iterator it = data_callback_map_.find(async_id);
     if (it == data_callback_map_.end()) {
       LOG(ERROR) << "Received signal for unknown async_id " << async_id;

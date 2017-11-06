@@ -262,6 +262,7 @@ EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler()
 }
 
 EncryptionMigrationScreenHandler::~EncryptionMigrationScreenHandler() {
+  DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   if (delegate_)
     delegate_->OnViewDestroyed(this);
@@ -597,11 +598,7 @@ void EncryptionMigrationScreenHandler::OnMountExistingVault(
   if (IsMinimalMigration())
     minimal_migration_start_ = tick_clock_->NowTicks();
 
-  DBusThreadManager::Get()
-      ->GetCryptohomeClient()
-      ->SetDircryptoMigrationProgressHandler(
-          base::Bind(&EncryptionMigrationScreenHandler::OnMigrationProgress,
-                     weak_ptr_factory_.GetWeakPtr()));
+  DBusThreadManager::Get()->GetCryptohomeClient()->AddObserver(this);
   cryptohome::HomedirMethods::GetInstance()->MigrateToDircrypto(
       cryptohome::Identification(user_context_.GetAccountId()),
       IsMinimalMigration(),
@@ -682,7 +679,7 @@ bool EncryptionMigrationScreenHandler::IsArcKiosk() const {
   return user_context_.GetUserType() == user_manager::USER_TYPE_ARC_KIOSK_APP;
 }
 
-void EncryptionMigrationScreenHandler::OnMigrationProgress(
+void EncryptionMigrationScreenHandler::DircryptoMigrationProgress(
     cryptohome::DircryptoMigrationStatus status,
     uint64_t current,
     uint64_t total) {
@@ -697,6 +694,8 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
     case cryptohome::DIRCRYPTO_MIGRATION_SUCCESS:
       RecordMigrationResultSuccess(IsResumingIncompleteMigration(),
                                    IsArcKiosk());
+      // Stop listening to the progress updates.
+      DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
       // If the battery level decreased during migration, record the consumed
       // battery level.
       if (current_battery_percent_ &&
@@ -733,10 +732,7 @@ void EncryptionMigrationScreenHandler::OnMigrationProgress(
       RecordMigrationResultGeneralFailure(IsResumingIncompleteMigration(),
                                           IsArcKiosk());
       // Stop listening to the progress updates.
-      DBusThreadManager::Get()
-          ->GetCryptohomeClient()
-          ->SetDircryptoMigrationProgressHandler(
-              CryptohomeClient::DircryptoMigrationProgessHandler());
+      DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
       // Shows error screen after removing user directory is completed.
       RemoveCryptohome();
       break;

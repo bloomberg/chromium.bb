@@ -58,24 +58,12 @@ FakeCryptohomeClient::~FakeCryptohomeClient() {}
 void FakeCryptohomeClient::Init(dbus::Bus* bus) {
 }
 
-void FakeCryptohomeClient::SetAsyncCallStatusHandlers(
-    const AsyncCallStatusHandler& handler,
-    const AsyncCallStatusWithDataHandler& data_handler) {
-  async_call_status_handler_ = handler;
-  async_call_status_data_handler_ = data_handler;
+void FakeCryptohomeClient::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
 }
 
-void FakeCryptohomeClient::ResetAsyncCallStatusHandlers() {
-  async_call_status_handler_.Reset();
-  async_call_status_data_handler_.Reset();
-}
-
-void FakeCryptohomeClient::SetLowDiskSpaceHandler(
-    const LowDiskSpaceHandler& handler) {}
-
-void FakeCryptohomeClient::SetDircryptoMigrationProgressHandler(
-    const DircryptoMigrationProgessHandler& handler) {
-  dircrypto_migration_progress_handler_ = handler;
+void FakeCryptohomeClient::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void FakeCryptohomeClient::WaitForServiceToBeAvailable(
@@ -761,11 +749,10 @@ void FakeCryptohomeClient::ReturnAsyncMethodData(AsyncMethodCallback callback,
 void FakeCryptohomeClient::ReturnAsyncMethodResultInternal(
     AsyncMethodCallback callback) {
   std::move(callback).Run(async_call_id_);
-  if (!async_call_status_handler_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(async_call_status_handler_, async_call_id_,
-                                  true, cryptohome::MOUNT_ERROR_NONE));
-  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeCryptohomeClient::NotifyAsyncCallStatus,
+                                weak_ptr_factory_.GetWeakPtr(), async_call_id_,
+                                true, cryptohome::MOUNT_ERROR_NONE));
   ++async_call_id_;
 }
 
@@ -773,11 +760,11 @@ void FakeCryptohomeClient::ReturnAsyncMethodDataInternal(
     AsyncMethodCallback callback,
     const std::string& data) {
   std::move(callback).Run(async_call_id_);
-  if (!async_call_status_data_handler_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(async_call_status_data_handler_,
-                                  async_call_id_, true, data));
-  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FakeCryptohomeClient::NotifyAsyncCallStatusWithData,
+                     weak_ptr_factory_.GetWeakPtr(), async_call_id_, true,
+                     data));
   ++async_call_id_;
 }
 
@@ -785,23 +772,43 @@ void FakeCryptohomeClient::OnDircryptoMigrationProgressUpdated() {
   dircrypto_migration_progress_++;
 
   if (dircrypto_migration_progress_ >= kDircryptoMigrationMaxProgress) {
-    if (!dircrypto_migration_progress_handler_.is_null()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(dircrypto_migration_progress_handler_,
-                                cryptohome::DIRCRYPTO_MIGRATION_SUCCESS,
-                                dircrypto_migration_progress_,
-                                kDircryptoMigrationMaxProgress));
-    }
+    NotifyDircryptoMigrationProgress(cryptohome::DIRCRYPTO_MIGRATION_SUCCESS,
+                                     dircrypto_migration_progress_,
+                                     kDircryptoMigrationMaxProgress);
     dircrypto_migration_progress_timer_.Stop();
     return;
   }
-  if (!dircrypto_migration_progress_handler_.is_null()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(dircrypto_migration_progress_handler_,
-                              cryptohome::DIRCRYPTO_MIGRATION_IN_PROGRESS,
-                              dircrypto_migration_progress_,
-                              kDircryptoMigrationMaxProgress));
-  }
+  NotifyDircryptoMigrationProgress(cryptohome::DIRCRYPTO_MIGRATION_IN_PROGRESS,
+                                   dircrypto_migration_progress_,
+                                   kDircryptoMigrationMaxProgress);
+}
+
+void FakeCryptohomeClient::NotifyAsyncCallStatus(int async_id,
+                                                 bool return_status,
+                                                 int return_code) {
+  for (auto& observer : observer_list_)
+    observer.AsyncCallStatus(async_id, return_status, return_code);
+}
+
+void FakeCryptohomeClient::NotifyAsyncCallStatusWithData(
+    int async_id,
+    bool return_status,
+    const std::string& data) {
+  for (auto& observer : observer_list_)
+    observer.AsyncCallStatusWithData(async_id, return_status, data);
+}
+
+void FakeCryptohomeClient::NotifyLowDiskSpace(uint64_t disk_free_bytes) {
+  for (auto& observer : observer_list_)
+    observer.LowDiskSpace(disk_free_bytes);
+}
+
+void FakeCryptohomeClient::NotifyDircryptoMigrationProgress(
+    cryptohome::DircryptoMigrationStatus status,
+    uint64_t current,
+    uint64_t total) {
+  for (auto& observer : observer_list_)
+    observer.DircryptoMigrationProgress(status, current, total);
 }
 
 }  // namespace chromeos

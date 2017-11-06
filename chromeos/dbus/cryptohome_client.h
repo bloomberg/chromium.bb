@@ -46,31 +46,42 @@ namespace chromeos {
 // initializes the DBusThreadManager instance.
 class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
  public:
-  // A callback to handle AsyncCallStatus signals.
-  typedef base::Callback<void(int async_id,
-                              bool return_status,
-                              int return_code)>
-      AsyncCallStatusHandler;
-  // A callback to handle AsyncCallStatusWithData signals.
-  typedef base::Callback<void(int async_id,
-                              bool return_status,
-                              const std::string& data)>
-      AsyncCallStatusWithDataHandler;
+  class Observer {
+   public:
+    // Called when AsyncCallStatus signal is received, when results for
+    // AsyncXXX methods are returned. Cryptohome service will process the
+    // calls in a first-in-first-out manner when they are made in parallel.
+    virtual void AsyncCallStatus(int async_id,
+                                 bool return_status,
+                                 int return_code) {}
+
+    // Called when AsyncCallStatusWithData signal is received,
+    // similar to AsyncCallStatus, but with |data|.
+    virtual void AsyncCallStatusWithData(int async_id,
+                                         bool return_status,
+                                         const std::string& data) {}
+
+    // Called when LowDiskSpace signal is received, when the cryptohome
+    // partition is running out of disk space.
+    virtual void LowDiskSpace(uint64_t disk_free_bytes) {}
+
+    // Called when DircryptoMigrationProgress signal is received.
+    // Typically, called periodicaly during a migration is performed by
+    // cryptohomed, as well as to notify the completion of migration.
+    virtual void DircryptoMigrationProgress(
+        cryptohome::DircryptoMigrationStatus status,
+        uint64_t current,
+        uint64_t total) {}
+
+   protected:
+    virtual ~Observer() = default;
+  };
 
   // Callback for the methods initiate asynchronous operations.
   // On success (i.e. the asynchronous operation is started), an |async_id|
   // is returned, so the user code can identify the corresponding singal
   // handler invocation later.
   using AsyncMethodCallback = DBusMethodCallback<int /* async_id */>;
-
-  // A callback to handle LowDiskSpace signals.
-  typedef base::Callback<void(uint64_t disk_free_bytes)> LowDiskSpaceHandler;
-
-  // A callback to handle DircryptoMigrationProgress signals.
-  typedef base::Callback<void(cryptohome::DircryptoMigrationStatus status,
-                              uint64_t current,
-                              uint64_t total)>
-      DircryptoMigrationProgessHandler;
 
   // Represents the result to obtain the data related to TPM attestation.
   struct TpmAttestationDataResult {
@@ -119,26 +130,11 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   static std::string GetStubSanitizedUsername(
       const cryptohome::Identification& cryptohome_id);
 
-  // Sets AsyncCallStatus signal handlers.
-  // |handler| is called when results for AsyncXXX methods are returned.
-  // Cryptohome service will process the calls in a first-in-first-out manner
-  // when they are made in parallel.
-  virtual void SetAsyncCallStatusHandlers(
-      const AsyncCallStatusHandler& handler,
-      const AsyncCallStatusWithDataHandler& data_handler) = 0;
+  // Adds an observer.
+  virtual void AddObserver(Observer* observer) = 0;
 
-  // Resets AsyncCallStatus signal handlers.
-  virtual void ResetAsyncCallStatusHandlers() = 0;
-
-  // Sets LowDiskSpace signal handler.  |handler| is called when the cryptohome
-  // partition is running out of disk space.
-  virtual void SetLowDiskSpaceHandler(const LowDiskSpaceHandler& handler) = 0;
-
-  // A callback to handle DircryptoMigrationProgress signals.  |handler| is
-  // called periodicaly during a migration is performed by cryptohomed, as well
-  // as to notify the completion of migration.
-  virtual void SetDircryptoMigrationProgressHandler(
-      const DircryptoMigrationProgessHandler& handler) = 0;
+  // Removes an observer if added.
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
