@@ -7,6 +7,9 @@
             height: 100px;
             width: 100px;
             background-color: green;
+         }
+
+        .running {
             animation: anim1 0.1s ease 0s forwards;
          }
 
@@ -37,10 +40,10 @@
          }
     </style>
     <script>
-
+        'use strict';
         var box;
         var expectedValue = "matrix(1, 0, 0, 1, 50, 200)";
-        
+
         function testState()
         {
             var result = document.getElementById("result");
@@ -51,8 +54,12 @@
             else
                 result.innerHTML = "FAIL - final state was " + computedValue + " expected " + expectedValue;
 
-            if (window.testRunner)
-                testRunner.notifyDone();
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    if (window.testRunner)
+                        testRunner.notifyDone();
+                });
+            });
         }
 
         function swapAnim()
@@ -64,19 +71,20 @@
             // change the animation
             box.style.animation = "anim2 0.1s ease 0s forwards";
         }
-        
+
         function setup()
         {
             box = document.getElementById("box");
             document.addEventListener("animationend", swapAnim, false);
+            // start the animation
+            box.classList.add('running');
         }
-        
+
         if (window.testRunner) {
             testRunner.waitUntilDone();
         }
 
         window.addEventListener("load", setup, false);
-        
     </script>
 </head>
 <body>
