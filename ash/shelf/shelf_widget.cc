@@ -114,7 +114,7 @@ ShelfWidget::DelegateView::~DelegateView() {}
 
 // static
 bool ShelfWidget::IsUsingMdLoginShelf() {
-  return !switches::IsUsingWebUiLock() &&
+  return switches::IsUsingMdLogin() &&
          (Shell::Get()->session_controller()->GetSessionState() ==
               session_manager::SessionState::LOCKED ||
           Shell::Get()->session_controller()->GetSessionState() ==

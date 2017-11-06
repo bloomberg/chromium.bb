@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/ash_switches.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -118,10 +117,6 @@ class ScreenLockerTest : public InProcessBrowserTest {
                     ->notify_lock_screen_dismissed_call_count();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
-  }
-
  private:
   void SetUpInProcessBrowserTestFixture() override {
     fake_session_manager_client_ = new FakeSessionManagerClient;
@@ -132,26 +127,16 @@ class ScreenLockerTest : public InProcessBrowserTest {
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
+  }
+
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockerTest);
 };
 
-class WebUiScreenLockerTest : public ScreenLockerTest {
- public:
-  WebUiScreenLockerTest() = default;
-  ~WebUiScreenLockerTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ScreenLockerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kShowWebUiLock);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebUiScreenLockerTest);
-};
-
-IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestBasic) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   ScreenLocker::Show();
   std::unique_ptr<test::ScreenLockerTester> tester(ScreenLocker::GetTester());
   tester->EmulateWindowManagerReady();
@@ -199,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, LockScreenWhileAddingUser) {
 }
 
 // Test how locking the screen affects an active fullscreen window.
-IN_PROC_BROWSER_TEST_F(WebUiScreenLockerTest, TestFullscreenExit) {
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   // 1) If the active browser window is in fullscreen and the fullscreen window
   // does not have all the pixels (e.g. the shelf is auto hidden instead of
   // hidden), locking the screen should not exit fullscreen. The shelf is

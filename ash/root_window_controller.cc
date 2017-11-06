@@ -877,9 +877,9 @@ void RootWindowController::CreateContainers() {
 
   // The shelf should be displayed on lock screen if md-based login/lock UI is
   // enabled.
-  aura::Window* shelf_container_parent = switches::IsUsingWebUiLock()
-                                             ? non_lock_screen_containers
-                                             : lock_screen_related_containers;
+  aura::Window* shelf_container_parent = switches::IsUsingMdLogin()
+                                             ? lock_screen_related_containers
+                                             : non_lock_screen_containers;
   aura::Window* shelf_container = CreateContainer(
       kShellWindowId_ShelfContainer, "ShelfContainer", shelf_container_parent);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(shelf_container);

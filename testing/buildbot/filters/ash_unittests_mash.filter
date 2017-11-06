@@ -178,8 +178,6 @@
 -WindowSelectorTest.RemoveDisplayWithAnimation
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_SwapPrimary
-# TODO: Panel focus is broken. http://crbug.com/780936
--WorkspaceControllerTest.WindowEdgeMouseHitTestPanel
 # TODO: fix this. It might fail because GL_OES_texture_npot is not supported.
 # http://crbug.com/775067.
 -WorkspaceLayoutManagerBackdropTest.BackdropTest
