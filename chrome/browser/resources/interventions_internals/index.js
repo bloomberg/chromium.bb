@@ -31,11 +31,13 @@ function getTimeFormat(time) {
  * Switch the selected tab to 'selected-tab' class.
  */
 function setSelectedTab() {
-  let selected =
-      document.querySelector('input[type=radio][name=tabs]:checked').value;
-  let selectedTab = document.querySelector('#' + selected);
+  let selected = document.querySelector('input[type=radio][name=tabs]:checked');
+  let selectedTab = document.querySelector('#' + selected.value);
+
   selectedTab.className =
       selectedTab.className.replace('hidden-tab', 'selected-tab');
+  selected.parentElement.className =
+      selected.parentElement.className.replace('inactive-tab', 'active-tab');
 }
 
 /**
@@ -44,8 +46,10 @@ function setSelectedTab() {
  */
 function changeTab() {
   let lastSelected = document.querySelector('.selected-tab');
+  let lastTab = document.querySelector('.active-tab');
   lastSelected.className =
       lastSelected.className.replace('selected-tab', 'hidden-tab');
+  lastTab.className = lastTab.className.replace('active-tab', 'inactive-tab');
 
   setSelectedTab();
 }

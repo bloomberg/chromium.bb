@@ -4,6 +4,15 @@
  * found in the LICENSE file.
  */
 
+body {
+  font-family: 'DejaVu Sans', Arial, sans-serif;
+  font-size: 75%;
+}
+
+button {
+  margin-bottom: 5px;
+}
+
 .hidden-tab {
   display: none;
   padding: 12px;
@@ -15,8 +24,13 @@
 }
 
 .tab-select {
-  left:0;
-  right:0;
+  left: 0;
+  right: 0;
+}
+
+
+nav {
+  border-bottom: 1px solid silver;
 }
 
 .tab-select input[type=radio] {
@@ -24,36 +38,41 @@
 }
 
 .tab-select label {
-  background: #ddd;
-  border: outset 1px silver;
+  border: 2px solid white;
+  border-bottom: 0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
   cursor: pointer;
   display: table-cell;
-  padding: 5px 5px;
+  padding: 5px;
+  position: relative;
   text-align: center;
   vertical-align: middle;
-  width: 20%;
+  width: 25%;
 }
 
-.tab-select input:checked + span {
-  background: #aaa;
-  border: inset 1px silver;
-  display: table-cell;
-  height: 2em;
-  text-align: center;
-  vertical-align: middle;
-  width: 30em;
+.inactive-tab {
+  background: #ddd;
+  color: black;
+}
+
+.active-tab {
+  background: rgb(0, 128, 255);
+  color: white;
 }
 
 .table-name {
+  color: rgb(43, 96, 222);
   font-size: 100%;
   font-weight: bold;
-  margin-top: 10px;
+  margin-bottom: 5px;
+  margin-top: 5px;
 }
 
 table {
-  border: 1px solid black;
-  border: 0;
-  border-collapse: collapse;
+  border: 1px solid white;
+  border-collapse: separate;
+  font-size: 90%;
   margin-top: 10px;
   max-height: 100px;
   table-layout: fixed;
@@ -61,24 +80,61 @@ table {
 }
 
 td {
-  border: 1px solid black;
+  border: 2px solid white;
   padding: 10px;
   text-align: left;
 }
 
-td.log-time {
-  word-wrap: break-word;
+td.log-url {
+  overflow: auto;
+  text-overflow: auto;
 }
 
-td.log-url {
-  overflow: scroll;
-  text-overflow: scroll;
+tr:nth-child(odd) td {
+  background: rgb(240, 255, 255);
 }
 
 th {
-  border: 1px solid black;
+  background: rgb(0, 92, 185);
+  border: 2px solid white;
+  color: white;
   padding: 15px;
   text-align: center;
+}
+
+.log-time {
+  font-size: 80%;
+  word-wrap: break-word;
+}
+
+@media(min-device-width: 768px) {
+  body {
+    font-size: 85%;
+  }
+
+  .log-time {
+    font-size: 80%;
+    width: 15%;
+  }
+
+  .log-type {
+    width: 10%;
+  }
+}
+
+@media(min-device-width: 1024px) {
+  body {
+    font-size: 100%;
+  }
+
+  .log-time {
+    font-size: 100%;
+    width: 15%;
+  }
+
+  .log-type {
+    width: 10%;
+  }
 }
 
 .error-header {
