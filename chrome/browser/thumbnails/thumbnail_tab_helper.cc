@@ -69,6 +69,7 @@ ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
       capture_on_navigating_away_(base::FeatureList::IsEnabled(
           features::kCaptureThumbnailOnNavigatingAway)),
+      has_painted_since_navigation_start_(false),
       page_transition_(ui::PAGE_TRANSITION_LINK),
       load_interrupted_(false),
       waiting_for_capture_(false),
@@ -123,12 +124,17 @@ void ThumbnailTabHelper::DidStartNavigation(
       navigation_handle->IsSameDocument()) {
     return;
   }
+
   if (capture_on_navigating_away_) {
     // At this point, the new navigation has just been started, but the
     // WebContents still shows the previous page. Grab a thumbnail before it
     // goes away.
     UpdateThumbnailIfNecessary();
   }
+
+  // Now reset navigation-related state. It's important that this happens after
+  // calling UpdateThumbnailIfNecessary.
+  has_painted_since_navigation_start_ = false;
   // Reset the page transition to some uninteresting type, since the actual
   // type isn't available at this point. We'll get it in DidFinishNavigation
   // (if that happens, which isn't guaranteed).
@@ -161,6 +167,10 @@ void ThumbnailTabHelper::DocumentOnLoadCompletedInMainFrame() {
   waiting_for_capture_ = false;
 }
 
+void ThumbnailTabHelper::DidFirstVisuallyNonEmptyPaint() {
+  has_painted_since_navigation_start_ = true;
+}
+
 void ThumbnailTabHelper::DidStartLoading() {
   // TODO(treib): We should probably track whether the load *finished* - as it
   // is, an in-progress load will count as not interrupted.
@@ -175,6 +185,13 @@ void ThumbnailTabHelper::NavigationStopped() {
 
 void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Don't take a screenshot if we haven't painted anything since the last
+  // navigation. This can happen when navigating away again very quickly.
+  if (!has_painted_since_navigation_start_) {
+    return;
+  }
+
   // Ignore thumbnail update requests if one is already in progress.
   if (thumbnailing_context_) {
     return;
