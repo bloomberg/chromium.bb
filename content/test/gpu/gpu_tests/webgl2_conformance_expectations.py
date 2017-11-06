@@ -143,8 +143,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('nvidia', 0x1cb3), 'd3d11'], bug=728670)
 
     # WIN / OpenGL / NVIDIA failures
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rgb565-rgb-unsigned_byte.html',
+        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=781668)
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',
-        ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=715001)
+        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=715001)
     self.Fail('conformance/textures/misc/texture-size.html',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
