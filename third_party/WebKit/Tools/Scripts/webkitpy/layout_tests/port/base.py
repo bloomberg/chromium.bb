@@ -266,12 +266,6 @@ class Port(object):
         flag_specific_path = self._flag_specific_baseline_search_path()
         return flag_specific_path[-1] if flag_specific_path else None
 
-    def virtual_baseline_search_path(self, test_name):
-        suite = self.lookup_virtual_suite(test_name)
-        if not suite:
-            return None
-        return [self._filesystem.join(path, suite.name) for path in self.default_baseline_search_path()]
-
     def baseline_search_path(self):
         return (self.get_option('additional_platform_directory', []) +
                 self._flag_specific_baseline_search_path() +
@@ -575,7 +569,7 @@ class Port(object):
 
         actual_test_name = self.lookup_virtual_test_base(test_name)
         if actual_test_name:
-            return self.expected_filename(actual_test_name, suffix)
+            return self.expected_filename(actual_test_name, suffix, return_default)
 
         if return_default:
             return self._filesystem.join(self.layout_tests_dir(), baseline_filename)

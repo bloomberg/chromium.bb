@@ -5,7 +5,6 @@
 import logging
 
 from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
-from webkitpy.layout_tests.controllers.test_result_writer import baseline_name
 from webkitpy.tool.commands.rebaseline import AbstractRebaseliningCommand
 
 
@@ -25,14 +24,8 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
         ] + self.platform_options)
 
     def _optimize_baseline(self, optimizer, test_name):
-        files_to_delete = []
-        files_to_add = []
         for suffix in self._baseline_suffix_list:
-            name = baseline_name(self._tool.filesystem, test_name, suffix)
-            succeeded = optimizer.optimize(name)
-            if not succeeded:
-                _log.error('Heuristics failed to optimize %s', name)
-        return files_to_delete, files_to_add
+            optimizer.optimize(test_name, suffix)
 
     def execute(self, options, args, tool):
         self._tool = tool
