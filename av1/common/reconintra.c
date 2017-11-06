@@ -44,9 +44,6 @@ enum {
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
 #endif  // CONFIG_INTRA_EDGE
 
-#define INTRA_USES_EXT_TRANSFORMS 1
-#define INTRA_USES_RECT_TRANSFORMS 1
-
 static const uint8_t extend_modes[INTRA_MODES] = {
   NEED_ABOVE | NEED_LEFT,                   // DC
   NEED_ABOVE,                               // V
@@ -2082,9 +2079,6 @@ static void build_intra_predictors_high(
   uint16_t *const left_col = left_data + 16;
   const int txwpx = tx_size_wide[tx_size];
   const int txhpx = tx_size_high[tx_size];
-#if !INTRA_USES_RECT_TRANSFORMS
-  assert(txwpx == txhpx);
-#endif  // !INTRA_USES_RECT_TRANSFORMS
   int need_left = extend_modes[mode] & NEED_LEFT;
   int need_above = extend_modes[mode] & NEED_ABOVE;
   int need_above_left = extend_modes[mode] & NEED_ABOVELEFT;
@@ -2328,9 +2322,6 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   uint8_t *const left_col = left_data + 16;
   const int txwpx = tx_size_wide[tx_size];
   const int txhpx = tx_size_high[tx_size];
-#if !INTRA_USES_RECT_TRANSFORMS
-  assert(txwpx == txhpx);
-#endif  // !INTRA_USES_RECT_TRANSFORMS
   int need_left = extend_modes[mode] & NEED_LEFT;
   int need_above = extend_modes[mode] & NEED_ABOVE;
   int need_above_left = extend_modes[mode] & NEED_ABOVELEFT;
@@ -2577,9 +2568,6 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
   const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
   const int txwpx = tx_size_wide[tx_size];
   const int txhpx = tx_size_high[tx_size];
-#if !INTRA_USES_RECT_TRANSFORMS
-  assert(txwpx == txhpx);
-#endif  // !INTRA_USES_RECT_TRANSFORMS
   const int xr_chr_offset = 0;
   const int yd_chr_offset = 0;
 
@@ -2684,7 +2672,6 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif
 }
 
-#if INTRA_USES_EXT_TRANSFORMS
 // Copy the given row of dst into the equivalent row of ref, saving
 // the overwritten data to tmp. Returns zero if no copy happened (so
 // no restore is needed)
@@ -2787,7 +2774,6 @@ static void restore_ref_col(int buf_flags, int block_height,
   (void)buf_flags;
 #endif  // CONFIG_HIGHBITDEPTH
 }
-#endif  // #if INTRA_USES_EXT_TRANSFORMS
 
 void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              int wpx, int hpx, BLOCK_SIZE bsize,
@@ -2796,13 +2782,8 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              int col_off, int row_off, int plane) {
   const int block_width = block_size_wide[bsize];
   const int block_height = block_size_high[bsize];
-#if INTRA_USES_RECT_TRANSFORMS
   const TX_SIZE tx_size = get_max_rect_tx_size(bsize, 0);
   assert(tx_size < TX_SIZES_ALL);
-#else
-  const TX_SIZE tx_size = max_txsize_lookup[bsize];
-  assert(tx_size < TX_SIZES);
-#endif  // INTRA_USES_RECT_TRANSFORMS
 
   // Start by running the helper to predict either the entire block
   // (if the block is square or the same size as tx_size) or the top
@@ -2810,19 +2791,9 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   predict_intra_block_helper(cm, xd, wpx, hpx, tx_size, mode, ref, ref_stride,
                              dst, dst_stride, col_off, row_off, plane);
 
-// If we're not using extended transforms, this function should
-// always be called with a square block.
-#if !INTRA_USES_EXT_TRANSFORMS
-  assert(block_width == block_height);
-#endif  // !INTRA_USES_EXT_TRANSFORMS
-
   // If the block is square, we're done.
   if (block_width == block_height) return;
 
-#if INTRA_USES_EXT_TRANSFORMS
-// If we're using rectangular transforms, we might be done even
-// though the block isn't square.
-#if INTRA_USES_RECT_TRANSFORMS
   if (block_width == tx_size_wide[tx_size] &&
       block_height == tx_size_high[tx_size])
     return;
@@ -2831,8 +2802,6 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // large and rectangular (such large transform sizes aren't
   // available).
   assert(block_width >= 32 && block_height >= 32);
-#endif  // INTRA_USES_RECT_TRANSFORMS
-
   assert((block_width == wpx && block_height == hpx) ||
          (block_width == (wpx >> 1) && block_height == hpx) ||
          (block_width == wpx && block_height == (hpx >> 1)));
@@ -2922,7 +2891,6 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       next_col_off += tx_width_off;
     }
   }
-#endif  // INTRA_USES_EXT_TRANSFORMS
 }
 
 void av1_init_intra_predictors(void) {
