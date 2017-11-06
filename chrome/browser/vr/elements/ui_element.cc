@@ -231,6 +231,10 @@ bool UiElement::IsWorldPositioned() const {
   return true;
 }
 
+std::string UiElement::DebugName() const {
+  return UiElementNameToString(name());
+}
+
 void UiElement::OnSetMode() {}
 void UiElement::OnUpdatedWorldSpaceTransform() {}
 

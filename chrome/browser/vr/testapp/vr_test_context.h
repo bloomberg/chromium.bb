@@ -47,6 +47,9 @@ class VrTestContext : public vr::UiBrowserInterface {
  private:
   unsigned int CreateFakeContentTexture();
   void CreateFakeOmniboxSuggestions();
+  gfx::Transform ProjectionMatrix() const;
+  gfx::Transform ViewProjectionMatrix() const;
+  ControllerModel UpdateController();
 
   std::unique_ptr<Ui> ui_;
   gfx::Size window_size_;
@@ -56,6 +59,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   float head_angle_y_degrees_ = 0;
   int last_drag_x_pixels_ = 0;
   int last_drag_y_pixels_ = 0;
+  gfx::Point last_mouse_point_;
   bool touchpad_pressed_ = false;
 
   float view_scale_factor_ = 1.f;
