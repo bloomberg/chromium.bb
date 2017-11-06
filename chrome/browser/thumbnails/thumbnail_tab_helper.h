@@ -46,6 +46,7 @@ class ThumbnailTabHelper
       content::NavigationHandle* navigation_handle) override;
   void DocumentAvailableInMainFrame() override;
   void DocumentOnLoadCompletedInMainFrame() override;
+  void DidFirstVisuallyNonEmptyPaint() override;
   void DidStartLoading() override;
   void NavigationStopped() override;
 
@@ -77,6 +78,7 @@ class ThumbnailTabHelper
 
   content::NotificationRegistrar registrar_;
 
+  bool has_painted_since_navigation_start_;
   ui::PageTransition page_transition_;
   bool load_interrupted_;
 
