@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <array>
+#include <limits>
 #include <utility>
 
 #include "base/bind.h"
@@ -150,7 +151,7 @@ class AudioDebugFileWriter::AudioFileWriter {
   void Write(const AudioBus* data);
 
  private:
-  AudioFileWriter(const AudioParameters& params);
+  explicit AudioFileWriter(const AudioParameters& params);
 
   // Write wave header to file. Called on the |task_runner_| twice: on
   // construction
@@ -178,33 +179,6 @@ class AudioDebugFileWriter::AudioFileWriter {
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
-AudioDebugFileWriter::OnSequenceDeleter::OnSequenceDeleter() {}
-
-AudioDebugFileWriter::OnSequenceDeleter::OnSequenceDeleter(
-    AudioDebugFileWriter::OnSequenceDeleter&& other) = default;
-
-AudioDebugFileWriter::OnSequenceDeleter&
-AudioDebugFileWriter::OnSequenceDeleter::operator=(
-    AudioDebugFileWriter::OnSequenceDeleter&&) = default;
-
-AudioDebugFileWriter::OnSequenceDeleter::OnSequenceDeleter(
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : task_runner_(std::move(task_runner)) {}
-
-AudioDebugFileWriter::OnSequenceDeleter::~OnSequenceDeleter() {}
-
-// AudioFileWriter deleter.
-void AudioDebugFileWriter::OnSequenceDeleter::operator()(
-    AudioDebugFileWriter::AudioFileWriter* ptr) const {
-  if (!task_runner_->DeleteSoon(FROM_HERE, ptr)) {
-#if defined(UNIT_TEST)
-    // Only logged under unit testing because leaks at shutdown
-    // are acceptable under normal circumstances.
-    LOG(ERROR) << "DeleteSoon failed for AudioDebugFileWriter::AudioFileWriter";
-#endif
-  }
-}
-
 // static
 AudioDebugFileWriter::AudioFileWriterUniquePtr
 AudioDebugFileWriter::AudioFileWriter::Create(
@@ -212,7 +186,7 @@ AudioDebugFileWriter::AudioFileWriter::Create(
     const AudioParameters& params,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   AudioFileWriterUniquePtr file_writer(new AudioFileWriter(params),
-                                       OnSequenceDeleter(task_runner));
+                                       base::OnTaskRunnerDeleter(task_runner));
 
   // base::Unretained is safe, because destructor is called on
   // |task_runner|.
@@ -301,8 +275,9 @@ void AudioDebugFileWriter::AudioFileWriter::CreateRecordingFile(
 }
 
 AudioDebugFileWriter::AudioDebugFileWriter(const AudioParameters& params)
-    : params_(params) {
-  client_sequence_checker_.DetachFromSequence();
+    : params_(params),
+      file_writer_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {
+  DETACH_FROM_SEQUENCE(client_sequence_checker_);
 }
 
 AudioDebugFileWriter::~AudioDebugFileWriter() {
@@ -310,20 +285,20 @@ AudioDebugFileWriter::~AudioDebugFileWriter() {
 }
 
 void AudioDebugFileWriter::Start(const base::FilePath& file_name) {
-  DCHECK(client_sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DCHECK(!file_writer_);
   file_writer_ = AudioFileWriter::Create(file_name, params_, file_task_runner_);
 }
 
 void AudioDebugFileWriter::Stop() {
-  DCHECK(client_sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   // |file_writer_| is deleted on FILE thread.
   file_writer_.reset();
-  client_sequence_checker_.DetachFromSequence();
+  DETACH_FROM_SEQUENCE(client_sequence_checker_);
 }
 
 void AudioDebugFileWriter::Write(std::unique_ptr<AudioBus> data) {
-  DCHECK(client_sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   if (!file_writer_)
     return;
 
@@ -348,4 +323,4 @@ const base::FilePath::CharType* AudioDebugFileWriter::GetFileNameExtension() {
   return FILE_PATH_LITERAL("wav");
 }
 
-}  // namspace media
+}  // namespace media

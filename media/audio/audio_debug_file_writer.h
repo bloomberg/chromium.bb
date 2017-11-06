@@ -30,7 +30,7 @@ class MEDIA_EXPORT AudioDebugFileWriter {
   // Number of channels and sample rate are used from |params|, the other
   // parameters are ignored. The number of channels in the data passed to
   // Write() must match |params|.
-  AudioDebugFileWriter(const AudioParameters& params);
+  explicit AudioDebugFileWriter(const AudioParameters& params);
 
   virtual ~AudioDebugFileWriter();
 
@@ -63,34 +63,20 @@ class MEDIA_EXPORT AudioDebugFileWriter {
  private:
   class AudioFileWriter;
 
-  // Deleter for AudioFileWriter.
-  struct OnSequenceDeleter {
-   public:
-    OnSequenceDeleter();
-    OnSequenceDeleter(OnSequenceDeleter&& other);
-    OnSequenceDeleter& operator=(OnSequenceDeleter&&);
-    OnSequenceDeleter(scoped_refptr<base::SequencedTaskRunner> task_runner);
-    ~OnSequenceDeleter();
-    void operator()(AudioFileWriter* ptr) const;
-
-   private:
-    scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  };
-
   using AudioFileWriterUniquePtr =
-      std::unique_ptr<AudioFileWriter, OnSequenceDeleter>;
-
-  AudioFileWriterUniquePtr file_writer_;
-  base::SequenceChecker client_sequence_checker_;
+      std::unique_ptr<AudioFileWriter, base::OnTaskRunnerDeleter>;
 
   // The task runner to do file output operations on.
   const scoped_refptr<base::SequencedTaskRunner> file_task_runner_ =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
+  AudioFileWriterUniquePtr file_writer_;
+  SEQUENCE_CHECKER(client_sequence_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(AudioDebugFileWriter);
 };
 
-}  // namspace media
+}  // namespace media
 
 #endif  // MEDIA_AUDIO_AUDIO_DEBUG_FILE_WRITER_H_
