@@ -12,9 +12,11 @@ import android.text.TextUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.SurveyInfoBar;
+import org.chromium.chrome.browser.infobar.SurveyInfoBarDelegate;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
@@ -32,12 +34,14 @@ import org.chromium.content_public.browser.WebContentsObserver;
  * Class that controls if and when to show surveys related to the Chrome Home experiment.
  */
 public class ChromeHomeSurveyController {
-    public static final String SURVEY_INFO_BAR_DISPLAYED = "chrome_home_survey_info_bar_displayed";
+    public static final String SURVEY_INFO_BAR_DISPLAYED_KEY =
+            "chrome_home_survey_info_bar_displayed";
     public static final String PARAM_NAME = "survey_override_site_id";
 
     private static final String TRIAL_NAME = "ChromeHome";
 
     static final long ONE_WEEK_IN_MILLIS = 604800000L;
+    static final String SURVEY_INFOBAR_DISMISSED_KEY = "chrome_home_survey_info_bar_dismissed";
 
     private TabModelSelector mTabModelSelector;
 
@@ -134,16 +138,17 @@ public class ChromeHomeSurveyController {
     }
 
     private void showSurveyInfoBar(WebContents webContents, String siteId) {
-        SurveyInfoBar.showSurveyInfoBar(webContents, siteId, true, R.drawable.chrome_sync_logo);
+        SurveyInfoBar.showSurveyInfoBar(
+                webContents, siteId, true, R.drawable.chrome_sync_logo, getSurveyInfoBarDelegate());
         SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        sharedPreferences.edit().putBoolean(SURVEY_INFO_BAR_DISPLAYED, true).apply();
+        sharedPreferences.edit().putBoolean(SURVEY_INFO_BAR_DISPLAYED_KEY, true).apply();
     }
 
     @VisibleForTesting
     boolean hasInfoBarBeenDisplayed() {
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-            return sharedPreferences.getBoolean(SURVEY_INFO_BAR_DISPLAYED, false);
+            return sharedPreferences.getBoolean(SURVEY_INFO_BAR_DISPLAYED_KEY, false);
         }
     }
 
@@ -166,5 +171,30 @@ public class ChromeHomeSurveyController {
     @VisibleForTesting
     public static ChromeHomeSurveyController createChromeHomeSurveyControllerForTests() {
         return new ChromeHomeSurveyController();
+    }
+
+    /**
+     * @return The survey info bar delegate containing actions specific to the Chrome Home survey.
+     */
+    private SurveyInfoBarDelegate getSurveyInfoBarDelegate() {
+        return new SurveyInfoBarDelegate() {
+
+            @Override
+            public void onSurveyInfoBarClosed() {
+                SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
+                sharedPreferences.edit().putBoolean(SURVEY_INFOBAR_DISMISSED_KEY, true).apply();
+            }
+
+            @Override
+            public void onSurveyTriggered() {
+                RecordUserAction.record("Android.ChromeHome.AcceptedSurvey");
+            }
+
+            @Override
+            public String getSurveyPromptString() {
+                return ContextUtils.getApplicationContext().getString(
+                        R.string.chrome_home_survey_prompt);
+            }
+        };
     }
 }
