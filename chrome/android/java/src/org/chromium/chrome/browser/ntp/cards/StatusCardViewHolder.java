@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.metrics.ImpressionTracker.Listener;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
@@ -25,7 +26,6 @@ public class StatusCardViewHolder extends CardViewHolder {
     private final TextView mTitleView;
     private final TextView mBodyView;
     private final Button mActionView;
-
     public StatusCardViewHolder(SuggestionsRecyclerView parent,
             ContextMenuManager contextMenuManager, UiConfig config) {
         super(getLayout(), parent, config, contextMenuManager);
@@ -63,7 +63,7 @@ public class StatusCardViewHolder extends CardViewHolder {
         void performAction(Context context);
     }
 
-    public void onBindViewHolder(final DataSource item) {
+    public void onBindViewHolder(final DataSource item, Listener listener) {
         super.onBindViewHolder();
 
         mTitleView.setText(item.getHeader());
@@ -81,6 +81,8 @@ public class StatusCardViewHolder extends CardViewHolder {
         } else {
             mActionView.setVisibility(View.GONE);
         }
+
+        setImpressionListener(listener);
     }
 
     @LayoutRes

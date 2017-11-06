@@ -248,6 +248,17 @@ class BookmarkItemsAdapter
         }
     }
 
+    @Override
+    public void onViewRecycled(ViewHolder holder) {
+        switch (holder.getItemViewType()) {
+            case ViewType.PERSONALIZED_SIGNIN_PROMO:
+                mPromoHeaderManager.detachPersonalizePromoView();
+                break;
+            default:
+                // Other view holders don't have special recycling code.
+        }
+    }
+
     // BookmarkUIObserver implementations.
 
     @Override

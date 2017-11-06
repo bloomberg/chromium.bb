@@ -374,7 +374,7 @@ public class ArticleSnippetsTest {
             mRecyclerView.setAdapter(null);
             mSigninPromo = new SignInPromo.GenericPromoViewHolder(mRecyclerView, null, mUiConfig);
             ((SignInPromo.GenericPromoViewHolder) mSigninPromo)
-                    .onBindViewHolder(new SignInPromo.GenericSigninPromoData());
+                    .onBindViewHolder(new SignInPromo.GenericSigninPromoData(), null);
             mContentView.addView(mSigninPromo.itemView);
         });
         mRenderTestRule.render(mSigninPromo.itemView, "signin_promo");
