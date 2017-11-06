@@ -11,7 +11,6 @@ enum class MDDownloadItemProgressIndicatorState {
   kNotStarted,
   kInProgress,
   kComplete,
-  kCanceled,
 };
 
 // MDDownloadItemProgressIndicator is the animated, circular progress bar

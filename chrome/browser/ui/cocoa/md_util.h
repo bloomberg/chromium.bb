@@ -9,9 +9,11 @@
 
 @interface CAMediaTimingFunction (ChromeBrowserMDUtil)
 @property(class, readonly)
-    CAMediaTimingFunction* cr_materialEaseInOutTimingFunction;
+    CAMediaTimingFunction* cr_materialEaseInTimingFunction;
 @property(class, readonly)
     CAMediaTimingFunction* cr_materialEaseOutTimingFunction;
+@property(class, readonly)
+    CAMediaTimingFunction* cr_materialEaseInOutTimingFunction;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_MD_UTIL_H_
