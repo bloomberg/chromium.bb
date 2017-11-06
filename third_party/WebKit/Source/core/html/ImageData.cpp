@@ -35,6 +35,7 @@
 #include "platform/graphics/ColorBehavior.h"
 #include "platform/wtf/ByteSwap.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
+#include "third_party/skia/include/core/SkSwizzle.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -693,45 +694,89 @@ CanvasColorParams ImageData::GetCanvasColorParams() {
   return CanvasColorParams(color_space, pixel_format, kNonOpaque);
 }
 
-void ImageData::SwapU16EndiannessForSkColorSpaceXform() {
-  DCHECK(data_u16_);
+void ImageData::SwapU16EndiannessForSkColorSpaceXform(
+    const IntRect* crop_rect) {
+  if (!data_u16_)
+    return;
   uint16_t* buffer = static_cast<uint16_t*>(data_u16_->BufferBase()->Data());
+  if (crop_rect) {
+    int start_index = (crop_rect->X() + crop_rect->Y() * width()) * 4;
+    for (int i = 0; i < crop_rect->Height(); i++) {
+      for (int j = 0; j < crop_rect->Width(); j++)
+        *(buffer + start_index + j) = WTF::Bswap16(*(buffer + start_index + j));
+      start_index += width() * 4;
+    }
+    return;
+  }
   for (unsigned i = 0; i < size_.Area() * 4; i++)
     *(buffer + i) = WTF::Bswap16(*(buffer + i));
 };
 
+void ImageData::SwizzleIfNeeded(DataU8ColorType u8_color_type,
+                                const IntRect* crop_rect) {
+  // ImageData is always in RGBA color component order. If this is the same for
+  // kN32, swizzling is not needed.
+  if (!data_ || u8_color_type == kRGBAColorType ||
+      kN32_SkColorType == kRGBA_8888_SkColorType)
+    return;
+  // Wide gamut color spaces are always in RGBA color component order.
+  if (!GetCanvasColorParams().NeedsSkColorSpaceXformCanvas())
+    return;
+  if (crop_rect) {
+    uint32_t* data_u32 = static_cast<uint32_t*>(BufferBase()->Data());
+    for (int i = crop_rect->Y(); i < crop_rect->Y() + crop_rect->Height();
+         i++) {
+      SkSwapRB(data_u32 + i * width() + crop_rect->X(),
+               data_u32 + i * width() + crop_rect->X(), crop_rect->Width());
+    }
+    return;
+  }
+  SkSwapRB(static_cast<uint32_t*>(BufferBase()->Data()),
+           static_cast<uint32_t*>(BufferBase()->Data()), Size().Area());
+}
+
 bool ImageData::ImageDataInCanvasColorSettings(
     CanvasColorSpace canvas_color_space,
     CanvasPixelFormat canvas_pixel_format,
-    std::unique_ptr<uint8_t[]>& converted_pixels) {
+    std::unique_ptr<uint8_t[]>& converted_pixels,
+    DataU8ColorType u8_color_type,
+    const IntRect* crop_rect) {
   if (!data_ && !data_u16_ && !data_f32_)
     return false;
 
   CanvasColorParams dst_color_params =
       CanvasColorParams(canvas_color_space, canvas_pixel_format, kNonOpaque);
 
-  unsigned num_pixels = size_.Width() * size_.Height();
   void* src_data = this->BufferBase()->Data();
-  SkColorSpaceXform::ColorFormat src_color_format =
-      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  if (data_u16_)
-    src_color_format = SkColorSpaceXform::ColorFormat::kRGBA_U16_BE_ColorFormat;
-  else if (data_f32_)
-    src_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat;
-
   sk_sp<SkColorSpace> src_color_space =
       GetCanvasColorParams().GetSkColorSpaceForSkSurfaces();
   sk_sp<SkColorSpace> dst_color_space =
       dst_color_params.GetSkColorSpaceForSkSurfaces();
-  SkColorSpaceXform::ColorFormat dst_color_format =
-      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
-  if (canvas_pixel_format == kF16CanvasPixelFormat)
-    dst_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
 
+  // if color conversion is not needed, copy data into pixel buffer.
   if (!src_color_space.get() && !dst_color_space.get() && data_) {
-    memcpy(converted_pixels.get(), data_->Data(), data_->length());
+    SwizzleIfNeeded(u8_color_type, crop_rect);
+    if (crop_rect) {
+      unsigned char* src_data =
+          static_cast<unsigned char*>(BufferBase()->Data());
+      unsigned char* dst_data =
+          static_cast<unsigned char*>(converted_pixels.get());
+      int src_index = (crop_rect->X() + crop_rect->Y() * width()) * 4;
+      int dst_index = 0;
+      int src_row_stride = width() * 4;
+      int dst_row_stride = crop_rect->Width() * 4;
+      for (int i = 0; i < crop_rect->Height(); i++) {
+        std::memcpy(dst_data + dst_index, src_data + src_index, dst_row_stride);
+        src_index += src_row_stride;
+        dst_index += dst_row_stride;
+      }
+    } else {
+      memcpy(converted_pixels.get(), data_->Data(), data_->length());
+    }
+    SwizzleIfNeeded(u8_color_type, crop_rect);
     return true;
   }
+
   bool conversion_result = false;
   if (!src_color_space.get())
     src_color_space = SkColorSpace::MakeSRGB();
@@ -739,16 +784,56 @@ bool ImageData::ImageDataInCanvasColorSettings(
     dst_color_space = SkColorSpace::MakeSRGB();
   std::unique_ptr<SkColorSpaceXform> xform =
       SkColorSpaceXform::New(src_color_space.get(), dst_color_space.get());
+
+  SkColorSpaceXform::ColorFormat src_color_format =
+      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
+  if (data_u16_)
+    src_color_format = SkColorSpaceXform::ColorFormat::kRGBA_U16_BE_ColorFormat;
+  else if (data_f32_)
+    src_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat;
+  SkColorSpaceXform::ColorFormat dst_color_format =
+      u8_color_type == kRGBAColorType ||
+              kN32_SkColorType == kRGBA_8888_SkColorType
+          ? SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat
+          : SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat;
+  if (canvas_pixel_format == kF16CanvasPixelFormat)
+    dst_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+
   // SkColorSpaceXform only accepts big-endian integers when source data is
   // uint16. Since ImageData is always little-endian, we need to convert back
   // and forth before passing uint16 data to SkColorSpaceXform::apply().
-  if (data_u16_)
-    this->SwapU16EndiannessForSkColorSpaceXform();
-  conversion_result =
-      xform->apply(dst_color_format, converted_pixels.get(), src_color_format,
-                   src_data, num_pixels, SkAlphaType::kUnpremul_SkAlphaType);
-  if (data_u16_)
-    this->SwapU16EndiannessForSkColorSpaceXform();
+  SwapU16EndiannessForSkColorSpaceXform(crop_rect);
+
+  if (crop_rect) {
+    unsigned char* src_data = static_cast<unsigned char*>(BufferBase()->Data());
+    unsigned char* dst_data =
+        static_cast<unsigned char*>(converted_pixels.get());
+    int src_data_type_size =
+        ImageData::StorageFormatDataSize(color_settings_.storageFormat());
+    int dst_pixel_size = dst_color_params.BytesPerPixel();
+    int src_index =
+        (crop_rect->X() + crop_rect->Y() * width()) * 4 * src_data_type_size;
+    int dst_index = 0;
+    int src_row_stride = width() * 4 * src_data_type_size;
+    int dst_row_stride = crop_rect->Width() * dst_pixel_size;
+    conversion_result = true;
+    for (int i = 0; i < crop_rect->Height(); i++) {
+      conversion_result &=
+          xform->apply(dst_color_format, dst_data + dst_index, src_color_format,
+                       src_data + src_index, crop_rect->Width(),
+                       SkAlphaType::kUnpremul_SkAlphaType);
+      if (!conversion_result)
+        break;
+      src_index += src_row_stride;
+      dst_index += dst_row_stride;
+    }
+  } else {
+    conversion_result = xform->apply(dst_color_format, converted_pixels.get(),
+                                     src_color_format, src_data, size_.Area(),
+                                     SkAlphaType::kUnpremul_SkAlphaType);
+  }
+
+  SwapU16EndiannessForSkColorSpaceXform(crop_rect);
   return conversion_result;
 }
 
