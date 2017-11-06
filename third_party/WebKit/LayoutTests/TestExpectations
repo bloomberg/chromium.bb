@@ -3811,6 +3811,6 @@ crbug.com/778575 [ Mac ] virtual/threaded/http/tests/devtools/tracing/hit-test.h
 
 # Sheriff failures 2017-11-03
 crbug.com/781171 [ Android ] external/wpt/css/css-timing/cubic-bezier-timing-functions-output.html [ Failure Crash Pass ]
-crbug.com/781171 [ Android ] external/wpt/css/css-timing/frames-timing-functions-output.html [ Failure Crash Pass ]
-crbug.com/781171 [ Android ] external/wpt/css/css-timing/frames-timing-functions-syntax.html [ Failure Crash Pass ]
-crbug.com/781171 [ Android ] external/wpt/css/css-timing/step-timing-functions-output.html [ Failure Crash Pass ]
+crbug.com/781171 [ Android ] external/wpt/css/css-timing/frames-timing-functions-output.html [ Skip ]
+crbug.com/781171 [ Android ] external/wpt/css/css-timing/frames-timing-functions-syntax.html [ Skip ]
+crbug.com/781171 [ Android ] external/wpt/css/css-timing/step-timing-functions-output.html [ Skip ]
