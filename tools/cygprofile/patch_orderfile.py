@@ -393,12 +393,24 @@ def main(argv):
   expanded_sections = _ExpandSections(
       profiled_sections, name_to_symbol_infos, offset_to_symbol_infos,
       section_to_symbols_map, symbol_to_sections_map, suffixed)
+
+  # Make sure the anchor functions are located in the right place, here and
+  # after everything else.
+  # See the comment in //tools/cygprofile/lightweight_cyrprofile.cc.
+  # The linker ignores sections it doesn't see, so this can stay for all builds.
+  for prefix in _PREFIXES:
+    print prefix + 'dummy_function_to_anchor_text'
+
   for section in expanded_sections:
     print section
   # The following is needed otherwise Gold only applies a partial sort.
   print '.text'  # gets methods not in a section, such as assembly
   for prefix in _PREFIXES:
     print prefix + '*'  # gets everything else
+
+  for prefix in _PREFIXES:
+    print prefix + 'dummy_function_at_the_end_of_text'
+
   return 0
 
 
