@@ -1119,8 +1119,8 @@ public class AwContents implements SmartClipProvider {
 
         mWindowAndroid = getWindowAndroid(mContext);
         mContentViewCore = new ContentViewCore(mContext, PRODUCT_VERSION);
-        mViewAndroidDelegate = new AwViewAndroidDelegate(
-                mContainerView, mContentsClient, mContentViewCore.getRenderCoordinates());
+        mViewAndroidDelegate =
+                new AwViewAndroidDelegate(mContainerView, mContentsClient, mScrollOffsetManager);
         initializeContentViewCore(mContentViewCore, mContext, mViewAndroidDelegate,
                 mInternalAccessAdapter, webContents, new AwGestureStateListener(),
                 mWindowAndroid.getWindowAndroid());
@@ -1134,8 +1134,7 @@ public class AwContents implements SmartClipProvider {
         mSettings.setWebContents(webContents);
         if (mAutofillProvider != null) mAutofillProvider.setWebContents(webContents);
 
-        final float dipScale = mWindowAndroid.getWindowAndroid().getDisplay().getDipScale();
-        mDisplayObserver.onDIPScaleChanged(dipScale);
+        mDisplayObserver.onDIPScaleChanged(getDeviceScaleFactor());
 
         updateContentViewCoreVisibility();
 
@@ -2190,6 +2189,10 @@ public class AwContents implements SmartClipProvider {
         return mPageScaleFactor;
     }
 
+    private float getDeviceScaleFactor() {
+        return mWindowAndroid.getWindowAndroid().getDisplay().getDipScale();
+    }
+
     /**
      * @see android.webkit.WebView#getScale()
      *
@@ -2198,7 +2201,7 @@ public class AwContents implements SmartClipProvider {
      */
     public float getScale() {
         if (isDestroyedOrNoOperation(WARN)) return 1;
-        return mPageScaleFactor * mContentViewCore.getDeviceScaleFactor();
+        return mPageScaleFactor * getDeviceScaleFactor();
     }
 
     /**
@@ -3070,7 +3073,7 @@ public class AwContents implements SmartClipProvider {
         if (mPageScaleFactor != pageScaleFactor) {
             float oldPageScaleFactor = mPageScaleFactor;
             mPageScaleFactor = pageScaleFactor;
-            float dipScale = mContentViewCore.getDeviceScaleFactor();
+            float dipScale = getDeviceScaleFactor();
             mContentsClient.getCallbackHelper().postOnScaleChangedScaled(
                     oldPageScaleFactor * dipScale, mPageScaleFactor * dipScale);
         }
@@ -3123,8 +3126,7 @@ public class AwContents implements SmartClipProvider {
     @Override
     public void extractSmartClipData(int x, int y, int width, int height) {
         if (!isDestroyedOrNoOperation(WARN)) {
-            mWebContents.requestSmartClipExtract(
-                    x, y, width, height, mContentViewCore.getRenderCoordinates());
+            mWebContents.requestSmartClipExtract(x, y, width, height);
         }
     }
 
@@ -3306,7 +3308,7 @@ public class AwContents implements SmartClipProvider {
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 // Note this will trigger IPC back to browser even if nothing is
                 // hit.
-                float dipScale = mContentViewCore.getDeviceScaleFactor();
+                float dipScale = getDeviceScaleFactor();
                 nativeRequestNewHitTestDataAt(mNativeAwContents,
                         event.getX() / dipScale, event.getY() / dipScale,
                         Math.max(event.getTouchMajor(), event.getTouchMinor()) / dipScale);

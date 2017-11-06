@@ -29,8 +29,8 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.SelectionClient;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.base.MenuSourceType;
 import org.chromium.ui.base.WindowAndroid;
@@ -44,9 +44,8 @@ public class SelectionPopupControllerTest {
     private SelectionPopupController mController;
     private Context mContext;
     private WindowAndroid mWindowAndroid;
-    private WebContents mWebContents;
+    private WebContentsImpl mWebContents;
     private View mView;
-    private RenderCoordinates mRenderCoordinates;
     private ActionMode mActionMode;
     private PackageManager mPackageManager;
 
@@ -103,16 +102,15 @@ public class SelectionPopupControllerTest {
 
         mContext = Mockito.mock(Context.class);
         mWindowAndroid = Mockito.mock(WindowAndroid.class);
-        mWebContents = Mockito.mock(WebContents.class);
+        mWebContents = Mockito.mock(WebContentsImpl.class);
         mView = Mockito.mock(View.class);
-        mRenderCoordinates = Mockito.mock(RenderCoordinates.class);
         mActionMode = Mockito.mock(ActionMode.class);
         mPackageManager = Mockito.mock(PackageManager.class);
 
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
 
         mController = SelectionPopupController.createForTesting(
-                mContext, mWindowAndroid, mWebContents, mView, mRenderCoordinates);
+                mContext, mWindowAndroid, mWebContents, mView);
     }
 
     @Test

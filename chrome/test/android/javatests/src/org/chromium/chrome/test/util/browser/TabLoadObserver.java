@@ -12,6 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content.browser.test.util.Coordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -89,6 +90,7 @@ public class TabLoadObserver extends EmptyTabObserver {
     public void assertLoaded() throws Exception {
         mTabLoadStartedCallback.waitForCallback(0, 1);
         mTabLoadFinishedCallback.waitForCallback(0, 1);
+        final Coordinates coord = Coordinates.createFor(mTab.getWebContents());
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -113,7 +115,7 @@ public class TabLoadObserver extends EmptyTabObserver {
                         return false;
                     }
 
-                    float scale = mTab.getContentViewCore().getPageScaleFactor();
+                    float scale = coord.getPageScaleFactor();
                     if (Math.abs(mExpectedScale - scale) >= FLOAT_EPSILON) {
                         updateFailureReason(String.format(
                                 Locale.ENGLISH,

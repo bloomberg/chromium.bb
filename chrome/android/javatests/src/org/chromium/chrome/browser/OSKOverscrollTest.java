@@ -20,6 +20,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.test.util.Coordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -134,8 +135,9 @@ public class OSKOverscrollTest {
         // Get the position of the footer and the viewport height before bringing up the OSK.
         Rect footerPositionBefore = DOMUtils.getNodeBounds(webContentsRef.get(), "footer");
         final int viewportHeightBeforeCss = getViewportHeight(webContentsRef.get());
-        final float cssToDevicePixFactor = viewCoreRef.get().getPageScaleFactor()
-                * viewCoreRef.get().getDeviceScaleFactor();
+        Coordinates coord = Coordinates.createFor(webContentsRef.get());
+        final float cssToDevicePixFactor =
+                coord.getPageScaleFactor() * coord.getDeviceScaleFactor();
 
         // Click on the unfocused input element for the first time to focus on it. This brings up
         // the OSK.

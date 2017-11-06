@@ -30,6 +30,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -363,12 +364,22 @@ void ContentViewCore::UpdateFrameInfo(
       viewport_size, page_scale_factor, content_offset,
   });
 
+  // Current viewport size in css.
+  gfx::SizeF view_size = gfx::SizeF(gfx::ScaleToCeiledSize(
+      GetViewportSizePix(), 1.0f / (dpi_scale() * page_scale_factor)));
+
+  // Adjust content size to be always at least as big as the actual
+  // viewport (as set by onSizeChanged).
+  float content_width = std::max(content_size.width(), view_size.width());
+  float content_height = std::max(content_size.height(), view_size.height());
+
   Java_ContentViewCore_updateFrameInfo(
       env, obj, scroll_offset.x(), scroll_offset.y(), page_scale_factor,
-      page_scale_factor_limits.x(), page_scale_factor_limits.y(),
-      content_size.width(), content_size.height(), viewport_size.width(),
-      viewport_size.height(), top_shown_pix, top_changed,
-      is_mobile_optimized_hint);
+      page_scale_factor_limits.x(), page_scale_factor_limits.y(), content_width,
+      content_height, top_shown_pix, top_changed, is_mobile_optimized_hint);
+  web_contents_->GetWebContentsAndroid()->UpdateFrameInfo(
+      scroll_offset, content_width, content_height, viewport_size,
+      page_scale_factor, page_scale_factor_limits, top_shown_pix);
 }
 
 void ContentViewCore::ShowSelectPopupMenu(RenderFrameHost* frame,

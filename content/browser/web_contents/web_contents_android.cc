@@ -781,4 +781,20 @@ void WebContentsAndroid::SetMediaSession(
   Java_WebContentsImpl_setMediaSession(env, obj_, j_media_session);
 }
 
+void WebContentsAndroid::UpdateFrameInfo(
+    const gfx::Vector2dF& scroll_offset,
+    float content_width,
+    float content_height,
+    const gfx::SizeF& viewport_size,
+    float page_scale_factor,
+    const gfx::Vector2dF& page_scale_factor_limits,
+    const float top_shown_pix) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_WebContentsImpl_updateFrameInfo(
+      env, obj_, scroll_offset.x(), scroll_offset.y(), content_width,
+      content_height, viewport_size.width(), viewport_size.height(),
+      page_scale_factor, page_scale_factor_limits.x(),
+      page_scale_factor_limits.y(), top_shown_pix);
+}
+
 }  // namespace content

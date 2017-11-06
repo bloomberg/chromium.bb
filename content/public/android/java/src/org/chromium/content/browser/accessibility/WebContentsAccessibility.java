@@ -26,6 +26,7 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider {
     protected final AccessibilityManager mAccessibilityManager;
     private final Context mContext;
     private final RenderCoordinates mRenderCoordinates;
-    private final WebContents mWebContents;
+    private final WebContentsImpl mWebContents;
     protected long mNativeObj;
     private Rect mAccessibilityFocusRect;
     private boolean mIsHovering;
@@ -87,33 +88,31 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider {
      * Create a WebContentsAccessibility object.
      */
     public static WebContentsAccessibility create(Context context, ViewGroup containerView,
-            WebContents webContents, RenderCoordinates renderCoordinates,
-            boolean shouldFocusOnPageLoad) {
+            WebContents webContents, boolean shouldFocusOnPageLoad) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             return new OWebContentsAccessibility(
-                    context, containerView, webContents, renderCoordinates, shouldFocusOnPageLoad);
+                    context, containerView, webContents, shouldFocusOnPageLoad);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             return new LollipopWebContentsAccessibility(
-                    context, containerView, webContents, renderCoordinates, shouldFocusOnPageLoad);
+                    context, containerView, webContents, shouldFocusOnPageLoad);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             return new KitKatWebContentsAccessibility(
-                    context, containerView, webContents, renderCoordinates, shouldFocusOnPageLoad);
+                    context, containerView, webContents, shouldFocusOnPageLoad);
         } else {
             return new WebContentsAccessibility(
-                    context, containerView, webContents, renderCoordinates, shouldFocusOnPageLoad);
+                    context, containerView, webContents, shouldFocusOnPageLoad);
         }
     }
 
     protected WebContentsAccessibility(Context context, ViewGroup containerView,
-            WebContents webContents, RenderCoordinates renderCoordinates,
-            boolean shouldFocusOnPageLoad) {
+            WebContents webContents, boolean shouldFocusOnPageLoad) {
         mContext = context;
-        mWebContents = webContents;
+        mWebContents = (WebContentsImpl) webContents;
         mAccessibilityFocusId = View.NO_ID;
         mIsHovering = false;
         mCurrentRootId = View.NO_ID;
         mView = containerView;
-        mRenderCoordinates = renderCoordinates;
+        mRenderCoordinates = mWebContents.getRenderCoordinates();
         mAccessibilityManager =
                 (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         mShouldFocusOnPageLoad = shouldFocusOnPageLoad;

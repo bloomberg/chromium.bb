@@ -12,6 +12,8 @@ import android.util.JsonReader;
 import org.junit.Assert;
 
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
 
 import java.io.IOException;
@@ -466,9 +468,11 @@ public class DOMUtils {
         int browserControlsLayoutHeight = viewCore.doBrowserControlsShrinkBlinkSize()
                 ? viewCore.getTopControlsHeightPix()
                 : 0;
-        int clickX = (int) viewCore.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterX());
-        int clickY = (int) viewCore.getRenderCoordinates().fromLocalCssToPix(bounds.exactCenterY())
-                + browserControlsLayoutHeight;
+        RenderCoordinates coord =
+                ((WebContentsImpl) viewCore.getWebContents()).getRenderCoordinates();
+        int clickX = (int) coord.fromLocalCssToPix(bounds.exactCenterX());
+        int clickY =
+                (int) coord.fromLocalCssToPix(bounds.exactCenterY()) + browserControlsLayoutHeight;
         return new int[] { clickX, clickY };
     }
 

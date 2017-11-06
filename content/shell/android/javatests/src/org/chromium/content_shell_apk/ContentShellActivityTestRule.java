@@ -16,6 +16,7 @@ import org.junit.Assert;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -95,6 +96,13 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      */
     public WebContents getWebContents() {
         return mDelegate.getWebContents();
+    }
+
+    /**
+     * Returns the RenderCoordinates of the WebContents.
+     */
+    public RenderCoordinates getRenderCoordinates() {
+        return mDelegate.getRenderCoordinates();
     }
 
     /**

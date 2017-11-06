@@ -39,6 +39,7 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content/browser/test/NativeLibraryTestRule.java",
     "javatests/src/org/chromium/content/browser/test/util/ApplicationUtils.java",
     "javatests/src/org/chromium/content/browser/test/util/ClickUtils.java",
+    "javatests/src/org/chromium/content/browser/test/util/Coordinates.java",
     "javatests/src/org/chromium/content/browser/test/util/Criteria.java",
     "javatests/src/org/chromium/content/browser/test/util/CriteriaHelper.java",
     "javatests/src/org/chromium/content/browser/test/util/DOMUtils.java",

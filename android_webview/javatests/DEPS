@@ -13,7 +13,6 @@ include_rules = [
   "!content/public/android/java/src/org/chromium/content/browser/ContentVideoView.java",
   "!content/public/android/java/src/org/chromium/content/browser/ContentViewCore.java",
   "!content/public/android/java/src/org/chromium/content/browser/ContentViewStatics.java",
-  "!content/public/android/java/src/org/chromium/content/browser/RenderCoordinates.java",
   "!content/public/android/java/src/org/chromium/content/browser/input/ImeAdapter.java",
   "!content/public/android/java/src/org/chromium/content/common/ContentSwitches.java",
 
