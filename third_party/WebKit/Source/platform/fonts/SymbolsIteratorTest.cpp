@@ -368,4 +368,10 @@ TEST_F(SymbolsIteratorTest, Emoji5AdditionsExceptFlags) {
         FontFallbackPriority::kEmojiEmoji}});
 }
 
+TEST_F(SymbolsIteratorTest, EmojiSubdivisionFlags) {
+  CHECK_RUNS(
+      {{"🏴󠁧󠁢󠁷󠁬󠁳󠁿🏴󠁧󠁢󠁳󠁣󠁴󠁿🏴󠁧󠁢",
+        FontFallbackPriority::kEmojiEmoji}});
+}
+
 }  // namespace blink

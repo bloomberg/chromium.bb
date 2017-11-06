@@ -240,4 +240,12 @@ TEST_F(RunSegmenterTest, ArmenianCyrillicCase) {
         FontFallbackPriority::kText}});
 }
 
+TEST_F(RunSegmenterTest, EmojiSubdivisionFlags) {
+  CHECK_RUNS_HORIZONTAL(
+      {{"🏴󠁧󠁢󠁷󠁬󠁳󠁿🏴󠁧󠁢󠁳󠁣󠁴󠁿🏴󠁧󠁢"
+        "󠁥󠁮󠁧󠁿",
+        USCRIPT_COMMON, OrientationIterator::kOrientationKeep,
+        FontFallbackPriority::kEmojiEmoji}});
+}
+
 }  // namespace blink
