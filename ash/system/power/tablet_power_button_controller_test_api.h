@@ -8,14 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 
-namespace base {
-class CommandLine;
-}  // namespace base
-
-namespace chromeos {
-class AccelerometerReader;
-}  // namespace chromeos
-
 namespace ui {
 class KeyEvent;
 }  // namespace ui
@@ -38,16 +30,6 @@ class TabletPowerButtonControllerTestApi {
   // If |controller_->shutdown_timer_| is running, stops it, runs its task, and
   // returns true. Otherwise, returns false.
   bool TriggerShutdownTimeout() WARN_UNUSED_RESULT;
-
-  // Returns true if |controller_| is observing |reader|.
-  bool IsObservingAccelerometerReader(
-      chromeos::AccelerometerReader* reader) const;
-
-  // Calls |controller_|'s ParseSpuriousPowerButtonSwitches() method.
-  void ParseSpuriousPowerButtonSwitches(const base::CommandLine& command_line);
-
-  // Calls |controller_|'s IsSpuriousPowerButtonEvent() method.
-  bool IsSpuriousPowerButtonEvent() const;
 
   // Sends |event| to |controller_->display_controller_|.
   void SendKeyEvent(ui::KeyEvent* event);

@@ -30,21 +30,6 @@ bool TabletPowerButtonControllerTestApi::TriggerShutdownTimeout() {
   return true;
 }
 
-bool TabletPowerButtonControllerTestApi::IsObservingAccelerometerReader(
-    chromeos::AccelerometerReader* reader) const {
-  DCHECK(reader);
-  return controller_->accelerometer_scoped_observer_.IsObserving(reader);
-}
-
-void TabletPowerButtonControllerTestApi::ParseSpuriousPowerButtonSwitches(
-    const base::CommandLine& command_line) {
-  controller_->ParseSpuriousPowerButtonSwitches(command_line);
-}
-
-bool TabletPowerButtonControllerTestApi::IsSpuriousPowerButtonEvent() const {
-  return controller_->IsSpuriousPowerButtonEvent();
-}
-
 void TabletPowerButtonControllerTestApi::SendKeyEvent(ui::KeyEvent* event) {
   controller_->display_controller_->OnKeyEvent(event);
 }
