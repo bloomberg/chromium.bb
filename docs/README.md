@@ -237,8 +237,6 @@ used when committed.
     Setting up profiling for `content_shell` on Android
 *   [Working Remotely with Android](working_remotely_with_android.md) - Building
     on a remote machine for an Android device connected to your local machine
-*   [Using FindBugs for Android](use_find_bugs_for_android.md) - Using the open
-    source static analysis tool findbugs on the Java code.
 *   [Android Test Instructions](android_test_instructions.md) - Running a build
     on an Android device or emulator.
 *   [Android Debugging](android_debugging_instructions.md) - Tools and tips for
