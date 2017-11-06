@@ -14,6 +14,7 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -43,6 +44,8 @@ namespace resource_coordinator {
 
 class TabManagerTest : public InProcessBrowserTest {
  public:
+  TabManagerTest() : scoped_set_tick_clock_for_testing_(&test_clock_) {}
+
   void OpenTwoTabs(const GURL& first_url, const GURL& second_url) {
     // Open two tabs. Wait for both of them to load.
     content::WindowedNotificationObserver load1(
@@ -65,6 +68,9 @@ class TabManagerTest : public InProcessBrowserTest {
 
     ASSERT_EQ(2, browser()->tab_strip_model()->count());
   }
+
+  base::SimpleTestTickClock test_clock_;
+  ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
 };
 
 bool ObserveNavEntryCommitted(const GURL& expected_url,
@@ -342,9 +348,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectRecentlyUsedTabs) {
   const int kProtectionTime = 5;
   TabManager* tab_manager = g_browser_process->GetTabManager();
 
-  base::SimpleTestTickClock test_clock_;
-  tab_manager->set_test_tick_clock(&test_clock_);
-
   auto* tsm = browser()->tab_strip_model();
 
   // Set the minimum time of protection.
@@ -512,9 +515,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, PurgeBackgroundRenderer) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
-
-  base::SimpleTestTickClock test_clock_;
-  tab_manager->set_test_tick_clock(&test_clock_);
 
   // Get three tabs open.
   content::WindowedNotificationObserver load1(

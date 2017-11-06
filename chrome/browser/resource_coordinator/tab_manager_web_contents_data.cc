@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -27,7 +28,6 @@ namespace resource_coordinator {
 
 TabManager::WebContentsData::WebContentsData(content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      test_tick_clock_(nullptr),
       time_to_purge_(base::TimeDelta::FromMinutes(30)),
       is_purged_(false),
       ukm_source_id_(0) {}
@@ -214,21 +214,7 @@ void TabManager::WebContentsData::CopyState(
     CreateForWebContents(new_contents);
     FromWebContents(new_contents)->tab_data_ =
         FromWebContents(old_contents)->tab_data_;
-    FromWebContents(new_contents)->test_tick_clock_ =
-        FromWebContents(old_contents)->test_tick_clock_;
   }
-}
-
-void TabManager::WebContentsData::set_test_tick_clock(
-    base::TickClock* test_tick_clock) {
-  test_tick_clock_ = test_tick_clock;
-}
-
-TimeTicks TabManager::WebContentsData::NowTicks() const {
-  if (!test_tick_clock_)
-    return TimeTicks::Now();
-
-  return test_tick_clock_->NowTicks();
 }
 
 void TabManager::WebContentsData::ReportUKMWhenTabIsClosed() {

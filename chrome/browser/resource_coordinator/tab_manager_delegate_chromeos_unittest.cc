@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/process/process_handle.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -285,7 +286,7 @@ TEST_F(TabManagerDelegateTest, IsRecentlyKilledArcProcess) {
 
   // When the process name is not in the map, IsRecentlyKilledArcProcess should
   // return false.
-  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeTicks now = NowTicks();
   EXPECT_FALSE(
       tab_manager_delegate.IsRecentlyKilledArcProcess(kProcessName1, now));
   EXPECT_FALSE(

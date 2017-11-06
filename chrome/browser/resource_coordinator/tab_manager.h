@@ -34,10 +34,6 @@ class BrowserList;
 class GURL;
 class TabStripModel;
 
-namespace base {
-class TickClock;
-}
-
 namespace content {
 class NavigationHandle;
 class WebContents;
@@ -145,10 +141,6 @@ class TabManager : public TabStripModelObserver,
 
   // Log memory statistics for the running processes, then call the callback.
   void LogMemory(const std::string& title, const base::Closure& callback);
-
-  // Used to set the test TickClock, which then gets used by NowTicks(). See
-  // |test_tick_clock_| for more details.
-  void set_test_tick_clock(base::TickClock* test_tick_clock);
 
   // Returns TabStats for all tabs in the current Chrome instance. The tabs are
   // sorted first by most recently used to least recently used Browser and
@@ -415,10 +407,6 @@ class TabManager : public TabStripModelObserver,
   // creating one if needed.
   WebContentsData* GetWebContentsData(content::WebContents* contents) const;
 
-  // Returns either the system's clock or the test clock. See |test_tick_clock_|
-  // for more details.
-  base::TimeTicks NowTicks() const;
-
   // Implementation of DiscardTab. Returns null if no tab was discarded.
   // Otherwise returns the new web_contents of the discarded tab.
   content::WebContents* DiscardTabImpl(DiscardTabCondition condition);
@@ -485,9 +473,6 @@ class TabManager : public TabStripModelObserver,
   bool IsNavigationDelayedForTest(
       const content::NavigationHandle* navigation_handle) const;
 
-  // Trigger |force_load_timer_| to fire. Use only in tests.
-  bool TriggerForceLoadTimerForTest();
-
   // Set |loading_slots_|. Use only in tests.
   void SetLoadingSlotsForTest(size_t loading_slots) {
     loading_slots_ = loading_slots;
@@ -518,10 +503,6 @@ class TabManager : public TabStripModelObserver,
   // no discard has happened yet.
   base::TimeTicks last_discard_time_;
 
-  // Wall-clock time of last priority adjustment, used to correct the above
-  // times for discontinuities caused by suspend/resume.
-  base::TimeTicks last_adjust_time_;
-
   // Number of times a tab has been discarded, for statistics.
   int discard_count_;
 
@@ -548,10 +529,6 @@ class TabManager : public TabStripModelObserver,
   // Responsible for automatically registering this class as an observer of all
   // TabStripModels. Automatically tracks browsers as they come and go.
   BrowserTabStripTracker browser_tab_strip_tracker_;
-
-  // Pointer to a test clock. If this is set, NowTicks() returns the value of
-  // this test clock. Otherwise it returns the system clock's value.
-  base::TickClock* test_tick_clock_;
 
   // Injected BrowserInfo list. Allows this to be tested end-to-end without
   // requiring a full browser environment. If specified these BrowserInfo will
