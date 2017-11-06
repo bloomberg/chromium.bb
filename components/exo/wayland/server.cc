@@ -1769,12 +1769,14 @@ void xdg_surface_v6_get_popup(wl_client* client,
 
   gfx::Point position = GetUserDataAs<WaylandPositioner>(positioner_resource)
                             ->CalculatePosition();
-  // |position| is relative to the parent's origin, and |origin| is in screen
-  // coordinates.
+  // |position| is relative to the parent's contents view origin, and |origin|
+  // is in screen coordinates.
   gfx::Point origin = position;
-  wm::ConvertPointToScreen(parent->GetWidget()->GetNativeWindow(), &origin);
+  views::View::ConvertPointToScreen(
+      parent->GetWidget()->widget_delegate()->GetContentsView(), &origin);
   shell_surface->SetParent(parent);
   shell_surface->SetOrigin(origin);
+  shell_surface->SetContainer(ash::kShellWindowId_SystemModalContainer);
   shell_surface->SetBoundsMode(ShellSurface::BoundsMode::FIXED);
   shell_surface->SetActivatable(false);
   shell_surface->SetCanMinimize(false);
