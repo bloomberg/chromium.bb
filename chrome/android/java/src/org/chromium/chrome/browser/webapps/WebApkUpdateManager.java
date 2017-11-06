@@ -104,7 +104,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
         boolean gotManifest = (fetchedInfo != null);
         boolean needsUpgrade = isShellApkVersionOutOfDate(mInfo)
-                || (gotManifest && needsUpdate(fetchedInfo, primaryIconUrl, badgeIconUrl));
+                || (gotManifest && needsUpdate(mInfo, fetchedInfo, primaryIconUrl, badgeIconUrl));
         Log.v(TAG, "Got Manifest: " + gotManifest);
         Log.v(TAG, "WebAPK upgrade needed: " + needsUpgrade);
 
@@ -284,59 +284,52 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
     /**
      * Checks whether the WebAPK needs to be updated.
+     * @param oldInfo        Data extracted from WebAPK manifest.
      * @param fetchedInfo    Fetched data for Web Manifest.
      * @param primaryIconUrl The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
      *                       suited for use as the launcher icon on this device.
      * @param badgeIconUrl   The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
      *                       suited for use as the badge icon on this device.
      */
-    private boolean needsUpdate(WebApkInfo fetchedInfo, String primaryIconUrl,
-            String badgeIconUrl) {
+    private static boolean needsUpdate(WebApkInfo oldInfo, WebApkInfo fetchedInfo,
+            String primaryIconUrl, String badgeIconUrl) {
         // We should have computed the Murmur2 hashes for the bitmaps at the primary icon URL and
         // the badge icon for {@link fetchedInfo} (but not the other icon URLs.)
         String fetchedPrimaryIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap()
                 .get(primaryIconUrl);
         String primaryIconMurmur2Hash = findMurmur2HashForUrlIgnoringFragment(
-                mInfo.iconUrlToMurmur2HashMap(), primaryIconUrl);
+                oldInfo.iconUrlToMurmur2HashMap(), primaryIconUrl);
         String fetchedBadgeIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap()
                 .get(badgeIconUrl);
         String badgeIconMurmur2Hash = findMurmur2HashForUrlIgnoringFragment(
-                mInfo.iconUrlToMurmur2HashMap(), badgeIconUrl);
+                oldInfo.iconUrlToMurmur2HashMap(), badgeIconUrl);
 
         return !TextUtils.equals(primaryIconMurmur2Hash, fetchedPrimaryIconMurmur2Hash)
                 || !TextUtils.equals(badgeIconMurmur2Hash, fetchedBadgeIconMurmur2Hash)
-                || !urlsMatchIgnoringFragments(
-                           mInfo.scopeUri().toString(), fetchedInfo.scopeUri().toString())
-                || !urlsMatchIgnoringFragments(
-                           mInfo.manifestStartUrl(), fetchedInfo.manifestStartUrl())
-                || !TextUtils.equals(mInfo.shortName(), fetchedInfo.shortName())
-                || !TextUtils.equals(mInfo.name(), fetchedInfo.name())
-                || mInfo.backgroundColor() != fetchedInfo.backgroundColor()
-                || mInfo.themeColor() != fetchedInfo.themeColor()
-                || mInfo.orientation() != fetchedInfo.orientation()
-                || mInfo.displayMode() != fetchedInfo.displayMode();
+                || !UrlUtilities.urlsMatchIgnoringFragments(
+                           oldInfo.scopeUri().toString(), fetchedInfo.scopeUri().toString())
+                || !UrlUtilities.urlsMatchIgnoringFragments(
+                           oldInfo.manifestStartUrl(), fetchedInfo.manifestStartUrl())
+                || !TextUtils.equals(oldInfo.shortName(), fetchedInfo.shortName())
+                || !TextUtils.equals(oldInfo.name(), fetchedInfo.name())
+                || oldInfo.backgroundColor() != fetchedInfo.backgroundColor()
+                || oldInfo.themeColor() != fetchedInfo.themeColor()
+                || oldInfo.orientation() != fetchedInfo.orientation()
+                || oldInfo.displayMode() != fetchedInfo.displayMode();
     }
 
     /**
      * Returns the Murmur2 hash for entry in {@link iconUrlToMurmur2HashMap} whose canonical
      * representation, ignoring fragments, matches {@link iconUrlToMatch}.
      */
-    private String findMurmur2HashForUrlIgnoringFragment(
+    private static String findMurmur2HashForUrlIgnoringFragment(
             Map<String, String> iconUrlToMurmur2HashMap, String iconUrlToMatch) {
         for (Map.Entry<String, String> entry : iconUrlToMurmur2HashMap.entrySet()) {
-            if (urlsMatchIgnoringFragments(entry.getKey(), iconUrlToMatch)) {
+            if (UrlUtilities.urlsMatchIgnoringFragments(entry.getKey(), iconUrlToMatch)) {
                 return entry.getValue();
             }
         }
         return null;
-    }
-
-    /**
-     * Returns whether the urls match ignoring fragments. Canonicalizes the URLs prior to doing the
-     * comparison.
-     */
-    protected boolean urlsMatchIgnoringFragments(String url1, String url2) {
-        return UrlUtilities.urlsMatchIgnoringFragments(url1, url2);
     }
 
     protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebApkInfo info,
