@@ -7,10 +7,14 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/scheduler/single_thread_task_runner.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace blink {
 
@@ -27,7 +31,8 @@ class WebWorkerFetchContext {
  public:
   virtual ~WebWorkerFetchContext() {}
 
-  virtual void InitializeOnWorkerThread(SingleThreadTaskRunnerRefPtr) = 0;
+  virtual void InitializeOnWorkerThread(
+      scoped_refptr<base::SingleThreadTaskRunner>) = 0;
 
   // Returns a new WebURLLoaderFactory which is associated with the worker
   // context. It can be called only once.

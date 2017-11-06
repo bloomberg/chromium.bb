@@ -360,7 +360,7 @@ WebURLLoaderFactoryImpl::CreateTestOnlyFactory() {
 
 std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
-    blink::SingleThreadTaskRunnerRefPtr task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (!loader_factory_getter_) {
     // In some tests like RenderViewTests loader_factory_getter_ is not
     // available. These tests can still use data URLs to bypass the

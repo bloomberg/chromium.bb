@@ -33,8 +33,8 @@ blink::WebScheduler* WebThreadImplForRendererScheduler::Scheduler() const {
   return web_scheduler_.get();
 }
 
-SingleThreadTaskRunnerRefPtr WebThreadImplForRendererScheduler::GetTaskRunner()
-    const {
+scoped_refptr<base::SingleThreadTaskRunner>
+WebThreadImplForRendererScheduler::GetTaskRunner() const {
   return task_runner_;
 }
 

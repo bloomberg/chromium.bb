@@ -101,7 +101,7 @@ class WebURLLoaderFactoryWithMock : public blink::WebURLLoaderFactory {
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      blink::SingleThreadTaskRunnerRefPtr task_runner) override {
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
     DCHECK(platform_);
     // This loader should be used only for process-local resources such as
     // data URLs.

@@ -18,7 +18,6 @@
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "public/platform/scheduler/single_thread_task_runner.h"
 #include "public/platform/site_engagement.mojom-shared.h"
 #include "public/web/WebSandboxFlags.h"
 #include "public/web/selection_menu_behavior.mojom-shared.h"
@@ -711,7 +710,8 @@ class WebLocalFrame : public WebFrame {
 
   // Returns frame-specific task runner to run tasks of this type on.
   // They have the same lifetime as the frame.
-  virtual SingleThreadTaskRunnerRefPtr GetTaskRunner(TaskType) = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
+      TaskType) = 0;
 
   // Returns the WebInputMethodController associated with this local frame.
   virtual WebInputMethodController* GetInputMethodController() = 0;

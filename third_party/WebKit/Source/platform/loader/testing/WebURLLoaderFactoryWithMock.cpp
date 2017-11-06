@@ -17,7 +17,7 @@ WebURLLoaderFactoryWithMock::~WebURLLoaderFactoryWithMock() {}
 
 std::unique_ptr<WebURLLoader> WebURLLoaderFactoryWithMock::CreateURLLoader(
     const WebURLRequest& request,
-    SingleThreadTaskRunnerRefPtr task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return mock_factory_->CreateURLLoader(nullptr);
 }
 

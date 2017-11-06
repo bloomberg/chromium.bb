@@ -20,7 +20,7 @@ BlinkInterfaceRegistryImpl::~BlinkInterfaceRegistryImpl() = default;
 void BlinkInterfaceRegistryImpl::AddInterface(
     const char* name,
     const blink::InterfaceFactory& factory,
-    blink::SingleThreadTaskRunnerRefPtr task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (!interface_registry_)
     return;
 

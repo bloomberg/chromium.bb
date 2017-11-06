@@ -10,9 +10,10 @@ namespace blink {
 namespace {
 
 class EmptyInterfaceRegistry : public InterfaceRegistry {
-  void AddInterface(const char* name,
-                    const InterfaceFactory& factory,
-                    SingleThreadTaskRunnerRefPtr task_runner) override {}
+  void AddInterface(
+      const char* name,
+      const InterfaceFactory& factory,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {}
 };
 
 }  // namespace

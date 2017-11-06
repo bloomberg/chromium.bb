@@ -20,7 +20,7 @@ class WebURLLoaderFactoryWithMock : public WebURLLoaderFactory {
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
-      SingleThreadTaskRunnerRefPtr) override;
+      scoped_refptr<base::SingleThreadTaskRunner>) override;
 
  private:
   // Not owned. The mock factory should outlive |this|.

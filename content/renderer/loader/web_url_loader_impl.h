@@ -68,7 +68,7 @@ class CONTENT_EXPORT WebURLLoaderFactoryImpl
 
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
-      blink::SingleThreadTaskRunnerRefPtr task_runner) override;
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
  private:
   base::WeakPtr<ResourceDispatcher> resource_dispatcher_;

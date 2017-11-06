@@ -316,7 +316,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ClearActiveFindMatch() override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
   WebFrameScheduler* Scheduler() const override;
-  SingleThreadTaskRunnerRefPtr GetTaskRunner(TaskType) override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
   WebInputMethodController* GetInputMethodController() override;
 
   void ExtractSmartClipData(WebRect rect_in_viewport,
