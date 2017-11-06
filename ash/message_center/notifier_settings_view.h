@@ -45,6 +45,9 @@ class ASH_EXPORT NotifierSettingsView
   void UpdateNotifierIcon(const message_center::NotifierId& notifier_id,
                           const gfx::ImageSkia& icon) override;
 
+  // Overridden from views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NotifierSettingsViewTest, TestLearnMoreButton);
   FRIEND_TEST_ALL_PREFIXES(NotifierSettingsViewTest, TestEmptyNotifierView);
