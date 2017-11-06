@@ -48,8 +48,7 @@ constexpr CGFloat kImageXInset = 16;
 constexpr CGSize kImageSize{16, 16};
 constexpr CGFloat kDividerWidth = 1;
 constexpr CGFloat kDividerYInset = 8;
-constexpr CGFloat kButtonLeadingInset = 8;
-constexpr CGFloat kButtonTrailingInset = 5;
+constexpr CGFloat kButtonXInset = 8;
 constexpr CGFloat kButtonYInset = 6;
 
 constexpr CGFloat kTextX = 46;
@@ -58,7 +57,7 @@ constexpr CGFloat kFilenameWithStatusY = 22;
 constexpr CGFloat kStatusTextY = 8;
 constexpr CGFloat kMenuButtonSpacing = 8;
 
-constexpr CGFloat kMenuButtonTrailingMargin = 9;
+constexpr CGFloat kMenuButtonTrailingMargin = 12;
 constexpr CGFloat kMenuButtonSize = 24;
 constexpr const gfx::VectorIcon* kMenuButtonIcon = &kHorizontalMenuIcon;
 
@@ -245,10 +244,9 @@ NSTextField* MakeLabel(
   if ((self = [super initWithFrame:NSMakeRect(0, 0, kNormalSize.width,
                                               kNormalSize.height)])) {
     const NSRect bounds = self.bounds;
-    const NSRect buttonRect =
-        NSMakeRect(kButtonLeadingInset, kButtonYInset,
-                   NSWidth(bounds) - kButtonLeadingInset - kButtonTrailingInset,
-                   NSHeight(bounds) - kButtonYInset * 2);
+    const NSRect buttonRect = NSMakeRect(kButtonXInset, kButtonYInset,
+                                         NSWidth(bounds) - kButtonXInset * 2,
+                                         NSHeight(bounds) - kButtonYInset * 2);
     base::scoped_nsobject<MDHoverButton> button([[MDHoverButton alloc]
         initWithFrame:[self cr_localizedRect:buttonRect]]);
     button_ = button;
