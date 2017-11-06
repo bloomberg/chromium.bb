@@ -200,9 +200,9 @@
         <div id="content">
           <div id="name-and-version" class="layout horizontal center">
             <div id="name">[[data.name]]</div>
-            <template is="dom-if" if="[[inDevMode]]">
-              <span id="version">[[data.version]]</span>
-            </template>
+            <span id="version" hidden$="[[!inDevMode]]">
+              [[data.version]]
+            </span>
           </div>
           <div id="description" hidden$="[[hasWarnings_(data.*)]]">
             [[data.description]]
