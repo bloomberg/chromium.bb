@@ -564,64 +564,43 @@ TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
   EXPECT_EQ(kNetworkName, ssid->GetString());
 }
 
-TEST_F(NetworkConfigurationHandlerMockTest, ClearProperties) {
-  std::string service_path = "/service/1";
-  std::string networkName = "MyNetwork";
-  std::string key = "SSID";
-  std::unique_ptr<base::Value> networkNameValue(new base::Value(networkName));
+TEST_F(NetworkConfigurationHandlerTest, ClearProperties) {
+  constexpr char kServicePath[] = "/service/1";
+  constexpr char kNetworkName[] = "MyNetwork";
 
-  // First set up a value to clear.
-  base::DictionaryValue value;
-  value.SetString(key, networkName);
-  dictionary_value_result_ = &value;
-  EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
-      .WillOnce(
-          Invoke(this, &NetworkConfigurationHandlerMockTest::OnSetProperties));
-  network_configuration_handler_->SetShillProperties(
-      service_path, value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::Bind(&base::DoNothing), base::Bind(&ErrorCallback));
-  base::RunLoop().RunUntilIdle();
+  // Set up a value to be cleared.
+  GetShillServiceClient()->AddService(
+      kServicePath, std::string() /* guid */, kNetworkName, shill::kTypeWifi,
+      std::string() /* state */, true /* visible */);
 
   // Now clear it.
-  std::vector<std::string> values_to_clear;
-  values_to_clear.push_back(key);
-  EXPECT_CALL(*mock_service_client_, ClearProperties(_, _, _, _))
-      .WillOnce(Invoke(
-          this, &NetworkConfigurationHandlerMockTest::OnClearProperties));
+  std::vector<std::string> names = {shill::kSSIDProperty};
   network_configuration_handler_->ClearShillProperties(
-      service_path, values_to_clear, base::Bind(&base::DoNothing),
+      kServicePath, names, base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
+
+  const base::DictionaryValue* properties =
+      GetShillServiceClient()->GetServiceProperties(kServicePath);
+  ASSERT_TRUE(properties);
+  const base::Value* ssid = properties->FindKeyOfType(
+      shill::kSSIDProperty, base::Value::Type::STRING);
+  EXPECT_FALSE(ssid);
 }
 
-TEST_F(NetworkConfigurationHandlerMockTest, ClearPropertiesError) {
-  std::string service_path = "/service/1";
-  std::string networkName = "MyNetwork";
-  std::string key = "SSID";
-  std::unique_ptr<base::Value> networkNameValue(new base::Value(networkName));
+TEST_F(NetworkConfigurationHandlerTest, ClearProperties_Error) {
+  constexpr char kServicePath[] = "/service/1";
+  constexpr char kNetworkName[] = "MyNetwork";
 
-  // First set up a value to clear.
-  base::DictionaryValue value;
-  value.SetString(key, networkName);
-  dictionary_value_result_ = &value;
-  EXPECT_CALL(*mock_service_client_, SetProperties(_, _, _, _))
-      .WillOnce(
-          Invoke(this, &NetworkConfigurationHandlerMockTest::OnSetProperties));
-  network_configuration_handler_->SetShillProperties(
-      service_path, value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::Bind(&base::DoNothing), base::Bind(&ErrorCallback));
-  base::RunLoop().RunUntilIdle();
+  GetShillServiceClient()->AddService(
+      kServicePath, std::string() /* guid */, kNetworkName, shill::kTypeWifi,
+      std::string() /* state */, true /* visible */);
 
-  // Now clear it.
-  std::vector<std::string> values_to_clear;
-  values_to_clear.push_back(key);
-  EXPECT_CALL(*mock_service_client_, ClearProperties(_, _, _, _))
-      .WillOnce(Invoke(
-          this, &NetworkConfigurationHandlerMockTest::OnClearPropertiesError));
-
-  std::string error;
+  // Now clear it. Even for unknown property removal (i.e. fail to clear it),
+  // the whole ClearShillProperties() should succeed.
+  std::vector<std::string> names = {"Unknown name"};
   network_configuration_handler_->ClearShillProperties(
-      service_path, values_to_clear, base::Bind(&base::DoNothing),
+      kServicePath, names, base::Bind(&base::DoNothing),
       base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
 }
