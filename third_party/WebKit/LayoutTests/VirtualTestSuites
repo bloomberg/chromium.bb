@@ -426,6 +426,11 @@
     "args": ["--enable-blink-features=LayoutNG"]
   },
   {
+    "prefix": "layout_ng_paint",
+    "base": "fast/inline",
+    "args": ["--enable-blink-features=LayoutNG,LayoutNGPaintFragments"]
+  },
+  {
     "prefix": "feature-policy",
     "base": "http/tests/feature-policy",
     "args": ["--enable-blink-features=FeaturePolicy"]

@@ -537,6 +537,71 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 crbug.com/724701 virtual/layout_ng/overflow/overflow-basic-004.html [ Failure ]
 crbug.com/728378 virtual/layout_ng/overflow/overflow-position-003.html [ Failure ]
 
+# ====== LayoutNG,LayoutNGPaintFragments ======
+
+### Crash site: DrawingRecorder.cpp
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/dirtyLinesForInline.html [ Crash ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/drawStyledEmptyInlinesWithWS.html [ Failure Crash ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-long-image.html [ Failure Crash ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-repeat-y.html [ Failure Crash ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background.html [ Crash Failure ]
+
+### Crash site: PaintController.cpp
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Crash ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/styledEmptyInlinesWithBRs.html [ Crash ]
+
+### Crash site: layout_ng_block_flow.cc
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/continuation-positioned-reparenting.html [ Crash ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-offsetLeft-relpos.html [ Crash ]
+
+### Crash site: ng_inline_node.cc
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-adjust-position-crash.html [ Crash ]
+
+### Crash site: ng_line_height_metrics.cc(39)
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-append-child-crash.html [ Crash ]
+
+### Image/text failures only on LayoutNGPaintFragments
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/001.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/002.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/25277-2.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/25277.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/br-text-decoration.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/continuation-outlines-with-layers-2.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/emptyInlinesWithinLists.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-continuation-borders.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-focus-ring.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-offsetLeft-continuation.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-padding-disables-text-quirk.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-text-quirk-bpm.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-width-containing-collapsed-whitespace-and-image-in-float.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-wrap-with-parent-padding.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/long-wrapped-line.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/nested-top-alignment.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/outline-offset.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/percentage-margins.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/positioned-object-between-replaced-elements.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/positionedLifetime.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/vertical-align-text-bottom.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/vertical-align-with-fallback-fonts.html [ Failure ]
+
+### Image/text failures also on LayoutNG
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/absolute-positioned-inline-in-centred-block.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/br-client-rect.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/break-between-nobr.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/continuation-outlines-with-layers.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/continuation-outlines.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/drawStyledEmptyInlines.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-borders-with-bidi-override.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-repeat-x.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-destroy-dirty-lines-crash.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-focus-ring-under-absolute-enclosing-relative-div.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-position-top-align.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-with-empty-inline-children.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/justify-emphasis-inline-box.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/left-right-center-inline-alignment-in-ltr-and-rtl-blocks.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/out-of-flow-objects-and-whitespace-after-empty-inline.html [ Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/outline-continuations.html [ Failure ]
+
 # ====== LayoutNG-only failures until here ======
 
 # ====== DevTools test migration failures from here ======
