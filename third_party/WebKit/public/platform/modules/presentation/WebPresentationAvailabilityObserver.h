@@ -7,7 +7,7 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "public/platform/modules/presentation/presentation.mojom-shared.h"
 
 namespace blink {
 
