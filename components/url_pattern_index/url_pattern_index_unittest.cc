@@ -5,7 +5,9 @@
 #include "components/url_pattern_index/url_pattern_index.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <memory>
+#include <numeric>
 #include <string>
 #include <vector>
 
@@ -33,6 +35,20 @@ class UrlPatternIndexTest : public ::testing::Test {
     return !!offset.o;
   }
 
+  void AddSimpleUrlRule(std::string pattern, uint32_t id, uint32_t priority) {
+    auto pattern_offset = flat_builder_->CreateString(pattern);
+
+    flat::UrlRuleBuilder rule_builder(*flat_builder_);
+    rule_builder.add_options(flat::OptionFlag_APPLIES_TO_THIRD_PARTY |
+                             flat::OptionFlag_APPLIES_TO_FIRST_PARTY);
+    rule_builder.add_url_pattern(pattern_offset);
+    rule_builder.add_id(id);
+    rule_builder.add_priority(priority);
+    auto rule_offset = rule_builder.Finish();
+
+    index_builder_->IndexUrlRule(rule_offset);
+  }
+
   void Finish() {
     const auto index_offset = index_builder_->Finish();
     flat_builder_->Finish(index_offset);
@@ -47,12 +63,23 @@ class UrlPatternIndexTest : public ::testing::Test {
       base::StringPiece document_origin_string = base::StringPiece(),
       proto::ElementType element_type = kOther,
       proto::ActivationType activation_type = kNoActivation,
-      bool disable_generic_rules = false) {
+      bool disable_generic_rules = false) const {
     const GURL url(url_string);
     const url::Origin document_origin = GetOrigin(document_origin_string);
     return index_matcher_->FindMatch(
         url, document_origin, element_type, activation_type,
-        IsThirdParty(url, document_origin), disable_generic_rules);
+        IsThirdParty(url, document_origin), disable_generic_rules,
+        UrlPatternIndexMatcher::FindRuleStrategy::kAny);
+  }
+
+  const flat::UrlRule* FindHighestPriorityMatch(
+      base::StringPiece url_string) const {
+    return index_matcher_->FindMatch(
+        GURL(url_string), url::Origin(), kOther /*element_type*/,
+        kNoActivation /*activation_type*/, true /*is_third_party*/,
+        false /*disable_generic_rules*/,
+        UrlPatternIndexMatcher::FindRuleStrategy::
+            kHighestPriority /*strategy*/);
   }
 
   bool IsOutOfRange(const flat::UrlRule* rule) const {
@@ -702,6 +729,47 @@ TEST_F(UrlPatternIndexTest, FindMatchReturnsCorrectRules) {
 
   EXPECT_FALSE(
       FindMatch("http://example." + std::to_string(kNumOfPatterns) + ".com"));
+}
+
+// Tests UrlPatternIndexMatcher::FindMatch works with the kHighestPriority match
+// strategy.
+TEST_F(UrlPatternIndexTest, FindMatchHighestPriority) {
+  const size_t kNumPatternTypes = 15;
+
+  int id = 1;
+  auto pattern_for_number = [](size_t num) {
+    return "http://" + std::to_string(num) + ".com";
+  };
+
+  for (size_t i = 1; i <= kNumPatternTypes; i++) {
+    // For pattern type |i|, add |i| rules with priority from 1 to |i|.
+    std::string pattern = pattern_for_number(i);
+
+    // Create a shuffled vector of priorities from 1 to |i|.
+    std::vector<uint32_t> priorities(i);
+    std::iota(priorities.begin(), priorities.end(), 1);
+    std::random_shuffle(priorities.begin(), priorities.end());
+
+    for (size_t j = 0; j < i; j++) {
+      AddSimpleUrlRule(pattern, id, priorities[j]);
+      id++;
+    }
+  }
+  Finish();
+
+  for (size_t i = 1; i <= kNumPatternTypes; i++) {
+    std::string pattern = pattern_for_number(i);
+    SCOPED_TRACE(::testing::Message() << "UrlPattern: " << pattern);
+
+    const flat::UrlRule* rule = FindHighestPriorityMatch(pattern);
+    ASSERT_TRUE(rule);
+
+    EXPECT_EQ(i, rule->priority());
+  }
+
+  EXPECT_FALSE(FindHighestPriorityMatch(pattern_for_number(0)));
+  EXPECT_FALSE(
+      FindHighestPriorityMatch(pattern_for_number(kNumPatternTypes + 1)));
 }
 
 }  // namespace url_pattern_index
