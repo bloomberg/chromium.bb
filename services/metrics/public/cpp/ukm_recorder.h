@@ -24,6 +24,7 @@ class PluginInfoMessageFilter;
 class ServiceWorkerPageLoadMetricsObserver;
 class SubresourceFilterMetricsObserver;
 class UkmPageLoadMetricsObserver;
+class UseCounterPageLoadMetricsObserver;
 class LocalNetworkRequestsPageLoadMetricsObserver;
 
 namespace blink {
@@ -93,6 +94,7 @@ class METRICS_EXPORT UkmRecorder {
   friend SubresourceFilterMetricsObserver;
   friend TestRecordingHelper;
   friend UkmInterface;
+  friend UseCounterPageLoadMetricsObserver;
   friend content::RenderWidgetHostLatencyTracker;
   friend password_manager::PasswordManagerMetricsRecorder;
   friend previews::PreviewsUKMObserver;

@@ -396,12 +396,11 @@ class PageLoadMetricsObserver {
 
   // Invoked when there is a change in either the main_frame_metadata or the
   // subframe_metadata's loading behavior_flags.
-  virtual void OnLoadingBehaviorObserved(
-      const page_load_metrics::PageLoadExtraInfo& extra_info) {}
+  virtual void OnLoadingBehaviorObserved(const PageLoadExtraInfo& extra_info) {}
 
   // Invoked when new use counter features are observed across all frames.
-  virtual void OnFeaturesUsageObserved(
-      const mojom::PageLoadFeatures& features) {}
+  virtual void OnFeaturesUsageObserved(const mojom::PageLoadFeatures& features,
+                                       const PageLoadExtraInfo& extra_info) {}
 
   // Invoked when a media element starts playing.
   virtual void MediaStartedPlaying(

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/page_load_metrics/observers/use_counter/ukm_features.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 #include "base/metrics/histogram_macros.h"
 
@@ -26,8 +29,9 @@ UseCounterPageLoadMetricsObserver::OnCommit(
 }
 
 void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
-    const Features& features) {
-  for (auto feature : features.features) {
+    const Features& features,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  for (WebFeature feature : features.features) {
     // Verify that kPageVisits is only observed at most once per observer.
     DCHECK(feature != WebFeature::kPageVisits);
     // The usage of each feature should be only measured once. With OOPIF,
@@ -38,5 +42,10 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
     UMA_HISTOGRAM_ENUMERATION(internal::kFeaturesHistogramName, feature,
                               WebFeature::kNumberOfFeatures);
     features_recorded_.set(static_cast<size_t>(feature));
+    if (IsAllowedUkmFeature(feature)) {
+      ukm::builders::Blink_UseCounter(extra_info.source_id)
+          .SetFeature(static_cast<int64_t>(feature))
+          .Record(ukm::UkmRecorder::Get());
+    }
   }
 }
