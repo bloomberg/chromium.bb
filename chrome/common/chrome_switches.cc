@@ -971,7 +971,7 @@ const char kWatcherProcess[]                = "watcher";
 const char kWindows10CustomTitlebar[]       = "windows10-custom-titlebar";
 #endif  // defined(OS_WIN)
 
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#if BUILDFLAG(ENABLE_MUS)
 // Enables Mus+ash (out-of-process ash and mus). See //ash/README.md
 const char kMash[]                          = "mash";
 
@@ -979,9 +979,6 @@ const char kMash[]                          = "mash";
 // NOTE: Used by the Chrome OS crash_reporter to identify mash processes. If you
 // change or remove the flag please update platform2/crash_reporter.
 const char kMashServiceName[] = "mash-service-name";
-
-// Used to enable mus as a separate process, but chrome+ash still together.
-const char kMus[] = "mus";
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)

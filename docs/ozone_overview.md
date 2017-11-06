@@ -163,7 +163,7 @@ Then to run for example the headless platform:
 To build `chrome`, do this from the `src` directory:
 
 ``` shell
-gn args out/OzoneLinuxDesktop --args="use_ozone=true enable_package_mash_services=true"
+gn args out/OzoneLinuxDesktop --args="use_ozone=true enable_mus=true"
 ninja -C out/OzoneLinuxDesktop chrome
 ```
 Then to run for example the X11 platform:
@@ -255,7 +255,7 @@ launching `chrome` from a Wayland environment such as `weston`. Execute the
 following commands:
 
 ``` shell
-gn args out/OzoneWayland --args="use_ozone=true enable_package_mash_services=true"
+gn args out/OzoneWayland --args="use_ozone=true enable_mus=true"
 ninja -C out/OzoneWayland chrome
 ./out/OzoneWayland/chrome --ozone-platform=wayland --mus
 ```

@@ -32,6 +32,7 @@
 #include "printing/features/features.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "ui/base/ui_features.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/common/resource_usage_reporter.mojom.h"
@@ -58,7 +59,7 @@
 #include "chrome/utility/extensions/extensions_handler.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#if BUILDFLAG(ENABLE_MUS)
 #include "chrome/utility/mash_service_factory.h"
 #endif
 
@@ -335,7 +336,7 @@ void ChromeContentUtilityClient::RegisterServices(
   }
 #endif
 
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#if BUILDFLAG(ENABLE_MUS)
   RegisterMashServices(services);
 #endif
 }

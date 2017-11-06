@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
+#include "ui/base/ui_features.h"
 
 namespace features {
 
@@ -55,6 +56,10 @@ UI_BASE_EXPORT extern const char kUseSkiaRenderer[];
 // Test related.
 UI_BASE_EXPORT extern const char kDisallowNonExactResourceReuse[];
 UI_BASE_EXPORT extern const char kMangleLocalizedStrings[];
+
+#if BUILDFLAG(ENABLE_MUS)
+UI_BASE_EXPORT extern const char kMus[];
+#endif
 
 }  // namespace switches
 

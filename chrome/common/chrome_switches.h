@@ -12,6 +12,7 @@
 #include "chrome/common/features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
+#include "ui/base/ui_features.h"
 
 // Don't add more switch files here. This is linked into some places like the
 // installer where dependencies should be limited. Instead, have files
@@ -295,7 +296,7 @@ extern const char kWatcherProcess[];
 extern const char kWindows10CustomTitlebar[];
 #endif  // defined(OS_WIN)
 
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#if BUILDFLAG(ENABLE_MUS)
 extern const char kMash[];
 extern const char kMashServiceName[];
 extern const char kMus[];

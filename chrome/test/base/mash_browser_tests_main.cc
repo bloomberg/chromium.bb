@@ -11,6 +11,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_launcher.h"
 #include "ui/aura/env.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace {
 

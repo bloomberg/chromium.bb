@@ -14,9 +14,11 @@
 #include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
 #include "headless/public/headless_shell.h"
+#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/switches.h"
 
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#if BUILDFLAG(ENABLE_MUS)
 #include "services/service_manager/runner/common/client_util.h"
 #endif
 
@@ -102,7 +104,7 @@ int ChromeMain(int argc, const char** argv) {
   }
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_MUS)
   if (service_manager::ServiceManagerIsRemote() ||
       command_line->HasSwitch(switches::kMash)) {
     params.create_discardable_memory = false;
@@ -118,7 +120,7 @@ int ChromeMain(int argc, const char** argv) {
     params.create_discardable_memory = true;
     params.env_mode = aura::Env::Mode::MUS;
   }
-#endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+#endif  // BUILDFLAG(ENABLE_MUS)
 
   int rv = content::ContentMain(params);
 

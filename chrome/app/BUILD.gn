@@ -375,7 +375,7 @@ static_library("test_support") {
     ]
   }
 
-  if (enable_package_mash_services) {
+  if (enable_mus) {
     deps += [
       "//mash/common",
       "//mash/quick_launch/public/interfaces:constants",
@@ -430,7 +430,7 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
   source =
       "//chrome/browser/chrome_content_packaged_services_manifest_overlay.json"
   packaged_services = chrome_packaged_services
-  if (enable_package_mash_services) {
+  if (enable_mus) {
     packaged_services += [ "//mash/quick_launch:manifest" ]
   }
   if (is_chromeos) {
@@ -439,7 +439,6 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
       "//ash/mus:manifest",
       "//ash/touch_hud/mus:manifest",
       "//components/font_service:manifest",
-      "//services/ui:manifest",
     ]
   }
 }
@@ -482,7 +481,7 @@ group("chrome_content_manifest_overlays") {
     ":chrome_content_utility_manifest_overlay",
   ]
 
-  if (enable_package_mash_services) {
+  if (enable_mus) {
     deps += [ ":chrome_content_packaged_services_manifest_overlay_for_mash" ]
   }
 }
@@ -543,7 +542,7 @@ if (use_aura) {
       ":chrome_content_utility_manifest",
     ]
 
-    if (enable_package_mash_services) {
+    if (enable_mus) {
       deps += [ ":chrome_content_packaged_services_manifest_for_mash" ]
     }
   }

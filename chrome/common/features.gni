@@ -49,10 +49,6 @@ declare_args() {
   enable_one_click_signin =
       is_win || is_mac || (is_linux && !is_chromeos && !is_chromecast)
 
-  # Set to true to bundle all the mash related mojo services into chrome.
-  # Specify --mash to chrome to have chrome start the mash environment.
-  enable_package_mash_services = is_chromeos
-
   enable_service_discovery = enable_mdns || is_mac
 
   # Enables use of the session service, which is enabled by default.

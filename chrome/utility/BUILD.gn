@@ -55,6 +55,7 @@ static_library("utility") {
     "//sql",
     "//third_party/libxml",
     "//third_party/zlib/google:zip",
+    "//ui/base:ui_features",
   ]
 
   if (!is_android) {
@@ -144,7 +145,7 @@ static_library("utility") {
     }
   }
 
-  if (enable_package_mash_services) {
+  if (enable_mus) {
     sources += [
       "mash_service_factory.cc",
       "mash_service_factory.h",
