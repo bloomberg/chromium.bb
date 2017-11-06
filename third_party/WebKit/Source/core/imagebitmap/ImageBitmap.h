@@ -32,10 +32,7 @@ enum AlphaDisposition {
   kPremultiplyAlpha,
   kDontPremultiplyAlpha,
 };
-enum DataColorFormat {
-  kRGBAColorType,
-  kN32ColorType,
-};
+
 enum ColorSpaceInfoUpdate {
   kUpdateColorSpaceInformation,
   kDontUpdateColorSpaceInformation,
@@ -97,7 +94,7 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   scoped_refptr<StaticBitmapImage> BitmapImage() const { return image_; }
   scoped_refptr<Uint8Array> CopyBitmapData();
   scoped_refptr<Uint8Array> CopyBitmapData(AlphaDisposition,
-                                           DataColorFormat = kRGBAColorType);
+                                           DataU8ColorType = kRGBAColorType);
   unsigned long width() const;
   unsigned long height() const;
   IntSize Size() const;

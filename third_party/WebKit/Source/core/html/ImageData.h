@@ -132,9 +132,17 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
 
   DOMArrayBufferBase* BufferBase() const;
   CanvasColorParams GetCanvasColorParams();
+
+  // DataU8ColorType param specifies if the converted pixels in 8-8-8-8 pixel
+  // format should respect the "native" 32bit ARGB format of Skia's blitters.
+  // For example, if ImageDataInCanvasColorSettings() is called to fill an
+  // ImageBuffer, kRGBAColorType should be used. If the converted pixels are
+  // used to create an ImageBitmap, kN32ColorType should be used.
   bool ImageDataInCanvasColorSettings(CanvasColorSpace,
                                       CanvasPixelFormat,
-                                      std::unique_ptr<uint8_t[]>&);
+                                      std::unique_ptr<uint8_t[]>&,
+                                      DataU8ColorType,
+                                      const IntRect* = nullptr);
 
   // ImageBitmapSource implementation
   IntSize BitmapSourceSize() const override { return size_; }
@@ -191,7 +199,8 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
   static DOMFloat32Array* ConvertFloat16ArrayToFloat32Array(const uint16_t*,
                                                             unsigned);
 
-  void SwapU16EndiannessForSkColorSpaceXform();
+  void SwapU16EndiannessForSkColorSpaceXform(const IntRect* = nullptr);
+  void SwizzleIfNeeded(DataU8ColorType, const IntRect*);
 };
 
 }  // namespace blink

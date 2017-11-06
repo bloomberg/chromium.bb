@@ -35,6 +35,11 @@
 
 namespace blink {
 
+enum DataU8ColorType {
+  kRGBAColorType,
+  kN32ColorType,
+};
+
 enum ImageDataStorageFormat {
   kUint8ClampedArrayStorageFormat,
   kUint16ArrayStorageFormat,

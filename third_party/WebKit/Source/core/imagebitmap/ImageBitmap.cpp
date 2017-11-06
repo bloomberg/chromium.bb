@@ -197,8 +197,7 @@ void freePixels(const void*, void* pixels) {
 scoped_refptr<StaticBitmapImage> NewImageFromRaster(
     const SkImageInfo& info,
     scoped_refptr<Uint8Array>&& image_pixels) {
-  unsigned image_row_bytes = info.width() * info.bytesPerPixel();
-  SkPixmap pixmap(info, image_pixels->Data(), image_row_bytes);
+  SkPixmap pixmap(info, image_pixels->Data(), info.minRowBytes());
 
   Uint8Array* pixels = image_pixels.get();
   if (pixels) {
@@ -208,6 +207,13 @@ scoped_refptr<StaticBitmapImage> NewImageFromRaster(
 
   return StaticBitmapImage::Create(
       SkImage::MakeFromRaster(pixmap, freePixels, pixels));
+}
+
+scoped_refptr<StaticBitmapImage> NewImageFromRaster(
+    const SkImageInfo& info,
+    std::unique_ptr<uint8_t[]>& image_pixels) {
+  SkPixmap pixmap(info, image_pixels.get(), info.minRowBytes());
+  return StaticBitmapImage::Create(SkImage::MakeRasterCopy(pixmap));
 }
 
 scoped_refptr<StaticBitmapImage> FlipImageVertically(
@@ -535,18 +541,6 @@ ImageBitmap::ImageBitmap(const void* pixel_data,
   image_->SetOriginClean(is_image_bitmap_origin_clean);
 }
 
-static void SwizzleImageDataIfNeeded(ImageData* data) {
-  if (!data || (kN32_SkColorType != kBGRA_8888_SkColorType) ||
-      (data->GetCanvasColorParams().GetSkColorSpaceForSkSurfaces() &&
-       data->GetCanvasColorParams()
-           .GetSkColorSpaceForSkSurfaces()
-           ->gammaIsLinear()))
-    return;
-  SkSwapRB(static_cast<uint32_t*>(data->BufferBase()->Data()),
-           static_cast<uint32_t*>(data->BufferBase()->Data()),
-           data->Size().Height() * data->Size().Width());
-}
-
 ImageBitmap::ImageBitmap(ImageData* data,
                          Optional<IntRect> crop_rect,
                          const ImageBitmapOptions& options) {
@@ -567,45 +561,19 @@ ImageBitmap::ImageBitmap(ImageData* data,
     return;
   }
 
-  // crop/flip the input if needed
-  bool crop_or_flip = (src_rect != data_src_rect) || parsed_options.flip_y;
-  ImageData* cropped_data = data;
-  if (crop_or_flip)
-    cropped_data = data->CropRect(src_rect, parsed_options.flip_y);
-
-  SwizzleImageDataIfNeeded(cropped_data);
-
-  int byte_length = cropped_data->BufferBase()->ByteLength();
-  scoped_refptr<ArrayBuffer> array_buffer =
-      ArrayBuffer::CreateOrNull(byte_length, 1);
-  if (!array_buffer)
+  int byte_length =
+      src_rect.Size().Area() * parsed_options.color_params.BytesPerPixel();
+  std::unique_ptr<uint8_t[]> image_pixels(new uint8_t[byte_length]);
+  if (!data->ImageDataInCanvasColorSettings(
+          parsed_options.color_params.ColorSpace(),
+          parsed_options.color_params.PixelFormat(), image_pixels,
+          kN32ColorType, &src_rect))
     return;
-  scoped_refptr<Uint8Array> image_pixels =
-      Uint8Array::Create(std::move(array_buffer), 0, byte_length);
-  const CanvasColorParams color_params = cropped_data->GetCanvasColorParams();
-  if (color_params.GetSkColorType() == kRGBA_F16_SkColorType) {
-    std::unique_ptr<SkColorSpaceXform> xform = SkColorSpaceXform::New(
-        color_params.GetSkColorSpaceForSkSurfaces().get(),
-        color_params.GetSkColorSpaceForSkSurfaces().get());
-    xform->apply(SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat,
-                 image_pixels->Data(),
-                 SkColorSpaceXform::ColorFormat::kRGBA_F32_ColorFormat,
-                 cropped_data->BufferBase()->Data(),
-                 cropped_data->Size().Area(), kUnpremul_SkAlphaType);
-  } else {
-    memcpy(image_pixels->Data(), cropped_data->BufferBase()->Data(),
-           byte_length);
-  }
-  SkImageInfo info =
-      SkImageInfo::Make(cropped_data->width(), cropped_data->height(),
-                        color_params.GetSkColorType(), kUnpremul_SkAlphaType,
-                        color_params.GetSkColorSpaceForSkSurfaces());
-  image_ = NewImageFromRaster(info, std::move(image_pixels));
-
-  // swizzle back
-  SwizzleImageDataIfNeeded(cropped_data);
-  if (!image_)
-    return;
+  SkImageInfo info = SkImageInfo::Make(
+      src_rect.Width(), src_rect.Height(),
+      parsed_options.color_params.GetSkColorType(), kUnpremul_SkAlphaType,
+      parsed_options.color_params.GetSkColorSpaceForSkSurfaces());
+  image_ = NewImageFromRaster(info, image_pixels);
 
   // premultiply if needed
   if (parsed_options.premultiply_alpha)
@@ -613,10 +581,9 @@ ImageBitmap::ImageBitmap(ImageData* data,
   if (!image_)
     return;
 
-  // color correct if needed
-  image_ = ApplyColorSpaceConversion(std::move(image_), parsed_options);
-  if (!image_)
-    return;
+  // flip if needed
+  if (parsed_options.flip_y)
+    image_ = FlipImageVertically(std::move(image_));
 
   // resize if needed
   if (parsed_options.should_scale_input) {
@@ -882,11 +849,12 @@ CanvasColorParams ImageBitmap::GetCanvasColorParams() {
   return CanvasColorParams(GetSkImageInfo(image_));
 }
 
-scoped_refptr<Uint8Array> ImageBitmap::CopyBitmapData(AlphaDisposition alpha_op,
-                                                      DataColorFormat format) {
+scoped_refptr<Uint8Array> ImageBitmap::CopyBitmapData(
+    AlphaDisposition alpha_op,
+    DataU8ColorType u8_color_type) {
   SkImageInfo info = GetSkImageInfo(image_);
   auto color_type = info.colorType();
-  if (color_type == kN32_SkColorType && format == kRGBAColorType)
+  if (color_type == kN32_SkColorType && u8_color_type == kRGBAColorType)
     color_type = kRGBA_8888_SkColorType;
   info =
       SkImageInfo::Make(width(), height(), color_type,

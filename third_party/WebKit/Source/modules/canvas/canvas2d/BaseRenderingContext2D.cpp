@@ -1744,21 +1744,25 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   CheckOverdraw(dest_rect, nullptr, CanvasRenderingContext2DState::kNoImage,
                 kUntransformedUnclippedFill);
 
-  // Color / format convert ImageData to canvas settings if needed
+  // Color / format convert ImageData to context 2D settings if needed. Color /
+  // format conversion is not needed only if context 2D and ImageData are both
+  // in sRGB color space and use 8-8-8-8 pixel storage format. We use RGBA pixel
+  // order for both ImageData and ImageBuffer, therefore no additional swizzling
+  // is needed.
   CanvasColorParams data_color_params = data->GetCanvasColorParams();
-  if ((ColorSpace() != data_color_params.ColorSpace() ||
-       PixelFormat() != data_color_params.PixelFormat() ||
-       PixelFormat() == kF16CanvasPixelFormat)) {
-    unsigned data_length = data->width() * data->height() * 4;
-    if (PixelFormat() == kF16CanvasPixelFormat)
-      data_length *= 2;
+  CanvasColorParams context_color_params =
+      CanvasColorParams(ColorSpace(), PixelFormat(), kNonOpaque);
+  if (data_color_params.NeedsColorConversion(context_color_params) ||
+      PixelFormat() == kF16CanvasPixelFormat) {
+    unsigned data_length =
+        data->Size().Area() * context_color_params.BytesPerPixel();
     std::unique_ptr<uint8_t[]> converted_pixels(new uint8_t[data_length]);
-    data->ImageDataInCanvasColorSettings(ColorSpace(), PixelFormat(),
-                                         converted_pixels);
-
-    buffer->PutByteArray(converted_pixels.get(),
-                         IntSize(data->width(), data->height()), source_rect,
-                         IntPoint(dest_offset));
+    if (data->ImageDataInCanvasColorSettings(
+            ColorSpace(), PixelFormat(), converted_pixels, kRGBAColorType)) {
+      buffer->PutByteArray(converted_pixels.get(),
+                           IntSize(data->width(), data->height()), source_rect,
+                           IntPoint(dest_offset));
+    }
   } else {
     buffer->PutByteArray(data->data()->Data(),
                          IntSize(data->width(), data->height()), source_rect,
