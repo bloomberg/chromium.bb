@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
-import subprocess
-import sys
-
 from core.css import css_properties
+import gperf
 import json5_generator
 import template_expander
 
@@ -46,6 +44,8 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
                 max(map(len, self._css_properties.properties_by_id)),
         }
 
+    @gperf.use_jinja_gperf_template('templates/CSSPropertyNames.cpp.tmpl',
+                                    ['-Q', 'CSSPropStringPool'])
     def generate_implementation(self):
         enum_value_to_name = {}
         for property_ in self._css_properties.properties_including_aliases:
@@ -65,38 +65,15 @@ class CSSPropertyNamesWriter(json5_generator.Writer):
             (property_['name'], property_['property_id'])
             for property_ in self._css_properties.properties_including_aliases]
 
-        template_params = {
+        return {
             'class_name': 'CSSPropertyNames',
             'property_names': property_names,
             'property_offsets': property_offsets,
             'property_to_enum_map':
                 '\n'.join('%s, %s' % property_
                           for property_ in css_name_and_enum_pairs),
+            'gperf_path': self.gperf_path,
         }
-        gperf_input = template_expander.apply_template(
-            'templates/CSSPropertyNames.cpp.tmpl', template_params)
-
-        # FIXME: If we could depend on Python 2.7, we would use
-        # subprocess.check_output
-        gperf_args = [self.gperf_path, '--key-positions=*', '-P', '-n']
-        gperf_args.extend(['-m', '50'])  # Pick best of 50 attempts.
-        gperf_args.append('-D')  # Allow duplicate hashes -> More compact code.
-        gperf_args.extend(['-Q', 'CSSPropStringPool'])  # Unique var names.
-
-        # If gperf isn't in the path we get an OSError. We don't want to use
-        # the normal solution of shell=True (as this has to run on many
-        # platforms), so instead we catch the error and raise a
-        # CalledProcessError like subprocess would do when shell=True is set.
-        try:
-            gperf = subprocess.Popen(
-                gperf_args,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                universal_newlines=True)
-            return gperf.communicate(gperf_input)[0]
-        except OSError:
-            raise subprocess.CalledProcessError(
-                127, gperf_args, output='Command not found.')
 
 
 if __name__ == "__main__":
