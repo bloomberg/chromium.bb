@@ -12,12 +12,12 @@
 #include "core/css/FontFaceCache.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class FontFaceCacheTest : public ::testing::Test {
+class FontFaceCacheTest : public PageTestBase {
   USING_FAST_MALLOC(FontFaceCacheTest);
 
  protected:
@@ -43,12 +43,11 @@ class FontFaceCacheTest : public ::testing::Test {
   void Trace(blink::Visitor*);
 
  protected:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   const AtomicString kFontNameForTesting{"Arial"};
 };
 
 void FontFaceCacheTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
+  PageTestBase::SetUp();
   ClearCache();
 }
 
@@ -77,8 +76,7 @@ void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
 
   StyleRuleFontFace* style_rule_font_face =
       StyleRuleFontFace::Create(font_face_descriptor);
-  FontFace* font_face = FontFace::Create(&dummy_page_holder_->GetDocument(),
-                                         style_rule_font_face);
+  FontFace* font_face = FontFace::Create(&GetDocument(), style_rule_font_face);
   CHECK(font_face);
   cache_.Add(style_rule_font_face, font_face);
 }

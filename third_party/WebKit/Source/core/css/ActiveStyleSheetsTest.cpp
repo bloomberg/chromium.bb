@@ -16,12 +16,12 @@
 #include "core/dom/ShadowRootInit.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class ActiveStyleSheetsTest : public ::testing::Test {
+class ActiveStyleSheetsTest : public PageTestBase {
  protected:
   static CSSStyleSheet* CreateSheet(const String& css_text = String()) {
     StyleSheetContents* contents =
@@ -35,16 +35,8 @@ class ActiveStyleSheetsTest : public ::testing::Test {
 
 class ApplyRulesetsTest : public ActiveStyleSheetsTest {
  protected:
-  void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-  }
-
-  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
   StyleEngine& GetStyleEngine() { return GetDocument().GetStyleEngine(); }
   ShadowRoot& AttachShadow(Element& host);
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 ShadowRoot& ApplyRulesetsTest::AttachShadow(Element& host) {
