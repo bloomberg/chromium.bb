@@ -1920,9 +1920,14 @@ NSString* const kTransitionToolbarAnimationKey =
                               alpha:1.0]
           : [UIColor colorWithWhite:kCardFrameBackgroundBrightness alpha:1.0];
   UIColor* toolbarBackgroundColor = cardBackgroundColor;
-  if (!base::FeatureList::IsEnabled(kToolbarSnapshotAnimation)) {
-    // TODO(crbug.com/779514): Set the correct color (white for NTP, normal for
-    // non-NTP).
+  if (base::FeatureList::IsEnabled(kToolbarSnapshotAnimation)) {
+    UIColor* backgroundColor =
+        [self.transitionToolbarOwner
+                .toolbarSnapshotProvider toolbarBackgroundColor];
+    if (backgroundColor) {
+      toolbarBackgroundColor = backgroundColor;
+    }
+  } else {
     if ([self.transitionToolbarController
             isKindOfClass:[NewTabPageToolbarController class]]) {
       // Use white for the non-incognito NTP toolbar.

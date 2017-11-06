@@ -187,6 +187,17 @@
   return toolbarSnapshotView;
 }
 
+- (UIColor*)toolbarBackgroundColor {
+  UIColor* toolbarBackgroundColor = nil;
+  if (self.webToolbarController.backgroundView.hidden ||
+      self.webToolbarController.backgroundView.alpha == 0) {
+    // If the background view isn't visible, use the base toolbar view's
+    // background color.
+    toolbarBackgroundColor = self.webToolbarController.view.backgroundColor;
+  }
+  return toolbarBackgroundColor;
+}
+
 #pragma mark - IncognitoViewControllerDelegate
 
 - (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
