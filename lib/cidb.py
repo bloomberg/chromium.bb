@@ -640,6 +640,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'message_type, message_subtype, message_value, timestamp, board FROM '
       'buildMessageTable c JOIN buildTable b ON build_id = b.id ')
   _DATE_FORMAT = '%Y-%m-%d'
+  _DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
   NUM_RESULTS_NO_LIMIT = -1
 
@@ -1907,6 +1908,23 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return self._GetBuildMessagesWithClause(
         'master_build_id = %s' % master_build_id)
 
+  @minimum_schema(42)
+  def GetBuildMessagesNewerThan(self, message_type, timestamp):
+    """Returns build messages newer than |timestamp|.
+
+    Args:
+      message_type: The type of buildMessage we're interested in
+      timestamp: The timestamp with which to filter out older messages.
+
+    Returns:
+      A list of build message dictionaries.
+    """
+    timestamp_formatted = timestamp.strftime(self._DATETIME_FORMAT)
+    return self._GetBuildMessagesWithClause(
+        'timestamp > TIMESTAMP("%s") AND message_type = "%s"' %
+        (timestamp_formatted, message_type)
+    )
+
   def _GetBuildMessagesWithClause(self, clause):
     """Private helper method for fetching build messages."""
     columns = ['build_id', 'build_config', 'waterfall', 'builder_name',
@@ -2110,6 +2128,7 @@ class CIDBConnectionFactoryClass(factory.ObjectFactory):
       set up for that using SetupNoCidb.
     """
     return self.GetInstance()
+
 
   def _ClearCIDBSetup(self):
     """Clears the CIDB Setup state. For testing purposes only."""
