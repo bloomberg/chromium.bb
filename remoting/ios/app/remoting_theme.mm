@@ -66,19 +66,14 @@
 }
 
 + (UIColor*)pinEntryPairingColor {
-  static UIColor* color;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    color = [UIColor colorWithWhite:1.f alpha:0.5f];
-  });
-  return color;
+  return UIColor.whiteColor;
 }
 
 + (UIColor*)pinEntryPlaceholderColor {
   static UIColor* color;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    color = [UIColor colorWithWhite:1.f alpha:0.26f];
+    color = [UIColor colorWithWhite:1.f alpha:0.5f];
   });
   return color;
 }
@@ -167,12 +162,7 @@
 }
 
 + (UIColor*)hostCellStatusTextColor {
-  static UIColor* color;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    color = [UIColor colorWithWhite:0 alpha:0.60f];
-  });
-  return color;
+  return UIColor.blackColor;
 }
 
 + (UIColor*)setupListBackgroundColor {
