@@ -97,13 +97,27 @@ class WebStateObserver {
   virtual void DidFinishNavigation(WebState* web_state,
                                    NavigationContext* navigation_context) {}
 
-  // Called when the current page has started loading.
+  // Called when the current page has started loading in the main frame.
+  // WebState::IsLoading() will start returning true after this callback.
+  // Clients should present network activity indicator UI to the user.
+  // DidStartLoading is a different event than DidStartNavigation and clients
+  // shold not assume that these two callbacks always called in pair or in a
+  // specific order. "Navigation" is about fetching the new document content and
+  // committing it as a new document, and "Loading" continues well after that.
   virtual void DidStartLoading(WebState* web_state) {}
 
-  // Called when the current page has stopped loading.
+  // Called when the current page has stopped loading in the main frame.
+  // WebState::IsLoading() will start returning false after this callback.
+  // Clients should hide network activity indicator UI from the user.
+  // DidStopLoading is a different event than DidFinishNavigation and clients
+  // shold not assume that these two callbacks always called in pair or in a
+  // specific order. "Navigation" is about fetching the new document content and
+  // committing it as a new document, and "Loading" continues well after that.
   virtual void DidStopLoading(WebState* web_state) {}
 
-  // Called when the current page is loaded.
+  // Called when the current page has finished loading in the main frame.
+  // Unlike DidStopLoading, this callback is not called when the load is
+  // cancelled.
   virtual void PageLoaded(WebState* web_state,
                           PageLoadCompletionStatus load_completion_status) {}
 
