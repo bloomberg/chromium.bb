@@ -8856,7 +8856,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     mvp_full = x->best_mv.as_mv;
     MV dv = {.row = mvp_full.row * 8, .col = mvp_full.col * 8 };
     if (mv_check_bounds(&x->mv_limits, &dv)) continue;
-    if (!is_dv_valid(dv, tile, mi_row, mi_col, bsize)) continue;
+    if (!av1_is_dv_valid(dv, tile, mi_row, mi_col, bsize, cm->mib_size_log2))
+      continue;
 
     // DV should not have sub-pel.
     assert((dv.col & 7) == 0);

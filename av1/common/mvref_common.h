@@ -438,8 +438,11 @@ static INLINE void av1_find_ref_dv(int_mv *ref_dv, int mi_row, int mi_col) {
   }
 }
 
-static INLINE int is_dv_valid(const MV dv, const TileInfo *const tile,
-                              int mi_row, int mi_col, BLOCK_SIZE bsize) {
+#define INTRABC_DELAY 0   // Writing back delay in units of super-block.
+#define USE_WAVE_FRONT 0  // Use only top left area of frame for reference.
+static INLINE int av1_is_dv_valid(const MV dv, const TileInfo *const tile,
+                                  int mi_row, int mi_col, BLOCK_SIZE bsize,
+                                  int mib_size_log2) {
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   const int SCALE_PX_TO_MV = 8;
@@ -461,17 +464,26 @@ static INLINE int is_dv_valid(const MV dv, const TileInfo *const tile,
   const int src_right_edge = (mi_col * MI_SIZE + bw) * SCALE_PX_TO_MV + dv.col;
   const int tile_right_edge = tile->mi_col_end * MI_SIZE * SCALE_PX_TO_MV;
   if (src_right_edge > tile_right_edge) return 0;
-  // Is the bottom right within an already coded SB?
-  const int active_sb_top_edge =
-      (mi_row & ~MAX_MIB_MASK) * MI_SIZE * SCALE_PX_TO_MV;
-  const int active_sb_bottom_edge =
-      ((mi_row & ~MAX_MIB_MASK) + MAX_MIB_SIZE) * MI_SIZE * SCALE_PX_TO_MV;
-  const int active_sb_left_edge =
-      (mi_col & ~MAX_MIB_MASK) * MI_SIZE * SCALE_PX_TO_MV;
-  if (src_bottom_edge > active_sb_bottom_edge) return 0;
-  if (src_bottom_edge > active_sb_top_edge &&
-      src_right_edge > active_sb_left_edge)
+
+  // Is the bottom right within an already coded SB? Also consider additional
+  // constraints to facilitate HW decoder.
+  const int max_mib_size = 1 << mib_size_log2;
+  const int active_sb_row = mi_row >> mib_size_log2;
+  const int active_sb_col = mi_col >> mib_size_log2;
+  const int sb_size = max_mib_size * MI_SIZE;
+  const int src_sb_row = ((src_bottom_edge >> 3) - 1) / sb_size;
+  const int src_sb_col = ((src_right_edge >> 3) - 1) / sb_size;
+#if USE_WAVE_FRONT
+  if (src_sb_row > active_sb_row ||
+      src_sb_col >=
+          active_sb_col - INTRABC_DELAY + 2 * (active_sb_row - src_sb_row))
     return 0;
+#else
+  if (src_sb_row > active_sb_row ||
+      (src_sb_row == active_sb_row &&
+       src_sb_col >= active_sb_col - INTRABC_DELAY))
+    return 0;
+#endif
   return 1;
 }
 #endif  // CONFIG_INTRABC

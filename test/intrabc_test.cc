@@ -147,10 +147,10 @@ TEST(IntrabcTest, DvValidation) {
   tile.mi_col_end = tile.mi_col_start + kTileMaxMibWidth * MAX_MIB_SIZE;
   for (int i = 0; i < static_cast<int>(GTEST_ARRAY_SIZE_(kDvCases)); ++i) {
     EXPECT_EQ(kDvCases[i].valid,
-              is_dv_valid(kDvCases[i].dv, &tile,
-                          tile.mi_row_start + kDvCases[i].mi_row_offset,
-                          tile.mi_col_start + kDvCases[i].mi_col_offset,
-                          kDvCases[i].bsize))
+              av1_is_dv_valid(kDvCases[i].dv, &tile,
+                              tile.mi_row_start + kDvCases[i].mi_row_offset,
+                              tile.mi_col_start + kDvCases[i].mi_col_offset,
+                              kDvCases[i].bsize, MAX_MIB_SIZE_LOG2))
         << "DvCases[" << i << "]";
   }
 }
