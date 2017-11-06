@@ -33,6 +33,9 @@ constexpr int kAvatarImageSize = 32;
 // account chooser.
 constexpr int kInfoIconSize = 16;
 
+// The minimal width of the username column.
+constexpr int kMinUsernameWidth = 100;
+
 // Crops and scales |image_skia| to the desired size for an account avatar.
 gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia image_skia);
 

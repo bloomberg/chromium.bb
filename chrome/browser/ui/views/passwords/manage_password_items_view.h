@@ -34,8 +34,7 @@ class ManagePasswordItemsView : public views::View {
  public:
   ManagePasswordItemsView(
       ManagePasswordsBubbleModel* manage_passwords_bubble_model,
-      const std::vector<autofill::PasswordForm>* password_forms,
-      int bubble_width);
+      const std::vector<autofill::PasswordForm>* password_forms);
 
  private:
   class PasswordFormRow;
@@ -51,7 +50,6 @@ class ManagePasswordItemsView : public views::View {
 
   std::vector<std::unique_ptr<PasswordFormRow>> password_forms_rows_;
   ManagePasswordsBubbleModel* model_;
-  const int bubble_width_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordItemsView);
 };
