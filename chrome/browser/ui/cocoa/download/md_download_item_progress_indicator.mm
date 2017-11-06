@@ -160,12 +160,14 @@ base::ScopedCFTypeRef<CGPathRef> CheckPath() {
 }
 
 - (void)updateColors {
+  const BOOL darkTheme = [self.window hasDarkTheme];
   CGColorRef indicatorColor =
       skia::SkColorToCalibratedNSColor(
-          paused_ ? SK_ColorBLACK
-                  : state_ == MDDownloadItemProgressIndicatorState::kComplete
-                        ? gfx::kGoogleGreen700
-                        : gfx::kGoogleBlue700)
+          paused_
+              ? (darkTheme ? SK_ColorWHITE : SK_ColorBLACK)
+              : state_ == MDDownloadItemProgressIndicatorState::kComplete
+                    ? (darkTheme ? gfx::kGoogleGreen300 : gfx::kGoogleGreen700)
+                    : (darkTheme ? gfx::kGoogleBlue300 : gfx::kGoogleBlue700))
           .CGColor;
   backgroundLayer_.fillColor = indicatorColor;
   shapeLayer_.fillColor =
