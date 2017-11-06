@@ -26,8 +26,6 @@ using blink::scheduler::RendererScheduler;
 
 namespace content {
 
-namespace {
-
 InputEventAckState InputEventDispositionToAck(
     InputHandlerProxy::EventDisposition disposition) {
   switch (disposition) {
@@ -47,8 +45,6 @@ InputEventAckState InputEventDispositionToAck(
   NOTREACHED();
   return INPUT_EVENT_ACK_STATE_UNKNOWN;
 }
-
-} // namespace
 
 InputHandlerManager::InputHandlerManager(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,

@@ -44,6 +44,9 @@ class InputHandlerManagerClient;
 class MainThreadEventQueue;
 class SynchronousInputHandlerProxyClient;
 
+InputEventAckState InputEventDispositionToAck(
+    ui::InputHandlerProxy::EventDisposition disposition);
+
 // InputHandlerManager class manages InputHandlerProxy instances for
 // the WebViews in this renderer.
 class CONTENT_EXPORT InputHandlerManager {
