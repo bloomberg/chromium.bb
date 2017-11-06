@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.suggestions.MostVisitedSites;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils;
@@ -138,7 +137,7 @@ public class NtpUiCaptureTestData {
                     /* thumbnailDominantColor = */ null),
     };
 
-    public static void registerArticleSamples(FakeSuggestionsSource suggestionsSource) {
+    private static void registerArticleSamples(FakeSuggestionsSource suggestionsSource) {
         ContentSuggestionsTestUtils.registerCategory(suggestionsSource, KnownCategories.ARTICLES);
         suggestionsSource.setSuggestionsForCategory(
                 KnownCategories.ARTICLES, Arrays.asList(FAKE_ARTICLE_SUGGESTIONS));
@@ -171,7 +170,7 @@ public class NtpUiCaptureTestData {
         return fakeSuggestionsSource;
     }
 
-    private static MostVisitedSites createMostVisitedSites() {
+    private static FakeMostVisitedSites createMostVisitedSites() {
         FakeMostVisitedSites result = new FakeMostVisitedSites();
         result.setTileSuggestions(SITE_SUGGESTIONS);
         return result;
