@@ -89,6 +89,7 @@ const CGFloat kHintLabelSidePadding = 12;
 @synthesize commandHandler = _commandHandler;
 @synthesize collectionSynchronizer = _collectionSynchronizer;
 @synthesize readingListModel = _readingListModel;
+@synthesize toolbarSnapshotProvider = _toolbarSnapshotProvider;
 
 @synthesize logoVendor = _logoVendor;
 @synthesize promoCanShow = _promoCanShow;

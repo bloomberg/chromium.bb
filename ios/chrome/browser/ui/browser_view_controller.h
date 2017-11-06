@@ -26,7 +26,6 @@ class GURL;
 @class Tab;
 @class TabModel;
 @protocol TabStripFoldAnimation;
-@protocol ToolbarSnapshotProviding;
 
 namespace ios {
 class ChromeBrowserState;
@@ -83,9 +82,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 // Returns the ios::ChromeBrowserState passed to the initializer.
 @property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
-
-@property(nonatomic, strong, readonly) id<ToolbarSnapshotProviding>
-    toolbarSnapshotProvider;
 
 // Whether the receiver is currently the primary BVC.
 - (void)setPrimary:(BOOL)primary;
