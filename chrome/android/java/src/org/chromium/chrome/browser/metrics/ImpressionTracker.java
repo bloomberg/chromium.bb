@@ -17,73 +17,64 @@ import android.view.ViewTreeObserver;
 public class ImpressionTracker
         implements ViewTreeObserver.OnPreDrawListener, View.OnAttachStateChangeListener {
     /**
-     * The Listener will be called back on each impression. Whenever at least 2/3 of the view's
-     * height is visible, that counts as an impression. Note that this will get called often while
-     * the view is visible; it's the implementer's responsibility to count only one impression or
-     * reset the {@link ImpressionTracker}.
+     * The Listener will be called back on an impression, which is defined as at least 2/3 of the
+     * view's height being visible.
      *
-     * @see ImpressionTracker#reset(View)
-     * @see ImpressionTracker#wasTriggered()
+     * @see #setListener
      */
     public interface Listener {
+        /**
+         * The tracked view is being shown (at least 2/3 of its height are visible).
+         */
         void onImpression();
     }
 
-    /**
-     * Currently tracked View. Can be {@code null} if the tracker was cleared.
-     * @see #reset(View)
-     */
-    @Nullable
-    private View mView;
-    private final Listener mListener;
-    private boolean mTriggered;
+    /** The currently tracked View. */
+    private final View mView;
+    private @Nullable Listener mListener;
 
     /**
-     * Creates an {@link ImpressionTracker} with no view being observed.
+     * Creates a new instance tracking the given {@code view} as soon as and while a listener is
+     * attached. Note that the view is final but the listener can be set and reset during the
+     * lifetime of this object.
+     * @param view The View to track.
      */
-    public ImpressionTracker(Listener listener) {
-        mListener = listener;
-    }
-
-    /**
-     * Creates an {@link ImpressionTracker} and starts observing the view given as parameter.
-     */
-    public ImpressionTracker(View view, Listener listener) {
-        this(listener);
-        reset(view);
-    }
-
-    /**
-     * Changes the view the tracker should observe.
-     * @param view The new View to observe. Set to {@code null} to completely stop observing.
-     */
-    public void reset(@Nullable View view) {
-        // Unregister the listeners for the current view.
-        if (mView != null) {
-            mView.removeOnAttachStateChangeListener(this);
-            if (ViewCompat.isAttachedToWindow(mView)) {
-                mView.getViewTreeObserver().removeOnPreDrawListener(this);
-            }
-        }
-
-        // Register the listeners for the new view.
+    public ImpressionTracker(View view) {
         mView = view;
-        if (mView != null) {
-            // Listen to onPreDraw only if view is potentially visible (attached to the window).
-            mView.addOnAttachStateChangeListener(this);
-            if (ViewCompat.isAttachedToWindow(mView)) {
-                mView.getViewTreeObserver().addOnPreDrawListener(this);
-            }
+    }
+
+    /**
+     * Sets the listener and starts tracking the view, or stops tracking by passing null.
+     * Changing the listener while this object is tracking is not allowed; tracking has to be
+     * stopped first.
+     * @param listener The impression listener, or null to stop tracking.
+     */
+    public void setListener(@Nullable Listener listener) {
+        assert listener == null || mListener == null;
+        if (mListener != null) detach();
+        mListener = listener;
+        if (mListener != null) attach();
+    }
+
+    /**
+     * Registers listeners for the current view.
+     */
+    private void attach() {
+        // Listen to onPreDraw() only if the view is potentially visible (attached to the window).
+        mView.addOnAttachStateChangeListener(this);
+        if (ViewCompat.isAttachedToWindow(mView)) {
+            mView.getViewTreeObserver().addOnPreDrawListener(this);
         }
     }
 
-    /** @return whether this observer called {@link Listener#onImpression()} at least once. */
-    public boolean wasTriggered() {
-        return mTriggered;
-    }
-
-    public void clearTriggered() {
-        mTriggered = false;
+    /**
+     * Unregisters the listeners for the current view.
+     */
+    private void detach() {
+        mView.removeOnAttachStateChangeListener(this);
+        if (ViewCompat.isAttachedToWindow(mView)) {
+            mView.getViewTreeObserver().removeOnPreDrawListener(this);
+        }
     }
 
     @Override
@@ -107,7 +98,6 @@ public class ImpressionTracker
             // dismissing or reassigning a View. In this case |rect| appears to be invalid.
             if (parent.getChildVisibleRect(mView, rect, null)
                     && rect.height() >= 2 * mView.getHeight() / 3) {
-                mTriggered = true;
                 mListener.onImpression();
             }
         }
