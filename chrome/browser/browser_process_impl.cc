@@ -116,13 +116,16 @@
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_connection_tracker.h"
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"
@@ -565,6 +568,18 @@ BrowserProcessImpl::system_network_context_manager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(system_network_context_manager_.get());
   return system_network_context_manager_.get();
+}
+
+content::NetworkConnectionTracker*
+BrowserProcessImpl::network_connection_tracker() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(io_thread_);
+  if (!network_connection_tracker_) {
+    network_connection_tracker_ =
+        std::make_unique<content::NetworkConnectionTracker>(
+            io_thread_->GetNetworkServiceOnUIThread());
+  }
+  return network_connection_tracker_.get();
 }
 
 WatchDogThread* BrowserProcessImpl::watchdog_thread() {

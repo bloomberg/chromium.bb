@@ -122,19 +122,28 @@ class ConnectionTypeGetter {
 
 class NetworkConnectionTrackerTest : public testing::Test {
  public:
-  NetworkConnectionTrackerTest()
-      : network_service_(NetworkService::Create()),
-        network_connection_tracker_(network_service_.get()),
-        network_connection_observer_(&network_connection_tracker_) {}
+  NetworkConnectionTrackerTest() {
+    mojom::NetworkServicePtr network_service_ptr;
+    mojom::NetworkServiceRequest network_service_request =
+        mojo::MakeRequest(&network_service_ptr);
+    network_service_ =
+        NetworkService::Create(std::move(network_service_request),
+                               /*netlog=*/nullptr);
+    tracker_ =
+        std::make_unique<NetworkConnectionTracker>(network_service_.get());
+    observer_ = std::make_unique<TestNetworkConnectionObserver>(tracker_.get());
+  }
 
   ~NetworkConnectionTrackerTest() override {}
 
+  NetworkService* network_service() { return network_service_.get(); }
+
   NetworkConnectionTracker* network_connection_tracker() {
-    return &network_connection_tracker_;
+    return tracker_.get();
   }
 
   TestNetworkConnectionObserver* network_connection_observer() {
-    return &network_connection_observer_;
+    return observer_.get();
   }
 
   // Simulates a connection type change and broadcast it to observers.
@@ -152,8 +161,8 @@ class NetworkConnectionTrackerTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::test::MockNetworkChangeNotifier mock_network_change_notifier_;
   std::unique_ptr<NetworkService> network_service_;
-  NetworkConnectionTracker network_connection_tracker_;
-  TestNetworkConnectionObserver network_connection_observer_;
+  std::unique_ptr<NetworkConnectionTracker> tracker_;
+  std::unique_ptr<TestNetworkConnectionObserver> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionTrackerTest);
 };
@@ -203,8 +212,14 @@ TEST_F(NetworkConnectionTrackerTest, UnregisteredObserverNotNotified) {
 
 TEST_F(NetworkConnectionTrackerTest, GetConnectionType) {
   SetConnectionType(net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
-  std::unique_ptr<NetworkService> network_service = NetworkService::Create();
-  NetworkConnectionTracker tracker(network_service.get());
+  // Creates a new NetworkService so it initializes a NetworkChangeManager
+  // with initial connection type as CONNECTION_3G.
+  mojom::NetworkServicePtr network_service_ptr;
+  mojom::NetworkServiceRequest network_service_request =
+      mojo::MakeRequest(&network_service_ptr);
+  std::unique_ptr<NetworkService> network_service =
+      NetworkService::Create(std::move(network_service_request), nullptr);
+  NetworkConnectionTracker tracker(network_service_ptr.get());
 
   ConnectionTypeGetter getter1(&tracker), getter2(&tracker);
   // These two GetConnectionType() will finish asynchonously because network

@@ -4,6 +4,8 @@
 
 module content.mojom;
 
+import "network_change_manager.mojom";
+
 struct Rule {
   string host_pattern;
   string replacement;
@@ -15,4 +17,9 @@ interface NetworkServiceTest {
   // service is running.
   [Sync]
   AddRules(array<Rule> rules) => ();
+
+  // Simulates a network connection type change. The new connection type will be
+  // updated to |type| and broadcasts will be sent to
+  // NetworkConnectionManagerClient implementations.
+  SimulateNetworkChange(ConnectionType type) => ();
 };
