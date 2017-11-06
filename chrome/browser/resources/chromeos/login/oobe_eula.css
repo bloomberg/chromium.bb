@@ -8,10 +8,11 @@ a {
   width: fit-content;
 }
 
-#eulaDialog {
+#crosEulaFrame {
   /* Works around the problem that webview height is not calculated
-   * correctly with only min-height set. */
-  height: 640px;
+   * correctly in flex layout. 207px is derived from en-US locale under
+   * the default 640px height of #eulaDialog. */
+  height: 207px;
 }
 
 #crosEulaFrame,
