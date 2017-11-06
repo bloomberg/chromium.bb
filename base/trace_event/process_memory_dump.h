@@ -46,8 +46,8 @@ class BASE_EXPORT ProcessMemoryDump {
 
     MemoryAllocatorDumpGuid source;
     MemoryAllocatorDumpGuid target;
-    int importance;
-    bool overridable;
+    int importance = 0;
+    bool overridable = false;
   };
 
   // Maps allocator dumps absolute names (allocator_name/heap/subheap) to
@@ -159,6 +159,8 @@ class BASE_EXPORT ProcessMemoryDump {
   // the memory usage of |target| to |source|. |importance| is optional and
   // relevant only for the cases of co-ownership, where it acts as a z-index:
   // the owner with the highest importance will be attributed |target|'s memory.
+  // If an edge is present, its importance will not be updated unless
+  // |importance| is larger.
   void AddOwnershipEdge(const MemoryAllocatorDumpGuid& source,
                         const MemoryAllocatorDumpGuid& target,
                         int importance);
