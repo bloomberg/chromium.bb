@@ -6,7 +6,7 @@ import common
 from common import TestDriver
 from common import IntegrationTest
 from decorators import ChromeVersionEqualOrAfterM
-from emulation_server import InvalidTLSHandler
+from emulation_server import InvalidTLSHandler, TCPResetHandler, TLSResetHandler
 
 class ProxyConnection(IntegrationTest):
 
@@ -33,6 +33,53 @@ class ProxyConnection(IntegrationTest):
         self.assertNotHasChromeProxyViaHeader(response)
       self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
         'InvalidResponseHeadersReceived.NetError'))
+
+  @ChromeVersionEqualOrAfterM(63)
+  def testTCPReset(self):
+    port = common.GetOpenPort()
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      # The server should be 127.0.0.1, not localhost because the two are
+      # treated differently in Chrome internals. Using localhost invalidates the
+      # test.
+      t.UseNetLog()
+      t.AddChromeArg(
+        '--data-reduction-proxy-http-proxies=http://127.0.0.1:%d' % port)
+      t.AddChromeArg(
+        '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
+      t.UseEmulationServer(TCPResetHandler, port=port)
+
+      t.LoadURL('http://check.googlezip.net/test.html')
+      responses = t.GetHTTPResponses()
+      # Expect responses with a bypass on a bad proxy. If the test failed, the
+      # next assertion will fail because there will be no responses.
+      self.assertEqual(2, len(responses))
+      for response in responses:
+        self.assertNotHasChromeProxyViaHeader(response)
+      self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
+        'InvalidResponseHeadersReceived.NetError'))
+
+  def testTLSReset(self):
+    port = common.GetOpenPort()
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.AddChromeArg('--allow-insecure-localhost')
+      # The server should be 127.0.0.1, not localhost because the two are
+      # treated differently in Chrome internals. Using localhost invalidates the
+      # test.
+      t.AddChromeArg(
+        '--data-reduction-proxy-http-proxies=https://127.0.0.1:%d' % port)
+      t.AddChromeArg(
+        '--force-fieldtrials=DataReductionProxyConfigService/Disabled')
+      t.UseEmulationServer(TLSResetHandler, port=port)
+
+      t.LoadURL('http://check.googlezip.net/test.html')
+      responses = t.GetHTTPResponses()
+      # Expect responses with a bypass on a bad proxy. If the test failed, the
+      # next assertion will fail because there will be no responses.
+      self.assertEqual(2, len(responses))
+      for response in responses:
+        self.assertNotHasChromeProxyViaHeader(response)
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

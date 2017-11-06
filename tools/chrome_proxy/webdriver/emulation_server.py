@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
 import SocketServer
+import os
+import socket
 import ssl
+import struct
 import tempfile
 import threading
 
@@ -20,6 +22,38 @@ class InvalidTLSHandler(SocketServer.BaseRequestHandler):
     ssl_conn = ssl.wrap_socket(self.request, server_side=True,
       **_CreateSelfSignedCert())
     self.request.sendall('this is unencrypted. oops')
+
+
+class TCPResetHandler(SocketServer.BaseRequestHandler):
+  """This handler sends TCP RST immediately after the connection is established.
+  """
+  def handle(self):
+    """Reset the socket once connected.
+    """
+    # Setting these socket options tells Python to TCP RST the connection when
+    # socket.close() is called instead of the default TCP FIN.
+    self.request.recv(4096)
+    self.request.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER,
+      struct.pack('ii', 1, 0))
+    self.request.close()
+
+
+class TLSResetHandler(SocketServer.BaseRequestHandler):
+  """This handler sends TCP RST immediately after the TLS handshake.
+  """
+  def handle(self):
+    """Reset the socket after TLS handshake.
+    """
+    # ssl.wrap_socket will automatically do a TLS handshake before returning.
+    ssl_conn = ssl.wrap_socket(self.request, server_side=True,
+      **_CreateSelfSignedCert())
+    # Allow the request to be sent.
+    ssl_conn.recv(4096)
+    # Setting these socket options tells the OS to TCP RST the connection when
+    # socket.close() is called instead of the default TCP FIN.
+    self.request.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER,
+      struct.pack('ii', 1, 0))
+    self.request.close()
 
 
 class LocalEmulationServer:
