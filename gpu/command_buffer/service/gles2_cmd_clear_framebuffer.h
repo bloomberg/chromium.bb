@@ -22,9 +22,8 @@ class GPU_EXPORT ClearFramebufferResourceManager {
   ClearFramebufferResourceManager(const gles2::GLES2Decoder* decoder);
   ~ClearFramebufferResourceManager();
 
-
   void ClearFramebuffer(const gles2::GLES2Decoder* decoder,
-                        const gfx::Size& framebuffer_size,
+                        const gfx::Size& max_viewport_size,
                         GLbitfield mask,
                         GLfloat clear_color_red,
                         GLfloat clear_color_green,

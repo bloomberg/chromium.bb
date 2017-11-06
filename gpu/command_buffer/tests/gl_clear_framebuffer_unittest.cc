@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/extension_set.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -218,6 +219,54 @@ TEST_P(GLClearFramebufferTest, ClearDepthStencil) {
   // Verify - depth test should have passed, so red.
   EXPECT_TRUE(
       GLTestHelper::CheckPixels(0, 0, 1, 1, 0 /* tolerance */, kRed, nullptr));
+}
+
+TEST_P(GLClearFramebufferTest, SeparateFramebufferClear) {
+  const char* extension_string =
+      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+  gl::ExtensionSet extensions = gl::MakeExtensionSet(extension_string);
+  bool has_separate_framebuffer =
+      gl::HasExtension(extensions, "GL_CHROMIUM_framebuffer_multisample");
+  if (!IsApplicable() || !has_separate_framebuffer) {
+    return;
+  }
+
+  glClearColor(0.f, 0.f, 0.f, 1.f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  // Bind incomplete read framebuffer, should not affect clear.
+  GLuint fbo;
+  glGenFramebuffers(1, &fbo);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+  EXPECT_NE(glCheckFramebufferStatus(GL_READ_FRAMEBUFFER),
+            static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE));
+
+  glClearColor(1.f, 0.f, 0.f, 1.f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  const uint8_t kRed[] = {255, 0, 0, 255};
+  EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, 1, 1, 0, kRed, nullptr));
+
+  // Bind complete, but smaller read framebuffer, should not affect clear.
+  GLuint texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               nullptr);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                         GL_TEXTURE_2D, texture, 0);
+  EXPECT_EQ(glCheckFramebufferStatus(GL_READ_FRAMEBUFFER),
+            static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE));
+
+  glClearColor(0.f, 1.f, 0.f, 1.f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+  const uint8_t kGreen[] = {0, 255, 0, 255};
+  EXPECT_TRUE(GLTestHelper::CheckPixels(3, 3, 1, 1, 0, kGreen, nullptr));
 }
 
 }  // namespace gpu
