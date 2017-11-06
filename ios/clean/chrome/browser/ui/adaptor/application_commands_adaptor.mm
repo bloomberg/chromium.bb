@@ -94,8 +94,10 @@
   [self showAlert:@"showSyncSettingsFromViewController:"];
 }
 
-- (void)showSyncPassphraseSettings {
-  [self showAlert:@"showSyncPassphraseSettings"];
+// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
+- (void)showSyncPassphraseSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  [self showAlert:@"showSyncPassphraseSettingsFromViewController:"];
 }
 
 #pragma mark - Private
