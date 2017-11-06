@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/CSSPropertyAPIWebkitClip.h"
+#include "core/css/properties/longhands/CSSPropertyAPIWebkitMaskClip.h"
 
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
@@ -10,7 +10,7 @@
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIWebkitClip::ParseSingleValue(
+const CSSValue* CSSPropertyAPIWebkitMaskClip::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext&) const {

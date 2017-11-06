@@ -1394,7 +1394,6 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyPaddingTop:
     case CSSPropertyTextTransform:
     case CSSPropertyVerticalAlign:
-    case CSSPropertyWebkitBackgroundClip:
     case CSSPropertyWebkitBackgroundOrigin:
     case CSSPropertyWebkitBorderAfter:
     case CSSPropertyWebkitBorderAfterColor:
