@@ -1933,6 +1933,7 @@ class ValidationPool(object):
            'You can follow along at %(build_log)s .')
     self.SendNotification(change, msg, build_log=build_log)
 
+  # Note: This function doesn't need to be a ValidationPool instance method.
   def UpdateCLPreCQStatus(self, change, status):
     """Update the pre-CQ |status| of |change|."""
     action = clactions.TranslatePreCQStatusToAction(status)
