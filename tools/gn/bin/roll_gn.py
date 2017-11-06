@@ -223,7 +223,7 @@ class GNRoller(object):
     builders = {
         'linux_chromium_gn_upload': 'linux64',
         'mac_chromium_gn_upload': 'mac',
-        'win8_chromium_gn_upload': 'win'
+        'win_chromium_gn_upload': 'win'
     }
 
     results = {}
