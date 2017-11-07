@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/chrome_render_thread_observer.h"
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "content/public/renderer/render_thread.h"
@@ -191,8 +192,17 @@ bool IsPersistentLicenseSupportedbyCdm(
 
 // Returns persistent-license session support.
 EmeSessionTypeSupport GetPersistentLicenseSupport(bool supported_by_the_cdm) {
-  if (!supported_by_the_cdm)
+  // Do not support persistent-license if the process cannot persist data.
+  // TODO(crbug.com/457487): Have a better plan on this. See bug for details.
+  if (ChromeRenderThreadObserver::is_incognito_process()) {
+    DVLOG(2) << __func__ << ": Not supported in incognito process.";
     return EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
+
+  if (!supported_by_the_cdm) {
+    DVLOG(2) << __func__ << ": Not supported by the CDM.";
+    return EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
 
 // On ChromeOS, platform verification is similar to CDM host verification.
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION) || defined(OS_CHROMEOS)
@@ -203,8 +213,10 @@ EmeSessionTypeSupport GetPersistentLicenseSupport(bool supported_by_the_cdm) {
 
   // If we are sure CDM host verification is NOT supported, we should not
   // support persistent-license.
-  if (!cdm_host_verification_potentially_supported)
+  if (!cdm_host_verification_potentially_supported) {
+    DVLOG(2) << __func__ << ": Not supported without CDM host verification.";
     return EmeSessionTypeSupport::NOT_SUPPORTED;
+  }
 
 #if defined(OS_CHROMEOS)
   // On ChromeOS, platform verification (similar to CDM host verification)
@@ -218,6 +230,7 @@ EmeSessionTypeSupport GetPersistentLicenseSupport(bool supported_by_the_cdm) {
   return EmeSessionTypeSupport::SUPPORTED;
 #else
   // Storage ID not implemented, so no support for persistent license.
+  DVLOG(2) << __func__ << ": Not supported without CDM storage ID.";
   return EmeSessionTypeSupport::NOT_SUPPORTED;
 #endif  // defined(OS_CHROMEOS)
 }
