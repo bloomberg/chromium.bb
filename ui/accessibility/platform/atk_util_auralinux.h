@@ -26,6 +26,11 @@ class AtkUtilAuraLinux {
  private:
   friend struct base::DefaultSingletonTraits<AtkUtilAuraLinux>;
 
+  bool ShouldEnableAccessibility();
+
+  bool PlatformShouldEnableAccessibility();
+  void PlatformInitializeAsync();
+
   DISALLOW_COPY_AND_ASSIGN(AtkUtilAuraLinux);
 };
 
