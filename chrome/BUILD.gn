@@ -281,11 +281,6 @@ if (!is_android && !is_mac) {
                        rebase_path(version_script, root_build_dir) ]
         }
 
-        if (use_pangocairo) {
-          # Needed for chrome_main.cc initialization of libraries.
-          configs += [ "//build/config/linux/pangocairo" ]
-        }
-
         if (use_x11) {
           configs += [
             "//build/config/linux:x11",

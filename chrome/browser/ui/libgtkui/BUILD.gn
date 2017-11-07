@@ -65,7 +65,10 @@ template("libgtkui") {
                 "x11_input_method_context_impl_gtk.h",
               ]
 
-    configs += [ "//build/config/linux:x11" ]
+    configs += [
+      "//build/config/linux/pangocairo",
+      "//build/config/linux:x11",
+    ]
 
     if (use_gconf) {
       sources += [
