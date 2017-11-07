@@ -13,10 +13,6 @@
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
-namespace service_manager {
-class InterfaceRegistry;
-}
-
 namespace content {
 
 // Embedder API for participating in renderer logic.
@@ -32,11 +28,6 @@ class CONTENT_EXPORT ContentUtilityClient {
 
   // Allows the embedder to filter messages.
   virtual bool OnMessageReceived(const IPC::Message& message);
-
-  // Allows the client to expose interfaces from this utility process to the
-  // browser process via |registry|.
-  virtual void ExposeInterfacesToBrowser(
-      service_manager::InterfaceRegistry* registry) {}
 
   virtual void RegisterServices(StaticServiceMap* services) {}
 
