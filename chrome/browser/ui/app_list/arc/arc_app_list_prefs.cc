@@ -57,6 +57,7 @@ constexpr char kShortcut[] = "shortcut";
 constexpr char kShouldSync[] = "should_sync";
 constexpr char kSystem[] = "system";
 constexpr char kUninstalled[] = "uninstalled";
+constexpr char kVPNProvider[] = "vpnprovider";
 
 constexpr base::TimeDelta kDetectDefaultAppAvailabilityTimeout =
     base::TimeDelta::FromMinutes(1);
@@ -294,7 +295,6 @@ ArcAppListPrefs::ArcAppListPrefs(
 
   const std::vector<std::string> existing_app_ids = GetAppIds();
   tracked_apps_.insert(existing_app_ids.begin(), existing_app_ids.end());
-
   // Once default apps are ready OnDefaultAppsReady is called.
 }
 
@@ -496,16 +496,18 @@ std::unique_ptr<ArcAppListPrefs::PackageInfo> ArcAppListPrefs::GetPackage(
   int64_t last_backup_time = 0;
   bool should_sync = false;
   bool system = false;
+  bool vpn_provider = false;
 
   GetInt64FromPref(package, kLastBackupAndroidId, &last_backup_android_id);
   GetInt64FromPref(package, kLastBackupTime, &last_backup_time);
   package->GetInteger(kPackageVersion, &package_version);
   package->GetBoolean(kShouldSync, &should_sync);
   package->GetBoolean(kSystem, &system);
+  package->GetBoolean(kVPNProvider, &vpn_provider);
 
   return base::MakeUnique<PackageInfo>(package_name, package_version,
                                        last_backup_android_id, last_backup_time,
-                                       should_sync, system);
+                                       should_sync, system, vpn_provider);
 }
 
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
@@ -643,6 +645,9 @@ void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id) {
   base::DictionaryValue* app_dict = update.Get();
   const std::string string_value = base::Int64ToString(time.ToInternalValue());
   app_dict->SetString(kLastLaunchTime, string_value);
+
+  for (auto& observer : observer_list_)
+    observer.OnAppLastLaunchTimeUpdated(app_id);
 
   if (first_launch_app_request_) {
     first_launch_app_request_ = false;
@@ -1009,6 +1014,7 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
   package_dict->SetString(kLastBackupTime, time_str);
   package_dict->SetBoolean(kSystem, package.system);
   package_dict->SetBoolean(kUninstalled, false);
+  package_dict->SetBoolean(kVPNProvider, package.vpn_provider);
 
   if (old_package_version == -1 ||
       old_package_version == package.package_version) {
@@ -1428,6 +1434,7 @@ void ArcAppListPrefs::OnPackageAdded(
   AddOrUpdatePackagePrefs(prefs_, *package_info);
   for (auto& observer : observer_list_)
     observer.OnPackageInstalled(*package_info);
+
   if (unknown_package &&
       current_batch_installation_revision_ !=
           last_shown_batch_installation_revision_) {
@@ -1616,10 +1623,12 @@ ArcAppListPrefs::PackageInfo::PackageInfo(const std::string& package_name,
                                           int64_t last_backup_android_id,
                                           int64_t last_backup_time,
                                           bool should_sync,
-                                          bool system)
+                                          bool system,
+                                          bool vpn_provider)
     : package_name(package_name),
       package_version(package_version),
       last_backup_android_id(last_backup_android_id),
       last_backup_time(last_backup_time),
       should_sync(should_sync),
-      system(system) {}
+      system(system),
+      vpn_provider(vpn_provider) {}
