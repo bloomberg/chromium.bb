@@ -85,7 +85,7 @@ const char PermissionContextBase::kPermissionsKillSwitchBlockedValue[] =
 PermissionContextBase::PermissionContextBase(
     Profile* profile,
     ContentSettingsType content_settings_type,
-    blink::WebFeaturePolicyFeature feature_policy_feature)
+    blink::FeaturePolicyFeature feature_policy_feature)
     : profile_(profile),
       content_settings_type_(content_settings_type),
       feature_policy_feature_(feature_policy_feature),
@@ -452,7 +452,7 @@ bool PermissionContextBase::PermissionAllowedByFeaturePolicy(
   }
 
   // Some features don't have an associated feature policy yet. Allow those.
-  if (feature_policy_feature_ == blink::WebFeaturePolicyFeature::kNotFound)
+  if (feature_policy_feature_ == blink::FeaturePolicyFeature::kNotFound)
     return true;
 
   return rfh->IsFeatureEnabled(feature_policy_feature_);

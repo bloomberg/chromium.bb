@@ -2180,7 +2180,7 @@ bool RenderFrameHostImpl::IsBeforeUnloadHangMonitorDisabledForTesting() {
 }
 
 bool RenderFrameHostImpl::IsFeatureEnabled(
-    blink::WebFeaturePolicyFeature feature) {
+    blink::FeaturePolicyFeature feature) {
   return feature_policy_ && feature_policy_->IsFeatureEnabledForOrigin(
                                 feature, GetLastCommittedOrigin());
 }

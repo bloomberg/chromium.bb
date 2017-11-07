@@ -314,8 +314,8 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     DCHECK_NE(CONTENT_SETTING_DEFAULT, video_setting_);
     content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
         request.render_process_id, request.render_frame_id);
-    if (!rfh->IsFeatureEnabled(blink::WebFeaturePolicyFeature::kMicrophone) ||
-        !rfh->IsFeatureEnabled(blink::WebFeaturePolicyFeature::kCamera)) {
+    if (!rfh->IsFeatureEnabled(blink::FeaturePolicyFeature::kMicrophone) ||
+        !rfh->IsFeatureEnabled(blink::FeaturePolicyFeature::kCamera)) {
       rfh->AddMessageToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING,
                                kPepperMediaFeaturePolicyDeprecationMessage);
     }

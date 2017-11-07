@@ -63,7 +63,7 @@ class PermissionContextBaseFeaturePolicyTest
   // The header policy should only be set once on page load, so we refresh the
   // page to simulate that.
   void RefreshPageAndSetHeaderPolicy(content::RenderFrameHost** rfh,
-                                     blink::WebFeaturePolicyFeature feature,
+                                     blink::FeaturePolicyFeature feature,
                                      const std::vector<std::string>& origins) {
     content::RenderFrameHost* current = *rfh;
     SimulateNavigation(&current, current->GetLastCommittedURL());
@@ -125,13 +125,13 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, FeatureDisabled) {
   content::RenderFrameHost* parent = GetMainRFH(kOrigin1);
 
   RefreshPageAndSetHeaderPolicy(&parent,
-                                blink::WebFeaturePolicyFeature::kMidiFeature,
+                                blink::FeaturePolicyFeature::kMidiFeature,
                                 std::vector<std::string>());
   MidiPermissionContext midi(profile());
   EXPECT_EQ(CONTENT_SETTING_ALLOW, GetPermissionForFrame(&midi, parent));
 
   RefreshPageAndSetHeaderPolicy(&parent,
-                                blink::WebFeaturePolicyFeature::kGeolocation,
+                                blink::FeaturePolicyFeature::kGeolocation,
                                 std::vector<std::string>());
   GeolocationPermissionContext geolocation(profile());
   EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&geolocation, parent));
@@ -164,7 +164,7 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, DisabledTopLevelFrame) {
 
   // Disable midi in the top level frame.
   RefreshPageAndSetHeaderPolicy(&parent,
-                                blink::WebFeaturePolicyFeature::kMidiFeature,
+                                blink::FeaturePolicyFeature::kMidiFeature,
                                 std::vector<std::string>());
   content::RenderFrameHost* child = AddChildRFH(parent, kOrigin2);
   MidiPermissionContext midi(profile());
@@ -173,7 +173,7 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, DisabledTopLevelFrame) {
 
   // Disable geolocation in the top level frame.
   RefreshPageAndSetHeaderPolicy(&parent,
-                                blink::WebFeaturePolicyFeature::kGeolocation,
+                                blink::FeaturePolicyFeature::kGeolocation,
                                 std::vector<std::string>());
   child = AddChildRFH(parent, kOrigin2);
   GeolocationPermissionContext geolocation(profile());
@@ -185,18 +185,16 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, EnabledForChildFrame) {
   content::RenderFrameHost* parent = GetMainRFH(kOrigin1);
 
   // Enable midi for the child frame.
-  RefreshPageAndSetHeaderPolicy(&parent,
-                                blink::WebFeaturePolicyFeature::kMidiFeature,
-                                {kOrigin1, kOrigin2});
+  RefreshPageAndSetHeaderPolicy(
+      &parent, blink::FeaturePolicyFeature::kMidiFeature, {kOrigin1, kOrigin2});
   content::RenderFrameHost* child = AddChildRFH(parent, kOrigin2);
   MidiPermissionContext midi(profile());
   EXPECT_EQ(CONTENT_SETTING_ALLOW, GetPermissionForFrame(&midi, parent));
   EXPECT_EQ(CONTENT_SETTING_ALLOW, GetPermissionForFrame(&midi, child));
 
   // Enable geolocation for the child frame.
-  RefreshPageAndSetHeaderPolicy(&parent,
-                                blink::WebFeaturePolicyFeature::kGeolocation,
-                                {kOrigin1, kOrigin2});
+  RefreshPageAndSetHeaderPolicy(
+      &parent, blink::FeaturePolicyFeature::kGeolocation, {kOrigin1, kOrigin2});
   child = AddChildRFH(parent, kOrigin2);
   GeolocationPermissionContext geolocation(profile());
   EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&geolocation, parent));
@@ -217,7 +215,7 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, RequestPermission) {
 
   // Disable geolocation in the top level frame.
   RefreshPageAndSetHeaderPolicy(&parent,
-                                blink::WebFeaturePolicyFeature::kGeolocation,
+                                blink::FeaturePolicyFeature::kGeolocation,
                                 std::vector<std::string>());
 
   // Request should fail.

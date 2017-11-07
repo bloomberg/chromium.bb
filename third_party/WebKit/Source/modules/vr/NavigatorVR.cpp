@@ -115,8 +115,8 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
         script_state, DOMException::Create(kInvalidStateError,
                                            kNotAssociatedWithDocumentMessage));
   }
-  if (IsSupportedInFeaturePolicy(WebFeaturePolicyFeature::kWebVr)) {
-    if (!frame->IsFeatureEnabled(WebFeaturePolicyFeature::kWebVr)) {
+  if (IsSupportedInFeaturePolicy(FeaturePolicyFeature::kWebVr)) {
+    if (!frame->IsFeatureEnabled(FeaturePolicyFeature::kWebVr)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(kSecurityError, kFeaturePolicyBlockedMessage));

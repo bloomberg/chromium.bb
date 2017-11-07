@@ -13,7 +13,7 @@ namespace blink {
 // https://github.com/WICG/feature-policy/blob/gh-pages/features.md. Many of
 // these are still under development in blink behind the
 // featurePolicyExperimentalFeatures flag.
-enum class WebFeaturePolicyFeature {
+enum class FeaturePolicyFeature {
   kNotFound = 0,
   // Controls access to video input devices.
   kCamera,

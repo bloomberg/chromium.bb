@@ -30,10 +30,10 @@ class RenderFrameHostFeaturePolicyTest
   static constexpr const char* kOrigin3 = "https://example.com";
   static constexpr const char* kOrigin4 = "https://test.com";
 
-  static const blink::WebFeaturePolicyFeature kDefaultEnabledFeature =
-      blink::WebFeaturePolicyFeature::kDocumentWrite;
-  static const blink::WebFeaturePolicyFeature kDefaultSelfFeature =
-      blink::WebFeaturePolicyFeature::kGeolocation;
+  static const blink::FeaturePolicyFeature kDefaultEnabledFeature =
+      blink::FeaturePolicyFeature::kDocumentWrite;
+  static const blink::FeaturePolicyFeature kDefaultSelfFeature =
+      blink::FeaturePolicyFeature::kGeolocation;
 
   RenderFrameHost* GetMainRFH(const char* origin) {
     RenderFrameHost* result = web_contents()->GetMainFrame();
@@ -53,7 +53,7 @@ class RenderFrameHostFeaturePolicyTest
   // The header policy should only be set once on page load, so we refresh the
   // page to simulate that.
   void RefreshPageAndSetHeaderPolicy(RenderFrameHost** rfh,
-                                     blink::WebFeaturePolicyFeature feature,
+                                     blink::FeaturePolicyFeature feature,
                                      const std::vector<std::string>& origins) {
     RenderFrameHost* current = *rfh;
     SimulateNavigation(&current, current->GetLastCommittedURL());
@@ -64,7 +64,7 @@ class RenderFrameHostFeaturePolicyTest
 
   void SetContainerPolicy(RenderFrameHost* parent,
                           RenderFrameHost* child,
-                          blink::WebFeaturePolicyFeature feature,
+                          blink::FeaturePolicyFeature feature,
                           const std::vector<std::string>& origins) {
     static_cast<TestRenderFrameHost*>(parent)->OnDidChangeFramePolicy(
         child->GetRoutingID(),
@@ -80,7 +80,7 @@ class RenderFrameHostFeaturePolicyTest
 
  private:
   blink::ParsedFeaturePolicy CreateFPHeader(
-      blink::WebFeaturePolicyFeature feature,
+      blink::FeaturePolicyFeature feature,
       const std::vector<std::string>& origins) {
     blink::ParsedFeaturePolicy result(1);
     result[0].feature = feature;

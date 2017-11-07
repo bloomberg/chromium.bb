@@ -695,9 +695,9 @@ void XMLHttpRequest::open(const AtomicString& method,
   upload_complete_ = false;
 
   if (!async && GetExecutionContext()->IsDocument()) {
-    if (IsSupportedInFeaturePolicy(WebFeaturePolicyFeature::kSyncXHR) &&
+    if (IsSupportedInFeaturePolicy(FeaturePolicyFeature::kSyncXHR) &&
         !GetDocument()->GetFrame()->IsFeatureEnabled(
-            WebFeaturePolicyFeature::kSyncXHR)) {
+            FeaturePolicyFeature::kSyncXHR)) {
       exception_state.ThrowDOMException(
           kInvalidAccessError,
           "Synchronous requests are disabled by Feature Policy.");

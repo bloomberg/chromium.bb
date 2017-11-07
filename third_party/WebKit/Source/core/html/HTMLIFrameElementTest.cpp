@@ -191,7 +191,7 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
       frame_element->ContainerPolicy();
 
   EXPECT_EQ(1UL, container_policy1.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy1[0].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kFullscreen, container_policy1[0].feature);
   EXPECT_FALSE(container_policy1[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy1[0].origins.size());
   EXPECT_EQ("http://example.net", container_policy1[0].origins[0].Serialize());
@@ -203,11 +203,10 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
       frame_element->ContainerPolicy();
   EXPECT_EQ(2UL, container_policy2.size());
   EXPECT_TRUE(
-      container_policy2[0].feature == WebFeaturePolicyFeature::kFullscreen ||
-      container_policy2[1].feature == WebFeaturePolicyFeature::kFullscreen);
-  EXPECT_TRUE(
-      container_policy2[0].feature == WebFeaturePolicyFeature::kPayment ||
-      container_policy2[1].feature == WebFeaturePolicyFeature::kPayment);
+      container_policy2[0].feature == FeaturePolicyFeature::kFullscreen ||
+      container_policy2[1].feature == FeaturePolicyFeature::kFullscreen);
+  EXPECT_TRUE(container_policy2[0].feature == FeaturePolicyFeature::kPayment ||
+              container_policy2[1].feature == FeaturePolicyFeature::kPayment);
   EXPECT_FALSE(container_policy2[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy2[0].origins.size());
   EXPECT_EQ("http://example.net", container_policy2[0].origins[0].Serialize());
@@ -223,11 +222,10 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
       frame_element->ContainerPolicy();
   EXPECT_EQ(2UL, container_policy3.size());
   EXPECT_TRUE(
-      container_policy3[0].feature == WebFeaturePolicyFeature::kFullscreen ||
-      container_policy3[1].feature == WebFeaturePolicyFeature::kFullscreen);
-  EXPECT_TRUE(
-      container_policy3[0].feature == WebFeaturePolicyFeature::kPayment ||
-      container_policy3[1].feature == WebFeaturePolicyFeature::kPayment);
+      container_policy3[0].feature == FeaturePolicyFeature::kFullscreen ||
+      container_policy3[1].feature == FeaturePolicyFeature::kFullscreen);
+  EXPECT_TRUE(container_policy3[0].feature == FeaturePolicyFeature::kPayment ||
+              container_policy3[1].feature == FeaturePolicyFeature::kPayment);
   EXPECT_FALSE(container_policy3[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy3[0].origins.size());
   EXPECT_EQ("http://example.net", container_policy3[0].origins[0].Serialize());
@@ -255,7 +253,7 @@ TEST_F(HTMLIFrameElementTest, SandboxAttributeContainerPolicy) {
       frame_element->ContainerPolicy();
 
   EXPECT_EQ(1UL, container_policy.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy[0].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kFullscreen, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
   EXPECT_TRUE(container_policy[0].origins[0].unique());
@@ -281,7 +279,7 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
       frame_element->ContainerPolicy();
 
   EXPECT_EQ(1UL, container_policy.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy[0].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kFullscreen, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
   EXPECT_FALSE(container_policy[0].origins[0].unique());
@@ -316,12 +314,12 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicy) {
   ParsedFeaturePolicy container_policy =
       frame_element->ConstructContainerPolicy(nullptr, nullptr);
   EXPECT_EQ(2UL, container_policy.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::kPayment, container_policy[0].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kPayment, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
   EXPECT_TRUE(container_policy[0].origins[0].IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
-  EXPECT_EQ(WebFeaturePolicyFeature::kUsb, container_policy[1].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kUsb, container_policy[1].feature);
   EXPECT_FALSE(container_policy[1].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[1].origins.size());
   EXPECT_TRUE(container_policy[1].origins[0].IsSameOriginWith(
@@ -342,7 +340,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowFullscreen) {
   ParsedFeaturePolicy container_policy =
       frame_element->ConstructContainerPolicy(nullptr, nullptr);
   EXPECT_EQ(1UL, container_policy.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy[0].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kFullscreen, container_policy[0].feature);
   EXPECT_TRUE(container_policy[0].matches_all_origins);
 }
 
@@ -361,12 +359,12 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowPaymentRequest) {
   ParsedFeaturePolicy container_policy =
       frame_element->ConstructContainerPolicy(nullptr, nullptr);
   EXPECT_EQ(2UL, container_policy.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::kUsb, container_policy[0].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kUsb, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
   EXPECT_TRUE(container_policy[0].origins[0].IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
-  EXPECT_EQ(WebFeaturePolicyFeature::kPayment, container_policy[1].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kPayment, container_policy[1].feature);
   EXPECT_TRUE(container_policy[1].matches_all_origins);
 }
 
@@ -390,17 +388,17 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowAttributes) {
   ParsedFeaturePolicy container_policy =
       frame_element->ConstructContainerPolicy(nullptr, nullptr);
   EXPECT_EQ(3UL, container_policy.size());
-  EXPECT_EQ(WebFeaturePolicyFeature::kPayment, container_policy[0].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kPayment, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
   EXPECT_TRUE(container_policy[0].origins[0].IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
-  EXPECT_EQ(WebFeaturePolicyFeature::kUsb, container_policy[1].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kUsb, container_policy[1].feature);
   EXPECT_FALSE(container_policy[1].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[1].origins.size());
   EXPECT_TRUE(container_policy[1].origins[0].IsSameOriginWith(
       GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
-  EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy[2].feature);
+  EXPECT_EQ(FeaturePolicyFeature::kFullscreen, container_policy[2].feature);
   EXPECT_TRUE(container_policy[2].matches_all_origins);
 }
 

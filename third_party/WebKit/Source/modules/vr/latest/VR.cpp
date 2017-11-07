@@ -66,8 +66,8 @@ ScriptPromise VR::requestDevice(ScriptState* script_state) {
         DOMException::Create(kInvalidStateError, kNavigatorDetachedError));
   }
 
-  if (IsSupportedInFeaturePolicy(WebFeaturePolicyFeature::kWebVr)) {
-    if (!frame->IsFeatureEnabled(WebFeaturePolicyFeature::kWebVr)) {
+  if (IsSupportedInFeaturePolicy(FeaturePolicyFeature::kWebVr)) {
+    if (!frame->IsFeatureEnabled(FeaturePolicyFeature::kWebVr)) {
       // Only allow the call to be made if the appropraite feature policy is in
       // place.
       return ScriptPromise::RejectWithDOMException(

@@ -84,7 +84,7 @@ void GeolocationServiceImpl::CreateGeolocation(
   if (base::FeatureList::IsEnabled(features::kFeaturePolicy) &&
       base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions) &&
       !render_frame_host_->IsFeatureEnabled(
-          blink::WebFeaturePolicyFeature::kGeolocation)) {
+          blink::FeaturePolicyFeature::kGeolocation)) {
     return;
   }
 

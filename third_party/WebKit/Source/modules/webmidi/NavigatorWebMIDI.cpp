@@ -106,7 +106,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
 
   if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
     if (!document.GetFrame()->IsFeatureEnabled(
-            WebFeaturePolicyFeature::kMidiFeature)) {
+            FeaturePolicyFeature::kMidiFeature)) {
       UseCounter::Count(document, WebFeature::kMidiDisabledByFeaturePolicy);
       document.AddConsoleMessage(
           ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
@@ -117,7 +117,7 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
     }
   } else {
     Deprecation::CountDeprecationFeaturePolicy(
-        document, WebFeaturePolicyFeature::kMidiFeature);
+        document, FeaturePolicyFeature::kMidiFeature);
   }
 
   return MIDIAccessInitializer::Start(script_state, options);

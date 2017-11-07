@@ -57,7 +57,7 @@ class PermissionContextBase : public KeyedService {
  public:
   PermissionContextBase(Profile* profile,
                         ContentSettingsType content_settings_type,
-                        blink::WebFeaturePolicyFeature feature_policy_feature);
+                        blink::FeaturePolicyFeature feature_policy_feature);
   ~PermissionContextBase() override;
 
   // A field trial used to enable the global permissions kill switch.
@@ -197,7 +197,7 @@ class PermissionContextBase : public KeyedService {
 
   Profile* profile_;
   const ContentSettingsType content_settings_type_;
-  const blink::WebFeaturePolicyFeature feature_policy_feature_;
+  const blink::FeaturePolicyFeature feature_policy_feature_;
   std::unordered_map<std::string, std::unique_ptr<PermissionRequest>>
       pending_requests_;
 

@@ -235,9 +235,8 @@ void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
   CountDeprecationCrossOriginIframe(frame, feature);
 }
 
-void Deprecation::CountDeprecationFeaturePolicy(
-    const Document& document,
-    WebFeaturePolicyFeature feature) {
+void Deprecation::CountDeprecationFeaturePolicy(const Document& document,
+                                                FeaturePolicyFeature feature) {
   // If feature policy is not enabled, don't do anything.
   if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
     return;
@@ -257,30 +256,30 @@ void Deprecation::CountDeprecationFeaturePolicy(
   // (until the general syntax is shipped) and this is also a good enough
   // approximation for deprecation messages.
   switch (feature) {
-    case WebFeaturePolicyFeature::kEncryptedMedia:
+    case FeaturePolicyFeature::kEncryptedMedia:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::
               kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe);
       break;
-    case WebFeaturePolicyFeature::kGeolocation:
+    case FeaturePolicyFeature::kGeolocation:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe);
       break;
-    case WebFeaturePolicyFeature::kMicrophone:
+    case FeaturePolicyFeature::kMicrophone:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::
               kGetUserMediaMicDisallowedByFeaturePolicyInCrossOriginIframe);
       break;
-    case WebFeaturePolicyFeature::kCamera:
+    case FeaturePolicyFeature::kCamera:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::
               kGetUserMediaCameraDisallowedByFeaturePolicyInCrossOriginIframe);
       break;
-    case WebFeaturePolicyFeature::kMidiFeature:
+    case FeaturePolicyFeature::kMidiFeature:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::

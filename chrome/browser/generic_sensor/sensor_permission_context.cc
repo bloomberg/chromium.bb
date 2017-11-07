@@ -12,7 +12,7 @@
 SensorPermissionContext::SensorPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_SENSORS,
-                            blink::WebFeaturePolicyFeature::kNotFound) {}
+                            blink::FeaturePolicyFeature::kNotFound) {}
 
 SensorPermissionContext::~SensorPermissionContext() {}
 

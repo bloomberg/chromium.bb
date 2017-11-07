@@ -30,7 +30,7 @@ DurableStoragePermissionContext::DurableStoragePermissionContext(
     Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
-                            blink::WebFeaturePolicyFeature::kNotFound) {}
+                            blink::FeaturePolicyFeature::kNotFound) {}
 
 void DurableStoragePermissionContext::DecidePermission(
     content::WebContents* web_contents,

@@ -128,8 +128,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::FileChooserParams::Mode,
                           content::FileChooserParams::Save)
 IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDirective::Name,
                           content::CSPDirective::NameLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFeaturePolicyFeature,
-                          blink::WebFeaturePolicyFeature::LAST_FEATURE)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::FeaturePolicyFeature,
+                          blink::FeaturePolicyFeature::LAST_FEATURE)
 IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDisposition,
                           content::CSPDisposition::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTriggeringEventInfo,

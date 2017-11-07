@@ -11,7 +11,7 @@ BackgroundSyncPermissionContext::BackgroundSyncPermissionContext(
     Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
-                            blink::WebFeaturePolicyFeature::kNotFound) {}
+                            blink::FeaturePolicyFeature::kNotFound) {}
 
 void BackgroundSyncPermissionContext::CancelPermissionRequest(
     content::WebContents* web_contents,
