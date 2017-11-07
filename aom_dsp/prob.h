@@ -44,6 +44,66 @@ typedef uint16_t aom_cdf_prob;
 #define AOM_ICDF(x) (x)
 #endif
 
+#define AOM_CDF2(a0) AOM_ICDF(a0), AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF3(a0, a1) AOM_ICDF(a0), AOM_ICDF(a1), AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF4(a0, a1, a2) \
+  AOM_ICDF(a0), AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF5(a0, a1, a2, a3) \
+  AOM_ICDF(a0)                   \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF6(a0, a1, a2, a3, a4)                        \
+  AOM_ICDF(a0)                                              \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), \
+      AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF7(a0, a1, a2, a3, a4, a5)                                  \
+  AOM_ICDF(a0)                                                            \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), AOM_ICDF(a5), \
+      AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF8(a0, a1, a2, a3, a4, a5, a6)                              \
+  AOM_ICDF(a0)                                                            \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), AOM_ICDF(a5), \
+      AOM_ICDF(a6), AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF9(a0, a1, a2, a3, a4, a5, a6, a7)                          \
+  AOM_ICDF(a0)                                                            \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), AOM_ICDF(a5), \
+      AOM_ICDF(a6), AOM_ICDF(a7), AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF10(a0, a1, a2, a3, a4, a5, a6, a7, a8)                     \
+  AOM_ICDF(a0)                                                            \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), AOM_ICDF(a5), \
+      AOM_ICDF(a6), AOM_ICDF(a7), AOM_ICDF(a8), AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF11(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)                 \
+  AOM_ICDF(a0)                                                            \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), AOM_ICDF(a5), \
+      AOM_ICDF(a6), AOM_ICDF(a7), AOM_ICDF(a8), AOM_ICDF(a9),             \
+      AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF12(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)               \
+  AOM_ICDF(a0)                                                               \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), AOM_ICDF(a5),    \
+      AOM_ICDF(a6), AOM_ICDF(a7), AOM_ICDF(a8), AOM_ICDF(a9), AOM_ICDF(a10), \
+      AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF13(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11)          \
+  AOM_ICDF(a0)                                                               \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), AOM_ICDF(a5),    \
+      AOM_ICDF(a6), AOM_ICDF(a7), AOM_ICDF(a8), AOM_ICDF(a9), AOM_ICDF(a10), \
+      AOM_ICDF(a11), AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF14(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12)     \
+  AOM_ICDF(a0)                                                               \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), AOM_ICDF(a5),    \
+      AOM_ICDF(a6), AOM_ICDF(a7), AOM_ICDF(a8), AOM_ICDF(a9), AOM_ICDF(a10), \
+      AOM_ICDF(a11), AOM_ICDF(a12), AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF15(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13) \
+  AOM_ICDF(a0)                                                                \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), AOM_ICDF(a5),     \
+      AOM_ICDF(a6), AOM_ICDF(a7), AOM_ICDF(a8), AOM_ICDF(a9), AOM_ICDF(a10),  \
+      AOM_ICDF(a11), AOM_ICDF(a12), AOM_ICDF(a13), AOM_ICDF(CDF_PROB_TOP), 0
+#define AOM_CDF16(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, \
+                  a14)                                                        \
+  AOM_ICDF(a0)                                                                \
+  , AOM_ICDF(a1), AOM_ICDF(a2), AOM_ICDF(a3), AOM_ICDF(a4), AOM_ICDF(a5),     \
+      AOM_ICDF(a6), AOM_ICDF(a7), AOM_ICDF(a8), AOM_ICDF(a9), AOM_ICDF(a10),  \
+      AOM_ICDF(a11), AOM_ICDF(a12), AOM_ICDF(a13), AOM_ICDF(a14),             \
+      AOM_ICDF(CDF_PROB_TOP), 0
+
 #define MAX_PROB 255
 
 #define LV_MAP_PROB 1
