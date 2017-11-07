@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
@@ -199,8 +198,7 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::CancelSamlFlow() {
   dm_token_.clear();
   auth_session_id_.clear();
   DCHECK(!callback_.is_null());
-  base::ResetAndReturn(&callback_)
-      .Run(Status::FAILURE, std::string(), std::string());
+  std::move(callback_).Run(Status::FAILURE, std::string(), std::string());
 }
 
 void ArcActiveDirectoryEnrollmentTokenFetcher::OnAuthSucceeded() {

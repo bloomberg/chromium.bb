@@ -63,7 +63,7 @@ class FakeAuthInstance : public mojom::AuthInstance {
   void OnAccountInfoReady(mojom::AccountInfoPtr account_info,
                           mojom::ArcSignInStatus status) override {
     account_info_ = std::move(account_info);
-    base::ResetAndReturn(&done_closure_).Run();
+    std::move(done_closure_).Run();
   }
 
   void RequestAccountInfo(base::Closure done_closure) {

@@ -4,7 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/auth/arc_auth_context.h"
 
-#include "base/callback_helpers.h"
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
@@ -110,7 +111,7 @@ void ArcAuthContext::OnRefreshTokensLoaded() {
 void ArcAuthContext::OnRefreshTokenTimeout() {
   LOG(WARNING) << "Failed to wait for refresh token.";
   token_service_->RemoveObserver(this);
-  base::ResetAndReturn(&callback_).Run(nullptr);
+  std::move(callback_).Run(nullptr);
 }
 
 void ArcAuthContext::StartFetchers() {
@@ -149,7 +150,7 @@ void ArcAuthContext::OnFetcherError(const GoogleServiceAuthError& error) {
     }
     LOG(WARNING) << "Too many transient errors. Stop retrying.";
   }
-  base::ResetAndReturn(&callback_).Run(nullptr);
+  std::move(callback_).Run(nullptr);
 }
 
 void ArcAuthContext::OnUbertokenSuccess(const std::string& token) {
@@ -169,7 +170,7 @@ void ArcAuthContext::OnMergeSessionSuccess(const std::string& data) {
       << "Auth context was successfully prepared after retry.";
   context_prepared_ = true;
   ResetFetchers();
-  base::ResetAndReturn(&callback_).Run(profile_->GetRequestContext());
+  std::move(callback_).Run(profile_->GetRequestContext());
 }
 
 void ArcAuthContext::OnMergeSessionFailure(
