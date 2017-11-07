@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -186,7 +185,7 @@ void ArcBackgroundAuthCodeFetcher::ReportResult(
     UpdateSilentAuthCodeUMA(uma_status);
   else
     UpdateReauthorizationSilentAuthCodeUMA(uma_status);
-  base::ResetAndReturn(&callback_).Run(!auth_code.empty(), auth_code);
+  std::move(callback_).Run(!auth_code.empty(), auth_code);
 }
 
 }  // namespace arc

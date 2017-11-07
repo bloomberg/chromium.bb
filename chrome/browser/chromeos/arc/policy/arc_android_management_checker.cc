@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -104,8 +104,7 @@ void ArcAndroidManagementChecker::StartCheckInternal() {
 
   if (!token_service_->RefreshTokenIsAvailable(account_id_)) {
     VLOG(2) << "No refresh token is available for android management check.";
-    base::ResetAndReturn(&callback_)
-        .Run(policy::AndroidManagementClient::Result::ERROR);
+    std::move(callback_).Run(policy::AndroidManagementClient::Result::ERROR);
     return;
   }
 
@@ -125,7 +124,7 @@ void ArcAndroidManagementChecker::OnAndroidManagementChecked(
     return;
   }
 
-  base::ResetAndReturn(&callback_).Run(result);
+  std::move(callback_).Run(result);
 }
 
 void ArcAndroidManagementChecker::ScheduleRetry() {

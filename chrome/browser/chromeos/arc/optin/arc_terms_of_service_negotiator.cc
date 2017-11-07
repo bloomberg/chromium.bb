@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_negotiator.h"
 
-#include "base/callback_helpers.h"
+#include <utility>
 
 namespace arc {
 
@@ -21,7 +21,7 @@ void ArcTermsOfServiceNegotiator::StartNegotiation(
 
 void ArcTermsOfServiceNegotiator::ReportResult(bool accepted) {
   DCHECK(!pending_callback_.is_null());
-  base::ResetAndReturn(&pending_callback_).Run(accepted);
+  std::move(pending_callback_).Run(accepted);
 }
 
 }  // namespace arc
