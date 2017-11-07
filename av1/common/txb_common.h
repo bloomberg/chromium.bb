@@ -281,15 +281,12 @@ static INLINE int get_br_ctx_from_count_mag(int row, int col, int count,
 
 static INLINE int get_br_ctx(const uint8_t *const levels,
                              const int c,  // raster order
-                             const int bwl) {
+                             const int bwl, const int count) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int stride = (1 << bwl) + TX_PAD_HOR;
-  const int level_minus_1 = NUM_BASE_LEVELS;
   int mag = 0;
   int nb_mag[3] = { 0 };
-  const int count = get_level_count(levels, stride, row, col, level_minus_1,
-                                    br_ref_offset, BR_CONTEXT_POSITION_NUM);
   get_level_mag(levels, stride, row, col, nb_mag);
   for (int idx = 0; idx < 3; ++idx) mag = AOMMAX(mag, nb_mag[idx]);
   const int ctx = get_br_ctx_from_count_mag(row, col, count, mag);
@@ -570,5 +567,8 @@ void av1_init_lv_map(AV1_COMMON *cm);
 void av1_get_base_level_counts(const uint8_t *const levels,
                                const int level_minus_1, const int width,
                                const int height, uint8_t *const level_counts);
+
+void av1_get_br_level_counts(const uint8_t *const levels, const int width,
+                             const int height, uint8_t *const level_counts);
 
 #endif  // AV1_COMMON_TXB_COMMON_H_

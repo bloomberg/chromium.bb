@@ -193,9 +193,9 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
                           const TxbInfo *const txb_info,
                           const LV_MAP_COEFF_COST *const txb_costs);
 
-void get_dist_cost_stats(LevelDownStats *stats, int scan_idx,
-                         const LV_MAP_COEFF_COST *txb_costs,
-                         TxbInfo *txb_info) {
+static void get_dist_cost_stats(LevelDownStats *stats, int scan_idx,
+                                const LV_MAP_COEFF_COST *txb_costs,
+                                TxbInfo *txb_info) {
   const int16_t *scan = txb_info->scan_order->scan;
   const int coeff_idx = scan[scan_idx];
   const tran_low_t qc = txb_info->qcoeff[coeff_idx];
@@ -297,6 +297,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
+  uint8_t level_counts[MAX_TX_SQUARE];
 
   (void)blk_row;
   (void)blk_col;
@@ -371,7 +372,6 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
   update_eob = eob - 1;
 #else
-  uint8_t level_counts[MAX_TX_SQUARE];
   for (int i = 1; i < eob; ++i) {
     c = eob - 1 - i;
     int coeff_ctx = get_nz_map_ctx(levels, c, scan, bwl, height, tx_type);
@@ -426,52 +426,55 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     }
   }
 
-  for (c = update_eob; c >= 0; --c) {
-    const tran_low_t level = abs(tcoeff[scan[c]]);
-    int idx;
-    int ctx;
+  if (update_eob >= 0) {
+    av1_get_br_level_counts(levels, width, height, level_counts);
+    for (c = update_eob; c >= 0; --c) {
+      const tran_low_t level = abs(tcoeff[scan[c]]);
+      int idx;
+      int ctx;
 
-    if (level <= NUM_BASE_LEVELS) continue;
+      if (level <= NUM_BASE_LEVELS) continue;
 
-    // level is above 1.
-    ctx = get_br_ctx(levels, scan[c], bwl);
+      // level is above 1.
+      ctx = get_br_ctx(levels, scan[c], bwl, level_counts[scan[c]]);
 
-    int base_range = level - 1 - NUM_BASE_LEVELS;
-    int br_set_idx = 0;
-    int br_base = 0;
-    int br_offset = 0;
+      int base_range = level - 1 - NUM_BASE_LEVELS;
+      int br_set_idx = 0;
+      int br_base = 0;
+      int br_offset = 0;
 
-    if (base_range >= COEFF_BASE_RANGE)
-      br_set_idx = BASE_RANGE_SETS;
-    else
-      br_set_idx = coeff_to_br_index[base_range];
+      if (base_range >= COEFF_BASE_RANGE)
+        br_set_idx = BASE_RANGE_SETS;
+      else
+        br_set_idx = coeff_to_br_index[base_range];
 
-    for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
-      aom_write_bin(w, idx == br_set_idx,
-                    ec_ctx->coeff_br_cdf[txs_ctx][plane_type][idx][ctx], 2);
-      if (idx == br_set_idx) {
-        br_base = br_index_to_coeff[br_set_idx];
-        br_offset = base_range - br_base;
-        int extra_bits = (1 << br_extra_bits[idx]) - 1;
-        for (int tok = 0; tok < extra_bits; ++tok) {
-          if (tok == br_offset) {
-            aom_write_bin(w, 1, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx],
+      for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
+        aom_write_bin(w, idx == br_set_idx,
+                      ec_ctx->coeff_br_cdf[txs_ctx][plane_type][idx][ctx], 2);
+        if (idx == br_set_idx) {
+          br_base = br_index_to_coeff[br_set_idx];
+          br_offset = base_range - br_base;
+          int extra_bits = (1 << br_extra_bits[idx]) - 1;
+          for (int tok = 0; tok < extra_bits; ++tok) {
+            if (tok == br_offset) {
+              aom_write_bin(w, 1,
+                            ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx], 2);
+              break;
+            }
+            aom_write_bin(w, 0, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx],
                           2);
-            break;
           }
-          aom_write_bin(w, 0, ec_ctx->coeff_lps_cdf[txs_ctx][plane_type][ctx],
-                        2);
+          //        aom_write_literal(w, br_offset, br_extra_bits[idx]);
+          break;
         }
-        //        aom_write_literal(w, br_offset, br_extra_bits[idx]);
-        break;
       }
+
+      if (br_set_idx < BASE_RANGE_SETS) continue;
+
+      // use 0-th order Golomb code to handle the residual level.
+      write_golomb(
+          w, abs(tcoeff[scan[c]]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
     }
-
-    if (br_set_idx < BASE_RANGE_SETS) continue;
-
-    // use 0-th order Golomb code to handle the residual level.
-    write_golomb(w,
-                 abs(tcoeff[scan[c]]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
   }
 }
 
@@ -590,6 +593,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   const int16_t *scan = scan_order->scan;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
+  uint8_t level_counts[MAX_TX_SQUARE];
 
   LV_MAP_COEFF_COST *coeff_costs = &x->coeff_costs[txs_ctx][plane_type];
 
@@ -610,6 +614,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   const int seg_eob = tx_size_2d[tx_size];
   int eob_cost = get_eob_cost(eob, seg_eob, coeff_costs, tx_type);
 
+  av1_get_br_level_counts(levels, width, height, level_counts);
   cost += eob_cost;
 #if USE_CAUSAL_BASE_CTX
   int coeff_ctx = 0;
@@ -668,7 +673,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
       if (level > NUM_BASE_LEVELS) {
         int ctx;
-        ctx = get_br_ctx(levels, scan[c], bwl);
+        ctx = get_br_ctx(levels, scan[c], bwl, level_counts[scan[c]]);
         int base_range = level - 1 - NUM_BASE_LEVELS;
         if (base_range < COEFF_BASE_RANGE) {
           cost += coeff_costs->lps_cost[ctx][base_range];
@@ -1461,7 +1466,13 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
 #endif
 
     if (abs_qc > NUM_BASE_LEVELS) {
-      int ctx = get_br_ctx(txb_info->levels, scan[scan_idx], txb_info->bwl);
+      const int row = scan[scan_idx] >> txb_info->bwl;
+      const int col = scan[scan_idx] - (row << txb_info->bwl);
+      const int count = get_level_count(
+          txb_info->levels, (1 << txb_info->bwl) + TX_PAD_HOR, row, col,
+          NUM_BASE_LEVELS, br_ref_offset, BR_CONTEXT_POSITION_NUM);
+      const int ctx =
+          get_br_ctx(txb_info->levels, scan[scan_idx], txb_info->bwl, count);
       cost += get_br_cost(abs_qc, ctx, txb_costs->lps_cost[ctx]);
       cost += get_golomb_cost(abs_qc);
     }
@@ -2022,6 +2033,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const int height = tx_size_high[tx_size];
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
+  uint8_t level_counts[MAX_TX_SQUARE];
   const uint8_t allow_update_cdf = args->allow_update_cdf;
 
   TX_SIZE txsize_ctx = get_txsize_context(tx_size);
@@ -2098,7 +2110,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
 #if !USE_CAUSAL_BASE_CTX
   // Reverse process order to handle coefficient level and sign.
-  uint8_t level_counts[MAX_TX_SQUARE];
   for (int i = 0; i < NUM_BASE_LEVELS; ++i) {
     av1_get_base_level_counts(levels, i, width, height, level_counts);
     for (c = eob - 1; c >= 0; --c) {
@@ -2138,51 +2149,54 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
   }
 
-  for (c = update_eob; c >= 0; --c) {
-    const tran_low_t level = abs(tcoeff[scan[c]]);
-    int idx;
-    int ctx;
+  if (update_eob >= 0) {
+    av1_get_br_level_counts(levels, width, height, level_counts);
+    for (c = update_eob; c >= 0; --c) {
+      const tran_low_t level = abs(tcoeff[scan[c]]);
+      int idx;
+      int ctx;
 
-    if (level <= NUM_BASE_LEVELS) continue;
+      if (level <= NUM_BASE_LEVELS) continue;
 
-    // level is above 1.
-    ctx = get_br_ctx(levels, scan[c], bwl);
+      // level is above 1.
+      ctx = get_br_ctx(levels, scan[c], bwl, level_counts[scan[c]]);
 
-    int base_range = level - 1 - NUM_BASE_LEVELS;
-    int br_set_idx = base_range < COEFF_BASE_RANGE
-                         ? coeff_to_br_index[base_range]
-                         : BASE_RANGE_SETS;
+      int base_range = level - 1 - NUM_BASE_LEVELS;
+      int br_set_idx = base_range < COEFF_BASE_RANGE
+                           ? coeff_to_br_index[base_range]
+                           : BASE_RANGE_SETS;
 
-    for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
-      if (idx == br_set_idx) {
-        int br_base = br_index_to_coeff[br_set_idx];
-        int br_offset = base_range - br_base;
-        ++td->counts->coeff_br[txsize_ctx][plane_type][idx][ctx][1];
-        if (allow_update_cdf)
-          update_bin(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][idx][ctx], 1,
-                     2);
-        int extra_bits = (1 << br_extra_bits[idx]) - 1;
-        for (int tok = 0; tok < extra_bits; ++tok) {
-          if (br_offset == tok) {
-            ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][1];
-            if (allow_update_cdf)
-              update_bin(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 1,
-                         2);
-            break;
-          }
-          ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][0];
+      for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
+        if (idx == br_set_idx) {
+          int br_base = br_index_to_coeff[br_set_idx];
+          int br_offset = base_range - br_base;
+          ++td->counts->coeff_br[txsize_ctx][plane_type][idx][ctx][1];
           if (allow_update_cdf)
-            update_bin(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 0,
-                       2);
+            update_bin(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][idx][ctx],
+                       1, 2);
+          int extra_bits = (1 << br_extra_bits[idx]) - 1;
+          for (int tok = 0; tok < extra_bits; ++tok) {
+            if (br_offset == tok) {
+              ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][1];
+              if (allow_update_cdf)
+                update_bin(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx],
+                           1, 2);
+              break;
+            }
+            ++td->counts->coeff_lps[txsize_ctx][plane_type][ctx][0];
+            if (allow_update_cdf)
+              update_bin(ec_ctx->coeff_lps_cdf[txsize_ctx][plane_type][ctx], 0,
+                         2);
+          }
+          break;
         }
-        break;
+        ++td->counts->coeff_br[txsize_ctx][plane_type][idx][ctx][0];
+        if (allow_update_cdf)
+          update_bin(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][idx][ctx], 0,
+                     2);
       }
-      ++td->counts->coeff_br[txsize_ctx][plane_type][idx][ctx][0];
-      if (allow_update_cdf)
-        update_bin(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][idx][ctx], 0,
-                   2);
+      // use 0-th order Golomb code to handle the residual level.
     }
-    // use 0-th order Golomb code to handle the residual level.
   }
 
   int cul_level = av1_get_txb_entropy_context(tcoeff, scan_order, eob);
