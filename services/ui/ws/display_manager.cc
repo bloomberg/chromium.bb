@@ -85,7 +85,7 @@ bool DisplayManager::SetDisplayConfiguration(
                   "created";
     return false;
   }
-  if (displays.size() != viewport_metrics.size()) {
+  if (displays.size() + mirrors.size() != viewport_metrics.size()) {
     LOG(ERROR) << "SetDisplayConfiguration called with mismatch in sizes";
     return false;
   }

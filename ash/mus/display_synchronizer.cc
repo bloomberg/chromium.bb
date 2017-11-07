@@ -19,6 +19,17 @@ aura::WindowTreeHostMus* ToWindowTreeHostMus(AshWindowTreeHost* ash_host) {
   return static_cast<aura::WindowTreeHostMus*>(ash_host->AsWindowTreeHost());
 }
 
+// Get the metrics for the display with the given |id|.
+ui::mojom::WmViewportMetricsPtr GetMetricsForDisplay(int64_t id) {
+  ui::mojom::WmViewportMetricsPtr metrics = ui::mojom::WmViewportMetrics::New();
+  const display::ManagedDisplayInfo& display_info =
+      Shell::Get()->display_manager()->GetDisplayInfo(id);
+  metrics->bounds_in_pixels = display_info.bounds_in_native();
+  metrics->device_scale_factor = display_info.device_scale_factor();
+  metrics->ui_scale_factor = display_info.configured_ui_scale();
+  return metrics;
+}
+
 }  // namespace
 
 DisplaySynchronizer::DisplaySynchronizer(
@@ -47,19 +58,15 @@ void DisplaySynchronizer::SendDisplayConfigurationToServer() {
   std::vector<ui::mojom::WmViewportMetricsPtr> metrics;
   for (size_t i = 0; i < display_count; ++i) {
     displays.push_back(display_manager->GetDisplayAt(i));
-    ui::mojom::WmViewportMetricsPtr viewport_metrics =
-        ui::mojom::WmViewportMetrics::New();
-    const display::ManagedDisplayInfo& display_info =
-        display_manager->GetDisplayInfo(displays.back().id());
-    viewport_metrics->bounds_in_pixels = display_info.bounds_in_native();
-    viewport_metrics->device_scale_factor = display_info.device_scale_factor();
-    viewport_metrics->ui_scale_factor = display_info.configured_ui_scale();
-    metrics.push_back(std::move(viewport_metrics));
+    metrics.push_back(GetMetricsForDisplay(displays[i].id()));
   }
+  const std::vector<display::Display>& mirrors =
+      display_manager->software_mirroring_display_list();
+  for (size_t i = 0; i < mirrors.size(); ++i)
+    metrics.push_back(GetMetricsForDisplay(mirrors[i].id()));
   window_manager_client_->SetDisplayConfiguration(
       displays, std::move(metrics),
-      WindowTreeHostManager::GetPrimaryDisplayId(),
-      display_manager->software_mirroring_display_list());
+      WindowTreeHostManager::GetPrimaryDisplayId(), mirrors);
 
   sent_initial_config_ = true;
 }
