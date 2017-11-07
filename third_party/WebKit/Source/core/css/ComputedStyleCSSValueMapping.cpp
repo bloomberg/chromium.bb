@@ -2308,7 +2308,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     }
     case CSSPropertyBackgroundClip:
     case CSSPropertyBackgroundOrigin:
-    case CSSPropertyWebkitBackgroundOrigin:
     case CSSPropertyWebkitMaskClip:
     case CSSPropertyWebkitMaskOrigin: {
       bool is_clip = property_id == CSSPropertyBackgroundClip ||

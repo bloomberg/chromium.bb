@@ -4,7 +4,6 @@ All changes to this list should go through Blink's feature review process: http:
 [LONGHANDS]
     -webkit-app-region
     -webkit-appearance
-    -webkit-background-origin
     -webkit-border-after-color
     -webkit-border-after-style
     -webkit-border-after-width
@@ -644,6 +643,8 @@ All changes to this list should go through Blink's feature review process: http:
         backface-visibility
     -webkit-background-clip
         background-clip
+    -webkit-background-origin
+        background-origin
     -webkit-background-size
         background-size
     -webkit-border-bottom-left-radius

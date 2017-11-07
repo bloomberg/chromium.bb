@@ -337,7 +337,6 @@ verticalAlign
 visibility
 webkitAppRegion
 webkitAppearance
-webkitBackgroundOrigin
 webkitBorderAfter
 webkitBorderAfterColor
 webkitBorderAfterStyle
