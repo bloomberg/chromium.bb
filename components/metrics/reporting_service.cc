@@ -174,8 +174,7 @@ void ReportingService::OnLogUploadComplete(int response_code,
   reporting_info_.set_last_attempt_was_https(was_https);
 
   // Log a histogram to track response success vs. failure rates.
-  // TODO(carlosil): Split histogram into http vs https.
-  LogResponseOrErrorCode(response_code, error_code);
+  LogResponseOrErrorCode(response_code, error_code, was_https);
 
   bool upload_succeeded = response_code == 200;
 

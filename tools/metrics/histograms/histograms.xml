@@ -88815,7 +88815,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>asvitkine@chromium.org</owner>
   <summary>
     HTTP response codes and network errors encountered by UMA when attempting to
-    upload logs to the server.
+    upload logs to the server through an HTTPS connection.
+  </summary>
+</histogram>
+
+<histogram name="UMA.LogUpload.ResponseOrErrorCode.HTTP"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>holte@chromium.org</owner>
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    HTTP response codes and network errors encountered by UMA when attempting to
+    upload logs to the server through an HTTP connection.
   </summary>
 </histogram>
 

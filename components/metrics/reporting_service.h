@@ -91,7 +91,9 @@ class ReportingService {
   // Methods for recording data to histograms.
   virtual void LogActualUploadInterval(base::TimeDelta interval) {}
   virtual void LogCellularConstraint(bool upload_canceled) {}
-  virtual void LogResponseOrErrorCode(int response_code, int error_code) {}
+  virtual void LogResponseOrErrorCode(int response_code,
+                                      int error_code,
+                                      bool was_https) {}
   virtual void LogSuccess(size_t log_size) {}
   virtual void LogLargeRejection(size_t log_size) {}
 

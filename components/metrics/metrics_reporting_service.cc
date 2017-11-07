@@ -73,9 +73,17 @@ void MetricsReportingService::LogCellularConstraint(bool upload_canceled) {
 }
 
 void MetricsReportingService::LogResponseOrErrorCode(int response_code,
-                                                     int error_code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.LogUpload.ResponseOrErrorCode",
-                              response_code >= 0 ? response_code : error_code);
+                                                     int error_code,
+                                                     bool was_https) {
+  if (was_https) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "UMA.LogUpload.ResponseOrErrorCode",
+        response_code >= 0 ? response_code : error_code);
+  } else {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "UMA.LogUpload.ResponseOrErrorCode.HTTP",
+        response_code >= 0 ? response_code : error_code);
+  }
 }
 
 void MetricsReportingService::LogSuccess(size_t log_size) {
