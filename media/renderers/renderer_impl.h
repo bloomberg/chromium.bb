@@ -249,6 +249,11 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // completed.
   std::list<base::Closure> pending_actions_;
 
+  // Pending flush indicates that a track change is in the middle of a Flush and
+  // that another one can't be scheduled at this time. Instead it should be
+  // added to |pending_actions_|.
+  bool pending_flush_for_stream_change_ = false;
+
   base::WeakPtr<RendererImpl> weak_this_;
   base::WeakPtrFactory<RendererImpl> weak_factory_;
 
