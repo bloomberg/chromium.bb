@@ -1,25 +1,25 @@
 AXWebArea
 ++AXTable AXARIAColumnCount='4'
 ++++AXRow
-++++++AXCell AXTitle='Month' AXARIAColumnIndex='1' AXARIARowIndex='1'
+++++++AXCell AXARIAColumnIndex='1' AXARIARowIndex='1'
 ++++++++AXStaticText AXValue='Month'
-++++++AXCell AXTitle='Day' AXARIAColumnIndex='2' AXARIARowIndex='1'
+++++++AXCell AXARIAColumnIndex='2' AXARIARowIndex='1'
 ++++++++AXStaticText AXValue='Day'
-++++++AXCell AXTitle='Weather' AXARIAColumnIndex='4' AXARIARowIndex='1'
+++++++AXCell AXARIAColumnIndex='4' AXARIARowIndex='1'
 ++++++++AXStaticText AXValue='Weather'
 ++++AXRow
-++++++AXCell AXTitle='January' AXARIAColumnIndex='1' AXARIARowIndex='2'
+++++++AXCell AXARIAColumnIndex='1' AXARIARowIndex='2'
 ++++++++AXStaticText AXValue='January'
-++++++AXCell AXTitle='01' AXARIAColumnIndex='2' AXARIARowIndex='2'
+++++++AXCell AXARIAColumnIndex='2' AXARIARowIndex='2'
 ++++++++AXStaticText AXValue='01'
-++++++AXCell AXTitle='Sunny' AXARIAColumnIndex='4' AXARIARowIndex='2'
+++++++AXCell AXARIAColumnIndex='4' AXARIARowIndex='2'
 ++++++++AXStaticText AXValue='Sunny'
 ++++AXRow
-++++++AXCell AXTitle='January' AXARIAColumnIndex='1' AXARIARowIndex='2'
+++++++AXCell AXARIAColumnIndex='1' AXARIARowIndex='2'
 ++++++++AXStaticText AXValue='January'
-++++++AXCell AXTitle='02' AXARIAColumnIndex='2' AXARIARowIndex='2'
+++++++AXCell AXARIAColumnIndex='2' AXARIARowIndex='2'
 ++++++++AXStaticText AXValue='02'
-++++++AXCell AXTitle='Rainy' AXARIAColumnIndex='4' AXARIARowIndex='2'
+++++++AXCell AXARIAColumnIndex='4' AXARIARowIndex='2'
 ++++++++AXStaticText AXValue='Rainy'
 ++++AXColumn
 ++++AXColumn

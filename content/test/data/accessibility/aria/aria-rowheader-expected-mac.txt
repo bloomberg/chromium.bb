@@ -1,18 +1,18 @@
 AXWebArea
 ++AXTable AXHeader='AXGroup' AXRowHeaderUIElements=["AXCell Browser","AXCell Rendering Engine"]
 ++++AXRow AXIndex='0'
-++++++AXCell AXTitle='Browser' AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}
 ++++++++AXStaticText AXValue='Browser'
-++++++AXCell AXTitle='Chrome' AXColumnIndexRange={"len":1,"loc":1} AXRowHeaderUIElements=["AXCell Browser"] AXRowIndexRange={"len":1,"loc":0}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowHeaderUIElements=["AXCell Browser"] AXRowIndexRange={"len":1,"loc":0}
 ++++++++AXStaticText AXValue='Chrome'
-++++++AXCell AXTitle='Safari' AXColumnIndexRange={"len":1,"loc":2} AXRowHeaderUIElements=["AXCell Browser"] AXRowIndexRange={"len":1,"loc":0}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":2} AXRowHeaderUIElements=["AXCell Browser"] AXRowIndexRange={"len":1,"loc":0}
 ++++++++AXStaticText AXValue='Safari'
 ++++AXRow AXIndex='1'
-++++++AXCell AXTitle='Rendering Engine' AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":1}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":1}
 ++++++++AXStaticText AXValue='Rendering Engine'
-++++++AXCell AXTitle='Blink' AXColumnIndexRange={"len":1,"loc":1} AXRowHeaderUIElements=["AXCell Rendering Engine"] AXRowIndexRange={"len":1,"loc":1}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowHeaderUIElements=["AXCell Rendering Engine"] AXRowIndexRange={"len":1,"loc":1}
 ++++++++AXStaticText AXValue='Blink'
-++++++AXCell AXTitle='WebKit' AXColumnIndexRange={"len":1,"loc":2} AXRowHeaderUIElements=["AXCell Rendering Engine"] AXRowIndexRange={"len":1,"loc":1}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":2} AXRowHeaderUIElements=["AXCell Rendering Engine"] AXRowIndexRange={"len":1,"loc":1}
 ++++++++AXStaticText AXValue='WebKit'
 ++++AXColumn AXIndex='0'
 ++++AXColumn AXIndex='1'

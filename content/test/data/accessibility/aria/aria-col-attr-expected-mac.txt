@@ -1,20 +1,20 @@
 AXWebArea
 ++AXTable AXARIAColumnCount='5'
 ++++AXRow
-++++++AXCell AXTitle='cell 2' AXARIAColumnIndex='2'
+++++++AXCell AXARIAColumnIndex='2'
 ++++++++AXStaticText AXValue='cell 2'
-++++++AXCell AXTitle='cell 4' AXARIAColumnIndex='4'
+++++++AXCell AXARIAColumnIndex='4'
 ++++++++AXStaticText AXValue='cell 4'
-++++++AXCell AXTitle='cell 5' AXARIAColumnIndex='5'
+++++++AXCell AXARIAColumnIndex='5'
 ++++++++AXStaticText AXValue='cell 5'
 ++++AXRow
-++++++AXCell AXTitle='cell 2' AXARIAColumnIndex='2'
+++++++AXCell AXARIAColumnIndex='2'
 ++++++++AXStaticText AXValue='cell 2'
-++++++AXCell AXTitle='cell 3' AXARIAColumnIndex='3'
+++++++AXCell AXARIAColumnIndex='3'
 ++++++++AXStaticText AXValue='cell 3'
-++++++AXCell AXTitle='cell 4' AXARIAColumnIndex='4'
+++++++AXCell AXARIAColumnIndex='4'
 ++++++++AXStaticText AXValue='cell 4'
-++++++AXCell AXTitle='cell 5' AXARIAColumnIndex='5'
+++++++AXCell AXARIAColumnIndex='5'
 ++++++++AXStaticText AXValue='cell 5'
 ++++AXColumn
 ++++AXColumn

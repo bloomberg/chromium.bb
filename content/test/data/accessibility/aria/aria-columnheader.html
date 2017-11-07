@@ -6,13 +6,14 @@
 @MAC-ALLOW:AXHeader=*
 @MAC-ALLOW:AXRowHeaderUIElements=*
 @MAC-ALLOW:AXRowIndexRange=*
+@MAC-DENY:AXDescription=*
 -->
 <html>
 <body>
 <div role="grid">
   <div role="row">
-    <span role="columnheader">Browser</span>
-    <span role="columnheader">Rendering Engine</span>
+    <span role="columnheader" aria-label="Browser">Browser</span>
+    <span role="columnheader" aria-label="Rendering Engine">Rendering Engine</span>
   </div>
   <div role="row">
     <span role="gridcell">Chrome</span>

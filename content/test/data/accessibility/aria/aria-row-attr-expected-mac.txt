@@ -1,16 +1,16 @@
 AXWebArea
 ++AXTable AXARIARowCount='5'
 ++++AXRow
-++++++AXCell AXTitle='cell 2' AXARIARowIndex='3'
+++++++AXCell AXARIARowIndex='3'
 ++++++++AXStaticText AXValue='cell 2'
-++++++AXCell AXTitle='cell 3' AXARIARowIndex='3'
+++++++AXCell AXARIARowIndex='3'
 ++++++++AXStaticText AXValue='cell 3'
-++++++AXCell AXTitle='cell 4' AXARIARowIndex='3'
+++++++AXCell AXARIARowIndex='3'
 ++++++++AXStaticText AXValue='cell 4'
 ++++AXRow
-++++++AXCell AXTitle='cell 2' AXARIARowIndex='4'
+++++++AXCell AXARIARowIndex='4'
 ++++++++AXStaticText AXValue='cell 2'
-++++++AXCell AXTitle='cell 3' AXARIARowIndex='4'
+++++++AXCell AXARIARowIndex='4'
 ++++++++AXStaticText AXValue='cell 3'
 ++++AXColumn
 ++++AXColumn

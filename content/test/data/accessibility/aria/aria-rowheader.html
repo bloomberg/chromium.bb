@@ -5,6 +5,7 @@
 @MAC-ALLOW:AXHeader=*
 @MAC-ALLOW:AXRowHeaderUIElements=*
 @MAC-ALLOW:AXRowIndexRange=*
+@MAC-DENY:AXDescription=*
 @WIN-ALLOW:xml-roles*
 @WIN-ALLOW:MULTISELECTABLE
 @WIN-ALLOW:EXTSELECTABLE
@@ -14,12 +15,12 @@
 <body>
 <div role="grid">
   <div role="row">
-    <span role="rowheader">Browser</span>
+    <span role="rowheader" aria-label="Browser">Browser</span>
     <span role="gridcell">Chrome</span>
     <span role="gridcell">Safari</span>
   </div>
   <div role="row">
-    <span role="rowheader">Rendering Engine</span>
+    <span role="rowheader" aria-label="Rendering Engine">Rendering Engine</span>
     <span role="gridcell">Blink</span>
     <span role="gridcell">WebKit</span>
   </div>
