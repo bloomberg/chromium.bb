@@ -29,11 +29,6 @@ namespace {
 // Not exposed/exported:
 const char kIndexKey[] = "index";
 
-// Keys from ModemManager1
-const char kModemManager1NumberKey[] = "Number";
-const char kModemManager1TextKey[] = "Text";
-const char kModemManager1TimestampKey[] = "Timestamp";
-
 // Maximum number of messages stored for RequestUpdate(true).
 const size_t kMaxReceivedMessages = 100;
 
@@ -316,13 +311,14 @@ ModemManager1NetworkSmsDeviceHandler::MessageReceived(
   // key namaes.
   base::DictionaryValue new_dictionary;
   std::string text, number, timestamp;
-  if (dictionary.GetStringWithoutPathExpansion(kModemManager1NumberKey,
+  if (dictionary.GetStringWithoutPathExpansion(SMSClient::kSMSPropertyNumber,
                                                &number))
     new_dictionary.SetString(kNumberKey, number);
-  if (dictionary.GetStringWithoutPathExpansion(kModemManager1TextKey, &text))
+  if (dictionary.GetStringWithoutPathExpansion(SMSClient::kSMSPropertyText,
+                                               &text))
     new_dictionary.SetString(kTextKey, text);
   // TODO(jglasgow): consider normalizing timestamp.
-  if (dictionary.GetStringWithoutPathExpansion(kModemManager1TimestampKey,
+  if (dictionary.GetStringWithoutPathExpansion(SMSClient::kSMSPropertyTimestamp,
                                                &timestamp))
     new_dictionary.SetString(kTimestampKey, timestamp);
   host_->MessageReceived(new_dictionary);
