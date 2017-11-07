@@ -26,14 +26,9 @@
 
 namespace WTF {
 
-template <typename T>
-using RefPtr = scoped_refptr<T>;
-
 using base::AdoptRef;
 using base::WrapRefCounted;
 
 }  // namespace WTF
-
-using WTF::RefPtr;
 
 #endif  // WTF_RefPtr_h

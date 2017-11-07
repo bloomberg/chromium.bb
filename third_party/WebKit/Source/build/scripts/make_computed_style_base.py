@@ -43,7 +43,7 @@ ALIGNMENT_ORDER = [
     'Vector<GridTrackSize>',
     'GridPosition',
     'AtomicString',
-    'RefPtr',
+    'scoped_refptr',
     'Persistent',
     'std::unique_ptr',
     'Vector<String>',
