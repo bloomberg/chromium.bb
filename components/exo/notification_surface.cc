@@ -14,7 +14,7 @@ namespace exo {
 NotificationSurface::NotificationSurface(NotificationSurfaceManager* manager,
                                          Surface* surface,
                                          const std::string& notification_key)
-    : SurfaceTreeHost("ExoNotificationSurface", nullptr),
+    : SurfaceTreeHost("ExoNotificationSurface"),
       manager_(manager),
       notification_key_(notification_key) {
   surface->AddSurfaceObserver(this);

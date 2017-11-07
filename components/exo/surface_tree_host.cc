@@ -78,9 +78,8 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceTreeHost, public:
 
-SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name,
-                                 aura::WindowDelegate* window_delegate) {
-  host_window_ = std::make_unique<aura::Window>(window_delegate);
+SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name)
+    : host_window_(std::make_unique<aura::Window>(nullptr)) {
   host_window_->SetType(aura::client::WINDOW_TYPE_CONTROL);
   host_window_->SetName(window_name);
   host_window_->Init(ui::LAYER_SOLID_COLOR);

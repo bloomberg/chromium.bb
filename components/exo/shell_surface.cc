@@ -295,7 +295,7 @@ ShellSurface::ShellSurface(Surface* surface,
                            bool activatable,
                            bool can_minimize,
                            int container)
-    : SurfaceTreeHost("ExoShellSurfaceHost", nullptr),
+    : SurfaceTreeHost("ExoShellSurfaceHost"),
       widget_(nullptr),
       parent_(parent ? parent->GetWidget()->GetNativeWindow() : nullptr),
       bounds_mode_(bounds_mode),
