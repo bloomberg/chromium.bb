@@ -57,6 +57,7 @@ class WebContents;
 // Shows or hides the hung renderer dialog for the given WebContents.
 + (void)showForWebContents:(content::WebContents*)contents;
 + (void)endForWebContents:(content::WebContents*)contents;
++ (bool)isShowing;
 
 // Kills the hung renderers.
 - (IBAction)kill:(id)sender;

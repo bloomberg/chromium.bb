@@ -50,6 +50,10 @@ void TabDialogsViews::HideHungRendererDialog() {
   HungRendererDialogView::Hide(web_contents_);
 }
 
+bool TabDialogsViews::IsShowingHungRendererDialog() {
+  return HungRendererDialogView::GetInstance();
+}
+
 void TabDialogsViews::ShowProfileSigninConfirmation(
     Browser* browser,
     Profile* profile,

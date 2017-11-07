@@ -51,6 +51,10 @@ using content::WebContents;
 // has gone away.
 - (void)renderProcessGone;
 
+// Called by |hungContentsObserver_| to indicate that |hungContents_|
+// has changed; restart hung renderer timer.
+- (void)tabUpdated;
+
 @end
 
 namespace {
@@ -73,6 +77,11 @@ class HungRendererWebContentsObserverBridge
   void RenderProcessGone(base::TerminationStatus status) override {
     [controller_ renderProcessGone];
   }
+  void RenderViewHostChanged(content::RenderViewHost* old_host,
+                             content::RenderViewHost* new_host) override {
+    [controller_ tabUpdated];
+  }
+
   void WebContentsDestroyed() override { [controller_ renderProcessGone]; }
 
  private:
@@ -153,6 +162,10 @@ class HungRendererWebContentsObserverBridge
 + (void)endForWebContents:(content::WebContents*)contents {
   if (!logging::DialogsAreSuppressed() && g_instance)
     [g_instance endForWebContents:contents];
+}
+
++ (bool)isShowing {
+  return g_instance;
 }
 
 - (IBAction)kill:(id)sender {
@@ -256,6 +269,17 @@ class HungRendererWebContentsObserverBridge
 
 - (void)renderProcessGone {
   // Cannot call performClose:, because the close button is disabled.
+  [self close];
+}
+
+- (void)tabUpdated {
+  // Tab was updated so restart the hang monitor if necessary and dismiss the
+  // current dialog.
+  if (hungContents_ && hungContents_->GetRenderViewHost()) {
+    hungContents_->GetRenderViewHost()
+        ->GetWidget()
+        ->RestartHangMonitorTimeoutIfNecessary();
+  }
   [self close];
 }
 
