@@ -26,12 +26,16 @@ using typed_urls_helper::AddUrlToHistoryWithTransition;
 using typed_urls_helper::AreVisitsEqual;
 using typed_urls_helper::AreVisitsUnique;
 using typed_urls_helper::CheckURLRowVectorsAreEqual;
-using typed_urls_helper::CheckSyncDirectoryHasURL;
+using typed_urls_helper::CheckSyncHasURLMetadata;
 using typed_urls_helper::DeleteUrlFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
 using typed_urls_helper::GetUrlFromClient;
 using typed_urls_helper::GetVisitsFromClient;
 using typed_urls_helper::RemoveVisitsFromClient;
+
+namespace {
+const std::string kDummyUrl = "http://dummy-history.google.com/";
+}  // namespace
 
 class TwoClientTypedUrlsSyncTest : public SyncTest {
  public:
@@ -115,14 +119,21 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpired) {
   ASSERT_EQ(new_url, urls[0].url());
 
   // Let sync finish.
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  // Add a dummy url and sync it.
+  AddUrlToHistory(0, GURL(kDummyUrl));
+  urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(2U, urls.size());
+  ASSERT_TRUE(TypedURLChecker(1, kDummyUrl).Wait());
 
-  // Second client should still have no URLs since this one is expired.
+  // Second client should only have dummy URL since kHistoryUrl is expired.
   urls = GetTypedUrlsFromClient(1);
-  ASSERT_EQ(0U, urls.size());
+  ASSERT_EQ(1U, urls.size());
+  ASSERT_EQ(GURL(kDummyUrl), urls.back().url());
+  EXPECT_TRUE(CheckSyncHasURLMetadata(1, GURL(kDummyUrl)));
 
-  // Sync should not receive expired visits.
-  EXPECT_FALSE(CheckSyncDirectoryHasURL(0, new_url));
+  // Sync on both clients should not receive expired visits.
+  EXPECT_FALSE(CheckSyncHasURLMetadata(0, new_url));
+  EXPECT_FALSE(CheckSyncHasURLMetadata(1, new_url));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpiredThenUpdate) {
@@ -144,28 +155,33 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpiredThenUpdate) {
   ASSERT_EQ(new_url, urls[0].url());
 
   // Let sync finish.
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  // Add a dummy url and sync it.
+  AddUrlToHistory(0, GURL(kDummyUrl));
+  urls = GetTypedUrlsFromClient(0);
+  ASSERT_EQ(2U, urls.size());
+  ASSERT_TRUE(TypedURLChecker(1, kDummyUrl).Wait());
 
-  // Second client should still have no URLs since this one is expired.
+  // Second client should only have dummy URL since kHistoryUrl is expired.
   urls = GetTypedUrlsFromClient(1);
-  ASSERT_EQ(0U, urls.size());
+  ASSERT_EQ(1U, urls.size());
+  EXPECT_TRUE(CheckSyncHasURLMetadata(0, GURL(kDummyUrl)));
 
   // Sync should not receive expired visits.
-  EXPECT_FALSE(CheckSyncDirectoryHasURL(0, new_url));
+  EXPECT_FALSE(CheckSyncHasURLMetadata(0, new_url));
 
   // Now drive an update on the first client.
   AddUrlToHistory(0, new_url);
 
   // Let sync finish again.
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(TypedURLChecker(1, new_url.spec()).Wait());
 
-  // Second client should have the URL now.
+  // Second client should have kHistoryUrl now.
   urls = GetTypedUrlsFromClient(1);
-  ASSERT_EQ(1U, urls.size());
+  ASSERT_EQ(2U, urls.size());
 
   // Sync should receive the new visit.
-  EXPECT_TRUE(CheckSyncDirectoryHasURL(0, new_url));
-  EXPECT_TRUE(CheckSyncDirectoryHasURL(1, new_url));
+  EXPECT_TRUE(CheckSyncHasURLMetadata(0, new_url));
+  EXPECT_TRUE(CheckSyncHasURLMetadata(1, new_url));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {
@@ -306,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   ASSERT_TRUE(GetClient(1)->SetupSync()) << "SetupSync() failed";
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(1)).Wait());
   ASSERT_TRUE(GetClient(0)->SetupSync()) << "SetupSync() failed";
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(TypedURLChecker(1, new_url.spec()).Wait());
 
   ASSERT_TRUE(CheckClientsEqual());
   // At this point, we should have no duplicates (total visit count should be
@@ -337,7 +353,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   // Now start up sync. Neither URL should get synced as they do not look like
   // typed URLs.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(CheckClientsEqual());
   history::URLRows urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
@@ -347,7 +362,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                                history::SOURCE_BROWSED,
                                timestamp + base::TimeDelta::FromSeconds(1));
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(TypedURLChecker(1, new_url.spec()).Wait());
   ASSERT_TRUE(CheckClientsEqual());
   ASSERT_TRUE(CheckNoDuplicateVisits());
   urls = GetTypedUrlsFromClient(0);
@@ -379,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, UpdateToNonTypedURL) {
   AddUrlToHistory(0, new_url);
 
   // Let sync finish.
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(TypedURLChecker(1, new_url.spec()).Wait());
 
   // Both clients should have this URL as typed and have two visits synced up.
   ASSERT_TRUE(CheckClientsEqual());
@@ -494,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                                 history::SOURCE_FIREFOX_IMPORTED);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(TypedURLChecker(1, browsed_url.spec()).Wait());
   history::URLRows urls = GetTypedUrlsFromClient(1);
   ASSERT_EQ(1U, urls.size());
   ASSERT_EQ(browsed_url, urls[0].url());
@@ -504,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   AddUrlToHistoryWithTransition(0, browsed_and_imported_url,
                                 ui::PAGE_TRANSITION_TYPED,
                                 history::SOURCE_BROWSED);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  ASSERT_TRUE(TypedURLChecker(1, browsed_and_imported_url.spec()).Wait());
   urls = GetTypedUrlsFromClient(1);
   ASSERT_EQ(2U, urls.size());
 
@@ -526,7 +541,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, BookmarksWithTypedVisit) {
       bookmarks_helper::FROM_UI);
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   // A row in the DB for client 1 should have been created as a result of the
   // sync.
   history::URLRow row;
@@ -535,7 +549,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, BookmarksWithTypedVisit) {
   // Now, add a typed visit for client 0 to the bookmark URL and sync it over
   // - this should not cause a crash.
   AddUrlToHistory(0, bookmark_url);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   ASSERT_TRUE(ProfilesHaveSameURLsChecker().Wait());
   history::URLRows urls = GetTypedUrlsFromClient(0);

@@ -332,13 +332,19 @@ public class FakeServerHelper {
      * In other words, this method injects a tombstone into the fake Sync server.
      *
      * @param id the server ID of the entity to delete
+     * @param clientDefinedUniqueTag the client defined unique tag of the entity to delete
      */
     public void deleteEntity(final String id) {
+        deleteEntity(id, "");
+    }
+
+    public void deleteEntity(final String id, final String clientDefinedUniqueTag) {
         checkFakeServerInitialized("useFakeServer must be called before deleting an entity.");
         ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Void>() {
             @Override
             public Void call() {
-                nativeDeleteEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, id);
+                nativeDeleteEntity(mNativeFakeServerHelperAndroid, sNativeFakeServer, id,
+                        clientDefinedUniqueTag);
                 return null;
             }
         });
@@ -410,8 +416,8 @@ public class FakeServerHelper {
             long nativeFakeServer, String bookmarkId, String title, String parentId);
     private native String nativeGetBookmarkBarFolderId(
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
-    private native void nativeDeleteEntity(
-            long nativeFakeServerHelperAndroid, long nativeFakeServer, String id);
+    private native void nativeDeleteEntity(long nativeFakeServerHelperAndroid,
+            long nativeFakeServer, String id, String clientDefinedUniqueTag);
     private native void nativeClearServerData(
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
 }

@@ -86,7 +86,14 @@ void ModelTypeDebugInfo::MergeDataWithMetadata(
         processor->GetEntityForStorageKey(data.first);
     // Entity could be null if there are some unapplied changes.
     if (entity != nullptr) {
-      node->Set("metadata", EntityMetadataToValue(entity->metadata()));
+      std::unique_ptr<base::DictionaryValue> metadata =
+          EntityMetadataToValue(entity->metadata());
+      base::Value* server_id = metadata->FindKey("server_id");
+      if (server_id) {
+        // Set ID value as directory, "s" means server.
+        node->SetString("ID", "s" + server_id->GetString());
+      }
+      node->Set("metadata", std::move(metadata));
     }
     node->SetString("modelType", type_string);
     all_nodes->Append(std::move(node));

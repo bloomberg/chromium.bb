@@ -58,7 +58,8 @@ EntityDataPtr EntityData::PassToPtr() {
 
 std::unique_ptr<base::DictionaryValue> EntityData::ToDictionaryValue() {
   std::unique_ptr<base::DictionaryValue> dict =
-      EntitySpecificsToValue(specifics);
+      std::make_unique<base::DictionaryValue>();
+  dict->Set("SPECIFICS", EntitySpecificsToValue(specifics));
   ADD_TO_DICT(dict, id);
   ADD_TO_DICT(dict, client_tag_hash);
   ADD_TO_DICT(dict, non_unique_name);
