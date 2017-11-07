@@ -8,9 +8,10 @@ from contrib.vr_benchmarks.vr_sample_page import VrSamplePage
 
 class WebVrSamplePage(VrSamplePage):
 
-  def __init__(self, page_set, url_parameters, extra_browser_args=None):
+  def __init__(self, page_set, url_parameters, sample_page,
+      extra_browser_args=None,):
     super(WebVrSamplePage, self).__init__(
-        sample_page='test-slow-render',
+        sample_page=sample_page,
         page_set=page_set,
         url_parameters=url_parameters,
         extra_browser_args=extra_browser_args)
@@ -30,7 +31,8 @@ class WebVrSamplePageSet(story.StorySet):
   def __init__(self):
     super(WebVrSamplePageSet, self).__init__()
 
-    test_cases = [
+    # Test cases that use the synthetic cube field page
+    cube_test_cases = [
       # Standard sample app with no changes
       ['canvasClickPresents=1', 'renderScale=1'],
       # Increased render scale
@@ -46,9 +48,19 @@ class WebVrSamplePageSet(story.StorySet):
           'cubeScale=0.3', 'workTime=4'],
     ]
 
-    for url_parameters in test_cases:
+    for url_parameters in cube_test_cases:
       # Standard set of pages with defaults
-      self.AddStory(WebVrSamplePage(self, url_parameters))
+      self.AddStory(WebVrSamplePage(self, url_parameters, 'test-slow-render'))
       # Set of pages with standardized render size and VSync alignment disabled
       self.AddStory(WebVrSamplePage(self, url_parameters + ['standardSize=1'],
+          'test-slow-render',
           extra_browser_args=['--disable-features=WebVrVsyncAlign']))
+
+    # Test cases that use the 360 video page
+    video_test_cases = [
+      # Test using the default, low resolution video
+      ['canvasClickPresents=1'],
+    ]
+
+    for url_parameters in video_test_cases:
+      self.AddStory(WebVrSamplePage(self, url_parameters, 'XX-360-video'))
