@@ -12,12 +12,10 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
-#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -79,11 +77,6 @@ const char kUMAPreviewsInfoBarActionLitePage[] =
 // Key of the UMA Previews.InfoBarTimestamp histogram.
 const char kUMAPreviewsInfoBarTimestamp[] = "Previews.InfoBarTimestamp";
 
-// Dummy method for creating TestPreviewsUIService.
-bool IsPreviewsEnabled(previews::PreviewsType type) {
-  return true;
-}
-
 class TestPreviewsWebContentsObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<TestPreviewsWebContentsObserver> {
@@ -118,30 +111,6 @@ class TestOptOutObserver : public page_load_metrics::PageLoadMetricsObserver {
   }
 
   base::Callback<void()> callback_;
-};
-
-class TestPreviewsLogger : public previews::PreviewsLogger {
- public:
-  TestPreviewsLogger() {}
-  ~TestPreviewsLogger() override {}
-
-  // previews::PreviewsLogger:
-  void LogMessage(const std::string& event_type,
-                  const std::string& event_description,
-                  const GURL& url,
-                  base::Time time) override {
-    event_type_ = event_type;
-    event_description_ = event_description;
-  }
-
-  // Exposed passed in params of LogMessage for testing.
-  std::string event_type() const { return event_type_; }
-  std::string event_description() const { return event_description_; }
-
- private:
-  // Passed in parameters of LogMessage.
-  std::string event_type_;
-  std::string event_description_;
 };
 
 }  // namespace
@@ -188,18 +157,6 @@ class PreviewsInfoBarDelegateUnitTest
     TestingBrowserProcess::GetGlobal()->SetLocalState(
         drp_test_context_->pref_service());
     network_time::NetworkTimeTracker::RegisterPrefs(registry);
-
-    std::unique_ptr<TestPreviewsLogger> previews_logger =
-        base::MakeUnique<TestPreviewsLogger>();
-    previews_logger_ = previews_logger.get();
-    previews_io_data_ = base::MakeUnique<previews::PreviewsIOData>(
-        base::MessageLoop::current()->task_runner(),
-        base::MessageLoop::current()->task_runner());
-    previews_ui_service_ = base::MakeUnique<previews::PreviewsUIService>(
-        previews_io_data_.get(), base::MessageLoop::current()->task_runner(),
-        nullptr /* previews_opt_out_store */, base::Bind(&IsPreviewsEnabled),
-        std::move(previews_logger));
-    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
@@ -215,8 +172,7 @@ class PreviewsInfoBarDelegateUnitTest
     PreviewsInfoBarDelegate::Create(
         web_contents(), type, previews_freshness, is_data_saver_user, is_reload,
         base::Bind(&PreviewsInfoBarDelegateUnitTest::OnDismissPreviewsInfobar,
-                   base::Unretained(this)),
-        previews_ui_service_.get());
+                   base::Unretained(this)));
 
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents());
@@ -272,9 +228,6 @@ class PreviewsInfoBarDelegateUnitTest
     return InfoBarService::FromWebContents(web_contents());
   }
 
-  // Expose previews_logger_ raw pointer to test results.
-  TestPreviewsLogger* previews_logger() const { return previews_logger_; }
-
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(base::MakeUnique<TestOptOutObserver>(base::Bind(
         &PreviewsInfoBarDelegateUnitTest::OptOut, base::Unretained(this))));
@@ -291,10 +244,6 @@ class PreviewsInfoBarDelegateUnitTest
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<base::HistogramTester> tester_;
-
-  TestPreviewsLogger* previews_logger_;
-  std::unique_ptr<previews::PreviewsIOData> previews_io_data_;
-  std::unique_ptr<previews::PreviewsUIService> previews_ui_service_;
 };
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestNavigationDismissal) {
@@ -307,8 +256,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestNavigationDismissal) {
       web_contents(), previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
       false /* is_reload */,
-      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback(),
-      previews_ui_service_.get());
+      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
   // Navigate and make sure the infobar is dismissed.
@@ -334,8 +282,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestReloadDismissal) {
       web_contents(), previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
       false /* is_reload */,
-      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback(),
-      previews_ui_service_.get());
+      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
   // Navigate to test URL as a reload to dismiss the infobar.
@@ -460,8 +407,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestShownOncePerNavigation) {
       web_contents(), previews::PreviewsType::LOFI,
       base::Time() /* previews_freshness */, true /* is_data_saver_user */,
       false /* is_reload */,
-      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback(),
-      previews_ui_service_.get());
+      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
 
   // Infobar should not be shown again since a navigation hasn't happened.
   EXPECT_EQ(0U, infobar_service()->infobar_count());
@@ -670,16 +616,4 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, PreviewInfobarTimestampReloadTest) {
       staleness_in_minutes, true /* is_reload */,
       l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_TIMESTAMP_UPDATED_NOW),
       PreviewsInfoBarDelegate::TIMESTAMP_UPDATED_NOW_SHOWN);
-}
-
-TEST_F(PreviewsInfoBarDelegateUnitTest, CreateInfoBarLogPreviewsInfoBarType) {
-  const previews::PreviewsType expected_type = previews::PreviewsType::LOFI;
-  const std::string expected_event = "InfoBar";
-  const std::string expected_description =
-      previews::GetStringNameForType(expected_type) + " InfoBar shown";
-
-  CreateInfoBar(expected_type, base::Time(), false /* is_data_saver_user */,
-                false /* is_reload */);
-  EXPECT_EQ(expected_event, previews_logger()->event_type());
-  EXPECT_EQ(expected_description, previews_logger()->event_description());
 }
