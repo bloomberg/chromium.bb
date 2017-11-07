@@ -5,7 +5,7 @@
 #ifndef IntersectionObserverController_h
 #define IntersectionObserverController_h
 
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/intersection_observer/IntersectionObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashSet.h"
@@ -19,14 +19,14 @@ class Document;
 
 class IntersectionObserverController
     : public GarbageCollectedFinalized<IntersectionObserverController>,
-      public SuspendableObject {
+      public PausableObject {
   USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
 
  public:
   static IntersectionObserverController* Create(Document*);
   ~IntersectionObserverController();
 
-  void Resume() override;
+  void Unpause() override;
 
   void ScheduleIntersectionObserverForDelivery(IntersectionObserver&);
   void DeliverIntersectionObservations();

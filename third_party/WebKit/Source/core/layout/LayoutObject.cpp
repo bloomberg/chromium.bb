@@ -3144,7 +3144,7 @@ bool LayoutObject::WillRenderImage() {
   if (Style()->Visibility() != EVisibility::kVisible)
     return false;
 
-  // We will not render a new image when SuspendableObjects is suspended
+  // We will not render a new image when PausableObjects is paused
   if (GetDocument().IsContextPaused())
     return false;
 

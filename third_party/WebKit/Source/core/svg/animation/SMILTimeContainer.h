@@ -61,7 +61,7 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
 
   void Start();
   void Pause();
-  void Resume();
+  void Unpause();
   void SetElapsed(double);
 
   void ServiceAnimations();

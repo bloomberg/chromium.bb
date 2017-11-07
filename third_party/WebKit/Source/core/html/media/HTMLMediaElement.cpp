@@ -441,7 +441,7 @@ void HTMLMediaElement::OnMediaControlsEnabledChange(Document* document) {
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
                                    Document& document)
     : HTMLElement(tag_name, document),
-      SuspendableObject(&document),
+      PausableObject(&document),
       load_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
                   this,
                   &HTMLMediaElement::LoadTimerFired),
@@ -590,7 +590,7 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   // load event from within the destructor.
   old_document.DecrementLoadEventDelayCount();
 
-  SuspendableObject::DidMoveToNewExecutionContext(&GetDocument());
+  PausableObject::DidMoveToNewExecutionContext(&GetDocument());
   HTMLElement::DidMoveToNewDocument(old_document);
 }
 
@@ -3871,7 +3871,7 @@ void HTMLMediaElement::Trace(blink::Visitor* visitor) {
       this);
   Supplementable<HTMLMediaElement>::Trace(visitor);
   HTMLElement::Trace(visitor);
-  SuspendableObject::Trace(visitor);
+  PausableObject::Trace(visitor);
 }
 
 void HTMLMediaElement::TraceWrappers(

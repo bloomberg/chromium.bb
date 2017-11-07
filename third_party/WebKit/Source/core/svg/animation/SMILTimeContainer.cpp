@@ -194,7 +194,7 @@ void SMILTimeContainer::Pause() {
   paused_ = true;
 }
 
-void SMILTimeContainer::Resume() {
+void SMILTimeContainer::Unpause() {
   if (!HandleAnimationPolicy(kRestartOnceTimer))
     return;
   DCHECK(IsPaused());

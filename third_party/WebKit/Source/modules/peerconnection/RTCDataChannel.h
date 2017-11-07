@@ -27,7 +27,7 @@
 
 #include <memory>
 #include "base/gtest_prod_util.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "modules/EventTargetModules.h"
 #include "platform/Timer.h"
@@ -51,7 +51,7 @@ class MODULES_EXPORT RTCDataChannel final
     : public EventTargetWithInlineData,
       public WebRTCDataChannelHandlerClient,
       public ActiveScriptWrappable<RTCDataChannel>,
-      public SuspendableObject {
+      public PausableObject {
   USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(RTCDataChannel, Dispose);
@@ -105,9 +105,9 @@ class MODULES_EXPORT RTCDataChannel final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // SuspendableObject
-  void Suspend() override;
-  void Resume() override;
+  // PausableObject
+  void Pause() override;
+  void Unpause() override;
   void ContextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable

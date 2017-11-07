@@ -1733,7 +1733,7 @@ unsigned Internals::mediaKeySessionCount() {
 
 unsigned Internals::suspendableObjectCount(Document* document) {
   DCHECK(document);
-  return document->SuspendableObjectCount();
+  return document->PausableObjectCount();
 }
 
 static unsigned EventHandlerCount(

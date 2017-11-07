@@ -264,7 +264,7 @@ void LocalDOMWindow::ClearDocument() {
 
   DCHECK(!document_->IsActive());
 
-  // FIXME: This should be part of SuspendableObject shutdown
+  // FIXME: This should be part of PausableObject shutdown
   ClearEventQueue();
 
   unused_preloads_timer_.Stop();

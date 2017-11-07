@@ -33,7 +33,7 @@ PresentationAvailability::PresentationAvailability(
     ExecutionContext* execution_context,
     const WTF::Vector<KURL>& urls,
     bool value)
-    : SuspendableObject(execution_context),
+    : PausableObject(execution_context),
       PageVisibilityObserver(ToDocument(execution_context)->GetPage()),
       urls_(urls),
       value_(value),
@@ -53,7 +53,7 @@ const AtomicString& PresentationAvailability::InterfaceName() const {
 }
 
 ExecutionContext* PresentationAvailability::GetExecutionContext() const {
-  return SuspendableObject::GetExecutionContext();
+  return PausableObject::GetExecutionContext();
 }
 
 void PresentationAvailability::AddedEventListener(
@@ -81,11 +81,11 @@ bool PresentationAvailability::HasPendingActivity() const {
   return state_ != State::kInactive;
 }
 
-void PresentationAvailability::Resume() {
+void PresentationAvailability::Unpause() {
   SetState(State::kActive);
 }
 
-void PresentationAvailability::Suspend() {
+void PresentationAvailability::Pause() {
   SetState(State::kSuspended);
 }
 
@@ -129,7 +129,7 @@ bool PresentationAvailability::value() const {
 void PresentationAvailability::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
-  SuspendableObject::Trace(visitor);
+  PausableObject::Trace(visitor);
 }
 
 }  // namespace blink

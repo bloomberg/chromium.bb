@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/dom/events/EventListener.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/workers/AbstractWorker.h"

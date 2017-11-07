@@ -90,7 +90,7 @@ class MODULES_EXPORT ServiceWorker final
                                     std::unique_ptr<WebServiceWorker::Handle>);
   ServiceWorker(ExecutionContext*, std::unique_ptr<WebServiceWorker::Handle>);
 
-  // SuspendableObject overrides.
+  // PausableObject overrides.
   void ContextDestroyed(ExecutionContext*) override;
 
   // A handle to the service worker representation in the embedder.

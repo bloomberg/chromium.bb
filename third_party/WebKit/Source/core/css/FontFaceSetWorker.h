@@ -10,7 +10,7 @@
 #include "core/css/FontFace.h"
 #include "core/css/FontFaceSet.h"
 #include "core/css/OffscreenFontSelector.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"

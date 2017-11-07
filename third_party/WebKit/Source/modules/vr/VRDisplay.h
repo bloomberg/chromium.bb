@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/v8_frame_request_callback.h"
 #include "core/dom/Document.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/dom/events/EventTarget.h"
 #include "device/vr/vr_service.mojom-blink.h"
 #include "modules/vr/VRDisplayCapabilities.h"
@@ -39,7 +39,7 @@ enum VREye { kVREyeNone, kVREyeLeft, kVREyeRight };
 
 class VRDisplay final : public EventTargetWithInlineData,
                         public ActiveScriptWrappable<VRDisplay>,
-                        public SuspendableObject,
+                        public PausableObject,
                         public device::mojom::blink::VRDisplayClient,
                         public device::mojom::blink::VRSubmitFrameClient {
   DEFINE_WRAPPERTYPEINFO();
@@ -90,9 +90,9 @@ class VRDisplay final : public EventTargetWithInlineData,
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
-  // SuspendableObject:
-  void Suspend() override;
-  void Resume() override;
+  // PausableObject:
+  void Pause() override;
+  void Unpause() override;
 
   void FocusChanged();
 

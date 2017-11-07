@@ -11,7 +11,7 @@
 namespace blink {
 
 ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
-    : SuspendableObject(ExecutionContext::From(script_state)),
+    : PausableObject(ExecutionContext::From(script_state)),
       state_(kPending),
       script_state_(script_state),
       timer_(GetExecutionContext()->GetTaskRunner(TaskType::kMicrotask),
@@ -25,11 +25,11 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
   probe::AsyncTaskScheduled(GetExecutionContext(), "Promise", this);
 }
 
-void ScriptPromiseResolver::Suspend() {
+void ScriptPromiseResolver::Pause() {
   timer_.Stop();
 }
 
-void ScriptPromiseResolver::Resume() {
+void ScriptPromiseResolver::Unpause() {
   if (state_ == kResolving || state_ == kRejecting)
     timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
@@ -84,7 +84,7 @@ void ScriptPromiseResolver::ResolveOrRejectImmediately() {
 }
 
 void ScriptPromiseResolver::Trace(blink::Visitor* visitor) {
-  SuspendableObject::Trace(visitor);
+  PausableObject::Trace(visitor);
 }
 
 }  // namespace blink

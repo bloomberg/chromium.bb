@@ -101,10 +101,10 @@ void ScriptedIdleTaskController::V8IdleTask::invoke(IdleDeadline* deadline) {
 
 ScriptedIdleTaskController::ScriptedIdleTaskController(
     ExecutionContext* context)
-    : SuspendableObject(context),
+    : PausableObject(context),
       scheduler_(Platform::Current()->CurrentThread()->Scheduler()),
       next_callback_id_(0),
-      suspended_(false) {
+      paused_(false) {
   PauseIfNeeded();
 }
 
@@ -112,7 +112,7 @@ ScriptedIdleTaskController::~ScriptedIdleTaskController() {}
 
 void ScriptedIdleTaskController::Trace(blink::Visitor* visitor) {
   visitor->Trace(idle_tasks_);
-  SuspendableObject::Trace(visitor);
+  PausableObject::Trace(visitor);
 }
 
 void ScriptedIdleTaskController::TraceWrappers(
@@ -191,7 +191,7 @@ void ScriptedIdleTaskController::CallbackFired(
   if (!idle_tasks_.Contains(id))
     return;
 
-  if (suspended_) {
+  if (paused_) {
     if (callback_type == IdleDeadline::CallbackType::kCalledByTimeout) {
       // Queue for execution when we are resumed.
       pending_timeouts_.push_back(id);
@@ -208,7 +208,7 @@ void ScriptedIdleTaskController::RunCallback(
     CallbackId id,
     double deadline_seconds,
     IdleDeadline::CallbackType callback_type) {
-  DCHECK(!suspended_);
+  DCHECK(!paused_);
   IdleTask* idle_task = idle_tasks_.Take(id);
   if (!idle_task)
     return;
@@ -245,13 +245,13 @@ void ScriptedIdleTaskController::ContextDestroyed(ExecutionContext*) {
   idle_tasks_.clear();
 }
 
-void ScriptedIdleTaskController::Suspend() {
-  suspended_ = true;
+void ScriptedIdleTaskController::Pause() {
+  paused_ = true;
 }
 
-void ScriptedIdleTaskController::Resume() {
-  DCHECK(suspended_);
-  suspended_ = false;
+void ScriptedIdleTaskController::Unpause() {
+  DCHECK(paused_);
+  paused_ = false;
 
   // Run any pending timeouts.
   Vector<CallbackId> pending_timeouts;

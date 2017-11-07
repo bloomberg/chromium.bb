@@ -75,14 +75,14 @@ ExecutionContext* ExecutionContext::ForRelevantRealm(
 
 void ExecutionContext::PausePausableObjects() {
   DCHECK(!is_context_paused_);
-  NotifySuspendingSuspendableObjects();
+  NotifySuspendingPausableObjects();
   is_context_paused_ = true;
 }
 
 void ExecutionContext::UnpausePausableObjects() {
   DCHECK(is_context_paused_);
   is_context_paused_ = false;
-  NotifyResumingSuspendableObjects();
+  NotifyResumingPausableObjects();
 }
 
 void ExecutionContext::NotifyContextDestroyed() {

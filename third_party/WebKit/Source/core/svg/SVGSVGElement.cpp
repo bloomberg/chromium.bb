@@ -559,7 +559,7 @@ void SVGSVGElement::pauseAnimations() {
 
 void SVGSVGElement::unpauseAnimations() {
   if (time_container_->IsPaused())
-    time_container_->Resume();
+    time_container_->Unpause();
 }
 
 bool SVGSVGElement::animationsPaused() const {

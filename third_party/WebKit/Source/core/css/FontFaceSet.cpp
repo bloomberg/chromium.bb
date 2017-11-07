@@ -13,11 +13,11 @@ namespace blink {
 const int FontFaceSet::kDefaultFontSize = 10;
 const char FontFaceSet::kDefaultFontFamily[] = "sans-serif";
 
-void FontFaceSet::Suspend() {
+void FontFaceSet::Pause() {
   async_runner_->Pause();
 }
 
-void FontFaceSet::Resume() {
+void FontFaceSet::Unpause() {
   async_runner_->Unpause();
 }
 
@@ -113,7 +113,7 @@ void FontFaceSet::Trace(blink::Visitor* visitor) {
   visitor->Trace(failed_fonts_);
   visitor->Trace(ready_);
   visitor->Trace(async_runner_);
-  SuspendableObject::Trace(visitor);
+  PausableObject::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
   FontFace::LoadFontCallback::Trace(visitor);
 }

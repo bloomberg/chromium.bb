@@ -215,10 +215,10 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   bool ShouldUseThreading() const { return should_use_threading_; }
 
   bool IsParsingFragment() const;
-  bool IsScheduledForResume() const;
+  bool IsScheduledForUnpause() const;
   bool InPumpSession() const { return pump_session_nesting_level_ > 0; }
   bool ShouldDelayEnd() const {
-    return InPumpSession() || IsPaused() || IsScheduledForResume() ||
+    return InPumpSession() || IsPaused() || IsScheduledForUnpause() ||
            IsExecutingScript();
   }
 

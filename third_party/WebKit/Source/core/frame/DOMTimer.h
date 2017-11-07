@@ -53,7 +53,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
 
   ~DOMTimer() override;
 
-  // SuspendableObject
+  // PausableObject
   void ContextDestroyed(ExecutionContext*) override;
 
   // Eager finalization is needed to promptly stop this Timer object.

@@ -56,11 +56,11 @@ void ScriptedAnimationController::TraceWrappers(
   visitor->TraceWrappers(callback_collection_);
 }
 
-void ScriptedAnimationController::Suspend() {
+void ScriptedAnimationController::Pause() {
   ++suspend_count_;
 }
 
-void ScriptedAnimationController::Resume() {
+void ScriptedAnimationController::Unpause() {
   // It would be nice to put an DCHECK(m_suspendCount > 0) here, but in WK1
   // resume() can be called even when suspend hasn't (if a tab was created in
   // the background).

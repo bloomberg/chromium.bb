@@ -83,10 +83,10 @@ void WebHelperPluginImpl::ReallyDestroy() {
 
 void WebHelperPluginImpl::Destroy() {
   // Defer deletion so we don't do too much work when called via
-  // stopSuspendableObjects().
+  // stopPausableObjects().
   // FIXME: It's not clear why we still need this. The original code held a
   // Page and a WebFrame, and destroying it would cause JavaScript triggered by
-  // frame detach to run, which isn't allowed inside stopSuspendableObjects().
+  // frame detach to run, which isn't allowed inside stopPausableObjects().
   // Removing this causes one Chrome test to fail with a timeout.
   object_element_->GetDocument()
       .GetTaskRunner(TaskType::kUnspecedTimer)

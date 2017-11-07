@@ -33,7 +33,7 @@
 #include "core/css/FontFaceSet.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/Document.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/dom/events/EventListener.h"
 #include "core/dom/events/EventTarget.h"
 #include "platform/AsyncMethodRunner.h"

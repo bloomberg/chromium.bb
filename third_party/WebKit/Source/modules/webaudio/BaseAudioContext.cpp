@@ -92,7 +92,7 @@ BaseAudioContext* BaseAudioContext::Create(
 // Constructor for rendering to the audio hardware.
 BaseAudioContext::BaseAudioContext(Document* document,
                                    enum ContextType context_type)
-    : SuspendableObject(document),
+    : PausableObject(document),
       destination_node_(nullptr),
       is_cleared_(false),
       is_resolving_resume_promises_(false),
@@ -779,7 +779,7 @@ void BaseAudioContext::HandlePreRenderTasks(
   if (TryLock()) {
     GetDeferredTaskHandler().HandleDeferredTasks();
 
-    ResolvePromisesForResume();
+    ResolvePromisesForUnpause();
 
     // Check to see if source nodes can be stopped because the end time has
     // passed.
@@ -887,7 +887,7 @@ void BaseAudioContext::ScheduleMainThreadCleanup() {
   has_posted_cleanup_task_ = true;
 }
 
-void BaseAudioContext::ResolvePromisesForResume() {
+void BaseAudioContext::ResolvePromisesForUnpause() {
   // This runs inside the BaseAudioContext's lock when handling pre-render
   // tasks.
   DCHECK(IsAudioThread());
@@ -981,7 +981,7 @@ const AtomicString& BaseAudioContext::InterfaceName() const {
 }
 
 ExecutionContext* BaseAudioContext::GetExecutionContext() const {
-  return SuspendableObject::GetExecutionContext();
+  return PausableObject::GetExecutionContext();
 }
 
 void BaseAudioContext::StartRendering() {
@@ -1012,7 +1012,7 @@ void BaseAudioContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(periodic_wave_triangle_);
   visitor->Trace(worklet_messaging_proxy_);
   EventTargetWithInlineData::Trace(visitor);
-  SuspendableObject::Trace(visitor);
+  PausableObject::Trace(visitor);
 }
 
 void BaseAudioContext::TraceWrappers(

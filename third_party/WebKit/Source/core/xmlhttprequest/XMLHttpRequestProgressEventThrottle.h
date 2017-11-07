@@ -82,8 +82,8 @@ class XMLHttpRequestProgressEventThrottle final
   // depending on the value of the ProgressEventAction argument.
   void DispatchReadyStateChangeEvent(Event*, DeferredEventAction);
 
-  void Suspend();
-  void Resume();
+  void Pause();
+  void Unpause();
 
   // Need to promptly stop this timer when it is deemed finalizable.
   EAGERLY_FINALIZE();

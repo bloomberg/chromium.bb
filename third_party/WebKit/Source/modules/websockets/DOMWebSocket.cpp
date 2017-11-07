@@ -654,11 +654,11 @@ bool DOMWebSocket::HasPendingActivity() const {
   return channel_ || !event_queue_->IsEmpty();
 }
 
-void DOMWebSocket::Suspend() {
+void DOMWebSocket::Pause() {
   event_queue_->Pause();
 }
 
-void DOMWebSocket::Resume() {
+void DOMWebSocket::Unpause() {
   event_queue_->Unpause();
 }
 

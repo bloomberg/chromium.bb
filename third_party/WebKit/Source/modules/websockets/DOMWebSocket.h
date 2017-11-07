@@ -122,8 +122,8 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
 
   // PausableObject functions.
   void ContextDestroyed(ExecutionContext*) override;
-  void Suspend() override;
-  void Resume() override;
+  void Pause() override;
+  void Unpause() override;
 
   // ScriptWrappable functions.
   // Prevent this instance from being collected while it's not in CLOSED

@@ -5,7 +5,7 @@
 #ifndef PresentationAvailability_h
 #define PresentationAvailability_h
 
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
@@ -28,7 +28,7 @@ class ExecutionContext;
 class MODULES_EXPORT PresentationAvailability final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<PresentationAvailability>,
-      public SuspendableObject,
+      public PausableObject,
       public PageVisibilityObserver,
       public WebPresentationAvailabilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
@@ -51,9 +51,9 @@ class MODULES_EXPORT PresentationAvailability final
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
-  // SuspendableObject implementation.
-  void Suspend() override;
-  void Resume() override;
+  // PausableObject implementation.
+  void Pause() override;
+  void Unpause() override;
   void ContextDestroyed(ExecutionContext*) override;
 
   // PageVisibilityObserver implementation.
@@ -71,7 +71,7 @@ class MODULES_EXPORT PresentationAvailability final
                           RegisteredEventListener&) override;
 
  private:
-  // Current state of the SuspendableObject. It is Active when created. It
+  // Current state of the PausableObject. It is Active when created. It
   // becomes Suspended when suspend() is called and moves back to Active if
   // resume() is called. It becomes Inactive when stop() is called or at
   // destruction time.

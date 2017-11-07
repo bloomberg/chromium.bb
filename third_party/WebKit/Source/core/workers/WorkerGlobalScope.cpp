@@ -36,7 +36,7 @@
 #include "core/css/OffscreenFontSelector.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/dom/events/Event.h"
 #include "core/events/ErrorEvent.h"
 #include "core/frame/DOMTimerCoordinator.h"
