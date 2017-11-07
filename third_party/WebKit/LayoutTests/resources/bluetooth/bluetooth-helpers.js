@@ -192,23 +192,27 @@ var gatt_errors_tests = [{
       'NotSupportedError')
 }];
 
-// TODO(jyasskin): Upstream this to testharness.js: https://crbug.com/509058.
-function callWithKeyDown(functionCalledOnKeyPress) {
+function callWithTrustedClick(callback) {
   return new Promise(resolve => {
-    function onKeyPress() {
-      document.removeEventListener('keypress', onKeyPress, false);
-      resolve(functionCalledOnKeyPress());
-    }
-    document.addEventListener('keypress', onKeyPress, false);
-
-    eventSender.keyDown(' ', []);
+    let button = document.createElement('button');
+    button.textContent = 'click to continue test';
+    button.style.display = 'block';
+    button.style.fontSize = '20px';
+    button.style.padding = '10px';
+    button.onclick = () => {
+      document.body.removeChild(button);
+      resolve(callback());
+    };
+    document.body.appendChild(button);
+    test_driver.click(button);
   });
 }
 
 // Calls requestDevice() in a context that's 'allowed to show a popup'.
-function requestDeviceWithKeyDown() {
+function requestDeviceWithTrustedClick() {
   let args = arguments;
-  return callWithKeyDown(() => navigator.bluetooth.requestDevice.apply(navigator.bluetooth, args));
+  return callWithTrustedClick(
+      () => navigator.bluetooth.requestDevice.apply(navigator.bluetooth, args));
 }
 
 function assert_testRunner() {
@@ -692,7 +696,7 @@ function getHealthThermometerDeviceWithServicesDiscovered(options) {
       let iframe = document.createElement('iframe');
       function messageHandler(messageEvent) {
         if (messageEvent.data === 'Ready') {
-          callWithKeyDown(() => iframe.contentWindow.postMessage({
+          callWithTrustedClick(() => iframe.contentWindow.postMessage({
             type: 'DiscoverServices',
             options: options
           }, '*'));
@@ -708,7 +712,7 @@ function getHealthThermometerDeviceWithServicesDiscovered(options) {
           '../../../resources/bluetooth/health-thermometer-iframe.html';
       document.body.appendChild(iframe);
     }))
-    .then(() => requestDeviceWithKeyDown(options))
+    .then(() => requestDeviceWithTrustedClick(options))
     .then(_ => device = _)
     .then(device => device.gatt.connect())
     .then(_ => Object.assign({device}, fakes));
@@ -771,7 +775,7 @@ function getHIDDevice(options) {
       ],
     })
     .then(fake_peripheral => {
-      return requestDeviceWithKeyDown(options)
+      return requestDeviceWithTrustedClick(options)
         .then(device => {
           return fake_peripheral
             .setNextGATTConnectionResponse({
@@ -808,7 +812,7 @@ function getDiscoveredHealthThermometerDevice(
     knownServiceUUIDs: ['generic_access', 'health_thermometer'],
   })
   .then(fake_peripheral => {
-    return requestDeviceWithKeyDown(options)
+    return requestDeviceWithTrustedClick(options)
       .then(device => ({
         device: device,
         fake_peripheral: fake_peripheral

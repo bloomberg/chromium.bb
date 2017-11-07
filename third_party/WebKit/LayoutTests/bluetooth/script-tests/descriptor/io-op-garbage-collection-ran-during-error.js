@@ -5,7 +5,7 @@ bluetooth_test(
       let promise;
       return setBluetoothFakeAdapter('FailingGATTOperationsAdapter')
           .then(
-              () => requestDeviceWithKeyDown(
+              () => requestDeviceWithTrustedClick(
                   {filters: [{services: [errorUUID(0xA0)]}]}))
           .then(device => device.gatt.connect())
           .then(gattServer => gattServer.getPrimaryService(errorUUID(0xA0)))

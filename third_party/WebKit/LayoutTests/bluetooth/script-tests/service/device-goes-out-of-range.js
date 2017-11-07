@@ -1,7 +1,7 @@
 'use strict';
 bluetooth_test(() => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithKeyDown({
+    .then(() => requestDeviceWithTrustedClick({
       filters: [{services: ['heart_rate']}],
       optionalServices: ['generic_access']}))
     .then(device => device.gatt.connect())

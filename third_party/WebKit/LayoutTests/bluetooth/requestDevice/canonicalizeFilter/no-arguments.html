@@ -2,10 +2,12 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharness-helpers.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/testdriver.js"></script>
+<script src="../../../resources/testdriver-vendor.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
 promise_test(t => {
-  return promise_rejects(t, new TypeError(), requestDeviceWithKeyDown());
+  return promise_rejects(t, new TypeError(), requestDeviceWithTrustedClick());
 }, 'requestDevice() requires an argument.');
 </script>

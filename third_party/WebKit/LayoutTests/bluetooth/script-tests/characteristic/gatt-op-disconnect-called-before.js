@@ -2,7 +2,7 @@
 bluetooth_test(() => {
   let val = new Uint8Array([1]);
   return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-    .then(() => requestDeviceWithKeyDown({
+    .then(() => requestDeviceWithTrustedClick({
       filters: [{services: ['health_thermometer']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => {

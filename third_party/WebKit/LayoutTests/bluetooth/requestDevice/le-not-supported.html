@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/testdriver.js"></script>
+<script src="../../resources/testdriver-vendor.js"></script>
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
 bluetooth_test(t => {
   return navigator.bluetooth.test.setLESupported(false)
     .then(() => promise_rejects(t, 'NotFoundError',
-      requestDeviceWithKeyDown({acceptAllDevices: true})));
+      requestDeviceWithTrustedClick({acceptAllDevices: true})));
 }, 'Reject with NotFoundError if bluetooth is not supported.');
 </script>

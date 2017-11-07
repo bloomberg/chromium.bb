@@ -2,7 +2,7 @@
 bluetooth_test(() => {
   let val = new Uint8Array([1]);
   return setBluetoothFakeAdapter('FailingGATTOperationsAdapter')
-    .then(() => requestDeviceWithKeyDown({
+    .then(() => requestDeviceWithTrustedClick({
       filters: [{services: [errorUUID(0xA0)]}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => {

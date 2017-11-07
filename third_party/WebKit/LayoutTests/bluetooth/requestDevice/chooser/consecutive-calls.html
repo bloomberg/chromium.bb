@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/testdriver.js"></script>
+<script src="../../../resources/testdriver-vendor.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
@@ -20,7 +22,7 @@ bluetooth_test(() => {
   // Open a chooser.
   let firstRequestDevicePromise = setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => assert_promise_rejects_with_message(
-        requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]}),
+        requestDeviceWithTrustedClick({filters: [{services: ['heart_rate']}]}),
         new DOMException('User cancelled the requestDevice() chooser.',
                          'NotFoundError')));
 
@@ -29,7 +31,7 @@ bluetooth_test(() => {
     .then(() => {
       // Open another chooser.
       let secondRequestDevicePromise =
-        requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+        requestDeviceWithTrustedClick({filters: [{services: ['heart_rate']}]})
           .then(device => assert_equals(device.constructor.name,
                                         'BluetoothDevice'));
       return getBluetoothManualChooserEvents(4)
