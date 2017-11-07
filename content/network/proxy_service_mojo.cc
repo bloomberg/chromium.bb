@@ -21,7 +21,7 @@ namespace content {
 std::unique_ptr<net::ProxyService> CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
-    net::ProxyScriptFetcher* proxy_script_fetcher,
+    std::unique_ptr<net::ProxyScriptFetcher> proxy_script_fetcher,
     std::unique_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     net::HostResolver* host_resolver,
     net::NetLog* net_log,
@@ -41,7 +41,7 @@ std::unique_ptr<net::ProxyService> CreateProxyServiceUsingMojoFactory(
       net_log));
 
   // Configure fetchers to use for PAC script downloads and auto-detect.
-  proxy_service->SetProxyScriptFetchers(proxy_script_fetcher,
+  proxy_service->SetProxyScriptFetchers(std::move(proxy_script_fetcher),
                                         std::move(dhcp_proxy_script_fetcher));
 
   return proxy_service;
