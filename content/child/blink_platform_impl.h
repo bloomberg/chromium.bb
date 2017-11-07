@@ -112,15 +112,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   int DomKeyEnumFromString(const blink::WebString& key_string) override;
   bool IsDomKeyForModifier(int dom_key) override;
 
-  std::unique_ptr<blink::FeaturePolicy> CreateFeaturePolicy(
-      const blink::FeaturePolicy* parentPolicy,
-      const blink::ParsedFeaturePolicy& containerPolicy,
-      const blink::ParsedFeaturePolicy& policyHeader,
-      const blink::WebSecurityOrigin& origin) override;
-  std::unique_ptr<blink::FeaturePolicy> DuplicateFeaturePolicyWithOrigin(
-      const blink::FeaturePolicy& policy,
-      const blink::WebSecurityOrigin& new_origin) override;
-
   void WaitUntilWebThreadTLSUpdate(blink::scheduler::WebThreadBase* thread);
 
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;

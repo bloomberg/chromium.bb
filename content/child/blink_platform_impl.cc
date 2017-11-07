@@ -733,28 +733,6 @@ bool BlinkPlatformImpl::IsDomKeyForModifier(int dom_key) {
       static_cast<ui::DomKey>(dom_key));
 }
 
-std::unique_ptr<blink::FeaturePolicy> BlinkPlatformImpl::CreateFeaturePolicy(
-    const blink::FeaturePolicy* parent_policy,
-    const blink::ParsedFeaturePolicy& container_policy,
-    const blink::ParsedFeaturePolicy& policy_header,
-    const blink::WebSecurityOrigin& origin) {
-  std::unique_ptr<blink::FeaturePolicy> policy =
-      blink::FeaturePolicy::CreateFromParentPolicy(
-          static_cast<const blink::FeaturePolicy*>(parent_policy),
-          container_policy, url::Origin(origin));
-  policy->SetHeaderPolicy(policy_header);
-  return policy;
-}
-
-std::unique_ptr<blink::FeaturePolicy>
-BlinkPlatformImpl::DuplicateFeaturePolicyWithOrigin(
-    const blink::FeaturePolicy& policy,
-    const blink::WebSecurityOrigin& new_origin) {
-  return blink::FeaturePolicy::CreateFromPolicyWithOrigin(
-      static_cast<const blink::FeaturePolicy&>(policy),
-      url::Origin(new_origin));
-}
-
 scoped_refptr<base::SingleThreadTaskRunner> BlinkPlatformImpl::GetIOTaskRunner()
     const {
   return io_thread_task_runner_;
