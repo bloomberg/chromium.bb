@@ -140,6 +140,10 @@ class PLATFORM_EXPORT ImageBuffer {
   bool CopyRenderingResultsFromDrawingBuffer(DrawingBuffer*,
                                              SourceDrawingBuffer);
 
+  void Flush(FlushReason);     // Process deferred draw commands immediately.
+  void FlushGpu(FlushReason);  // Like flush(), but flushes all the way down to
+                               // the GPU context if the surface is accelerated.
+
   void NotifySurfaceInvalid();
 
   scoped_refptr<StaticBitmapImage> NewImageSnapshot(

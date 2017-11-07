@@ -35,7 +35,6 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
-#include "platform/graphics/CanvasResourceProvider.cpp"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
@@ -62,9 +61,7 @@
 using ::testing::AnyNumber;
 using ::testing::AtLeast;
 using ::testing::InSequence;
-using ::testing::Pointee;
 using ::testing::Return;
-using ::testing::SetArgPointee;
 using ::testing::Test;
 using ::testing::_;
 
@@ -88,7 +85,7 @@ class Canvas2DLayerBridgePtr {
   }
 
   void operator=(std::unique_ptr<Canvas2DLayerBridge> layer_bridge) {
-    DCHECK(!layer_bridge_);  // Existing ref must be removed with Clear()
+    DCHECK(!layer_bridge_);
     layer_bridge_ = std::move(layer_bridge);
   }
 
@@ -99,14 +96,22 @@ class Canvas2DLayerBridgePtr {
   std::unique_ptr<Canvas2DLayerBridge> layer_bridge_;
 };
 
-class MockGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
+class FakeGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
  public:
   MOCK_METHOD0(Flush, void());
-  MOCK_METHOD4(CreateImageCHROMIUM,
-               GLuint(ClientBuffer, GLsizei, GLsizei, GLenum));
-  MOCK_METHOD1(DestroyImageCHROMIUM, void(GLuint));
   MOCK_METHOD2(GenTextures, void(GLsizei, GLuint*));
-  MOCK_METHOD2(DeleteTextures, void(GLsizei, const GLuint*));
+
+  GLuint CreateImageCHROMIUM(ClientBuffer, GLsizei, GLsizei, GLenum) override {
+    return ++create_image_count_;
+  }
+  void DestroyImageCHROMIUM(GLuint) override { ++destroy_image_count_; }
+
+  GLuint CreateImageCount() { return create_image_count_; }
+  GLuint DestroyImageCount() { return destroy_image_count_; }
+
+ private:
+  GLuint create_image_count_ = 0;
+  GLuint destroy_image_count_ = 0;
 };
 
 class FakePlatformSupport : public TestingPlatformSupport {
@@ -149,7 +154,7 @@ class Canvas2DLayerBridgeTest : public Test {
   bool IsUnitTest() { return true; }
 
  protected:
-  MockGLES2InterfaceWithImageSupport gl_;
+  FakeGLES2InterfaceWithImageSupport gl_;
 
   void FullLifecycleTest() {
     Canvas2DLayerBridgePtr bridge(WTF::WrapUnique(new Canvas2DLayerBridge(
@@ -218,20 +223,20 @@ class Canvas2DLayerBridgeTest : public Test {
         CanvasColorParams(), IsUnitTest())));
     EXPECT_TRUE(bridge->IsValid());
     PaintFlags flags;
-    uint32_t gen_id = bridge->GetOrCreateResourceProvider()->ContentUniqueID();
+    uint32_t gen_id = bridge->GetOrCreateSurface()->generationID();
     bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-    EXPECT_EQ(gen_id, bridge->GetOrCreateResourceProvider()->ContentUniqueID());
+    EXPECT_EQ(gen_id, bridge->GetOrCreateSurface()->generationID());
     gl_.SetIsContextLost(true);
-    EXPECT_EQ(gen_id, bridge->GetOrCreateResourceProvider()->ContentUniqueID());
+    EXPECT_EQ(gen_id, bridge->GetOrCreateSurface()->generationID());
     bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-    EXPECT_EQ(gen_id, bridge->GetOrCreateResourceProvider()->ContentUniqueID());
+    EXPECT_EQ(gen_id, bridge->GetOrCreateSurface()->generationID());
     // This results in the internal surface being torn down in response to the
     // context loss.
     EXPECT_FALSE(bridge->IsValid());
-    EXPECT_EQ(nullptr, bridge->GetOrCreateResourceProvider());
+    EXPECT_EQ(nullptr, bridge->GetOrCreateSurface());
     // The following passes by not crashing
     bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-    bridge->NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnitTests);
+    bridge->Flush(kFlushReasonUnknown);
   }
 
   void PrepareMailboxWhenContextIsLost() {
@@ -240,7 +245,7 @@ class Canvas2DLayerBridgeTest : public Test {
         CanvasColorParams(), IsUnitTest())));
 
     EXPECT_TRUE(bridge->IsAccelerated());
-    bridge->FinalizeFrame();  // Trigger the creation of a backing store
+
     // When the context is lost we are not sure if we should still be producing
     // GL frames for the compositor or not, so fail to generate frames.
     gl_.SetIsContextLost(true);
@@ -256,7 +261,7 @@ class Canvas2DLayerBridgeTest : public Test {
         IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
         CanvasColorParams(), IsUnitTest())));
 
-    bridge->GetOrCreateResourceProvider();
+    bridge->GetOrCreateSurface();
     EXPECT_TRUE(bridge->IsValid());
     // When the context is lost we are not sure if we should still be producing
     // GL frames for the compositor or not, so fail to generate frames.
@@ -284,7 +289,6 @@ class Canvas2DLayerBridgeTest : public Test {
           IntSize(300, 150), 0,
           Canvas2DLayerBridge::kForceAccelerationForTesting,
           CanvasColorParams())));
-      bridge->FinalizeFrame();
       EXPECT_TRUE(
           bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback));
     }
@@ -306,7 +310,7 @@ class Canvas2DLayerBridgeTest : public Test {
           IntSize(300, 150), 0,
           Canvas2DLayerBridge::kForceAccelerationForTesting,
           CanvasColorParams(), IsUnitTest())));
-      bridge->FinalizeFrame();
+
       viz::TextureMailbox texture_mailbox;
       std::unique_ptr<viz::SingleReleaseCallback> release_callback;
       EXPECT_TRUE(
@@ -326,7 +330,6 @@ class Canvas2DLayerBridgeTest : public Test {
             IntSize(300, 150), 0,
             Canvas2DLayerBridge::kForceAccelerationForTesting,
             CanvasColorParams(), IsUnitTest())));
-        bridge->FinalizeFrame();
         bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback);
         // |bridge| goes out of scope and would normally be destroyed, but
         // object is kept alive by self references.
@@ -427,8 +430,7 @@ class MockImageBuffer : public ImageBuffer {
 void DrawSomething(Canvas2DLayerBridgePtr& bridge) {
   bridge->DidDraw(FloatRect(0, 0, 1, 1));
   bridge->FinalizeFrame();
-  // Grabbing an image forces a flush
-  bridge->NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnitTests);
+  bridge->Flush(kFlushReasonUnknown);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -1067,177 +1069,81 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
   EXPECT_TRUE(bridge->IsValid());
 }
 
-TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
+TEST_F(Canvas2DLayerBridgeTest, DeleteGpuMemoryBufferAfterTeardown) {
   ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
   ScopedTestingPlatformSupport<FakePlatformSupport> platform;
-  const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
-                                     ->ContextProvider()
-                                     ->GetCapabilities())
-      .texture_format_bgra8888 = true;
-
-  viz::TextureMailbox texture_mailbox1;
-  viz::TextureMailbox texture_mailbox2;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
-  const GLuint texture_id1 = 1;
-  const GLuint texture_id2 = 2;
-  const GLuint image_id1 = 3;
-  const GLuint image_id2 = 4;
-
-  Canvas2DLayerBridgePtr bridge(WTF::WrapUnique(new Canvas2DLayerBridge(
-      IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
-      CanvasColorParams(), IsUnitTest())));
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-
-  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
-  EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
-  DrawSomething(bridge);
-  bridge->FinalizeFrame();
-  bridge->PrepareTextureMailbox(&texture_mailbox1, &release_callback1);
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-
-  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
-  EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
-  DrawSomething(bridge);
-  bridge->FinalizeFrame();
-  bridge->PrepareTextureMailbox(&texture_mailbox2, &release_callback2);
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-
-  // Check that release resources does not result in destruction due
-  // to recycling.
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
-  EXPECT_CALL(gl_, DeleteTextures(_, _)).Times(0);
-  bool lost_resource = false;
-  release_callback1->Run(gpu::SyncToken(), lost_resource);
-  release_callback1 = nullptr;
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
-  EXPECT_CALL(gl_, DeleteTextures(_, _)).Times(0);
-  release_callback2->Run(gpu::SyncToken(), lost_resource);
-  release_callback2 = nullptr;
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-
-  // Destroying the bridge results in destruction of cached resources.
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id1)).Times(1);
-  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id1))).Times(1);
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id2)).Times(1);
-  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id2))).Times(1);
-  bridge.Clear();
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-}
-
-TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
-  ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
-  const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
-                                     ->ContextProvider()
-                                     ->GetCapabilities())
-      .texture_format_bgra8888 = true;
-
-  viz::TextureMailbox texture_mailbox1;
-  viz::TextureMailbox texture_mailbox2;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
-  const GLuint texture_id1 = 1;
-  const GLuint texture_id2 = 2;
-  const GLuint image_id1 = 3;
-  const GLuint image_id2 = 4;
-
-  Canvas2DLayerBridgePtr bridge(WTF::WrapUnique(new Canvas2DLayerBridge(
-      IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
-      CanvasColorParams(), IsUnitTest())));
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-
-  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
-  EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
-  DrawSomething(bridge);
-  bridge->FinalizeFrame();
-  bridge->PrepareTextureMailbox(&texture_mailbox1, &release_callback1);
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-
-  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
-  EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
-  DrawSomething(bridge);
-  bridge->FinalizeFrame();
-  bridge->PrepareTextureMailbox(&texture_mailbox2, &release_callback2);
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-
-  // Release first frame to cache
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
-  EXPECT_CALL(gl_, DeleteTextures(_, _)).Times(0);
-  bool lost_resource = false;
-  release_callback1->Run(gpu::SyncToken(), lost_resource);
-  release_callback1 = nullptr;
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-
-  // Switching to Hidden frees cached resources immediately
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id1)).Times(1);
-  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id1))).Times(1);
-  bridge->SetIsHidden(true);
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-
-  // Release second frame and verify that its resource is destroyed immediately
-  // due to the layer bridge being hidden
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id2)).Times(1);
-  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id2))).Times(1);
-  release_callback2->Run(gpu::SyncToken(), lost_resource);
-  release_callback2 = nullptr;
-
-  ::testing::Mock::VerifyAndClearExpectations(&gl_);
-}
-
-TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
-  ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
-  const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
-                                     ->ContextProvider()
-                                     ->GetCapabilities())
-      .texture_format_bgra8888 = true;
 
   viz::TextureMailbox texture_mailbox;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  const GLuint texture_id = 1;
-  const GLuint image_id = 2;
 
+  // Texture id just needs to be non-zero for image creation to work.
+  const GLint texture_id = 1;
+  EXPECT_CALL(gl_, GenTextures(1, _))
+      .WillOnce(testing::SetArgPointee<1>(texture_id));
+
+  {
+    Canvas2DLayerBridgePtr bridge(WTF::WrapUnique(new Canvas2DLayerBridge(
+        IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
+        CanvasColorParams(), IsUnitTest())));
+    bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback);
+  }
+
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  bool lost_resource = false;
+  release_callback->Run(gpu::SyncToken(), lost_resource);
+  EXPECT_EQ(1u, gl_.CreateImageCount());
+  EXPECT_EQ(1u, gl_.DestroyImageCount());
+}
+
+TEST_F(Canvas2DLayerBridgeTest, NoUnnecessaryFlushes) {
+  EXPECT_CALL(gl_, Flush()).Times(0);
   Canvas2DLayerBridgePtr bridge(WTF::WrapUnique(new Canvas2DLayerBridge(
       IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
       CanvasColorParams(), IsUnitTest())));
-
+  EXPECT_FALSE(bridge->HasRecordedDrawCommands());
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id));
-  EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
-  DrawSomething(bridge);
-  bridge->FinalizeFrame();
-  bridge->PrepareTextureMailbox(&texture_mailbox, &release_callback);
-
+  EXPECT_CALL(gl_, Flush()).Times(0);
+  bridge->DidDraw(FloatRect(0, 0, 1, 1));
+  EXPECT_TRUE(bridge->HasRecordedDrawCommands());
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  // Tearing down the bridge does not destroy unreleased resources.
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(_)).Times(0);
-  EXPECT_CALL(gl_, DeleteTextures(_, _)).Times(0);
-  bridge.Clear();
-
+  EXPECT_CALL(gl_, Flush()).Times(1);
+  bridge->FlushGpu(kFlushReasonUnknown);
+  EXPECT_FALSE(bridge->HasRecordedDrawCommands());
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, DestroyImageCHROMIUM(image_id)).Times(1);
-  EXPECT_CALL(gl_, DeleteTextures(1, Pointee(texture_id))).Times(1);
-  bool lost_resource = false;
-  release_callback->Run(gpu::SyncToken(), lost_resource);
-  release_callback = nullptr;
+  EXPECT_CALL(gl_, Flush()).Times(0);
+  bridge->DidDraw(FloatRect(0, 0, 1, 1));
+  EXPECT_TRUE(bridge->HasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
+  EXPECT_CALL(gl_, Flush()).Times(1);
+  bridge->FlushGpu(kFlushReasonUnknown);
+  EXPECT_FALSE(bridge->HasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  // No flush because already flushed since last draw
+  EXPECT_CALL(gl_, Flush()).Times(0);
+  bridge->FlushGpu(kFlushReasonUnknown);
+  EXPECT_FALSE(bridge->HasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  EXPECT_CALL(gl_, Flush()).Times(0);
+  bridge->DidDraw(FloatRect(0, 0, 1, 1));
+  EXPECT_TRUE(bridge->HasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  // Flushes recording, but not the gpu
+  EXPECT_CALL(gl_, Flush()).Times(0);
+  bridge->Flush(kFlushReasonUnknown);
+  EXPECT_FALSE(bridge->HasRecordedDrawCommands());
+  ::testing::Mock::VerifyAndClearExpectations(&gl_);
+
+  EXPECT_CALL(gl_, Flush()).Times(1);
+  bridge->FlushGpu(kFlushReasonUnknown);
+  EXPECT_FALSE(bridge->HasRecordedDrawCommands());
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 }
 

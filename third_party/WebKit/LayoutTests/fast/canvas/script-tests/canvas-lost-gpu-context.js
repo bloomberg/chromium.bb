@@ -4,44 +4,29 @@ var ctx;
 var lostEventHasFired = false;
 var contextLostTest;
 
-if (window.internals) {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
+if (window.internals && window.testRunner) {
+    testRunner.dumpAsText();
     var canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 300;
     canvas.addEventListener('contextlost', contextLost);
     canvas.addEventListener('contextrestored', contextRestored);
     ctx = canvas.getContext('2d');
     document.body.appendChild(ctx.canvas);
-
+    verifyContextLost(false);
+    window.internals.loseSharedGraphicsContext3D();
+    // for the canvas to realize its Graphics context was lost we must try to
+    // use the contents of the canvas -- that is, we must either try to present
+    // the canvas or read from it (e.g. by calling getImageData)
     ctx.fillRect(0, 0, 1, 1);
-    // setTimeout creates a frame barrier that locks the canvas into gpu
-    // acceleration mode when running under virtual/gpu
-    setTimeout(() => {
-        // Now it is safe to use verifyContextLost without fearing side-effects
-        // because a rendering mode was fixed.
-        verifyContextLost(false);
-
-        window.internals.loseSharedGraphicsContext3D();
-        // for the canvas to realize its Graphics context was lost we must try to
-        // use the contents of the canvas -- that is, we must either try to present
-        // the canvas or read from it (e.g. by calling getImageData)
-        ctx.fillRect(0, 0, 1, 1);
-        shouldBeFalse('ctx.isContextLost()');
-        var imageData = ctx.getImageData(0, 0, 1, 1);
-        if (!ctx.isContextLost()) {
-            debug('<span>Aborting test: Graphics context loss did not destroy canvas contents. This is expected if canvas is not accelerated.</span>');
-            if (window.testRunner) {
-                testRunner.notifyDone();
-            }
-        } else {
-            verifyContextLost(true);
-        }
-    }, 0);
+    shouldBeFalse('ctx.isContextLost()');
+    var imageData = ctx.getImageData(0, 0, 1, 1);
+    if (!ctx.isContextLost()) {
+        debug('<span>Aborting test: Graphics context loss did not destroy canvas contents. This is expected if canvas is not accelerated.</span>');
+    } else {
+        verifyContextLost(true);
+        testRunner.waitUntilDone();
+    }
 } else {
-    testFailed('This test requires window.internals.');
+    testFailed('This test requires window.internals and window.testRunner.');
 }
 
 
@@ -76,7 +61,5 @@ function contextRestored() {
         testFailed('Context restored event was dispatched before a context lost event.');
     }
     verifyContextLost(false);
-    if (window.testRunner) {
-        testRunner.notifyDone();
-    }
+    testRunner.notifyDone();
 }
