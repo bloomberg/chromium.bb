@@ -382,8 +382,6 @@ Status ParsePerfLoggingPrefs(const base::Value& option,
       &ParseInspectorDomainStatus, &capabilities->perf_logging_prefs.network);
   parser_map["enablePage"] = base::Bind(
       &ParseInspectorDomainStatus, &capabilities->perf_logging_prefs.page);
-  parser_map["enableTimeline"] = base::Bind(
-      &ParseInspectorDomainStatus, &capabilities->perf_logging_prefs.timeline);
   parser_map["traceCategories"] = base::Bind(
       &ParseString, &capabilities->perf_logging_prefs.trace_categories);
 
@@ -619,7 +617,6 @@ std::string Switches::ToString() const {
 PerfLoggingPrefs::PerfLoggingPrefs()
     : network(InspectorDomainStatus::kDefaultEnabled),
       page(InspectorDomainStatus::kDefaultEnabled),
-      timeline(InspectorDomainStatus::kDefaultDisabled),
       trace_categories(),
       buffer_usage_reporting_interval(1000) {}
 

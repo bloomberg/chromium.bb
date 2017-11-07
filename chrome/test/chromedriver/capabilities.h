@@ -81,9 +81,6 @@ struct PerfLoggingPrefs {
 
   InspectorDomainStatus network;
   InspectorDomainStatus page;
-  // TODO(samuong): Timeline was removed in blink 189656 (chromium commit
-  // position 315092) so remove this option once we stop supporting M41.
-  InspectorDomainStatus timeline;
 
   std::string trace_categories;  // Non-empty string enables tracing.
   int buffer_usage_reporting_interval;  // ms between trace buffer usage events.
