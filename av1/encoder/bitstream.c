@@ -3508,7 +3508,7 @@ static void write_bitdepth_colorspace_sampling(
   }
 }
 
-#if CONFIG_REFERENCE_BUFFER
+#if CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 void write_sequence_header(AV1_COMMON *const cm,
                            struct aom_write_bit_buffer *wb) {
   SequenceHeader *seq_params = &cm->seq_params;
@@ -3550,7 +3550,7 @@ void write_sequence_header(AV1_COMMON *const cm,
         3);
   }
 }
-#endif  // CONFIG_REFERENCE_BUFFER
+#endif  // CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 
 static void write_sb_size(const AV1_COMMON *cm,
                           struct aom_write_bit_buffer *wb) {
@@ -4627,7 +4627,6 @@ uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
 
 static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   AV1_COMMON *const cm = &cpi->common;
-  SequenceHeader *const seq_params = &cm->seq_params;
   struct aom_write_bit_buffer wb = { dst, 0 };
   uint32_t size = 0;
 
@@ -4635,36 +4634,7 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
 
   aom_wb_write_literal(&wb, 0, 4);
 
-#if CONFIG_FRAME_SIZE
-  int num_bits_width = 16;
-  int num_bits_height = 16;
-  int max_frame_width = cm->width;
-  int max_frame_height = cm->height;
-
-  seq_params->num_bits_width = num_bits_width;
-  seq_params->num_bits_height = num_bits_height;
-  seq_params->max_frame_width = max_frame_width;
-  seq_params->max_frame_height = max_frame_height;
-
-  aom_wb_write_literal(&wb, num_bits_width - 1, 4);
-  aom_wb_write_literal(&wb, num_bits_height - 1, 4);
-  aom_wb_write_literal(&wb, max_frame_width - 1, num_bits_width);
-  aom_wb_write_literal(&wb, max_frame_height - 1, num_bits_height);
-#endif
-
-  seq_params->frame_id_numbers_present_flag = FRAME_ID_NUMBERS_PRESENT_FLAG;
-  aom_wb_write_literal(&wb, seq_params->frame_id_numbers_present_flag, 1);
-  if (seq_params->frame_id_numbers_present_flag) {
-    seq_params->frame_id_length = FRAME_ID_LENGTH;
-    seq_params->delta_frame_id_length = DELTA_FRAME_ID_LENGTH;
-    // We must always have delta_frame_id_length < frame_id_length,
-    // in order for a frame to be referenced with a unique delta.
-    // Avoid wasting bits by using a coding that enforces this restriction.
-    aom_wb_write_literal(&wb, seq_params->delta_frame_id_length - 2, 4);
-    aom_wb_write_literal(
-        &wb,
-        seq_params->frame_id_length - seq_params->delta_frame_id_length - 1, 3);
-  }
+  write_sequence_header(cm, &wb);
 
   // color_config
   write_bitdepth_colorspace_sampling(cm, &wb);
