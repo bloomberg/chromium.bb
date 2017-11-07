@@ -22,10 +22,15 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/api/app_runtime.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/aura/window.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
 class PrefRegistrySimple;
 class Profile;
+
+namespace aura {
+class Window;
+}
 
 namespace base {
 class TickClock;
@@ -66,6 +71,7 @@ class FirstAppRunToastManager;
 // Currently assumes single supported action - NEW_NOTE.
 class StateController : public ash::mojom::TrayActionClient,
                         public session_manager::SessionManagerObserver,
+                        public aura::WindowObserver,
                         public extensions::AppWindowRegistry::Observer,
                         public ui::InputDeviceEventObserver,
                         public chromeos::PowerManagerClient::Observer {
@@ -138,6 +144,9 @@ class StateController : public ash::mojom::TrayActionClient,
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;
+
+  // aura::WindowObserver:
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // extensions::AppWindowRegistry::Observer:
   void OnAppWindowAdded(extensions::AppWindow* app_window) override;
@@ -297,6 +306,7 @@ class StateController : public ash::mojom::TrayActionClient,
   // for the associated app has been previosly seen (and closed) by the user.
   std::unique_ptr<FirstAppRunToastManager> first_app_run_toast_manager_;
 
+  ScopedObserver<aura::Window, aura::WindowObserver> note_window_observer_;
   ScopedObserver<extensions::AppWindowRegistry,
                  extensions::AppWindowRegistry::Observer>
       app_window_observer_;

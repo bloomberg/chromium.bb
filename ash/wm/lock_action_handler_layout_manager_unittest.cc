@@ -351,8 +351,22 @@ TEST_F(LockActionHandlerLayoutManagerTest, AddingWindowInActiveState) {
   EXPECT_TRUE(window->HasFocus());
 }
 
-TEST_F(LockActionHandlerLayoutManagerTest, AddingWindowInNonActiveState) {
+TEST_F(LockActionHandlerLayoutManagerTest, AddingWindowInLaunchingState) {
   SetUpTrayActionClientAndLockSession(mojom::TrayActionState::kLaunching);
+
+  views::Widget::InitParams widget_params(
+      views::Widget::InitParams::TYPE_WINDOW);
+  widget_params.show_state = ui::SHOW_STATE_MAXIMIZED;
+  std::unique_ptr<aura::Window> window = CreateTestingWindow(
+      widget_params, kShellWindowId_LockActionHandlerContainer,
+      nullptr /* window_delegate */);
+
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(window->HasFocus());
+}
+
+TEST_F(LockActionHandlerLayoutManagerTest, AddingWindowInNonActiveState) {
+  SetUpTrayActionClientAndLockSession(mojom::TrayActionState::kAvailable);
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
@@ -384,7 +398,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, AddingWindowInNonActiveState) {
 }
 
 TEST_F(LockActionHandlerLayoutManagerTest, FocusWindowWhileInNonActiveState) {
-  SetUpTrayActionClientAndLockSession(mojom::TrayActionState::kLaunching);
+  SetUpTrayActionClientAndLockSession(mojom::TrayActionState::kAvailable);
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
@@ -406,7 +420,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, FocusWindowWhileInNonActiveState) {
 
 TEST_F(LockActionHandlerLayoutManagerTest,
        RequestShowWindowOutsideActiveState) {
-  SetUpTrayActionClientAndLockSession(mojom::TrayActionState::kLaunching);
+  SetUpTrayActionClientAndLockSession(mojom::TrayActionState::kAvailable);
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
@@ -579,16 +593,9 @@ TEST_F(LockActionHandlerLayoutManagerTestWithTestBackgroundController,
   EXPECT_FALSE(second_window->IsVisible());
   EXPECT_TRUE(background_controller()->GetWindow()->IsVisible());
 
-  // Finish showing the background. The app windows should be not be shown yet,
-  // as the note action is not active.
+  // Finish showing the background. The app windows should be shown at this
+  // point.
   ASSERT_TRUE(background_controller()->FinishShow());
-
-  EXPECT_FALSE(window->IsVisible());
-  EXPECT_FALSE(second_window->IsVisible());
-  EXPECT_TRUE(background_controller()->GetWindow()->IsVisible());
-
-  Shell::Get()->tray_action()->UpdateLockScreenNoteState(
-      mojom::TrayActionState::kActive);
 
   EXPECT_TRUE(window->IsVisible());
   EXPECT_FALSE(window->HasFocus());
