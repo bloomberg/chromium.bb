@@ -65,8 +65,8 @@ public class MockResourcesForLayout extends MockResources {
         mStrings.put(R.string.tab_loading_default_title, "Loading...");
         mFloats.put(org.chromium.chrome.R.dimen.overlay_panel_bar_height, 56.f);
         mFloats.put(org.chromium.chrome.R.dimen.control_container_height, 56.f);
-        mFloats.put(org.chromium.chrome.R.dimen.contextual_search_peek_promo_height, 48.f);
-        mFloats.put(org.chromium.chrome.R.dimen.contextual_search_peek_promo_padding, 12.f);
+        mFloats.put(org.chromium.chrome.R.dimen.contextual_search_bar_banner_height, 48.f);
+        mFloats.put(org.chromium.chrome.R.dimen.contextual_search_bar_banner_padding, 12.f);
         mFloats.put(org.chromium.chrome.R.dimen.contextual_search_end_button_width, 41.f);
         mFloats.put(org.chromium.chrome.R.dimen.toolbar_height_no_shadow, 56.f);
     }

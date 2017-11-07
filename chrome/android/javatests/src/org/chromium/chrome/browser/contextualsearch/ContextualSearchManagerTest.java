@@ -2456,46 +2456,6 @@ public class ContextualSearchManagerTest {
         waitForSelectionToBe("United States Intelligence");
     }
 
-    /**
-     * Tests that long-press triggers the Peek Promo, and expanding the Panel dismisses it.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @CommandLineFlags.Add(ContextualSearchFieldTrial.PEEK_PROMO_ENABLED + "=true")
-    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
-    public void testLongPressShowsPeekPromo()
-            throws InterruptedException, TimeoutException {
-        // Must be in undecided state in order to trigger the Peek Promo.
-        mPolicy.overrideDecidedStateForTesting(false);
-        // Must have never opened the Panel in order to trigger the Peek Promo.
-        Assert.assertEquals(0, mPolicy.getPromoOpenCount());
-
-        // Long press and make sure the Promo shows.
-        longPressNode("intelligence");
-        waitForPanelToPeek();
-        Assert.assertTrue(mPanel.isPeekPromoVisible());
-
-        // After expanding the Panel the Promo should be invisible.
-        flingPanelUp();
-        waitForPanelToExpand();
-        Assert.assertFalse(mPanel.isPeekPromoVisible());
-
-        // After closing the Panel the Promo should still be invisible.
-        tapBasePageToClosePanel();
-        Assert.assertFalse(mPanel.isPeekPromoVisible());
-
-        // Click elsewhere to clear the selection.
-        clickNode("question-mark");
-        waitForSelectionToBe(null);
-
-        // Now that the Panel was opened at least once, the Promo should not show again.
-        longPressNode("intelligence");
-        waitForPanelToPeek();
-        Assert.assertFalse(mPanel.isPeekPromoVisible());
-    }
-
     //============================================================================================
     // Content Tests
     //============================================================================================

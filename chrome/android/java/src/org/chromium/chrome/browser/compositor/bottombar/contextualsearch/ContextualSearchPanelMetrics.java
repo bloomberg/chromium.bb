@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchHeuristics;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchIPH;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchRankerLogger;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.contextualsearch.QuickActionCategory;
+import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * This class is responsible for all the logging related to Contextual Search.
@@ -59,9 +61,10 @@ public class ContextualSearchPanelMetrics {
      * @param fromState The state the panel is transitioning from.
      * @param toState The state that the panel is transitioning to.
      * @param reason The reason for the state change.
+     * @param profile The current {@link Profile}.
      */
-    public void onPanelStateChanged(PanelState fromState, PanelState toState,
-            StateChangeReason reason) {
+    public void onPanelStateChanged(
+            PanelState fromState, PanelState toState, StateChangeReason reason, Profile profile) {
         // Note: the logging within this function includes the promo, unless specifically
         // excluded.
         boolean isStartingSearch = isStartingNewContextualSearch(toState, reason);
@@ -149,6 +152,10 @@ public class ContextualSearchPanelMetrics {
             // complete record.
             if (mRankerLogger != null) mRankerLogger.writeLogAndReset();
             mRankerLogger = null;
+
+            // Notifications to Feature Engagement.
+            ContextualSearchIPH.doSearchFinishedNotifications(profile, mWasSearchContentViewSeen,
+                    mWasActivatedByTap, mWasContextualCardsDataShown);
         }
 
         if (isExitingPanelOpenedBeyondPeeked) {

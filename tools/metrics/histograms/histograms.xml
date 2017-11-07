@@ -100327,11 +100327,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              menu."/>
   <suffix name="IPH_DataSaverPreview"
       label="In product help data saver preview."/>
-  <suffix name="IPH_ContextualSearch"
-      label="In product help for contextual search."/>
-  <suffix name="IPH_ContextualSearchTap"
+  <suffix name="IPH_ContextualSearch">
+    <obsolete>
+      Replaced with IPH_ContextualSearchWebSearch.
+    </obsolete>
+  </suffix>
+  <suffix name="IPH_ContextualSearchWebSearch"
+      label="In product help for contextual search for users who use web
+             search."/>
+  <suffix name="IPH_ContextualSearchTap">
+    <obsolete>
+      Replaced with IPH_ContextualSearchPromoteTap.
+    </obsolete>
+  </suffix>
+  <suffix name="IPH_ContextualSearchPromoteTap"
       label="In product help for tap trigger for contextual search."/>
-  <suffix name="IPH_ContextualSearchPanel"
+  <suffix name="IPH_ContextualSearchPanel">
+    <obsolete>
+      Replaced with IPH_ContextualSearchPromotePanelOpen.
+    </obsolete>
+  </suffix>
+  <suffix name="IPH_ContextualSearchPromotePanelOpen"
       label="In product help for opening the contextual search panel."/>
   <suffix name="IPH_ContextualSearchOptIn"
       label="In product help for opting-in for contextual search."/>
