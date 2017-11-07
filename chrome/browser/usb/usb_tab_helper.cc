@@ -170,7 +170,7 @@ bool UsbTabHelper::AllowedByFeaturePolicy(
   DCHECK(WebContents::FromRenderFrameHost(render_frame_host) == web_contents());
   if (base::FeatureList::IsEnabled(features::kFeaturePolicy)) {
     return render_frame_host->IsFeatureEnabled(
-        blink::WebFeaturePolicyFeature::kUsb);
+        blink::FeaturePolicyFeature::kUsb);
   }
   return web_contents()->GetMainFrame() == render_frame_host;
 }

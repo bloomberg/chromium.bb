@@ -161,7 +161,7 @@ NotificationPermissionContext::NotificationPermissionContext(
     ContentSettingsType content_settings_type)
     : PermissionContextBase(profile,
                             content_settings_type,
-                            blink::WebFeaturePolicyFeature::kNotFound),
+                            blink::FeaturePolicyFeature::kNotFound),
       weak_factory_ui_thread_(this) {
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
          content_settings_type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);

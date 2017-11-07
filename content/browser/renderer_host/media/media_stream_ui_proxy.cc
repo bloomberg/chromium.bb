@@ -24,7 +24,7 @@ namespace content {
 
 bool IsFeatureEnabled(RenderFrameHost* rfh,
                       bool tests_use_fake_render_frame_hosts,
-                      blink::WebFeaturePolicyFeature feature) {
+                      blink::FeaturePolicyFeature feature) {
   if (!base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions))
     return true;
 
@@ -152,13 +152,13 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
   for (const MediaStreamDevice& device : devices) {
     if (device.type == MEDIA_DEVICE_AUDIO_CAPTURE &&
         !IsFeatureEnabled(host, tests_use_fake_render_frame_hosts_,
-                          blink::WebFeaturePolicyFeature::kMicrophone)) {
+                          blink::FeaturePolicyFeature::kMicrophone)) {
       continue;
     }
 
     if (device.type == MEDIA_DEVICE_VIDEO_CAPTURE &&
         !IsFeatureEnabled(host, tests_use_fake_render_frame_hosts_,
-                          blink::WebFeaturePolicyFeature::kCamera)) {
+                          blink::FeaturePolicyFeature::kCamera)) {
       continue;
     }
 

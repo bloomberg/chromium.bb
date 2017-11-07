@@ -302,7 +302,7 @@ void TestRenderFrameHost::NavigateAndCommitRendererInitiated(
 }
 
 void TestRenderFrameHost::SimulateFeaturePolicyHeader(
-    blink::WebFeaturePolicyFeature feature,
+    blink::FeaturePolicyFeature feature,
     const std::vector<url::Origin>& whitelist) {
   blink::ParsedFeaturePolicy header(1);
   header[0].feature = feature;

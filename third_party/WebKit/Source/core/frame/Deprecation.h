@@ -14,7 +14,7 @@
 namespace blink {
 
 class LocalFrame;
-enum class WebFeaturePolicyFeature;
+enum class FeaturePolicyFeature;
 
 class CORE_EXPORT Deprecation {
   DISALLOW_NEW();
@@ -50,7 +50,7 @@ class CORE_EXPORT Deprecation {
   static void CountDeprecationCrossOriginIframe(const Document&, WebFeature);
 
   static void CountDeprecationFeaturePolicy(const Document&,
-                                            WebFeaturePolicyFeature);
+                                            FeaturePolicyFeature);
   static String DeprecationMessage(WebFeature);
 
   // Note: this is only public for tests.

@@ -216,7 +216,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   if (AllowFullscreen()) {
     bool has_fullscreen_policy = false;
     for (const auto& declaration : container_policy) {
-      if (declaration.feature == WebFeaturePolicyFeature::kFullscreen) {
+      if (declaration.feature == FeaturePolicyFeature::kFullscreen) {
         has_fullscreen_policy = true;
         if (messages) {
           messages->push_back(
@@ -227,7 +227,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
     }
     if (!has_fullscreen_policy) {
       ParsedFeaturePolicyDeclaration whitelist;
-      whitelist.feature = WebFeaturePolicyFeature::kFullscreen;
+      whitelist.feature = FeaturePolicyFeature::kFullscreen;
       whitelist.matches_all_origins = true;
       container_policy.push_back(whitelist);
     }
@@ -237,7 +237,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   if (AllowPaymentRequest()) {
     bool has_payment_policy = false;
     for (const auto& declaration : container_policy) {
-      if (declaration.feature == WebFeaturePolicyFeature::kPayment) {
+      if (declaration.feature == FeaturePolicyFeature::kPayment) {
         has_payment_policy = true;
         if (messages) {
           messages->push_back(
@@ -248,7 +248,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
     }
     if (!has_payment_policy) {
       ParsedFeaturePolicyDeclaration whitelist;
-      whitelist.feature = WebFeaturePolicyFeature::kPayment;
+      whitelist.feature = FeaturePolicyFeature::kPayment;
       whitelist.matches_all_origins = true;
       whitelist.origins = std::vector<url::Origin>(0UL);
       container_policy.push_back(whitelist);

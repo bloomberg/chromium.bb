@@ -742,7 +742,7 @@ bool AllowedToUsePaymentRequest(const Frame* frame) {
   if (!frame)
     return false;
 
-  if (!IsSupportedInFeaturePolicy(WebFeaturePolicyFeature::kPayment)) {
+  if (!IsSupportedInFeaturePolicy(FeaturePolicyFeature::kPayment)) {
     // 2. If |document|'s browsing context is a top-level browsing context, then
     // return true.
     if (frame->IsMainFrame())
@@ -760,7 +760,7 @@ bool AllowedToUsePaymentRequest(const Frame* frame) {
   }
 
   // 2. If Feature Policy is enabled, return the policy for "payment" feature.
-  return frame->IsFeatureEnabled(WebFeaturePolicyFeature::kPayment);
+  return frame->IsFeatureEnabled(FeaturePolicyFeature::kPayment);
 }
 
 void WarnIgnoringQueryQuotaForCanMakePayment(

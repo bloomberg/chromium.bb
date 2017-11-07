@@ -35,7 +35,7 @@ namespace blink {
 // Features
 // --------
 // Features which can be controlled by policy are defined by instances of enum
-// WebFeaturePolicyFeature, declared in |feature_policy_feature.h|.
+// FeaturePolicyFeature, declared in |feature_policy_feature.h|.
 //
 // Whitelists
 // ----------
@@ -90,13 +90,13 @@ namespace blink {
 // They exist only because we can't transfer WebVectors directly over IPC.
 struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   ParsedFeaturePolicyDeclaration();
-  ParsedFeaturePolicyDeclaration(WebFeaturePolicyFeature feature,
+  ParsedFeaturePolicyDeclaration(FeaturePolicyFeature feature,
                                  bool matches_all_origins,
                                  std::vector<url::Origin> origins);
   ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& rhs);
   ~ParsedFeaturePolicyDeclaration();
 
-  WebFeaturePolicyFeature feature;
+  FeaturePolicyFeature feature;
   bool matches_all_origins;
   std::vector<url::Origin> origins;
 };
@@ -151,7 +151,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
     EnableForAll
   };
 
-  using FeatureList = std::map<WebFeaturePolicyFeature, FeatureDefault>;
+  using FeatureList = std::map<FeaturePolicyFeature, FeatureDefault>;
 
   ~FeaturePolicy();
 
@@ -164,11 +164,11 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
       const FeaturePolicy& policy,
       const url::Origin& origin);
 
-  bool IsFeatureEnabled(WebFeaturePolicyFeature feature) const;
+  bool IsFeatureEnabled(FeaturePolicyFeature feature) const;
 
   // Returns whether or not the given feature is enabled by this policy for a
   // specific origin.
-  bool IsFeatureEnabledForOrigin(WebFeaturePolicyFeature feature,
+  bool IsFeatureEnabledForOrigin(FeaturePolicyFeature feature,
                                  const url::Origin& origin) const;
 
   // Sets the declared policy from the parsed Feature-Policy HTTP header.
@@ -200,13 +200,13 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
 
   // Map of feature names to declared whitelists. Any feature which is missing
   // from this map should use the inherited policy.
-  std::map<WebFeaturePolicyFeature, std::unique_ptr<Whitelist>> whitelists_;
+  std::map<FeaturePolicyFeature, std::unique_ptr<Whitelist>> whitelists_;
 
   // Records whether or not each feature was enabled for this frame by its
   // parent frame.
   // TODO(iclelland): Generate, instead of this map, a set of bool flags, one
   // for each feature, as all features are supposed to be represented here.
-  std::map<WebFeaturePolicyFeature, bool> inherited_policies_;
+  std::map<FeaturePolicyFeature, bool> inherited_policies_;
 
   const FeatureList& feature_list_;
 

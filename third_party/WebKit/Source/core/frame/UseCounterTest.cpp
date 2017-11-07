@@ -457,8 +457,7 @@ TEST_F(FeaturePolicyDisabledDeprecationTest,
        TestCountDeprecationFeaturePolicy) {
   // The specific feature we use here isn't important, but we need the
   // corresponding FP feature as well.
-  WebFeaturePolicyFeature policy_feature =
-      WebFeaturePolicyFeature::kGeolocation;
+  FeaturePolicyFeature policy_feature = FeaturePolicyFeature::kGeolocation;
   WebFeature feature =
       WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe;
 

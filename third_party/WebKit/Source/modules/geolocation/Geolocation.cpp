@@ -159,7 +159,7 @@ void Geolocation::RecordOriginTypeAccess() const {
         *document, WebFeature::kGeolocationSecureOriginIframe);
     if (!RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
       Deprecation::CountDeprecationFeaturePolicy(
-          *document, WebFeaturePolicyFeature::kGeolocation);
+          *document, FeaturePolicyFeature::kGeolocation);
     }
   } else if (GetFrame()
                  ->GetSettings()
@@ -177,7 +177,7 @@ void Geolocation::RecordOriginTypeAccess() const {
         *document, HostsUsingFeatures::Feature::kGeolocationInsecureHost);
     if (!RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
       Deprecation::CountDeprecationFeaturePolicy(
-          *document, WebFeaturePolicyFeature::kGeolocation);
+          *document, FeaturePolicyFeature::kGeolocation);
     }
   } else {
     Deprecation::CountDeprecation(document,
@@ -238,7 +238,7 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
   }
 
   if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
-    if (!GetFrame()->IsFeatureEnabled(WebFeaturePolicyFeature::kGeolocation)) {
+    if (!GetFrame()->IsFeatureEnabled(FeaturePolicyFeature::kGeolocation)) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kGeolocationDisabledByFeaturePolicy);
       GetDocument()->AddConsoleMessage(

@@ -30,7 +30,7 @@ ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration()
     : matches_all_origins(false) {}
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
-    WebFeaturePolicyFeature feature,
+    FeaturePolicyFeature feature,
     bool matches_all_origins,
     std::vector<url::Origin> origins)
     : feature(feature),
@@ -107,11 +107,11 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromPolicyWithOrigin(
   return new_policy;
 }
 
-bool FeaturePolicy::IsFeatureEnabled(WebFeaturePolicyFeature feature) const {
+bool FeaturePolicy::IsFeatureEnabled(FeaturePolicyFeature feature) const {
   return IsFeatureEnabledForOrigin(feature, origin_);
 }
 
-bool FeaturePolicy::IsFeatureEnabledForOrigin(WebFeaturePolicyFeature feature,
+bool FeaturePolicy::IsFeatureEnabledForOrigin(FeaturePolicyFeature feature,
                                               const url::Origin& origin) const {
   DCHECK(base::ContainsKey(feature_list_, feature));
   const FeaturePolicy::FeatureDefault default_policy =
@@ -137,8 +137,8 @@ void FeaturePolicy::SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header) {
   DCHECK(whitelists_.empty());
   for (const ParsedFeaturePolicyDeclaration& parsed_declaration :
        parsed_header) {
-    WebFeaturePolicyFeature feature = parsed_declaration.feature;
-    DCHECK(feature != WebFeaturePolicyFeature::kNotFound);
+    FeaturePolicyFeature feature = parsed_declaration.feature;
+    DCHECK(feature != FeaturePolicyFeature::kNotFound);
     whitelists_[feature] = WhitelistFromDeclaration(parsed_declaration);
   }
 }
@@ -186,8 +186,8 @@ void FeaturePolicy::AddContainerPolicy(
     // If a feature is enabled in the parent frame, and the parent chooses to
     // delegate it to the child frame, using the iframe attribute, then the
     // feature should be enabled in the child frame.
-    WebFeaturePolicyFeature feature = parsed_declaration.feature;
-    if (feature == WebFeaturePolicyFeature::kNotFound)
+    FeaturePolicyFeature feature = parsed_declaration.feature;
+    if (feature == FeaturePolicyFeature::kNotFound)
       continue;
     if (WhitelistFromDeclaration(parsed_declaration)->Contains(origin_) &&
         parent_policy->IsFeatureEnabled(feature)) {
@@ -203,37 +203,37 @@ void FeaturePolicy::AddContainerPolicy(
 // each feature (in spec, implemented, etc).
 const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
   CR_DEFINE_STATIC_LOCAL(FeatureList, default_feature_list,
-                         ({{WebFeaturePolicyFeature::kCamera,
+                         ({{FeaturePolicyFeature::kCamera,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {WebFeaturePolicyFeature::kEncryptedMedia,
+                           {FeaturePolicyFeature::kEncryptedMedia,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {WebFeaturePolicyFeature::kFullscreen,
+                           {FeaturePolicyFeature::kFullscreen,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {WebFeaturePolicyFeature::kGeolocation,
+                           {FeaturePolicyFeature::kGeolocation,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {WebFeaturePolicyFeature::kMicrophone,
+                           {FeaturePolicyFeature::kMicrophone,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {WebFeaturePolicyFeature::kMidiFeature,
+                           {FeaturePolicyFeature::kMidiFeature,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {WebFeaturePolicyFeature::kPayment,
+                           {FeaturePolicyFeature::kPayment,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {WebFeaturePolicyFeature::kSpeaker,
+                           {FeaturePolicyFeature::kSpeaker,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {WebFeaturePolicyFeature::kVibrate,
+                           {FeaturePolicyFeature::kVibrate,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {WebFeaturePolicyFeature::kDocumentCookie,
+                           {FeaturePolicyFeature::kDocumentCookie,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {WebFeaturePolicyFeature::kDocumentDomain,
+                           {FeaturePolicyFeature::kDocumentDomain,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {WebFeaturePolicyFeature::kDocumentWrite,
+                           {FeaturePolicyFeature::kDocumentWrite,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {WebFeaturePolicyFeature::kSyncScript,
+                           {FeaturePolicyFeature::kSyncScript,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {WebFeaturePolicyFeature::kSyncXHR,
+                           {FeaturePolicyFeature::kSyncXHR,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {WebFeaturePolicyFeature::kUsb,
+                           {FeaturePolicyFeature::kUsb,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {WebFeaturePolicyFeature::kWebVr,
+                           {FeaturePolicyFeature::kWebVr,
                             FeaturePolicy::FeatureDefault::EnableForSelf}}));
   return default_feature_list;
 }

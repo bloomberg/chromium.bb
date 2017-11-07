@@ -120,7 +120,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
 
   ParsedFeaturePolicy whitelists;
   BitVector features_specified(
-      static_cast<int>(WebFeaturePolicyFeature::LAST_FEATURE));
+      static_cast<int>(FeaturePolicyFeature::LAST_FEATURE));
 
   // RFC2616, section 4.2 specifies that headers appearing multiple times can be
   // combined with a comma. Walk the header string, and parse each comma
@@ -146,7 +146,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
         continue;
       }
 
-      WebFeaturePolicyFeature feature = feature_names.at(tokens[0]);
+      FeaturePolicyFeature feature = feature_names.at(tokens[0]);
       // If a policy has already been specified for the current feature, drop
       // the new policy.
       if (features_specified.QuickGet(static_cast<int>(feature)))
@@ -192,17 +192,17 @@ ParsedFeaturePolicy ParseFeaturePolicy(
   return whitelists;
 }
 
-bool IsSupportedInFeaturePolicy(WebFeaturePolicyFeature feature) {
+bool IsSupportedInFeaturePolicy(FeaturePolicyFeature feature) {
   if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
     return false;
   switch (feature) {
-    case WebFeaturePolicyFeature::kFullscreen:
-    case WebFeaturePolicyFeature::kPayment:
-    case WebFeaturePolicyFeature::kUsb:
-    case WebFeaturePolicyFeature::kWebVr:
+    case FeaturePolicyFeature::kFullscreen:
+    case FeaturePolicyFeature::kPayment:
+    case FeaturePolicyFeature::kUsb:
+    case FeaturePolicyFeature::kWebVr:
       return true;
-    case WebFeaturePolicyFeature::kSyncXHR:
-    case WebFeaturePolicyFeature::kVibrate:
+    case FeaturePolicyFeature::kSyncXHR:
+    case FeaturePolicyFeature::kVibrate:
       return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
     default:
       return false;
@@ -213,32 +213,30 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
   DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
   if (default_feature_name_map.IsEmpty()) {
     default_feature_name_map.Set("fullscreen",
-                                 WebFeaturePolicyFeature::kFullscreen);
-    default_feature_name_map.Set("payment", WebFeaturePolicyFeature::kPayment);
-    default_feature_name_map.Set("usb", WebFeaturePolicyFeature::kUsb);
-    default_feature_name_map.Set("camera", WebFeaturePolicyFeature::kCamera);
+                                 FeaturePolicyFeature::kFullscreen);
+    default_feature_name_map.Set("payment", FeaturePolicyFeature::kPayment);
+    default_feature_name_map.Set("usb", FeaturePolicyFeature::kUsb);
+    default_feature_name_map.Set("camera", FeaturePolicyFeature::kCamera);
     default_feature_name_map.Set("encrypted-media",
-                                 WebFeaturePolicyFeature::kEncryptedMedia);
+                                 FeaturePolicyFeature::kEncryptedMedia);
     default_feature_name_map.Set("microphone",
-                                 WebFeaturePolicyFeature::kMicrophone);
-    default_feature_name_map.Set("speaker", WebFeaturePolicyFeature::kSpeaker);
+                                 FeaturePolicyFeature::kMicrophone);
+    default_feature_name_map.Set("speaker", FeaturePolicyFeature::kSpeaker);
     default_feature_name_map.Set("geolocation",
-                                 WebFeaturePolicyFeature::kGeolocation);
-    default_feature_name_map.Set("midi", WebFeaturePolicyFeature::kMidiFeature);
-    default_feature_name_map.Set("vr", WebFeaturePolicyFeature::kWebVr);
+                                 FeaturePolicyFeature::kGeolocation);
+    default_feature_name_map.Set("midi", FeaturePolicyFeature::kMidiFeature);
+    default_feature_name_map.Set("vr", FeaturePolicyFeature::kWebVr);
     if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
-      default_feature_name_map.Set("vibrate",
-                                   WebFeaturePolicyFeature::kVibrate);
+      default_feature_name_map.Set("vibrate", FeaturePolicyFeature::kVibrate);
       default_feature_name_map.Set("cookie",
-                                   WebFeaturePolicyFeature::kDocumentCookie);
+                                   FeaturePolicyFeature::kDocumentCookie);
       default_feature_name_map.Set("domain",
-                                   WebFeaturePolicyFeature::kDocumentDomain);
+                                   FeaturePolicyFeature::kDocumentDomain);
       default_feature_name_map.Set("docwrite",
-                                   WebFeaturePolicyFeature::kDocumentWrite);
+                                   FeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set("sync-script",
-                                   WebFeaturePolicyFeature::kSyncScript);
-      default_feature_name_map.Set("sync-xhr",
-                                   WebFeaturePolicyFeature::kSyncXHR);
+                                   FeaturePolicyFeature::kSyncScript);
+      default_feature_name_map.Set("sync-xhr", FeaturePolicyFeature::kSyncXHR);
     }
   }
   return default_feature_name_map;
