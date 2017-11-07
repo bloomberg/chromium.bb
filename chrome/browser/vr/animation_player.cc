@@ -261,7 +261,6 @@ SkColor AnimationPlayer::GetTargetColorValue(int target_property,
 }
 
 void AnimationPlayer::StartAnimations(base::TimeTicks monotonic_time) {
-  // TODO(vollick): support groups. crbug.com/742358
   cc::TargetProperties animated_properties;
   for (auto& animation : animations_) {
     if (animation->run_state() == cc::Animation::RUNNING ||

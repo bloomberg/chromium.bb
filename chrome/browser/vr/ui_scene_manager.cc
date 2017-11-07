@@ -1043,7 +1043,6 @@ void UiSceneManager::ConfigureScene() {
   ceiling_->SetVisible(browsing_mode());
 
   // Update content quad parameters depending on fullscreen.
-  // TODO(http://crbug.com/642937): Animate fullscreen transitions.
   if (fullscreen_) {
     scene_->GetUiElementByName(k2dBrowsingContentGroup)
         ->SetTranslate(0, kFullscreenVerticalOffset, -kFullscreenDistance);

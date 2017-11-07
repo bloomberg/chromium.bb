@@ -26,8 +26,6 @@ namespace vr {
 
 // The browser-side host for a device::VRDisplayImpl. Controls access to VR
 // APIs like poses and presentation.
-// TODO(mthiesse, crbug.com/768923): Move focus code from VrShellDelegate to
-// here.
 class VRDisplayHost : public device::mojom::VRDisplayHost {
  public:
   VRDisplayHost(device::VRDevice* device,
