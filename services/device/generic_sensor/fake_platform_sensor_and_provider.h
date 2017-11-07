@@ -49,6 +49,8 @@ class FakePlatformSensorProvider : public PlatformSensorProvider {
                     scoped_refptr<PlatformSensor>,
                     const CreateSensorCallback&));
 
+  mojo::ScopedSharedBufferMapping GetMapping(mojom::SensorType type);
+
  private:
   void CreateSensorInternal(mojom::SensorType type,
                             mojo::ScopedSharedBufferMapping mapping,
@@ -61,6 +63,9 @@ class FakePlatformSensorProvider : public PlatformSensorProvider {
 // error and data changes notifications.
 class MockPlatformSensorClient : public PlatformSensor::Client {
  public:
+  MockPlatformSensorClient();
+  // For the given |sensor| this client will be automatically
+  // added in the costructor and removed in the destructor.
   explicit MockPlatformSensorClient(scoped_refptr<PlatformSensor> sensor);
   ~MockPlatformSensorClient() override;
 

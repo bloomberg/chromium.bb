@@ -52,9 +52,6 @@ class PlatformSensorFusion : public PlatformSensor,
   // PlatformSensor:
   mojom::ReportingMode GetReportingMode() override;
   PlatformSensorConfiguration GetDefaultConfiguration() override;
-  // Can only be called once, the first time or after a StopSensor call.
-  bool StartSensor(const PlatformSensorConfiguration& configuration) override;
-  void StopSensor() override;
   bool CheckSensorConfiguration(
       const PlatformSensorConfiguration& configuration) override;
 
@@ -67,11 +64,15 @@ class PlatformSensorFusion : public PlatformSensor,
 
  protected:
   ~PlatformSensorFusion() override;
+  // Can only be called once, the first time or after a StopSensor call.
+  bool StartSensor(const PlatformSensorConfiguration& configuration) override;
+  void StopSensor() override;
 
  private:
   void FetchSourceSensors(PlatformSensorProvider* provider);
   void CreateSensorCallback(scoped_refptr<PlatformSensor> sensor);
   void AddSourceSensor(scoped_refptr<PlatformSensor> sensor);
+  bool SourcesNotReady() const;
 
   PlatformSensorProviderBase::CreateSensorCallback callback_;
   SensorReading reading_;

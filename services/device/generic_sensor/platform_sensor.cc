@@ -75,6 +75,17 @@ bool PlatformSensor::StopListening(Client* client,
   return UpdateSensorInternal(config_map_);
 }
 
+bool PlatformSensor::StopListening(Client* client) {
+  DCHECK(client);
+  auto client_entry = config_map_.find(client);
+  if (client_entry == config_map_.end())
+    return false;
+
+  config_map_.erase(client_entry);
+
+  return UpdateSensorInternal(config_map_);
+}
+
 void PlatformSensor::UpdateSensor() {
   UpdateSensorInternal(config_map_);
 }
@@ -87,11 +98,7 @@ void PlatformSensor::AddClient(Client* client) {
 void PlatformSensor::RemoveClient(Client* client) {
   DCHECK(client);
   clients_.RemoveObserver(client);
-  auto client_entry = config_map_.find(client);
-  if (client_entry != config_map_.end()) {
-    config_map_.erase(client_entry);
-    UpdateSensorInternal(config_map_);
-  }
+  StopListening(client);
 }
 
 bool PlatformSensor::GetLatestReading(SensorReading* result) {
@@ -148,12 +155,18 @@ bool PlatformSensor::UpdateSensorInternal(const ConfigMap& configurations) {
   }
 
   if (!optimal_configuration) {
+    is_active_ = false;
     StopSensor();
     UpdateSharedBuffer(SensorReading());
     return true;
   }
 
-  return StartSensor(*optimal_configuration);
+  is_active_ = StartSensor(*optimal_configuration);
+  return is_active_;
+}
+
+bool PlatformSensor::IsActiveForTesting() const {
+  return is_active_;
 }
 
 }  // namespace device
