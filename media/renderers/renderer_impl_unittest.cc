@@ -883,6 +883,54 @@ TEST_F(RendererImplTest, FlushDuringAudioReinit) {
   EXPECT_TRUE(flush_done);
 }
 
+// Verify that RendererImpl::Flush is not postponed by waiting for data.
+TEST_F(RendererImplTest, FlushDuringAudioReinitWhileWaiting) {
+  CreateAudioAndVideoStream();
+
+  StreamStatusChangeCB stream_status_change_cb;
+  EXPECT_CALL(*demuxer_, SetStreamStatusChangeCB(_))
+      .WillOnce(SaveArg<0>(&stream_status_change_cb));
+  SetAudioRendererInitializeExpectations(PIPELINE_OK);
+  SetVideoRendererInitializeExpectations(PIPELINE_OK);
+  InitializeAndExpect(PIPELINE_OK);
+  Play();
+
+  EXPECT_CALL(time_source_, StopTicking()).Times(testing::AnyNumber());
+  base::Closure audio_renderer_flush_cb;
+
+  // Override the standard buffering state transitions for Flush() and
+  // StartPlaying() setup above.
+  EXPECT_CALL(*audio_renderer_, Flush(_))
+      .WillOnce(DoAll(
+          SetBufferingState(&audio_renderer_client_, BUFFERING_HAVE_NOTHING),
+          SaveArg<0>(&audio_renderer_flush_cb)));
+  EXPECT_CALL(*audio_renderer_, StartPlaying())
+      .WillOnce(RunClosure(base::Bind(&base::DoNothing)));
+
+  // This should start flushing the audio renderer (due to audio stream status
+  // change) and should populate the |audio_renderer_flush_cb|.
+  stream_status_change_cb.Run(audio_stream_.get(), false, base::TimeDelta());
+  EXPECT_TRUE(audio_renderer_flush_cb);
+  base::RunLoop().RunUntilIdle();
+
+  bool flush_done = false;
+
+  // Complete the first half of the track change, it should be stuck in the
+  // StartPlaying() state after this.
+  EXPECT_CALL(callbacks_, OnFlushed()).WillOnce(SetBool(&flush_done, true));
+  audio_renderer_flush_cb.Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(flush_done);
+
+  // Ensure that even though we're stuck waiting for have_enough from the
+  // audio renderer, that our flush still executes immediately.
+  SetFlushExpectationsForAVRenderers();
+  renderer_impl_->Flush(
+      base::Bind(&CallbackHelper::OnFlushed, base::Unretained(&callbacks_)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(flush_done);
+}
+
 TEST_F(RendererImplTest, FlushDuringVideoReinit) {
   CreateAudioAndVideoStream();
 
@@ -920,6 +968,54 @@ TEST_F(RendererImplTest, FlushDuringVideoReinit) {
   // video renderer flush (initiated by the stream status change) completes.
   SetFlushExpectationsForAVRenderers();
   video_renderer_flush_cb.Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(flush_done);
+}
+
+// Verify that RendererImpl::Flush is not postponed by waiting for data.
+TEST_F(RendererImplTest, FlushDuringVideoReinitWhileWaiting) {
+  CreateAudioAndVideoStream();
+
+  StreamStatusChangeCB stream_status_change_cb;
+  EXPECT_CALL(*demuxer_, SetStreamStatusChangeCB(_))
+      .WillOnce(SaveArg<0>(&stream_status_change_cb));
+  SetAudioRendererInitializeExpectations(PIPELINE_OK);
+  SetVideoRendererInitializeExpectations(PIPELINE_OK);
+  InitializeAndExpect(PIPELINE_OK);
+  Play();
+
+  EXPECT_CALL(time_source_, StopTicking()).Times(testing::AnyNumber());
+  base::Closure video_renderer_flush_cb;
+
+  // Override the standard buffering state transitions for Flush() and
+  // StartPlaying() setup above.
+  EXPECT_CALL(*video_renderer_, Flush(_))
+      .WillOnce(DoAll(
+          SetBufferingState(&video_renderer_client_, BUFFERING_HAVE_NOTHING),
+          SaveArg<0>(&video_renderer_flush_cb)));
+  EXPECT_CALL(*video_renderer_, StartPlayingFrom(_))
+      .WillOnce(RunClosure(base::Bind(&base::DoNothing)));
+
+  // This should start flushing the video renderer (due to video stream status
+  // change) and should populate the |video_renderer_flush_cb|.
+  stream_status_change_cb.Run(video_stream_.get(), false, base::TimeDelta());
+  EXPECT_TRUE(video_renderer_flush_cb);
+  base::RunLoop().RunUntilIdle();
+
+  bool flush_done = false;
+
+  // Complete the first half of the track change, it should be stuck in the
+  // StartPlaying() state after this.
+  EXPECT_CALL(callbacks_, OnFlushed()).WillOnce(SetBool(&flush_done, true));
+  video_renderer_flush_cb.Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(flush_done);
+
+  // Ensure that even though we're stuck waiting for have_enough from the
+  // video renderer, that our flush still executes immediately.
+  SetFlushExpectationsForAVRenderers();
+  renderer_impl_->Flush(
+      base::Bind(&CallbackHelper::OnFlushed, base::Unretained(&callbacks_)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(flush_done);
 }
