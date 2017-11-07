@@ -131,15 +131,11 @@ void AnswerCardSearchProvider::DidFinishNavigation(
   DCHECK_EQ(source, context_for_loading.contents.get());
 
   if (url != current_request_url_) {
-    // TODO(vadimt): Remove this and similar logging once testing is complete if
-    // we think this is not useful after release or happens too frequently.
-    VLOG(1) << "DidFinishNavigation: Another request started";
     RecordRequestResult(
         SearchAnswerRequestResult::REQUEST_RESULT_ANOTHER_REQUEST_STARTED);
     return;
   }
 
-  VLOG(1) << "DidFinishNavigation: Latest request completed";
   if (has_error) {
     RecordRequestResult(
         SearchAnswerRequestResult::REQUEST_RESULT_REQUEST_FAILED);
