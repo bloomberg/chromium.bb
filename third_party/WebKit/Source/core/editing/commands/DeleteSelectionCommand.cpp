@@ -711,6 +711,10 @@ void DeleteSelectionCommand::HandleGeneralDelete(EditingState* editing_state) {
       }
     }
 
+    // TODO(editing-dev): Hoist updateStyleAndLayoutIgnorePendingStylesheets
+    // to caller. See http://crbug.com/590369 for more details.
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
     if (downstream_end_.AnchorNode() != start_node &&
         !upstream_start_.AnchorNode()->IsDescendantOf(
             downstream_end_.AnchorNode()) &&
