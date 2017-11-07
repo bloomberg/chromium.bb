@@ -823,10 +823,6 @@ const char kMojoVideoEncodeAcceleratorDescription[] =
     "Use new Mojo IPC to access hardware-accelerated video encoder, where "
     "available.";
 
-const char kModuleScriptsName[] = "Enable ECMAScript 6 modules";
-const char kModuleScriptsDescription[] =
-    "Enables ECMAScript 6 modules support in Blink.";
-
 const char kModuleScriptsDynamicImportName[] =
     "Enable ECMAScript 6 modules dynamic import";
 const char kModuleScriptsDynamicImportDescription[] =

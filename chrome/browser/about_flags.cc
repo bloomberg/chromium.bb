@@ -3262,10 +3262,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableExperimentalFullscreenExitUI)},
 #endif  // defined(TOOLKIT_VIEWS)
 
-    {"enable-module-scripts", flag_descriptions::kModuleScriptsName,
-     flag_descriptions::kModuleScriptsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kModuleScripts)},
-
     {"network-service", flag_descriptions::kEnableNetworkServiceName,
      flag_descriptions::kEnableNetworkServiceDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kNetworkService)},
