@@ -1751,6 +1751,9 @@ enum WebFeature {
   kV8Element_GetBoundingClientRect_Method = 2219,
   kV8Range_GetClientRects_Method = 2220,
   kV8Range_GetBoundingClientRect_Method = 2221,
+  kV8ErrorCaptureStackTrace = 2222,
+  kV8ErrorPrepareStackTrace = 2223,
+  kV8ErrorStackTraceLimit = 2224,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

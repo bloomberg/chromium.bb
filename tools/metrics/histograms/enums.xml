@@ -16891,6 +16891,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2219" label="V8Element_GetBoundingClientRect_Method"/>
   <int value="2220" label="V8Range_GetClientRects_Method"/>
   <int value="2221" label="V8Range_GetBoundingClientRect_Method"/>
+  <int value="2222" label="V8ErrorCaptureStackTrace"/>
+  <int value="2223" label="V8ErrorPrepareStackTrace"/>
+  <int value="2224" label="V8ErrorStackTraceLimit"/>
 </enum>
 
 <enum name="FeedbackSource">
