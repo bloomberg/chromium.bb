@@ -72,13 +72,17 @@ SelectionModifier::SelectionModifier(
     const VisibleSelection& selection,
     LayoutUnit x_pos_for_vertical_arrow_navigation)
     : frame_(const_cast<LocalFrame*>(&frame)),
-      selection_(selection),
+      current_selection_(selection.AsSelection()),
       x_pos_for_vertical_arrow_navigation_(
           x_pos_for_vertical_arrow_navigation) {}
 
 SelectionModifier::SelectionModifier(const LocalFrame& frame,
                                      const VisibleSelection& selection)
     : SelectionModifier(frame, selection, NoXPosForVerticalArrowNavigation()) {}
+
+VisibleSelection SelectionModifier::Selection() const {
+  return CreateVisibleSelection(current_selection_);
+}
 
 static VisiblePosition ComputeVisibleExtent(
     const VisibleSelection& visible_selection) {
@@ -140,8 +144,9 @@ static bool IsBaseStart(const VisibleSelection& visible_selection,
 // and start/end adjustment in |visibleSelection::validate()| for range
 // selection.
 static SelectionInDOMTree PrepareToExtendSelection(
-    const VisibleSelection& visible_selection,
+    const SelectionInDOMTree& selection,
     SelectionModifyDirection direction) {
+  const VisibleSelection& visible_selection = CreateVisibleSelection(selection);
   if (visible_selection.Start().IsNull())
     return visible_selection.AsSelection();
   const bool base_is_start = IsBaseStart(visible_selection, direction);
@@ -151,6 +156,15 @@ static SelectionInDOMTree PrepareToExtendSelection(
       .Extend(base_is_start ? visible_selection.End()
                             : visible_selection.Start())
       .Build();
+}
+
+static SelectionInDOMTree PrepareToModifySelection(
+    const SelectionInDOMTree& selection,
+    SelectionModifyAlteration alter,
+    SelectionModifyDirection direction) {
+  return alter == SelectionModifyAlteration::kExtend
+             ? PrepareToExtendSelection(selection, direction)
+             : CreateVisibleSelection(selection).AsSelection();
 }
 
 VisiblePosition SelectionModifier::PositionForPlatform(
@@ -588,10 +602,8 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetFrame()->GetDocument()->Lifecycle());
 
-  if (alter == SelectionModifyAlteration::kExtend) {
-    selection_ =
-        CreateVisibleSelection(PrepareToExtendSelection(selection_, direction));
-  }
+  selection_ = CreateVisibleSelection(
+      PrepareToModifySelection(current_selection_, alter, direction));
 
   bool was_range = selection_.IsRange();
   VisiblePosition original_start_position = selection_.VisibleStart();
@@ -616,11 +628,11 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
 
   switch (alter) {
     case SelectionModifyAlteration::kMove:
-      selection_ = CreateVisibleSelection(
+      current_selection_ =
           SelectionInDOMTree::Builder()
               .Collapse(position.ToPositionWithAffinity())
               .SetIsDirectional(ShouldAlwaysUseDirectionalSelection(GetFrame()))
-              .Build());
+              .Build();
       break;
     case SelectionModifyAlteration::kExtend:
 
@@ -655,12 +667,11 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
                .Behavior()
                .ShouldAlwaysGrowSelectionWhenExtendingToBoundary() ||
           selection_.IsCaret() || !IsBoundary(granularity)) {
-        selection_ =
-            CreateVisibleSelection(SelectionInDOMTree::Builder()
-                                       .Collapse(selection_.Base())
-                                       .Extend(position.DeepEquivalent())
-                                       .SetIsDirectional(true)
-                                       .Build());
+        current_selection_ = SelectionInDOMTree::Builder()
+                                 .Collapse(selection_.Base())
+                                 .Extend(position.DeepEquivalent())
+                                 .SetIsDirectional(true)
+                                 .Build();
       } else {
         TextDirection text_direction = DirectionOfEnclosingBlock();
         if (direction == SelectionModifyDirection::kForward ||
@@ -668,7 +679,7 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
              direction == SelectionModifyDirection::kRight) ||
             (text_direction == TextDirection::kRtl &&
              direction == SelectionModifyDirection::kLeft)) {
-          selection_ = CreateVisibleSelection(
+          current_selection_ =
               SelectionInDOMTree::Builder()
                   .Collapse(selection_.IsBaseFirst()
                                 ? selection_.Base()
@@ -676,16 +687,16 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
                   .Extend(selection_.IsBaseFirst() ? position.DeepEquivalent()
                                                    : selection_.Extent())
                   .SetIsDirectional(true)
-                  .Build());
+                  .Build();
         } else {
-          selection_ = CreateVisibleSelection(
+          current_selection_ =
               SelectionInDOMTree::Builder()
                   .Collapse(selection_.IsBaseFirst() ? position.DeepEquivalent()
                                                      : selection_.Base())
                   .Extend(selection_.IsBaseFirst() ? selection_.Extent()
                                                    : position.DeepEquivalent())
                   .SetIsDirectional(true)
-                  .Build());
+                  .Build();
         }
       }
       break;
@@ -718,12 +729,11 @@ bool SelectionModifier::ModifyWithPageGranularity(
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetFrame()->GetDocument()->Lifecycle());
 
-  if (alter == SelectionModifyAlteration::kExtend) {
-    selection_ = CreateVisibleSelection(PrepareToExtendSelection(
-        selection_, direction == SelectionModifyVerticalDirection::kUp
-                        ? SelectionModifyDirection::kBackward
-                        : SelectionModifyDirection::kForward));
-  }
+  selection_ = CreateVisibleSelection(PrepareToModifySelection(
+      current_selection_, alter,
+      direction == SelectionModifyVerticalDirection::kUp
+          ? SelectionModifyDirection::kBackward
+          : SelectionModifyDirection::kForward));
 
   VisiblePosition pos;
   LayoutUnit x_pos;
@@ -781,21 +791,21 @@ bool SelectionModifier::ModifyWithPageGranularity(
 
   switch (alter) {
     case SelectionModifyAlteration::kMove:
-      selection_ = CreateVisibleSelection(
+      current_selection_ =
           SelectionInDOMTree::Builder()
               .Collapse(result.ToPositionWithAffinity())
               .SetIsDirectional(ShouldAlwaysUseDirectionalSelection(GetFrame()))
               .SetAffinity(direction == SelectionModifyVerticalDirection::kUp
                                ? TextAffinity::kUpstream
                                : TextAffinity::kDownstream)
-              .Build());
+              .Build();
       break;
     case SelectionModifyAlteration::kExtend: {
-      selection_ = CreateVisibleSelection(SelectionInDOMTree::Builder()
-                                              .Collapse(selection_.Base())
-                                              .Extend(result.DeepEquivalent())
-                                              .SetIsDirectional(true)
-                                              .Build());
+      current_selection_ = SelectionInDOMTree::Builder()
+                               .Collapse(selection_.Base())
+                               .Extend(result.DeepEquivalent())
+                               .SetIsDirectional(true)
+                               .Build();
       break;
     }
   }
