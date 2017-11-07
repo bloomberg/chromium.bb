@@ -211,17 +211,20 @@ NSString* const kActivityServicesSnackbarCategory =
 
 - (NSArray*)activityItemsForData:(ShareToData*)data {
   NSMutableArray* activityItems = [NSMutableArray array];
-  // ShareToData object guarantees that there is a NSURL.
-  DCHECK(data.nsurl);
+  // ShareToData object guarantees that there is a sharedNSURL and
+  // passwordManagerNSURL.
+  DCHECK(data.shareNSURL);
+  DCHECK(data.passwordManagerNSURL);
 
   // In order to support find-login-action protocol, the provider object
   // UIActivityURLSource supports both Password Management App Extensions
   // (e.g. 1Password) and also provide a public.url UTType for Share Extensions
   // (e.g. Facebook, Twitter).
   UIActivityURLSource* loginActionProvider =
-      [[UIActivityURLSource alloc] initWithURL:data.nsurl
-                                       subject:data.title
-                            thumbnailGenerator:data.thumbnailGenerator];
+      [[UIActivityURLSource alloc] initWithShareURL:data.shareNSURL
+                                 passwordManagerURL:data.passwordManagerNSURL
+                                            subject:data.title
+                                 thumbnailGenerator:data.thumbnailGenerator];
   [activityItems addObject:loginActionProvider];
 
   if (data.image) {
@@ -241,9 +244,9 @@ NSString* const kActivityServicesSnackbarCategory =
     printActivity.dispatcher = dispatcher;
     [applicationActivities addObject:printActivity];
   }
-  if (data.url.SchemeIsHTTPOrHTTPS()) {
+  if (data.shareURL.SchemeIsHTTPOrHTTPS()) {
     ReadingListActivity* readingListActivity =
-        [[ReadingListActivity alloc] initWithURL:data.url
+        [[ReadingListActivity alloc] initWithURL:data.shareURL
                                            title:data.title
                                       dispatcher:dispatcher];
     [applicationActivities addObject:readingListActivity];

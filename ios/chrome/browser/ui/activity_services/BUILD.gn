@@ -64,6 +64,7 @@ source_set("coordinator") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
+    "//url",
   ]
 }
 
@@ -94,6 +95,7 @@ source_set("unit_tests") {
     "//third_party/ocmock",
     "//ui/base",
     "//ui/base:test_support",
+    "//url",
   ]
 }
 

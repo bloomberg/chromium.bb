@@ -12,6 +12,7 @@
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,7 +20,7 @@
 
 namespace activity_services {
 
-ShareToData* ShareToDataForTab(Tab* tab) {
+ShareToData* ShareToDataForTab(Tab* tab, const GURL& shareURL) {
   DCHECK(tab);
   // For crash documented in crbug.com/503955, tab.url which is being passed
   // as a reference parameter caused a crash due to invalid address which
@@ -50,11 +51,15 @@ ShareToData* ShareToDataForTab(Tab* tab) {
   BOOL is_page_printable = [tab viewForPrinting] != nil;
   ThumbnailGeneratorBlock thumbnail_generator =
       activity_services::ThumbnailGeneratorForTab(tab);
-  return [[ShareToData alloc] initWithURL:tab.webState->GetVisibleURL()
-                                    title:tab.title
-                          isOriginalTitle:is_original_title
-                          isPagePrintable:is_page_printable
-                       thumbnailGenerator:thumbnail_generator];
+  const GURL& finalURLToShare =
+      !shareURL.is_empty() ? shareURL : tab.webState->GetVisibleURL();
+
+  return [[ShareToData alloc] initWithShareURL:finalURLToShare
+                            passwordManagerURL:tab.webState->GetVisibleURL()
+                                         title:tab.title
+                               isOriginalTitle:is_original_title
+                               isPagePrintable:is_page_printable
+                            thumbnailGenerator:thumbnail_generator];
 }
 
 }  // namespace activity_services
