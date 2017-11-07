@@ -1,19 +1,19 @@
 AXWebArea AXTitle='Table example'
 ++AXTable
 ++++AXRow AXIndex='0'
-++++++AXCell AXTitle='Pair' AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}
 ++++++++AXStaticText AXValue='Pair'
-++++++AXCell AXTitle='Single' AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":0}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":0}
 ++++++++AXStaticText AXValue='Single'
 ++++AXRow AXIndex='1'
-++++++AXCell AXTitle='AB' AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":1}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":1}
 ++++++++AXStaticText AXValue='AB'
-++++++AXCell AXTitle='B' AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":1}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":1}
 ++++++++AXStaticText AXValue='B'
 ++++AXRow AXIndex='2'
-++++++AXCell AXTitle='CD' AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":2}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":2}
 ++++++++AXStaticText AXValue='CD'
-++++++AXCell AXTitle='D' AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":2}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":2}
 ++++++++AXStaticText AXValue='D'
 ++++AXColumn AXIndex='0'
 ++++AXColumn AXIndex='1'

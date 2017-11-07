@@ -1,19 +1,19 @@
 AXWebArea
 ++AXTable AXColumnHeaderUIElements=["AXCell Browser","AXCell Rendering Engine"] AXHeader='AXGroup'
 ++++AXRow AXIndex='0'
-++++++AXCell AXTitle='Browser' AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":0}
 ++++++++AXStaticText AXValue='Browser'
-++++++AXCell AXTitle='Rendering Engine' AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":0}
+++++++AXCell AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":0}
 ++++++++AXStaticText AXValue='Rendering Engine'
 ++++AXRow AXIndex='1'
-++++++AXCell AXTitle='Chrome' AXColumnHeaderUIElements=["AXCell Browser"] AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":1}
+++++++AXCell AXColumnHeaderUIElements=["AXCell Browser"] AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":1}
 ++++++++AXStaticText AXValue='Chrome'
-++++++AXCell AXTitle='Blink' AXColumnHeaderUIElements=["AXCell Rendering Engine"] AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":1}
+++++++AXCell AXColumnHeaderUIElements=["AXCell Rendering Engine"] AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":1}
 ++++++++AXStaticText AXValue='Blink'
 ++++AXRow AXIndex='2'
-++++++AXCell AXTitle='Safari' AXColumnHeaderUIElements=["AXCell Browser"] AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":2}
+++++++AXCell AXColumnHeaderUIElements=["AXCell Browser"] AXColumnIndexRange={"len":1,"loc":0} AXRowIndexRange={"len":1,"loc":2}
 ++++++++AXStaticText AXValue='Safari'
-++++++AXCell AXTitle='WebKit' AXColumnHeaderUIElements=["AXCell Rendering Engine"] AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":2}
+++++++AXCell AXColumnHeaderUIElements=["AXCell Rendering Engine"] AXColumnIndexRange={"len":1,"loc":1} AXRowIndexRange={"len":1,"loc":2}
 ++++++++AXStaticText AXValue='WebKit'
 ++++AXColumn AXHeader='AXCell Browser' AXIndex='0'
 ++++AXColumn AXHeader='AXCell Rendering Engine' AXIndex='1'

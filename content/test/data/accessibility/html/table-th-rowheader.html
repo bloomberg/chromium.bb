@@ -7,6 +7,7 @@
 @MAC-ALLOW:AXHeader=*
 @MAC-ALLOW:AXRowHeaderUIElements=*
 @MAC-ALLOW:AXRowIndexRange=*
+@MAC-DENY:AXDescription=*
 -->
 <!DOCTYPE html>
 <html>
@@ -17,12 +18,12 @@
 
 <table border=1>
   <tr>
-    <th>Firstname</th>
+    <th aria-label="Firstname">Firstname</th>
     <td>Jill</td>
   </tr>
   <tr>
-    <th>Lastname</th> 
-    <td>Smith</td>    
+    <th aria-label="Lastname">Lastname</th>
+    <td>Smith</td>
   </tr>
 </table>
 

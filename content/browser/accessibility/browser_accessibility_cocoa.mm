@@ -2000,11 +2000,18 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if ([self shouldExposeTitleUIElement])
     return @"";
 
+  ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
+      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
+
+  // On Mac OS X, cell titles are "" if it it came from content.
+  NSString* role = [self role];
+  if ([role isEqualToString:NSAccessibilityCellRole] &&
+      nameFrom == ui::AX_NAME_FROM_CONTENTS)
+    return @"";
+
   // On Mac OS X, the accessible name of an object is exposed as its
   // title if it comes from visible text, and as its description
   // otherwise, but never both.
-  ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
-      browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
   if (nameFrom == ui::AX_NAME_FROM_CONTENTS ||
       nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT ||
       nameFrom == ui::AX_NAME_FROM_VALUE) {
