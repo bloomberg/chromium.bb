@@ -18,6 +18,7 @@
 #include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
 
@@ -30,49 +31,18 @@ class TestSSLPlatformKey : public ThreadedSSLPrivateKey::Delegate {
 
   ~TestSSLPlatformKey() override {}
 
-  std::vector<SSLPrivateKey::Hash> GetDigestPreferences() override {
-    static const SSLPrivateKey::Hash kHashes[] = {
-        SSLPrivateKey::Hash::SHA512, SSLPrivateKey::Hash::SHA384,
-        SSLPrivateKey::Hash::SHA256, SSLPrivateKey::Hash::SHA1};
-    return std::vector<SSLPrivateKey::Hash>(kHashes,
-                                            kHashes + arraysize(kHashes));
+  std::vector<uint16_t> GetAlgorithmPreferences() override {
+    return SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_id(key_.get()));
   }
 
-  Error SignDigest(SSLPrivateKey::Hash hash,
+  Error SignDigest(uint16_t algorithm,
                    const base::StringPiece& input,
                    std::vector<uint8_t>* signature) override {
     bssl::UniquePtr<EVP_PKEY_CTX> ctx(EVP_PKEY_CTX_new(key_.get(), nullptr));
-    if (!ctx)
+    if (!ctx || !EVP_PKEY_sign_init(ctx.get()) ||
+        !EVP_PKEY_CTX_set_signature_md(
+            ctx.get(), SSL_get_signature_algorithm_digest(algorithm))) {
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-    if (!EVP_PKEY_sign_init(ctx.get()))
-      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-
-    if (EVP_PKEY_id(key_.get()) == EVP_PKEY_RSA) {
-      const EVP_MD* digest = nullptr;
-      switch (hash) {
-        case SSLPrivateKey::Hash::MD5_SHA1:
-          digest = EVP_md5_sha1();
-          break;
-        case SSLPrivateKey::Hash::SHA1:
-          digest = EVP_sha1();
-          break;
-        case SSLPrivateKey::Hash::SHA256:
-          digest = EVP_sha256();
-          break;
-        case SSLPrivateKey::Hash::SHA384:
-          digest = EVP_sha384();
-          break;
-        case SSLPrivateKey::Hash::SHA512:
-          digest = EVP_sha512();
-          break;
-        default:
-          return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-      }
-      DCHECK(digest);
-      if (!EVP_PKEY_CTX_set_rsa_padding(ctx.get(), RSA_PKCS1_PADDING))
-        return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-      if (!EVP_PKEY_CTX_set_signature_md(ctx.get(), digest))
-        return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     }
 
     const uint8_t* input_ptr = reinterpret_cast<const uint8_t*>(input.data());

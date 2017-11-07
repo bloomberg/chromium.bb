@@ -18,6 +18,7 @@
 #include "net/test/keychain_test_util_mac.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
 
@@ -27,13 +28,14 @@ struct TestKey {
   const char* name;
   const char* cert_file;
   const char* key_file;
+  int type;
 };
 
 const TestKey kTestKeys[] = {
-    {"RSA", "client_1.pem", "client_1.pk8"},
-    {"ECDSA_P256", "client_4.pem", "client_4.pk8"},
-    {"ECDSA_P384", "client_5.pem", "client_5.pk8"},
-    {"ECDSA_P521", "client_6.pem", "client_6.pk8"},
+    {"RSA", "client_1.pem", "client_1.pk8", EVP_PKEY_RSA},
+    {"ECDSA_P256", "client_4.pem", "client_4.pk8", EVP_PKEY_EC},
+    {"ECDSA_P384", "client_5.pem", "client_5.pk8", EVP_PKEY_EC},
+    {"ECDSA_P521", "client_6.pem", "client_6.pk8", EVP_PKEY_EC},
 };
 
 std::string TestKeyToString(const testing::TestParamInfo<TestKey>& params) {
@@ -72,12 +74,9 @@ TEST_P(SSLPlatformKeyMacTest, KeyMatches) {
       CreateSSLPrivateKeyForSecIdentity(cert.get(), sec_identity.get());
   ASSERT_TRUE(key);
 
-  // All Mac keys are expected to have the same hash preferences.
-  std::vector<SSLPrivateKey::Hash> expected_hashes = {
-      SSLPrivateKey::Hash::SHA512, SSLPrivateKey::Hash::SHA384,
-      SSLPrivateKey::Hash::SHA256, SSLPrivateKey::Hash::SHA1,
-  };
-  EXPECT_EQ(expected_hashes, key->GetDigestPreferences());
+  // All Mac keys are expected to have the default preferences.
+  EXPECT_EQ(SSLPrivateKey::DefaultAlgorithmPreferences(test_key.type),
+            key->GetAlgorithmPreferences());
 
   TestSSLPrivateKeyMatches(key.get(), pkcs8);
 }

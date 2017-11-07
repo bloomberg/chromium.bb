@@ -80,12 +80,13 @@ class CertificateProviderService : public KeyedService {
     virtual void BroadcastCertificateRequest(int cert_request_id) = 0;
 
     // Dispatches a sign request with the given arguments to the extension with
-    // id |extension_id|. Returns whether that extension is actually a listener
-    // for that event.
+    // id |extension_id|. |algorithm| is a TLS 1.3 SignatureScheme value. See
+    // net::SSLPrivateKey for details. Returns whether that extension is
+    // actually a listener for that event.
     virtual bool DispatchSignRequestToExtension(
         const std::string& extension_id,
         int sign_request_id,
-        net::SSLPrivateKey::Hash hash,
+        uint16_t algorithm,
         const scoped_refptr<net::X509Certificate>& certificate,
         const std::string& digest) = 0;
 
@@ -180,12 +181,14 @@ class CertificateProviderService : public KeyedService {
   void TerminateCertificateRequest(int cert_request_id);
 
   // Requests extension with |extension_id| to sign |digest| with the private
-  // key certified by |certificate|. |hash| was used to create |digest|.
-  // |callback| will be run with the reply of the extension or an error.
+  // key certified by |certificate|. |algorithm| is a TLS 1.3 SignatureScheme
+  // value. See net::SSLPrivateKey for details. |digest| was created by
+  // |algorithm|'s prehash.  |callback| will be run with the reply of the
+  // extension or an error.
   void RequestSignatureFromExtension(
       const std::string& extension_id,
       const scoped_refptr<net::X509Certificate>& certificate,
-      net::SSLPrivateKey::Hash hash,
+      uint16_t algorithm,
       const std::string& digest,
       const net::SSLPrivateKey::SignCallback& callback);
 

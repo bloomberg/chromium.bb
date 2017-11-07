@@ -18,12 +18,12 @@ class MockSSLPrivateKey : public SSLPrivateKey {
  public:
   MockSSLPrivateKey() {}
 
-  std::vector<SSLPrivateKey::Hash> GetDigestPreferences() override {
+  std::vector<uint16_t> GetAlgorithmPreferences() override {
     NOTIMPLEMENTED();
-    return std::vector<SSLPrivateKey::Hash>();
+    return {};
   }
 
-  void SignDigest(Hash hash,
+  void SignDigest(uint16_t algorithm,
                   const base::StringPiece& input,
                   const SignCallback& callback) override {
     NOTIMPLEMENTED();

@@ -31,6 +31,7 @@
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
 
@@ -40,14 +41,14 @@ struct TestKey {
   const char* name;
   const char* cert_file;
   const char* key_file;
-  bool is_ecdsa;
+  int type;
 };
 
 const TestKey kTestKeys[] = {
-    {"RSA", "client_1.pem", "client_1.pk8", false},
-    {"ECDSA_P256", "client_4.pem", "client_4.pk8", true},
-    {"ECDSA_P384", "client_5.pem", "client_5.pk8", true},
-    {"ECDSA_P521", "client_6.pem", "client_6.pk8", true},
+    {"RSA", "client_1.pem", "client_1.pk8", EVP_PKEY_RSA},
+    {"ECDSA_P256", "client_4.pem", "client_4.pk8", EVP_PKEY_EC},
+    {"ECDSA_P384", "client_5.pem", "client_5.pk8", EVP_PKEY_EC},
+    {"ECDSA_P521", "client_6.pem", "client_6.pk8", EVP_PKEY_EC},
 };
 
 std::string TestKeyToString(const testing::TestParamInfo<TestKey>& params) {
@@ -70,7 +71,7 @@ TEST_P(SSLPlatformKeyNSSTest, KeyMatches) {
   crypto::ScopedTestNSSDB test_db;
   scoped_refptr<X509Certificate> cert;
   ScopedCERTCertificate nss_cert;
-  if (test_key.is_ecdsa) {
+  if (test_key.type == EVP_PKEY_EC) {
     // NSS cannot import unencrypted ECDSA keys, so we encrypt it with an empty
     // password and import manually.
     std::vector<uint8_t> pkcs8_vector(pkcs8.begin(), pkcs8.end());
@@ -130,12 +131,9 @@ TEST_P(SSLPlatformKeyNSSTest, KeyMatches) {
       FetchClientCertPrivateKey(cert.get(), nss_cert.get(), nullptr);
   ASSERT_TRUE(key);
 
-  // All NSS keys are expected to have the same hash preferences.
-  std::vector<SSLPrivateKey::Hash> expected_hashes = {
-      SSLPrivateKey::Hash::SHA512, SSLPrivateKey::Hash::SHA384,
-      SSLPrivateKey::Hash::SHA256, SSLPrivateKey::Hash::SHA1,
-  };
-  EXPECT_EQ(expected_hashes, key->GetDigestPreferences());
+  // All NSS keys are expected to have the default preferences.
+  EXPECT_EQ(SSLPrivateKey::DefaultAlgorithmPreferences(test_key.type),
+            key->GetAlgorithmPreferences());
 
   TestSSLPrivateKeyMatches(key.get(), pkcs8);
 }
