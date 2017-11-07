@@ -162,15 +162,16 @@
               could-not-display-code="$i18n{noErrorsToShow}">
           </extensions-code-section>
           <div id="errors-list">
-            <template is="dom-repeat" items="[[calculateShownItems_(data.*)]]">
+            <template is="dom-repeat" items="[[entries_]]">
               <div class="item-container">
-                <div class$="error-item [[computeErrorClass_(selectedError_, item)]]">
-                  <div class="start" on-tap="onErrorItemAction_"
+                <div class$="error-item
+                    [[computeErrorClass_(selectedError_, item)]]">
+                  <div actionable class=" start" on-tap="onErrorItemAction_"
                       on-keydown="onErrorItemAction_" tabindex="0">
                     <iron-icon icon$="[[computeErrorIcon_(item)]]"></iron-icon>
                     <div class="error-message">[[item.message]]</div>
                     <cr-expand-button hidden="[[!computeIsRuntimeError_(item)]]"
-                        expanded="[[isEqual_(selectedError_, item)]]"
+                        expanded="{{item.expanded}}"
                         tab-index="-1">
                     </cr-expand-button>
                   </div>
@@ -181,7 +182,7 @@
                   </button>
                 </div>
                 <template is="dom-if" if="[[computeIsRuntimeError_(item)]]">
-                  <iron-collapse opened="[[isEqual_(selectedError_, item)]]">
+                  <iron-collapse opened="[[item.expanded]]">
                     <div id="devtools-controls">
                       <div id="stack-trace-heading">
                         $i18n{stackTrace}
@@ -190,7 +191,8 @@
                         <template is="dom-repeat" items="[[item.stackTrace]]">
                           <li on-tap="onStackFrameTap_"
                               hidden="[[!shouldDisplayFrame_(item.url)]]"
-                              class$="[[getStackFrameClass_(item, selectedStackFrame_)]]">
+                              class$="[[getStackFrameClass_(item,
+                                  selectedStackFrame_)]]">
                             [[getStackTraceLabel_(item)]]
                           </li>
                         </template>
