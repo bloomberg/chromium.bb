@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
@@ -76,12 +75,10 @@ mojom::ConnectResult LaunchAndConnectToProcess(
   connector->StartService(target, std::move(client), MakeRequest(&receiver));
   mojom::ConnectResult result;
   {
-    base::RunLoop loop;
+    base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
     Connector::TestApi test_api(connector);
     test_api.SetStartServiceCallback(
         base::Bind(&GrabConnectResult, &loop, &result));
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
     loop.Run();
   }
 
