@@ -23,6 +23,14 @@ namespace search_provider_logos {
 // The maximum number of milliseconds that a logo can be cached.
 extern const int64_t kMaxTimeToLiveMS;
 
+enum class LogoType {
+  SIMPLE,
+  ANIMATED,
+  INTERACTIVE,
+};
+
+// Note: whenever a new field is added here, LogoCache must be updated to
+// serialize and deserialize that field.
 struct LogoMetadata {
   LogoMetadata();
   LogoMetadata(const LogoMetadata& other);
@@ -30,15 +38,31 @@ struct LogoMetadata {
 
   // For use by the client ----------------------------------------------------
 
-  // The URL to load when the logo is clicked.
+  // SIMPLE, ANIMATED, or INTERACTIVE.
+  LogoType type = LogoType::SIMPLE;
+
+  // SIMPLE, ANIMATED: The URL to load when the logo is clicked.
+  // INTERACTIVE: Unused, on Desktop. Same as SIMPLE/ANIMATED on Mobile.
   GURL on_click_url;
-  // The accessibility text for the logo.
+
+  // INTERACTIVE: The URL of a full-page version of the logo. On Desktop, logo
+  // is embedded into an <iframe> on the NTP.
+  // SIMPLE, ANIMATED: not used.
+  GURL full_page_url;
+
+  // SIMPLE: The accessibility text for the logo.
+  // ANIMATED: The accessibility text for the CTA and animated logos.
+  // INTERACTIVE: The accessibility text for the iframe, on Desktop.
   std::string alt_text;
-  // The mime type of the logo image.
+
+  // SIMPLE: The mime type of the logo image.
+  // ANIMATED: The mime type of the CTA image.
   std::string mime_type;
-  // The URL for an animated image to display when the call to action logo is
-  // clicked. If |animated_url| is not empty, |encoded_image| refers to a call
-  // to action image.
+
+  // ANIMATED: The URL for an animated image to display when the call to action
+  // logo is clicked. If |animated_url| is not empty, |encoded_image| refers to
+  // a call to action image.
+  // SIMPLE, INTERACTIVE: not used.
   GURL animated_url;
 
   // For use by LogoService ---------------------------------------------------
@@ -50,7 +74,7 @@ struct LogoMetadata {
   std::string fingerprint;
   // Whether the logo can be shown optimistically after it's expired while a
   // fresh logo is being downloaded.
-  bool can_show_after_expiration;
+  bool can_show_after_expiration = false;
   // When the logo expires. After this time, the logo will not be used and will
   // be deleted.
   base::Time expiration_time;

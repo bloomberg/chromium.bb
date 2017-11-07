@@ -27,6 +27,7 @@ LogoMetadata GetExampleMetadata() {
   EXPECT_TRUE(base::Time::FromString("98-05-05 05:05:06 GMT",
                                      &metadata.expiration_time));
   metadata.can_show_after_expiration = true;
+  metadata.type = LogoType::ANIMATED;
   metadata.on_click_url = GURL("https://www.google.com/search?q=chicken");
   metadata.animated_url = GURL("http://www.google.com/logos/doodle.png");
   metadata.alt_text = "A logo about chickens";
@@ -41,7 +42,10 @@ LogoMetadata GetExampleMetadata2() {
   EXPECT_TRUE(base::Time::FromString("17-04-04 07:10:58 GMT",
                                      &metadata.expiration_time));
   metadata.can_show_after_expiration = false;
+  metadata.type = LogoType::INTERACTIVE;
   metadata.on_click_url = GURL("http://www.example.co.uk/welcome.php#top");
+  metadata.full_page_url =
+      GURL("http://www.example.co.uk/welcome.php#fpdoodle");
   metadata.alt_text = "This is a logo";
   metadata.mime_type = "image/png";
   return metadata;
@@ -77,7 +81,9 @@ void ExpectMetadataEqual(const LogoMetadata& expected_metadata,
   EXPECT_EQ(expected_metadata.can_show_after_expiration,
             actual_metadata.can_show_after_expiration);
   EXPECT_EQ(expected_metadata.expiration_time, actual_metadata.expiration_time);
+  EXPECT_EQ(expected_metadata.type, actual_metadata.type);
   EXPECT_EQ(expected_metadata.on_click_url, actual_metadata.on_click_url);
+  EXPECT_EQ(expected_metadata.full_page_url, actual_metadata.full_page_url);
   EXPECT_EQ(expected_metadata.animated_url, actual_metadata.animated_url);
   EXPECT_EQ(expected_metadata.alt_text, actual_metadata.alt_text);
   EXPECT_EQ(expected_metadata.mime_type, actual_metadata.mime_type);
