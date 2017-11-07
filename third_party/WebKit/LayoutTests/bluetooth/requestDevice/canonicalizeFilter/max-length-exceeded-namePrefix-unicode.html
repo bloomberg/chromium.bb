@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/testdriver.js"></script>
+<script src="../../../resources/testdriver-vendor.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
@@ -9,7 +11,7 @@ bluetooth_test(() => {
   // 83 chars * 3 bytes/char = 249 bytes
   const unicode_name = '\u2764'.repeat(83);
   return assert_promise_rejects_with_message(
-    requestDeviceWithKeyDown({filters: [{namePrefix: unicode_name}]}),
+    requestDeviceWithTrustedClick({filters: [{namePrefix: unicode_name}]}),
       new DOMException(
         'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
         'A device name can\'t be longer than 248 bytes.',

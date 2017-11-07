@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/testdriver.js"></script>
+<script src="../../../resources/testdriver-vendor.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 bluetooth_test(t => {
   let test_promises = Promise.resolve();
   generateRequestDeviceArgsWithServices([]).forEach(args => {
   test_promises = test_promises.then(() => promise_rejects(
-    t, new TypeError(), requestDeviceWithKeyDown(args)));
+    t, new TypeError(), requestDeviceWithTrustedClick(args)));
   });
   return test_promises;
 }, 'Services member must contain at least one service.');

@@ -4,7 +4,7 @@ bluetooth_test(
       return setBluetoothFakeAdapter(
                  'DisconnectingDuringFailureGATTOperationAdapter')
           .then(
-              () => requestDeviceWithKeyDown(
+              () => requestDeviceWithTrustedClick(
                   {filters: [{services: ['health_thermometer']}]}))
           .then(device => device.gatt.connect())
           .then(gatt => gatt.getPrimaryService('health_thermometer'))

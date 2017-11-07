@@ -6,7 +6,7 @@ let expected = new DOMException('Origin is not allowed to access the ' +
                                 'SecurityError');
 bluetooth_test(() => {
   return setBluetoothFakeAdapter('DelayedServicesDiscoveryAdapter')
-    .then(() => requestDeviceWithKeyDown({
+    .then(() => requestDeviceWithTrustedClick({
       filters: [{services: ['heart_rate']}]
     }))
     .then(device => device.gatt.connect())

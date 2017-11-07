@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/testdriver.js"></script>
+<script src="../../../resources/testdriver-vendor.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
@@ -16,7 +18,7 @@ bluetooth_test(t => {
   test_specs.forEach(args => {
     test_promises = test_promises
       .then(() => assert_promise_rejects_with_message(
-        requestDeviceWithKeyDown(args),
+        requestDeviceWithTrustedClick(args),
         new TypeError(
           'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
           'Either \'filters\' should be present or ' +

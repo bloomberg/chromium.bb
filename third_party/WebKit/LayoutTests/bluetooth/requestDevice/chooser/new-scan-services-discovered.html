@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/testdriver.js"></script>
+<script src="../../../resources/testdriver-vendor.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
@@ -9,7 +11,7 @@ bluetooth_test(() => {
 
   let requestDevicePromise =
     setBluetoothFakeAdapter('DeviceEventAdapter')
-      .then(() => requestDeviceWithKeyDown({
+      .then(() => requestDeviceWithTrustedClick({
         filters: [{services: ['generic_access']}]}));
   return getBluetoothManualChooserEvents(4).then(events => {
     assert_equals(events[0], 'chooser-opened(file://)');

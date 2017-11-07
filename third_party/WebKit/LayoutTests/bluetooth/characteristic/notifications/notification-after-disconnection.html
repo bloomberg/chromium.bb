@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/testdriver.js"></script>
+<script src="../../../resources/testdriver-vendor.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
@@ -12,7 +14,7 @@ bluetooth_test(() => {
     window.onmessage = messageEvent => {
       if (messageEvent.data === 'Ready') {
         let iframe = document.querySelector('iframe');
-        callWithKeyDown(() => {
+        callWithTrustedClick(() => {
           iframe.contentWindow.postMessage('RequestAndConnect', '*');
         });
       } else if (messageEvent.data === 'Connected') {
@@ -33,7 +35,7 @@ bluetooth_test(() => {
       document.body.appendChild(iframe);
 
       return iframe_connected
-        .then(() => requestDeviceWithKeyDown(
+        .then(() => requestDeviceWithTrustedClick(
           {filters: [{services: ['heart_rate']}]}))
         .then(device => device.gatt.connect())
         .then(gatt => gatt.getPrimaryService('heart_rate'))

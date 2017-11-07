@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/testdriver.js"></script>
+<script src="../../resources/testdriver-vendor.js"></script>
 <script src="../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 
@@ -52,7 +54,7 @@ bluetooth_test(() => {
         let test_promises = Promise.resolve();
         test_specs.forEach(args => {
           test_promises = test_promises
-            .then(() => requestDeviceWithKeyDown(args))
+            .then(() => requestDeviceWithTrustedClick(args))
             .then(device => {
               // We always have access to the services in matching_services
               // because we include them in a filter or in optionalServices.

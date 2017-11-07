@@ -2,7 +2,7 @@
 'use strict';
 bluetooth_test(() => {
   return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-    .then(() => requestDeviceWithKeyDown({
+    .then(() => requestDeviceWithTrustedClick({
       filters: [{services: ['health_thermometer']}]}))
     .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('health_thermometer'))
