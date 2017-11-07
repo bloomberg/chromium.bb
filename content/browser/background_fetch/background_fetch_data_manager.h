@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -34,23 +33,6 @@ struct BackgroundFetchSettledFetch;
 class BrowserContext;
 class ChromeBlobStorageContext;
 class ServiceWorkerContextWrapper;
-
-// Interface used by the BackgroundFetchDataManager with the
-// BackgroundFetchJobController.
-// TODO(crbug.com/757760): As part of the persistence work, we should just
-// decouple the DataManager from the JobController rather than having this
-// clunky interface of unconnected methods.
-class BackgroundFetchDatabaseClient {
- public:
-  virtual ~BackgroundFetchDatabaseClient() {}
-
-  // Called once the status of the active and completed downloads has been
-  // loaded from the database.
-  virtual void InitializeRequestStatus(
-      int completed_downloads,
-      int total_downloads,
-      const std::vector<std::string>& outstanding_guids) = 0;
-};
 
 // The BackgroundFetchDataManager is a wrapper around persistent storage (the
 // Service Worker database), exposing APIs for the read and write queries needed
@@ -82,16 +64,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~BackgroundFetchDataManager();
-
-  // Sets the BackgroundFetchDatabaseClient that handles in-progress requests
-  // for a registration, and will be notified of relevant changes to the
-  // registration data. Must outlive |this| or call SetDatabaseClient(nullptr)
-  // in its destructor.
-  void SetDatabaseClient(const BackgroundFetchRegistrationId& registration_id,
-                         BackgroundFetchDatabaseClient* client);
-
-  BackgroundFetchDatabaseClient* GetDatabaseClientFromUniqueID(
-      const std::string& unique_id);
 
   // Creates and stores a new registration with the given properties. Will
   // invoke the |callback| when the registration has been created, which may
@@ -167,6 +139,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       int64_t service_worker_registration_id,
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
 
+  int GetTotalNumberOfRequests(
+      const BackgroundFetchRegistrationId& registration_id) const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(BackgroundFetchDataManagerTest, Cleanup);
   friend class BackgroundFetchDataManagerTest;
@@ -198,11 +173,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // Map from the |unique_id|s of known (but possibly inactive) background fetch
   // registrations to their associated data.
   std::map<std::string, std::unique_ptr<RegistrationData>> registrations_;
-
-  // Map from background fetch registration |unique_id|s to the
-  // BackgroundFetchDatabaseClient that needs to be notified about changes to
-  // the registration.
-  base::flat_map<std::string, BackgroundFetchDatabaseClient*> database_clients_;
 
   // Pending database operations, serialized to ensure consistency.
   // Invariant: the frontmost task, if any, has already been started.

@@ -33,8 +33,7 @@ namespace content {
 // registration has been aborted, or once it has completed/failed and the
 // waitUntil promise has been resolved so UpdateUI can no longer be called).
 class CONTENT_EXPORT BackgroundFetchJobController final
-    : public BackgroundFetchDelegateProxy::Controller,
-      public BackgroundFetchDatabaseClient {
+    : public BackgroundFetchDelegateProxy::Controller {
  public:
   using FinishedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
@@ -57,11 +56,12 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // fetch new content until all requests have been handled.
   void Start();
 
-  // BackgroundFetchDatabaseClient implementation:
+  // Initializes the job controller with the status of the active and completed
+  // downloads. Only called when this has been loaded from the database.
   void InitializeRequestStatus(
       int completed_downloads,
       int total_downloads,
-      const std::vector<std::string>& outstanding_guids) override;
+      const std::vector<std::string>& outstanding_guids);
 
   // Gets the number of bytes downloaded for jobs that are currently running.
   uint64_t GetInProgressDownloadedBytes();

@@ -20,11 +20,6 @@ void DatabaseTask::Finished() {
   data_manager_->OnDatabaseTaskFinished(this);
 }
 
-BackgroundFetchDatabaseClient* DatabaseTask::GetController(
-    const std::string& unique_id) {
-  return data_manager_->GetDatabaseClientFromUniqueID(unique_id);
-}
-
 void DatabaseTask::AddDatabaseTask(std::unique_ptr<DatabaseTask> task) {
   data_manager_->AddDatabaseTask(std::move(task));
 }
