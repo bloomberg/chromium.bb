@@ -17,8 +17,6 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace chrome {
-
 void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
                            media::mojom::MediaDrmStorageRequest request) {
   DVLOG(1) << __func__;
@@ -48,5 +46,3 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
   new cdm::MediaDrmStorageImpl(render_frame_host, pref_service,
                                std::move(request));
 }
-
-}  // namespace chrome
