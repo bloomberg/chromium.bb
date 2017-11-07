@@ -27,7 +27,7 @@
 
 namespace {
 
-class OmniboxTextFieldTest : public PlatformTest {
+class OmniboxTextFieldIOSTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
@@ -112,7 +112,7 @@ class OmniboxTextFieldTest : public PlatformTest {
   OmniboxTextFieldIOS* textfield_;
 };
 
-TEST_F(OmniboxTextFieldTest, enterPreEditState_preEditTextAlignment_short) {
+TEST_F(OmniboxTextFieldIOSTest, enterPreEditState_preEditTextAlignment_short) {
   [textfield_ setText:@"s"];
   [textfield_ becomeFirstResponder];
   [textfield_ enterPreEditState];
@@ -121,7 +121,7 @@ TEST_F(OmniboxTextFieldTest, enterPreEditState_preEditTextAlignment_short) {
   [textfield_ resignFirstResponder];
 }
 
-TEST_F(OmniboxTextFieldTest, enterPreEditState_preEditTextAlignment_long) {
+TEST_F(OmniboxTextFieldIOSTest, enterPreEditState_preEditTextAlignment_long) {
   [textfield_ setText:@"some really long text that is wider than the omnibox"];
   [textfield_ becomeFirstResponder];
   [textfield_ enterPreEditState];
@@ -130,7 +130,7 @@ TEST_F(OmniboxTextFieldTest, enterPreEditState_preEditTextAlignment_long) {
   [textfield_ resignFirstResponder];
 }
 
-TEST_F(OmniboxTextFieldTest, enterPreEditState_preEditTextAlignment_change) {
+TEST_F(OmniboxTextFieldIOSTest, enterPreEditState_preEditTextAlignment_change) {
   [textfield_ setText:@"s"];
   [textfield_ becomeFirstResponder];
   [textfield_ enterPreEditState];
@@ -142,7 +142,7 @@ TEST_F(OmniboxTextFieldTest, enterPreEditState_preEditTextAlignment_change) {
   [textfield_ resignFirstResponder];
 }
 
-TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_entireURLFits) {
+TEST_F(OmniboxTextFieldIOSTest, rectForDrawTextInRect_entireURLFits) {
   NSString* text = @"http://www.google.com";
   [textfield_ setText:text];
   CGSize textSize = [[textfield_ attributedText] size];
@@ -153,7 +153,7 @@ TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_entireURLFits) {
   ExpectRectEqual(inputRect, actualRect);
 }
 
-TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_clippedPrefix) {
+TEST_F(OmniboxTextFieldIOSTest, rectForDrawTextInRect_clippedPrefix) {
   NSString* text = @"http://www.google.com";
   [textfield_ setText:text];
   CGSize textSize = [[textfield_ attributedText] size];
@@ -167,7 +167,7 @@ TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_clippedPrefix) {
   ExpectRectEqual(expectedRect, actualRect);
 }
 
-TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_clippedSuffix) {
+TEST_F(OmniboxTextFieldIOSTest, rectForDrawTextInRect_clippedSuffix) {
   NSString* text = @"http://www.google.com/somelongpath";
   [textfield_ setText:text];
   CGSize textSize = [[textfield_ attributedText] size];
@@ -179,7 +179,7 @@ TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_clippedSuffix) {
   ExpectRectEqual(expectedRect, actualRect);
 }
 
-TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_noScheme) {
+TEST_F(OmniboxTextFieldIOSTest, rectForDrawTextInRect_noScheme) {
   NSString* text = @"www.google.com";
   [textfield_ setText:text];
   CGSize textSize = [[textfield_ attributedText] size];
@@ -191,7 +191,7 @@ TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_noScheme) {
 
 // When the text doesn't contain a host the method bails early and returns
 // the |rect| passed in.
-TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_noHost) {
+TEST_F(OmniboxTextFieldIOSTest, rectForDrawTextInRect_noHost) {
   NSString* text = @"http://";
   [textfield_ setText:text];
   CGSize textSize = [[textfield_ attributedText] size];
@@ -201,7 +201,7 @@ TEST_F(OmniboxTextFieldTest, rectForDrawTextInRect_noHost) {
   ExpectRectEqual(inputRect, actualRect);
 }
 
-TEST_F(OmniboxTextFieldTest, SelectedRanges) {
+TEST_F(OmniboxTextFieldIOSTest, SelectedRanges) {
   base::FilePath test_data_directory;
   ASSERT_TRUE(PathService::Get(ios::DIR_TEST_DATA, &test_data_directory));
   base::FilePath test_file = test_data_directory.Append(
@@ -220,14 +220,14 @@ TEST_F(OmniboxTextFieldTest, SelectedRanges) {
   }
 }
 
-TEST_F(OmniboxTextFieldTest, SelectExitsPreEditState) {
+TEST_F(OmniboxTextFieldIOSTest, SelectExitsPreEditState) {
   [textfield_ enterPreEditState];
   EXPECT_TRUE([textfield_ isPreEditing]);
   [textfield_ select:nil];
   EXPECT_FALSE([textfield_ isPreEditing]);
 }
 
-TEST_F(OmniboxTextFieldTest, SelectAllExitsPreEditState) {
+TEST_F(OmniboxTextFieldIOSTest, SelectAllExitsPreEditState) {
   [textfield_ enterPreEditState];
   EXPECT_TRUE([textfield_ isPreEditing]);
   [textfield_ selectAll:nil];
