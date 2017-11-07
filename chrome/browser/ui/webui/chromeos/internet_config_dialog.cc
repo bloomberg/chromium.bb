@@ -25,7 +25,7 @@ namespace chromeos {
 namespace {
 
 // Width matches the internet config dialog in Settings UI (including margins).
-constexpr int kInternetConfigDialogWidth = 500;
+constexpr int kInternetConfigDialogWidth = 460;
 constexpr int kInternetConfigDialogHeight = 480;
 
 void AddInternetStrings(content::WebUIDataSource* html_source) {
@@ -69,9 +69,8 @@ void InternetConfigDialog::ShowDialogForNetworkType(
 
 InternetConfigDialog::InternetConfigDialog(const std::string& network_type,
                                            const std::string& network_id)
-    : SystemWebDialogDelegate(
-          GURL(chrome::kChromeUIIntenetConfigDialogURL),
-          l10n_util::GetStringUTF16(IDS_SETTINGS_INTERNET_CONFIG)),
+    : SystemWebDialogDelegate(GURL(chrome::kChromeUIIntenetConfigDialogURL),
+                              base::string16() /* title */),
       network_type_(network_type),
       network_id_(network_id) {}
 

@@ -13,29 +13,36 @@
         --paper-input-container-color: var(--secondary-text-color);
         --paper-input-container-focus-color: var(--secondary-text-color);
         --paper-input-container-input-color: var(--primary-text-color);
-        -webkit-margin-end: var(--network-control-margin);
+        flex: 1;
       }
 
-      #passwordIcon {
-        -webkit-margin-start: calc(
-            var(--cr-icon-ripple-padding) - var(--network-control-margin));
+      #iconDiv {
+        -webkit-margin-start: var(--cr-icon-button-margin-start);
+        justify-content: center;
+        width: var(--network-control-margin);
+      }
+
+      #iconDiv button {
+        margin: 0;
       }
     </style>
 
-    <div class="property-box two-line">
+    <div class="control-box">
       <paper-input-container always-float-label>
         <label id="label">[[label]]</label>
         <input is="iron-input" value="{{value::change}}"
             disabled="[[disabled]]" aria-label$="[[label]]"
             type="[[getInputType_(password, showPassword)]]">
       </paper-input-container>
-      <template is="dom-if" if="[[password]]">
-        <button id="passwordIcon" is="paper-icon-button-light"
-            on-tap="onShowPasswordTap_"
-            class$="[[getIconClass_(showPassword)]]"
-            title="[[getShowPasswordTitle_(showPassword)]]">
-        </button>
-      </template>
+      <div id="iconDiv">
+        <template is="dom-if" if="[[password]]">
+          <button is="paper-icon-button-light"
+              on-tap="onShowPasswordTap_"
+              class$="[[getIconClass_(showPassword)]]"
+              title="[[getShowPasswordTitle_(showPassword)]]">
+          </button>
+        </template>
+      </div>
     </div>
   </template>
   <script src="network_config_input.js"></script>
