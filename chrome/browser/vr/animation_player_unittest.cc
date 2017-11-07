@@ -171,17 +171,12 @@ TEST(AnimationPlayerTest, AnimationQueue) {
 
   // Only the transform animation should have started (since there's no
   // conflicting animation).
-  // TODO(vollick): Once we were to support groups (crbug.com/742358)
-  // these two animations should start together so neither queued animation
-  // should start since there's a running animation blocking one of them.
   EXPECT_EQ(cc::Animation::WAITING_FOR_TARGET_AVAILABILITY,
             player.animations()[1]->run_state());
   EXPECT_EQ(cc::Animation::RUNNING, player.animations()[2]->run_state());
 
   // Tick beyond the first animation. This should cause it (and the transform
   // animation) to get removed and for the second bounds animation to start.
-  // TODO(vollick): this will also change when groups are supported
-  // (crbug.com/742358).
   player.Tick(start_time + MicrosecondsToDelta(15000));
 
   EXPECT_EQ(1ul, player.animations().size());

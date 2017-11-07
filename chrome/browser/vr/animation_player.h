@@ -42,8 +42,6 @@ class AnimationPlayer final {
   cc::AnimationTarget* target() const { return target_; }
   void set_target(cc::AnimationTarget* target) { target_ = target; }
 
-  // Animations for properties already being animated are enqueued. Animation
-  // groups are not currently supported. crbug.com/742358
   void AddAnimation(std::unique_ptr<cc::Animation> animation);
   void RemoveAnimation(int animation_id);
   void RemoveAnimations(int target_property);

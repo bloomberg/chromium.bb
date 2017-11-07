@@ -231,10 +231,9 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     left_edge += kSecurityIconSize + kFieldSpacing;
   }
 
-  // Possibly draw security chip text (eg. "Not secure") next to the icon.
-  // The security chip text consumes a significant percentage of URL bar text
-  // space, so it is currently disabled (see crbug.com/734206). The offline
-  // state is an exception, and must be shown (see crbug.com/735770).
+  // Possibly draw security text (eg. "Not secure") next to the icon.  This text
+  // consumes a significant percentage of URL bar text space, so for now, only
+  // Offline mode shows text (see crbug.com/735770).
   if (state_.offline_page && state_.should_display_url) {
     float chip_max_width = kWidth - left_edge - kUrlRightMargin;
     gfx::Rect text_bounds(ToPixels(left_edge), 0, ToPixels(chip_max_width),
