@@ -128,9 +128,6 @@ class NetworkHandler : public DevToolsDomainHandler,
 
   std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
-  void InterceptedNavigationRequest(const GlobalRequestID& global_request_id,
-                                    const std::string& interception_id);
-  void InterceptedNavigationRequestFinished(const std::string& interception_id);
   bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
   void AppendDevToolsHeaders(net::HttpRequestHeaders* headers);
   bool ShouldBypassServiceWorker() const;
@@ -145,8 +142,6 @@ class NetworkHandler : public DevToolsDomainHandler,
   bool interception_enabled_;
   std::string user_agent_;
   std::vector<std::pair<std::string, std::string>> extra_headers_;
-  base::flat_map<std::string, GlobalRequestID> navigation_requests_;
-  base::flat_set<GlobalRequestID> canceled_navigation_requests_;
   std::string host_id_;
   bool bypass_service_worker_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;

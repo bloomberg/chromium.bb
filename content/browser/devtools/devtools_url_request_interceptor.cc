@@ -16,6 +16,13 @@
 
 namespace content {
 
+// static
+bool DevToolsURLRequestInterceptor::IsNavigationRequest(
+    ResourceType resource_type) {
+  return resource_type == RESOURCE_TYPE_MAIN_FRAME ||
+         resource_type == RESOURCE_TYPE_SUB_FRAME;
+}
+
 DevToolsURLRequestInterceptor::DevToolsURLRequestInterceptor(
     BrowserContext* browser_context)
     : next_id_(0), weak_factory_(this) {
@@ -24,8 +31,10 @@ DevToolsURLRequestInterceptor::DevToolsURLRequestInterceptor(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO));
   target_resolver_ = target_registry->CreateResolver();
-  DevToolsInterceptorController::SetUserData(
-      browser_context, weak_factory_.GetWeakPtr(), std::move(target_registry));
+  // Controller lifetime is managed by the browser context.
+  auto* controller = new DevToolsInterceptorController(
+      weak_factory_.GetWeakPtr(), std::move(target_registry), browser_context);
+  controller_ = controller->weak_factory_.GetWeakPtr();
 }
 
 DevToolsURLRequestInterceptor::~DevToolsURLRequestInterceptor() {
@@ -142,6 +151,15 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
 
   bool is_redirect;
   std::string interception_id = GetIdForRequest(request, &is_redirect);
+
+  if (IsNavigationRequest(resource_request_info->GetResourceType())) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&DevToolsInterceptorController::NavigationStarted,
+                       controller_, interception_id,
+                       resource_request_info->GetGlobalRequestID()));
+  }
+
   DevToolsURLInterceptorRequestJob* job = new DevToolsURLInterceptorRequestJob(
       this, interception_id, request, network_delegate,
       target_info->devtools_token, target_info->devtools_target_id,
@@ -218,9 +236,16 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::GetJob(
 }
 
 void DevToolsURLRequestInterceptor::JobFinished(
-    const std::string& interception_id) {
+    const std::string& interception_id,
+    bool is_navigation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   interception_id_to_job_map_.erase(interception_id);
+  if (!is_navigation)
+    return;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&DevToolsInterceptorController::NavigationFinished,
+                     controller_, interception_id));
 }
 
 DevToolsURLRequestInterceptor::Modifications::Modifications(

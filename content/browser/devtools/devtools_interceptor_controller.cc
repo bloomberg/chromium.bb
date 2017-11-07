@@ -16,18 +16,6 @@ namespace {
 const char kDevToolsInterceptorController[] = "DevToolsInterceptorController";
 }
 
-// static
-void DevToolsInterceptorController::SetUserData(
-    BrowserContext* browser_context,
-    base::WeakPtr<DevToolsURLRequestInterceptor> interceptor,
-    std::unique_ptr<DevToolsTargetRegistry> target_registry) {
-  std::unique_ptr<DevToolsInterceptorController> controller(
-      new DevToolsInterceptorController(interceptor,
-                                        std::move(target_registry)));
-  browser_context->SetUserData(kDevToolsInterceptorController,
-                               std::move(controller));
-}
-
 void DevToolsInterceptorController::StartInterceptingRequests(
     const FrameTreeNode* target_frame,
     base::WeakPtr<protocol::NetworkHandler> network_handler,
@@ -76,6 +64,27 @@ void DevToolsInterceptorController::ContinueInterceptedRequest(
                      base::Passed(std::move(callback))));
 }
 
+bool DevToolsInterceptorController::ShouldCancelNavigation(
+    const GlobalRequestID& global_request_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto it = canceled_navigation_requests_.find(global_request_id);
+  if (it == canceled_navigation_requests_.end())
+    return false;
+  canceled_navigation_requests_.erase(it);
+  return true;
+}
+
+void DevToolsInterceptorController::NavigationStarted(
+    const std::string& interception_id,
+    const GlobalRequestID& request_id) {
+  navigation_requests_[interception_id] = request_id;
+}
+
+void DevToolsInterceptorController::NavigationFinished(
+    const std::string& interception_id) {
+  navigation_requests_.erase(interception_id);
+}
+
 // static
 DevToolsInterceptorController*
 DevToolsInterceptorController::FromBrowserContext(BrowserContext* context) {
@@ -86,8 +95,15 @@ DevToolsInterceptorController::FromBrowserContext(BrowserContext* context) {
 
 DevToolsInterceptorController::DevToolsInterceptorController(
     base::WeakPtr<DevToolsURLRequestInterceptor> interceptor,
-    std::unique_ptr<DevToolsTargetRegistry> target_registry)
-    : interceptor_(interceptor), target_registry_(std::move(target_registry)) {}
+    std::unique_ptr<DevToolsTargetRegistry> target_registry,
+    BrowserContext* browser_context)
+    : interceptor_(interceptor),
+      target_registry_(std::move(target_registry)),
+      weak_factory_(this) {
+  browser_context->SetUserData(
+      kDevToolsInterceptorController,
+      std::unique_ptr<DevToolsInterceptorController>(this));
+}
 
 DevToolsInterceptorController::~DevToolsInterceptorController() = default;
 

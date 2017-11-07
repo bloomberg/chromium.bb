@@ -324,37 +324,19 @@ const char* ResourceTypeToString(ResourceType resource_type) {
   }
 }
 
-bool IsNavigationRequest(ResourceType resource_type) {
-  return resource_type == RESOURCE_TYPE_MAIN_FRAME ||
-         resource_type == RESOURCE_TYPE_SUB_FRAME;
-}
-
-void UnregisterNavigationRequestOnUI(
-    base::WeakPtr<protocol::NetworkHandler> network_handler,
-    std::string interception_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!network_handler)
-    return;
-  network_handler->InterceptedNavigationRequestFinished(interception_id);
-}
-
 void SendRequestInterceptedEventOnUiThread(
     base::WeakPtr<protocol::NetworkHandler> network_handler,
     std::string interception_id,
-    GlobalRequestID global_request_id,
     std::unique_ptr<protocol::Network::Request> network_request,
     const base::UnguessableToken& frame_id,
     ResourceType resource_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!network_handler)
     return;
-  if (IsNavigationRequest(resource_type)) {
-    network_handler->InterceptedNavigationRequest(global_request_id,
-                                                  interception_id);
-  }
   network_handler->frontend()->RequestIntercepted(
       interception_id, std::move(network_request), frame_id.ToString(),
-      ResourceTypeToString(resource_type), IsNavigationRequest(resource_type));
+      ResourceTypeToString(resource_type),
+      DevToolsURLRequestInterceptor::IsNavigationRequest(resource_type));
 }
 
 void SendRedirectInterceptedEventOnUiThread(
@@ -371,7 +353,8 @@ void SendRedirectInterceptedEventOnUiThread(
     return;
   network_handler->frontend()->RequestIntercepted(
       interception_id, std::move(network_request), frame_id.ToString(),
-      ResourceTypeToString(resource_type), IsNavigationRequest(resource_type),
+      ResourceTypeToString(resource_type),
+      DevToolsURLRequestInterceptor::IsNavigationRequest(resource_type),
       std::move(headers_object), http_status_code, redirect_url);
 }
 
@@ -387,7 +370,8 @@ void SendAuthRequiredEventOnUiThread(
     return;
   network_handler->frontend()->RequestIntercepted(
       interception_id, std::move(network_request), frame_id.ToString(),
-      ResourceTypeToString(resource_type), IsNavigationRequest(resource_type),
+      ResourceTypeToString(resource_type),
+      DevToolsURLRequestInterceptor::IsNavigationRequest(resource_type),
       protocol::Maybe<protocol::Network::Headers>(), protocol::Maybe<int>(),
       protocol::Maybe<protocol::String>(), std::move(auth_challenge));
 }
@@ -473,20 +457,13 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
       resource_type_(resource_type),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (const ResourceRequestInfo* info =
-          ResourceRequestInfo::ForRequest(original_request)) {
-    global_request_id_ = info->GetGlobalRequestID();
-  }
 }
 
 DevToolsURLInterceptorRequestJob::~DevToolsURLInterceptorRequestJob() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (IsNavigationRequest(resource_type_)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(UnregisterNavigationRequestOnUI,
-                                           network_handler_, interception_id_));
-  }
-  interceptor_->JobFinished(interception_id_);
+  interceptor_->JobFinished(
+      interception_id_,
+      DevToolsURLRequestInterceptor::IsNavigationRequest(resource_type_));
 }
 
 // net::URLRequestJob implementation:
@@ -511,9 +488,8 @@ void DevToolsURLInterceptorRequestJob::Start() {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(SendRequestInterceptedEventOnUiThread, network_handler_,
-                       interception_id_, global_request_id_,
-                       base::Passed(&network_request), devtools_token_,
-                       resource_type_));
+                       interception_id_, base::Passed(&network_request),
+                       devtools_token_, resource_type_));
   }
 }
 

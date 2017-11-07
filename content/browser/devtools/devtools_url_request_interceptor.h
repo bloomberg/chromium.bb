@@ -23,6 +23,7 @@ class NetworkHandler;
 }  // namespace
 
 class BrowserContext;
+class DevToolsInterceptorController;
 class DevToolsTargetRegistry;
 class DevToolsURLInterceptorRequestJob;
 class ResourceRequestInfo;
@@ -33,6 +34,8 @@ class ResourceRequestInfo;
 // This class is constructed on the UI thread but only accessed on IO thread.
 class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
  public:
+  static bool IsNavigationRequest(ResourceType resource_type);
+
   explicit DevToolsURLRequestInterceptor(BrowserContext* browser_context);
   ~DevToolsURLRequestInterceptor() override;
 
@@ -116,7 +119,7 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
   void ExpectRequestAfterRedirect(const net::URLRequest* request,
                                   std::string id);
 
-  void JobFinished(const std::string& interception_id);
+  void JobFinished(const std::string& interception_id, bool is_navigation);
   void ContinueInterceptedRequest(
       std::string interception_id,
       std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
@@ -146,6 +149,7 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
       const std::string& interception_id) const;
 
   std::unique_ptr<DevToolsTargetRegistry::Resolver> target_resolver_;
+  base::WeakPtr<DevToolsInterceptorController> controller_;
 
   base::flat_map<base::UnguessableToken, std::unique_ptr<InterceptedPage>>
       target_id_to_intercepted_page_;
