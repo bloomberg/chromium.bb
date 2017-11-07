@@ -2638,6 +2638,12 @@ const char kEnableMashDescription[] =
 const char kEnableMusDescription[] =
     "Mus (UI in separate service, Chrome and ash in same service)";
 
+// TODO(mcasas): remove after https://crbug.com/771345.
+const char kUseMonitorColorSpaceName[] = "Use monitor color space";
+const char kUseMonitorColorSpaceDescription[] =
+    "Enables Chrome to use the  color space information provided by the monitor"
+    " instead of the default sRGB color space.";
+
 const char kVideoPlayerChromecastSupportName[] =
     "Experimental Chromecast support for Video Player";
 const char kVideoPlayerChromecastSupportDescription[] =
