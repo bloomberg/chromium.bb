@@ -92,7 +92,8 @@ void MessageCenterDisplayService::Display(
     return;
 
   NotificationHandler* handler = GetNotificationHandler(notification_type);
-  handler->OnShow(profile_, notification.id());
+  if (handler)
+    handler->OnShow(profile_, notification.id());
 
   if (notification.delegate()) {
     ui_manager->Add(notification, profile_);

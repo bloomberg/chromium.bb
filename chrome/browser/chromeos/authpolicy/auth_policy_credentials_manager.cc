@@ -15,7 +15,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_display_service.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -336,10 +338,9 @@ void AuthPolicyCredentialsManager::ShowNotification(int message_id) {
   }
   notification.SetSystemPriority();
 
-  NotificationUIManager* notification_ui_manager =
-      g_browser_process->notification_ui_manager();
   // Add the notification.
-  notification_ui_manager->Add(notification, profile_);
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+      NotificationCommon::TRANSIENT, notification);
   shown_notifications_.insert(message_id);
 }
 

@@ -71,6 +71,11 @@ void NativeNotificationDisplayService::Display(
     NotificationCommon::Type notification_type,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
+  // TODO(estade): in the future, the reverse should also be true: a
+  // non-TRANSIENT type implies no delegate.
+  if (notification_type == NotificationCommon::TRANSIENT)
+    DCHECK(notification.delegate());
+
   if (notification_bridge_ready_) {
     notification_bridge_->Display(notification_type, GetProfileId(profile_),
                                   profile_->IsOffTheRecord(), notification,
@@ -91,14 +96,15 @@ void NativeNotificationDisplayService::Close(
     NotificationCommon::Type notification_type,
     const std::string& notification_id) {
   if (notification_bridge_ready_) {
-    NotificationHandler* handler = GetNotificationHandler(notification_type);
     notification_bridge_->Close(GetProfileId(profile_), notification_id);
 
     // TODO(miguelg): Figure out something better here, passing an empty
     // origin works because only non persistent notifications care about
     // this method for JS generated close calls and they don't require
     // the origin.
-    handler->OnClose(profile_, GURL(), notification_id, false /* by user */);
+    NotificationHandler* handler = GetNotificationHandler(notification_type);
+    if (handler)
+      handler->OnClose(profile_, GURL(), notification_id, false /* by user */);
   } else if (message_center_display_service_) {
     message_center_display_service_->Close(notification_type, notification_id);
   } else {
