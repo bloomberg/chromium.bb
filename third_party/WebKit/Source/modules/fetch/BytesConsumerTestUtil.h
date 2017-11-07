@@ -133,7 +133,7 @@ class BytesConsumerTestUtil {
    private:
     void NotifyAsReadable(int notification_token);
     void Close();
-    void GetError(const Error&);
+    void MakeErrored(const Error&);
 
     Member<ExecutionContext> execution_context_;
     Member<BytesConsumer::Client> client_;
