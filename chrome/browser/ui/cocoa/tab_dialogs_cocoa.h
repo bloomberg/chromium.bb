@@ -20,6 +20,7 @@ class TabDialogsCocoa : public TabDialogs {
   void ShowHungRendererDialog(
       const content::WebContentsUnresponsiveState& unresponsive_state) override;
   void HideHungRendererDialog() override;
+  bool IsShowingHungRendererDialog() override;
   void ShowProfileSigninConfirmation(
       Browser* browser,
       Profile* profile,

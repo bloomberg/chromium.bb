@@ -1499,6 +1499,7 @@ test("browser_tests") {
       "../browser/ui/extensions/extension_message_bubble_browsertest.h",
       "../browser/ui/extensions/hosted_app_browsertest.cc",
       "../browser/ui/find_bar/find_bar_host_browsertest.cc",
+      "../browser/ui/hung_renderer_browsertest.cc",
       "../browser/ui/javascript_dialogs/javascript_dialog_browsertest.cc",
       "../browser/ui/location_bar/location_bar_browsertest.cc",
       "../browser/ui/login/login_handler_browsertest.cc",
@@ -1739,9 +1740,6 @@ test("browser_tests") {
         "$root_out_dir/chrome_200_percent.pak",
         "$root_out_dir/resources.pak",
       ]
-    }
-    if (!is_mac || mac_views_browser) {
-      sources += [ "../browser/ui/views/hung_renderer_view_browsertest.cc" ]
     }
     if (enable_captive_portal_detection) {
       sources +=
