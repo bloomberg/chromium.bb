@@ -594,11 +594,11 @@ using ios::material::TimingFunction;
     trailingControl = stackButton_;
   if ([self shareButtonShouldBeVisible])
     trailingControl = shareButton_;
-  LayoutRect trailing =
-      LayoutRectForRectInBoundingRect(trailingControl.frame, self.view.bounds);
+  LayoutRect trailing = LayoutRectForRectInBoundingRect(
+      trailingControl.frame, self.contentView.bounds);
   LayoutRect controlsArea = LayoutRectGetLeadingLayout(trailing);
-  controlsArea.size.height = self.view.bounds.size.height;
-  controlsArea.position.originY = self.view.bounds.origin.y;
+  controlsArea.size.height = self.contentView.bounds.size.height;
+  controlsArea.position.originY = self.contentView.bounds.origin.y;
   CGRect controlsFrame = LayoutRectGetRect(controlsArea);
 
   if (!IsIPadIdiom()) {
