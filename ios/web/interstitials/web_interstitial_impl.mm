@@ -17,24 +17,24 @@
 
 namespace web {
 
-// static
-WebInterstitial* WebInterstitial::GetWebInterstitial(web::WebState* web_state) {
-  return web_state->GetWebInterstitial();
-}
-
 WebInterstitialImpl::WebInterstitialImpl(WebStateImpl* web_state,
                                          bool new_navigation,
                                          const GURL& url)
-    : WebStateObserver(web_state),
+    : web_state_(web_state),
       navigation_manager_(&web_state->GetNavigationManagerImpl()),
       url_(url),
       new_navigation_(new_navigation),
       action_taken_(false) {
-  DCHECK(web_state);
+  DCHECK(web_state_);
+  web_state_->AddObserver(this);
 }
 
 WebInterstitialImpl::~WebInterstitialImpl() {
   Hide();
+  if (web_state_) {
+    web_state_->RemoveObserver(this);
+    web_state_ = nullptr;
+  }
 }
 
 const GURL& WebInterstitialImpl::GetUrl() const {
@@ -87,11 +87,16 @@ void WebInterstitialImpl::Proceed() {
 }
 
 void WebInterstitialImpl::WebStateDestroyed(WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
+  // There is no need to remove the current instance from WebState's observer
+  // as DontProceed() delete "this" and the removal is done in the destructor.
+  // In addition since the current instance has been deleted, "this" should no
+  // longer be used after the method call.
   DontProceed();
 }
 
 WebStateImpl* WebInterstitialImpl::GetWebStateImpl() const {
-  return static_cast<web::WebStateImpl*>(web_state());
+  return web_state_;
 }
 
 }  // namespace web

@@ -69,6 +69,10 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
                                  JavaScriptResultBlock completion_handler) = 0;
 
  private:
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  WebStateImpl* web_state_ = nullptr;
+
   // The navigation manager corresponding to the WebState the interstiatial was
   // created for.
   NavigationManagerImpl* navigation_manager_;
