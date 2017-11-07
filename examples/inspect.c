@@ -618,12 +618,10 @@ void inspect(void *pbi, void *data) {
                   frame_data.frame_type);
   buf += snprintf(buf, MAX_BUFFER, "  \"baseQIndex\": %d,\n",
                   frame_data.base_qindex);
-#if !CONFIG_MAX_TILE
   buf += snprintf(buf, MAX_BUFFER, "  \"tileCols\": %d,\n",
                   frame_data.tile_mi_cols);
   buf += snprintf(buf, MAX_BUFFER, "  \"tileRows\": %d,\n",
                   frame_data.tile_mi_rows);
-#endif
   buf += snprintf(buf, MAX_BUFFER, "  \"deltaQPresentFlag\": %d,\n",
                   frame_data.delta_q_present_flag);
   buf += snprintf(buf, MAX_BUFFER, "  \"deltaQRes\": %d,\n",

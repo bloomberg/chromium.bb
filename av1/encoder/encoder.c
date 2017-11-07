@@ -310,14 +310,10 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
 
   assert(cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_DYNAMIC);
 
-#if !CONFIG_MAX_TILE
-  // for the max_tile experiment there is no common tile_width, tile_height
-  // max_tile assumes tile dimensions are in superblocks (not 64x64 units)
   assert(IMPLIES(cpi->common.tile_cols > 1,
                  cpi->common.tile_width % MAX_MIB_SIZE == 0));
   assert(IMPLIES(cpi->common.tile_rows > 1,
                  cpi->common.tile_height % MAX_MIB_SIZE == 0));
-#endif
 
   // TODO(any): Possibly could improve this with a heuristic.
   return BLOCK_128X128;
@@ -878,11 +874,6 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   int i, start_sb;
 
-  // Ensure superblock size is set before we read tile size in superblocks
-  if (cm->frame_type == KEY_FRAME) {
-    set_sb_size(cm, select_sb_size(cpi));
-  }
-
   av1_get_tile_limits(cm);
 
   // configure tile columns
@@ -891,8 +882,8 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
     cm->log2_tile_cols = AOMMAX(cpi->oxcf.tile_columns, cm->min_log2_tile_cols);
     cm->log2_tile_cols = AOMMIN(cm->log2_tile_cols, cm->max_log2_tile_cols);
   } else {
-    int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
-    int sb_cols = mi_cols >> cm->mib_size_log2;
+    int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
+    int sb_cols = mi_cols >> MAX_MIB_SIZE_LOG2;
     int size_sb, j = 0;
     cm->uniform_tile_spacing_flag = 0;
     for (i = 0, start_sb = 0; start_sb < sb_cols && i < MAX_TILE_COLS; i++) {
@@ -911,8 +902,8 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
     cm->log2_tile_rows = AOMMAX(cpi->oxcf.tile_rows, cm->min_log2_tile_rows);
     cm->log2_tile_rows = AOMMIN(cm->log2_tile_rows, cm->max_log2_tile_rows);
   } else {
-    int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
-    int sb_rows = mi_rows >> cm->mib_size_log2;
+    int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
+    int sb_rows = mi_rows >> MAX_MIB_SIZE_LOG2;
     int size_sb, j = 0;
     for (i = 0, start_sb = 0; start_sb < sb_rows && i < MAX_TILE_ROWS; i++) {
       cm->tile_row_start_sb[i] = start_sb;

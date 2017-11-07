@@ -1672,10 +1672,10 @@ static int rb_read_uniform(struct aom_read_bit_buffer *const rb, int n) {
 
 static void read_tile_info_max_tile(AV1_COMMON *const cm,
                                     struct aom_read_bit_buffer *const rb) {
-  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
-  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
-  int width_sb = width_mi >> cm->mib_size_log2;
-  int height_sb = height_mi >> cm->mib_size_log2;
+  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
+  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
+  int width_sb = width_mi >> MAX_MIB_SIZE_LOG2;
+  int height_sb = height_mi >> MAX_MIB_SIZE_LOG2;
   int start_sb, size_sb, i;
 
   av1_get_tile_limits(cm);
