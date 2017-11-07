@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_PAGE_SIGNAL_RECEIVER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/interfaces/page_signal.mojom.h"
 
@@ -16,11 +16,25 @@ class WebContents;
 
 namespace resource_coordinator {
 
-// Implementation of resource_coordinator::mojom::PageSignalReceiver,
-// observer constructs a mojo channel to PageSignalGenerator in GRC, passes an
-// interface pointer to PageSignalGenerator, and receives page scoped signals
-// from PageSignalGenerator once a signal is generated.
-class TabManager::PageSignalReceiver : public mojom::PageSignalReceiver {
+// A PageSignalObserver is implemented to receive notifications from
+// PageSignalReceiver by adding itself to PageSignalReceiver.
+class PageSignalObserver {
+ public:
+  virtual ~PageSignalObserver() = default;
+  virtual void NotifyPageAlmostIdle(content::WebContents* web_contents) {}
+  virtual void OnExpectedTaskQueueingDurationSet(
+      content::WebContents* web_contents,
+      base::TimeDelta duration) {}
+};
+
+// Implementation of resource_coordinator::mojom::PageSignalReceiver.
+// PageSignalReceiver constructs a mojo channel to PageSignalGenerator in
+// resource coordinator, passes an interface pointer to PageSignalGenerator,
+// receives page scoped signals from PageSignalGenerator, and dispatches them
+// with WebContents to PageSignalObservers.
+// The mojo channel won't be constructed until PageSignalReceiver has the first
+// observer.
+class PageSignalReceiver : public mojom::PageSignalReceiver {
  public:
   PageSignalReceiver();
   ~PageSignalReceiver() override;
@@ -34,6 +48,8 @@ class TabManager::PageSignalReceiver : public mojom::PageSignalReceiver {
   void SetExpectedTaskQueueingDuration(const CoordinationUnitID& cu_id,
                                        base::TimeDelta duration) override;
 
+  void AddObserver(PageSignalObserver* observer);
+  void RemoveObserver(PageSignalObserver* observer);
   void AssociateCoordinationUnitIDWithWebContents(
       const CoordinationUnitID& cu_id,
       content::WebContents* web_contents);
@@ -43,6 +59,7 @@ class TabManager::PageSignalReceiver : public mojom::PageSignalReceiver {
  private:
   mojo::Binding<mojom::PageSignalReceiver> binding_;
   std::map<CoordinationUnitID, content::WebContents*> cu_id_web_contents_map_;
+  base::ObserverList<PageSignalObserver> observers_;
   DISALLOW_COPY_AND_ASSIGN(PageSignalReceiver);
 };
 
