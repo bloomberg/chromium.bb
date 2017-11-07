@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
@@ -271,9 +270,7 @@ void MockMojoProxyResolver::GetProxyForUrl(
       break;
     }
     case GetProxyForUrlAction::WAIT_FOR_CLIENT_DISCONNECT: {
-      base::MessageLoop::ScopedNestableTaskAllower nestable_allower(
-          base::MessageLoop::current());
-      base::RunLoop run_loop;
+      base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
       client.set_connection_error_handler(run_loop.QuitClosure());
       run_loop.Run();
       ASSERT_TRUE(client.encountered_error());
@@ -444,9 +441,7 @@ void MockMojoProxyResolverFactory::CreateResolver(
       break;
     }
     case CreateProxyResolverAction::WAIT_FOR_CLIENT_DISCONNECT: {
-      base::MessageLoop::ScopedNestableTaskAllower nestable_allower(
-          base::MessageLoop::current());
-      base::RunLoop run_loop;
+      base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
       client.set_connection_error_handler(run_loop.QuitClosure());
       run_loop.Run();
       ASSERT_TRUE(client.encountered_error());
