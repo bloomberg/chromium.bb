@@ -5,7 +5,6 @@
 #include "components/translate/core/browser/translate_prefs.h"
 
 #include <set>
-#include <unordered_set>
 #include <utility>
 
 #include "base/feature_list.h"
