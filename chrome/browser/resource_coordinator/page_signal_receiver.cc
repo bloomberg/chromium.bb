@@ -6,9 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
-#include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
@@ -18,70 +15,79 @@
 namespace resource_coordinator {
 
 namespace {
-base::LazyInstance<TabManager::PageSignalReceiver>::Leaky
-    g_page_signal_receiver;
+base::LazyInstance<PageSignalReceiver>::Leaky g_page_signal_receiver;
 }
 
 // static
-bool TabManager::PageSignalReceiver::IsEnabled() {
-  // Check that service_manager is active and GRC is enabled.
+bool PageSignalReceiver::IsEnabled() {
+  // Check that service_manager is active and Resource Coordinator is enabled.
   return content::ServiceManagerConnection::GetForProcess() != nullptr &&
          resource_coordinator::IsResourceCoordinatorEnabled();
 }
 
 // static
-TabManager::PageSignalReceiver* TabManager::PageSignalReceiver::GetInstance() {
+PageSignalReceiver* PageSignalReceiver::GetInstance() {
   if (!IsEnabled())
     return nullptr;
   return g_page_signal_receiver.Pointer();
 }
 
-TabManager::PageSignalReceiver::PageSignalReceiver() : binding_(this) {
-  content::ServiceManagerConnection* service_manager_connection =
-      content::ServiceManagerConnection::GetForProcess();
-  // Ensure service_manager is active before trying to connect to it.
-  if (service_manager_connection) {
-    service_manager::Connector* connector =
-        service_manager_connection->GetConnector();
-    mojom::PageSignalGeneratorPtr page_signal_generator_ptr;
-    connector->BindInterface(mojom::kServiceName,
-                             mojo::MakeRequest(&page_signal_generator_ptr));
-    mojom::PageSignalReceiverPtr page_signal_receiver_ptr;
-    binding_.Bind(mojo::MakeRequest(&page_signal_receiver_ptr));
-    page_signal_generator_ptr->AddReceiver(std::move(page_signal_receiver_ptr));
-  }
-}
+PageSignalReceiver::PageSignalReceiver() : binding_(this) {}
 
-TabManager::PageSignalReceiver::~PageSignalReceiver() = default;
+PageSignalReceiver::~PageSignalReceiver() = default;
 
-void TabManager::PageSignalReceiver::NotifyPageAlmostIdle(
-    const CoordinationUnitID& cu_id) {
+void PageSignalReceiver::NotifyPageAlmostIdle(const CoordinationUnitID& cu_id) {
   auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
   if (web_contents_iter == cu_id_web_contents_map_.end())
     return;
-  auto* web_contents_data =
-      TabManager::WebContentsData::FromWebContents(web_contents_iter->second);
-  web_contents_data->NotifyAlmostIdle();
+  for (auto& observer : observers_)
+    observer.NotifyPageAlmostIdle(web_contents_iter->second);
 }
 
-void TabManager::PageSignalReceiver::SetExpectedTaskQueueingDuration(
+void PageSignalReceiver::SetExpectedTaskQueueingDuration(
     const CoordinationUnitID& cu_id,
     base::TimeDelta duration) {
   auto web_contents_iter = cu_id_web_contents_map_.find(cu_id);
   if (web_contents_iter == cu_id_web_contents_map_.end())
     return;
-  g_browser_process->GetTabManager()
-      ->stats_collector()
-      ->RecordExpectedTaskQueueingDuration(web_contents_iter->second, duration);
+  for (auto& observer : observers_)
+    observer.OnExpectedTaskQueueingDurationSet(web_contents_iter->second,
+                                               duration);
 }
 
-void TabManager::PageSignalReceiver::AssociateCoordinationUnitIDWithWebContents(
+void PageSignalReceiver::AddObserver(PageSignalObserver* observer) {
+  // When PageSignalReceiver starts to have observer, construct the mojo
+  // channel.
+  if (!observers_.might_have_observers()) {
+    content::ServiceManagerConnection* service_manager_connection =
+        content::ServiceManagerConnection::GetForProcess();
+    // Ensure service_manager is active before trying to connect to it.
+    if (service_manager_connection) {
+      service_manager::Connector* connector =
+          service_manager_connection->GetConnector();
+      mojom::PageSignalGeneratorPtr page_signal_generator_ptr;
+      connector->BindInterface(mojom::kServiceName,
+                               mojo::MakeRequest(&page_signal_generator_ptr));
+      mojom::PageSignalReceiverPtr page_signal_receiver_ptr;
+      binding_.Bind(mojo::MakeRequest(&page_signal_receiver_ptr));
+      page_signal_generator_ptr->AddReceiver(
+          std::move(page_signal_receiver_ptr));
+    }
+  }
+  observers_.AddObserver(observer);
+}
+
+void PageSignalReceiver::RemoveObserver(PageSignalObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void PageSignalReceiver::AssociateCoordinationUnitIDWithWebContents(
     const CoordinationUnitID& cu_id,
     content::WebContents* web_contents) {
   cu_id_web_contents_map_[cu_id] = web_contents;
 }
 
-void TabManager::PageSignalReceiver::RemoveCoordinationUnitID(
+void PageSignalReceiver::RemoveCoordinationUnitID(
     const CoordinationUnitID& cu_id) {
   cu_id_web_contents_map_.erase(cu_id);
 }

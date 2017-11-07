@@ -53,15 +53,13 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
     EnsureUkmRecorderInterface();
   }
 
-#if !defined(OS_ANDROID)
   if (auto* page_signal_receiver =
-          resource_coordinator::TabManager::PageSignalReceiver::GetInstance()) {
+          resource_coordinator::PageSignalReceiver::GetInstance()) {
     // Gets CoordinationUnitID for this WebContents and adds it to
     // PageSignalReceiver.
     page_signal_receiver->AssociateCoordinationUnitIDWithWebContents(
         page_resource_coordinator_->id(), web_contents);
   }
-#endif
 }
 
 // TODO(matthalp) integrate into ResourceCoordinatorService once the UKM mojo
@@ -122,15 +120,13 @@ void ResourceCoordinatorWebContentsObserver::WasHidden() {
 }
 
 void ResourceCoordinatorWebContentsObserver::WebContentsDestroyed() {
-#if !defined(OS_ANDROID)
   if (auto* page_signal_receiver =
-          resource_coordinator::TabManager::PageSignalReceiver::GetInstance()) {
+          resource_coordinator::PageSignalReceiver::GetInstance()) {
     // Gets CoordinationUnitID for this WebContents and removes it from
     // PageSignalReceiver.
     page_signal_receiver->RemoveCoordinationUnitID(
         page_resource_coordinator_->id());
   }
-#endif
 }
 
 void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(

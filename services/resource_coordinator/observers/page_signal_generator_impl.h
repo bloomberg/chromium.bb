@@ -27,7 +27,7 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
   PageSignalGeneratorImpl();
   ~PageSignalGeneratorImpl() override;
 
-  // mojom::SignalGenerator implementation.
+  // mojom::PageSignalGenerator implementation.
   void AddReceiver(mojom::PageSignalReceiverPtr receiver) override;
 
   // CoordinationUnitGraphObserver implementation.
