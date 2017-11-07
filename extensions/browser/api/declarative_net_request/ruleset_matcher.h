@@ -36,6 +36,8 @@ struct ExtensionIndexedRuleset;
 class RulesetMatcher {
  public:
   // Describes the result of creating a RulesetMatcher instance.
+  // This is logged as part of UMA. Hence existing values should not be re-
+  // numbered or deleted. New values should be added before kLoadRulesetMax.
   enum LoadRulesetResult {
     kLoadSuccess = 0,
     kLoadErrorInvalidPath = 1,
