@@ -119,13 +119,10 @@ CString ServiceWorkerCacheErrorString(WebServiceWorkerCacheError error) {
   switch (error) {
     case kWebServiceWorkerCacheErrorNotImplemented:
       return CString("not implemented.");
-      break;
     case kWebServiceWorkerCacheErrorNotFound:
       return CString("not found.");
-      break;
     case kWebServiceWorkerCacheErrorExists:
       return CString("cache already exists.");
-      break;
     case kWebServiceWorkerCacheErrorQuotaExceeded:
       return CString("quota exceeded.");
     case kWebServiceWorkerCacheErrorCacheNameNotFound:

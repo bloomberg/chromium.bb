@@ -25,7 +25,7 @@ PaymentRequestRespondWithObserver* PaymentRequestRespondWithObserver::Create(
 }
 
 void PaymentRequestRespondWithObserver::OnResponseRejected(
-    WebServiceWorkerResponseError error) {
+    mojom::ServiceWorkerResponseError error) {
   PaymentHandlerUtils::ReportResponseError(GetExecutionContext(),
                                            "PaymentRequestEvent", error);
 
@@ -44,7 +44,7 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
       ToIsolate(GetExecutionContext()), value, exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
-    OnResponseRejected(kWebServiceWorkerResponseErrorNoV8Instance);
+    OnResponseRejected(mojom::ServiceWorkerResponseError::kNoV8Instance);
     return;
   }
 
@@ -55,7 +55,7 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
   if (!v8::JSON::Stringify(response.details().GetContext(),
                            response.details().V8Value().As<v8::Object>())
            .ToLocal(&details_value)) {
-    OnResponseRejected(kWebServiceWorkerResponseErrorUnknown);
+    OnResponseRejected(mojom::ServiceWorkerResponseError::kUnknown);
     return;
   }
   web_data.stringified_details = ToCoreString(details_value);

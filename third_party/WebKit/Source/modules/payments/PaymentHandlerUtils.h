@@ -7,7 +7,7 @@
 
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
+#include "public/platform/modules/serviceworker/service_worker_error_type.mojom-shared.h"
 
 namespace blink {
 
@@ -19,7 +19,7 @@ class PaymentHandlerUtils {
  public:
   static void ReportResponseError(ExecutionContext*,
                                   const String& event_name_prefix,
-                                  WebServiceWorkerResponseError);
+                                  mojom::ServiceWorkerResponseError);
 };
 
 }  // namespace blink

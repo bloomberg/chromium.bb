@@ -7,7 +7,7 @@
 
 #include "modules/ModulesExport.h"
 #include "modules/serviceworkers/RespondWithObserver.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
+#include "public/platform/modules/serviceworker/service_worker_error_type.mojom-shared.h"
 
 namespace blink {
 
@@ -27,7 +27,7 @@ class MODULES_EXPORT PaymentRequestRespondWithObserver final
                                                    int event_id,
                                                    WaitUntilObserver*);
 
-  void OnResponseRejected(WebServiceWorkerResponseError) override;
+  void OnResponseRejected(mojom::ServiceWorkerResponseError) override;
   void OnResponseFulfilled(const ScriptValue&) override;
   void OnNoResponse() override;
 

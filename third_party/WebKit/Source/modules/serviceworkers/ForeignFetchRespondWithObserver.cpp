@@ -10,6 +10,8 @@
 #include "public/platform/WebCORS.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
+using blink::mojom::ServiceWorkerResponseError;
+
 namespace blink {
 
 ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::Create(
@@ -38,7 +40,7 @@ void ForeignFetchRespondWithObserver::OnResponseFulfilled(
                                             value, exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
-    OnResponseRejected(kWebServiceWorkerResponseErrorNoForeignFetchResponse);
+    OnResponseRejected(ServiceWorkerResponseError::kNoForeignFetchResponse);
     return;
   }
 
@@ -56,7 +58,7 @@ void ForeignFetchRespondWithObserver::OnResponseFulfilled(
     if (foreign_fetch_response.hasHeaders() &&
         !foreign_fetch_response.headers().IsEmpty()) {
       OnResponseRejected(
-          kWebServiceWorkerResponseErrorForeignFetchHeadersWithoutOrigin);
+          ServiceWorkerResponseError::kForeignFetchHeadersWithoutOrigin);
       return;
     }
 
@@ -68,7 +70,7 @@ void ForeignFetchRespondWithObserver::OnResponseFulfilled(
     }
   } else if (request_origin_->ToString() != foreign_fetch_response.origin()) {
     OnResponseRejected(
-        kWebServiceWorkerResponseErrorForeignFetchMismatchedOrigin);
+        ServiceWorkerResponseError::kForeignFetchMismatchedOrigin);
     return;
   } else if (!is_opaque) {
     WebHTTPHeaderSet headers;

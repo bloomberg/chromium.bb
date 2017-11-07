@@ -92,7 +92,7 @@ ServiceWorkerResponse::ServiceWorkerResponse()
     : status_code(0),
       response_type(network::mojom::FetchResponseType::kOpaque),
       blob_size(0),
-      error(blink::kWebServiceWorkerResponseErrorUnknown) {}
+      error(blink::mojom::ServiceWorkerResponseError::kUnknown) {}
 
 ServiceWorkerResponse::ServiceWorkerResponse(
     std::unique_ptr<std::vector<GURL>> url_list,
@@ -103,7 +103,7 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     const std::string& blob_uuid,
     uint64_t blob_size,
     scoped_refptr<storage::BlobHandle> blob,
-    blink::WebServiceWorkerResponseError error,
+    blink::mojom::ServiceWorkerResponseError error,
     base::Time response_time,
     bool is_in_cache_storage,
     const std::string& cache_storage_cache_name,
