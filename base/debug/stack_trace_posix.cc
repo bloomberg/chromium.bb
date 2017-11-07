@@ -566,7 +566,6 @@ class SandboxSymbolizeHelper {
     // The assumption here is that iterating over
     // std::vector<MappedMemoryRegion> using a const_iterator does not allocate
     // dynamic memory, hence it is async-signal-safe.
-    std::vector<MappedMemoryRegion>::const_iterator it;
     for (const MappedMemoryRegion& region : instance->regions_) {
       if (region.start <= pc && pc < region.end) {
         start_address = region.start;
