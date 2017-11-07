@@ -11,7 +11,6 @@
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

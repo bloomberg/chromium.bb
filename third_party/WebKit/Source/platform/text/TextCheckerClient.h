@@ -31,7 +31,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/text/TextChecking.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

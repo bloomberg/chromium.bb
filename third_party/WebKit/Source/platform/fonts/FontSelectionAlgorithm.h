@@ -29,7 +29,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontSelectionTypes.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

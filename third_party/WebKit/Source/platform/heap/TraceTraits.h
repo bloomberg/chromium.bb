@@ -19,7 +19,6 @@
 #include "platform/wtf/LinkedHashSet.h"
 #include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/TypeTraits.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

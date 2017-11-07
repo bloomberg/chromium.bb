@@ -14,7 +14,6 @@
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
-#include "platform/wtf/Vector.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"

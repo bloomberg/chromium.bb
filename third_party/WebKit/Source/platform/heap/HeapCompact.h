@@ -10,7 +10,6 @@
 #include "platform/wtf/DataLog.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Vector.h"
 
 #include <bitset>
 #include <utility>

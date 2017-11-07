@@ -33,7 +33,6 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

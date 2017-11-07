@@ -27,6 +27,7 @@
  */
 
 #include "platform/audio/ReverbAccumulationBuffer.h"
+#include <algorithm>
 #include "platform/audio/VectorMath.h"
 
 namespace blink {

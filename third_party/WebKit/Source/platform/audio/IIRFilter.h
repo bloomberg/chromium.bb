@@ -7,7 +7,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

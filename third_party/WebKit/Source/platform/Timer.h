@@ -35,7 +35,6 @@
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Threading.h"
-#include "platform/wtf/Vector.h"
 #include "platform/wtf/WeakPtr.h"
 #include "public/platform/WebTraceLocation.h"
 
