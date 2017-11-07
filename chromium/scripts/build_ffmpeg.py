@@ -463,7 +463,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
       # them.  http://crbug.com/559379
       if target_os == 'android':
         configure_flags['Common'].extend([
-            '--disable-asm',
+          '--disable-x86asm',
         ])
     elif target_arch == 'arm' or target_arch == 'arm-neon':
       # TODO(ihf): ARM compile flags are tricky. The final options

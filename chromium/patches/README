@@ -22,11 +22,6 @@ Current patches:
     Commented out a section that creates symlink for source_path. Using symlink
     causes windows builds to fail (cl.exe cant find the files).
 
-    Pinned older mipsel minimum ISA detection logic, including removal of
-    add_cflags "-mips64", which conflicts with --extra-cflags=-mips64r6 for
-    mips64el. In M56 roll, returned to previous logic here to prevent population
-    of CFLAGS etc with various -mips32r* which broke builds.
-
     Commented out pkg-config checks for libopus since we use Chromium's
     copy.
 
