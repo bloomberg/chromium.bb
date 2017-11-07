@@ -76,6 +76,13 @@ void AutocompleteResult::CopyOldMatches(
   // if it doesn't, then once the providers are done and we expire the old
   // matches, the new ones will all become visible, so we won't have lost
   // anything permanently.
+  //
+  // Note that culling tail suggestions (see |MaybeCullTailSuggestions()|)
+  // relies on the behavior below of capping the total number of suggestions to
+  // the higher of the number of new and old suggestions.  Without it, a
+  // provider could have one old and one new suggestion, cull tail suggestions,
+  // expire the old suggestion, and restore tail suggestions.  This would be
+  // visually unappealing, and could occur on each keystroke.
   ProviderToMatches matches_per_provider, old_matches_per_provider;
   BuildProviderToMatches(&matches_per_provider);
   old_matches.BuildProviderToMatches(&old_matches_per_provider);
