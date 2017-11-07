@@ -81,7 +81,8 @@ IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest, AudioPlaybackWavPcm) {
 }
 
 #if !BUILDFLAG(IS_CAST_AUDIO_ONLY)
-IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest, VideoPlaybackMp4) {
+// TODO: reenable test; crashes occasionally: http://crbug.com/754269
+IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest, DISABLED_VideoPlaybackMp4) {
   PlayVideo("bear.mp4");
 }
 #endif
