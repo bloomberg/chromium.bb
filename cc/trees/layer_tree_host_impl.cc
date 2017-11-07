@@ -2484,13 +2484,15 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
                              settings_.disallow_non_exact_resource_reuse);
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
+    bool oop_raster_enabled =
+        settings_.enable_oop_rasterization &&
+        compositor_context_provider->ContextCapabilities().supports_oop_raster;
 
     *raster_buffer_provider = std::make_unique<GpuRasterBufferProvider>(
         compositor_context_provider, worker_context_provider,
         resource_provider_.get(), settings_.use_distance_field_text,
         msaa_sample_count, settings_.preferred_tile_format,
-        settings_.async_worker_context_enabled,
-        settings_.enable_oop_rasterization);
+        settings_.async_worker_context_enabled, oop_raster_enabled);
     return;
   }
 
