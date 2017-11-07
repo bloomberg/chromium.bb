@@ -4619,15 +4619,20 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (self.presentedViewController) {
     // Dismisses any other modal controllers that may be present, e.g. Recent
     // Tabs.
+    //
     // Note that currently, some controllers like the bookmark ones were already
     // dismissed (in this example in -dismissBookmarkModalControllerAnimated:),
-    // but are still reported as the presentedViewController. The result is that
-    // this will call -dismissViewControllerAnimated:completion: a second time
-    // on it. It is not per se an issue, as it is a no-op. The problem is that
-    // in such a case, the completion block is not called.
-    // To ensure the completion is called, nil is passed here, and the
-    // completion is called below.
-    [self dismissViewControllerAnimated:NO completion:nil];
+    // but are still reported as the presentedViewController.  Calling
+    // |dismissViewControllerAnimated:completion:| again would dismiss the BVC
+    // itself, so instead check the value of |self.dismissingModal| and only
+    // call dismiss if one of the above calls has not already triggered a
+    // dismissal.
+    //
+    // To ensure the completion is called, nil is passed to the call to dismiss,
+    // and the completion is called explicitly below.
+    if (!TabSwitcherPresentsBVCEnabled() || !self.dismissingModal) {
+      [self dismissViewControllerAnimated:NO completion:nil];
+    }
     // Dismissed controllers will be so after a delay. Queue the completion
     // callback after that.
     if (completion) {
