@@ -105,8 +105,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 // The loading spinner background which appears when syncing.
 @property(nonatomic, strong) BookmarkHomeWaitingView* spinnerView;
 
-// Dispatcher for sending commands.
-@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+// Presenter for showing signin UI.
+@property(nonatomic, readonly, weak) id<SigninPresenter> presenter;
 
 // Section indices.
 @property(nonatomic, readonly, assign) NSInteger promoSection;
@@ -132,7 +132,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 @synthesize emptyTableBackgroundView = _emptyTableBackgroundView;
 @synthesize spinnerView = _spinnerView;
 @synthesize editing = _editing;
-@synthesize dispatcher = _dispatcher;
+@synthesize presenter = _presenter;
 @synthesize addingNewFolder = _addingNewFolder;
 @synthesize editingFolderCell = _editingFolderCell;
 
@@ -145,14 +145,14 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
                             delegate:(id<BookmarkTableViewDelegate>)delegate
                             rootNode:(const BookmarkNode*)rootNode
                                frame:(CGRect)frame
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+                           presenter:(id<SigninPresenter>)presenter {
   self = [super initWithFrame:frame];
   if (self) {
     DCHECK(rootNode);
     _browserState = browserState;
     _delegate = delegate;
     _currentRootNode = rootNode;
-    _dispatcher = dispatcher;
+    _presenter = presenter;
 
     // Set up connection to the BookmarkModel.
     _bookmarkModel =
@@ -238,7 +238,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
         initWithBrowserState:_browserState
                  accessPoint:signin_metrics::AccessPoint::
                                  ACCESS_POINT_BOOKMARK_MANAGER
-                  dispatcher:self.dispatcher];
+                   presenter:self.presenter];
     _signinPromoViewMediator.consumer = self;
     [_signinPromoViewMediator signinPromoViewVisible];
   }

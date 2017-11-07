@@ -18,8 +18,8 @@
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -239,8 +239,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 @interface SigninPromoViewMediator ()<ChromeIdentityServiceObserver,
                                       ChromeBrowserProviderObserver>
-// Dispatcher for sending commands.
-@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+// Presenter which can show signin UI.
+@property(nonatomic, readonly, weak) id<SigninPresenter> presenter;
 @end
 
 @implementation SigninPromoViewMediator {
@@ -255,17 +255,17 @@ const char* AlreadySeenSigninViewPreferenceKey(
 @synthesize consumer = _consumer;
 @synthesize defaultIdentity = _defaultIdentity;
 @synthesize signinPromoViewState = _signinPromoViewState;
-@synthesize dispatcher = _dispatcher;
+@synthesize presenter = _presenter;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+                           presenter:(id<SigninPresenter>)presenter {
   self = [super init];
   if (self) {
     DCHECK(IsSupportedAccessPoint(accessPoint));
     _accessPoint = accessPoint;
     _browserState = browserState;
-    _dispatcher = dispatcher;
+    _presenter = presenter;
     NSArray* identities = ios::GetChromeBrowserProvider()
                               ->GetChromeIdentityService()
                               ->GetAllIdentitiesSortedForDisplay();
@@ -472,7 +472,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
                callback:^(BOOL succeeded) {
                  [weakSelf signinCallback];
                }];
-  [self.dispatcher showSignin:command];
+  [self.presenter showSignin:command];
 }
 
 - (void)signinPromoViewDidTapSigninWithDefaultAccount:
@@ -490,7 +490,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
                callback:^(BOOL succeeded) {
                  [weakSelf signinCallback];
                }];
-  [self.dispatcher showSignin:command];
+  [self.presenter showSignin:command];
 }
 
 - (void)signinPromoViewDidTapSigninWithOtherAccount:
@@ -508,7 +508,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
                callback:^(BOOL succeeded) {
                  [weakSelf signinCallback];
                }];
-  [self.dispatcher showSignin:command];
+  [self.presenter showSignin:command];
 }
 
 @end

@@ -83,6 +83,7 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/ntp/recent_tabs/views",
     "//ios/chrome/browser/ui/settings/sync_utils",
+    "//ios/chrome/browser/ui/signin_interaction/public",
     "//ios/chrome/browser/ui/tabs/requirements",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/toolbar",

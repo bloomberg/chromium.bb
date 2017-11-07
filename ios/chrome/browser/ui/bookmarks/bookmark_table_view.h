@@ -8,8 +8,8 @@
 #import <UIKit/UIKit.h>
 #include <set>
 
-@protocol ApplicationCommands;
 class GURL;
+@protocol SigninPresenter;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -83,7 +83,7 @@ class PrefRegistrySyncable;
                             delegate:(id<BookmarkTableViewDelegate>)delegate
                             rootNode:(const bookmarks::BookmarkNode*)rootNode
                                frame:(CGRect)frame
-                          dispatcher:(id<ApplicationCommands>)dispatcher
+                           presenter:(id<SigninPresenter>)presenter
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;

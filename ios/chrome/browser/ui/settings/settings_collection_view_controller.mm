@@ -68,6 +68,7 @@
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/voicesearch_collection_view_controller.h"
+#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -185,6 +186,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                                                PrefObserverDelegate,
                                                SettingsControllerProtocol,
                                                SettingsMainPageCommands,
+                                               SigninPresenter,
                                                SigninPromoViewConsumer,
                                                SigninPromoViewDelegate,
                                                SyncObserverModelBridge> {
@@ -361,7 +363,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
             initWithBrowserState:_browserState
                      accessPoint:signin_metrics::AccessPoint::
                                      ACCESS_POINT_SETTINGS
-                      dispatcher:self.dispatcher];
+                       presenter:self /* id<SigninPresenter> */];
         _signinPromoViewMediator.consumer = self;
         prefs->SetInteger(prefs::kIosSettingsSigninPromoDisplayedCount,
                           displayedCount + 1);
@@ -995,6 +997,12 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     [self updateIdentityAccountItem:identityAccountItem];
     [self reconfigureCellsForItems:@[ identityAccountItem ]];
   }
+}
+
+#pragma mark - SigninPresenter
+
+- (void)showSignin:(ShowSigninCommand*)command {
+  [self.dispatcher showSignin:command];
 }
 
 #pragma mark Sign in
