@@ -306,7 +306,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
     // If the toolbar is hidden, move it to visible.
-    if (!base::FeatureList::IsEnabled(features::kNewFullscreen)) {
+    if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
       [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
     }
     [[model_ currentTab] updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
@@ -391,7 +391,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 // Show swipe to navigate.
 - (void)handleSwipeToNavigate:(SideSwipeGestureRecognizer*)gesture {
   if (gesture.state == UIGestureRecognizerStateBegan) {
-    if (!base::FeatureList::IsEnabled(features::kNewFullscreen)) {
+    if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
       // If the toolbar is hidden, move it to visible.
       [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
     }
@@ -454,7 +454,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 // Show horizontal swipe stack view for iPhone.
 - (void)handleiPhoneTabSwipe:(SideSwipeGestureRecognizer*)gesture {
   if (gesture.state == UIGestureRecognizerStateBegan) {
-    if (!base::FeatureList::IsEnabled(features::kNewFullscreen)) {
+    if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
       // If the toolbar is hidden, move it to visible.
       [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
     }

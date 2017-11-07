@@ -47,6 +47,11 @@ extern const char kMarkHttpAsName[];
 extern const char kMarkHttpAsDescription[];
 extern const char kMarkHttpAsDangerous[];
 
+// Title and description for the flag to enable the new fullscreen
+// implementation.
+extern const char kNewFullscreenName[];
+extern const char kNewFullscreenDescription[];
+
 // Title and description for the flag to enable elision of the URL path, query,
 // and ref in omnibox URL suggestions.
 extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];
