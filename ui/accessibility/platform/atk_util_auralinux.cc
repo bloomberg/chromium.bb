@@ -4,6 +4,7 @@
 
 #include <atk/atk.h>
 
+#include "base/environment.h"
 #include "base/memory/singleton.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
@@ -100,9 +101,10 @@ AtkUtilAuraLinux* AtkUtilAuraLinux::GetInstance() {
 }
 
 bool AtkUtilAuraLinux::ShouldEnableAccessibility() {
-  char* enable_accessibility = getenv(kAccessibilityEnabled);
-  if ((enable_accessibility && atoi(enable_accessibility) == 1) ||
-      PlatformShouldEnableAccessibility())
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string enable_accessibility;
+  env->GetVar(kAccessibilityEnabled, &enable_accessibility);
+  if (enable_accessibility == "1" || PlatformShouldEnableAccessibility())
     return true;
   return false;
 }
