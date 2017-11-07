@@ -619,6 +619,7 @@ void LocationBarView::Update(const WebContents* contents) {
   RefreshTranslateIcon();
   RefreshSaveCreditCardIconView();
   RefreshManagePasswordsIconView();
+  RefreshFindBarIcon();
 
   if (star_view_)
     UpdateBookmarkStarVisibility();
@@ -763,7 +764,7 @@ bool LocationBarView::RefreshSaveCreditCardIconView() {
 }
 
 bool LocationBarView::RefreshFindBarIcon() {
-  if (!find_bar_icon_)
+  if (!find_bar_icon_ || !browser_ || !browser_->window())
     return false;
   const bool was_visible = find_bar_icon_->visible();
   find_bar_icon_->SetVisible(
@@ -893,14 +894,12 @@ void LocationBarView::UpdateSaveCreditCardIcon() {
 }
 
 void LocationBarView::UpdateFindBarIconVisibility() {
-  if (RefreshFindBarIcon()) {
+  const bool visibility_changed = RefreshFindBarIcon();
+  if (visibility_changed) {
     Layout();
-    find_bar_icon_->AnimateInkDrop(find_bar_icon_->visible()
-                                       ? views::InkDropState::ACTIVATED
-                                       : views::InkDropState::HIDDEN,
-                                   nullptr);
     SchedulePaint();
   }
+  find_bar_icon_->SetActive(find_bar_icon_->visible(), visibility_changed);
 }
 
 void LocationBarView::UpdateBookmarkStarVisibility() {
