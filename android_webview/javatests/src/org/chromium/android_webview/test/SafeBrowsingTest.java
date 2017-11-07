@@ -681,6 +681,7 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_DISABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingCanBeEnabledPerWebview() throws Throwable {
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
         mActivityTestRule.loadUrlSync(

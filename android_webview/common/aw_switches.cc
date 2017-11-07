@@ -14,4 +14,8 @@ const char kWebViewSandboxedRenderer[] = "webview-sandboxed-renderer";
 const char kWebViewEnableSafeBrowsingSupport[] =
     "webview-enable-safebrowsing-support";
 
+// used to disable safebrowsing functionality in webview
+const char kWebViewDisableSafeBrowsingSupport[] =
+    "webview-disable-safebrowsing-support";
+
 }  // namespace switches

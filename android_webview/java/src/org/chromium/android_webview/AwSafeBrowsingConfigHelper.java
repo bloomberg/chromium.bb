@@ -64,6 +64,10 @@ public class AwSafeBrowsingConfigHelper {
 
     private static boolean getCommandLineOptIn() {
         CommandLine cli = CommandLine.getInstance();
+        // Disable flag has higher precedence than the enable flag
+        if (cli.hasSwitch(AwSwitches.WEBVIEW_DISABLE_SAFEBROWSING_SUPPORT)) {
+            return false;
+        }
         return cli.hasSwitch(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
                 || cli.hasSwitch(AwSwitches.WEBVIEW_SAFEBROWSING_BLOCK_ALL_RESOURCES);
     }
