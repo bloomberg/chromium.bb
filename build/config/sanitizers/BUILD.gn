@@ -574,3 +574,33 @@ config("default_sanitizer_flags_but_ubsan_vptr") {
 config("default_sanitizer_flags_but_coverage") {
   configs = all_sanitizer_configs - [ ":coverage_flags" ]
 }
+
+# This config is used by parts of code that aren't targeted in fuzzers and
+# therefore don't need coverage instrumentation and possibly wont need
+# sanitizer instrumentation either. The config also tells the compiler to
+# perform additional optimizations on the configured code and ensures that
+# linking it to the rest of the binary which is instrumented with sanitizers
+# works. The config only does anything if the build is a fuzzing build.
+config("not_fuzzed") {
+  if (use_fuzzing_engine) {
+    # Since we aren't instrumenting with coverage, code size is less of a
+    # concern, so use a more aggressive optimization level than
+    # optimize_for_fuzzing (-O1). When given multiple optimization flags, clang
+    # obeys the last one, so as long as this flag comes after -O1, it should work.
+    # Since this config will always be depended on after
+    # "//build/config/compiler:default_optimization" (which adds -O1 when
+    # optimize_for_fuzzing is true), -O2 should always be the second flag. Even
+    # though this sounds fragile, it isn't a big deal if it breaks, since proto
+    # fuzzers will still work, they will just be slightly slower.
+    cflags = [ "-O2" ]
+
+    # We need to include this config when we remove default_sanitizer_flags or
+    # else there will be linking errors. We would remove default_sanitizer_flags
+    # here as well, but gn doesn't permit this.
+    if (!is_msan) {
+      # We don't actually remove sanitization when MSan is being used so there
+      # is no need to add default_sanitizer_ldflags in that case
+      configs = [ ":default_sanitizer_ldflags" ]
+    }
+  }
+}
