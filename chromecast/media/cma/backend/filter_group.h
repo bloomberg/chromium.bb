@@ -118,10 +118,10 @@ class FilterGroup {
   std::vector<StreamMixer::InputQueue*> active_inputs_;
 
   int output_samples_per_second_;
-  int frames_zeroed_ = 0;
-  float last_volume_ = 0.0f;
-  int64_t delay_frames_ = 0;
-  AudioContentType loudest_content_type_ = AudioContentType::kCommunication;
+  int frames_zeroed_;
+  float last_volume_;
+  int64_t delay_frames_;
+  AudioContentType loudest_content_type_;
 
   // Buffers that hold audio data while it is mixed.
   // These are kept as members of this class to minimize copies and

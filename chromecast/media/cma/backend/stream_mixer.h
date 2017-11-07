@@ -151,11 +151,13 @@ class StreamMixer {
     // Sets whether or not this stream should be muted.
     virtual void SetMuted(bool muted) = 0;
 
-    // Returns the volume multiplier of the stream.
-    virtual float EffectiveVolume() = 0;
+    // Returns the target volume multiplier of the stream. Fading in or out may
+    // cause this to be different from the actual multiplier applied in the last
+    // buffer. For the actual multiplier applied, use InstantaneousVolume().
+    virtual float TargetVolume() = 0;
 
     // Returns the largest volume multiplier applied to the last buffer
-    // retrieved. This differs from EffectiveVolume() during transients.
+    // retrieved. This differs from TargetVolume() during transients.
     virtual float InstantaneousVolume() = 0;
   };
 
