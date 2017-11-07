@@ -15,7 +15,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.download.DownloadResumptionScheduler;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
@@ -54,11 +53,6 @@ public class ChromeBackgroundService extends GcmTaskService {
                     case SnippetsLauncher.TASK_TAG_WIFI:
                     case SnippetsLauncher.TASK_TAG_FALLBACK:
                         handleSnippetsOnPersistentSchedulerWakeUp(context, taskTag);
-                        break;
-
-                    case DownloadResumptionScheduler.TASK_TAG:
-                        DownloadResumptionScheduler.getDownloadResumptionScheduler(
-                                context.getApplicationContext()).handleDownloadResumption();
                         break;
 
                     default:

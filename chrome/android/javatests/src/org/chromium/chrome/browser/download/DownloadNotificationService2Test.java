@@ -9,10 +9,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.content.SharedPreferences;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
+import android.support.test.rule.UiThreadTestRule;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,13 +33,16 @@ import java.util.UUID;
  * Tests of {@link DownloadNotificationService2}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class DownloadNotificationServiceTest2 {
+public class DownloadNotificationService2Test {
     private static final ContentId ID1 =
             LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
     private static final ContentId ID2 =
             LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
     private static final ContentId ID3 =
             LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
+
+    @Rule
+    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
 
     private MockDownloadNotificationService2 mDownloadNotificationService;
     private DownloadForegroundServiceManagerTest
@@ -51,6 +57,7 @@ public class DownloadNotificationServiceTest2 {
 
     @Before
     public void setUp() {
+        DownloadNotificationService2.clearResumptionAttemptLeft();
         mDownloadNotificationService = new MockDownloadNotificationService2();
         mDownloadForegroundServiceManager =
                 new DownloadForegroundServiceManagerTest.MockDownloadForegroundServiceManager();
@@ -61,6 +68,7 @@ public class DownloadNotificationServiceTest2 {
 
     @After
     public void tearDown() {
+        DownloadNotificationService2.clearResumptionAttemptLeft();
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.remove(DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
@@ -69,6 +77,7 @@ public class DownloadNotificationServiceTest2 {
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Download"})
     public void testBasicDownloadFlow() {
         // Download is in-progress.
@@ -114,6 +123,7 @@ public class DownloadNotificationServiceTest2 {
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Download"})
     public void testDownloadPendingAndCancelled() {
         // Download is in-progress.
@@ -147,6 +157,7 @@ public class DownloadNotificationServiceTest2 {
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Download"})
     public void testDownloadInterruptedAndFailed() {
         // Download is in-progress.
@@ -172,6 +183,7 @@ public class DownloadNotificationServiceTest2 {
 
     @Test
     @SmallTest
+    @UiThreadTest
     @Feature({"Download"})
     public void testResumeAllPendingDownloads() {
         // Queue a few pending downloads.

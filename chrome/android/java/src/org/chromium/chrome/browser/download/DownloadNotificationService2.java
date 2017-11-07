@@ -501,7 +501,7 @@ public class DownloadNotificationService2 {
         Context context = ContextUtils.getApplicationContext();
 
         // Limit the number of auto resumption attempts in case Chrome falls into a vicious cycle.
-        DownloadResumptionScheduler.getDownloadResumptionScheduler(context).cancelTask();
+        DownloadResumptionScheduler.getDownloadResumptionScheduler(context).cancel();
         int numAutoResumptionAtemptLeft = getResumptionAttemptLeft();
         if (numAutoResumptionAtemptLeft <= 0) return;
 
@@ -514,7 +514,6 @@ public class DownloadNotificationService2 {
             DownloadSharedPreferenceEntry entry = entries.get(i);
             if (!canResumeDownload(context, entry)) continue;
             if (mDownloadsInProgress.contains(entry.id)) continue;
-
             notifyDownloadPending(entry.id, entry.fileName, entry.isOffTheRecord,
                     entry.canDownloadWhileMetered, entry.isTransient, null, false);
 
@@ -675,29 +674,9 @@ public class DownloadNotificationService2 {
     }
 
     private void rescheduleDownloads() {
-        Context context = ContextUtils.getApplicationContext();
-
-        // Cancel any existing task.  If we have any downloads to resume we'll reschedule another.
-        DownloadResumptionScheduler.getDownloadResumptionScheduler(context).cancelTask();
-        List<DownloadSharedPreferenceEntry> entries = mDownloadSharedPreferenceHelper.getEntries();
-        if (entries.isEmpty()) return;
-
-        boolean scheduleAutoResumption = false;
-        boolean allowMeteredConnection = false;
-        for (int i = 0; i < entries.size(); ++i) {
-            DownloadSharedPreferenceEntry entry = entries.get(i);
-            if (entry.isAutoResumable) {
-                scheduleAutoResumption = true;
-                if (entry.canDownloadWhileMetered) {
-                    allowMeteredConnection = true;
-                    break;
-                }
-            }
-        }
-
-        if (scheduleAutoResumption && getResumptionAttemptLeft() > 0) {
-            DownloadResumptionScheduler.getDownloadResumptionScheduler(context).schedule(
-                    allowMeteredConnection);
-        }
+        if (getResumptionAttemptLeft() <= 0) return;
+        DownloadResumptionScheduler
+                .getDownloadResumptionScheduler(ContextUtils.getApplicationContext())
+                .scheduleIfNecessary();
     }
 }
