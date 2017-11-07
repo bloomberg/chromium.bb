@@ -326,7 +326,7 @@ void StyleSheetContents::ParserAddNamespace(const AtomicString& prefix,
 }
 
 const AtomicString& StyleSheetContents::NamespaceURIFromPrefix(
-    const AtomicString& prefix) {
+    const AtomicString& prefix) const {
   return namespaces_.at(prefix);
 }
 
