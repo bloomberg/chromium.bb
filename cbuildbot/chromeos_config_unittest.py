@@ -62,6 +62,7 @@ class ConfigDumpTest(ChromeosConfigTestBase):
 
     # watefall_layout_dump.txt
     with self.OutputCapturer() as output:
+      config_lib.ClearConfigCache()
       cros_show_waterfall_layout.main(['--format', 'text'])
 
     new_dump = output.GetStdout()
