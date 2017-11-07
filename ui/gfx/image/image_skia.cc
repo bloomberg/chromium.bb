@@ -495,8 +495,7 @@ void ImageSkia::RemoveUnsupportedRepresentationsForScale(float scale) {
 }
 
 void ImageSkia::Init(const ImageSkiaRep& image_rep) {
-  // TODO(pkotwicz): The image should be null whenever image rep is null.
-  if (image_rep.sk_bitmap().empty()) {
+  if (image_rep.sk_bitmap().drawsNothing()) {
     storage_ = NULL;
     return;
   }
