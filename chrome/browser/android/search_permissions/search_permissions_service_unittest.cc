@@ -31,9 +31,6 @@ const char kGoogleAusURL[] = "https://www.google.com.au";
 const char kGoogleHTTPURL[] = "http://www.google.com";
 const char kExampleURL[] = "https://www.example.com";
 
-const char kIsGoogleSearchEngineKey[] = "is_google_search_engine";
-const char kDSESettingKey[] = "dse_setting";
-
 url::Origin ToOrigin(const char* url) {
   return url::Origin::Create(GURL(url));
 }
@@ -116,15 +113,6 @@ class SearchPermissionsServiceTest : public testing::Test {
     GetService()->InitializeDSEGeolocationSettingIfNeeded();
   }
 
-  // Simulate setting the old preference to test migration.
-  void SetOldPreference(bool is_google, bool setting) {
-    base::DictionaryValue dict;
-    dict.SetBoolean(kIsGoogleSearchEngineKey, is_google);
-    dict.SetBoolean(kDSESettingKey, setting);
-    profile()->GetPrefs()->Set(prefs::kGoogleDSEGeolocationSettingDeprecated,
-                               dict);
-  }
-
  private:
   std::unique_ptr<TestingProfile> profile_;
   content::TestBrowserThreadBundle thread_bundle_;
@@ -166,55 +154,6 @@ TEST_F(SearchPermissionsServiceTest, Initialization) {
   SetContentSetting(kExampleURL, CONTENT_SETTING_ALLOW);
   ReinitializeService(true /* clear_pref */);
   EXPECT_TRUE(GetService()->UseDSEGeolocationSetting(ToOrigin(kExampleURL)));
-}
-
-TEST_F(SearchPermissionsServiceTest, Migration) {
-  // First test migrating when the search engine is Google, and the setting is
-  // on.
-  test_delegate()->SetDSEOrigin(kGoogleURL);
-  SearchGeolocationDisclosureTabHelper::FakeShowingDisclosureForTests(
-      profile());
-  SetOldPreference(true /* is_google */, true /* setting */);
-  ReinitializeService(true /* clear_pref */);
-
-  // The setting should be true, and the disclosure should not be reset as it
-  // has been shown for Google, and the current search engine is Google.
-  EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
-  EXPECT_FALSE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
-      profile()));
-
-  // Now test that migration won't happen again.
-  GetService()->SetDSEGeolocationSetting(false);
-  ReinitializeService(false /* clear_pref */);
-  EXPECT_FALSE(GetService()->GetDSEGeolocationSetting());
-
-  // Secondly, test migrating when the search engine isn't Google, and the
-  // setting is on.
-  test_delegate()->SetDSEOrigin(kExampleURL);
-  SetOldPreference(false /* is_google */, true /* setting */);
-  ReinitializeService(true /* clear_pref */);
-
-  // The setting should be true, and the disclosure should be reset as it would
-  // have only been shown for Google.
-  EXPECT_TRUE(GetService()->GetDSEGeolocationSetting());
-  EXPECT_TRUE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
-      profile()));
-
-  // Last, test migrating when the search engine isn't Google, and the setting
-  // is off.
-  SearchGeolocationDisclosureTabHelper::FakeShowingDisclosureForTests(
-      profile());
-  SetOldPreference(false /* is_google */, false /* setting */);
-  ReinitializeService(true /* clear_pref */);
-
-  // The setting should be false, and the disclosure should not be reset as the
-  // setting is off.
-  EXPECT_FALSE(GetService()->GetDSEGeolocationSetting());
-  EXPECT_FALSE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
-      profile()));
-
-  // Note there isn't any need to test when the search engine was Google and the
-  // setting was off, as the code paths have been tested by the above cases.
 }
 
 TEST_F(SearchPermissionsServiceTest, OffTheRecord) {
