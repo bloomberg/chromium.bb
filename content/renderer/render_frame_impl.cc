@@ -2620,7 +2620,7 @@ void RenderFrameImpl::DidFailProvisionalLoadInternal(
   // Notify the browser that we failed a provisional load with an error.
   SendFailedProvisionalLoad(failed_request, error, frame_);
 
-  if (!ShouldDisplayErrorPageForFailedLoad(error.reason, error.unreachable_url))
+  if (!ShouldDisplayErrorPageForFailedLoad(error.reason(), error.url()))
     return;
 
   // Make sure we never show errors in view source mode.
@@ -2661,13 +2661,13 @@ void RenderFrameImpl::LoadNavigationErrorPage(
             : blink::WebFrameLoadType::kStandard;
   const blink::WebHistoryItem& history_item =
       entry ? entry->root() : blink::WebHistoryItem();
-  DCHECK_EQ(WebURLError::Domain::kNet, error.domain);
+  DCHECK_EQ(WebURLError::Domain::kNet, error.domain());
 
   // Requests blocked by the X-Frame-Options HTTP response header don't display
   // error pages but a blank page instead.
   // TODO(alexmos, mkwst, arthursonzogni): This block can be removed once error
   // pages are refactored. See crbug.com/588314 and crbug.com/622385.
-  if (error.reason == net::ERR_BLOCKED_BY_RESPONSE) {
+  if (error.reason() == net::ERR_BLOCKED_BY_RESPONSE) {
     // Do not preserve the history item for blocked navigations, since we will
     // not attempt to reload it later.  Also, it is important that the document
     // sequence number is not preserved, so that other navigations will not be
@@ -2687,8 +2687,8 @@ void RenderFrameImpl::LoadNavigationErrorPage(
         this, failed_request, error, &error_html, nullptr);
   }
   LoadNavigationErrorPageInternal(error_html, GURL(kUnreachableWebDataURL),
-                                  error.unreachable_url, replace,
-                                  frame_load_type, history_item);
+                                  error.url(), replace, frame_load_type,
+                                  history_item);
 }
 
 void RenderFrameImpl::LoadNavigationErrorPageForHttpStatusError(
@@ -2839,10 +2839,8 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
 }
 
 void RenderFrameImpl::LoadErrorPage(int reason) {
-  blink::WebURLError error;
-  error.unreachable_url = frame_->GetDocument().Url();
-  error.domain = blink::WebURLError::Domain::kNet;
-  error.reason = reason;
+  blink::WebURLError error(blink::WebURLError::Domain::kNet, reason,
+                           frame_->GetDocument().Url());
 
   std::string error_html;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
@@ -2851,8 +2849,8 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
 
   frame_->LoadData(error_html, WebString::FromUTF8("text/html"),
                    WebString::FromUTF8("UTF-8"), GURL(kUnreachableWebDataURL),
-                   error.unreachable_url, true,
-                   blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(),
+                   error.url(), true, blink::WebFrameLoadType::kStandard,
+                   blink::WebHistoryItem(),
                    blink::kWebHistoryDifferentDocumentLoad, true);
 }
 
@@ -4212,8 +4210,8 @@ void RenderFrameImpl::DidFailLoad(const blink::WebURLError& error,
       error,
       nullptr,
       &error_description);
-  Send(new FrameHostMsg_DidFailLoadWithError(routing_id_, failed_request.Url(),
-                                             error.reason, error_description));
+  Send(new FrameHostMsg_DidFailLoadWithError(
+      routing_id_, failed_request.Url(), error.reason(), error_description));
 }
 
 void RenderFrameImpl::DidFinishLoad() {
@@ -5495,8 +5493,11 @@ void RenderFrameImpl::OnFailedNavigation(
       common_params, StartNavigationParams(), request_params));
 
   // Send the provisional load failure.
-  blink::WebURLError error(common_params.url, has_stale_copy_in_cache,
-                           error_code);
+  WebURLError error(
+      WebURLError::Domain::kNet, error_code,
+      has_stale_copy_in_cache ? WebURLError::HasCopyInCache::kTrue
+                              : WebURLError::HasCopyInCache::kFalse,
+      WebURLError::IsWebSecurityViolation::kFalse, common_params.url);
   WebURLRequest failed_request =
       CreateURLRequestForNavigation(common_params, request_params,
                                     std::unique_ptr<StreamOverrideParameters>(),
@@ -6812,14 +6813,14 @@ void RenderFrameImpl::SendFailedProvisionalLoad(
     const blink::WebURLError& error,
     blink::WebLocalFrame* frame) {
   bool show_repost_interstitial =
-      (error.reason == net::ERR_CACHE_MISS &&
+      (error.reason() == net::ERR_CACHE_MISS &&
        base::EqualsASCII(request.HttpMethod().Utf16(), "POST"));
 
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-  params.error_code = error.reason;
+  params.error_code = error.reason();
   GetContentClient()->renderer()->GetNavigationErrorStrings(
       this, request, error, nullptr, &params.error_description);
-  params.url = error.unreachable_url;
+  params.url = error.url(),
   params.showing_repost_interstitial = show_repost_interstitial;
   Send(new FrameHostMsg_DidFailProvisionalLoadWithError(routing_id_, params));
 }

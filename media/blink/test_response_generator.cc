@@ -11,6 +11,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 
 using blink::WebString;
+using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLResponse;
 
@@ -21,10 +22,7 @@ TestResponseGenerator::TestResponseGenerator(const GURL& gurl,
     : gurl_(gurl), content_length_(content_length) {}
 
 WebURLError TestResponseGenerator::GenerateError() {
-  WebURLError error;
-  error.reason = net::ERR_ABORTED;
-  error.domain = WebURLError::Domain::kNet;
-  return error;
+  return WebURLError(WebURLError::Domain::kNet, net::ERR_ABORTED, WebURL());
 }
 
 WebURLResponse TestResponseGenerator::Generate200() {

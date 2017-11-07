@@ -86,9 +86,7 @@ void RegisterMockedErrorURLLoad(const WebURL& full_url) {
   response.SetHTTPStatusCode(404);
   response.SetLoadTiming(timing);
 
-  WebURLError error;
-  error.domain = WebURLError::Domain::kTest;
-  error.reason = 404;
+  WebURLError error(WebURLError::Domain::kTest, 404, full_url);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
       full_url, response, error);
 }

@@ -182,7 +182,7 @@ void WebURLLoaderMockFactoryImpl::LoadRequest(const WebURL& url,
     return;
   }
 
-  if (!error->reason && !ReadFile(response_info.file_path, data)) {
+  if (!error->reason() && !ReadFile(response_info.file_path, data)) {
     NOTREACHED();
     return;
   }

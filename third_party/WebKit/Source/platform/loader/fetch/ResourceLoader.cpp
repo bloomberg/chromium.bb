@@ -699,7 +699,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   if (!loader_)
     return;
   int64_t decoded_body_length = data_out.size();
-  if (error_out.reason) {
+  if (error_out.reason()) {
     DidFail(error_out, encoded_data_length, encoded_body_length,
             decoded_body_length);
     return;

@@ -1397,10 +1397,8 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
 // Crashy, http://crbug.com/53247.
 TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   GetMainFrame()->EnableViewSourceMode(true);
-  WebURLError error;
-  error.domain = WebURLError::Domain::kNet;
-  error.reason = net::ERR_FILE_NOT_FOUND;
-  error.unreachable_url = GURL("http://foo");
+  WebURLError error(WebURLError::Domain::kNet, net::ERR_FILE_NOT_FOUND,
+                    GURL("http://foo"));
   WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
@@ -1420,10 +1418,8 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
 
 TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   GetMainFrame()->EnableViewSourceMode(true);
-  WebURLError error;
-  error.domain = WebURLError::Domain::kNet;
-  error.reason = net::ERR_ABORTED;
-  error.unreachable_url = GURL("http://foo");
+  WebURLError error(WebURLError::Domain::kNet, net::ERR_ABORTED,
+                    GURL("http://foo"));
   WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
@@ -1903,10 +1899,8 @@ class RendererErrorPageTest : public RenderViewImplTest {
 #endif
 
 TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
-  WebURLError error;
-  error.domain = WebURLError::Domain::kNet;
-  error.reason = net::ERR_FILE_NOT_FOUND;
-  error.unreachable_url = GURL("http://example.com/suppress");
+  WebURLError error(WebURLError::Domain::kNet, net::ERR_FILE_NOT_FOUND,
+                    GURL("http://example.com/suppress"));
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
@@ -1933,10 +1927,8 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
 #endif
 
 TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
-  WebURLError error;
-  error.domain = WebURLError::Domain::kNet;
-  error.reason = net::ERR_FILE_NOT_FOUND;
-  error.unreachable_url = GURL("http://example.com/dont-suppress");
+  WebURLError error(WebURLError::Domain::kNet, net::ERR_FILE_NOT_FOUND,
+                    GURL("http://example.com/dont-suppress"));
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.

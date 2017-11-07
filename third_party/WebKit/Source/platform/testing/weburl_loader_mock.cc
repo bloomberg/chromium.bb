@@ -60,7 +60,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
   if (!self)
     return;
 
-  if (error.reason) {
+  if (error.reason()) {
     delegate->DidFail(client_, error, data.size(), 0, 0);
     return;
   }

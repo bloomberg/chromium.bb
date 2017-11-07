@@ -138,9 +138,9 @@ void ShellContentRendererClient::GetNavigationErrorStrings(
     *error_html =
         "<head><title>Error</title></head><body>Could not load the requested "
         "resource.<br/>Error code: " +
-        base::IntToString(error.reason) +
-        (error.reason < 0 ? " (" + net::ErrorToString(error.reason) + ")"
-                          : "") +
+        base::IntToString(error.reason()) +
+        (error.reason() < 0 ? " (" + net::ErrorToString(error.reason()) + ")"
+                            : "") +
         "</body>";
   }
 }
