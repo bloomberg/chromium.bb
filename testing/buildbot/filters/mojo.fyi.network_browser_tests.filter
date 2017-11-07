@@ -1770,6 +1770,7 @@
 -BrowserNavigatorTest.CloseSingletonTab
 -BrowserNavigatorTest.Disposition_CurrentTab
 -BrowserNavigatorTest.NavigateFromPageToOptionsInNewTab
+# note: this passes locally but fails on bot.
 -BrowserNonClientFrameViewBrowserTest.InactiveSeparatorColor
 -BrowserTest.ClearPendingOnFailUnlessNTP
 -BrowserTest.GetSizeForNewRenderView
@@ -1846,6 +1847,7 @@
 -CredentialManagerBrowserTest.StoreInUnloadHandler_SameSite_OnDemandMojoPipe
 -DataProxyScriptBrowserTest.Verify
 -DeclarativeNetRequestBrowserTest.*
+-DeclarativeNetRequestBrowserTest_Packed.BrowserRestart/0
 -DevToolsExperimentalExtensionTest.TestDevToolsExperimentalExtensionAPI
 -DevToolsExtensionTest.TestDevToolsExtensionAPI
 -DevToolsExtensionTest.TestDevToolsExtensionMessaging
@@ -1945,6 +1947,7 @@
 -PPAPINaClNewlibTest.FileRef1
 -PPAPINaClNewlibTest.FileRef2
 -PPAPINaClNewlibTest.URLLoader1
+# Note: the next 3 tests pass locally but fail on bot.
 -PPAPINaClPNaClNonSfiTest.FileRef1
 -PPAPINaClPNaClNonSfiTest.FileRef2
 -PPAPINaClPNaClNonSfiTest.URLLoader1
