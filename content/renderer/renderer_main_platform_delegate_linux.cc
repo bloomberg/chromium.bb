@@ -13,7 +13,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
-#include "services/service_manager/sandbox/linux/sandbox_linux.h"
+#include "services/service_manager/sandbox/sandbox.h"
 
 namespace content {
 
@@ -34,7 +34,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox.md
   //
   // Anything else is started in InitializeSandbox().
-  service_manager::SandboxSeccompBPF::Options options;
+  service_manager::SandboxLinux::Options options;
   options.has_wasm_trap_handler =
       base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler);
   service_manager::Sandbox::Initialize(

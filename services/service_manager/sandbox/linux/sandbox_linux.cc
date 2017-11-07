@@ -199,18 +199,6 @@ std::vector<int> SandboxLinux::GetFileDescriptorsToClose() {
   return fds;
 }
 
-bool SandboxLinux::InitializeSandbox(
-    SandboxType sandbox_type,
-    SandboxSeccompBPF::PreSandboxHook hook,
-    const SandboxSeccompBPF::Options& options) {
-  return SandboxLinux::GetInstance()->InitializeSandboxImpl(
-      sandbox_type, std::move(hook), options);
-}
-
-void SandboxLinux::StopThread(base::Thread* thread) {
-  SandboxLinux::GetInstance()->StopThreadImpl(thread);
-}
-
 int SandboxLinux::GetStatus() {
   if (!pre_initialized_) {
     return 0;
@@ -291,10 +279,9 @@ bool SandboxLinux::StartSeccompBPF(service_manager::SandboxType sandbox_type,
   return true;
 }
 
-bool SandboxLinux::InitializeSandboxImpl(
-    SandboxType sandbox_type,
-    SandboxSeccompBPF::PreSandboxHook hook,
-    const SandboxSeccompBPF::Options& options) {
+bool SandboxLinux::InitializeSandbox(SandboxType sandbox_type,
+                                     SandboxSeccompBPF::PreSandboxHook hook,
+                                     const Options& options) {
   DCHECK(!initialize_sandbox_ran_);
   initialize_sandbox_ran_ = true;
 
@@ -356,6 +343,10 @@ bool SandboxLinux::InitializeSandboxImpl(
   if (!pre_initialized_)
     PreinitializeSandbox();
 
+  // Turn on the namespace sandbox if the zygote hasn't done so already.
+  if (options.engage_namespace_sandbox)
+    EngageNamespaceSandbox();
+
   DCHECK(!HasOpenDirectories())
       << "InitializeSandbox() called after unexpected directories have been "
       << "opened. This breaks the security of the setuid sandbox.";
@@ -366,7 +357,7 @@ bool SandboxLinux::InitializeSandboxImpl(
   return StartSeccompBPF(sandbox_type, std::move(hook), options);
 }
 
-void SandboxLinux::StopThreadImpl(base::Thread* thread) {
+void SandboxLinux::StopThread(base::Thread* thread) {
   DCHECK(thread);
   StopThreadAndEnsureNotCounted(thread);
 }

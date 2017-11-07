@@ -348,12 +348,12 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
   if (watchdog_thread) {
     // SandboxLinux needs to be able to ensure that the thread
     // has really been stopped.
-    service_manager::SandboxLinux::StopThread(watchdog_thread);
+    service_manager::SandboxLinux::GetInstance()->StopThread(watchdog_thread);
   }
 
   // SandboxLinux::InitializeSandbox() must always be called
   // with only one thread.
-  service_manager::SandboxSeccompBPF::Options sandbox_options;
+  service_manager::SandboxLinux::Options sandbox_options;
   sandbox_options.use_amd_specific_policies =
       gpu_info && angle::IsAMD(gpu_info->active_gpu().vendor_id);
   sandbox_options.accelerated_video_decode_enabled =
@@ -364,7 +364,7 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
       !gpu_prefs.disable_vaapi_accelerated_video_encode;
 #endif
 
-  bool res = service_manager::SandboxLinux::InitializeSandbox(
+  bool res = service_manager::SandboxLinux::GetInstance()->InitializeSandbox(
       service_manager::SandboxTypeFromCommandLine(
           *base::CommandLine::ForCurrentProcess()),
       GetGpuProcessPreSandboxHook(sandbox_options.use_amd_specific_policies),

@@ -14,7 +14,6 @@
 #include "base/posix/global_descriptors.h"
 #include "services/service_manager/sandbox/export.h"
 #include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
-#include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
@@ -65,6 +64,15 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
     METHOD_MATCH_WITH_FALLBACK = 37,
   };
 
+  // SandboxLinux Options are a superset of SandboxSecompBPF Options.
+  struct Options : public SandboxSeccompBPF::Options {
+    // When running with a zygote, the namespace sandbox will have already
+    // been engaged prior to initializing SandboxLinux itself, and need not
+    // be done so again. Set to true to indicate that there isn't a zygote
+    // for this process and the step is to be performed here explicitly.
+    bool engage_namespace_sandbox = false;
+  };
+
   // Get our singleton instance.
   static SandboxLinux* GetInstance();
 
@@ -95,15 +103,14 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   // an adequate policy depending on the process type and command line
   // arguments.
   // Currently the layer-2 sandbox is composed of seccomp-bpf and address space
-  // limitations. This will instantiate the SandboxLinux singleton if it
-  // doesn't already exist.
+  // limitations.
   // This function should only be called without any thread running.
-  static bool InitializeSandbox(SandboxType sandbox_type,
-                                SandboxSeccompBPF::PreSandboxHook hook,
-                                const SandboxSeccompBPF::Options& options);
+  bool InitializeSandbox(SandboxType sandbox_type,
+                         SandboxSeccompBPF::PreSandboxHook hook,
+                         const Options& options);
 
   // Stop |thread| in a way that can be trusted by the sandbox.
-  static void StopThread(base::Thread* thread);
+  void StopThread(base::Thread* thread);
 
   // Returns the status of the renderer, worker and ppapi sandbox. Can only
   // be queried after going through PreinitializeSandbox(). This is a bitmask
@@ -169,13 +176,6 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
 
   SandboxLinux();
   ~SandboxLinux();
-
-  // Some methods are static and get an instance of the Singleton. These
-  // are the non-static implementations.
-  bool InitializeSandboxImpl(SandboxType sandbox_type,
-                             SandboxSeccompBPF::PreSandboxHook hook,
-                             const SandboxSeccompBPF::Options& options);
-  void StopThreadImpl(base::Thread* thread);
 
   // We must have been pre_initialized_ before using these.
   bool seccomp_bpf_supported() const;
