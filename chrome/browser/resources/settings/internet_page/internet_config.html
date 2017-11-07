@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_config.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -18,31 +17,23 @@
     </style>
 
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
-      <div slot="title">
-        <div class="layout horizontal center">
-          <cr-network-icon network-state="[[networkProperties_]]" is-list-item>
-          </cr-network-icon>
-          <div class="title">[[getDialogTitle_(networkProperties_)]]</div>
-        </div>
-      </div>
+      <div slot="title">[[getDialogTitle_(networkProperties_)]]</div>
       <div slot="body">
-        <div class="settings-box first">
-          <network-config id="networkConfig" class="flex"
-              networking-private="[[networkingPrivate]]"
-              network-properties="{{networkProperties_}}"
-              enable-connect="{{enableConnect_}}" enable-save="{{enableSave_}}"
-              share-allow-enable="[[shareAllowEnable_]]"
-              share-default="[[shareDefault_]]"
-              on-close="close_">
-          </network-config>
-        </div>
+        <network-config id="networkConfig" class="flex"
+            networking-private="[[networkingPrivate]]"
+            network-properties="{{networkProperties_}}"
+            enable-connect="{{enableConnect_}}" enable-save="{{enableSave_}}"
+            share-allow-enable="[[shareAllowEnable_]]"
+            share-default="[[shareDefault_]]"
+            on-close="close_">
+        </network-config>
       </div>
 
       <div slot="button-container">
         <paper-button class="cancel-button" on-tap="onCancelTap_">
           $i18n{cancel}
         </paper-button>
-        <paper-button class="primary-button" on-tap="onSaveOrConnectTap_"
+        <paper-button class="action-button" on-tap="onSaveOrConnectTap_"
             disabled="[[!getSaveOrConnectEnabled_(
                 guid, networkProperties_, enableSave_, enableConnect_)]]">
           [[getSaveOrConnectLabel_(guid, networkProperties_)]]

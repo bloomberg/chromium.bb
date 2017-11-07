@@ -11,14 +11,26 @@
 
       .md-select {
         color: var(--primary-text-color);
+        width: 100%;
       }
 
       .md-select-wrapper {
         -webkit-margin-start: calc(var(--md-select-side-padding) * -1);
       }
+
+      .md-select-underline {
+        -webkit-margin-end: var(--cr-icon-button-margin-start);
+      }
+
+      .control-box {
+        -webkit-padding-end: calc(var(--network-control-margin) - 12px);
+        align-items: stretch;
+        flex-direction: column;
+        justify-content: center;
+      }
     </style>
 
-    <div class="property-box two-line single-column">
+    <div class="control-box">
       <div id="label">[[label]]</div>
       <div class="md-select-wrapper">
         <select class="md-select" disabled="[[disabled]]"

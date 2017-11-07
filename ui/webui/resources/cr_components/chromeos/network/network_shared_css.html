@@ -7,13 +7,15 @@
   <template>
     <style include="cr-shared-style md-select">
       :root {
-        --network-control-width: 350px;
         /* Margin for the show/hide password icon */
         --network-control-margin: 40px;
       }
 
-      .md-select {
-        --md-select-width: var(--network-control-width);
+      .control-box {
+        align-items: center;
+        display: flex;
+        height: 58px;  /* Matches height of paper-input */
+        padding: 0;
       }
 
       .property-box {
@@ -68,7 +70,6 @@
         --paper-input-container-input-color: var(--secondary-text-color);
         margin-bottom: 0;
         margin-top: -9px;
-        width: var(--network-control-width);
       }
     </style>
   </template>
