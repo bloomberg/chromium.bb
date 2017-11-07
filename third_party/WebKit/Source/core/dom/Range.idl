@@ -64,8 +64,8 @@
 
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extensions-to-the-range-interface
-    DOMRectList getClientRects();
-    DOMRect getBoundingClientRect();
+    [Measure] DOMRectList getClientRects();
+    [Measure] DOMRect getBoundingClientRect();
 
     // DOM Parsing and Serialization
     // https://w3c.github.io/DOM-Parsing/#extensions-to-the-range-interface

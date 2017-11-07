@@ -1747,6 +1747,10 @@ enum WebFeature {
   kGeolocationWatchPosition = 2215,
   kDataUriHasOctothorpe = 2216,
   kNetInfoSaveData = 2217,
+  kV8Element_GetClientRects_Method = 2218,
+  kV8Element_GetBoundingClientRect_Method = 2219,
+  kV8Range_GetClientRects_Method = 2220,
+  kV8Range_GetBoundingClientRect_Method = 2221,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
