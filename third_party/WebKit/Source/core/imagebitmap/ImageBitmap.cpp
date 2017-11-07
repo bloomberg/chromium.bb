@@ -217,21 +217,40 @@ scoped_refptr<StaticBitmapImage> NewImageFromRaster(
 }
 
 scoped_refptr<StaticBitmapImage> FlipImageVertically(
-    scoped_refptr<StaticBitmapImage> input) {
-  scoped_refptr<Uint8Array> image_pixels = CopyImageData(input);
-  if (!image_pixels)
-    return nullptr;
-  SkImageInfo info = GetSkImageInfo(input.get());
-  unsigned image_row_bytes = info.width() * info.bytesPerPixel();
-  for (int i = 0; i < info.height() / 2; i++) {
-    unsigned top_first_element = i * image_row_bytes;
-    unsigned top_last_element = (i + 1) * image_row_bytes;
-    unsigned bottom_first_element = (info.height() - 1 - i) * image_row_bytes;
-    std::swap_ranges(image_pixels->Data() + top_first_element,
-                     image_pixels->Data() + top_last_element,
-                     image_pixels->Data() + bottom_first_element);
+    scoped_refptr<StaticBitmapImage> input,
+    const ImageBitmap::ParsedOptions& parsed_options) {
+  sk_sp<SkImage> image = input->PaintImageForCurrentFrame().GetSkImage();
+  // If image is unpremul and premultiply alpha is none, we have to avoid
+  // SkSurface code path, which only supports premul. This code path may result
+  // in a GPU readback if |input| is texture backed since CopyImageData() uses
+  // SkImage::readPixels() to extract the pixels from SkImage.
+  if (image->alphaType() == kUnpremul_SkAlphaType &&
+      !parsed_options.premultiply_alpha) {
+    scoped_refptr<Uint8Array> image_pixels = CopyImageData(input);
+    if (!image_pixels)
+      return nullptr;
+    SkImageInfo info = GetSkImageInfo(input.get());
+    unsigned image_row_bytes = info.width() * info.bytesPerPixel();
+    for (int i = 0; i < info.height() / 2; i++) {
+      unsigned top_first_element = i * image_row_bytes;
+      unsigned top_last_element = (i + 1) * image_row_bytes;
+      unsigned bottom_first_element = (info.height() - 1 - i) * image_row_bytes;
+      std::swap_ranges(image_pixels->Data() + top_first_element,
+                       image_pixels->Data() + top_last_element,
+                       image_pixels->Data() + bottom_first_element);
+    }
+    return NewImageFromRaster(info, std::move(image_pixels));
   }
-  return NewImageFromRaster(info, std::move(image_pixels));
+
+  // Otherwise, we can use Skia to flip the image by drawing it on a surface.
+  sk_sp<SkSurface> surface = SkSurface::MakeRaster(GetSkImageInfo(input));
+  if (!surface)
+    return nullptr;
+  SkCanvas* canvas = surface->getCanvas();
+  canvas->scale(1, -1);
+  canvas->translate(0, -input->height());
+  canvas->drawImage(image.get(), 0, 0);
+  return StaticBitmapImage::Create(surface->makeImageSnapshot());
 }
 
 scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
@@ -380,25 +399,38 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   scoped_refptr<StaticBitmapImage> result =
       StaticBitmapImage::Create(skia_image, image->ContextProviderWrapper());
 
+  // down-scaling has higher priority than other tasks, up-scaling has lower.
+  bool down_scaling =
+      parsed_options.should_scale_input &&
+      (parsed_options.resize_width * parsed_options.resize_height <
+       result->Size().Area());
+  bool up_scaling = parsed_options.should_scale_input && !down_scaling;
+  // resize if down-scaling
+  if (down_scaling) {
+    result =
+        ScaleImage(std::move(result), parsed_options.resize_width,
+                   parsed_options.resize_height, parsed_options.resize_quality);
+  }
+
   // flip if needed
   if (parsed_options.flip_y)
-    result = FlipImageVertically(std::move(result));
+    result = FlipImageVertically(std::move(result), parsed_options);
+
+  // color convert if needed
+  if (parsed_options.has_color_space_conversion)
+    result = ApplyColorSpaceConversion(std::move(result), parsed_options);
 
   // premultiply / unpremultiply if needed
   result = GetImageWithAlphaDisposition(std::move(result),
                                         parsed_options.premultiply_alpha
                                             ? kPremultiplyAlpha
                                             : kDontPremultiplyAlpha);
-
-  // resize if needed
-  if (parsed_options.should_scale_input) {
+  // resize if up-scaling
+  if (up_scaling) {
     result =
         ScaleImage(std::move(result), parsed_options.resize_width,
                    parsed_options.resize_height, parsed_options.resize_quality);
   }
-
-  if (parsed_options.has_color_space_conversion)
-    result = ApplyColorSpaceConversion(std::move(result), parsed_options);
   return result;
 }
 
@@ -583,7 +615,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
 
   // flip if needed
   if (parsed_options.flip_y)
-    image_ = FlipImageVertically(std::move(image_));
+    image_ = FlipImageVertically(std::move(image_), parsed_options);
 
   // resize if needed
   if (parsed_options.should_scale_input) {
