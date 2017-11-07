@@ -19,6 +19,7 @@
 #include "extensions/renderer/native_renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
+#include "extensions/renderer/send_message_tester.h"
 
 namespace extensions {
 namespace {
@@ -187,45 +188,22 @@ TEST_F(RuntimeHooksDelegateTest, Connect) {
     EXPECT_TRUE(connect_native->IsUndefined());
   }
 
-  int next_context_port_id = 0;
-  auto run_connect = [this, context, &next_context_port_id](
-                         const std::string& args,
-                         const std::string& expected_channel,
-                         const std::string& expected_target_id,
-                         bool expected_include_tls_channel_id) {
-    SCOPED_TRACE(base::StringPrintf("Args: `%s`", args.c_str()));
-    constexpr char kAddPortTemplate[] =
-        "(function() { return chrome.runtime.connect(%s); })";
-    PortId expected_port_id(script_context()->context_id(),
-                            next_context_port_id++, true);
-    MessageTarget expected_target(
-        MessageTarget::ForExtension(expected_target_id));
-    EXPECT_CALL(*ipc_message_sender(),
-                SendOpenMessageChannel(script_context(), expected_port_id,
-                                       expected_target, expected_channel,
-                                       expected_include_tls_channel_id));
-    v8::Local<v8::Function> add_port = FunctionFromString(
-        context, base::StringPrintf(kAddPortTemplate, args.c_str()));
-    v8::Local<v8::Value> port = RunFunction(add_port, context, 0, nullptr);
-    ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
-    ASSERT_FALSE(port.IsEmpty());
-    ASSERT_TRUE(port->IsObject());
-    v8::Local<v8::Object> port_obj = port.As<v8::Object>();
-    EXPECT_EQ(base::StringPrintf(R"("%s")", expected_channel.c_str()),
-              GetStringPropertyFromObject(port_obj, context, "name"));
-  };
-
-  run_connect("", "", extension()->id(), false);
-  run_connect("{name: 'channel'}", "channel", extension()->id(), false);
-  run_connect("{includeTlsChannelId: true}", "", extension()->id(), true);
-  run_connect("{includeTlsChannelId: true, name: 'channel'}", "channel",
-              extension()->id(), true);
+  SendMessageTester tester(ipc_message_sender(), script_context(), 0,
+                           "runtime");
+  MessageTarget self_target = MessageTarget::ForExtension(extension()->id());
+  tester.TestConnect("", "", self_target, false);
+  tester.TestConnect("{name: 'channel'}", "channel", self_target, false);
+  tester.TestConnect("{includeTlsChannelId: true}", "", self_target, true);
+  tester.TestConnect("{includeTlsChannelId: true, name: 'channel'}", "channel",
+                     self_target, true);
 
   std::string other_id = crx_file::id_util::GenerateId("other");
-  run_connect(base::StringPrintf("'%s'", other_id.c_str()), "", other_id,
-              false);
-  run_connect(base::StringPrintf("'%s', {name: 'channel'}", other_id.c_str()),
-              "channel", other_id, false);
+  MessageTarget other_target = MessageTarget::ForExtension(other_id);
+  tester.TestConnect(base::StringPrintf("'%s'", other_id.c_str()), "",
+                     other_target, false);
+  tester.TestConnect(
+      base::StringPrintf("'%s', {name: 'channel'}", other_id.c_str()),
+      "channel", other_target, false);
 }
 
 // Tests the end-to-end (renderer) flow for a call to runtime.sendMessage
@@ -235,12 +213,6 @@ TEST_F(RuntimeHooksDelegateTest, SendMessage) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
-  // Whether we expect the port to be open or closed at the end of the call.
-  enum PortStatus {
-    CLOSED,
-    OPEN,
-  };
-
   {
     // Sanity check: sendNativeMessage is unavailable (missing permission).
     v8::Local<v8::Value> send_native_message =
@@ -249,63 +221,38 @@ TEST_F(RuntimeHooksDelegateTest, SendMessage) {
     EXPECT_TRUE(send_native_message->IsUndefined());
   }
 
-  int next_context_port_id = 0;
-  auto send_message = [this, context, &next_context_port_id](
-                          const std::string& args,
-                          const std::string& expected_message,
-                          const std::string& expected_target_id,
-                          bool expected_include_tls_channel_id,
-                          PortStatus expected_port_status) {
-    SCOPED_TRACE(base::StringPrintf("Args: `%s`", args.c_str()));
-    constexpr char kSendMessageTemplate[] =
-        "(function() { chrome.runtime.sendMessage(%s); })";
+  SendMessageTester tester(ipc_message_sender(), script_context(), 0,
+                           "runtime");
 
-    PortId expected_port_id(script_context()->context_id(),
-                            next_context_port_id++, true);
-    constexpr char kExpectedChannel[] = "chrome.runtime.sendMessage";
-    MessageTarget expected_target(
-        MessageTarget::ForExtension(expected_target_id));
-    EXPECT_CALL(*ipc_message_sender(),
-                SendOpenMessageChannel(script_context(), expected_port_id,
-                                       expected_target, kExpectedChannel,
-                                       expected_include_tls_channel_id));
-    Message message(expected_message, false);
-    EXPECT_CALL(
-        *ipc_message_sender(),
-        SendPostMessageToPort(MSG_ROUTING_NONE, expected_port_id, message));
-    if (expected_port_status == CLOSED) {
-      EXPECT_CALL(
-          *ipc_message_sender(),
-          SendCloseMessagePort(MSG_ROUTING_NONE, expected_port_id, true));
-    }
-    v8::Local<v8::Function> send_message = FunctionFromString(
-        context, base::StringPrintf(kSendMessageTemplate, args.c_str()));
-    RunFunction(send_message, context, 0, nullptr);
-    ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
-  };
-
-  send_message("''", R"("")", extension()->id(), false, CLOSED);
+  MessageTarget self_target = MessageTarget::ForExtension(extension()->id());
+  tester.TestSendMessage("''", R"("")", self_target, false,
+                         SendMessageTester::CLOSED);
 
   constexpr char kStandardMessage[] = R"({"data":"hello"})";
-  send_message("{data: 'hello'}", kStandardMessage, extension()->id(), false,
-               CLOSED);
-  send_message("{data: 'hello'}, function() {}", kStandardMessage,
-               extension()->id(), false, OPEN);
-  send_message("{data: 'hello'}, {includeTlsChannelId: true}", kStandardMessage,
-               extension()->id(), true, CLOSED);
-  send_message("{data: 'hello'}, {includeTlsChannelId: true}, function() {}",
-               kStandardMessage, extension()->id(), true, OPEN);
+  tester.TestSendMessage("{data: 'hello'}", kStandardMessage, self_target,
+                         false, SendMessageTester::CLOSED);
+  tester.TestSendMessage("{data: 'hello'}, function() {}", kStandardMessage,
+                         self_target, false, SendMessageTester::OPEN);
+  tester.TestSendMessage("{data: 'hello'}, {includeTlsChannelId: true}",
+                         kStandardMessage, self_target, true,
+                         SendMessageTester::CLOSED);
+  tester.TestSendMessage(
+      "{data: 'hello'}, {includeTlsChannelId: true}, function() {}",
+      kStandardMessage, self_target, true, SendMessageTester::OPEN);
 
   std::string other_id_str = crx_file::id_util::GenerateId("other");
   const char* other_id = other_id_str.c_str();  // For easy StringPrintf()ing.
+  MessageTarget other_target = MessageTarget::ForExtension(other_id_str);
 
-  send_message(base::StringPrintf("'%s', {data: 'hello'}", other_id),
-               kStandardMessage, other_id_str, false, CLOSED);
-  send_message(
+  tester.TestSendMessage(base::StringPrintf("'%s', {data: 'hello'}", other_id),
+                         kStandardMessage, other_target, false,
+                         SendMessageTester::CLOSED);
+  tester.TestSendMessage(
       base::StringPrintf("'%s', {data: 'hello'}, function() {}", other_id),
-      kStandardMessage, other_id_str, false, OPEN);
-  send_message(base::StringPrintf("'%s', 'string message'", other_id),
-               R"("string message")", other_id_str, false, CLOSED);
+      kStandardMessage, other_target, false, SendMessageTester::OPEN);
+  tester.TestSendMessage(base::StringPrintf("'%s', 'string message'", other_id),
+                         R"("string message")", other_target, false,
+                         SendMessageTester::CLOSED);
 
   // Funny case. The only required argument is `message`, which can be any type.
   // This means that if an extension provides a <string, object> pair for the
@@ -318,13 +265,15 @@ TEST_F(RuntimeHooksDelegateTest, SendMessage) {
   // a bit more intelligent about it. We could examine the string to see if it's
   // a valid extension id as well as looking at the properties on the object.
   // But probably not worth it at this time.
-  send_message(
+  tester.TestSendMessage(
       base::StringPrintf("'%s', {includeTlsChannelId: true}", other_id),
-      R"({"includeTlsChannelId":true})", other_id_str, false, CLOSED);
-  send_message(
+      R"({"includeTlsChannelId":true})", other_target, false,
+      SendMessageTester::CLOSED);
+  tester.TestSendMessage(
       base::StringPrintf("'%s', {includeTlsChannelId: true}, function() {}",
                          other_id),
-      R"({"includeTlsChannelId":true})", other_id_str, false, OPEN);
+      R"({"includeTlsChannelId":true})", other_target, false,
+      SendMessageTester::OPEN);
 }
 
 // Test that some incorrect invocations of sendMessage() throw errors.

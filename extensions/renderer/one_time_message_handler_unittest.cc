@@ -14,6 +14,7 @@
 #include "extensions/renderer/bindings/api_bindings_system.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/message_target.h"
+#include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/native_extension_bindings_system_test_base.h"
 #include "extensions/renderer/script_context.h"
@@ -23,8 +24,6 @@
 namespace extensions {
 
 namespace {
-
-constexpr char kSendMessageChannel[] = "chrome.runtime.sendMessage";
 
 constexpr char kEchoArgsAndError[] =
     "(function() {\n"
@@ -95,18 +94,18 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndDontExpectReply) {
   // We should open a message port, send a message, and then close it
   // immediately.
   MessageTarget target(MessageTarget::ForExtension(extension()->id()));
-  EXPECT_CALL(
-      *ipc_message_sender(),
-      SendOpenMessageChannel(script_context(), port_id, target,
-                             kSendMessageChannel, include_tls_channel_id));
+  EXPECT_CALL(*ipc_message_sender(),
+              SendOpenMessageChannel(script_context(), port_id, target,
+                                     messaging_util::kSendMessageChannel,
+                                     include_tls_channel_id));
   EXPECT_CALL(*ipc_message_sender(),
               SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
   EXPECT_CALL(*ipc_message_sender(),
               SendCloseMessagePort(MSG_ROUTING_NONE, port_id, true));
 
-  message_handler()->SendMessage(script_context(), port_id, target,
-                                 kSendMessageChannel, include_tls_channel_id,
-                                 message, v8::Local<v8::Function>());
+  message_handler()->SendMessage(
+      script_context(), port_id, target, messaging_util::kSendMessageChannel,
+      include_tls_channel_id, message, v8::Local<v8::Function>());
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
 
   EXPECT_FALSE(message_handler()->HasPort(script_context(), port_id));
@@ -132,16 +131,16 @@ TEST_F(OneTimeMessageHandlerTest, SendMessageAndExpectReply) {
   // We should open a message port and send a message, and the message port
   // should remain open (to allow for a reply).
   MessageTarget target(MessageTarget::ForExtension(extension()->id()));
-  EXPECT_CALL(
-      *ipc_message_sender(),
-      SendOpenMessageChannel(script_context(), port_id, target,
-                             kSendMessageChannel, include_tls_channel_id));
+  EXPECT_CALL(*ipc_message_sender(),
+              SendOpenMessageChannel(script_context(), port_id, target,
+                                     messaging_util::kSendMessageChannel,
+                                     include_tls_channel_id));
   EXPECT_CALL(*ipc_message_sender(),
               SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
 
   message_handler()->SendMessage(script_context(), port_id, target,
-                                 kSendMessageChannel, include_tls_channel_id,
-                                 message, callback);
+                                 messaging_util::kSendMessageChannel,
+                                 include_tls_channel_id, message, callback);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
 
   // We should have added a pending request to the APIRequestHandler, but
@@ -178,15 +177,15 @@ TEST_F(OneTimeMessageHandlerTest, DisconnectOpener) {
       FunctionFromString(context, kEchoArgsAndError);
 
   MessageTarget target(MessageTarget::ForExtension(extension()->id()));
-  EXPECT_CALL(
-      *ipc_message_sender(),
-      SendOpenMessageChannel(script_context(), port_id, target,
-                             kSendMessageChannel, include_tls_channel_id));
+  EXPECT_CALL(*ipc_message_sender(),
+              SendOpenMessageChannel(script_context(), port_id, target,
+                                     messaging_util::kSendMessageChannel,
+                                     include_tls_channel_id));
   EXPECT_CALL(*ipc_message_sender(),
               SendPostMessageToPort(MSG_ROUTING_NONE, port_id, message));
   message_handler()->SendMessage(script_context(), port_id, target,
-                                 kSendMessageChannel, include_tls_channel_id,
-                                 message, callback);
+                                 messaging_util::kSendMessageChannel,
+                                 include_tls_channel_id, message, callback);
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
 
   EXPECT_EQ("undefined", GetGlobalProperty(context, "replyArgs"));
