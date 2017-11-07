@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//printing/features/features.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
@@ -36,29 +37,31 @@ service_manifest("pdf_compositor_manifest") {
   source = "pdf_compositor_manifest.json"
 }
 
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "pdf_compositor_service_unittest.cc",
-  ]
+if (enable_basic_printing || enable_print_preview) {
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "pdf_compositor_service_unittest.cc",
+    ]
 
-  include_dirs = [ "testing/gmock/include" ]
-  deps = [
-    ":service",
-    "//base/test:test_support",
-    "//components/printing/service/public/interfaces",
-    "//mojo/common",
-    "//services/service_manager/public/cpp:service_test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-  data = [
-    "//components/test/data/printing/google.mskp",
-  ]
-}
+    include_dirs = [ "testing/gmock/include" ]
+    deps = [
+      ":service",
+      "//base/test:test_support",
+      "//components/printing/service/public/interfaces",
+      "//mojo/common",
+      "//services/service_manager/public/cpp:service_test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+    ]
+    data = [
+      "//components/test/data/printing/google.mskp",
+    ]
+  }
 
-service_manifest("pdf_compositor_service_unittest_manifest") {
-  name = "pdf_compositor_service_unittest"
-  source = "pdf_compositor_service_unittest_manifest.json"
-  packaged_services = [ ":pdf_compositor_manifest" ]
+  service_manifest("pdf_compositor_service_unittest_manifest") {
+    name = "pdf_compositor_service_unittest"
+    source = "pdf_compositor_service_unittest_manifest.json"
+    packaged_services = [ ":pdf_compositor_manifest" ]
+  }
 }

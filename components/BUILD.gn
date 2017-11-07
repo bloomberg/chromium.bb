@@ -310,11 +310,7 @@ test("components_unittests") {
   }
 
   if (enable_basic_printing || enable_print_preview) {
-    deps += [
-      "//components/printing/browser",
-      "//components/printing/common",
-      "//components/printing/renderer",
-    ]
+    deps += [ "//components/printing/service:unit_tests" ]
   }
 
   if (safe_browsing_mode == 1) {

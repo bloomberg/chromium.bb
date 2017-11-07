@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//printing/features/features.gni")
+import("//services/catalog/public/tools/catalog.gni")
+import("//services/service_manager/public/service_manifest.gni")
+
 source_set("test_support") {
   testonly = true
 
@@ -47,4 +51,26 @@ source_set("run_all_unittests") {
   deps = [
     ":test_support",
   ]
+
+  if (enable_basic_printing || enable_print_preview) {
+    defines = [ "HAS_SERVICE_IN_UNIT_TEST" ]
+    deps += [
+      ":components_unittests_catalog_source",
+      "//services/catalog:lib",
+    ]
+  }
+}
+
+if (enable_basic_printing || enable_print_preview) {
+  # There is only one service in catalog, which depends on printing feature.
+  # When more services are added, the condition can be moved inside of catalog.
+  catalog("components_unittests_catalog") {
+    embedded_services = [ "//components/printing/service:pdf_compositor_service_unittest_manifest" ]
+  }
+
+  catalog_cpp_source("components_unittests_catalog_source") {
+    testonly = true
+    catalog = ":components_unittests_catalog"
+    generated_function_name = "components::CreateUnittestsCatalog"
+  }
 }
