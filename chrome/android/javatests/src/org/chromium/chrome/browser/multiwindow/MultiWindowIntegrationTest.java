@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.multiwindow;
 
-import static org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest.moveActivityToFront;
-import static org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest.waitForSecondChromeTabbedActivity;
+import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.moveActivityToFront;
+import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.waitForSecondChromeTabbedActivity;
+import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.waitForTabs;
 
 import android.annotation.TargetApi;
 import android.os.Build;
@@ -38,7 +39,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 
-import java.util.Locale;
 import java.util.concurrent.Callable;
 
 /**
@@ -150,43 +150,5 @@ public class MultiWindowIntegrationTest {
         // At this point cta2 should have zero tabs, and cta should have 2 tabs (NTP, 'google').
         waitForTabs("CTA2", cta2, 0, Tab.INVALID_TAB_ID);
         waitForTabs("CTA", cta, 2, googleTabId);
-    }
-
-    /**
-     * Waits until 'activity' has 'expectedTotalTabCount' total tabs, and its active tab has
-     * 'expectedActiveTabId' ID. 'expectedActiveTabId' is optional and can be Tab.INVALID_TAB_ID.
-     * 'tag' is an arbitrary string that is prepended to failure reasons.
-     */
-    private static void waitForTabs(final String tag, final ChromeTabbedActivity activity,
-            final int expectedTotalTabCount, final int expectedActiveTabId) {
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                int actualTotalTabCount = activity.getTabModelSelector().getTotalTabCount();
-                if (expectedTotalTabCount != actualTotalTabCount) {
-                    updateFailureReason(String.format((Locale) null,
-                            "%s: total tab count is wrong: %d (expected %d)", tag,
-                            actualTotalTabCount, expectedTotalTabCount));
-                    return false;
-                }
-                return true;
-            }
-        });
-
-        if (expectedActiveTabId == Tab.INVALID_TAB_ID) return;
-
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                int actualActiveTabId = activity.getActivityTab().getId();
-                if (expectedActiveTabId != actualActiveTabId) {
-                    updateFailureReason(String.format((Locale) null,
-                            "%s: active tab ID is wrong: %d (expected %d)", tag, actualActiveTabId,
-                            expectedActiveTabId));
-                    return false;
-                }
-                return true;
-            }
-        });
     }
 }

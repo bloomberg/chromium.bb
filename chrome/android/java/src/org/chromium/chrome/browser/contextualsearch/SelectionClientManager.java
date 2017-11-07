@@ -76,6 +76,7 @@ public class SelectionClientManager {
      * notified of method calls.
      * @param contextualSearchSelectionClient An additional {@link SelectionClient} that should be
      *        notified of requests going forward, used by Contextual Search.
+     * @return The resulting {@link SelectionClient} that should be active after the addition.
      */
     SelectionClient addContextualSearchSelectionClient(
             SelectionClient contextualSearchSelectionClient) {
@@ -94,6 +95,7 @@ public class SelectionClientManager {
     /**
      * Removes the current {@link SelectionClient} from the current instances that will be notified
      * of method calls.
+     * @return A remaining {@link SelectionClient} used for Smart Selection or {@code null}.
      */
     @Nullable
     SelectionClient removeContextualSearchSelectionClient() {
