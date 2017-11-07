@@ -38,8 +38,7 @@ import template_expander
 
 def calculate_functions_to_declare(property_):
     property_['should_declare_functions'] = \
-        not property_['use_handlers_for'] \
-        and not property_['longhands'] \
+        not property_['longhands'] \
         and not property_['direction_aware_options'] \
         and not property_['builder_skip'] \
         and property_['is_property']
