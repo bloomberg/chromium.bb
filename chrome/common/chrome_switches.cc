@@ -486,7 +486,10 @@ const char kMediaCacheSize[]                = "media-cache-size";
 // Enables the out-of-process memory logging.
 const char kMemlog[] = "memlog";
 const char kMemlogModeAll[] = "all";
+const char kMemlogModeBrowser[] = "browser";
+const char kMemlogModeGpu[] = "gpu";
 const char kMemlogModeMinimal[] = "minimal";
+const char kMemlogModeRendererSampling[] = "renderer-sampling";
 
 // Allows setting a different destination ID for connection-monitoring GCM
 // messages. Useful when running against a non-prod management server.
