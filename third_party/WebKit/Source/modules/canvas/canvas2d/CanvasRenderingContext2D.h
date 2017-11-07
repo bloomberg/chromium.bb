@@ -39,7 +39,6 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/heap/GarbageCollected.h"
-#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebThread.h"
 

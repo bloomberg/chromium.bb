@@ -48,7 +48,6 @@
 #include "platform/bindings/ScriptWrappableVisitor.h"
 #include "platform/bindings/WrapperTypeInfo.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/Vector.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/Platform.h"

@@ -8,7 +8,6 @@
 #include "platform/PlatformExport.h"
 
 #include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

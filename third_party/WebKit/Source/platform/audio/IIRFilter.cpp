@@ -4,7 +4,9 @@
 
 #include "platform/audio/IIRFilter.h"
 
+#include <algorithm>
 #include <complex>
+
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/VectorMath.h"
 #include "platform/wtf/MathExtras.h"

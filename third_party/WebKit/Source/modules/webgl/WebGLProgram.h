@@ -30,7 +30,6 @@
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/wtf/RefPtr.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

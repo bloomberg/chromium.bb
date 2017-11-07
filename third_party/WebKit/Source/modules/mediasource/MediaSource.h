@@ -41,7 +41,6 @@
 #include "modules/mediasource/SourceBuffer.h"
 #include "modules/mediasource/SourceBufferList.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
-#include "platform/wtf/Vector.h"
 #include "public/platform/WebMediaSource.h"
 
 namespace blink {

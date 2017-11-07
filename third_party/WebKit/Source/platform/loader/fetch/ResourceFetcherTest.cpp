@@ -59,7 +59,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/Vector.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
