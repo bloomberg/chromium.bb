@@ -1714,6 +1714,9 @@ extern const char kWebrtcH264WithOpenh264FfmpegDescription[];
 
 #if defined(OS_CHROMEOS)
 
+extern const char kAshDisableLoginDimAndBlurName[];
+extern const char kAshDisableLoginDimAndBlurDescription[];
+
 extern const char kAshDisableSmoothScreenRotationName[];
 extern const char kAshDisableSmoothScreenRotationDescription[];
 
