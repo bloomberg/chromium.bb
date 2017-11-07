@@ -75,6 +75,12 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   displayed_preview_infobar_ = false;
   displayed_preview_timestamp_ = false;
 
+  // Retrieve PreviewsUIService* from |web_contents| if available.
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  previews::PreviewsUIService* previews_ui_service =
+      previews_service ? previews_service->previews_ui_service() : nullptr;
+
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   offline_pages::OfflinePageTabHelper* tab_helper =
       offline_pages::OfflinePageTabHelper::FromWebContents(web_contents());
@@ -96,7 +102,8 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
         base::Bind(&AddPreviewNavigationCallback,
                    web_contents()->GetBrowserContext(),
                    navigation_handle->GetRedirectChain()[0],
-                   previews::PreviewsType::OFFLINE));
+                   previews::PreviewsType::OFFLINE),
+        previews_ui_service);
     // Don't try to show other infobars if this is an offline preview.
     return;
   }
@@ -123,7 +130,8 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
           base::Bind(&AddPreviewNavigationCallback,
                      web_contents()->GetBrowserContext(),
                      navigation_handle->GetRedirectChain()[0],
-                     main_frame_preview));
+                     main_frame_preview),
+          previews_ui_service);
     }
   }
 }
