@@ -162,6 +162,7 @@
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
+#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/stack_view/card_view.h"
 #import "ios/chrome/browser/ui/stack_view/page_animation_util.h"
@@ -395,6 +396,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     SKStoreProductViewControllerDelegate,
                                     SnapshotOverlayProvider,
                                     StoreKitLauncher,
+                                    SigninPresenter,
                                     SyncPresenter,
                                     TabDialogDelegate,
                                     TabHeadersDelegate,
@@ -1668,7 +1670,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       InfoBarManagerImpl::FromWebState(webState);
   [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
                                              forTabId:[tab tabId]];
-  if (!ReSignInInfoBarDelegate::Create(_browserState, tab, self.dispatcher)) {
+  if (!ReSignInInfoBarDelegate::Create(_browserState, tab,
+                                       self /* id<SigninPresenter> */)) {
     DisplaySyncErrors(_browserState, tab, self /* id<SyncPresenter> */);
   }
 
@@ -5389,6 +5392,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)showSyncPassphraseSettings {
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
+}
+
+#pragma mark - SigninPresenter
+
+- (void)showSignin:(ShowSigninCommand*)command {
+  [self.dispatcher showSignin:command];
 }
 
 @end
