@@ -29,14 +29,14 @@ class WebState;
 class OmniboxViewIOS;
 @class OmniboxClearButtonBridge;
 @protocol OmniboxPopupPositioner;
-@class OmniboxTextFieldIOS;
+@class LocationBarView;
 class ToolbarModel;
 class OmniboxPopupViewIOS;
 
 // Concrete implementation of the LocationBarController interface.
 class LocationBarControllerImpl : public LocationBarController {
  public:
-  LocationBarControllerImpl(OmniboxTextFieldIOS* field,
+  LocationBarControllerImpl(LocationBarView* location_bar_view,
                             ios::ChromeBrowserState* browser_state,
                             id<LocationBarDelegate> delegate,
                             id<BrowserCommands> dispatcher);
@@ -93,7 +93,7 @@ class LocationBarControllerImpl : public LocationBarController {
   // A bridge from a UIControl action to the dispatcher to display a page
   // info popup.
   __strong PageInfoBridge* page_info_bridge_;
-  __weak OmniboxTextFieldIOS* field_;
+  LocationBarView* location_bar_view_;
   __weak id<LocationBarDelegate> delegate_;
   // Dispatcher to send commands from the location bar.
   __weak id<BrowserCommands> dispatcher_;

@@ -7,13 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
-@class OmniboxTextFieldIOS;
+@class LocationBarView;
 
 // View controller for the location bar, which contains the omnibox and
 // associated decorations.
 @interface LocationBarViewController : UIViewController
 
-@property(nonatomic, readonly, strong) OmniboxTextFieldIOS* omnibox;
+@property(nonatomic, readonly, strong) LocationBarView* locationBarView;
 
 // The frame of the omnibox, in its window's coordinate system.  Declared as a
 // property to make it KVO compliant and therefore usable by

@@ -17,6 +17,25 @@ typedef enum {
   OMNIBOX_TEXT_FIELD_FADE_STYLE_OUT
 } OmniboxTextFieldFadeStyle;
 
+@class OmniboxTextFieldIOS;
+
+@interface LocationBarView : UIView
+
+// Initialize the location bar with the given frame, font, text color, and tint
+// color for omnibox.
+- (instancetype)initWithFrame:(CGRect)frame
+                         font:(UIFont*)font
+                    textColor:(UIColor*)textColor
+                    tintColor:(UIColor*)tintColor NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+
+@property(nonatomic, strong) OmniboxTextFieldIOS* textField;
+
+@end
+
 // UITextField subclass to allow for adjusting borders.
 @interface OmniboxTextFieldIOS : UITextField
 
