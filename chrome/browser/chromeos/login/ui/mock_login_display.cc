@@ -10,8 +10,8 @@
 
 namespace chromeos {
 
-MockLoginDisplay::MockLoginDisplay() : LoginDisplay(NULL, gfx::Rect()) {}
+MockLoginDisplay::MockLoginDisplay() : LoginDisplay(nullptr) {}
 
-MockLoginDisplay::~MockLoginDisplay() {}
+MockLoginDisplay::~MockLoginDisplay() = default;
 
 }  // namespace chromeos

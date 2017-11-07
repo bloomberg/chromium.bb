@@ -170,7 +170,6 @@ void WebUIScreenLocker::LockScreen() {
       new SignInScreenController(GetOobeUI(), this));
 
   login_display_.reset(new WebUILoginDisplay(this));
-  login_display_->set_background_bounds(bounds);
   login_display_->set_parent_window(GetNativeWindow());
   login_display_->Init(screen_locker_->users(), false, true, false);
 

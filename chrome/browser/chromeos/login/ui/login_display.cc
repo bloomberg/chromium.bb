@@ -6,15 +6,10 @@
 
 namespace chromeos {
 
-LoginDisplay::Delegate::~Delegate() {}
+LoginDisplay::Delegate::~Delegate() = default;
 
-LoginDisplay::LoginDisplay(Delegate* delegate,
-                           const gfx::Rect& background_bounds)
-    : delegate_(delegate),
-      parent_window_(NULL),
-      background_bounds_(background_bounds),
-      is_signin_completed_(false) {}
+LoginDisplay::LoginDisplay(Delegate* delegate) : delegate_(delegate) {}
 
-LoginDisplay::~LoginDisplay() {}
+LoginDisplay::~LoginDisplay() = default;
 
 }  // namespace chromeos
