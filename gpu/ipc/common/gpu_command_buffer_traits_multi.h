@@ -136,6 +136,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(disable_2d_canvas_copy_on_write)
   IPC_STRUCT_TRAITS_MEMBER(texture_npot)
   IPC_STRUCT_TRAITS_MEMBER(texture_storage_image)
+  IPC_STRUCT_TRAITS_MEMBER(supports_oop_raster)
 
   IPC_STRUCT_TRAITS_MEMBER(major_version)
   IPC_STRUCT_TRAITS_MEMBER(minor_version)
