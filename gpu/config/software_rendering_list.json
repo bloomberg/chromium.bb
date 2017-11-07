@@ -857,11 +857,15 @@
     {
       "id": 104,
       "description": "GPU raster broken on PowerVR Rogue",
-      "cr_bugs": [436331, 483574],
+      "cr_bugs": [436331, 483574, 684586],
       "os": {
         "type": "android"
       },
       "gl_renderer": "PowerVR Rogue.*",
+      "driver_version": {
+        "op": "<",
+        "value": "1.8"
+      },
       "features": [
         "accelerated_2d_canvas",
         "gpu_rasterization"
