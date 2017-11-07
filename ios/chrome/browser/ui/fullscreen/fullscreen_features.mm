@@ -8,9 +8,11 @@
 #error "This file requires ARC support."
 #endif
 
+namespace fullscreen {
 namespace features {
 
 const base::Feature kNewFullscreen{"NewFullscreen",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
+}  // namespace fullscreen

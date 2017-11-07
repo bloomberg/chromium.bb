@@ -7,11 +7,13 @@
 
 #include "base/feature_list.h"
 
+namespace fullscreen {
 namespace features {
 
 // Used to control whether the new fullscreen implementation should be used.
 extern const base::Feature kNewFullscreen;
 
 }  // namespace features
+}  // namespace fullscreen
 
 #endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_FULLSCREEN_FEATURES_H_

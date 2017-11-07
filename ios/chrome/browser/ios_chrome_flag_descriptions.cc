@@ -51,6 +51,13 @@ const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 const char kMarkHttpAsDangerous[] = "Always mark HTTP as actively dangerous";
 
+const char kNewFullscreenName[] = "Enable the new FullscreenController.";
+const char kNewFullscreenDescription[] =
+    "When enabled, the new implementation of FullscreenController will be used "
+    "instead of the legacy version.  This new implementation utilizes the "
+    "observer and broadcaster patterns to simplify interaction with the "
+    "feature and to distribute UI implementations to more specific owners.";
+
 const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
     "Hide the path, query, and ref of omnibox suggestions";
 const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
