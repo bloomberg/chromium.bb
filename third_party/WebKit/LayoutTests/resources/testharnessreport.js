@@ -101,10 +101,8 @@
         };
 
         let src;
-        if (pathAndBase.startsWith('/fullscreen/') ||
-            pathAndBase.startsWith('/webusb/')) {
-            // Fullscreen tests all use the same automation script and WebUSB
-            // tests borrow it.
+        if (pathAndBase.startsWith('/fullscreen/')) {
+            // Fullscreen tests all use the same automation script.
             src = automationPath + '/fullscreen/auto-click.js';
         } else if (
             pathAndBase.startsWith('/pointerevents/') ||
