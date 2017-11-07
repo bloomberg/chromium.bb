@@ -19,9 +19,10 @@ class ReportingInfo;
 // of MetricsService.
 class MetricsLogUploader {
  public:
-  // Type for OnUploadComplete callbacks.  These callbacks will receive two
-  // parameters: A response code and an net error code.
-  typedef base::Callback<void(int, int)> UploadCallback;
+  // Type for OnUploadComplete callbacks.  These callbacks will receive three
+  // parameters: A response code, a net error code, and a boolean specifying
+  // if the connection was secure (over HTTPS).
+  typedef base::Callback<void(int, int, bool)> UploadCallback;
 
   // Possible service types. This should correspond to a type from
   // DataUseUserData.

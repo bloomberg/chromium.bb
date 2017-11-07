@@ -10,6 +10,9 @@ namespace metrics {
 // The new metrics server's URL.
 extern const char kNewMetricsServerUrl[];
 
+// The HTTP fallback metrics server's URL.
+extern const char kNewMetricsServerUrlInsecure[];
+
 // The old metrics server's URL.
 extern const char kOldMetricsServerUrl[];
 

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/metrics/data_use_tracker.h"
@@ -146,7 +147,8 @@ void ReportingService::SendStagedLog() {
 
   if (!log_uploader_) {
     log_uploader_ = client_->CreateUploader(
-        GetUploadUrl(), upload_mime_type(), service_type(),
+        GetUploadUrl(), GetInsecureUploadUrl(), upload_mime_type(),
+        service_type(),
         base::Bind(&ReportingService::OnLogUploadComplete,
                    self_ptr_factory_.GetWeakPtr()));
   }
@@ -159,15 +161,20 @@ void ReportingService::SendStagedLog() {
   log_uploader_->UploadLog(log_store()->staged_log(), hash, reporting_info_);
 }
 
-void ReportingService::OnLogUploadComplete(int response_code, int error_code) {
+void ReportingService::OnLogUploadComplete(int response_code,
+                                           int error_code,
+                                           bool was_https) {
   DVLOG(1) << "OnLogUploadComplete:" << response_code;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(log_upload_in_progress_);
   log_upload_in_progress_ = false;
 
   reporting_info_.set_last_response_code(response_code);
+  reporting_info_.set_last_error_code(error_code);
+  reporting_info_.set_last_attempt_was_https(was_https);
 
   // Log a histogram to track response success vs. failure rates.
+  // TODO(carlosil): Split histogram into http vs https.
   LogResponseOrErrorCode(response_code, error_code);
 
   bool upload_succeeded = response_code == 200;
@@ -198,6 +205,7 @@ void ReportingService::OnLogUploadComplete(int response_code, int error_code) {
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
   bool server_is_healthy = upload_succeeded || response_code == 400;
+
   if (!log_store()->has_unsent_logs()) {
     DVLOG(1) << "Stopping upload_scheduler_.";
     upload_scheduler_->Stop();

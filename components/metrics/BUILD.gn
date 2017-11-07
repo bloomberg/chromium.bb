@@ -197,8 +197,12 @@ static_library("net") {
   deps = [
     "//base",
     "//components/data_use_measurement/core",
+    "//components/encrypted_messages:encrypted_message_proto",
+    "//components/encrypted_messages:encrypted_messages",
     "//components/variations",
     "//net",
+    "//third_party/metrics_proto",
+    "//third_party/zlib/google:compression_utils",
     "//url",
   ]
 
@@ -356,6 +360,7 @@ source_set("unit_tests") {
     ":ui",
     "//base/test:test_support",
     "//components/component_updater:test_support",
+    "//components/encrypted_messages:encrypted_message_proto",
     "//components/metrics/public/cpp:call_stack_unit_tests",
     "//components/prefs:test_support",
     "//components/variations",

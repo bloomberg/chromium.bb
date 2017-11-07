@@ -61,6 +61,7 @@ void TestMetricsServiceClient::CollectFinalMetricsForLog(
 
 std::unique_ptr<MetricsLogUploader> TestMetricsServiceClient::CreateUploader(
     base::StringPiece server_url,
+    base::StringPiece insecure_server_url,
     base::StringPiece mime_type,
     MetricsLogUploader::MetricServiceType service_type,
     const MetricsLogUploader::UploadCallback& on_upload_complete) {

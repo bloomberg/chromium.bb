@@ -146,12 +146,13 @@ void IOSChromeMetricsServiceClient::CollectFinalMetricsForLog(
 std::unique_ptr<metrics::MetricsLogUploader>
 IOSChromeMetricsServiceClient::CreateUploader(
     base::StringPiece server_url,
+    base::StringPiece insecure_server_url,
     base::StringPiece mime_type,
     metrics::MetricsLogUploader::MetricServiceType service_type,
     const metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
   return base::MakeUnique<metrics::NetMetricsLogUploader>(
       GetApplicationContext()->GetSystemURLRequestContext(), server_url,
-      mime_type, service_type, on_upload_complete);
+      insecure_server_url, mime_type, service_type, on_upload_complete);
 }
 
 base::TimeDelta IOSChromeMetricsServiceClient::GetStandardUploadInterval() {

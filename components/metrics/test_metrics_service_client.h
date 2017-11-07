@@ -36,6 +36,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
   void CollectFinalMetricsForLog(const base::Closure& done_callback) override;
   std::unique_ptr<MetricsLogUploader> CreateUploader(
       base::StringPiece server_url,
+      base::StringPiece insecure_server_url,
       base::StringPiece mime_type,
       MetricsLogUploader::MetricServiceType service_type,
       const MetricsLogUploader::UploadCallback& on_upload_complete) override;
