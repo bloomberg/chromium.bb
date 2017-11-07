@@ -40,10 +40,6 @@ class TestWebStateObserver : public WebStateObserver {
   }
   // Arguments passed to |PageLoaded|.
   web::TestLoadPageInfo* load_page_info() { return load_page_info_.get(); }
-  // Arguments passed to |InterstitialDismissed|.
-  web::TestDismissInterstitialInfo* dismiss_interstitial_info() {
-    return dismiss_interstitial_info_.get();
-  }
   // Arguments passed to |LoadProgressChanged|.
   web::TestChangeLoadingProgressInfo* change_loading_progress_info() {
     return change_loading_progress_info_.get();
@@ -107,7 +103,6 @@ class TestWebStateObserver : public WebStateObserver {
                                const LoadCommittedDetails&) override;
   void PageLoaded(WebState* web_state,
                   PageLoadCompletionStatus load_completion_status) override;
-  void InterstitialDismissed(WebState* web_state) override;
   void LoadProgressChanged(WebState* web_state, double progress) override;
   void NavigationItemsPruned(WebState* web_state,
                              size_t pruned_item_count) override;
@@ -143,7 +138,6 @@ class TestWebStateObserver : public WebStateObserver {
   std::unique_ptr<web::TestWasHiddenInfo> was_hidden_info_;
   std::unique_ptr<web::TestCommitNavigationInfo> commit_navigation_info_;
   std::unique_ptr<web::TestLoadPageInfo> load_page_info_;
-  std::unique_ptr<web::TestDismissInterstitialInfo> dismiss_interstitial_info_;
   std::unique_ptr<web::TestChangeLoadingProgressInfo>
       change_loading_progress_info_;
   std::unique_ptr<web::TestNavigationItemsPrunedInfo>

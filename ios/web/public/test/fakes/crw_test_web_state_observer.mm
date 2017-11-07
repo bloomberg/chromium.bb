@@ -38,8 +38,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   std::unique_ptr<web::TestCommitNavigationInfo> _commitNavigationInfo;
   // Arguments passed to |webState:didLoadPageWithSuccess:|.
   std::unique_ptr<web::TestLoadPageInfo> _loadPageInfo;
-  // Arguments passed to |webStateDidDismissInterstitial:|.
-  std::unique_ptr<web::TestDismissInterstitialInfo> _dismissInterstitialInfo;
   // Arguments passed to |webState:didChangeLoadingProgress:|.
   std::unique_ptr<web::TestChangeLoadingProgressInfo>
       _changeLoadingProgressInfo;
@@ -95,10 +93,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 
 - (web::TestLoadPageInfo*)loadPageInfo {
   return _loadPageInfo.get();
-}
-
-- (web::TestDismissInterstitialInfo*)dismissInterstitialInfo {
-  return _dismissInterstitialInfo.get();
 }
 
 - (web::TestChangeLoadingProgressInfo*)changeLoadingProgressInfo {
@@ -207,12 +201,6 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   _loadPageInfo = base::MakeUnique<web::TestLoadPageInfo>();
   _loadPageInfo->web_state = webState;
   _loadPageInfo->success = success;
-}
-
-- (void)webStateDidDismissInterstitial:(web::WebState*)webState {
-  _dismissInterstitialInfo =
-      base::MakeUnique<web::TestDismissInterstitialInfo>();
-  _dismissInterstitialInfo->web_state = webState;
 }
 
 - (void)webState:(web::WebState*)webState

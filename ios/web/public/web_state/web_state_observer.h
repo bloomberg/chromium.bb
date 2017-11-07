@@ -121,9 +121,6 @@ class WebStateObserver {
   virtual void PageLoaded(WebState* web_state,
                           PageLoadCompletionStatus load_completion_status) {}
 
-  // Called when the interstitial is dismissed by the user.
-  virtual void InterstitialDismissed(WebState* web_state) {}
-
   // Notifies the observer that the page has made some progress loading.
   // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully
   // loaded).

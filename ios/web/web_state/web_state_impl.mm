@@ -750,8 +750,6 @@ void WebStateImpl::ClearTransientContent() {
     interstitial->DontProceed();
     // Don't access |interstitial| after calling |DontProceed()|, as it triggers
     // deletion.
-    for (auto& observer : observers_)
-      observer.InterstitialDismissed(this);
   }
   [web_controller_ clearTransientContentView];
 }

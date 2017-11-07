@@ -29,9 +29,6 @@
     web::TestCommitNavigationInfo* commitNavigationInfo;
 // Arguments passed to |webState:didLoadPageWithSuccess:|.
 @property(nonatomic, readonly) web::TestLoadPageInfo* loadPageInfo;
-// Arguments passed to |webStateDidDismissInterstitial:|.
-@property(nonatomic, readonly)
-    web::TestDismissInterstitialInfo* dismissInterstitialInfo;
 // Arguments passed to |webState:didChangeLoadingProgress:|.
 @property(nonatomic, readonly)
     web::TestChangeLoadingProgressInfo* changeLoadingProgressInfo;

@@ -60,13 +60,6 @@ void TestWebStateObserver::PageLoaded(
       load_completion_status == PageLoadCompletionStatus::SUCCESS;
 }
 
-void TestWebStateObserver::InterstitialDismissed(WebState* web_state) {
-  ASSERT_EQ(web_state_, web_state);
-  dismiss_interstitial_info_ =
-      base::MakeUnique<web::TestDismissInterstitialInfo>();
-  dismiss_interstitial_info_->web_state = web_state;
-}
-
 void TestWebStateObserver::LoadProgressChanged(WebState* web_state,
                                                double progress) {
   ASSERT_EQ(web_state_, web_state);
