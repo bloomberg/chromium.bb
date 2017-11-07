@@ -334,7 +334,10 @@ class RemoteAccess(object):
         ssh_cmd.append('sudo')
 
       if isinstance(cmd, basestring):
-        ssh_cmd += [cmd]
+        if kwargs.get('shell'):
+          ssh_cmd = '%s %s' % (' '.join(ssh_cmd), cmd)
+        else:
+          ssh_cmd += [cmd]
       else:
         ssh_cmd += cmd
 
