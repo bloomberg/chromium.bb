@@ -27,7 +27,6 @@
 
 namespace {
 
-const char kIsGoogleSearchEngineKey[] = "is_google_search_engine";
 const char kDSESettingKey[] = "dse_setting";
 const char kDSENameKey[] = "dse_name";
 
@@ -135,8 +134,6 @@ KeyedService* SearchPermissionsService::Factory::BuildServiceInstanceFor(
 void SearchPermissionsService::Factory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kDSEGeolocationSetting);
-  registry->RegisterDictionaryPref(
-      prefs::kGoogleDSEGeolocationSettingDeprecated);
 }
 
 SearchPermissionsService::SearchPermissionsService(Profile* profile)
@@ -238,33 +235,6 @@ void SearchPermissionsService::OnDSEChanged() {
 }
 
 void SearchPermissionsService::InitializeDSEGeolocationSettingIfNeeded() {
-  // Migrate the pref if it hasn't been migrated yet.
-  if (pref_service_->HasPrefPath(
-          prefs::kGoogleDSEGeolocationSettingDeprecated)) {
-    const base::DictionaryValue* dict = pref_service_->GetDictionary(
-        prefs::kGoogleDSEGeolocationSettingDeprecated);
-
-    bool setting = false;
-    dict->GetBoolean(kDSESettingKey, &setting);
-    bool was_google = false;
-    dict->GetBoolean(kIsGoogleSearchEngineKey, &was_google);
-
-    // Make sure the new setting is configured to match the old one.
-    PrefValue pref;
-    pref.dse_name = delegate_->GetDSEName();
-    pref.setting = setting;
-    SetDSEGeolocationPref(pref);
-
-    // If the setting isn't for Google, reset the disclosure so it will be
-    // shown, even if it was shown previously for Google.
-    if (!was_google && setting)
-      SearchGeolocationDisclosureTabHelper::ResetDisclosure(profile_);
-
-    // Now remove the old setting so there is no more migration.
-    pref_service_->ClearPref(prefs::kGoogleDSEGeolocationSettingDeprecated);
-    return;
-  }
-
   // Initialize the pref if it hasn't been initialized yet.
   if (!pref_service_->HasPrefPath(prefs::kDSEGeolocationSetting)) {
     ContentSetting content_setting = GetCurrentContentSetting();
