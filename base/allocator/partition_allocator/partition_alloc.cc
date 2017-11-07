@@ -988,7 +988,7 @@ void PartitionFreeSlowPath(PartitionPage* page) {
     // If it's the current active page, change it. We bounce the page to
     // the empty list as a force towards defragmentation.
     if (LIKELY(page == bucket->active_pages_head))
-      (void)PartitionSetNewActivePage(bucket);
+      PartitionSetNewActivePage(bucket);
     DCHECK(bucket->active_pages_head != page);
 
     PartitionPageSetRawSize(page, 0);
@@ -1156,7 +1156,7 @@ static size_t PartitionPurgePage(PartitionPage* page, bool discard) {
   size_t bucket_num_slots = PartitionBucketSlots(bucket);
   size_t discardable_bytes = 0;
 
-  size_t raw_size = PartitionPageGetRawSize(const_cast<PartitionPage*>(page));
+  size_t raw_size = PartitionPageGetRawSize(page);
   if (raw_size) {
     uint32_t usedBytes = static_cast<uint32_t>(RoundUpToSystemPage(raw_size));
     discardable_bytes = bucket->slot_size - usedBytes;
@@ -1168,12 +1168,12 @@ static size_t PartitionPurgePage(PartitionPage* page, bool discard) {
     return discardable_bytes;
   }
 
-  const size_t max_slot_count =
+  constexpr size_t kMaxSlotCount =
       (kPartitionPageSize * kMaxPartitionPagesPerSlotSpan) / kSystemPageSize;
-  DCHECK(bucket_num_slots <= max_slot_count);
+  DCHECK(bucket_num_slots <= kMaxSlotCount);
   DCHECK(page->num_unprovisioned_slots < bucket_num_slots);
   size_t num_slots = bucket_num_slots - page->num_unprovisioned_slots;
-  char slot_usage[max_slot_count];
+  char slot_usage[kMaxSlotCount];
 #if !defined(OS_WIN)
   // The last freelist entry should not be discarded when using OS_WIN.
   // DiscardVirtualMemory makes the contents of discarded memory undefined.
@@ -1292,7 +1292,7 @@ static void PartitionPurgeBucket(PartitionBucket* bucket) {
     for (PartitionPage* page = bucket->active_pages_head; page;
          page = page->next_page) {
       DCHECK(page != &g_sentinel_page);
-      (void)PartitionPurgePage(page, true);
+      PartitionPurgePage(page, true);
     }
   }
 }
@@ -1320,7 +1320,7 @@ void PartitionPurgeMemoryGeneric(PartitionRootGeneric* root, int flags) {
 }
 
 static void PartitionDumpPageStats(PartitionBucketMemoryStats* stats_out,
-                                   const PartitionPage* page) {
+                                   PartitionPage* page) {
   uint16_t bucket_num_slots = PartitionBucketSlots(page->bucket);
 
   if (PartitionPageStateIsDecommitted(page)) {
@@ -1328,15 +1328,15 @@ static void PartitionDumpPageStats(PartitionBucketMemoryStats* stats_out,
     return;
   }
 
-  stats_out->discardable_bytes +=
-      PartitionPurgePage(const_cast<PartitionPage*>(page), false);
+  stats_out->discardable_bytes += PartitionPurgePage(page, false);
 
-  size_t raw_size = PartitionPageGetRawSize(const_cast<PartitionPage*>(page));
-  if (raw_size)
+  size_t raw_size = PartitionPageGetRawSize(page);
+  if (raw_size) {
     stats_out->active_bytes += static_cast<uint32_t>(raw_size);
-  else
+  } else {
     stats_out->active_bytes +=
         (page->num_allocated_slots * stats_out->bucket_slot_size);
+  }
 
   size_t page_bytes_resident =
       RoundUpToSystemPage((bucket_num_slots - page->num_unprovisioned_slots) *
@@ -1377,20 +1377,20 @@ static void PartitionDumpBucketStats(PartitionBucketMemoryStats* stats_out,
   stats_out->resident_bytes =
       bucket->num_full_pages * stats_out->allocated_page_size;
 
-  for (const PartitionPage* page = bucket->empty_pages_head; page;
+  for (PartitionPage* page = bucket->empty_pages_head; page;
        page = page->next_page) {
     DCHECK(PartitionPageStateIsEmpty(page) ||
            PartitionPageStateIsDecommitted(page));
     PartitionDumpPageStats(stats_out, page);
   }
-  for (const PartitionPage* page = bucket->decommitted_pages_head; page;
+  for (PartitionPage* page = bucket->decommitted_pages_head; page;
        page = page->next_page) {
     DCHECK(PartitionPageStateIsDecommitted(page));
     PartitionDumpPageStats(stats_out, page);
   }
 
   if (bucket->active_pages_head != &g_sentinel_page) {
-    for (const PartitionPage* page = bucket->active_pages_head; page;
+    for (PartitionPage* page = bucket->active_pages_head; page;
          page = page->next_page) {
       DCHECK(page != &g_sentinel_page);
       PartitionDumpPageStats(stats_out, page);
@@ -1488,7 +1488,6 @@ void PartitionDumpStats(PartitionRoot* partition,
                         const char* partition_name,
                         bool is_light_dump,
                         PartitionStatsDumper* dumper) {
-
   PartitionMemoryStats stats = {0};
   stats.total_mmapped_bytes = partition->total_size_of_super_pages;
   stats.total_committed_bytes = partition->total_size_of_committed_pages;
