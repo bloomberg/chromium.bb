@@ -166,34 +166,7 @@ class TestNativeViewAccessibility : public NativeViewAccessibilityBase {
  public:
   explicit TestNativeViewAccessibility(View* view)
       : NativeViewAccessibilityBase(view) {}
-
-  void OnWidgetDestroying(Widget* widget) override {
-    bool is_destroying_parent_widget = (parent_widget_ == widget);
-    NativeViewAccessibilityBase::OnWidgetDestroying(widget);
-    if (is_destroying_parent_widget)
-      delete this;
-  }
 };
-
-TEST_F(NativeViewAccessibilityTest, CrashOnWidgetDestroyed) {
-  std::unique_ptr<Widget> parent_widget(new Widget);
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(50, 50, 650, 650);
-  parent_widget->Init(params);
-
-  std::unique_ptr<Widget> child_widget(new Widget);
-  child_widget->Init(params);
-
-  // Make sure that deleting the parent widget can't cause a crash
-  // due to NativeViewAccessibility not unregistering itself as a
-  // WidgetObserver. Note that TestNativeViewAccessibility is a subclass
-  // defined above that destroys itself when its parent widget is destroyed.
-  TestNativeViewAccessibility* child_accessible =
-      new TestNativeViewAccessibility(child_widget->GetRootView());
-  child_accessible->SetParentWidget(parent_widget.get());
-  parent_widget.reset();
-}
 
 #if defined(USE_AURA)
 class DerivedTestView : public View {
