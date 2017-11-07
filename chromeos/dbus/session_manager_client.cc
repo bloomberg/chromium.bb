@@ -28,6 +28,7 @@
 #include "chromeos/dbus/blocking_method_caller.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
+#include "chromeos/dbus/login_manager/policy_descriptor.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
 #include "dbus/bus.h"
@@ -43,10 +44,13 @@ namespace {
 
 using RetrievePolicyResponseType =
     SessionManagerClient::RetrievePolicyResponseType;
+using login_manager::PolicyDescriptor;
 
 constexpr char kStubPolicyFile[] = "stub_policy";
 constexpr char kStubDevicePolicyFile[] = "stub_device_policy";
 constexpr char kStubStateKeysFile[] = "stub_state_keys";
+
+constexpr char kEmptyAccountId[] = "";
 
 // Returns a location for |file| that is specific to the given |cryptohome_id|.
 // These paths will be relative to DIR_USER_POLICY_KEYS, and can be used only
@@ -110,12 +114,12 @@ void NotifyOnRetrievePolicySuccess(
 
 // Helper to get the enum type of RetrievePolicyResponseType based on error
 // name.
-RetrievePolicyResponseType GetResponseTypeBasedOnError(
+RetrievePolicyResponseType GetPolicyResponseTypeByError(
     base::StringPiece error_name) {
   if (error_name == login_manager::dbus_error::kNone) {
     return RetrievePolicyResponseType::SUCCESS;
-  } else if (error_name == login_manager::dbus_error::kSessionDoesNotExist) {
-    return RetrievePolicyResponseType::SESSION_DOES_NOT_EXIST;
+  } else if (error_name == login_manager::dbus_error::kGetServiceFail) {
+    return RetrievePolicyResponseType::GET_SERVICE_FAIL;
   } else if (error_name == login_manager::dbus_error::kSigEncodeFail) {
     return RetrievePolicyResponseType::POLICY_ENCODE_ERROR;
   }
@@ -124,29 +128,38 @@ RetrievePolicyResponseType GetResponseTypeBasedOnError(
 
 // Logs UMA stat for retrieve policy request, corresponding to D-Bus method name
 // used.
-void LogPolicyResponseUma(base::StringPiece method_name,
+void LogPolicyResponseUma(login_manager::PolicyAccountType account_type,
                           RetrievePolicyResponseType response) {
-  if (method_name == login_manager::kSessionManagerRetrievePolicy) {
-    UMA_HISTOGRAM_ENUMERATION("Enterprise.RetrievePolicyResponse.Device",
-                              response, RetrievePolicyResponseType::COUNT);
-  } else if (method_name ==
-             login_manager::kSessionManagerRetrieveDeviceLocalAccountPolicy) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Enterprise.RetrievePolicyResponse.DeviceLocalAccount", response,
-        RetrievePolicyResponseType::COUNT);
-  } else if (method_name ==
-             login_manager::kSessionManagerRetrievePolicyForUser) {
-    UMA_HISTOGRAM_ENUMERATION("Enterprise.RetrievePolicyResponse.User",
-                              response, RetrievePolicyResponseType::COUNT);
-  } else if (method_name ==
-             login_manager::
-                 kSessionManagerRetrievePolicyForUserWithoutSession) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Enterprise.RetrievePolicyResponse.UserDuringLogin", response,
-        RetrievePolicyResponseType::COUNT);
-  } else {
-    LOG(ERROR) << "Invalid method_name: " << method_name;
+  switch (account_type) {
+    case login_manager::ACCOUNT_TYPE_DEVICE:
+      UMA_HISTOGRAM_ENUMERATION("Enterprise.RetrievePolicyResponse.Device",
+                                response, RetrievePolicyResponseType::COUNT);
+      break;
+    case login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Enterprise.RetrievePolicyResponse.DeviceLocalAccount", response,
+          RetrievePolicyResponseType::COUNT);
+      break;
+    case login_manager::ACCOUNT_TYPE_USER:
+      UMA_HISTOGRAM_ENUMERATION("Enterprise.RetrievePolicyResponse.User",
+                                response, RetrievePolicyResponseType::COUNT);
+      break;
+    case login_manager::ACCOUNT_TYPE_SESSIONLESS_USER:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Enterprise.RetrievePolicyResponse.UserDuringLogin", response,
+          RetrievePolicyResponseType::COUNT);
+      break;
   }
+}
+
+PolicyDescriptor MakePolicyDescriptor(
+    login_manager::PolicyAccountType account_type,
+    const std::string& account_id) {
+  PolicyDescriptor descriptor;
+  descriptor.set_account_type(account_type);
+  descriptor.set_account_id(account_id);
+  descriptor.set_domain(login_manager::POLICY_DOMAIN_CHROME);
+  return descriptor;
 }
 
 }  // namespace
@@ -273,106 +286,78 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void RetrieveDevicePolicy(RetrievePolicyCallback callback) override {
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 login_manager::kSessionManagerRetrievePolicy);
-    session_manager_proxy_->CallMethodWithErrorResponse(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnRetrievePolicy,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       login_manager::kSessionManagerRetrievePolicy,
-                       std::move(callback)));
+    PolicyDescriptor descriptor = MakePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId);
+    CallRetrievePolicy(descriptor, std::move(callback));
   }
 
   RetrievePolicyResponseType BlockingRetrieveDevicePolicy(
       std::string* policy_out) override {
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 login_manager::kSessionManagerRetrievePolicy);
-    dbus::ScopedDBusError error;
-    std::unique_ptr<dbus::Response> response =
-        blocking_method_caller_->CallMethodAndBlockWithError(&method_call,
-                                                             &error);
-    RetrievePolicyResponseType result = RetrievePolicyResponseType::SUCCESS;
-    if (error.is_set() && error.name()) {
-      result = GetResponseTypeBasedOnError(error.name());
-    }
-    if (result == RetrievePolicyResponseType::SUCCESS) {
-      ExtractString(login_manager::kSessionManagerRetrievePolicy,
-                    response.get(), policy_out);
-    } else {
-      *policy_out = "";
-    }
-    LogPolicyResponseUma(login_manager::kSessionManagerRetrievePolicy, result);
-    return result;
+    PolicyDescriptor descriptor = MakePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId);
+    return BlockingRetrievePolicy(descriptor, policy_out);
   }
 
   void RetrievePolicyForUser(const cryptohome::Identification& cryptohome_id,
                              RetrievePolicyCallback callback) override {
-    CallRetrievePolicyByUsername(
-        login_manager::kSessionManagerRetrievePolicyForUser, cryptohome_id.id(),
-        std::move(callback));
+    PolicyDescriptor descriptor = MakePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
+    CallRetrievePolicy(descriptor, std::move(callback));
   }
 
   RetrievePolicyResponseType BlockingRetrievePolicyForUser(
       const cryptohome::Identification& cryptohome_id,
       std::string* policy_out) override {
-    return BlockingRetrievePolicyByUsername(
-        login_manager::kSessionManagerRetrievePolicyForUser, cryptohome_id.id(),
-        policy_out);
+    PolicyDescriptor descriptor = MakePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
+    return BlockingRetrievePolicy(descriptor, policy_out);
   }
 
   void RetrievePolicyForUserWithoutSession(
       const cryptohome::Identification& cryptohome_id,
       RetrievePolicyCallback callback) override {
-    CallRetrievePolicyByUsername(
-        login_manager::kSessionManagerRetrievePolicyForUserWithoutSession,
-        cryptohome_id.id(), std::move(callback));
+    PolicyDescriptor descriptor = MakePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_SESSIONLESS_USER, cryptohome_id.id());
+    CallRetrievePolicy(descriptor, std::move(callback));
   }
 
   void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,
       RetrievePolicyCallback callback) override {
-    CallRetrievePolicyByUsername(
-        login_manager::kSessionManagerRetrieveDeviceLocalAccountPolicy,
-        account_name, std::move(callback));
+    PolicyDescriptor descriptor = MakePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT, account_name);
+    CallRetrievePolicy(descriptor, std::move(callback));
   }
 
   RetrievePolicyResponseType BlockingRetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,
       std::string* policy_out) override {
-    return BlockingRetrievePolicyByUsername(
-        login_manager::kSessionManagerRetrieveDeviceLocalAccountPolicy,
-        account_name, policy_out);
+    PolicyDescriptor descriptor = MakePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT, account_name);
+    return BlockingRetrievePolicy(descriptor, policy_out);
   }
 
   void StoreDevicePolicy(const std::string& policy_blob,
                          VoidDBusMethodCallback callback) override {
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 login_manager::kSessionManagerStorePolicy);
-    dbus::MessageWriter writer(&method_call);
-    // static_cast does not work due to signedness.
-    writer.AppendArrayOfBytes(
-        reinterpret_cast<const uint8_t*>(policy_blob.data()),
-        policy_blob.size());
-    session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    PolicyDescriptor descriptor = MakePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE, kEmptyAccountId);
+    CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
 
   void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
                           const std::string& policy_blob,
                           VoidDBusMethodCallback callback) override {
-    CallStorePolicyByUsername(login_manager::kSessionManagerStorePolicyForUser,
-                              cryptohome_id.id(), policy_blob,
-                              std::move(callback));
+    PolicyDescriptor descriptor = MakePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_USER, cryptohome_id.id());
+    CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
 
   void StoreDeviceLocalAccountPolicy(const std::string& account_name,
                                      const std::string& policy_blob,
                                      VoidDBusMethodCallback callback) override {
-    CallStorePolicyByUsername(
-        login_manager::kSessionManagerStoreDeviceLocalAccountPolicy,
-        account_name, policy_blob, std::move(callback));
+    PolicyDescriptor descriptor = MakePolicyDescriptor(
+        login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT, account_name);
+    CallStorePolicy(descriptor, policy_blob, std::move(callback));
   }
 
   bool SupportsRestartToApplyUserFlags() const override { return true; }
@@ -562,57 +547,67 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(response);
   }
 
-  // Helper for RetrieveDeviceLocalAccountPolicy and RetrievePolicyForUser.
-  void CallRetrievePolicyByUsername(const std::string& method_name,
-                                    const std::string& account_id,
-                                    RetrievePolicyCallback callback) {
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 method_name);
+  // Non-blocking call to Session Manager to retrieve policy.
+  void CallRetrievePolicy(const PolicyDescriptor& descriptor,
+                          RetrievePolicyCallback callback) {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerRetrievePolicyEx);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(account_id);
+    const std::string descriptor_blob = descriptor.SerializeAsString();
+    // static_cast does not work due to signedness.
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const uint8_t*>(descriptor_blob.data()),
+        descriptor_blob.size());
     session_manager_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnRetrievePolicy,
-                       weak_ptr_factory_.GetWeakPtr(), method_name,
-                       std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       descriptor.account_type(), std::move(callback)));
   }
 
-  // Helper for blocking RetrievePolicyForUser and
-  // RetrieveDeviceLocalAccountPolicy.
-  RetrievePolicyResponseType BlockingRetrievePolicyByUsername(
-      const std::string& method_name,
-      const std::string& account_name,
+  // Blocking call to Session Manager to retrieve policy.
+  RetrievePolicyResponseType BlockingRetrievePolicy(
+      const PolicyDescriptor& descriptor,
       std::string* policy_out) {
-    dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 method_name);
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerRetrievePolicyEx);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(account_name);
+    const std::string descriptor_blob = descriptor.SerializeAsString();
+    // static_cast does not work due to signedness.
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const uint8_t*>(descriptor_blob.data()),
+        descriptor_blob.size());
     dbus::ScopedDBusError error;
     std::unique_ptr<dbus::Response> response =
         blocking_method_caller_->CallMethodAndBlockWithError(&method_call,
                                                              &error);
     RetrievePolicyResponseType result = RetrievePolicyResponseType::SUCCESS;
     if (error.is_set() && error.name()) {
-      result = GetResponseTypeBasedOnError(error.name());
+      result = GetPolicyResponseTypeByError(error.name());
     }
     if (result == RetrievePolicyResponseType::SUCCESS) {
-      ExtractString(method_name, response.get(), policy_out);
+      ExtractPolicyResponseString(descriptor.account_type(), response.get(),
+                                  policy_out);
     } else {
       *policy_out = "";
     }
-    LogPolicyResponseUma(method_name, result);
+    LogPolicyResponseUma(descriptor.account_type(), result);
     return result;
   }
 
-  void CallStorePolicyByUsername(const std::string& method_name,
-                                 const std::string& account_id,
-                                 const std::string& policy_blob,
-                                 VoidDBusMethodCallback callback) {
+  void CallStorePolicy(const PolicyDescriptor& descriptor,
+                       const std::string& policy_blob,
+                       VoidDBusMethodCallback callback) {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
-                                 method_name);
+                                 login_manager::kSessionManagerStorePolicyEx);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(account_id);
+    const std::string descriptor_blob = descriptor.SerializeAsString();
     // static_cast does not work due to signedness.
+    writer.AppendArrayOfBytes(
+        reinterpret_cast<const uint8_t*>(descriptor_blob.data()),
+        descriptor_blob.size());
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8_t*>(policy_blob.data()),
         policy_blob.size());
@@ -657,12 +652,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(std::move(sessions));
   }
 
-  // Reads array of bytes data as std::string.
-  void ExtractString(const std::string& method_name,
-                     dbus::Response* response,
-                     std::string* extracted) {
+  // Reads an array of policy data bytes data as std::string.
+  void ExtractPolicyResponseString(
+      login_manager::PolicyAccountType account_type,
+      dbus::Response* response,
+      std::string* extracted) {
     if (!response) {
-      LOG(ERROR) << "Failed to call " << method_name;
+      LOG(ERROR) << "Failed to call RetrievePolicyEx for account type "
+                 << account_type;
       return;
     }
     dbus::MessageReader reader(response);
@@ -678,22 +675,22 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   // Called when kSessionManagerRetrievePolicy or
   // kSessionManagerRetrievePolicyForUser method is complete.
-  void OnRetrievePolicy(const std::string& method_name,
+  void OnRetrievePolicy(login_manager::PolicyAccountType account_type,
                         RetrievePolicyCallback callback,
                         dbus::Response* response,
                         dbus::ErrorResponse* error) {
     if (!response) {
       RetrievePolicyResponseType response_type =
-          GetResponseTypeBasedOnError(error ? error->GetErrorName() : "");
-      LogPolicyResponseUma(method_name, response_type);
+          GetPolicyResponseTypeByError(error ? error->GetErrorName() : "");
+      LogPolicyResponseUma(account_type, response_type);
       std::move(callback).Run(response_type, std::string());
       return;
     }
 
     dbus::MessageReader reader(response);
     std::string proto_blob;
-    ExtractString(method_name, response, &proto_blob);
-    LogPolicyResponseUma(method_name, RetrievePolicyResponseType::SUCCESS);
+    ExtractPolicyResponseString(account_type, response, &proto_blob);
+    LogPolicyResponseUma(account_type, RetrievePolicyResponseType::SUCCESS);
     std::move(callback).Run(RetrievePolicyResponseType::SUCCESS, proto_blob);
   }
 
