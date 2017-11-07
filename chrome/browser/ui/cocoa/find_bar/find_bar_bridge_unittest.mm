@@ -22,7 +22,8 @@ TEST_F(FindBarBridgeTest, Accessors) {
   // Get/SetFindBarController are virtual methods implemented in
   // FindBarBridge, so we test them here.
   FindBarBridge* bridge = new FindBarBridge(NULL);
-  FindBarController controller(bridge);  // takes ownership of |bridge|.
+  FindBarController controller(bridge,  // takes ownership of |bridge|.
+                               nullptr);
   bridge->SetFindBarController(&controller);
 
   EXPECT_EQ(&controller, bridge->GetFindBarController());

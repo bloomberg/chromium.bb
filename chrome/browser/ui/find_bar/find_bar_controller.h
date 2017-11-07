@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class FindBar;
+class Browser;
 
 namespace content {
 class WebContents;
@@ -41,7 +42,7 @@ class FindBarController : public content::NotificationObserver {
   };
 
   // FindBar takes ownership of |find_bar_view|.
-  explicit FindBarController(FindBar* find_bar);
+  FindBarController(FindBar* find_bar, Browser* browser);
 
   ~FindBarController() override;
 
@@ -97,11 +98,14 @@ class FindBarController : public content::NotificationObserver {
   std::unique_ptr<FindBar> find_bar_;
 
   // The WebContents we are currently associated with.  Can be NULL.
-  content::WebContents* web_contents_;
+  content::WebContents* web_contents_ = nullptr;
+
+  // The Browser creating this controller.
+  Browser* browser_;
 
   // The last match count we reported to the user. This is used by
   // UpdateFindBarForCurrentResult to avoid flickering.
-  int last_reported_matchcount_;
+  int last_reported_matchcount_ = 0;
 
   // Used to keep track of whether the user has been notified that the find came
   // up empty. A single find session can result in multiple final updates, if
