@@ -22,27 +22,25 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
                                  bool isInitial,
                                  bool isInherit) {
   switch (property) {
-    {% for property in properties
-        if property.should_declare_functions or property.use_handlers_for %}
-    {% set used_property = properties_by_id[property.use_handlers_for] or property %}
-    {% set used_property_id = used_property.property_id %}
-    {% if used_property.use_api_in_stylebuilder %}
+    {% for property in properties if property.should_declare_functions %}
+    {% set property_id = property.property_id %}
+    {% if property.use_api_in_stylebuilder %}
     case {{property.property_id}}:
       if (isInitial)
-        Get{{used_property_id}}API().ApplyInitial(state);
+        Get{{property_id}}API().ApplyInitial(state);
       else if (isInherit)
-        Get{{used_property_id}}API().ApplyInherit(state);
+        Get{{property_id}}API().ApplyInherit(state);
       else
-        Get{{used_property_id}}API().ApplyValue(state, value);
+        Get{{property_id}}API().ApplyValue(state, value);
       return;
       {% else %}
     case {{property.property_id}}:
       if (isInitial)
-        StyleBuilderFunctions::applyInitial{{used_property_id}}(state);
+        StyleBuilderFunctions::applyInitial{{property_id}}(state);
       else if (isInherit)
-        StyleBuilderFunctions::applyInherit{{used_property_id}}(state);
+        StyleBuilderFunctions::applyInherit{{property_id}}(state);
       else
-        StyleBuilderFunctions::applyValue{{used_property_id}}(state, value);
+        StyleBuilderFunctions::applyValue{{property_id}}(state, value);
       return;
     {% endif %}
 

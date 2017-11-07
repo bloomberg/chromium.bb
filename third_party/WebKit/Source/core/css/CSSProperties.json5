@@ -301,11 +301,6 @@
     converter: {
     },
 
-    // - use_handlers_for: "CSSPropertyTransform"
-    // Use handlers for the specified property instead of defining new ones
-    use_handlers_for: {
-    },
-
     // - builder_skip
     // Ignore this property in the StyleBuilder
     builder_skip: {
