@@ -10043,59 +10043,15 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             rate_uv = rd_stats_uv.rate;
             disable_skip = dummy_disable_skip;
             backup_mbmi = *mbmi;
+            for (i = 0; i < MAX_MB_PLANE; ++i)
+              memcpy(x->blk_skip_drl[i], x->blk_skip[i],
+                     sizeof(uint8_t) * ctx->num_4x4_blk);
           }
         }
         *mbmi = backup_mbmi;
-
-        // TODO(chengchen): Redo encoding use the selected compound_idx
-        // But ideally, this is unnecessary
-        {
-          RD_STATS rd_stats, rd_stats_y, rd_stats_uv;
-          av1_init_rd_stats(&rd_stats);
-          av1_init_rd_stats(&rd_stats_y);
-          av1_init_rd_stats(&rd_stats_uv);
-          rd_stats.rate = cum_rate;
-
-          memcpy(frame_mv, backup_frame_mv, sizeof(frame_mv));
-          memcpy(single_newmv, backup_single_newmv, sizeof(single_newmv));
-          memcpy(single_newmv_rate, backup_single_newmv_rate,
-                 sizeof(single_newmv_rate));
-          memcpy(modelled_rd, backup_modelled_rd, sizeof(modelled_rd));
-
-          mbmi->interp_filters = backup_interp_filters;
-
-          int dummy_disable_skip = 0;
-
-          args.single_newmv = single_newmv;
-          args.single_newmv_rate = single_newmv_rate;
-          args.modelled_rd = modelled_rd;
-
-          int64_t tmp_rd = handle_inter_mode(
-              cpi, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
-              &dummy_disable_skip, frame_mv, mi_row, mi_col, &args, best_rd);
-
-          if (tmp_rd < INT64_MAX) {
-            if (RDCOST(x->rdmult, rd_stats.rate, rd_stats.dist) <
-                RDCOST(x->rdmult, 0, rd_stats.sse))
-              tmp_rd =
-                  RDCOST(x->rdmult, rd_stats.rate + x->skip_cost[skip_ctx][0],
-                         rd_stats.dist);
-            else
-              tmp_rd = RDCOST(x->rdmult,
-                              rd_stats.rate + x->skip_cost[skip_ctx][1] -
-                                  rd_stats_y.rate - rd_stats_uv.rate,
-                              rd_stats.sse);
-          }
-
-          this_rd = tmp_rd;
-          rate2 = rd_stats.rate;
-          skippable = rd_stats.skip;
-          distortion2 = rd_stats.dist;
-          total_sse = rd_stats.sse;
-          rate_y = rd_stats_y.rate;
-          rate_uv = rd_stats_uv.rate;
-          disable_skip = dummy_disable_skip;
-        }
+        for (i = 0; i < MAX_MB_PLANE; ++i)
+          memcpy(x->blk_skip[i], x->blk_skip_drl[i],
+                 sizeof(uint8_t) * ctx->num_4x4_blk);
       }
 #else  // CONFIG_JNT_COMP
       {
