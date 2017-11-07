@@ -3,8 +3,5 @@ michaelbai@chromium.org
 tobiasjs@chromium.org
 torne@chromium.org
 
-per-file aw_safe_browsing*=ntfschr@chromium.org
-per-file SafeBrowsingTest.java=ntfschr@chromium.org
-
 # TEAM: android-webview-dev@chromium.org
 # COMPONENT: Mobile>WebView
