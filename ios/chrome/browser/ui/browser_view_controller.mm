@@ -4338,7 +4338,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
   };
 
   [self setLastTapPoint:command];
-  DCHECK(self.visible || self.dismissingModal);
+  // When the tab switcher presentation experiment is enabled, the new tab can
+  // be opened before BVC has been made visible onscreen.  Test for this case by
+  // checking if the parent container VC is currently in the process of being
+  // presented.
+  DCHECK(self.visible || self.dismissingModal ||
+         (TabSwitcherPresentsBVCEnabled() &&
+          self.parentViewController.isBeingPresented));
   Tab* currentTab = [_model currentTab];
   if (currentTab) {
     [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
