@@ -94,9 +94,7 @@ cr.define('print_preview', function() {
      */
     this.localList_ = new print_preview.DestinationList(
         this, loadTimeData.getString('localDestinationsTitle'),
-        loadTimeData.getBoolean('showLocalManageButton') ?
-            loadTimeData.getString('manage') :
-            null);
+        loadTimeData.getString('manage'));
     this.addChild(this.localList_);
 
     /**
