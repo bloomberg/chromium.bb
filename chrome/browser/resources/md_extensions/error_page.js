@@ -55,6 +55,9 @@ cr.define('extensions', function() {
       /** @type {!extensions.ErrorPageDelegate|undefined} */
       delegate: Object,
 
+      /** @private {!Array<!(ManifestError|RuntimeError)>} */
+      entries_: Array,
+
       /** @private {?(ManifestError|RuntimeError)} */
       selectedError_: Object,
 
@@ -68,7 +71,7 @@ cr.define('extensions', function() {
     },
 
     observers: [
-      'observeDataChanges_(data)',
+      'observeDataChanges_(data.*)',
       'onSelectedErrorChanged_(selectedError_)',
     ],
 
@@ -78,17 +81,21 @@ cr.define('extensions', function() {
      * @private
      */
     observeDataChanges_: function() {
-      assert(this.data);
-      this.selectedError_ =
-          this.data.manifestErrors[0] || this.data.runtimeErrors[0] || null;
-    },
-
-    /**
-     * @return {!Array<!(ManifestError|RuntimeError)>}
-     * @private
-     */
-    calculateShownItems_: function() {
-      return this.data.manifestErrors.concat(this.data.runtimeErrors);
+      const errors = this.data.manifestErrors.concat(this.data.runtimeErrors);
+      // When setting |this.entries_| for the first time, set the |expanded|
+      // flags so that the first error is selected. This is needed to show
+      // the cr-expand-button images.
+      // TODO(dschuyler): A similar loop is repeated in selectError_(). I
+      // intend to change/improve this by December 2017.
+      for (let i = 0; i < errors.length; ++i) {
+        // Augmenting error with |expanded| intentionally, to use the HTML
+        // binding. (A temporary workaround).
+        errors[i].expanded = i == 0;
+      }
+      this.entries_ = errors;
+      if (this.entries_.length) {
+        this.selectError_(this.entries_[0]);
+      }
     },
 
     /** @private */
@@ -290,6 +297,11 @@ cr.define('extensions', function() {
      */
     selectError_: function(error) {
       this.selectedError_ = error;
+      const items =
+          this.$$('#errors-list').querySelectorAll('cr-expand-button');
+      for (let i = 0; i < items.length; ++i) {
+        items[i].expanded = this.entries_[i] == error;
+      }
     },
 
     /**
