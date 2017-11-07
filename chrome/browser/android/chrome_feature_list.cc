@@ -61,8 +61,9 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
     &kChromeHomeFeature,
-    &kChromeHomeDestroySuggestions,
     &kChromeHomeBottomNavLabels,
+    &kChromeHomeDestroySuggestions,
+    &kChromeHomeDropAllButFirstThumbnail,
     &kChromeHomePromo,
     &kChromeHomeOptOutSnackbar,
     &kChromeHomeSwipeLogic,
@@ -168,11 +169,14 @@ const base::Feature kCCTRedirectPreconnect{"CCTRedirectPreconnect",
 const base::Feature kChromeHomeFeature{"ChromeHome",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kChromeHomeBottomNavLabels{
+    "ChromeHomeBottomNavLabels", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kChromeHomeDestroySuggestions{
     "ChromeHomeDestroySuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kChromeHomeBottomNavLabels{
-    "ChromeHomeBottomNavLabels", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kChromeHomeDropAllButFirstThumbnail{
+    "ChromeHomeDropAllButFirstThumbnail", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeHomePromo{"ChromeHomePromo",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

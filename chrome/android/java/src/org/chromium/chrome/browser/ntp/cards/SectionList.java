@@ -263,6 +263,17 @@ public class SectionList
         }
     }
 
+    /**
+     * Drops all but the first {@code n} thumbnails on articles.
+     * @param n The number of article thumbnails to keep.
+     */
+    public void dropAllButFirstNArticleThumbnails(int n) {
+        SuggestionsSection articles = mSections.get(KnownCategories.ARTICLES);
+        if (articles == null) return;
+
+        articles.dropAllButFirstNThumbnails(n);
+    }
+
     /** Returns a string showing the categories of all the contained sections. */
     private String getCategoriesForDebugging() {
         StringBuilder sb = new StringBuilder();

@@ -571,6 +571,17 @@ public class SuggestionsSection extends InnerNode {
         mIsDataStale = false;
     }
 
+    /**
+     * Drops all but the first {@code n} thumbnails on suggestions.
+     * @param n The number of thumbnails to keep.
+     */
+    public void dropAllButFirstNThumbnails(int n) {
+        for (SnippetArticle suggestion : mSuggestionsList) {
+            if (n-- > 0) continue;
+            suggestion.clearThumbnail();
+        }
+    }
+
     @CategoryInt
     public int getCategory() {
         return mCategoryInfo.getCategory();

@@ -193,6 +193,11 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             @Override
             public void onSheetClosed(@StateChangeReason int reason) {
                 super.onSheetClosed(reason);
+
+                if (ChromeFeatureList.isEnabled(
+                            ChromeFeatureList.CHROME_HOME_DROP_ALL_BUT_FIRST_THUMBNAIL)) {
+                    adapter.dropAllButFirstNArticleThumbnails(1);
+                }
                 mRecyclerView.setAdapter(null);
                 updateLogoTransition();
             }

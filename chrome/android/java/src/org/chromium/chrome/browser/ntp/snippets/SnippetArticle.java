@@ -113,8 +113,10 @@ public class SnippetArticle implements OfflinableSuggestion {
     }
 
     /**
-     * Returns this article's thumbnail. Can return {@code null} as it is initially unset.
+     * Returns this article's thumbnail, or {@code null} if it hasn't been fetched yet or has been
+     * discarded.
      */
+    @Nullable
     public Drawable getThumbnail() {
         return mThumbnail == null ? null : mThumbnail.get();
     }
@@ -122,6 +124,13 @@ public class SnippetArticle implements OfflinableSuggestion {
     /** Sets the thumbnail bitmap for this article. */
     public void setThumbnail(DiscardableReference<Drawable> thumbnail) {
         mThumbnail = thumbnail;
+    }
+
+    /**
+     * Clears this article's thumbnail if there is one.
+     */
+    public void clearThumbnail() {
+        mThumbnail = null;
     }
 
     /**
