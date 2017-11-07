@@ -28,7 +28,6 @@ BackgroundFetchJobController::BackgroundFetchJobController(
       finished_callback_(std::move(finished_callback)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  data_manager_->SetDatabaseClient(registration_id, this);
 }
 
 void BackgroundFetchJobController::InitializeRequestStatus(
@@ -44,7 +43,6 @@ void BackgroundFetchJobController::InitializeRequestStatus(
 
 BackgroundFetchJobController::~BackgroundFetchJobController() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  data_manager_->SetDatabaseClient(registration_id_, nullptr);
 }
 
 void BackgroundFetchJobController::Start() {

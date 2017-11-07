@@ -17,7 +17,6 @@
 namespace content {
 
 class BackgroundFetchDataManager;
-class BackgroundFetchDatabaseClient;
 class ServiceWorkerContextWrapper;
 
 // Note that this also handles non-error cases where the NONE is NONE.
@@ -48,8 +47,6 @@ class DatabaseTask {
   // Each task MUST call this once finished, even if exceptions occur, to
   // release their lock and allow the next task to execute.
   void Finished();
-
-  BackgroundFetchDatabaseClient* GetController(const std::string& unique_id);
 
   void AddDatabaseTask(std::unique_ptr<DatabaseTask> task);
 

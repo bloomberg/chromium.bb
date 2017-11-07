@@ -4,8 +4,6 @@
 
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 
-#include <algorithm>
-#include <set>
 #include <utility>
 
 #include "base/command_line.h"
@@ -13,7 +11,6 @@
 #include "base/guid.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
-#include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/storage/cleanup_task.h"
@@ -194,26 +191,6 @@ BackgroundFetchDataManager::~BackgroundFetchDataManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-void BackgroundFetchDataManager::SetDatabaseClient(
-    const BackgroundFetchRegistrationId& registration_id,
-    BackgroundFetchDatabaseClient* client) {
-  if (client) {
-    DCHECK_EQ(0u, database_clients_.count(registration_id.unique_id()));
-    database_clients_.emplace(registration_id.unique_id(), client);
-
-    // TODO(delphick): This assumes that fetches are always started afresh in
-    // each browser session. We need to initialize the number of downloads using
-    // information loaded from the database.
-    client->InitializeRequestStatus(
-        0, /* completed_downloads*/
-        registrations_[registration_id.unique_id()]->GetTotalNumberOfRequests(),
-        std::vector<std::string>() /* outstanding download GUIDs */);
-  } else {
-    DCHECK_EQ(1u, database_clients_.count(registration_id.unique_id()));
-    database_clients_.erase(registration_id.unique_id());
-  }
-}
-
 void BackgroundFetchDataManager::CreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
@@ -307,21 +284,6 @@ void BackgroundFetchDataManager::UpdateRegistrationUI(
 
   auto registrations_iter = registrations_.find(unique_id);
   if (registrations_iter == registrations_.end()) {  // Not found.
-    std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
-    return;
-  }
-
-  const BackgroundFetchRegistrationId& registration_id =
-      registrations_iter->second->registration_id();
-
-  auto database_clients_iter = database_clients_.find(unique_id);
-
-  // The registration must a) still be active, or b) have completed/failed (not
-  // aborted) with the waitUntil promise from that event not yet resolved. The
-  // latter case can be detected because the DatabaseClient will be kept alive
-  // until the waitUntil promise is resolved.
-  if (!IsActive(registration_id) &&
-      database_clients_iter == database_clients_.end()) {
     std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
     return;
   }
@@ -545,6 +507,12 @@ void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
                           developer_ids);
 }
 
+int BackgroundFetchDataManager::GetTotalNumberOfRequests(
+    const BackgroundFetchRegistrationId& registration_id) const {
+  return registrations_.find(registration_id.unique_id())
+      ->second->GetTotalNumberOfRequests();
+}
+
 bool BackgroundFetchDataManager::IsActive(
     const BackgroundFetchRegistrationId& registration_id) {
   auto developer_id_tuple =
@@ -578,13 +546,6 @@ void BackgroundFetchDataManager::OnDatabaseTaskFinished(
   database_tasks_.pop();
   if (!database_tasks_.empty())
     database_tasks_.front()->Start();
-}
-
-BackgroundFetchDatabaseClient*
-BackgroundFetchDataManager::GetDatabaseClientFromUniqueID(
-    const std::string& unique_id) {
-  auto iter = database_clients_.find(unique_id);
-  return iter == database_clients_.end() ? nullptr : iter->second;
 }
 
 }  // namespace content

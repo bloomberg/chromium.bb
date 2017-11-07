@@ -105,7 +105,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     registration.developer_id = registration_id.developer_id();
     registration.unique_id = registration_id.unique_id();
 
-    return std::make_unique<BackgroundFetchJobController>(
+    auto controller = std::make_unique<BackgroundFetchJobController>(
         delegate_proxy_.get(), registration_id, BackgroundFetchOptions(),
         registration, &data_manager_,
         base::BindRepeating(
@@ -113,6 +113,10 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
             base::Unretained(this)),
         base::BindOnce(&BackgroundFetchJobControllerTest::DidFinishJob,
                        base::Unretained(this)));
+
+    controller->InitializeRequestStatus(0, total_downloads,
+                                        std::vector<std::string>());
+    return controller;
   }
 
  protected:
