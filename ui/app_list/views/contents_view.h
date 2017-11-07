@@ -31,7 +31,6 @@ class AppListFolderItem;
 class AppListMainView;
 class AppsContainerView;
 class AppsGridView;
-class CustomLauncherPageView;
 class PaginationModel;
 class SearchBoxView;
 class SearchResultListView;
@@ -97,7 +96,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
     return apps_container_view_;
   }
   StartPageView* start_page_view() const { return start_page_view_; }
-  CustomLauncherPageView* custom_page_view() const { return custom_page_view_; }
   SearchResultPageView* search_results_page_view() const {
     return search_results_page_view_;
   }
@@ -203,7 +201,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   SearchResultTileItemListView* search_result_tile_item_list_view_ = nullptr;
   SearchResultListView* search_result_list_view_ = nullptr;
   StartPageView* start_page_view_ = nullptr;
-  CustomLauncherPageView* custom_page_view_ = nullptr;
 
   // The child page views. Owned by the views hierarchy.
   std::vector<AppListPage*> app_list_pages_;
