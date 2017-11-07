@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/accessibility/default_accessibility_delegate.h"
-#include "ash/gpu_support_stub.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
 #include "ash/screenshot_delegate.h"
 #include "base/strings/string16.h"
@@ -103,12 +102,6 @@ std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
 
 AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
-}
-
-GPUSupport* ShellDelegateMus::CreateGPUSupport() {
-  // TODO: http://crbug.com/647421.
-  NOTIMPLEMENTED_LOG_ONCE() << " Using a stub GPUSupport implementation";
-  return new GPUSupportStub();
 }
 
 base::string16 ShellDelegateMus::GetProductName() const {

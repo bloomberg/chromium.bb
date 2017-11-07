@@ -180,9 +180,6 @@ component("ash") {
     "frame/header_painter_util.h",
     "frame/header_view.cc",
     "frame/header_view.h",
-    "gpu_support.h",
-    "gpu_support_stub.cc",
-    "gpu_support_stub.h",
     "high_contrast/high_contrast_controller.cc",
     "high_contrast/high_contrast_controller.h",
     "highlighter/highlighter_controller.cc",
@@ -1040,8 +1037,6 @@ component("ash") {
 component("ash_with_content") {
   sources = [
     "content/ash_with_content_export.h",
-    "content/gpu_support_impl.cc",
-    "content/gpu_support_impl.h",
     "content/keyboard_overlay/keyboard_overlay_delegate.cc",
     "content/keyboard_overlay/keyboard_overlay_delegate.h",
     "content/keyboard_overlay/keyboard_overlay_view.cc",

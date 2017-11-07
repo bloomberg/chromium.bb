@@ -5,7 +5,6 @@
 #include "ash/test_shell_delegate.h"
 
 #include "ash/accessibility/test_accessibility_delegate.h"
-#include "ash/gpu_support_stub.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test_screenshot_delegate.h"
@@ -61,11 +60,6 @@ TestShellDelegate::CreateWallpaperDelegate() {
 
 AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {
   return new TestAccessibilityDelegate();
-}
-
-GPUSupport* TestShellDelegate::CreateGPUSupport() {
-  // Real GPU support depends on src/content, so just use a stub.
-  return new GPUSupportStub;
 }
 
 base::string16 TestShellDelegate::GetProductName() const {

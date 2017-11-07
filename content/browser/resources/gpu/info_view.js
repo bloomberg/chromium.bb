@@ -94,7 +94,6 @@ cr.define('gpu', function() {
         'texture_sharing': 'Texture Sharing',
         'video_decode': 'Video Decode',
         'video_encode': 'Video Encode',
-        'panel_fitting': 'Panel Fitting',
         'rasterization': 'Rasterization',
         'multiple_raster_threads': 'Multiple Raster Threads',
         'native_gpu_memory_buffers': 'Native GpuMemoryBuffers',

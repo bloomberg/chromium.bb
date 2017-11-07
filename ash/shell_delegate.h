@@ -37,7 +37,6 @@ class InputDeviceControllerClient;
 namespace ash {
 
 class AccessibilityDelegate;
-class GPUSupport;
 class NetworkingConfigDelegate;
 class ScreenshotDelegate;
 class WallpaperDelegate;
@@ -88,9 +87,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a accessibility delegate. Shell takes ownership of the delegate.
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() = 0;
-
-  // Creates a GPU support object. Shell takes ownership of the object.
-  virtual GPUSupport* CreateGPUSupport() = 0;
 
   // Get the product name.
   virtual base::string16 GetProductName() const = 0;
