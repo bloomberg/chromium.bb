@@ -36,7 +36,7 @@
     navigator.webkitGetUserMedia(
         constraints,
         function(stream) {
-          detectVideoInLocalView1(stream, function() {
+          detectVideoInLocalView1(stream).then(() => {
             stream.getVideoTracks()[0].stop();
             waitForVideoToStop('local-view-1');
           });
@@ -100,11 +100,8 @@
           assertEquals(duplicate.getVideoTracks().length, 1);
           assertNotEquals(stream.getVideoTracks()[0].id,
                           duplicate.getVideoTracks()[0].id);
-          detectVideoInLocalView1(
-            stream,
-            function() {
-              reportTestSuccess();
-            });
+          detectVideoInLocalView1(stream)
+              .then(reportTestSuccess);
         },
         failedCallback);
   }
@@ -119,11 +116,8 @@
           assertEquals(duplicate.getVideoTracks().length, 1);
           assertEquals(stream.getVideoTracks()[0].id,
                        duplicate.getVideoTracks()[0].id);
-          detectVideoInLocalView1(
-            duplicate,
-            function() {
-              reportTestSuccess();
-            });
+          detectVideoInLocalView1(duplicate)
+              .then(reportTestSuccess);
         },
         failedCallback);
   }
@@ -139,11 +133,8 @@
           assertEquals(duplicate.getVideoTracks().length, 1);
           assertEquals(stream.getVideoTracks()[0].id,
                        duplicate.getVideoTracks()[0].id);
-          detectVideoInLocalView1(
-            duplicate,
-            function() {
-              reportTestSuccess();
-            });
+          detectVideoInLocalView1(duplicate)
+              .then(reportTestSuccess);
         },
         failedCallback);
   }
@@ -159,11 +150,8 @@
           assertEquals(duplicate.getVideoTracks().length, 1);
           assertNotEquals(stream.getVideoTracks()[0].id,
                           duplicate.getVideoTracks()[0].id)
-          detectVideoInLocalView1(
-            duplicate,
-            function() {
-              reportTestSuccess();
-            });
+          detectVideoInLocalView1(duplicate)
+              .then(reportTestSuccess);
         },
         failedCallback);
   }
@@ -177,11 +165,8 @@
         constraints,
         function(stream) {
           window[streamName] = stream;
-          detectVideoInLocalView1(
-            stream,
-            function() {
-              reportTestSuccess();
-            });
+          detectVideoInLocalView1(stream)
+              .then(reportTestSuccess);
         },
         failedCallback);
   }
@@ -238,8 +223,8 @@
     var stopBothVideoTracksAndVerify = function() {
       // Stop track 2, ensure track 2 stops but not track 1, then stop track 1.
       stream2.getVideoTracks()[0].stop();
-      detectVideoStopped('local-view-2', function() {
-        detectVideoInLocalView1(stream1, function() {
+      detectVideoStopped('local-view-2').then(() => {
+        detectVideoInLocalView1(stream1).then(() => {
           stream1.getVideoTracks()[0].stop();
           waitForVideoToStop('local-view-1');
         });
@@ -296,9 +281,8 @@
         function(stream) {
           requestSecondGetUserMedia();
           attachMediaStream(stream, 'local-view-1');
-          detectVideoPlaying(
-              'local-view-1',
-              function() {
+          detectVideoPlaying('local-view-1')
+              .then(() => {
                 validateFrameRate('local-view-1', expected_frame_rate1,
                                   validateFrameRateCallback);
               });
@@ -309,9 +293,8 @@
           constraints2,
           function(stream) {
             attachMediaStream(stream, 'local-view-2');
-            detectVideoPlaying(
-                'local-view-2',
-                function() {
+            detectVideoPlaying('local-view-2')
+                .then(() => {
                   validateFrameRate('local-view-2', expected_frame_rate2,
                                     validateFrameRateCallback);
                 });
@@ -381,9 +364,9 @@
     $(videoElement).src = localStreamUrl;
   }
 
-  function detectVideoInLocalView1(stream, callback) {
+  function detectVideoInLocalView1(stream) {
     attachMediaStream(stream, 'local-view-1');
-    detectVideoPlaying('local-view-1', callback);
+    return detectVideoPlaying('local-view-1');
   }
 
   function displayDetectAndAnalyzeVideo(stream) {
@@ -416,7 +399,8 @@
       assertEquals(newStream.getAudioTracks().length, 0);
     }
 
-    detectVideoInLocalView1(newStream, reportTestSuccess);
+    detectVideoInLocalView1(newStream)
+        .then(reportTestSuccess);
   }
 
   // Calls stop on |stream|'s video track after a delay and reports success.
@@ -453,7 +437,8 @@
     setAllEventsOccuredHandler(function() {
       var id = "lastVideoTag";
       createDetectableRenderer(stream, id);
-      detectVideoPlaying(id, function () { reportTestSuccess(); });
+      detectVideoPlaying(id)
+          .then(reportTestSuccess);
     });
 
     // Create 3 video renderers and pause them once video is playing.
@@ -473,7 +458,8 @@
           };
       // Detect video id |id| and trigger the function returned by
       // |video_detected_function| when video is playing.
-      detectVideoPlaying(id, video_detected_function(id));
+      detectVideoPlaying(id)
+          .then(video_detected_function(id));
      }
    }
 

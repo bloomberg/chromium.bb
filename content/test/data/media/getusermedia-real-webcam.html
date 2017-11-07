@@ -18,7 +18,7 @@
   function gotStreamCallback(stream) {
     var localView = $('local-view');
     localView.src = URL.createObjectURL(stream);
-    detectVideoPlaying('local-view', function() {
+    detectVideoPlaying('local-view').then(() => {
       sendValueToTest(localView.videoWidth + 'x' + localView.videoHeight);
     });
   }
