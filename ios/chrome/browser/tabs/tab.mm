@@ -894,9 +894,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     didCommitNavigationWithDetails:(const web::LoadCommittedDetails&)details {
   DCHECK([self navigationManager]);
   if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    // |webWillAddPendingURL:transition:| is not called for native page loads.
-    // TODO(crbug.com/381201): Move this call there once that bug is fixed so
-    // that |disableFullScreen| is called only from one place.
+    // TODO(crbug.com/381201): Move this call to DidFinishNavigation callback.
     [_legacyFullscreenController disableFullScreen];
   }
   GURL lastCommittedURL = webState->GetLastCommittedURL();
