@@ -91,16 +91,12 @@ V8DOMActivityLogger* V8DOMActivityLogger::CurrentActivityLogger() {
   return context_data->ActivityLogger();
 }
 
-V8DOMActivityLogger*
-V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld() {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+V8DOMActivityLogger* V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld(
+    v8::Isolate* isolate) {
   if (!isolate->InContext())
     return nullptr;
 
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
-
-  ScriptState* script_state = ScriptState::From(context);
+  ScriptState* script_state = ScriptState::From(isolate->GetCurrentContext());
   if (!script_state->World().IsIsolatedWorld())
     return nullptr;
 
@@ -109,6 +105,20 @@ V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld() {
     return nullptr;
 
   return context_data->ActivityLogger();
+}
+
+V8DOMActivityLogger*
+V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld() {
+  return CurrentActivityLoggerIfIsolatedWorld(v8::Isolate::GetCurrent());
+}
+
+V8DOMActivityLogger*
+V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorldForMainThread() {
+  DCHECK(IsMainThread());
+  if (DomActivityLoggersForIsolatedWorld().IsEmpty())
+    return nullptr;
+  return CurrentActivityLoggerIfIsolatedWorld(
+      V8PerIsolateData::MainThreadIsolate());
 }
 
 }  // namespace blink
