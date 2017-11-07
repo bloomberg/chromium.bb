@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/vaapi_drm_picture.h"
+#include "media/gpu/vaapi/vaapi_drm_picture.h"
 
 #include "base/file_descriptor_posix.h"
 #include "media/gpu/va_surface.h"

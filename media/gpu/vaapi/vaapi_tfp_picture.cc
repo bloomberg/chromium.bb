@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/vaapi_tfp_picture.h"
+#include "media/gpu/vaapi/vaapi_tfp_picture.h"
 
 #include <X11/Xlib.h>
 

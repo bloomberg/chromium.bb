@@ -6,14 +6,14 @@
 // X11 window system used by VaapiVideoDecodeAccelerator to produce
 // output pictures.
 
-#ifndef MEDIA_GPU_VAAPI_TFP_PICTURE_H_
-#define MEDIA_GPU_VAAPI_TFP_PICTURE_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_TFP_PICTURE_H_
+#define MEDIA_GPU_VAAPI_VAAPI_TFP_PICTURE_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "media/gpu/vaapi_picture.h"
+#include "media/gpu/vaapi/vaapi_picture.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -58,4 +58,4 @@ class VaapiTFPPicture : public VaapiPicture {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_TFP_PICTURE_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_TFP_PICTURE_H_
