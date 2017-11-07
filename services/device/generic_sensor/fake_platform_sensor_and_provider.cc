@@ -54,6 +54,11 @@ double FakePlatformSensor::GetMinimumSupportedFrequency() {
 FakePlatformSensorProvider::FakePlatformSensorProvider() = default;
 FakePlatformSensorProvider::~FakePlatformSensorProvider() = default;
 
+mojo::ScopedSharedBufferMapping FakePlatformSensorProvider::GetMapping(
+    mojom::SensorType type) {
+  return MapSharedBufferForType(type);
+}
+
 void FakePlatformSensorProvider::CreateSensorInternal(
     mojom::SensorType type,
     mojo::ScopedSharedBufferMapping mapping,
@@ -64,16 +69,21 @@ void FakePlatformSensorProvider::CreateSensorInternal(
   DoCreateSensorInternal(type, std::move(sensor), callback);
 }
 
-MockPlatformSensorClient::MockPlatformSensorClient(
-    scoped_refptr<PlatformSensor> sensor)
-    : sensor_(std::move(sensor)) {
-  DCHECK(sensor_);
-  sensor_->AddClient(this);
+MockPlatformSensorClient::MockPlatformSensorClient() {
   ON_CALL(*this, IsSuspended()).WillByDefault(Return(false));
 }
 
+MockPlatformSensorClient::MockPlatformSensorClient(
+    scoped_refptr<PlatformSensor> sensor)
+    : MockPlatformSensorClient() {
+  DCHECK(sensor);
+  sensor_ = std::move(sensor);
+  sensor_->AddClient(this);
+}
+
 MockPlatformSensorClient::~MockPlatformSensorClient() {
-  sensor_->RemoveClient(this);
+  if (sensor_)
+    sensor_->RemoveClient(this);
 }
 
 }  // namespace device

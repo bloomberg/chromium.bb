@@ -49,8 +49,9 @@ PlatformSensorConfiguration PlatformSensorFusion::GetDefaultConfiguration() {
 
 bool PlatformSensorFusion::StartSensor(
     const PlatformSensorConfiguration& configuration) {
+  DCHECK(!SourcesNotReady());
   for (const auto& pair : source_sensors_) {
-    if (!pair.second->StartSensor(configuration))
+    if (!pair.second->StartListening(this, configuration))
       return false;
   }
 
@@ -59,8 +60,9 @@ bool PlatformSensorFusion::StartSensor(
 }
 
 void PlatformSensorFusion::StopSensor() {
+  DCHECK(!SourcesNotReady());
   for (const auto& pair : source_sensors_)
-    pair.second->StopSensor();
+    pair.second->StopListening(this);
 
   fusion_algorithm_->Reset();
 }
@@ -113,7 +115,7 @@ bool PlatformSensorFusion::GetSourceReading(mojom::SensorType type,
 }
 
 PlatformSensorFusion::~PlatformSensorFusion() {
-  if (source_sensors_.size() != fusion_algorithm_->source_types().size())
+  if (SourcesNotReady())
     return;
 
   for (const auto& pair : source_sensors_)
@@ -150,7 +152,7 @@ void PlatformSensorFusion::AddSourceSensor(
   mojom::SensorType type = sensor->GetType();
   source_sensors_[type] = std::move(sensor);
 
-  if (source_sensors_.size() != fusion_algorithm_->source_types().size())
+  if (SourcesNotReady())
     return;
 
   reporting_mode_ = mojom::ReportingMode::CONTINUOUS;
@@ -164,6 +166,10 @@ void PlatformSensorFusion::AddSourceSensor(
   fusion_algorithm_->set_fusion_sensor(this);
 
   callback_.Run(this);
+}
+
+bool PlatformSensorFusion::SourcesNotReady() const {
+  return source_sensors_.size() != fusion_algorithm_->source_types().size();
 }
 
 }  // namespace device
