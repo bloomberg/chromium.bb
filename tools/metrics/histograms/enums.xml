@@ -13944,6 +13944,7 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="ACCESSIBILITY_PRIVATE_SETNATIVECHROMEVOXARCSUPPORTFORCURRENTAPP"/>
   <int value="1198"
       label="LANGUAGESETTINGSPRIVATE_SETENABLETRANSLATIONFORLANGUAGE"/>
+  <int value="1199" label="LANGUAGESETTINGSPRIVATE_MOVELANGUAGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
