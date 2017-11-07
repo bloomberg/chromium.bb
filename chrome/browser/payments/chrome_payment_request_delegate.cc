@@ -111,8 +111,7 @@ void ChromePaymentRequestDelegate::DoFullCardRequest(
 autofill::RegionDataLoader*
 ChromePaymentRequestDelegate::GetRegionDataLoader() {
   return new autofill::RegionDataLoaderImpl(
-      GetAddressInputSource(
-          GetPersonalDataManager()->GetURLRequestContextGetter())
+      GetAddressInputSource(g_browser_process->system_request_context())
           .release(),
       GetAddressInputStorage().release(), GetApplicationLocale());
 }
