@@ -28,6 +28,7 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/win/atl_module.h"
+#include "ui/gfx/win/hwnd_util.h"
 
 namespace {
 
@@ -350,6 +351,8 @@ void AccessibilityTreeFormatterWin::RecursiveBuildAccessibilityTree(
 
 const char* const ALL_ATTRIBUTES[] = {
     "name",
+    "parent",
+    "window_class",
     "value",
     "states",
     "attributes",
@@ -422,6 +425,7 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
   LONG ia_role = 0;
   if (SUCCEEDED(node->get_accRole(variant_self, ia_role_variant.Receive()))) {
     dict->SetString("role", RoleVariantToString(ia_role_variant));
+    ia_role = V_I4(ia_role_variant.ptr());
   }
 
   // If S_FALSE it means there is no name
@@ -433,6 +437,35 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
       dict->SetString("name", name);
   }
   temp_bstr.Reset();
+
+  Microsoft::WRL::ComPtr<IDispatch> parent_dispatch;
+  if (SUCCEEDED(node->get_accParent(parent_dispatch.GetAddressOf()))) {
+    Microsoft::WRL::ComPtr<IAccessible> parent_accessible;
+    if (!parent_dispatch) {
+      dict->SetString("parent", "[null]");
+    } else if (SUCCEEDED(
+                   parent_dispatch.CopyTo(parent_accessible.GetAddressOf()))) {
+      base::win::ScopedVariant parent_ia_role_variant;
+      if (SUCCEEDED(parent_accessible->get_accRole(
+              variant_self, parent_ia_role_variant.Receive())))
+        dict->SetString("parent", RoleVariantToString(parent_ia_role_variant));
+      else
+        dict->SetString("parent", L"[Error retrieving role from parent]");
+    } else {
+      dict->SetString("parent", L"[Error getting IAccessible* for parent]");
+    }
+  } else {
+    dict->SetString("parent", L"[Error retrieving parent]");
+  }
+
+  HWND hwnd;
+  if (SUCCEEDED(::WindowFromAccessibleObject(node.Get(), &hwnd)) && hwnd) {
+    dict->SetString("window_class", gfx::GetClassName(hwnd));
+  } else {
+    // This method is implemented by oleacc.dll and uses get_accParent,
+    // therefore it Will fail if get_accParent from root fails.
+    dict->SetString("window_class", L"[Error]");
+  }
 
   if (SUCCEEDED(node->get_accValue(variant_self, temp_bstr.Receive())))
     dict->SetString("value", base::string16(temp_bstr, temp_bstr.Length()));
