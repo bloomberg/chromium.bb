@@ -13,6 +13,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/language/core/browser/baseline_language_model.h"
 #include "components/language/core/browser/heuristic_language_model.h"
+#include "components/language/core/browser/pref_names.h"
 
 // static
 LanguageModelFactory* LanguageModelFactory::GetInstance() {
@@ -40,7 +41,7 @@ KeyedService* LanguageModelFactory::BuildServiceInstanceFor(
   if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
     return new language::HeuristicLanguageModel(
         profile->GetPrefs(), g_browser_process->GetApplicationLocale(),
-        prefs::kAcceptLanguages, prefs::kUserLanguageProfile);
+        prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile);
   }
 
   return new language::BaselineLanguageModel(

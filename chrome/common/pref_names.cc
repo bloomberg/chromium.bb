@@ -71,11 +71,6 @@ const char kLastProfileResetTimestamp[] = "profile.last_reset_timestamp";
 const char kChromeCleanerResetPending[] = "chrome_cleaner.reset_pending";
 #endif
 
-// The JSON representation of the user's language profile. Used as an input to
-// the user language model (i.e. for determining which languages a user
-// understands).
-const char kUserLanguageProfile[] = "language_profile";
-
 // The URL to open the new tab page to. Only set by Group Policy.
 const char kNewTabPageLocationOverride[] = "newtab_page_location_override";
 

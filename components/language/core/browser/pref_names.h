@@ -9,7 +9,6 @@ namespace language {
 namespace prefs {
 
 // TODO(martis): Add accept language preference here.
-// TODO(martis): Use these preferences for Content too.
 extern const char kUserLanguageProfile[];
 
 }  // namespace prefs
