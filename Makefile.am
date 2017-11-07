@@ -31,8 +31,7 @@ endif
 
 ACLOCAL_AMFLAGS = -I m4
 
-EXTRA_DIST = \
-	config.rpath  \
+EXTRA_DIST = config.rpath  \
 	fontconfig.pc.in \
 	fonts.conf.in \
 	fonts.dtd \

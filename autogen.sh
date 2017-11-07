@@ -50,7 +50,7 @@ GPERF=${GPERF-gperf}
 PYTHON=${PYTHON-python}
 LIBTOOLIZE_FLAGS="--copy --force"
 GETTEXTIZE=${GETTEXTIZE-gettextize}
-GETTEXTIZE_FLAGS="--force"
+GETTEXTIZE_FLAGS="--force --no-changelog"
 
 DIE=0
 
@@ -141,8 +141,14 @@ if test -z "$AUTOGEN_SUBDIR_MODE" -a -z "$NOCONFIGURE"; then
         fi
 fi
 
+[ -f configure.ac~ ] && rm configure.ac~
 echo Running $GETTEXTIZE $GETTEXTIZE_FLAGS
 $GETTEXTIZE $GETTEXTIZE_FLAGS
+# revert changes from gettextize for workaround...
+[ -f configure.ac~ ] && mv configure.ac~ configure.ac
+echo Running $GETTEXTIZE $GETTEXTIZE_FLAGS --po-dir=po-conf
+$GETTEXTIZE $GETTEXTIZE_FLAGS --po-dir=po-conf
+[ -f configure.ac~ ] && mv configure.ac~ configure.ac
 
 echo Running $ACLOCAL $ACLOCAL_FLAGS
 $ACLOCAL $ACLOCAL_FLAGS
