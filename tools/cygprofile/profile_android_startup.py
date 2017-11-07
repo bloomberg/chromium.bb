@@ -102,8 +102,8 @@ class WprManager(object):
     _DownloadFromCloudStorage(self._WPR_BUCKET, self._wpr_archive_hash)
     if binary_manager.NeedsInit():
       binary_manager.InitDependencyManager([])
-    self._wpr_server = webpagereplay_go_server.ReplayServer(self._wpr_archive,
-        '127.0.0.1', 0, 0, replay_options=[])
+    self._wpr_server = webpagereplay_go_server.ReplayServer(
+        self._wpr_archive, '127.0.0.1', 0, 0, replay_options=[])
     ports = self._wpr_server.StartServer()[:-1]
     self._host_http_port = ports[0]
     self._host_https_port = ports[1]
@@ -143,7 +143,7 @@ class WprManager(object):
         # the WprGo documentation at:
         # https://github.com/catapult-project/catapult/blob/master/web_page_replay_go/README.md
         '--ignore-certificate-errors-spki-list=' +
-            'PhrPvGIaAMmd29hj8BCZOq096yj7uMpRNHpn5PDxI6I=',
+        'PhrPvGIaAMmd29hj8BCZOq096yj7uMpRNHpn5PDxI6I=',
 
         # The flag --ignore-certificate-errors-spki-list (above) requires
         # specifying the profile directory, otherwise it is silently ignored.
@@ -212,8 +212,10 @@ class AndroidProfileTool(object):
       apk: The location of the chrome apk to profile.
       package_info: A PackageInfo structure describing the chrome apk,
                     as from pylib/constants.
+
     Returns:
       A list of cygprofile data files.
+
     Raises:
       NoCyglogDataError: No data was found on the device.
     """
@@ -304,7 +306,7 @@ class AndroidProfileTool(object):
         intent.Intent(package=package_info.package,
                       activity=package_info.activity,
                       data=url,
-                      extras={'create_new_tab' : True}),
+                      extras={'create_new_tab': True}),
         blocking=True, force_stop=True)
 
   def _KillChrome(self, package_info):
@@ -319,10 +321,11 @@ class AndroidProfileTool(object):
     os.mkdir(self._host_cyglog_dir)
 
   def _PullCyglogData(self):
-    """Pull the cyglog data off of the device.
+    """Pulls the cyglog data off of the device.
 
     Returns:
       A list of cyglog data files which were pulled.
+
     Raises:
       NoCyglogDataError: No data was found on the device.
     """

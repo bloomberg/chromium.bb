@@ -173,11 +173,26 @@ def MatchSymbolsInRegularBuild(reached_symbol_infos,
   return matched_primary_symbols
 
 
-def WriteReachedSymbolNames(filename, reached_symbols):
-  """Writes the list of reached symbol names to |filename|."""
-  with open(filename, 'w') as f:
-    for s in reached_symbols:
-      f.write(s.name + '\n')
+def GetReachedSymbolsFromDumpsAndMaybeWriteOffsets(
+    dump_filenames, native_lib_filename, output_filename):
+  """Merges a list of dumps, returns reached symbols and maybe writes offsets.
+
+  Args:
+    dump_filenames: ([str]) List of dump filenames.
+    native_lib_filename: (str) Path to the native library.
+    output_filename: (str or None) Offset output path, if not None.
+
+  Returns:
+    [symbol_extractor.SymbolInfo] Reached symbols.
+  """
+  dump = MergeDumps(dump_filenames)
+  offset_to_symbol_info = GetOffsetToSymbolArray(native_lib_filename)
+  reached_symbols = GetReachedSymbolsFromDump(dump, offset_to_symbol_info)
+  if output_filename:
+    offsets = [s.offset for s in reached_symbols]
+    with open(output_filename, 'w') as f:
+      f.write('\n'.join('%d' % offset for offset in offsets))
+  return reached_symbols
 
 
 def CreateArgumentParser():
@@ -191,6 +206,9 @@ def CreateArgumentParser():
                       'files with instrumentation dumps', required=True)
   parser.add_argument('--output', type=str, help='Output filename',
                       required=True)
+  parser.add_argument('--offsets-output', type=str,
+                      help='Output filename for the symbol offsets',
+                      required=False, default=None)
   return parser
 
 
@@ -199,21 +217,23 @@ def main():
   parser = CreateArgumentParser()
   args = parser.parse_args()
   logging.info('Merging dumps')
-  dump = MergeDumps(args.dumps.split(','))
-  logging.info('Mapping offsets to symbols')
+  dumps = args.dumps.split(',')
+
   instrumented_native_lib = os.path.join(args.instrumented_build_dir,
                                          'lib.unstripped', 'libchrome.so')
   regular_native_lib = os.path.join(args.build_dir,
                                     'lib.unstripped', 'libchrome.so')
-  offset_to_symbol_info = GetOffsetToSymbolArray(instrumented_native_lib)
-  logging.info('Matching symbols')
-  reached_symbols = GetReachedSymbolsFromDump(dump, offset_to_symbol_info)
+
+  reached_symbols = GetReachedSymbolsFromDumpsAndMaybeWriteOffsets(
+      dumps, instrumented_native_lib, args.offsets_output)
   logging.info('Reached Symbols = %d', len(reached_symbols))
   total_size = sum(s.size for s in reached_symbols)
   logging.info('Total reached size = %d', total_size)
   matched_in_regular_build = MatchSymbolsInRegularBuild(reached_symbols,
                                                         regular_native_lib)
-  WriteReachedSymbolNames(args.output, matched_in_regular_build)
+  with open(args.output, 'w') as f:
+    for s in matched_in_regular_build:
+      f.write(s.name + '\n')
 
 
 if __name__ == '__main__':

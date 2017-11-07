@@ -86,7 +86,8 @@ class DelayedDumper {
     CHECK(!g_enabled_and_array.load(std::memory_order_relaxed));
 
     auto path = base::StringPrintf(
-        "/data/local/tmp/chrome/cygprofile-instrumented-code-hitmap-%d.txt",
+        "/data/local/tmp/chrome/cyglog/"
+        "cygprofile-instrumented-code-hitmap-%d.txt",
         getpid());
     auto file =
         base::File(base::FilePath(path),
