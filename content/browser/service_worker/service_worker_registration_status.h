@@ -11,17 +11,6 @@
 
 namespace content {
 
-// TODO(leonhsl): Eliminate this function once all its users changed to use
-// GetServiceWorkerErrorTypeForRegistration() which gets out a std::string
-// |message| rather than a base::string16. The legacy IPC used base::string16 as
-// an old WebKit convention. This should only be called for errors, where status
-// != OK.
-void GetServiceWorkerRegistrationStatusResponse(
-    ServiceWorkerStatusCode status,
-    const std::string& status_message,
-    blink::mojom::ServiceWorkerErrorType* error_type,
-    base::string16* message);
-
 // This should only be called for errors, where status != OK.
 void GetServiceWorkerErrorTypeForRegistration(
     ServiceWorkerStatusCode status,
