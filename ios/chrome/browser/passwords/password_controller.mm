@@ -28,13 +28,11 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/passwords/credential_manager.h"
 #include "ios/chrome/browser/passwords/credential_manager_features.h"
@@ -43,7 +41,6 @@
 #import "ios/chrome/browser/passwords/js_password_manager.h"
 #import "ios/chrome/browser/passwords/notify_auto_signin_view_controller.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
-#import "ios/chrome/browser/passwords/password_generation_agent.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -58,7 +55,6 @@
 #endif
 
 using password_manager::PasswordFormManager;
-using password_manager::PasswordGenerationManager;
 using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
@@ -280,11 +276,9 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 @implementation PasswordController {
   std::unique_ptr<PasswordManager> passwordManager_;
-  std::unique_ptr<PasswordGenerationManager> passwordGenerationManager_;
   std::unique_ptr<PasswordManagerClient> passwordManagerClient_;
   std::unique_ptr<PasswordManagerDriver> passwordManagerDriver_;
   std::unique_ptr<CredentialManager> credentialManager_;
-  PasswordGenerationAgent* passwordGenerationAgent_;
 
   __weak JsPasswordManager* passwordJsManager_;
   web::WebState* webState_;               // weak
@@ -308,6 +302,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }
 
 @synthesize isWebStateDestroyed = _isWebStateDestroyed;
+
+@synthesize dispatcher = _dispatcher;
 
 @synthesize delegate = _delegate;
 
@@ -335,16 +331,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
       passwordManagerClient_.reset(new IOSChromePasswordManagerClient(self));
     passwordManager_.reset(new PasswordManager(passwordManagerClient_.get()));
     passwordManagerDriver_.reset(new IOSChromePasswordManagerDriver(self));
-    if (experimental_flags::IsPasswordGenerationEnabled() &&
-        !passwordManagerClient_->IsIncognito()) {
-      passwordGenerationManager_.reset(new PasswordGenerationManager(
-          passwordManagerClient_.get(), passwordManagerDriver_.get()));
-      passwordGenerationAgent_ = [[PasswordGenerationAgent alloc]
-               initWithWebState:webState
-                passwordManager:passwordManager_.get()
-          passwordManagerDriver:passwordManagerDriver_.get()
-            passwordsUiDelegate:delegate];
-    }
 
     passwordJsManager_ = base::mac::ObjCCastStrict<JsPasswordManager>(
         [webState->GetJSInjectionReceiver()
@@ -396,8 +382,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     webState_->RemoveScriptCommandCallback(kCommandPrefix);
   webState_ = nullptr;
   webStateObserverBridge_.reset();
-  passwordGenerationAgent_ = nil;
-  passwordGenerationManager_.reset();
   passwordManagerDriver_.reset();
   passwordManager_.reset();
   passwordManagerClient_.reset();
@@ -409,14 +393,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (id<PasswordFormFiller>)passwordFormFiller {
   return self;
-}
-
-- (id<ApplicationCommands>)dispatcher {
-  return passwordGenerationAgent_.dispatcher;
-}
-
-- (void)setDispatcher:(id<ApplicationCommands>)dispatcher {
-  passwordGenerationAgent_.dispatcher = dispatcher;
 }
 
 #pragma mark -
@@ -665,10 +641,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     // on the loaded page.
     passwordManager_->OnPasswordFormsParsed(passwordManagerDriver_.get(),
                                             forms);
-
-    // Pass the forms to PasswordGenerationAgent to look for account creation
-    // forms with local heuristics.
-    [passwordGenerationAgent_ processParsedPasswordForms:forms];
   }
   // Invoke the password manager callback to check if password was
   // accepted or rejected. If accepted, infobar is presented. If
@@ -678,10 +650,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   // ordering of these two calls.
   passwordManager_->OnPasswordFormsRendered(passwordManagerDriver_.get(), forms,
                                             true);
-}
-
-- (id<FormInputAccessoryViewProvider>)accessoryViewProvider {
-  return [passwordGenerationAgent_ accessoryViewProvider];
 }
 
 #pragma mark -
@@ -1005,14 +973,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   }
 
   return NO;
-}
-
-- (PasswordGenerationAgent*)passwordGenerationAgent {
-  return passwordGenerationAgent_;
-}
-
-- (PasswordGenerationManager*)passwordGenerationManager {
-  return passwordGenerationManager_.get();
 }
 
 - (PasswordManagerClient*)passwordManagerClient {

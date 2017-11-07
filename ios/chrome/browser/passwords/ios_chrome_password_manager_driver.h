@@ -10,8 +10,6 @@
 #include "base/macros.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 
-@class PasswordGenerationAgent;
-
 namespace autofill {
 struct PasswordForm;
 struct PasswordFormFillData;
@@ -19,16 +17,11 @@ struct PasswordFormFillData;
 
 namespace password_manager {
 class PasswordAutofillManager;
-class PasswordGenerationManager;
 class PasswordManager;
 }  // namespace password_manager
 
 // Defines the interface the driver needs to the controller.
 @protocol PasswordManagerDriverDelegate
-
-- (PasswordGenerationAgent*)passwordGenerationAgent;
-
-- (password_manager::PasswordGenerationManager*)passwordGenerationManager;
 
 - (password_manager::PasswordManager*)passwordManager;
 

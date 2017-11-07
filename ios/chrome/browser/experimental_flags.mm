@@ -114,12 +114,6 @@ bool IsPageIconForDowngradedHTTPSEnabled() {
                            base::CompareCase::INSENSITIVE_ASCII);
 }
 
-bool IsPasswordGenerationEnabled() {
-  // TODO(crbug.com/752077): Remove this function and its associated code.
-  // Either by replacing it with a base::Feature or by removing all its uses.
-  return false;
-}
-
 bool IsPhysicalWebEnabled() {
   // TODO(crbug.com/760104): Remove this function and its associated code.
   // Either by replacing it with a base::Feature or by removing all its uses.
