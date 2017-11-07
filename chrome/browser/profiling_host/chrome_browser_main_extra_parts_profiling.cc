@@ -15,8 +15,16 @@ ChromeBrowserMainExtraPartsProfiling::~ChromeBrowserMainExtraPartsProfiling() =
 
 void ChromeBrowserMainExtraPartsProfiling::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+  // Memory sanitizers are using large memory shadow to keep track of memory
+  // state. Using memlog and memory sanitizers at the same time is slowing down
+  // user experience, causing the browser to be barely responsive. In theory,
+  // memlog and memory sanitizers are compatible and can run at the same time.
+  (void)connection;  // Unused variable.
+#else
   profiling::ProfilingProcessHost::Mode mode =
       profiling::ProfilingProcessHost::GetCurrentMode();
   if (mode != profiling::ProfilingProcessHost::Mode::kNone)
     profiling::ProfilingProcessHost::Start(connection, mode);
+#endif
 }
