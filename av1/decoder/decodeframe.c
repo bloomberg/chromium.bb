@@ -2843,6 +2843,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   int frame_size_override_flag = aom_rb_read_literal(rb, 1);
 #endif
 
+#if CONFIG_INTRABC
+  cm->allow_intrabc = 0;
+#endif  // CONFIG_INTRABC
+
   if (cm->frame_type == KEY_FRAME) {
     cm->current_video_frame = 0;
 #if !CONFIG_OBU
@@ -2870,6 +2874,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     cm->ans_window_size_log2 = aom_rb_read_literal(rb, 4) + 8;
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
     cm->allow_screen_content_tools = aom_rb_read_bit(rb);
+#if CONFIG_INTRABC
+    if (cm->allow_screen_content_tools) cm->allow_intrabc = aom_rb_read_bit(rb);
+#endif  // CONFIG_INTRABC
 #if CONFIG_AMVR
     if (cm->allow_screen_content_tools) {
       if (aom_rb_read_bit(rb)) {
@@ -2885,7 +2892,13 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     cm->use_prev_frame_mvs = 0;
 #endif
   } else {
-    if (cm->intra_only) cm->allow_screen_content_tools = aom_rb_read_bit(rb);
+    if (cm->intra_only) {
+      cm->allow_screen_content_tools = aom_rb_read_bit(rb);
+#if CONFIG_INTRABC
+      if (cm->allow_screen_content_tools)
+        cm->allow_intrabc = aom_rb_read_bit(rb);
+#endif  // CONFIG_INTRABC
+    }
 #if CONFIG_TEMPMV_SIGNALING
     if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
 #endif

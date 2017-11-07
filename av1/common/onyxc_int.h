@@ -278,6 +278,9 @@ typedef struct AV1Common {
 #endif
 
   int allow_screen_content_tools;
+#if CONFIG_INTRABC
+  int allow_intrabc;
+#endif  // CONFIG_INTRABC
   int allow_interintra_compound;
   int allow_masked_compound;
 

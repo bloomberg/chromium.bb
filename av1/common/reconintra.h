@@ -75,7 +75,7 @@ static INLINE int av1_allow_intrabc(BLOCK_SIZE bsize,
   // TODO(huisu@google.com): intrabc is disabled for BLOCK_4X16 and
   // BLOCK_16X4 because of onflict between cfl.
   return bsize != BLOCK_4X16 && bsize != BLOCK_16X4 &&
-         cm->allow_screen_content_tools;
+         cm->allow_screen_content_tools && cm->allow_intrabc;
 }
 #endif  // CONFIG_INTRABC
 

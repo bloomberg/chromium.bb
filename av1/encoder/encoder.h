@@ -341,8 +341,10 @@ typedef struct ThreadData {
   int32_t *mask_buf;
   uint8_t *above_pred_buf;
   uint8_t *left_pred_buf;
-
   PALETTE_BUFFER *palette_buffer;
+#if CONFIG_INTRABC
+  int intrabc_used_this_tile;
+#endif  // CONFIG_INTRABC
 } ThreadData;
 
 struct EncWorkerData;
@@ -606,6 +608,10 @@ typedef struct AV1_COMP {
 #if CONFIG_BGSPRITE
   int bgsprite_allowed;
 #endif  // CONFIG_BGSPRITE
+#if CONFIG_INTRABC
+  // A flag to indicate if intrabc is ever used in current frame.
+  int intrabc_used;
+#endif  // CONFIG_INTRABC
 } AV1_COMP;
 
 void av1_initialize_enc(void);

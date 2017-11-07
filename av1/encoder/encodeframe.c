@@ -3628,10 +3628,18 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   av1_crc_calculator_init(&td->mb.tx_rd_record.crc_calculator, 24, 0x5D6DCB);
 
+#if CONFIG_INTRABC
+  td->intrabc_used_this_tile = 0;
+#endif  // CONFIG_INTRABC
+
   for (mi_row = tile_info->mi_row_start; mi_row < tile_info->mi_row_end;
        mi_row += cm->mib_size) {
     encode_rd_sb_row(cpi, td, this_tile, mi_row, &tok);
   }
+
+#if CONFIG_INTRABC
+  cpi->intrabc_used |= td->intrabc_used_this_tile;
+#endif  // CONFIG_INTRABC
 
   cpi->tok_count[tile_row][tile_col] =
       (unsigned int)(tok - cpi->tile_tok[tile_row][tile_col]);
@@ -3918,6 +3926,13 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                           cpi->source->y_stride, cpi->source->y_width,
                           cpi->source->y_height);
   }
+
+#if CONFIG_INTRABC
+  // Allow intrabc when screen content tools are enabled.
+  cm->allow_intrabc = cm->allow_screen_content_tools;
+  // Reset the flag.
+  cpi->intrabc_used = 0;
+#endif  // CONFIG_INTRABC
 
 #if CONFIG_HASH_ME
   if (cpi->oxcf.pass != 1 && cpi->common.allow_screen_content_tools) {
@@ -4223,6 +4238,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     aom_usec_timer_mark(&emr_timer);
     cpi->time_encode_sb_row += aom_usec_timer_elapsed(&emr_timer);
   }
+
+#if CONFIG_INTRABC
+  // If intrabc is allowed but never selected, reset the allow_intrabc flag.
+  if (cm->allow_intrabc && !cpi->intrabc_used) cm->allow_intrabc = 0;
+#endif  // CONFIG_INTRABC
 
 #if 0
   // Keep record of the total distortion this time around for future use
@@ -4850,6 +4870,10 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_DIST_8X8
 
   if (!dry_run) {
+#if CONFIG_INTRABC
+    if (av1_allow_intrabc(bsize, cm))
+      if (is_intrabc_block(mbmi)) td->intrabc_used_this_tile = 1;
+#endif  // CONFIG_INTRABC
     TX_SIZE tx_size =
         is_inter && !mbmi->skip ? mbmi->min_tx_size : mbmi->tx_size;
     if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id] &&
