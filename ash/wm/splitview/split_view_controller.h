@@ -219,11 +219,14 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void AdjustLeftOrTopSnappedWindowBoundsDuringResizing(
       gfx::Rect* left_or_top_rect);
 
+  // Returns the closest position ratio based on |distance| and |length|.
+  float FindClosestPositionRatio(float distance, float length);
+
   // Gets the divider optional position ratios. The divider can always be
   // moved to the positions in |kFixedPositionRatios|. Whether the divider can
   // be moved to |kOneThirdPositionRatio| or |kTwoThirdPositionRatio| depends
   // on the minimum size of current snapped windows.
-  void GetDividerOptionalPositionRatios(std::vector<float>& positionRatios);
+  void GetDividerOptionalPositionRatios(std::vector<float>* positionRatios);
 
   // The current left/right snapped window.
   aura::Window* left_window_ = nullptr;
