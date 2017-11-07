@@ -18,7 +18,7 @@ C/C++](http://en.wikipedia.org/wiki/Integer_overflow). Adhere to these best
 practices:
 
 * Use the [integer templates and cast templates in
-base/numerics](../base/numerics/README.md) to avoid overflows, **especially when
+base/numerics](../../base/numerics/README.md) to avoid overflows, **especially when
 calculating the size or offset of memory allocations**.
 * Use unsigned types for values that shouldn't be negative or where defined
 overflow behavior is required.
