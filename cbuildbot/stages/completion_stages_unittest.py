@@ -212,16 +212,12 @@ class MasterSlaveSyncCompletionStageTest(
     self.source_repo = 'ssh://source/repo'
     self.manifest_version_url = 'fake manifest url'
     self.branch = 'master'
-    self.build_type = constants.PFQ_TYPE
 
     self._Prepare()
 
   def _Prepare(self, bot_id=None, **kwargs):
     super(MasterSlaveSyncCompletionStageTest, self)._Prepare(bot_id, **kwargs)
-
     self._run.config['manifest_version'] = True
-    self._run.config['build_type'] = self.build_type
-    self._run.config['master'] = True
 
   def ConstructStage(self):
     sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
@@ -260,6 +256,15 @@ class MasterSlaveSyncCompletionStageTest(
       self.assertEqual(len(ret), 3)
       self.assertEqual(ret[0], e)
 
+  def testGetBuilderStatusesFetcher(self):
+    """Test GetBuilderStatusesFetcher."""
+    mock_fetcher = mock.Mock()
+    self.PatchObject(
+        builder_status_lib, 'BuilderStatusesFetcher',
+        return_value=mock_fetcher)
+
+    stage = self.ConstructStage()
+    self.assertEqual(stage._GetBuilderStatusesFetcher(), mock_fetcher)
 
 class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     generic_stages_unittest.AbstractStageTestCase):
@@ -302,6 +307,21 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         constants.METADATA_SCHEDULED_IMPORTANT_SLAVES, scheduled_slaves_list)
     return completion_stages.MasterSlaveSyncCompletionStage(
         self._run, sync_stage, success=True)
+
+  def testGetBuilderStatusesFetcher(self):
+    """Test GetBuilderStatusesFetcher."""
+    mock_fetcher = mock.Mock()
+    self.PatchObject(
+        builder_status_lib, 'BuilderStatusesFetcher',
+        return_value=mock_fetcher)
+    mock_wait = self.PatchObject(
+        completion_stages.MasterSlaveSyncCompletionStage,
+        '_WaitForSlavesToComplete')
+    stage = self.ConstructStage()
+    stage._run.attrs.manifest_manager = mock.Mock()
+
+    self.assertEqual(stage._GetBuilderStatusesFetcher(), mock_fetcher)
+    self.assertEqual(mock_wait.call_count, 1)
 
   def testPerformStageWithFatalFailure(self):
     """Test PerformStage on master-paladin."""
@@ -546,6 +566,21 @@ class CanaryCompletionStageTest(
     self.assertEqual(
         stage._ComposeTreeStatusMessage(failing, inflight, no_stat),
         'bar timed out; foo1,foo2 and 3 others failed')
+
+  def testGetBuilderStatusesFetcher(self):
+    """Test GetBuilderStatusesFetcher."""
+    mock_fetcher = mock.Mock()
+    self.PatchObject(
+        builder_status_lib, 'BuilderStatusesFetcher',
+        return_value=mock_fetcher)
+    mock_wait = self.PatchObject(
+        completion_stages.MasterSlaveSyncCompletionStage,
+        '_WaitForSlavesToComplete')
+    stage = self.ConstructStage()
+    stage._run.attrs.manifest_manager = mock.Mock()
+
+    self.assertEqual(stage._GetBuilderStatusesFetcher(), mock_fetcher)
+    self.assertEqual(mock_wait.call_count, 1)
 
 
 class BaseCommitQueueCompletionStageTest(

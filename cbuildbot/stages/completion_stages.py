@@ -154,8 +154,9 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       manager = self._run.attrs.manifest_manager
       if sync_stages.MasterSlaveLKGMSyncStage.external_manager:
         manager = sync_stages.MasterSlaveLKGMSyncStage.external_manager
-        self._WaitForSlavesToComplete(
-            manager, build_id, db, builders_array, timeout)
+
+      self._WaitForSlavesToComplete(
+          manager, build_id, db, builders_array, timeout)
 
     builder_statuses_fetcher = builder_status_lib.BuilderStatusesFetcher(
         build_id, db, self.success, self.message, self._run.config,
