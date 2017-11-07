@@ -356,8 +356,11 @@ void LayerAnimator::StopAnimatingProperty(
 }
 
 void LayerAnimator::AddObserver(LayerAnimationObserver* observer) {
-  if (!observers_.HasObserver(observer))
+  if (!observers_.HasObserver(observer)) {
     observers_.AddObserver(observer);
+    for (auto& layer_animation_sequence : animation_queue_)
+      layer_animation_sequence->AddObserver(observer);
+  }
 }
 
 void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
