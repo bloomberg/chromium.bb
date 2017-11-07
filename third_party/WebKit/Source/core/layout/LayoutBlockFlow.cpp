@@ -3024,29 +3024,22 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
   // children as blocks.
   // So, if our children are currently inline and a block child has to be
   // inserted, we move all our inline children into anonymous block boxes.
-  bool child_is_block_level = !new_child->IsInline();
-
-  // ** LayoutNG **
-  // We want to use the block layout for out of flow positioned
-  // objects when they go in front of inline blocks or if they are just
-  // standalone objects.
-  // Example 1:
-  //   <div id="zero"><div id="oof"></div></div>
-  //   Legacy Layout: #oof is in inline context.
-  //   LayoutNG: #oof is in block context.
-  //
-  // Example 2:
-  //   <div id=container><oof></oof>Hello!</div>
-  //   Legacy Layout: oof is in inline context.
-  //   LayoutNG: oof is in block context.
-  //
-  // Example 3:
-  //   <div id=container>Hello!<oof></oof></div>
-  //   Legacy Layout: oof is in inline context.
-  //   LayoutNG: oof is in inline context.
+  bool child_is_block_level;
   bool layout_ng_enabled = RuntimeEnabledFeatures::LayoutNGEnabled();
-  if (new_child->IsFloatingOrOutOfFlowPositioned())
-    child_is_block_level = layout_ng_enabled && !FirstChild();
+  if (layout_ng_enabled && !FirstChild() &&
+      (new_child->IsFloating() ||
+       (new_child->IsOutOfFlowPositioned() &&
+        !new_child->StyleRef().IsOriginalDisplayInlineType()))) {
+    // TODO(kojii): We once forced all floats and OOF to create a block
+    // container in LayoutNG, which turned out to be not a great way, but
+    // completely turning this off breaks too much. When an OOF is an inline
+    // type, we need to disable this so that we can compute the inline static
+    // position. crbug.com/734554
+    child_is_block_level = true;
+  } else {
+    child_is_block_level =
+        !new_child->IsInline() && !new_child->IsFloatingOrOutOfFlowPositioned();
+  }
 
   if (ChildrenInline()) {
     if (child_is_block_level) {
