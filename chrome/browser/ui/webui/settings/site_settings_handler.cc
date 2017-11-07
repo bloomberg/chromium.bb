@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -417,6 +418,8 @@ void SiteSettingsHandler::HandleSetDefaultValueForContentType(
   CHECK(args->GetString(1, &setting));
   ContentSetting default_setting;
   CHECK(content_settings::ContentSettingFromString(setting, &default_setting));
+  ContentSettingsType type =
+      site_settings::ContentSettingsTypeFromGroupName(content_type);
 
   Profile* profile = profile_;
 #if defined(OS_CHROMEOS)
@@ -427,9 +430,20 @@ void SiteSettingsHandler::HandleSetDefaultValueForContentType(
 #endif
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  map->SetDefaultContentSetting(
-      site_settings::ContentSettingsTypeFromGroupName(content_type),
-      default_setting);
+  ContentSetting previous_setting =
+      map->GetDefaultContentSetting(type, nullptr);
+  map->SetDefaultContentSetting(type, default_setting);
+
+  if (type == CONTENT_SETTINGS_TYPE_SOUND &&
+      previous_setting != default_setting) {
+    if (default_setting == CONTENT_SETTING_BLOCK) {
+      base::RecordAction(
+          base::UserMetricsAction("SoundContentSetting.MuteBy.DefaultSwitch"));
+    } else {
+      base::RecordAction(base::UserMetricsAction(
+          "SoundContentSetting.UnmuteBy.DefaultSwitch"));
+    }
+  }
 }
 
 void SiteSettingsHandler::HandleGetDefaultValueForContentType(
@@ -573,6 +587,20 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
     }
     map->SetContentSettingDefaultScope(origin, origin, content_type,
                                        std::string(), setting);
+    if (content_type == CONTENT_SETTINGS_TYPE_SOUND) {
+      ContentSetting default_setting =
+          map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND, nullptr);
+      bool mute = (setting == CONTENT_SETTING_BLOCK) ||
+                  (setting == CONTENT_SETTING_DEFAULT &&
+                   default_setting == CONTENT_SETTING_BLOCK);
+      if (mute) {
+        base::RecordAction(
+            base::UserMetricsAction("SoundContentSetting.MuteBy.SiteSettings"));
+      } else {
+        base::RecordAction(base::UserMetricsAction(
+            "SoundContentSetting.UnmuteBy.SiteSettings"));
+      }
+    }
     WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
   }
 
@@ -632,6 +660,17 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
   map->SetContentSettingCustomScope(primary_pattern, secondary_pattern,
                                     content_type, "", CONTENT_SETTING_DEFAULT);
 
+  if (content_type == CONTENT_SETTINGS_TYPE_SOUND) {
+    ContentSetting default_setting =
+        map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND, nullptr);
+    if (default_setting == CONTENT_SETTING_BLOCK) {
+      base::RecordAction(base::UserMetricsAction(
+          "SoundContentSetting.MuteBy.PatternException"));
+    } else {
+      base::RecordAction(base::UserMetricsAction(
+          "SoundContentSetting.UnmuteBy.PatternException"));
+    }
+  }
   WebSiteSettingsUmaUtil::LogPermissionChange(
       content_type, ContentSetting::CONTENT_SETTING_DEFAULT);
 }
@@ -682,6 +721,20 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
   map->SetContentSettingCustomScope(primary_pattern, secondary_pattern,
                                     content_type, "", setting);
 
+  if (content_type == CONTENT_SETTINGS_TYPE_SOUND) {
+    ContentSetting default_setting =
+        map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND, nullptr);
+    bool mute = (setting == CONTENT_SETTING_BLOCK) ||
+                (setting == CONTENT_SETTING_DEFAULT &&
+                 default_setting == CONTENT_SETTING_BLOCK);
+    if (mute) {
+      base::RecordAction(base::UserMetricsAction(
+          "SoundContentSetting.MuteBy.PatternException"));
+    } else {
+      base::RecordAction(base::UserMetricsAction(
+          "SoundContentSetting.UnmuteBy.PatternException"));
+    }
+  }
   WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
 }
 

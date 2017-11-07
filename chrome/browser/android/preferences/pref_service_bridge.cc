@@ -20,6 +20,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/metrics/user_metrics.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -620,6 +621,14 @@ static void SetSoundEnabled(JNIEnv* env,
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_SOUND,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+
+  if (allow) {
+    base::RecordAction(
+        base::UserMetricsAction("SoundContentSetting.UnmuteBy.DefaultSwitch"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("SoundContentSetting.MuteBy.DefaultSwitch"));
+  }
 }
 
 static void SetAllowCookiesEnabled(JNIEnv* env,

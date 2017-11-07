@@ -602,6 +602,14 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 Toast.LENGTH_SHORT).show();
 
         getInfoForOrigins();
+
+        if (mCategory.showSoundSites()) {
+            if (setting == ContentSetting.BLOCK.toInt()) {
+                RecordUserAction.record("SoundContentSetting.MuteBy.PatternException");
+            } else {
+                RecordUserAction.record("SoundContentSetting.UnmuteBy.PatternException");
+            }
+        }
     }
 
     /**
