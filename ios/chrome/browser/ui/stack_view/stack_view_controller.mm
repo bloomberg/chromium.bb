@@ -2120,10 +2120,11 @@ NSString* const kTransitionToolbarAnimationKey =
 
   // The mask animation is used to crop the additional height of the toolbar to
   // have the snapshot display only the content part of the toolbar.
+  // The last pixel is croped as it is displaying the shadow below the toolbar.
   CGRect toolbarMaskFrame = CGRectMake(0, 0, screenToolbarFrame.size.width,
-                                       screenToolbarFrame.size.height);
+                                       screenToolbarFrame.size.height - 1);
   CGRect cardMaskFrame = CGRectMake(0, additionalHeight, endFrame.size.width,
-                                    endFrame.size.height);
+                                    endFrame.size.height - 1);
 
   CGRect beginMaskFrame =
       isPresentingStackView ? toolbarMaskFrame : cardMaskFrame;
