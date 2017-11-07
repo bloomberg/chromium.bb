@@ -31,7 +31,7 @@ TEST_F(AutofillPhoneValidationTest, ValidateFullValidProfile) {
   // This is a full valid profile:
   // Country Code: "CA", Phone Number: "15141112233",
   // Email: "alice@wonderland.ca"
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   EXPECT_EQ(AutofillProfile::VALID, ValidatePhoneAndEmailTest(&profile));
   EXPECT_EQ(AutofillProfile::VALID,
             profile.GetValidityState(PHONE_HOME_WHOLE_NUMBER));
@@ -39,7 +39,7 @@ TEST_F(AutofillPhoneValidationTest, ValidateFullValidProfile) {
 }
 
 TEST_F(AutofillPhoneValidationTest, ValidateEmptyPhoneNumber) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::string16());
   EXPECT_EQ(AutofillProfile::INVALID, ValidatePhoneAndEmailTest(&profile));
   EXPECT_EQ(AutofillProfile::EMPTY,
@@ -51,7 +51,7 @@ TEST_F(AutofillPhoneValidationTest, ValidateValidPhone_CountryCodeNotExist) {
   // This is a profile with invalid country code, therefore the phone number
   // cannot be validated.
   const std::string country_code = "PP";
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16(country_code));
   EXPECT_EQ(AutofillProfile::INVALID, ValidatePhoneAndEmailTest(&profile));
   EXPECT_EQ(AutofillProfile::UNVALIDATED,
@@ -63,7 +63,7 @@ TEST_F(AutofillPhoneValidationTest, ValidateEmptyPhone_CountryCodeNotExist) {
   // This is a profile with invalid country code, but a missing phone number.
   // Therefore, it's an invalid phone number.
   const std::string country_code = "PP";
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16(country_code));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::string16());
   EXPECT_EQ(AutofillProfile::INVALID, ValidatePhoneAndEmailTest(&profile));
@@ -73,7 +73,7 @@ TEST_F(AutofillPhoneValidationTest, ValidateEmptyPhone_CountryCodeNotExist) {
 }
 
 TEST_F(AutofillPhoneValidationTest, ValidateInvalidPhoneNumber) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::ASCIIToUTF16("33"));
   EXPECT_EQ(AutofillProfile::INVALID, ValidatePhoneAndEmailTest(&profile));
   EXPECT_EQ(AutofillProfile::INVALID,
@@ -104,7 +104,7 @@ TEST_F(AutofillPhoneValidationTest, ValidateInvalidPhoneNumber) {
 }
 
 TEST_F(AutofillPhoneValidationTest, ValidateValidPhoneNumber) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::ASCIIToUTF16("5141112233"));
   EXPECT_EQ(AutofillProfile::VALID, ValidatePhoneAndEmailTest(&profile));
   EXPECT_EQ(AutofillProfile::VALID,
@@ -154,7 +154,7 @@ TEST_F(AutofillPhoneValidationTest, ValidateValidPhoneNumber) {
 }
 
 TEST_F(AutofillPhoneValidationTest, ValidateEmptyEmailAddress) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(EMAIL_ADDRESS, base::string16());
   EXPECT_EQ(AutofillProfile::INVALID, ValidatePhoneAndEmailTest(&profile));
   EXPECT_EQ(AutofillProfile::VALID,
@@ -163,7 +163,7 @@ TEST_F(AutofillPhoneValidationTest, ValidateEmptyEmailAddress) {
 }
 
 TEST_F(AutofillPhoneValidationTest, ValidateInvalidEmailAddress) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Hello!"));
   EXPECT_EQ(AutofillProfile::INVALID, ValidatePhoneAndEmailTest(&profile));
   EXPECT_EQ(AutofillProfile::INVALID, profile.GetValidityState(EMAIL_ADDRESS));
@@ -183,7 +183,7 @@ TEST_F(AutofillPhoneValidationTest, ValidateInvalidEmailAddress) {
 }
 
 TEST_F(AutofillPhoneValidationTest, ValidateValidEmailAddress) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
 
   profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("alice@wonderland"));
   EXPECT_EQ(AutofillProfile::VALID, ValidatePhoneAndEmailTest(&profile));
