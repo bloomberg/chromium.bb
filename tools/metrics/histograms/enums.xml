@@ -4167,8 +4167,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2"
       label="Canvas state stack too large (unbalanced save/restore?)."/>
   <int value="3" label="Direct pixel write."/>
-  <int value="4" label="Flush for initial clear."/>
-  <int value="5" label="Flush after drawing from a WebGL canvas."/>
+  <int value="4" label="Flush for initial clear. (obsolete)"/>
+  <int value="5" label="Flush after drawing from a WebGL canvas. (obsolete)"/>
   <int value="6" label="Acquiring snapshot for getImageData()."/>
   <int value="7"
       label="Acquiring snapshot for WebGL texture upload. (obsolete)"/>

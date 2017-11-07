@@ -67,7 +67,7 @@ class PLATFORM_EXPORT ImageBufferSurface {
   virtual void DidDraw(const FloatRect& rect) {}
   virtual bool IsValid() const = 0;
   virtual bool Restore() { return false; }
-  virtual WebLayer* Layer() const { return 0; }
+  virtual WebLayer* Layer() { return nullptr; }
   virtual bool IsAccelerated() const { return false; }
   virtual bool IsRecording() const { return false; }
   virtual bool IsExpensiveToPaint() { return false; }
@@ -83,14 +83,6 @@ class PLATFORM_EXPORT ImageBufferSurface {
                     SkBlendMode);
   virtual void SetHasExpensiveOp() {}
   virtual GLuint GetBackingTextureHandleForOverwrite() { return 0; }
-
-  // Executes all deferred rendering immediately.
-  virtual void Flush(FlushReason);
-
-  // Like flush, but flushes all the way down to the GPU context if the surface
-  // uses the GPU.
-  virtual void FlushGpu(FlushReason reason) { Flush(reason); }
-
   virtual void PrepareSurfaceForPaintingIfNeeded() {}
   virtual bool WritePixels(const SkImageInfo& orig_info,
                            const void* pixels,
