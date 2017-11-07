@@ -760,7 +760,7 @@
     },
     {
       name: "background-clip",
-      api_class: true,
+      api_class: "CSSPropertyAPIBackgroundBox",
       api_methods: ["ParseSingleValue"],
       api_custom_apply_functions_all: true,
     },
@@ -788,7 +788,7 @@
     },
     {
       name: "background-origin",
-      api_class: true,
+      api_class: "CSSPropertyAPIBackgroundBox",
       api_methods: ["ParseSingleValue"],
       api_custom_apply_functions_all: true,
     },
@@ -3029,12 +3029,6 @@
       api_custom_apply_functions_all: true,
     },
     {
-      name: "-webkit-background-origin",
-      api_class: "CSSPropertyAPIWebkitOrigin",
-      api_methods: ["ParseSingleValue"],
-      use_handlers_for: "CSSPropertyBackgroundOrigin",
-    },
-    {
       name: "-webkit-border-horizontal-spacing",
       api_class: "CSSPropertyAPIWebkitBorderSpacing",
       api_methods: ["ParseSingleValue"],
@@ -3371,7 +3365,7 @@
     },
     {
       name: "-webkit-mask-origin",
-      api_class: "CSSPropertyAPIWebkitOrigin",
+      api_class: true,
       api_methods: ["ParseSingleValue"],
       api_custom_apply_functions_all: true,
     },
@@ -4621,6 +4615,12 @@
     {
       name: "-webkit-background-clip",
       alias_for: "background-clip",
+    },
+    // -webkit-background-origin accepts "content", "padding", and "border"
+    // values. See crbug.com/604023
+    {
+      name: "-webkit-background-origin",
+      alias_for: "background-origin"
     },
     // "-webkit-background-size: 10px" behaves as "background-size: 10px 10px"
     {
