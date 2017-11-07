@@ -216,9 +216,8 @@ class NET_EXPORT ProxyService : public NetworkChangeNotifier::IPAddressObserver,
 
   // Sets the ProxyScriptFetcher and DhcpProxyScriptFetcher dependencies. This
   // is needed if the ProxyResolver is of type ProxyResolverWithoutFetch.
-  // ProxyService takes ownership of proxy_script_fetcher.
   void SetProxyScriptFetchers(
-      ProxyScriptFetcher* proxy_script_fetcher,
+      std::unique_ptr<ProxyScriptFetcher> proxy_script_fetcher,
       std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher);
   ProxyScriptFetcher* GetProxyScriptFetcher() const;
 

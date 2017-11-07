@@ -1076,7 +1076,8 @@ TEST_F(ProxyServiceTest, ProxyResolverFailsParsingJavaScriptMandatoryPac) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start resolve request.
   GURL url("http://www.google.com/");
@@ -2014,7 +2015,8 @@ TEST_F(ProxyServiceTest, InitialPACScriptDownload) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 3 requests.
 
@@ -2121,7 +2123,8 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 2 jobs.
 
@@ -2151,7 +2154,8 @@ TEST_F(ProxyServiceTest, ChangeScriptFetcherWhilePACDownloadInProgress) {
 
   fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Nothing has been sent to the factory yet.
   EXPECT_TRUE(factory->pending_requests().empty());
@@ -2181,7 +2185,8 @@ TEST_F(ProxyServiceTest, CancelWhilePACFetching) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 3 requests.
   ProxyInfo info1;
@@ -2279,7 +2284,8 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 2 requests.
 
@@ -2362,7 +2368,8 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomPac2) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 2 requests.
 
@@ -2438,7 +2445,8 @@ TEST_F(ProxyServiceTest, FallbackFromAutodetectToCustomToManual) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 2 jobs.
 
@@ -2500,7 +2508,8 @@ TEST_F(ProxyServiceTest, BypassDoesntApplyToPac) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 1 requests.
 
@@ -2569,7 +2578,8 @@ TEST_F(ProxyServiceTest, DeleteWhileInitProxyResolverHasOutstandingFetch) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 1 request.
 
@@ -2710,7 +2720,8 @@ TEST_F(ProxyServiceTest, NetworkChangeTriggersPacRefetch) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Disable the "wait after IP address changes" hack, so this unit-test can
   // complete quickly.
@@ -2832,7 +2843,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterFailure) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 1 request.
 
@@ -2939,7 +2951,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentChange) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 1 request.
 
@@ -3052,7 +3065,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterContentUnchanged) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 1 request.
 
@@ -3162,7 +3176,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterSuccess) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 1 request.
 
@@ -3317,7 +3332,8 @@ TEST_F(ProxyServiceTest, PACScriptRefetchAfterActivity) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   // Start 1 request.
 
@@ -3692,7 +3708,8 @@ TEST_F(ProxyServiceTest, OnShutdownWithLiveRequest) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   ProxyInfo info;
   TestCompletionCallback callback;
@@ -3725,7 +3742,8 @@ TEST_F(ProxyServiceTest, OnShutdownFollowedByRequest) {
 
   MockProxyScriptFetcher* fetcher = new MockProxyScriptFetcher;
   service.SetProxyScriptFetchers(
-      fetcher, std::make_unique<DoNothingDhcpProxyScriptFetcher>());
+      base::WrapUnique(fetcher),
+      std::make_unique<DoNothingDhcpProxyScriptFetcher>());
 
   service.OnShutdown();
 

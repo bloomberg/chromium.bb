@@ -1414,11 +1414,11 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
 }
 
 void ProxyService::SetProxyScriptFetchers(
-    ProxyScriptFetcher* proxy_script_fetcher,
+    std::unique_ptr<ProxyScriptFetcher> proxy_script_fetcher,
     std::unique_ptr<DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   State previous_state = ResetProxyConfig(false);
-  proxy_script_fetcher_.reset(proxy_script_fetcher);
+  proxy_script_fetcher_ = std::move(proxy_script_fetcher);
   dhcp_proxy_script_fetcher_ = std::move(dhcp_proxy_script_fetcher);
   if (previous_state != STATE_NONE)
     ApplyProxyConfigIfAvailable();

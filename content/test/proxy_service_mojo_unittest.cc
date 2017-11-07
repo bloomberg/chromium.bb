@@ -136,7 +136,8 @@ class ProxyServiceMojoTest : public testing::Test, MojoProxyResolverFactory {
         this,
         std::make_unique<net::ProxyConfigServiceFixed>(
             net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
-        fetcher_, std::make_unique<net::DoNothingDhcpProxyScriptFetcher>(),
+        base::WrapUnique(fetcher_),
+        std::make_unique<net::DoNothingDhcpProxyScriptFetcher>(),
         &mock_host_resolver_, &net_log_, &network_delegate_);
   }
 

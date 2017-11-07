@@ -28,7 +28,7 @@ class MojoProxyResolverFactory;
 // |proxy_config_service| to notice when the proxy settings change.
 //
 // |proxy_script_fetcher| specifies the dependency to use for downloading
-// any PAC scripts. The resulting ProxyService will take ownership of it.
+// any PAC scripts.
 //
 // |dhcp_proxy_script_fetcher| specifies the dependency to use for attempting
 // to retrieve the most appropriate PAC script configured in DHCP.
@@ -40,7 +40,7 @@ std::unique_ptr<net::ProxyService> CONTENT_EXPORT
 CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
-    net::ProxyScriptFetcher* proxy_script_fetcher,
+    std::unique_ptr<net::ProxyScriptFetcher> proxy_script_fetcher,
     std::unique_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
     net::HostResolver* host_resolver,
     net::NetLog* net_log,
