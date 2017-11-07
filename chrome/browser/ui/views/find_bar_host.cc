@@ -317,6 +317,8 @@ void FindBarHost::SetDialogPosition(const gfx::Rect& new_pos) {
   // revealed when the mouse is hovered over the find bar.
   browser_view()->immersive_mode_controller()->OnFindBarVisibleBoundsChanged(
       host()->GetWindowBoundsInScreen());
+
+  find_bar_controller_->FindBarVisibilityChanged();
 }
 
 void FindBarHost::GetWidgetBounds(gfx::Rect* bounds) {
