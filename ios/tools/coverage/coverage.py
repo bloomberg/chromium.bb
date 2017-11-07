@@ -672,13 +672,14 @@ def _RunTestTargetsWithCoverageConfiguration(targets, gtest_filter=None):
   logs = []
   iossim_path = _GetIOSSimPath()
   for target in targets:
-    application_path = _GetApplicationBundlePath(target)
     cmd = [iossim_path]
-    cmd.append(application_path)
 
     # For iossim arguments, please refer to src/testing/iossim/iossim.mm.
     if gtest_filter and not _TargetIsEarlGreyTest(target):
       cmd.append('-c --gtest_filter=' + gtest_filter)
+
+    application_path = _GetApplicationBundlePath(target)
+    cmd.append(application_path)
 
     if _TargetIsEarlGreyTest(target):
       cmd.append(_GetXCTestBundlePath(target))
