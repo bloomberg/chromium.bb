@@ -25,4 +25,9 @@ Please follow these steps to update libaom source code:
 
    Use the generated commit message for the roll.
 
+2. Generate the config files:
+    ./generate_gni.sh
+
+  This will also update this file with the new revision.
+
 Local Modifications:
