@@ -73,6 +73,8 @@ bool ContainsValue(const std::vector<T>& vector, const T& value) {
 }
 
 // Returns true if a private key for certificate |cert| is installed.
+// Note that HasPrivateKey is not a cheap operation: it iterates all tokens and
+// attempts to look up the private key.
 bool HasPrivateKey(CERTCertificate* cert) {
   PK11SlotInfo* slot = PK11_KeyForCertExists(cert, nullptr, nullptr);
   if (!slot)
@@ -180,14 +182,21 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
     base::Time now) {
   // Filter all client certs and determines each certificate's issuer, which is
   // required for the pattern matching.
+  // TODO(pmarko): Consider moving the filtering of client certs into
+  // CertLoader. It should not be in ClientCertResolver's responsibility to
+  // decide if a certificate is a valid client certificate or not. Other
+  // consumers of CertLoader could also use a pre-filtered list (e.g.
+  // NetworkCertMigrator). See crbug.com/781693.
   std::vector<CertAndIssuer> client_certs;
   for (net::ScopedCERTCertificateList::iterator it = certs.begin();
        it != certs.end(); ++it) {
     CERTCertificate* cert = it->get();
     base::Time not_after;
+    // HasPrivateKey should be invoked after IsCertificateHardwareBacked for
+    // performance reasons.
     if (!net::x509_util::GetValidityTimes(cert, nullptr, &not_after) ||
-        now > not_after || !HasPrivateKey(cert) ||
-        !CertLoader::IsCertificateHardwareBacked(cert)) {
+        now > not_after || !CertLoader::IsCertificateHardwareBacked(cert) ||
+        !HasPrivateKey(cert)) {
       continue;
     }
     std::string pem_encoded_issuer = GetPEMEncodedIssuer(cert);
