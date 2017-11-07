@@ -1002,7 +1002,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 #pragma mark - SigninPresenter
 
 - (void)showSignin:(ShowSigninCommand*)command {
-  [self.dispatcher showSignin:command];
+  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 #pragma mark Sign in
@@ -1022,7 +1022,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                callback:^(BOOL succeeded) {
                  [weakSelf didFinishSignin];
                }];
-  [self.dispatcher showSignin:command];
+  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 - (void)didFinishSignin {

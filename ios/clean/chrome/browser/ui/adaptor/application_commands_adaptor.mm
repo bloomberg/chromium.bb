@@ -73,8 +73,10 @@
   [self showAlert:@"openURL"];
 }
 
-- (void)showSignin:(ShowSigninCommand*)command {
-  [self showAlert:@"showSignin"];
+// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
+- (void)showSignin:(ShowSigninCommand*)command
+    baseViewController:(UIViewController*)baseViewController {
+  [self showAlert:@"showSignin:baseViewController:"];
 }
 
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController {

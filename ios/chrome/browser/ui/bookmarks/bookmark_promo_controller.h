@@ -42,8 +42,8 @@ class PrefRegistrySyncable;
                                 (id<BookmarkPromoControllerDelegate>)delegate
                           dispatcher:(id<ApplicationCommands>)dispatcher;
 
-// Presents the sign-in UI.
-- (void)showSignIn;
+// Presents the sign-in UI, presenting from |baseViewController|.
+- (void)showSignInFromViewController:(UIViewController*)baseViewController;
 
 // Hides the promo cell. It won't be presented again on this profile.
 - (void)hidePromoCell;

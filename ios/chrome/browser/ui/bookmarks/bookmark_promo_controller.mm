@@ -135,7 +135,7 @@ class SignInObserver : public SigninManagerBase::Observer {
   }
 }
 
-- (void)showSignIn {
+- (void)showSignInFromViewController:(UIViewController*)baseViewController {
   UMA_HISTOGRAM_ENUMERATION(kBookmarksPromoActionsHistogram,
                             BOOKMARKS_PROMO_ACTION_COMPLETED,
                             BOOKMARKS_PROMO_ACTION_COUNT);
@@ -145,7 +145,7 @@ class SignInObserver : public SigninManagerBase::Observer {
       initWithOperation:AUTHENTICATION_OPERATION_SIGNIN
             accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_BOOKMARK_MANAGER];
-  [self.dispatcher showSignin:command];
+  [self.dispatcher showSignin:command baseViewController:baseViewController];
 }
 
 - (void)hidePromoCell {

@@ -501,7 +501,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                callback:^(BOOL success) {
                  [weakSelf handleDidAddAccount:success];
                }];
-  [self.dispatcher showSignin:command];
+  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 - (void)handleDidAddAccount:(BOOL)success {
