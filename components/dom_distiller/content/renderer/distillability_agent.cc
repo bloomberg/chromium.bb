@@ -24,9 +24,7 @@ using namespace blink;
 
 namespace {
 
-const char* const kBlacklist[] = {
-  "www.reddit.com"
-};
+const char* const kBlacklist[] = {"www.reddit.com", "tools.usps.com"};
 
 enum RejectionBuckets {
   NOT_ARTICLE = 0,
