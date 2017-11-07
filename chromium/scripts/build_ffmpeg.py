@@ -346,6 +346,7 @@ def main(argv):
       '--disable-xlib',
       '--disable-zlib',
       '--disable-securetransport',
+      '--disable-faan',
 
       # Disable automatically detected external libraries. This prevents
       # automatic inclusion of things like hardware decoders. Each roll should
@@ -550,8 +551,8 @@ def main(argv):
     # Clang Linux will use the first 'ld' it finds on the path, which will
     # typically be the system one, so explicitly configure use of Clang's
     # ld.lld, to ensure that things like cross-compilation and LTO work.
-    # This does not work for arm64.
-    if target_arch not in ['arm64', 'ia32']:
+    # This does not work for arm64, ia32 and is always used on mac.
+    if target_arch not in ['arm64', 'ia32'] and target_os != 'mac':
       configure_flags['Common'].append('--extra-ldflags=-fuse-ld=lld')
 
   # Should be run on Mac.
