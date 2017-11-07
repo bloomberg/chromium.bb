@@ -167,6 +167,11 @@ public class WebApkUma {
         RecordHistogram.recordCountHistogram("WebApk.Update.NumStaleUpdateRequestFiles", count);
     }
 
+    /** Records whether Chrome could bind to the WebAPK service. */
+    public static void recordBindToWebApkServiceSucceeded(boolean bindSucceeded) {
+        RecordHistogram.recordBooleanHistogram("WebApk.WebApkService.BindSuccess", bindSucceeded);
+    }
+
     /**
      * Log necessary disk usage and cache size UMAs when WebAPK installation fails.
      */
