@@ -1965,7 +1965,7 @@ void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
     ht.rows(temp_in, temp_out);
     for (j = 0; j < n; ++j) {
 #if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
-      out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+      out[j * n2 + i] = temp_out[j];
 #else
       out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 4);
 #endif
@@ -1976,7 +1976,12 @@ void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
     ht.cols(temp_in, temp_out);
+#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
+    for (j = 0; j < n2; ++j)
+      output[i + j * n] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#else
     for (j = 0; j < n2; ++j) output[i + j * n] = temp_out[j];
+#endif
   }
   // Note: overall scale factor of transform is 4 times unitary
 }
@@ -2049,7 +2054,7 @@ void av1_fht32x16_c(const int16_t *input, tran_low_t *output, int stride,
     ht.cols(temp_in, temp_out);
     for (j = 0; j < n; ++j) {
 #if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
-      out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+      out[j * n2 + i] = temp_out[j];
 #else
       out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 4);
 #endif
@@ -2060,7 +2065,12 @@ void av1_fht32x16_c(const int16_t *input, tran_low_t *output, int stride,
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
     ht.rows(temp_in, temp_out);
+#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
+    for (j = 0; j < n2; ++j)
+      output[j + i * n2] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#else
     for (j = 0; j < n2; ++j) output[j + i * n2] = temp_out[j];
+#endif
   }
   // Note: overall scale factor of transform is 4 times unitary
 }
@@ -2489,8 +2499,7 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
 #if CONFIG_DAALA_TX64
     for (j = 0; j < 64; ++j) temp_in[j] = input[j * stride + i] * 16;
     ht.cols(temp_in, temp_out);
-    for (j = 0; j < 64; ++j)
-      out[j * 64 + i] = (temp_out[j] + 1 + (temp_out[j] > 0)) >> 3;
+    for (j = 0; j < 64; ++j) out[j * 64 + i] = temp_out[j];
 
 #else
     for (j = 0; j < 64; ++j) temp_in[j] = input[j * stride + i];
@@ -2506,7 +2515,7 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
     ht.rows(temp_in, temp_out);
     for (j = 0; j < 64; ++j)
 #if CONFIG_DAALA_TX64
-      output[j + i * 64] = temp_out[j];
+      output[j + i * 64] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 3);
 #else
       output[j + i * 64] =
           (tran_low_t)((temp_out[j] + 1 + (temp_out[j] < 0)) >> 2);
