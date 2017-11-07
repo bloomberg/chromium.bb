@@ -1212,9 +1212,6 @@ TEST_F(ShelfViewTest, ShelfItemStatus) {
   int index = model_->ItemIndexByID(last_added);
   ShelfButton* button = GetButtonByID(last_added);
   ASSERT_EQ(ShelfButton::STATE_RUNNING, button->state());
-  item.status = STATUS_ACTIVE;
-  model_->Set(index, item);
-  ASSERT_EQ(ShelfButton::STATE_ACTIVE, button->state());
   item.status = STATUS_ATTENTION;
   model_->Set(index, item);
   ASSERT_EQ(ShelfButton::STATE_ATTENTION, button->state());
@@ -1330,9 +1327,6 @@ TEST_F(ShelfViewTest, ShelfItemStatusPlatformApp) {
   int index = model_->ItemIndexByID(last_added);
   ShelfButton* button = GetButtonByID(last_added);
   ASSERT_EQ(ShelfButton::STATE_RUNNING, button->state());
-  item.status = STATUS_ACTIVE;
-  model_->Set(index, item);
-  ASSERT_EQ(ShelfButton::STATE_ACTIVE, button->state());
   item.status = STATUS_ATTENTION;
   model_->Set(index, item);
   ASSERT_EQ(ShelfButton::STATE_ATTENTION, button->state());

@@ -61,11 +61,13 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
   item->type = GetShelfItemType(window);
   item->title = window->GetTitle();
 
-  item->status = STATUS_RUNNING;
-  if (wm::IsActiveWindow(window))
-    item->status = STATUS_ACTIVE;
-  else if (window->GetProperty(aura::client::kDrawAttentionKey))
+  // Active windows don't draw attention because the user is looking at them.
+  if (window->GetProperty(aura::client::kDrawAttentionKey) &&
+      !wm::IsActiveWindow(window)) {
     item->status = STATUS_ATTENTION;
+  } else {
+    item->status = STATUS_RUNNING;
+  }
 
   // Prefer app icons over window icons, they're typically larger.
   gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconKey);

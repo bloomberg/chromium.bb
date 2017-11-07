@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchUnpinned) {
   ASSERT_EQ(item_count, shelf_model()->item_count());
   const ash::ShelfItem& item = GetLastLauncherItem();
   EXPECT_EQ(ash::TYPE_APP, item.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
   CloseAppWindow(window);
   --item_count;
   EXPECT_EQ(item_count, shelf_model()->item_count());
@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPinned) {
   ASSERT_EQ(item_count, shelf_model()->item_count());
   item = *shelf_model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_PINNED_APP, item.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
 
   // Then close it, make sure there's still an item.
   CloseAppWindow(window);
@@ -417,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   const ash::ShelfItem& item1 = GetLastLauncherItem();
   ash::ShelfID id = item1.id;
   EXPECT_EQ(ash::TYPE_APP, item1.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
 
   // Create a shortcut. The app item should be after it.
   ash::ShelfID foo_id = CreateAppShortcutLauncherItem(
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
   ASSERT_EQ(item_count, shelf_model()->item_count());
   const ash::ShelfItem& item2 = *shelf_model()->ItemByID(id);
   EXPECT_EQ(ash::TYPE_PINNED_APP, item2.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item2.status);
 
   // New shortcuts should come after the item.
   ash::ShelfID bar_id = CreateAppShortcutLauncherItem(
@@ -478,14 +478,14 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
   ASSERT_EQ(item_count, shelf_model()->item_count());
   item = *shelf_model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_PINNED_APP, item.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
 
   // Unpin the app. The item should remain.
   controller_->UnpinAppWithID(app_id);
   ASSERT_EQ(item_count, shelf_model()->item_count());
   item = *shelf_model()->ItemByID(shortcut_id);
   EXPECT_EQ(ash::TYPE_APP, item.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
   // The item should have moved after the other shortcuts.
   EXPECT_GT(shelf_model()->ItemIndexByID(shortcut_id),
             shelf_model()->ItemIndexByID(foo_id));
@@ -507,21 +507,21 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleWindows) {
   const ash::ShelfItem& item1 = GetLastLauncherItem();
   ash::ShelfID item_id = item1.id;
   EXPECT_EQ(ash::TYPE_APP, item1.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   EXPECT_EQ(1u, controller_->GetAppMenuItemsForTesting(item1).size());
 
   // Add a second window; confirm the shelf item stays; check the app menu.
   AppWindow* window2 = CreateAppWindow(browser()->profile(), extension);
   ASSERT_EQ(item_count + 1, shelf_model()->item_count());
   const ash::ShelfItem& item2 = *shelf_model()->ItemByID(item_id);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item2.status);
   EXPECT_EQ(2u, controller_->GetAppMenuItemsForTesting(item2).size());
 
   // Close the second window; confirm the shelf item stays; check the app menu.
   CloseAppWindow(window2);
   ASSERT_EQ(item_count + 1, shelf_model()->item_count());
   const ash::ShelfItem& item3 = *shelf_model()->ItemByID(item_id);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item3.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item3.status);
   EXPECT_EQ(1u, controller_->GetAppMenuItemsForTesting(item3).size());
 
   // Close the first window; the shelf item should be removed.
@@ -540,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleApps) {
   const ash::ShelfItem& item1 = GetLastLauncherItem();
   ash::ShelfID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_APP, item1.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
 
   // Then run second app.
   const Extension* extension2 =
@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleApps) {
   const ash::ShelfItem& item2 = GetLastLauncherItem();
   ash::ShelfID item_id2 = item2.id;
   EXPECT_EQ(ash::TYPE_APP, item2.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item2.status);
 
   EXPECT_NE(item_id1, item_id2);
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id1)->status);
@@ -560,8 +560,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleApps) {
   CloseAppWindow(window2);
   --item_count;
   ASSERT_EQ(item_count, shelf_model()->item_count());
-  // First app should be active again.
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(item_id1)->status);
+  // First app should still be running.
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id1)->status);
 
   // Close first app.
   CloseAppWindow(window1);
@@ -582,7 +582,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   const ash::ShelfItem& item1 = GetLastLauncherItem();
   ash::ShelfID item_id1 = item1.id;
   EXPECT_EQ(ash::TYPE_APP, item1.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
 
   // Then run second app.
   const Extension* extension2 =
@@ -593,22 +593,18 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   const ash::ShelfItem& item2 = GetLastLauncherItem();
   ash::ShelfID item_id2 = item2.id;
   EXPECT_EQ(ash::TYPE_APP, item2.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item2.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item2.status);
 
   EXPECT_NE(item_id1, item_id2);
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id1)->status);
 
   // Activate first one.
   SelectItem(item_id1);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(item_id1)->status);
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id2)->status);
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_FALSE(window2->GetBaseWindow()->IsActive());
 
   // Activate second one.
   SelectItem(item_id2);
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id1)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(item_id2)->status);
   EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window2->GetBaseWindow()->IsActive());
 
@@ -643,8 +639,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   CloseAppWindow(window2);
   --item_count;
   EXPECT_EQ(item_count, shelf_model()->item_count());
-  // First app should be active again.
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(item_id1)->status);
+  // First app is still running.
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id1)->status);
 
   // Close first app.
   CloseAppWindow(window1b);
@@ -665,18 +661,16 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
   // Confirm that a controller item was created and is the correct state.
   const ash::ShelfItem& item = GetLastLauncherItem();
   EXPECT_EQ(ash::TYPE_APP, item.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
   // Since it is already active, clicking it should minimize.
   SelectItem(item.id);
   EXPECT_FALSE(window1->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMinimized());
-  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
   // Clicking the item again should activate the window again.
   SelectItem(item.id);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
   // Maximizing a window should preserve state after minimize + click.
   window1->GetBaseWindow()->Maximize();
   window1->GetBaseWindow()->Minimize();
@@ -742,7 +736,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PanelItemClickBehavior) {
   // Click the item and confirm that the panel is activated.
   EXPECT_EQ(ash::SHELF_ACTION_WINDOW_ACTIVATED, SelectItem(item.id));
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
   // Click the item again and confirm that the panel is minimized.
   EXPECT_EQ(ash::SHELF_ACTION_WINDOW_MINIMIZED, SelectItem(item.id));
   EXPECT_TRUE(panel->GetBaseWindow()->IsMinimized());
@@ -752,7 +746,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PanelItemClickBehavior) {
   EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_FALSE(panel->GetBaseWindow()->IsMinimized());
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
@@ -766,7 +760,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
   const ash::ShelfItem& item = GetLastLauncherItem();
   ash::ShelfID item_id1 = item.id;
   EXPECT_EQ(ash::TYPE_APP, item.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
 
   browser()->window()->Activate();
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id1)->status);
@@ -872,7 +866,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchPinned) {
   EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(shortcut_id)->status);
   SelectItem(shortcut_id);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
   WebContents* tab = tab_strip->GetActiveWebContents();
   content::WebContentsDestroyedWatcher destroyed_watcher(tab);
   browser()->tab_strip_model()->CloseSelectedTabs();
@@ -978,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchUnpinned) {
                          WindowOpenDisposition::NEW_FOREGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
   ash::ShelfID shortcut_id = CreateShortcut("app1");
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
   WebContents* tab = tab_strip->GetActiveWebContents();
   content::WebContentsDestroyedWatcher destroyed_watcher(tab);
   browser()->tab_strip_model()->CloseSelectedTabs();
@@ -1017,13 +1011,15 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchMaximized) {
   ash::ShelfID shortcut_id = CreateShortcut("app1");
   SelectItem(shortcut_id);
   EXPECT_EQ(++tab_count, tab_strip->count());
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
-
-  browser()->window()->Activate();
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
 
+  // Activate the first browser window.
+  browser()->window()->Activate();
+  EXPECT_FALSE(browser2->window()->IsActive());
+
+  // Selecting the shortcut activates the second window.
   SelectItem(shortcut_id);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
+  EXPECT_TRUE(browser2->window()->IsActive());
 }
 
 // Activating the same app multiple times should launch only a single copy.
@@ -1052,67 +1048,13 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchApp) {
   EXPECT_EQ(++tab_count, tab_strip->count());
 }
 
-// Launch 2 apps and toggle which is active.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultipleApps) {
-  int item_count = shelf_model()->item_count();
-  TabStripModel* tab_strip = browser()->tab_strip_model();
-  int tab_count = tab_strip->count();
-  ash::ShelfID shortcut1 = CreateShortcut("app1");
-  EXPECT_EQ(++item_count, shelf_model()->item_count());
-  ash::ShelfID shortcut2 = CreateShortcut("app2");
-  EXPECT_EQ(++item_count, shelf_model()->item_count());
-
-  // Launch first app.
-  SelectItem(shortcut1);
-  EXPECT_EQ(++tab_count, tab_strip->count());
-  WebContents* tab1 = tab_strip->GetActiveWebContents();
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut1)->status);
-
-  // Launch second app.
-  SelectItem(shortcut2);
-  EXPECT_EQ(++tab_count, tab_strip->count());
-  WebContents* tab2 = tab_strip->GetActiveWebContents();
-  ASSERT_NE(tab1, tab2);
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut1)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut2)->status);
-
-  // Reactivate first app.
-  SelectItem(shortcut1);
-  EXPECT_EQ(tab_count, tab_strip->count());
-  EXPECT_EQ(tab_strip->GetActiveWebContents(), tab1);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut1)->status);
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut2)->status);
-
-  // Open second tab for second app. This should activate it.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("http://www.example.com/path3/foo.html"),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
-  EXPECT_EQ(++tab_count, tab_strip->count());
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut1)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut2)->status);
-
-  // Reactivate first app.
-  SelectItem(shortcut1);
-  EXPECT_EQ(tab_count, tab_strip->count());
-  EXPECT_EQ(tab_strip->GetActiveWebContents(), tab1);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut1)->status);
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut2)->status);
-
-  // And second again. This time the second tab should become active.
-  SelectItem(shortcut2);
-  EXPECT_EQ(tab_count, tab_strip->count());
-  EXPECT_EQ(tab_strip->GetActiveWebContents(), tab2);
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut1)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut2)->status);
-}
-
 // Confirm that a page can be navigated from and to while maintaining the
 // correct running state.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, Navigation) {
   ash::ShelfID shortcut_id = CreateShortcut("app1");
   EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(shortcut_id)->status);
   SelectItem(shortcut_id);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
 
   // Navigate away.
   ui_test_utils::NavigateToURL(browser(),
@@ -1122,7 +1064,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, Navigation) {
   // Navigate back.
   ui_test_utils::NavigateToURL(browser(),
                                GURL("http://www.example.com/path1/foo.html"));
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
 }
 
 // Confirm that a tab can be moved between browsers while maintaining the
@@ -1136,21 +1078,21 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabDragAndDrop) {
 
   // Create a shortcut for app1.
   ash::ShelfID shortcut_id = CreateShortcut("app1");
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->items()[browser_index].status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->items()[browser_index].status);
   EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(shortcut_id)->status);
 
   // Activate app1 and check its item status.
   SelectItem(shortcut_id);
   EXPECT_EQ(2, tab_strip_model1->count());
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->items()[browser_index].status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
 
   // Create a new browser with blank tab.
   Browser* browser2 = CreateBrowser(profile());
   EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
   TabStripModel* tab_strip_model2 = browser2->tab_strip_model();
   EXPECT_EQ(1, tab_strip_model2->count());
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->items()[browser_index].status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->items()[browser_index].status);
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
 
   // Detach a tab at index 1 (app1) from |tab_strip_model1| and insert it as an
@@ -1161,77 +1103,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabDragAndDrop) {
   EXPECT_EQ(1, tab_strip_model1->count());
   EXPECT_EQ(2, tab_strip_model2->count());
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->items()[browser_index].status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
 
   tab_strip_model1->CloseAllTabs();
   tab_strip_model2->CloseAllTabs();
-}
-
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultipleOwnedTabs) {
-  TabStripModel* tab_strip = browser()->tab_strip_model();
-  int tab_count = tab_strip->count();
-  ash::ShelfID shortcut_id = CreateShortcut("app1");
-  SelectItem(shortcut_id);
-  EXPECT_EQ(++tab_count, tab_strip->count());
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
-  WebContents* first_tab = tab_strip->GetActiveWebContents();
-
-  // Create new tab owned by app.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("http://www.example.com/path2/bar.html"),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(++tab_count, tab_strip->count());
-  // Confirm app is still active.
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
-
-  // Create new tab not owned by app.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("http://www.example.com/path3/foo.html"),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
-  EXPECT_EQ(++tab_count, tab_strip->count());
-  // No longer active.
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
-
-  // Activating app makes first tab active again.
-  SelectItem(shortcut_id);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
-  EXPECT_EQ(tab_strip->GetActiveWebContents(), first_tab);
-}
-
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, RefocusFilter) {
-  TabStripModel* tab_strip = browser()->tab_strip_model();
-  int tab_count = tab_strip->count();
-  ash::ShelfID shortcut_id = CreateShortcut("app1");
-  SelectItem(shortcut_id);
-  EXPECT_EQ(++tab_count, tab_strip->count());
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
-  WebContents* first_tab = tab_strip->GetActiveWebContents();
-
-  controller_->SetRefocusURLPatternForTest(
-      shortcut_id, GURL("http://www.example.com/path1/*"));
-  // Create new tab owned by app.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("http://www.example.com/path2/bar.html"),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(++tab_count, tab_strip->count());
-  // Confirm app is still active.
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
-
-  // Create new tab not owned by app.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("http://www.example.com/path3/foo.html"),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
-  EXPECT_EQ(++tab_count, tab_strip->count());
-  // No longer active.
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
-
-  // Activating app makes first tab active again, because second tab isn't
-  // in its refocus url path.
-  SelectItem(shortcut_id);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
-  EXPECT_EQ(tab_strip->GetActiveWebContents(), first_tab);
 }
 
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, RefocusFilterLaunch) {
@@ -1256,49 +1131,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, RefocusFilterLaunch) {
   SelectItem(shortcut_id);
   EXPECT_EQ(++tab_count, tab_strip->count());
   WebContents* second_tab = tab_strip->GetActiveWebContents();
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
   EXPECT_NE(first_tab, second_tab);
   EXPECT_EQ(tab_strip->GetActiveWebContents(), second_tab);
-}
-
-// Check the launcher activation state for applications and browser.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivationStateCheck) {
-  TabStripModel* tab_strip = browser()->tab_strip_model();
-  // Get the browser item index
-  int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
-  EXPECT_TRUE(browser_index >= 0);
-
-  // Even though we are just comming up, the browser should be active.
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->items()[browser_index].status);
-
-  ash::ShelfID shortcut_id = CreateShortcut("app1");
-  controller_->SetRefocusURLPatternForTest(
-      shortcut_id, GURL("http://www.example.com/path1/*"));
-
-  EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(shortcut_id)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->items()[browser_index].status);
-
-  // Create new tab which would be the running app.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL("http://www.example.com/path1/bar.html"),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  // There should never be two items active at the same time.
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->items()[browser_index].status);
-
-  tab_strip->ActivateTabAt(0, false);
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->items()[browser_index].status);
-
-  tab_strip->CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);
-  EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(shortcut_id)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->items()[browser_index].status);
-
-  browser()->window()->Deactivate();
-  EXPECT_EQ(ash::STATUS_CLOSED, shelf_model()->ItemByID(shortcut_id)->status);
-  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->items()[browser_index].status);
 }
 
 // Check that the launcher activation state for a V1 application stays closed
@@ -1319,7 +1154,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, AsyncActivationStateCheck) {
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(shortcut_id)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(shortcut_id)->status);
   // To address the issue of crbug.com/174050, the tab we are about to close
   // has to be active.
   tab_strip->ActivateTabAt(1, false);
@@ -1475,7 +1310,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AltNumberAppsTabbing) {
   const ash::ShelfItem& item = GetLastLauncherItem();
 
   EXPECT_EQ(ash::TYPE_APP, item.type);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
 
   const Extension* extension2 =
       LoadAndLaunchPlatformApp("launch_2", "Launched");
@@ -1585,11 +1420,10 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowAttentionStatus) {
   // Click the item and confirm that the window is activated.
   EXPECT_EQ(ash::SHELF_ACTION_WINDOW_ACTIVATED, SelectItem(item.id));
   EXPECT_TRUE(window->GetBaseWindow()->IsActive());
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // Active windows don't show attention.
   window->GetNativeWindow()->SetProperty(aura::client::kDrawAttentionKey, true);
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
 }
 
 // Test attention states of panels.
@@ -1620,13 +1454,12 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PanelAttentionStatus) {
   // Ash updates panel shelf items; spin a run loop to sync Chrome's ShelfModel.
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 
   // Active windows don't show attention.
   panel->GetNativeWindow()->SetProperty(aura::client::kDrawAttentionKey, true);
   // Ash updates panel shelf items; spin a run loop to sync Chrome's ShelfModel.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
 }
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
@@ -2285,7 +2118,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
       WindowOpenDisposition::NEW_FOREGROUND_TAB, extensions::SOURCE_TEST);
   params.container = extensions::LAUNCH_CONTAINER_WINDOW;
   OpenApplication(params);
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(id)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(id)->status);
 
   // Find the browser which holds our app.
   Browser* app_browser = NULL;
@@ -2305,7 +2138,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
                                GURL("http://www.foo.com/bar.html"));
   // Make sure the navigation was entirely performed.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::STATUS_ACTIVE, shelf_model()->ItemByID(id)->status);
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(id)->status);
   app_browser->tab_strip_model()->CloseWebContentsAt(0,
                                                      TabStripModel::CLOSE_NONE);
   // Make sure that the app is really gone.
@@ -2379,10 +2212,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
       browser(), extensions::AppLaunchInfo::GetLaunchWebURL(bookmark_app),
       WindowOpenDisposition::NEW_FOREGROUND_TAB, 0);
 
-  // The apps should now be running, with the last opened app active.
+  // The apps should now be running.
   EXPECT_EQ(ash::STATUS_RUNNING,
             shelf_model()->ItemByID(hosted_app_shelf_id)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE,
+  EXPECT_EQ(ash::STATUS_RUNNING,
             shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
 
   // Now use the launcher controller to activate the apps.
@@ -2443,10 +2276,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
   // There should be two new browsers.
   EXPECT_EQ(3u, chrome::GetBrowserCount(browser()->profile()));
 
-  // The apps should now be running, with the last opened app active.
+  // The apps should now be running.
   EXPECT_EQ(ash::STATUS_RUNNING,
             shelf_model()->ItemByID(hosted_app_shelf_id)->status);
-  EXPECT_EQ(ash::STATUS_ACTIVE,
+  EXPECT_EQ(ash::STATUS_RUNNING,
             shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
 }
 
