@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.multiwindow;
 
+import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.createSecondChromeTabbedActivity;
+
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.test.filters.SmallTest;
@@ -20,8 +19,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -36,9 +33,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
-import java.lang.ref.WeakReference;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Class for testing MultiWindowUtils.
@@ -185,89 +180,5 @@ public class MultiWindowUtilsTest {
         MultiWindowUtils.getInstance().getTabbedActivityForIntent(
                 mActivityTestRule.getActivity().getIntent(), mActivityTestRule.getActivity());
         Assert.assertFalse(MultiWindowUtils.getInstance().getTabbedActivity2TaskRunning());
-    }
-
-    public static ChromeTabbedActivity2 createSecondChromeTabbedActivity(Activity activity) {
-        // TODO(twellington): after there is test support for putting an activity into multi-window
-        // mode, this should be changed to use the menu item for opening a new window.
-
-        // Number of expected activities after the second ChromeTabbedActivity is created.
-        int numExpectedActivities = ApplicationStatus.getRunningActivities().size() + 1;
-
-        // Get the class name to use for the second ChromeTabbedActivity. This step is important
-        // for initializing things in MultiWindowUtils.java.
-        Class<? extends Activity> secondActivityClass =
-                MultiWindowUtils.getInstance().getOpenInOtherWindowActivity(activity);
-        Assert.assertEquals(
-                "ChromeTabbedActivity2 should be used as the 'open in other window' activity.",
-                ChromeTabbedActivity2.class, secondActivityClass);
-
-        // Create an intent and start the second ChromeTabbedActivity.
-        Intent intent = new Intent();
-        MultiWindowUtils.setOpenInOtherWindowIntentExtras(intent, activity, secondActivityClass);
-        MultiWindowUtils.onMultiInstanceModeStarted();
-        activity.startActivity(intent);
-
-        // Wait for ChromeTabbedActivity2 to be created.
-        CriteriaHelper.pollUiThread(Criteria.equals(numExpectedActivities, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return ApplicationStatus.getRunningActivities().size();
-            }
-        }));
-
-        return waitForSecondChromeTabbedActivity();
-    }
-
-    /**
-     * Waits for an instance of ChromeTabbedActivity2, and then waits until it's resumed.
-     */
-    public static ChromeTabbedActivity2 waitForSecondChromeTabbedActivity() {
-        AtomicReference<ChromeTabbedActivity2> returnActivity = new AtomicReference<>();
-        CriteriaHelper.pollUiThread(new Criteria(
-                "Couldn't find instance of ChromeTabbedActivity2") {
-            @Override
-            public boolean isSatisfied() {
-                for (WeakReference<Activity> reference : ApplicationStatus.getRunningActivities()) {
-                    Activity runningActivity = reference.get();
-                    if (runningActivity == null) continue;
-                    if (runningActivity.getClass().equals(ChromeTabbedActivity2.class)) {
-                        returnActivity.set((ChromeTabbedActivity2) runningActivity);
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
-        waitUntilActivityResumed(returnActivity.get());
-        return returnActivity.get();
-    }
-
-    private static void waitUntilActivityResumed(final Activity activity) {
-        CriteriaHelper.pollUiThread(Criteria.equals(ActivityState.RESUMED, new Callable<Integer>() {
-            @Override
-            public Integer call() throws Exception {
-                return ApplicationStatus.getStateForActivity(activity);
-            }
-        }));
-    }
-
-    @TargetApi(Build.VERSION_CODES.N)
-    public static void moveActivityToFront(final Activity activity) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Context context = ContextUtils.getApplicationContext();
-                ActivityManager activityManager =
-                        (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-                for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-                    if (activity.getTaskId() == task.getTaskInfo().id) {
-                        task.moveToFront();
-                        break;
-                    }
-                }
-            }
-        });
-        waitUntilActivityResumed(activity);
     }
 }

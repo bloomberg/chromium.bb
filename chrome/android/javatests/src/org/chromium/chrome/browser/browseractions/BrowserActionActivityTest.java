@@ -47,8 +47,8 @@ import org.chromium.chrome.browser.contextmenu.ShareContextMenuItem;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
-import org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -481,7 +481,7 @@ public class BrowserActionActivityTest {
         ChromeTabbedActivity activity1 = mActivityTestRule.getActivity();
         MultiWindowUtils.getInstance().setIsInMultiWindowModeForTesting(true);
         ChromeTabbedActivity activity2 =
-                MultiWindowUtilsTest.createSecondChromeTabbedActivity(activity1);
+                MultiWindowTestHelper.createSecondChromeTabbedActivity(activity1);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

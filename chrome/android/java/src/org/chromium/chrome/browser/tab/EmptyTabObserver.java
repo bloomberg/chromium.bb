@@ -119,5 +119,8 @@ public class EmptyTabObserver implements TabObserver {
     public void onReparentingFinished(Tab tab) {}
 
     @Override
+    public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {}
+
+    @Override
     public void onInteractabilityChanged(boolean isInteractable) {}
 }
