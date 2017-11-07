@@ -182,3 +182,12 @@ TEST_F(IntentPickerBubbleViewTest, StayInChromeTest) {
   CreateBubbleView(false, false);
   EXPECT_EQ(bubble_->GetStayInChromeEnabledForTesting(), true);
 }
+
+// Check that a non nullptr WebContents() has been created and observed.
+TEST_F(IntentPickerBubbleViewTest, WebContentsTiedToBubble) {
+  CreateBubbleView(false, true);
+  EXPECT_TRUE(bubble_->web_contents());
+
+  CreateBubbleView(false, false);
+  EXPECT_TRUE(bubble_->web_contents());
+}
