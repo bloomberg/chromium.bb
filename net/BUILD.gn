@@ -3108,6 +3108,10 @@ source_set("quic_test_tools") {
     "quic/test_tools/mock_clock.h",
     "quic/test_tools/mock_crypto_client_stream.cc",
     "quic/test_tools/mock_crypto_client_stream.h",
+    "quic/test_tools/mock_decrypter.cc",
+    "quic/test_tools/mock_decrypter.h",
+    "quic/test_tools/mock_encrypter.cc",
+    "quic/test_tools/mock_encrypter.h",
     "quic/test_tools/mock_quic_client_promised_info.cc",
     "quic/test_tools/mock_quic_client_promised_info.h",
     "quic/test_tools/mock_quic_dispatcher.cc",
@@ -6261,5 +6265,22 @@ fuzzer_test("net_reporting_header_parser_fuzzer") {
     "//testing/libfuzzer/proto:json_proto",
     "//testing/libfuzzer/proto:json_proto_converter",
     "//third_party/libprotobuf-mutator",
+  ]
+}
+
+fuzzer_test("net_quic_stream_factory_fuzzer") {
+  sources = [
+    "quic/chromium/mock_crypto_client_stream_factory.cc",
+    "quic/chromium/mock_crypto_client_stream_factory.h",
+    "quic/chromium/quic_stream_factory_fuzzer.cc",
+    "quic/chromium/test_task_runner.cc",
+    "quic/chromium/test_task_runner.h",
+  ]
+
+  deps = [
+    ":net_fuzzer_test_support",
+    ":quic_test_tools",
+    ":test_support",
+    "//net",
   ]
 }

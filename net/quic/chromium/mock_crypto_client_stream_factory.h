@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_CHROMIUM_MOCK_CRYPTO_CLIENT_STREAM_FACTORY_H_
 #define NET_QUIC_CHROMIUM_MOCK_CRYPTO_CLIENT_STREAM_FACTORY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/containers/queue.h"
@@ -34,6 +35,10 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory {
     handshake_mode_ = handshake_mode;
   }
 
+  void set_use_mock_crypter(bool use_mock_crypter) {
+    use_mock_crypter_ = use_mock_crypter;
+  }
+
   // The caller keeps ownership of |proof_verify_details|.
   void AddProofVerifyDetails(
       const ProofVerifyDetailsChromium* proof_verify_details) {
@@ -50,6 +55,7 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory {
   MockCryptoClientStream* last_stream_;
   base::queue<const ProofVerifyDetailsChromium*> proof_verify_details_queue_;
   std::unique_ptr<QuicConfig> config_;
+  bool use_mock_crypter_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCryptoClientStreamFactory);
 };

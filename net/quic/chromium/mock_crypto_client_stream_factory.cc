@@ -17,7 +17,8 @@ MockCryptoClientStreamFactory::~MockCryptoClientStreamFactory() {}
 MockCryptoClientStreamFactory::MockCryptoClientStreamFactory()
     : handshake_mode_(MockCryptoClientStream::CONFIRM_HANDSHAKE),
       last_stream_(nullptr),
-      config_(new QuicConfig()) {}
+      config_(new QuicConfig()),
+      use_mock_crypter_(false) {}
 
 void MockCryptoClientStreamFactory::SetConfig(const QuicConfig& config) {
   config_.reset(new QuicConfig(config));
@@ -41,7 +42,7 @@ MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
   }
   last_stream_ = new MockCryptoClientStream(
       server_id, session, nullptr, *(config_.get()), crypto_config,
-      handshake_mode_, proof_verify_details);
+      handshake_mode_, proof_verify_details, use_mock_crypter_);
   return last_stream_;
 }
 

@@ -52,7 +52,8 @@ class MockCryptoClientStream : public QuicCryptoClientStream,
       const QuicConfig& config,
       QuicCryptoClientConfig* crypto_config,
       HandshakeMode handshake_mode,
-      const ProofVerifyDetailsChromium* proof_verify_details_);
+      const ProofVerifyDetailsChromium* proof_verify_details_,
+      bool use_mock_crypter);
   ~MockCryptoClientStream() override;
 
   // CryptoFramerVisitorInterface implementation.
@@ -83,6 +84,7 @@ class MockCryptoClientStream : public QuicCryptoClientStream,
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters>
       crypto_negotiated_params_;
   CryptoFramer crypto_framer_;
+  bool use_mock_crypter_;
 
   const QuicServerId server_id_;
   const ProofVerifyDetailsChromium* proof_verify_details_;
