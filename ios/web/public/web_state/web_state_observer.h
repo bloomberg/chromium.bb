@@ -97,27 +97,26 @@ class WebStateObserver {
   virtual void DidFinishNavigation(WebState* web_state,
                                    NavigationContext* navigation_context) {}
 
-  // Called when the current page has started loading in the main frame.
-  // WebState::IsLoading() will start returning true after this callback.
-  // Clients should present network activity indicator UI to the user.
-  // DidStartLoading is a different event than DidStartNavigation and clients
-  // shold not assume that these two callbacks always called in pair or in a
-  // specific order. "Navigation" is about fetching the new document content and
-  // committing it as a new document, and "Loading" continues well after that.
+  // Called when the current WebState has started or stopped loading. This is
+  // not correlated with the document load phase of the main frame, but rather
+  // represents the load of the web page as a whole. Clients should present
+  // network activity indicator UI to the user when DidStartLoading is called
+  // and UI when DidStopLoading is called. DidStartLoading is a different event
+  // than DidStartNavigation and clients shold not assume that these two
+  // callbacks always called in pair or in a specific order (same true for
+  // DidFinishNavigation/DidFinishLoading). "Navigation" is about fetching the
+  // new document content and committing it as a new document, and "Loading"
+  // continues well after that. "Loading" callbacks are not called for fragment
+  // change navigations, but called for other same-document navigations
+  // (crbug.com/767092).
   virtual void DidStartLoading(WebState* web_state) {}
-
-  // Called when the current page has stopped loading in the main frame.
-  // WebState::IsLoading() will start returning false after this callback.
-  // Clients should hide network activity indicator UI from the user.
-  // DidStopLoading is a different event than DidFinishNavigation and clients
-  // shold not assume that these two callbacks always called in pair or in a
-  // specific order. "Navigation" is about fetching the new document content and
-  // committing it as a new document, and "Loading" continues well after that.
   virtual void DidStopLoading(WebState* web_state) {}
 
-  // Called when the current page has finished loading in the main frame.
-  // Unlike DidStopLoading, this callback is not called when the load is
-  // cancelled.
+  // Called when the current page has finished the loading of the main frame
+  // document. DidStopLoading relates to the general loading state of the
+  // WebState, but PageLoaded is correlated with the main frame document load
+  // phase. Unlike DidStopLoading, this callback is not called when the load
+  // is aborted.
   virtual void PageLoaded(WebState* web_state,
                           PageLoadCompletionStatus load_completion_status) {}
 
