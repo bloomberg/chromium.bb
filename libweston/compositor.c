@@ -5445,6 +5445,7 @@ weston_output_init(struct weston_output *output,
 	output->destroying = 0;
 	output->name = strdup(name);
 	wl_list_init(&output->link);
+	wl_signal_init(&output->user_destroy_signal);
 	output->enabled = false;
 
 	wl_list_init(&output->head_list);
@@ -5685,6 +5686,49 @@ weston_compositor_flush_heads_changed(struct weston_compositor *compositor)
 	}
 }
 
+/** Add destroy callback for an output
+ *
+ * \param output The output to watch.
+ * \param listener The listener to add. The \c notify member must be set.
+ *
+ * The listener callback will be called when user destroys an output. This
+ * may be delayed by a backend in some cases. The main purpose of the
+ * listener is to allow hooking up custom data to the output. The custom data
+ * can be fetched via weston_output_get_destroy_listener() followed by
+ * container_of().
+ *
+ * The \c data argument to the notify callback is the weston_output being
+ * destroyed.
+ *
+ * @note This is for the final destruction of an output, not when it gets
+ * disabled. If you want to keep track of enabled outputs, this is not it.
+ */
+WL_EXPORT void
+weston_output_add_destroy_listener(struct weston_output *output,
+				   struct wl_listener *listener)
+{
+	wl_signal_add(&output->user_destroy_signal, listener);
+}
+
+/** Look up destroy listener for an output
+ *
+ * \param output The output to query.
+ * \param notify The notify function used used for the added destroy listener.
+ * \return The listener, or NULL if not found.
+ *
+ * This looks up the previously added destroy listener struct based on the
+ * notify function it has. The listener can be used to access user data
+ * through \c container_of().
+ *
+ * \sa wl_signal_get() weston_output_add_destroy_listener()
+ */
+WL_EXPORT struct wl_listener *
+weston_output_get_destroy_listener(struct weston_output *output,
+				   wl_notify_func_t notify)
+{
+	return wl_signal_get(&output->user_destroy_signal, notify);
+}
+
 /** Uninitialize an output
  *
  * Removes the output from the list of enabled outputs if necessary, but
@@ -5703,6 +5747,8 @@ weston_output_release(struct weston_output *output)
 	struct weston_head *head, *tmp;
 
 	output->destroying = 1;
+
+	wl_signal_emit(&output->user_destroy_signal, output);
 
 	if (output->idle_repaint_source)
 		wl_event_source_remove(output->idle_repaint_source);

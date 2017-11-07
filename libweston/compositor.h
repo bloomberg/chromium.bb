@@ -180,6 +180,9 @@ struct weston_output {
 	uint32_t id;
 	char *name;
 
+	/** Matches the lifetime from the user perspective */
+	struct wl_signal user_destroy_signal;
+
 	void *renderer_state;
 
 	struct wl_list link;
@@ -220,7 +223,7 @@ struct weston_output {
 	struct weston_output_zoom zoom;
 	int dirty;
 	struct wl_signal frame_signal;
-	struct wl_signal destroy_signal;
+	struct wl_signal destroy_signal;	/**< sent when disabled */
 	int move_x, move_y;
 	struct timespec frame_time; /* presentation timestamp */
 	uint64_t msc;        /* media stream counter */
@@ -1808,6 +1811,12 @@ weston_output_activate_zoom(struct weston_output *output,
 void
 weston_output_move(struct weston_output *output, int x, int y);
 
+void
+weston_output_add_destroy_listener(struct weston_output *output,
+				   struct wl_listener *listener);
+struct wl_listener *
+weston_output_get_destroy_listener(struct weston_output *output,
+				   wl_notify_func_t notify);
 void
 weston_output_release(struct weston_output *output);
 void
