@@ -558,42 +558,42 @@ void StreamMixerInputImpl::SetVolumeMultiplier(float multiplier) {
   RUN_ON_MIXER_THREAD(SetVolumeMultiplier, multiplier);
   DCHECK(!IsDeleting());
   stream_volume_multiplier_ = std::max(0.0f, multiplier);
-  float effective_volume = EffectiveVolume();
+  float target_volume = TargetVolume();
   LOG(INFO) << device_id_ << "(" << this
             << "): stream volume = " << stream_volume_multiplier_
-            << ", effective multiplier = " << effective_volume;
+            << ", effective multiplier = " << target_volume;
   slew_volume_.SetMaxSlewTimeMs(kDefaultSlewTimeMs);
-  slew_volume_.SetVolume(effective_volume);
+  slew_volume_.SetVolume(target_volume);
 }
 
 void StreamMixerInputImpl::SetContentTypeVolume(float volume, int fade_ms) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   type_volume_multiplier_ = std::max(0.0f, std::min(volume, 1.0f));
-  float effective_volume = EffectiveVolume();
+  float target_volume = TargetVolume();
   LOG(INFO) << device_id_ << "(" << this
             << "): type volume = " << type_volume_multiplier_
-            << ", effective multiplier = " << effective_volume;
+            << ", effective multiplier = " << target_volume;
   if (fade_ms < 0) {
     fade_ms = kDefaultSlewTimeMs;
   } else {
     LOG(INFO) << "Fade over " << fade_ms << " ms";
   }
   slew_volume_.SetMaxSlewTimeMs(fade_ms);
-  slew_volume_.SetVolume(effective_volume);
+  slew_volume_.SetVolume(target_volume);
 }
 
 void StreamMixerInputImpl::SetMuted(bool muted) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   mute_volume_multiplier_ = muted ? 0.0f : 1.0f;
-  float effective_volume = EffectiveVolume();
+  float target_volume = TargetVolume();
   LOG(INFO) << device_id_ << "(" << this
             << "): mute volume = " << mute_volume_multiplier_
-            << ", effective multiplier = " << effective_volume;
+            << ", effective multiplier = " << target_volume;
   slew_volume_.SetMaxSlewTimeMs(kDefaultSlewTimeMs);
-  slew_volume_.SetVolume(effective_volume);
+  slew_volume_.SetVolume(target_volume);
 }
 
-float StreamMixerInputImpl::EffectiveVolume() {
+float StreamMixerInputImpl::TargetVolume() {
   float volume = stream_volume_multiplier_ * type_volume_multiplier_ *
                  mute_volume_multiplier_;
   return std::max(0.0f, std::min(volume, 1.0f));

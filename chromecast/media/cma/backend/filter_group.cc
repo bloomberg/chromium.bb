@@ -30,12 +30,17 @@ FilterGroup::FilterGroup(int num_channels,
       device_ids_(device_ids),
       mixed_inputs_(mixed_inputs),
       output_samples_per_second_(0),
+      frames_zeroed_(0),
+      last_volume_(0.0),
+      delay_frames_(0),
+      loudest_content_type_(AudioContentType::kMedia),
       post_processing_pipeline_(std::move(pipeline)) {
   for (auto* const m : mixed_inputs)
     DCHECK_EQ(m->GetOutputChannelCount(), num_channels);
   // Don't need mono mixer if input is single channel.
   if (num_channels == 1)
     mix_to_mono_ = false;
+  post_processing_pipeline_->SetContentType(loudest_content_type_);
 }
 
 FilterGroup::~FilterGroup() = default;
@@ -97,7 +102,7 @@ float FilterGroup::MixAndFilter(int chunk_size) {
       input->VolumeScaleAccumulate(c != 0, temp_->channel(c), chunk_size,
                                    mixed_->channel(c));
     }
-    float tmp = input->EffectiveVolume();
+    float tmp = input->InstantaneousVolume();
     if (tmp > volume) {
       volume = tmp;
       loudest_content_type = input->content_type();

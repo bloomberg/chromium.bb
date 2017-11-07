@@ -19,6 +19,7 @@
 #include "chromecast/media/cma/backend/alsa/mixer_output_stream_alsa.h"
 #include "chromecast/media/cma/backend/alsa/mock_alsa_wrapper.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline.h"
+#include "chromecast/public/volume_control.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
@@ -199,7 +200,7 @@ class MockInputQueue : public StreamMixer::InputQueue {
 
   void SetContentTypeVolume(float volume, int fade_ms) override {}
   void SetMuted(bool muted) override {}
-  float EffectiveVolume() override { return multiplier_; }
+  float TargetVolume() override { return multiplier_; }
   float InstantaneousVolume() override { return multiplier_; }
 
   // Setters and getters for test control.
@@ -300,6 +301,7 @@ class MockPostProcessor : public PostProcessingPipeline {
   MOCK_METHOD4(
       ProcessFrames,
       int(float* data, int num_frames, float current_volume, bool is_silence));
+  MOCK_METHOD1(SetContentType, void(AudioContentType));
   bool SetSampleRate(int sample_rate) override { return true; }
   bool IsRinging() override { return ringing_; }
   int delay() { return rendering_delay_; }
@@ -1033,6 +1035,7 @@ TEST_F(StreamMixerTest, PostProcessorDelayUnlistedDevice) {
   EXPECT_CALL(*input, VolumeScaleAccumulate(_, _, kNumFrames, _))
       .Times(kNumChannels);
   EXPECT_CALL(*input, AfterWriteFrames(MatchDelay(delay, device_id)));
+  mixer->SetFilterFrameAlignmentForTest(4);
   mixer->WriteFramesForTest();
 }
 

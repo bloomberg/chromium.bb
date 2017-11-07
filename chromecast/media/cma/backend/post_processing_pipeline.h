@@ -28,7 +28,7 @@ class PostProcessingPipeline {
   virtual bool IsRinging() = 0;
   virtual void SetPostProcessorConfig(const std::string& name,
                                       const std::string& config) = 0;
-  virtual void SetContentType(AudioContentType content_type) {}
+  virtual void SetContentType(AudioContentType content_type) = 0;
 };
 
 class PostProcessingPipelineFactory {

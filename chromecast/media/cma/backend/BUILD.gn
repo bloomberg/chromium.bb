@@ -165,6 +165,7 @@ test("cast_audio_backend_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//chromecast/media/cma/backend/post_processors:test_support",
+    "//chromecast/public",
     "//chromecast/public/media",
     "//media:shared_memory_support",
     "//testing/gmock",
