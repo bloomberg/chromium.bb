@@ -18,6 +18,12 @@ from chromite.lib import remote_try
 from chromite.cbuildbot import trybot_patch_pool
 
 
+REMOTE = 'remote'
+SWARMING = 'swarming'
+LOCAL = 'local'
+CBUILDBOT = 'cbuildbot'
+
+
 def ConfigsToPrint(site_config, production, build_config_fragments):
   """Select a list of buildbot configs to print out.
 
@@ -81,24 +87,36 @@ def CbuildbotArgs(options):
     options: Parsed cros tryjob tryjob arguments.
 
   Returns:
-    List of strings in ['arg1', 'arg2'] format.
+    List of strings in ['arg1', 'arg2'] format
   """
   args = []
 
-
-  if options.remote:
+  if options.where in (REMOTE, SWARMING):
     if options.production:
       args.append('--buildbot')
     else:
       args.append('--remote-trybot')
-  else:
-    args.extend(('--buildroot', options.buildroot, '--no-buildbot-tags'))
+
+  elif options.where == LOCAL:
+    args.append('--no-buildbot-tags')
     if options.production:
       # This is expected to fail on workstations without an explicit --debug,
       # or running 'branch-util'.
       args.append('--buildbot')
     else:
       args.append('--debug')
+
+  elif options.where == CBUILDBOT:
+    args.extend(('--buildbot', '--nobootstrap', '--noreexec',
+                 '--no-buildbot-tags'))
+    if not options.production:
+      args.append('--debug')
+
+  else:
+    raise Exception('Unknown options.where: %s', options.where)
+
+  if options.buildroot:
+    args.extend(('--buildroot', options.buildroot))
 
   if options.branch:
     args.extend(('-b', options.branch))
@@ -115,25 +133,74 @@ def CbuildbotArgs(options):
   return args
 
 
+def CreateBuildrootIfNeeded(buildroot):
+  """Create the buildroot is it doesn't exist with confirmation prompt.
+
+  Args:
+    buildroot: The buildroot path to create as a string.
+
+  Returns:
+    boolean: Does the buildroot now exist?
+  """
+  if os.path.exists(buildroot):
+    return True
+
+  prompt = 'Create %s as buildroot' % buildroot
+  if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
+    print('Please specify a different buildroot via the --buildroot option.')
+    return False
+
+  os.makedirs(buildroot)
+  return True
+
+
 def RunLocal(options):
-  """Run a local tryjob."""
+  """Run a local tryjob.
+
+  Args:
+    options: Parsed cros tryjob tryjob arguments.
+
+  Returns:
+    Exit code of build as an int.
+  """
   if cros_build_lib.IsInsideChroot():
     cros_build_lib.Die('Local tryjobs cannot be started inside the chroot.')
 
-  # Create the buildroot, if needed.
-  if not os.path.exists(options.buildroot):
-    prompt = 'Create %s as buildroot' % options.buildroot
-    if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
-      print('Please specify a different buildroot via the --buildroot option.')
-      return 1
-    os.makedirs(options.buildroot)
+  args = CbuildbotArgs(options)
+
+  if not CreateBuildrootIfNeeded(options.buildroot):
+    return 1
 
   # Define the command to run.
   launcher = os.path.join(constants.CHROMITE_DIR, 'scripts', 'cbuildbot_launch')
-  args = CbuildbotArgs(options)  # The requested build arguments.
-  cmd = ([launcher] +
-         args +
-         options.build_configs)
+  cmd = [launcher] + args + options.build_configs
+
+  # Run the tryjob.
+  result = cros_build_lib.RunCommand(cmd, debug_level=logging.CRITICAL,
+                                     error_code_ok=True, cwd=options.buildroot)
+  return result.returncode
+
+
+def RunCbuildbot(options):
+  """Run a cbuildbot build.
+
+  Args:
+    options: Parsed cros tryjob tryjob arguments.
+
+  Returns:
+    Exit code of build as an int.
+  """
+  if cros_build_lib.IsInsideChroot():
+    cros_build_lib.Die('cbuildbot tryjobs cannot be started inside the chroot.')
+
+  args = CbuildbotArgs(options)
+
+  if not CreateBuildrootIfNeeded(options.buildroot):
+    return 1
+
+  # Define the command to run.
+  cbuildbot = os.path.join(constants.CHROMITE_BIN_DIR, 'cbuildbot')
+  cmd = [cbuildbot] + args + options.build_configs
 
   # Run the tryjob.
   result = cros_build_lib.RunCommand(cmd, debug_level=logging.CRITICAL,
@@ -193,7 +260,7 @@ def RunRemote(site_config, options, patch_pool):
         pass_through_args=args,
         local_patches=patch_pool.local_patches,
         committer_email=options.committer_email,
-        swarming=options.swarming,
+        swarming=options.where == SWARMING,
         master_buildbucket_id='',  # TODO: Add new option to populate.
     )
 
@@ -205,6 +272,95 @@ def RunRemote(site_config, options, patch_pool):
   for link in links:
     print('  %s' % link)
 
+def AdjustOptions(options):
+  """Set defaults that require some logic.
+
+  Args:
+    options: Parsed cros tryjob tryjob arguments.
+    site_config: config_lib.SiteConfig containing all config info.
+  """
+  if options.buildroot:
+    return
+
+  if options.where == CBUILDBOT:
+    options.buildroot = os.path.join(
+        os.path.dirname(constants.SOURCE_ROOT), 'cbuild')
+
+  if options.where == LOCAL:
+    options.buildroot = os.path.join(
+        os.path.dirname(constants.SOURCE_ROOT), 'tryjob')
+
+
+def VerifyOptions(options, site_config):
+  """Verify that our command line options make sense.
+
+  Args:
+    options: Parsed cros tryjob tryjob arguments.
+    site_config: config_lib.SiteConfig containing all config info.
+  """
+  # Handle --list before checking that everything else is valid.
+  if options.list:
+    PrintKnownConfigs(site_config,
+                      options.production,
+                      options.build_configs)
+    raise cros_build_lib.DieSystemExit(0)  # Exit with success code.
+
+  # Validate specified build_configs.
+  if not options.build_configs:
+    cros_build_lib.Die('At least one build_config is required.')
+
+  unknown_build_configs = [b for b in options.build_configs
+                           if b not in site_config]
+  if unknown_build_configs and not options.yes:
+    prompt = ('Unknown build configs; are you sure you want to schedule '
+              'for %s?' % ', '.join(unknown_build_configs))
+    if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
+      cros_build_lib.Die('No confirmation.')
+
+  # Ensure that production configs are only run with --production.
+  if not (options.production or options.where == CBUILDBOT):
+    # We can't know if branched configs are tryjob safe.
+    # It should always be safe to run a tryjob config with --production.
+    prod_configs = []
+    for b in options.build_configs:
+      if b in site_config and not config_lib.isTryjobConfig(site_config[b]):
+        prod_configs.append(b)
+
+    if prod_configs:
+      # Die, and explain why.
+      alternative_configs = ['%s-tryjob' % b for b in prod_configs]
+      msg = ('These configs are not tryjob safe:\n'
+             '  %s\n'
+             'Consider these configs instead:\n'
+             '  %s\n'
+             'See go/cros-explicit-tryjob-build-configs-psa.' %
+             (', '.join(prod_configs), ', '.join(alternative_configs)))
+
+      if options.branch == 'master':
+        # On master branch, we know the status of configs for sure.
+        cros_build_lib.Die(msg)
+      elif not options.yes:
+        # On branches, we are just guessing. Let people override.
+        prompt = '%s\nAre you sure you want to continue?' % msg
+        if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
+          cros_build_lib.Die('No confirmation.')
+
+  patches_given = options.gerrit_patches or options.local_patches
+  if options.production:
+    # Make sure production builds don't have patches.
+    if patches_given and not options.debug:
+      cros_build_lib.Die('Patches cannot be included in production builds.')
+  elif options.where != CBUILDBOT:
+    # Ask for confirmation if there are no patches to test.
+    if not patches_given and not options.yes:
+      prompt = ('No patches were provided; are you sure you want to just '
+                'run a build of %s?' % (
+                    options.branch if options.branch else 'ToT'))
+      if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
+        cros_build_lib.Die('No confirmation.')
+
+  if options.where in (REMOTE, SWARMING) and options.buildroot:
+    cros_build_lib.Die('--buildroot is not used for remote tryjobs.')
 
 @command.CommandDecorator('tryjob')
 class TryjobCommand(command.CliCommand):
@@ -262,17 +418,20 @@ List Examples:
         description='Where do we run the tryjob?')
     where_ex = where_group.add_mutually_exclusive_group()
     where_ex.add_argument(
-        '--local', action='store_false', dest='remote',
+        '--remote', dest='where', action='store_const', const=REMOTE,
+        default=REMOTE,
+        help='Run the tryjob on a remote builder. (default)')
+    where_ex.add_argument(
+        '--local', dest='where', action='store_const', const=LOCAL,
         help='Run the tryjob on your local machine.')
     where_ex.add_argument(
-        '--remote', action='store_true', default=True,
-        help='Run the tryjob on a remote builder. (default)')
-    where_group.add_argument(
-        '--swarming', action='store_true', default=False,
+        '--cbuildbot', dest='where', action='store_const', const=CBUILDBOT,
+        help='Run special local build from current checkout in buildroot.')
+    where_ex.add_argument(
+        '--swarming', dest='where', action='store_const', const=SWARMING,
         help='Run the tryjob on a swarming builder (experimental)')
     where_group.add_argument(
         '-r', '--buildroot', type='path', dest='buildroot',
-        default=os.path.join(os.path.dirname(constants.SOURCE_ROOT), 'tryjob'),
         help='Root directory to use for the local tryjob. '
              'NOT the current checkout.')
 
@@ -397,79 +556,14 @@ List Examples:
         '-l', '--list', action='store_true', dest='list', default=False,
         help='List the trybot configs (adjusted by --production).')
 
-  def VerifyOptions(self, site_config):
-    """Verify that our command line options make sense."""
-    # Handle --list before checking that everything else is valid.
-    if self.options.list:
-      PrintKnownConfigs(site_config,
-                        self.options.production,
-                        self.options.build_configs)
-      raise cros_build_lib.DieSystemExit(0)  # Exit with success code.
-
-    # Validate specified build_configs.
-    if not self.options.build_configs:
-      cros_build_lib.Die('At least one build_config is required.')
-
-    if not self.options.remote and self.options.swarming:
-      cros_build_lib.Die('--swarming cannot be used with local tryjobs.')
-
-    unknown_build_configs = [b for b in self.options.build_configs
-                             if b not in site_config]
-    if unknown_build_configs and not self.options.yes:
-      prompt = ('Unknown build configs; are you sure you want to schedule '
-                'for %s?' % ', '.join(unknown_build_configs))
-      if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
-        cros_build_lib.Die('No confirmation.')
-
-    # Ensure that production configs are only run with --production.
-    if not self.options.production:
-      # We can't know if branched configs are tryjob safe.
-      # It should always be safe to run a tryjob config with --production.
-      prod_configs = []
-      for b in self.options.build_configs:
-        if b in site_config and not config_lib.isTryjobConfig(site_config[b]):
-          prod_configs.append(b)
-
-      if prod_configs:
-        # Die, and explain why.
-        alternative_configs = ['%s-tryjob' % b for b in prod_configs]
-        msg = ('These configs are not tryjob safe:\n'
-               '  %s\n'
-               'Consider these configs instead:\n'
-               '  %s\n'
-               'See go/cros-explicit-tryjob-build-configs-psa.' %
-               (', '.join(prod_configs), ', '.join(alternative_configs)))
-
-        if self.options.branch == 'master':
-          # On master branch, we know the status of configs for sure.
-          cros_build_lib.Die(msg)
-        elif not self.options.yes:
-          # On branches, we are just guessing. Let people override.
-          prompt = '%s\nAre you sure you want to continue?' % msg
-          if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
-            cros_build_lib.Die('No confirmation.')
-
-    patches_given = self.options.gerrit_patches or self.options.local_patches
-    if self.options.production:
-      # Make sure production builds don't have patches.
-      if patches_given and not self.options.debug:
-        cros_build_lib.Die('Patches cannot be included in production builds.')
-    else:
-      # Ask for confirmation if there are no patches to test.
-      if not patches_given and not self.options.yes:
-        prompt = ('No patches were provided; are you sure you want to just '
-                  'run a build of %s?' % (
-                      self.options.branch if self.options.branch else 'ToT'))
-        if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
-          cros_build_lib.Die('No confirmation.')
-    return True
-
   def Run(self):
     """Runs `cros chroot`."""
     site_config = config_lib.GetConfig()
 
+    AdjustOptions(self.options)
     self.options.Freeze()
-    self.VerifyOptions(site_config)
+
+    VerifyOptions(self.options, site_config)
 
     # Verify gerrit patches are valid.
     print('Verifying patches...')
@@ -479,7 +573,11 @@ List Examples:
         sourceroot=constants.SOURCE_ROOT,
         remote_patches=[])
 
-    if self.options.remote:
+    if self.options.where in (REMOTE, SWARMING):
       return RunRemote(site_config, self.options, patch_pool)
-    else:
+    elif self.options.where == LOCAL:
       return RunLocal(self.options)
+    elif self.options.where == CBUILDBOT:
+      return RunCbuildbot(self.options)
+    else:
+      raise Exception('Unknown options.where: %s', self.options.where)
