@@ -117,8 +117,9 @@ NumberingSystem::createInstance(const Locale & inLocale, UErrorCode& status) {
     char buffer[ULOC_KEYWORDS_CAPACITY];
     int32_t count = inLocale.getKeywordValue("numbers",buffer, sizeof(buffer),status);
     if (U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING) {
-      count = 0;
-      status = U_ZERO_ERROR;
+        // the "numbers" keyword exceeds ULOC_KEYWORDS_CAPACITY; ignore and use default.
+        count = 0;
+        status = U_ZERO_ERROR;
     }
     if ( count > 0 ) { // @numbers keyword was specified in the locale
         U_ASSERT(count < ULOC_KEYWORDS_CAPACITY);

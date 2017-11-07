@@ -55,6 +55,9 @@ sed -i.orig -e '/^ac_config_files=/ s:\ layoutex/Makefile::g' \
   "${treeroot}/source/configure"
 rm -f "${treeroot}/source/configure.orig"
 
+echo "git-adding new files"
+git status source | sed -n '/^Untracked/,$ p' | grep source | xargs git add
+
 # TODO(jshin): Automatically update BUILD.gn and icu.gypi with the updated
 # list of source files.
 

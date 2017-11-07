@@ -47,7 +47,7 @@ cs{
         ar{"arabština"}
         ar_001{"arabština (moderní standardní)"}
         arc{"aramejština"}
-        arn{"mapudungun"}
+        arn{"mapudungunština"}
         aro{"araonština"}
         arp{"arapažština"}
         arq{"arabština (alžírská)"}
@@ -80,7 +80,7 @@ cs{
         bfq{"badagština"}
         bg{"bulharština"}
         bgn{"balúčština (západní)"}
-        bho{"bhojpurština"}
+        bho{"bhódžpurština"}
         bi{"bislamština"}
         bik{"bikolština"}
         bin{"bini"}
@@ -185,7 +185,7 @@ cs{
         fo{"faerština"}
         fon{"fonština"}
         fr{"francouzština"}
-        frc{"francouzština (kajunská)"}
+        frc{"francouzština (cajunská)"}
         frm{"francouzština (středověká)"}
         fro{"francouzština (stará)"}
         frp{"franko-provensálština"}
@@ -332,6 +332,7 @@ cs{
         ln{"lingalština"}
         lo{"laoština"}
         lol{"mongština"}
+        lou{"kreolština (Louisiana)"}
         loz{"lozština"}
         lrc{"lúrština (severní)"}
         lt{"litevština"}
@@ -379,7 +380,7 @@ cs{
         ms{"malajština"}
         mt{"maltština"}
         mua{"mundang"}
-        mul{"složené (víceřádkové) jazyky"}
+        mul{"více jazyků"}
         mus{"kríkština"}
         mwl{"mirandština"}
         mwr{"márvárština"}
@@ -661,7 +662,7 @@ cs{
         Cprt{"kyperské"}
         Cyrl{"cyrilice"}
         Cyrs{"cyrilce - staroslověnská"}
-        Deva{"dévanágárí"}
+        Deva{"dévanágarí"}
         Dsrt{"deseret"}
         Dupl{"Duployého těsnopis"}
         Egyd{"egyptské démotické"}
@@ -727,7 +728,7 @@ cs{
         Mlym{"malajlámské"}
         Modi{"modí"}
         Mong{"mongolské"}
-        Moon{"Moonovo"}
+        Moon{"Moonovo písmo"}
         Mroo{"mro"}
         Mtei{"mejtej majek (manipurské)"}
         Mymr{"myanmarské"}
@@ -821,6 +822,7 @@ cs{
             indian{"Indický národní kalendář"}
             islamic{"Islámský kalendář"}
             islamic-civil{"Muslimský občanský kalendář"}
+            islamic-umalqura{"Muslimský kalendář (Umm al-Qura)"}
             iso8601{"Kalendář ISO-8601"}
             japanese{"Japonský kalendář"}
             persian{"Perský kalendář"}
@@ -864,11 +866,12 @@ cs{
         }
         collation{
             big5han{"Řazení pro tradiční čínštinu – Big5"}
+            compat{"Předchozí řazení, kompatibilita"}
             dictionary{"Slovníkové řazení"}
             ducet{"Výchozí řazení Unicode"}
             eor{"Evropské řazení"}
             gb2312han{"Řazení pro zjednodušenou čínštinu – GB2312"}
-            phonebook{"Řazení jako v telefonním seznamu"}
+            phonebook{"Řazení telefonního seznamu"}
             phonetic{"Fonetické řazení"}
             pinyin{"Řazení podle pchin-jinu"}
             reformed{"Reformované řazení"}
@@ -897,8 +900,8 @@ cs{
             strict{"Striktní styl zalamování řádků"}
         }
         m0{
-            bgn{"BGN"}
-            ungegn{"UNGEGN"}
+            bgn{"Transliterace podle BGN"}
+            ungegn{"Transliterace podle UNGEGN"}
         }
         ms{
             metric{"Metrická soustava"}
@@ -957,7 +960,7 @@ cs{
         SCOTLAND{"angličtina (Skotsko)"}
         WADEGILE{"Wade-Giles"}
     }
-    Version{"2.1.32.59"}
+    Version{"2.1.37.11"}
     characterLabelPattern{
         all{"{0} – vše"}
         category-list{"{0}: {1}"}

@@ -1,8 +1,8 @@
 diff --git a/source/common/dictbe.cpp b/source/common/dictbe.cpp
-index 924f09b..80c27c0 100644
+index 9d8de50a..a280bc04 100644
 --- a/source/common/dictbe.cpp
 +++ b/source/common/dictbe.cpp
-@@ -834,11 +834,11 @@ foundBest:
+@@ -812,11 +812,11 @@ foundBest:
  static const int32_t KHMER_LOOKAHEAD = 3;
  
  // Will not combine a non-word with a preceding dictionary word longer than this

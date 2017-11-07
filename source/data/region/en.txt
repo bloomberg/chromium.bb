@@ -31,6 +31,7 @@ en{
         151{"Eastern Europe"}
         154{"Northern Europe"}
         155{"Western Europe"}
+        202{"Sub-Saharan Africa"}
         419{"Latin America"}
         AC{"Ascension Island"}
         AD{"Andorra"}
@@ -308,5 +309,5 @@ en{
         CZ{"Czech Republic"}
         TL{"East Timor"}
     }
-    Version{"2.1.32.59"}
+    Version{"2.1.37.44"}
 }

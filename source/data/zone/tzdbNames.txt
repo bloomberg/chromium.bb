@@ -201,7 +201,7 @@ tzdbNames{
         "meta:China"{
             sd{"CDT"}
             ss{"CST"}
-            parseRegions{"CN", "MO", "TW"}
+            parseRegions{"CN", "MO"}
         }
         "meta:Choibalsan"{
             sd{"CHOST"}
@@ -427,8 +427,8 @@ tzdbNames{
             ss{"LINT"}
         }
         "meta:Lord_Howe"{
-            ss{"LHST"}
             sd{"LHDT"}
+            ss{"LHST"}
         }
         "meta:Macau"{
             sd{"MOST"}
@@ -564,7 +564,7 @@ tzdbNames{
         }
         "meta:Pyongyang"{
             ss{"KST"}
-            sd{"KDT"}
+            parseRegions{"KP"}
         }
         "meta:Qyzylorda"{
             sd{"QYZST"}
@@ -621,6 +621,7 @@ tzdbNames{
         "meta:Taipei"{
             sd{"CDT"}
             ss{"CST"}
+            parseRegions{"TW"}
         }
         "meta:Tajikistan"{
             ss{"TJT"}

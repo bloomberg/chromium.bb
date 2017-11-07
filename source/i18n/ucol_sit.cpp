@@ -467,7 +467,7 @@ ucol_prepareShortStringOpen( const char *definition,
     // if there is a keyword, we pick it up and try to get elements
     int32_t keyLen = uloc_getKeywordValue(buffer, "collation", keyBuffer, sizeof(keyBuffer), status);
     // Treat too long a value as no keyword.
-    if(keyLen >= sizeof(keyBuffer)) {
+    if(keyLen >= (int32_t)sizeof(keyBuffer)) {
       keyLen = 0;
       *status = U_ZERO_ERROR;
     }

@@ -24,10 +24,10 @@ index cc126d53..646bfa18 100644
      uint32_t nameOffset;
      uint32_t dataOffset;
 diff --git a/source/common/udata.cpp b/source/common/udata.cpp
-index 29074a64..21dfd0f2 100644
+index 3cb8863f..a02a28d3 100644
 --- a/source/common/udata.cpp
 +++ b/source/common/udata.cpp
-@@ -629,7 +629,7 @@ U_NAMESPACE_END
+@@ -633,7 +633,7 @@ U_NAMESPACE_END
   *                                                                      *
   *----------------------------------------------------------------------*/
  #if U_PLATFORM_HAS_WINUWP_API == 0 // Windows UWP Platform does not support dll icu data at this time
@@ -36,7 +36,7 @@ index 29074a64..21dfd0f2 100644
  #endif
  
  /*
-@@ -681,7 +681,7 @@ openCommonData(const char *path,          /*  Path from OpenChoice?          */
+@@ -685,7 +685,7 @@ openCommonData(const char *path,          /*  Path from OpenChoice?          */
  #if U_PLATFORM_HAS_WINUWP_API == 0 // Windows UWP Platform does not support dll icu data at this time
              int32_t i;
              for(i = 0; i < commonDataIndex; ++i) {
@@ -45,7 +45,7 @@ index 29074a64..21dfd0f2 100644
                      /* The linked-in data is already in the list. */
                      return NULL;
                  }
-@@ -703,7 +703,7 @@ openCommonData(const char *path,          /*  Path from OpenChoice?          */
+@@ -707,7 +707,7 @@ openCommonData(const char *path,          /*  Path from OpenChoice?          */
          }
          */
  #if U_PLATFORM_HAS_WINUWP_API == 0 // Windows UWP Platform does not support dll icu data at this time

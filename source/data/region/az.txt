@@ -106,6 +106,7 @@ az{
         ES{"İspaniya"}
         ET{"Efiopiya"}
         EU{"Avropa Birliyi"}
+        EZ{"Avrozona"}
         FI{"Finlandiya"}
         FJ{"Fici"}
         FK{"Folklend adaları (Malvin adaları)"}
@@ -305,5 +306,5 @@ az{
         CZ{"Çex Respublikası"}
         TL{"Doğu Timor"}
     }
-    Version{"2.1.32.59"}
+    Version{"2.1.37.1"}
 }

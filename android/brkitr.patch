@@ -63,7 +63,7 @@ index 9c93dd5..eb150ea 100644
  
  
  #
-@@ -194,11 +192,6 @@ $ExtendNumLetEx  $KatakanaEx     {400};    #  (13b)
+@@ -190,10 +190,6 @@ $ExtendNumLetEx  $KatakanaEx     {400};    #  (13b)
  #
  ^$Regional_IndicatorEx $Regional_IndicatorEx;
  
@@ -71,18 +71,6 @@ index 9c93dd5..eb150ea 100644
 -$HangulSyllable $HangulSyllable {200};
 -$KanaKanji $KanaKanji {400}; # different rule status if both kana and kanji found 
 -
--
- ## -------------------------------------------------
- 
- !!reverse;
-@@ -265,10 +258,6 @@ $BackKatakanaEx $BackKatakanaEx;
- $BackExtendNumLetEx ($BackALetterEx | $BackHebrew_LetterEx | $BackNumericEx | $BackKatakanaEx | $BackExtendNumLetEx);
- ($BackALetterEx | $BackHebrew_LetterEx | $BackNumericEx | $BackKatakanaEx) $BackExtendNumLetEx; 
- 
--# special handling for CJK characters: chain for later dictionary segmentation
--$HangulSyllable $HangulSyllable;
--$KanaKanji $KanaKanji; #different rule status if both kanji and kana found
--
- # rule 14
- 
- $E_Modifier ($Format | $Extend | $ZWJ)* ($E_Base | $EBG);
+ # Rule 999
+ #     Match a single code point if no other rule applies.
+ .;

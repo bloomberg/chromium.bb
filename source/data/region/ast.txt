@@ -106,6 +106,7 @@ ast{
         ES{"España"}
         ET{"Etiopía"}
         EU{"Xunión Europea"}
+        EZ{"Eurozona"}
         FI{"Finlandia"}
         FJ{"Islles Fixi"}
         FK{"Islles Malvines (Falkland Islands)"}
@@ -272,6 +273,7 @@ ast{
         UA{"Ucraína"}
         UG{"Uganda"}
         UM{"Islles Perifériques Menores de los EE.XX."}
+        UN{"Naciones Xuníes"}
         US{"Estaos Xuníos"}
         UY{"Uruguái"}
         UZ{"Uzbequistán"}
@@ -300,7 +302,8 @@ ast{
         CD{"Congu (RDC)"}
         CG{"Congu (República del)"}
         CI{"Costa del Marfil"}
+        CZ{"República Checa"}
         TL{"Timor Este"}
     }
-    Version{"2.1.31.86"}
+    Version{"2.1.37.1"}
 }

@@ -588,7 +588,7 @@ ucurr_forLocale(const char* locale,
         idDelim[0] = 0;
     }
 
-    const UChar* s;  // Currency code from data file.
+    const UChar* s = NULL;  // Currency code from data file.
     if (id[0] == 0) {
         // No point looking in the data for an empty string.
         // This is what we would get.
@@ -653,7 +653,16 @@ static UBool fallback(char *loc) {
         return FALSE;
     }
     UErrorCode status = U_ZERO_ERROR;
-    uloc_getParent(loc, loc, (int32_t)uprv_strlen(loc), &status);
+    if (uprv_strcmp(loc, "en_GB") == 0) {
+        // HACK: See #13368.  We need "en_GB" to fall back to "en_001" instead of "en"
+        // in order to consume the correct data strings.  This hack will be removed
+        // when proper data sink loading is implemented here.
+        // NOTE: "001" adds 1 char over "GB".  However, both call sites allocate
+        // arrays with length ULOC_FULLNAME_CAPACITY (plenty of room for en_001).
+        uprv_strcpy(loc + 3, "001");
+    } else {
+        uloc_getParent(loc, loc, (int32_t)uprv_strlen(loc), &status);
+    }
  /*
     char *i = uprv_strrchr(loc, '_');
     if (i == NULL) {
@@ -2221,6 +2230,7 @@ ucurr_countCurrencies(const char* locale,
         UErrorCode localStatus = U_ZERO_ERROR;
         char id[ULOC_FULLNAME_CAPACITY];
         uloc_getKeywordValue(locale, "currency", id, ULOC_FULLNAME_CAPACITY, &localStatus);
+
         // get country or country_variant in `id'
         /*uint32_t variantType =*/ idForLocale(locale, id, sizeof(id), ec);
 

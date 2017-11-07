@@ -106,6 +106,7 @@ zu{
         ES{"i-Spain"}
         ET{"i-Ethiopia"}
         EU{"i-European Union"}
+        EZ{"EZ"}
         FI{"i-Finland"}
         FJ{"i-Fiji"}
         FK{"i-Falkland Islands (Islas Malvinas)"}
@@ -288,7 +289,7 @@ zu{
         XK{"i-Kosovo"}
         YE{"i-Yemen"}
         YT{"i-Mayotte"}
-        ZA{"i-South Africa"}
+        ZA{"iNingizimu Afrika"}
         ZM{"i-Zambia"}
         ZW{"iZimbabwe"}
         ZZ{"iSifunda esingaziwa"}
@@ -305,5 +306,5 @@ zu{
         CZ{"i-Czech Republic"}
         TL{"i-East Timor"}
     }
-    Version{"2.1.31.74"}
+    Version{"2.1.37.1"}
 }

@@ -106,6 +106,7 @@ lt{
         ES{"Ispanija"}
         ET{"Etiopija"}
         EU{"Europos Sąjunga"}
+        EZ{"euro zona"}
         FI{"Suomija"}
         FJ{"Fidžis"}
         FK{"Folklando (Malvinų) Salos"}
@@ -302,6 +303,7 @@ lt{
         CD{"Kongo Demokratinė Respublika"}
         CG{"Kongo Respublika"}
         CI{"Dramblio Kaulo Kranto Respublika"}
+        CZ{"Čekijos Respublika"}
     }
-    Version{"2.1.32.59"}
+    Version{"2.1.37.5"}
 }

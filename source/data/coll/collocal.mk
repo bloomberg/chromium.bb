@@ -40,21 +40,26 @@ COLLATION_EMPTY_SOURCE =
 
 
 # Ordinary resources
-# am and sw are not listed here because we don't have the tailoring
-# for them.
-COLLATION_SOURCE = $(COLLATION_EMPTY_SOURCE) ar.txt bg.txt\
- ca.txt cs.txt da.txt\
- de.txt de_AT.txt el.txt en.txt en_US.txt\
- es.txt et.txt fi.txt fil.txt\
- fr.txt fr_CA.txt he.txt\
- hi.txt hr.txt hu.txt id.txt it.txt\
+COLLATION_SOURCE = $(COLLATION_EMPTY_SOURCE)\
+ am.txt ar.txt\
+ bg.txt bn.txt ca.txt\
+ cs.txt\
+ da.txt de.txt de_AT.txt\
+ el.txt en.txt en_US.txt es.txt et.txt\
+ fa.txt fi.txt fil.txt\
+ fr.txt fr_CA.txt\
+ gu.txt\
+ he.txt hi.txt hr.txt hu.txt\
+ id.txt it.txt\
  ja.txt\
- ko.txt lt.txt lv.txt\
+ kn.txt ko.txt\
+ lt.txt lv.txt\
+ ml.txt mr.txt ms.txt\
  nb.txt nn.txt\
- pl.txt\
- ro.txt ru.txt sk.txt sl.txt\
- sr.txt sr_Latn.txt sv.txt\
- th.txt tr.txt uk.txt vi.txt zh.txt\
- zh_Hant.txt\
- bn.txt gu.txt kn.txt ml.txt mr.txt ms.txt ta.txt te.txt\
- fa.txt
+ pl.txt pt.txt\
+ ro.txt ru.txt\
+ sk.txt sl.txt sr.txt sr_Latn.txt sv.txt sw.txt\
+ ta.txt te.txt th.txt tr.txt\
+ uk.txt\
+ vi.txt\
+ zh.txt zh_Hant.txt

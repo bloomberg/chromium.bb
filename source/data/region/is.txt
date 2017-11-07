@@ -106,6 +106,7 @@ is{
         ES{"Spánn"}
         ET{"Eþíópía"}
         EU{"Evrópusambandið"}
+        EZ{"Evrusvæðið"}
         FI{"Finnland"}
         FJ{"Fídjíeyjar"}
         FK{"Falklandseyjar (Malvinas)"}
@@ -295,7 +296,7 @@ is{
     }
     Countries%short{
         GB{"Bretland"}
-        UN{"Sameinuðu þjóðirnar"}
+        UN{"SÞ"}
         US{"BNA"}
     }
     Countries%variant{
@@ -303,5 +304,5 @@ is{
         CG{"Kongó (Lýðveldið)"}
         TL{"Austur-Tímor"}
     }
-    Version{"2.1.32.59"}
+    Version{"2.1.37.5"}
 }

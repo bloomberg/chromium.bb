@@ -106,6 +106,7 @@ de{
         ES{"Spanien"}
         ET{"Äthiopien"}
         EU{"Europäische Union"}
+        EZ{"Eurozone"}
         FI{"Finnland"}
         FJ{"Fidschi"}
         FK{"Falklandinseln (Malwinen)"}
@@ -239,7 +240,7 @@ de{
         SG{"Singapur"}
         SH{"St. Helena"}
         SI{"Slowenien"}
-        SJ{"Spitzbergen"}
+        SJ{"Spitzbergen und Jan Mayen"}
         SK{"Slowakei"}
         SL{"Sierra Leone"}
         SM{"San Marino"}
@@ -260,7 +261,7 @@ de{
         TH{"Thailand"}
         TJ{"Tadschikistan"}
         TK{"Tokelau"}
-        TL{"Osttimor"}
+        TL{"Timor-Leste"}
         TM{"Turkmenistan"}
         TN{"Tunesien"}
         TO{"Tonga"}
@@ -303,6 +304,7 @@ de{
         CG{"Kongo (Republik)"}
         CI{"Elfenbeinküste"}
         CZ{"Tschechische Republik"}
+        TL{"Osttimor"}
     }
-    Version{"2.1.32.59"}
+    Version{"2.1.37.11"}
 }

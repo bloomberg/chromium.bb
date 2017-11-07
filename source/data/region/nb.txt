@@ -106,6 +106,7 @@ nb{
         ES{"Spania"}
         ET{"Etiopia"}
         EU{"EU"}
+        EZ{"eurosonen"}
         FI{"Finland"}
         FJ{"Fiji"}
         FK{"Falklandsøyene (Islas Malvinas)"}
@@ -217,7 +218,7 @@ nb{
         PH{"Filippinene"}
         PK{"Pakistan"}
         PL{"Polen"}
-        PM{"St. Pierre og Miquelon"}
+        PM{"Saint-Pierre-et-Miquelon"}
         PN{"Pitcairn"}
         PR{"Puerto Rico"}
         PS{"Palestina"}
@@ -301,7 +302,6 @@ nb{
     Countries%variant{
         CD{"Den demokratiske republikken Kongo"}
         CG{"Republikken Kongo"}
-        CZ{"Den tsjekkiske republikk"}
     }
-    Version{"2.1.32.59"}
+    Version{"2.1.37.5"}
 }

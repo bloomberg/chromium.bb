@@ -139,7 +139,7 @@ pl{
         dav{"taita"}
         de{"niemiecki"}
         de_AT{"austriacki niemiecki"}
-        de_CH{"wysokoniemiecki (Szwajcaria)"}
+        de_CH{"szwajcarski wysokoniemiecki"}
         del{"delaware"}
         den{"slave"}
         dgr{"dogrib"}
@@ -339,6 +339,7 @@ pl{
         ln{"lingala"}
         lo{"laotański"}
         lol{"mongo"}
+        lou{"kreolski luizjański"}
         loz{"lozi"}
         lrc{"luryjski północny"}
         lt{"litewski"}
@@ -847,6 +848,7 @@ pl{
         }
         collation{
             big5han{"chiński tradycyjny porządek sortowania - Big5"}
+            compat{"poprzedni porządek sortowania, dla zgodności"}
             dictionary{"sortowanie słownikowe"}
             ducet{"domyślne sortowanie Unicode"}
             eor{"europejskie reguły określania kolejności"}
@@ -863,8 +865,8 @@ pl{
             unihan{"sortowanie wg kluczy i ich liczby kresek"}
         }
         d0{
-            fwidth{"Pełna szerokość"}
-            hwidth{"Połowa szerokości"}
+            fwidth{"pełna szerokość"}
+            hwidth{"połowa szerokości"}
             npinyin{"Liczbowe"}
         }
         hc{
@@ -963,7 +965,7 @@ pl{
         VALENCIA{"walencki"}
         WADEGILE{"latynizacja Wade’a i Gilesa"}
     }
-    Version{"2.1.32.59"}
+    Version{"2.1.37.5"}
     characterLabelPattern{
         all{"{0} — wszystko"}
         category-list{"{0}: {1}"}

@@ -106,6 +106,7 @@ uz{
         ES{"Ispaniya"}
         ET{"Efiopiya"}
         EU{"Yevropa Ittifoqi"}
+        EZ{"yevrozona"}
         FI{"Finlandiya"}
         FJ{"Fiji"}
         FK{"Folklend (Malvin) orollari"}
@@ -239,7 +240,7 @@ uz{
         SG{"Singapur"}
         SH{"Muqaddas Yelena oroli"}
         SI{"Sloveniya"}
-        SJ{"Svalbard va Yan-Mayen"}
+        SJ{"Shpitsbergen va Yan-Mayen"}
         SK{"Slovakiya"}
         SL{"Syerra-Leone"}
         SM{"San-Marino"}
@@ -305,5 +306,5 @@ uz{
         CZ{"Chexiya Respublikasi"}
         TL{"Sharqiy Timor"}
     }
-    Version{"2.1.32.60"}
+    Version{"2.1.37.1"}
 }

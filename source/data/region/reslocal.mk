@@ -39,7 +39,7 @@ REGION_SOURCE =\
  fa.txt\
  fi.txt\
  fil.txt\
- fr.txt\
+ fr.txt fr_CA.txt\
  gu.txt\
  he.txt\
  hi.txt\

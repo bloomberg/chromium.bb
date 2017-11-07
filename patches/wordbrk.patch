@@ -1,8 +1,8 @@
 diff --git a/source/data/brkitr/rules/word.txt b/source/data/brkitr/rules/word.txt
-index 742d8f8f..83dd490e 100644
+index 617205de..665758c0 100644
 --- a/source/data/brkitr/rules/word.txt
 +++ b/source/data/brkitr/rules/word.txt
-@@ -40,10 +40,16 @@ $Hebrew_Letter      = [\p{Word_Break = Hebrew_Letter}];
+@@ -41,10 +41,16 @@ $Hebrew_Letter      = [\p{Word_Break = Hebrew_Letter}];
  $ALetter            = [\p{Word_Break = ALetter}];
  $Single_Quote       = [\p{Word_Break = Single_Quote}];
  $Double_Quote       = [\p{Word_Break = Double_Quote}];
