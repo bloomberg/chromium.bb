@@ -30,6 +30,7 @@ SYMBOLIZATION_TIMEOUT_SECS = 10
 GUEST_NET = '192.168.3.0/24'
 GUEST_IP_ADDRESS = '192.168.3.9'
 HOST_IP_ADDRESS = '192.168.3.2'
+GUEST_MAC_ADDRESS = '52:54:00:63:5e:7b'
 
 # A string used to uniquely identify this invocation of Fuchsia.
 INSTANCE_ID = str(uuid.uuid1())
@@ -520,7 +521,6 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
         # testserver running on the host.
         '-netdev', 'user,id=net0,net=%s,dhcpstart=%s,host=%s' %
             (GUEST_NET, GUEST_IP_ADDRESS, HOST_IP_ADDRESS),
-        '-device', 'e1000,netdev=net0,mac=52:54:00:63:5e:7b',
 
         # Use stdio for the guest OS only; don't attach the QEMU interactive
         # monitor.
@@ -539,6 +539,7 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
       qemu_command.extend([
           '-machine','virt',
           '-cpu', 'cortex-a53',
+          '-device', 'virtio-net-pci,netdev=net0,mac=' + GUEST_MAC_ADDRESS,
       ])
       if platform.machine() == 'aarch64':
         qemu_command.append('-enable-kvm')
@@ -546,6 +547,7 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
       qemu_command.extend([
           '-machine', 'q35',
           '-cpu', 'host,migratable=no',
+          '-device', 'e1000,netdev=net0,mac=' + GUEST_MAC_ADDRESS,
       ])
       if platform.machine() == 'x86_64':
         qemu_command.append('-enable-kvm')
