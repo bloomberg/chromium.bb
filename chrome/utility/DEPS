@@ -40,5 +40,10 @@ specific_include_rules = {
     "+mash/quick_launch/quick_launch.h",
     "+services/ui/public",
     "+services/ui/service.h",
+  ],
+  # Needed until utility process launching has been moved to the service
+  # manager.
+  "chrome_content_utility_client.cc": [
+    "+services/service_manager/sandbox/switches.h",
   ]
 }

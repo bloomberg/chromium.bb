@@ -19,6 +19,10 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kServiceSandboxType[];
 // Must be in sync with "sandbox_type" values as used in service manager's
 // manifest.json catalog files.
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoneSandbox[];
+#if defined(OS_WIN)
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char
+    kNoneSandboxAndElevatedPrivileges[];
+#endif
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNetworkSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilitySandbox[];
@@ -45,6 +49,10 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kRendererProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilityProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoSandbox[];
+#if defined(OS_WIN)
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char
+    kNoSandboxAndElevatedPrivileges[];
+#endif
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableSandboxLogging[];
 
 }  // namespace switches

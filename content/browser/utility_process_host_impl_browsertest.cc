@@ -33,7 +33,8 @@ class UtilityProcessHostImplBrowserTest : public ContentBrowserTest {
     host->SetName(base::ASCIIToUTF16("TestProcess"));
 #if defined(OS_WIN)
     if (elevated)
-      host->ElevatePrivileges();
+      host->SetSandboxType(service_manager::SandboxType::
+                               SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES);
 #endif
     EXPECT_TRUE(host->Start());
 

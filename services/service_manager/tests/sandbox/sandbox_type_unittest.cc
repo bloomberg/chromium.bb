@@ -5,6 +5,7 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,6 +17,15 @@ TEST(SandboxTypeTest, Empty) {
 
   command_line.AppendSwitchASCII(switches::kServiceSandboxType, "network");
   EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX, SandboxTypeFromCommandLine(command_line));
+
+#if defined(OS_WIN)
+  EXPECT_FALSE(
+      command_line.HasSwitch(switches::kNoSandboxAndElevatedPrivileges));
+  SetCommandLineFlagsForSandboxType(
+      &command_line, SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES);
+  EXPECT_EQ(SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES,
+            SandboxTypeFromCommandLine(command_line));
+#endif
 
   EXPECT_FALSE(command_line.HasSwitch(switches::kNoSandbox));
   SetCommandLineFlagsForSandboxType(&command_line, SANDBOX_TYPE_NO_SANDBOX);

@@ -62,11 +62,6 @@ class UtilityProcessHost : public IPC::Sender {
   // SANDBOX_TYPE_NO_SANDBOX is specified.
   virtual void SetSandboxType(service_manager::SandboxType sandbox_type) = 0;
 
-#if defined(OS_WIN)
-  // Make the process run elevated.
-  virtual void ElevatePrivileges() = 0;
-#endif
-
   // Returns information about the utility child process.
   virtual const ChildProcessData& GetData() = 0;
 
