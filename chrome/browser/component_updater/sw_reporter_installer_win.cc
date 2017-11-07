@@ -21,6 +21,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
@@ -475,12 +476,10 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
       is_x86_architecture;
 
   // Install the component.
-  std::unique_ptr<ComponentInstallerPolicy> policy =
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
       std::make_unique<SwReporterInstallerPolicy>(
           base::Bind(&RunSwReportersAfterStartup),
-          is_experimental_engine_supported);
-  // |cus| will take ownership of |installer| during installer->Register(cus).
-  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
+          is_experimental_engine_supported));
   installer->Register(cus, base::OnceClosure());
 }
 

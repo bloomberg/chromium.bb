@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
@@ -151,10 +152,9 @@ void RegisterSubresourceFilterComponent(ComponentUpdateService* cus) {
           subresource_filter::kSafeBrowsingSubresourceFilter)) {
     return;
   }
-  std::unique_ptr<ComponentInstallerPolicy> policy =
-      std::make_unique<SubresourceFilterComponentInstallerPolicy>();
-  // |cus| will take ownership of |installer| during installer->Register(cus).
-  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
+
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
+      std::make_unique<SubresourceFilterComponentInstallerPolicy>());
   installer->Register(cus, base::OnceClosure());
 }
 

@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/version.h"
@@ -23,6 +24,7 @@
 using component_updater::ComponentUpdateService;
 
 namespace {
+
 const base::FilePath::CharType kFileTypePoliciesBinaryPbFileName[] =
     FILE_PATH_LITERAL("download_file_types.pb");
 
@@ -127,11 +129,8 @@ FileTypePoliciesComponentInstallerPolicy::GetMimeTypes() const {
 void RegisterFileTypePoliciesComponent(ComponentUpdateService* cus,
                                        const base::FilePath& user_data_dir) {
   VLOG(1) << "Registering File Type Policies component.";
-
-  std::unique_ptr<ComponentInstallerPolicy> policy =
-      std::make_unique<FileTypePoliciesComponentInstallerPolicy>();
-  // |cus| will take ownership of |installer| during installer->Register(cus).
-  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
+      std::make_unique<FileTypePoliciesComponentInstallerPolicy>());
   installer->Register(cus, base::OnceClosure());
 }
 

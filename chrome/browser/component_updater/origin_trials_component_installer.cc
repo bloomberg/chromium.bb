@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -143,10 +144,8 @@ std::vector<std::string> OriginTrialsComponentInstallerPolicy::GetMimeTypes()
 
 void RegisterOriginTrialsComponent(ComponentUpdateService* cus,
                                    const base::FilePath& user_data_dir) {
-  std::unique_ptr<ComponentInstallerPolicy> policy =
-      std::make_unique<OriginTrialsComponentInstallerPolicy>();
-  // |cus| will take ownership of |installer| during installer->Register(cus).
-  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
+      std::make_unique<OriginTrialsComponentInstallerPolicy>());
   installer->Register(cus, base::OnceClosure());
 }
 

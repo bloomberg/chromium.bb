@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/component_updater/component_installer.h"
@@ -126,9 +127,8 @@ std::vector<std::string> CRLSetPolicy::GetMimeTypes() const {
 
 void RegisterCRLSetComponent(ComponentUpdateService* cus,
                              const base::FilePath& user_data_dir) {
-  // |cus| will take ownership of |installer| during installer->Register(cus).
-  ComponentInstaller* installer =
-      new ComponentInstaller(std::make_unique<CRLSetPolicy>());
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
+      std::make_unique<CRLSetPolicy>());
   installer->Register(cus, base::OnceClosure());
 }
 
