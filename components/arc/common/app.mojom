@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 25
+// Next MinVersion: 26
 
 module arc.mojom;
 
@@ -55,6 +55,8 @@ struct ArcPackageInfo {
   int64 last_backup_time;
   bool sync;  // true if package installation should be synced
   [MinVersion=11] bool system;  // true if package is system package.
+  // true if package registers VPNService intent.
+  [MinVersion=25] bool vpn_provider;
 };
 
 // Describes ARC app shortcut.
