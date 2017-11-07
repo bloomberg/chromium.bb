@@ -19,10 +19,15 @@ class BrowserView;
 // A container for hosted app buttons in the title bar.
 class HostedAppButtonContainer : public views::View {
  public:
-  // |use_light| determines whether the buttons contained in the frame will use
-  // dark or light colors for drawing their button images.
-  HostedAppButtonContainer(BrowserView* browser_view, bool use_light);
+  // |active_icon_color| and |inactive_icon_color| indicate the colors to use
+  // for button icons when the window is focused and blurred respectively.
+  HostedAppButtonContainer(BrowserView* browser_view,
+                           SkColor active_icon_color,
+                           SkColor inactive_icon_color);
   ~HostedAppButtonContainer() override;
+
+  // Sets the container to paints its buttons the active/inactive color.
+  void SetPaintAsActive(bool active);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HostedAppNonClientFrameViewAshTest, HostedAppFrame);
@@ -31,8 +36,11 @@ class HostedAppButtonContainer : public views::View {
   class AppMenuButton : public views::MenuButton,
                         public views::MenuButtonListener {
    public:
-    AppMenuButton(BrowserView* browser_view, bool use_light);
+    explicit AppMenuButton(BrowserView* browser_view);
     ~AppMenuButton() override;
+
+    // Sets the color of the menu button icon.
+    void SetIconColor(SkColor color);
 
     // views::MenuButtonListener:
     void OnMenuButtonClicked(views::MenuButton* source,
@@ -53,6 +61,13 @@ class HostedAppButtonContainer : public views::View {
 
     DISALLOW_COPY_AND_ASSIGN(AppMenuButton);
   };
+
+  // The containing browser view.
+  BrowserView* browser_view_;
+
+  // Button colors.
+  const SkColor active_icon_color_;
+  const SkColor inactive_icon_color_;
 
   // Owned by the views hierarchy.
   AppMenuButton* app_menu_button_;

@@ -245,7 +245,11 @@ SkColor DefaultHeaderPainter::GetInactiveFrameColor() const {
   return inactive_frame_color_;
 }
 
-bool DefaultHeaderPainter::ShouldUseLightImages() {
+SkColor DefaultHeaderPainter::GetTitleColor() const {
+  return ShouldUseLightImages() ? kLightTitleTextColor : kTitleTextColor;
+}
+
+bool DefaultHeaderPainter::ShouldUseLightImages() const {
   return color_utils::IsDark(mode_ == MODE_INACTIVE ? inactive_frame_color_
                                                     : active_frame_color_);
 }
@@ -303,8 +307,7 @@ void DefaultHeaderPainter::PaintTitleBar(gfx::Canvas* canvas) {
   title_bounds.set_x(view_->GetMirroredXForRect(title_bounds));
   canvas->DrawStringRectWithFlags(
       frame_->widget_delegate()->GetWindowTitle(), GetTitleFontList(),
-      ShouldUseLightImages() ? kLightTitleTextColor : kTitleTextColor,
-      title_bounds, gfx::Canvas::NO_SUBPIXEL_RENDERING);
+      GetTitleColor(), title_bounds, gfx::Canvas::NO_SUBPIXEL_RENDERING);
 }
 
 void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {

@@ -66,9 +66,12 @@ class ASH_EXPORT DefaultHeaderPainter : public HeaderPainter,
   SkColor GetActiveFrameColor() const;
   SkColor GetInactiveFrameColor() const;
 
+  // Gets the color of the title text.
+  SkColor GetTitleColor() const;
+
   // Whether light caption images should be used. This is the case when the
   // background of the frame is dark.
-  bool ShouldUseLightImages();
+  bool ShouldUseLightImages() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DefaultHeaderPainterTest, BackButtonAlignment);
