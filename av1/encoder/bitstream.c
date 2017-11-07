@@ -2532,6 +2532,9 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_LOOP_RESTORATION
 static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
+#if CONFIG_INTRABC
+  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
+#endif  // CONFIG_INTRABC
   for (int p = 0; p < MAX_MB_PLANE; ++p) {
     RestorationInfo *rsi = &cm->rst_info[p];
     switch (rsi->frame_restoration_type) {
@@ -2693,6 +2696,9 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
 #endif  // CONFIG_LOOP_RESTORATION
 
 static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
+#if CONFIG_INTRABC
+  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
+#endif  // CONFIG_INTRABC
   int i;
   struct loopfilter *lf = &cm->lf;
 
@@ -2743,6 +2749,9 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 
 #if CONFIG_CDEF
 static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
+#if CONFIG_INTRABC
+  if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
+#endif  // CONFIG_INTRABC
   int i;
 #if CONFIG_CDEF_SINGLEPASS
   aom_wb_write_literal(wb, cm->cdef_pri_damping - 3, 2);
