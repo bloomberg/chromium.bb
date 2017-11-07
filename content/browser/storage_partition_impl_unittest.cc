@@ -23,7 +23,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/test/mock_leveldb_database.h"
+#include "content/test/fake_leveldb_database.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
@@ -266,7 +266,7 @@ class RemoveLocalStorageTester {
   content::DOMStorageContext* dom_storage_context_;
 
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
-  MockLevelDBDatabase mock_db_;
+  FakeLevelDBDatabase mock_db_;
   mojo::AssociatedBinding<leveldb::mojom::LevelDBDatabase> db_binding_;
 
   std::vector<content::LocalStorageUsageInfo> infos_;

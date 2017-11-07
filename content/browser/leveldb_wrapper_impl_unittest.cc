@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/test/mock_leveldb_database.h"
+#include "content/test/fake_leveldb_database.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -243,7 +243,7 @@ class LevelDBWrapperImplTest : public testing::Test,
 
   TestBrowserThreadBundle thread_bundle_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
-  MockLevelDBDatabase db_;
+  FakeLevelDBDatabase db_;
   MockDelegate delegate_;
   std::unique_ptr<LevelDBWrapperImpl> level_db_wrapper_;
   mojom::LevelDBWrapperPtr level_db_wrapper_ptr_;

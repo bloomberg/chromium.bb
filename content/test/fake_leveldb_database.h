@@ -2,22 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_TEST_MOCK_LEVELDB_DATABASE_H_
-#define CONTENT_TEST_MOCK_LEVELDB_DATABASE_H_
+#ifndef CONTENT_TEST_FAKE_LEVELDB_DATABASE_H_
+#define CONTENT_TEST_FAKE_LEVELDB_DATABASE_H_
 
+#include "base/memory/ref_counted.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
 
 // Simple implementation of the leveldb::mojom::LevelDBDatabase interface that
 // is backed by a std::map.
 
-class MockLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
+class FakeLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
  public:
   // |mock_data| must not be null and must outlive this MockLevelDBDatabase
-  // instance.
-  explicit MockLevelDBDatabase(
+  // instance. All callbacks are called synchronously.
+  explicit FakeLevelDBDatabase(
       std::map<std::vector<uint8_t>, std::vector<uint8_t>>* mock_data);
+  ~FakeLevelDBDatabase() override;
+
+  void Bind(leveldb::mojom::LevelDBDatabaseRequest request);
 
   // LevelDBDatabase:
   void Put(const std::vector<uint8_t>& key,
@@ -55,9 +60,11 @@ class MockLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
                     IteratorPrevCallback callback) override;
 
  private:
+  mojo::BindingSet<leveldb::mojom::LevelDBDatabase> bindings_;
+
   std::map<std::vector<uint8_t>, std::vector<uint8_t>>& mock_data_;
 };
 
 }  // namespace content
 
-#endif  // CONTENT_TEST_MOCK_LEVELDB_DATABASE_H_
+#endif  // CONTENT_TEST_FAKE_LEVELDB_DATABASE_H_
