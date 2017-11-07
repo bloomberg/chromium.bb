@@ -15,8 +15,8 @@
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_fake.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest_mac.h"
@@ -150,8 +150,8 @@ TEST_F(ReSignInInfoBarDelegateTest, TestAccept) {
           chrome_browser_state_.get());
   authService->SetPromptForSignIn(true);
 
-  id dispatcher = OCMProtocolMock(@protocol(ApplicationCommands));
-  [[dispatcher expect]
+  id presenter = OCMProtocolMock(@protocol(SigninPresenter));
+  [[presenter expect]
       showSignin:[OCMArg checkWithBlock:^BOOL(id command) {
         EXPECT_TRUE([command isKindOfClass:[ShowSigninCommand class]]);
         EXPECT_EQ(AUTHENTICATION_OPERATION_REAUTHENTICATE,
@@ -161,7 +161,7 @@ TEST_F(ReSignInInfoBarDelegateTest, TestAccept) {
 
   std::unique_ptr<infobars::InfoBar> infobar(
       CreateConfirmInfoBar(ReSignInInfoBarDelegate::CreateInfoBarDelegate(
-          chrome_browser_state_.get(), dispatcher)));
+          chrome_browser_state_.get(), presenter)));
   InfoBarIOS* infobarIOS = static_cast<InfoBarIOS*>(infobar.get());
   infobarIOS->Layout(CGRectZero);
 
@@ -178,12 +178,12 @@ TEST_F(ReSignInInfoBarDelegateTest, TestInfoBarDismissed) {
           chrome_browser_state_.get());
   authService->SetPromptForSignIn(true);
 
-  id dispatcher = OCMProtocolMock(@protocol(ApplicationCommands));
-  [[dispatcher reject] showSignin:[OCMArg any]];
+  id presenter = OCMProtocolMock(@protocol(SigninPresenter));
+  [[presenter reject] showSignin:[OCMArg any]];
 
   std::unique_ptr<infobars::InfoBar> infobar(
       CreateConfirmInfoBar(ReSignInInfoBarDelegate::CreateInfoBarDelegate(
-          chrome_browser_state_.get(), dispatcher)));
+          chrome_browser_state_.get(), presenter)));
   InfoBarIOS* infobarIOS = static_cast<InfoBarIOS*>(infobar.get());
   infobarIOS->Layout(CGRectZero);
 

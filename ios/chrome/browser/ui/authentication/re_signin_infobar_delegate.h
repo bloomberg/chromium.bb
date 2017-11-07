@@ -12,7 +12,7 @@
 #include "components/infobars/core/infobar.h"
 #include "ui/gfx/image/image.h"
 
-@protocol ApplicationCommands;
+@protocol SigninPresenter;
 
 namespace infobars {
 class InfoBarManager;
@@ -28,25 +28,25 @@ class ChromeBrowserState;
 class ReSignInInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   ReSignInInfoBarDelegate(ios::ChromeBrowserState* browser_state,
-                          id<ApplicationCommands> dispatcher);
+                          id<SigninPresenter> presenter);
   ~ReSignInInfoBarDelegate() override;
 
   // Creates a re-sign-in error infobar and adds it to the |tab|. Returns
   // whether the infobar was actually added.
   static bool Create(ios::ChromeBrowserState* browser_state,
                      Tab* tab,
-                     id<ApplicationCommands> dispatcher);
+                     id<SigninPresenter> presenter);
 
   // Creates a re-sign-in error infobar, but does not add it to tab content.
   static std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       infobars::InfoBarManager* infobar_manager,
       ios::ChromeBrowserState* browser_state,
-      id<ApplicationCommands> dispatcher);
+      id<SigninPresenter> presenter);
 
   // Creates a re-sign-in error infobar delegate, visible for testing.
   static std::unique_ptr<ReSignInInfoBarDelegate> CreateInfoBarDelegate(
       ios::ChromeBrowserState* browser_state,
-      id<ApplicationCommands> dispatcher);
+      id<SigninPresenter> presenter);
 
   // InfobarDelegate implementation.
   InfoBarIdentifier GetIdentifier() const override;
@@ -62,7 +62,7 @@ class ReSignInInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   ios::ChromeBrowserState* browser_state_;
   gfx::Image icon_;
-  id<ApplicationCommands> dispatcher_;
+  id<SigninPresenter> presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(ReSignInInfoBarDelegate);
 };
