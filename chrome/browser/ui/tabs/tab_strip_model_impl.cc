@@ -992,6 +992,13 @@ void TabStripModelImpl::ExecuteContextMenuCommand(
     case CommandToggleSiteMuted: {
       const std::vector<int>& indices = GetIndicesForCommand(context_index);
       const bool mute = WillContextMenuMuteSites(context_index);
+      if (mute) {
+        base::RecordAction(
+            UserMetricsAction("SoundContentSetting.MuteBy.TabStrip"));
+      } else {
+        base::RecordAction(
+            UserMetricsAction("SoundContentSetting.UnmuteBy.TabStrip"));
+      }
       chrome::SetSitesMuted(*this, indices, mute);
       break;
     }

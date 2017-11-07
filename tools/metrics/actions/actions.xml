@@ -17236,6 +17236,82 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="SoundContentSetting.MuteBy.DefaultSwitch">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    User muted all sites by changing the default sound setting from the content
+    settings privacy page (Desktop) or the SingleCategoryPreferences page
+    (Android).
+  </description>
+</action>
+
+<action name="SoundContentSetting.MuteBy.PageInfo">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>User muted site via the Page Info bubble.</description>
+</action>
+
+<action name="SoundContentSetting.MuteBy.PatternException">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    User muted site via adding/removing a pattern exception from the content
+    settings privacy page (Desktop) or the SingleCategoryPreferences page
+    (Android).
+  </description>
+</action>
+
+<action name="SoundContentSetting.MuteBy.SiteSettings">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>User muted site via the site settings page.</description>
+</action>
+
+<action name="SoundContentSetting.MuteBy.TabStrip">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>User muted site via the tab strip.</description>
+</action>
+
+<action name="SoundContentSetting.UnmuteBy.DefaultSwitch">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    User unmuted all sites by changing the default sound setting from the
+    content settings privacy page (Desktop) or the SingleCategoryPreferences
+    page (Android).
+  </description>
+</action>
+
+<action name="SoundContentSetting.UnmuteBy.PageInfo">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>User unmuted site via the Page Info bubble.</description>
+</action>
+
+<action name="SoundContentSetting.UnmuteBy.PatternException">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    User unmuted site via adding/removing a pattern exception from the content
+    settings privacy page (Desktop) or the SingleCategoryPreferences page
+    (Android).
+  </description>
+</action>
+
+<action name="SoundContentSetting.UnmuteBy.SiteSettings">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>User unmuted site via the site settings page.</description>
+</action>
+
+<action name="SoundContentSetting.UnmuteBy.TabStrip">
+  <owner>steimel@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>User unmuted site via the tab strip.</description>
+</action>
+
 <action name="StackedTab_DragActiveTab">
   <owner>bruthig@chromium.org</owner>
   <owner>tdanderson@chromium.org</owner>

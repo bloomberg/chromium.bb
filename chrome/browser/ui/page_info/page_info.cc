@@ -16,6 +16,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -418,6 +419,21 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
   // total count of permission changes in another histogram makes it easier to
   // compare it against other kinds of actions in Page Info.
   RecordPageInfoAction(PAGE_INFO_CHANGED_PERMISSION);
+  if (type == CONTENT_SETTINGS_TYPE_SOUND) {
+    ContentSetting default_setting =
+        content_settings_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SOUND,
+                                                    nullptr);
+    bool mute = (setting == CONTENT_SETTING_BLOCK) ||
+                (setting == CONTENT_SETTING_DEFAULT &&
+                 default_setting == CONTENT_SETTING_BLOCK);
+    if (mute) {
+      base::RecordAction(
+          base::UserMetricsAction("SoundContentSetting.MuteBy.PageInfo"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("SoundContentSetting.UnmuteBy.PageInfo"));
+    }
+  }
 
   PermissionUtil::ScopedRevocationReporter scoped_revocation_reporter(
       profile_, site_url_, site_url_, type, PermissionSourceUI::OIB);

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.util.MathUtils;
 
@@ -299,8 +300,14 @@ public class Website implements Serializable {
      * Configure Sound permission access setting for this site.
      */
     public void setSoundPermission(ContentSetting value) {
-        if (mSoundException != null) {
-            mSoundException.setContentSetting(value);
+        if (mSoundException == null) {
+            return;
+        }
+        mSoundException.setContentSetting(value);
+        if (value == ContentSetting.BLOCK) {
+            RecordUserAction.record("SoundContentSetting.MuteBy.SiteSettings");
+        } else {
+            RecordUserAction.record("SoundContentSetting.UnmuteBy.SiteSettings");
         }
     }
 
