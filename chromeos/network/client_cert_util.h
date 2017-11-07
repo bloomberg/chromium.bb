@@ -20,7 +20,7 @@ class DictionaryValue;
 namespace net {
 struct CertPrincipal;
 class X509Certificate;
-typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
+typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
 }
 
 namespace chromeos {

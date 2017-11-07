@@ -279,8 +279,7 @@ RepairParams ExpectStrictNotValid(const std::string& strict_repaired) {
 // that the validator returns NULL and the result INVALID.
 class ONCValidatorTestRepairable
     : public ONCValidatorTest,
-      public ::testing::WithParamInterface<std::pair<OncParams,
-                                                     RepairParams> > {
+      public ::testing::WithParamInterface<std::pair<OncParams, RepairParams>> {
  public:
   // Load the common test data and return the dictionary at the field with
   // name |name|.

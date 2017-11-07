@@ -159,7 +159,7 @@ class CHROMEOS_EXPORT ShillPropertyHandler
                          const base::Value& value) override;
 
  private:
-  typedef std::map<ManagedState::ManagedType, std::set<std::string> >
+  typedef std::map<ManagedState::ManagedType, std::set<std::string>>
       TypeRequestMap;
 
   // Callback for dbus method fetching properties.

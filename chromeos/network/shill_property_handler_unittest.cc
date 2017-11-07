@@ -145,10 +145,10 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   }
 
   // Map of list-type -> paths
-  std::map<std::string, std::vector<std::string> > entries_;
+  std::map<std::string, std::vector<std::string>> entries_;
   // Map of list-type -> map of paths -> update counts
-  std::map<std::string, std::map<std::string, int> > property_updates_;
-  std::map<std::string, std::map<std::string, int> > initial_property_updates_;
+  std::map<std::string, std::map<std::string, int>> property_updates_;
+  std::map<std::string, std::map<std::string, int>> initial_property_updates_;
   // Map of list-type -> list update counts
   std::map<std::string, int > list_updates_;
   int technology_list_updates_;
