@@ -6,11 +6,23 @@
 
 #include <utility>
 
+#include "services/metrics/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
+
 namespace ukm {
 
 MojoUkmRecorder::MojoUkmRecorder(mojom::UkmRecorderInterfacePtr interface)
     : interface_(std::move(interface)) {}
 MojoUkmRecorder::~MojoUkmRecorder() = default;
+
+// static
+std::unique_ptr<MojoUkmRecorder> MojoUkmRecorder::Create(
+    service_manager::Connector* connector) {
+  ukm::mojom::UkmRecorderInterfacePtr interface;
+  connector->BindInterface(metrics::mojom::kMetricsServiceName,
+                           mojo::MakeRequest(&interface));
+  return base::MakeUnique<MojoUkmRecorder>(std::move(interface));
+}
 
 void MojoUkmRecorder::UpdateSourceURL(SourceId source_id, const GURL& url) {
   interface_->UpdateSourceURL(source_id, url.spec());

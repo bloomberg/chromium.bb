@@ -8,28 +8,30 @@
 #include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 
 namespace ukm {
-
 class UkmRecorder;
+}
 
-class UkmInterface : public mojom::UkmRecorderInterface {
+namespace metrics {
+
+class UkmRecorderInterface : public ukm::mojom::UkmRecorderInterface {
  public:
-  UkmInterface(UkmRecorder* ukm_recorder, int64_t instance_id);
-  ~UkmInterface() override;
+  UkmRecorderInterface(ukm::UkmRecorder* ukm_recorder, int64_t instance_id);
+  ~UkmRecorderInterface() override;
 
-  static void Create(UkmRecorder* ukm_recorder,
-                     mojom::UkmRecorderInterfaceRequest request);
+  static void Create(ukm::UkmRecorder* ukm_recorder,
+                     ukm::mojom::UkmRecorderInterfaceRequest request);
 
  private:
   // ukm::mojom::UkmRecorderInterface:
-  void AddEntry(mojom::UkmEntryPtr entry) override;
+  void AddEntry(ukm::mojom::UkmEntryPtr entry) override;
   void UpdateSourceURL(int64_t source_id, const std::string& url) override;
 
-  UkmRecorder* ukm_recorder_;
+  ukm::UkmRecorder* ukm_recorder_;
   int64_t instance_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(UkmInterface);
+  DISALLOW_COPY_AND_ASSIGN(UkmRecorderInterface);
 };
 
-}  // namespace ukm
+}  // namespace metrics
 
 #endif  // COMPONENTS_UKM_UKM_INTERFACE_H_

@@ -12,7 +12,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/resource_coordinator/public/interfaces/service_callbacks.mojom.h"
 #include "url/gurl.h"
 
 namespace resource_coordinator {
@@ -44,8 +43,6 @@ class ResourceCoordinatorWebContentsObserver
   void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) override;
 
-  void EnsureUkmRecorderInterface();
-  void MaybeSetUkmRecorderInterface(bool ukm_recorder_already_initialized);
   void UpdateUkmRecorder(int64_t navigation_id);
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
 
@@ -70,8 +67,6 @@ class ResourceCoordinatorWebContentsObserver
   // supposed to happen.
   bool first_time_favicon_set_ = false;
   bool first_time_title_set_ = false;
-
-  resource_coordinator::mojom::ServiceCallbacksPtr service_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorWebContentsObserver);
 };

@@ -38,8 +38,6 @@ class ResourceCoordinatorService : public service_manager::Service {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
-  void SetUkmRecorder(std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder);
-
   service_manager::ServiceContextRefFactory* ref_factory() {
     return ref_factory_.get();
   }

@@ -47,11 +47,14 @@ namespace previews {
 class PreviewsUKMObserver;
 }
 
+namespace metrics {
+class UkmRecorderInterface;
+}
+
 namespace ukm {
 
 class DelegatingUkmRecorder;
 class UkmEntryBuilder;
-class UkmInterface;
 class TestRecordingHelper;
 
 namespace internal {
@@ -82,24 +85,24 @@ class METRICS_EXPORT UkmRecorder {
   virtual void UpdateSourceURL(SourceId source_id, const GURL& url) = 0;
 
  private:
-  friend blink::AutoplayUmaHelper;
-  friend cc::UkmManager;
   friend ContextualSearchRankerLoggerImpl;
-  friend PluginInfoMessageFilter;
-  friend UkmPageLoadMetricsObserver;
-  friend LocalNetworkRequestsPageLoadMetricsObserver;
+  friend DelegatingUkmRecorder;
   friend DocumentWritePageLoadMetricsObserver;
   friend FromGWSPageLoadMetricsLogger;
+  friend LocalNetworkRequestsPageLoadMetricsObserver;
+  friend PluginInfoMessageFilter;
   friend ServiceWorkerPageLoadMetricsObserver;
   friend SubresourceFilterMetricsObserver;
   friend TestRecordingHelper;
-  friend UkmInterface;
+  friend UkmPageLoadMetricsObserver;
   friend UseCounterPageLoadMetricsObserver;
+  friend blink::AutoplayUmaHelper;
+  friend cc::UkmManager;
   friend content::RenderWidgetHostLatencyTracker;
+  friend internal::UkmEntryBuilderBase;
+  friend metrics::UkmRecorderInterface;
   friend password_manager::PasswordManagerMetricsRecorder;
   friend previews::PreviewsUKMObserver;
-  friend internal::UkmEntryBuilderBase;
-  friend DelegatingUkmRecorder;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,

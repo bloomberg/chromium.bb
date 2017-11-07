@@ -47,15 +47,14 @@ source_set("lib") {
     "observers/page_signal_generator_impl.h",
     "resource_coordinator_service.cc",
     "resource_coordinator_service.h",
-    "service_callbacks_impl.cc",
-    "service_callbacks_impl.h",
   ]
 
   public_deps = [
     "//base",
-    "//components/ukm:ukm",
     "//mojo/public/cpp/bindings",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/metrics/public/interfaces",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/resource_coordinator/tracing:lib",
     "//services/service_manager/public/cpp/standalone_service:standalone_service",

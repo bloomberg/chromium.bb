@@ -1,0 +1,13 @@
+{
+  "name": "metrics",
+  "display_name": "Metrics Service",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "url_keyed_metrics": [
+          "ukm::mojom::UkmRecorderInterface"
+        ]
+      }
+    }
+  }
+}
