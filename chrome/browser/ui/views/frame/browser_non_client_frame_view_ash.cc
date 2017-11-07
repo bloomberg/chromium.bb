@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/ash_constants.h"
 #include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_back_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -127,8 +128,11 @@ void BrowserNonClientFrameViewAsh::Init() {
       }
       if (extensions::HostedAppBrowserController::
               IsForExperimentalHostedAppBrowser(browser)) {
+        SkColor text_color = header_painter->GetTitleColor();
         hosted_app_button_container_ = new HostedAppButtonContainer(
-            browser_view(), header_painter->ShouldUseLightImages());
+            browser_view(), text_color,
+            SkColorSetA(text_color,
+                        255 * ash::kInactiveFrameButtonIconAlphaRatio));
         caption_button_container_->AddChildViewAt(hosted_app_button_container_,
                                                   0);
       }
@@ -296,6 +300,9 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   const ash::HeaderPainter::Mode header_mode = should_paint_as_active ?
       ash::HeaderPainter::MODE_ACTIVE : ash::HeaderPainter::MODE_INACTIVE;
   header_painter_->PaintHeader(canvas, header_mode);
+
+  if (hosted_app_button_container_)
+    hosted_app_button_container_->SetPaintAsActive(should_paint_as_active);
 
   if (browser_view()->IsToolbarVisible() &&
       !browser_view()->toolbar()->GetPreferredSize().IsEmpty() &&
