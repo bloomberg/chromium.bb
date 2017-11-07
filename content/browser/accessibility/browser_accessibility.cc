@@ -919,10 +919,18 @@ gfx::NativeWindow BrowserAccessibility::GetTopLevelWidget() {
 
 gfx::NativeViewAccessible BrowserAccessibility::GetParent() {
   auto* parent = PlatformGetParent();
-  if (!parent)
+  if (parent)
+    return parent->GetNativeViewAccessible();
+
+  if (!manager_)
     return nullptr;
 
-  return parent->GetNativeViewAccessible();
+  BrowserAccessibilityDelegate* delegate =
+      manager_->GetDelegateFromRootManager();
+  if (!delegate)
+    return nullptr;
+
+  return delegate->AccessibilityGetNativeViewAccessible();
 }
 
 int BrowserAccessibility::GetChildCount() {
