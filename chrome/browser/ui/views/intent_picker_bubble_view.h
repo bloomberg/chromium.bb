@@ -147,9 +147,6 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   gfx::ImageSkia GetAppImageForTesting(size_t index);
   views::InkDropState GetInkDropStateForTesting(size_t);
   void PressButtonForTesting(size_t index, const ui::Event& event);
-  size_t GetScrollViewSizeForTesting() const;
-  std::string GetPackageNameForTesting(size_t index) const;
-  bool GetStayInChromeEnabledForTesting();
 
   static IntentPickerBubbleView* intent_picker_bubble_;
 
