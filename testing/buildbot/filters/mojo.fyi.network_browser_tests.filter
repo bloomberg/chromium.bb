@@ -1918,6 +1918,7 @@
 -CredentialManagerBrowserTest.StoreInUnloadHandler_SameSite_OnDemandMojoPipe
 -DataProxyScriptBrowserTest.Verify
 -DeclarativeContentApiTest.RulesAddedFromManifest
+-DeclarativeNetRequestBrowserTest.*
 -DevToolsExperimentalExtensionTest.TestDevToolsExperimentalExtensionAPI
 -DevToolsExtensionTest.TestDevToolsExtensionAPI
 -DevToolsExtensionTest.TestDevToolsExtensionMessaging
