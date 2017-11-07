@@ -36,8 +36,6 @@
 
 @property(nonatomic, weak) TabModel* tabModel;
 @property(nonatomic, readonly, strong) UIView* view;
-// TODO(crbug.com/778226): Remove this property.
-@property(nonatomic, strong) WebToolbarController* webToolbarController;
 
 // Returns the different protocols and superclass now implemented by the
 // WebToolbarController to avoid using the toolbar directly.

@@ -12,6 +12,12 @@
 #error "This file requires ARC support."
 #endif
 
+@interface LegacyToolbarCoordinator ()
+
+@property(nonatomic, strong) WebToolbarController* webToolbarController;
+
+@end
+
 @implementation LegacyToolbarCoordinator
 @synthesize tabModel = _tabModel;
 @synthesize webToolbarController = _webToolbarController;
