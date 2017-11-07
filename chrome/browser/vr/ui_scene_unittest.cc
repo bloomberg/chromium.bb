@@ -10,12 +10,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/gtest_util.h"
 #include "base/values.h"
+#include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/transient_element.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_transform_operations.h"
 #include "chrome/browser/vr/elements/viewport_aware_root.h"
 #include "chrome/browser/vr/test/animation_utils.h"
+#include "chrome/browser/vr/test/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform_util.h"
@@ -38,6 +40,16 @@ size_t NumElementsInSubtree(UiElement* element) {
   }
   return count;
 }
+
+class AlwaysDirty : public UiElement {
+ public:
+  ~AlwaysDirty() override {}
+
+  bool OnBeginFrame(const base::TimeTicks& time,
+                    const gfx::Vector3dF& look_at) override {
+    return true;
+  }
+};
 
 }  // namespace
 
@@ -116,7 +128,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   gfx::Point3F origin(0, 0, 0);
   gfx::Point3F point(1, 0, 0);
 
-  scene.OnBeginFrame(MicrosecondsToTicks(1), gfx::Vector3dF(0.f, 0.f, -1.0f));
+  scene.OnBeginFrame(MsToTicks(0), kForwardVector);
   child->world_space_transform().TransformPoint(&origin);
   child->world_space_transform().TransformPoint(&point);
   EXPECT_VEC3F_NEAR(gfx::Point3F(6, 10, 0), origin);
@@ -138,7 +150,7 @@ TEST(UiScene, Opacity) {
   element->set_draw_phase(0);
   parent->AddChild(std::move(element));
 
-  scene.OnBeginFrame(MicrosecondsToTicks(0), gfx::Vector3dF(0.f, 0.f, -1.0f));
+  scene.OnBeginFrame(MsToTicks(0), kForwardVector);
   EXPECT_EQ(0.5f, parent->computed_opacity());
   EXPECT_EQ(0.25f, child->computed_opacity());
 }
@@ -167,8 +179,52 @@ TEST(UiScene, NoViewportAwareElementWhenNoVisibleChild) {
 
   EXPECT_FALSE(scene.GetVisibleWebVrOverlayForegroundElements().empty());
   child->SetVisible(false);
-  scene.root_element().UpdateComputedOpacityRecursive();
+  scene.OnBeginFrame(MsToTicks(0), kForwardVector);
   EXPECT_TRUE(scene.GetVisibleWebVrOverlayForegroundElements().empty());
+}
+
+TEST(UiScene, InvisibleElementsDoNotCauseAnimationDirtiness) {
+  UiScene scene;
+  auto element = base::MakeUnique<UiElement>();
+  element->AddAnimation(CreateBackgroundColorAnimation(
+      1, 1, SK_ColorBLACK, SK_ColorWHITE, MsToDelta(1000)));
+  UiElement* element_ptr = element.get();
+  scene.AddUiElement(kRoot, std::move(element));
+  EXPECT_TRUE(scene.OnBeginFrame(MsToTicks(1), kForwardVector));
+
+  element_ptr->SetVisible(false);
+  element_ptr->UpdateComputedOpacity();
+  EXPECT_FALSE(scene.OnBeginFrame(MsToTicks(2), kForwardVector));
+}
+
+TEST(UiScene, InvisibleElementsDoNotCauseBindingDirtiness) {
+  UiScene scene;
+  auto element = base::MakeUnique<UiElement>();
+  struct FakeModel {
+    int foo = 1;
+  } model;
+  element->AddBinding(VR_BIND(int, FakeModel, &model, foo, UiElement,
+                              element.get(), SetSize(1, value)));
+  UiElement* element_ptr = element.get();
+  scene.AddUiElement(kRoot, std::move(element));
+  EXPECT_TRUE(scene.OnBeginFrame(MsToTicks(1), kForwardVector));
+
+  model.foo = 2;
+  element_ptr->SetVisible(false);
+  element_ptr->UpdateComputedOpacity();
+  EXPECT_FALSE(scene.OnBeginFrame(MsToTicks(2), kForwardVector));
+}
+
+TEST(UiScene, InvisibleElementsDoNotCauseOnBeginFrameDirtiness) {
+  UiScene scene;
+  auto element = base::MakeUnique<AlwaysDirty>();
+  UiElement* element_ptr = element.get();
+  scene.AddUiElement(kRoot, std::move(element));
+  EXPECT_TRUE(scene.OnBeginFrame(MsToTicks(1), kForwardVector));
+
+  element_ptr->SetVisible(false);
+  element_ptr->UpdateComputedOpacity();
+  EXPECT_FALSE(scene.OnBeginFrame(MsToTicks(2), kForwardVector));
 }
 
 typedef struct {
@@ -203,7 +259,7 @@ TEST_P(AlignmentTest, VerifyCorrectPosition) {
   element->set_draw_phase(0);
   parent->AddChild(std::move(element));
 
-  scene.OnBeginFrame(MicrosecondsToTicks(0), gfx::Vector3dF(0.f, 0.f, -1.0f));
+  scene.OnBeginFrame(MsToTicks(0), kForwardVector);
   EXPECT_NEAR(GetParam().expected_x, child->GetCenter().x(), TOLERANCE);
   EXPECT_NEAR(GetParam().expected_y, child->GetCenter().y(), TOLERANCE);
 }

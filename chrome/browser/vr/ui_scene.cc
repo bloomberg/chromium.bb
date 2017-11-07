@@ -71,39 +71,27 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
   is_dirty_ = false;
 
   {
+    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateBindings");
+
+    // Propagate updates across bindings.
+    for (auto& element : *root_element_) {
+      element.UpdateBindings();
+      element.set_update_phase(UiElement::kUpdatedBindings);
+    }
+  }
+
+  {
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateAnimations");
 
     // Process all animations and pre-binding work. I.e., induce any
     // time-related "dirtiness" on the scene graph.
     for (auto& element : *root_element_) {
       element.set_update_phase(UiElement::kDirty);
-      if (element.DoBeginFrame(current_time, look_at))
+      if ((element.DoBeginFrame(current_time, look_at) ||
+           element.updated_bindings_this_frame()) &&
+          (element.IsVisible() || element.updated_visiblity_this_frame())) {
         scene_dirty = true;
-      element.set_update_phase(UiElement::kUpdatedAnimations);
-    }
-  }
-
-  {
-    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateBindings");
-
-    // Propagate updates across bindings.
-    for (auto& element : *root_element_) {
-      if (element.UpdateBindings())
-        scene_dirty = true;
-      element.set_update_phase(UiElement::kUpdatedBindings);
-    }
-  }
-
-  {
-    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateOpacity");
-
-    if (scene_dirty) {
-      // We must now update visibility since some texture update optimizations
-      // rely on accurate visibility information.
-      root_element_->UpdateComputedOpacityRecursive();
-    } else {
-      for (auto& element : *root_element_)
-        element.set_update_phase(UiElement::kUpdatedComputedOpacity);
+      }
     }
   }
 

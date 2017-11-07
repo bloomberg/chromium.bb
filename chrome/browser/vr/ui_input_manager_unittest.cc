@@ -289,7 +289,7 @@ TEST_F(UiInputManagerContentTest, TreeVsZOrder) {
 
   // We will now move the content quad behind the backplane.
   content_quad->SetTranslate(0, 0, -2.0 * kTextureOffset);
-  EXPECT_TRUE(AnimateBy(MsToDelta(500)));
+  scene_->root_element().UpdateWorldSpaceTransformRecursive();
   input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
                               &gesture_list);
 
