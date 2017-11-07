@@ -842,9 +842,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoClickLink) {
 // Test that a DNS error occuring in an iframe does not result in showing
 // navigation corrections.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_Basic) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURLAndWaitForTitle(
-      net::URLRequestMockHTTPJob::GetMockUrl("iframe_dns_error.html"), "Blah",
-      1);
+      embedded_test_server()->GetURL("/iframe_dns_error.html"), "Blah", 1);
   // We expect to have two history entries, since we started off with navigation
   // to "about:blank" and then navigated to "iframe_dns_error.html".
   EXPECT_EQ(2,
@@ -954,8 +954,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
 // Checks that navigation corrections are not loaded when we receive an actual
 // 404 page.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
-  NavigateToURLAndWaitForTitle(
-      net::URLRequestMockHTTPJob::GetMockUrl("page404.html"), "SUCCESS", 1);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  NavigateToURLAndWaitForTitle(embedded_test_server()->GetURL("/page404.html"),
+                               "SUCCESS", 1);
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
 }
 

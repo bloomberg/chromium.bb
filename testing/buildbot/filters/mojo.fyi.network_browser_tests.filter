@@ -2061,8 +2061,6 @@
 -WindowOpenApiTest.WindowOpenPopupSmall
 
 # crbug.com/776589 Intercepting requests with net::URLRequestFilter.
--BrowserCloseManagerWithDownloadsBrowserTest/BrowserCloseManagerWithDownloadsBrowserTest.TestWithDangerousUrlDownload/0
--BrowserCloseManagerWithDownloadsBrowserTest/BrowserCloseManagerWithDownloadsBrowserTest.TestWithDangerousUrlDownload/1
 -BrowserCloseManagerWithDownloadsBrowserTest/BrowserCloseManagerWithDownloadsBrowserTest.TestWithDownloads/0
 -BrowserCloseManagerWithDownloadsBrowserTest/BrowserCloseManagerWithDownloadsBrowserTest.TestWithDownloads/1
 -BrowserCloseManagerWithDownloadsBrowserTest/BrowserCloseManagerWithDownloadsBrowserTest.TestWithDownloadsFromDifferentProfiles/0
@@ -2121,7 +2119,6 @@
 -ContinueWhereILeftOffTest.SessionCookiesCloseAllBrowsers
 -ContinueWhereILeftOffTest.SessionStorage
 -DevToolsSanityTest.TestNetworkPushTime
--DnsProbeBrowserTest.NoProbeInSubframe
 -DnsProbeBrowserTest.NxdomainProbeResultWithWorkingCorrections
 -DnsProbeBrowserTest.NxdomainProbeResultWithWorkingSlowCorrections
 -DnsProbeBrowserTest.OtherErrorWithCorrectionsFailure
@@ -2163,10 +2160,8 @@
 -ErrorPageTest.Empty404
 -ErrorPageTest.Empty500
 -ErrorPageTest.Failed
--ErrorPageTest.IFrameDNSError_Basic
 -ErrorPageTest.IFrameDNSError_GoBack
 -ErrorPageTest.IFrameDNSError_JavaScript
--ErrorPageTest.Page404
 -ErrorPageTest.SniffSmallHttpErrorResponseAsDownload
 -ErrorPageTest.StaleCacheStatus
 -FastUnloadTest.UnloadHidden
@@ -2292,9 +2287,6 @@
 -SSLUITest.TestWSSInvalidCertAndGoForward
 -SSLUITestHSTS.TestInterstitialOptionsNonOverridable
 -SSLUITestWithClientCert.TestWSSClientCert
--UnloadTest.CrossSiteInfiniteBeforeUnloadAsync
--UnloadTest.CrossSiteInfiniteUnloadAsync
--UnloadTest.CrossSiteInfiniteUnloadSync
 
 # crbug.com/778376
 -PaymentRequestCanMakePaymentQueryPMITest.QueryQuotaForDisabledPaymentAppsInIncognitoMode
