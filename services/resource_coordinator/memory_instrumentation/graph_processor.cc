@@ -5,6 +5,7 @@
 #include "services/resource_coordinator/memory_instrumentation/graph_processor.h"
 
 #include "base/logging.h"
+#include "base/memory/shared_memory_tracker.h"
 #include "base/strings/string_split.h"
 
 namespace memory_instrumentation {
@@ -46,7 +47,7 @@ void AddEntryToNode(Node* node, const MemoryAllocatorDump::Entry& entry) {
 }  // namespace
 
 // static
-std::unique_ptr<GlobalDumpGraph> GraphProcessor::ComputeMemoryGraph(
+std::unique_ptr<GlobalDumpGraph> GraphProcessor::CreateMemoryGraph(
     const std::map<ProcessId, ProcessMemoryDump>& process_dumps) {
   auto global_graph = std::make_unique<GlobalDumpGraph>();
 
@@ -62,6 +63,11 @@ std::unique_ptr<GlobalDumpGraph> GraphProcessor::ComputeMemoryGraph(
     AddEdges(pid_to_dump.second, global_graph.get());
   }
 
+  return global_graph;
+}
+
+// static
+void GraphProcessor::RemoveWeakNodesFromGraph(GlobalDumpGraph* global_graph) {
   auto* global_root = global_graph->shared_memory_graph()->root();
 
   // Third pass: mark recursively nodes as weak if they don't have an associated
@@ -93,15 +99,87 @@ std::unique_ptr<GlobalDumpGraph> GraphProcessor::ComputeMemoryGraph(
   for (auto& pid_to_process : global_graph->process_dump_graphs()) {
     Process* process = pid_to_process.second.get();
     if (process->FindNode("winheap")) {
-      AssignTracingOverhead("winheap", global_graph.get(),
+      AssignTracingOverhead("winheap", global_graph,
                             pid_to_process.second.get());
     } else if (process->FindNode("malloc")) {
-      AssignTracingOverhead("malloc", global_graph.get(),
+      AssignTracingOverhead("malloc", global_graph,
                             pid_to_process.second.get());
     }
   }
+}
 
-  return global_graph;
+// static
+std::map<base::ProcessId, uint64_t>
+GraphProcessor::ComputeSharedFootprintFromGraph(
+    const GlobalDumpGraph& global_graph) {
+  // Go through all nodes associated with global dumps and find if they are
+  // owned by shared memory nodes.
+  Node* global_root =
+      global_graph.shared_memory_graph()->root()->GetChild("global");
+
+  struct GlobalNodeOwners {
+    std::list<Edge*> edges;
+    int max_priority = 0;
+  };
+
+  std::map<Node*, GlobalNodeOwners> global_node_to_shared_owners;
+  for (const auto& path_to_child : *global_root->children()) {
+    // The path of this node is something like "global/foo".
+    Node* global_node = path_to_child.second;
+
+    // If there's no size to attribute, there's no point in propogating
+    // anything.
+    if (global_node->entries().count("size") == 0)
+      continue;
+
+    for (auto* edge : *global_node->owned_by_edges()) {
+      // Find if the source node's path starts with "shared_memory/" which
+      // indcates shared memory.
+      Node* source_root = edge->source()->dump_graph()->root();
+      const Node* current = edge->source();
+      DCHECK_NE(current, source_root);
+
+      // Traverse up until we hit the point where |current| holds a node which
+      // is the child of |source_root|.
+      while (current->parent() != source_root)
+        current = current->parent();
+
+      // If the source is indeed a shared memory node, add the edge to the map.
+      if (source_root->GetChild(base::SharedMemoryTracker::kDumpRootName) ==
+          current) {
+        GlobalNodeOwners* owners = &global_node_to_shared_owners[global_node];
+        owners->edges.push_back(edge);
+        owners->max_priority = std::max(owners->max_priority, edge->priority());
+      }
+    }
+  }
+
+  // Go through the map and leave only the edges which have the maximum
+  // priority.
+  for (auto& global_to_shared_edges : global_node_to_shared_owners) {
+    int max_priority = global_to_shared_edges.second.max_priority;
+    global_to_shared_edges.second.edges.remove_if(
+        [max_priority](Edge* edge) { return edge->priority() < max_priority; });
+  }
+
+  // Compute the footprints by distributing the memory of the nodes
+  // among the processes which have edges left.
+  std::map<base::ProcessId, uint64_t> pid_to_shared_footprint;
+  for (const auto& global_to_shared_edges : global_node_to_shared_owners) {
+    Node* node = global_to_shared_edges.first;
+    const auto& edges = global_to_shared_edges.second.edges;
+
+    const Node::Entry& size_entry = node->entries().find("size")->second;
+    DCHECK_EQ(size_entry.type, Node::Entry::kUInt64);
+
+    uint64_t size_per_process = size_entry.value_uint64 / edges.size();
+    for (auto* edge : edges) {
+      base::ProcessId pid = edge->source()->dump_graph()->pid();
+      pid_to_shared_footprint[pid] += size_per_process;
+    }
+  }
+
+  return pid_to_shared_footprint;
 }
 
 // static

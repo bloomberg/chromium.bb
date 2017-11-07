@@ -26,7 +26,7 @@ class GlobalDumpGraph {
   // the shared space.
   class Process {
    public:
-    explicit Process(GlobalDumpGraph* global_graph);
+    Process(base::ProcessId pid, GlobalDumpGraph* global_graph);
     ~Process();
 
     // Creates a node in the dump graph which is associated with the
@@ -40,9 +40,11 @@ class GlobalDumpGraph {
     // if no such node exists in the provided |graph|.
     GlobalDumpGraph::Node* FindNode(base::StringPiece path);
 
+    base::ProcessId pid() const { return pid_; }
     GlobalDumpGraph::Node* root() const { return root_; }
 
    private:
+    base::ProcessId pid_;
     GlobalDumpGraph* const global_graph_;
     GlobalDumpGraph::Node* root_;
 

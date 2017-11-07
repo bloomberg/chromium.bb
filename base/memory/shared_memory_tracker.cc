@@ -12,6 +12,8 @@
 
 namespace base {
 
+const char SharedMemoryTracker::kDumpRootName[] = "shared_memory";
+
 // static
 SharedMemoryTracker* SharedMemoryTracker::GetInstance() {
   static SharedMemoryTracker* instance = new SharedMemoryTracker;
@@ -22,7 +24,7 @@ SharedMemoryTracker* SharedMemoryTracker::GetInstance() {
 std::string SharedMemoryTracker::GetDumpNameForTracing(
     const UnguessableToken& id) {
   DCHECK(!id.is_empty());
-  return "shared_memory/" + id.ToString();
+  return std::string(kDumpRootName) + "/" + id.ToString();
 }
 
 // static

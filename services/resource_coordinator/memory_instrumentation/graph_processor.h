@@ -15,11 +15,16 @@ namespace memory_instrumentation {
 
 class GraphProcessor {
  public:
-  // Processes memory dumps to compute the memory dump graph which allows
-  // subsequent computation of metrics such as effective sizes.
-  static std::unique_ptr<GlobalDumpGraph> ComputeMemoryGraph(
-      const std::map<base::ProcessId, base::trace_event::ProcessMemoryDump>&
-          process_dumps);
+  using MemoryDumpMap =
+      std::map<base::ProcessId, base::trace_event::ProcessMemoryDump>;
+
+  static std::unique_ptr<GlobalDumpGraph> CreateMemoryGraph(
+      const MemoryDumpMap& process_dumps);
+
+  static void RemoveWeakNodesFromGraph(GlobalDumpGraph* global_graph);
+
+  static std::map<base::ProcessId, uint64_t> ComputeSharedFootprintFromGraph(
+      const GlobalDumpGraph& global_graph);
 
  private:
   friend class GraphProcessorTest;
