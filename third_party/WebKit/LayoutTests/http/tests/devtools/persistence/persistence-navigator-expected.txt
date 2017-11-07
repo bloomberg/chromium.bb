@@ -6,16 +6,11 @@ Running: addFileSystem
 Running: waitForUISourceCodes
 [largeicon-navigator-frame] top
   [largeicon-navigator-domain] 127.0.0.1:8000
-    [largeicon-navigator-folder] devtools/persistence
-      [largeicon-navigator-folder] resources
+    [largeicon-navigator-folder] devtools
+      [largeicon-navigator-folder] persistence/resources
         [largeicon-navigator-file] foo.js
-      [largeicon-navigator-file] persistence-navigator.html
-    [largeicon-navigator-folder] inspector
-      [largeicon-navigator-folder] persistence
-        [largeicon-navigator-file] persistence-test.js
-      [largeicon-navigator-file] debugger-test.js
-      [largeicon-navigator-file] inspector-test.js
-      [largeicon-navigator-file] isolated-filesystem-test.js
+      [largeicon-navigator-folder] resources
+        [largeicon-navigator-file] inspected-page.html
 [largeicon-navigator-folder] www [dimmed]
   [largeicon-navigator-folder] devtools/persistence/resources [dimmed]
     [largeicon-navigator-file] foo.js
@@ -23,16 +18,11 @@ Running: waitForUISourceCodes
 Running: addFileMapping
 [largeicon-navigator-frame] top
   [largeicon-navigator-domain] 127.0.0.1:8000
-    [largeicon-navigator-folder] devtools/persistence
-      [largeicon-navigator-folder] resources
+    [largeicon-navigator-folder] devtools
+      [largeicon-navigator-folder] persistence/resources
         [largeicon-navigator-file-sync, badge-navigator-file-sync] foo.js
-      [largeicon-navigator-file] persistence-navigator.html
-    [largeicon-navigator-folder] inspector
-      [largeicon-navigator-folder] persistence
-        [largeicon-navigator-file] persistence-test.js
-      [largeicon-navigator-file] debugger-test.js
-      [largeicon-navigator-file] inspector-test.js
-      [largeicon-navigator-file] isolated-filesystem-test.js
+      [largeicon-navigator-folder] resources
+        [largeicon-navigator-file] inspected-page.html
 [largeicon-navigator-folder] www
   [largeicon-navigator-folder] devtools/persistence/resources
     [largeicon-navigator-file-sync, badge-navigator-file-sync] foo.js
@@ -40,16 +30,11 @@ Running: addFileMapping
 Running: removeFileMapping
 [largeicon-navigator-frame] top
   [largeicon-navigator-domain] 127.0.0.1:8000
-    [largeicon-navigator-folder] devtools/persistence
-      [largeicon-navigator-folder] resources
+    [largeicon-navigator-folder] devtools
+      [largeicon-navigator-folder] persistence/resources
         [largeicon-navigator-file] foo.js
-      [largeicon-navigator-file] persistence-navigator.html
-    [largeicon-navigator-folder] inspector
-      [largeicon-navigator-folder] persistence
-        [largeicon-navigator-file] persistence-test.js
-      [largeicon-navigator-file] debugger-test.js
-      [largeicon-navigator-file] inspector-test.js
-      [largeicon-navigator-file] isolated-filesystem-test.js
+      [largeicon-navigator-folder] resources
+        [largeicon-navigator-file] inspected-page.html
 [largeicon-navigator-folder] www [dimmed]
   [largeicon-navigator-folder] devtools/persistence/resources [dimmed]
     [largeicon-navigator-file] foo.js

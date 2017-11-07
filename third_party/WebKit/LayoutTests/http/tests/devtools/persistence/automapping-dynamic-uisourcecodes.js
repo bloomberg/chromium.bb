@@ -1,12 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/isolated-filesystem-test.js"></script>
-<script src="../../inspector/persistence/persistence-test.js"></script>
-<script src="../../inspector/persistence/automapping-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Verify that automapping works property when UISourceCodes come and go.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
+
   var foo_js = {content: 'console.log(\'foo.js!\');', time: new Date('December 1, 1989')};
 
   var automappingTest = new BindingsTestRunner.AutomappingTest(new Workspace.Workspace());
@@ -50,10 +49,4 @@ function test() {
       automappingTest.waitUntilMappingIsStabilized().then(next);
     },
   ];
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Verify that automapping works property when UISourceCodes come and go.</p>
-</body>
-</html>
+})();

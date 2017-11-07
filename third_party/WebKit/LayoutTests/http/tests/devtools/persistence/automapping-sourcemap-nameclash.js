@@ -1,14 +1,19 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/isolated-filesystem-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/persistence/persistence-test.js"></script>
-<script src="../../inspector/persistence/automapping-test.js"></script>
-<script src="resources/sourcemap-name-clash/out.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `Verify that sourcemap sources are mapped event when sourcemap compiled url matches with one of the source urls.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.loadHTML(`
+      <p>Verify that sourcemap sources are mapped event when sourcemap compiled url matches with one of the
+      source urls.</p>
+    `);
+  await TestRunner.addScriptTag('resources/sourcemap-name-clash/out.js');
+
   BindingsTestRunner.initializeTestMapping();
   BindingsTestRunner.overrideNetworkModificationTime(
       {'http://127.0.0.1:8000/devtools/persistence/resources/sourcemap-name-clash/out.js': null});
@@ -26,7 +31,7 @@ function test() {
 
   function onFileSystemCreated() {
     var automappingTest = new BindingsTestRunner.AutomappingTest(Workspace.workspace);
-    automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(InspectorTest));
+    automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(TestRunner));
   }
 
   function getResourceContent(name) {
@@ -39,11 +44,4 @@ function test() {
       uiSourceCode.requestContent().then(content => fulfill(content));
     }
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Verify that sourcemap sources are mapped event when sourcemap compiled url matches with one of the
-source urls.</p>
-</body>
-</html>
+})();

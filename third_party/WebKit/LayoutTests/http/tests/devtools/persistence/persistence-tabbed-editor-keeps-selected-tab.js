@@ -1,13 +1,14 @@
-<html>
-<head>
-<script src='../../inspector/inspector-test.js'></script>
-<script src='../../inspector/debugger-test.js'></script>
-<script src='../../inspector/isolated-filesystem-test.js'></script>
-<script src='../../inspector/persistence/persistence-test.js'></script>
-<script src='./resources/foo.js'></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-async function test() {
+(async function() {
+  TestRunner.addResult(`Verify that tab keeps selected as the persistence binding comes in.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.addScriptTag('resources/foo.js');
+  await TestRunner.showPanel('sources');
+
   var testMapping = BindingsTestRunner.initializeTestMapping();
   var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
   var fsEntry = BindingsTestRunner.addFooJSFile(fs);
@@ -40,10 +41,4 @@ async function test() {
       TestRunner.addResult('    ' + text);
     }
   }
-};
-</script>
-</head>
-<body onload='runTest()'>
-<p>Verify that tab keeps selected as the persistence binding comes in.</p>
-</body>
-</html>
+})();

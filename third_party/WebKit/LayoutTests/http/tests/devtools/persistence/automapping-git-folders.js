@@ -1,12 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/isolated-filesystem-test.js"></script>
-<script src="../../inspector/persistence/persistence-test.js"></script>
-<script src="../../inspector/persistence/automapping-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `Verify that automapping is able to map ambiguous resources based on the selected project folder.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
+
   var automappingTest = new BindingsTestRunner.AutomappingTest(new Workspace.Workspace());
 
   var reset_css = {content: '* { margin: 0 }', time: new Date('April 29, 1959')};
@@ -35,12 +35,6 @@ function test() {
   fs.reportCreated(onFileSystemCreated);
 
   function onFileSystemCreated() {
-    automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(InspectorTest));
+    automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(TestRunner));
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Verify that automapping is able to map ambiguous resources based on the selected project folder.</p>
-</body>
-</html>
+})();

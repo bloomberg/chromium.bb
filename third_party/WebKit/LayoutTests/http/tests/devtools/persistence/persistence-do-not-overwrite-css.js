@@ -1,19 +1,21 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/isolated-filesystem-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/persistence/persistence-test.js"></script>
-<script src="../../inspector/persistence/automapping-test.js"></script>
-<style>
-body {
-    color: red;
-}
-/*# sourceURL=http://127.0.0.1:8000/simple.css */
-</style>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `Verify that persistence does not overwrite CSS files when CSS model reports error on getStyleSheetText.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadHTML(`
+      <style>
+      body {
+          color: red;
+      }
+      /*# sourceURL=http://127.0.0.1:8000/simple.css */
+      </style>
+    `);
+
   var testMapping = BindingsTestRunner.initializeTestMapping();
   var fsUISourceCode, fs;
 
@@ -74,10 +76,4 @@ function test() {
       next();
     }
   ]);
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Verify that persistence does not overwrite CSS files when CSS model reports error on getStyleSheetText.</p>
-</body>
-</html>
+})();

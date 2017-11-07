@@ -1,14 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/search/search-test.js"></script>
-<script src="../../inspector/isolated-filesystem-test.js"></script>
-<script src="../../inspector/persistence/persistence-test.js"></script>
-<script src="resources/foo.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Verify that search across all files omits filesystem uiSourceCodes with binding to network.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.addScriptTag('resources/foo.js');
+
   var testMapping = BindingsTestRunner.initializeTestMapping();
   var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
   var fsEntry = BindingsTestRunner.addFooJSFile(fs);
@@ -49,10 +48,4 @@ function test() {
           {data: {requestId: requestId, fileSystemPath: path, files: paths}});
     }
   };
-};
-</script>
-</head>
-<body onload="runTest()">
-<p>Verify that search across all files omits filesystem uiSourceCodes with binding to network.</p>
-</body>
-</html>
+})();
