@@ -92,7 +92,7 @@ void LockScreenClient::FocusLockScreenApps(bool reverse) {
 }
 
 void LockScreenClient::LoadWallpaper(const AccountId& account_id) {
-  chromeos::WallpaperManager::Get()->SetUserWallpaper(account_id);
+  chromeos::WallpaperManager::Get()->ShowUserWallpaper(account_id);
 }
 
 void LockScreenClient::SignOutUser() {
