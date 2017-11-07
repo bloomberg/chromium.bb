@@ -206,7 +206,7 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
     return true;
   }
 
-  if (RuntimeEnabledFeatures::ModuleScriptsEnabled() && type == "module") {
+  if (type == "module") {
     // - "If the script block's type string is an ASCII case-insensitive match
     //    for the string "module", the script's type is "module"."
     out_script_type = ScriptType::kModule;
@@ -219,8 +219,7 @@ bool ScriptLoader::IsValidScriptTypeAndLanguage(
 }
 
 bool ScriptLoader::BlockForNoModule(ScriptType script_type, bool nomodule) {
-  return nomodule && script_type == ScriptType::kClassic &&
-         RuntimeEnabledFeatures::ModuleScriptsEnabled();
+  return nomodule && script_type == ScriptType::kClassic;
 }
 
 bool ScriptLoader::IsScriptTypeSupported(LegacyTypeSupport support_legacy_types,
@@ -436,8 +435,6 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
 
       // Steps 14 and 18 are skipped because they are not used in module
       // scripts.
-
-      DCHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
 
       Modulator* modulator = Modulator::From(
           ToScriptStateForMainWorld(context_document->GetFrame()));

@@ -22,7 +22,7 @@
 interface HTMLScriptElement : HTMLElement {
     [CEReactions, Reflect, URL, RaisesException=Setter] attribute ScriptURLString src;
     [CEReactions, Reflect] attribute DOMString type;
-    [CEReactions, Reflect, RuntimeEnabled=ModuleScripts] attribute boolean noModule;
+    [CEReactions, Reflect] attribute boolean noModule;
     [CEReactions, Reflect] attribute DOMString charset;
     [CEReactions] attribute boolean async;
     [CEReactions, Reflect] attribute boolean defer;

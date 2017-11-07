@@ -382,8 +382,7 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
     v8::Local<v8::Context> context,
     v8::Local<v8::ScriptOrModule> v8_referrer,
     v8::Local<v8::String> v8_specifier) {
-  CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled() &&
-        RuntimeEnabledFeatures::ModuleScriptsDynamicImportEnabled());
+  CHECK(RuntimeEnabledFeatures::ModuleScriptsDynamicImportEnabled());
   ScriptState* script_state = ScriptState::From(context);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -414,8 +413,7 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
 static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
                                         v8::Local<v8::Module> module,
                                         v8::Local<v8::Object> meta) {
-  CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled() &&
-        RuntimeEnabledFeatures::ModuleScriptsImportMetaUrlEnabled());
+  CHECK(RuntimeEnabledFeatures::ModuleScriptsImportMetaUrlEnabled());
   ScriptState* script_state = ScriptState::From(context);
   v8::Isolate* isolate = context->GetIsolate();
   v8::HandleScope handle_scope(isolate);
@@ -448,13 +446,11 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetUseCounterCallback(&UseCounterCallback);
   isolate->SetWasmModuleCallback(WasmModuleOverride);
   isolate->SetWasmInstanceCallback(WasmInstanceOverride);
-  if (RuntimeEnabledFeatures::ModuleScriptsEnabled() &&
-      RuntimeEnabledFeatures::ModuleScriptsDynamicImportEnabled()) {
+  if (RuntimeEnabledFeatures::ModuleScriptsDynamicImportEnabled()) {
     isolate->SetHostImportModuleDynamicallyCallback(
         HostImportModuleDynamically);
   }
-  if (RuntimeEnabledFeatures::ModuleScriptsEnabled() &&
-      RuntimeEnabledFeatures::ModuleScriptsImportMetaUrlEnabled()) {
+  if (RuntimeEnabledFeatures::ModuleScriptsImportMetaUrlEnabled()) {
     isolate->SetHostInitializeImportMetaObjectCallback(
         HostGetImportMetaProperties);
   }
