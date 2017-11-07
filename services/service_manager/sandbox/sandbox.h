@@ -67,7 +67,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT Sandbox {
 
   static bool Initialize(SandboxType sandbox_type,
                          SandboxSeccompBPF::PreSandboxHook hook,
-                         const SandboxSeccompBPF::Options& options);
+                         const SandboxLinux::Options& options);
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_MACOSX)

@@ -18,6 +18,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
+#include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/switches.h"
 
 #if defined(OS_LINUX)
@@ -50,14 +51,13 @@ void RunStandaloneService(const StandaloneServiceCallback& callback) {
     base::SysInfo::NumberOfProcessors();
 
     // Repeat steps normally performed by the zygote.
-    auto* sandbox_linux = SandboxLinux::GetInstance();
-    sandbox_linux->PreinitializeSandbox();
-    sandbox_linux->EngageNamespaceSandbox();
+    SandboxLinux::Options sandbox_options;
+    sandbox_options.engage_namespace_sandbox = true;
 
     Sandbox::Initialize(
         UtilitySandboxTypeFromString(
             command_line.GetSwitchValueASCII(switches::kServiceSandboxType)),
-        SandboxSeccompBPF::PreSandboxHook(), SandboxSeccompBPF::Options());
+        SandboxSeccompBPF::PreSandboxHook(), sandbox_options);
   }
 #endif
 

@@ -17,7 +17,7 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/utility/utility_thread_impl.h"
-#include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/sandbox.h"
 
 #if defined(OS_LINUX)
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
@@ -54,7 +54,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
         service_manager::SandboxTypeFromCommandLine(parameters.command_line);
     service_manager::Sandbox::Initialize(
         sandbox_type, service_manager::SandboxSeccompBPF::PreSandboxHook(),
-        service_manager::SandboxSeccompBPF::Options());
+        service_manager::SandboxLinux::Options());
   }
 #elif defined(OS_WIN)
   g_utility_target_services = parameters.sandbox_info->target_services;
