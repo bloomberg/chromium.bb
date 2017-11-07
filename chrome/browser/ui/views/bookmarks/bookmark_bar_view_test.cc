@@ -1288,15 +1288,7 @@ class BookmarkBarViewTest11 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_CloseMenuAfterClosingContextMenu \
-  DISABLED_CloseMenuAfterClosingContextMenu
-#else
-#define MAYBE_CloseMenuAfterClosingContextMenu CloseMenuAfterClosingContextMenu
-#endif
-
-VIEW_TEST(BookmarkBarViewTest11, MAYBE_CloseMenuAfterClosingContextMenu)
+VIEW_TEST(BookmarkBarViewTest11, CloseMenuAfterClosingContextMenu)
 
 // Tests showing a modal dialog from a context menu.
 class BookmarkBarViewTest12 : public BookmarkBarViewEventTestBase {
@@ -1624,14 +1616,7 @@ class BookmarkBarViewTest16 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_DeleteMenu DISABLED_DeleteMenu
-#else
-#define MAYBE_DeleteMenu DeleteMenu
-#endif
-
-VIEW_TEST(BookmarkBarViewTest16, MAYBE_DeleteMenu)
+VIEW_TEST(BookmarkBarViewTest16, DeleteMenu)
 
 // Makes sure right clicking on an item while a context menu is already showing
 // doesn't crash and works.
@@ -1766,16 +1751,7 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
   }
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_BookmarkBarViewTest18_SiblingMenu \
-  DISABLED_BookmarkBarViewTest18_SiblingMenu
-#else
-#define MAYBE_BookmarkBarViewTest18_SiblingMenu \
-  BookmarkBarViewTest18_SiblingMenu
-#endif
-
-VIEW_TEST(BookmarkBarViewTest18, MAYBE_BookmarkBarViewTest18_SiblingMenu)
+VIEW_TEST(BookmarkBarViewTest18, BookmarkBarViewTest18_SiblingMenu)
 
 // Verifies mousing over an already open sibling menu doesn't prematurely cancel
 // the menu.
