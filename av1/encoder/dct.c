@@ -2713,6 +2713,24 @@ void av1_fht64x32_c(const int16_t *input, tran_low_t *output, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d FHT[] = {
+#if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
+    { daala_fdct32, daala_fdct64 },  // DCT_DCT
+    { daala_fdst32, daala_fdct64 },  // ADST_DCT
+    { daala_fdct32, daala_fdst64 },  // DCT_ADST
+    { daala_fdst32, daala_fdst64 },  // ADST_ADST
+    { daala_fdst32, daala_fdct64 },  // FLIPADST_DCT
+    { daala_fdct32, daala_fdst64 },  // DCT_FLIPADST
+    { daala_fdst32, daala_fdst64 },  // FLIPADST_FLIPADST
+    { daala_fdst32, daala_fdst64 },  // ADST_FLIPADST
+    { daala_fdst32, daala_fdst64 },  // FLIPADST_ADST
+    { daala_idtx32, daala_idtx64 },  // IDTX
+    { daala_fdct32, daala_idtx64 },  // V_DCT
+    { daala_idtx32, daala_fdct64 },  // H_DCT
+    { daala_fdst32, daala_idtx64 },  // V_ADST
+    { daala_idtx32, daala_fdst64 },  // H_ADST
+    { daala_fdst32, daala_idtx64 },  // V_FLIPADST
+    { daala_idtx32, daala_fdst64 },  // H_FLIPADST
+#else
     { fdct32, fdct64_row },          // DCT_DCT
     { fhalfright32, fdct64_row },    // ADST_DCT
     { fdct32, fhalfright64 },        // DCT_ADST
@@ -2729,6 +2747,7 @@ void av1_fht64x32_c(const int16_t *input, tran_low_t *output, int stride,
     { fidtx32, fhalfright64 },       // H_ADST
     { fhalfright32, fidtx64 },       // V_FLIPADST
     { fidtx32, fhalfright64 },       // H_FLIPADST
+#endif
   };
   const transform_2d ht = FHT[tx_type];
   tran_low_t out[2048];
@@ -2741,20 +2760,36 @@ void av1_fht64x32_c(const int16_t *input, tran_low_t *output, int stride,
 
   // Columns
   for (i = 0; i < n2; ++i) {
-    for (j = 0; j < n; ++j)
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
+      temp_in[j] = input[j * stride + i] * 16;
+#else
       temp_in[j] = (tran_low_t)fdct_round_shift(input[j * stride + i] * Sqrt2);
+#endif
+    }
     ht.cols(temp_in, temp_out);
-    for (j = 0; j < n; ++j)
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
+      out[j * n2 + i] = temp_out[j];
+#else
       out[j * n2 + i] = (tran_low_t)ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#endif
+    }
   }
 
   // Rows
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n2; ++j)
+    for (j = 0; j < n2; ++j) {
+#if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
+      output[j + i * n2] =
+          (tran_low_t)ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 3);
+#else
       output[j + i * n2] =
           (tran_low_t)ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#endif
+    }
   }
 
   // Zero out right 32x32 area.
@@ -2773,6 +2808,24 @@ void av1_fht32x64_c(const int16_t *input, tran_low_t *output, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d FHT[] = {
+#if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
+    { daala_fdct64, daala_fdct32 },  // DCT_DCT
+    { daala_fdst64, daala_fdct32 },  // ADST_DCT
+    { daala_fdct64, daala_fdst32 },  // DCT_ADST
+    { daala_fdst64, daala_fdst32 },  // ADST_ADST
+    { daala_fdst64, daala_fdct32 },  // FLIPADST_DCT
+    { daala_fdct64, daala_fdst32 },  // DCT_FLIPADST
+    { daala_fdst64, daala_fdst32 },  // FLIPADST_FLIPADST
+    { daala_fdst64, daala_fdst32 },  // ADST_FLIPADST
+    { daala_fdst64, daala_fdst32 },  // FLIPADST_ADST
+    { daala_idtx64, daala_idtx32 },  // IDTX
+    { daala_fdct64, daala_idtx32 },  // V_DCT
+    { daala_idtx64, daala_fdct32 },  // H_DCT
+    { daala_fdst64, daala_idtx32 },  // V_ADST
+    { daala_idtx64, daala_fdst32 },  // H_ADST
+    { daala_fdst64, daala_idtx32 },  // V_FLIPADST
+    { daala_idtx64, daala_fdst32 },  // H_FLIPADST
+#else
     { fdct64_row, fdct32 },          // DCT_DCT
     { fhalfright64, fdct32 },        // ADST_DCT
     { fdct64_row, fhalfright32 },    // DCT_ADST
@@ -2789,6 +2842,7 @@ void av1_fht32x64_c(const int16_t *input, tran_low_t *output, int stride,
     { fidtx64, fhalfright32 },       // H_ADST
     { fhalfright64, fidtx32 },       // V_FLIPADST
     { fidtx64, fhalfright32 },       // H_FLIPADST
+#endif
   };
   const transform_2d ht = FHT[tx_type];
   tran_low_t out[32 * 64];
@@ -2801,19 +2855,34 @@ void av1_fht32x64_c(const int16_t *input, tran_low_t *output, int stride,
 
   // Rows
   for (i = 0; i < n2; ++i) {
-    for (j = 0; j < n; ++j)
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
+      temp_in[j] = input[i * stride + j] * 16;
+#else
       temp_in[j] = (tran_low_t)fdct_round_shift(input[i * stride + j] * Sqrt2);
+#endif
+    }
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n; ++j)
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
+      out[j * n2 + i] = temp_out[j];
+#else
       out[j * n2 + i] = (tran_low_t)ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#endif
+    }
   }
 
   // Columns
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
     ht.cols(temp_in, temp_out);
-    for (j = 0; j < n2; ++j)
+    for (j = 0; j < n2; ++j) {
+#if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
+      output[i + j * n] = (tran_low_t)ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 3);
+#else
       output[i + j * n] = (tran_low_t)ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#endif
+    }
   }
 
   // Zero out the bottom 32x32 area.
