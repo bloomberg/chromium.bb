@@ -487,6 +487,7 @@ def _AddNmAliases(raw_symbols, names_by_address):
   logging.debug('Creating alias list')
   replacements = []
   num_new_symbols = 0
+  missing_names = collections.defaultdict(list)
   for i, s in enumerate(raw_symbols):
     # Don't alias padding-only symbols (e.g. ** symbol gap)
     if s.size_without_padding == 0:
@@ -494,11 +495,19 @@ def _AddNmAliases(raw_symbols, names_by_address):
     name_list = names_by_address.get(s.address)
     if name_list:
       if s.full_name not in name_list:
+        missing_names[s.full_name].append(s.address)
         logging.warning('Name missing from aliases: %s %s', s.full_name,
                         name_list)
         continue
       replacements.append((i, name_list))
       num_new_symbols += len(name_list) - 1
+
+  if missing_names and logging.getLogger().isEnabledFor(logging.INFO):
+    for address, names in names_by_address.iteritems():
+      for name in names:
+        if name in missing_names:
+          logging.info('Missing name %s is at address %x instead of [%s]' %
+              (name, address, ','.join('%x' % a for a in missing_names[name])))
 
   if float(num_new_symbols) / len(raw_symbols) < .05:
     logging.warning('Number of aliases is oddly low (%.0f%%). It should '
