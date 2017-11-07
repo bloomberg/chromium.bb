@@ -362,6 +362,14 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mRoot.dismissItem(position, itemRemovedCallback);
     }
 
+    /**
+     * Drops all but the first {@code n} thumbnails on articles.
+     * @param n The number of article thumbnails to keep.
+     */
+    public void dropAllButFirstNArticleThumbnails(int n) {
+        mSections.dropAllButFirstNArticleThumbnails(n);
+    }
+
     private boolean hasAllBeenDismissed() {
         if (mSigninPromo.isVisible()) return false;
 
