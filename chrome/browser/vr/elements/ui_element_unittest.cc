@@ -7,48 +7,56 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/test/geometry_test_utils.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
+#include "chrome/browser/vr/ui_scene.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace vr {
 
 TEST(UiElements, AnimateSize) {
-  UiElement rect;
-  rect.SetSize(10, 100);
-  rect.AddAnimation(CreateBoundsAnimation(1, 1, gfx::SizeF(10, 100),
-                                          gfx::SizeF(20, 200),
-                                          MicrosecondsToDelta(10000)));
+  UiScene scene;
+  auto rect = base::MakeUnique<UiElement>();
+  rect->SetSize(10, 100);
+  rect->AddAnimation(CreateBoundsAnimation(1, 1, gfx::SizeF(10, 100),
+                                           gfx::SizeF(20, 200),
+                                           MicrosecondsToDelta(10000)));
+  UiElement* rect_ptr = rect.get();
+  scene.AddUiElement(kRoot, std::move(rect));
   base::TimeTicks start_time = MicrosecondsToTicks(1);
-  EXPECT_TRUE(rect.DoBeginFrame(start_time, kForwardVector));
-  EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(10, 100), rect.size());
-  EXPECT_TRUE(rect.DoBeginFrame(start_time + MicrosecondsToDelta(10000),
-                                kForwardVector));
-  EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(20, 200), rect.size());
+  EXPECT_TRUE(scene.OnBeginFrame(start_time, kForwardVector));
+  EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(10, 100), rect_ptr->size());
+  EXPECT_TRUE(scene.OnBeginFrame(start_time + MicrosecondsToDelta(10000),
+                                 kForwardVector));
+  EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(20, 200), rect_ptr->size());
 }
 
 TEST(UiElements, AnimationAffectsInheritableTransform) {
-  UiElement rect;
+  UiScene scene;
+  auto rect = base::MakeUnique<UiElement>();
+  UiElement* rect_ptr = rect.get();
+  scene.AddUiElement(kRoot, std::move(rect));
 
   cc::TransformOperations from_operations;
   from_operations.AppendTranslate(10, 100, 1000);
   cc::TransformOperations to_operations;
   to_operations.AppendTranslate(20, 200, 2000);
-  rect.AddAnimation(CreateTransformAnimation(
+  rect_ptr->AddAnimation(CreateTransformAnimation(
       2, 2, from_operations, to_operations, MicrosecondsToDelta(10000)));
 
   base::TimeTicks start_time = MicrosecondsToTicks(1);
-  EXPECT_TRUE(rect.DoBeginFrame(start_time, kForwardVector));
+  EXPECT_TRUE(scene.OnBeginFrame(start_time, kForwardVector));
   gfx::Point3F p;
-  rect.LocalTransform().TransformPoint(&p);
+  rect_ptr->LocalTransform().TransformPoint(&p);
   EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(10, 100, 1000), p);
   p = gfx::Point3F();
-  EXPECT_TRUE(rect.DoBeginFrame(start_time + MicrosecondsToDelta(10000),
-                                kForwardVector));
-  rect.LocalTransform().TransformPoint(&p);
+  EXPECT_TRUE(scene.OnBeginFrame(start_time + MicrosecondsToDelta(10000),
+                                 kForwardVector));
+  rect_ptr->LocalTransform().TransformPoint(&p);
   EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(20, 200, 2000), p);
 }
 

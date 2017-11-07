@@ -73,7 +73,7 @@ void UiSceneManagerTest::MakeAutoPresentedManager() {
 }
 
 bool UiSceneManagerTest::IsVisible(UiElementName name) const {
-  EXPECT_TRUE(OnBeginFrame());
+  OnBeginFrame();
   UiElement* element = scene_->GetUiElementByName(name);
   if (!element || !element->IsVisible())
     return false;
@@ -92,7 +92,7 @@ void UiSceneManagerTest::SetIncognito(bool incognito) {
 void UiSceneManagerTest::VerifyElementsVisible(
     const std::string& trace_context,
     const std::set<UiElementName>& names) const {
-  EXPECT_TRUE(OnBeginFrame());
+  OnBeginFrame();
   SCOPED_TRACE(trace_context);
   for (auto name : names) {
     SCOPED_TRACE(name);
@@ -107,7 +107,9 @@ void UiSceneManagerTest::VerifyElementsVisible(
 
 bool UiSceneManagerTest::VerifyVisibility(const std::set<UiElementName>& names,
                                           bool visible) const {
-  scene_->root_element().UpdateComputedOpacityRecursive();
+  for (auto& elem : scene_->root_element()) {
+    elem.UpdateComputedOpacity();
+  }
   scene_->root_element().UpdateWorldSpaceTransformRecursive();
   for (auto name : names) {
     SCOPED_TRACE(name);
@@ -141,7 +143,9 @@ int UiSceneManagerTest::NumVisibleChildren(UiElementName name) const {
 bool UiSceneManagerTest::VerifyRequiresLayout(
     const std::set<UiElementName>& names,
     bool requires_layout) const {
-  scene_->root_element().UpdateComputedOpacityRecursive();
+  for (auto& elem : scene_->root_element()) {
+    elem.UpdateComputedOpacity();
+  }
   scene_->root_element().UpdateWorldSpaceTransformRecursive();
   for (auto name : names) {
     SCOPED_TRACE(name);
@@ -163,7 +167,7 @@ void UiSceneManagerTest::CheckRendererOpacityRecursive(
   // might be confused which opacity is used by renderer.
   element->SetOpacity(0.9f);
 
-  EXPECT_TRUE(OnBeginFrame());
+  OnBeginFrame();
 
   FakeUiElementRenderer renderer;
   if (element->draw_phase() != kPhaseNone) {
