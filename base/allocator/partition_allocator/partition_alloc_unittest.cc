@@ -2146,7 +2146,8 @@ TEST_F(PartitionAllocTest, ReallocMovesCookies) {
   // use of the entire result is compatible with the debug mode's cookies, even
   // when the bucket size is large enough to span more than one partition page
   // and we can track the "raw" size. See https://crbug.com/709271
-  const size_t kSize = base::kMaxSystemPagesPerSlotSpan * base::kSystemPageSize;
+  static constexpr size_t kSize =
+      base::kMaxSystemPagesPerSlotSpan * base::kSystemPageSize;
   void* ptr =
       PartitionAllocGeneric(generic_allocator.root(), kSize + 1, type_name);
   EXPECT_TRUE(ptr);
@@ -2157,6 +2158,19 @@ TEST_F(PartitionAllocTest, ReallocMovesCookies) {
   EXPECT_TRUE(ptr);
 
   memset(ptr, 0xbd, kSize + 2);
+  PartitionFreeGeneric(generic_allocator.root(), ptr);
+}
+
+TEST_F(PartitionAllocTest, SmallReallocDoesNotMoveTrailingCookie) {
+  // For crbug.com/781473
+  static constexpr size_t kSize = 264;
+  void* ptr = PartitionAllocGeneric(generic_allocator.root(), kSize, type_name);
+  EXPECT_TRUE(ptr);
+
+  ptr = PartitionReallocGeneric(generic_allocator.root(), ptr, kSize + 16,
+                                type_name);
+  EXPECT_TRUE(ptr);
+
   PartitionFreeGeneric(generic_allocator.root(), ptr);
 }
 
