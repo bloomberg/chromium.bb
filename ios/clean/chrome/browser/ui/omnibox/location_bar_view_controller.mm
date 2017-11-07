@@ -11,38 +11,37 @@
 #endif
 
 @interface LocationBarViewController ()
-@property(nonatomic, readwrite, strong) LocationBarView* locationBarView;
+@property(nonatomic, readwrite, strong) OmniboxTextFieldIOS* omnibox;
 @end
 
 @implementation LocationBarViewController
 
-@synthesize locationBarView = _locationBarView;
+@synthesize omnibox = _omnibox;
 @synthesize omniboxFrame = _omniboxFrame;
 
 - (instancetype)init {
   if ((self = [super init])) {
     UIColor* textColor = [UIColor blackColor];
     UIColor* tintColor = nil;
-    _locationBarView =
-        [[LocationBarView alloc] initWithFrame:CGRectZero
-                                          font:[UIFont systemFontOfSize:14]
-                                     textColor:textColor
-                                     tintColor:tintColor];
+    _omnibox =
+        [[OmniboxTextFieldIOS alloc] initWithFrame:CGRectZero
+                                              font:[UIFont systemFontOfSize:14]
+                                         textColor:textColor
+                                         tintColor:tintColor];
   }
   return self;
 }
 
 - (void)viewDidLoad {
-  self.locationBarView.autoresizingMask =
+  self.omnibox.autoresizingMask =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-  self.locationBarView.frame = self.view.bounds;
-  [self.view addSubview:self.locationBarView];
+  self.omnibox.frame = self.view.bounds;
+  [self.view addSubview:self.omnibox];
 }
 
 // After layout, update the omnibox's frame so that it can be broadcast.
 - (void)viewDidLayoutSubviews {
-  self.omniboxFrame =
-      [self.view convertRect:self.locationBarView.frame toView:nil];
+  self.omniboxFrame = [self.view convertRect:self.omnibox.frame toView:nil];
 }
 
 @end
