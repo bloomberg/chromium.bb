@@ -7,7 +7,16 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/browser/web_data_service_factory.h"
+#include "components/keyed_service/core/service_access_type.h"
+#include "components/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_service_client.h"
+#include "content/public/browser/browser_context.h"
 
 ProfileResetterMockObject::ProfileResetterMockObject() {}
 
@@ -49,4 +58,15 @@ void ProfileResetterTestBase::ResetAndWait(
                    base::Bind(&ProfileResetterMockObject::StopLoop,
                               base::Unretained(&mock_object_)));
   mock_object_.RunLoop();
+}
+
+std::unique_ptr<KeyedService> CreateTemplateURLServiceForTesting(
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  return std::make_unique<TemplateURLService>(
+      profile->GetPrefs(), std::make_unique<UIThreadSearchTermsData>(profile),
+      WebDataServiceFactory::GetKeywordWebDataForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
+      std::unique_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
+      base::Closure());
 }

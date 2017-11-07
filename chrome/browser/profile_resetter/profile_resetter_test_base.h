@@ -5,10 +5,18 @@
 #ifndef CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_TEST_BASE_H_
 #define CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_TEST_BASE_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "chrome/browser/profile_resetter/profile_resetter.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+namespace content {
+class BrowserContext;
+}
 
 // The ProfileResetterMockObject is used to block the thread until
 // ProfileResetter::Reset has completed:
@@ -51,5 +59,8 @@ class ProfileResetterTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileResetterTestBase);
 };
+
+std::unique_ptr<KeyedService> CreateTemplateURLServiceForTesting(
+    content::BrowserContext* context);
 
 #endif  // CHROME_BROWSER_PROFILE_RESETTER_PROFILE_RESETTER_TEST_BASE_H_
