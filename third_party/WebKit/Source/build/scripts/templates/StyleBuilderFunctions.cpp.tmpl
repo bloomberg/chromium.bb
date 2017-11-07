@@ -38,7 +38,7 @@ void StyleBuilderFunctions::applyValue{{property_id}}(StyleResolverState& state,
 {%- endmacro %}
 {% macro set_is_inherited(property) %}
 state.Style()->{{property.is_inherited_setter}}
-{% endmacro %}
+{%- endmacro %}
 
 namespace blink {
 
