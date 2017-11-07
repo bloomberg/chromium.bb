@@ -319,7 +319,10 @@ class ASH_EXPORT Shell : public SessionObserver,
     return brightness_control_delegate_.get();
   }
   CastConfigController* cast_config() { return cast_config_.get(); }
+
+  // Returns nullptr in mash which has no global cursor manager.
   ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
+
   display::DisplayManager* display_manager() { return display_manager_.get(); }
   DisplayConfigurationController* display_configuration_controller() {
     return display_configuration_controller_.get();
