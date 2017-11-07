@@ -256,7 +256,8 @@ bool MediaRecorderHandler::Start(int timeslice) {
             &MediaRecorderHandler::OnEncodedAudio, weak_factory_.GetWeakPtr()));
 
     audio_recorders_.emplace_back(new AudioTrackRecorder(
-        audio_track, on_encoded_audio_cb, audio_bits_per_second_));
+        AudioTrackRecorder::CodecId::OPUS, audio_track,
+        std::move(on_encoded_audio_cb), audio_bits_per_second_));
   }
 
   recording_ = true;
