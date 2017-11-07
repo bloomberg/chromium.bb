@@ -1,4 +1,4 @@
-Tests the basic operation of NetInfo.
+Tests the basic operation of saveData attribute in NetInfo.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -14,14 +14,14 @@ PASS typeof connection.type is "string"
 PASS connection.type is initialType
 PASS connection.saveData is false
 PASS connection.downlinkMax is initialDownlinkMax
-PASS connection.effectiveType is newEffectiveType
+PASS connection.effectiveType is initialEffectiveType
 PASS connection.rtt is newRtt
 PASS connection.downlink is newDownlink
 PASS typeof connection.type is "string"
-PASS connection.type is newConnectionType
-PASS connection.saveData is false
-PASS connection.downlinkMax is newDownlinkMax
-PASS connection.effectiveType is newEffectiveType
+PASS connection.type is initialType
+PASS connection.saveData is true
+PASS connection.downlinkMax is initialDownlinkMax
+PASS connection.effectiveType is initialEffectiveType
 PASS connection.rtt is newRtt
 PASS connection.downlink is newDownlink
 PASS successfullyParsed is true
