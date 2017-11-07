@@ -2446,10 +2446,8 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_LOOP_RESTORATION
 static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
-  int p;
-  RestorationInfo *rsi;
-  for (p = 0; p < MAX_MB_PLANE; ++p) {
-    rsi = &cm->rst_info[p];
+  for (int p = 0; p < MAX_MB_PLANE; ++p) {
+    RestorationInfo *rsi = &cm->rst_info[p];
     switch (rsi->frame_restoration_type) {
       case RESTORE_NONE:
         aom_wb_write_bit(wb, 0);
@@ -2473,11 +2471,12 @@ static void encode_restoration_mode(AV1_COMMON *cm,
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-    aom_wb_write_bit(
-        wb, rsi->restoration_unit_size != (RESTORATION_TILESIZE_MAX >> 2));
-    if (rsi->restoration_unit_size != (RESTORATION_TILESIZE_MAX >> 2)) {
-      aom_wb_write_bit(
-          wb, rsi->restoration_unit_size != (RESTORATION_TILESIZE_MAX >> 1));
+    RestorationInfo *rsi = &cm->rst_info[0];
+    const int qsize = RESTORATION_TILESIZE_MAX >> 2;
+    const int hsize = RESTORATION_TILESIZE_MAX >> 1;
+    aom_wb_write_bit(wb, rsi->restoration_unit_size != qsize);
+    if (rsi->restoration_unit_size != qsize) {
+      aom_wb_write_bit(wb, rsi->restoration_unit_size != hsize);
     }
   }
   int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);

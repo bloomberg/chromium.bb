@@ -1110,10 +1110,8 @@ static void setup_segmentation(AV1_COMMON *const cm,
 #if CONFIG_LOOP_RESTORATION
 static void decode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_read_bit_buffer *rb) {
-  int p;
-  RestorationInfo *rsi;
-  for (p = 0; p < MAX_MB_PLANE; ++p) {
-    rsi = &cm->rst_info[p];
+  for (int p = 0; p < MAX_MB_PLANE; ++p) {
+    RestorationInfo *rsi = &cm->rst_info[p];
     if (aom_rb_read_bit(rb)) {
       rsi->frame_restoration_type =
           aom_rb_read_bit(rb) ? RESTORE_SGRPROJ : RESTORE_WIENER;
@@ -1122,21 +1120,24 @@ static void decode_restoration_mode(AV1_COMMON *cm,
           aom_rb_read_bit(rb) ? RESTORE_SWITCHABLE : RESTORE_NONE;
     }
   }
-  cm->rst_info[0].restoration_unit_size = RESTORATION_TILESIZE_MAX;
-  cm->rst_info[1].restoration_unit_size = RESTORATION_TILESIZE_MAX;
-  cm->rst_info[2].restoration_unit_size = RESTORATION_TILESIZE_MAX;
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-    cm->rst_info[0].restoration_unit_size = RESTORATION_TILESIZE_MAX >> 2;
-    cm->rst_info[1].restoration_unit_size = RESTORATION_TILESIZE_MAX >> 2;
-    cm->rst_info[2].restoration_unit_size = RESTORATION_TILESIZE_MAX >> 2;
-    rsi = &cm->rst_info[0];
+    const int qsize = RESTORATION_TILESIZE_MAX >> 2;
+    for (int p = 0; p < MAX_MB_PLANE; ++p)
+      cm->rst_info[p].restoration_unit_size = qsize;
+
+    RestorationInfo *rsi = &cm->rst_info[0];
     rsi->restoration_unit_size <<= aom_rb_read_bit(rb);
-    if (rsi->restoration_unit_size != (RESTORATION_TILESIZE_MAX >> 2)) {
+    if (rsi->restoration_unit_size != qsize) {
       rsi->restoration_unit_size <<= aom_rb_read_bit(rb);
     }
+  } else {
+    const int size = RESTORATION_TILESIZE_MAX;
+    for (int p = 0; p < MAX_MB_PLANE; ++p)
+      cm->rst_info[p].restoration_unit_size = size;
   }
+
   int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
   if (s && (cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
             cm->rst_info[2].frame_restoration_type != RESTORE_NONE)) {
