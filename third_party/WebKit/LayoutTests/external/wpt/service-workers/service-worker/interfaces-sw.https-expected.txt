@@ -2,6 +2,7 @@ This is a testharness.js-based test.
 PASS Interfaces and attributes in ServiceWorkerGlobalScope
 PASS test setup (cache creation)
 PASS Event constructors
+PASS xhr is not exposed
 PASS ServiceWorkerGlobalScope interface: existence and properties of interface object
 PASS ServiceWorkerGlobalScope interface object length
 PASS ServiceWorkerGlobalScope interface object name
