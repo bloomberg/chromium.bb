@@ -143,6 +143,13 @@ bool RulesetManager::ShouldBlockRequest(const net::URLRequest& request,
                                         bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Return early if DNR is not enabled.
+  if (!IsAPIAvailable())
+    return false;
+
+  if (test_observer_)
+    test_observer_->OnShouldBlockRequest(request, is_incognito_context);
+
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Extensions.DeclarativeNetRequest.ShouldBlockRequestTime.AllExtensions");
 
@@ -164,6 +171,11 @@ bool RulesetManager::ShouldBlockRequest(const net::URLRequest& request,
     }
   }
   return false;
+}
+
+void RulesetManager::SetObserverForTest(TestObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  test_observer_ = observer;
 }
 
 }  // namespace declarative_net_request

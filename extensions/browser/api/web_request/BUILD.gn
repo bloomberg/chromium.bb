@@ -39,6 +39,7 @@ source_set("web_request") {
     "//components/web_cache/browser",
     "//content/public/browser",
     "//content/public/common",
+    "//extensions/browser/api/declarative_net_request",
     "//extensions/common/api",
     "//extensions/strings",
     "//third_party/re2",

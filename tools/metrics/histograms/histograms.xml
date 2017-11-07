@@ -22202,6 +22202,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.DeclarativeNetRequest.LoadRulesetResult"
+    enum="LoadRulesetResult">
+  <owner>karandeepb@chromium.org</owner>
+  <summary>
+    Records the result of loading an extension ruleset for the Declarative Net
+    Request API. Emitted whenever an extension with a ruleset is loaded.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.DeclarativeNetRequest.ManifestRulesCount"
     units="rules">
   <owner>karandeepb@chromium.org</owner>

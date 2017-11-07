@@ -23866,6 +23866,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="LoadLibraryExW Unavailable, LoadLibraryW Fail"/>
 </enum>
 
+<enum name="LoadRulesetResult">
+  <int value="0" label="Load succeeded"/>
+  <int value="1" label="Load failed - Invalid path"/>
+  <int value="2" label="Load failed - Memory Map error"/>
+  <int value="3" label="Load failed - Ruleset verification error"/>
+</enum>
+
 <enum name="LoadType">
   <int value="0" label="UNDEFINED_LOAD">Not yet initialized</int>
   <int value="1" label="RELOAD">User pressed reload</int>
