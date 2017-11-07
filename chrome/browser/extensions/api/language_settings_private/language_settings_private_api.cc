@@ -161,12 +161,10 @@ std::vector<std::string> GetSortedExtensionIMEs(
 #endif
 
 LanguageSettingsPrivateGetLanguageListFunction::
-    LanguageSettingsPrivateGetLanguageListFunction() {
-}
+    LanguageSettingsPrivateGetLanguageListFunction() = default;
 
 LanguageSettingsPrivateGetLanguageListFunction::
-    ~LanguageSettingsPrivateGetLanguageListFunction() {
-}
+    ~LanguageSettingsPrivateGetLanguageListFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetLanguageListFunction::Run() {
@@ -261,13 +259,12 @@ LanguageSettingsPrivateEnableLanguageFunction::
     : chrome_details_(this) {}
 
 LanguageSettingsPrivateEnableLanguageFunction::
-    ~LanguageSettingsPrivateEnableLanguageFunction() {}
+    ~LanguageSettingsPrivateEnableLanguageFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateEnableLanguageFunction::Run() {
-  std::unique_ptr<language_settings_private::EnableLanguage::Params>
-      parameters =
-          language_settings_private::EnableLanguage::Params::Create(*args_);
+  const auto parameters =
+      language_settings_private::EnableLanguage::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
   const std::string& language_code = parameters->language_code;
 
@@ -295,13 +292,12 @@ LanguageSettingsPrivateDisableLanguageFunction::
     : chrome_details_(this) {}
 
 LanguageSettingsPrivateDisableLanguageFunction::
-    ~LanguageSettingsPrivateDisableLanguageFunction() {}
+    ~LanguageSettingsPrivateDisableLanguageFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateDisableLanguageFunction::Run() {
-  std::unique_ptr<language_settings_private::DisableLanguage::Params>
-      parameters =
-          language_settings_private::DisableLanguage::Params::Create(*args_);
+  const auto parameters =
+      language_settings_private::DisableLanguage::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
   const std::string& language_code = parameters->language_code;
 
@@ -330,14 +326,12 @@ LanguageSettingsPrivateSetEnableTranslationForLanguageFunction::
     : chrome_details_(this) {}
 
 LanguageSettingsPrivateSetEnableTranslationForLanguageFunction::
-    ~LanguageSettingsPrivateSetEnableTranslationForLanguageFunction() {}
+    ~LanguageSettingsPrivateSetEnableTranslationForLanguageFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateSetEnableTranslationForLanguageFunction::Run() {
-  const std::unique_ptr<
-      language_settings_private::SetEnableTranslationForLanguage::Params>
-      parameters = language_settings_private::SetEnableTranslationForLanguage::
-          Params::Create(*args_);
+  const auto parameters = language_settings_private::
+      SetEnableTranslationForLanguage::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
   const std::string& language_code = parameters->language_code;
   // True if translation enabled, false if disabled.
@@ -356,13 +350,61 @@ LanguageSettingsPrivateSetEnableTranslationForLanguageFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction::
-    LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction() {
+LanguageSettingsPrivateMoveLanguageFunction::
+    LanguageSettingsPrivateMoveLanguageFunction()
+    : chrome_details_(this) {}
+
+LanguageSettingsPrivateMoveLanguageFunction::
+    ~LanguageSettingsPrivateMoveLanguageFunction() = default;
+
+ExtensionFunction::ResponseAction
+LanguageSettingsPrivateMoveLanguageFunction::Run() {
+  const auto parameters =
+      language_settings_private::MoveLanguage::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+
+  const std::string app_locale = g_browser_process->GetApplicationLocale();
+  std::vector<std::string> supported_language_codes;
+  l10n_util::GetAcceptLanguagesForLocale(app_locale, &supported_language_codes);
+
+  const std::string& language_code = parameters->language_code;
+  const language_settings_private::MoveType move_type = parameters->move_type;
+
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(
+          chrome_details_.GetProfile()->GetPrefs());
+
+  translate::TranslatePrefs::RearrangeSpecifier where =
+      translate::TranslatePrefs::kNone;
+  switch (move_type) {
+    case language_settings_private::MOVE_TYPE_TOP:
+      where = translate::TranslatePrefs::kTop;
+      break;
+
+    case language_settings_private::MOVE_TYPE_UP:
+      where = translate::TranslatePrefs::kUp;
+      break;
+
+    case language_settings_private::MOVE_TYPE_DOWN:
+      where = translate::TranslatePrefs::kDown;
+      break;
+
+    case language_settings_private::MOVE_TYPE_NONE:
+    case language_settings_private::MOVE_TYPE_LAST:
+      NOTREACHED();
+  }
+
+  translate_prefs->RearrangeLanguage(language_code, where,
+                                     supported_language_codes);
+
+  return RespondNow(NoArguments());
 }
 
 LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction::
-    ~LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction() {
-}
+    LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction() = default;
+
+LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction::
+    ~LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction::Run() {
@@ -376,12 +418,10 @@ LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction::Run() {
 }
 
 LanguageSettingsPrivateGetSpellcheckWordsFunction::
-    LanguageSettingsPrivateGetSpellcheckWordsFunction() {
-}
+    LanguageSettingsPrivateGetSpellcheckWordsFunction() = default;
 
 LanguageSettingsPrivateGetSpellcheckWordsFunction::
-    ~LanguageSettingsPrivateGetSpellcheckWordsFunction() {
-}
+    ~LanguageSettingsPrivateGetSpellcheckWordsFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetSpellcheckWordsFunction::Run() {
@@ -430,16 +470,14 @@ LanguageSettingsPrivateGetSpellcheckWordsFunction::GetSpellcheckWords() const {
 }
 
 LanguageSettingsPrivateAddSpellcheckWordFunction::
-    LanguageSettingsPrivateAddSpellcheckWordFunction() {
-}
+    LanguageSettingsPrivateAddSpellcheckWordFunction() = default;
 
 LanguageSettingsPrivateAddSpellcheckWordFunction::
-    ~LanguageSettingsPrivateAddSpellcheckWordFunction() {
-}
+    ~LanguageSettingsPrivateAddSpellcheckWordFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateAddSpellcheckWordFunction::Run() {
-  std::unique_ptr<language_settings_private::AddSpellcheckWord::Params> params =
+  const auto params =
       language_settings_private::AddSpellcheckWord::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -451,18 +489,15 @@ LanguageSettingsPrivateAddSpellcheckWordFunction::Run() {
 }
 
 LanguageSettingsPrivateRemoveSpellcheckWordFunction::
-    LanguageSettingsPrivateRemoveSpellcheckWordFunction() {
-}
+    LanguageSettingsPrivateRemoveSpellcheckWordFunction() = default;
 
 LanguageSettingsPrivateRemoveSpellcheckWordFunction::
-    ~LanguageSettingsPrivateRemoveSpellcheckWordFunction() {
-}
+    ~LanguageSettingsPrivateRemoveSpellcheckWordFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateRemoveSpellcheckWordFunction::Run() {
-  std::unique_ptr<language_settings_private::RemoveSpellcheckWord::Params>
-      params = language_settings_private::RemoveSpellcheckWord::Params::Create(
-          *args_);
+  const auto params =
+      language_settings_private::RemoveSpellcheckWord::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   SpellcheckService* service =
@@ -478,8 +513,7 @@ LanguageSettingsPrivateGetTranslateTargetLanguageFunction::
 }
 
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::
-    ~LanguageSettingsPrivateGetTranslateTargetLanguageFunction() {
-}
+    ~LanguageSettingsPrivateGetTranslateTargetLanguageFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::Run() {
@@ -521,12 +555,10 @@ void PopulateInputMethodListFromDescriptors(
 #endif
 
 LanguageSettingsPrivateGetInputMethodListsFunction::
-    LanguageSettingsPrivateGetInputMethodListsFunction() {
-}
+    LanguageSettingsPrivateGetInputMethodListsFunction() = default;
 
 LanguageSettingsPrivateGetInputMethodListsFunction::
-    ~LanguageSettingsPrivateGetInputMethodListsFunction() {
-}
+    ~LanguageSettingsPrivateGetInputMethodListsFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetInputMethodListsFunction::Run() {
@@ -562,15 +594,14 @@ LanguageSettingsPrivateAddInputMethodFunction::
     : chrome_details_(this) {}
 
 LanguageSettingsPrivateAddInputMethodFunction::
-    ~LanguageSettingsPrivateAddInputMethodFunction() {
-}
+    ~LanguageSettingsPrivateAddInputMethodFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateAddInputMethodFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  std::unique_ptr<language_settings_private::AddInputMethod::Params> params =
+  const auto params =
       language_settings_private::AddInputMethod::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -617,15 +648,14 @@ LanguageSettingsPrivateRemoveInputMethodFunction::
     : chrome_details_(this) {}
 
 LanguageSettingsPrivateRemoveInputMethodFunction::
-    ~LanguageSettingsPrivateRemoveInputMethodFunction() {
-}
+    ~LanguageSettingsPrivateRemoveInputMethodFunction() = default;
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateRemoveInputMethodFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  std::unique_ptr<language_settings_private::RemoveInputMethod::Params> params =
+  const auto params =
       language_settings_private::RemoveInputMethod::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 

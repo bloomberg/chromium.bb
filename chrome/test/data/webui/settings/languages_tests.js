@@ -84,11 +84,11 @@ cr.define('settings-languages', function() {
       assertLanguageOrder(['en-US', 'sw', 'en-CA']);
 
       // Can move a language up.
-      languageHelper.moveLanguage('en-CA', -1);
+      languageHelper.moveLanguage('en-CA', true /* upDirection */);
       assertLanguageOrder(['en-US', 'en-CA', 'sw']);
 
       // Can move a language down.
-      languageHelper.moveLanguage('en-US', 1);
+      languageHelper.moveLanguage('en-US', false /* upDirection */);
       assertLanguageOrder(['en-CA', 'en-US', 'sw']);
 
       // Can move a language to the front.
@@ -97,7 +97,7 @@ cr.define('settings-languages', function() {
       assertLanguageOrder(expectedOrder);
 
       // Moving the first language up has no effect.
-      languageHelper.moveLanguage('sw', -1);
+      languageHelper.moveLanguage('sw', true /* upDirection */);
       assertLanguageOrder(expectedOrder);
 
       // Moving the first language to top has no effect.
@@ -105,7 +105,7 @@ cr.define('settings-languages', function() {
       assertLanguageOrder(expectedOrder);
 
       // Moving the last language down has no effect.
-      languageHelper.moveLanguage('en-US', 1);
+      languageHelper.moveLanguage('en-US', false /* upDirection */);
       assertLanguageOrder(expectedOrder);
     });
 

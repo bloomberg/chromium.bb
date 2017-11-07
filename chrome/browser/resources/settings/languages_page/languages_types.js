@@ -106,8 +106,8 @@ LanguageHelper.prototype = {
   /**
    * Moves the language in the list of enabled languages by the given offset.
    * @param {string} languageCode
-   * @param {number} offset Negative offset moves the language toward the front
-   *     of the list. A Positive one moves the language toward the back.
+   * @param {boolean} upDirection True if we need to move toward the front,
+   *     false if we need to move toward the back.
    */
   moveLanguage: assertNotReached,
 

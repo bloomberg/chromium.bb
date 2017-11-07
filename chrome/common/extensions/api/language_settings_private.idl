@@ -5,6 +5,13 @@
 // Use the <code>chrome.languageSettingsPrivate</code> API to get or change
 // language and input method settings.
 namespace languageSettingsPrivate {
+  enum MoveType {
+    TOP,
+    UP,
+    DOWN,
+    UNKNOWN
+  };
+
   dictionary Language {
     // The unique code identifying the language.
     DOMString code;
@@ -90,6 +97,9 @@ namespace languageSettingsPrivate {
     // Enables or disables translation for a given language.
     static void setEnableTranslationForLanguage(
         DOMString languageCode, boolean enable);
+
+    // Moves a language inside the language list.
+    static void moveLanguage(DOMString languageCode, MoveType moveType);
 
     // Gets the current status of the chosen spell check dictionaries.
     static void getSpellcheckDictionaryStatuses(

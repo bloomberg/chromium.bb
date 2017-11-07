@@ -17,6 +17,16 @@
 chrome.languageSettingsPrivate = {};
 
 /**
+ * @enum {string}
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#type-MoveType
+ */
+chrome.languageSettingsPrivate.MoveType = {
+  TOP: 'TOP',
+  UP: 'UP',
+  DOWN: 'DOWN',
+};
+
+/**
  * @typedef {{
  *   code: string,
  *   displayName: string,
@@ -91,8 +101,15 @@ chrome.languageSettingsPrivate.disableLanguage = function(languageCode) {};
  * @param {boolean} enable
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-setEnableTranslationForLanguage
  */
-chrome.languageSettingsPrivate.setEnableTranslationForLanguage = function(
-    languageCode, enable) {};
+chrome.languageSettingsPrivate.setEnableTranslationForLanguage = function(languageCode, enable) {};
+
+/**
+ * Moves a language inside the language list.
+ * @param {string} languageCode
+ * @param {!chrome.languageSettingsPrivate.MoveType} moveType
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-moveLanguage
+ */
+chrome.languageSettingsPrivate.moveLanguage = function(languageCode, moveType) {};
 
 /**
  * Gets the current status of the chosen spell check dictionaries.

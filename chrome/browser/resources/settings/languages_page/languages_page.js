@@ -342,7 +342,8 @@ Polymer({
    */
   onMoveUpTap_: function() {
     /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
-    this.languageHelper.moveLanguage(this.detailLanguage_.language.code, -1);
+    this.languageHelper.moveLanguage(
+        this.detailLanguage_.language.code, true /* upDirection */);
   },
 
   /**
@@ -351,7 +352,8 @@ Polymer({
    */
   onMoveDownTap_: function() {
     /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
-    this.languageHelper.moveLanguage(this.detailLanguage_.language.code, 1);
+    this.languageHelper.moveLanguage(
+        this.detailLanguage_.language.code, false /* upDirection */);
   },
 
   /**
