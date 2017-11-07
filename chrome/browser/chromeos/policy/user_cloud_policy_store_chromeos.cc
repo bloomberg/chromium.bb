@@ -90,7 +90,7 @@ void UserCloudPolicyStoreChromeOS::LoadImmediately() {
       session_manager_client_->BlockingRetrievePolicyForUser(
           cryptohome::Identification(account_id_), &policy_blob);
 
-  if (response_type == RetrievePolicyResponseType::SESSION_DOES_NOT_EXIST) {
+  if (response_type == RetrievePolicyResponseType::GET_SERVICE_FAIL) {
     LOG(ERROR)
         << "Session manager claims that session doesn't exist; signing out";
     base::debug::DumpWithoutCrashing();
@@ -200,7 +200,7 @@ void UserCloudPolicyStoreChromeOS::OnPolicyRetrieved(
   // should always happen before the profile construction. An attempt to read
   // the policy outside the session will always fail and return an empty policy
   // blob.
-  if (response_type == RetrievePolicyResponseType::SESSION_DOES_NOT_EXIST) {
+  if (response_type == RetrievePolicyResponseType::GET_SERVICE_FAIL) {
     LOG(ERROR)
         << "Session manager claims that session doesn't exist; signing out";
     base::debug::DumpWithoutCrashing();
