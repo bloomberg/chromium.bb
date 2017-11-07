@@ -82,11 +82,11 @@ void HardwareDisplayController::Disable() {
   is_disabled_ = true;
 }
 
-void HardwareDisplayController::SchedulePageFlip(
+bool HardwareDisplayController::SchedulePageFlip(
     const OverlayPlaneList& plane_list,
     SwapCompletionOnceCallback callback) {
-  ActualSchedulePageFlip(plane_list, false /* test_only */,
-                         std::move(callback));
+  return ActualSchedulePageFlip(plane_list, false /* test_only */,
+                                std::move(callback));
 }
 
 bool HardwareDisplayController::TestPageFlip(

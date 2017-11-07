@@ -85,7 +85,7 @@ class DrmWindow {
   // Move the HW cursor to the specified location.
   void MoveCursor(const gfx::Point& location);
 
-  void SchedulePageFlip(const std::vector<OverlayPlane>& planes,
+  bool SchedulePageFlip(const std::vector<OverlayPlane>& planes,
                         SwapCompletionOnceCallback callback);
   std::vector<OverlayCheckReturn_Params> TestPageFlip(
       const std::vector<OverlayCheck_Params>& overlay_params);
