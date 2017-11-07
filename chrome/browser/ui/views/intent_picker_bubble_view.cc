@@ -421,16 +421,3 @@ void IntentPickerBubbleView::PressButtonForTesting(size_t index,
       static_cast<views::Button*>(GetIntentPickerLabelButtonAt(index));
   ButtonPressed(button, event);
 }
-
-size_t IntentPickerBubbleView::GetScrollViewSizeForTesting() const {
-  return GetScrollViewSize();
-}
-
-std::string IntentPickerBubbleView::GetPackageNameForTesting(
-    size_t index) const {
-  return app_info_[index].package_name;
-}
-
-bool IntentPickerBubbleView::GetStayInChromeEnabledForTesting() {
-  return IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL);
-}
