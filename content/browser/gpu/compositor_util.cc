@@ -116,14 +116,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
      " about:flags or the command line.",
      true},
 #endif
-#if defined(OS_CHROMEOS)
-    {"panel_fitting",
-     manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_PANEL_FITTING),
-     command_line.HasSwitch(switches::kDisablePanelFitting),
-     "Panel fitting has been disabled, either via blacklist, about:flags or"
-     " the command line.",
-     false},
-#endif
     {kRasterizationFeatureName,
      IsGpuRasterizationBlacklisted() && !IsGpuRasterizationEnabled() &&
          !IsForceGpuRasterizationEnabled(),

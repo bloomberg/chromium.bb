@@ -13,7 +13,6 @@
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
-#include "ash/content/gpu_support_impl.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
@@ -433,11 +432,6 @@ void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {
   // browser will be shown on the active desktop, we ensure the visibility.
   multi_user_util::MoveWindowToCurrentDesktop(
       displayer.browser()->window()->GetNativeWindow());
-}
-
-ash::GPUSupport* ChromeShellDelegate::CreateGPUSupport() {
-  // Chrome uses real GPU support.
-  return new ash::GPUSupportImpl;
 }
 
 base::string16 ChromeShellDelegate::GetProductName() const {

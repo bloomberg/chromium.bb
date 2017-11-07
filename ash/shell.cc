@@ -38,7 +38,6 @@
 #include "ash/first_run/first_run_helper_impl.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/custom_frame_view_ash.h"
-#include "ash/gpu_support.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
@@ -619,8 +618,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   // TODO(sky): better refactor cash/mash dependencies. Perhaps put all cash
   // state on ShellPortClassic. http://crbug.com/671246.
 
-  gpu_support_.reset(shell_delegate_->CreateGPUSupport());
-
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
   window_tree_host_manager_ = std::make_unique<WindowTreeHostManager>();
   user_metrics_recorder_ = std::make_unique<UserMetricsRecorder>();
@@ -896,7 +893,7 @@ void Shell::Init(const ShellInitParams& init_params) {
       std::make_unique<DisplayConfigurationController>(
           display_manager_.get(), window_tree_host_manager_.get());
   display_configurator_->Init(shell_port_->CreateNativeDisplayDelegate(),
-                              !gpu_support_->IsPanelFittingDisabled());
+                              false);
 
   // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.
   chromeos::DBusThreadManager* dbus_thread_manager =

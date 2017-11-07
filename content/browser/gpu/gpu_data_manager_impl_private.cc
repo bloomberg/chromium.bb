@@ -337,14 +337,6 @@ void GpuDataManagerImplPrivate::InitializeForTesting(
 }
 
 bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
-#if defined(OS_CHROMEOS)
-  if (feature == gpu::GPU_FEATURE_TYPE_PANEL_FITTING &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePanelFitting)) {
-    return true;
-  }
-#endif  // OS_CHROMEOS
-
   // SwiftShader blacklists all features
   return use_swiftshader_ || (blacklisted_features_.count(feature) == 1);
 }

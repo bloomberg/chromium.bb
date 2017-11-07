@@ -8,7 +8,6 @@
 
 #include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/default_wallpaper_delegate.h"
-#include "ash/gpu_support_stub.h"
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -73,11 +72,6 @@ ShellDelegateImpl::CreateWallpaperDelegate() {
 
 AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
-}
-
-GPUSupport* ShellDelegateImpl::CreateGPUSupport() {
-  // Real GPU support depends on src/content, so just use a stub.
-  return new GPUSupportStub;
 }
 
 base::string16 ShellDelegateImpl::GetProductName() const {
