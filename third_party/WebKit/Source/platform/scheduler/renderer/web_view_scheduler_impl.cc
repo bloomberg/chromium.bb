@@ -142,6 +142,8 @@ void WebViewSchedulerImpl::SetPageVisible(bool page_visible) {
 void WebViewSchedulerImpl::SetPageStopped(bool stopped) {
   for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_)
     frame_scheduler->SetPageStopped(stopped);
+  if (delegate_)
+    delegate_->SetPageStopped(stopped);
 }
 
 std::unique_ptr<WebFrameSchedulerImpl>
