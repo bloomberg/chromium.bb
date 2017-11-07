@@ -25,10 +25,7 @@ void DeleteServiceObjects(ClientServiceMap<ClientType, ServiceType>* id_map,
                           bool have_context,
                           DeleteFunction delete_function) {
   if (have_context) {
-    for (auto client_service_id_pair : *id_map) {
-      delete_function(client_service_id_pair.first,
-                      client_service_id_pair.second);
-    }
+    id_map->ForEach(delete_function);
   }
 
   id_map->Clear();
