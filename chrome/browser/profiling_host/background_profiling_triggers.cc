@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/process_type.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
 namespace profiling {
@@ -27,6 +28,34 @@ const size_t kGPUProcessMallocTriggerKb = 400 * 1024;        // 400 MB
 const size_t kRendererProcessMallocTriggerKb = 500 * 1024;   // 500 MB
 #endif  // OS_ANDROID
 
+int GetContentProcessType(
+    const memory_instrumentation::mojom::ProcessType& type) {
+  using memory_instrumentation::mojom::ProcessType;
+
+  switch (type) {
+    case ProcessType::BROWSER:
+      return content::ProcessType::PROCESS_TYPE_BROWSER;
+
+    case ProcessType::RENDERER:
+      return content::ProcessType::PROCESS_TYPE_RENDERER;
+
+    case ProcessType::GPU:
+      return content::ProcessType::PROCESS_TYPE_GPU;
+
+    case ProcessType::UTILITY:
+      return content::ProcessType::PROCESS_TYPE_UTILITY;
+
+    case ProcessType::PLUGIN:
+      return content::ProcessType::PROCESS_TYPE_PLUGIN_DEPRECATED;
+
+    case ProcessType::OTHER:
+      return content::ProcessType::PROCESS_TYPE_UNKNOWN;
+  }
+
+  NOTREACHED();
+  return content::ProcessType::PROCESS_TYPE_UNKNOWN;
+}
+
 }  // namespace
 
 BackgroundProfilingTriggers::BackgroundProfilingTriggers(
@@ -43,6 +72,28 @@ void BackgroundProfilingTriggers::StartTimer() {
       FROM_HERE, base::TimeDelta::FromHours(kRepeatingCheckMemoryDelayInHours),
       base::Bind(&BackgroundProfilingTriggers::PerformMemoryUsageChecks,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+bool BackgroundProfilingTriggers::IsOverTriggerThreshold(
+    int content_process_type,
+    uint32_t private_footprint_kb) {
+  if (!host_->ShouldProfileProcessType(content_process_type)) {
+    return false;
+  }
+
+  switch (content_process_type) {
+    case content::ProcessType::PROCESS_TYPE_BROWSER:
+      return private_footprint_kb > kBrowserProcessMallocTriggerKb;
+
+    case content::ProcessType::PROCESS_TYPE_GPU:
+      return private_footprint_kb > kGPUProcessMallocTriggerKb;
+
+    case content::ProcessType::PROCESS_TYPE_RENDERER:
+      return private_footprint_kb > kRendererProcessMallocTriggerKb;
+
+    default:
+      return false;
+  }
 }
 
 void BackgroundProfilingTriggers::PerformMemoryUsageChecks() {
@@ -66,34 +117,11 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
   if (!success)
     return;
 
-  ProfilingProcessHost::Mode mode = host_->mode();
   for (const auto& proc : dump->process_dumps) {
-    bool trigger_report = false;
-
-    if (proc->process_type ==
-            memory_instrumentation::mojom::ProcessType::BROWSER &&
-        (mode == profiling::ProfilingProcessHost::Mode::kMinimal ||
-         mode == profiling::ProfilingProcessHost::Mode::kAll)) {
-      trigger_report =
-          proc->os_dump->private_footprint_kb > kBrowserProcessMallocTriggerKb;
-    }
-
-    if (proc->process_type == memory_instrumentation::mojom::ProcessType::GPU &&
-        (mode == profiling::ProfilingProcessHost::Mode::kMinimal ||
-         mode == profiling::ProfilingProcessHost::Mode::kAll)) {
-      trigger_report =
-          proc->os_dump->private_footprint_kb > kGPUProcessMallocTriggerKb;
-    }
-
-    if (proc->process_type ==
-            memory_instrumentation::mojom::ProcessType::RENDERER &&
-        mode == profiling::ProfilingProcessHost::Mode::kAll) {
-      trigger_report =
-          proc->os_dump->private_footprint_kb > kRendererProcessMallocTriggerKb;
-    }
-
-    if (trigger_report)
+    if (IsOverTriggerThreshold(GetContentProcessType(proc->process_type),
+                               proc->os_dump->private_footprint_kb)) {
       TriggerMemoryReportForProcess(proc->pid);
+    }
   }
 }
 

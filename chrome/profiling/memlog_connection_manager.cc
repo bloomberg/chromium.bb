@@ -229,6 +229,13 @@ void MemlogConnectionManager::DumpProcessesForTracing(
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
   base::AutoLock lock(connections_lock_);
 
+  // Early out if there are no connections.
+  if (connections_.empty()) {
+    std::move(callback).Run(
+        std::vector<profiling::mojom::SharedBufferWithSizePtr>());
+    return;
+  }
+
   auto tracking = base::MakeRefCounted<DumpProcessesForTracingTracking>();
   tracking->backtrace_storage_lock =
       BacktraceStorage::Lock(&backtrace_storage_);
