@@ -93,6 +93,8 @@
 #    ]
 #  }
 
+import("//build/config/sanitizers/sanitizers.gni")
+
 template("proto_library") {
   assert(defined(invoker.sources), "Need sources for proto_library")
   proto_sources = invoker.sources
@@ -348,6 +350,12 @@ template("proto_library") {
     if (defined(invoker.extra_configs)) {
       configs += invoker.extra_configs
     }
+
+    # Remove Sanitizer and coverage instrumentation for a performance boost when
+    # fuzzing, since the only fuzzers that use protobuf are libprotobuf-mutator
+    # based fuzzers, and they don't actually target protobuf code.
+    configs -= not_fuzzed_remove_configs
+    configs += [ "//build/config/sanitizers:not_fuzzed" ]
 
     public_configs = [ "//third_party/protobuf:using_proto" ]
 

@@ -1,6 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import("//build/config/sanitizers/sanitizers.gni")
 
 config("protobuf_config") {
   include_dirs = [ "src" ]
@@ -168,6 +169,12 @@ component("protobuf_lite") {
     # correctly.
     ":protobuf_warnings",
   ]
+
+  # Remove Sanitizers and coverage for a performance boost when fuzzing. This is
+  # OK because the only fuzzers that use protobuf are libprotobuf-mutator based
+  # fuzzers, and they don't actually target the protobuf code, they just use it.
+  configs -= not_fuzzed_remove_configs
+  configs += [ "//build/config/sanitizers:not_fuzzed" ]
 
   if (is_win) {
     configs -= [ "//build/config/win:lean_and_mean" ]
@@ -362,6 +369,13 @@ static_library("protobuf_full") {
     # correctly.
     ":protobuf_warnings",
   ]
+
+  # Remove coverage and Sanitizers other than ASan for a performance boost when
+  # fuzzing. ASan can't be removed here because of a bug preventing unsanitized
+  # code from using libc++, which protobuf_full uses.
+  configs -= not_fuzzed_remove_nonasan_configs
+  configs += [ "//build/config/sanitizers:not_fuzzed" ]
+
   if (is_win) {
     configs -= [ "//build/config/win:lean_and_mean" ]
   }
