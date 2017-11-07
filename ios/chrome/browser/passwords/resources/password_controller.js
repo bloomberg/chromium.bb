@@ -212,32 +212,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   };
 
   /**
-   * Clears autofilled credentials in the form with the specified name.
-   * @param {string} formName The name of the form to clear.
-   * @return {boolean} Whether the form was successfully cleared.
-   */
-  __gCrWeb['clearAutofilledPasswords'] = function(formName) {
-    var el = __gCrWeb.common.getFormElementFromIdentifier(formName);
-    if (!el)
-      return false;
-    var formData = __gCrWeb.getPasswordFormData(el);
-    if (!formData)
-      return false;
-    var usernameElement =
-        __gCrWeb.getElementByNameWithParent(el, formData.usernameElement);
-    __gCrWeb.setAutofilled(usernameElement, false);
-    formData.passwords.forEach(function(password) {
-      var passwordElement =
-          __gCrWeb.getElementByNameWithParent(el, password.element, true);
-      if (__gCrWeb.isAutofilled(passwordElement)) {
-        __gCrWeb.setAutofilled(passwordElement, false);
-        passwordElement.value = '';
-      }
-    });
-    return true;
-  };
-
-  /**
    * Finds the form described by |formData| and fills in the
    * username and password values.
    *

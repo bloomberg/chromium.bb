@@ -48,11 +48,6 @@
                 password:(NSString*)password
        completionHandler:(void (^)(BOOL))completionHandler;
 
-// Clears autofilled credentials in the specified form. Invokes
-// |completionHandler| with YES if successful and NO otherwise.
-- (void)clearAutofilledPasswordsInForm:(NSString*)formName
-                     completionHandler:(void (^)(BOOL))completionHandler;
-
 // Fills all password fields in the form identified by |formName| with
 // |password| and invokes |completionHandler| with true if any fields were
 // filled.
