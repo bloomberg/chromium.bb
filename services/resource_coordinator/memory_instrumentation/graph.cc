@@ -18,12 +18,13 @@ using Node = GlobalDumpGraph::Node;
 }  // namespace
 
 GlobalDumpGraph::GlobalDumpGraph()
-    : shared_memory_graph_(std::make_unique<Process>(this)) {}
+    : shared_memory_graph_(
+          std::make_unique<Process>(base::kNullProcessId, this)) {}
 GlobalDumpGraph::~GlobalDumpGraph() {}
 
 Process* GlobalDumpGraph::CreateGraphForProcess(base::ProcessId process_id) {
-  auto id_to_dump_iterator =
-      process_dump_graphs_.emplace(process_id, std::make_unique<Process>(this));
+  auto id_to_dump_iterator = process_dump_graphs_.emplace(
+      process_id, std::make_unique<Process>(process_id, this));
   DCHECK(id_to_dump_iterator.second);  // Check for duplicate pids
   return id_to_dump_iterator.first->second.get();
 }
@@ -45,8 +46,9 @@ Node* GlobalDumpGraph::CreateNode(Process* process_graph, Node* parent) {
   return &*all_nodes_.begin();
 }
 
-Process::Process(GlobalDumpGraph* global_graph)
-    : global_graph_(global_graph),
+Process::Process(base::ProcessId pid, GlobalDumpGraph* global_graph)
+    : pid_(pid),
+      global_graph_(global_graph),
       root_(global_graph->CreateNode(this, nullptr)) {}
 Process::~Process() {}
 

@@ -40,7 +40,7 @@ TEST(GlobalDumpGraphTest, AddNodeOwnershipEdge) {
 
 TEST(ProcessTest, CreateAndFindNode) {
   GlobalDumpGraph global_dump_graph;
-  Process graph(&global_dump_graph);
+  Process graph(1, &global_dump_graph);
 
   Node* first =
       graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple/test/1", false);
@@ -69,7 +69,7 @@ TEST(ProcessTest, CreateAndFindNode) {
 
 TEST(ProcessTest, CreateNodeParent) {
   GlobalDumpGraph global_dump_graph;
-  Process graph(&global_dump_graph);
+  Process graph(1, &global_dump_graph);
 
   Node* parent = graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple", false);
   Node* child =
@@ -81,7 +81,7 @@ TEST(ProcessTest, CreateNodeParent) {
 
 TEST(ProcessTest, WeakAndExplicit) {
   GlobalDumpGraph global_dump_graph;
-  Process graph(&global_dump_graph);
+  Process graph(1, &global_dump_graph);
 
   Node* first =
       graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple/test/1", true);

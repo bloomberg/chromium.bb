@@ -44,6 +44,9 @@ class BASE_EXPORT SharedMemoryTracker : public trace_event::MemoryDumpProvider {
   // Records shared memory usage on unmapping.
   void DecrementMemoryUsage(const SharedMemory& shared_memory);
 
+  // Root dump name for all shared memory dumps.
+  static const char kDumpRootName[];
+
  private:
   SharedMemoryTracker();
   ~SharedMemoryTracker() override;
