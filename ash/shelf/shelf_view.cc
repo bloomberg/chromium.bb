@@ -686,10 +686,11 @@ bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
 void ShelfView::PointerPressedOnButton(views::View* view,
                                        Pointer pointer,
                                        const ui::LocatedEvent& event) {
-  if (IsShowingMenu())
-    launcher_menu_runner_->Cancel();
   if (drag_view_)
     return;
+
+  if (IsShowingMenu())
+    launcher_menu_runner_->Cancel();
 
   int index = view_model_->GetIndexOfView(view);
   if (index == -1 || view_model_->view_size() <= 1)
