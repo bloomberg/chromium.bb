@@ -1,7 +1,6 @@
 Tests that the execution context is changed to match new selected node.
 
 
-
 Running: initialize
 Execution Context: main
           matches: true

@@ -136,8 +136,8 @@ crbug.com/420008 [ Release ] http/tests/devtools/editor/text-editor-word-jumps.j
 crbug.com/667560 [ Release ] virtual/mojo-loading/http/tests/devtools/editor/text-editor-word-jumps.js [ Slow ]
 crbug.com/420008 [ Release ] http/tests/devtools/console-xhr-logging.js [ Slow ]
 crbug.com/420008 [ Release ] virtual/mojo-loading/http/tests/devtools/console-xhr-logging.js [ Slow ]
-crbug.com/596486 [ Linux ] http/tests/devtools/elements/insert-node.html [ Slow ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/insert-node.html [ Slow ]
+crbug.com/596486 [ Linux ] http/tests/devtools/elements/insert-node.js [ Slow ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/insert-node.js [ Slow ]
 webkit.org/b/84735 [ Win ] http/tests/devtools/change-iframe-src.js [ Slow ]
 webkit.org/b/84735 [ Win ] virtual/mojo-loading/http/tests/devtools/change-iframe-src.js [ Slow ]
 crbug.com/504565 [ Mac ] http/tests/devtools/search/sources-search-scope.html [ Slow ]
@@ -462,8 +462,8 @@ crbug.com/676572 [ Debug ] external/wpt/webstorage/storage_local_setitem_quotaex
 crbug.com/741259 editing/selection/select-bidi-run.html [ Slow ]
 
 # These tests were previously marked Slow in ASANExpectations.
-crbug.com/451577 [ Linux ] http/tests/devtools/elements/user-properties.html [ Slow ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/user-properties.html [ Slow ]
+crbug.com/451577 [ Linux ] http/tests/devtools/elements/user-properties.js [ Slow ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/user-properties.js [ Slow ]
 crbug.com/451577 [ Linux ] http/tests/devtools/layers/layer-canvas-log.html [ Slow ]
 crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/layers/layer-canvas-log.html [ Slow ]
 
