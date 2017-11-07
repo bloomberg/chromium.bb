@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSParserScopedTokenBuffer.h"
 #include "core/css/parser/CSSParserTokenStream.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,11 +101,8 @@ TEST(CSSParserTokenStreamTest, RangesDoNotGetInvalidatedWhenConsuming) {
   CSSParserTokenStream stream(tokenizer);
 
   // Consume a single token range.
-  CSSParserScopedTokenBuffer buffer(stream);
-  stream.EnsureLookAhead();
-  stream.UncheckedConsumeComponentValue(buffer);
+  auto range = stream.ConsumeUntilPeekedTypeIs<kIdentToken>();
 
-  auto range = buffer.Range();
   EXPECT_EQ(kNumberToken, range.Peek().GetType());
 
   // Consume remaining tokens to try to invalidate the range.
@@ -196,16 +192,13 @@ TEST(CSSParserTokenStreamTest, LookAheadOffset) {
   EXPECT_EQ(13U, stream.LookAheadOffset());
 }
 
-TEST(CSSParserTokenStreamTest, ConsumeComponentValueWithBuffer) {
+TEST(CSSParserTokenStreamTest, ConsumeUntilPeekedTypeIsEmpty) {
   CSSTokenizer tokenizer("{23 }");
   CSSParserTokenStream stream(tokenizer);
 
-  CSSParserScopedTokenBuffer buffer(stream);
-  stream.EnsureLookAhead();
-  stream.UncheckedConsumeComponentValue(buffer);
+  auto range = stream.ConsumeUntilPeekedTypeIs<>();
   EXPECT_TRUE(stream.AtEnd());
 
-  auto range = buffer.Range();
   EXPECT_EQ(kLeftBraceToken, range.Consume().GetType());
   EXPECT_EQ(kNumberToken, range.Consume().GetType());
   EXPECT_EQ(kWhitespaceToken, range.Consume().GetType());
