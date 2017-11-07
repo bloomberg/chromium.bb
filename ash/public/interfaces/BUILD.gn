@@ -68,6 +68,7 @@ mojom("interfaces_internal") {
 mojom("test_interfaces") {
   testonly = true
   sources = [
+    "shelf_test_api.mojom",
     "system_tray_test_api.mojom",
   ]
   deps = [
