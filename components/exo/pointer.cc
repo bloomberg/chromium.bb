@@ -77,7 +77,7 @@ display::ManagedDisplayInfo GetCaptureDisplayInfo() {
 // Pointer, public:
 
 Pointer::Pointer(PointerDelegate* delegate)
-    : SurfaceTreeHost("ExoPointer", nullptr),
+    : SurfaceTreeHost("ExoPointer"),
       delegate_(delegate),
       cursor_(ui::CursorType::kNull),
       capture_scale_(GetCaptureDisplayInfo().device_scale_factor()),
