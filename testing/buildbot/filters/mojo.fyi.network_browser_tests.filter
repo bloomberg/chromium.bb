@@ -792,6 +792,8 @@
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.Prefetch301LoadFlags/1
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.Prefetch301Redirect/1
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.Prefetch301Subresource/1
+-NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.Prefetch302Redirect/0
+-NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.Prefetch302Redirect/1
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchClientRedirect/1
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchCrossDomain/1
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.PrefetchHttps/1
@@ -2314,12 +2316,15 @@
 -DevToolsReattachAfterCrashTest.TestReattachAfterCrashOnTimeline
 
 # crbug.com/778846 DCHECK() failed at URLDataManagerBackend::CheckURLIsValid().
+# Note: these may flake pass, but don't enable them.
 -CrSettingsPeoplePageTest.All
 -DomDistillerTabUtilsBrowserTest.TestDistillIntoWebContents
 -DomDistillerViewerSourceBrowserTest.DistillerJavaScriptExposed
 -DomDistillerViewerSourceBrowserTest.DistillerJavaScriptNotInMainWorld
 -DomDistillerViewerSourceBrowserTest.EarlyTemplateLoad
 -DomDistillerViewerSourceBrowserTest.MultiPageArticle
+-DomDistillerViewerSourceBrowserTest.NoWebUIBindingsArticleExists
+-DomDistillerViewerSourceBrowserTest.NoWebUIBindingsArticleNotFound
 -DomDistillerViewerSourceBrowserTest.PrefPersist
 -LocalNTPDoodleTest.ShouldAnimateLogoWhenClicked
 -PrintPreviewDialogControllerBrowserTest.PdfPluginDisabled
