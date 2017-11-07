@@ -704,9 +704,20 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
   }
 }
 
+// This test is failing on asan-clang-phone because memory allocation is
+// declined. See <http://crbug.com/782286>.
+#if defined(OS_ANDROID)
+#define MAYBE_CreateImageBitmapFromTooBigImageDataDoesNotCrash \
+  DISABLED_CreateImageBitmapFromTooBigImageDataDoesNotCrash
+#else
+#define MAYBE_CreateImageBitmapFromTooBigImageDataDoesNotCrash \
+  CreateImageBitmapFromTooBigImageDataDoesNotCrash
+#endif
+
 // This test verifies if requesting a large ImageData and creating an
 // ImageBitmap from that does not crash. crbug.com/780358
-TEST_F(ImageBitmapTest, CreateImageBitmapFromTooBigImageDataDoesNotCrash) {
+TEST_F(ImageBitmapTest,
+       MAYBE_CreateImageBitmapFromTooBigImageDataDoesNotCrash) {
   // Enable experimental canvas features for this test.
   ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
 
