@@ -3802,7 +3802,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_OBU
 
 static OBU_TYPE read_obu_header(struct aom_read_bit_buffer *rb,
-                                uint32_t *header_size) {
+                                size_t *header_size) {
   OBU_TYPE obu_type;
   int obu_extension_flag;
 
@@ -3907,10 +3907,8 @@ static uint32_t read_one_tile_group_obu(AV1Decoder *pbi,
   return header_size + tg_payload_size;
 }
 
-static void read_metadata_private_data(const uint8_t *data, uint32_t sz) {
-  int i;
-
-  for (i = 0; i < (int)sz; i++) {
+static void read_metadata_private_data(const uint8_t *data, size_t sz) {
+  for (size_t i = 0; i < sz; i++) {
     mem_get_le16(data);
     data += 2;
   }
@@ -3940,9 +3938,10 @@ static void read_metadata_hdr_mdcv(const uint8_t *data) {
   mem_get_le16(data);
 }
 
-static uint32_t read_metadata(const uint8_t *data, uint32_t sz) {
+static size_t read_metadata(const uint8_t *data, size_t sz) {
   METADATA_TYPE metadata_type;
 
+  assert(sz >= 2);
   metadata_type = (METADATA_TYPE)mem_get_le16(data);
 
   if (metadata_type == METADATA_TYPE_PRIVATE_DATA) {
@@ -3969,7 +3968,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
   while (!frame_decoding_finished && !cm->error.error_code) {
     struct aom_read_bit_buffer rb;
     uint8_t clear_data[80];
-    uint32_t obu_size, obu_header_size, obu_payload_size = 0;
+    size_t obu_size, obu_header_size, obu_payload_size = 0;
     OBU_TYPE obu_type;
 
     init_read_bit_buffer(pbi, &rb, data + PRE_OBU_SIZE_BYTES, data_end,
