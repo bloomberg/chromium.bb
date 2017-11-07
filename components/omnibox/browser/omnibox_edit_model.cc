@@ -764,11 +764,12 @@ bool OmniboxEditModel::AcceptKeyword(
     has_temporary_text_ = true;
     const AutocompleteMatch& match = CurrentMatch(nullptr);
     original_url_ = match.destination_url;
-    view_->OnTemporaryTextMaybeChanged(
-        MaybeStripKeyword(match.fill_into_edit), save_original_selection,
-        true);
+    view_->OnTemporaryTextMaybeChanged(MaybeStripKeyword(match.fill_into_edit),
+                                       match.type, save_original_selection,
+                                       true);
   } else {
-    view_->OnTemporaryTextMaybeChanged(user_text_, false, true);
+    const AutocompleteMatch& match = CurrentMatch(nullptr);
+    view_->OnTemporaryTextMaybeChanged(user_text_, match.type, false, true);
   }
 
   base::RecordAction(base::UserMetricsAction("AcceptedKeywordHint"));
@@ -1064,7 +1065,8 @@ void OmniboxEditModel::OnPopupDataChanged(
       // pressed, even though maybe it isn't any more.  There is no obvious
       // right answer here :(
     }
-    view_->OnTemporaryTextMaybeChanged(MaybeStripKeyword(text),
+    const AutocompleteMatch& match = CurrentMatch(nullptr);
+    view_->OnTemporaryTextMaybeChanged(MaybeStripKeyword(text), match.type,
                                        save_original_selection, true);
     return;
   }

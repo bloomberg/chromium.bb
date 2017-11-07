@@ -79,6 +79,7 @@ class OmniboxViewMac : public OmniboxView,
   void SetFocus() override;
   void ApplyCaretVisibility() override;
   void OnTemporaryTextMaybeChanged(const base::string16& display_text,
+                                   AutocompleteMatch::Type match_type,
                                    bool save_original_selection,
                                    bool notify_text_changed) override;
   bool OnInlineAutocompleteTextMaybeChanged(const base::string16& display_text,

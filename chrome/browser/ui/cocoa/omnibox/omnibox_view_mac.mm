@@ -601,6 +601,7 @@ void OmniboxViewMac::ApplyTextAttributes(
 
 void OmniboxViewMac::OnTemporaryTextMaybeChanged(
     const base::string16& display_text,
+    AutocompleteMatch::Type match_type,
     bool save_original_selection,
     bool notify_text_changed) {
   if (save_original_selection)
@@ -610,6 +611,9 @@ void OmniboxViewMac::OnTemporaryTextMaybeChanged(
   if (notify_text_changed)
     model()->OnChanged();
   [field_ clearUndoChain];
+
+  AnnounceAutocompleteForScreenReader(
+      AutocompleteMatchType::ToAccessibilityLabel(match_type, display_text));
 }
 
 bool OmniboxViewMac::OnInlineAutocompleteTextMaybeChanged(

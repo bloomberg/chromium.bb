@@ -270,6 +270,7 @@ source_set("unit_tests") {
   sources = [
     "answers_cache_unittest.cc",
     "autocomplete_input_unittest.cc",
+    "autocomplete_match_type_unittest.cc",
     "autocomplete_match_unittest.cc",
     "autocomplete_provider_unittest.cc",
     "autocomplete_result_unittest.cc",
