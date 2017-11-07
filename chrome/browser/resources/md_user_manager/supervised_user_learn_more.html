@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="/icons.html">
 <link rel="import" href="/shared_styles.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -19,15 +18,8 @@
       }
 
       #title-area {
-        border-bottom: var(--user-manager-separator-line);
         font-size: 16px;
-        padding-bottom: 16px;
-      }
-
-      #title-area iron-icon {
-        --iron-icon-height: 20px;
-        --iron-icon-width: 20px;
-        color: var(--title-icon-color);
+        font-weight: 500;
       }
 
       .content-area {
@@ -50,7 +42,6 @@
     <div id="container">
       <div id="title-area" class="horizontal justified layout">
         <span id="title">$i18n{supervisedUserLearnMoreTitle}</span>
-        <iron-icon icon="user-manager:supervisor-account"></iron-icon>
       </div>
       <div class="content-area">$i18nRaw{supervisedUserLearnMoreText}</div>
       <div id="actions">
