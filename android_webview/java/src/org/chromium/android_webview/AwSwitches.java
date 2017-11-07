@@ -18,6 +18,11 @@ public final class AwSwitches {
     public static final String WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT =
             "webview-enable-safebrowsing-support";
 
+    // Disables safebrowsing functionality in webview.
+    // Native switch kWebViewDisableSafeBrowsingSupport.
+    public static final String WEBVIEW_DISABLE_SAFEBROWSING_SUPPORT =
+            "webview-disable-safebrowsing-support";
+
     // Enables SafeBrowsing and causes WebView to treat all resources as malicious. Use care: this
     // will block all resources from loading.
     // No native switch.

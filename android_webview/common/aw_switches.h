@@ -11,6 +11,7 @@ extern const char kEnableWebViewVariations[];
 extern const char kSyncOnDrawHardware[];
 extern const char kWebViewSandboxedRenderer[];
 extern const char kWebViewEnableSafeBrowsingSupport[];
+extern const char kWebViewDisableSafeBrowsingSupport[];
 
 // Please note that if you are adding a flag that is intended for a renderer,
 // you also need to add it into
