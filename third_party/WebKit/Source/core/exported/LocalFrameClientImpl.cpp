@@ -931,7 +931,7 @@ void LocalFrameClientImpl::DidUpdateToUniqueOrigin() {
 void LocalFrameClientImpl::DidChangeFramePolicy(
     Frame* child_frame,
     SandboxFlags flags,
-    const WebParsedFeaturePolicy& container_policy) {
+    const ParsedFeaturePolicy& container_policy) {
   if (!web_frame_->Client())
     return;
   web_frame_->Client()->DidChangeFramePolicy(
@@ -940,7 +940,7 @@ void LocalFrameClientImpl::DidChangeFramePolicy(
 }
 
 void LocalFrameClientImpl::DidSetFeaturePolicyHeader(
-    const WebParsedFeaturePolicy& parsed_header) {
+    const ParsedFeaturePolicy& parsed_header) {
   if (web_frame_->Client())
     web_frame_->Client()->DidSetFeaturePolicyHeader(parsed_header);
 }

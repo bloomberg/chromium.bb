@@ -203,7 +203,7 @@ void HTMLFrameOwnerElement::DispatchLoad() {
   DispatchScopedEvent(Event::Create(EventTypeNames::load));
 }
 
-const WebParsedFeaturePolicy& HTMLFrameOwnerElement::ContainerPolicy() const {
+const ParsedFeaturePolicy& HTMLFrameOwnerElement::ContainerPolicy() const {
   return container_policy_;
 }
 

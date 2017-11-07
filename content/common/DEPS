@@ -15,11 +15,11 @@ include_rules = [
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
+  "+third_party/WebKit/common/feature_policy/feature_policy.h",
   "+third_party/WebKit/public/platform/WebAddressSpace.h",
   "+third_party/WebKit/public/platform/WebContentSecurityPolicy.h",
   "+third_party/WebKit/public/platform/WebDisplayMode.h",
   "+third_party/WebKit/public/platform/WebDragOperation.h",
-  "+third_party/WebKit/public/platform/WebFeaturePolicy.h",
   "+third_party/WebKit/public/platform/WebFloatPoint.h",
   "+third_party/WebKit/public/platform/WebFloatRect.h",
   "+third_party/WebKit/public/platform/WebFocusType.h",

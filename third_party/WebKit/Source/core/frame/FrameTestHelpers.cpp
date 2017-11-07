@@ -177,7 +177,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
   WebLocalFrameImpl* frame =
       ToWebLocalFrameImpl(WebLocalFrame::CreateProvisional(
           client, nullptr, &old_frame, WebSandboxFlags::kNone,
-          WebParsedFeaturePolicy()));
+          ParsedFeaturePolicy()));
   client->Bind(frame, std::move(owned_client));
   // Create a local root, if necessary.
   std::unique_ptr<TestWebWidgetClient> owned_widget_client;
@@ -212,8 +212,7 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   auto owned_client = CreateDefaultClientIfNeeded(client);
   auto* frame = ToWebLocalFrameImpl(parent.CreateLocalChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone, client,
-      nullptr, previous_sibling, WebParsedFeaturePolicy(), properties,
-      nullptr));
+      nullptr, previous_sibling, ParsedFeaturePolicy(), properties, nullptr));
   client->Bind(frame, std::move(owned_client));
 
   auto owned_widget_client = CreateDefaultClientIfNeeded(widget_client);
@@ -230,7 +229,7 @@ WebRemoteFrameImpl* CreateRemoteChild(
   auto owned_client = CreateDefaultClientIfNeeded(client);
   auto* frame = ToWebRemoteFrameImpl(parent.CreateRemoteChild(
       WebTreeScopeType::kDocument, name, WebSandboxFlags::kNone,
-      WebParsedFeaturePolicy(), client, nullptr));
+      ParsedFeaturePolicy(), client, nullptr));
   client->Bind(frame, std::move(owned_client));
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUnique();
@@ -410,7 +409,7 @@ WebLocalFrame* TestWebFrameClient::CreateChildFrame(
     const WebString& name,
     const WebString& fallback_name,
     WebSandboxFlags sandbox_flags,
-    const WebParsedFeaturePolicy& container_policy,
+    const ParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties) {
   return CreateLocalChild(*parent, scope);
 }

@@ -53,6 +53,7 @@
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h"
@@ -98,7 +99,6 @@ namespace content {
 class AssociatedInterfaceProviderImpl;
 class AssociatedInterfaceRegistryImpl;
 class LegacyIPCFrameInputHandler;
-class FeaturePolicy;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
@@ -613,7 +613,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ResetLoadingState();
 
   // Returns the feature policy which should be enforced on this RenderFrame.
-  FeaturePolicy* feature_policy() { return feature_policy_.get(); }
+  blink::FeaturePolicy* feature_policy() { return feature_policy_.get(); }
 
   // Clears any existing policy and constructs a new policy for this frame,
   // based on its parent frame.
@@ -776,7 +776,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidChangeOpener(int32_t opener_routing_id);
   void OnDidChangeName(const std::string& name, const std::string& unique_name);
   void OnDidSetFeaturePolicyHeader(
-      const ParsedFeaturePolicyHeader& parsed_header);
+      const blink::ParsedFeaturePolicy& parsed_header);
 
   // A new set of CSP |policies| has been added to the document.
   void OnDidAddContentSecurityPolicies(
@@ -1310,7 +1310,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   int enabled_bindings_ = 0;
 
   // Tracks the feature policy which has been set on this frame.
-  std::unique_ptr<FeaturePolicy> feature_policy_;
+  std::unique_ptr<blink::FeaturePolicy> feature_policy_;
 
 #if defined(OS_ANDROID)
   // An InterfaceProvider for Java-implemented interfaces that are scoped to

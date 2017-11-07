@@ -126,8 +126,6 @@ source_set("common") {
     "drag_traits.h",
     "dwrite_font_proxy_messages.h",
     "edit_command.h",
-    "feature_policy/feature_policy.cc",
-    "feature_policy/feature_policy.h",
     "fileapi/file_system_messages.h",
     "fileapi/webblob_messages.h",
     "font_cache_dispatcher_win.cc",

@@ -103,9 +103,9 @@ void SecurityContext::EnforceSuborigin(const Suborigin& suborigin) {
 }
 
 void SecurityContext::InitializeFeaturePolicy(
-    const WebParsedFeaturePolicy& parsed_header,
-    const WebParsedFeaturePolicy& container_policy,
-    const WebFeaturePolicy* parent_feature_policy) {
+    const ParsedFeaturePolicy& parsed_header,
+    const ParsedFeaturePolicy& container_policy,
+    const FeaturePolicy* parent_feature_policy) {
   WebSecurityOrigin origin = WebSecurityOrigin(security_origin_);
   feature_policy_ = Platform::Current()->CreateFeaturePolicy(
       parent_feature_policy, container_policy, parsed_header, origin);

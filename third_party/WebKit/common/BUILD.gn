@@ -26,6 +26,8 @@ component("blink_common") {
     "common_export.h",
     "device_memory/approximated_device_memory.cc",
     "device_memory/approximated_device_memory.h",
+    "feature_policy/feature_policy.cc",
+    "feature_policy/feature_policy.h",
     "message_port/cloneable_message.cc",
     "message_port/cloneable_message.h",
     "message_port/cloneable_message_struct_traits.cc",
@@ -69,6 +71,7 @@ test("blink_common_unittests") {
 
   sources = [
     "device_memory/approximated_device_memory_unittest.cc",
+    "feature_policy/feature_policy_unittest.cc",
     "mime_util/mime_util_unittest.cc",
     "origin_manifest/origin_manifest_unittest.cc",
     "origin_trials/trial_token_unittest.cc",

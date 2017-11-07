@@ -13,7 +13,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/mock_permission_manager.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
 #include "url/origin.h"
 

@@ -5,6 +5,8 @@
 #include "core/html/HTMLIFrameElement.h"
 
 #include "core/dom/Document.h"
+#include "platform/feature_policy/FeaturePolicy.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -166,7 +168,7 @@ TEST_F(HTMLIFrameElementTest, DefaultContainerPolicy) {
   frame_element->setAttribute(HTMLNames::srcAttr, "http://example.net/");
   frame_element->UpdateContainerPolicyForTests();
 
-  const WebParsedFeaturePolicy& container_policy =
+  const ParsedFeaturePolicy& container_policy =
       frame_element->ContainerPolicy();
   EXPECT_EQ(0UL, container_policy.size());
 }
@@ -185,19 +187,19 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
   frame_element->setAttribute(HTMLNames::allowAttr, "fullscreen");
   frame_element->UpdateContainerPolicyForTests();
 
-  const WebParsedFeaturePolicy& container_policy1 =
+  const ParsedFeaturePolicy& container_policy1 =
       frame_element->ContainerPolicy();
 
   EXPECT_EQ(1UL, container_policy1.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy1[0].feature);
   EXPECT_FALSE(container_policy1[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy1[0].origins.size());
-  EXPECT_EQ("http://example.net", container_policy1[0].origins[0].ToString());
+  EXPECT_EQ("http://example.net", container_policy1[0].origins[0].Serialize());
 
   frame_element->setAttribute(HTMLNames::allowAttr, "payment; fullscreen");
   frame_element->UpdateContainerPolicyForTests();
 
-  const WebParsedFeaturePolicy& container_policy2 =
+  const ParsedFeaturePolicy& container_policy2 =
       frame_element->ContainerPolicy();
   EXPECT_EQ(2UL, container_policy2.size());
   EXPECT_TRUE(
@@ -208,16 +210,16 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
       container_policy2[1].feature == WebFeaturePolicyFeature::kPayment);
   EXPECT_FALSE(container_policy2[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy2[0].origins.size());
-  EXPECT_EQ("http://example.net", container_policy2[0].origins[0].ToString());
+  EXPECT_EQ("http://example.net", container_policy2[0].origins[0].Serialize());
   EXPECT_FALSE(container_policy2[1].matches_all_origins);
   EXPECT_EQ(1UL, container_policy2[1].origins.size());
-  EXPECT_EQ("http://example.net", container_policy2[1].origins[0].ToString());
+  EXPECT_EQ("http://example.net", container_policy2[1].origins[0].Serialize());
 
   // TODO(loonybear): Remove this test when deprecating the old syntax.
   // Test for supporting old allow syntax.
   frame_element->setAttribute(HTMLNames::allowAttr, "payment fullscreen");
 
-  const WebParsedFeaturePolicy& container_policy3 =
+  const ParsedFeaturePolicy& container_policy3 =
       frame_element->ContainerPolicy();
   EXPECT_EQ(2UL, container_policy3.size());
   EXPECT_TRUE(
@@ -228,10 +230,10 @@ TEST_F(HTMLIFrameElementTest, AllowAttributeContainerPolicy) {
       container_policy3[1].feature == WebFeaturePolicyFeature::kPayment);
   EXPECT_FALSE(container_policy3[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy3[0].origins.size());
-  EXPECT_EQ("http://example.net", container_policy3[0].origins[0].ToString());
+  EXPECT_EQ("http://example.net", container_policy3[0].origins[0].Serialize());
   EXPECT_FALSE(container_policy3[1].matches_all_origins);
   EXPECT_EQ(1UL, container_policy3[1].origins.size());
-  EXPECT_EQ("http://example.net", container_policy3[1].origins[0].ToString());
+  EXPECT_EQ("http://example.net", container_policy3[1].origins[0].Serialize());
 }
 
 // Test that the allow attribute on a sandboxed frame results in a container
@@ -249,14 +251,14 @@ TEST_F(HTMLIFrameElementTest, SandboxAttributeContainerPolicy) {
   frame_element->setAttribute(HTMLNames::sandboxAttr, "");
   frame_element->UpdateContainerPolicyForTests();
 
-  const WebParsedFeaturePolicy& container_policy =
+  const ParsedFeaturePolicy& container_policy =
       frame_element->ContainerPolicy();
 
   EXPECT_EQ(1UL, container_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_TRUE(container_policy[0].origins[0].IsUnique());
+  EXPECT_TRUE(container_policy[0].origins[0].unique());
 }
 
 // Test that the allow attribute on a sandboxed frame with the allow-same-origin
@@ -275,15 +277,15 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
   frame_element->setAttribute(HTMLNames::sandboxAttr, "allow-same-origin");
   frame_element->UpdateContainerPolicyForTests();
 
-  const WebParsedFeaturePolicy& container_policy =
+  const ParsedFeaturePolicy& container_policy =
       frame_element->ContainerPolicy();
 
   EXPECT_EQ(1UL, container_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_FALSE(container_policy[0].origins[0].IsUnique());
-  EXPECT_EQ("http://example.net", container_policy[0].origins[0].ToString());
+  EXPECT_FALSE(container_policy[0].origins[0].unique());
+  EXPECT_EQ("http://example.net", container_policy[0].origins[0].Serialize());
 }
 
 // Test the ConstructContainerPolicy method when no attributes are set on the
@@ -296,7 +298,7 @@ TEST_F(HTMLIFrameElementTest, ConstructEmptyContainerPolicy) {
 
   HTMLIFrameElement* frame_element = HTMLIFrameElement::Create(*document);
 
-  WebParsedFeaturePolicy container_policy =
+  ParsedFeaturePolicy container_policy =
       frame_element->ConstructContainerPolicy(nullptr, nullptr);
   EXPECT_EQ(0UL, container_policy.size());
 }
@@ -311,21 +313,19 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicy) {
 
   HTMLIFrameElement* frame_element = HTMLIFrameElement::Create(*document);
   frame_element->setAttribute(HTMLNames::allowAttr, "payment; usb");
-  WebParsedFeaturePolicy container_policy =
+  ParsedFeaturePolicy container_policy =
       frame_element->ConstructContainerPolicy(nullptr, nullptr);
   EXPECT_EQ(2UL, container_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kPayment, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_TRUE(GetOriginForFeaturePolicy(frame_element)
-                  ->IsSameSchemeHostPortAndSuborigin(
-                      container_policy[0].origins[0].Get()));
+  EXPECT_TRUE(container_policy[0].origins[0].IsSameOriginWith(
+      GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
   EXPECT_EQ(WebFeaturePolicyFeature::kUsb, container_policy[1].feature);
   EXPECT_FALSE(container_policy[1].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[1].origins.size());
-  EXPECT_TRUE(GetOriginForFeaturePolicy(frame_element)
-                  ->IsSameSchemeHostPortAndSuborigin(
-                      container_policy[1].origins[0].Get()));
+  EXPECT_TRUE(container_policy[1].origins[0].IsSameOriginWith(
+      GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
 }
 
 // Test the ConstructContainerPolicy method when the "allowfullscreen" attribute
@@ -339,7 +339,7 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowFullscreen) {
   HTMLIFrameElement* frame_element = HTMLIFrameElement::Create(*document);
   frame_element->SetBooleanAttribute(HTMLNames::allowfullscreenAttr, true);
 
-  WebParsedFeaturePolicy container_policy =
+  ParsedFeaturePolicy container_policy =
       frame_element->ConstructContainerPolicy(nullptr, nullptr);
   EXPECT_EQ(1UL, container_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy[0].feature);
@@ -358,15 +358,14 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowPaymentRequest) {
   frame_element->setAttribute(HTMLNames::allowAttr, "usb");
   frame_element->SetBooleanAttribute(HTMLNames::allowpaymentrequestAttr, true);
 
-  WebParsedFeaturePolicy container_policy =
+  ParsedFeaturePolicy container_policy =
       frame_element->ConstructContainerPolicy(nullptr, nullptr);
   EXPECT_EQ(2UL, container_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kUsb, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_TRUE(GetOriginForFeaturePolicy(frame_element)
-                  ->IsSameSchemeHostPortAndSuborigin(
-                      container_policy[0].origins[0].Get()));
+  EXPECT_TRUE(container_policy[0].origins[0].IsSameOriginWith(
+      GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
   EXPECT_EQ(WebFeaturePolicyFeature::kPayment, container_policy[1].feature);
   EXPECT_TRUE(container_policy[1].matches_all_origins);
 }
@@ -388,21 +387,19 @@ TEST_F(HTMLIFrameElementTest, ConstructContainerPolicyWithAllowAttributes) {
   frame_element->SetBooleanAttribute(HTMLNames::allowfullscreenAttr, true);
   frame_element->SetBooleanAttribute(HTMLNames::allowpaymentrequestAttr, true);
 
-  WebParsedFeaturePolicy container_policy =
+  ParsedFeaturePolicy container_policy =
       frame_element->ConstructContainerPolicy(nullptr, nullptr);
   EXPECT_EQ(3UL, container_policy.size());
   EXPECT_EQ(WebFeaturePolicyFeature::kPayment, container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_TRUE(GetOriginForFeaturePolicy(frame_element)
-                  ->IsSameSchemeHostPortAndSuborigin(
-                      container_policy[0].origins[0].Get()));
+  EXPECT_TRUE(container_policy[0].origins[0].IsSameOriginWith(
+      GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
   EXPECT_EQ(WebFeaturePolicyFeature::kUsb, container_policy[1].feature);
   EXPECT_FALSE(container_policy[1].matches_all_origins);
   EXPECT_EQ(1UL, container_policy[1].origins.size());
-  EXPECT_TRUE(GetOriginForFeaturePolicy(frame_element)
-                  ->IsSameSchemeHostPortAndSuborigin(
-                      container_policy[1].origins[0].Get()));
+  EXPECT_TRUE(container_policy[1].origins[0].IsSameOriginWith(
+      GetOriginForFeaturePolicy(frame_element)->ToUrlOrigin()));
   EXPECT_EQ(WebFeaturePolicyFeature::kFullscreen, container_policy[2].feature);
   EXPECT_TRUE(container_policy[2].matches_all_origins);
 }

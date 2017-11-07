@@ -83,7 +83,7 @@ class CORE_EXPORT HTMLPlugInElement
   void RequestPluginCreationWithoutLayoutObjectIfPossible();
   void CreatePluginWithoutLayoutObject();
 
-  virtual Vector<WebParsedFeaturePolicyDeclaration> ConstructContainerPolicy(
+  virtual ParsedFeaturePolicy ConstructContainerPolicy(
       Vector<String>* /* messages */,
       bool* /* old_syntax */) const;
 

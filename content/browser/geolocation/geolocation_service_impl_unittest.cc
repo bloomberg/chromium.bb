@@ -17,7 +17,7 @@
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebFeaturePolicyFeature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 
 using base::test::ScopedFeatureList;
 using blink::mojom::PermissionStatus;

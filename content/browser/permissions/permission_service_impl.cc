@@ -17,7 +17,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
-#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 
 using blink::mojom::PermissionDescriptorPtr;
 using blink::mojom::PermissionName;

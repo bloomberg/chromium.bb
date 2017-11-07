@@ -15,7 +15,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
-#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "url/origin.h"
 
 namespace content {

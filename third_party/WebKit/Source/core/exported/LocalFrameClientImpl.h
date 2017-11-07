@@ -185,9 +185,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidUpdateToUniqueOrigin() override;
   void DidChangeFramePolicy(Frame* child_frame,
                             SandboxFlags,
-                            const WebParsedFeaturePolicy&) override;
+                            const ParsedFeaturePolicy&) override;
   void DidSetFeaturePolicyHeader(
-      const WebParsedFeaturePolicy& parsed_header) override;
+      const ParsedFeaturePolicy& parsed_header) override;
   void DidAddContentSecurityPolicies(
       const blink::WebVector<WebContentSecurityPolicy>&) override;
   void DidChangeFrameOwnerProperties(HTMLFrameOwnerElement*) override;

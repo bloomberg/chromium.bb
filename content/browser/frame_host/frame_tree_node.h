@@ -185,7 +185,7 @@ class CONTENT_EXPORT FrameTreeNode {
   void SetFrameName(const std::string& name, const std::string& unique_name);
 
   // Set the frame's feature policy header, clearing any existing header.
-  void SetFeaturePolicyHeader(const ParsedFeaturePolicyHeader& parsed_header);
+  void SetFeaturePolicyHeader(const blink::ParsedFeaturePolicy& parsed_header);
 
   // Clear any feature policy header associated with the frame.
   void ResetFeaturePolicyHeader();

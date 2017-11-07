@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
-blink::WebFeaturePolicyFeature kDefaultOnFeature =
-    static_cast<blink::WebFeaturePolicyFeature>(
-        static_cast<int>(blink::WebFeaturePolicyFeature::LAST_FEATURE) + 1);
+WebFeaturePolicyFeature kDefaultOnFeature =
+    static_cast<WebFeaturePolicyFeature>(
+        static_cast<int>(WebFeaturePolicyFeature::LAST_FEATURE) + 1);
 
-blink::WebFeaturePolicyFeature kDefaultSelfFeature =
-    static_cast<blink::WebFeaturePolicyFeature>(
-        static_cast<int>(blink::WebFeaturePolicyFeature::LAST_FEATURE) + 2);
+WebFeaturePolicyFeature kDefaultSelfFeature =
+    static_cast<WebFeaturePolicyFeature>(
+        static_cast<int>(WebFeaturePolicyFeature::LAST_FEATURE) + 2);
 
-blink::WebFeaturePolicyFeature kDefaultOffFeature =
-    static_cast<blink::WebFeaturePolicyFeature>(
-        static_cast<int>(blink::WebFeaturePolicyFeature::LAST_FEATURE) + 3);
+WebFeaturePolicyFeature kDefaultOffFeature =
+    static_cast<WebFeaturePolicyFeature>(
+        static_cast<int>(WebFeaturePolicyFeature::LAST_FEATURE) + 3);
 
 }  // namespace
 
@@ -40,14 +40,14 @@ class FeaturePolicyTest : public ::testing::Test {
   std::unique_ptr<FeaturePolicy> CreateFromParentPolicy(
       const FeaturePolicy* parent,
       const url::Origin& origin) {
-    ParsedFeaturePolicyHeader empty_container_policy;
+    ParsedFeaturePolicy empty_container_policy;
     return FeaturePolicy::CreateFromParentPolicy(parent, empty_container_policy,
                                                  origin, feature_list_);
   }
 
   std::unique_ptr<FeaturePolicy> CreateFromParentWithFramePolicy(
       const FeaturePolicy* parent,
-      const ParsedFeaturePolicyHeader& frame_policy,
+      const ParsedFeaturePolicy& frame_policy,
       const url::Origin& origin) {
     return FeaturePolicy::CreateFromParentPolicy(parent, frame_policy, origin,
                                                  feature_list_);
@@ -661,7 +661,7 @@ TEST_F(FeaturePolicyTest, TestSimpleFramePolicy) {
   // <iframe allow="default-self">
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
-  ParsedFeaturePolicyHeader frame_policy = {
+  ParsedFeaturePolicy frame_policy = {
       {{kDefaultSelfFeature, false, {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy, origin_b_);
@@ -696,7 +696,7 @@ TEST_F(FeaturePolicyTest, TestAllOriginFramePolicy) {
   // <iframe allowfullscreen>
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
-  ParsedFeaturePolicyHeader frame_policy = {
+  ParsedFeaturePolicy frame_policy = {
       {{kDefaultSelfFeature, true, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy, origin_b_);
@@ -742,11 +742,11 @@ TEST_F(FeaturePolicyTest, TestFramePolicyCanBeFurtherDelegated) {
   // delegated through frame policy.
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
-  ParsedFeaturePolicyHeader frame_policy1 = {
+  ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultSelfFeature, false, {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
-  ParsedFeaturePolicyHeader frame_policy2 = {
+  ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultSelfFeature, false, {origin_c_}}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy2.get(), frame_policy2, origin_c_);
@@ -787,11 +787,11 @@ TEST_F(FeaturePolicyTest, TestDefaultOnCanBeDisabledByFramePolicy) {
   // child frames because permission was removed through frame policy.
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
-  ParsedFeaturePolicyHeader frame_policy1 = {
+  ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultOnFeature, false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_a_);
-  ParsedFeaturePolicyHeader frame_policy2 = {
+  ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultOnFeature, false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
@@ -834,11 +834,11 @@ TEST_F(FeaturePolicyTest, TestDefaultOffMustBeEnabledByChildFrame) {
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
   policy1->SetHeaderPolicy({{{kDefaultOffFeature, false, {origin_a_}}}});
-  ParsedFeaturePolicyHeader frame_policy1 = {
+  ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultOffFeature, false, {origin_a_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_a_);
-  ParsedFeaturePolicyHeader frame_policy2 = {
+  ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultOffFeature, false, {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
@@ -885,12 +885,12 @@ TEST_F(FeaturePolicyTest, TestDefaultOffCanBeEnabledByChildFrame) {
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
   policy1->SetHeaderPolicy({{{kDefaultOffFeature, false, {origin_a_}}}});
-  ParsedFeaturePolicyHeader frame_policy1 = {
+  ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultOffFeature, false, {origin_a_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_a_);
   policy2->SetHeaderPolicy({{{kDefaultOffFeature, false, {origin_a_}}}});
-  ParsedFeaturePolicyHeader frame_policy2 = {
+  ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultOffFeature, false, {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
@@ -940,11 +940,11 @@ TEST_F(FeaturePolicyTest, TestFramePolicyModifiesHeaderPolicy) {
       CreateFromParentPolicy(nullptr, origin_a_);
   policy1->SetHeaderPolicy(
       {{{kDefaultSelfFeature, false, {origin_a_, origin_b_}}}});
-  ParsedFeaturePolicyHeader frame_policy1 = {
+  ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultSelfFeature, false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
-  ParsedFeaturePolicyHeader frame_policy2 = {
+  ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultSelfFeature, false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy2, origin_b_);
@@ -982,13 +982,13 @@ TEST_F(FeaturePolicyTest, TestCombineFrameAndHeaderPolicies) {
   // 4. Feature should be disabled in frame 3 by frame policy.
   std::unique_ptr<FeaturePolicy> policy1 =
       CreateFromParentPolicy(nullptr, origin_a_);
-  ParsedFeaturePolicyHeader frame_policy1 = {
+  ParsedFeaturePolicy frame_policy1 = {
       {{kDefaultSelfFeature, false, {origin_b_}}}};
   std::unique_ptr<FeaturePolicy> policy2 =
       CreateFromParentWithFramePolicy(policy1.get(), frame_policy1, origin_b_);
   policy2->SetHeaderPolicy(
       {{{kDefaultSelfFeature, true, std::vector<url::Origin>()}}});
-  ParsedFeaturePolicyHeader frame_policy2 = {
+  ParsedFeaturePolicy frame_policy2 = {
       {{kDefaultSelfFeature, false, std::vector<url::Origin>()}}};
   std::unique_ptr<FeaturePolicy> policy3 =
       CreateFromParentWithFramePolicy(policy2.get(), frame_policy2, origin_c_);
@@ -1004,4 +1004,4 @@ TEST_F(FeaturePolicyTest, TestCombineFrameAndHeaderPolicies) {
       policy4->IsFeatureEnabledForOrigin(kDefaultSelfFeature, origin_c_));
 }
 
-}  // namespace content
+}  // namespace blink

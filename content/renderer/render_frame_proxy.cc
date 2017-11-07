@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "components/viz/common/switches.h"
-#include "content/child/feature_policy/feature_policy_platform.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -33,8 +32,8 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
-#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -137,9 +136,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         replicated_state.scope,
         blink::WebString::FromUTF8(replicated_state.name),
         replicated_state.frame_policy.sandbox_flags,
-        FeaturePolicyHeaderToWeb(
-            replicated_state.frame_policy.container_policy),
-        proxy.get(), opener);
+        replicated_state.frame_policy.container_policy, proxy.get(), opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
     render_widget = parent->render_widget();
@@ -279,8 +276,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   web_frame_->SetReplicatedInsecureRequestPolicy(state.insecure_request_policy);
   web_frame_->SetReplicatedPotentiallyTrustworthyUniqueOrigin(
       state.has_potentially_trustworthy_unique_origin);
-  web_frame_->SetReplicatedFeaturePolicyHeader(
-      FeaturePolicyHeaderToWeb(state.feature_policy_header));
+  web_frame_->SetReplicatedFeaturePolicyHeader(state.feature_policy_header);
   if (state.has_received_user_gesture)
     web_frame_->SetHasReceivedUserGesture();
 
@@ -306,9 +302,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
 // about updates to its flags until they take effect.
 void RenderFrameProxy::OnDidUpdateFramePolicy(const FramePolicy& frame_policy) {
   web_frame_->SetReplicatedSandboxFlags(frame_policy.sandbox_flags);
-  web_frame_->SetFrameOwnerPolicy(
-      frame_policy.sandbox_flags,
-      FeaturePolicyHeaderToWeb(frame_policy.container_policy));
+  web_frame_->SetFrameOwnerPolicy(frame_policy.sandbox_flags,
+                                  frame_policy.container_policy);
 }
 
 void RenderFrameProxy::SetChildFrameSurface(

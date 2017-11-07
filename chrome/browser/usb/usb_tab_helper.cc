@@ -14,7 +14,7 @@
 #include "content/public/common/content_features.h"
 #include "device/usb/mojo/device_manager_impl.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "third_party/WebKit/public/platform/WebFeaturePolicyFeature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/usb/web_usb_chooser_service_android.h"

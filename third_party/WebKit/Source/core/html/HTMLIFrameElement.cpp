@@ -203,14 +203,13 @@ void HTMLIFrameElement::ParseAttribute(
   }
 }
 
-Vector<WebParsedFeaturePolicyDeclaration>
-HTMLIFrameElement::ConstructContainerPolicy(Vector<String>* messages,
-                                            bool* old_syntax) const {
+ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
+    Vector<String>* messages,
+    bool* old_syntax) const {
   scoped_refptr<SecurityOrigin> src_origin = GetOriginForFeaturePolicy();
   scoped_refptr<SecurityOrigin> self_origin = GetDocument().GetSecurityOrigin();
-  Vector<WebParsedFeaturePolicyDeclaration> container_policy =
-      ParseFeaturePolicyAttribute(allow_, self_origin, src_origin, messages,
-                                  old_syntax);
+  ParsedFeaturePolicy container_policy = ParseFeaturePolicyAttribute(
+      allow_, self_origin, src_origin, messages, old_syntax);
 
   // If allowfullscreen attribute is present and no fullscreen policy is set,
   // enable the feature for all origins.
@@ -227,10 +226,9 @@ HTMLIFrameElement::ConstructContainerPolicy(Vector<String>* messages,
       }
     }
     if (!has_fullscreen_policy) {
-      WebParsedFeaturePolicyDeclaration whitelist;
+      ParsedFeaturePolicyDeclaration whitelist;
       whitelist.feature = WebFeaturePolicyFeature::kFullscreen;
       whitelist.matches_all_origins = true;
-      whitelist.origins = Vector<WebSecurityOrigin>(0UL);
       container_policy.push_back(whitelist);
     }
   }
@@ -249,10 +247,10 @@ HTMLIFrameElement::ConstructContainerPolicy(Vector<String>* messages,
       }
     }
     if (!has_payment_policy) {
-      WebParsedFeaturePolicyDeclaration whitelist;
+      ParsedFeaturePolicyDeclaration whitelist;
       whitelist.feature = WebFeaturePolicyFeature::kPayment;
       whitelist.matches_all_origins = true;
-      whitelist.origins = Vector<WebSecurityOrigin>(0UL);
+      whitelist.origins = std::vector<url::Origin>(0UL);
       container_policy.push_back(whitelist);
     }
   }

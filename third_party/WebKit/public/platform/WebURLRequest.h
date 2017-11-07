@@ -35,6 +35,7 @@
 #include "WebCommon.h"
 #include "WebHTTPBody.h"
 #include "WebReferrerPolicy.h"
+#include "WebSecurityOrigin.h"
 #include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 
 namespace blink {
