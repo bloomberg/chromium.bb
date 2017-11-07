@@ -1210,6 +1210,10 @@
                   'components/omnibox/|'\
                   'ios/chrome/browser/ui/omnibox/'
     },
+    'optimization_guide': {
+      'filepath': 'optimization_guide|'\
+                  'optimization_hints',
+    },
     'origin_trials': {
       'filepath': 'origin_trials'\
                   '|OriginTrial'\
@@ -2159,6 +2163,9 @@
                       'petewil+watch@chromium.org',
                       'romax+watch@chromium.org'],
     'omnibox': ['jdonnelly+watch@chromium.org'],
+    'optimization_guide': ['dougarnett+watch-optguide@chromium.org',
+                           'sophiechang+watch-optguide@chromium.org',
+			   'maniscalco+watch-optguide@chromium.org'],
     'origin_trials': ['chasej+watch@chromium.org',
                       'iclelland+watch@chromium.org'],
     'ozone': ['kalyan.kondapally@intel.com',
