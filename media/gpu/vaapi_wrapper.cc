@@ -144,6 +144,11 @@ class VADisplayState {
  public:
   static VADisplayState* Get();
 
+  // Initialize static data before sandbox is enabled.
+  static void PreSandboxInitialization();
+  // Returns false on init failure.
+  static bool PostSandboxInitialization();
+
   VADisplayState();
   ~VADisplayState() = delete;
 
@@ -183,6 +188,44 @@ class VADisplayState {
 VADisplayState* VADisplayState::Get() {
   static VADisplayState* display_state = new VADisplayState();
   return display_state;
+}
+
+// static
+void VADisplayState::PreSandboxInitialization() {
+#if defined(USE_OZONE)
+  const char kDriRenderNode0Path[] = "/dev/dri/renderD128";
+  base::File drm_file = base::File(
+      base::FilePath::FromUTF8Unsafe(kDriRenderNode0Path),
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE);
+  if (drm_file.IsValid())
+    VADisplayState::Get()->SetDrmFd(drm_file.GetPlatformFile());
+#endif
+}
+
+// static
+bool VADisplayState::PostSandboxInitialization() {
+  StubPathMap paths;
+
+  paths[kModuleVa].push_back("libva.so.1");
+
+#if defined(USE_X11)
+  paths[kModuleVa_x11].push_back("libva-x11.so.1");
+#elif defined(USE_OZONE)
+  paths[kModuleVa_drm].push_back("libva-drm.so.1");
+#endif
+
+  const bool success = InitializeStubs(paths);
+  if (!success) {
+    static const char kErrorMsg[] = "Failed to initialize VAAPI libs";
+#if defined(OS_CHROMEOS)
+    // When Chrome runs on Linux with target_os="chromeos", do not log error
+    // message without VAAPI libraries.
+    LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS()) << kErrorMsg;
+#else
+    DVLOG(1) << kErrorMsg;
+#endif
+  }
+  return success;
 }
 
 VADisplayState::VADisplayState()
@@ -305,9 +348,7 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
     VideoCodecProfile profile,
     const base::Closure& report_error_to_uma_cb) {
   VAProfile va_profile = ProfileToVAProfile(profile, mode);
-  scoped_refptr<VaapiWrapper> vaapi_wrapper =
-      Create(mode, va_profile, report_error_to_uma_cb);
-  return vaapi_wrapper;
+  return Create(mode, va_profile, report_error_to_uma_cb);
 }
 
 // static
@@ -436,21 +477,10 @@ VaapiWrapper::GetSupportedProfileInfosForCodecModeInternal(CodecMode mode) {
 }
 
 bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
-  static bool vaapi_functions_initialized = PostSandboxInitialization();
-  if (!vaapi_functions_initialized) {
-    bool running_on_chromeos = false;
-#if defined(OS_CHROMEOS)
-    // When chrome runs on linux with chromeos=1, do not log error message
-    // without VAAPI libraries.
-    running_on_chromeos = base::SysInfo::IsRunningOnChromeOS();
-#endif
-    static const char kErrorMsg[] = "Failed to initialize VAAPI libs";
-    if (running_on_chromeos)
-      LOG(ERROR) << kErrorMsg;
-    else
-      DVLOG(1) << kErrorMsg;
+  static bool vaapi_functions_initialized =
+      VADisplayState::Get()->PostSandboxInitialization();
+  if (!vaapi_functions_initialized)
     return false;
-  }
 
   report_error_to_uma_cb_ = report_error_to_uma_cb;
 
@@ -1176,29 +1206,7 @@ void VaapiWrapper::DeinitializeVpp() {
 
 // static
 void VaapiWrapper::PreSandboxInitialization() {
-#if defined(USE_OZONE)
-  const char kDriRenderNode0Path[] = "/dev/dri/renderD128";
-  base::File drm_file = base::File(
-      base::FilePath::FromUTF8Unsafe(kDriRenderNode0Path),
-      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE);
-  if (drm_file.IsValid())
-    VADisplayState::Get()->SetDrmFd(drm_file.GetPlatformFile());
-#endif
-}
-
-// static
-bool VaapiWrapper::PostSandboxInitialization() {
-  StubPathMap paths;
-
-  paths[kModuleVa].push_back("libva.so.1");
-
-#if defined(USE_X11)
-  paths[kModuleVa_x11].push_back("libva-x11.so.1");
-#elif defined(USE_OZONE)
-  paths[kModuleVa_drm].push_back("libva-drm.so.1");
-#endif
-
-  return InitializeStubs(paths);
+  VADisplayState::PreSandboxInitialization();
 }
 
 // static

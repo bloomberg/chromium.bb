@@ -279,10 +279,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   std::vector<ProfileInfo> GetSupportedProfileInfosForCodecModeInternal(
       CodecMode mode);
 
-  // Lazily initialize static data after sandbox is enabled.  Return false on
-  // init failure.
-  static bool PostSandboxInitialization();
-
   // Map VideoCodecProfile enum values to VaProfile values. This function
   // includes a workaround for crbug.com/345569. If va_profile is h264 baseline
   // and it is not supported, we try constrained baseline.
