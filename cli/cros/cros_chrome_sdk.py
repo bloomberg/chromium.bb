@@ -397,7 +397,10 @@ class SDKFetcher(object):
             self._UpdateTarball(url, ref)
           except gs.GSNoSuchKey:
             if key == constants.VM_IMAGE_TAR:
-              logging.warning('No VM available.')
+              logging.warning(
+                  'No VM available for board %s. '
+                  'Please try a different board, e.g. amd64-generic.',
+                  self.board)
             else:
               raise
 

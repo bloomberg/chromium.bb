@@ -118,14 +118,15 @@ class VM(object):
     if not self.qemu_path:
       self.qemu_path = osutils.Which('qemu-system-x86_64')
     if not self.qemu_path:
-      raise VMError('qemu not found.')
+      raise VMError('qemu not found. Try: sudo apt-get install qemu')
     logging.debug('qemu path=%s', self.qemu_path)
 
     if not self.image_path:
       self.image_path = os.environ.get('VM_IMAGE_PATH', '')
     logging.debug('vm image path=%s', self.image_path)
     if not self.image_path or not os.path.exists(self.image_path):
-      raise VMError('VM image path %s does not exist.' % self.image_path)
+      raise VMError('No VM image path found. '
+                    'Use cros chrome-sdk --download-vm.')
 
     self._CleanupFiles(recreate=True)
     # Make sure we can read these files later on by creating them as ourselves.
