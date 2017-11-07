@@ -36,7 +36,7 @@ class MESSAGE_CENTER_EXPORT NotificationView
       public views::ButtonListener,
       public views::ViewTargeterDelegate {
  public:
-  NotificationView(MessageCenterController* controller,
+  NotificationView(MessageViewDelegate* delegate,
                    const Notification& notification);
   ~NotificationView() override;
 

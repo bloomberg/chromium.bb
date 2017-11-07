@@ -42,8 +42,6 @@ class MockDelegate : public MessageCenterTrayDelegate {
   void HideMessageCenter() override {}
   bool ShowNotifierSettings() override { return true; }
 
-  MessageCenterTray* GetMessageCenterTray() override { return nullptr; }
-
   bool show_popups_success_ = true;
   bool show_message_center_success_ = true;
 

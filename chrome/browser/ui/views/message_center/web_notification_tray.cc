@@ -61,6 +61,7 @@ bool WebNotificationTray::ShowNotifierSettings() {
 
 void WebNotificationTray::OnMessageCenterTrayChanged() {}
 
-message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
+message_center::MessageCenterTray*
+WebNotificationTray::GetMessageCenterTrayForTesting() {
   return message_center_tray_.get();
 }

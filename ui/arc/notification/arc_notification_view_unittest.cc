@@ -19,7 +19,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -86,19 +86,18 @@ class TestContentViewDelegate : public ArcNotificationContentViewDelegate {
 };
 
 std::unique_ptr<message_center::MessageView> CreateCustomMessageViewForTest(
-    message_center::MessageCenterController* controller,
+    message_center::MessageViewDelegate* controller,
     const message_center::Notification& notification) {
   return std::make_unique<ArcNotificationView>(
       std::make_unique<TestNotificationContentsView>(),
       std::make_unique<TestContentViewDelegate>(), controller, notification);
 }
 
-class TestMessageCenterController
-    : public message_center::MessageCenterController {
+class TestMessageViewDelegate : public message_center::MessageViewDelegate {
  public:
-  TestMessageCenterController() = default;
+  TestMessageViewDelegate() = default;
 
-  // MessageCenterController
+  // MessageViewDelegate
   void ClickOnNotification(const std::string& notification_id) override {
     // For this test, this method should not be invoked.
     NOTREACHED();
@@ -136,7 +135,7 @@ class TestMessageCenterController
  private:
   std::set<std::string> removed_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestMessageCenterController);
+  DISALLOW_COPY_AND_ASSIGN(TestMessageViewDelegate);
 };
 
 class TestTextInputClient : public ui::DummyTextInputClient {
@@ -254,7 +253,7 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
         ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, dx, 0));
   }
 
-  TestMessageCenterController* controller() { return &controller_; }
+  TestMessageViewDelegate* controller() { return &controller_; }
   message_center::Notification* notification() { return notification_.get(); }
   TestNotificationContentsView* contents_view() {
     return static_cast<TestNotificationContentsView*>(
@@ -264,7 +263,7 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
   ArcNotificationView* notification_view() { return notification_view_.get(); }
 
  private:
-  TestMessageCenterController controller_;
+  TestMessageViewDelegate controller_;
   std::unique_ptr<message_center::Notification> notification_;
   std::unique_ptr<ArcNotificationView> notification_view_;
 

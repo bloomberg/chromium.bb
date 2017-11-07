@@ -13,7 +13,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center_export.h"
-#include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -37,14 +37,14 @@ class MessageView;
 class Notification;
 class PopupAlignmentDelegate;
 
-// The widget host for a popup. Also implements MessageCenterController
+// The widget host for a popup. Also implements MessageViewDelegate
 // which delegates over to MessagePopupCollection, but takes care about
 // checking the weakref since MessagePopupCollection may disappear before
 // widget/views are closed/destructed.
 class MESSAGE_CENTER_EXPORT ToastContentsView
     : public views::WidgetDelegateView,
       public views::WidgetObserver,
-      public MessageCenterController,
+      public MessageViewDelegate,
       public gfx::AnimationDelegate {
  public:
   static const char kViewClassName[];
@@ -93,7 +93,7 @@ class MESSAGE_CENTER_EXPORT ToastContentsView
  private:
   friend class test::MessagePopupCollectionTest;
 
-  // Overridden from MessageCenterController:
+  // Overridden from MessageViewDelegate:
   void ClickOnNotification(const std::string& notification_id) override;
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;

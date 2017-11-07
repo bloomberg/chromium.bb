@@ -25,7 +25,7 @@
 #include "ui/message_center/vector_icons.h"
 #include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/constants.h"
-#include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/padded_button.h"
@@ -383,7 +383,7 @@ void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateActionButtonViews(notification);
 }
 
-NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
+NotificationViewMD::NotificationViewMD(MessageViewDelegate* controller,
                                        const Notification& notification)
     : MessageView(controller, notification),
       clickable_(notification.clickable()) {
@@ -525,7 +525,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   // See if the button pressed was an action button.
   for (size_t i = 0; i < action_buttons_.size(); ++i) {
     if (sender == action_buttons_[i]) {
-      controller()->ClickOnNotificationButton(id, i);
+      delegate()->ClickOnNotificationButton(id, i);
       return;
     }
   }
@@ -921,8 +921,8 @@ void NotificationViewMD::SetExpanded(bool expanded) {
 
   UpdateViewForExpandedState(expanded_);
   content_row_->InvalidateLayout();
-  if (controller())
-    controller()->UpdateNotificationSize(notification_id());
+  if (delegate())
+    delegate()->UpdateNotificationSize(notification_id());
 }
 
 void NotificationViewMD::Activate() {

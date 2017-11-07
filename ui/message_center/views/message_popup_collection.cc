@@ -220,7 +220,7 @@ void MessagePopupCollection::UpdateWidgets() {
     // There will be no contents already since this is a new ToastContentsView.
     toast->SetContents(view, /*a11y_feedback_for_updates=*/false);
     toasts_.push_back(toast);
-    view->set_controller(toast);
+    view->set_delegate(toast);
 
     gfx::Size preferred_size = toast->GetPreferredSize();
     gfx::Point origin(

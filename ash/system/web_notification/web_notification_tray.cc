@@ -478,10 +478,6 @@ bool WebNotificationTray::ShowNotifierSettings() {
                                    false /* show_by_click */);
 }
 
-message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
-  return message_center_tray_.get();
-}
-
 bool WebNotificationTray::IsCommandIdChecked(int command_id) const {
   if (command_id != kToggleQuietMode)
     return false;

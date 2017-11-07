@@ -15,7 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/bounded_label.h"
-#include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/padded_button.h"
@@ -33,7 +33,7 @@ namespace message_center {
 static const SkColor kBitmapColor = SK_ColorGREEN;
 
 class NotificationViewMDTest : public views::ViewsTestBase,
-                               public MessageCenterController {
+                               public MessageViewDelegate {
  public:
   NotificationViewMDTest();
   ~NotificationViewMDTest() override;
@@ -42,7 +42,7 @@ class NotificationViewMDTest : public views::ViewsTestBase,
   void SetUp() override;
   void TearDown() override;
 
-  // Overridden from MessageCenterController:
+  // Overridden from MessageViewDelegate:
   void ClickOnNotification(const std::string& notification_id) override;
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;

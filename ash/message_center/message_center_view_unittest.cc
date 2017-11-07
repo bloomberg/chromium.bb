@@ -22,7 +22,7 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/widget/widget.h"
@@ -31,7 +31,7 @@ namespace ash {
 
 using message_center::FakeMessageCenter;
 using message_center::MessageCenter;
-using message_center::MessageCenterController;
+using message_center::MessageViewDelegate;
 using message_center::MessageCenterTray;
 using message_center::MessageView;
 using message_center::Notification;
@@ -64,7 +64,7 @@ class MockNotificationView : public NotificationView {
     virtual void RegisterCall(CallType type) = 0;
   };
 
-  explicit MockNotificationView(MessageCenterController* controller,
+  explicit MockNotificationView(MessageViewDelegate* controller,
                                 const Notification& notification,
                                 Test* test);
   ~MockNotificationView() override;
@@ -79,7 +79,7 @@ class MockNotificationView : public NotificationView {
   DISALLOW_COPY_AND_ASSIGN(MockNotificationView);
 };
 
-MockNotificationView::MockNotificationView(MessageCenterController* controller,
+MockNotificationView::MockNotificationView(MessageViewDelegate* controller,
                                            const Notification& notification,
                                            Test* test)
     : NotificationView(controller, notification), test_(test) {}
@@ -166,7 +166,7 @@ void MockMessageCenterView::PreferredSizeChanged() {
 
 class MessageCenterViewTest : public AshTestBase,
                               public MockNotificationView::Test,
-                              public MessageCenterController,
+                              public MessageViewDelegate,
                               views::BoundsAnimatorObserver {
  public:
   // Expose the private enum class MessageCenter::Mode for this test.
@@ -193,7 +193,7 @@ class MessageCenterViewTest : public AshTestBase,
   void UpdateNotification(const std::string& notification_id,
                           std::unique_ptr<Notification> notification);
 
-  // Overridden from MessageCenterController
+  // Overridden from MessageViewDelegate
   void ClickOnNotification(const std::string& notification_id) override;
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;

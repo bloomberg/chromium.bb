@@ -23,11 +23,11 @@ class ArcNotificationView : public message_center::MessageView {
   static const char kViewClassName[];
 
   // |content_view| is a view to be hosted in this view.
-  ArcNotificationView(
-      std::unique_ptr<views::View> content_view,
-      std::unique_ptr<ArcNotificationContentViewDelegate> delegate,
-      message_center::MessageCenterController* controller,
-      const message_center::Notification& notification);
+  ArcNotificationView(std::unique_ptr<views::View> content_view,
+                      std::unique_ptr<ArcNotificationContentViewDelegate>
+                          contents_view_delegate,
+                      message_center::MessageViewDelegate* delegate,
+                      const message_center::Notification& notification);
   ~ArcNotificationView() override;
 
   // These method are called by the content view when focus handling is defered

@@ -8,8 +8,8 @@
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/arc/notification/arc_notification_view.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/message_center/views/message_view_delegate.h"
 
 namespace arc {
 
@@ -23,7 +23,7 @@ ArcNotificationDelegate::~ArcNotificationDelegate() = default;
 
 std::unique_ptr<message_center::MessageView>
 ArcNotificationDelegate::CreateCustomMessageView(
-    message_center::MessageCenterController* controller,
+    message_center::MessageViewDelegate* controller,
     const message_center::Notification& notification) {
   DCHECK(item_);
   DCHECK_EQ(item_->GetNotificationId(), notification.id());
