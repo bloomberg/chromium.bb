@@ -258,7 +258,8 @@ TEST_P(SSLPlatformKeyCNGTest, KeyMatches) {
   scoped_refptr<SSLPrivateKey> key = WrapCNGPrivateKey(cert.get(), ncrypt_key);
   ASSERT_TRUE(key);
 
-  EXPECT_EQ(SSLPrivateKey::DefaultAlgorithmPreferences(test_key.type),
+  EXPECT_EQ(SSLPrivateKey::DefaultAlgorithmPreferences(test_key.type,
+                                                       true /* supports PSS */),
             key->GetAlgorithmPreferences());
 
   TestSSLPrivateKeyMatches(key.get(), pkcs8);

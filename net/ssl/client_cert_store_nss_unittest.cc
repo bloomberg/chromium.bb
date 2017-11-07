@@ -90,8 +90,8 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
       new ClientCertStoreNSS(ClientCertStoreNSS::PasswordDelegateFactory()));
 
   // These test keys are RSA keys.
-  std::vector<uint16_t> expected =
-      SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_RSA);
+  std::vector<uint16_t> expected = SSLPrivateKey::DefaultAlgorithmPreferences(
+      EVP_PKEY_RSA, true /* supports PSS */);
 
   {
     // Request certificates matching B CA, |client_1|'s issuer.
@@ -195,8 +195,8 @@ TEST(ClientCertStoreNSSTest, SubjectPrintableStringContainingUTF8) {
       new ClientCertStoreNSS(ClientCertStoreNSS::PasswordDelegateFactory()));
 
   // These test keys are RSA keys.
-  std::vector<uint16_t> expected =
-      SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_RSA);
+  std::vector<uint16_t> expected = SSLPrivateKey::DefaultAlgorithmPreferences(
+      EVP_PKEY_RSA, true /* supports PSS */);
 
   constexpr uint8_t kAuthorityDN[] = {
       0x30, 0x45, 0x31, 0x0b, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06, 0x13,
