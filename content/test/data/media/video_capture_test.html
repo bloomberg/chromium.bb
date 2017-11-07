@@ -35,7 +35,7 @@
       hasReceivedTrackEndedEvent = true;
     };
 
-    detectVideoPlaying('local-view', function() {
+    detectVideoPlaying('local-view').then(() => {
       if (localView.videoWidth == WIDTH) {
         reportTestSuccess();
       } else {
@@ -45,7 +45,7 @@
   }
 
   function waitForVideoToTurnBlack() {
-    detectBlackVideo('local-view', function() {
+    detectBlackVideo('local-view').then(() => {
       reportTestSuccess();
     });
   }

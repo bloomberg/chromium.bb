@@ -29,6 +29,7 @@
     createConnections(null);
     navigator.webkitGetUserMedia(constraints,
         addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+
     waitForVideo('remote-view-1');
     waitForVideo('remote-view-2');
   }
@@ -54,8 +55,8 @@
     createConnections(null);
     navigator.webkitGetUserMedia(constraints,
         addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
-    detectVideoPlaying('remote-view-1',
-        function () {
+    detectVideoPlaying('remote-view-1')
+        .then(() => {
           assertEquals(gLocalStream.getVideoTracks().length, 1);
           gLocalStream.getVideoTracks()[0].enabled = false;
           waitForBlackVideo('remote-view-1');
@@ -132,7 +133,8 @@
     console.log('Initial setup done. Waiting.');
     // Wait for remove video to be playing in pc2. Once video is playing,
     // forward the remove stream from pc2 to pc1.
-    detectVideoPlaying('remote-view-2', onRemoteStream2);
+    detectVideoPlaying('remote-view-2')
+        .then(onRemoteStream2);
 
     // Wait for video to be forwarded back to connection 1.
     waitForVideo('remote-view-1');
@@ -147,7 +149,7 @@
                                  addStreamToBothConnectionsAndNegotiate,
                                  printGetUserMediaError);
 
-    detectVideoPlaying('remote-view-2', function() {
+    detectVideoPlaying('remote-view-2').then(() => {
       // Construct a new media stream with remote tracks.
       var newStream = new MediaStream();
       newStream.addTrack(
@@ -240,7 +242,8 @@
     }
 
     // Do the DTMF test after we have received video.
-    detectVideoPlaying('remote-view-2', onCallEstablished);
+    detectVideoPlaying('remote-view-2')
+        .then(onCallEstablished);
   }
 
   function testCreateOfferOptions() {
@@ -277,16 +280,16 @@
       addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
 
     addExpectedEvent();
-    detectVideoPlaying('remote-view-2', function() {
+    detectVideoPlaying('remote-view-2').then(() => {
       // Disable the receiver's remote media stream. Video should stop.
       // (Also, ensure muting audio doesn't affect video).
       enableRemoteVideo(gSecondConnection, false);
       enableRemoteAudio(gSecondConnection, false);
 
-      detectVideoStopped('remote-view-2', function() {
+      detectVideoStopped('remote-view-2').then(() => {
         // Video has stopped: unmute and succeed if it starts playing again.
         enableRemoteVideo(gSecondConnection, true);
-        detectVideoPlaying('remote-view-2', eventOccured);
+        detectVideoPlaying('remote-view-2').then(eventOccured);
       })
     });
   }
@@ -557,6 +560,7 @@
   }
 
   function callAndExpectNonLoopbackCandidates() {
+    // This one fails if the executing machine has no Internet.
     var pc = new RTCPeerConnection();
     gatherIceCandidates(pc, function(candidates) {
       var hasCandidate = false;
@@ -625,7 +629,7 @@
       .then(addStreamToBothConnectionsAndNegotiate)
       .catch(printGetUserMediaError);
 
-    detectVideoPlaying('remote-view-1', () => {
+    detectVideoPlaying('remote-view-1').then(() => {
       var track = gFirstConnection.getRemoteStreams()[0].getVideoTracks()[0];
       track.applyConstraints({width: {min: 1000}})
         .then(()=>{
@@ -648,13 +652,13 @@
       .then(addStreamToBothConnectionsAndNegotiate)
       .catch(printGetUserMediaError);
 
-    detectVideoPlaying('remote-view-1', function() {
+    detectVideoPlaying('remote-view-1').then(() => {
       var settings1 = gFirstConnection.getRemoteStreams()[0].getVideoTracks()[0]
           .getSettings();
       assertTrue(settings1.width === undefined);
       assertTrue(settings1.height === undefined);
       assertTrue(settings1.frameRate === undefined);
-      detectVideoPlaying('remote-view-2', function() {
+      detectVideoPlaying('remote-view-2').then(() => {
         var settings2 = gSecondConnection.getRemoteStreams()[0]
             .getVideoTracks()[0].getSettings();
         assertTrue(settings2.width === undefined);

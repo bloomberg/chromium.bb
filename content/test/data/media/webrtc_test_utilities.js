@@ -67,92 +67,97 @@ function printGetUserMediaError(error) {
   failTest(message);
 }
 
-function detectVideoPlaying(videoElementName, callback) {
-  detectVideo(videoElementName, isVideoPlaying, callback);
+function detectVideoPlaying(videoElementName) {
+  return detectVideo(videoElementName, isVideoPlaying);
 }
 
-function detectVideoStopped(videoElementName, callback) {
-  detectVideo(videoElementName,
-              function (pixels, previous_pixels) {
-                return !isVideoPlaying(pixels, previous_pixels);
-              },
-              callback);
+function detectVideoStopped(videoElementName) {
+  return detectVideo(videoElementName,
+                     function (pixels, previous_pixels) {
+                       return !isVideoPlaying(pixels, previous_pixels);
+                     });
 }
 
-function detectBlackVideo(videoElementName, callback) {
-  detectVideo(videoElementName,
-              function (pixels, previous_pixels) {
-                return isVideoBlack(pixels);
-              },
-              callback);
+function detectBlackVideo(videoElementName) {
+  return detectVideo(videoElementName,
+                     function (pixels, previous_pixels) {
+                       return isVideoBlack(pixels);
+                     });
 }
 
-function detectVideo(videoElementName, predicate, callback) {
+function detectVideo(videoElementName, predicate) {
   console.log('Looking at video in element ' + videoElementName);
 
-  var width = VIDEO_TAG_WIDTH;
-  var height = VIDEO_TAG_HEIGHT;
-  var videoElement = $(videoElementName);
-  var oldPixels = [];
-  var startTimeMs = new Date().getTime();
-  var waitVideo = setInterval(function() {
-    var canvas = $(videoElementName + '-canvas');
-    if (canvas == null) {
-      console.log('Waiting for ' + videoElementName + '-canvas' + ' to appear');
-      return;
-    }
-    var context = canvas.getContext('2d');
-    context.drawImage(videoElement, 0, 0, width, height);
-    var pixels = context.getImageData(0, 0 , width, height / 3).data;
-    // Check that there is an old and a new picture with the same size to
-    // compare and use the function |predicate| to detect the video state in
-    // that case.
-    // There's a failure(?) mode here where the video generated claims to
-    // have size 2x2. Don't consider that a valid video.
-    if (oldPixels.length == pixels.length &&
-        predicate(pixels, oldPixels)) {
-      console.log('Done looking at video in element ' + videoElementName);
-      console.log('DEBUG: video.width = ' + videoElement.videoWidth);
-      console.log('DEBUG: video.height = ' + videoElement.videoHeight);
-      clearInterval(waitVideo);
-      callback(videoElement.videoWidth, videoElement.videoHeight);
-    }
-    oldPixels = pixels;
-    var elapsedTime = new Date().getTime() - startTimeMs;
-    if (elapsedTime > 3000) {
-      startTimeMs = new Date().getTime();
-      console.log('Still waiting for video to satisfy ' + predicate.toString());
-      console.log('DEBUG: video.width = ' + videoElement.videoWidth);
-      console.log('DEBUG: video.height = ' + videoElement.videoHeight);
-      // clearInterval(waitVideo);
-      // callback(0, 0);
-    }
-  }, 200);
+  return new Promise((resolve, reject) => {
+    var width = VIDEO_TAG_WIDTH;
+    var height = VIDEO_TAG_HEIGHT;
+    var videoElement = $(videoElementName);
+    var oldPixels = [];
+    var startTimeMs = new Date().getTime();
+    var waitVideo = setInterval(function() {
+      var canvas = $(videoElementName + '-canvas');
+      if (canvas == null) {
+        console.log('Waiting for ' + videoElementName + '-canvas' +
+                    ' to appear');
+        return;
+      }
+      var context = canvas.getContext('2d');
+      context.drawImage(videoElement, 0, 0, width, height);
+      var pixels = context.getImageData(0, 0 , width, height / 3).data;
+
+      // Check that there is an old and a new picture with the same size to
+      // compare and use the function |predicate| to detect the video state in
+      // that case.
+      // There's a failure(?) mode here where the video generated claims to
+      // have size 2x2. Don't consider that a valid video.
+      if (oldPixels.length == pixels.length &&
+          predicate(pixels, oldPixels)) {
+        console.log('Done looking at video in element ' + videoElementName);
+        console.log('DEBUG: video.width = ' + videoElement.videoWidth);
+        console.log('DEBUG: video.height = ' + videoElement.videoHeight);
+        clearInterval(waitVideo);
+        resolve({'width': videoElement.videoWidth,
+                 'height': videoElement.videoHeight});
+      }
+      oldPixels = pixels;
+      var elapsedTime = new Date().getTime() - startTimeMs;
+      if (elapsedTime > 3000) {
+        startTimeMs = new Date().getTime();
+        console.log('Still waiting for video to satisfy ' +
+                    predicate.toString());
+        console.log('DEBUG: video.width = ' + videoElement.videoWidth);
+        console.log('DEBUG: video.height = ' + videoElement.videoHeight);
+      }
+    }, 200);
+  });
 }
 
 function waitForVideoWithResolution(element, expected_width, expected_height) {
   addExpectedEvent();
-  detectVideoPlaying(element,
-      function (width, height) {
-        assertEquals(expected_width, width);
-        assertEquals(expected_height, height);
+  detectVideoPlaying(element)
+      .then((resolution) => {
+        assertEquals(expected_width, resolution.width);
+        assertEquals(expected_height, resolution.height);
         eventOccured();
       });
 }
 
 function waitForVideo(videoElement) {
   addExpectedEvent();
-  detectVideoPlaying(videoElement, function () { eventOccured(); });
+  detectVideoPlaying(videoElement)
+      .then(() => { eventOccured(); });
 }
 
 function waitForVideoToStop(videoElement) {
   addExpectedEvent();
-  detectVideoStopped(videoElement, function () { eventOccured(); });
+  detectVideoStopped(videoElement)
+      .then(() => { eventOccured(); });
 }
 
 function waitForBlackVideo(videoElement) {
   addExpectedEvent();
-  detectBlackVideo(videoElement, function () { eventOccured(); });
+  detectBlackVideo(videoElement)
+      .then(() => { eventOccured(); });
 }
 
 // Calculates the current frame rate and compares to |expected_frame_rate|

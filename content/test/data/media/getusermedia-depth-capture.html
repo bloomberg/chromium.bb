@@ -16,7 +16,7 @@
   $ = function(id) {
     return document.getElementById(id);
   };
-  
+
   setAllEventsOccuredHandler(function() {
     reportTestSuccess();
   });
@@ -25,15 +25,14 @@
   // run here because they require --use-fake-device-for-media-capture.
   function getDepthStreamAndCallCreateImageBitmap() {
     console.log('Calling getDepthStreamAndCallCreateImageBitmap');
-    getFake16bitStream().then(function(stream) {
-      detectVideoInLocalView1(stream, function() {
+    getFake16bitStream().then((stream) => {
+      detectVideoInLocalView1(stream).then(() => {
         testVideoToImageBitmap('local-view-1', function() {
           stream.getVideoTracks()[0].stop();
           waitForVideoToStop('local-view-1');
         }, failedCallback);
       });
-    },
-    failedCallback);
+    }, failedCallback);
   }
 
   function getDepthStreamAndCameraCalibration() {
@@ -135,7 +134,7 @@
       failedCallback);
     });
   }
-  
+
   function getStreamsByVideoKind() {
     console.log('Calling getStreamsByVideoKind');
     var cases = [{constraint: {exact: "depth"}, kind: "depth"},
@@ -172,41 +171,38 @@
 
   function depthStreamToRGBAUint8Texture() {
     console.log('Calling depthStreamToRGBAUint8Texture');
-    getFake16bitStream().then(function(stream) {
-      detectVideoInLocalView1(stream, function() {
+    getFake16bitStream().then((stream) => {
+      detectVideoInLocalView1(stream).then(() => {
         testVideoToRGBA8Texture('local-view-1', function() {
           stream.getVideoTracks()[0].stop();
           waitForVideoToStop('local-view-1');
         }, failedCallback);
       });
-    },
-    failedCallback);
+    }, failedCallback);
   }
 
   function depthStreamToRGBAFloatTexture() {
     console.log('Calling depthStreamToRGBAFloatTexture');
-    getFake16bitStream().then(function(stream) {
-      detectVideoInLocalView1(stream, function() {
+    getFake16bitStream().then((stream) => {
+      detectVideoInLocalView1(stream).then(() => {
         testVideoToRGBA32FTexture('local-view-1', function() {
           stream.getVideoTracks()[0].stop();
           waitForVideoToStop('local-view-1');
         }, failedCallback);
       });
-    },
-    failedCallback);
+    }, failedCallback);
   }
 
   function depthStreamToR32FloatTexture() {
     console.log('Calling depthStreamToR32FloatTexture');
-    getFake16bitStream().then(function(stream) {
-      detectVideoInLocalView1(stream, function() {
+    getFake16bitStream().then((stream) => {
+      detectVideoInLocalView1(stream).then(() => {
         testVideoToR32FTexture('local-view-1', function() {
           stream.getVideoTracks()[0].stop();
           waitForVideoToStop('local-view-1');
         }, failedCallback);
       });
-    },
-    failedCallback);
+    }, failedCallback);
   }
 
   function failedCallback(error) {
@@ -218,11 +214,11 @@
     $(videoElement).src = localStreamUrl;
   }
 
-  function detectVideoInLocalView1(stream, callback) {
+  function detectVideoInLocalView1(stream) {
     attachMediaStream(stream, 'local-view-1');
-    detectVideoPlaying('local-view-1', callback);
+    return detectVideoPlaying('local-view-1');
   }
-  
+
   function testVideoToImageBitmap(videoElementName, success, error) {
     var bitmaps = {};
     var video = $(videoElementName);
@@ -260,7 +256,7 @@
       return error({name: reason});
     });
   }
-  
+
   function runImageBitmapTest(bitmap, canvas, flip_y) {
     var context = canvas.getContext('2d');
     context.drawImage(bitmap, 0, 0);
