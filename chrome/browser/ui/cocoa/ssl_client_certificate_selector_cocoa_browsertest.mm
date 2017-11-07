@@ -26,6 +26,7 @@
 #include "net/test/keychain_test_util_mac.h"
 #include "net/test/test_data_directory.h"
 #import "testing/gtest_mac.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 using web_modal::WebContentsModalDialogManager;
@@ -227,13 +228,9 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Accept) {
   EXPECT_EQ(client_cert1_, results.cert);
   ASSERT_TRUE(results.key);
 
-  // All Mac keys are expected to have the same hash preferences.
-  std::vector<net::SSLPrivateKey::Hash> expected_hashes = {
-      net::SSLPrivateKey::Hash::SHA512, net::SSLPrivateKey::Hash::SHA384,
-      net::SSLPrivateKey::Hash::SHA256, net::SSLPrivateKey::Hash::SHA1,
-  };
-  EXPECT_EQ(expected_hashes, results.key->GetDigestPreferences());
-
+  // The test keys are RSA keys.
+  EXPECT_EQ(net::SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_RSA),
+            results.key->GetAlgorithmPreferences());
   TestSSLPrivateKeyMatches(results.key.get(), pkcs8_key1_);
 }
 

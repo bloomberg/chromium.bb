@@ -30,6 +30,7 @@
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/nid.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
 
@@ -54,15 +55,11 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
         key_(std::move(key)) {}
   ~SSLPlatformKeyNSS() override {}
 
-  std::vector<SSLPrivateKey::Hash> GetDigestPreferences() override {
-    static const SSLPrivateKey::Hash kHashes[] = {
-        SSLPrivateKey::Hash::SHA512, SSLPrivateKey::Hash::SHA384,
-        SSLPrivateKey::Hash::SHA256, SSLPrivateKey::Hash::SHA1};
-    return std::vector<SSLPrivateKey::Hash>(kHashes,
-                                            kHashes + arraysize(kHashes));
+  std::vector<uint16_t> GetAlgorithmPreferences() override {
+    return SSLPrivateKey::DefaultAlgorithmPreferences(type_);
   }
 
-  Error SignDigest(SSLPrivateKey::Hash hash,
+  Error SignDigest(uint16_t algorithm,
                    const base::StringPiece& input,
                    std::vector<uint8_t>* signature) override {
     SECItem digest_item;
@@ -71,27 +68,9 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
     digest_item.len = input.size();
 
     bssl::UniquePtr<uint8_t> free_digest_info;
-    if (type_ == EVP_PKEY_RSA) {
+    if (SSL_get_signature_algorithm_key_type(algorithm) == EVP_PKEY_RSA) {
       // PK11_Sign expects the caller to prepend the DigestInfo.
-      int hash_nid = NID_undef;
-      switch (hash) {
-        case SSLPrivateKey::Hash::MD5_SHA1:
-          hash_nid = NID_md5_sha1;
-          break;
-        case SSLPrivateKey::Hash::SHA1:
-          hash_nid = NID_sha1;
-          break;
-        case SSLPrivateKey::Hash::SHA256:
-          hash_nid = NID_sha256;
-          break;
-        case SSLPrivateKey::Hash::SHA384:
-          hash_nid = NID_sha384;
-          break;
-        case SSLPrivateKey::Hash::SHA512:
-          hash_nid = NID_sha512;
-          break;
-      }
-      DCHECK_NE(NID_undef, hash_nid);
+      int hash_nid = EVP_MD_type(SSL_get_signature_algorithm_digest(algorithm));
       int is_alloced;
       size_t prefix_len;
       if (!RSA_add_pkcs1_prefix(&digest_item.data, &prefix_len, &is_alloced,
@@ -122,7 +101,7 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
 
     // NSS emits raw ECDSA signatures, but BoringSSL expects a DER-encoded
     // ECDSA-Sig-Value.
-    if (type_ == EVP_PKEY_EC) {
+    if (SSL_get_signature_algorithm_key_type(algorithm) == EVP_PKEY_EC) {
       if (signature->size() % 2 != 0) {
         LOG(ERROR) << "Bad signature length";
         return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;

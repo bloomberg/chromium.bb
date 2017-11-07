@@ -26,6 +26,7 @@
 #include "net/ssl/ssl_private_key_test_util.h"
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
 
@@ -88,11 +89,9 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
   std::unique_ptr<ClientCertStoreNSS> store(
       new ClientCertStoreNSS(ClientCertStoreNSS::PasswordDelegateFactory()));
 
-  // All NSS keys are expected to have the same hash preferences.
-  const std::vector<SSLPrivateKey::Hash> expected_hashes = {
-      SSLPrivateKey::Hash::SHA512, SSLPrivateKey::Hash::SHA384,
-      SSLPrivateKey::Hash::SHA256, SSLPrivateKey::Hash::SHA1,
-  };
+  // These test keys are RSA keys.
+  std::vector<uint16_t> expected =
+      SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_RSA);
 
   {
     // Request certificates matching B CA, |client_1|'s issuer.
@@ -123,7 +122,7 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
     key_loop.Run();
 
     ASSERT_TRUE(ssl_private_key);
-    EXPECT_EQ(expected_hashes, ssl_private_key->GetDigestPreferences());
+    EXPECT_EQ(expected, ssl_private_key->GetAlgorithmPreferences());
     TestSSLPrivateKeyMatches(ssl_private_key.get(), pkcs8_key);
   }
 
@@ -159,7 +158,7 @@ TEST(ClientCertStoreNSSTest, BuildsCertificateChain) {
                    key_loop.QuitClosure()));
     key_loop.Run();
     ASSERT_TRUE(ssl_private_key);
-    EXPECT_EQ(expected_hashes, ssl_private_key->GetDigestPreferences());
+    EXPECT_EQ(expected, ssl_private_key->GetAlgorithmPreferences());
     TestSSLPrivateKeyMatches(ssl_private_key.get(), pkcs8_key);
   }
 }
@@ -195,11 +194,9 @@ TEST(ClientCertStoreNSSTest, SubjectPrintableStringContainingUTF8) {
   std::unique_ptr<ClientCertStoreNSS> store(
       new ClientCertStoreNSS(ClientCertStoreNSS::PasswordDelegateFactory()));
 
-  // All NSS keys are expected to have the same hash preferences.
-  const std::vector<SSLPrivateKey::Hash> expected_hashes = {
-      SSLPrivateKey::Hash::SHA512, SSLPrivateKey::Hash::SHA384,
-      SSLPrivateKey::Hash::SHA256, SSLPrivateKey::Hash::SHA1,
-  };
+  // These test keys are RSA keys.
+  std::vector<uint16_t> expected =
+      SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_RSA);
 
   constexpr uint8_t kAuthorityDN[] = {
       0x30, 0x45, 0x31, 0x0b, 0x30, 0x09, 0x06, 0x03, 0x55, 0x04, 0x06, 0x13,
@@ -233,7 +230,7 @@ TEST(ClientCertStoreNSSTest, SubjectPrintableStringContainingUTF8) {
   key_loop.Run();
 
   ASSERT_TRUE(ssl_private_key);
-  EXPECT_EQ(expected_hashes, ssl_private_key->GetDigestPreferences());
+  EXPECT_EQ(expected, ssl_private_key->GetAlgorithmPreferences());
   TestSSLPrivateKeyMatches(ssl_private_key.get(), pkcs8_key);
 }
 

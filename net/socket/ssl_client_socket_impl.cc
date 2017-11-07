@@ -83,52 +83,12 @@ const uint8_t kTbProtocolVersionMinor = 13;
 const uint8_t kTbMinProtocolVersionMajor = 0;
 const uint8_t kTbMinProtocolVersionMinor = 10;
 
-bool EVP_MDToPrivateKeyHash(const EVP_MD* md, SSLPrivateKey::Hash* hash) {
-  switch (EVP_MD_type(md)) {
-    case NID_md5_sha1:
-      *hash = SSLPrivateKey::Hash::MD5_SHA1;
-      return true;
-    case NID_sha1:
-      *hash = SSLPrivateKey::Hash::SHA1;
-      return true;
-    case NID_sha256:
-      *hash = SSLPrivateKey::Hash::SHA256;
-      return true;
-    case NID_sha384:
-      *hash = SSLPrivateKey::Hash::SHA384;
-      return true;
-    case NID_sha512:
-      *hash = SSLPrivateKey::Hash::SHA512;
-      return true;
-    default:
-      return false;
-  }
-}
-
 std::unique_ptr<base::Value> NetLogPrivateKeyOperationCallback(
-    SSLPrivateKey::Hash hash,
+    uint16_t algorithm,
     NetLogCaptureMode mode) {
-  std::string hash_str;
-  switch (hash) {
-    case SSLPrivateKey::Hash::MD5_SHA1:
-      hash_str = "MD5_SHA1";
-      break;
-    case SSLPrivateKey::Hash::SHA1:
-      hash_str = "SHA1";
-      break;
-    case SSLPrivateKey::Hash::SHA256:
-      hash_str = "SHA256";
-      break;
-    case SSLPrivateKey::Hash::SHA384:
-      hash_str = "SHA384";
-      break;
-    case SSLPrivateKey::Hash::SHA512:
-      hash_str = "SHA512";
-      break;
-  }
-
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
-  value->SetString("hash", hash_str);
+  value->SetString("algorithm", SSL_get_signature_algorithm_name(
+                                    algorithm, 0 /* exclude curve */));
   return std::move(value);
 }
 
@@ -353,17 +313,16 @@ class SSLClientSocketImpl::SSLContext {
     return socket->NewSessionCallback(session);
   }
 
-  static ssl_private_key_result_t PrivateKeySignDigestCallback(
-      SSL* ssl,
-      uint8_t* out,
-      size_t* out_len,
-      size_t max_out,
-      const EVP_MD* md,
-      const uint8_t* in,
-      size_t in_len) {
+  static ssl_private_key_result_t PrivateKeySignCallback(SSL* ssl,
+                                                         uint8_t* out,
+                                                         size_t* out_len,
+                                                         size_t max_out,
+                                                         uint16_t algorithm,
+                                                         const uint8_t* in,
+                                                         size_t in_len) {
     SSLClientSocketImpl* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    return socket->PrivateKeySignDigestCallback(out, out_len, max_out, md, in,
-                                                in_len);
+    return socket->PrivateKeySignCallback(out, out_len, max_out, algorithm, in,
+                                          in_len);
   }
 
   static ssl_private_key_result_t PrivateKeyCompleteCallback(SSL* ssl,
@@ -414,8 +373,8 @@ const SSL_PRIVATE_KEY_METHOD
     SSLClientSocketImpl::SSLContext::kPrivateKeyMethod = {
         nullptr /* type (unused) */,
         nullptr /* max_signature_len (unused) */,
-        nullptr /* sign */,
-        &SSLClientSocketImpl::SSLContext::PrivateKeySignDigestCallback,
+        &SSLClientSocketImpl::SSLContext::PrivateKeySignCallback,
+        nullptr /* sign_digest */,
         nullptr /* decrypt */,
         &SSLClientSocketImpl::SSLContext::PrivateKeyCompleteCallback,
 };
@@ -1642,33 +1601,10 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
       return -1;
     }
 
-    std::vector<SSLPrivateKey::Hash> digest_prefs =
-        ssl_config_.client_private_key->GetDigestPreferences();
-
-    size_t digests_len = digest_prefs.size();
-    std::vector<int> digests;
-    for (size_t i = 0; i < digests_len; i++) {
-      switch (digest_prefs[i]) {
-        case SSLPrivateKey::Hash::SHA1:
-          digests.push_back(NID_sha1);
-          break;
-        case SSLPrivateKey::Hash::SHA256:
-          digests.push_back(NID_sha256);
-          break;
-        case SSLPrivateKey::Hash::SHA384:
-          digests.push_back(NID_sha384);
-          break;
-        case SSLPrivateKey::Hash::SHA512:
-          digests.push_back(NID_sha512);
-          break;
-        case SSLPrivateKey::Hash::MD5_SHA1:
-          // MD5-SHA1 is not used in TLS 1.2.
-          break;
-      }
-    }
-
-    SSL_set_private_key_digest_prefs(ssl_.get(), digests.data(),
-                                     digests.size());
+    std::vector<uint16_t> preferences =
+        ssl_config_.client_private_key->GetAlgorithmPreferences();
+    SSL_set_signing_algorithm_prefs(ssl_.get(), preferences.data(),
+                                    preferences.size());
 
     net_log_.AddEvent(
         NetLogEventType::SSL_CLIENT_CERT_PROVIDED,
@@ -1743,29 +1679,33 @@ bool SSLClientSocketImpl::IsRenegotiationAllowed() const {
   return false;
 }
 
-ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignDigestCallback(
+ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(
     uint8_t* out,
     size_t* out_len,
     size_t max_out,
-    const EVP_MD* md,
+    uint16_t algorithm,
     const uint8_t* in,
     size_t in_len) {
   DCHECK_EQ(kNoPendingResult, signature_result_);
   DCHECK(signature_.empty());
   DCHECK(ssl_config_.client_private_key);
 
-  SSLPrivateKey::Hash hash;
-  if (!EVP_MDToPrivateKeyHash(md, &hash)) {
-    OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
+  net_log_.BeginEvent(
+      NetLogEventType::SSL_PRIVATE_KEY_OP,
+      base::Bind(&NetLogPrivateKeyOperationCallback, algorithm));
+
+  // SSLPrivateKey expects the input to be prehashed.
+  const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
+  uint8_t digest[EVP_MAX_MD_SIZE];
+  unsigned digest_len;
+  if (!md || !EVP_Digest(in, in_len, digest, &digest_len, md, nullptr)) {
     return ssl_private_key_failure;
   }
 
-  net_log_.BeginEvent(NetLogEventType::SSL_PRIVATE_KEY_OP,
-                      base::Bind(&NetLogPrivateKeyOperationCallback, hash));
-
   signature_result_ = ERR_IO_PENDING;
   ssl_config_.client_private_key->SignDigest(
-      hash, base::StringPiece(reinterpret_cast<const char*>(in), in_len),
+      algorithm,
+      base::StringPiece(reinterpret_cast<const char*>(digest), digest_len),
       base::Bind(&SSLClientSocketImpl::OnPrivateKeyComplete,
                  weak_factory_.GetWeakPtr()));
   return ssl_private_key_retry;

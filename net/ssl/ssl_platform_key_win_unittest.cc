@@ -23,6 +23,7 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
 
@@ -32,13 +33,14 @@ struct TestKey {
   const char* name;
   const char* cert_file;
   const char* key_file;
+  int type;
 };
 
 const TestKey kTestKeys[] = {
-    {"RSA", "client_1.pem", "client_1.pk8"},
-    {"ECDSA_P256", "client_4.pem", "client_4.pk8"},
-    {"ECDSA_P384", "client_5.pem", "client_5.pk8"},
-    {"ECDSA_P521", "client_6.pem", "client_6.pk8"},
+    {"RSA", "client_1.pem", "client_1.pk8", EVP_PKEY_RSA},
+    {"ECDSA_P256", "client_4.pem", "client_4.pk8", EVP_PKEY_EC},
+    {"ECDSA_P384", "client_5.pem", "client_5.pk8", EVP_PKEY_EC},
+    {"ECDSA_P521", "client_6.pem", "client_6.pk8", EVP_PKEY_EC},
 };
 
 std::string TestKeyToString(const testing::TestParamInfo<TestKey>& params) {
@@ -256,11 +258,8 @@ TEST_P(SSLPlatformKeyCNGTest, KeyMatches) {
   scoped_refptr<SSLPrivateKey> key = WrapCNGPrivateKey(cert.get(), ncrypt_key);
   ASSERT_TRUE(key);
 
-  std::vector<SSLPrivateKey::Hash> expected_hashes = {
-      SSLPrivateKey::Hash::SHA512, SSLPrivateKey::Hash::SHA384,
-      SSLPrivateKey::Hash::SHA256, SSLPrivateKey::Hash::SHA1,
-  };
-  EXPECT_EQ(expected_hashes, key->GetDigestPreferences());
+  EXPECT_EQ(SSLPrivateKey::DefaultAlgorithmPreferences(test_key.type),
+            key->GetAlgorithmPreferences());
 
   TestSSLPrivateKeyMatches(key.get(), pkcs8);
 }
@@ -303,11 +302,11 @@ TEST(SSLPlatformKeyCAPITest, KeyMatches) {
       WrapCAPIPrivateKey(cert.get(), prov.release(), AT_SIGNATURE);
   ASSERT_TRUE(key);
 
-  std::vector<SSLPrivateKey::Hash> expected_hashes = {
-      SSLPrivateKey::Hash::SHA1, SSLPrivateKey::Hash::SHA512,
-      SSLPrivateKey::Hash::SHA384, SSLPrivateKey::Hash::SHA256,
+  std::vector<uint16_t> expected = {
+      SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA512,
+      SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA256,
   };
-  EXPECT_EQ(expected_hashes, key->GetDigestPreferences());
+  EXPECT_EQ(expected, key->GetAlgorithmPreferences());
 
   TestSSLPrivateKeyMatches(key.get(), pkcs8);
 }
