@@ -31,7 +31,7 @@ class UiElement;
 class UiScene {
  public:
   UiScene();
-  virtual ~UiScene();
+  ~UiScene();
 
   void AddUiElement(UiElementName parent, std::unique_ptr<UiElement> element);
 
@@ -79,7 +79,7 @@ class UiScene {
   }
   void set_dirty() { is_dirty_ = true; }
 
-  void OnGlInitialized();
+  void OnGlInitialized(SkiaSurfaceProvider* provider);
 
  private:
   std::unique_ptr<UiElement> root_element_;
@@ -96,6 +96,8 @@ class UiScene {
   // of bindings so that we can do a single pass and update everything and
   // easily compute dirtiness.
   bool is_dirty_ = false;
+
+  SkiaSurfaceProvider* provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);
 };

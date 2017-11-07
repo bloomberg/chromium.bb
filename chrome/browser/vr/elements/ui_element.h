@@ -37,6 +37,7 @@ class WebGestureEvent;
 namespace vr {
 
 class Animation;
+class SkiaSurfaceProvider;
 class UiElementRenderer;
 class UiElementTransformOperations;
 
@@ -83,7 +84,7 @@ class UiElement : public cc::AnimationTarget {
   virtual void Render(UiElementRenderer* renderer,
                       const gfx::Transform& model_view_proj_matrix) const;
 
-  virtual void Initialize();
+  virtual void Initialize(SkiaSurfaceProvider* provider);
 
   // Controller interaction methods.
   virtual void OnHoverEnter(const gfx::PointF& position);

@@ -60,7 +60,7 @@ void UiElement::Render(UiElementRenderer* renderer,
   NOTREACHED();
 }
 
-void UiElement::Initialize() {}
+void UiElement::Initialize(SkiaSurfaceProvider* provider) {}
 
 void UiElement::OnHoverEnter(const gfx::PointF& position) {}
 

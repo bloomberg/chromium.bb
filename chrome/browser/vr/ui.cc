@@ -7,6 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
+#include "chrome/browser/vr/cpu_surface_provider.h"
+#include "chrome/browser/vr/ganesh_surface_provider.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/speech_recognizer.h"
@@ -123,11 +125,18 @@ bool Ui::ShouldRenderWebVr() {
 }
 
 void Ui::OnGlInitialized(unsigned int content_texture_id,
-                         UiElementRenderer::TextureLocation content_location) {
+                         UiElementRenderer::TextureLocation content_location,
+                         bool use_ganesh) {
   vr_shell_renderer_ = base::MakeUnique<VrShellRenderer>();
   ui_renderer_ =
       base::MakeUnique<UiRenderer>(scene_.get(), vr_shell_renderer_.get());
-  scene_manager_->OnGlInitialized(content_texture_id, content_location);
+  if (use_ganesh) {
+    provider_ = base::MakeUnique<GaneshSurfaceProvider>();
+  } else {
+    provider_ = base::MakeUnique<CpuSurfaceProvider>();
+  }
+  scene_manager_->OnGlInitialized(content_texture_id, content_location,
+                                  provider_.get());
 }
 
 void Ui::OnAppButtonClicked() {
