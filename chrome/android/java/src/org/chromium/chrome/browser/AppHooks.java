@@ -285,7 +285,9 @@ public abstract class AppHooks {
      */
     @SuppressWarnings("Unused")
     public void startForegroundService(Intent intent) {
-        ContextUtils.getApplicationContext().startService(intent);
+        // TODO(crbug.com/758280): Remove this whole method once the downstream override is gone and
+        // all overrides have been ported over.
+        ContextUtils.startForegroundService(ContextUtils.getApplicationContext(), intent);
     }
 
     /**
