@@ -116,7 +116,7 @@ class HardwareDisplayController {
   //
   // Note that this function does not block. Also, this function should not be
   // called again before the page flip occurrs.
-  void SchedulePageFlip(const OverlayPlaneList& plane_list,
+  bool SchedulePageFlip(const OverlayPlaneList& plane_list,
                         SwapCompletionOnceCallback callback);
 
   // Returns true if the page flip with the |plane_list| would succeed. This

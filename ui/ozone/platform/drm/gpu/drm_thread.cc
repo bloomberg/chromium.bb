@@ -189,10 +189,12 @@ void DrmThread::SchedulePageFlip(gfx::AcceleratedWidget widget,
                                  const std::vector<OverlayPlane>& planes,
                                  SwapCompletionOnceCallback callback) {
   DrmWindow* window = screen_manager_->GetWindow(widget);
-  if (window)
-    window->SchedulePageFlip(planes, std::move(callback));
-  else
+  if (window) {
+    bool result = window->SchedulePageFlip(planes, std::move(callback));
+    CHECK(result) << "DrmThread::SchedulePageFlip failed.";
+  } else {
     std::move(callback).Run(gfx::SwapResult::SWAP_ACK);
+  }
 }
 
 void DrmThread::GetVSyncParameters(
