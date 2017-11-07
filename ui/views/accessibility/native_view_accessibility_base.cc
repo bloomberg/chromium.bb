@@ -41,15 +41,12 @@ bool IsViewUnfocusableChildOfFocusableAncestor(View* view) {
 
 NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
     : view_(view),
-      parent_widget_(nullptr),
       ax_node_(ui::AXPlatformNode::Create(this)) {
   DCHECK(ax_node_);
 }
 
 NativeViewAccessibilityBase::~NativeViewAccessibilityBase() {
   ax_node_->Destroy();
-  if (parent_widget_)
-    parent_widget_->RemoveObserver(this);
 }
 
 gfx::NativeViewAccessible NativeViewAccessibilityBase::GetNativeObject() {
@@ -143,8 +140,11 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::GetParent() {
   if (view_->parent())
     return view_->parent()->GetNativeViewAccessible();
 
-  if (parent_widget_)
-    return parent_widget_->GetRootView()->GetNativeViewAccessible();
+  if (Widget* widget = view_->GetWidget()) {
+    Widget* top_widget = widget->GetTopLevelWidget();
+    if (top_widget && widget != top_widget && top_widget->GetRootView())
+      return top_widget->GetRootView()->GetNativeViewAccessible();
+  }
 
   return nullptr;
 }
@@ -226,20 +226,6 @@ bool NativeViewAccessibilityBase::IsOffscreen() const {
   return false;
 }
 
-void NativeViewAccessibilityBase::OnWidgetDestroying(Widget* widget) {
-  if (parent_widget_ == widget) {
-    parent_widget_->RemoveObserver(this);
-    parent_widget_ = nullptr;
-  }
-}
-
-void NativeViewAccessibilityBase::SetParentWidget(Widget* parent_widget) {
-  if (parent_widget_)
-    parent_widget_->RemoveObserver(this);
-  parent_widget_ = parent_widget;
-  parent_widget_->AddObserver(this);
-}
-
 gfx::RectF NativeViewAccessibilityBase::GetBoundsInScreen() const {
   return gfx::RectF(view_->GetBoundsInScreen());
 }
@@ -264,18 +250,6 @@ void NativeViewAccessibilityBase::PopulateChildWidgetVector(
 
     if (widget->GetNativeWindowProperty(kWidgetNativeViewHostKey))
       continue;
-
-    gfx::NativeViewAccessible child_widget_accessible =
-        child_widget->GetRootView()->GetNativeViewAccessible();
-    ui::AXPlatformNode* child_widget_platform_node =
-        ui::AXPlatformNode::FromNativeViewAccessible(child_widget_accessible);
-    if (child_widget_platform_node) {
-      NativeViewAccessibilityBase* child_widget_view_accessibility =
-          static_cast<NativeViewAccessibilityBase*>(
-              child_widget_platform_node->GetDelegate());
-      if (child_widget_view_accessibility->parent_widget() != widget)
-        child_widget_view_accessibility->SetParentWidget(widget);
-    }
 
     result_child_widgets->push_back(child_widget);
   }

@@ -28,9 +28,6 @@ gfx::NativeViewAccessible NativeViewAccessibilityMac::GetParent() {
   if (view_->GetWidget())
     return view_->GetWidget()->GetNativeView();
 
-  if (parent_widget_)
-    return parent_widget_->GetRootView()->GetNativeViewAccessible();
-
   return nullptr;
 }
 

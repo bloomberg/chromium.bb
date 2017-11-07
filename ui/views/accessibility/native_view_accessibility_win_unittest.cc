@@ -115,44 +115,24 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
   ASSERT_EQ(1L, child_count);
 
-  ComPtr<IDispatch> child_view_dispatch;
-  ComPtr<IAccessible> child_view_accessible;
-  ScopedVariant child_index_1(1);
-  ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
-                      child_index_1, child_view_dispatch.GetAddressOf()));
-  ASSERT_EQ(S_OK,
-            child_view_dispatch.CopyTo(child_view_accessible.GetAddressOf()));
-
   Widget owned_widget;
   Widget::InitParams owned_init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+      CreateParams(Widget::InitParams::TYPE_BUBBLE);
   owned_init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   owned_init_params.parent = widget.GetNativeView();
   owned_widget.Init(owned_init_params);
   owned_widget.Show();
 
   ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
-  ASSERT_EQ(2L, child_count);
+  ASSERT_EQ(1L, child_count);
 
   ComPtr<IDispatch> child_widget_dispatch;
   ComPtr<IAccessible> child_widget_accessible;
-  ScopedVariant child_index_2(2);
+  ScopedVariant child_index_1(1);
   ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
-                      child_index_2, child_widget_dispatch.GetAddressOf()));
+                      child_index_1, child_widget_dispatch.GetAddressOf()));
   ASSERT_EQ(S_OK, child_widget_dispatch.CopyTo(
                       child_widget_accessible.GetAddressOf()));
-
-  ComPtr<IDispatch> child_widget_sibling_dispatch;
-  ComPtr<IAccessible> child_widget_sibling_accessible;
-  ScopedVariant childid_self(CHILDID_SELF);
-  ScopedVariant result;
-  ASSERT_EQ(S_OK, child_widget_accessible->accNavigate(
-      NAVDIR_PREVIOUS, childid_self, result.Receive()));
-  ASSERT_EQ(VT_DISPATCH, V_VT(result.ptr()));
-  child_widget_sibling_dispatch = V_DISPATCH(result.ptr());
-  ASSERT_EQ(S_OK, child_widget_sibling_dispatch.CopyTo(
-                      child_widget_sibling_accessible.GetAddressOf()));
-  ASSERT_EQ(child_view_accessible.Get(), child_widget_sibling_accessible.Get());
 
   ComPtr<IDispatch> child_widget_parent_dispatch;
   ComPtr<IAccessible> child_widget_parent_accessible;
@@ -160,7 +140,7 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
                       child_widget_parent_dispatch.GetAddressOf()));
   ASSERT_EQ(S_OK, child_widget_parent_dispatch.CopyTo(
                       child_widget_parent_accessible.GetAddressOf()));
-  ASSERT_EQ(root_view_accessible.Get(), child_widget_parent_accessible.Get());
+  EXPECT_EQ(root_view_accessible.Get(), child_widget_parent_accessible.Get());
 }
 
 // Flaky on Windows: https://crbug.com/461837.

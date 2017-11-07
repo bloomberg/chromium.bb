@@ -28,8 +28,7 @@ class Widget;
 // NativeViewAccessibility to interface with the native accessibility toolkit.
 class VIEWS_EXPORT NativeViewAccessibilityBase
     : public NativeViewAccessibility,
-      public ui::AXPlatformNodeDelegate,
-      public WidgetObserver {
+      public ui::AXPlatformNodeDelegate {
  public:
   ~NativeViewAccessibilityBase() override;
 
@@ -54,22 +53,11 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
 
-  // WidgetObserver
-  void OnWidgetDestroying(Widget* widget) override;
-
-  Widget* parent_widget() const { return parent_widget_; }
-  void SetParentWidget(Widget* parent_widget);
-
  protected:
   explicit NativeViewAccessibilityBase(View* view);
 
   // Weak. Owns this.
   View* view_;
-
-  // Weak. Uses WidgetObserver to clear. This is set on the root view for
-  // a widget that's owned by another widget, so we can walk back up the
-  // tree.
-  Widget* parent_widget_;
 
  protected:
   virtual gfx::RectF GetBoundsInScreen() const;
