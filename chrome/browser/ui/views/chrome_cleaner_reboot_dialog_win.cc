@@ -19,8 +19,10 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_constants.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace chrome {
 
@@ -82,6 +84,12 @@ ui::ModalType ChromeCleanerRebootDialog::GetModalType() const {
 base::string16 ChromeCleanerRebootDialog::GetWindowTitle() const {
   DCHECK(dialog_controller_);
   return l10n_util::GetStringUTF16(IDS_CHROME_CLEANUP_REBOOT_PROMPT_TITLE);
+}
+
+views::View* ChromeCleanerRebootDialog::GetInitiallyFocusedView() {
+  // Set focus away from the Restart/OK button to prevent accidental prompt
+  // acceptance if the user is typing as the dialog appears.
+  return GetDialogClientView()->cancel_button();
 }
 
 // DialogDelegate overrides.

@@ -37,6 +37,7 @@ class ChromeCleanerRebootDialog : public views::DialogDelegateView {
   // views::WidgetDelegate overrides.
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
+  views::View* GetInitiallyFocusedView() override;
 
   // views::DialogDelegate overrides.
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
