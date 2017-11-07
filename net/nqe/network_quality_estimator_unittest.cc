@@ -3375,4 +3375,46 @@ TEST(NetworkQualityEstimatorTest,
   base::RunLoop().RunUntilIdle();
 }
 
+// Tests that the ECT is computed when more than N RTT samples have been
+// received.
+TEST(NetworkQualityEstimatorTest, MaybeComputeECTAfterNSamples) {
+  std::unique_ptr<base::SimpleTestTickClock> tick_clock(
+      new base::SimpleTestTickClock());
+  base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
+  tick_clock_ptr->Advance(base::TimeDelta::FromMinutes(1));
+
+  std::map<std::string, std::string> variation_params;
+  variation_params["add_default_platform_observations"] = "false";
+  TestNetworkQualityEstimator estimator(variation_params);
+  estimator.DisableOfflineCheckForTesting(true);
+  base::RunLoop().RunUntilIdle();
+  estimator.SetTickClockForTesting(std::move(tick_clock));
+  estimator.SimulateNetworkChange(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN, "test");
+  tick_clock_ptr->Advance(base::TimeDelta::FromMinutes(1));
+
+  const base::TimeDelta rtt = base::TimeDelta::FromSeconds(1);
+  uint64_t host = 1u;
+
+  // Fill the observation buffer so that ECT computations are not triggered due
+  // to observation buffer's size increasing to 1.5x.
+  for (size_t i = 0; i < estimator.params()->observation_buffer_size(); ++i) {
+    estimator.AddAndNotifyObserversOfRTT(NetworkQualityEstimator::Observation(
+        rtt.InMilliseconds(), tick_clock_ptr->NowTicks(), INT32_MIN,
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP, host));
+  }
+  EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
+  tick_clock_ptr->Advance(base::TimeDelta::FromMinutes(60));
+
+  const base::TimeDelta rtt_new = base::TimeDelta::FromSeconds(3);
+  for (size_t i = 0;
+       i < estimator.params()->count_new_observations_received_compute_ect();
+       ++i) {
+    estimator.AddAndNotifyObserversOfRTT(NetworkQualityEstimator::Observation(
+        rtt_new.InMilliseconds(), tick_clock_ptr->NowTicks(), INT32_MIN,
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP, host));
+  }
+  EXPECT_EQ(rtt_new, estimator.GetHttpRTT().value());
+}
+
 }  // namespace net

@@ -221,7 +221,7 @@ bool ThroughputAnalyzer::MaybeGetThroughputObservation(
   if (!IsCurrentlyTrackingThroughput())
     return false;
 
-  DCHECK_GT(requests_.size(), 0U);
+  DCHECK_GE(requests_.size(), params_->throughput_min_requests_in_flight());
   DCHECK_EQ(0U, accuracy_degrading_requests_.size());
 
   base::TimeTicks now = tick_clock_->NowTicks();

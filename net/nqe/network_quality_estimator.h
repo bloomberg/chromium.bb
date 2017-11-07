@@ -344,6 +344,9 @@ class NET_EXPORT NetworkQualityEstimator
   base::ObserverList<EffectiveConnectionTypeObserver>
       effective_connection_type_observer_list_;
 
+  // Params to configure the network quality estimator.
+  const std::unique_ptr<NetworkQualityEstimatorParams> params_;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            AdaptiveRecomputationEffectiveConnectionType);
@@ -530,9 +533,6 @@ class NET_EXPORT NetworkQualityEstimator
   // Returns true if |observation| should be added to the observation buffer.
   bool ShouldAddObservation(const Observation& observation) const;
 
-  // Params to configure the network quality estimator.
-  const std::unique_ptr<NetworkQualityEstimatorParams> params_;
-
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
   bool use_localhost_requests_;
@@ -601,6 +601,14 @@ class NET_EXPORT NetworkQualityEstimator
   // type was last recomputed.
   size_t rtt_observations_size_at_last_ect_computation_;
   size_t throughput_observations_size_at_last_ect_computation_;
+
+  // Number of RTT observations received since the effective connection type was
+  // last computed.
+  size_t new_rtt_observations_since_last_ect_computation_;
+
+  // Number of throughput observations received since the effective connection
+  // type was last computed.
+  size_t new_throughput_observations_since_last_ect_computation_;
 
   // Current estimate of the network quality.
   nqe::internal::NetworkQuality network_quality_;
