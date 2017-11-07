@@ -17,7 +17,7 @@ state.Style()->{{property.setter}}
 {{set_value(property)}}(ToCSSPrimitiveValue(value).ConvertTo<{{property.type_name}}>());
   {%- elif property.converter == 'CSSIdentifierValue' %}
 {{set_value(property)}}(ToCSSIdentifierValue(value).ConvertTo<{{property.type_name}}>());
-  {% elif property.converter %}
+  {%- elif property.converter %}
 {{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
   {%- endif %}
 {% endmacro %}
