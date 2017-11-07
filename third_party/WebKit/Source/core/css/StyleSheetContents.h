@@ -67,8 +67,8 @@ class CORE_EXPORT StyleSheetContents
 
   const CSSParserContext* ParserContext() const { return parser_context_; }
 
-  const AtomicString& DefaultNamespace() { return default_namespace_; }
-  const AtomicString& NamespaceURIFromPrefix(const AtomicString& prefix);
+  const AtomicString& DefaultNamespace() const { return default_namespace_; }
+  const AtomicString& NamespaceURIFromPrefix(const AtomicString& prefix) const;
 
   void ParseAuthorStyleSheet(const CSSStyleSheetResource*,
                              const SecurityOrigin*);
