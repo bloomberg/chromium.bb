@@ -58,8 +58,9 @@ namespace content {
 namespace {
 
 net::URLRequestStatus ServiceWorkerResponseErrorToNetStatus(
-    blink::WebServiceWorkerResponseError error) {
-  if (error == blink::kWebServiceWorkerResponseErrorDataPipeCreationFailed) {
+    blink::mojom::ServiceWorkerResponseError error) {
+  if (error ==
+      blink::mojom::ServiceWorkerResponseError::kDataPipeCreationFailed) {
     return net::URLRequestStatus::FromError(net::ERR_INSUFFICIENT_RESOURCES);
   }
 
@@ -891,7 +892,7 @@ bool ServiceWorkerURLRequestJob::ShouldRecordResult() {
 }
 
 void ServiceWorkerURLRequestJob::RecordStatusZeroResponseError(
-    blink::WebServiceWorkerResponseError error) {
+    blink::mojom::ServiceWorkerResponseError error) {
   // It violates style guidelines to handle a NOTREACHED() failure but if there
   // is a bug don't let it corrupt UMA results by double-counting.
   if (!ShouldRecordResult()) {

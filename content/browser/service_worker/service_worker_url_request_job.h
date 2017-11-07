@@ -213,7 +213,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   void SetResponseBodyType(ResponseBodyType type);
   bool ShouldRecordResult();
   void RecordStatusZeroResponseError(
-      blink::WebServiceWorkerResponseError error);
+      blink::mojom::ServiceWorkerResponseError error);
 
   const net::HttpResponseInfo* http_info() const;
 

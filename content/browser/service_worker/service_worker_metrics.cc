@@ -780,15 +780,15 @@ void ServiceWorkerMetrics::RecordURLRequestJobResult(
 
 void ServiceWorkerMetrics::RecordStatusZeroResponseError(
     bool is_main_resource,
-    blink::WebServiceWorkerResponseError error) {
+    blink::mojom::ServiceWorkerResponseError error) {
   if (is_main_resource) {
     UMA_HISTOGRAM_ENUMERATION(
         "ServiceWorker.URLRequestJob.MainResource.StatusZeroError", error,
-        blink::kWebServiceWorkerResponseErrorLast + 1);
+        static_cast<int>(blink::mojom::ServiceWorkerResponseError::kLast) + 1);
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         "ServiceWorker.URLRequestJob.Subresource.StatusZeroError", error,
-        blink::kWebServiceWorkerResponseErrorLast + 1);
+        static_cast<int>(blink::mojom::ServiceWorkerResponseError::kLast) + 1);
   }
 }
 

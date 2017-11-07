@@ -9,7 +9,6 @@
 #include "modules/serviceworkers/RespondWithObserver.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
 namespace blink {
@@ -33,7 +32,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
                                           WebURLRequest::RequestContext,
                                           WaitUntilObserver*);
 
-  void OnResponseRejected(WebServiceWorkerResponseError) override;
+  void OnResponseRejected(mojom::ServiceWorkerResponseError) override;
   void OnResponseFulfilled(const ScriptValue&) override;
   void OnNoResponse() override;
 

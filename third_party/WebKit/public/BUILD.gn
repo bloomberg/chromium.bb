@@ -453,7 +453,6 @@ source_set("blink_headers") {
     "platform/modules/serviceworker/WebServiceWorkerRegistrationProxy.h",
     "platform/modules/serviceworker/WebServiceWorkerRequest.h",
     "platform/modules/serviceworker/WebServiceWorkerResponse.h",
-    "platform/modules/serviceworker/WebServiceWorkerResponseError.h",
     "platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h",
     "platform/modules/serviceworker/WebServiceWorkerStreamHandle.h",
     "platform/modules/webmidi/WebMIDIAccessor.h",

@@ -6,44 +6,47 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "public/platform/modules/serviceworker/service_worker_error_type.mojom-shared.h"
+
+using blink::mojom::ServiceWorkerResponseError;
 
 namespace blink {
 
 void PaymentHandlerUtils::ReportResponseError(
     ExecutionContext* execution_context,
     const String& event_name_prefix,
-    WebServiceWorkerResponseError error) {
+    ServiceWorkerResponseError error) {
   String error_message = event_name_prefix + ".respondWith() failed: ";
   switch (error) {
-    case kWebServiceWorkerResponseErrorPromiseRejected:
+    case ServiceWorkerResponseError::kPromiseRejected:
       error_message =
           error_message + "the promise passed to respondWith() was rejected.";
       break;
-    case kWebServiceWorkerResponseErrorDefaultPrevented:
+    case ServiceWorkerResponseError::kDefaultPrevented:
       error_message =
           error_message +
           "preventDefault() was called without calling respondWith().";
       break;
-    case kWebServiceWorkerResponseErrorNoV8Instance:
+    case ServiceWorkerResponseError::kNoV8Instance:
       error_message = error_message +
                       "an object that was not a PaymentResponse was passed to "
                       "respondWith().";
       break;
-    case kWebServiceWorkerResponseErrorUnknown:
+    case ServiceWorkerResponseError::kUnknown:
       error_message = error_message + "an unexpected error occurred.";
       break;
-    case kWebServiceWorkerResponseErrorResponseTypeError:
-    case kWebServiceWorkerResponseErrorResponseTypeOpaque:
-    case kWebServiceWorkerResponseErrorResponseTypeNotBasicOrDefault:
-    case kWebServiceWorkerResponseErrorBodyUsed:
-    case kWebServiceWorkerResponseErrorResponseTypeOpaqueForClientRequest:
-    case kWebServiceWorkerResponseErrorResponseTypeOpaqueRedirect:
-    case kWebServiceWorkerResponseErrorBodyLocked:
-    case kWebServiceWorkerResponseErrorNoForeignFetchResponse:
-    case kWebServiceWorkerResponseErrorForeignFetchHeadersWithoutOrigin:
-    case kWebServiceWorkerResponseErrorForeignFetchMismatchedOrigin:
-    case kWebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest:
-    case kWebServiceWorkerResponseErrorDataPipeCreationFailed:
+    case ServiceWorkerResponseError::kResponseTypeError:
+    case ServiceWorkerResponseError::kResponseTypeOpaque:
+    case ServiceWorkerResponseError::kResponseTypeNotBasicOrDefault:
+    case ServiceWorkerResponseError::kBodyUsed:
+    case ServiceWorkerResponseError::kResponseTypeOpaqueForClientRequest:
+    case ServiceWorkerResponseError::kResponseTypeOpaqueRedirect:
+    case ServiceWorkerResponseError::kBodyLocked:
+    case ServiceWorkerResponseError::kNoForeignFetchResponse:
+    case ServiceWorkerResponseError::kForeignFetchHeadersWithoutOrigin:
+    case ServiceWorkerResponseError::kForeignFetchMismatchedOrigin:
+    case ServiceWorkerResponseError::kRedirectedResponseForNotFollowRequest:
+    case ServiceWorkerResponseError::kDataPipeCreationFailed:
       NOTREACHED();
       error_message = error_message + "an unexpected error occurred.";
       break;

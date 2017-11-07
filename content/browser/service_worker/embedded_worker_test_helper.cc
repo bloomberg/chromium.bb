@@ -74,8 +74,9 @@ void OnFetchEventCommon(
           std::make_unique<std::vector<GURL>>(), 200, "OK",
           network::mojom::FetchResponseType::kDefault,
           std::make_unique<ServiceWorkerHeaderMap>(), std::string(), 0,
-          nullptr /* blob */, blink::kWebServiceWorkerResponseErrorUnknown,
-          base::Time(), false /* is_in_cache_storage */,
+          nullptr /* blob */,
+          blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
+          false /* is_in_cache_storage */,
           std::string() /* cache_storage_cache_name */,
           std::make_unique<
               ServiceWorkerHeaderList>() /* cors_exposed_header_names */),

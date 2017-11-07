@@ -21,7 +21,7 @@ AbortPaymentRespondWithObserver::AbortPaymentRespondWithObserver(
     : RespondWithObserver(context, event_id, observer) {}
 
 void AbortPaymentRespondWithObserver::OnResponseRejected(
-    WebServiceWorkerResponseError error) {
+    blink::mojom::ServiceWorkerResponseError error) {
   PaymentHandlerUtils::ReportResponseError(GetExecutionContext(),
                                            "AbortPaymentEvent", error);
 
@@ -39,7 +39,7 @@ void AbortPaymentRespondWithObserver::OnResponseFulfilled(
                             exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
-    OnResponseRejected(kWebServiceWorkerResponseErrorNoV8Instance);
+    OnResponseRejected(blink::mojom::ServiceWorkerResponseError::kNoV8Instance);
     return;
   }
 
