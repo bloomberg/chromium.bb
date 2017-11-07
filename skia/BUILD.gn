@@ -4,7 +4,6 @@
 
 import("//build/config/features.gni")
 import("//build/config/freetype/freetype.gni")
-import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//printing/features/features.gni")
 import("//testing/test.gni")
@@ -450,15 +449,6 @@ component("skia") {
   }
 
   if (is_linux) {
-    if (use_pangocairo) {
-      configs += [
-        # libpng_config will be included automatically from deps.  We do this
-        # to ensure that it is included before the pangocairo path (which also
-        # has a png.h).
-        "//third_party/libpng:libpng_config",
-        "//build/config/linux/pangocairo",
-      ]
-    }
     deps += [
       "//third_party/expat",
       "//third_party/fontconfig",
@@ -727,12 +717,6 @@ test("skia_unittests") {
       "//mojo/public/cpp/bindings",
       "//skia/public/interfaces:test_interfaces",
     ]
-  }
-
-  if (is_linux) {
-    if (use_pangocairo) {
-      configs += [ "//build/config/linux/pangocairo" ]
-    }
   }
 }
 
