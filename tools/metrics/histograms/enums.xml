@@ -20410,9 +20410,6 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="DataUse.MessageSize.AllServices.Downstream.Unknown.NotCellular"/>
   <int value="-1607339868"
       label="DataUse.MessageSize.AllServices.Upstream.Unknown.NotCellular"/>
-  <summary>
-    These numbers are the lower 32 bits of the hash of the metric name.
-  </summary>
   <int value="-1459119846"
       label="ServiceWorkerCache.Cache.Scheduler.QueueLength"/>
   <int value="-1390672863"
@@ -20429,6 +20426,7 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="DataUse.MessageSize.AllServices.Downstream.Background.NotCellular"/>
   <int value="-355731177" label="UMA.SamplingRatePerMille"/>
   <int value="-141990989" label="DataUse.AllServices.Background"/>
+  <int value="-132932440" label="DataUse.ContentType.Services"/>
   <int value="-48200749" label="DiskCache.0.TotalIOTime"/>
   <int value="0" label="Missing hash value"/>
   <int value="149985012"
@@ -20446,6 +20444,8 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="PasswordManager.Android.PasswordCredentialEntry.Website"/>
   <int value="757405826"
       label="DataUse.MessageSize.AllServices.Upstream.Foreground.Cellular"/>
+  <int value="761823979" label="Crashpad.HandlerLifetimeMilestone"/>
+  <int value="1264664660" label="DataUse.PageTransition.UserTraffic"/>
   <int value="1370064090"
       label="DataUse.MessageSize.AllServices.Upstream.Background.Cellular"/>
   <int value="1514844119" label="DataUse.Sync.Upload.Bytes"/>
