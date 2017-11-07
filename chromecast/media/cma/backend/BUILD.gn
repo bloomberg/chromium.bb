@@ -189,6 +189,9 @@ cast_shared_library("libcast_governor_1.0") {
     ":governor",
     "//chromecast/public/media",
   ]
+  if (is_fuchsia) {
+    ldflags = [ "-Wl,-Bsymbolic" ]
+  }
 }
 
 cast_source_set("governor") {
@@ -213,6 +216,9 @@ cast_shared_library("libcast_saturated_gain_1.0") {
     ":saturated_gain",
     "//chromecast/public/media",
   ]
+  if (is_fuchsia) {
+    ldflags = [ "-Wl,-Bsymbolic" ]
+  }
 }
 
 cast_source_set("saturated_gain") {
