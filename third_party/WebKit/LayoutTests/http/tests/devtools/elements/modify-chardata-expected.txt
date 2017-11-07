@@ -1,7 +1,5 @@
 Tests that elements panel updates dom tree structure upon changes to characters.
 
-Bar
-Lorem ipstestlor sit amet
 
 Running: testDumpInitial
 ========= Original for normal mutation ========

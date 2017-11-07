@@ -1,6 +1,5 @@
 Tests that you can click and hover on links in attributes.
 
-                  a link
 
 Rendered text: <img id=​"linkify-1" srcset=​"./​1x/​googlelogo_color_272x92dp.png 1x, ./​2x/​googlelogo_color_272x92dp.png 2x">​
 Link at offset: 30: ./​1x/​googlelogo_color_272x92dp.png

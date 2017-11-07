@@ -1,6 +1,6 @@
 Tests what elements have focus after pressing tab.
 
- DIV#tab-Styles:Styles
+DIV#tab-Styles:Styles
 INPUT:Filter Styles
 BUTTON:Toggle Element State
 BUTTON:Element Classes

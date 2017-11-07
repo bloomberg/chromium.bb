@@ -1,15 +1,11 @@
 Tests that DOMNode properly tracks own and descendants' user properties.
 
 attr1 set on aNode
-  <!DOCTYPE html>
 - <html> [subtreeMarkerCount:1]
     - <head>
-          <script src="../../inspector/inspector-test.js"></script>
-          <script src="../../inspector/elements-test.js"></script>
-          <script src="resources/user-properties.js"></script>
+          <base href="http://127.0.0.1:8000/devtools/elements/">
       </head>
-    - <body onload="runTest()"> [subtreeMarkerCount:1]
-          <p>\nTests that DOMNode properly tracks own and descendants' user properties.\n</p>
+    - <body> [subtreeMarkerCount:1]
         - <div id="container"> [subtreeMarkerCount:1]
               <div id="child1"></div>
             - <div id="child2"> [subtreeMarkerCount:1]
@@ -19,15 +15,11 @@ attr1 set on aNode
       </body>
   </html>
 attr2 set on child2
-  <!DOCTYPE html>
 - <html> [subtreeMarkerCount:2]
     - <head>
-          <script src="../../inspector/inspector-test.js"></script>
-          <script src="../../inspector/elements-test.js"></script>
-          <script src="resources/user-properties.js"></script>
+          <base href="http://127.0.0.1:8000/devtools/elements/">
       </head>
-    - <body onload="runTest()"> [subtreeMarkerCount:2]
-          <p>\nTests that DOMNode properly tracks own and descendants' user properties.\n</p>
+    - <body> [subtreeMarkerCount:2]
         - <div id="container"> [subtreeMarkerCount:2]
               <div id="child1"></div>
             - <div id="child2"> [markers:[attr2=value], subtreeMarkerCount:2]
@@ -37,15 +29,11 @@ attr2 set on child2
       </body>
   </html>
 attr1 set on child2
-  <!DOCTYPE html>
 - <html> [subtreeMarkerCount:3]
     - <head>
-          <script src="../../inspector/inspector-test.js"></script>
-          <script src="../../inspector/elements-test.js"></script>
-          <script src="resources/user-properties.js"></script>
+          <base href="http://127.0.0.1:8000/devtools/elements/">
       </head>
-    - <body onload="runTest()"> [subtreeMarkerCount:3]
-          <p>\nTests that DOMNode properly tracks own and descendants' user properties.\n</p>
+    - <body> [subtreeMarkerCount:3]
         - <div id="container"> [subtreeMarkerCount:3]
               <div id="child1"></div>
             - <div id="child2"> [markers:[attr2=value,attr1=true], subtreeMarkerCount:3]
@@ -55,15 +43,11 @@ attr1 set on child2
       </body>
   </html>
 attr1 modified on aNode
-  <!DOCTYPE html>
 - <html> [subtreeMarkerCount:3]
     - <head>
-          <script src="../../inspector/inspector-test.js"></script>
-          <script src="../../inspector/elements-test.js"></script>
-          <script src="resources/user-properties.js"></script>
+          <base href="http://127.0.0.1:8000/devtools/elements/">
       </head>
-    - <body onload="runTest()"> [subtreeMarkerCount:3]
-          <p>\nTests that DOMNode properly tracks own and descendants' user properties.\n</p>
+    - <body> [subtreeMarkerCount:3]
         - <div id="container"> [subtreeMarkerCount:3]
               <div id="child1"></div>
             - <div id="child2"> [markers:[attr2=value,attr1=true], subtreeMarkerCount:3]
@@ -73,15 +57,11 @@ attr1 modified on aNode
       </body>
   </html>
 attr2 modified on child2
-  <!DOCTYPE html>
 - <html> [subtreeMarkerCount:3]
     - <head>
-          <script src="../../inspector/inspector-test.js"></script>
-          <script src="../../inspector/elements-test.js"></script>
-          <script src="resources/user-properties.js"></script>
+          <base href="http://127.0.0.1:8000/devtools/elements/">
       </head>
-    - <body onload="runTest()"> [subtreeMarkerCount:3]
-          <p>\nTests that DOMNode properly tracks own and descendants' user properties.\n</p>
+    - <body> [subtreeMarkerCount:3]
         - <div id="container"> [subtreeMarkerCount:3]
               <div id="child1"></div>
             - <div id="child2"> [markers:[attr2=anotherValue,attr1=true], subtreeMarkerCount:3]
@@ -91,15 +71,11 @@ attr2 modified on child2
       </body>
   </html>
 attr1 removed from aNode
-  <!DOCTYPE html>
 - <html> [subtreeMarkerCount:2]
     - <head>
-          <script src="../../inspector/inspector-test.js"></script>
-          <script src="../../inspector/elements-test.js"></script>
-          <script src="resources/user-properties.js"></script>
+          <base href="http://127.0.0.1:8000/devtools/elements/">
       </head>
-    - <body onload="runTest()"> [subtreeMarkerCount:2]
-          <p>\nTests that DOMNode properly tracks own and descendants' user properties.\n</p>
+    - <body> [subtreeMarkerCount:2]
         - <div id="container"> [subtreeMarkerCount:2]
               <div id="child1"></div>
             - <div id="child2"> [markers:[attr2=anotherValue,attr1=true], subtreeMarkerCount:2]
@@ -109,15 +85,11 @@ attr1 removed from aNode
       </body>
   </html>
 aNode removed
-  <!DOCTYPE html>
 - <html> [subtreeMarkerCount:2]
     - <head>
-          <script src="../../inspector/inspector-test.js"></script>
-          <script src="../../inspector/elements-test.js"></script>
-          <script src="resources/user-properties.js"></script>
+          <base href="http://127.0.0.1:8000/devtools/elements/">
       </head>
-    - <body onload="runTest()"> [subtreeMarkerCount:2]
-          <p>\nTests that DOMNode properly tracks own and descendants' user properties.\n</p>
+    - <body> [subtreeMarkerCount:2]
         - <div id="container"> [subtreeMarkerCount:2]
               <div id="child1"></div>
               <div id="child2"></div> [markers:[attr2=anotherValue,attr1=true], subtreeMarkerCount:2]
@@ -125,15 +97,11 @@ aNode removed
       </body>
   </html>
 child2 removed
-  <!DOCTYPE html>
 - <html> [subtreeMarkerCount:2]
     - <head>
-          <script src="../../inspector/inspector-test.js"></script>
-          <script src="../../inspector/elements-test.js"></script>
-          <script src="resources/user-properties.js"></script>
+          <base href="http://127.0.0.1:8000/devtools/elements/">
       </head>
-    - <body onload="runTest()"> [subtreeMarkerCount:2]
-          <p>\nTests that DOMNode properly tracks own and descendants' user properties.\n</p>
+    - <body> [subtreeMarkerCount:2]
         - <div id="container">
               <div id="child1"></div>
           </div>
