@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <map>
-
 #include "base/macros.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
@@ -25,27 +23,17 @@ namespace ui {
 // system.
 class EVENTS_OZONE_EVDEV_EXPORT MouseButtonMapEvdev {
  public:
-  typedef uint32_t Button;
-  typedef std::map<uint32_t, uint32_t> ButtonMap;
-
   MouseButtonMapEvdev();
   ~MouseButtonMapEvdev();
 
-  // Set mapping for one button.
-  void UpdateButtonMap(Button button_from, Button button_to);
-
-  // Reset the button map to the system default.
-  void ResetButtonMap();
+  // Swaps left & right mouse buttons.
+  void SetPrimaryButtonRight(bool primary_button_right);
 
   // Return the mapped button.
-  int GetMappedButton(const Button button) const;
-
-  // Return current button map to use for incoming events.
-  const ButtonMap& button_map() { return button_map_; }
+  int GetMappedButton(uint16_t button) const;
 
  private:
-  // Mouse button map.
-  ButtonMap button_map_;
+  bool primary_button_right_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MouseButtonMapEvdev);
 };
