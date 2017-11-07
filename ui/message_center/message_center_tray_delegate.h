@@ -9,8 +9,6 @@
 
 namespace message_center {
 
-class MessageCenterTray;
-
 // A MessageCenterTrayDelegate class is responsible for managing the various UI
 // surfaces that should be displayed when the MessageCenter is changed.
 class MESSAGE_CENTER_EXPORT MessageCenterTrayDelegate {
@@ -38,12 +36,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterTrayDelegate {
 
   // Display the notifier settings as a bubble.
   virtual bool ShowNotifierSettings() = 0;
-
-  // Show a platform-specific UI that informs the user how to open the message
-  // center.
-  virtual void DisplayFirstRunBalloon() {}
-
-  virtual MessageCenterTray* GetMessageCenterTray() = 0;
 };
 
 }  // namespace message_center

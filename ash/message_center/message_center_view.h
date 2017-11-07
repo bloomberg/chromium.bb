@@ -13,8 +13,8 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification_list.h"
-#include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/message_view_context_menu_controller.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
@@ -37,12 +37,12 @@ class NotifierSettingsView;
 
 // Container for all the top-level views in the notification center, such as the
 // button bar, settings view, scrol view, and message list view.  Acts as a
-// controller for the message list view, passing data back and forth to message
-// center.
+// controller/delegate for the message list view, passing data back and forth to
+// message center.
 class ASH_EXPORT MessageCenterView
     : public views::View,
       public message_center::MessageCenterObserver,
-      public message_center::MessageCenterController,
+      public message_center::MessageViewDelegate,
       public MessageListView::Observer,
       public gfx::AnimationDelegate,
       public views::FocusChangeListener {
@@ -97,7 +97,7 @@ class ASH_EXPORT MessageCenterView
   void OnLockedStateChanged(bool locked) override;
   void OnQuietModeChanged(bool is_quiet_mode) override;
 
-  // Overridden from MessageCenterController:
+  // Overridden from MessageViewDelegate:
   void ClickOnNotification(const std::string& notification_id) override;
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;

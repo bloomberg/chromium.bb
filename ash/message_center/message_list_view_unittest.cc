@@ -16,12 +16,12 @@
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_list.h"
-#include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/views/test/views_test_base.h"
 
 using ::testing::ElementsAre;
-using message_center::MessageCenterController;
+using message_center::MessageViewDelegate;
 using message_center::Notification;
 using message_center::NotificationView;
 using message_center::NotifierId;
@@ -47,7 +47,7 @@ class MockNotificationView : public NotificationView {
     virtual void RegisterCall(CallType type) = 0;
   };
 
-  MockNotificationView(MessageCenterController* controller,
+  MockNotificationView(MessageViewDelegate* controller,
                        const Notification& notification,
                        Test* test);
   ~MockNotificationView() override;
@@ -62,7 +62,7 @@ class MockNotificationView : public NotificationView {
   DISALLOW_COPY_AND_ASSIGN(MockNotificationView);
 };
 
-MockNotificationView::MockNotificationView(MessageCenterController* controller,
+MockNotificationView::MockNotificationView(MessageViewDelegate* controller,
                                            const Notification& notification,
                                            Test* test)
     : NotificationView(controller, notification), test_(test) {
@@ -98,7 +98,7 @@ void MockNotificationView::Layout() {
 class MessageListViewTest : public AshTestBase,
                             public MockNotificationView::Test,
                             public MessageListView::Observer,
-                            public MessageCenterController {
+                            public MessageViewDelegate {
  public:
   MessageListViewTest() {}
 
@@ -176,7 +176,7 @@ class MessageListViewTest : public AshTestBase,
     is_on_all_notifications_cleared_called_ = true;
   }
 
-  // MessageCenterController override:
+  // MessageViewDelegate override:
   void ClickOnNotification(const std::string& notification_id) override {}
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override {}

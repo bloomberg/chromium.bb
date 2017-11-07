@@ -50,8 +50,3 @@ void MessageCenterTrayBridge::HideMessageCenter() {
 bool MessageCenterTrayBridge::ShowNotifierSettings() {
   return false;
 }
-
-message_center::MessageCenterTray*
-MessageCenterTrayBridge::GetMessageCenterTray() {
-  return tray_.get();
-}

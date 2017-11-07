@@ -25,7 +25,7 @@ base::LazyInstance<MessageViewFactory::CustomMessageViewFactoryFunction>::Leaky
 }  // namespace
 
 // static
-MessageView* MessageViewFactory::Create(MessageCenterController* controller,
+MessageView* MessageViewFactory::Create(MessageViewDelegate* controller,
                                         const Notification& notification,
                                         bool top_level) {
   MessageView* notification_view = nullptr;

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/views/widget/widget_observer.h"
@@ -38,14 +37,9 @@ class WebNotificationTray : public message_center::MessageCenterTrayDelegate {
   void OnMessageCenterTrayChanged() override;
   bool ShowNotifierSettings() override;
 
-  message_center::MessageCenterTray* GetMessageCenterTray() override;
+  message_center::MessageCenterTray* GetMessageCenterTrayForTesting();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotifications);
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, WebNotificationPopupBubble);
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManyPopupNotifications);
-  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, ManuallyCloseMessageCenter);
-
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
   std::unique_ptr<message_center::DesktopPopupAlignmentDelegate>
       alignment_delegate_;

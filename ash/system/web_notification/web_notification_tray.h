@@ -99,7 +99,6 @@ class ASH_EXPORT WebNotificationTray
   bool ShowPopups() override;
   void HidePopups() override;
   bool ShowNotifierSettings() override;
-  message_center::MessageCenterTray* GetMessageCenterTray() override;
 
   // Overridden from ui::SimpleMenuModel::Delegate.
   bool IsCommandIdChecked(int command_id) const override;

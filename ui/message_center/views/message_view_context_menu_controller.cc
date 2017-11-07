@@ -6,8 +6,8 @@
 
 #include "ui/base/models/menu_model.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
@@ -15,9 +15,8 @@
 namespace message_center {
 
 MessageViewContextMenuController::MessageViewContextMenuController(
-    MessageCenterController* controller)
-    : controller_(controller) {
-}
+    MessageViewDelegate* controller)
+    : controller_(controller) {}
 
 MessageViewContextMenuController::~MessageViewContextMenuController() {
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_CENTER_CONTROLLER_H_
-#define UI_MESSAGE_CENTER_VIEWS_MESSAGE_CENTER_CONTROLLER_H_
+#ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_DELEGATE_H_
+#define UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_DELEGATE_H_
 
 #include <memory>
 #include <string>
@@ -16,9 +16,9 @@ class Notification;
 
 // Interface used by views to report clicks and other user actions. The views
 // by themselves do not know how to perform those operations, they ask
-// MessageCenterController to do them. Implemented by MessageCenterView and
+// MessageViewDelegate to do them. Implemented by MessageCenterView and
 // MessagePopupCollection.
-class MessageCenterController {
+class MessageViewDelegate {
  public:
   virtual void ClickOnNotification(const std::string& notification_id) = 0;
   virtual void RemoveNotification(const std::string& notification_id,
@@ -37,4 +37,4 @@ class MessageCenterController {
 
 }  // namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_VIEWS_MESSAGE_CENTER_CONTROLLER_H_
+#endif  // UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_DELEGATE_H_

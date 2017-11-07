@@ -29,7 +29,7 @@ namespace message_center {
 
 class Notification;
 class NotificationControlButtonsView;
-class MessageCenterController;
+class MessageViewDelegate;
 
 // An base class for a notification entry. Contains background and other
 // elements shared by derived notification views.
@@ -37,8 +37,7 @@ class MESSAGE_CENTER_EXPORT MessageView
     : public views::View,
       public views::SlideOutController::Delegate {
  public:
-  MessageView(MessageCenterController* controller,
-              const Notification& notification);
+  MessageView(MessageViewDelegate* delegate, const Notification& notification);
   ~MessageView() override;
 
   // Updates this view with the new data contained in the notification.
@@ -78,9 +77,7 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() const { return notification_id_; }
-  void set_controller(MessageCenterController* controller) {
-    controller_ = controller;
-  }
+  void set_delegate(MessageViewDelegate* delegate) { delegate_ = delegate; }
 
 #if defined(OS_CHROMEOS)
   // By calling this, all notifications are treated as non-pinned forcibly.
@@ -99,10 +96,10 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   views::View* background_view() { return background_view_; }
   views::ScrollView* scroller() { return scroller_; }
-  MessageCenterController* controller() { return controller_; }
+  MessageViewDelegate* delegate() { return delegate_; }
 
  private:
-  MessageCenterController* controller_;  // Weak, lives longer then views.
+  MessageViewDelegate* delegate_;
   std::string notification_id_;
   views::View* background_view_ = nullptr;  // Owned by views hierarchy.
   views::ScrollView* scroller_ = nullptr;

@@ -29,7 +29,6 @@ class FakeMessageCenterTrayDelegate : public MessageCenterTrayDelegate {
   bool ShowMessageCenter(bool show_by_click) override;
   void HideMessageCenter() override;
   bool ShowNotifierSettings() override;
-  MessageCenterTray* GetMessageCenterTray() override;
 
  private:
   std::unique_ptr<MessageCenterTray> tray_;

@@ -22,13 +22,12 @@ class MenuRunner;
 }  // namespace views
 
 namespace message_center {
-class MessageCenterController;
+class MessageViewDelegate;
 
 class MESSAGE_CENTER_EXPORT MessageViewContextMenuController
     : public views::ContextMenuController {
  public:
-  explicit MessageViewContextMenuController(
-      MessageCenterController* controller);
+  explicit MessageViewContextMenuController(MessageViewDelegate* controller);
   ~MessageViewContextMenuController() override;
 
  private:
@@ -40,7 +39,7 @@ class MESSAGE_CENTER_EXPORT MessageViewContextMenuController
   // Callback for MenuModelAdapter
   void OnMenuClosed();
 
-  MessageCenterController* controller_;
+  MessageViewDelegate* controller_;
 
   std::unique_ptr<ui::MenuModel> menu_model_;
   std::unique_ptr<views::MenuModelAdapter> menu_model_adapter_;

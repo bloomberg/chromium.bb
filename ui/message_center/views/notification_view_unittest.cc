@@ -27,7 +27,7 @@
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/constants.h"
-#include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_button.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
@@ -48,7 +48,7 @@ namespace message_center {
 /* Test fixture ***************************************************************/
 
 class NotificationViewTest : public views::ViewsTestBase,
-                             public MessageCenterController {
+                             public MessageViewDelegate {
  public:
   NotificationViewTest();
   ~NotificationViewTest() override;
@@ -63,7 +63,7 @@ class NotificationViewTest : public views::ViewsTestBase,
   Notification* notification() { return notification_.get(); }
   RichNotificationData* data() { return data_.get(); }
 
-  // Overridden from MessageCenterController:
+  // Overridden from MessageViewDelegate:
   void ClickOnNotification(const std::string& notification_id) override;
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;

@@ -24,7 +24,7 @@ namespace arc {
 namespace {
 
 std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
-    message_center::MessageCenterController* controller,
+    message_center::MessageViewDelegate* controller,
     const message_center::Notification& notification) {
   DCHECK_EQ(notification.notifier_id().type,
             message_center::NotifierId::ARC_APPLICATION);

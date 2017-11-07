@@ -31,7 +31,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/padded_button.h"
@@ -153,12 +153,11 @@ class MockArcNotificationItem : public ArcNotificationItem {
   DISALLOW_COPY_AND_ASSIGN(MockArcNotificationItem);
 };
 
-class TestMessageCenterController
-    : public message_center::MessageCenterController {
+class TestMessageViewDelegate : public message_center::MessageViewDelegate {
  public:
-  TestMessageCenterController() = default;
+  TestMessageViewDelegate() = default;
 
-  // MessageCenterController
+  // MessageViewDelegate
   void ClickOnNotification(const std::string& notification_id) override {
     // For this test, this method should not be invoked.
     NOTREACHED();
@@ -196,7 +195,7 @@ class TestMessageCenterController
  private:
   std::set<std::string> removed_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestMessageCenterController);
+  DISALLOW_COPY_AND_ASSIGN(TestMessageViewDelegate);
 };
 
 class DummyEvent : public ui::Event {
@@ -315,7 +314,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
         new ArcNotificationDelegate(notification_item->GetWeakPtr()));
   }
 
-  TestMessageCenterController* controller() { return &controller_; }
+  TestMessageViewDelegate* controller() { return &controller_; }
   ArcNotificationSurfaceManagerImpl* surface_manager() {
     return surface_manager_.get();
   }
@@ -344,7 +343,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
   }
 
  private:
-  TestMessageCenterController controller_;
+  TestMessageViewDelegate controller_;
   std::unique_ptr<exo::WMHelper> wm_helper_;
   std::unique_ptr<ArcNotificationSurfaceManagerImpl> surface_manager_;
   std::unique_ptr<exo::Buffer> surface_buffer_;

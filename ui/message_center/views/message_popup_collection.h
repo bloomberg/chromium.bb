@@ -17,7 +17,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
-#include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view_delegate.h"
 #include "ui/message_center/views/toast_contents_view.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -49,7 +49,7 @@ class PopupAlignmentDelegate;
 // contents of each toast are for the message center and layout strategy would
 // be slightly different.
 class MESSAGE_CENTER_EXPORT MessagePopupCollection
-    : public MessageCenterController,
+    : public MessageViewDelegate,
       public MessageCenterObserver {
  public:
   MessagePopupCollection(MessageCenter* message_center,
@@ -57,7 +57,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
                          PopupAlignmentDelegate* alignment_delegate);
   ~MessagePopupCollection() override;
 
-  // Overridden from MessageCenterController:
+  // Overridden from MessageViewDelegate:
   void ClickOnNotification(const std::string& notification_id) override;
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;

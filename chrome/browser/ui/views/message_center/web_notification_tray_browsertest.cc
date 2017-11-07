@@ -123,20 +123,20 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
 
   // Adding a notification should show the popup bubble.
   AddNotification("id1");
-  EXPECT_TRUE(tray->GetMessageCenterTray()->popups_visible());
+  EXPECT_TRUE(tray->GetMessageCenterTrayForTesting()->popups_visible());
 
   // Updating a notification should not hide the popup bubble.
   AddNotification("id2");
   UpdateNotification("id2");
-  EXPECT_TRUE(tray->GetMessageCenterTray()->popups_visible());
+  EXPECT_TRUE(tray->GetMessageCenterTrayForTesting()->popups_visible());
 
   // Removing the first notification should not hide the popup bubble.
   RemoveNotification("id1");
-  EXPECT_TRUE(tray->GetMessageCenterTray()->popups_visible());
+  EXPECT_TRUE(tray->GetMessageCenterTrayForTesting()->popups_visible());
 
   // Removing the visible notification should hide the popup bubble.
   RemoveNotification("id2");
-  EXPECT_FALSE(tray->GetMessageCenterTray()->popups_visible());
+  EXPECT_FALSE(tray->GetMessageCenterTrayForTesting()->popups_visible());
 }
 
 IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
     std::string id = base::StringPrintf("id%d", static_cast<int>(i));
     AddNotification(id);
   }
-  EXPECT_TRUE(tray->GetMessageCenterTray()->popups_visible());
+  EXPECT_TRUE(tray->GetMessageCenterTrayForTesting()->popups_visible());
   MessageCenter* message_center = tray->message_center();
   EXPECT_EQ(notifications_to_add, message_center->NotificationCount());
   NotificationList::PopupNotifications popups =

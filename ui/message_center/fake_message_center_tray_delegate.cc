@@ -37,8 +37,4 @@ bool FakeMessageCenterTrayDelegate::ShowNotifierSettings() {
   return false;
 }
 
-MessageCenterTray* FakeMessageCenterTrayDelegate::GetMessageCenterTray() {
-  return tray_.get();
-}
-
 }  // namespace message_center
