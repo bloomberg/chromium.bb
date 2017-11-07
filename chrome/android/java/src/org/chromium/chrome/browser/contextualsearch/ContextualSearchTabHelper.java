@@ -238,7 +238,7 @@ public class ContextualSearchTabHelper
 
     /** @return whether Contextual Search is enabled and active in this tab. */
     private boolean isContextualSearchActive(ContentViewCore cvc) {
-        assert mTab.getContentViewCore() == cvc;
+        assert mTab.getContentViewCore() == null || mTab.getContentViewCore() == cvc;
         ContextualSearchManager manager = getContextualSearchManager(mTab);
         if (manager == null) return false;
 
