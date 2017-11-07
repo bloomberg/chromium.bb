@@ -293,12 +293,13 @@ void NavButtonProviderGtk3::RedrawImages(int top_area_height,
 
   top_area_spacing_ =
       InsetsFromGtkBorder(header_padding) + InsetsFromGtkBorder(header_border);
-  top_area_spacing_ = gfx::Insets(scale * top_area_spacing_.top() + 0.5f,
-                                  scale * top_area_spacing_.left() + 0.5f,
-                                  scale * top_area_spacing_.bottom() + 0.5f,
-                                  scale * top_area_spacing_.right() + 0.5f);
+  top_area_spacing_ =
+      gfx::Insets(std::round(scale * top_area_spacing_.top()),
+                  std::round(scale * top_area_spacing_.left()),
+                  std::round(scale * top_area_spacing_.bottom()),
+                  std::round(scale * top_area_spacing_.right()));
 
-  inter_button_spacing_ = scale * kHeaderSpacing + 0.5f;
+  inter_button_spacing_ = std::round(scale * kHeaderSpacing);
 
   for (auto type : display_types) {
     double button_height =
@@ -310,12 +311,15 @@ void NavButtonProviderGtk3::RedrawImages(int top_area_height,
     double scaled_button_offset = (available_height - button_height) / 2;
 
     gfx::Size size = button_sizes[type];
-    size = gfx::Size(scale * size.width() + 0.5f, scale * size.height() + 0.5f);
+    size = gfx::Size(std::round(scale * size.width()),
+                     std::round(scale * size.height()));
     gfx::Insets margin = button_margins[type];
-    margin = gfx::Insets(
-        scale * (header_border.top + header_padding.top + margin.top()) +
-            scaled_button_offset + 0.5f,
-        0, scale * margin.left() + 0.5f, scale * margin.right() + 0.5f);
+    margin =
+        gfx::Insets(std::round(scale * (header_border.top + header_padding.top +
+                                        margin.top()) +
+                               scaled_button_offset),
+                    std::round(scale * margin.left()), 0,
+                    std::round(scale * margin.right()));
 
     button_margins_[type] = margin;
 
@@ -422,14 +426,14 @@ void NavButtonProviderGtk3::CalculateCaptionButtonLayout(
       2;
 
   *caption_button_size =
-      gfx::Size(content_size.width() + additional_button_width +
-                    button_border.left() + button_border.right() +
-                    button_padding.left() + button_padding.right() + 0.5f,
-                button_height + 0.5f);
-  *caption_button_spacing =
-      gfx::Insets(shiftable_region_start + button_margin.top() +
-                      button_offset_in_shiftable_region + 0.5f,
-                  button_margin.left() + 0.5f, 0, button_margin.right() + 0.5f);
+      gfx::Size(std::round(content_size.width() + additional_button_width +
+                           button_border.left() + button_border.right() +
+                           button_padding.left() + button_padding.right()),
+                std::round(button_height));
+  *caption_button_spacing = gfx::Insets(
+      std::round(shiftable_region_start + button_margin.top() +
+                 button_offset_in_shiftable_region),
+      std::round(button_margin.left()), 0, std::round(button_margin.right()));
 }
 
 }  // namespace libgtkui
