@@ -21,6 +21,8 @@ def HostArch():
     host_arch = 'x64'
   elif host_arch.startswith('arm'):
     host_arch = 'arm'
+  elif host_arch.startswith('aarch64'):
+    host_arch = 'arm64'
   elif host_arch.startswith('mips'):
     host_arch = 'mips'
   elif host_arch.startswith('ppc'):
@@ -35,6 +37,8 @@ def HostArch():
   # the python binary.
   if host_arch == 'x64' and platform.architecture()[0] == '32bit':
     host_arch = 'ia32'
+  if host_arch == 'arm64' and platform.architecture()[0] == '32bit':
+    host_arch = 'arm'
 
   return host_arch
 
