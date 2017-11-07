@@ -18,7 +18,6 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "gin/converter.h"
-#include "gin/dictionary.h"
 
 namespace extensions {
 
@@ -49,68 +48,6 @@ bool GetTarget(ScriptContext* script_context,
   }
 
   return true;
-}
-
-// The result of trying to parse options passed to a messaging API.
-enum ParseOptionsResult {
-  TYPE_ERROR,  // Invalid values were passed.
-  THROWN,      // An error was thrown while parsing.
-  SUCCESS,     // Parsing succeeded.
-};
-
-struct MessageOptions {
-  std::string channel_name;
-  bool include_tls_channel_id = false;
-};
-
-// Parses the parameters sent to sendMessage or connect, returning the result of
-// the attempted parse. If |check_for_channel_name| is true, also checks for a
-// provided channel name (this is only true for connect() calls). Populates the
-// result in |options_out| or |error_out| (depending on the success of the
-// parse).
-ParseOptionsResult ParseMessageOptions(v8::Local<v8::Context> context,
-                                       v8::Local<v8::Object> v8_options,
-                                       bool check_for_channel_name,
-                                       MessageOptions* options_out,
-                                       std::string* error_out) {
-  DCHECK(!v8_options.IsEmpty());
-  DCHECK(!v8_options->IsNull());
-
-  v8::Isolate* isolate = context->GetIsolate();
-
-  MessageOptions options;
-
-  // Theoretically, our argument matching code already checked the types of
-  // the properties on v8_connect_options. However, since we don't make an
-  // independent copy, it's possible that author script has super sneaky
-  // getters/setters that change the result each time the property is
-  // queried. Make no assumptions.
-  v8::Local<v8::Value> v8_channel_name;
-  v8::Local<v8::Value> v8_include_tls_channel_id;
-  gin::Dictionary options_dict(isolate, v8_options);
-  if (!options_dict.Get("includeTlsChannelId", &v8_include_tls_channel_id) ||
-      (check_for_channel_name && !options_dict.Get("name", &v8_channel_name))) {
-    return THROWN;
-  }
-
-  if (check_for_channel_name && !v8_channel_name->IsUndefined()) {
-    if (!v8_channel_name->IsString()) {
-      *error_out = "connectInfo.name must be a string.";
-      return TYPE_ERROR;
-    }
-    options.channel_name = gin::V8ToString(v8_channel_name);
-  }
-
-  if (!v8_include_tls_channel_id->IsUndefined()) {
-    if (!v8_include_tls_channel_id->IsBoolean()) {
-      *error_out = "connectInfo.includeTlsChannelId must be a boolean.";
-      return TYPE_ERROR;
-    }
-    options.include_tls_channel_id = v8_include_tls_channel_id->BooleanValue();
-  }
-
-  *options_out = std::move(options);
-  return SUCCESS;
 }
 
 // Massages the sendMessage() arguments into the expected schema. These
@@ -199,8 +136,6 @@ constexpr char kConnect[] = "runtime.connect";
 constexpr char kConnectNative[] = "runtime.connectNative";
 constexpr char kSendMessage[] = "runtime.sendMessage";
 constexpr char kSendNativeMessage[] = "runtime.sendNativeMessage";
-
-constexpr char kSendMessageChannel[] = "chrome.runtime.sendMessage";
 
 }  // namespace
 
@@ -312,20 +247,22 @@ RequestResult RuntimeHooksDelegate::HandleSendMessage(
   }
 
   v8::Local<v8::Context> v8_context = script_context->v8_context();
-  MessageOptions options;
+  messaging_util::MessageOptions options;
   if (!arguments[2]->IsNull()) {
     std::string error;
-    ParseOptionsResult parse_result = ParseMessageOptions(
-        v8_context, arguments[2].As<v8::Object>(), false, &options, &error);
+    messaging_util::ParseOptionsResult parse_result =
+        messaging_util::ParseMessageOptions(
+            v8_context, arguments[2].As<v8::Object>(),
+            messaging_util::PARSE_INCLUDE_TLS_CHANNEL_ID, &options, &error);
     switch (parse_result) {
-      case TYPE_ERROR: {
+      case messaging_util::TYPE_ERROR: {
         RequestResult result(RequestResult::INVALID_INVOCATION);
         result.error = std::move(error);
         return result;
       }
-      case THROWN:
+      case messaging_util::THROWN:
         return RequestResult(RequestResult::THROWN);
-      case SUCCESS:
+      case messaging_util::SUCCESS:
         break;
     }
   }
@@ -345,8 +282,8 @@ RequestResult RuntimeHooksDelegate::HandleSendMessage(
 
   messaging_service_->SendOneTimeMessage(
       script_context, MessageTarget::ForExtension(target_id),
-      kSendMessageChannel, options.include_tls_channel_id, *message,
-      response_callback);
+      messaging_util::kSendMessageChannel, options.include_tls_channel_id,
+      *message, response_callback);
 
   return RequestResult(RequestResult::HANDLED);
 }
@@ -393,21 +330,24 @@ RequestResult RuntimeHooksDelegate::HandleConnect(
     return result;
   }
 
-  MessageOptions options;
+  messaging_util::MessageOptions options;
   if (!arguments[1]->IsNull()) {
     std::string error;
-    ParseOptionsResult parse_result = ParseMessageOptions(
-        script_context->v8_context(), arguments[1].As<v8::Object>(), true,
-        &options, &error);
+    messaging_util::ParseOptionsResult parse_result =
+        messaging_util::ParseMessageOptions(
+            script_context->v8_context(), arguments[1].As<v8::Object>(),
+            messaging_util::PARSE_INCLUDE_TLS_CHANNEL_ID |
+                messaging_util::PARSE_CHANNEL_NAME,
+            &options, &error);
     switch (parse_result) {
-      case TYPE_ERROR: {
+      case messaging_util::TYPE_ERROR: {
         RequestResult result(RequestResult::INVALID_INVOCATION);
         result.error = std::move(error);
         return result;
       }
-      case THROWN:
+      case messaging_util::THROWN:
         return RequestResult(RequestResult::THROWN);
-      case SUCCESS:
+      case messaging_util::SUCCESS:
         break;
     }
   }

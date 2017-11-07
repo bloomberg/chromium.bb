@@ -335,6 +335,8 @@ static_library("unit_test_support") {
     "bindings/api_binding_test_util.h",
     "native_extension_bindings_system_test_base.cc",
     "native_extension_bindings_system_test_base.h",
+    "send_message_tester.cc",
+    "send_message_tester.h",
     "string_source_map.cc",
     "string_source_map.h",
     "test_v8_extension_configuration.cc",
