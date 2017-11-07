@@ -708,7 +708,9 @@ Surface::BufferAttachment& Surface::BufferAttachment::operator=(
   if (buffer_)
     buffer_->OnDetach();
   buffer_ = other.buffer_;
+  size_ = other.size_;
   other.buffer_ = base::WeakPtr<Buffer>();
+  other.size_ = gfx::Size();
   return *this;
 }
 
@@ -720,9 +722,16 @@ const base::WeakPtr<Buffer>& Surface::BufferAttachment::buffer() const {
   return buffer_;
 }
 
+const gfx::Size& Surface::BufferAttachment::size() const {
+  return size_;
+}
+
 void Surface::BufferAttachment::Reset(base::WeakPtr<Buffer> buffer) {
-  if (buffer)
+  size_ = gfx::Size();
+  if (buffer) {
     buffer->OnAttach();
+    size_ = buffer->GetSize();
+  }
   if (buffer_)
     buffer_->OnDetach();
   buffer_ = buffer;
@@ -741,7 +750,7 @@ void Surface::UpdateResource(LayerTreeFrameSinkHolder* frame_sink_holder) {
       current_resource_.id = 0;
       // Use the buffer's size, so the AppendContentsToFrame() will append
       // a SolidColorDrawQuad with the buffer's size.
-      current_resource_.size = current_buffer_.buffer()->GetSize();
+      current_resource_.size = current_buffer_.size();
       current_resource_has_alpha_ = false;
     }
   } else {
@@ -867,11 +876,10 @@ void Surface::UpdateContentSize() {
         << ") most be expressible using integers when viewport is not set";
     content_size = gfx::ToCeiledSize(state_.crop.size());
   } else {
-    auto size = current_buffer_.buffer() ? current_buffer_.buffer()->GetSize()
-                                         : gfx::Size();
-    content_size = gfx::ToCeiledSize(gfx::ScaleSize(
-        gfx::SizeF(ToTransformedSize(size, state_.buffer_transform)),
-        1.0f / state_.buffer_scale));
+    content_size = gfx::ToCeiledSize(
+        gfx::ScaleSize(gfx::SizeF(ToTransformedSize(current_buffer_.size(),
+                                                    state_.buffer_transform)),
+                       1.0f / state_.buffer_scale));
   }
 
   // Enable/disable sub-surface based on if it has contents.
