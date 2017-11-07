@@ -1225,9 +1225,6 @@ NetworkHandle QuicStreamFactory::FindAlternateNetwork(
 std::unique_ptr<DatagramClientSocket> QuicStreamFactory::CreateSocket(
     NetLog* net_log,
     const NetLogSource& source) {
-  // Use OS-specified port for socket (DEFAULT_BIND) instead of
-  // using the PortSuggester since the connection is being migrated
-  // and not being newly created.
   return client_socket_factory_->CreateDatagramClientSocket(
       DatagramSocket::DEFAULT_BIND, RandIntCallback(), net_log, source);
 }
