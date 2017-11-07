@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/previews_ui_service.h"
+#include "components/previews/content/previews_ui_service.h"
 
 #include <memory>
 
@@ -11,9 +11,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "components/previews/content/previews_io_data.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_io_data.h"
 #include "components/previews/core/previews_logger.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

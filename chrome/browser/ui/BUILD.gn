@@ -423,6 +423,7 @@ split_static_library("ui") {
     "//components/physical_web/webui",
     "//components/policy/core/browser",
     "//components/pref_registry",
+    "//components/previews/content",
     "//components/previews/core",
     "//components/proximity_auth",
     "//components/proxy_config",

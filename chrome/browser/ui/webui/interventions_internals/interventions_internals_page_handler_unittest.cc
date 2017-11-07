@@ -13,11 +13,11 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
+#include "components/previews/content/previews_io_data.h"
+#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_features.h"
-#include "components/previews/core/previews_io_data.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_logger_observer.h"
-#include "components/previews/core/previews_ui_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

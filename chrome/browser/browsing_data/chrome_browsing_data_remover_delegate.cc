@@ -71,7 +71,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_ui_service.h"
+#include "components/previews/content/previews_ui_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
