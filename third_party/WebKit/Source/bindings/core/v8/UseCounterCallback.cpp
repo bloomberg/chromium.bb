@@ -130,6 +130,15 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kLineOrParagraphSeparatorAsLineTerminator:
       blink_feature = WebFeature::kV8LineOrParagraphSeparatorAsLineTerminator;
       break;
+    case v8::Isolate::kErrorCaptureStackTrace:
+      blink_feature = WebFeature::kV8ErrorCaptureStackTrace;
+      break;
+    case v8::Isolate::kErrorPrepareStackTrace:
+      blink_feature = WebFeature::kV8ErrorPrepareStackTrace;
+      break;
+    case v8::Isolate::kErrorStackTraceLimit:
+      blink_feature = WebFeature::kV8ErrorStackTraceLimit;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.
