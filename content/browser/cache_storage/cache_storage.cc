@@ -1137,7 +1137,8 @@ void CacheStorage::SizeRetrievedFromCache(CacheStorageCacheHandle cache_handle,
                                           base::OnceClosure closure,
                                           int64_t* accumulator,
                                           int64_t size) {
-  cache_index_->SetCacheSize(cache_handle.value()->cache_name(), size);
+  if (doomed_caches_.find(cache_handle.value()) == doomed_caches_.end())
+    cache_index_->SetCacheSize(cache_handle.value()->cache_name(), size);
   *accumulator += size;
   std::move(closure).Run();
 }
@@ -1150,7 +1151,7 @@ void CacheStorage::GetSizeThenCloseAllCachesImpl(SizeCallback callback) {
   int64_t* accumulator_ptr = accumulator.get();
 
   base::RepeatingClosure barrier_closure =
-      base::BarrierClosure(cache_index_->num_entries(),
+      base::BarrierClosure(cache_index_->num_entries() + doomed_caches_.size(),
                            base::BindOnce(&SizeRetrievedFromAllCaches,
                                           base::Passed(std::move(accumulator)),
                                           std::move(callback)));
@@ -1162,6 +1163,14 @@ void CacheStorage::GetSizeThenCloseAllCachesImpl(SizeCallback callback) {
         &CacheStorage::SizeRetrievedFromCache, weak_factory_.GetWeakPtr(),
         base::Passed(std::move(cache_handle)), barrier_closure,
         accumulator_ptr));
+  }
+
+  for (const auto& cache_it : doomed_caches_) {
+    CacheStorageCache* cache = cache_it.first;
+    cache->GetSizeThenClose(base::BindOnce(
+        &CacheStorage::SizeRetrievedFromCache, weak_factory_.GetWeakPtr(),
+        CacheStorageCacheHandle(cache->AsWeakPtr(), weak_factory_.GetWeakPtr()),
+        barrier_closure, accumulator_ptr));
   }
 }
 
