@@ -13,6 +13,9 @@ namespace display {
 // before display IDs are known.
 constexpr int64_t kInvalidDisplayId = -1;
 
+// Display ID for a virtual display assigned to a unified desktop.
+constexpr int64_t kUnifiedDisplayId = -10;
+
 // Used to describe the state of a multi-display configuration.
 enum MultipleDisplayState {
   MULTIPLE_DISPLAY_STATE_INVALID,

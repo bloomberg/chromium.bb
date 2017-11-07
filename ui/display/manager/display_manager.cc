@@ -260,9 +260,6 @@ DisplayManager::BeginEndNotifier::~BeginEndNotifier() {
   }
 }
 
-// static
-int64_t DisplayManager::kUnifiedDisplayId = -10;
-
 DisplayManager::DisplayManager(std::unique_ptr<Screen> screen)
     : screen_(std::move(screen)),
       layout_store_(new DisplayLayoutStore),
@@ -1445,8 +1442,7 @@ bool DisplayManager::ResetDisplayToDefaultMode(int64_t id) {
 
 void DisplayManager::ResetInternalDisplayZoom() {
   if (IsInUnifiedMode()) {
-    const ManagedDisplayInfo& display_info =
-        GetDisplayInfo(DisplayManager::kUnifiedDisplayId);
+    const ManagedDisplayInfo& display_info = GetDisplayInfo(kUnifiedDisplayId);
     const ManagedDisplayInfo::ManagedDisplayModeList& modes =
         display_info.display_modes();
     auto iter = std::find_if(
