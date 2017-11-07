@@ -89,35 +89,6 @@ class TextureIdAllocator {
 
 namespace {
 
-GLenum TextureStorageFormat(viz::ResourceFormat format) {
-  switch (format) {
-    case viz::RGBA_8888:
-      return GL_RGBA8_OES;
-    case viz::BGRA_8888:
-      return GL_BGRA8_EXT;
-    case viz::RGBA_F16:
-      return GL_RGBA16F_EXT;
-    case viz::RGBA_4444:
-      return GL_RGBA4;
-    case viz::ALPHA_8:
-      return GL_ALPHA8_EXT;
-    case viz::LUMINANCE_8:
-      return GL_LUMINANCE8_EXT;
-    case viz::RGB_565:
-      return GL_RGB565;
-    case viz::RED_8:
-      return GL_R8_EXT;
-    case viz::LUMINANCE_F16:
-      return GL_LUMINANCE16F_EXT;
-    case viz::R16_EXT:
-      return GL_R16_EXT;
-    case viz::ETC1:
-      break;
-  }
-  NOTREACHED();
-  return GL_RGBA8_OES;
-}
-
 class ScopedSetActiveTexture {
  public:
   ScopedSetActiveTexture(GLES2Interface* gl, GLenum unit)
@@ -864,7 +835,7 @@ void ResourceProvider::ScopedWriteLockGL::LazyAllocate(
 
   if (is_overlay_) {
     DCHECK(settings.use_texture_storage_image);
-    gl->TexStorage2DImageCHROMIUM(target_, TextureStorageFormat(format_),
+    gl->TexStorage2DImageCHROMIUM(target_, viz::TextureStorageFormat(format_),
                                   GL_SCANOUT_CHROMIUM, size_.width(),
                                   size_.height());
     if (color_space_.IsValid()) {
@@ -877,7 +848,7 @@ void ResourceProvider::ScopedWriteLockGL::LazyAllocate(
         (hint_ & ResourceProvider::TEXTURE_HINT_MIPMAP)) {
       levels += base::bits::Log2Floor(std::max(size_.width(), size_.height()));
     }
-    gl->TexStorage2DEXT(target_, levels, TextureStorageFormat(format_),
+    gl->TexStorage2DEXT(target_, levels, viz::TextureStorageFormat(format_),
                         size_.width(), size_.height());
   } else {
     gl->TexImage2D(target_, 0, GLInternalFormat(format_), size_.width(),

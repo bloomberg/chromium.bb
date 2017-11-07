@@ -208,4 +208,33 @@ bool DoesResourceFormatSupportAlpha(ResourceFormat format) {
   return false;
 }
 
+unsigned int TextureStorageFormat(ResourceFormat format) {
+  switch (format) {
+    case RGBA_8888:
+      return GL_RGBA8_OES;
+    case BGRA_8888:
+      return GL_BGRA8_EXT;
+    case RGBA_F16:
+      return GL_RGBA16F_EXT;
+    case RGBA_4444:
+      return GL_RGBA4;
+    case ALPHA_8:
+      return GL_ALPHA8_EXT;
+    case LUMINANCE_8:
+      return GL_LUMINANCE8_EXT;
+    case RGB_565:
+      return GL_RGB565;
+    case RED_8:
+      return GL_R8_EXT;
+    case LUMINANCE_F16:
+      return GL_LUMINANCE16F_EXT;
+    case R16_EXT:
+      return GL_R16_EXT;
+    case ETC1:
+      break;
+  }
+  NOTREACHED();
+  return GL_RGBA8_OES;
+}
+
 }  // namespace viz
