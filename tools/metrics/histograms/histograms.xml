@@ -90083,15 +90083,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="V8.CompileScriptMicroSeconds.CompilationCacheHit"
-    units="microseconds">
-  <owner>leszeks@chromium.org</owner>
-  <summary>
-    Total time spent in compiling a script (incl. parsing/caching) in the case
-    where the V8 in-memory compilation cache is hit.
-  </summary>
-</histogram>
-
 <histogram name="V8.CompileScriptMicroSeconds.ConsumeCache"
     units="microseconds">
   <owner>leszeks@chromium.org</owner>
@@ -90107,6 +90098,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Total time spent in compiling a script  (incl. parsing/caching) when the
     compilation tried to deserialize it from the code cache, but failed.
+  </summary>
+</histogram>
+
+<histogram name="V8.CompileScriptMicroSeconds.IsolateCacheHit"
+    units="microseconds">
+  <owner>leszeks@chromium.org</owner>
+  <summary>
+    Total time spent in compiling a script (incl. parsing/caching) in the case
+    where the V8 isolate's compilation cache is hit.
   </summary>
 </histogram>
 
