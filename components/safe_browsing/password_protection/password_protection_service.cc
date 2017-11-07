@@ -168,12 +168,6 @@ bool PasswordProtectionService::ShouldShowModalWarning(
                false)));
 }
 
-void PasswordProtectionService::OnWarningShown(WebContents* web_contents,
-                                               WarningUIType ui_type) {
-  RecordWarningAction(ui_type, SHOWN);
-  // TODO(jialiul): Trigger event logger here.
-}
-
 bool PasswordProtectionService::ShouldShowSofterWarning() {
   return base::GetFieldTrialParamByFeatureAsBool(kGoogleBrandedPhishingWarning,
                                                  "softer_warning", false);

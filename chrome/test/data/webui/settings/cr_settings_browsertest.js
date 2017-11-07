@@ -1717,3 +1717,27 @@ CrSettingsExtensionControlledIndicatorTest.prototype = {
 TEST_F('CrSettingsExtensionControlledIndicatorTest', 'All', function() {
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsChangePasswordPageTest() {}
+
+CrSettingsChangePasswordPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://settings/change_password_page/change_password_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'change_password_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsChangePasswordPageTest', 'All', function() {
+  mocha.run();
+});

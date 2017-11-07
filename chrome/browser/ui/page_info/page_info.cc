@@ -896,8 +896,9 @@ void PageInfo::PresentSiteIdentity() {
   ui_->SetIdentityInfo(info);
 #if defined(SAFE_BROWSING_DB_LOCAL)
   if (password_protection_service_ && show_change_password_buttons_) {
-    password_protection_service_->OnWarningShown(
-        web_contents(), safe_browsing::PasswordProtectionService::PAGE_INFO);
+    password_protection_service_->RecordWarningAction(
+        safe_browsing::PasswordProtectionService::PAGE_INFO,
+        safe_browsing::PasswordProtectionService::SHOWN);
   }
 #endif
 }

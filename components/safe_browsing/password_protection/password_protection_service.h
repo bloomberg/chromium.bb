@@ -197,10 +197,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void ShowModalWarning(content::WebContents* web_contents,
                                 const std::string& verdict_token) = 0;
 
-  // Record UMA stats and trigger event logger when warning UI is shown.
-  virtual void OnWarningShown(content::WebContents* web_contents,
-                              WarningUIType ui_type);
-
   // Called when user interacts with warning UIs.
   virtual void OnUserAction(content::WebContents* web_contents,
                             WarningUIType ui_type,

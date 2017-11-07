@@ -234,13 +234,20 @@ void ChromePasswordProtectionService::ShowModalWarning(
   if (IsModalWarningShowingInWebContents(web_contents))
     return;
 
+  // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
+  if (web_contents->IsFullscreenForCurrentTab())
+    web_contents->ExitFullscreen(true);
+
   UpdateSecurityState(SB_THREAT_TYPE_PASSWORD_REUSE, web_contents);
   ShowPasswordReuseModalWarningDialog(
       web_contents, this,
       base::BindOnce(&ChromePasswordProtectionService::OnUserAction,
                      base::Unretained(this), web_contents,
                      PasswordProtectionService::MODAL_DIALOG));
-  OnWarningShown(web_contents, PasswordProtectionService::MODAL_DIALOG);
+  RecordWarningAction(PasswordProtectionService::MODAL_DIALOG,
+                      PasswordProtectionService::SHOWN);
+
+  // Updates prefs.
   GURL trigger_url = web_contents->GetLastCommittedURL();
   DCHECK(trigger_url.is_valid());
   DictionaryPrefUpdate update(profile_->GetPrefs(),
@@ -251,6 +258,10 @@ void ChromePasswordProtectionService::ShowModalWarning(
       Origin::Create(web_contents->GetLastCommittedURL()).Serialize(),
       base::Value(
           base::Int64ToString(GetLastCommittedNavigationID(web_contents))));
+
+  // Informs observers.
+  for (auto& observer : observer_list_)
+    observer.OnGaiaPasswordReuseWarningShown();
 
   // Starts preparing post-warning report.
   MaybeStartThreatDetailsCollection(web_contents, verdict_token);
