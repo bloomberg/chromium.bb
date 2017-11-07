@@ -9,11 +9,9 @@
 
 namespace blink {
 
-class LocalFrame;
-
 class BlinkInitializer : public ModulesInitializer {
- private:
-  void InitLocalFrame(LocalFrame&) const override;
+ public:
+  void RegisterInterfaces(InterfaceRegistry&) override;
 };
 
 }  // namespace blink

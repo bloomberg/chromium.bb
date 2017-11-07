@@ -4,12 +4,8 @@
 
 module blink.mojom;
 
-// Renderer interface for OOM intervention.
-interface OomIntervention {
-  // Called when NearOomMonitor detects near-OOM situation.
-  OnNearOomDetected() => ();
-
-  // Called when the intervention is declined. Only called after
-  // OnNearOomDetected().
-  OnInterventionDeclined() => ();
-};
+// Renderer interface for OOM intervention. An instance of this interface
+// will be created when NearOomMonitor detects near-OOM situation to activate
+// intervention (e.g. pausing the renderer). The instance will be destroyed
+// when the intervention is declined.
+interface OomIntervention {};

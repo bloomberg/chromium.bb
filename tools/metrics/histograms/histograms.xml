@@ -35778,6 +35778,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.Experimental.OomIntervention.UserDecision"
+    enum="OomInterventionUserDecision">
+  <owner>bashi@chromium.org</owner>
+  <summary>Records user decisions on near-OOM intervention.</summary>
+</histogram>
+
 <histogram base="true" name="Memory.Experimental.Renderer" units="MB">
 <!-- Name completed by histogram_suffixes name="RendererMemoryAllocator" -->
 

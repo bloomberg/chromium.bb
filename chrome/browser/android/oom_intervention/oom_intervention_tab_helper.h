@@ -8,8 +8,11 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/oom_intervention/near_oom_monitor.h"
+#include "chrome/browser/ui/android/infobars/near_oom_infobar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/platform/oom_intervention.mojom.h"
 
 namespace content {
 class WebContents;
@@ -18,11 +21,16 @@ class WebContents;
 // A tab helper for near-OOM intervention.
 class OomInterventionTabHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<OomInterventionTabHelper> {
+      public content::WebContentsUserData<OomInterventionTabHelper>,
+      public NearOomMessageDelegate {
  public:
   static bool IsEnabled();
 
   ~OomInterventionTabHelper() override;
+
+  // NearOomMessageDelegate:
+  void AcceptIntervention() override;
+  void DeclineIntervention() override;
 
  private:
   explicit OomInterventionTabHelper(content::WebContents* web_contents);
@@ -49,6 +57,8 @@ class OomInterventionTabHelper
   bool navigation_started_ = false;
   base::Optional<base::TimeTicks> near_oom_detected_time_;
   std::unique_ptr<NearOomMonitor::Subscription> subscription_;
+
+  blink::mojom::OomInterventionPtr intervention_;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_OOM_INTERVENTION_OOM_INTERVENTION_TAB_HELPER_H_

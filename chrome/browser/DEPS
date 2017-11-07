@@ -124,28 +124,15 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebDisplayMode.h",
   "+third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h",
   "+third_party/WebKit/public/platform/WebGestureEvent.h",
-  "+third_party/WebKit/public/platform/web_feature.mojom.h",
   "+third_party/WebKit/public/platform/WebInputEvent.h",
   "+third_party/WebKit/public/platform/WebMouseEvent.h",
   "+third_party/WebKit/public/platform/WebMouseWheelEvent.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
   "+third_party/WebKit/public/platform/WebSecurityStyle.h",
-  "+third_party/WebKit/public/platform/media_engagement.mojom.h",
-  "+third_party/WebKit/public/platform/modules/app_banner/app_banner.mojom.h",
-  "+third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h",
-  "+third_party/WebKit/public/platform/modules/insecure_input/insecure_input_service.mojom.h",
-  "+third_party/WebKit/public/platform/modules/installation/installation.mojom.h",
-  "+third_party/WebKit/public/platform/modules/installedapp/installed_app_provider.mojom.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",
-  "+third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h",
-  "+third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h",
-  "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",
-  "+third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h",
   "+third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h",
   "+third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h",
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
-  "+third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h",
-  "+third_party/WebKit/public/platform/site_engagement.mojom.h",
   "+third_party/WebKit/public/public_features.h",
   "+third_party/WebKit/public/web/WebContextMenuData.h",
   "+third_party/WebKit/public/web/WebFindOptions.h",
@@ -154,12 +141,29 @@ include_rules = [
   "+third_party/WebKit/public/web/WebPresentationReceiverFlags.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebTriggeringEventInfo.h",
-  "+third_party/WebKit/public/web/window_features.mojom.h",
 
   # Unlike other WebKit directories WebKit/common is for the files that
   # are commonly referenced by renderer-side and browser-side code, and
   # does not use Blink types like WTF.
   "+third_party/WebKit/common",
+
+  # Allow mojo generated files in WebKit. These files use STL types and
+  # don't use WTF types.
+  "+third_party/WebKit/public/platform/web_feature.mojom.h",
+  "+third_party/WebKit/public/platform/media_engagement.mojom.h",
+  "+third_party/WebKit/public/platform/modules/app_banner/app_banner.mojom.h",
+  "+third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h",
+  "+third_party/WebKit/public/platform/modules/insecure_input/insecure_input_service.mojom.h",
+  "+third_party/WebKit/public/platform/modules/installation/installation.mojom.h",
+  "+third_party/WebKit/public/platform/modules/installedapp/installed_app_provider.mojom.h",
+  "+third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h",
+  "+third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h",
+  "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",
+  "+third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h",
+  "+third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h",
+  "+third_party/WebKit/public/platform/oom_intervention.mojom.h",
+  "+third_party/WebKit/public/platform/site_engagement.mojom.h",
+  "+third_party/WebKit/public/web/window_features.mojom.h",
 
   # The following restrictions are for ChromeOS and in particular mus/mash where
   # Ozone does not run in process. If the linux build transitions to Ozone then

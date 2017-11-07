@@ -6,11 +6,10 @@
 #define OomInterventionImpl_h
 
 #include "controller/ControllerExport.h"
+#include "core/page/ScopedPagePauser.h"
 #include "public/platform/oom_intervention.mojom-blink.h"
 
 namespace blink {
-
-class ScopedPagePauser;
 
 // Implementation of OOM intervention. This pauses all pages by using
 // ScopedPagePauser when near-OOM situation is detected.
@@ -22,12 +21,8 @@ class CONTROLLER_EXPORT OomInterventionImpl
   OomInterventionImpl();
   ~OomInterventionImpl() override;
 
-  // mojom::OomIntervention implementations:
-  void OnNearOomDetected(OnNearOomDetectedCallback) override;
-  void OnInterventionDeclined(OnInterventionDeclinedCallback) override;
-
  private:
-  std::unique_ptr<ScopedPagePauser> pauser_;
+  ScopedPagePauser pauser_;
 };
 
 }  // namespace blink
