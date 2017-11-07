@@ -1,0 +1,4 @@
+declare_args() {
+  # Enable decoding AV1 video files.
+  use_av1 = false
+}
