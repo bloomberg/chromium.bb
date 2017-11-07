@@ -137,8 +137,8 @@ void BackgroundFetchServiceImpl::GetDeveloperIds(
     const url::Origin& origin,
     GetDeveloperIdsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  background_fetch_context_->data_manager().GetDeveloperIdsForServiceWorker(
-      service_worker_registration_id, std::move(callback));
+  background_fetch_context_->GetDeveloperIdsForServiceWorker(
+      service_worker_registration_id, origin, std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::AddRegistrationObserver(

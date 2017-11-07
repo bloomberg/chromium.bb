@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "content/browser/background_fetch/background_fetch_request_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -16,13 +17,13 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     const BackgroundFetchRegistration& registration,
-    BackgroundFetchDataManager* data_manager,
+    BackgroundFetchRequestManager* request_manager,
     ProgressCallback progress_callback,
     FinishedCallback finished_callback)
     : registration_id_(registration_id),
       options_(options),
       complete_requests_downloaded_bytes_cache_(registration.downloaded),
-      data_manager_(data_manager),
+      request_manager_(request_manager),
       delegate_proxy_(delegate_proxy),
       progress_callback_(std::move(progress_callback)),
       finished_callback_(std::move(finished_callback)),
@@ -51,7 +52,7 @@ void BackgroundFetchJobController::Start() {
   // TODO(crbug.com/741609): Enforce kMaximumBackgroundFetchParallelRequests
   // globally and/or per origin rather than per fetch.
   for (size_t i = 0; i < kMaximumBackgroundFetchParallelRequests; i++) {
-    data_manager_->PopNextRequest(
+    request_manager_->PopNextRequest(
         registration_id_,
         base::BindOnce(&BackgroundFetchJobController::StartRequest,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -77,8 +78,8 @@ void BackgroundFetchJobController::DidStartRequest(
     const scoped_refptr<BackgroundFetchRequestInfo>& request,
     const std::string& download_guid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  data_manager_->MarkRequestAsStarted(registration_id_, request.get(),
-                                      download_guid);
+  request_manager_->MarkRequestAsStarted(registration_id_, request.get(),
+                                         download_guid);
 }
 
 void BackgroundFetchJobController::DidUpdateRequest(
@@ -102,14 +103,13 @@ void BackgroundFetchJobController::DidCompleteRequest(
     const std::string& download_guid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // This request is no longer in-progress, so the DataManager will take over
-  // responsibility for storing its downloaded bytes, though still need a cache.
   active_request_download_bytes_.erase(download_guid);
   complete_requests_downloaded_bytes_cache_ += request->GetFileSize();
 
-  // The DataManager must acknowledge that it stored the data and that there are
-  // no more pending requests to avoid marking this job as completed too early.
-  data_manager_->MarkRequestAsComplete(
+  // The RequestManager must acknowledge that it stored the data and that there
+  // are no more pending requests to avoid marking this job as completed too
+  // early.
+  request_manager_->MarkRequestAsComplete(
       registration_id_, request.get(),
       base::BindOnce(&BackgroundFetchJobController::DidMarkRequestCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -122,7 +122,7 @@ void BackgroundFetchJobController::DidMarkRequestCompleted(
   // If not all requests have completed, start a pending request if there are
   // any left, and bail.
   if (has_pending_or_active_requests) {
-    data_manager_->PopNextRequest(
+    request_manager_->PopNextRequest(
         registration_id_,
         base::BindOnce(&BackgroundFetchJobController::StartRequest,
                        weak_ptr_factory_.GetWeakPtr()));

@@ -123,6 +123,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
   // Synchronous wrapper for BackgroundFetchServiceImpl::GetDeveloperIds().
   void GetDeveloperIds(int64_t service_worker_registration_id,
+                       const url::Origin& origin,
                        blink::mojom::BackgroundFetchError* out_error,
                        std::vector<std::string>* out_developer_ids) {
     DCHECK(out_error);
@@ -130,7 +131,7 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
     base::RunLoop run_loop;
     service_->GetDeveloperIds(
-        service_worker_registration_id, origin(),
+        service_worker_registration_id, origin,
         base::BindOnce(&BackgroundFetchServiceTest::DidGetDeveloperIds,
                        base::Unretained(this), run_loop.QuitClosure(),
                        out_error, out_developer_ids));
@@ -825,7 +826,8 @@ TEST_F(BackgroundFetchServiceTest, GetDeveloperIds) {
     blink::mojom::BackgroundFetchError error;
     std::vector<std::string> developer_ids;
 
-    GetDeveloperIds(service_worker_registration_id, &error, &developer_ids);
+    GetDeveloperIds(service_worker_registration_id, origin(), &error,
+                    &developer_ids);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
     ASSERT_EQ(developer_ids.size(), 0u);
@@ -846,7 +848,8 @@ TEST_F(BackgroundFetchServiceTest, GetDeveloperIds) {
     blink::mojom::BackgroundFetchError error;
     std::vector<std::string> developer_ids;
 
-    GetDeveloperIds(service_worker_registration_id, &error, &developer_ids);
+    GetDeveloperIds(service_worker_registration_id, origin(), &error,
+                    &developer_ids);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
     ASSERT_EQ(developer_ids.size(), 1u);
@@ -868,7 +871,8 @@ TEST_F(BackgroundFetchServiceTest, GetDeveloperIds) {
     blink::mojom::BackgroundFetchError error;
     std::vector<std::string> developer_ids;
 
-    GetDeveloperIds(service_worker_registration_id, &error, &developer_ids);
+    GetDeveloperIds(service_worker_registration_id, origin(), &error,
+                    &developer_ids);
     ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
 
     ASSERT_EQ(developer_ids.size(), 2u);
@@ -878,6 +882,36 @@ TEST_F(BackgroundFetchServiceTest, GetDeveloperIds) {
                 developer_ids[1] == kExampleDeveloperId);
     EXPECT_TRUE(developer_ids[0] == kAlternativeDeveloperId ||
                 developer_ids[1] == kAlternativeDeveloperId);
+  }
+
+  // Verify that using the wrong origin does not return developer ids even if
+  // the service worker registration is correct.
+  {
+    blink::mojom::BackgroundFetchError error;
+    std::vector<std::string> developer_ids;
+
+    GetDeveloperIds(service_worker_registration_id,
+                    url::Origin::Create(GURL("https://www.bogus-origin.com")),
+                    &error, &developer_ids);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+    ASSERT_EQ(developer_ids.size(), 0u);
+  }
+
+  // Verify that using the wrong service worker id does not return developer ids
+  // even if the origin is correct.
+  {
+    blink::mojom::BackgroundFetchError error;
+    std::vector<std::string> developer_ids;
+
+    int64_t bogus_service_worker_registration_id =
+        service_worker_registration_id + 1;
+
+    GetDeveloperIds(bogus_service_worker_registration_id, origin(), &error,
+                    &developer_ids);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+    ASSERT_EQ(developer_ids.size(), 0u);
   }
 }
 

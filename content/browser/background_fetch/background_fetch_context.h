@@ -57,6 +57,13 @@ class CONTENT_EXPORT BackgroundFetchContext
       const std::string& developer_id,
       blink::mojom::BackgroundFetchService::GetRegistrationCallback callback);
 
+  // Gets all the Background Fetch registration |developer_id|s for a Service
+  // Worker and invokes |callback| with that list.
+  void GetDeveloperIdsForServiceWorker(
+      int64_t service_worker_registration_id,
+      const url::Origin& origin,
+      blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
+
   // Starts a Background Fetch for the |registration_id|. The |requests| will be
   // asynchronously fetched. The |callback| will be invoked when the fetch has
   // been registered, or an error occurred that prevents it from doing so.
@@ -85,8 +92,6 @@ class CONTENT_EXPORT BackgroundFetchContext
       const std::string& unique_id,
       const std::string& title,
       blink::mojom::BackgroundFetchService::UpdateUICallback callback);
-
-  BackgroundFetchDataManager& data_manager() { return data_manager_; }
 
  private:
   friend class base::DeleteHelper<BackgroundFetchContext>;

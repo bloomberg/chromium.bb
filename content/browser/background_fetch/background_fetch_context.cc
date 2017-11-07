@@ -69,6 +69,14 @@ void BackgroundFetchContext::GetRegistration(
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void BackgroundFetchContext::GetDeveloperIdsForServiceWorker(
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
+    blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback) {
+  data_manager_.GetDeveloperIdsForServiceWorker(service_worker_registration_id,
+                                                origin, std::move(callback));
+}
+
 void BackgroundFetchContext::DidGetRegistration(
     blink::mojom::BackgroundFetchService::GetRegistrationCallback callback,
     blink::mojom::BackgroundFetchError error,
