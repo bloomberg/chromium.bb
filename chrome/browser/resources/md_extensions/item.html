@@ -207,23 +207,25 @@
           <div id="description" hidden$="[[hasWarnings_(data.*)]]">
             [[data.description]]
           </div>
-          <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
-            <div id="suspicious-warning"
-                 hidden$="[[!data.disableReasons.suspiciousInstall]]">
-              $i18n{itemSuspiciousInstall}
-              <a target="_blank" id="learn-more-link"
-                  href="$i18n{suspiciousInstallHelpUrl}">
-                $i18n{learnMore}
-              </a>
+          <template is="dom-if" if="[[hasWarnings_(data.*)]]">
+            <div id="warnings" >
+              <div id="suspicious-warning"
+                   hidden$="[[!data.disableReasons.suspiciousInstall]]">
+                $i18n{itemSuspiciousInstall}
+                <a target="_blank" id="learn-more-link"
+                    href="$i18n{suspiciousInstallHelpUrl}">
+                  $i18n{learnMore}
+                </a>
+              </div>
+              <div id="corrupted-warning"
+                  hidden$="[[!data.disableReasons.corruptInstall]]">
+                $i18n{itemCorruptInstall}
+              </div>
+              <div id="blacklisted-warning"><!-- No whitespace
+                -->[[data.blacklistText]]<!-- so we can use :empty in css.
+             --></div>
             </div>
-            <div id="corrupted-warning"
-                hidden$="[[!data.disableReasons.corruptInstall]]">
-              $i18n{itemCorruptInstall}
-            </div>
-            <div id="blacklisted-warning"><!-- No whitespace
-              -->[[data.blacklistText]]<!-- so we can use :empty in css.
-           --></div>
-          </div>
+          </template>
           <template is="dom-if" if="[[inDevMode]]">
             <div id="extension-id">[[data.id]]</div>
             <template is="dom-if"
