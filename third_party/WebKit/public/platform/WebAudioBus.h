@@ -30,11 +30,6 @@
 #if INSIDE_BLINK
 template <typename T>
 class scoped_refptr;
-
-namespace WTF {
-template <typename T>
-using RefPtr = scoped_refptr<T>;
-}
 #endif
 
 namespace blink {

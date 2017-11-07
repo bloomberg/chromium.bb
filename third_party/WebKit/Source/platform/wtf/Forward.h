@@ -30,8 +30,6 @@ class scoped_refptr;
 namespace WTF {
 
 template <typename T>
-using RefPtr = scoped_refptr<T>;
-template <typename T>
 class StringBuffer;
 class PartitionAllocator;
 template <typename T,
@@ -61,7 +59,6 @@ class Uint32Array;
 
 }  // namespace WTF
 
-using WTF::RefPtr;
 using WTF::Vector;
 
 using WTF::ArrayBuffer;
