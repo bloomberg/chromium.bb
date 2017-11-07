@@ -809,7 +809,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 - (void)bookmarkCollectionViewShowSignIn:(BookmarkCollectionView*)view {
-  [self.bookmarkPromoController showSignIn];
+  [self.bookmarkPromoController showSignInFromViewController:self];
 }
 
 - (void)bookmarkCollectionViewDismissPromo:(BookmarkCollectionView*)view {
@@ -1572,7 +1572,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 #pragma mark - SigninPresenter
 
 - (void)showSignin:(ShowSigninCommand*)command {
-  [self.dispatcher showSignin:command];
+  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 @end

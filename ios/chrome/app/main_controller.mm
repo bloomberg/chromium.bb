@@ -368,13 +368,6 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 - (void)activateBVCAndMakeCurrentBVCPrimary;
 // Sets |currentBVC| as the root view controller for the window.
 - (void)displayCurrentBVC;
-// Invokes the sign in flow with the specified authentication operation and
-// invokes |callback| when finished.
-- (void)showSigninWithOperation:(AuthenticationOperation)operation
-                       identity:(ChromeIdentity*)identity
-                    accessPoint:(signin_metrics::AccessPoint)accessPoint
-                    promoAction:(signin_metrics::PromoAction)promoAction
-                       callback:(ShowSigninCommandCompletionCallback)callback;
 // Shows the tab switcher UI.
 - (void)showTabSwitcher;
 // Starts a voice search on the current BVC.
@@ -1478,15 +1471,39 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   }
 }
 
-- (void)showSignin:(ShowSigninCommand*)command {
+// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
+- (void)showSignin:(ShowSigninCommand*)command
+    baseViewController:(UIViewController*)baseViewController {
   if (command.operation == AUTHENTICATION_OPERATION_DISMISS) {
     [self dismissSigninInteractionCoordinator];
-  } else {
-    [self showSigninWithOperation:command.operation
-                         identity:command.identity
-                      accessPoint:command.accessPoint
-                      promoAction:command.promoAction
-                         callback:command.callback];
+    return;
+  }
+
+  if (!self.signinInteractionCoordinator) {
+    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
+        initWithBrowserState:_mainBrowserState
+                  dispatcher:self.mainBVC.dispatcher];
+  }
+
+  switch (command.operation) {
+    case AUTHENTICATION_OPERATION_DISMISS:
+      // Special case handled above.
+      NOTREACHED();
+      break;
+    case AUTHENTICATION_OPERATION_REAUTHENTICATE:
+      [self.signinInteractionCoordinator
+          reAuthenticateWithAccessPoint:command.accessPoint
+                            promoAction:command.promoAction
+               presentingViewController:baseViewController
+                             completion:command.callback];
+      break;
+    case AUTHENTICATION_OPERATION_SIGNIN:
+      [self.signinInteractionCoordinator signInWithIdentity:command.identity
+                                                accessPoint:command.accessPoint
+                                                promoAction:command.promoAction
+                                   presentingViewController:baseViewController
+                                                 completion:command.callback];
+      break;
   }
 }
 
@@ -2038,42 +2055,6 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   [baseViewController presentViewController:_settingsNavigationController
                                    animated:YES
                                  completion:nil];
-}
-
-- (void)showSigninWithOperation:(AuthenticationOperation)operation
-                       identity:(ChromeIdentity*)identity
-                    accessPoint:(signin_metrics::AccessPoint)accessPoint
-                    promoAction:(signin_metrics::PromoAction)promoAction
-                       callback:(ShowSigninCommandCompletionCallback)callback {
-  DCHECK_NE(AUTHENTICATION_OPERATION_DISMISS, operation);
-
-  if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
-        initWithBrowserState:_mainBrowserState
-                  dispatcher:self.mainBVC.dispatcher];
-  }
-
-  switch (operation) {
-    case AUTHENTICATION_OPERATION_DISMISS:
-      // Special case handled above.
-      NOTREACHED();
-      break;
-    case AUTHENTICATION_OPERATION_REAUTHENTICATE:
-      [self.signinInteractionCoordinator
-          reAuthenticateWithAccessPoint:accessPoint
-                            promoAction:promoAction
-               presentingViewController:[self topPresentedViewController]
-                             completion:callback];
-      break;
-    case AUTHENTICATION_OPERATION_SIGNIN:
-      [self.signinInteractionCoordinator
-                signInWithIdentity:identity
-                       accessPoint:accessPoint
-                       promoAction:promoAction
-          presentingViewController:[self topPresentedViewController]
-                        completion:callback];
-      break;
-  }
 }
 
 - (void)dismissSigninInteractionCoordinator {

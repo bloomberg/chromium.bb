@@ -92,8 +92,10 @@
 // Opens the |command| URL.
 - (void)openURL:(OpenUrlCommand*)command;
 
-// Shows the signin UI.
-- (void)showSignin:(ShowSigninCommand*)command;
+// TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
+// Shows the signin UI, presenting from |baseViewController|.
+- (void)showSignin:(ShowSigninCommand*)command
+    baseViewController:(UIViewController*)baseViewController;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
 // Shows the Add Account UI, presenting from |baseViewController|.
