@@ -10,7 +10,7 @@ java_prebuilt("guava_java") {
   # results in size regressions. Thus, do not use this outside of tests and
   # build tooling.
   supports_android = true
-  jar_path = "lib/guava-20.0.jar"
+  jar_path = "lib/guava.jar"
 
   # Avoids dependency cycle.
   no_build_hooks = true

@@ -5,5 +5,5 @@
 import("//build/config/android/rules.gni")
 
 java_prebuilt("gson_java") {
-  jar_path = "lib/gson-2.8.0.jar"
+  jar_path = "lib/gson.jar"
 }
