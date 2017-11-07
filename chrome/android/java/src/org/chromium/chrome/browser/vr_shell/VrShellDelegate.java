@@ -749,8 +749,9 @@ public class VrShellDelegate
         // in the vrdisplayactivate handler we will exit presentation later. Note that in the
         // case of autopresentation, we don't want to enter WebVR mode so that we can show the
         // splash screen. In this case, we enter WebVR mode when the site requests presentation.
-        boolean tentativeWebVrMode =
-                mListeningForWebVrActivateBeforePause && !mRequestedWebVr && !mAutopresentWebVr;
+        // Note that we don't want to dispatch vrdisplayactivate for auto-present and vr intents.
+        boolean tentativeWebVrMode = mListeningForWebVrActivateBeforePause && !mRequestedWebVr
+                && !mAutopresentWebVr && !mEnterVrOnStartup;
         if (tentativeWebVrMode) {
             // Before we fire DisplayActivate, we need focus to propagate to the WebContents we're
             // about to send DisplayActivate to. Focus propagates during onResume, which is when
@@ -767,6 +768,7 @@ public class VrShellDelegate
         }
 
         enterVr(tentativeWebVrMode);
+        mEnterVrOnStartup = false;
 
         // The user has successfully completed a DON flow.
         RecordUserAction.record("VR.DON");
@@ -786,7 +788,6 @@ public class VrShellDelegate
             return;
         }
         mInVr = true;
-        mEnterVrOnStartup = false;
         mVrClassesWrapper.setVrModeEnabled(mActivity, true);
 
         setWindowModeForVr();
@@ -829,6 +830,7 @@ public class VrShellDelegate
                 public void run() {
                     mProbablyInDon = false;
                     mDonSucceeded = true;
+                    mEnterVrOnStartup = false;
                     handleDonFlowSuccess();
                 }
             }, EXPECT_DON_TIMEOUT_MS);
@@ -1183,7 +1185,6 @@ public class VrShellDelegate
             mCancellingEntryAnimation = false;
             if (enterVrInternal() == ENTER_VR_CANCELLED) {
                 cancelPendingVrEntry();
-                mEnterVrOnStartup = false;
             }
         } else if (mDonSucceeded) {
             mCancellingEntryAnimation = false;
