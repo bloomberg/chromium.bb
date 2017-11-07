@@ -33,8 +33,10 @@ class NotificationCommon {
     PERSISTENT = 0,
     NON_PERSISTENT = 1,
     EXTENSION = 2,
-    PRODUCT_EOL = 3,
-    DOWNLOAD = 4,
+    DOWNLOAD = 3,
+    TRANSIENT = 4,  // A generic type for any notification that does not outlive
+                    // the browser instance and is controlled by a
+                    // NotificationDelegate.
     TYPE_MAX = DOWNLOAD,
   };
 
