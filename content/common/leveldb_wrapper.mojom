@@ -72,10 +72,13 @@ interface LevelDBWrapper {
   // Removes all the entries.
   DeleteAll(string source) => (bool success);
 
-  // Returns the value of the |key|.
+  // [DEPRECATED] Returns the value of the |key| only if values are
+  // stored in the internal in-memory cache. Fails if the |key| does not exist
+  // or if values are not required to be stored in the cache.
+  // TODO(ssid): Remove this function, crbug.com/764127.
   Get(array<uint8> key) => (bool success, array<uint8> value);
 
-  // Only used with small databases. Returns all key/value pairs.
+  // Returns all key/value pairs.
   [Sync]
   GetAll(associated LevelDBWrapperGetAllCallback complete_callback)
     => (leveldb.mojom.DatabaseError status, array<KeyValue> data);
