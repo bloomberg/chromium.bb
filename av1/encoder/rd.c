@@ -91,28 +91,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; ++i)
       av1_cost_tokens_from_cdf(x->partition_cost[i], fc->partition_cdf[i],
                                NULL);
-#if CONFIG_UNPOISON_PARTITION_CTX
-    for (; i < PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES; ++i) {
-      aom_prob p = fc->partition_prob[i][PARTITION_VERT];
-      assert(p > 0);
-      x->partition_cost[i][PARTITION_NONE] = INT_MAX;
-      x->partition_cost[i][PARTITION_HORZ] = INT_MAX;
-      x->partition_cost[i][PARTITION_VERT] = av1_cost_bit(p, 0);
-      x->partition_cost[i][PARTITION_SPLIT] = av1_cost_bit(p, 1);
-    }
-    for (; i < PARTITION_CONTEXTS_PRIMARY + 2 * PARTITION_BLOCK_SIZES; ++i) {
-      aom_prob p = fc->partition_prob[i][PARTITION_HORZ];
-      assert(p > 0);
-      x->partition_cost[i][PARTITION_NONE] = INT_MAX;
-      x->partition_cost[i][PARTITION_HORZ] = av1_cost_bit(p, 0);
-      x->partition_cost[i][PARTITION_VERT] = INT_MAX;
-      x->partition_cost[i][PARTITION_SPLIT] = av1_cost_bit(p, 1);
-    }
-    x->partition_cost[PARTITION_CONTEXTS][PARTITION_NONE] = INT_MAX;
-    x->partition_cost[PARTITION_CONTEXTS][PARTITION_HORZ] = INT_MAX;
-    x->partition_cost[PARTITION_CONTEXTS][PARTITION_VERT] = INT_MAX;
-    x->partition_cost[PARTITION_CONTEXTS][PARTITION_SPLIT] = 0;
-#endif  // CONFIG_UNPOISON_PARTITION_CTX
   }
 
   for (i = 0; i < SKIP_CONTEXTS; ++i) {

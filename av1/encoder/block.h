@@ -235,11 +235,9 @@ struct macroblock {
 #endif
   int switchable_interp_costs[SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS];
 #if CONFIG_EXT_PARTITION_TYPES
-  int partition_cost[PARTITION_CONTEXTS + CONFIG_UNPOISON_PARTITION_CTX]
-                    [EXT_PARTITION_TYPES];
+  int partition_cost[PARTITION_CONTEXTS][EXT_PARTITION_TYPES];
 #else
-  int partition_cost[PARTITION_CONTEXTS + CONFIG_UNPOISON_PARTITION_CTX]
-                    [PARTITION_TYPES];
+  int partition_cost[PARTITION_CONTEXTS][PARTITION_TYPES];
 #endif  // CONFIG_EXT_PARTITION_TYPES
 #if CONFIG_MRC_TX
   int mrc_mask_inter_cost[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]

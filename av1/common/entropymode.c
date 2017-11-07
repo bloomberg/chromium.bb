@@ -621,22 +621,6 @@ static const aom_prob
       { 58, 32, 12, 128, 128, 128, 255, 128, 255 },   // l split, a not split
       { 10, 7, 6, 128, 128, 128, 255, 128, 255 },     // a/l both split
 #endif                                                // CONFIG_EXT_PARTITION
-#if CONFIG_UNPOISON_PARTITION_CTX
-      { 0, 0, 141, 0, 0, 0, 0, 0, 0 },  // 8x8 -> 4x4
-      { 0, 0, 87, 0, 0, 0, 0, 0, 0 },   // 16x16 -> 8x8
-      { 0, 0, 59, 0, 0, 0, 0, 0, 0 },   // 32x32 -> 16x16
-      { 0, 0, 30, 0, 0, 0, 0, 0, 0 },   // 64x64 -> 32x32
-#if CONFIG_EXT_PARTITION
-      { 0, 0, 30, 0, 0, 0, 0, 0, 0 },   // 128x128 -> 64x64
-#endif                                  // CONFIG_EXT_PARTITION
-      { 0, 122, 0, 0, 0, 0, 0, 0, 0 },  // 8x8 -> 4x4
-      { 0, 73, 0, 0, 0, 0, 0, 0, 0 },   // 16x16 -> 8x8
-      { 0, 58, 0, 0, 0, 0, 0, 0, 0 },   // 32x32 -> 16x16
-      { 0, 34, 0, 0, 0, 0, 0, 0, 0 },   // 64x64 -> 32x32
-#if CONFIG_EXT_PARTITION
-      { 0, 34, 0, 0, 0, 0, 0, 0, 0 },  // 128x128 -> 64x64
-#endif                                 // CONFIG_EXT_PARTITION
-#endif                                 // CONFIG_UNPOISON_PARTITION_CTX
     };
 #else
 static const aom_prob
@@ -668,22 +652,6 @@ static const aom_prob
       { 58, 32, 12 },   // l split, a not split
       { 10, 7, 6 },     // a/l both split
 #endif  // CONFIG_EXT_PARTITION
-#if CONFIG_UNPOISON_PARTITION_CTX
-      { 0, 0, 141 },    // 8x8 -> 4x4
-      { 0, 0, 87 },     // 16x16 -> 8x8
-      { 0, 0, 59 },     // 32x32 -> 16x16
-      { 0, 0, 30 },     // 64x64 -> 32x32
-#if CONFIG_EXT_PARTITION
-      { 0, 0, 30 },     // 128x128 -> 64x64
-#endif  // CONFIG_EXT_PARTITION
-      { 0, 122, 0 },    // 8x8 -> 4x4
-      { 0, 73, 0 },     // 16x16 -> 8x8
-      { 0, 58, 0 },     // 32x32 -> 16x16
-      { 0, 34, 0 },     // 64x64 -> 32x32
-#if CONFIG_EXT_PARTITION
-      { 0, 34, 0 },     // 128x128 -> 64x64
-#endif  // CONFIG_EXT_PARTITION
-#endif  // CONFIG_UNPOISON_PARTITION_CTX
     };
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
@@ -3468,30 +3436,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
                          counts->partition[i], fc->partition_prob[i]);
   }
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#if CONFIG_UNPOISON_PARTITION_CTX
-  for (i = PARTITION_CONTEXTS_PRIMARY;
-       i < PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES; ++i) {
-    unsigned int ct[2] = { counts->partition[i][PARTITION_VERT],
-                           counts->partition[i][PARTITION_SPLIT] };
-    assert(counts->partition[i][PARTITION_NONE] == 0);
-    assert(counts->partition[i][PARTITION_HORZ] == 0);
-    assert(fc->partition_prob[i][PARTITION_NONE] == 0);
-    assert(fc->partition_prob[i][PARTITION_HORZ] == 0);
-    fc->partition_prob[i][PARTITION_VERT] =
-        av1_mode_mv_merge_probs(pre_fc->partition_prob[i][PARTITION_VERT], ct);
-  }
-  for (i = PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES;
-       i < PARTITION_CONTEXTS_PRIMARY + 2 * PARTITION_BLOCK_SIZES; ++i) {
-    unsigned int ct[2] = { counts->partition[i][PARTITION_HORZ],
-                           counts->partition[i][PARTITION_SPLIT] };
-    assert(counts->partition[i][PARTITION_NONE] == 0);
-    assert(counts->partition[i][PARTITION_VERT] == 0);
-    assert(fc->partition_prob[i][PARTITION_NONE] == 0);
-    assert(fc->partition_prob[i][PARTITION_VERT] == 0);
-    fc->partition_prob[i][PARTITION_HORZ] =
-        av1_mode_mv_merge_probs(pre_fc->partition_prob[i][PARTITION_HORZ], ct);
-  }
-#endif
   for (i = 0; i < DELTA_Q_PROBS; ++i)
     fc->delta_q_prob[i] =
         mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);

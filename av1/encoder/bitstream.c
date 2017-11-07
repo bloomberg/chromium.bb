@@ -2232,11 +2232,7 @@ static void write_partition(const AV1_COMMON *const cm,
   const int has_cols = (mi_col + hbs) < cm->mi_cols;
   const int is_partition_point = bsize >= BLOCK_8X8;
   const int ctx = is_partition_point
-                      ? partition_plane_context(xd, mi_row, mi_col,
-#if CONFIG_UNPOISON_PARTITION_CTX
-                                                has_rows, has_cols,
-#endif
-                                                bsize)
+                      ? partition_plane_context(xd, mi_row, mi_col, bsize)
                       : 0;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;

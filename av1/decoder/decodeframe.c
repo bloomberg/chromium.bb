@@ -756,12 +756,7 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int mi_row, int mi_col, aom_reader *r,
                                      int has_rows, int has_cols,
                                      BLOCK_SIZE bsize) {
-#if CONFIG_UNPOISON_PARTITION_CTX
-  const int ctx =
-      partition_plane_context(xd, mi_row, mi_col, has_rows, has_cols, bsize);
-#else
   const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
-#endif
   PARTITION_TYPE p;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;

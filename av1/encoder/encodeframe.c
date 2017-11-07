@@ -1520,12 +1520,7 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
 #endif
   const int is_partition_root = bsize >= BLOCK_8X8;
   const int ctx = is_partition_root
-                      ? partition_plane_context(xd, mi_row, mi_col,
-#if CONFIG_UNPOISON_PARTITION_CTX
-                                                mi_row + hbs < cm->mi_rows,
-                                                mi_col + hbs < cm->mi_cols,
-#endif
-                                                bsize)
+                      ? partition_plane_context(xd, mi_row, mi_col, bsize)
                       : -1;
   const PARTITION_TYPE partition = pc_tree->partitioning;
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
@@ -1783,12 +1778,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   const int hbs = bs / 2;
   int i;
   const int pl = (bsize >= BLOCK_8X8)
-                     ? partition_plane_context(xd, mi_row, mi_col,
-#if CONFIG_UNPOISON_PARTITION_CTX
-                                               mi_row + hbs < cm->mi_rows,
-                                               mi_col + hbs < cm->mi_cols,
-#endif
-                                               bsize)
+                     ? partition_plane_context(xd, mi_row, mi_col, bsize)
                      : 0;
   const PARTITION_TYPE partition =
       (bsize >= BLOCK_8X8) ? get_partition(cm, mi_row, mi_col, bsize)
@@ -2436,12 +2426,6 @@ static void rd_test_partition3(const AV1_COMP *const cpi, ThreadData *td,
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_STATS sum_rdc, this_rdc;
-#if CONFIG_UNPOISON_PARTITION_CTX
-  const AV1_COMMON *const cm = &cpi->common;
-  const int hbs = mi_size_wide[bsize] / 2;
-  const int has_rows = mi_row + hbs < cm->mi_rows;
-  const int has_cols = mi_col + hbs < cm->mi_cols;
-#endif  // CONFIG_UNPOISON_PARTITION_CTX
 #if CONFIG_EXT_PARTITION_TYPES_AB
   const AV1_COMMON *const cm = &cpi->common;
 #endif
@@ -2475,11 +2459,7 @@ static void rd_test_partition3(const AV1_COMP *const cpi, ThreadData *td,
 
   if (sum_rdc.rdcost >= best_rdc->rdcost) return;
 
-  int pl = partition_plane_context(xd, mi_row, mi_col,
-#if CONFIG_UNPOISON_PARTITION_CTX
-                                   has_rows, has_cols,
-#endif
-                                   bsize);
+  int pl = partition_plane_context(xd, mi_row, mi_col, bsize);
   sum_rdc.rate += x->partition_cost[pl][partition];
   sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
 
@@ -2551,23 +2531,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   RD_SEARCH_MACROBLOCK_CONTEXT x_ctx;
   const TOKENEXTRA *const tp_orig = *tp;
   PICK_MODE_CONTEXT *ctx_none = &pc_tree->none;
-#if CONFIG_UNPOISON_PARTITION_CTX
-  const int hbs = mi_size_wide[bsize] / 2;
-  const int has_rows = mi_row + hbs < cm->mi_rows;
-  const int has_cols = mi_col + hbs < cm->mi_cols;
-#else
   int tmp_partition_cost[PARTITION_TYPES];
-#endif
   BLOCK_SIZE subsize;
   RD_STATS this_rdc, sum_rdc, best_rdc;
   const int bsize_at_least_8x8 = (bsize >= BLOCK_8X8);
   int do_square_split = bsize_at_least_8x8;
   const int pl = bsize_at_least_8x8
-                     ? partition_plane_context(xd, mi_row, mi_col,
-#if CONFIG_UNPOISON_PARTITION_CTX
-                                               has_rows, has_cols,
-#endif
-                                               bsize)
+                     ? partition_plane_context(xd, mi_row, mi_col, bsize)
                      : 0;
   const int *partition_cost =
       pl >= 0 ? x->partition_cost[pl] : x->partition_cost[0];
@@ -2606,7 +2576,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   (void)*tp_orig;
 
-#if !CONFIG_UNPOISON_PARTITION_CTX
   if (force_horz_split || force_vert_split) {
     tmp_partition_cost[PARTITION_NONE] = INT_MAX;
 
@@ -2630,7 +2599,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
     partition_cost = tmp_partition_cost;
   }
-#endif
 
 #ifndef NDEBUG
   // Nothing should rely on the default value of this array (which is just
