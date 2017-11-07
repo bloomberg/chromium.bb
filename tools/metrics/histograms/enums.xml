@@ -28917,6 +28917,7 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Thread busy"/>
   <int value="6" label="V8 cannot stream"/>
   <int value="7" label="Script too small"/>
+  <int value="8" label="No resource buffer"/>
 </enum>
 
 <enum name="NPAPIPluginStatus">
