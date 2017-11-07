@@ -16887,6 +16887,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2215" label="GeolocationWatchPosition"/>
   <int value="2216" label="DataUriHasOctothorpe"/>
   <int value="2217" label="NetInfoSaveData"/>
+  <int value="2218" label="V8Element_GetClientRects_Method"/>
+  <int value="2219" label="V8Element_GetBoundingClientRect_Method"/>
+  <int value="2220" label="V8Range_GetClientRects_Method"/>
+  <int value="2221" label="V8Range_GetBoundingClientRect_Method"/>
 </enum>
 
 <enum name="FeedbackSource">
