@@ -472,9 +472,8 @@ void WebRtcLogUploader::UploadCompressedLog(
             "Not implemented, it would be good to do so."
         })");
 
-  std::unique_ptr<net::URLFetcher> url_fetcher(
-      net::URLFetcher::Create(GURL(chrome::kUploadURL), net::URLFetcher::POST,
-                              this, traffic_annotation));
+  std::unique_ptr<net::URLFetcher> url_fetcher(net::URLFetcher::Create(
+      GURL(kUploadURL), net::URLFetcher::POST, this, traffic_annotation));
   url_fetcher->SetUploadData(content_type, *post_data);
   url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                             net::LOAD_DO_NOT_SAVE_COOKIES);

@@ -29,8 +29,6 @@
 #endif  // BUILDFLAG(ENABLE_RLZ)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-namespace chrome {
-
 namespace {
 
 // Calculates the Storage Id based on:
@@ -117,4 +115,3 @@ void ComputeStorageId(const std::vector<uint8_t>& profile_salt,
 #endif
 }
 
-}  // namespace chrome

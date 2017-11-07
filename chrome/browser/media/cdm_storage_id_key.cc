@@ -10,8 +10,6 @@
 #include "chrome/browser/internal/google_chrome_cdm_storage_id_key.h"
 #endif
 
-namespace chrome {
-
 std::string GetCdmStorageIdKey() {
 #if defined(CDM_STORAGE_ID_KEY)
   return CDM_STORAGE_ID_KEY;
@@ -19,5 +17,3 @@ std::string GetCdmStorageIdKey() {
 #error CDM_STORAGE_ID_KEY must be defined if enable_cdm_storage_id specified.
 #endif
 }
-
-}  // namespace chrome

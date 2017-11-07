@@ -131,7 +131,7 @@ void PlatformVerificationImpl::GetStorageId(uint32_t version,
   // Check that the request is for a supported version.
   if (version == kCurrentStorageIdVersion ||
       version == kRequestLatestStorageIdVersion) {
-    chrome::ComputeStorageId(
+    ComputeStorageId(
         GetStorageIdSaltFromProfile(render_frame_host_), origin(),
         base::BindOnce(&PlatformVerificationImpl::OnStorageIdResponse,
                        weak_factory_.GetWeakPtr(), base::Passed(&callback)));
