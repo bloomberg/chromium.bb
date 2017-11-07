@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_IO_DATA_H_
-#define COMPONENTS_PREVIEWS_CORE_PREVIEWS_IO_DATA_H_
+#ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_IO_DATA_H_
+#define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_IO_DATA_H_
 
 #include <memory>
 #include <string>
@@ -15,12 +15,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_black_list_delegate.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
-#include "components/previews/core/previews_optimization_guide.h"
 #include "net/nqe/effective_connection_type.h"
 
 class GURL;
@@ -139,4 +139,4 @@ class PreviewsIOData : public PreviewsDecider,
 
 }  // namespace previews
 
-#endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_IO_DATA_H_
+#endif  // COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_IO_DATA_H_

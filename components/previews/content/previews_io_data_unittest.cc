@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/previews_io_data.h"
+#include "components/previews/content/previews_io_data.h"
 
 #include <initializer_list>
 #include <map>
@@ -24,6 +24,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_black_list_delegate.h"
 #include "components/previews/core/previews_black_list_item.h"
@@ -31,7 +32,6 @@
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_opt_out_store.h"
-#include "components/previews/core/previews_ui_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/nqe/effective_connection_type.h"
@@ -300,6 +300,8 @@ class PreviewsIODataTest : public testing::Test {
   }
 
   ~PreviewsIODataTest() override {
+    // TODO(dougarnett) bug 781975: Consider switching to Feature API and
+    // ScopedFeatureList (and dropping components/variations dep).
     variations::testing::ClearAllVariationParams();
   }
 

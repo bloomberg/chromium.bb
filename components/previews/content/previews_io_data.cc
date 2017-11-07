@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/previews/core/previews_io_data.h"
+#include "components/previews/content/previews_io_data.h"
 
 #include <algorithm>
 
@@ -15,9 +15,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
+#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
-#include "components/previews/core/previews_ui_service.h"
 #include "net/base/load_flags.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request.h"

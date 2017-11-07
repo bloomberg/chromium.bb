@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_UI_SERVICE_H_
-#define COMPONENTS_PREVIEWS_CORE_PREVIEWS_UI_SERVICE_H_
+#ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_UI_SERVICE_H_
+#define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_UI_SERVICE_H_
 
 #include <string>
 
@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/previews/content/previews_io_data.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_io_data.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_opt_out_store.h"
 
@@ -110,4 +110,4 @@ class PreviewsUIService {
 
 }  // namespace previews
 
-#endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_UI_SERVICE_H_
+#endif  // COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_UI_SERVICE_H_
