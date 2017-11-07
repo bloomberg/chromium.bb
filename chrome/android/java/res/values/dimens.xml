@@ -107,8 +107,8 @@
     <dimen name="infobar_translate_menu_width">260dp</dimen>
 
     <!-- Contextual search dimensions -->
-    <dimen name="contextual_search_peek_promo_height">48dp</dimen>
-    <dimen name="contextual_search_peek_promo_padding">12dp</dimen>
+    <dimen name="contextual_search_bar_banner_height">48dp</dimen>
+    <dimen name="contextual_search_bar_banner_padding">12dp</dimen>
     <dimen name="contextual_search_bar_image_size">36dp</dimen>
     <!-- The following two dimensions were taking from the UI specs for contextual search, where
     they were 36dp and 3dp respectively, but have been updated to allow for padding around
@@ -119,6 +119,7 @@
     <dimen name="contextual_search_end_button_width">48dp</dimen>
     <dimen name="contextual_search_divider_line_width">1dp</dimen>
     <dimen name="contextual_search_divider_line_height">24dp</dimen>
+    <dimen name="contextual_search_bubble_y_inset">14dp</dimen>
 
     <!-- Overlay panel dimensions -->
     <dimen name="overlay_panel_bar_height">56dp</dimen>

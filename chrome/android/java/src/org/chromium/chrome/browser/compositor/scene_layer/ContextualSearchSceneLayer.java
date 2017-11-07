@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarBannerControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchImageControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPeekPromoControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPromoControl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
@@ -44,12 +44,10 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
      * @param peekPromoControl The peeking promotion for Contextual Search.
      * @param imageControl The object controlling the image displayed in the Bar.
      */
-    public void update(ResourceManager resourceManager,
-            ContextualSearchPanel panel,
+    public void update(ResourceManager resourceManager, ContextualSearchPanel panel,
             ContextualSearchBarControl searchBarControl,
-            ContextualSearchPeekPromoControl peekPromoControl,
-            ContextualSearchPromoControl promoControl,
-            ContextualSearchImageControl imageControl) {
+            ContextualSearchBarBannerControl peekPromoControl,
+            ContextualSearchPromoControl promoControl, ContextualSearchImageControl imageControl) {
         // Don't try to update the layer if not initialized or showing.
         if (resourceManager == null || !panel.isShowing()) return;
 

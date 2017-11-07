@@ -5394,6 +5394,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InProductHelp.NotifyEvent.IPH_ContextualSearch">
+  <obsolete>
+    Replaced with InProductHelp.NotifyEvent.IPH_ContextualSearchWebSearch.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5416,6 +5419,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InProductHelp.NotifyEvent.IPH_ContextualSearchPanel">
+  <obsolete>
+    Replaced with
+    InProductHelp.NotifyEvent.IPH_ContextualSearchPromotePanelOpen.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5426,13 +5433,49 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchTap">
+<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchPromotePanelOpen">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The user triggered an event related to opening the Contextual Search panel
+    in-product help. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchPromoteTap">
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
     The user triggered an event related to activation by tap for Contextual
     Search in-product help. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchTap">
+  <obsolete>
+    Replaced with InProductHelp.NotifyEvent.IPH_ContextualSearchPromoteTap.
+  </obsolete>
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The user triggered an event related to activation by tap for Contextual
+    Search in-product help. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyEvent.IPH_ContextualSearchWebSearch">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The user triggered an event related to the Contextual Search web search
+    in-product help. See
     //components/feature_engagement/README.md#Configuring-UMA for details.
   </description>
 </action>
@@ -5536,6 +5579,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearch">
+  <obsolete>
+    Replaced with InProductHelp.NotifyUsedEvent.IPH_ContextualSearchWebSearch.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5558,6 +5604,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchPanel">
+  <obsolete>
+    Replaced with
+    InProductHelp.NotifyUsedEvent.IPH_ContextualSearchPromotePanelOpen.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5568,7 +5618,19 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchTap">
+<action
+    name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchPromotePanelOpen">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The user triggered a used event related to opening the Contextual Search
+    panel in-product help. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchPromoteTap">
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5576,6 +5638,31 @@ should be able to be added at any place in this file.
     The user triggered a used event related to activation by tap for Contextual
     Search in-product help. See
     //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchTap">
+  <obsolete>
+    Replaced with InProductHelp.NotifyUsedEvent.IPH_ContextualSearchPromoteTap.
+  </obsolete>
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The user triggered a used event related to activation by tap for Contextual
+    Search in-product help. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSearchWebSearch">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The user triggered a used event related to the Contextual Search in-product
+    help. See //components/feature_engagement/README.md#Configuring-UMA for
+    details.
   </description>
 </action>
 
@@ -5678,6 +5765,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSearch">
+  <obsolete>
+    Replaced with
+    InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSearchWebSearch.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5700,6 +5791,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSearchPanel">
+  <obsolete>
+    Replaced with
+    InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSearchPromotePanelOpen.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5711,7 +5806,20 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSearchTap">
+<action
+    name="InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSearchPromotePanelOpen">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether the in-product
+    help related to opening the Contextual Search panel should be shown to the
+    user. See //components/feature_engagement/README.md#Configuring-UMA for
+    details.
+  </description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSearchPromoteTap">
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5720,6 +5828,33 @@ should be able to be added at any place in this file.
     help related to activation by tap for Contextual Search should be shown to
     the user. See //components/feature_engagement/README.md#Configuring-UMA for
     details.
+  </description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSearchTap">
+  <obsolete>
+    Replaced with
+    InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSearchPromoteTap.
+  </obsolete>
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether the in-product
+    help related to activation by tap for Contextual Search should be shown to
+    the user. See //components/feature_engagement/README.md#Configuring-UMA for
+    details.
+  </description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSearchWebSearch">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether the Contextual
+    Search in-product help should be shown to the user. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
   </description>
 </action>
 
@@ -5855,6 +5990,10 @@ should be able to be added at any place in this file.
 
 <action
     name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearch">
+  <obsolete>
+    Replaced with
+    InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearchWebSearch.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5879,6 +6018,10 @@ should be able to be added at any place in this file.
 
 <action
     name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearchPanel">
+  <obsolete>
+    Replaced with
+    InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearchPromotePanelOpen.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5890,7 +6033,19 @@ should be able to be added at any place in this file.
 </action>
 
 <action
-    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearchTap">
+    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearchPromotePanelOpen">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    A user action that could have triggered the in-product help related to
+    opening the Contextual Search panel did not. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearchPromoteTap">
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -5898,6 +6053,34 @@ should be able to be added at any place in this file.
     A user action that could have triggered the in-product help related to
     activation by tap did not. See
     //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearchTap">
+  <obsolete>
+    Replaced with
+    InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearchPromoteTap.
+  </obsolete>
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    A user action that could have triggered the in-product help related to
+    activation by tap did not. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSearchWebSearch">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    A user action that could have triggered the Contextual Search in-product
+    help did not. See //components/feature_engagement/README.md#Configuring-UMA
+    for details.
   </description>
 </action>
 
@@ -6025,6 +6208,10 @@ should be able to be added at any place in this file.
 
 <action
     name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearch">
+  <obsolete>
+    Replaced with
+    InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearchWebSearch.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -6048,6 +6235,10 @@ should be able to be added at any place in this file.
 
 <action
     name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearchPanel">
+  <obsolete>
+    Replaced with
+    InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearchPromotePanelOpen.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -6059,13 +6250,51 @@ should be able to be added at any place in this file.
 </action>
 
 <action
-    name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearchTap">
+    name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearchPromotePanelOpen">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    A user action triggered the in-product help related to opening the
+    Contextual Search panel. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearchPromoteTap">
   <owner>donnd@chromium.org</owner>
   <owner>mahmoudi@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <description>
     A user action triggered the in-product help related to activation by tap.
     See //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearchTap">
+  <obsolete>
+    Replaced with
+    InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearchPromoteTap.
+  </obsolete>
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    A user action triggered the in-product help related to activation by tap.
+    See //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSearchWebSearch">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    A user action triggered the Contextual Search in-product help. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
   </description>
 </action>
 

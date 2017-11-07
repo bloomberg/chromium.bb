@@ -31,12 +31,12 @@ const base::Feature kIPHChromeHomeMenuHeaderFeature{
     "IPH_ChromeHomeMenuHeader", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHMediaDownloadFeature{"IPH_MediaDownload",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHContextualSearchFeature{
-    "IPH_ContextualSearch", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHContextualSearchTapFeature{
-    "IPH_ContextualSearchTap", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kIPHContextualSearchPanelFeature{
-    "IPH_ContextualSearchPanel", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHContextualSearchWebSearchFeature{
+    "IPH_ContextualSearchWebSearch", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHContextualSearchPromoteTapFeature{
+    "IPH_ContextualSearchPromoteTap", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHContextualSearchPromotePanelOpenFeature{
+    "IPH_ContextualSearchPromotePanelOpen", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHContextualSearchOptInFeature{
     "IPH_ContextualSearchOptIn", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
