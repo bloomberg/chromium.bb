@@ -207,6 +207,7 @@ enum BadMessageReason {
   WEBUI_SEND_FROM_UNAUTHORIZED_PROCESS = 181,
   CPFC_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED = 182,
   BPG_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED = 183,
+  RFH_NEGATIVE_SELECTION_START_OFFSET = 184,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalFocusChangeListener;
-import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
@@ -1313,19 +1312,6 @@ public class ContextualSearchManager
 
         @Override
         public void cancelAllRequests() {}
-
-        @Override
-        public void setTextClassifier(TextClassifier textClassifier) {}
-
-        @Override
-        public TextClassifier getTextClassifier() {
-            return null;
-        }
-
-        @Override
-        public TextClassifier getCustomTextClassifier() {
-            return null;
-        }
     }
 
     /**

@@ -188,6 +188,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
   IPC_STRUCT_TRAITS_MEMBER(source_type)
   IPC_STRUCT_TRAITS_MEMBER(input_field_type)
   IPC_STRUCT_TRAITS_MEMBER(selection_rect)
+  IPC_STRUCT_TRAITS_MEMBER(selection_start_offset)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)

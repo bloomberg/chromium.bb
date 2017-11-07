@@ -153,6 +153,9 @@ struct CONTENT_EXPORT ContextMenuParams {
 
   // Rect representing the coordinates in the document space of the selection.
   gfx::Rect selection_rect;
+
+  // Start position of the selection text.
+  int selection_start_offset;
 };
 
 }  // namespace content

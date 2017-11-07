@@ -196,6 +196,14 @@ struct WebContextMenuData {
   // Selection in viewport coordinates.
   WebRect selection_rect;
 
+  // TODO(https://crbug.com/781914): Remove this field after we done with Blink
+  // side tracking.
+  // Global index of start position for the current selection.
+  // If the current element is editable, then it starts from the first
+  // character within the element, otherwise, it starts from the beginning of
+  // the current webpage.
+  int selection_start_offset;
+
   WebMenuSourceType source_type;
 
   WebContextMenuData()

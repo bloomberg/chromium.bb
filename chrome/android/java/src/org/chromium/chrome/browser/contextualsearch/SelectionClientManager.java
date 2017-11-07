@@ -10,6 +10,7 @@ import android.view.textclassifier.TextClassifier;
 
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.SelectionClient;
+import org.chromium.content_public.browser.SelectionMetricsLogger;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -195,6 +196,11 @@ public class SelectionClientManager {
         @Override
         public TextClassifier getCustomTextClassifier() {
             return mSmartSelectionClient.getCustomTextClassifier();
+        }
+
+        @Override
+        public SelectionMetricsLogger getSelectionMetricsLogger() {
+            return mSmartSelectionClient.getSelectionMetricsLogger();
         }
     }
 }
