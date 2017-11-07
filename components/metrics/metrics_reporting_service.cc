@@ -47,6 +47,10 @@ std::string MetricsReportingService::GetUploadUrl() const {
   return client()->GetMetricsServerUrl();
 }
 
+std::string MetricsReportingService::GetInsecureUploadUrl() const {
+  return client()->GetInsecureMetricsServerUrl();
+}
+
 base::StringPiece MetricsReportingService::upload_mime_type() const {
   return kDefaultMetricsMimeType;
 }

@@ -32,6 +32,10 @@ std::string MetricsServiceClient::GetMetricsServerUrl() {
   return kNewMetricsServerUrl;
 }
 
+std::string MetricsServiceClient::GetInsecureMetricsServerUrl() {
+  return kNewMetricsServerUrlInsecure;
+}
+
 bool MetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {
   return false;
 }

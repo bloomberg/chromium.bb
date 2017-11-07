@@ -86,10 +86,14 @@ class MetricsServiceClient {
   // Get the URL of the metrics server.
   virtual std::string GetMetricsServerUrl();
 
+  // Get the fallback HTTP URL of the metrics server.
+  virtual std::string GetInsecureMetricsServerUrl();
+
   // Creates a MetricsLogUploader with the specified parameters (see comments on
   // MetricsLogUploader for details).
   virtual std::unique_ptr<MetricsLogUploader> CreateUploader(
       base::StringPiece server_url,
+      base::StringPiece insecure_server_url,
       base::StringPiece mime_type,
       metrics::MetricsLogUploader::MetricServiceType service_type,
       const MetricsLogUploader::UploadCallback& on_upload_complete) = 0;

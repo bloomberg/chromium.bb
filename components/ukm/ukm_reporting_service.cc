@@ -75,6 +75,10 @@ std::string UkmReportingService::GetUploadUrl() const {
   return GetServerUrl();
 }
 
+std::string UkmReportingService::GetInsecureUploadUrl() const {
+  return "";
+}
+
 base::StringPiece UkmReportingService::upload_mime_type() const {
   return kMimeType;
 }

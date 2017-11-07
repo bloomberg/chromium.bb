@@ -48,6 +48,8 @@ class UkmReportingService : public metrics::ReportingService {
   // metrics:ReportingService:
   metrics::LogStore* log_store() override;
   std::string GetUploadUrl() const override;
+  // Returns an empty string since retrying over HTTP is not enabled for UKM
+  std::string GetInsecureUploadUrl() const override;
   base::StringPiece upload_mime_type() const override;
   metrics::MetricsLogUploader::MetricServiceType service_type() const override;
   void LogCellularConstraint(bool upload_canceled) override;
