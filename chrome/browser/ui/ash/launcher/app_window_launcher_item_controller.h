@@ -65,6 +65,7 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
  protected:
   explicit AppWindowLauncherItemController(const ash::ShelfID& shelf_id);
 
+ private:
   // Returns the action performed. Should be one of SHELF_ACTION_NONE,
   // SHELF_ACTION_WINDOW_ACTIVATED, or SHELF_ACTION_WINDOW_MINIMIZED.
   ash::ShelfAction ShowAndActivateOrMinimize(ui::BaseWindow* window);
@@ -79,7 +80,6 @@ class AppWindowLauncherItemController : public ash::ShelfItemDelegate,
   // Returns last active window in the controller or first window.
   ui::BaseWindow* GetLastActiveWindow();
 
- private:
   WindowList::iterator GetFromNativeWindow(aura::Window* window);
 
   // Handles the case when the app window in this controller has been changed,

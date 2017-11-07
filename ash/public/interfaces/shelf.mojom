@@ -33,7 +33,6 @@ enum ShelfAction {
 enum ShelfItemStatus {
   CLOSED,     // A closed shelf item, i.e. has no live instance.
   RUNNING,    // A shelf item that has live instance.
-  ACTIVE,     // An active shelf item that has focus.
   ATTENTION,  // A shelf item that needs user's attention.
 };
 
