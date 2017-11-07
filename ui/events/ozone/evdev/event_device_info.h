@@ -148,10 +148,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
 
  private:
   enum class LegacyAbsoluteDeviceType {
-    LADT_TOUCHPAD,
-    LADT_TOUCHSCREEN,
-    LADT_TABLET,
-    LADT_NONE,
+    TOUCHPAD,
+    TOUCHSCREEN,
+    TABLET,
+    NONE,
   };
 
   // Probe absolute X & Y axis behavior. This is for legacy drivers that
