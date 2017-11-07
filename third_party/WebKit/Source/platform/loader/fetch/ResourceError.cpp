@@ -42,7 +42,7 @@ constexpr char kThrottledErrorDescription[] =
 }  // namespace
 
 ResourceError ResourceError::CancelledError(const KURL& url) {
-  return WebURLError(url, false, net::ERR_ABORTED);
+  return ResourceError(Domain::kNet, net::ERR_ABORTED, url);
 }
 
 ResourceError ResourceError::CancelledDueToAccessCheckError(

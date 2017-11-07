@@ -1168,11 +1168,11 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     const blink::WebURLError& web_error,
     std::string* error_html,
     base::string16* error_description) {
-  DCHECK_EQ(WebURLError::Domain::kNet, web_error.domain);
+  DCHECK_EQ(WebURLError::Domain::kNet, web_error.domain());
   GetNavigationErrorStringsInternal(
       render_frame, failed_request,
-      error_page::Error::NetError(web_error.unreachable_url, web_error.reason,
-                                  web_error.stale_copy_in_cache),
+      error_page::Error::NetError(web_error.url(), web_error.reason(),
+                                  web_error.has_copy_in_cache()),
       error_html, error_description);
 }
 

@@ -49,21 +49,21 @@ void SimRequest::Start() {
 
 void SimRequest::Write(const String& data) {
   DCHECK(is_ready_);
-  DCHECK(!error_.reason);
+  DCHECK(!error_.reason());
   total_encoded_data_length_ += data.length();
   client_->DidReceiveData(data.Utf8().data(), data.length());
 }
 
 void SimRequest::Write(const Vector<char>& data) {
   DCHECK(is_ready_);
-  DCHECK(!error_.reason);
+  DCHECK(!error_.reason());
   total_encoded_data_length_ += data.size();
   client_->DidReceiveData(data.data(), data.size());
 }
 
 void SimRequest::Finish() {
   DCHECK(is_ready_);
-  if (error_.reason) {
+  if (error_.reason()) {
     client_->DidFail(error_, total_encoded_data_length_,
                      total_encoded_data_length_, total_encoded_data_length_);
   } else {

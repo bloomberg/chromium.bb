@@ -6510,7 +6510,7 @@ class TestSubstituteDataWebFrameClient
                               WebHistoryCommitType) override {
     Frame()->LoadHTMLString("This should appear",
                             ToKURL("chrome-error://chromewebdata/"),
-                            error.unreachable_url, true);
+                            error.url(), true);
   }
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType) override {
@@ -6538,10 +6538,8 @@ TEST_P(ParameterizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation) {
   // https://bugs.webkit.org/show_bug.cgi?id=91685,
   // FrameLoader::didReceiveData() wasn't getting called in this case, which
   // resulted in the SubstituteData document not getting displayed.
-  WebURLError error;
-  error.reason = 1337;
-  error.domain = WebURLError::Domain::kTest;
   std::string error_url = "http://0.0.0.0";
+  WebURLError error(WebURLError::Domain::kTest, 1337, ToKURL(error_url));
   WebURLResponse response;
   response.SetURL(URLTestHelpers::ToKURL(error_url));
   response.SetMIMEType("text/html");

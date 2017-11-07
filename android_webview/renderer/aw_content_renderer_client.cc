@@ -213,11 +213,11 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     std::string* error_html,
     base::string16* error_description) {
   std::string err;
-  if (error.domain == blink::WebURLError::Domain::kNet) {
-    if (error.reason == net::ERR_TEMPORARILY_THROTTLED)
+  if (error.domain() == blink::WebURLError::Domain::kNet) {
+    if (error.reason() == net::ERR_TEMPORARILY_THROTTLED)
       err = kThrottledErrorDescription;
     else
-      err = net::ErrorToString(error.reason);
+      err = net::ErrorToString(error.reason());
   }
   if (error_description)
     *error_description = base::ASCIIToUTF16(err);
@@ -230,7 +230,7 @@ void AwContentRendererClient::GetNavigationErrorStrings(
   std::string url_string = gurl.possibly_invalid_spec();
   int reason_id = IDS_AW_WEBPAGE_CAN_NOT_BE_LOADED;
 
-  if (error.reason == net::ERR_BLOCKED_BY_ADMINISTRATOR) {
+  if (error.reason() == net::ERR_BLOCKED_BY_ADMINISTRATOR) {
     // This creates a different error page giving considerably more
     // detail, and possibly allowing the user to request access.
     // Get the details this needs from the browser.

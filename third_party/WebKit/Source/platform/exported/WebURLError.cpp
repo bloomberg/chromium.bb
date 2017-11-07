@@ -35,14 +35,6 @@
 
 namespace blink {
 
-WebURLError::WebURLError(const WebURL& unreachable_url,
-                         bool stale_copy_in_cache,
-                         int reason)
-    : domain(Domain::kNet),
-      reason(reason),
-      stale_copy_in_cache(stale_copy_in_cache),
-      unreachable_url(unreachable_url) {}
-
 WebURLError::WebURLError(const ResourceError& error) {
   *this = error;
 }
@@ -51,21 +43,21 @@ WebURLError& WebURLError::operator=(const ResourceError& error) {
   if (error.IsNull()) {
     *this = WebURLError();
   } else {
-    domain = error.GetDomain();
-    reason = error.ErrorCode();
-    unreachable_url = KURL(error.FailingURL());
-    stale_copy_in_cache = error.StaleCopyInCache();
-    is_web_security_violation = error.IsAccessCheck();
+    domain_ = error.GetDomain();
+    reason_ = error.ErrorCode();
+    url_ = KURL(error.FailingURL());
+    has_copy_in_cache_ = error.StaleCopyInCache();
+    is_web_security_violation_ = error.IsAccessCheck();
   }
   return *this;
 }
 
 WebURLError::operator ResourceError() const {
-  if (!reason)
+  if (!reason_)
     return ResourceError();
-  ResourceError resource_error(domain, reason, unreachable_url);
-  resource_error.SetStaleCopyInCache(stale_copy_in_cache);
-  resource_error.SetIsAccessCheck(is_web_security_violation);
+  ResourceError resource_error(domain_, reason_, url_);
+  resource_error.SetStaleCopyInCache(has_copy_in_cache_);
+  resource_error.SetIsAccessCheck(is_web_security_violation_);
   return resource_error;
 }
 

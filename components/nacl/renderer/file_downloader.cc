@@ -74,8 +74,8 @@ void FileDownloader::DidFinishLoading(double finish_time) {
 
 void FileDownloader::DidFail(const blink::WebURLError& error) {
   status_ = FAILED;
-  if (error.domain == blink::WebURLError::Domain::kNet) {
-    switch (error.reason) {
+  if (error.domain() == blink::WebURLError::Domain::kNet) {
+    switch (error.reason()) {
       case net::ERR_ACCESS_DENIED:
       case net::ERR_NETWORK_ACCESS_DENIED:
         status_ = ACCESS_DENIED;
@@ -83,7 +83,7 @@ void FileDownloader::DidFail(const blink::WebURLError& error) {
     }
   }
 
-  if (error.is_web_security_violation)
+  if (error.is_web_security_violation())
     status_ = ACCESS_DENIED;
 
   // Delete url_loader to prevent didFinishLoading from being called, which
