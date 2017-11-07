@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/signed_in_sync_on_no_sessions_view.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/spacers_view.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
+#import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
@@ -94,6 +95,7 @@ enum CellType {
 }  // namespace
 
 @interface RecentTabsTableViewController ()<SigninPromoViewConsumer,
+                                            SigninPresenter,
                                             SyncPresenter> {
   ios::ChromeBrowserState* _browserState;  // weak
   // The service that manages the recently closed tabs.
@@ -813,7 +815,7 @@ enum CellType {
             initWithBrowserState:_browserState
                      accessPoint:signin_metrics::AccessPoint::
                                      ACCESS_POINT_RECENT_TABS
-                      dispatcher:self.dispatcher];
+                       presenter:self /* id<SigninPresenter> */];
         _signinPromoViewMediator.consumer = self;
       }
       contentViewTopMargin = kSigninPromoViewTopMargin;
@@ -1038,6 +1040,12 @@ enum CellType {
 
 - (void)showSyncPassphraseSettings {
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
+}
+
+#pragma mark - SigninPresenter
+
+- (void)showSignin:(ShowSigninCommand*)command {
+  [self.dispatcher showSignin:command];
 }
 
 @end

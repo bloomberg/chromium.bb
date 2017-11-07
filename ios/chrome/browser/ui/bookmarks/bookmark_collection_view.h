@@ -17,9 +17,9 @@
 
 // TODO(crbug.com/753599) : Delete this file after new bookmarks ui is launched.
 
-@protocol ApplicationCommands;
 @class BookmarkCollectionView;
 class GURL;
+@protocol SigninPresenter;
 @protocol UrlLoader;
 
 namespace bookmarks {
@@ -100,7 +100,7 @@ class PrefRegistrySyncable;
 // Designated initializer.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                                frame:(CGRect)frame
-                          dispatcher:(id<ApplicationCommands>)dispatcher;
+                           presenter:(id<SigninPresenter>)presenter;
 
 // Callback whenever the collection view is scrolled.
 - (void)collectionViewScrolled;

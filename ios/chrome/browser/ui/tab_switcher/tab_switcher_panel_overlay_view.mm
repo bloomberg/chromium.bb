@@ -93,7 +93,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 
 - (instancetype)initWithFrame:(CGRect)frame
                  browserState:(ios::ChromeBrowserState*)browserState
-                    presenter:(id<SyncPresenter>)presenter
+                    presenter:(id<SigninPresenter, SyncPresenter>)presenter
                    dispatcher:
                        (id<ApplicationCommands, BrowserCommands>)dispatcher {
   self = [super initWithFrame:frame];
@@ -255,7 +255,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
       initWithBrowserState:_browserState
                accessPoint:signin_metrics::AccessPoint::
                                ACCESS_POINT_TAB_SWITCHER
-                dispatcher:self.dispatcher];
+                 presenter:self.presenter /* id<SigninPresenter> */];
   _signinPromoView.delegate = _signinPromoViewMediator;
   _signinPromoViewMediator.consumer = self;
   [[_signinPromoViewMediator createConfigurator]

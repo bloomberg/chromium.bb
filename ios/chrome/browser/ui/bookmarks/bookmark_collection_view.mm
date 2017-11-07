@@ -37,7 +37,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -131,8 +130,8 @@ CGFloat minFaviconSizePt = 16;
 
 @property(nonatomic, assign) const bookmarks::BookmarkNode* folder;
 
-// Dispatcher for sending commands.
-@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+// Presenter for showing signin UI.
+@property(nonatomic, readonly, weak) id<SigninPresenter> presenter;
 
 // Section indices.
 @property(nonatomic, readonly, assign) NSInteger promoSection;
@@ -153,7 +152,7 @@ CGFloat minFaviconSizePt = 16;
 @synthesize longPressRecognizer = _longPressRecognizer;
 @synthesize browserState = _browserState;
 @synthesize shadow = _shadow;
-@synthesize dispatcher = _dispatcher;
+@synthesize presenter = _presenter;
 
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
   registry->RegisterIntegerPref(prefs::kIosBookmarkSigninPromoDisplayedCount,
@@ -216,11 +215,11 @@ CGFloat minFaviconSizePt = 16;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                                frame:(CGRect)frame
-                          dispatcher:(id<ApplicationCommands>)dispatcher {
+                           presenter:(id<SigninPresenter>)presenter {
   self = [super initWithFrame:frame];
   if (self) {
     _browserState = browserState;
-    _dispatcher = dispatcher;
+    _presenter = presenter;
 
     // Set up connection to the BookmarkModel.
     _bookmarkModel =
@@ -364,7 +363,7 @@ CGFloat minFaviconSizePt = 16;
         initWithBrowserState:_browserState
                  accessPoint:signin_metrics::AccessPoint::
                                  ACCESS_POINT_BOOKMARK_MANAGER
-                  dispatcher:self.dispatcher];
+                   presenter:self.presenter];
     _signinPromoViewMediator.consumer = self;
     [_signinPromoViewMediator signinPromoViewVisible];
   }
