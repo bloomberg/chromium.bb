@@ -42,6 +42,7 @@ class TestInMemoryProtocolHandler
 
   struct Response {
     Response() {}
+    Response(const std::string& data) : data(data) {}
     Response(const std::string& body, const std::string& mime_type)
         : data("HTTP/1.1 200 OK\r\nContent-Type: " + mime_type + "\r\n\r\n" +
                body) {}

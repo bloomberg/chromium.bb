@@ -296,4 +296,53 @@ class DeferredLoadDoesntBlockVirtualTimeTest : public VirtualTimeBrowserTest {
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DeferredLoadDoesntBlockVirtualTimeTest);
 
+class RedirectVirtualTimeTest : public VirtualTimeBrowserTest {
+ public:
+  RedirectVirtualTimeTest() { SetInitialURL("http://test.com/index.html"); }
+
+  ProtocolHandlerMap GetProtocolHandlers() override {
+    ProtocolHandlerMap protocol_handlers;
+    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
+        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), nullptr));
+    http_handler_ = http_handler.get();
+    http_handler->InsertResponse("http://test.com/index.html",
+                                 {kIndexHtml, "text/html"});
+    http_handler->InsertResponse(
+        "http://test.com/iframe.html",
+        {"HTTP/1.1 302 Found\r\nLocation: iframe2.html\r\n\r\n"});
+    http_handler->InsertResponse("http://test.com/iframe2.html",
+                                 {kIFrame, "text/html"});
+    http_handler->InsertResponse(
+        "http://test.com/style.css",
+        {"HTTP/1.1 302 Found\r\nLocation: style2.css\r\n\r\n"});
+    http_handler->InsertResponse("http://test.com/style2.css",
+                                 {kCss, "text/css"});
+    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
+    return protocol_handlers;
+  }
+
+  void RunDevTooledTest() override {
+    http_handler_->SetHeadlessBrowserContext(browser_context_);
+    VirtualTimeBrowserTest::RunDevTooledTest();
+  }
+
+  // emulation::Observer implementation:
+  void OnVirtualTimeBudgetExpired(
+      const emulation::VirtualTimeBudgetExpiredParams& params) override {
+    EXPECT_THAT(
+        http_handler_->urls_requested(),
+        ElementsAre("http://test.com/index.html", "http://test.com/iframe.html",
+                    "http://test.com/iframe2.html", "http://test.com/style.css",
+                    "http://test.com/style2.css"));
+
+    // Virtual time should still expire, despite the CSS resource load not
+    // finishing.
+    FinishAsynchronousTest();
+  }
+
+  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(RedirectVirtualTimeTest);
+
 }  // namespace headless

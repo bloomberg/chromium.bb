@@ -28,6 +28,8 @@ ScopedVirtualTimePauser::ScopedVirtualTimePauser(
 
 ScopedVirtualTimePauser& ScopedVirtualTimePauser::operator=(
     ScopedVirtualTimePauser&& other) {
+  if (scheduler_ && paused_)
+    scheduler_->DecrementVirtualTimePauseCount();
   paused_ = other.paused_;
   scheduler_ = std::move(other.scheduler_);
   other.scheduler_ = nullptr;
