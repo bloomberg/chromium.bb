@@ -12,16 +12,13 @@
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
-
-namespace {
+namespace simplified_backwards_text_iterator_test {
 
 TextIteratorBehavior EmitsSmallXForTextSecurityBehavior() {
   return TextIteratorBehavior::Builder()
       .SetEmitsSmallXForTextSecurity(true)
       .Build();
 }
-
-}  // namespace
 
 class SimplifiedBackwardsTextIteratorTest : public EditingTestBase {
  protected:
@@ -339,4 +336,5 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, TextSecurity) {
             ExtractStringInRange("^abc<s>foo</s>baz|", TextIteratorBehavior()));
 }
 
+}  // namespace simplified_backwards_text_iterator_test
 }  // namespace blink
