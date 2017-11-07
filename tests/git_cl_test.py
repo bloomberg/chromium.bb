@@ -1755,19 +1755,14 @@ class TestGitCl(TestCase):
         squash=False,
         squash_mode='override_nosquash')
 
-  def test_gerrit_patchset_title_bad_chars(self):
+  def test_gerrit_patchset_title_special_chars(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self._run_gerrit_upload_test(
-        ['-f', '-t', 'Don\'t put bad cha,.rs'],
+        ['-f', '-t', 'We\'ll escape ^_ ^ special chars...@{u}'],
         'desc\n\nBUG=\n\nChange-Id: I123456789',
         squash=False,
         squash_mode='override_nosquash',
-        title='Dont_put_bad_chars')
-    self.assertIn(
-        'WARNING: Patchset title may only contain alphanumeric chars '
-        'and spaces. You can edit it in the UI. See https://crbug.com/663787.\n'
-        'Cleaned up title: Dont put bad chars\n',
-        git_cl.sys.stdout.getvalue())
+        title='We%27ll_escape_%5E%5F_%5E_special_chars%2E%2E%2E%40%7Bu%7D')
 
   def test_gerrit_reviewers_cmd_line(self):
     self._run_gerrit_upload_test(

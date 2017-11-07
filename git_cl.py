@@ -2901,7 +2901,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     # This may be None; default fallback value is determined in logic below.
     title = options.title
-    automatic_title = False
 
     # Extract bug number from branch name.
     bug = options.bug
@@ -2931,8 +2930,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             else:
               title = ask_for_data(
                   'Title for patchset [%s]: ' % default_title) or default_title
-            if title == default_title:
-              automatic_title = True
         change_id = self._GetChangeDetail()['change_id']
         while True:
           footer_change_ids = git_footers.get_footer_change_id(message)
@@ -2982,7 +2979,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         # On first upload, patchset title is always this string, while
         # --title flag gets converted to first line of message.
         title = 'Initial upload'
-        automatic_title = True
         if not change_desc.description:
           DieWithError("Description is empty. Aborting...")
         change_ids = git_footers.get_footer_change_id(change_desc.description)
@@ -3066,16 +3062,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     # if --send-mail is set on non-initial upload as Rietveld used to do it.
 
     if title:
-      if not re.match(r'^[\w ]+$', title):
-        title = re.sub(r'[^\w ]', '', title)
-        if not automatic_title:
-          print('WARNING: Patchset title may only contain alphanumeric chars '
-                'and spaces. You can edit it in the UI. '
-                'See https://crbug.com/663787.\n'
-                'Cleaned up title: %s' % title)
-      # Per doc, spaces must be converted to underscores, and Gerrit will do the
-      # reverse on its side.
-      refspec_opts.append('m=' + title.replace(' ', '_'))
+      # Punctuation and whitespace in |title| must be percent-encoded.
+      refspec_opts.append('m=' + gerrit_util.PercentEncodeForGitRef(title))
 
     if options.private:
       refspec_opts.append('private')
