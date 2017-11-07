@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/iterators/ForwardsTextBuffer.h"
+#include "core/editing/iterators/TextIteratorBehavior.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -39,7 +40,7 @@ class CORE_EXPORT TextIteratorTextState {
   STACK_ALLOCATED();
 
  public:
-  TextIteratorTextState() = default;
+  explicit TextIteratorTextState(const TextIteratorBehavior&);
 
   // Return properties of the current text.
   unsigned length() const { return text_length_; }
@@ -83,6 +84,7 @@ class CORE_EXPORT TextIteratorTextState {
   }
 
  private:
+  TextIteratorBehavior behavior_;
   unsigned text_length_ = 0;
 
   // Used for whitespace characters that aren't in the DOM, so we can point at

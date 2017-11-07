@@ -67,6 +67,7 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::
         const EphemeralRangeTemplate<Strategy>& range,
         const TextIteratorBehavior& behavior)
     : behavior_(behavior),
+      text_state_(behavior),
       node_(nullptr),
       offset_(0),
       handled_node_(false),

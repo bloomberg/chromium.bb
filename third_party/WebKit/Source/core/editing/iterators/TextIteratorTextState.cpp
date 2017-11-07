@@ -27,11 +27,16 @@
 
 #include "core/editing/iterators/TextIteratorTextState.h"
 
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/iterators/BackwardsTextBuffer.h"
 #include "core/html/HTMLElement.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+
+TextIteratorTextState::TextIteratorTextState(
+    const TextIteratorBehavior& behavior)
+    : behavior_(behavior) {}
 
 UChar TextIteratorTextState::CharacterAt(unsigned index) const {
   SECURITY_DCHECK(index < length());
@@ -140,7 +145,10 @@ void TextIteratorTextState::EmitText(Node* text_node,
                                      unsigned text_start_offset,
                                      unsigned text_end_offset) {
   DCHECK(text_node);
-  text_ = string;
+  text_ =
+      behavior_.EmitsSmallXForTextSecurity() && IsTextSecurityNode(text_node)
+          ? RepeatString("x", string.length())
+          : string,
 
   DCHECK(!text_.IsEmpty());
   DCHECK_LT(text_start_offset, text_.length());
