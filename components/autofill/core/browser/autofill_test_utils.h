@@ -65,8 +65,11 @@ void CreateTestAddressFormData(FormData* form);
 void CreateTestAddressFormData(FormData* form,
                                std::vector<ServerFieldTypeSet>* types);
 
-// Returns a full profile with valid info.
-AutofillProfile GetFullValidProfile();
+// Returns a full profile with valid info according to rules for Canada.
+AutofillProfile GetFullValidProfileForCanada();
+
+// Returns a full profile with valid info according to rules for China.
+AutofillProfile GetFullValidProfileForChina();
 
 // Returns a profile full of dummy info.
 AutofillProfile GetFullProfile();
@@ -113,11 +116,34 @@ CreditCard GetRandomCreditCard(CreditCard::RecordType record_Type);
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with
 // c-strings.
 void SetProfileInfo(AutofillProfile* profile,
-    const char* first_name, const char* middle_name,
-    const char* last_name, const char* email, const char* company,
-    const char* address1, const char* address2, const char* city,
-    const char* state, const char* zipcode, const char* country,
-    const char* phone);
+                    const char* first_name,
+                    const char* middle_name,
+                    const char* last_name,
+                    const char* email,
+                    const char* company,
+                    const char* address1,
+                    const char* address2,
+                    const char* dependent_locality,
+                    const char* city,
+                    const char* state,
+                    const char* zipcode,
+                    const char* country,
+                    const char* phone);
+
+// This one doesn't require the |dependent_locality|.
+void SetProfileInfo(AutofillProfile* profile,
+                    const char* first_name,
+                    const char* middle_name,
+                    const char* last_name,
+                    const char* email,
+                    const char* company,
+                    const char* address1,
+                    const char* address2,
+                    const char* city,
+                    const char* state,
+                    const char* zipcode,
+                    const char* country,
+                    const char* phone);
 
 void SetProfileInfoWithGuid(AutofillProfile* profile,
     const char* guid, const char* first_name, const char* middle_name,

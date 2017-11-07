@@ -114,7 +114,7 @@ TEST_F(AutofillProfileValidatorTest, ValidateNullProfile) {
 TEST_F(AutofillProfileValidatorTest, ValidateFullValidProfile_RulesNotLoaded) {
   // This is a valid profile, and the rules are loaded in the constructors
   // Province: "QC", Country: "CA"
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   set_expected_status(AutofillProfile::VALID);
 
   std::string country_code =
@@ -126,7 +126,7 @@ TEST_F(AutofillProfileValidatorTest, ValidateFullValidProfile_RulesNotLoaded) {
 
 // Validate a Full Profile, for which the rules are already loaded.
 TEST_F(AutofillProfileValidatorTest, ValidateAddress_RulesLoaded) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   set_expected_status(AutofillProfile::VALID);
 
   std::string country_code =
@@ -140,7 +140,7 @@ TEST_F(AutofillProfileValidatorTest, ValidateAddress_RulesLoaded) {
 // When country code is invalid, the profile is invalid.
 TEST_F(AutofillProfileValidatorTest, ValidateProfile_CountryCodeNotExists) {
   const std::string country_code = "PP";
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16(country_code));
   set_expected_status(AutofillProfile::INVALID);
 
@@ -153,7 +153,7 @@ TEST_F(AutofillProfileValidatorTest, ValidateProfile_CountryCodeNotExists) {
 // is unvalidated.
 TEST_F(AutofillProfileValidatorTest, ValidateAddress_RuleNotExists) {
   const std::string country_code = "US";
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16(country_code));
   set_expected_status(AutofillProfile::UNVALIDATED);
 
@@ -164,7 +164,7 @@ TEST_F(AutofillProfileValidatorTest, ValidateAddress_RuleNotExists) {
 
 // Validate a profile with an invalid phone, valid email and valid address.
 TEST_F(AutofillProfileValidatorTest, ValidateProfile_InvalidPhone) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::string16());
 
   set_expected_status(AutofillProfile::INVALID);
@@ -174,7 +174,7 @@ TEST_F(AutofillProfileValidatorTest, ValidateProfile_InvalidPhone) {
 
 // Validate a profile with a valid phone, valid email and invalid address.
 TEST_F(AutofillProfileValidatorTest, ValidateProfile_InvalidAddress) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   // QQ is an invalid admin area, thus an invalid address.
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("QQ"));
 
@@ -186,7 +186,7 @@ TEST_F(AutofillProfileValidatorTest, ValidateProfile_InvalidAddress) {
 // Validate a profile with an invalid phone, invalid email and invalid address.
 TEST_F(AutofillProfileValidatorTest,
        ValidateProfile_InvalidPhone_InvalidAddress) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::string16());
   // QQ is an invalid admin area, thus an invalid address.
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("QQ"));
@@ -198,7 +198,7 @@ TEST_F(AutofillProfileValidatorTest,
 // Validate a profile with a valid phone, invalid email and invalid address.
 TEST_F(AutofillProfileValidatorTest,
        ValidateProfile_InvalidEmail_InvalidAddress) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Invalid Email."));
   // QQ is an invalid admin area, thus an invalid address.
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("QQ"));
@@ -210,7 +210,7 @@ TEST_F(AutofillProfileValidatorTest,
 // Validate a profile with a valid phone, invalid email and invalid address.
 TEST_F(AutofillProfileValidatorTest,
        ValidateProfile_InvalidEmail_InvalidPhone) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Invalid Email."));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::string16());
 
@@ -220,7 +220,7 @@ TEST_F(AutofillProfileValidatorTest,
 
 // Validate a profile with a valid phone, invalid email and valid address.
 TEST_F(AutofillProfileValidatorTest, ValidateProfile_InvalidEmail) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Invalid Email."));
 
   set_expected_status(AutofillProfile::INVALID);
@@ -230,7 +230,7 @@ TEST_F(AutofillProfileValidatorTest, ValidateProfile_InvalidEmail) {
 // Validate a profile with a invalid phone, invalid email and invalid address.
 TEST_F(AutofillProfileValidatorTest,
        ValidateProfile_InvalidEmail_InvalidPhone_InvalidAddress) {
-  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Invalid Email."));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::string16());
   // QQ is an invalid admin area, thus an invalid address.

@@ -39,7 +39,8 @@ using ::i18n::addressinput::MISSING_REQUIRED_FIELD;
 using ::i18n::addressinput::UNEXPECTED_FIELD;
 using ::i18n::addressinput::UNKNOWN_VALUE;
 
-const AddressField kFields[] = {COUNTRY, ADMIN_AREA, POSTAL_CODE};
+const AddressField kFields[] = {COUNTRY, ADMIN_AREA, LOCALITY,
+                                DEPENDENT_LOCALITY, POSTAL_CODE};
 const AddressProblem kProblems[] = {UNEXPECTED_FIELD, MISSING_REQUIRED_FIELD,
                                     UNKNOWN_VALUE, INVALID_FORMAT,
                                     MISMATCHING_VALUE};
@@ -93,6 +94,9 @@ void InitializeAddressFromProfile(const AutofillProfile& profile,
       base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
   address->administrative_area =
       base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE));
+  address->locality = base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_CITY));
+  address->dependent_locality =
+      base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY));
   address->postal_code =
       base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP));
 }
@@ -102,6 +106,11 @@ void SetEmptyValidityIfEmpty(AutofillProfile* profile) {
     profile->SetValidityState(ADDRESS_HOME_COUNTRY, AutofillProfile::EMPTY);
   if (profile->GetRawInfo(ADDRESS_HOME_STATE).empty())
     profile->SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::EMPTY);
+  if (profile->GetRawInfo(ADDRESS_HOME_CITY).empty())
+    profile->SetValidityState(ADDRESS_HOME_CITY, AutofillProfile::EMPTY);
+  if (profile->GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY).empty())
+    profile->SetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                              AutofillProfile::EMPTY);
   if (profile->GetRawInfo(ADDRESS_HOME_ZIP).empty())
     profile->SetValidityState(ADDRESS_HOME_ZIP, AutofillProfile::EMPTY);
 }
