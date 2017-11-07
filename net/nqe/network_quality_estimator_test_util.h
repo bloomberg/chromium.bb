@@ -224,6 +224,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // changed to |network_quality|.
   void NotifyObserversOfEffectiveConnectionType(EffectiveConnectionType type);
 
+  const NetworkQualityEstimatorParams* params() const;
+
   using NetworkQualityEstimator::SetTickClockForTesting;
   using NetworkQualityEstimator::OnConnectionTypeChanged;
   using NetworkQualityEstimator::OnUpdatedTransportRTTAvailable;

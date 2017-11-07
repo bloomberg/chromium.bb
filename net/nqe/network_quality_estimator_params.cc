@@ -119,9 +119,6 @@ const char* GetNameForConnectionTypeInternal(
       return "None";
     case NetworkChangeNotifier::CONNECTION_BLUETOOTH:
       return "Bluetooth";
-    default:
-      NOTREACHED();
-      break;
   }
   return "";
 }

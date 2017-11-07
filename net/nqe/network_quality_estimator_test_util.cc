@@ -323,6 +323,11 @@ void TestNetworkQualityEstimator::NotifyObserversOfEffectiveConnectionType(
     observer.OnEffectiveConnectionTypeChanged(type);
 }
 
+const NetworkQualityEstimatorParams* TestNetworkQualityEstimator::params()
+    const {
+  return params_.get();
+}
+
 nqe::internal::NetworkID TestNetworkQualityEstimator::GetCurrentNetworkID()
     const {
   return nqe::internal::NetworkID(current_network_type_, current_network_id_);

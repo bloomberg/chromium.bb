@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "net/nqe/network_quality_estimator_params.h"
 #include "net/nqe/weighted_observation.h"
 
 namespace net {
@@ -20,29 +21,34 @@ namespace nqe {
 
 namespace internal {
 
-ObservationBuffer::ObservationBuffer(double weight_multiplier_per_second,
-                                     double weight_multiplier_per_signal_level)
-    : weight_multiplier_per_second_(weight_multiplier_per_second),
+ObservationBuffer::ObservationBuffer(
+    const NetworkQualityEstimatorParams* params,
+    base::TickClock* tick_clock,
+    double weight_multiplier_per_second,
+    double weight_multiplier_per_signal_level)
+    : params_(params),
+      weight_multiplier_per_second_(weight_multiplier_per_second),
       weight_multiplier_per_signal_level_(weight_multiplier_per_signal_level),
-      tick_clock_(new base::DefaultTickClock()) {
-  static_assert(kMaximumObservationsBufferSize > 0U,
-                "Minimum size of observation buffer must be > 0");
+      tick_clock_(tick_clock) {
+  DCHECK_LT(0u, params_->observation_buffer_size());
   DCHECK_LE(0.0, weight_multiplier_per_second_);
   DCHECK_GE(1.0, weight_multiplier_per_second_);
   DCHECK_LE(0.0, weight_multiplier_per_signal_level_);
   DCHECK_GE(1.0, weight_multiplier_per_signal_level_);
+  DCHECK(params_);
+  DCHECK(tick_clock_);
 }
 
 ObservationBuffer::~ObservationBuffer() {}
 
 void ObservationBuffer::AddObservation(const Observation& observation) {
-  DCHECK_LE(observations_.size(), kMaximumObservationsBufferSize);
+  DCHECK_LE(observations_.size(), params_->observation_buffer_size());
   // Evict the oldest element if the buffer is already full.
-  if (observations_.size() == kMaximumObservationsBufferSize)
+  if (observations_.size() == params_->observation_buffer_size())
     observations_.pop_front();
 
   observations_.push_back(observation);
-  DCHECK_LE(observations_.size(), kMaximumObservationsBufferSize);
+  DCHECK_LE(observations_.size(), params_->observation_buffer_size());
 }
 
 base::Optional<int32_t> ObservationBuffer::GetPercentile(
@@ -204,6 +210,10 @@ void ObservationBuffer::ComputeWeightedObservations(
   // since the former contains only the observations later than
   // |begin_timestamp|.
   DCHECK_GE(observations_.size(), weighted_observations->size());
+}
+
+size_t ObservationBuffer::Capacity() const {
+  return params_->observation_buffer_size();
 }
 
 }  // namespace internal

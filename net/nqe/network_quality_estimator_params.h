@@ -206,6 +206,14 @@ class NET_EXPORT NetworkQualityEstimatorParams {
     return add_default_platform_observations_;
   }
 
+  // Number of observations received after which the effective connection type
+  // should be recomputed.
+  size_t count_new_observations_received_compute_ect() const { return 50; }
+
+  // Maximum number of observations that can be held in a single
+  // ObservationBuffer.
+  size_t observation_buffer_size() const { return 300; }
+
  private:
   // Map containing all field trial parameters related to
   // NetworkQualityEstimator field trial.
