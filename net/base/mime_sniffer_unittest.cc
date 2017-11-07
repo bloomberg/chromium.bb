@@ -251,6 +251,10 @@ TEST(MimeSnifferTest, DontAllowPrivilegeEscalationTest) {
         "</body></html>\n")-1,
       "http://www.example.com/foo.html",
       "", "text/plain" },
+    { "<html><body>text</body></html>",
+      sizeof("<html><body>text</body></html>")-1,
+      "file:///C/test.nosuchextension",
+      "", "text/plain" },
   };
 
   TestArray(tests, arraysize(tests));
