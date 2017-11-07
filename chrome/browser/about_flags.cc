@@ -3552,6 +3552,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableKeyboardShortcutViewerName,
      flag_descriptions::kAshEnableKeyboardShortcutViewerDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableKeyboardShortcutViewer)},
+
+    {"ash-disable-login-dim-and-blur",
+     flag_descriptions::kAshDisableLoginDimAndBlurName,
+     flag_descriptions::kAshDisableLoginDimAndBlurDescription, kOsCrOS,
+     SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableLoginDimAndBlur)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_CHROMEOS)

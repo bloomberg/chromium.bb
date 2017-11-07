@@ -374,6 +374,12 @@ void WallpaperController::OpenSetWallpaperPage() {
   }
 }
 
+bool WallpaperController::ShouldApplyDimAndBlur() const {
+  return Shell::Get()->session_controller()->IsUserSessionBlocked() &&
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kAshDisableLoginDimAndBlur);
+}
+
 void WallpaperController::AddObserver(
     mojom::WallpaperObserverAssociatedPtrInfo observer) {
   mojom::WallpaperObserverAssociatedPtr observer_ptr;
@@ -427,7 +433,7 @@ void WallpaperController::InstallDesktopController(aura::Window* root_window) {
       return;
   }
 
-  if (Shell::Get()->session_controller()->IsUserSessionBlocked())
+  if (ShouldApplyDimAndBlur())
     component->SetWallpaperBlur(login_constants::kBlurSigma);
 
   RootWindowController* controller =

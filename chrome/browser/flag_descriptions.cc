@@ -2425,8 +2425,7 @@ const char kDisableSystemTimezoneAutomaticDetectionDescription[] =
 
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
-    "Enables background blur for the Peeking Launcher, Lock Screen, and Tab "
-    "Switcher.";
+    "Enables background blur for the Peeking Launcher and Tab Switcher.";
 
 const char kEnableAndroidWallpapersAppName[] = "Android Wallpapers App";
 const char kEnableAndroidWallpapersAppDescription[] =
@@ -2770,6 +2769,11 @@ const char kWebrtcH264WithOpenh264FfmpegDescription[] =
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 #if defined(OS_CHROMEOS)
+
+const char kAshDisableLoginDimAndBlurName[] =
+    "Disable dimming and blur on login screen.";
+const char kAshDisableLoginDimAndBlurDescription[] =
+    "Disable dimming and blur on login screen.";
 
 const char kAshDisableSmoothScreenRotationName[] =
     "Disable smooth rotation animations.";

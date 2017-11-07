@@ -160,7 +160,7 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   cc::PaintFlags flags;
-  if (Shell::Get()->session_controller()->IsUserSessionBlocked()) {
+  if (controller->ShouldApplyDimAndBlur()) {
     flags.setColorFilter(SkColorFilter::MakeModeFilter(
         GetWallpaperDarkenColor(), SkBlendMode::kDarken));
   }

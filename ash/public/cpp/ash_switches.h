@@ -19,6 +19,7 @@ namespace switches {
 ASH_PUBLIC_EXPORT extern const char kAshConstrainPointerToRoot[];
 ASH_PUBLIC_EXPORT extern const char kAshDebugShortcuts[];
 ASH_PUBLIC_EXPORT extern const char kAshDeveloperShortcuts[];
+ASH_PUBLIC_EXPORT extern const char kAshDisableLoginDimAndBlur[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableShelfModelSynchronization[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableSmoothScreenRotation[];
 ASH_PUBLIC_EXPORT extern const char kAshDisableTabletAutohideTitlebars[];

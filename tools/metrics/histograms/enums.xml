@@ -24259,6 +24259,7 @@ from previous Chrome versions.
   <int value="-1487243228" label="NewUsbBackend:disabled"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
   <int value="-1480926949" label="MaterialDesignBookmarks:enabled"/>
+  <int value="-1480866718" label="ash-disable-login-dim-and-blur"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
   <int value="-1473668019" label="token-binding:disabled"/>
   <int value="-1473136627" label="enable-web-payments"/>
