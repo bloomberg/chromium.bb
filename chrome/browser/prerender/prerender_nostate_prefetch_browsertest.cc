@@ -49,6 +49,7 @@ namespace prerender {
 
 // These URLs used for test resources must be relative with the exception of
 // |kPrefetchLoaderPath|.
+const char k302RedirectPage[] = "prerender/302_redirect.html";
 const char kPrefetchAppcache[] = "prerender/prefetch_appcache.html";
 const char kPrefetchAppcacheManifest[] = "prerender/appcache.manifest";
 const char kPrefetchImagePage[] = "prerender/prefetch_image.html";
@@ -399,6 +400,14 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, Prefetch301Redirect) {
       "/server-redirect/?" +
           net::EscapeQueryParamValue(MakeAbsolute(kPrefetchPage), false),
       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  script_counter.WaitForCount(1);
+}
+
+// Checks that a 302 redirect is followed.
+IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, Prefetch302Redirect) {
+  RequestCounter script_counter;
+  CountRequestFor(kPrefetchScript, &script_counter);
+  PrefetchFromFile(k302RedirectPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   script_counter.WaitForCount(1);
 }
 
