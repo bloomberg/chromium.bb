@@ -161,9 +161,7 @@ std::unique_ptr<base::ListValue> ConstructPreviewArgs(
   std::string json;
   base::JSONWriter::Write(print_ticket, &json);
   args.GetList().emplace_back(json);
-  std::string page_count;
-  base::JSONWriter::Write(base::Value(-1), &page_count);
-  args.GetList().emplace_back(page_count);
+  args.GetList().emplace_back(-1);
   return base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
 }
 
