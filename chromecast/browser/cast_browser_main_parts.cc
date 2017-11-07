@@ -22,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
 #include "chromecast/base/cast_constants.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/cast_paths.h"
@@ -221,6 +222,7 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
     {switches::kDisableGpuVsync, ""},
     {switches::kSkipGpuDataLoading, ""},
     {switches::kDisableGpuCompositing, ""},
+    {cc::switches::kDisableThreadedAnimation, ""},
 #endif  // defined(OS_ANDROID)
 #endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
 #if defined(OS_LINUX)
