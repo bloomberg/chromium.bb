@@ -494,13 +494,16 @@ void BackgroundFetchDataManager::DeleteRegistration(
 
 void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
     int64_t service_worker_registration_id,
+    const url::Origin& origin,
     blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::vector<std::string> developer_ids;
   for (const auto& entry : active_registration_unique_ids_) {
-    if (service_worker_registration_id == std::get<0>(entry.first))
+    if (service_worker_registration_id == std::get<0>(entry.first) &&
+        origin == std::get<1>(entry.first)) {
       developer_ids.emplace_back(std::get<2>(entry.first));
+    }
   }
 
   std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,

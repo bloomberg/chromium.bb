@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
+#include "content/browser/background_fetch/background_fetch_request_manager.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
@@ -45,12 +46,9 @@ class ServiceWorkerContextWrapper;
 // Worker code to remove a ServiceWorkerRegistration and all its keys).
 //
 // Storage schema is documented in storage/README.md
-class CONTENT_EXPORT BackgroundFetchDataManager {
+class CONTENT_EXPORT BackgroundFetchDataManager
+    : public BackgroundFetchRequestManager {
  public:
-  using NextRequestCallback =
-      base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
-  using MarkedCompleteCallback =
-      base::OnceCallback<void(bool /* has_pending_or_active_requests */)>;
   using SettledFetchesCallback = base::OnceCallback<void(
       blink::mojom::BackgroundFetchError,
       bool /* background_fetch_succeeded */,
@@ -63,7 +61,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   BackgroundFetchDataManager(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
-  ~BackgroundFetchDataManager();
+  ~BackgroundFetchDataManager() override;
 
   // Creates and stores a new registration with the given properties. Will
   // invoke the |callback| when the registration has been created, which may
@@ -85,25 +83,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       const std::string& unique_id,
       const std::string& title,
       blink::mojom::BackgroundFetchService::UpdateUICallback callback);
-
-  // Removes the next request, if any, from the pending requests queue, and
-  // invokes the |callback| with that request, else a null request.
-  void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
-                      NextRequestCallback callback);
-
-  // Marks that the |request|, part of the Background Fetch identified by
-  // |registration_id|, has been started as |download_guid|.
-  void MarkRequestAsStarted(
-      const BackgroundFetchRegistrationId& registration_id,
-      BackgroundFetchRequestInfo* request,
-      const std::string& download_guid);
-
-  // Marks that the |request|, part of the Background Fetch identified by
-  // |registration_id|, has completed.
-  void MarkRequestAsComplete(
-      const BackgroundFetchRegistrationId& registration_id,
-      BackgroundFetchRequestInfo* request,
-      MarkedCompleteCallback callback);
 
   // Reads all settled fetches for the given |registration_id|. Both the Request
   // and Response objects will be initialised based on the stored data. Will
@@ -137,10 +116,23 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // Worker.
   void GetDeveloperIdsForServiceWorker(
       int64_t service_worker_registration_id,
+      const url::Origin& origin,
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);
 
   int GetTotalNumberOfRequests(
       const BackgroundFetchRegistrationId& registration_id) const;
+
+  // BackgroundFetchRequestManager implementation:
+  void PopNextRequest(const BackgroundFetchRegistrationId& registration_id,
+                      NextRequestCallback callback) override;
+  void MarkRequestAsStarted(
+      const BackgroundFetchRegistrationId& registration_id,
+      BackgroundFetchRequestInfo* request,
+      const std::string& download_guid) override;
+  void MarkRequestAsComplete(
+      const BackgroundFetchRegistrationId& registration_id,
+      BackgroundFetchRequestInfo* request,
+      MarkedCompleteCallback callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BackgroundFetchDataManagerTest, Cleanup);
