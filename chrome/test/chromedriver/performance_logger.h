@@ -63,10 +63,10 @@ class PerformanceLogger : public DevToolsEventListener, public CommandListener {
                    const std::string& method,
                    const base::DictionaryValue& params);
 
-  // Enables Network, Page and Timeline domains according to |PerfLoggingPrefs|.
+  // Enables Network and Page domains according to |PerfLoggingPrefs|.
   Status EnableInspectorDomains(DevToolsClient* client);
 
-  // Logs Network, Page, and Timeline events.
+  // Logs Network and Page events.
   Status HandleInspectorEvents(DevToolsClient* client,
                                const std::string& method,
                                const base::DictionaryValue& params);

@@ -251,8 +251,7 @@ TEST(PerformanceLogger, PerfLoggingPrefs) {
   client.AddListener(&logger);
   logger.OnConnected(&client);
   ExpectCommand(&client, "Page.enable");
-  // Do not expect Timeline.enable command since specifying trace categories
-  // implicitly disables Timeline feed.
+
   DevToolsCommand* cmd;
   ASSERT_FALSE(client.PopSentCommand(&cmd));
 }
