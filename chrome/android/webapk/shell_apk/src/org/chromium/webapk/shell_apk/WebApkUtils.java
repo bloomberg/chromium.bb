@@ -46,7 +46,7 @@ public class WebApkUtils {
      */
     private static List<String> sBrowsersSupportingWebApk = new ArrayList<String>(
             Arrays.asList("com.google.android.apps.chrome", "com.android.chrome", "com.chrome.beta",
-                    "com.chrome.dev", "com.chrome.canary"));
+                    "com.chrome.dev", "com.chrome.canary", "org.chromium.chrome"));
 
     /** Caches the package name of the host browser. */
     private static String sHostPackage;
