@@ -52,11 +52,6 @@ const uint32_t kServiceWorkerFilteredMessageClasses[] = {
     ServiceWorkerMsgStart, EmbeddedWorkerMsgStart,
 };
 
-void RunSoon(const base::Closure& callback) {
-  if (!callback.is_null())
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
-}
-
 }  // namespace
 
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
@@ -266,11 +261,15 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
       blink::mojom::ServiceWorkerObjectInfoPtr worker_info =
           sender_provider_host->GetOrCreateServiceWorkerHandle(
               sender_provider_host->running_hosted_version());
-      RunSoon(base::Bind(
-          &ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal<
-              blink::mojom::ServiceWorkerObjectInfo>,
-          this, worker, message, source_origin, sent_message_ports,
-          base::make_optional(timeout), callback, *worker_info));
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&ServiceWorkerDispatcherHost::
+                             DispatchExtendableMessageEventInternal<
+                                 blink::mojom::ServiceWorkerObjectInfo>,
+                         this, worker, message, source_origin,
+                         sent_message_ports, base::make_optional(timeout),
+                         callback, *worker_info));
       break;
     }
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
