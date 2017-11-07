@@ -62,10 +62,8 @@ void V8Document::openMethodCustom(
       ExceptionState exception_state(info.GetIsolate(),
                                      ExceptionState::kExecutionContext,
                                      "Document", "open");
-      exception_state.ThrowDOMException(kInvalidAccessError,
-                                        "document.open should throw when it "
-                                        "has no window and is called with "
-                                        "three arguments");
+      exception_state.ThrowDOMException(
+          kInvalidAccessError, "The document has no window associated.");
       return;
     }
     LocalFrame* frame = document->GetFrame();
