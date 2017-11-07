@@ -59,6 +59,9 @@ std::string GetMessageString() {
              " to log only the browser and GPU processes. "
              "This is also configurable in chrome://flags";
   }
+#elif defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+  return "Memory logging is not available in this build because a memory "
+         "sanitizer is running.";
 #else
   return "Memory logging is not available in this build because "
          "USE_ALLOCATOR_SHIM is not set. It can not have sanitizers enabled "
