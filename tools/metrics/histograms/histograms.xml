@@ -99466,6 +99466,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="DeviceLocalAccount"
       label="DeviceLocalAccount policy fetch response."/>
   <suffix name="User" label="User policy fetch response."/>
+  <suffix name="UserDuringLogin"
+      label="User policy fetch response during login."/>
   <affected-histogram name="Enterprise.RetrievePolicyResponse"/>
 </histogram_suffixes>
 

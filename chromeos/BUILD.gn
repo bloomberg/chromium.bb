@@ -768,6 +768,7 @@ proto_library("cryptohome_proto") {
 proto_library("login_manager_proto") {
   sources = [
     "//third_party/cros_system_api/dbus/login_manager/arc.proto",
+    "//third_party/cros_system_api/dbus/login_manager/policy_descriptor.proto",
   ]
 
   proto_out_dir = "chromeos/dbus/login_manager"

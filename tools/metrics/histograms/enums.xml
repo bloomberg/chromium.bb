@@ -11997,8 +11997,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   </summary>
   <int value="0" label="Other type of error on retrieve policy request"/>
   <int value="1" label="Success"/>
-  <int value="2" label="Retrieve request issued before session started"/>
+  <int value="2"
+      label="Retrieve request issued before session started (Deprecated)"/>
   <int value="3" label="Failed to retrieve policy data in session manager"/>
+  <int value="4"
+      label="Session manager failed to get policy service, possibly because
+             the retrieve request was issued before the user session started
+             or the account id was invalid"/>
 </enum>
 
 <enum name="EnterpriseUploadJobSuccess">
