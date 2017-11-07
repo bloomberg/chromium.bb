@@ -223,13 +223,6 @@ source_set("material_components_ios") {
     "src/components/private/Overlay/src/private/MDCOverlayObserverTransition.m",
     "src/components/private/Overlay/src/private/MDCOverlayUtilities.h",
     "src/components/private/Overlay/src/private/MDCOverlayUtilities.m",
-    "src/components/private/RTL/src/MDCRTL.h",
-    "src/components/private/RTL/src/MDCRTL.m",
-    "src/components/private/RTL/src/MaterialRTL.h",
-    "src/components/private/RTL/src/UIImage+MaterialRTL.h",
-    "src/components/private/RTL/src/UIImage+MaterialRTL.m",
-    "src/components/private/RTL/src/UIView+MaterialRTL.h",
-    "src/components/private/RTL/src/UIView+MaterialRTL.m",
     "src/components/private/ThumbTrack/src/MDCNumericValueLabel.h",
     "src/components/private/ThumbTrack/src/MDCNumericValueLabel.m",
     "src/components/private/ThumbTrack/src/MDCThumbTrack.h",
@@ -261,7 +254,6 @@ source_set("material_components_ios") {
     "src/components/private/Icons/icons/ic_reorder/src",
     "src/components/private/KeyboardWatcher/src",
     "src/components/private/Overlay/src",
-    "src/components/private/RTL/src",
     "src/components/private/ThumbTrack/src",
   ]
 
