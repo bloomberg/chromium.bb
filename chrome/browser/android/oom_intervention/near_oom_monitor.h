@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/process/process_metrics.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 
 // NearOomMonitor tracks memory stats to estimate whether we are in "near-OOM"
 // situation. Near-OOM is defined as a situation where the foreground apps
@@ -21,15 +21,10 @@ class NearOomMonitor {
   // Returns nullptr when the monitor isn't available.
   static NearOomMonitor* GetInstance();
 
-  NearOomMonitor();
   virtual ~NearOomMonitor();
 
-  // Starts monitoring. Returns true when monitoring is actually started.
-  bool Start();
-
   base::TimeDelta GetMonitoringInterval() const { return monitoring_interval_; }
-
-  bool IsRunning() const;
+  base::TimeDelta GetCooldownInterval() const { return cooldown_interval_; }
 
   using CallbackList = base::CallbackList<void()>;
   using Subscription = CallbackList::Subscription;
@@ -40,20 +35,32 @@ class NearOomMonitor {
   std::unique_ptr<Subscription> RegisterCallback(base::Closure callback);
 
  protected:
-  // Constructs with a TaskRunner. Used for tests.
-  explicit NearOomMonitor(scoped_refptr<base::SequencedTaskRunner> task_runner);
+  static NearOomMonitor* Create();
+
+  NearOomMonitor(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                 int64_t swapfree_threshold);
 
   // Gets system memory info. This is a virtual method so that we can override
   // this for testing.
   virtual bool GetSystemMemoryInfo(base::SystemMemoryInfoKB* memory_info);
 
  private:
-  // Checks whether we are in near-OOM situation. Called every
-  // |monitoring_interval_|.
+  // Checks whether we are in near-OOM situation.
   void Check();
+  void ScheduleCheck();
 
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  base::Callback<void()> check_callback_;
+
+  // The time between Check() calls. When Check() detects a near-OOM
+  // situation, |cooldown_interval_| is used instead of this interval to
+  // schedule next Check().
   base::TimeDelta monitoring_interval_;
-  base::RepeatingTimer timer_;
+  // The time which should pass between two successive near-OOM detections.
+  base::TimeDelta cooldown_interval_;
+  // The time when Check() will be called next.
+  base::TimeTicks next_check_time_;
 
   int64_t swapfree_threshold_;
 
