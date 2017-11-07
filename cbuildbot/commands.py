@@ -737,7 +737,7 @@ def RunHWTestSuite(
     suite_args=None,
     offload_failures_only=None,
     debug=True,
-    subsystems=None,
+    subsystems=frozenset(),
     skip_duts_check=False,
     job_keyvals=None):
   """Run the test suite in the Autotest lab.
@@ -922,7 +922,7 @@ def _GetRunSuiteArgs(
     suite_min_duts=0,
     suite_args=None,
     offload_failures_only=None,
-    subsystems=None,
+    subsystems=frozenset(),
     skip_duts_check=False,
     job_keyvals=None):
   """Get a list of args for run_suite.

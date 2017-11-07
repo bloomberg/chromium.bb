@@ -263,15 +263,10 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     build = '/'.join([self._bot_id, self.version])
 
     # Get the subsystems set for the board to test
-    per_board_dict = self._run.attrs.metadata.GetDict()['board-metadata']
-    current_board_dict = per_board_dict.get(self._current_board)
-    if current_board_dict:
-      subsystems = set(current_board_dict.get('subsystems_to_test', []))
-      # 'subsystem:all' indicates to skip the subsystem logic
-      if 'all' in subsystems:
-        subsystems = None
+    if self.suite_config.suite == constants.HWTEST_PROVISION_SUITE:
+      subsystems = set()
     else:
-      subsystems = None
+      subsystems = self._GetSubsystems()
 
     skip_duts_check = False
     if config_lib.IsCanaryType(self._run.config.build_type):
@@ -322,6 +317,21 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
                                 message_value=str(s), board=self._current_board)
     if cmd_result.to_raise:
       raise cmd_result.to_raise
+
+  def _GetSubsystems(self):
+    """Return a set of subsystem strings for the current board.
+
+    Returns an empty set if there are no subsystems.
+    """
+    per_board_dict = self._run.attrs.metadata.GetDict()['board-metadata']
+    current_board_dict = per_board_dict.get(self._current_board)
+    if not current_board_dict:
+      return set()
+    subsystems = set(current_board_dict.get('subsystems_to_test', []))
+    # 'subsystem:all' indicates to skip the subsystem logic
+    if 'all' in subsystems:
+      return set()
+    return subsystems
 
 
 class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
