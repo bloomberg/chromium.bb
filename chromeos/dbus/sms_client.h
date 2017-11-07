@@ -30,6 +30,11 @@ class CHROMEOS_EXPORT SMSClient : public DBusClient {
  public:
   typedef base::Callback<void(const base::DictionaryValue& sms)> GetAllCallback;
 
+  static const char kSMSPropertyState[];
+  static const char kSMSPropertyNumber[];
+  static const char kSMSPropertyText[];
+  static const char kSMSPropertyTimestamp[];
+
   ~SMSClient() override;
 
   // Factory function, creates a new instance and returns ownership.
