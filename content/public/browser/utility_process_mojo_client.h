@@ -140,7 +140,8 @@ class UtilityProcessMojoClient {
 #if defined(OS_WIN)
       if (run_elevated_) {
         DCHECK(disable_sandbox_);
-        utility_host_->ElevatePrivileges();
+        utility_host_->SetSandboxType(
+            service_manager::SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES);
       }
 #endif  // defined(OS_WIN)
 

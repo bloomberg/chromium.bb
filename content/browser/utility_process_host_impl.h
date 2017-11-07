@@ -48,9 +48,6 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   bool Send(IPC::Message* message) override;
   void SetExposedDir(const base::FilePath& dir) override;
   void SetSandboxType(service_manager::SandboxType sandbox_type) override;
-#if defined(OS_WIN)
-  void ElevatePrivileges() override;
-#endif
   const ChildProcessData& GetData() override;
 #if defined(OS_POSIX)
   void SetEnv(const base::EnvironmentMap& env) override;
@@ -95,9 +92,6 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   // Launch the child process with switches that will setup this sandbox type.
   service_manager::SandboxType sandbox_type_;
-
-  // Whether to launch the child process with elevated privileges.
-  bool run_elevated_;
 
   // ChildProcessHost flags to use when starting the child process.
   int child_flags_;

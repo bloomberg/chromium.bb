@@ -53,30 +53,33 @@ class UtilitySandboxedProcessLauncherDelegate
  public:
   UtilitySandboxedProcessLauncherDelegate(
       const base::FilePath& exposed_dir,
-      bool launch_elevated,
       service_manager::SandboxType sandbox_type,
       const base::EnvironmentMap& env)
       : exposed_dir_(exposed_dir),
-#if defined(OS_WIN)
-        launch_elevated_(launch_elevated),
-#elif defined(OS_POSIX)
+#if defined(OS_POSIX)
         env_(env),
-#endif  // OS_WIN
+#endif
         sandbox_type_(sandbox_type) {
-    DCHECK(sandbox_type_ == service_manager::SANDBOX_TYPE_NO_SANDBOX ||
-           sandbox_type_ == service_manager::SANDBOX_TYPE_UTILITY ||
-           sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK ||
-           sandbox_type_ == service_manager::SANDBOX_TYPE_CDM ||
-           sandbox_type_ == service_manager::SANDBOX_TYPE_PDF_COMPOSITOR ||
-           sandbox_type_ == service_manager::SANDBOX_TYPE_PROFILING ||
-           sandbox_type_ == service_manager::SANDBOX_TYPE_PPAPI);
+#if DCHECK_IS_ON()
+    bool supported_sandbox_type =
+        sandbox_type_ == service_manager::SANDBOX_TYPE_NO_SANDBOX ||
+#if defined(OS_WIN)
+        sandbox_type_ ==
+            service_manager::SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES ||
+#endif
+        sandbox_type_ == service_manager::SANDBOX_TYPE_UTILITY ||
+        sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK ||
+        sandbox_type_ == service_manager::SANDBOX_TYPE_CDM ||
+        sandbox_type_ == service_manager::SANDBOX_TYPE_PDF_COMPOSITOR ||
+        sandbox_type_ == service_manager::SANDBOX_TYPE_PROFILING ||
+        sandbox_type_ == service_manager::SANDBOX_TYPE_PPAPI;
+    DCHECK(supported_sandbox_type);
+#endif  // DCHECK_IS_ON()
   }
 
   ~UtilitySandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  bool ShouldLaunchElevated() override { return launch_elevated_; }
-
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
     if (exposed_dir_.empty())
       return true;
@@ -116,9 +119,7 @@ class UtilitySandboxedProcessLauncherDelegate
  private:
   base::FilePath exposed_dir_;
 
-#if defined(OS_WIN)
-  bool launch_elevated_;
-#elif defined(OS_POSIX)
+#if defined(OS_POSIX)
   base::EnvironmentMap env_;
 #endif  // OS_WIN
   service_manager::SandboxType sandbox_type_;
@@ -143,7 +144,6 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
     : client_(client),
       client_task_runner_(client_task_runner),
       sandbox_type_(service_manager::SANDBOX_TYPE_UTILITY),
-      run_elevated_(false),
 #if defined(OS_LINUX)
       child_flags_(ChildProcessHost::CHILD_ALLOW_SELF),
 #else
@@ -180,13 +180,6 @@ void UtilityProcessHostImpl::SetSandboxType(
   DCHECK(sandbox_type != service_manager::SANDBOX_TYPE_INVALID);
   sandbox_type_ = sandbox_type;
 }
-
-#if defined(OS_WIN)
-void UtilityProcessHostImpl::ElevatePrivileges() {
-  sandbox_type_ = service_manager::SANDBOX_TYPE_NO_SANDBOX;
-  run_elevated_ = true;
-}
-#endif
 
 const ChildProcessData& UtilityProcessHostImpl::GetData() {
   return process_->GetData();
@@ -324,12 +317,6 @@ bool UtilityProcessHostImpl::StartProcess() {
                                  exposed_dir_);
     }
 
-#if defined(OS_WIN)
-    // Let the utility process know if it is intended to be elevated.
-    if (run_elevated_)
-      cmd_line->AppendSwitch(switches::kUtilityProcessRunningElevated);
-#endif
-
     const bool is_service = service_identity_.has_value();
     if (is_service) {
       GetContentClient()->browser()->AdjustUtilityServiceProcessCommandLine(
@@ -337,7 +324,7 @@ bool UtilityProcessHostImpl::StartProcess() {
     }
 
     process_->Launch(std::make_unique<UtilitySandboxedProcessLauncherDelegate>(
-                         exposed_dir_, run_elevated_, sandbox_type_, env_),
+                         exposed_dir_, sandbox_type_, env_),
                      std::move(cmd_line), true);
   }
 
