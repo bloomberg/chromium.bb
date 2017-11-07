@@ -1,3 +1,5 @@
+per-file typed_url_data_type_controller*=gangwu@chromium.org
+per-file typed_url_model_type_controller*=gangwu@chromium.org
 per-file typed_url_sync_bridge*=gangwu@chromium.org
 per-file typed_url_syncable_service*=gangwu@chromium.org
 per-file typed_url_syncable_service*=zea@chromium.org

@@ -188,7 +188,12 @@ public final class SyncTestUtil {
             bookmarkSpecifics.put("parent_id", node.getString("PARENT_ID"));
             return bookmarkSpecifics;
         }
-        return specifics.getJSONObject(key);
+
+        JSONObject model_type_info = specifics.getJSONObject(key);
+        if (node.has("metadata")) {
+            model_type_info.put("metadata", node.getJSONObject("metadata"));
+        }
+        return model_type_info;
     }
 
     /**
@@ -246,7 +251,8 @@ public final class SyncTestUtil {
                 new ArrayList<Pair<String, JSONObject>>(datatypeNodes.length());
         for (int i = 0; i < datatypeNodes.length(); i++) {
             JSONObject entity = datatypeNodes.getJSONObject(i);
-            if (!entity.getString("UNIQUE_SERVER_TAG").isEmpty()) {
+            if (entity.has("UNIQUE_SERVER_TAG")
+                    && !entity.getString("UNIQUE_SERVER_TAG").isEmpty()) {
                 // Ignore permanent items (e.g., root datatype folders).
                 continue;
             }

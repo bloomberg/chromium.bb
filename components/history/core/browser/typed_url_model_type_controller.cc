@@ -84,10 +84,8 @@ void TypedURLModelTypeController::OnSavingBrowserHistoryDisabledChanged() {
     // generate an unrecoverable error. This can be fixed by restarting
     // Chrome (on restart, typed urls will not be a registered type).
     if (state() != NOT_RUNNING && state() != STOPPING) {
-      PostTaskOnHistoryThread(base::Bind(
-          &TypedURLModelTypeController::ReportModelError, base::AsWeakPtr(this),
-          syncer::ModelError(FROM_HERE,
-                             "History saving is now disabled by policy.")));
+      ReportModelError(syncer::ModelError(
+          FROM_HERE, "History saving is now disabled by policy."));
     }
   }
 }

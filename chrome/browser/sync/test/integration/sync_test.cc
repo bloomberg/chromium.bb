@@ -239,6 +239,12 @@ SyncTest::SyncTest(TestType test_type)
 SyncTest::~SyncTest() {}
 
 void SyncTest::SetUp() {
+  // TODO(crbug.com/781368) remove once feature enabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {switches::kSyncUSSTypedURL},
+      {});
+
   // Sets |server_type_| if it wasn't specified by the test.
   DecideServerType();
 

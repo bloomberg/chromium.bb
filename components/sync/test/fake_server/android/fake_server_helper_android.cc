@@ -287,15 +287,18 @@ FakeServerHelperAndroid::GetBookmarkBarFolderId(
   return base::android::ConvertUTF8ToJavaString(env, "32904_bookmark_bar");
 }
 
-void FakeServerHelperAndroid::DeleteEntity(JNIEnv* env,
-                                           const JavaParamRef<jobject>& obj,
-                                           jlong fake_server,
-                                           const JavaParamRef<jstring>& id) {
+void FakeServerHelperAndroid::DeleteEntity(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jlong fake_server,
+    const JavaParamRef<jstring>& id,
+    const base::android::JavaParamRef<jstring>& client_defined_unique_tag) {
   fake_server::FakeServer* fake_server_ptr =
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
   std::string native_id = base::android::ConvertJavaStringToUTF8(env, id);
-  fake_server_ptr->InjectEntity(
-      syncer::PersistentTombstoneEntity::CreateNew(native_id, std::string()));
+  fake_server_ptr->InjectEntity(syncer::PersistentTombstoneEntity::CreateNew(
+      native_id,
+      base::android::ConvertJavaStringToUTF8(env, client_defined_unique_tag)));
 }
 
 void FakeServerHelperAndroid::ClearServerData(JNIEnv* env,

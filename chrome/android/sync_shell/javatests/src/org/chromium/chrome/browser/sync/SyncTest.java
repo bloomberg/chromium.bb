@@ -45,6 +45,8 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+        // TODO(crbug.com/781368) remove once feature enabled.
+        "enable-features=SyncUSSTypedURL"
 })
 @RetryOnFailure // crbug.com/637448
 public class SyncTest {

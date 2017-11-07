@@ -63,10 +63,12 @@ public class TypedUrlsTest {
     private static class TypedUrl {
         public final String id;
         public final String url;
+        public final String clientTagHash;
 
-        public TypedUrl(String id, String url) {
+        public TypedUrl(String id, String url, String clientTagHash) {
             this.id = id;
             this.url = url;
+            this.clientTagHash = clientTagHash;
         }
     }
 
@@ -120,7 +122,7 @@ public class TypedUrlsTest {
 
         // Delete on server, sync, and verify deleted locally.
         TypedUrl typedUrl = getClientTypedUrls().get(0);
-        mSyncTestRule.getFakeServerHelper().deleteEntity(typedUrl.id);
+        mSyncTestRule.getFakeServerHelper().deleteEntity(typedUrl.id, typedUrl.clientTagHash);
         SyncTestUtil.triggerSync();
         waitForClientTypedUrlCount(0);
     }
@@ -140,7 +142,7 @@ public class TypedUrlsTest {
         specifics.typedUrl = new TypedUrlSpecifics();
         specifics.typedUrl.url = url;
         specifics.typedUrl.title = url;
-        specifics.typedUrl.visits = new long[]{1L};
+        specifics.typedUrl.visits = new long[] {getCurrentTimeInMicroseconds()};
         specifics.typedUrl.visitTransitions = new int[]{SyncEnums.TYPED};
         mSyncTestRule.getFakeServerHelper().injectUniqueClientEntity(url /* name */, specifics);
     }
@@ -151,7 +153,14 @@ public class TypedUrlsTest {
         List<TypedUrl> typedUrls = new ArrayList<TypedUrl>(rawTypedUrls.size());
         for (Pair<String, JSONObject> rawTypedUrl : rawTypedUrls) {
             String id =  rawTypedUrl.first;
-            typedUrls.add(new TypedUrl(id, rawTypedUrl.second.getString("url")));
+            String client_tag_hash = "";
+            if (rawTypedUrl.second.has("metadata")) {
+                JSONObject metadata = rawTypedUrl.second.getJSONObject("metadata");
+                if (metadata.has("client_tag_hash")) {
+                    client_tag_hash = metadata.getString("client_tag_hash");
+                }
+            }
+            typedUrls.add(new TypedUrl(id, rawTypedUrl.second.getString("url"), client_tag_hash));
         }
         return typedUrls;
     }
@@ -191,5 +200,11 @@ public class TypedUrlsTest {
                 }
             }
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
+    }
+
+    private long getCurrentTimeInMicroseconds() {
+        long microsecondsSinceEpoch = System.currentTimeMillis() * 1000;
+        // 11644473600000000L is offset of UNIX epoch from windows FILETIME epoch in microseconds.
+        return 11644473600000000L + microsecondsSinceEpoch;
     }
 }
