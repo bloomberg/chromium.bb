@@ -167,8 +167,7 @@ TEST_F(PeripheralBatteryNotifierTest, ExtractBluetoothAddress) {
   EXPECT_TRUE(non_bluetooth_device_info.bluetooth_address.empty());
 }
 
-// TODO(crbug.com/765794): Flaky on ash_unittests.
-TEST_F(PeripheralBatteryNotifierTest, DISABLED_DeviceRemove) {
+TEST_F(PeripheralBatteryNotifierTest, DeviceRemove) {
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
 
@@ -183,8 +182,7 @@ TEST_F(PeripheralBatteryNotifierTest, DISABLED_DeviceRemove) {
               nullptr);
 }
 
-// TODO(crbug.com/765794): Flaky on ash_unittests.
-TEST_F(PeripheralBatteryNotifierTest, DISABLED_StylusNotification) {
+TEST_F(PeripheralBatteryNotifierTest, StylusNotification) {
   // DeviceDataManager is nullptr when the config is not classic.
   // TODO(sammiequon): Make this work for mash.
   if (Shell::GetAshConfig() != Config::CLASSIC)
