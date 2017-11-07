@@ -14,8 +14,8 @@ class MediaControlsImpl;
 
 // MediaControlElementBase implementation based on a <div>. Used for panels, and
 // floating UI.
-class MediaControlDivElement : public HTMLDivElement,
-                               public MediaControlElementBase {
+class MODULES_EXPORT MediaControlDivElement : public HTMLDivElement,
+                                              public MediaControlElementBase {
   USING_GARBAGE_COLLECTED_MIXIN(MediaControlDivElement);
 
  public:
