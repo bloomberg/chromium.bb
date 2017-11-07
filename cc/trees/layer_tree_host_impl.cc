@@ -2484,9 +2484,11 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
                              settings_.disallow_non_exact_resource_reuse);
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
+
+    // The worker context must support oop raster to enable oop rasterization.
     bool oop_raster_enabled =
         settings_.enable_oop_rasterization &&
-        compositor_context_provider->ContextCapabilities().supports_oop_raster;
+        worker_context_provider->ContextCapabilities().supports_oop_raster;
 
     *raster_buffer_provider = std::make_unique<GpuRasterBufferProvider>(
         compositor_context_provider, worker_context_provider,
