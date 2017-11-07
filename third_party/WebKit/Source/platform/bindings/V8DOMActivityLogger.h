@@ -80,6 +80,12 @@ class PLATFORM_EXPORT V8DOMActivityLogger {
   // Returns activity logger for current V8 context if the context belongs to
   // an isolated world or 0.
   static V8DOMActivityLogger* CurrentActivityLoggerIfIsolatedWorld();
+  static V8DOMActivityLogger*
+  CurrentActivityLoggerIfIsolatedWorldForMainThread();
+
+ private:
+  static V8DOMActivityLogger* CurrentActivityLoggerIfIsolatedWorld(
+      v8::Isolate*);
 };
 
 }  // namespace blink
