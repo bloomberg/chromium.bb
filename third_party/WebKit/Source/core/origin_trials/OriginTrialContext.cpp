@@ -104,7 +104,7 @@ OriginTrialContext* OriginTrialContext::From(ExecutionContext* context,
       Supplement<ExecutionContext>::From(context, SupplementName()));
   if (!origin_trials && create == kCreateIfNotExists) {
     origin_trials = new OriginTrialContext(
-        *context, Platform::Current()->TrialTokenValidator());
+        *context, Platform::Current()->CreateTrialTokenValidator());
     Supplement<ExecutionContext>::ProvideTo(*context, SupplementName(),
                                             origin_trials);
   }

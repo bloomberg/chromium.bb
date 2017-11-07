@@ -281,11 +281,8 @@ Platform::CreateImageCaptureFrameGrabber() {
   return nullptr;
 }
 
-std::unique_ptr<WebTrialTokenValidator> Platform::TrialTokenValidator() {
-  return std::unique_ptr<WebTrialTokenValidator>{};
-}
-std::unique_ptr<TrialPolicy> Platform::OriginTrialPolicy() {
-  return std::unique_ptr<TrialPolicy>{};
+std::unique_ptr<WebTrialTokenValidator> Platform::CreateTrialTokenValidator() {
+  return nullptr;
 }
 
 }  // namespace blink

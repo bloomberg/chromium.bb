@@ -31,6 +31,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
+#include "content/common/origin_trials/trial_policy_impl.h"
 #include "content/common/render_process_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -1368,14 +1369,9 @@ blink::WebPushProvider* RendererBlinkPlatformImpl::PushProvider() {
 //------------------------------------------------------------------------------
 
 std::unique_ptr<blink::WebTrialTokenValidator>
-RendererBlinkPlatformImpl::TrialTokenValidator() {
+RendererBlinkPlatformImpl::CreateTrialTokenValidator() {
   return std::make_unique<WebTrialTokenValidatorImpl>(
-      std::make_unique<blink::TrialTokenValidator>(OriginTrialPolicy()));
-}
-
-std::unique_ptr<blink::TrialPolicy>
-RendererBlinkPlatformImpl::OriginTrialPolicy() {
-  return std::make_unique<TrialPolicyImpl>();
+      TrialPolicyImpl::CreateValidatorForPolicy());
 }
 
 //------------------------------------------------------------------------------

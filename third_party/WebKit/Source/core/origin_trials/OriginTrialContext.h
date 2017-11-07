@@ -13,13 +13,10 @@
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebTrialTokenValidator.h"
-#include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 
 namespace blink {
 
 class ExecutionContext;
-enum class WebOriginTrialTokenStatus;
-class WebTrialTokenValidator;
 
 // The Origin Trials Framework provides limited access to experimental features,
 // on a per-origin basis (origin trials). This class provides the implementation

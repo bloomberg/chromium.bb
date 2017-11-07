@@ -9,6 +9,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_trial_policy.h"
 #include "content/public/common/origin_util.h"
+#include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 
 namespace content {
 
@@ -32,6 +33,12 @@ bool TrialPolicyImpl::IsOriginSecure(const GURL& url) const {
 
 const OriginTrialPolicy* TrialPolicyImpl::policy() const {
   return GetContentClient()->GetOriginTrialPolicy();
+}
+
+std::unique_ptr<blink::TrialTokenValidator>
+TrialPolicyImpl::CreateValidatorForPolicy() {
+  return std::make_unique<blink::TrialTokenValidator>(
+      std::make_unique<TrialPolicyImpl>());
 }
 
 }  // namespace content
