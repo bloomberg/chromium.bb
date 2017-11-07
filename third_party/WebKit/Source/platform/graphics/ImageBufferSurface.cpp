@@ -82,4 +82,8 @@ void ImageBufferSurface::Draw(GraphicsContext& context,
                     op);
 }
 
+void ImageBufferSurface::Flush(FlushReason) {
+  Canvas()->flush();
+}
+
 }  // namespace blink
