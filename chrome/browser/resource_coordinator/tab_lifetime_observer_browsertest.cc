@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/resource_coordinator/tab_lifetime_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
-#include "chrome/browser/resource_coordinator/tab_manager_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -17,13 +18,14 @@
 using content::OpenURLParams;
 using content::WebContents;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 
 namespace resource_coordinator {
 
-class TabManagerObserverTest : public InProcessBrowserTest {
+class TabLifetimeObserverTest : public InProcessBrowserTest {
  public:
-  TabManagerObserverTest() {}
+  TabLifetimeObserverTest() {}
 
   // Helper functions.
   void set_tab_strip_model(TabStripModel* tsm) { tab_strip_model_ = tsm; }
@@ -44,15 +46,15 @@ class TabManagerObserverTest : public InProcessBrowserTest {
   TabStripModel* tab_strip_model_;
 };
 
-class MockTabManagerObserver : public TabManagerObserver {
+class MockTabLifetimeObserver : public TabLifetimeObserver {
  public:
-  MockTabManagerObserver()
+  MockTabLifetimeObserver()
       : nb_events_(0),
         contents_(nullptr),
         is_discarded_(false),
         is_auto_discardable_(true) {}
 
-  // TabManagerObserver implementation:
+  // TabLifetimeObserver implementation:
   void OnDiscardedStateChange(content::WebContents* contents,
                               bool is_discarded) override {
     nb_events_++;
@@ -78,10 +80,10 @@ class MockTabManagerObserver : public TabManagerObserver {
   bool is_discarded_;
   bool is_auto_discardable_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockTabManagerObserver);
+  DISALLOW_COPY_AND_ASSIGN(MockTabLifetimeObserver);
 };
 
-IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnDiscardStateChange) {
+IN_PROC_BROWSER_TEST_F(TabLifetimeObserverTest, OnDiscardStateChange) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
   auto* tsm = browser()->tab_strip_model();
   set_tab_strip_model(tsm);
@@ -98,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnDiscardStateChange) {
   int index_2 = GetIndex(browser()->OpenURL(open2));
 
   // Subscribe observer to TabManager's observer list.
-  MockTabManagerObserver tabmanager_observer;
+  MockTabLifetimeObserver tabmanager_observer;
   tab_manager->AddObserver(&tabmanager_observer);
 
   // Discards both tabs and make sure the events were observed properly.
@@ -149,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnDiscardStateChange) {
   EXPECT_EQ(4, tabmanager_observer.nb_events());
 }
 
-IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnAutoDiscardableStateChange) {
+IN_PROC_BROWSER_TEST_F(TabLifetimeObserverTest, OnAutoDiscardableStateChange) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
   auto* tsm = browser()->tab_strip_model();
   set_tab_strip_model(tsm);
@@ -161,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnAutoDiscardableStateChange) {
   WebContents* contents = browser()->OpenURL(open);
 
   // Subscribe observer to TabManager's observer list.
-  MockTabManagerObserver observer;
+  MockTabLifetimeObserver observer;
   tab_manager->AddObserver(&observer);
 
   // No events initially.
@@ -190,4 +192,5 @@ IN_PROC_BROWSER_TEST_F(TabManagerObserverTest, OnAutoDiscardableStateChange) {
 
 }  // namespace resource_coordinator
 
-#endif  // OS_WIN || OS_MAXOSX || OS_LINUX
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)

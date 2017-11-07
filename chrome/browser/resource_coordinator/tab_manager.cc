@@ -33,7 +33,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
-#include "chrome/browser/resource_coordinator/tab_manager_observer.h"
+#include "chrome/browser/resource_coordinator/tab_lifetime_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_resource_coordinator_signal_observer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
@@ -503,11 +503,11 @@ TabStatsList TabManager::GetUnsortedTabStats(
   return stats_list;
 }
 
-void TabManager::AddObserver(TabManagerObserver* observer) {
+void TabManager::AddObserver(TabLifetimeObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void TabManager::RemoveObserver(TabManagerObserver* observer) {
+void TabManager::RemoveObserver(TabLifetimeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -637,13 +637,13 @@ int TabManager::GetTabCount() const {
 
 void TabManager::OnDiscardedStateChange(content::WebContents* contents,
                                         bool is_discarded) {
-  for (TabManagerObserver& observer : observers_)
+  for (TabLifetimeObserver& observer : observers_)
     observer.OnDiscardedStateChange(contents, is_discarded);
 }
 
 void TabManager::OnAutoDiscardableStateChange(content::WebContents* contents,
                                               bool is_auto_discardable) {
-  for (TabManagerObserver& observer : observers_)
+  for (TabLifetimeObserver& observer : observers_)
     observer.OnAutoDiscardableStateChange(contents, is_auto_discardable);
 }
 
