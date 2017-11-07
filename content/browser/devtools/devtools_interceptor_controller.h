@@ -19,6 +19,8 @@ namespace content {
 class BrowserContext;
 class FrameTreeNode;
 
+struct GlobalRequestID;
+
 class DevToolsInterceptorController : public base::SupportsUserData::Data {
  public:
   using ContinueInterceptedRequestCallback =
@@ -41,24 +43,31 @@ class DevToolsInterceptorController : public base::SupportsUserData::Data {
 
   void StopInterceptingRequests(const FrameTreeNode* target_frame);
 
+  bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
+
   ~DevToolsInterceptorController() override;
 
  private:
   friend class DevToolsURLRequestInterceptor;
-  static void SetUserData(
-      BrowserContext* browser_context,
-      base::WeakPtr<DevToolsURLRequestInterceptor>,
-      std::unique_ptr<DevToolsTargetRegistry> target_registry);
 
   DevToolsInterceptorController(
       base::WeakPtr<DevToolsURLRequestInterceptor> interceptor,
-      std::unique_ptr<DevToolsTargetRegistry> target_registry);
+      std::unique_ptr<DevToolsTargetRegistry> target_registry,
+      BrowserContext* browser_context);
+
+  void NavigationStarted(const std::string& interception_id,
+                         const GlobalRequestID& request_id);
+  void NavigationFinished(const std::string& interception_id);
 
   base::WeakPtr<DevToolsURLRequestInterceptor> interceptor_;
   std::unique_ptr<DevToolsTargetRegistry> target_registry_;
   base::flat_map<base::UnguessableToken,
                  DevToolsTargetRegistry::RegistrationHandle>
       target_handles_;
+
+  base::flat_map<std::string, GlobalRequestID> navigation_requests_;
+  base::flat_set<GlobalRequestID> canceled_navigation_requests_;
+  base::WeakPtrFactory<DevToolsInterceptorController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsInterceptorController);
 };
