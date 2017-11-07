@@ -68132,6 +68132,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="RendererScheduler.ExpectedQueueingTimeByFrameType"
+    units="ms">
+  <owner>npm@chromium.org</owner>
+  <summary>
+    Expected queueing time split by tasks according to their frame type. The sum
+    of the split values should be equal to the total, reported on
+    RendererScheduler.ExpectedQueueingTimeWhenQueueingTime.
+  </summary>
+</histogram>
+
+<histogram base="true"
+    name="RendererScheduler.ExpectedQueueingTimeByTaskQueueType" units="ms">
+  <owner>npm@chromium.org</owner>
+  <summary>
+    Expected queueing time split by tasks according to the type of their task
+    queue. The sum of the split values should be equal to the total, reported on
+    RendererScheduler.ExpectedQueueingTimeWhenQueueingTime.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.ExpectedQueueingTimeWhenQueueingTime"
     units="ms">
   <owner>tdresser@chromium.org</owner>
@@ -105505,9 +105525,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Memory.Experimental.Renderer.V8MainThreadIsolate"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="RendererScheduler.ExpectedQueueingTime.FrameSplit"
+    separator=".">
+  <suffix name="CrossOriginBackground"
+      label="Expected Queueing Time from cross-origin backgrounded frames."/>
+  <suffix name="CrossOriginHidden"
+      label="Expected Queueing Time from cross-origin offscreen frames."/>
+  <suffix name="CrossOriginVisible"
+      label="Expected Queueing Time from cross-origin onscreen frames."/>
+  <suffix name="SameOriginBackground"
+      label="Expected Queueing Time from same-origin backgrounded frames."/>
+  <suffix name="SameOriginHidden"
+      label="Expected Queueing Time from same-origin offscreen frames."/>
+  <suffix name="SameOriginVisible"
+      label="Expected Queueing Time from same-origin onscreen frames."/>
+  <suffix name="MainFrameBackground"
+      label="Expected Queueing Time from backgrounded main frames."/>
+  <suffix name="MainFrameHidden"
+      label="Expected Queueing Time from offscreen main frames."/>
+  <suffix name="MainFrameVisible"
+      label="Expected Queueing Time from onscreen main frames."/>
+  <suffix name="Other"
+      label="Expected Queueing Time from events with detached or nonexistent
+             frames."/>
+  <affected-histogram name="RendererScheduler.ExpectedQueueingTimeByFrameType"/>
+</histogram_suffixes>
+
 <histogram_suffixes
-    name="RendererScheduler.ExpectedQueueingTimeByTaskQueueType" separator=".">
-  <owner>npm@chromium.org</owner>
+    name="RendererScheduler.ExpectedQueueingTime.TaskQueueSplit" separator=".">
   <suffix name="Compositor"
       label="Expected Queueing Time from the compositor task queue."/>
   <suffix name="Default"
@@ -105524,7 +105569,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Expected Queueing Time from the unthrottled task queue."/>
   <suffix name="Other"
       label="Expected Queueing Time from events in any other task queue."/>
-  <affected-histogram name="RendererScheduler.ExpectedTaskQueueingDuration"/>
+  <affected-histogram
+      name="RendererScheduler.ExpectedQueueingTimeByTaskQueueType"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="RendererScheduler.MainThreadLoadSplit" separator=".">

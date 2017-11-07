@@ -25,51 +25,6 @@ using testing::ElementsAre;
 using testing::UnorderedElementsAre;
 using base::Bucket;
 
-namespace {
-
-class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
- public:
-  MainThreadTaskQueueForTest(QueueType queue_type)
-      : MainThreadTaskQueue(nullptr,
-                            Spec("test_tq"),
-                            QueueCreationParams(queue_type),
-                            nullptr) {}
-  ~MainThreadTaskQueueForTest() {}
-};
-
-class MockWebFrameScheduler : public FakeWebFrameScheduler {
- public:
-  MockWebFrameScheduler(bool is_page_visible,
-                        bool is_frame_visible,
-                        WebFrameScheduler::FrameType frame_type,
-                        bool is_cross_origin,
-                        bool is_exempt_from_throttling)
-      : is_page_visible_(is_page_visible),
-        is_frame_visible_(is_frame_visible),
-        frame_type_(frame_type),
-        is_cross_origin_(is_cross_origin),
-        is_exempt_from_throttling_(is_exempt_from_throttling) {
-    DCHECK(frame_type_ != FrameType::kMainFrame || !is_cross_origin);
-  }
-
-  bool IsCrossOrigin() const override { return is_cross_origin_; }
-  bool IsExemptFromThrottling() const override {
-    return is_exempt_from_throttling_;
-  }
-  bool IsFrameVisible() const override { return is_frame_visible_; }
-  bool IsPageVisible() const override { return is_page_visible_; }
-  FrameType GetFrameType() const override { return frame_type_; }
-
- private:
-  bool is_page_visible_;
-  bool is_frame_visible_;
-  WebFrameScheduler::FrameType frame_type_;
-  bool is_cross_origin_;
-  bool is_exempt_from_throttling_;
-};
-
-}  // namespace
-
 class RendererMetricsHelperTest : public ::testing::Test {
  public:
   RendererMetricsHelperTest() {}
@@ -218,23 +173,23 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
 }
 
 TEST_F(RendererMetricsHelperTest, GetFrameTypeTest) {
-  MockWebFrameScheduler frame1(
+  FakeWebFrameScheduler frame1(
       true, true, WebFrameScheduler::FrameType::kMainFrame, false, false);
   EXPECT_EQ(GetFrameType(&frame1), FrameType::MAIN_FRAME_VISIBLE);
 
-  MockWebFrameScheduler frame2(
+  FakeWebFrameScheduler frame2(
       true, false, WebFrameScheduler::FrameType::kSubframe, false, false);
   EXPECT_EQ(GetFrameType(&frame2), FrameType::SAME_ORIGIN_HIDDEN);
 
-  MockWebFrameScheduler frame3(
+  FakeWebFrameScheduler frame3(
       true, false, WebFrameScheduler::FrameType::kSubframe, true, false);
   EXPECT_EQ(GetFrameType(&frame3), FrameType::CROSS_ORIGIN_HIDDEN);
 
-  MockWebFrameScheduler frame4(
+  FakeWebFrameScheduler frame4(
       false, false, WebFrameScheduler::FrameType::kSubframe, false, false);
   EXPECT_EQ(GetFrameType(&frame4), FrameType::SAME_ORIGIN_BACKGROUND);
 
-  MockWebFrameScheduler frame5(
+  FakeWebFrameScheduler frame5(
       false, false, WebFrameScheduler::FrameType::kMainFrame, false, true);
   DCHECK_EQ(GetFrameType(&frame5),
             FrameType::MAIN_FRAME_BACKGROUND_EXEMPT_SELF);

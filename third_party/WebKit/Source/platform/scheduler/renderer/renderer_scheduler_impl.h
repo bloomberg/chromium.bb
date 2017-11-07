@@ -151,7 +151,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
                                         bool is_disjoint_window) override;
   void OnReportSplitExpectedQueueingTime(
-      const std::string& split_description,
+      const char* split_description,
       base::TimeDelta queueing_time) override;
 
   scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
