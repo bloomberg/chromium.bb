@@ -54768,6 +54768,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OSX.NativeShare" units="BooleanSuccess">
+  <owner>lgrey@chromium.org</owner>
+  <summary>
+    Whether the user successfully shared via a native sharing extensions after
+    selecting it from the share menu. False can indicate failure or
+    user-initiated cancellation.
+  </summary>
+</histogram>
+
 <histogram name="OSX.RendererHost.SurfaceWaitTime" units="ms">
   <obsolete>
     Deprecated as of 11/2015.

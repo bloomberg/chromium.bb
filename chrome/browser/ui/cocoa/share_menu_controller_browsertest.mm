@@ -7,6 +7,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -187,4 +188,28 @@ IN_PROC_BROWSER_TEST_F(ShareMenuControllerTest, SharingDelegate) {
              }]);
 
   PerformShare(service);
+}
+
+IN_PROC_BROWSER_TEST_F(ShareMenuControllerTest, Histograms) {
+  base::HistogramTester tester;
+  const std::string histogram_name = "OSX.NativeShare";
+
+  tester.ExpectTotalCount(histogram_name, 0);
+
+  base::scoped_nsobject<MockSharingService> service = MakeMockSharingService();
+
+  [controller_ sharingService:service didShareItems:@[]];
+  tester.ExpectBucketCount(histogram_name, true, 1);
+  tester.ExpectTotalCount(histogram_name, 1);
+
+  [controller_ sharingService:service didShareItems:@[]];
+  tester.ExpectBucketCount(histogram_name, true, 2);
+  tester.ExpectTotalCount(histogram_name, 2);
+
+  [controller_
+           sharingService:service
+      didFailToShareItems:@[]
+                    error:[NSError errorWithDomain:@"" code:0 userInfo:nil]];
+  tester.ExpectTotalCount(histogram_name, 3);
+  tester.ExpectBucketCount(histogram_name, false, 1);
 }

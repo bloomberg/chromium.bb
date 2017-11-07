@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,6 +24,11 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
 #include "ui/snapshot/snapshot.h"
+
+// Private method, used to identify instantiated services.
+@interface NSSharingService (ExposeName)
+- (id)name;
+@end
 
 namespace {
 
@@ -69,11 +75,10 @@ NSString* const kOpenSharingSubpaneProtocolValue = @"com.apple.share-services";
   // to fetch sharing services that can handle the NSURL type.
   NSArray* services = [NSSharingService
       sharingServicesForItems:@[ [NSURL URLWithString:@"https://google.com"] ]];
-  NSSharingService* readingListService = [NSSharingService
-      sharingServiceNamed:NSSharingServiceNameAddToSafariReadingList];
   for (NSSharingService* service in services) {
     // Don't include "Add to Reading List".
-    if ([service isEqual:readingListService])
+    if ([[service name]
+            isEqualToString:NSSharingServiceNameAddToSafariReadingList])
       continue;
     NSMenuItem* item = [self menuItemForService:service];
     [item setEnabled:canShare];
@@ -95,14 +100,14 @@ NSString* const kOpenSharingSubpaneProtocolValue = @"com.apple.share-services";
 
 - (void)sharingService:(NSSharingService*)service
          didShareItems:(NSArray*)items {
-  // TODO(lgrey): Add an UMA stat.
+  UMA_HISTOGRAM_BOOLEAN("OSX.NativeShare", true);
   [self clearTransitionData];
 }
 
 - (void)sharingService:(NSSharingService*)service
     didFailToShareItems:(NSArray*)items
                   error:(NSError*)error {
-  // TODO(lgrey): Add an UMA stat.
+  UMA_HISTOGRAM_BOOLEAN("OSX.NativeShare", false);
   [self clearTransitionData];
 }
 
