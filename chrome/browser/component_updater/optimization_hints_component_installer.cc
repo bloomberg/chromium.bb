@@ -67,6 +67,8 @@ OptimizationHintsComponentInstallerPolicy::OnCustomInstall(
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
+void OptimizationHintsComponentInstallerPolicy::OnCustomUninstall() {}
+
 void OptimizationHintsComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,

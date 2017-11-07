@@ -73,6 +73,8 @@ STHSetComponentInstallerPolicy::OnCustomInstall(
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
+void STHSetComponentInstallerPolicy::OnCustomUninstall() {}
+
 void STHSetComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
