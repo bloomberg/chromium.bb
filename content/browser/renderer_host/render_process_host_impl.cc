@@ -3556,6 +3556,22 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
     render_process_host = GetExistingProcessHost(browser_context, site_url);
   }
 
+  // If we found a process to reuse, sanity check that it is suitable for
+  // hosting |site_url|. For example, if |site_url| requires a dedicated
+  // process, we should never pick a process used by, or locked to, a different
+  // site.
+  if (render_process_host &&
+      !RenderProcessHostImpl::IsSuitableHost(render_process_host,
+                                             browser_context, site_url)) {
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    base::debug::SetCrashKeyValue("requested_site_url", site_url.spec());
+    base::debug::SetCrashKeyValue(
+        "killed_process_origin_lock",
+        policy->GetOriginLock(render_process_host->GetID()).spec());
+    CHECK(false) << "Unsuitable process reused for site " << site_url;
+  }
+
   // Otherwise, use the spare RenderProcessHost or create a new one.
   if (!render_process_host) {
     // Pass a null StoragePartition. Tests with TestBrowserContext using a
