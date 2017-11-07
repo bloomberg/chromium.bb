@@ -57,7 +57,6 @@
 #include "public/platform/WebContentSecurityPolicyStruct.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebEffectiveConnectionType.h"
-#include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
@@ -74,6 +73,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "v8/include/v8.h"
 
 namespace service_manager {
@@ -221,7 +221,7 @@ class BLINK_EXPORT WebFrameClient {
       const WebString& name,
       const WebString& fallback_name,
       WebSandboxFlags sandbox_flags,
-      const WebParsedFeaturePolicy& container_policy,
+      const ParsedFeaturePolicy& container_policy,
       const WebFrameOwnerProperties&) {
     return nullptr;
   }
@@ -265,12 +265,12 @@ class BLINK_EXPORT WebFrameClient {
   virtual void DidChangeFramePolicy(
       WebFrame* child_frame,
       WebSandboxFlags flags,
-      const WebParsedFeaturePolicy& container_policy) {}
+      const ParsedFeaturePolicy& container_policy) {}
 
   // Called when a Feature-Policy HTTP header is encountered while loading the
   // frame's document.
   virtual void DidSetFeaturePolicyHeader(
-      const WebParsedFeaturePolicy& parsed_header) {}
+      const ParsedFeaturePolicy& parsed_header) {}
 
   // Called when a new Content Security Policy is added to the frame's
   // document.  This can be triggered by handling of HTTP headers, handling

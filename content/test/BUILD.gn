@@ -1456,7 +1456,6 @@ test("content_unittests") {
     "../common/cross_site_document_classifier_unittest.cc",
     "../common/cursors/webcursor_unittest.cc",
     "../common/dom_storage/dom_storage_map_unittest.cc",
-    "../common/feature_policy/feature_policy_unittest.cc",
     "../common/indexed_db/indexed_db_key_unittest.cc",
     "../common/input/event_with_latency_info_unittest.cc",
     "../common/input/gesture_event_stream_validator_unittest.cc",

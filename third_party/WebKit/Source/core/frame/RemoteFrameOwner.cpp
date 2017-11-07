@@ -12,7 +12,7 @@ namespace blink {
 
 RemoteFrameOwner::RemoteFrameOwner(
     SandboxFlags flags,
-    const WebParsedFeaturePolicy& container_policy,
+    const ParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties)
     : sandbox_flags_(flags),
       browsing_context_container_name_(

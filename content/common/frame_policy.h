@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_FRAME_POLICY_H_
 
 #include "content/common/content_export.h"
-#include "content/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
@@ -26,12 +26,12 @@ namespace content {
 struct CONTENT_EXPORT FramePolicy {
   FramePolicy();
   FramePolicy(blink::WebSandboxFlags sandbox_flags,
-              const ParsedFeaturePolicyHeader& container_policy);
+              const blink::ParsedFeaturePolicy& container_policy);
   FramePolicy(const FramePolicy& lhs);
   ~FramePolicy();
 
   blink::WebSandboxFlags sandbox_flags;
-  ParsedFeaturePolicyHeader container_policy;
+  blink::ParsedFeaturePolicy container_policy;
 };
 
 }  // namespace content

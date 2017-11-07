@@ -40,8 +40,8 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebFeaturePolicyFeature.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 
 namespace blink {
 namespace {

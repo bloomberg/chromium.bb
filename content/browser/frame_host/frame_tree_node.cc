@@ -339,7 +339,7 @@ void FrameTreeNode::SetFrameName(const std::string& name,
 }
 
 void FrameTreeNode::SetFeaturePolicyHeader(
-    const ParsedFeaturePolicyHeader& parsed_header) {
+    const blink::ParsedFeaturePolicy& parsed_header) {
   replication_state_.feature_policy_header = parsed_header;
 }
 

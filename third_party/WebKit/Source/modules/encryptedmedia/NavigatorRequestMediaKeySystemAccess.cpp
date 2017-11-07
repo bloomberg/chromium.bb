@@ -30,10 +30,10 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebEncryptedMediaClient.h"
 #include "public/platform/WebEncryptedMediaRequest.h"
-#include "public/platform/WebFeaturePolicyFeature.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
 #include "public/platform/WebMediaKeySystemMediaCapability.h"
 #include "public/platform/WebVector.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 
 namespace blink {
 

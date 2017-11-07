@@ -26,6 +26,7 @@
 
 #include "core/CoreExport.h"
 #include "core/html/HTMLFrameElementBase.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 
 namespace blink {
 
@@ -39,7 +40,7 @@ class CORE_EXPORT HTMLFrameElement final : public HTMLFrameElementBase {
 
   bool NoResize() const;
 
-  Vector<WebParsedFeaturePolicyDeclaration> ConstructContainerPolicy(
+  ParsedFeaturePolicy ConstructContainerPolicy(
       Vector<String>* /* messages */,
       bool* /* old_syntax */) const override;
 

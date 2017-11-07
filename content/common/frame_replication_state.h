@@ -10,8 +10,8 @@
 
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy_header.h"
-#include "content/common/feature_policy/feature_policy.h"
 #include "content/common/frame_policy.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "url/origin.h"
 
@@ -74,7 +74,7 @@ struct CONTENT_EXPORT FrameReplicationState {
 
   // Parsed feature policy header. May be empty if no header was sent with the
   // document.
-  ParsedFeaturePolicyHeader feature_policy_header;
+  blink::ParsedFeaturePolicy feature_policy_header;
 
   // Iframe sandbox flags and container policy currently in effect for the
   // frame. Container policy may be empty if this is the top-level frame.

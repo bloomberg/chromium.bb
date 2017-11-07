@@ -119,9 +119,9 @@ include_rules = [
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
+  "+third_party/WebKit/common/feature_policy/feature_policy_feature.h",
   "+third_party/WebKit/public/platform/WebCache.h",
   "+third_party/WebKit/public/platform/WebDisplayMode.h",
-  "+third_party/WebKit/public/platform/WebFeaturePolicyFeature.h",
   "+third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h",
   "+third_party/WebKit/public/platform/WebGestureEvent.h",
   "+third_party/WebKit/public/platform/web_feature.mojom.h",

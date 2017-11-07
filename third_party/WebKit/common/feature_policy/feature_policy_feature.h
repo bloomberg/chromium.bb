@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFeaturePolicyFeature_h
-#define WebFeaturePolicyFeature_h
+#ifndef THIRD_PARTY_WEBKIT_COMMON_FEATURE_POLICY_FEATURE_POLICY_FEATURE_H_
+#define THIRD_PARTY_WEBKIT_COMMON_FEATURE_POLICY_FEATURE_POLICY_FEATURE_H_
 
 namespace blink {
 
@@ -12,7 +12,7 @@ namespace blink {
 // Features are defined in
 // https://github.com/WICG/feature-policy/blob/gh-pages/features.md. Many of
 // these are still under development in blink behind the
-// featurePolicyExperimentalFeatures flag, see getWebFeaturePolicyFeature().
+// featurePolicyExperimentalFeatures flag.
 enum class WebFeaturePolicyFeature {
   kNotFound = 0,
   // Controls access to video input devices.
@@ -54,4 +54,4 @@ enum class WebFeaturePolicyFeature {
 
 }  // namespace blink
 
-#endif  // WebFeaturePolicyFeature_h
+#endif  // THIRD_PARTY_WEBKIT_COMMON_FEATURE_POLICY_FEATURE_POLICY_FEATURE_H_

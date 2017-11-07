@@ -66,8 +66,8 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
-#include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
@@ -560,7 +560,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebString& name,
       const blink::WebString& fallback_name,
       blink::WebSandboxFlags sandbox_flags,
-      const blink::WebParsedFeaturePolicy& container_policy,
+      const blink::ParsedFeaturePolicy& container_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void DidChangeOpener(blink::WebFrame* frame) override;
   void FrameDetached(DetachType type) override;
@@ -574,9 +574,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeFramePolicy(
       blink::WebFrame* child_frame,
       blink::WebSandboxFlags flags,
-      const blink::WebParsedFeaturePolicy& container_policy) override;
+      const blink::ParsedFeaturePolicy& container_policy) override;
   void DidSetFeaturePolicyHeader(
-      const blink::WebParsedFeaturePolicy& parsed_header) override;
+      const blink::ParsedFeaturePolicy& parsed_header) override;
   void DidAddContentSecurityPolicies(
       const blink::WebVector<blink::WebContentSecurityPolicy>&) override;
   void DidChangeFrameOwnerProperties(

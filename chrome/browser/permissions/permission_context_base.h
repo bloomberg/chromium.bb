@@ -16,7 +16,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "third_party/WebKit/public/platform/WebFeaturePolicyFeature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 
 class GURL;
 class PermissionRequestID;

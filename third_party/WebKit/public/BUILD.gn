@@ -197,7 +197,6 @@ source_set("blink_headers") {
     "platform/WebEventListenerProperties.h",
     "platform/WebExternalTextureLayer.h",
     "platform/WebFallbackThemeEngine.h",
-    "platform/WebFeaturePolicy.h",
     "platform/WebFederatedCredential.h",
     "platform/WebFileError.h",
     "platform/WebFileInfo.h",

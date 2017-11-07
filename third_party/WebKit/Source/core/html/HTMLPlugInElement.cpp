@@ -268,18 +268,17 @@ bool HTMLPlugInElement::ShouldAccelerate() const {
   return plugin && plugin->PlatformLayer();
 }
 
-Vector<WebParsedFeaturePolicyDeclaration>
-HTMLPlugInElement::ConstructContainerPolicy(Vector<String>*, bool*) const {
+ParsedFeaturePolicy HTMLPlugInElement::ConstructContainerPolicy(Vector<String>*,
+                                                                bool*) const {
   // Plugin elements (<object> and <embed>) are not allowed to enable the
   // fullscreen feature. Add an empty whitelist for the fullscreen feature so
   // that the nested browsing context is unable to use the API, regardless of
   // origin.
   // https://fullscreen.spec.whatwg.org/#model
-  Vector<WebParsedFeaturePolicyDeclaration> container_policy;
-  WebParsedFeaturePolicyDeclaration whitelist;
+  ParsedFeaturePolicy container_policy;
+  ParsedFeaturePolicyDeclaration whitelist;
   whitelist.feature = WebFeaturePolicyFeature::kFullscreen;
   whitelist.matches_all_origins = false;
-  whitelist.origins = Vector<WebSecurityOrigin>(0UL);
   container_policy.push_back(whitelist);
   return container_policy;
 }

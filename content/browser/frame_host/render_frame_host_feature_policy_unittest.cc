@@ -4,14 +4,14 @@
 
 #include <vector>
 
-#include "content/common/feature_policy/feature_policy.h"
 #include "content/common/frame_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_render_frame_host.h"
-#include "third_party/WebKit/public/platform/WebFeaturePolicyFeature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -79,10 +79,10 @@ class RenderFrameHostFeaturePolicyTest
   }
 
  private:
-  ParsedFeaturePolicyHeader CreateFPHeader(
+  blink::ParsedFeaturePolicy CreateFPHeader(
       blink::WebFeaturePolicyFeature feature,
       const std::vector<std::string>& origins) {
-    ParsedFeaturePolicyHeader result(1);
+    blink::ParsedFeaturePolicy result(1);
     result[0].feature = feature;
     result[0].matches_all_origins = false;
     for (const std::string& origin : origins)

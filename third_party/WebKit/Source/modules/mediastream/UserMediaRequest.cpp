@@ -48,7 +48,7 @@
 #include "modules/mediastream/UserMediaController.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
-#include "public/platform/WebFeaturePolicyFeature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 
 namespace blink {
 

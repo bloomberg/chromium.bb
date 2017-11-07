@@ -55,8 +55,6 @@ target(link_target_type, "child") {
     "dwrite_font_proxy/dwrite_localized_strings_win.h",
     "dwrite_font_proxy/font_fallback_win.cc",
     "dwrite_font_proxy/font_fallback_win.h",
-    "feature_policy/feature_policy_platform.cc",
-    "feature_policy/feature_policy_platform.h",
     "font_warmup_win.cc",
     "font_warmup_win.h",
     "image_decoder.cc",

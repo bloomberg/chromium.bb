@@ -31,9 +31,9 @@
 #ifndef WebSecurityOrigin_h
 #define WebSecurityOrigin_h
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebCommon.h"
+#include "third_party/WebKit/public/platform/WebPrivatePtr.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "url/origin.h"
 
 #if INSIDE_BLINK

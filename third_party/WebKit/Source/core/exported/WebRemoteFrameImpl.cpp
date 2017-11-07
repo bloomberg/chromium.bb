@@ -26,7 +26,6 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebRemoteScrollProperties.h"
@@ -35,6 +34,7 @@
 #include "public/web/WebPerformance.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebTreeScopeType.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -155,7 +155,7 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     WebFrameClient* client,
     blink::InterfaceRegistry* interface_registry,
     WebFrame* previous_sibling,
-    const WebParsedFeaturePolicy& container_policy,
+    const ParsedFeaturePolicy& container_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
     WebFrame* opener) {
   WebLocalFrameImpl* child =
@@ -181,7 +181,7 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
     WebTreeScopeType scope,
     const WebString& name,
     WebSandboxFlags sandbox_flags,
-    const WebParsedFeaturePolicy& container_policy,
+    const ParsedFeaturePolicy& container_policy,
     WebRemoteFrameClient* client,
     WebFrame* opener) {
   WebRemoteFrameImpl* child = WebRemoteFrameImpl::Create(scope, client);
@@ -244,15 +244,15 @@ void WebRemoteFrameImpl::SetReplicatedName(const WebString& name) {
 }
 
 void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeader(
-    const WebParsedFeaturePolicy& parsed_header) {
+    const ParsedFeaturePolicy& parsed_header) {
   if (RuntimeEnabledFeatures::FeaturePolicyEnabled()) {
-    WebFeaturePolicy* parent_feature_policy = nullptr;
+    FeaturePolicy* parent_feature_policy = nullptr;
     if (Parent()) {
       Frame* parent_frame = GetFrame()->Client()->Parent();
       parent_feature_policy =
           parent_frame->GetSecurityContext()->GetFeaturePolicy();
     }
-    WebParsedFeaturePolicy container_policy;
+    ParsedFeaturePolicy container_policy;
     if (GetFrame()->Owner())
       container_policy = GetFrame()->Owner()->ContainerPolicy();
     GetFrame()->GetSecurityContext()->InitializeFeaturePolicy(

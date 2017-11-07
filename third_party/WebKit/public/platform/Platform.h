@@ -43,7 +43,6 @@
 #include "WebCommon.h"
 #include "WebData.h"
 #include "WebDataConsumerHandle.h"
-#include "WebFeaturePolicy.h"
 #include "WebGamepadListener.h"
 #include "WebGestureDevice.h"
 #include "WebLocalizedString.h"
@@ -63,6 +62,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -730,16 +730,16 @@ class BLINK_PLATFORM_EXPORT Platform {
   // document's policy (may be nullptr), its container policy (may be empty),
   // the header policy with which it was delivered (may be empty), and the
   // document's origin.
-  virtual std::unique_ptr<WebFeaturePolicy> CreateFeaturePolicy(
-      const WebFeaturePolicy* parent_policy,
-      const WebParsedFeaturePolicy& container_policy,
-      const WebParsedFeaturePolicy& policy_header,
+  virtual std::unique_ptr<FeaturePolicy> CreateFeaturePolicy(
+      const FeaturePolicy* parent_policy,
+      const ParsedFeaturePolicy& container_policy,
+      const ParsedFeaturePolicy& policy_header,
       const WebSecurityOrigin&);
 
   // Create a new feature policy for a document whose origin has changed, given
   // the previous policy object and the new origin.
-  virtual std::unique_ptr<WebFeaturePolicy> DuplicateFeaturePolicyWithOrigin(
-      const WebFeaturePolicy&,
+  virtual std::unique_ptr<FeaturePolicy> DuplicateFeaturePolicyWithOrigin(
+      const FeaturePolicy&,
       const WebSecurityOrigin&);
 
  protected:

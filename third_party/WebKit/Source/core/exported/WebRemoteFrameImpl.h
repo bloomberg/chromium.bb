@@ -47,13 +47,13 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                   WebFrameClient*,
                                   blink::InterfaceRegistry*,
                                   WebFrame* previous_sibling,
-                                  const WebParsedFeaturePolicy&,
+                                  const ParsedFeaturePolicy&,
                                   const WebFrameOwnerProperties&,
                                   WebFrame* opener) override;
   WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
                                     const WebString& name,
                                     WebSandboxFlags,
-                                    const WebParsedFeaturePolicy&,
+                                    const ParsedFeaturePolicy&,
                                     WebRemoteFrameClient*,
                                     WebFrame* opener) override;
   void SetWebLayer(WebLayer*) override;
@@ -61,7 +61,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetReplicatedSandboxFlags(WebSandboxFlags) override;
   void SetReplicatedName(const WebString&) override;
   void SetReplicatedFeaturePolicyHeader(
-      const WebParsedFeaturePolicy& parsed_header) override;
+      const ParsedFeaturePolicy& parsed_header) override;
   void AddReplicatedContentSecurityPolicyHeader(
       const WebString& header_value,
       WebContentSecurityPolicyType,

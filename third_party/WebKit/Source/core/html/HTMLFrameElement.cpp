@@ -76,17 +76,16 @@ void HTMLFrameElement::ParseAttribute(
   }
 }
 
-Vector<WebParsedFeaturePolicyDeclaration>
-HTMLFrameElement::ConstructContainerPolicy(Vector<String>*, bool*) const {
+ParsedFeaturePolicy HTMLFrameElement::ConstructContainerPolicy(Vector<String>*,
+                                                               bool*) const {
   // Frame elements are not allowed to enable the fullscreen feature. Add an
   // empty whitelist for the fullscreen feature so that the framed content is
   // unable to use the API, regardless of origin.
   // https://fullscreen.spec.whatwg.org/#model
-  Vector<WebParsedFeaturePolicyDeclaration> container_policy;
-  WebParsedFeaturePolicyDeclaration whitelist;
+  ParsedFeaturePolicy container_policy;
+  ParsedFeaturePolicyDeclaration whitelist;
   whitelist.feature = WebFeaturePolicyFeature::kFullscreen;
   whitelist.matches_all_origins = false;
-  whitelist.origins = Vector<WebSecurityOrigin>(0UL);
   container_policy.push_back(whitelist);
   return container_policy;
 }

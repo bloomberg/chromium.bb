@@ -25,7 +25,7 @@ class CORE_EXPORT RemoteFrameOwner final
  public:
   static RemoteFrameOwner* Create(
       SandboxFlags flags,
-      const WebParsedFeaturePolicy& container_policy,
+      const ParsedFeaturePolicy& container_policy,
       const WebFrameOwnerProperties& frame_owner_properties) {
     return new RemoteFrameOwner(flags, container_policy,
                                 frame_owner_properties);
@@ -52,7 +52,7 @@ class CORE_EXPORT RemoteFrameOwner final
   bool AllowPaymentRequest() const override { return allow_payment_request_; }
   bool IsDisplayNone() const override { return is_display_none_; }
   AtomicString Csp() const override { return csp_; }
-  const WebParsedFeaturePolicy& ContainerPolicy() const override {
+  const ParsedFeaturePolicy& ContainerPolicy() const override {
     return container_policy_;
   }
 
@@ -72,7 +72,7 @@ class CORE_EXPORT RemoteFrameOwner final
     is_display_none_ = is_display_none;
   }
   void SetCsp(const WebString& csp) { csp_ = csp; }
-  void SetContainerPolicy(const WebParsedFeaturePolicy& container_policy) {
+  void SetContainerPolicy(const ParsedFeaturePolicy& container_policy) {
     container_policy_ = container_policy;
   }
 
@@ -80,7 +80,7 @@ class CORE_EXPORT RemoteFrameOwner final
 
  private:
   RemoteFrameOwner(SandboxFlags,
-                   const WebParsedFeaturePolicy&,
+                   const ParsedFeaturePolicy&,
                    const WebFrameOwnerProperties&);
 
   // Intentionally private to prevent redundant checks when the type is
@@ -98,7 +98,7 @@ class CORE_EXPORT RemoteFrameOwner final
   bool allow_payment_request_;
   bool is_display_none_;
   WebString csp_;
-  WebParsedFeaturePolicy container_policy_;
+  ParsedFeaturePolicy container_policy_;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameOwner,
