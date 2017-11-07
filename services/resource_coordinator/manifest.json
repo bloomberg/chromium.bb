@@ -12,7 +12,6 @@
           "resource_coordinator::mojom::CoordinationUnitIntrospector"
         ],
         "coordination_unit": [ "resource_coordinator::mojom::CoordinationUnitProvider" ],
-        "service_callbacks": [ "resource_coordinator::mojom::ServiceCallbacks" ],
         "tab_signal": [ "resource_coordinator::mojom::TabSignalGenerator" ],
         "tracing": [ "tracing::mojom::Coordinator" ],
         "tests": [ "*" ]
@@ -21,6 +20,9 @@
         "service_manager": [
           "service_manager:all_users",
           "service_manager:service_manager"
+        ],
+        "metrics": [
+          "url_keyed_metrics"
         ]
       }
     }

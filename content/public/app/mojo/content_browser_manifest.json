@@ -63,7 +63,6 @@
         "*": [ "app" ],
         "cdm": [ "media:cdm" ],
         "content_browser": [
-          "url_keyed_metrics",
           "geolocation_config"
         ],
         "content_gpu": [ "browser" ],
@@ -83,6 +82,7 @@
         ],
         "file": [ "file:filesystem", "file:leveldb" ],
         "media": [ "media:media" ],
+        "metrics": [ "url_keyed_metrics" ],
         "network": [
           "network_service",
           "test",
