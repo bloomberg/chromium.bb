@@ -5,9 +5,9 @@
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"
-#include "components/subresource_filter/core/common/time_measurements.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -66,8 +66,8 @@ void RulesetIndexer::Finish() {
 bool IndexedRulesetMatcher::Verify(const uint8_t* buffer, size_t size) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "IndexedRulesetMatcher::Verify");
-  SCOPED_UMA_HISTOGRAM_MICRO_TIMER(
-      "SubresourceFilter.IndexRuleset.Verify.WallDuration");
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "SubresourceFilter.IndexRuleset.Verify2.WallDuration");
   flatbuffers::Verifier verifier(buffer, size);
   return flat::VerifyIndexedRulesetBuffer(verifier);
 }

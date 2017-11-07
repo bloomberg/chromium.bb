@@ -82696,6 +82696,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SubresourceFilter.IndexRuleset.Verify.WallDuration"
     units="microseconds">
+  <obsolete>
+    Deprecated in favor of the Verify2 metric
+  </obsolete>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The total time it took to verify the indexed ruleset in the browser process.
+    Logged every time verification occurs, which usually occurs when the first
+    page with activation is navigated to.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.IndexRuleset.Verify2.WallDuration"
+    units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
     The total time it took to verify the indexed ruleset in the browser process.
