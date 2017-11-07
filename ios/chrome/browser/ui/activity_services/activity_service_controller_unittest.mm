@@ -185,11 +185,12 @@ class ActivityServiceControllerTest : public PlatformTest {
     [[UIApplication sharedApplication] keyWindow].rootViewController =
         parentController_;
     shareData_ =
-        [[ShareToData alloc] initWithURL:GURL("https://chromium.org")
-                                   title:@""
-                         isOriginalTitle:YES
-                         isPagePrintable:YES
-                      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+        [[ShareToData alloc] initWithShareURL:GURL("https://chromium.org")
+                           passwordManagerURL:GURL("https://chromium.org")
+                                        title:@""
+                              isOriginalTitle:YES
+                              isPagePrintable:YES
+                           thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   }
 
   void TearDown() override {
@@ -337,11 +338,12 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForData) {
   // ShareToData does not contain an image, so the result items array will not
   // contain an image source.
   ShareToData* data =
-      [[ShareToData alloc] initWithURL:GURL("https://chromium.org")
-                                 title:@"foo"
-                       isOriginalTitle:YES
-                       isPagePrintable:YES
-                    thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      [[ShareToData alloc] initWithShareURL:GURL("https://chromium.org")
+                         passwordManagerURL:GURL("https://chromium.org")
+                                      title:@"foo"
+                            isOriginalTitle:YES
+                            isPagePrintable:YES
+                         thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   NSArray* items = [activityController activityItemsForData:data];
   EXPECT_FALSE(ArrayContainsImageSource(items));
 
@@ -357,12 +359,13 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForData) {
 TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {
   ActivityServiceController* activityController =
       [[ActivityServiceController alloc] init];
-  ShareToData* data =
-      [[ShareToData alloc] initWithURL:GURL("https://chromium.org/login.html")
-                                 title:@"kung fu fighting"
-                       isOriginalTitle:YES
-                       isPagePrintable:YES
-                    thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+  ShareToData* data = [[ShareToData alloc]
+        initWithShareURL:GURL("https://chromium.org/login.html")
+      passwordManagerURL:GURL("https://m.chromium.org/login.html")
+                   title:@"kung fu fighting"
+         isOriginalTitle:YES
+         isPagePrintable:YES
+      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   NSArray* items = [activityController activityItemsForData:data];
   NSString* findLoginAction =
       (NSString*)activity_services::kUTTypeAppExtensionFindLoginAction;
@@ -398,7 +401,7 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {
   // Checks URL.
   NSString* appExUrlString =
       [result objectForKey:activity_services::kPasswordAppExURLStringKey];
-  EXPECT_NSEQ(@"https://chromium.org/login.html", appExUrlString);
+  EXPECT_NSEQ(@"https://m.chromium.org/login.html", appExUrlString);
 
   // Checks that the list includes the page's title.
   NSArray* sources = FindItemsOfClass(items, [UIActivityURLSource class]);
@@ -418,12 +421,13 @@ TEST_F(ActivityServiceControllerTest,
        ActivityItemsForDataWithPasswordAppExReturnsURL) {
   ActivityServiceController* activityController =
       [[ActivityServiceController alloc] init];
-  ShareToData* data =
-      [[ShareToData alloc] initWithURL:GURL("https://chromium.org/login.html")
-                                 title:@"kung fu fighting"
-                       isOriginalTitle:YES
-                       isPagePrintable:YES
-                    thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+  ShareToData* data = [[ShareToData alloc]
+        initWithShareURL:GURL("https://chromium.org/login.html")
+      passwordManagerURL:GURL("https://m.chromium.org/login.html")
+                   title:@"kung fu fighting"
+         isOriginalTitle:YES
+         isPagePrintable:YES
+      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   NSArray* items = [activityController activityItemsForData:data];
   NSString* shareAction = @"com.apple.UIKit.activity.PostToFacebook";
   NSArray* urlItems =
@@ -519,12 +523,13 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
       [[ActivityServiceController alloc] init];
 
   // Verify printable data.
-  ShareToData* data =
-      [[ShareToData alloc] initWithURL:GURL("https://chromium.org/printable")
-                                 title:@"bar"
-                       isOriginalTitle:YES
-                       isPagePrintable:YES
-                    thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+  ShareToData* data = [[ShareToData alloc]
+        initWithShareURL:GURL("https://chromium.org/printable")
+      passwordManagerURL:GURL("https://chromium.org/printable")
+                   title:@"bar"
+         isOriginalTitle:YES
+         isPagePrintable:YES
+      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
 
   NSArray* items = [activityController applicationActivitiesForData:data
                                                          dispatcher:nil];
@@ -532,12 +537,13 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
   EXPECT_EQ([PrintActivity class], [[items objectAtIndex:0] class]);
 
   // Verify non-printable data.
-  data =
-      [[ShareToData alloc] initWithURL:GURL("https://chromium.org/unprintable")
-                                 title:@"baz"
-                       isOriginalTitle:YES
-                       isPagePrintable:NO
-                    thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+  data = [[ShareToData alloc]
+        initWithShareURL:GURL("https://chromium.org/unprintable")
+      passwordManagerURL:GURL("https://chromium.org/unprintable")
+                   title:@"baz"
+         isOriginalTitle:YES
+         isPagePrintable:NO
+      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil];
   EXPECT_EQ(1U, [items count]);

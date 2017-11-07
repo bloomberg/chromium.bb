@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/activity_services/share_to_data_builder.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,7 +66,7 @@
 
 - (void)sharePage {
   ShareToData* data =
-      activity_services::ShareToDataForTab([self.tabModel currentTab]);
+      activity_services::ShareToDataForTab([self.tabModel currentTab], GURL());
   if (!data)
     return;
 

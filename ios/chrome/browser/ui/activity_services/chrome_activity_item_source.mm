@@ -57,27 +57,38 @@
 
 @interface UIActivityURLSource () {
   NSString* _subject;
-  NSURL* _url;
   ThumbnailGeneratorBlock _thumbnailGenerator;
 }
+
+// URL to be shared with share extensions.
+@property(nonatomic, strong) NSURL* shareURL;
+// URL to be shared with password managers.
+@property(nonatomic, strong) NSURL* passwordManagerURL;
+
 @end
 
 @implementation UIActivityURLSource
+
+@synthesize shareURL = _shareURL;
+@synthesize passwordManagerURL = _passwordManagerURL;
 
 - (instancetype)init {
   NOTREACHED();
   return nil;
 }
 
-- (instancetype)initWithURL:(NSURL*)url
-                    subject:(NSString*)subject
-         thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator {
-  DCHECK(url);
+- (instancetype)initWithShareURL:(NSURL*)shareURL
+              passwordManagerURL:(NSURL*)passwordManagerURL
+                         subject:(NSString*)subject
+              thumbnailGenerator:(ThumbnailGeneratorBlock)thumbnailGenerator {
+  DCHECK(shareURL);
+  DCHECK(passwordManagerURL);
   DCHECK(subject);
   DCHECK(thumbnailGenerator);
   self = [super init];
   if (self) {
-    _url = url;
+    _shareURL = shareURL;
+    _passwordManagerURL = passwordManagerURL;
     _subject = [subject copy];
     _thumbnailGenerator = thumbnailGenerator;
   }
@@ -89,7 +100,7 @@
 - (id)activityViewControllerPlaceholderItem:
     (UIActivityViewController*)activityViewController {
   // Return the current URL as a placeholder
-  return _url;
+  return self.shareURL;
 }
 
 - (NSString*)activityViewController:
@@ -102,13 +113,15 @@
          itemForActivityType:(NSString*)activityType {
   if (activity_type_util::TypeFromString(activityType) !=
       activity_type_util::APPEX_PASSWORD_MANAGEMENT)
-    return _url;
+    return self.shareURL;
 
-  // Constructs an NSExtensionItem object from the URL being "shared".
+  // Constructs an NSExtensionItem object from the URL designated for password
+  // managers.
   NSDictionary* appExItems = @{
     activity_services::kPasswordAppExVersionNumberKey :
         activity_services::kPasswordAppExVersionNumber,
-    activity_services::kPasswordAppExURLStringKey : [_url absoluteString]
+    activity_services::
+    kPasswordAppExURLStringKey : [self.passwordManagerURL absoluteString]
   };
   NSItemProvider* itemProvider = [[NSItemProvider alloc]
         initWithItem:appExItems

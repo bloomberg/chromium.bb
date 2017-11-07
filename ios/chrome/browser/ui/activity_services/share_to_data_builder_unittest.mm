@@ -21,6 +21,7 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "ui/base/test/ios/ui_image_test_utils.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -111,12 +112,36 @@ class ShareToDataBuilderTest : public PlatformTest {
   DISALLOW_COPY_AND_ASSIGN(ShareToDataBuilderTest);
 };
 
-// Verifies that ShareToData is constructed properly for a given Tab.
-TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandling) {
-  ShareToData* actual_data = activity_services::ShareToDataForTab(tab());
+// Verifies that ShareToData is constructed properly for a given Tab when there
+// is a URL provided for share extensions.
+TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandlingNpShareUrl) {
+  const char* kExpectedShareUrl = "http://www.testurl.com/";
+  ShareToData* actual_data =
+      activity_services::ShareToDataForTab(tab(), GURL(kExpectedShareUrl));
 
   ASSERT_TRUE(actual_data);
-  EXPECT_EQ(kExpectedUrl, actual_data.url);
+  EXPECT_EQ(kExpectedShareUrl, actual_data.shareURL);
+  EXPECT_EQ(kExpectedUrl, actual_data.passwordManagerURL);
+  EXPECT_NSEQ(base::SysUTF8ToNSString(kExpectedTitle), actual_data.title);
+  EXPECT_TRUE(actual_data.isOriginalTitle);
+  EXPECT_FALSE(actual_data.isPagePrintable);
+
+  CGSize size = CGSizeMake(40, 40);
+  EXPECT_TRUE(ui::test::uiimage_utils::UIImagesAreEqual(
+      actual_data.thumbnailGenerator(size),
+      ui::test::uiimage_utils::UIImageWithSizeAndSolidColor(
+          size, [UIColor blueColor])));
+}
+
+// Verifies that ShareToData is constructed properly for a given Tab when the
+// URL designated for share extensions is empty.
+TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandlingNoShareUrl) {
+  ShareToData* actual_data =
+      activity_services::ShareToDataForTab(tab(), GURL());
+
+  ASSERT_TRUE(actual_data);
+  EXPECT_EQ(kExpectedUrl, actual_data.shareURL);
+  EXPECT_EQ(kExpectedUrl, actual_data.passwordManagerURL);
   EXPECT_NSEQ(base::SysUTF8ToNSString(kExpectedTitle), actual_data.title);
   EXPECT_TRUE(actual_data.isOriginalTitle);
   EXPECT_FALSE(actual_data.isPagePrintable);
@@ -133,5 +158,5 @@ TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandling) {
 TEST_F(ShareToDataBuilderTest, TestReturnsNilWhenClosing) {
   [tab_mock() close];
 
-  EXPECT_EQ(nil, activity_services::ShareToDataForTab(tab()));
+  EXPECT_EQ(nil, activity_services::ShareToDataForTab(tab(), GURL()));
 }
