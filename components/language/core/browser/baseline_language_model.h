@@ -11,17 +11,9 @@
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/browser/url_language_histogram.h"
 
-namespace base {
-struct Feature;
-}  // namespace base
-
 class PrefService;
 
 namespace language {
-
-// The feature that enables the baseline language model for translation. If
-// disabled, translate preferences are used instead of a model.
-extern const base::Feature kUseBaselineLanguageModel;
 
 // A language model that attempts to approximate Chrome's legacy behaviour as
 // much as possible.

@@ -9,7 +9,9 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/language/core/browser/baseline_language_model.h"
+#include "components/language/core/browser/heuristic_language_model.h"
 #include "components/language/core/browser/language_model.h"
+#include "components/language/core/browser/pref_names.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -35,21 +37,24 @@ LanguageModelFactory::LanguageModelFactory()
 LanguageModelFactory::~LanguageModelFactory() {}
 
 std::unique_ptr<KeyedService> LanguageModelFactory::BuildServiceInstanceFor(
-    web::BrowserState* state) const {
-  if (base::FeatureList::IsEnabled(language::kUseBaselineLanguageModel)) {
-    ios::ChromeBrowserState* chrome_state =
-        ios::ChromeBrowserState::FromBrowserState(state);
-    return base::MakeUnique<language::BaselineLanguageModel>(
+    web::BrowserState* const state) const {
+  ios::ChromeBrowserState* const chrome_state =
+      ios::ChromeBrowserState::FromBrowserState(state);
+
+  if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
+    return base::MakeUnique<language::HeuristicLanguageModel>(
         chrome_state->GetPrefs(),
         GetApplicationContext()->GetApplicationLocale(),
-        prefs::kAcceptLanguages);
+        prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile);
   }
 
-  return nullptr;
+  return base::MakeUnique<language::BaselineLanguageModel>(
+      chrome_state->GetPrefs(), GetApplicationContext()->GetApplicationLocale(),
+      prefs::kAcceptLanguages);
 }
 
 web::BrowserState* LanguageModelFactory::GetBrowserStateToUse(
-    web::BrowserState* state) const {
+    web::BrowserState* const state) const {
   // Use the original profile's language model even in Incognito mode.
   return GetBrowserStateRedirectedInIncognito(state);
 }

@@ -10,6 +10,8 @@ static_library("browser") {
     "heuristic_language_model.h",
     "language_model.cc",
     "language_model.h",
+    "pref_names.cc",
+    "pref_names.h",
     "url_language_histogram.cc",
     "url_language_histogram.h",
   ]
