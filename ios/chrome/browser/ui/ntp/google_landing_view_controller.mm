@@ -705,6 +705,10 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   [_headerView reparentToolbarController];
 }
 
+- (CGRect)toolbarFrame {
+  return [_headerView toolbarFrame];
+}
+
 #pragma mark - UICollectionView Methods.
 
 - (UIEdgeInsets)collectionView:(UICollectionView*)collectionView

@@ -21,6 +21,10 @@
 // relinquished.
 - (void)reparentToolbarController;
 
+// TODO(crbug.com/781786): Remove this once the TabGrid is enabled.
+// Returns the frame of the toolbar.
+- (CGRect)toolbarFrame;
+
 // Snapshot provider for the toolbar owner by this class.
 @property(nonatomic, strong, readonly) id<ToolbarSnapshotProviding>
     toolbarSnapshotProvider;

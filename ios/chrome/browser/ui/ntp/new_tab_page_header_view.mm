@@ -203,6 +203,10 @@
   }
 }
 
+- (CGRect)toolbarFrame {
+  return _toolbarController.view.frame;
+}
+
 - (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
   return self;
 }

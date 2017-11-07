@@ -793,6 +793,10 @@ enum {
   [self.headerController reparentToolbarController];
 }
 
+- (CGRect)toolbarFrame {
+  return [self.headerController toolbarFrame];
+}
+
 - (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
   return self.headerController.toolbarSnapshotProvider;
 }

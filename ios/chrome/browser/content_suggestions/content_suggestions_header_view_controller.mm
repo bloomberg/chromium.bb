@@ -381,6 +381,10 @@ const CGFloat kHintLabelSidePadding = 12;
   [self.headerView reparentToolbarController];
 }
 
+- (CGRect)toolbarFrame {
+  return [self.headerView toolbarFrame];
+}
+
 - (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
   return self.headerView.toolbarSnapshotProvider;
 }
