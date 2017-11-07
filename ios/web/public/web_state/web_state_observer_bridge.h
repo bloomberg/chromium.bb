@@ -43,9 +43,6 @@
 // Invoked by WebStateObserverBridge::PageLoaded.
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success;
 
-// Invoked by WebStateObserverBridge::InterstitialDismissed.
-- (void)webStateDidDismissInterstitial:(web::WebState*)webState;
-
 // Invoked by WebStateObserverBridge::LoadProgressChanged.
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress;
@@ -133,7 +130,6 @@ class WebStateObserverBridge : public web::WebStateObserver {
   void PageLoaded(
       web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override;
-  void InterstitialDismissed(web::WebState* web_state) override;
   void LoadProgressChanged(web::WebState* web_state, double progress) override;
   void TitleWasSet(web::WebState* web_state) override;
   void DidChangeVisibleSecurityState(web::WebState* web_state) override;

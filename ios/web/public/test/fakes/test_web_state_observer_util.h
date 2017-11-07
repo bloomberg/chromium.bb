@@ -54,11 +54,6 @@ struct TestLoadPageInfo {
   bool success;
 };
 
-// Arguments passed to |InterstitialDismissed|.
-struct TestDismissInterstitialInfo {
-  WebState* web_state;
-};
-
 // Arguments passed to |LoadProgressChanged|.
 struct TestChangeLoadingProgressInfo {
   WebState* web_state;

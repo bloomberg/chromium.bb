@@ -118,14 +118,6 @@ void WebStateObserverBridge::PageLoaded(
   }
 }
 
-void WebStateObserverBridge::InterstitialDismissed(web::WebState* web_state) {
-  DCHECK(!web_state_ || web_state_ == web_state);
-  SEL selector = @selector(webStateDidDismissInterstitial:);
-  if ([observer_ respondsToSelector:selector]) {
-    [observer_ webStateDidDismissInterstitial:web_state];
-  }
-}
-
 void WebStateObserverBridge::LoadProgressChanged(web::WebState* web_state,
                                                  double progress) {
   DCHECK(!web_state_ || web_state_ == web_state);

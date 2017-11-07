@@ -165,15 +165,6 @@ TEST_F(WebStateObserverBridgeTest, PageLoaded) {
   EXPECT_FALSE([observer_ loadPageInfo]->success);
 }
 
-// Tests |webState:webStateDidDismissInterstitial:| forwarding.
-TEST_F(WebStateObserverBridgeTest, InterstitialDismissed) {
-  ASSERT_FALSE([observer_ dismissInterstitialInfo]);
-
-  bridge_->InterstitialDismissed(&test_web_state_);
-  ASSERT_TRUE([observer_ dismissInterstitialInfo]);
-  EXPECT_EQ(&test_web_state_, [observer_ dismissInterstitialInfo]->web_state);
-}
-
 // Tests |webState:didChangeLoadingProgress:| forwarding.
 TEST_F(WebStateObserverBridgeTest, LoadProgressChanged) {
   ASSERT_FALSE([observer_ changeLoadingProgressInfo]);

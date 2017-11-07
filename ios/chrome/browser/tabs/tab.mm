@@ -1000,10 +1000,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [_parentTabModel notifyTabChanged:self];
 }
 
-- (void)webStateDidDismissInterstitial:(web::WebState*)webState {
-  [_parentTabModel notifyTabChanged:self];
-}
-
 - (void)webStateDidStopLoading:(web::WebState*)webState {
   if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
     // This is the maximum that a page will ever load and it is safe to allow
