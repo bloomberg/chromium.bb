@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.Locale;
-
+import java.util.Set;
 
 /**
  * ChromePreferenceManager stores and retrieves various values in Android shared preferences.
@@ -22,7 +22,10 @@ public class ChromePreferenceManager {
     private static final String TAG = "preferences";
 
     private static final String PROMOS_SKIPPED_ON_FIRST_START = "promos_skipped_on_first_start";
-    private static final String SIGNIN_PROMO_LAST_SHOWN = "signin_promo_last_shown_chrome_version";
+    private static final String SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION =
+            "signin_promo_last_shown_chrome_version";
+    private static final String SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES =
+            "signin_promo_last_shown_account_names";
     private static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
     private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
     private static final String CARDS_IMPRESSION_AFTER_ANIMATION =
@@ -182,15 +185,31 @@ public class ChromePreferenceManager {
      * isn't known.
      */
     public int getSigninPromoLastShownVersion() {
-        return mSharedPreferences.getInt(SIGNIN_PROMO_LAST_SHOWN, 0);
+        return mSharedPreferences.getInt(SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION, 0);
     }
 
     /**
      * Sets Chrome major version number when signin promo was last shown.
      */
     public void setSigninPromoLastShownVersion(int majorVersion) {
-        SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putInt(SIGNIN_PROMO_LAST_SHOWN, majorVersion).apply();
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putInt(SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION, majorVersion).apply();
+    }
+
+    /**
+     * Returns a set of account names on the device when signin promo was last shown,
+     * or null if promo hasn't been shown yet.
+     */
+    public Set<String> getSigninPromoLastAccountNames() {
+        return mSharedPreferences.getStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, null);
+    }
+
+    /**
+     * Stores a set of account names on the device when signin promo is shown.
+     */
+    public void setSigninPromoLastAccountNames(Set<String> accountNames) {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, accountNames).apply();
     }
 
     /**
