@@ -133,12 +133,11 @@ bool SelectionPopupController::ShowSelectionMenu(
                           params.source_type == ui::MENU_SOURCE_STYLUS;
 
   const bool from_selection_adjustment =
-      params.source_type == ui::MENU_SOURCE_ADJUST_SELECTION;
-  const bool from_selection_reset =
+      params.source_type == ui::MENU_SOURCE_ADJUST_SELECTION ||
       params.source_type == ui::MENU_SOURCE_ADJUST_SELECTION_RESET;
 
   // If source_type is not in the list then return.
-  if (!from_touch && !from_selection_adjustment && !from_selection_reset)
+  if (!from_touch && !from_selection_adjustment)
     return false;
 
   // Don't show paste pop-up for non-editable textarea.
@@ -160,8 +159,8 @@ bool SelectionPopupController::ShowSelectionMenu(
       env, obj, params.selection_rect.x(), params.selection_rect.y(),
       params.selection_rect.right(),
       params.selection_rect.bottom() + handle_height, params.is_editable,
-      is_password_type, jselected_text, can_select_all, can_edit_richly,
-      should_suggest, params.source_type);
+      is_password_type, jselected_text, params.selection_start_offset,
+      can_select_all, can_edit_richly, should_suggest, params.source_type);
   return true;
 }
 
