@@ -53,6 +53,7 @@ KEY_NAMES[evdev.ecodes.KEY_HANGEUL] = 'KEY_HANGEUL'
 KEY_NAMES[evdev.ecodes.BTN_LEFT] = 'BTN_LEFT'
 KEY_NAMES[evdev.ecodes.BTN_TRIGGER] = 'BTN_TRIGGER'
 KEY_NAMES[evdev.ecodes.BTN_0] = 'BTN_0'
+KEY_NAMES[evdev.ecodes.BTN_TOOL_PEN] = 'BTN_TOOL_PEN'
 
 
 BITFIELDS = [
