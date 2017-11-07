@@ -9,6 +9,10 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/common/origin_trials/trial_policy.h"
 
+namespace blink {
+class TrialTokenValidator;
+}  // namespace blink
+
 namespace content {
 
 class OriginTrialPolicy;
@@ -26,6 +30,8 @@ class CONTENT_EXPORT TrialPolicyImpl : public blink::TrialPolicy {
   bool IsFeatureDisabled(base::StringPiece feature) const override;
   bool IsTokenDisabled(base::StringPiece token_signature) const override;
   bool IsOriginSecure(const GURL& url) const override;
+
+  static std::unique_ptr<blink::TrialTokenValidator> CreateValidatorForPolicy();
 
  private:
   const OriginTrialPolicy* policy() const;
