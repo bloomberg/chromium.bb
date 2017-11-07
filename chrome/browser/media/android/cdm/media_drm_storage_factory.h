@@ -11,11 +11,7 @@ namespace content {
 class RenderFrameHost;
 }
 
-namespace chrome {
-
 void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
                            media::mojom::MediaDrmStorageRequest request);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_ANDROID_CDM_MEDIA_DRM_STORAGE_FACTORY_H_

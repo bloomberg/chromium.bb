@@ -11,8 +11,6 @@
 class GURL;
 class PrefService;
 
-namespace chrome {
-
 // Clear media licenses and related data if:
 // 1. Creation time falls in [delete_begin, delete_end], and
 // 2. |filter| returns true for the origin. |filter| is passed in to allow
@@ -32,7 +30,5 @@ void ClearMediaDrmLicenses(
     base::Time delete_end,
     const base::RepeatingCallback<bool(const GURL& url)>& filter,
     base::OnceClosure complete_cb);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_ANDROID_CDM_MEDIA_DRM_LICENSE_MANAGER_H_

@@ -3010,8 +3010,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
-  registry->AddInterface(
-      base::Bind(&chrome::CreateMediaDrmStorage, render_frame_host));
+  registry->AddInterface(base::Bind(&CreateMediaDrmStorage, render_frame_host));
 #endif
 }
 

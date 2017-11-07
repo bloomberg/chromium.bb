@@ -16,7 +16,6 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-namespace chrome {
 namespace {
 // Unprovision MediaDrm in IO thread.
 void ClearMediaDrmLicensesBlocking(
@@ -65,5 +64,3 @@ void ClearMediaDrmLicenses(
                                         std::move(no_license_origin_ids)),
                          std::move(complete_cb));
 }
-
-}  // namespace chrome

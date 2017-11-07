@@ -1021,9 +1021,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
 #if defined(OS_ANDROID)
     clear_media_drm_licenses_.Start();
-    chrome::ClearMediaDrmLicenses(
-        prefs, delete_begin_, delete_end, filter,
-        clear_media_drm_licenses_.GetCompletionCallback());
+    ClearMediaDrmLicenses(prefs, delete_begin_, delete_end, filter,
+                          clear_media_drm_licenses_.GetCompletionCallback());
 #endif  // defined(OS_ANDROID);
   }
 
