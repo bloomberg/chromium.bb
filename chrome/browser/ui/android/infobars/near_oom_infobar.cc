@@ -40,22 +40,23 @@ class NearOomInfoBarDelegate : public infobars::InfoBarDelegate {
 
 }  // namespace
 
-NearOomInfoBar::NearOomInfoBar()
+NearOomInfoBar::NearOomInfoBar(NearOomMessageDelegate* delegate)
     : InfoBarAndroid(std::make_unique<NearOomInfoBarDelegate>(
           base::BindOnce(&NearOomInfoBar::AcceptIntervention,
-                         base::Unretained(this)))) {}
+                         base::Unretained(this)))),
+      delegate_(delegate) {
+  DCHECK(delegate_);
+}
 
 NearOomInfoBar::~NearOomInfoBar() = default;
 
 void NearOomInfoBar::AcceptIntervention() {
-  // TODO(bashi): Implement.
-  // delegate->AcceptIntervention();
+  delegate_->AcceptIntervention();
   DLOG(WARNING) << "Near-OOM Intervention accepted.";
 }
 
 void NearOomInfoBar::DeclineIntervention() {
-  // TODO(bashi): Implement.
-  // delegate->DeclineIntervention();
+  delegate_->DeclineIntervention();
   DLOG(WARNING) << "Near-OOM Intervention declined.";
 }
 
@@ -79,7 +80,8 @@ base::android::ScopedJavaLocalRef<jobject> NearOomInfoBar::CreateRenderInfoBar(
 }
 
 // static
-void NearOomInfoBar::Show(content::WebContents* web_contents) {
+void NearOomInfoBar::Show(content::WebContents* web_contents,
+                          NearOomMessageDelegate* delegate) {
   InfoBarService* service = InfoBarService::FromWebContents(web_contents);
-  service->AddInfoBar(base::WrapUnique(new NearOomInfoBar()));
+  service->AddInfoBar(base::WrapUnique(new NearOomInfoBar(delegate)));
 }

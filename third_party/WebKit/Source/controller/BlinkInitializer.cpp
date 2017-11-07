@@ -114,13 +114,16 @@ void Initialize(Platform* platform, InterfaceRegistry* registry) {
   }
 }
 
-void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
-  ModulesInitializer::InitLocalFrame(frame);
+void BlinkInitializer::RegisterInterfaces(InterfaceRegistry& registry) {
+  ModulesInitializer::RegisterInterfaces(registry);
+  WebThread* main_thread = Platform::Current()->MainThread();
+  // GetSingleThreadTaskRunner() uses GetWebTaskRunner() internally.
+  // crbug.com/781664
+  if (!main_thread || !main_thread->GetWebTaskRunner())
+    return;
 
-  if (frame.IsMainFrame()) {
-    frame.GetInterfaceRegistry()->AddInterface(
-        WTF::Bind(&OomInterventionImpl::Create));
-  }
+  registry.AddInterface(CrossThreadBind(&OomInterventionImpl::Create),
+                        main_thread->GetSingleThreadTaskRunner());
 }
 
 }  // namespace blink

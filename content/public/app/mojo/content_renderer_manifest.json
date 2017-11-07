@@ -5,6 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
+          "blink::mojom::OomIntervention",
           "blink::mojom::WebDatabase",
           "content::mojom::Child",
           "content::mojom::ChildControl",
@@ -45,7 +46,6 @@
           "blink::mojom::EngagementClient",
           "blink::mojom::InstallationService",
           "blink::mojom::ManifestManager",
-          "blink::mojom::OomIntervention",
           "blink::mojom::TextSuggestionBackend",
           "content::mojom::ImageDownloader",
           "content::mojom::FrameInputHandler",

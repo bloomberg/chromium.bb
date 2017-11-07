@@ -4,7 +4,6 @@
 
 #include "controller/OomInterventionImpl.h"
 
-#include "core/page/ScopedPagePauser.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace blink {
@@ -15,22 +14,10 @@ void OomInterventionImpl::Create(mojom::blink::OomInterventionRequest request) {
                           std::move(request));
 }
 
+// The ScopedPagePauser is destryed when the intervention is declined and mojo
+// strong binding is disconnected.
 OomInterventionImpl::OomInterventionImpl() = default;
 
 OomInterventionImpl::~OomInterventionImpl() = default;
-
-void OomInterventionImpl::OnNearOomDetected(
-    OnNearOomDetectedCallback callback) {
-  if (!pauser_) {
-    pauser_.reset(new ScopedPagePauser());
-  }
-  std::move(callback).Run();
-}
-
-void OomInterventionImpl::OnInterventionDeclined(
-    OnInterventionDeclinedCallback callback) {
-  pauser_.reset();
-  std::move(callback).Run();
-}
 
 }  // namespace blink

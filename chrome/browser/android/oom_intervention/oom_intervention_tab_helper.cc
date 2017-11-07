@@ -4,8 +4,12 @@
 
 #include "chrome/browser/android/oom_intervention/oom_intervention_tab_helper.h"
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(OomInterventionTabHelper);
@@ -22,8 +26,8 @@ void SetLastVisibleWebContents(content::WebContents* web_contents) {
   g_last_visible_web_contents = web_contents;
 }
 
-// This enum is associated with UMA. Values must be kept in sync with enums.xml
-// and must not be renumbered/reused.
+// These enums are associated with UMA. Values must be kept in sync with
+// enums.xml and must not be renumbered/reused.
 enum class NearOomMonitoringEndReason {
   OOM_PROTECTED_CRASH = 0,
   RENDERER_GONE = 1,
@@ -35,6 +39,19 @@ void RecordNearOomMonitoringEndReason(NearOomMonitoringEndReason reason) {
   UMA_HISTOGRAM_ENUMERATION(
       "Memory.Experimental.OomIntervention.NearOomMonitoringEndReason", reason,
       NearOomMonitoringEndReason::COUNT);
+}
+
+void RecordInterventionUserDecision(bool accepted) {
+  UMA_HISTOGRAM_BOOLEAN("Memory.Experimental.OomIntervention.UserDecision",
+                        accepted);
+}
+
+const char kRendererPauseParamName[] = "pause_renderer";
+
+bool RendererPauseIsEnabled() {
+  static bool enabled = base::GetFieldTrialParamByFeatureAsBool(
+      features::kOomIntervention, kRendererPauseParamName, false);
+  return enabled;
 }
 
 }  // namespace
@@ -50,12 +67,23 @@ OomInterventionTabHelper::OomInterventionTabHelper(
 
 OomInterventionTabHelper::~OomInterventionTabHelper() = default;
 
+void OomInterventionTabHelper::AcceptIntervention() {
+  RecordInterventionUserDecision(true);
+}
+
+void OomInterventionTabHelper::DeclineIntervention() {
+  RecordInterventionUserDecision(false);
+  intervention_.reset();
+}
+
 void OomInterventionTabHelper::WebContentsDestroyed() {
   StopMonitoring();
 }
 
 void OomInterventionTabHelper::RenderProcessGone(
     base::TerminationStatus status) {
+  intervention_.reset();
+
   // Skip background process termination.
   if (!IsLastVisibleWebContents(web_contents())) {
     near_oom_detected_time_.reset();
@@ -160,4 +188,14 @@ void OomInterventionTabHelper::OnNearOomDetected() {
   DCHECK(!near_oom_detected_time_);
   near_oom_detected_time_ = base::TimeTicks::Now();
   subscription_.reset();
+
+  if (RendererPauseIsEnabled()) {
+    content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+    DCHECK(main_frame);
+    content::RenderProcessHost* render_process_host = main_frame->GetProcess();
+    DCHECK(render_process_host);
+    content::BindInterface(render_process_host,
+                           mojo::MakeRequest(&intervention_));
+    NearOomInfoBar::Show(web_contents(), this);
+  }
 }

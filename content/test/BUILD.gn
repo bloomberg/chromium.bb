@@ -733,7 +733,6 @@ test("content_browsertests") {
     "../browser/media/session/mock_media_session_player_observer.cc",
     "../browser/media/session/mock_media_session_player_observer.h",
     "../browser/memory/memory_coordinator_impl_browsertest.cc",
-    "../browser/memory/near_oom_intervention_browsertest.cc",
     "../browser/message_port_provider_browsertest.cc",
     "../browser/mojo_sandbox_browsertest.cc",
     "../browser/net_info_browsertest.cc",
