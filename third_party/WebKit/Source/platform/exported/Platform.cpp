@@ -288,18 +288,4 @@ std::unique_ptr<TrialPolicy> Platform::OriginTrialPolicy() {
   return std::unique_ptr<TrialPolicy>{};
 }
 
-std::unique_ptr<FeaturePolicy> Platform::CreateFeaturePolicy(
-    const FeaturePolicy* parent_policy,
-    const ParsedFeaturePolicy& container_policy,
-    const ParsedFeaturePolicy& policy_header,
-    const WebSecurityOrigin&) {
-  return nullptr;
-}
-
-std::unique_ptr<FeaturePolicy> Platform::DuplicateFeaturePolicyWithOrigin(
-    const FeaturePolicy&,
-    const WebSecurityOrigin&) {
-  return nullptr;
-}
-
 }  // namespace blink
