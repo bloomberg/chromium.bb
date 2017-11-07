@@ -39,18 +39,8 @@ id<FormSuggestionProvider> PasswordTabHelper::GetSuggestionProvider() {
   return controller_.suggestionProvider;
 }
 
-id<FormInputAccessoryViewProvider>
-PasswordTabHelper::GetAccessoryViewProvider() {
-  return controller_.accessoryViewProvider;
-}
-
 id<PasswordFormFiller> PasswordTabHelper::GetPasswordFormFiller() {
   return controller_.passwordFormFiller;
-}
-
-password_manager::PasswordGenerationManager*
-PasswordTabHelper::GetPasswordGenerationManager() {
-  return controller_.passwordGenerationManager;
 }
 
 PasswordTabHelper::PasswordTabHelper(

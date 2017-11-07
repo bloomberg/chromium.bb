@@ -10,16 +10,11 @@
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 @protocol ApplicationCommands;
-@protocol FormInputAccessoryViewProvider;
 @protocol FormSuggestionProvider;
 @class PasswordController;
 @protocol PasswordControllerDelegate;
 @protocol PasswordFormFiller;
 @protocol PasswordsUiDelegate;
-
-namespace password_manager {
-class PasswordGenerationManager;
-}
 
 // Class binding a PasswordController to a WebState.
 class PasswordTabHelper : public web::WebStateObserver,
@@ -42,15 +37,8 @@ class PasswordTabHelper : public web::WebStateObserver,
   // May return nil.
   id<FormSuggestionProvider> GetSuggestionProvider();
 
-  // Returns an object that can provide an input accessory view from the
-  // PasswordController.
-  id<FormInputAccessoryViewProvider> GetAccessoryViewProvider();
-
   // Returns the PasswordFormFiller from the PasswordController.
   id<PasswordFormFiller> GetPasswordFormFiller();
-
-  // Returns the PasswordGenerationManager owned by the PasswordController.
-  password_manager::PasswordGenerationManager* GetPasswordGenerationManager();
 
  private:
   PasswordTabHelper(web::WebState* web_state,

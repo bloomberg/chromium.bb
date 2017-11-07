@@ -51,9 +51,6 @@ bool IsNewClearBrowsingDataUIEnabled();
 // Whether the page icon for downgraded HTTPS is enabled.
 bool IsPageIconForDowngradedHTTPSEnabled();
 
-// Whether password generation is enabled.
-bool IsPasswordGenerationEnabled();
-
 // Whether the Physical Web feature is enabled.
 bool IsPhysicalWebEnabled();
 

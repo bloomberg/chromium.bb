@@ -14,15 +14,12 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 @protocol ApplicationCommands;
-@protocol FormInputAccessoryViewProvider;
 @class NotifyUserAutoSigninViewController;
 @protocol PasswordFormFiller;
-@class PasswordGenerationAgent;
 @protocol PasswordsUiDelegate;
 @class UIViewController;
 
 namespace password_manager {
-class PasswordGenerationManager;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 }  // namespace password_manager
@@ -45,15 +42,6 @@ class PasswordManagerDriver;
 
 // An object that can provide suggestions from this PasswordController.
 @property(nonatomic, readonly) id<FormSuggestionProvider> suggestionProvider;
-
-// An object that can provide an input accessory view from this
-// PasswordController.
-@property(nonatomic, readonly) id<FormInputAccessoryViewProvider>
-    accessoryViewProvider;
-
-// The PasswordGenerationManager owned by this PasswordController.
-@property(nonatomic, readonly)
-    password_manager::PasswordGenerationManager* passwordGenerationManager;
 
 // The PasswordManagerClient owned by this PasswordController.
 @property(nonatomic, readonly)

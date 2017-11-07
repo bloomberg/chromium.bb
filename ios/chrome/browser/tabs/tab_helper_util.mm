@@ -107,30 +107,17 @@ void AttachTabHelpers(web::WebState* web_state) {
   PasswordTabHelper::CreateForWebState(web_state,
                                        [[PasswordsUiDelegateImpl alloc] init]);
 
-  AutofillTabHelper::CreateForWebState(
-      web_state, PasswordTabHelper::FromWebState(web_state)
-                     ->GetPasswordGenerationManager());
+  AutofillTabHelper::CreateForWebState(web_state, nullptr);
 
   FormSuggestionTabHelper::CreateForWebState(web_state, @[
     PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
     AutofillTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
   ]);
 
-  if (id<FormInputAccessoryViewProvider>
-          password_controller_form_input_accessory_view_provider =
-              PasswordTabHelper::FromWebState(web_state)
-                  ->GetAccessoryViewProvider()) {
-    FormInputAccessoryViewTabHelper::CreateForWebState(web_state, @[
-      password_controller_form_input_accessory_view_provider,
-      FormSuggestionTabHelper::FromWebState(web_state)
-          ->GetAccessoryViewProvider(),
-    ]);
-  } else {
-    FormInputAccessoryViewTabHelper::CreateForWebState(web_state, @[
-      FormSuggestionTabHelper::FromWebState(web_state)
-          ->GetAccessoryViewProvider(),
-    ]);
-  }
+  FormInputAccessoryViewTabHelper::CreateForWebState(web_state, @[
+    FormSuggestionTabHelper::FromWebState(web_state)
+        ->GetAccessoryViewProvider(),
+  ]);
 
   // Allow the embedder to attach tab helpers.
   ios::GetChromeBrowserProvider()->AttachTabHelpers(web_state, tab);

@@ -7,9 +7,7 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#import "ios/chrome/browser/passwords/password_generation_agent.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -64,7 +62,7 @@ void IOSChromePasswordManagerDriver::ClearPreviewedForm() {
 
 PasswordGenerationManager*
 IOSChromePasswordManagerDriver::GetPasswordGenerationManager() {
-  return [delegate_ passwordGenerationManager];
+  return nullptr;
 }
 
 PasswordManager* IOSChromePasswordManagerDriver::GetPasswordManager() {
@@ -73,7 +71,6 @@ PasswordManager* IOSChromePasswordManagerDriver::GetPasswordManager() {
 
 void IOSChromePasswordManagerDriver::AllowPasswordGenerationForForm(
     const autofill::PasswordForm& form) {
-  [[delegate_ passwordGenerationAgent] allowPasswordGenerationForForm:form];
 }
 
 PasswordAutofillManager*
