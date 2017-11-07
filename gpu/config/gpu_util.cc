@@ -13,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "gpu/config/gpu_blacklist.h"
@@ -24,6 +23,7 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
+#include "ui/gl/extension_set.h"
 #include "ui/gl/gl_switches.h"
 
 namespace gpu {
@@ -328,7 +328,7 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
       GetAcceleratedVideoDecodeFeatureStatus(
           blacklisted_features, use_swift_shader, use_swift_shader_for_webgl);
 
-  std::set<base::StringPiece> all_disabled_extensions;
+  gl::ExtensionSet all_disabled_extensions;
   std::string disabled_gl_extensions_value =
       command_line->GetSwitchValueASCII(switches::kDisableGLExtensions);
   if (!disabled_gl_extensions_value.empty()) {
@@ -362,9 +362,8 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
       enabled_driver_bug_workarounds.end());
 
   if (all_disabled_extensions.size()) {
-    std::vector<base::StringPiece> v(all_disabled_extensions.begin(),
-                                     all_disabled_extensions.end());
-    gpu_feature_info.disabled_extensions = base::JoinString(v, " ");
+    gpu_feature_info.disabled_extensions =
+        gl::MakeExtensionString(all_disabled_extensions);
   }
 
   AdjustGpuFeatureStatusToWorkarounds(&gpu_feature_info);
