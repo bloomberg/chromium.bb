@@ -108,7 +108,8 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
                       CacheStorageCache::ResponseCallback callback);
 
   // Sums the sizes of each cache and closes them. Runs |callback| with the
-  // size.
+  // size. The sizes include any doomed caches and will also force close all
+  // caches even if there are existing handles to them.
   void GetSizeThenCloseAllCaches(SizeCallback callback);
 
   // The size of all of the origin's contents. This value should be used as an
