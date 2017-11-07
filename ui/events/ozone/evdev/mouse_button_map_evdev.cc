@@ -10,43 +10,24 @@
 
 namespace ui {
 
-namespace {
-
-// Defines the range of button codes that we support.
-//
-// Check linux/input.h for more info.
-const MouseButtonMapEvdev::Button kMinMouseButtonCode = BTN_MISC;
-const MouseButtonMapEvdev::Button kMaxMouseButtonCode = BTN_GEAR_UP;
-
-bool IsMouseButton(const MouseButtonMapEvdev::Button button) {
-  return (button >= kMinMouseButtonCode && button <= kMaxMouseButtonCode);
-}
-
-}  // namespace
-
 MouseButtonMapEvdev::MouseButtonMapEvdev() {
-  ResetButtonMap();
 }
 
 MouseButtonMapEvdev::~MouseButtonMapEvdev() {
 }
 
-void MouseButtonMapEvdev::UpdateButtonMap(Button button_from,
-                                          Button button_to) {
-  DCHECK(IsMouseButton(button_from) && IsMouseButton(button_to));
-  button_map_[button_from] = button_to;
+void MouseButtonMapEvdev::SetPrimaryButtonRight(bool primary_button_right) {
+  primary_button_right_ = primary_button_right;
 }
 
-void MouseButtonMapEvdev::ResetButtonMap() {
-  button_map_.clear();
-  for (Button i = kMinMouseButtonCode; i <= kMaxMouseButtonCode; ++i)
-    button_map_[i] = i;
-}
-
-int MouseButtonMapEvdev::GetMappedButton(const Button button) const {
-  ButtonMap::const_iterator it = button_map_.find(button);
-  DCHECK(it != button_map_.end());
-  return it->second;
+int MouseButtonMapEvdev::GetMappedButton(uint16_t button) const {
+  if (!primary_button_right_)
+    return button;
+  if (button == BTN_LEFT)
+    return BTN_RIGHT;
+  if (button == BTN_RIGHT)
+    return BTN_LEFT;
+  return button;
 }
 
 }  // namespace ui

@@ -150,8 +150,7 @@ void InputControllerEvdev::SetMouseSensitivity(int value) {
 }
 
 void InputControllerEvdev::SetPrimaryButtonRight(bool right) {
-  button_map_->UpdateButtonMap(BTN_LEFT, right ? BTN_RIGHT : BTN_LEFT);
-  button_map_->UpdateButtonMap(BTN_RIGHT, right ? BTN_LEFT : BTN_RIGHT);
+  button_map_->SetPrimaryButtonRight(right);
 }
 
 void InputControllerEvdev::SetMouseReverseScroll(bool enabled) {
