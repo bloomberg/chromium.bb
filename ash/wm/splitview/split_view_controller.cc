@@ -722,23 +722,10 @@ void SplitViewController::MoveDividerToClosestFixedPosition() {
   // extract the center from |divider_position_|. The result will also be the
   // center of the divider, so extract the origin, unless the result is on of
   // the endpoints.
-  float divider_distance =
-      divider_position_ + std::floor(divider_thickness / 2.f);
-
   int work_area_long_length = GetDividerEndPosition();
-  float current_ratio = divider_distance / work_area_long_length;
-  float closest_ratio = 0.f;
-  std::vector<float> position_ratios(
-      kFixedPositionRatios,
-      kFixedPositionRatios + sizeof(kFixedPositionRatios) / sizeof(float));
-  GetDividerOptionalPositionRatios(position_ratios);
-  for (float ratio : position_ratios) {
-    if (std::abs(current_ratio - ratio) <
-        std::abs(current_ratio - closest_ratio)) {
-      closest_ratio = ratio;
-    }
-  }
-
+  float closest_ratio = FindClosestPositionRatio(
+      divider_position_ + std::floor(divider_thickness / 2.f),
+      work_area_long_length);
   divider_position_ = std::floor(work_area_long_length * closest_ratio);
   if (closest_ratio > 0.f && closest_ratio < 1.f)
     divider_position_ -= std::floor(divider_thickness / 2.f);
@@ -827,8 +814,25 @@ void SplitViewController::AdjustLeftOrTopSnappedWindowBoundsDuringResizing(
     TransposeRect(left_or_top_rect);
 }
 
+float SplitViewController::FindClosestPositionRatio(float distance,
+                                                    float length) {
+  float current_ratio = distance / length;
+  float closest_ratio = 0.f;
+  std::vector<float> position_ratios(
+      kFixedPositionRatios,
+      kFixedPositionRatios + sizeof(kFixedPositionRatios) / sizeof(float));
+  GetDividerOptionalPositionRatios(&position_ratios);
+  for (float ratio : position_ratios) {
+    if (std::abs(current_ratio - ratio) <
+        std::abs(current_ratio - closest_ratio)) {
+      closest_ratio = ratio;
+    }
+  }
+  return closest_ratio;
+}
+
 void SplitViewController::GetDividerOptionalPositionRatios(
-    std::vector<float>& position_ratios) {
+    std::vector<float>* position_ratios) {
   bool is_left_or_top = IsLeftWindowOnTopOrLeftOfScreen(screen_orientation_);
   aura::Window* left_or_top_window =
       is_left_or_top ? left_window_ : right_window_;
@@ -851,10 +855,10 @@ void SplitViewController::GetDividerOptionalPositionRatios(
   min_size_left_ratio = static_cast<float>(min_left_size) / long_length;
   min_size_right_ratio = static_cast<float>(min_right_size) / long_length;
   if (min_size_left_ratio <= kOneThirdPositionRatio)
-    position_ratios.push_back(kOneThirdPositionRatio);
+    position_ratios->push_back(kOneThirdPositionRatio);
 
   if (min_size_right_ratio <= kOneThirdPositionRatio)
-    position_ratios.push_back(kTwoThirdPositionRatio);
+    position_ratios->push_back(kTwoThirdPositionRatio);
 }
 
 }  // namespace ash
