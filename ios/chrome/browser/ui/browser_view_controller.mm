@@ -4802,6 +4802,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
+- (CGRect)toolbarFrame {
+  return [_toolbarCoordinator view].frame;
+}
+
 - (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
   id<ToolbarSnapshotProviding> toolbarSnapshotProvider = nil;
   if ([_toolbarCoordinator view].hidden) {
