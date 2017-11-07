@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -126,10 +127,8 @@ void RegisterSSLErrorAssistantComponent(ComponentUpdateService* cus,
                                         const base::FilePath& user_data_dir) {
   DVLOG(1) << "Registering SSL Error Assistant component.";
 
-  std::unique_ptr<ComponentInstallerPolicy> policy =
-      std::make_unique<SSLErrorAssistantComponentInstallerPolicy>();
-  // |cus| takes ownership of |installer|.
-  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
+      std::make_unique<SSLErrorAssistantComponentInstallerPolicy>());
   installer->Register(cus, base::OnceClosure());
 }
 

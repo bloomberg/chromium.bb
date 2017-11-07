@@ -4,6 +4,8 @@
 
 #include "chrome/browser/component_updater/component_updater_resource_throttle.h"
 
+#include <vector>
+
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "components/component_updater/component_updater_service.h"

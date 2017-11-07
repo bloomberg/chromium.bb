@@ -157,8 +157,7 @@ class ComponentInstaller final : public update_client::CrxInstaller {
       base::Version* version,
       base::FilePath* install_path);
   void StartRegistration(
-      const scoped_refptr<RegistrationInfo>& registration_info,
-      ComponentUpdateService* cus);
+      const scoped_refptr<RegistrationInfo>& registration_info);
   void FinishRegistration(
       const scoped_refptr<RegistrationInfo>& registration_info,
       ComponentUpdateService* cus,
