@@ -103,6 +103,7 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, PressButtonTwice);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, ChromeNotInCandidates);
   FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, StayInChromeTest);
+  FRIEND_TEST_ALL_PREFIXES(IntentPickerBubbleViewTest, WebContentsTiedToBubble);
   IntentPickerBubbleView(const std::vector<AppInfo>& app_info,
                          IntentPickerResponse intent_picker_cb,
                          content::WebContents* web_contents,
