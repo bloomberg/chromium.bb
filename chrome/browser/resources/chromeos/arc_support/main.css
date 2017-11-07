@@ -82,6 +82,10 @@ p.title {
   -webkit-margin-end: 6px;
 }
 
+#overlay-text-content p {
+  margin-bottom: 0;
+}
+
 .checkbox-text,
 .content-text {
   color: rgba(0, 0, 0, 0.54);
