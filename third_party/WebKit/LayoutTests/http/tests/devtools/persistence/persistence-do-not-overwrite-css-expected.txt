@@ -7,10 +7,10 @@ Running: waitForPersistenceBinding
 Initial content of file:///var/www/simple.css
 ----
 
-body {
-    color: red;
-}
-
+      body {
+          color: red;
+      }
+      
 ----
 
 Running: breakCSSModelProtocol
@@ -20,9 +20,9 @@ Running: onStylesSourcemappingSynced
 Updated content of file:///var/www/simple.css
 ----
 
-body {
-    color: red;
-}
-
+      body {
+          color: red;
+      }
+      
 ----
 

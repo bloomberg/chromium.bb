@@ -1,12 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/isolated-filesystem-test.js"></script>
-<script src="../../inspector/persistence/persistence-test.js"></script>
-<script src="../../inspector/persistence/automapping-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Verifies that uiSourceCode.delete actually deltes file from IsolatedFileSystem.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
+
   var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
   BindingsTestRunner.addFiles(fs, {
     'script.js': {content: 'testme'},
@@ -21,10 +20,4 @@ function test() {
     TestRunner.addResult('\nAFTER:\n' + fs.dumpAsText());
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Verifies that uiSourceCode.delete actually deltes file from IsolatedFileSystem.</p>
-</body>
-</html>
+})();

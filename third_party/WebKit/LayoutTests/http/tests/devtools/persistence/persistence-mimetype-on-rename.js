@@ -1,12 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/isolated-filesystem-test.js"></script>
-<script src="../../inspector/persistence/automapping-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-async function test() {
+(async function() {
+  TestRunner.addResult(`Verify that text editor's mimeType gets changed as UISourceCode gets renamed.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.showPanel('sources');
+
   var foo_js = {content: 'console.log(\'foo.js!\');', time: null};
 
   var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
@@ -29,10 +30,4 @@ async function test() {
     var textEditor = sourceFrame.textEditor;
     TestRunner.addResult('Text editor mimeType: ' + textEditor.mimeType());
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Verify that text editor's mimeType gets changed as UISourceCode gets renamed.</p>
-</body>
-</html>
+})();

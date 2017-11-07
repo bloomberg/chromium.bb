@@ -1,3 +1,4 @@
+CONFIRM: This file was changed externally. Would you like to reload it?
 Verify that syncing Node.js contents works fine.
 
 Initial fileSystem content:
