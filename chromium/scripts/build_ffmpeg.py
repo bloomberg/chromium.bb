@@ -7,12 +7,14 @@
 from __future__ import print_function
 
 import collections
+import functools
 import multiprocessing
 import optparse
 import os
 import platform
 import re
 import shutil
+import signal
 import subprocess
 import sys
 
@@ -28,13 +30,21 @@ BRANDINGS = [
     'Chromium',
 ]
 
-USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]
+ARCH_MAP = {
+    'android': ['ia32', 'x64', 'mipsel', 'mips64el', 'arm-neon', 'arm64'],
+    'linux': ['ia32', 'x64', 'noasm-x64', 'arm', 'arm-neon', 'arm64'],
+    'mac': ['x64'],
+    'win': ['ia32', 'x64'],
+}
 
-Valid combinations are android     [ia32|x64|mipsel|mips64el|arm-neon|arm64]
-                       linux       [ia32|x64|arm|arm-neon|arm64]
-                       linux-noasm [x64]
-                       mac         [x64]
-                       win         [ia32|x64]
+USAGE_BEGIN = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]"""
+USAGE_END = """
+Valid combinations are android     [%(android)s]
+                       linux       [%(linux)s]
+                       mac         [%(mac)s]
+                       win         [%(win)s]
+
+If no target architecture is specified all will be built.
 
 Platform specific build notes:
   android:
@@ -44,12 +54,10 @@ Platform specific build notes:
   linux ia32/x64:
     Script can run on a normal Ubuntu box.
 
-  linux arm/arm-neon:
-    Script must be run inside of ChromeOS checkout. Follow instructions in this doc:
-        https://docs.google.com/document/d/14bqZ9NISsyEO3948wehhJ7wc9deTIz-yHUhF1MQp7Po/edit?pref=2&pli=1#bookmark=id.9xsx8g59oaay
-
-  linux arm64:
-    Script can run on a normal Ubuntu with AArch64 cross-toolchain in $PATH.
+  linux arm/arm-neon/arm64:
+    Script can run on a normal Ubuntu with ARM/ARM64 ready Chromium checkout:
+      build/linux/sysroot_scripts/install-sysroot.py --arch=arm
+      build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
 
   mac:
     Script must be run on OSX.  Additionally, ensure the Chromium (not Apple)
@@ -267,7 +275,9 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
 
 
 def main(argv):
-  parser = optparse.OptionParser(usage=USAGE)
+  clean_arch_map = {k: '|'.join(v) for k, v in ARCH_MAP.items()}
+  formatted_usage_end = USAGE_END % clean_arch_map
+  parser = optparse.OptionParser(usage=USAGE_BEGIN + formatted_usage_end)
   parser.add_option(
       '--branding',
       action='append',
@@ -281,12 +291,14 @@ def main(argv):
       'is not necessary for generate_gn.py')
   options, args = parser.parse_args(argv)
 
-  if len(args) < 2:
+  if len(args) < 1:
     parser.print_help()
     return 1
 
   target_os = args[0]
-  target_arch = args[1]
+  target_arch = ''
+  if len(args) >= 2:
+    target_arch = args[1]
   configure_args = args[2:]
 
   if target_os not in ('android', 'linux', 'linux-noasm', 'mac', 'win'):
@@ -305,13 +317,56 @@ def main(argv):
     print('Android cross compilation can only be done from a linux x64 host.')
     return 1
 
+  if target_arch:
+    print('System information:\n'
+          'Host OS       : %s\n'
+          'Target OS     : %s\n'
+          'Host arch     : %s\n'
+          'Target arch   : %s\n'
+          'Parallel jobs : %d\n' % (host_os, target_os, host_arch, target_arch,
+                                    parallel_jobs))
+    ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
+                      configure_args, options=options)
+    return
+
+  pool_size = len(ARCH_MAP[target_os])
+  parallel_jobs = parallel_jobs / pool_size
   print('System information:\n'
         'Host OS       : %s\n'
         'Target OS     : %s\n'
         'Host arch     : %s\n'
         'Target arch   : %s\n'
-        'Parallel jobs : %d\n' % (host_os, target_os, host_arch, target_arch,
-                                  parallel_jobs))
+        'Parallel jobs : %d\n' % (host_os, target_os, host_arch,
+                                  ARCH_MAP[target_os], parallel_jobs))
+
+  # Setup signal handles such that Ctrl+C works to terminate; will still result
+  # in triggering a bunch of Python2 bugs and log spam, but will exit versus
+  # hanging indefinitely.
+  original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+  p = multiprocessing.Pool(pool_size)
+  signal.signal(signal.SIGINT, original_sigint_handler)
+  try:
+    result = p.map_async(
+        functools.partial(
+            ConfigureAndBuild,
+            target_os=target_os,
+            host_os=host_os,
+            host_arch=host_arch,
+            parallel_jobs=parallel_jobs,
+            configure_args=configure_args,
+            options=options), ARCH_MAP[target_os])
+    # Timeout required or Ctrl+C is ignored; choose a ridiculous value so that
+    # it doesn't trigger accidentally.
+    result.get(1000)
+  except Exception as e:
+    p.terminate()
+
+
+def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
+                      configure_args, options):
+  if target_os == 'linux' and target_arch == 'noasm-x64':
+    target_os = 'linux-noasm'
+    target_arch = 'x64'
 
   configure_flags = collections.defaultdict(list)
 
@@ -408,7 +463,7 @@ def main(argv):
       # them.  http://crbug.com/559379
       if target_os == 'android':
         configure_flags['Common'].extend([
-          '--disable-asm',
+            '--disable-asm',
         ])
     elif target_arch == 'arm' or target_arch == 'arm-neon':
       # TODO(ihf): ARM compile flags are tricky. The final options
@@ -455,17 +510,17 @@ def main(argv):
       else:
         if host_arch != 'arm':
           configure_flags['Common'].extend([
-              # Location is for CrOS chroot. If you want to use this, enter chroot
-              # and copy ffmpeg to a location that is reachable.
               '--enable-cross-compile',
               '--target-os=linux',
-              '--cross-prefix=armv7a-cros-linux-gnueabi-',
-              '--extra-cflags=--target=armv7a-cros-linux-gnueabi',
-              '--extra-ldflags=--target=armv7a-cros-linux-gnueabi',
+              '--extra-cflags=--target=arm-linux-gnueabihf',
+              '--extra-ldflags=--target=arm-linux-gnueabihf',
+              '--sysroot=' + os.path.join(
+                  CHROMIUM_ROOT_DIR, 'build/linux/debian_jessie_arm-sysroot'),
               '--extra-cflags=-mtune=cortex-a8',
               # NOTE: we don't need softfp for this hardware.
               '--extra-cflags=-mfloat-abi=hard',
-              '--sysroot=/usr/armv7a-cros-linux-gnueabi',
+              # For some reason configure drops this...
+              '--extra-cflags=-O2',
           ])
 
         if target_arch == 'arm-neon':
