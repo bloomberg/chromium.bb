@@ -95,8 +95,9 @@ owners rather than large directories with many owners. Owners must:
     discourage people from sending reviews, including writing "slow" or
     "emeritus" after your name.
 
-Seldom-updated directories may have exceptions. Directories in `third_party`
-should list those most familiar with the library.
+Seldom-updated directories may have exceptions to the "substantiality" and
+"recency" requirements. Directories in `third_party` should list those most
+familiar with the library, regardless of how often the code is updated.
 
 ## TBR ("To Be Reviewed")
 
