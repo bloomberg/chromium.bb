@@ -106,8 +106,7 @@ class LoginDisplay {
     virtual ~Delegate();
   };
 
-  // |background_bounds| determines the bounds of login UI background.
-  LoginDisplay(Delegate* delegate, const gfx::Rect& background_bounds);
+  explicit LoginDisplay(Delegate* delegate);
   virtual ~LoginDisplay();
 
   // Clears and enables fields on user pod or GAIA frame.
@@ -152,11 +151,6 @@ class LoginDisplay {
   // Show unrecoverable cryptohome error dialog.
   virtual void ShowUnrecoverableCrypthomeErrorDialog() = 0;
 
-  gfx::Rect background_bounds() const { return background_bounds_; }
-  void set_background_bounds(const gfx::Rect& background_bounds) {
-    background_bounds_ = background_bounds;
-  }
-
   Delegate* delegate() { return delegate_; }
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
@@ -166,23 +160,18 @@ class LoginDisplay {
   bool is_signin_completed() const { return is_signin_completed_; }
   void set_signin_completed(bool value) { is_signin_completed_ = value; }
 
-  int width() const { return background_bounds_.width(); }
-
  protected:
   // Login UI delegate (controller).
   Delegate* delegate_;
 
   // Parent window, might be used to create dialog windows.
-  gfx::NativeWindow parent_window_;
-
-  // Bounds of the login UI background.
-  gfx::Rect background_bounds_;
+  gfx::NativeWindow parent_window_ = nullptr;
 
   // True if signin for user has completed.
   // TODO(nkostylev): Find a better place to store this state
   // in redesigned login stack.
   // Login stack (and this object) will be recreated for next user sign in.
-  bool is_signin_completed_;
+  bool is_signin_completed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplay);
 };

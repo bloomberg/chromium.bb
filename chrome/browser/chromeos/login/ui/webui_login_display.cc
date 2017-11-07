@@ -41,7 +41,7 @@ WebUILoginDisplay::~WebUILoginDisplay() {
 // LoginDisplay implementation: ------------------------------------------------
 
 WebUILoginDisplay::WebUILoginDisplay(LoginDisplay::Delegate* delegate)
-    : LoginDisplay(delegate, gfx::Rect()) {}
+    : LoginDisplay(delegate) {}
 
 void WebUILoginDisplay::ClearAndEnablePassword() {
   if (webui_handler_)

@@ -576,7 +576,6 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
 LoginDisplay* LoginDisplayHostImpl::CreateLoginDisplay(
     LoginDisplay::Delegate* delegate) {
   webui_login_display_ = new WebUILoginDisplay(delegate);
-  webui_login_display_->set_background_bounds(wallpaper_bounds());
   return webui_login_display_;
 }
 
