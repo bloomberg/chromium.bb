@@ -1505,12 +1505,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       assert(comp_ref_type == BIDIR_COMP_REFERENCE);
 #endif  // CONFIG_EXT_COMP_REFS
 
-// Normative in decoder (for low delay)
-#if CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS
       const int idx = 1;
-#else   // !(CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS)
-      const int idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
-#endif  // CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS)
 
       const int ctx = av1_get_pred_context_comp_ref_p(cm, xd);
       const int bit = READ_REF_BIT(comp_ref_p);

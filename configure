@@ -309,7 +309,6 @@ EXPERIMENT_LIST="
     new_multisymbol
     compound_singleref
     aom_qm
-    one_sided_compound
     ext_comp_refs
     smooth_hv
     lgt
@@ -500,7 +499,6 @@ post_process_cmdline() {
       soft_enable intra_edge
       soft_enable mv_compress
       soft_enable dual_filter
-      soft_enable one_sided_compound
       soft_enable convolve_round
       soft_enable aom_qm
       soft_enable dist_8x8
@@ -542,7 +540,6 @@ post_process_cmdline() {
     enabled compound_round && soft_enable convolve_round
     enabled ext_intra_mod && enable_feature intra_edge
     enabled intra_edge && enable_feature ext_intra
-    enabled ext_comp_refs && enable_feature one_sided_compound
     enabled cfl && enable_feature smooth_hv
     enabled cdef_singlepass && enable_feature cdef
     enabled mfmv && enable_feature frame_marker

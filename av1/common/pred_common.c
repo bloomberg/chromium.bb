@@ -519,16 +519,11 @@ int av1_get_pred_context_comp_ref_p(const AV1_COMMON *cm,
   const int above_in_image = xd->up_available;
   const int left_in_image = xd->left_available;
 
-// Note:
-// The mode info data structure has a one element border above and to the
-// left of the entries correpsonding to real macroblocks.
-// The prediction flags in these dummy entries are initialised to 0.
-#if CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS
-  // Code seems to assume that signbias of cm->comp_bwd_ref[0] is always 1
+  // Note:
+  // The mode info data structure has a one element border above and to the
+  // left of the entries correpsonding to real macroblocks.
+  // The prediction flags in these dummy entries are initialised to 0.
   const int bwd_ref_sign_idx = 1;
-#else
-  const int bwd_ref_sign_idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
-#endif  // CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS
   const int fwd_ref_sign_idx = !bwd_ref_sign_idx;
 
   (void)cm;
@@ -624,16 +619,11 @@ int av1_get_pred_context_comp_ref_p1(const AV1_COMMON *cm,
   const int above_in_image = xd->up_available;
   const int left_in_image = xd->left_available;
 
-// Note:
-// The mode info data structure has a one element border above and to the
-// left of the entries correpsonding to real macroblocks.
-// The prediction flags in these dummy entries are initialised to 0.
-#if CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS
-  // Code seems to assume that signbias of cm->comp_bwd_ref[0] is always 1
+  // Note:
+  // The mode info data structure has a one element border above and to the
+  // left of the entries correpsonding to real macroblocks.
+  // The prediction flags in these dummy entries are initialised to 0.
   const int bwd_ref_sign_idx = 1;
-#else
-  const int bwd_ref_sign_idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
-#endif  //  CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS
   const int fwd_ref_sign_idx = !bwd_ref_sign_idx;
 
   (void)cm;
@@ -732,15 +722,11 @@ int av1_get_pred_context_comp_ref_p2(const AV1_COMMON *cm,
   const int above_in_image = xd->up_available;
   const int left_in_image = xd->left_available;
 
-// Note:
-// The mode info data structure has a one element border above and to the
-// left of the entries correpsonding to real macroblocks.
-// The prediction flags in these dummy entries are initialised to 0.
-#if CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS
+  // Note:
+  // The mode info data structure has a one element border above and to the
+  // left of the entries correpsonding to real macroblocks.
+  // The prediction flags in these dummy entries are initialised to 0.
   const int bwd_ref_sign_idx = 1;
-#else
-  const int bwd_ref_sign_idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
-#endif  // CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS
   const int fwd_ref_sign_idx = !bwd_ref_sign_idx;
 
   (void)cm;

@@ -4177,25 +4177,14 @@ void av1_encode_frame(AV1_COMP *cpi) {
   // side behavior is where the ALT ref buffer has opposite sign bias to
   // the other two.
   if (!frame_is_intra_only(cm)) {
-#if !CONFIG_ONE_SIDED_COMPOUND
-    if ((cm->ref_frame_sign_bias[ALTREF_FRAME] ==
-         cm->ref_frame_sign_bias[GOLDEN_FRAME]) ||
-        (cm->ref_frame_sign_bias[ALTREF_FRAME] ==
-         cm->ref_frame_sign_bias[LAST_FRAME])) {
-      cpi->allow_comp_inter_inter = 0;
-    } else {
-#endif  // !CONFIG_ONE_SIDED_COMPOUND
-      cpi->allow_comp_inter_inter = 1;
-      cm->comp_fwd_ref[0] = LAST_FRAME;
-      cm->comp_fwd_ref[1] = LAST2_FRAME;
-      cm->comp_fwd_ref[2] = LAST3_FRAME;
-      cm->comp_fwd_ref[3] = GOLDEN_FRAME;
-      cm->comp_bwd_ref[0] = BWDREF_FRAME;
-      cm->comp_bwd_ref[1] = ALTREF2_FRAME;
-      cm->comp_bwd_ref[2] = ALTREF_FRAME;
-#if !CONFIG_ONE_SIDED_COMPOUND  // Normative in encoder
-    }
-#endif  // !CONFIG_ONE_SIDED_COMPOUND
+    cpi->allow_comp_inter_inter = 1;
+    cm->comp_fwd_ref[0] = LAST_FRAME;
+    cm->comp_fwd_ref[1] = LAST2_FRAME;
+    cm->comp_fwd_ref[2] = LAST3_FRAME;
+    cm->comp_fwd_ref[3] = GOLDEN_FRAME;
+    cm->comp_bwd_ref[0] = BWDREF_FRAME;
+    cm->comp_bwd_ref[1] = ALTREF2_FRAME;
+    cm->comp_bwd_ref[2] = ALTREF_FRAME;
   } else {
     cpi->allow_comp_inter_inter = 0;
   }
