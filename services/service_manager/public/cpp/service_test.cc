@@ -5,7 +5,6 @@
 #include "services/service_manager/public/cpp/service_test.h"
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -65,9 +64,7 @@ void ServiceTest::SetUp() {
 
   // Create the service manager connection. We don't proceed until we get our
   // Service's OnStart() method is called.
-  base::RunLoop run_loop;
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   initialize_called_ = run_loop.QuitClosure();
 
   mojom::ServicePtr service;
