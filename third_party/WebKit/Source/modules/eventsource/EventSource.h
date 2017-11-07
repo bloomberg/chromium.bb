@@ -88,7 +88,7 @@ class MODULES_EXPORT EventSource final
 
   // ContextLifecycleObserver
   //
-  // Note: We don't need to inherit from SuspendableObject since
+  // Note: We don't need to inherit from PausableObject since
   // ScopedPageLoadDeferrer calls Page::setDefersLoading() and
   // it defers delivery of events from the loader, and therefore
   // the methods of this class for receiving asynchronous events

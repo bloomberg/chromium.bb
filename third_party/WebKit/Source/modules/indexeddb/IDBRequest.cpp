@@ -111,7 +111,7 @@ IDBRequest::IDBRequest(ScriptState* script_state,
                        IDBAny* source,
                        IDBTransaction* transaction,
                        AsyncTraceState metrics)
-    : SuspendableObject(ExecutionContext::From(script_state)),
+    : PausableObject(ExecutionContext::From(script_state)),
       transaction_(transaction),
       isolate_(script_state->GetIsolate()),
       metrics_(std::move(metrics)),
@@ -132,7 +132,7 @@ void IDBRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(cursor_key_);
   visitor->Trace(cursor_primary_key_);
   EventTargetWithInlineData::Trace(visitor);
-  SuspendableObject::Trace(visitor);
+  PausableObject::Trace(visitor);
 }
 
 ScriptValue IDBRequest::result(ScriptState* script_state,
@@ -614,7 +614,7 @@ const AtomicString& IDBRequest::InterfaceName() const {
 }
 
 ExecutionContext* IDBRequest::GetExecutionContext() const {
-  return SuspendableObject::GetExecutionContext();
+  return PausableObject::GetExecutionContext();
 }
 
 DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {

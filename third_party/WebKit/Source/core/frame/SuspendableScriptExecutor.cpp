@@ -236,7 +236,7 @@ void SuspendableScriptExecutor::ExecuteAndDestroySelf() {
 
 void SuspendableScriptExecutor::Dispose() {
   // Remove object as a ContextLifecycleObserver.
-  SuspendableObject::ClearContext();
+  PausableObject::ClearContext();
   keep_alive_.Clear();
   Stop();
 }

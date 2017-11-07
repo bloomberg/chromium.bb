@@ -11,7 +11,7 @@ title: test1
 	Nodes
 	Resources
 	ScriptPromises
-	SuspendableObjects
+	PausableObjects
 	V8PerContextDatas
 	WorkerGlobalScopes
 	UACSSResources
@@ -38,7 +38,7 @@ title: test1
 	Nodes
 	Resources
 	ScriptPromises
-	SuspendableObjects
+	PausableObjects
 	V8PerContextDatas
 	WorkerGlobalScopes
 	UACSSResources
@@ -65,7 +65,7 @@ title:
 	Nodes
 	Resources
 	ScriptPromises
-	SuspendableObjects
+	PausableObjects
 	V8PerContextDatas
 	WorkerGlobalScopes
 	UACSSResources

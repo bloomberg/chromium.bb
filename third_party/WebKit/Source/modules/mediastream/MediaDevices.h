@@ -6,7 +6,7 @@
 #define MediaDevices_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/dom/events/EventTarget.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
@@ -23,7 +23,7 @@ class UserMediaController;
 class MODULES_EXPORT MediaDevices final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<MediaDevices>,
-      public SuspendableObject {
+      public PausableObject {
   USING_GARBAGE_COLLECTED_MIXIN(MediaDevices);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(MediaDevices, Dispose);
@@ -47,10 +47,10 @@ class MODULES_EXPORT MediaDevices final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
-  // SuspendableObject overrides.
+  // PausableObject overrides.
   void ContextDestroyed(ExecutionContext*) override;
-  void Suspend() override;
-  void Resume() override;
+  void Pause() override;
+  void Unpause() override;
 
   virtual void Trace(blink::Visitor*);
 

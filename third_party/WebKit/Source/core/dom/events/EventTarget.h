@@ -107,8 +107,8 @@ DEFINE_TRAIT_FOR_TRACE_WRAPPERS(EventTargetData);
 //   file.
 // - Override EventTarget::interfaceName() and getExecutionContext(). The former
 //   will typically return EventTargetNames::YourClassName. The latter will
-//   return SuspendableObject::executionContext (if you are an
-//   SuspendableObject)
+//   return PausableObject::executionContext (if you are an
+//   PausableObject)
 //   or the document you're in.
 // - Your trace() method will need to call EventTargetWithInlineData::trace
 //   depending on the base class of your class.

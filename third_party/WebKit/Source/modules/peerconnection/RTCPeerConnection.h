@@ -33,7 +33,7 @@
 
 #include <memory>
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "modules/EventTargetModules.h"
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "modules/mediastream/MediaStream.h"
@@ -72,7 +72,7 @@ class MODULES_EXPORT RTCPeerConnection final
     : public EventTargetWithInlineData,
       public WebRTCPeerConnectionHandlerClient,
       public ActiveScriptWrappable<RTCPeerConnection>,
-      public SuspendableObject,
+      public PausableObject,
       public MediaStreamObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCPeerConnection);
@@ -205,9 +205,9 @@ class MODULES_EXPORT RTCPeerConnection final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // SuspendableObject
-  void Suspend() override;
-  void Resume() override;
+  // PausableObject
+  void Pause() override;
+  void Unpause() override;
   void ContextDestroyed(ExecutionContext*) override;
 
   // ScriptWrappable

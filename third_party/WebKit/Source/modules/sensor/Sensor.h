@@ -8,7 +8,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMHighResTimeStamp.h"
 #include "core/dom/DOMTimeStamp.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/frame/PlatformEventController.h"
 #include "modules/EventTargetModules.h"
 #include "modules/sensor/SensorOptions.h"

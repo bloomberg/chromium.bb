@@ -257,7 +257,7 @@ void HTMLDocumentParser::PumpTokenizerIfPossible() {
   PumpTokenizer();
 }
 
-bool HTMLDocumentParser::IsScheduledForResume() const {
+bool HTMLDocumentParser::IsScheduledForUnpause() const {
   return parser_scheduler_ && parser_scheduler_->IsScheduledForUnpause();
 }
 
@@ -369,7 +369,7 @@ void HTMLDocumentParser::NotifyPendingTokenizedChunks() {
   for (auto& chunk : pending_chunks)
     speculations_.push_back(std::move(chunk));
 
-  if (!IsPaused() && !IsScheduledForResume()) {
+  if (!IsPaused() && !IsScheduledForUnpause()) {
     if (tasks_were_suspended_)
       parser_scheduler_->ForceUnpauseAfterYield();
     else
@@ -583,7 +583,7 @@ void HTMLDocumentParser::PumpPendingSpeculations() {
   DCHECK(!last_chunk_before_pause_);
   DCHECK(!IsPaused());
   DCHECK(!IsStopped());
-  DCHECK(!IsScheduledForResume());
+  DCHECK(!IsScheduledForUnpause());
   DCHECK(!InPumpSession());
 
   // FIXME: Here should never be reached when there is a blocking script,
@@ -603,17 +603,17 @@ void HTMLDocumentParser::PumpPendingSpeculations() {
 
   SpeculationsPumpSession session(pump_speculations_session_nesting_level_);
   while (!speculations_.IsEmpty()) {
-    DCHECK(!IsScheduledForResume());
+    DCHECK(!IsScheduledForUnpause());
     size_t element_token_count =
         ProcessTokenizedChunkFromBackgroundParser(speculations_.TakeFirst());
     session.AddedElementTokens(element_token_count);
 
     // Always check isParsing first as m_document may be null. Surprisingly,
-    // isScheduledForResume() may be set here as a result of
+    // isScheduledForUnpause() may be set here as a result of
     // processTokenizedChunkFromBackgroundParser running arbitrary javascript
     // which invokes nested event loops. (e.g. inspector breakpoints)
     CheckIfBodyStylesheetAdded();
-    if (!IsParsing() || IsPaused() || IsScheduledForResume())
+    if (!IsParsing() || IsPaused() || IsScheduledForUnpause())
       break;
 
     if (speculations_.IsEmpty() ||
@@ -923,7 +923,7 @@ void HTMLDocumentParser::Append(const String& input_source) {
 
 void HTMLDocumentParser::end() {
   DCHECK(!IsDetached());
-  DCHECK(!IsScheduledForResume());
+  DCHECK(!IsScheduledForUnpause());
 
   if (have_background_parser_)
     StopBackgroundParser();

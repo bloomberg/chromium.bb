@@ -265,7 +265,6 @@ blink_core_sources("dom") {
     "StaticNodeList.h",
     "StaticRange.cpp",
     "StaticRange.h",
-    "SuspendableObject.h",
     "SyncReattachContext.cpp",
     "SyncReattachContext.h",
     "SynchronousMutationNotifier.cpp",

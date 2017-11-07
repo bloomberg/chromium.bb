@@ -73,7 +73,7 @@ class CORE_EXPORT ContextLifecycleObserver
 
   enum Type {
     kGenericType,
-    kSuspendableObjectType,
+    kPausableObjectType,
   };
 
   Type ObserverType() const { return observer_type_; }

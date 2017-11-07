@@ -31,7 +31,7 @@
 #ifndef UserMediaRequest_h
 #define UserMediaRequest_h
 
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"

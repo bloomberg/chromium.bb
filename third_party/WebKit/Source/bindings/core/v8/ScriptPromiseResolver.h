@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "platform/Timer.h"
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
@@ -24,13 +24,13 @@ namespace blink {
 // functionalities.
 //  - A ScriptPromiseResolver retains a ScriptState. A caller
 //    can call resolve or reject from outside of a V8 context.
-//  - This class is an SuspendableObject and keeps track of the associated
+//  - This class is an PausableObject and keeps track of the associated
 //    ExecutionContext state. When the ExecutionContext is suspended,
 //    resolve or reject will be delayed. When it is stopped, resolve or reject
 //    will be ignored.
 class CORE_EXPORT ScriptPromiseResolver
     : public GarbageCollectedFinalized<ScriptPromiseResolver>,
-      public SuspendableObject {
+      public PausableObject {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
   WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 
@@ -86,9 +86,9 @@ class CORE_EXPORT ScriptPromiseResolver
 
   ScriptState* GetScriptState() const { return script_state_.get(); }
 
-  // SuspendableObject implementation.
-  void Suspend() override;
-  void Resume() override;
+  // PausableObject implementation.
+  void Pause() override;
+  void Unpause() override;
   void ContextDestroyed(ExecutionContext*) override { Detach(); }
 
   // Calling this function makes the resolver release its internal resources.
@@ -105,7 +105,7 @@ class CORE_EXPORT ScriptPromiseResolver
 
  protected:
   // You need to call suspendIfNeeded after the construction because
-  // this is an SuspendableObject.
+  // this is an PausableObject.
   explicit ScriptPromiseResolver(ScriptState*);
 
  private:

@@ -27,7 +27,7 @@
 #include "bindings/core/v8/ScriptString.h"
 #include "core/dom/DocumentParserClient.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
@@ -70,7 +70,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
                              private ThreadableLoaderClient,
                              public DocumentParserClient,
                              public ActiveScriptWrappable<XMLHttpRequest>,
-                             public SuspendableObject {
+                             public PausableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 
@@ -103,11 +103,11 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
     kResponseTypeArrayBuffer,
   };
 
-  // SuspendableObject
+  // PausableObject
   void ContextDestroyed(ExecutionContext*) override;
   ExecutionContext* GetExecutionContext() const override;
-  void Suspend() override;
-  void Resume() override;
+  void Pause() override;
+  void Unpause() override;
 
   // ScriptWrappable
   bool HasPendingActivity() const final;

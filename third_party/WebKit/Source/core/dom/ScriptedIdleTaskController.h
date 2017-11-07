@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/v8_idle_request_callback.h"
 #include "core/dom/IdleDeadline.h"
-#include "core/dom/SuspendableObject.h"
+#include "core/dom/PausableObject.h"
 #include "platform/Timer.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
@@ -23,7 +23,7 @@ class IdleRequestOptions;
 
 class CORE_EXPORT ScriptedIdleTaskController
     : public GarbageCollectedFinalized<ScriptedIdleTaskController>,
-      public SuspendableObject,
+      public PausableObject,
       public TraceWrapperBase {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
 
@@ -69,10 +69,10 @@ class CORE_EXPORT ScriptedIdleTaskController
   int RegisterCallback(IdleTask*, const IdleRequestOptions&);
   void CancelCallback(CallbackId);
 
-  // SuspendableObject interface.
+  // PausableObject interface.
   void ContextDestroyed(ExecutionContext*) override;
-  void Suspend() override;
-  void Resume() override;
+  void Pause() override;
+  void Unpause() override;
 
   void CallbackFired(CallbackId,
                      double deadline_seconds,
@@ -101,7 +101,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   HeapHashMap<CallbackId, TraceWrapperMember<IdleTask>> idle_tasks_;
   Vector<CallbackId> pending_timeouts_;
   CallbackId next_callback_id_;
-  bool suspended_;
+  bool paused_;
 };
 
 }  // namespace blink
