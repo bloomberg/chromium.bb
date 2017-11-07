@@ -16,8 +16,9 @@ from telemetry.web_perf import timeline_based_measurement
 import page_sets
 
 
-# See tr.v.Numeric.getSummarizedScalarNumericsWithNames()
-# https://github.com/catapult-project/catapult/blob/master/tracing/tracing/value/numeric.html#L323
+# Regex to filter out a few names of statistics supported by
+# Histogram.getStatisticScalar(), see:
+#   https://github.com/catapult-project/catapult/blob/d4179a05/tracing/tracing/value/histogram.html#L645  pylint: disable=line-too-long
 _IGNORED_STATS_RE = re.compile(r'_(std|count|max|min|sum|pct_\d{4}(_\d+)?)$')
 
 
