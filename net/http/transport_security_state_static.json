@@ -40283,55 +40283,55 @@
       "name": "scotthelme.co.uk",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://scotthelme.report-uri.io/r/default/staple/reportOnly",
+      "expect_staple_report_uri": "https://scotthelme.report-uri.com/r/d/staple/reportOnly",
       "expect_ct": true,
-      "expect_ct_report_uri": "https://scotthelme.report-uri.io/r/default/ct/reportOnly"
+      "expect_ct_report_uri": "https://scotthelme.report-uri.com/r/d/ct/reportOnly"
     },
     { "name": "hstspreload.appspot.com", "include_subdomains": true, "mode": "force-https" },
     {
       "name": "matteomarescotti.it",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://matteomarescotti.report-uri.io/r/default/staple/reportOnly",
+      "expect_staple_report_uri": "https://matteomarescotti.report-uri.com/r/d/staple/reportOnly",
       "expect_ct": true,
-      "expect_ct_report_uri": "https://matteomarescotti.report-uri.io/r/default/ct/reportOnly"
+      "expect_ct_report_uri": "https://matteomarescotti.report-uri.com/r/d/ct/reportOnly"
     },
     { "name": "www.cnet.com", "include_subdomains": true, "mode": "force-https" },
     {
       "name": "alessandroz.pro",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://azreport.report-uri.io/r/default/staple/reportOnly"
+      "expect_staple_report_uri": "https://azreport.report-uri.com/r/d/staple/reportOnly"
     },
     {
       "name": "minecraftforum.de",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://minecraft.report-uri.io/r/default/staple/reportOnly"
+      "expect_staple_report_uri": "https://minecraft.report-uri.com/r/d/staple/reportOnly"
     },
     {
       "name": "tobiassachs.de",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://tobiassachs.report-uri.io/r/default/staple/reportOnly",
+      "expect_staple_report_uri": "https://tobiassachs.report-uri.com/r/d/staple/reportOnly",
       "expect_ct": true,
-      "expect_ct_report_uri": "https://tobiassachs.report-uri.io/r/default/ct/reportOnly"
+      "expect_ct_report_uri": "https://tobiassachs.report-uri.com/r/d/ct/reportOnly"
     },
     {
       "name": "gc-mc.de",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://tobiassachs.report-uri.io/r/default/staple/reportOnly",
+      "expect_staple_report_uri": "https://tobiassachs.report-uri.com/r/d/staple/reportOnly",
       "expect_ct": true,
-      "expect_ct_report_uri": "https://tobiassachs.report-uri.io/r/default/ct/reportOnly"
+      "expect_ct_report_uri": "https://tobiassachs.report-uri.com/r/d/ct/reportOnly"
     },
     {
       "name": "knightsblog.de",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://tobiassachs.report-uri.io/r/default/staple/reportOnly",
+      "expect_staple_report_uri": "https://tobiassachs.report-uri.com/r/d/staple/reportOnly",
       "expect_ct": true,
-      "expect_ct_report_uri": "https://tobiassachs.report-uri.io/r/default/ct/reportOnly"
+      "expect_ct_report_uri": "https://tobiassachs.report-uri.com/r/d/ct/reportOnly"
     },
     {
       "name": "cloudflare.com",
@@ -40345,7 +40345,7 @@
       "name": "weeblrpress.com",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://weeblr.report-uri.io/r/default/staple/reportOnly"
+      "expect_staple_report_uri": "https://weeblr.report-uri.com/r/d/staple/reportOnly"
     },
     {
       "name": "0.me.uk",
@@ -40359,7 +40359,7 @@
       "name": "photistic.org",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://photistic.report-uri.io/r/default/staple/reportOnly"
+      "expect_staple_report_uri": "https://photistic.report-uri.com/r/d/staple/reportOnly"
     },
     { "name": "ccu.plus", "include_subdomains": true, "mode": "force-https" },
     { "name": "mitm-software.badssl.com", "include_subdomains": true, "mode": "force-https" },
@@ -40374,17 +40374,17 @@
       "name": "history.pe",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://history.report-uri.io/r/default/staple/reportOnly",
+      "expect_staple_report_uri": "https://history.report-uri.com/r/d/staple/reportOnly",
       "expect_ct": true,
-      "expect_ct_report_uri": "https://history.report-uri.io/r/default/ct/reportOnly"
+      "expect_ct_report_uri": "https://history.report-uri.com/r/d/ct/reportOnly"
     },
     {
       "name": "www.history.pe",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://history.report-uri.io/r/default/staple/reportOnly",
+      "expect_staple_report_uri": "https://history.report-uri.com/r/d/staple/reportOnly",
       "expect_ct": true,
-      "expect_ct_report_uri": "https://history.report-uri.io/r/default/ct/reportOnly"
+      "expect_ct_report_uri": "https://history.report-uri.com/r/d/ct/reportOnly"
     },
     { "name": "connect.facebook.net", "include_subdomains": true, "mode": "force-https" },
     // END OF MANUAL CUSTOM ENTRIES
