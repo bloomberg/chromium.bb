@@ -137,6 +137,34 @@ class NonSpareRendererContentBrowserClient : public TestContentBrowserClient {
   }
 };
 
+class RenderProcessHostWithKeepAliveOptionEnabledTest
+    : public RenderProcessHostTest {
+ public:
+  void SetUpOnMainThread() override {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kKeepAliveRendererForKeepaliveRequests,
+        {std::make_pair("timeout_in_sec", "30")});
+    RenderProcessHostTest::SetUpOnMainThread();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+class RenderProcessHostWithShortKeepAliveOptionEnabledTest
+    : public RenderProcessHostTest {
+ public:
+  void SetUpOnMainThread() override {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kKeepAliveRendererForKeepaliveRequests,
+        {std::make_pair("timeout_in_sec", "1")});
+    RenderProcessHostTest::SetUpOnMainThread();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Sometimes the renderer process's ShutdownRequest (corresponding to the
 // ViewMsg_WasSwappedOut from a previous navigation) doesn't arrive until after
 // the browser process decides to re-use the renderer for a new purpose.  This
@@ -706,12 +734,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
     rph->RemoveObserver(this);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kKeepAliveRendererForKeepaliveRequests,
-      {std::make_pair("timeout_in_sec", "30")});
-
+IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
+                       KeepAliveRendererProcess) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -733,12 +757,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
     rph->RemoveObserver(this);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess_Hung) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kKeepAliveRendererForKeepaliveRequests,
-      {std::make_pair("timeout_in_sec", "1")});
-
+IN_PROC_BROWSER_TEST_F(RenderProcessHostWithShortKeepAliveOptionEnabledTest,
+                       KeepAliveRendererProcess_Hung) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleHungBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -760,13 +780,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess_Hung) {
     rph->RemoveObserver(this);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+IN_PROC_BROWSER_TEST_F(RenderProcessHostWithShortKeepAliveOptionEnabledTest,
                        FetchKeepAliveRendererProcess_Hung) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      features::kKeepAliveRendererForKeepaliveRequests,
-      {std::make_pair("timeout_in_sec", "1")});
-
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleHungBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
