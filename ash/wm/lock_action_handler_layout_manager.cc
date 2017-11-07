@@ -28,7 +28,8 @@ namespace {
 // This should not be used for lock screen background windows.
 bool ShowChildWindows(mojom::TrayActionState action_state,
                       LockScreenActionBackgroundState background_state) {
-  return action_state == mojom::TrayActionState::kActive &&
+  return (action_state == mojom::TrayActionState::kActive ||
+          action_state == mojom::TrayActionState::kLaunching) &&
          (background_state == LockScreenActionBackgroundState::kShown ||
           background_state == LockScreenActionBackgroundState::kHidden);
 }
