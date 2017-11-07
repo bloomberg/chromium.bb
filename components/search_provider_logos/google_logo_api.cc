@@ -175,6 +175,11 @@ std::unique_ptr<EncodedLogo> GoogleLegacyParseLogoResponse(
   std::string animated_url;
   logo_dict->GetString("url", &animated_url);
   logo->metadata.animated_url = GURL(animated_url);
+  if (logo->metadata.animated_url.is_valid()) {
+    logo->metadata.type = LogoType::ANIMATED;
+  } else {
+    logo->metadata.type = LogoType::SIMPLE;
+  }
 
   base::TimeDelta time_to_live;
   int time_to_live_ms;
@@ -276,25 +281,39 @@ std::unique_ptr<EncodedLogo> GoogleNewParseLogoResponse(
 
   auto logo = base::MakeUnique<EncodedLogo>();
 
-  // Check if the main image is animated.
-  bool is_animated = false;
-  const base::DictionaryValue* image = nullptr;
-  if (ddljson->GetDictionary("large_image", &image)) {
-    image->GetBoolean("is_animated_gif", &is_animated);
-
-    // If animated, get the URL for the animated image.
-    if (is_animated) {
-      logo->metadata.animated_url = ParseUrl(*image, "url", base_url);
-      if (!logo->metadata.animated_url.is_valid())
-        return nullptr;
+  std::string doodle_type;
+  logo->metadata.type = LogoType::SIMPLE;
+  if (ddljson->GetString("doodle_type", &doodle_type)) {
+    if (doodle_type == "ANIMATED") {
+      logo->metadata.type = LogoType::ANIMATED;
+    } else if (doodle_type == "INTERACTIVE") {
+      logo->metadata.type = LogoType::INTERACTIVE;
+    } else if (doodle_type == "VIDEO") {
+      logo->metadata.type = LogoType::INTERACTIVE;
     }
   }
 
+  const bool is_animated = (logo->metadata.type == LogoType::ANIMATED);
+
+  // Check if the main image is animated.
+  if (is_animated) {
+    // If animated, get the URL for the animated image.
+    const base::DictionaryValue* image = nullptr;
+    if (!ddljson->GetDictionary("large_image", &image))
+      return nullptr;
+    logo->metadata.animated_url = ParseUrl(*image, "url", base_url);
+    if (!logo->metadata.animated_url.is_valid())
+      return nullptr;
+  }
+
+  logo->metadata.full_page_url =
+      ParseUrl(*ddljson, "fullpage_interactive_url", base_url);
+
   // Data is optional, since we may be revalidating a cached logo.
-  // If this is an animated doodle, get the CTA image data.
+  // If there is a CTA image, get that; otherwise use the regular image.
   std::string encoded_image_data;
-  if (ddljson->GetString(is_animated ? "cta_data_uri" : "data_uri",
-                         &encoded_image_data)) {
+  if (ddljson->GetString("cta_data_uri", &encoded_image_data) ||
+      ddljson->GetString("data_uri", &encoded_image_data)) {
     GURL encoded_image_uri(encoded_image_data);
     if (!encoded_image_uri.is_valid() ||
         !encoded_image_uri.SchemeIs(url::kDataScheme)) {

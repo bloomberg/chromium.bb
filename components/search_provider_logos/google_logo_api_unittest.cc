@@ -115,6 +115,7 @@ TEST(GoogleNewLogoApiTest, ParsesStaticImage) {
   ASSERT_FALSE(failed);
   ASSERT_TRUE(logo);
   EXPECT_EQ("abc", logo->encoded_image->data());
+  EXPECT_EQ(LogoType::SIMPLE, logo->metadata.type);
 }
 
 TEST(GoogleNewLogoApiTest, ParsesAnimatedImage) {
@@ -123,6 +124,7 @@ TEST(GoogleNewLogoApiTest, ParsesAnimatedImage) {
   const std::string json = R"json()]}'
 {
   "ddljson": {
+    "doodle_type": "ANIMATED",
     "target_url": "/target",
     "large_image": {
       "is_animated_gif": true,
@@ -141,6 +143,28 @@ TEST(GoogleNewLogoApiTest, ParsesAnimatedImage) {
   EXPECT_EQ(GURL("https://www.doodle.com/image.gif"),
             logo->metadata.animated_url);
   EXPECT_EQ("abc", logo->encoded_image->data());
+  EXPECT_EQ(LogoType::ANIMATED, logo->metadata.type);
+}
+
+TEST(GoogleNewLogoApiTest, ParsesInteractiveDoodle) {
+  const GURL base_url("https://base.doo/");
+  const std::string json = R"json()]}'
+{
+  "ddljson": {
+    "doodle_type": "INTERACTIVE",
+    "fullpage_interactive_url": "/fullpage",
+    "target_url": "/target"
+  }
+})json";
+
+  bool failed = false;
+  std::unique_ptr<EncodedLogo> logo = GoogleNewParseLogoResponse(
+      base_url, base::MakeUnique<std::string>(json), base::Time(), &failed);
+
+  ASSERT_FALSE(failed);
+  ASSERT_TRUE(logo);
+  EXPECT_EQ(GURL("https://base.doo/fullpage"), logo->metadata.full_page_url);
+  EXPECT_EQ(LogoType::INTERACTIVE, logo->metadata.type);
 }
 
 TEST(GoogleNewLogoApiTest, ParsesCapturedApiResult) {

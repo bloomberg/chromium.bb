@@ -16,6 +16,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
+namespace search_provider_logos {
+
 namespace {
 
 // The cached logo metadata is persisted as JSON using these keys.
@@ -23,11 +25,17 @@ const char kSourceUrlKey[] = "url";
 const char kExpirationTimeKey[] = "expiration_time";
 const char kCanShowAfterExpirationKey[] = "can_show_after_expiration";
 const char kFingerprintKey[] = "fingerprint";
+const char kTypeKey[] = "type";
 const char kOnClickURLKey[] = "on_click_url";
+const char kFullPageURLKey[] = "full_page_url";
 const char kAltTextKey[] = "alt_text";
 const char kMimeTypeKey[] = "mime_type";
 const char kNumBytesKey[] = "num_bytes";
 const char kAnimatedUrlKey[] = "animated_url";
+
+const char kSimpleType[] = "SIMPLE";
+const char kAnimatedType[] = "ANIMATED";
+const char kInteractiveType[] = "INTERACTIVE";
 
 bool GetTimeValue(const base::DictionaryValue& dict,
                   const std::string& key,
@@ -49,9 +57,34 @@ void SetTimeValue(base::DictionaryValue& dict,
   dict.SetString(key, base::Int64ToString(internal_time_value));
 }
 
-}  // namespace
+LogoType LogoTypeFromString(base::StringPiece type) {
+  if (type == kSimpleType) {
+    return LogoType::SIMPLE;
+  }
+  if (type == kAnimatedType) {
+    return LogoType::ANIMATED;
+  }
+  if (type == kInteractiveType) {
+    return LogoType::INTERACTIVE;
+  }
+  LOG(WARNING) << "invalid type " << type;
+  return LogoType::SIMPLE;
+}
 
-namespace search_provider_logos {
+std::string LogoTypeToString(LogoType type) {
+  switch (type) {
+    case LogoType::SIMPLE:
+      return kSimpleType;
+    case LogoType::ANIMATED:
+      return kAnimatedType;
+    case LogoType::INTERACTIVE:
+      return kInteractiveType;
+  }
+  NOTREACHED();
+  return "";
+}
+
+}  // namespace
 
 LogoCache::LogoCache(const base::FilePath& cache_directory)
     : cache_directory_(cache_directory),
@@ -129,11 +162,15 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
 
   std::unique_ptr<LogoMetadata> metadata(new LogoMetadata());
   std::string source_url;
+  std::string type;
   std::string on_click_url;
+  std::string full_page_url;
   std::string animated_url;
   if (!dict->GetString(kSourceUrlKey, &source_url) ||
       !dict->GetString(kFingerprintKey, &metadata->fingerprint) ||
+      !dict->GetString(kTypeKey, &type) ||
       !dict->GetString(kOnClickURLKey, &on_click_url) ||
+      !dict->GetString(kFullPageURLKey, &full_page_url) ||
       !dict->GetString(kAltTextKey, &metadata->alt_text) ||
       !dict->GetString(kAnimatedUrlKey, &animated_url) ||
       !dict->GetString(kMimeTypeKey, &metadata->mime_type) ||
@@ -143,8 +180,10 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
       !GetTimeValue(*dict, kExpirationTimeKey, &metadata->expiration_time)) {
     return nullptr;
   }
+  metadata->type = LogoTypeFromString(type);
   metadata->source_url = GURL(source_url);
   metadata->on_click_url = GURL(on_click_url);
+  metadata->full_page_url = GURL(full_page_url);
   metadata->animated_url = GURL(animated_url);
 
   return metadata;
@@ -157,7 +196,9 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
   base::DictionaryValue dict;
   dict.SetString(kSourceUrlKey, metadata.source_url.spec());
   dict.SetString(kFingerprintKey, metadata.fingerprint);
+  dict.SetString(kTypeKey, LogoTypeToString(metadata.type));
   dict.SetString(kOnClickURLKey, metadata.on_click_url.spec());
+  dict.SetString(kFullPageURLKey, metadata.full_page_url.spec());
   dict.SetString(kAltTextKey, metadata.alt_text);
   dict.SetString(kAnimatedUrlKey, metadata.animated_url.spec());
   dict.SetString(kMimeTypeKey, metadata.mime_type);
