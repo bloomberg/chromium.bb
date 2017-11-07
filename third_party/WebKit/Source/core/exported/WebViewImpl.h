@@ -247,7 +247,10 @@ class CORE_EXPORT WebViewImpl final
   // WebScheduler::InterventionReporter implementation:
   void ReportIntervention(const WebString& message) override;
 
+  // WebViewScheduler::WebViewSchedulerDelegate implementation:
   void RequestBeginMainFrameNotExpected(bool new_state) override;
+  void SetPageStopped(bool stopped) override;
+
   void DidUpdateFullscreenSize();
 
   float DefaultMinimumPageScaleFactor() const;

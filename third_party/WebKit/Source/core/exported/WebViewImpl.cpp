@@ -97,6 +97,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
+#include "core/page/PageLifecycleState.h"
 #include "core/page/PageOverlay.h"
 #include "core/page/PagePopupClient.h"
 #include "core/page/PointerLockController.h"
@@ -947,6 +948,15 @@ void WebViewImpl::RequestBeginMainFrameNotExpected(bool new_state) {
   if (layer_tree_view_) {
     layer_tree_view_->RequestBeginMainFrameNotExpected(new_state);
   }
+}
+
+void WebViewImpl::SetPageStopped(bool stopped) {
+  if (!GetPage())
+    return;
+  GetPage()->SetLifecycleState(
+      stopped ? PageLifecycleState::kStopped
+              // TODO(fmeawad): if not stopped, fall back to visibility state.
+              : PageLifecycleState::kUnknown);
 }
 
 WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {

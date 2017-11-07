@@ -32,6 +32,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "core/page/PageAnimator.h"
+#include "core/page/PageLifecycleState.h"
 #include "core/page/PageVisibilityNotifier.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "core/page/PageVisibilityState.h"
@@ -266,6 +267,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   PageVisibilityState VisibilityState() const;
   bool IsPageVisible() const;
 
+  void SetLifecycleState(PageLifecycleState);
+  PageLifecycleState LifecycleState() const;
+
   bool IsCursorVisible() const;
   void SetIsCursorVisible(bool is_visible) { is_cursor_visible_ = is_visible; }
 
@@ -379,6 +383,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   float device_scale_factor_;
 
   PageVisibilityState visibility_state_;
+
+  PageLifecycleState page_lifecycle_state_;
 
   bool is_cursor_visible_;
 
