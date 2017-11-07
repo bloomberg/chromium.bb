@@ -118,7 +118,10 @@ RetrievePolicyResponseType GetPolicyResponseTypeByError(
     base::StringPiece error_name) {
   if (error_name == login_manager::dbus_error::kNone) {
     return RetrievePolicyResponseType::SUCCESS;
-  } else if (error_name == login_manager::dbus_error::kGetServiceFail) {
+  } else if (error_name == login_manager::dbus_error::kGetServiceFail ||
+             error_name == login_manager::dbus_error::kSessionDoesNotExist) {
+    // TODO(crbug.com/765644, ljusten): Remove kSessionDoesNotExist case once
+    // Chrome OS has switched to kGetServiceFail.
     return RetrievePolicyResponseType::GET_SERVICE_FAIL;
   } else if (error_name == login_manager::dbus_error::kSigEncodeFail) {
     return RetrievePolicyResponseType::POLICY_ENCODE_ERROR;
