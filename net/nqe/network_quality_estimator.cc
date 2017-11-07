@@ -1664,7 +1664,7 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfRTT(
   if (!ShouldAddObservation(observation))
     return;
 
-  MaybeUpdateCachedEstimateApplied(observation);
+  MaybeUpdateCachedEstimateApplied(observation, &rtt_ms_observations_);
 
   ++new_rtt_observations_since_last_ect_computation_;
   rtt_ms_observations_.AddObservation(observation);
@@ -1696,7 +1696,8 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfThroughput(
   if (!ShouldAddObservation(observation))
     return;
 
-  MaybeUpdateCachedEstimateApplied(observation);
+  MaybeUpdateCachedEstimateApplied(observation,
+                                   &downstream_throughput_kbps_observations_);
 
   ++new_throughput_observations_since_last_ect_computation_;
   downstream_throughput_kbps_observations_.AddObservation(observation);
@@ -1950,14 +1951,28 @@ const char* NetworkQualityEstimator::GetNameForStatistic(int i) const {
 }
 
 void NetworkQualityEstimator::MaybeUpdateCachedEstimateApplied(
-    const Observation& observation) {
+    const Observation& observation,
+    ObservationBuffer* buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (observation.source() ==
-          NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE ||
-      observation.source() ==
+  if (observation.source() !=
+          NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE &&
+      observation.source() !=
           NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE) {
-    cached_estimate_applied_ = true;
+    return;
   }
+
+  cached_estimate_applied_ = true;
+  bool deleted_observation_sources[NETWORK_QUALITY_OBSERVATION_SOURCE_MAX] = {
+      false};
+  deleted_observation_sources
+      [NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE] = true;
+  deleted_observation_sources
+      [NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM] = true;
+  deleted_observation_sources
+      [NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_TRANSPORT_FROM_PLATFORM] =
+          true;
+
+  buffer->RemoveObservationsWithSource(deleted_observation_sources);
 }
 
 bool NetworkQualityEstimator::ShouldAddObservation(
