@@ -251,9 +251,12 @@ static int parse_counts_for_cdf_opt(aom_count_type **ct_ptr,
     (*ct_ptr) += total_modes;
 
     if (tabs > 0) fprintf(probsfile, "%*c", tabs * SPACES_PER_TAB, ' ');
-    for (int k = 0; k < total_modes; ++k)
-      fprintf(probsfile, " AOM_ICDF(%d),", cdfs[k]);
-    fprintf(probsfile, " 0 ");
+    fprintf(probsfile, "AOM_CDF%d( ", total_modes);
+    for (int k = 0; k < total_modes - 1; ++k) {
+      fprintf(probsfile, "%d", cdfs[k]);
+      if (k < total_modes - 2) fprintf(probsfile, ",");
+    }
+    fprintf(probsfile, " )");
   } else {
     for (int k = 0; k < cts_each_dim[0]; ++k) {
       int tabs_next_level;
