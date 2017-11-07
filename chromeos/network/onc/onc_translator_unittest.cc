@@ -20,8 +20,7 @@ namespace onc {
 // First parameter: Filename of source ONC.
 // Second parameter: Filename of expected translated Shill json.
 class ONCTranslatorOncToShillTest
-    : public ::testing::TestWithParam<std::pair<std::string, std::string> > {
-};
+    : public ::testing::TestWithParam<std::pair<std::string, std::string>> {};
 
 // Test the translation from ONC to Shill json.
 TEST_P(ONCTranslatorOncToShillTest, Translate) {
@@ -81,8 +80,7 @@ INSTANTIATE_TEST_CASE_P(
 // Note: This translation direction doesn't have to reconstruct all of the ONC
 // fields, as Chrome doesn't need all of a Service's properties.
 class ONCTranslatorShillToOncTest
-    : public ::testing::TestWithParam<std::pair<std::string, std::string> > {
-};
+    : public ::testing::TestWithParam<std::pair<std::string, std::string>> {};
 
 TEST_P(ONCTranslatorShillToOncTest, Translate) {
   std::string source_shill_filename = GetParam().first;
