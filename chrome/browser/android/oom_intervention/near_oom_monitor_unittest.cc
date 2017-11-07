@@ -8,19 +8,28 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+const int64_t kTestSwapTotalKB = 128 * 1024;
+const int64_t kTestSwapFreeThreshold = kTestSwapTotalKB / 4;
+}  // namespace
+
 class MockNearOomMonitor : public NearOomMonitor {
  public:
   explicit MockNearOomMonitor(
       scoped_refptr<base::SequencedTaskRunner> task_runner)
-      : NearOomMonitor(task_runner) {
+      : NearOomMonitor(task_runner, kTestSwapFreeThreshold) {
     // Start with 128MB swap total and 64MB swap free.
-    memory_info_.swap_total = 128 * 1024;
-    memory_info_.swap_free = 64 * 1024;
+    memory_info_.swap_total = kTestSwapTotalKB;
+    memory_info_.swap_free = kTestSwapTotalKB / 2;
   }
 
-  void SetSwapTotal(int swap_total) { memory_info_.swap_total = swap_total; }
-
   void SetSwapFree(int swap_free) { memory_info_.swap_free = swap_free; }
+
+  void SimulateNonNearOom() {
+    memory_info_.swap_free = memory_info_.swap_total;
+  }
+
+  void SimulateNearOom() { memory_info_.swap_free = 0; }
 
   bool is_get_system_memory_info_called() const {
     return is_get_system_memory_info_called_;
@@ -73,22 +82,14 @@ class NearOomMonitorTest : public testing::Test {
   std::unique_ptr<MockNearOomMonitor> monitor_;
 };
 
-TEST_F(NearOomMonitorTest, NoSwap) {
-  monitor_->SetSwapTotal(0);
-  EXPECT_FALSE(monitor_->Start());
-  EXPECT_FALSE(monitor_->IsRunning());
-}
-
 TEST_F(NearOomMonitorTest, Observe) {
-  ASSERT_TRUE(monitor_->Start());
-  ASSERT_TRUE(monitor_->IsRunning());
+  base::TimeDelta interval =
+      monitor_->GetMonitoringInterval() + base::TimeDelta::FromSeconds(1);
 
   TestNearOomObserver observer1(monitor_.get());
   TestNearOomObserver observer2(monitor_.get());
 
-  base::TimeDelta interval =
-      monitor_->GetMonitoringInterval() + base::TimeDelta::FromSeconds(1);
-
+  monitor_->SimulateNonNearOom();
   task_runner_->FastForwardBy(interval);
   EXPECT_TRUE(monitor_->is_get_system_memory_info_called());
   EXPECT_FALSE(observer1.is_detected());
@@ -96,11 +97,34 @@ TEST_F(NearOomMonitorTest, Observe) {
 
   observer2.Unsubscribe();
 
-  // Simulate near-OOM situation by setting swap free to zero.
-  monitor_->SetSwapFree(0);
+  monitor_->SimulateNearOom();
   task_runner_->FastForwardBy(interval);
   EXPECT_TRUE(observer1.is_detected());
   EXPECT_FALSE(observer2.is_detected());
 
   observer1.Unsubscribe();
+}
+
+TEST_F(NearOomMonitorTest, Cooldown) {
+  base::TimeDelta interval =
+      monitor_->GetMonitoringInterval() + base::TimeDelta::FromSeconds(1);
+  base::TimeDelta cooldown_interval =
+      monitor_->GetCooldownInterval() + base::TimeDelta::FromSeconds(1);
+
+  monitor_->SimulateNearOom();
+
+  // The first detection should happen when |interval| is passed.
+  TestNearOomObserver observer1(monitor_.get());
+  task_runner_->FastForwardBy(interval);
+  EXPECT_TRUE(observer1.is_detected());
+  observer1.Unsubscribe();
+
+  // After a detection, the next detection shouldn't happen until
+  // |cooldown_interval| is passed.
+  TestNearOomObserver observer2(monitor_.get());
+  task_runner_->FastForwardBy(interval);
+  EXPECT_FALSE(observer2.is_detected());
+  task_runner_->FastForwardBy(cooldown_interval);
+  EXPECT_TRUE(observer2.is_detected());
+  observer2.Unsubscribe();
 }

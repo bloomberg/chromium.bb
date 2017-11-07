@@ -41,8 +41,7 @@ void RecordNearOomMonitoringEndReason(NearOomMonitoringEndReason reason) {
 
 // static
 bool OomInterventionTabHelper::IsEnabled() {
-  NearOomMonitor* monitor = NearOomMonitor::GetInstance();
-  return monitor && monitor->IsRunning();
+  return NearOomMonitor::GetInstance() != nullptr;
 }
 
 OomInterventionTabHelper::OomInterventionTabHelper(
