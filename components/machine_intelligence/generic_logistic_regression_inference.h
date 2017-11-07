@@ -12,16 +12,19 @@ namespace machine_intelligence {
 
 float Sigmoid(float x);
 
+// TODO(hamelphi): Implement an interface base class
+// BinaryClassificationInferenceModule.
+//
 // Implements inference for a GenericLogisticRegressionModel.
 class GenericLogisticRegressionInference {
  public:
   explicit GenericLogisticRegressionInference(
       GenericLogisticRegressionModel model_proto);
-  // Returns a score between 0 and 1 give a RankerExample.
-  float PredictScore(const RankerExample& example);
   // Returns a boolean decision given a RankerExample. Uses the same logic as
   // PredictScore, and then applies the model decision threshold.
-  bool PredictDecision(const RankerExample& example);
+  bool Predict(const RankerExample& example);
+  // Returns a score between 0 and 1 give a RankerExample.
+  float PredictScore(const RankerExample& example);
 
  private:
   // Returns the decision threshold. If no threshold is specified in the proto,

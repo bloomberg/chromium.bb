@@ -61,7 +61,7 @@ TEST_F(GenericLogisticRegressionInferenceTest, BaseTest) {
       Sigmoid(bias_ + 1.0f * scalar1_weight_ + 42.0f * scalar2_weight_ +
               0.666f * scalar3_weight_ + elem1_weight_);
   EXPECT_NEAR(expected_score, score, epsilon_);
-  EXPECT_EQ(expected_score >= threshold_, predictor.PredictDecision(example));
+  EXPECT_EQ(expected_score >= threshold_, predictor.Predict(example));
 }
 
 TEST_F(GenericLogisticRegressionInferenceTest, UnknownElement) {
@@ -132,7 +132,7 @@ TEST_F(GenericLogisticRegressionInferenceTest, Threshold) {
   // decision should be positive.
   EXPECT_LT(threshold, score);
   EXPECT_NEAR(threshold, score, epsilon_);
-  EXPECT_TRUE(predictor.PredictDecision(example));
+  EXPECT_TRUE(predictor.Predict(example));
 
   // A small negative contribution from scalar3 should tip the decision the
   // other way.
@@ -140,7 +140,7 @@ TEST_F(GenericLogisticRegressionInferenceTest, Threshold) {
   score = predictor.PredictScore(example);
   EXPECT_GT(threshold, score);
   EXPECT_NEAR(threshold, score, epsilon_);
-  EXPECT_FALSE(predictor.PredictDecision(example));
+  EXPECT_FALSE(predictor.Predict(example));
 }
 
 TEST_F(GenericLogisticRegressionInferenceTest, NoThreshold) {
@@ -166,7 +166,7 @@ TEST_F(GenericLogisticRegressionInferenceTest, NoThreshold) {
   // positive.
   EXPECT_LT(0.5f, score);
   EXPECT_NEAR(0.5f, score, epsilon_);
-  EXPECT_TRUE(predictor.PredictDecision(example));
+  EXPECT_TRUE(predictor.Predict(example));
 
   features[scalar3_name_].set_float_value(-0.01f);
   score = predictor.PredictScore(example);
@@ -174,7 +174,7 @@ TEST_F(GenericLogisticRegressionInferenceTest, NoThreshold) {
   // negative.
   EXPECT_GT(0.5f, score);
   EXPECT_NEAR(0.5f, score, epsilon_);
-  EXPECT_FALSE(predictor.PredictDecision(example));
+  EXPECT_FALSE(predictor.Predict(example));
 }
 
 }  // namespace machine_intelligence

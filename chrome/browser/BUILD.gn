@@ -439,6 +439,8 @@ split_static_library("browser") {
 
     # Oh hey, all the cool browser/extensions files are hanging out in
     # //chrome/browser/extensions/BUILD.gn
+    "assist_ranker/assist_ranker_service_factory.cc",
+    "assist_ranker/assist_ranker_service_factory.h",
     "external_protocol/external_protocol_handler.cc",
     "external_protocol/external_protocol_handler.h",
     "external_protocol/external_protocol_observer.cc",
@@ -1600,6 +1602,7 @@ split_static_library("browser") {
     "//components/invalidation/impl",
     "//components/keyed_service/content",
     "//components/language/core/browser",
+    "//components/machine_intelligence",
     "//components/metrics:call_stacks",
     "//components/metrics:component_metrics",
     "//components/metrics:gpu",

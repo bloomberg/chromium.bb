@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/machine_intelligence/ranker_model_loader.h"
+#include "components/machine_intelligence/ranker_model_loader_impl.h"
 
 #include <initializer_list>
 #include <memory>
@@ -28,15 +28,15 @@
 namespace {
 
 using machine_intelligence::RankerModel;
-using machine_intelligence::RankerModelLoader;
+using machine_intelligence::RankerModelLoaderImpl;
 using machine_intelligence::RankerModelStatus;
 
 const char kInvalidModelData[] = "not a valid model";
 const int kInvalidModelSize = sizeof(kInvalidModelData) - 1;
 
-class RankerModelLoaderTest : public ::testing::Test {
+class RankerModelLoaderImplTest : public ::testing::Test {
  protected:
-  RankerModelLoaderTest();
+  RankerModelLoaderImplTest();
 
   void SetUp() override;
 
@@ -68,10 +68,10 @@ class RankerModelLoaderTest : public ::testing::Test {
   // InitLocalModels()
   void SaveModel(const RankerModel& model, const base::FilePath& model_path);
 
-  // Implements RankerModelLoader's ValidateModelCallback interface.
+  // Implements RankerModelLoaderImpl's ValidateModelCallback interface.
   RankerModelStatus ValidateModel(const RankerModel& model);
 
-  // Implements RankerModelLoader's OnModelAvailableCallback interface.
+  // Implements RankerModelLoaderImpl's OnModelAvailableCallback interface.
   void OnModelAvailable(std::unique_ptr<RankerModel> model);
 
   // Sets up the task scheduling/task-runner environment for each test.
@@ -112,13 +112,13 @@ class RankerModelLoaderTest : public ::testing::Test {
   RankerModel expired_model_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RankerModelLoaderTest);
+  DISALLOW_COPY_AND_ASSIGN(RankerModelLoaderImplTest);
 };
 
-RankerModelLoaderTest::RankerModelLoaderTest()
+RankerModelLoaderImplTest::RankerModelLoaderImplTest()
     : url_fetcher_factory_(nullptr) {}
 
-void RankerModelLoaderTest::SetUp() {
+void RankerModelLoaderImplTest::SetUp() {
   request_context_getter_ =
       new net::TestURLRequestContextGetter(base::ThreadTaskRunnerHandle::Get());
 
@@ -141,7 +141,7 @@ void RankerModelLoaderTest::SetUp() {
 }
 
 // static
-std::unique_ptr<RankerModel> RankerModelLoaderTest::Clone(
+std::unique_ptr<RankerModel> RankerModelLoaderImplTest::Clone(
     const RankerModel& model) {
   auto copy = base::MakeUnique<RankerModel>();
   *copy->mutable_proto() = model.proto();
@@ -149,14 +149,14 @@ std::unique_ptr<RankerModel> RankerModelLoaderTest::Clone(
 }
 
 // static
-bool RankerModelLoaderTest::IsEqual(const RankerModel& m1,
-                                    const RankerModel& m2) {
+bool RankerModelLoaderImplTest::IsEqual(const RankerModel& m1,
+                                        const RankerModel& m2) {
   return m1.SerializeAsString() == m2.SerializeAsString();
 }
 
 // static
-bool RankerModelLoaderTest::IsEquivalent(const RankerModel& m1,
-                                         const RankerModel& m2) {
+bool RankerModelLoaderImplTest::IsEquivalent(const RankerModel& m1,
+                                             const RankerModel& m2) {
   auto copy_m1 = Clone(m1);
   copy_m1->mutable_proto()->mutable_metadata()->Clear();
 
@@ -166,21 +166,22 @@ bool RankerModelLoaderTest::IsEquivalent(const RankerModel& m1,
   return IsEqual(*copy_m1, *copy_m2);
 }
 
-bool RankerModelLoaderTest::DoLoaderTest(const base::FilePath& model_path,
-                                         const GURL& model_url) {
-  auto loader = base::MakeUnique<RankerModelLoader>(
-      base::Bind(&RankerModelLoaderTest::ValidateModel, base::Unretained(this)),
-      base::Bind(&RankerModelLoaderTest::OnModelAvailable,
+bool RankerModelLoaderImplTest::DoLoaderTest(const base::FilePath& model_path,
+                                             const GURL& model_url) {
+  auto loader = base::MakeUnique<RankerModelLoaderImpl>(
+      base::Bind(&RankerModelLoaderImplTest::ValidateModel,
+                 base::Unretained(this)),
+      base::Bind(&RankerModelLoaderImplTest::OnModelAvailable,
                  base::Unretained(this)),
       request_context_getter_.get(), model_path, model_url,
-      "RankerModelLoaderTest");
+      "RankerModelLoaderImplTest");
   loader->NotifyOfRankerActivity();
   scoped_task_environment_.RunUntilIdle();
 
   return true;
 }
 
-void RankerModelLoaderTest::InitRemoteModels() {
+void RankerModelLoaderImplTest::InitRemoteModels() {
   InitModel(remote_model_url_, base::Time(), base::TimeDelta(), &remote_model_);
   url_fetcher_factory_.SetFakeResponse(
       remote_model_url_, remote_model_.SerializeAsString(), net::HTTP_OK,
@@ -193,7 +194,7 @@ void RankerModelLoaderTest::InitRemoteModels() {
                                        net::URLRequestStatus::FAILED);
 }
 
-void RankerModelLoaderTest::InitLocalModels() {
+void RankerModelLoaderImplTest::InitLocalModels() {
   InitModel(remote_model_url_, base::Time::Now(), base::TimeDelta::FromDays(30),
             &local_model_);
   InitModel(remote_model_url_,
@@ -206,10 +207,10 @@ void RankerModelLoaderTest::InitLocalModels() {
             kInvalidModelSize);
 }
 
-void RankerModelLoaderTest::InitModel(const GURL& model_url,
-                                      const base::Time& last_modified,
-                                      const base::TimeDelta& cache_duration,
-                                      RankerModel* model) {
+void RankerModelLoaderImplTest::InitModel(const GURL& model_url,
+                                          const base::Time& last_modified,
+                                          const base::TimeDelta& cache_duration,
+                                          RankerModel* model) {
   ASSERT_TRUE(model != nullptr);
   model->mutable_proto()->Clear();
 
@@ -233,14 +234,14 @@ void RankerModelLoaderTest::InitModel(const GURL& model_url,
   logit->set_ignore_ratio_weight(0.4f);
 }
 
-void RankerModelLoaderTest::SaveModel(const RankerModel& model,
-                                      const base::FilePath& model_path) {
+void RankerModelLoaderImplTest::SaveModel(const RankerModel& model,
+                                          const base::FilePath& model_path) {
   std::string model_str = model.SerializeAsString();
   ASSERT_EQ(base::WriteFile(model_path, model_str.data(), model_str.size()),
             static_cast<int>(model_str.size()));
 }
 
-RankerModelStatus RankerModelLoaderTest::ValidateModel(
+RankerModelStatus RankerModelLoaderImplTest::ValidateModel(
     const RankerModel& model) {
   validated_models_.push_back(Clone(model));
   RankerModelStatus response = RankerModelStatus::OK;
@@ -251,28 +252,28 @@ RankerModelStatus RankerModelLoaderTest::ValidateModel(
   return response;
 }
 
-void RankerModelLoaderTest::OnModelAvailable(
+void RankerModelLoaderImplTest::OnModelAvailable(
     std::unique_ptr<RankerModel> model) {
   available_models_.push_back(std::move(model));
 }
 
 }  // namespace
 
-TEST_F(RankerModelLoaderTest, NoLocalOrRemoteModel) {
+TEST_F(RankerModelLoaderImplTest, NoLocalOrRemoteModel) {
   ASSERT_TRUE(DoLoaderTest(base::FilePath(), GURL()));
 
   EXPECT_EQ(0U, validated_models_.size());
   EXPECT_EQ(0U, available_models_.size());
 }
 
-TEST_F(RankerModelLoaderTest, BadLocalAndRemoteModel) {
+TEST_F(RankerModelLoaderImplTest, BadLocalAndRemoteModel) {
   ASSERT_TRUE(DoLoaderTest(invalid_model_path_, invalid_model_url_));
 
   EXPECT_EQ(0U, validated_models_.size());
   EXPECT_EQ(0U, available_models_.size());
 }
 
-TEST_F(RankerModelLoaderTest, LoadFromFileOnly) {
+TEST_F(RankerModelLoaderImplTest, LoadFromFileOnly) {
   EXPECT_TRUE(DoLoaderTest(local_model_path_, GURL()));
 
   ASSERT_EQ(1U, validated_models_.size());
@@ -281,7 +282,7 @@ TEST_F(RankerModelLoaderTest, LoadFromFileOnly) {
   EXPECT_TRUE(IsEqual(*available_models_[0], local_model_));
 }
 
-TEST_F(RankerModelLoaderTest, LoadFromFileSkipsDownload) {
+TEST_F(RankerModelLoaderImplTest, LoadFromFileSkipsDownload) {
   ASSERT_TRUE(DoLoaderTest(local_model_path_, remote_model_url_));
 
   ASSERT_EQ(1U, validated_models_.size());
@@ -290,7 +291,7 @@ TEST_F(RankerModelLoaderTest, LoadFromFileSkipsDownload) {
   EXPECT_TRUE(IsEqual(*available_models_[0], local_model_));
 }
 
-TEST_F(RankerModelLoaderTest, LoadFromFileAndBadUrl) {
+TEST_F(RankerModelLoaderImplTest, LoadFromFileAndBadUrl) {
   ASSERT_TRUE(DoLoaderTest(local_model_path_, invalid_model_url_));
   ASSERT_EQ(1U, validated_models_.size());
   ASSERT_EQ(1U, available_models_.size());
@@ -298,7 +299,7 @@ TEST_F(RankerModelLoaderTest, LoadFromFileAndBadUrl) {
   EXPECT_TRUE(IsEqual(*available_models_[0], local_model_));
 }
 
-TEST_F(RankerModelLoaderTest, LoadFromURLOnly) {
+TEST_F(RankerModelLoaderImplTest, LoadFromURLOnly) {
   ASSERT_TRUE(DoLoaderTest(base::FilePath(), remote_model_url_));
   ASSERT_EQ(1U, validated_models_.size());
   ASSERT_EQ(1U, available_models_.size());
@@ -306,7 +307,7 @@ TEST_F(RankerModelLoaderTest, LoadFromURLOnly) {
   EXPECT_TRUE(IsEquivalent(*available_models_[0], remote_model_));
 }
 
-TEST_F(RankerModelLoaderTest, LoadFromExpiredFileTriggersDownload) {
+TEST_F(RankerModelLoaderImplTest, LoadFromExpiredFileTriggersDownload) {
   ASSERT_TRUE(DoLoaderTest(expired_model_path_, remote_model_url_));
   ASSERT_EQ(2U, validated_models_.size());
   ASSERT_EQ(2U, available_models_.size());
@@ -316,7 +317,7 @@ TEST_F(RankerModelLoaderTest, LoadFromExpiredFileTriggersDownload) {
   EXPECT_TRUE(IsEquivalent(*available_models_[1], remote_model_));
 }
 
-TEST_F(RankerModelLoaderTest, LoadFromBadFileTriggersDownload) {
+TEST_F(RankerModelLoaderImplTest, LoadFromBadFileTriggersDownload) {
   ASSERT_TRUE(DoLoaderTest(invalid_model_path_, remote_model_url_));
   ASSERT_EQ(1U, validated_models_.size());
   ASSERT_EQ(1U, available_models_.size());
@@ -324,7 +325,7 @@ TEST_F(RankerModelLoaderTest, LoadFromBadFileTriggersDownload) {
   EXPECT_TRUE(IsEquivalent(*available_models_[0], remote_model_));
 }
 
-TEST_F(RankerModelLoaderTest, IncompatibleCachedFileTriggersDownload) {
+TEST_F(RankerModelLoaderImplTest, IncompatibleCachedFileTriggersDownload) {
   validate_model_response_.push_back(RankerModelStatus::INCOMPATIBLE);
 
   ASSERT_TRUE(DoLoaderTest(local_model_path_, remote_model_url_));
@@ -335,7 +336,7 @@ TEST_F(RankerModelLoaderTest, IncompatibleCachedFileTriggersDownload) {
   EXPECT_TRUE(IsEquivalent(*available_models_[0], remote_model_));
 }
 
-TEST_F(RankerModelLoaderTest, IncompatibleDownloadedFileKeepsExpired) {
+TEST_F(RankerModelLoaderImplTest, IncompatibleDownloadedFileKeepsExpired) {
   validate_model_response_.push_back(RankerModelStatus::OK);
   validate_model_response_.push_back(RankerModelStatus::INCOMPATIBLE);
 

@@ -4,14 +4,24 @@
 
 static_library("machine_intelligence") {
   sources = [
+    "assist_ranker_service.h",
+    "assist_ranker_service_impl.cc",
+    "assist_ranker_service_impl.h",
+    "base_predictor.cc",
+    "base_predictor.h",
+    "binary_classifier_predictor.cc",
+    "binary_classifier_predictor.h",
+    "fake_ranker_model_loader.cc",
+    "fake_ranker_model_loader.h",
     "generic_logistic_regression_inference.cc",
     "generic_logistic_regression_inference.h",
     "ranker_example_util.cc",
     "ranker_example_util.h",
     "ranker_model.cc",
     "ranker_model.h",
-    "ranker_model_loader.cc",
     "ranker_model_loader.h",
+    "ranker_model_loader_impl.cc",
+    "ranker_model_loader_impl.h",
     "ranker_url_fetcher.cc",
     "ranker_url_fetcher.h",
   ]
@@ -19,6 +29,7 @@ static_library("machine_intelligence") {
   deps = [
     "//base",
     "//components/data_use_measurement/core",
+    "//components/keyed_service/core",
     "//components/machine_intelligence/proto",
     "//net",
     "//url",
@@ -29,9 +40,10 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "binary_classifier_predictor_unittest.cc",
     "generic_logistic_regression_inference_unittest.cc",
     "ranker_example_util_unittest.cc",
-    "ranker_model_loader_unittest.cc",
+    "ranker_model_loader_impl_unittest.cc",
     "ranker_model_unittest.cc",
   ]
 
