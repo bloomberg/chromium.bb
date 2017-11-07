@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   wallpaper_manager->SetUserWallpaperInfo(test_account_id1_, info, true);
 
   // Set the wallpaper for |test_account_id1_|.
-  wallpaper_manager->SetUserWallpaper(test_account_id1_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   gfx::ImageSkia wallpaper = controller_->GetWallpaper();
 
@@ -289,12 +289,12 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   EXPECT_EQ(1, LoadedWallpapers());
   // Loads the same wallpaper before the initial one finished. It should be
   // prevented.
-  wallpaper_manager->SetUserWallpaper(test_account_id1_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_EQ(1, LoadedWallpapers());
   // Loads the same wallpaper after the initial one finished. It should be
   // prevented.
-  wallpaper_manager->SetUserWallpaper(test_account_id1_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_EQ(1, LoadedWallpapers());
   ClearDisposableWallpaperCache();
@@ -315,15 +315,15 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                         base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(test_account_id1_, info, true);
 
-  wallpaper_manager->SetUserWallpaper(test_account_id1_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id1_);
   WaitAsyncWallpaperLoadStarted();
   EXPECT_EQ(2, LoadedWallpapers());
   // Loads the same wallpaper before the initial one finished. It should be
   // prevented.
-  wallpaper_manager->SetUserWallpaper(test_account_id1_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id1_);
   WaitAsyncWallpaperLoadStarted();
   EXPECT_EQ(2, LoadedWallpapers());
-  wallpaper_manager->SetUserWallpaper(test_account_id1_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_EQ(2, LoadedWallpapers());
 }
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // Old wallpaper migration code doesn't exist in codebase anymore. So if
   // user's profile is not migrated, it is the same as no wallpaper info. To
   // simulate this, we remove user's wallpaper info here.
-  WallpaperManager::Get()->RemoveUserWallpaperInfo(test_account_id1_);
+  WallpaperManager::Get()->RemoveUserWallpaper(test_account_id1_);
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
@@ -384,8 +384,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                        HotPlugInScreenAtGAIALoginScreen) {
   UpdateDisplay("800x600");
   // Set initial wallpaper to the default wallpaper.
-  WallpaperManager::Get()->SetDefaultWallpaper(user_manager::StubAccountId(),
-                                               true /* update_wallpaper */);
+  WallpaperManager::Get()->ShowDefaultWallpaperForTesting(
+      user_manager::StubAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
 
   // Hook up a 2000x2000 display. The large resolution custom wallpaper should
@@ -444,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
   // Old wallpaper migration code doesn't exist in codebase anymore. So if
   // user's profile is not migrated, it is the same as no wallpaper info. To
   // simulate this, we remove user's wallpaper info here.
-  WallpaperManager::Get()->RemoveUserWallpaperInfo(test_account_id1_);
+  WallpaperManager::Get()->RemoveUserWallpaper(test_account_id1_);
 }
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
                         wallpaper::CUSTOMIZED,
                         base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(test_account_id1_, info, true);
-  wallpaper_manager->SetUserWallpaper(test_account_id1_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   std::unique_ptr<WallpaperManager::TestApi> test_api;
   test_api.reset(new WallpaperManager::TestApi(wallpaper_manager));
@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
 // Tests for crbug.com/339576. Wallpaper cache should be updated in
 // multi-profile mode when user:
 // 1. chooses an online wallpaper from wallpaper
-//    picker (calls SetWallpaperFromImageSkia);
+//    picker (calls SetOnlineWallpaper);
 // 2. chooses a custom wallpaper from wallpaper
 //    picker (calls SetCustomWallpaper);
 // 3. reverts to a default wallpaper.
@@ -579,11 +579,12 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   EXPECT_EQ(original_path, path);
 
   gfx::ImageSkia red_wallpaper = CreateTestImage(SK_ColorRED);
-  wallpaper_manager->SetWallpaperFromImageSkia(test_account_id1_, red_wallpaper,
-                                               WALLPAPER_LAYOUT_CENTER, true);
+  wallpaper_manager->SetOnlineWallpaper(test_account_id1_, red_wallpaper,
+                                        "dummy" /* dummy url */,
+                                        WALLPAPER_LAYOUT_CENTER, true);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  // SetWallpaperFromImageSkia should update wallpaper cache when multi-profile
-  // is turned on.
+  // SetOnlineWallpaper should update wallpaper cache when multi-profile is
+  // turned on.
   EXPECT_TRUE(
       test_api->GetWallpaperFromCache(test_account_id1_, &cached_wallpaper));
   EXPECT_TRUE(test_api->GetPathFromCache(test_account_id1_, &path));
@@ -592,21 +593,20 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   gfx::ImageSkia green_wallpaper = CreateTestImage(SK_ColorGREEN);
   wallpaper_manager->SetCustomWallpaper(
       test_account_id1_, test_account1_wallpaper_files_id_,
-      "dummy",  // dummy file name
-      WALLPAPER_LAYOUT_CENTER, wallpaper::CUSTOMIZED, green_wallpaper, true);
+      "dummy" /* dummy file name */, WALLPAPER_LAYOUT_CENTER,
+      wallpaper::CUSTOMIZED, green_wallpaper, true);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  // SetCustomWallpaper should also update wallpaper cache when multi-profile is
-  // turned on.
+  // SetCustomWallpaper should also update wallpaper cache when multi-profile
+  // is turned on.
   EXPECT_TRUE(
       test_api->GetWallpaperFromCache(test_account_id1_, &cached_wallpaper));
   EXPECT_TRUE(cached_wallpaper.BackedBySameObjectAs(green_wallpaper));
   EXPECT_TRUE(test_api->GetPathFromCache(test_account_id1_, &path));
   EXPECT_NE(original_path, path);
 
-  wallpaper_manager->SetDefaultWallpaper(test_account_id1_,
-                                         true /* update_wallpaper */);
+  wallpaper_manager->ShowDefaultWallpaperForTesting(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  // SetDefaultWallpaper should invalidate the user's wallpaper cache.
+  // ShowDefaultWallpaperForTesting invalidates the user's wallpaper cache.
   EXPECT_FALSE(
       test_api->GetWallpaperFromCache(test_account_id1_, &cached_wallpaper));
 }
@@ -734,8 +734,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallDefaultWallpaper) {
 
   // At 800x600, the small wallpaper should be loaded.
   UpdateDisplay("800x600");
-  WallpaperManager::Get()->SetDefaultWallpaper(EmptyAccountId(),
-                                               true /* update_wallpaper */);
+  WallpaperManager::Get()->ShowDefaultWallpaperForTesting(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),
@@ -745,8 +744,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallDefaultWallpaper) {
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeDefaultWallpaper) {
   CreateCmdlineWallpapers();
   UpdateDisplay("1600x1200");
-  WallpaperManager::Get()->SetDefaultWallpaper(EmptyAccountId(),
-                                               true /* update_wallpaper */);
+  WallpaperManager::Get()->ShowDefaultWallpaperForTesting(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),
@@ -758,8 +756,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   CreateCmdlineWallpapers();
 
   UpdateDisplay("1200x800/r");
-  WallpaperManager::Get()->SetDefaultWallpaper(EmptyAccountId(),
-                                               true /* update_wallpaper */);
+  WallpaperManager::Get()->ShowDefaultWallpaperForTesting(EmptyAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),
@@ -771,8 +768,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallGuestWallpaper) {
   SessionManager::Get()->CreateSession(user_manager::GuestAccountId(),
                                        user_manager::kGuestUserName);
   UpdateDisplay("800x600");
-  WallpaperManager::Get()->SetDefaultWallpaper(user_manager::GuestAccountId(),
-                                               true /* update_wallpaper */);
+  WallpaperManager::Get()->ShowDefaultWallpaperForTesting(
+      user_manager::GuestAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),
@@ -784,8 +781,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeGuestWallpaper) {
   SessionManager::Get()->CreateSession(user_manager::GuestAccountId(),
                                        user_manager::kGuestUserName);
   UpdateDisplay("1600x1200");
-  WallpaperManager::Get()->SetDefaultWallpaper(user_manager::GuestAccountId(),
-                                               true /* update_wallpaper */);
+  WallpaperManager::Get()->ShowDefaultWallpaperForTesting(
+      user_manager::GuestAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),
@@ -796,8 +793,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, SmallChildWallpaper) {
   CreateCmdlineWallpapers();
   LogInAsChild(test_account_id1_, kTestUser1Hash);
   UpdateDisplay("800x600");
-  WallpaperManager::Get()->SetDefaultWallpaper(test_account_id1_,
-                                               true /* update_wallpaper */);
+  WallpaperManager::Get()->ShowDefaultWallpaperForTesting(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),
@@ -808,8 +804,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, LargeChildWallpaper) {
   CreateCmdlineWallpapers();
   LogInAsChild(test_account_id1_, kTestUser1Hash);
   UpdateDisplay("1600x1200");
-  WallpaperManager::Get()->SetDefaultWallpaper(test_account_id1_,
-                                               true /* update_wallpaper */);
+  WallpaperManager::Get()->ShowDefaultWallpaperForTesting(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),
@@ -824,14 +819,15 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   SessionManager::Get()->CreateSession(user_manager::StubAccountId(),
                                        "test_hash");
 
-  WallpaperManager::Get()->SetDefaultWallpaper(user_manager::StubAccountId(),
-                                               true /* update_wallpaper */);
+  WallpaperManager* wallpaper_manager = WallpaperManager::Get();
+  wallpaper_manager->ShowDefaultWallpaperForTesting(
+      user_manager::StubAccountId());
 
   // Custom wallpaper should be applied immediately, canceling the default
   // wallpaper load task.
   gfx::ImageSkia image = wallpaper_manager_test_utils::CreateTestImage(
       640, 480, wallpaper_manager_test_utils::kCustomWallpaperColor);
-  WallpaperManager::Get()->SetCustomWallpaper(
+  wallpaper_manager->SetCustomWallpaper(
       user_manager::StubAccountId(),
       wallpaper::WallpaperFilesId::FromString("test_hash"), "test-nofile.jpeg",
       WALLPAPER_LAYOUT_STRETCH, wallpaper::CUSTOMIZED, image, true);
@@ -841,8 +837,8 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
       controller_->GetWallpaper(),
       wallpaper_manager_test_utils::kCustomWallpaperColor));
 
-  WallpaperManager::Get()->SetDefaultWallpaper(user_manager::StubAccountId(),
-                                               true /* update_wallpaper */);
+  wallpaper_manager->ShowDefaultWallpaperForTesting(
+      user_manager::StubAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
 
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
@@ -857,21 +853,22 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, IsPendingWallpaper) {
   SessionManager::Get()->CreateSession(user_manager::StubAccountId(),
                                        "test_hash");
 
-  WallpaperManager::Get()->SetDefaultWallpaper(user_manager::StubAccountId(),
-                                               true /* update_wallpaper */);
+  WallpaperManager* wallpaper_manager = WallpaperManager::Get();
+  wallpaper_manager->ShowDefaultWallpaperForTesting(
+      user_manager::StubAccountId());
 
   gfx::ImageSkia image = wallpaper_manager_test_utils::CreateTestImage(
       640, 480, wallpaper_manager_test_utils::kCustomWallpaperColor);
   EXPECT_FALSE(WallpaperManager::Get()->IsPendingWallpaper(
       wallpaper::WallpaperResizer::GetImageId(image)));
-  WallpaperManager::Get()->SetCustomWallpaper(
+  wallpaper_manager->SetCustomWallpaper(
       user_manager::StubAccountId(),
       wallpaper::WallpaperFilesId::FromString("test_hash"), "test-nofile.jpeg",
       WALLPAPER_LAYOUT_STRETCH, wallpaper::CUSTOMIZED, image, true);
-  EXPECT_TRUE(WallpaperManager::Get()->IsPendingWallpaper(
+  EXPECT_TRUE(wallpaper_manager->IsPendingWallpaper(
       wallpaper::WallpaperResizer::GetImageId(image)));
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  EXPECT_FALSE(WallpaperManager::Get()->IsPendingWallpaper(
+  EXPECT_FALSE(wallpaper_manager->IsPendingWallpaper(
       wallpaper::WallpaperResizer::GetImageId(image)));
 }
 
@@ -906,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, CustomWallpaperLostTest) {
                          wallpaper::CUSTOMIZED,
                          base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(test_account_id2_, info2, true);
-  wallpaper_manager->SetUserWallpaper(test_account_id2_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id2_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       controller_->GetWallpaper(),
@@ -960,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                         wallpaper::CUSTOMIZED,
                         base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(test_account_id1_, info, true);
-  wallpaper_manager->SetUserWallpaper(test_account_id1_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(base::PathExists(small_wallpaper_path));
 
@@ -980,12 +977,12 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                          wallpaper::CUSTOMIZED,
                          base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(test_account_id2_, info2, true);
-  wallpaper_manager->SetUserWallpaper(test_account_id2_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id2_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(base::PathExists(small_wallpaper_path2));
 
   // Simulate the removal of |test_account_id2_|.
-  wallpaper_manager->RemoveUserWallpaperInfo(test_account_id2_);
+  wallpaper_manager->RemoveUserWallpaper(test_account_id2_);
   // Wait until all files under the user's custom_wallpapers directory are
   // removed.
   WaitUntilCustomWallpapersDeleted(test_account_id2_);
@@ -1021,7 +1018,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
                         wallpaper::CUSTOMIZED,
                         base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(test_account_id1_, info, true);
-  wallpaper_manager->SetUserWallpaper(test_account_id1_);
+  wallpaper_manager->ShowUserWallpaper(test_account_id1_);
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_TRUE(base::PathExists(small_wallpaper_path));
 
@@ -1032,12 +1029,12 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   WallpaperInfo info2 = {"", WALLPAPER_LAYOUT_CENTER_CROPPED,
                          wallpaper::DEFAULT, base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(test_account_id2_, info2, true);
-  WallpaperManager::Get()->SetDefaultWallpaper(test_account_id2_,
-                                               true /* update_wallpaper */);
+  wallpaper_manager->ShowDefaultWallpaperForTesting(
+      user_manager::StubAccountId());
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
 
   // Simulate the removal of |test_account_id2_|.
-  wallpaper_manager->RemoveUserWallpaperInfo(test_account_id2_);
+  wallpaper_manager->RemoveUserWallpaper(test_account_id2_);
   WaitUntilCustomWallpapersDeleted(test_account_id2_);
 
   // Test that the other user's wallpaper is not affected.

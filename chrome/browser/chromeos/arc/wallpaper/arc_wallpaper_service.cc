@@ -234,7 +234,7 @@ void ArcWallpaperService::SetDefaultWallpaper() {
   decode_request_.reset();
   const PrimaryAccount& account = GetPrimaryAccount();
   chromeos::WallpaperManager::Get()->SetDefaultWallpaper(
-      account.id, account.is_active /* update_wallpaper */);
+      account.id, account.is_active /* show_wallpaper */);
 }
 
 void ArcWallpaperService::GetWallpaper(GetWallpaperCallback callback) {
