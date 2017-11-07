@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import collections
+import traceback
 
 from chromite.cbuildbot import afdo
 from chromite.cbuildbot import manifest_version
@@ -30,10 +31,10 @@ from chromite.cbuildbot.stages import vm_test_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
 from chromite.lib import patch as cros_patch
 from chromite.lib import parallel
 from chromite.lib import results_lib
-from chromite.lib import failures_lib
 
 
 # TODO: SimpleBuilder needs to be broken up big time.
@@ -167,22 +168,36 @@ class SimpleBuilder(generic_builders.Builder):
       board: String containing board name.
     """
     config = builder_run.config
+    except_infos = []
 
-    if config.vm_test_runs > 1:
-      # Run the VMTests multiple times to see if they fail.
-      self._RunStage(generic_stages.RepeatStage, config.vm_test_runs,
-                     vm_test_stages.VMTestStage, board, builder_run=builder_run)
-    else:
-      # Retry VM-based tests in case failures are flaky.
-      self._RunStage(generic_stages.RetryStage, constants.VM_NUM_RETRIES,
-                     vm_test_stages.VMTestStage, board, builder_run=builder_run)
+    try:
+      if config.vm_test_runs > 1:
+        # Run the VMTests multiple times to see if they fail.
+        self._RunStage(generic_stages.RepeatStage, config.vm_test_runs,
+                       vm_test_stages.VMTestStage, board,
+                       builder_run=builder_run)
+      else:
+        # Retry VM-based tests in case failures are flaky.
+        self._RunStage(generic_stages.RetryStage, constants.VM_NUM_RETRIES,
+                       vm_test_stages.VMTestStage, board,
+                       builder_run=builder_run)
+    except Exception as e:
+      except_infos.extend(
+          failures_lib.CreateExceptInfo(e, traceback.format_exc()))
 
     # Run stages serially to avoid issues encountered when running VMs (or the
     # devserver) in parallel: https://crbug.com/779267
     if config.tast_vm_tests:
-      self._RunStage(generic_stages.RetryStage, constants.VM_NUM_RETRIES,
-                     tast_test_stages.TastVMTestStage, board,
-                     builder_run=builder_run)
+      try:
+        self._RunStage(generic_stages.RetryStage, constants.VM_NUM_RETRIES,
+                       tast_test_stages.TastVMTestStage, board,
+                       builder_run=builder_run)
+      except Exception as e:
+        except_infos.extend(
+            failures_lib.CreateExceptInfo(e, traceback.format_exc()))
+
+    if except_infos:
+      raise failures_lib.CompoundFailure('VM tests failed', except_infos)
 
   def _RunDebugSymbolStages(self, builder_run, board):
     """Run debug-related stages for the specified board.

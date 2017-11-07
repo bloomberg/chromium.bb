@@ -14,7 +14,10 @@ from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import completion_stages
+from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import handle_changes_stages
+from chromite.cbuildbot.stages import tast_test_stages
+from chromite.cbuildbot.stages import vm_test_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
@@ -34,11 +37,25 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     # List of all stages that would have been called as part of this run.
     self.called_stages = []
 
+    # Map from stage class to exception to be raised when stage is run.
+    self.stage_exceptions = {}
+
+    # VM test stages that are run by SimpleBuilder._RunVMTests.
+    self.all_vm_test_stages = [vm_test_stages.VMTestStage,
+                               tast_test_stages.TastVMTestStage]
+
     # Simple new function that redirects RunStage to record all stages to be
     # run rather than mock them completely. These can be used in a test to
     # assert something has been called.
-    def run_stage(_class_instance, stage_name, *_args, **_kwargs):
+    def run_stage(_class_instance, stage_name, *args, **_kwargs):
+      # It's more useful to record the actual stage that's wrapped within
+      # RepeatStage or RetryStage.
+      if stage_name in [generic_stages.RepeatStage, generic_stages.RetryStage]:
+        stage_name = args[1]
+
       self.called_stages.append(stage_name)
+      if stage_name in self.stage_exceptions:
+        raise self.stage_exceptions[stage_name]
 
     # Parallel version.
     def run_parallel_stages(_class_instance, *_args):
@@ -92,6 +109,22 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
 
     return cbuildbot_run.BuilderRun(
         options, site_config, build_config, self._manager)
+
+  def _RunVMTests(self):
+    """Helper method that runs VM tests and returns exceptions.
+
+    Returns:
+      List of exception classes in CompoundFailure.
+    """
+    board = 'betty-release'
+    builder_run = self._initConfig(board)
+    exception_types = []
+
+    try:
+      simple_builders.SimpleBuilder(builder_run)._RunVMTests(builder_run, board)
+    except failures_lib.CompoundFailure as f:
+      exception_types = [e.type for e in f.exc_infos]
+    return exception_types
 
   def testRunStagesPreCQ(self):
     """Verify RunStages for PRE_CQ_LAUNCHER_TYPE builders"""
@@ -200,6 +233,38 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
         model2,
         test_phase2)
     self.assertIsNotNone(hw_stage)
+
+  def testAllVMTestStagesSucceed(self):
+    """Verify all VM test stages are run."""
+    self.assertEquals([], self._RunVMTests())
+    self.assertEquals(self.all_vm_test_stages, self.called_stages)
+
+  def testAllVMTestStagesFail(self):
+    """Verify failures are reported when all VM test stages fail."""
+    self.stage_exceptions = {
+        vm_test_stages.VMTestStage: failures_lib.InfrastructureFailure(),
+        tast_test_stages.TastVMTestStage: failures_lib.TestFailure(),
+    }
+    self.assertEquals(
+        [failures_lib.InfrastructureFailure, failures_lib.TestFailure],
+        self._RunVMTests())
+    self.assertEquals(self.all_vm_test_stages, self.called_stages)
+
+  def testVMTestStageFails(self):
+    """Verify TastVMTestStage is still run when VMTestStage fails."""
+    self.stage_exceptions = {
+        vm_test_stages.VMTestStage: failures_lib.TestFailure(),
+    }
+    self.assertEquals([failures_lib.TestFailure], self._RunVMTests())
+    self.assertEquals(self.all_vm_test_stages, self.called_stages)
+
+  def testTastVMTestStageFails(self):
+    """Verify VMTestStage is still run when TastVMTestStage fails."""
+    self.stage_exceptions = {
+        tast_test_stages.TastVMTestStage: failures_lib.TestFailure(),
+    }
+    self.assertEquals([failures_lib.TestFailure], self._RunVMTests())
+    self.assertEquals(self.all_vm_test_stages, self.called_stages)
 
 
 class DistributedBuilderTests(SimpleBuilderTest):
