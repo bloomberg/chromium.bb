@@ -27,13 +27,13 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -66,10 +66,10 @@ public class WebappActionsNotificationTest {
         Notification notification = getWebappNotification();
 
         Assert.assertNotNull(notification);
-        Assert.assertEquals("webapp short name runs in Chrome",
-                notification.extras.getString(Notification.EXTRA_TITLE));
-        Assert.assertEquals(UrlFormatter.formatUrlForDisplay(
-                                    mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH)),
+        Assert.assertEquals(
+                "webapp short name", notification.extras.getString(Notification.EXTRA_TITLE));
+        Assert.assertEquals(
+                mActivityTestRule.getActivity().getString(R.string.webapp_tap_to_copy_url),
                 notification.extras.getString(Notification.EXTRA_TEXT));
         Assert.assertEquals("Share", notification.actions[0].title);
         Assert.assertEquals("Open in Chrome", notification.actions[1].title);

@@ -613,15 +613,6 @@ public class WebappActivity extends SingleTabActivity {
             }
 
             @Override
-            public void onUrlUpdated(Tab tab) {
-                if (ApplicationStatus.getStateForActivity(WebappActivity.this)
-                        == ActivityState.RESUMED) {
-                    // Updates the URL on the notification.
-                    mNotificationManager.maybeShowNotification();
-                }
-            }
-
-            @Override
             public void onDidChangeThemeColor(Tab tab, int color) {
                 mBrandColor = color;
                 updateTaskDescription();
