@@ -297,7 +297,8 @@ IN_PROC_BROWSER_TEST_F(ThumbnailTest,
   ui_test_utils::NavigateToURL(browser(), slow_url);
 }
 
-IN_PROC_BROWSER_TEST_F(ThumbnailTest, ShouldContainProperContentIfCaptured) {
+IN_PROC_BROWSER_TEST_F(ThumbnailTest,
+                       ShouldContainProperContentIfCapturedOnNavigatingAway) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   const GURL about_blank_url("about:blank");
@@ -338,6 +339,76 @@ IN_PROC_BROWSER_TEST_F(ThumbnailTest, ShouldContainProperContentIfCaptured) {
       .Times(AtMost(1))
       .WillOnce(Return(true));
   ui_test_utils::NavigateToURL(browser(), yellow_url);
+}
+
+IN_PROC_BROWSER_TEST_F(ThumbnailTest,
+                       ShouldContainProperContentIfCapturedOnTabSwitch) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL about_blank_url("about:blank");
+  const GURL red_url =
+      embedded_test_server()->GetURL("/thumbnail_capture/red.html");
+  const GURL yellow_url =
+      embedded_test_server()->GetURL("/thumbnail_capture/yellow.html");
+
+  // Normally, ShouldAcquirePageThumbnail depends on many things, e.g. whether
+  // the given URL is in TopSites. For the purposes of this test, bypass all
+  // that and just take thumbnails of the red and the yellow page.
+  ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(about_blank_url, _))
+      .WillByDefault(Return(false));
+  ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(red_url, _))
+      .WillByDefault(Return(true));
+  ON_CALL(*thumbnail_service(), ShouldAcquirePageThumbnail(yellow_url, _))
+      .WillByDefault(Return(true));
+
+  // The test framework opens an about:blank tab by default.
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(about_blank_url, active_tab->GetLastCommittedURL());
+
+  // Open a new tab with the red page.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), red_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Open another tab with the yellow page. Before the red tab gets hidden, we
+  // should attempt to take a thumbnail of it, which might or might not succeed.
+  // In any case, we must not get an image with wrong (non-red) contents.
+  EXPECT_CALL(*thumbnail_service(),
+              SetPageThumbnail(Field(&ThumbnailingContext::url, red_url),
+                               ImageColorIs(SK_ColorRED)))
+      .Times(AtMost(1))
+      .WillOnce(Return(true));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), yellow_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Switch back to the first tab. Again, we should attempt to take a thumbnail
+  // (of the yellow page this time), which might or might not succeed, but if it
+  // does must have the correct contents.
+  EXPECT_CALL(*thumbnail_service(),
+              SetPageThumbnail(Field(&ThumbnailingContext::url, yellow_url),
+                               ImageColorIs(SK_ColorYELLOW)))
+      .Times(AtMost(1))
+      .WillOnce(Return(true));
+  ASSERT_EQ(2, browser()->tab_strip_model()->active_index());
+  ASSERT_EQ(yellow_url, active_tab->GetLastCommittedURL());
+  browser()->tab_strip_model()->ActivateTabAt(0, /*user_gesture=*/true);
+  active_tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(about_blank_url, active_tab->GetLastCommittedURL());
+
+  // Open another about:blank tab, to give the thumbnailing process above some
+  // time to finish (or fail). Without this, the test always finishes before
+  // the thumbnailing process does, so we'd have no chance to check the image
+  // contents.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), about_blank_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 }
 
 }  // namespace
