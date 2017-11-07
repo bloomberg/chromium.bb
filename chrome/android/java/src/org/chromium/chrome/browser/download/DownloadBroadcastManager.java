@@ -110,7 +110,7 @@ public class DownloadBroadcastManager extends Service {
     void cancelQueuedResumptions() {
         DownloadResumptionScheduler
                 .getDownloadResumptionScheduler(ContextUtils.getApplicationContext())
-                .cancelTask();
+                .cancel();
         // Reset number of attempts left if the action is triggered by user.
         clearResumptionAttemptLeft();
     }
