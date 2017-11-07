@@ -47,6 +47,9 @@ const char kUseFirstDisplayAsInternal[] = "use-first-display-as-internal";
 
 // Enables unified desktop mode.
 const char kEnableUnifiedDesktop[] = "ash-enable-unified-desktop";
+
+// Enables using the monitor's provided color space information when rendering.
+const char kUseMonitorColorSpace[] = "use-monitor-color-space";
 #endif
 
 }  // namespace switches

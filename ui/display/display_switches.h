@@ -24,6 +24,7 @@ DISPLAY_EXPORT extern const char kUseFirstDisplayAsInternal[];
 
 #if defined(OS_CHROMEOS)
 DISPLAY_EXPORT extern const char kEnableUnifiedDesktop[];
+DISPLAY_EXPORT extern const char kUseMonitorColorSpace[];
 #endif
 
 }  // namespace switches

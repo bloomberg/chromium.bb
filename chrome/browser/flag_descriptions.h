@@ -1622,6 +1622,9 @@ extern const char kUseMusDescription[];
 extern const char kEnableMashDescription[];
 extern const char kEnableMusDescription[];
 
+extern const char kUseMonitorColorSpaceName[];
+extern const char kUseMonitorColorSpaceDescription[];
+
 extern const char kVideoPlayerChromecastSupportName[];
 extern const char kVideoPlayerChromecastSupportDescription[];
 
