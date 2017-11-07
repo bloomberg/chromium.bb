@@ -6,6 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_MAIN_THREAD_TASK_QUEUE_H_
 
 #include "platform/scheduler/base/task_queue.h"
+#include "platform/scheduler/base/task_queue_impl.h"
 
 namespace blink {
 
