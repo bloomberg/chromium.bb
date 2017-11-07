@@ -264,13 +264,23 @@ int amdgpu_device_initialize(int fd,
 		goto cleanup;
 	}
 
-	start = dev->dev_info.virtual_address_offset;
-	max = MIN2(dev->dev_info.virtual_address_max, 0x100000000ULL);
+	if (dev->dev_info.high_va_offset && dev->dev_info.high_va_max) {
+		start = dev->dev_info.high_va_offset;
+		max = dev->dev_info.high_va_max;
+	} else {
+		start = dev->dev_info.virtual_address_offset;
+		max = dev->dev_info.virtual_address_max;
+	}
+
+	max = MIN2(max, (start & ~0xffffffff) + 0x100000000ULL);
 	amdgpu_vamgr_init(&dev->vamgr_32, start, max,
 			  dev->dev_info.virtual_address_alignment);
 
-	start = MAX2(dev->dev_info.virtual_address_offset, 0x100000000ULL);
-	max = MAX2(dev->dev_info.virtual_address_max, 0x100000000ULL);
+	start = max;
+	if (dev->dev_info.high_va_offset && dev->dev_info.high_va_max)
+		max = dev->dev_info.high_va_max;
+	else
+		max = dev->dev_info.virtual_address_max;
 	amdgpu_vamgr_init(&dev->vamgr, start, max,
 			  dev->dev_info.virtual_address_alignment);
 
