@@ -9431,9 +9431,9 @@
       },
       'example_value': 'managedchrome.com,example.com',
       'id': 331,
-      'caption': '''Define domains allowed to access Google Apps''',
+      'caption': '''Define domains allowed to access G Suite''',
       'tags': ['filtering'],
-      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s restricted log in feature in Google Apps and prevents users from changing this setting.
+      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s restricted log in feature in G Suite and prevents users from changing this setting.
 
       If you define this setting, the user will only be able to access Google
       Apps using accounts from the specified domains (note that this does not
@@ -9442,10 +9442,10 @@
       This setting will NOT prevent the user from loging in on a managed device
       that requires Google authentication. The user will still be allowed to
       sign in to accounts from other domains, but they will receive an error
-      when trying to use Google Apps with those accounts.
+      when trying to use G Suite with those accounts.
 
       If you leave this setting empty/not-configured, the user will be able to
-      access Google Apps with any account.
+      access G Suite with any account.
 
       This policy causes the X-GoogApps-Allowed-Domains header to be appended to
       all HTTP and HTTPS requests to all google.com domains, as described in
