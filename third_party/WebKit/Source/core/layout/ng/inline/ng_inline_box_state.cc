@@ -390,7 +390,8 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
           box->fragment_start, fragment_end, box->metrics, vertical_align});
       return kPositionPending;
   }
-  box->metrics.Move(baseline_shift);
+  if (!box->metrics.IsEmpty())
+    box->metrics.Move(baseline_shift);
   line_box->MoveInBlockDirection(baseline_shift, box->fragment_start,
                                  fragment_end);
   return kPositionNotPending;
