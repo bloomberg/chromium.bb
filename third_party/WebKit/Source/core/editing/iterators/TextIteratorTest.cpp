@@ -37,8 +37,7 @@
 #include "core/html/forms/TextControlElement.h"
 
 namespace blink {
-
-namespace {
+namespace text_iterator_test {
 
 TextIteratorBehavior CollapseTrailingSpaceBehavior() {
   return TextIteratorBehavior::Builder().SetCollapseTrailingSpace(true).Build();
@@ -67,8 +66,6 @@ TextIteratorBehavior EmitsSmallXForTextSecurityBehavior() {
       .SetEmitsSmallXForTextSecurity(true)
       .Build();
 }
-
-}  // namespace
 
 struct DOMTree : NodeTraversal {
   using PositionType = Position;
@@ -1016,4 +1013,5 @@ TEST_F(TextIteratorTest, BasicIterationInputiWithBr) {
   EXPECT_EQ("[b]", IteratePartial<DOMTree>(start, end));
 }
 
+}  // namespace text_iterator_test
 }  // namespace blink
