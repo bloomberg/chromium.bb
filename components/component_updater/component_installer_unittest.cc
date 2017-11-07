@@ -134,8 +134,6 @@ class FakeInstallerPolicy : public ComponentInstallerPolicy {
     return update_client::CrxInstaller::Result(0);
   }
 
-  void OnCustomUninstall() override {}
-
   void ComponentReady(
       const base::Version& version,
       const base::FilePath& install_dir,
