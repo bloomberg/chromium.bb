@@ -50,7 +50,6 @@ libvpx_include_dirs = [
   "source/config",
   platform_include_dir,
   "source/libvpx",
-  target_gen_dir,  # Provides vpx_rtcd.h.
 ]
 
 config("libvpx_config") {
