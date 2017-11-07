@@ -55,13 +55,14 @@ TEST(EC_TEST, random_ec_test) {
     for (j = 0; j < sz; j++) {
       data[j] = rand() / ((RAND_MAX >> 1) + 1);
 
-      fts[j] = 15;
-      fz[j] = (rand() % 32766) >> (15 - fts[j]);
+      fts[j] = CDF_PROB_BITS;
+      fz[j] = (rand() % (CDF_PROB_TOP - 2)) >> (CDF_PROB_BITS - fts[j]);
       fz[j] = OD_MAXI(fz[j], 1);
       enc_method[j] = 3 + (rand() & 1);
       switch (enc_method[j]) {
         case 3: {
-          od_ec_encode_bool_q15(&enc, data[j], OD_ICDF(fz[j] << (15 - fts[j])));
+          od_ec_encode_bool_q15(&enc, data[j],
+                                OD_ICDF(fz[j] << (CDF_PROB_BITS - fts[j])));
           break;
         }
         case 4: {
@@ -69,7 +70,6 @@ TEST(EC_TEST, random_ec_test) {
           cdf[0] = OD_ICDF(fz[j]);
           cdf[1] = OD_ICDF(1U << fts[j]);
           od_ec_encode_cdf_q15(&enc, data[j], cdf, 2);
-          enc_method[j]++;
           break;
         }
       }
@@ -90,10 +90,15 @@ TEST(EC_TEST, random_ec_test) {
         << " (Random seed: " << seed << ").\n";
     for (j = 0; j < sz; j++) {
       int dec_method;
-      dec_method = 3 + (rand() & 1);
+      if (CDF_SHIFT == 0) {
+        dec_method = 3 + (rand() & 1);
+      } else {
+        dec_method = enc_method[j];
+      }
       switch (dec_method) {
         case 3: {
-          sym = od_ec_decode_bool_q15(&dec, OD_ICDF(fz[j] << (15 - fts[j])));
+          sym = od_ec_decode_bool_q15(
+              &dec, OD_ICDF(fz[j] << (CDF_PROB_BITS - fts[j])));
           break;
         }
         case 4: {
@@ -101,7 +106,6 @@ TEST(EC_TEST, random_ec_test) {
           cdf[0] = OD_ICDF(fz[j]);
           cdf[1] = OD_ICDF(1U << fts[j]);
           sym = od_ec_decode_cdf_q15(&dec, cdf, 2);
-          dec_method++;
           break;
         }
       }
@@ -126,28 +130,30 @@ TEST(EC_TEST, random_ec_test) {
     free(fz);
   }
   od_ec_enc_reset(&enc);
-  od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
-  od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
-  od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
-  od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
-  od_ec_encode_bool_q15(&enc, 0, OD_ICDF(24576));
-  od_ec_enc_patch_initial_bits(&enc, 3, 2);
-  EXPECT_FALSE(enc.error) << "od_ec_enc_patch_initial_bits() failed.\n";
-  od_ec_enc_patch_initial_bits(&enc, 0, 5);
-  EXPECT_TRUE(enc.error)
-      << "od_ec_enc_patch_initial_bits() didn't fail when it should have.\n";
-  od_ec_enc_reset(&enc);
-  od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
-  od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
-  od_ec_encode_bool_q15(&enc, 1, OD_ICDF(32256));
-  od_ec_encode_bool_q15(&enc, 0, OD_ICDF(24576));
-  od_ec_enc_patch_initial_bits(&enc, 0, 2);
-  EXPECT_FALSE(enc.error) << "od_ec_enc_patch_initial_bits() failed.\n";
-  ptr = od_ec_enc_done(&enc, &ptr_sz);
-  EXPECT_EQ(ptr_sz, 2u);
-  EXPECT_EQ(ptr[0], 63)
-      << "Got " << ptr[0]
-      << " when expecting 63 for od_ec_enc_patch_initial_bits().\n";
+  if (CDF_SHIFT == 0) {
+    od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
+    od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
+    od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
+    od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
+    od_ec_encode_bool_q15(&enc, 0, OD_ICDF(24576));
+    od_ec_enc_patch_initial_bits(&enc, 3, 2);
+    EXPECT_FALSE(enc.error) << "od_ec_enc_patch_initial_bits() failed.\n";
+    od_ec_enc_patch_initial_bits(&enc, 0, 5);
+    EXPECT_TRUE(enc.error)
+        << "od_ec_enc_patch_initial_bits() didn't fail when it should have.\n";
+    od_ec_enc_reset(&enc);
+    od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
+    od_ec_encode_bool_q15(&enc, 0, OD_ICDF(16384));
+    od_ec_encode_bool_q15(&enc, 1, OD_ICDF(32256));
+    od_ec_encode_bool_q15(&enc, 0, OD_ICDF(24576));
+    od_ec_enc_patch_initial_bits(&enc, 0, 2);
+    EXPECT_FALSE(enc.error) << "od_ec_enc_patch_initial_bits() failed.\n";
+    ptr = od_ec_enc_done(&enc, &ptr_sz);
+    EXPECT_EQ(ptr_sz, 2u);
+    EXPECT_EQ(ptr[0], 63)
+        << "Got " << ptr[0]
+        << " when expecting 63 for od_ec_enc_patch_initial_bits().\n";
+  }
   od_ec_enc_clear(&enc);
   EXPECT_EQ(ret, 0);
 }

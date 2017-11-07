@@ -14,6 +14,7 @@
 #include <limits.h>
 #include <stddef.h>
 #include "av1/common/odintrin.h"
+#include "aom_dsp/prob.h"
 
 #define EC_PROB_SHIFT 6
 #define EC_MIN_PROB 4  // must be <= (1<<EC_PROB_SHIFT)/16
@@ -31,11 +32,7 @@ typedef uint32_t od_ec_window;
    3 => 1/8th bits.*/
 #define OD_BITRES (3)
 
-/*The value stored in an iCDF is 32768 minus the actual Q15 cumulative
-   probability (an "inverse" CDF).
-  This function converts from one representation to the other (and is its own
-   inverse).*/
-#define OD_ICDF(x) (32768U - (x))
+#define OD_ICDF AOM_ICDF
 
 /*See entcode.c for further documentation.*/
 

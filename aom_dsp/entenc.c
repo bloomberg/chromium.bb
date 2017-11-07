@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "aom_dsp/entenc.h"
+#include "aom_dsp/prob.h"
 
 /*A range encoder.
   See entdec.c and the references for implementation details \cite{Mar79,MNW98}.
@@ -143,9 +144,11 @@ void od_ec_enc_clear(od_ec_enc *enc) {
 }
 
 /*Encodes a symbol given its frequency in Q15.
-  fl: 32768 minus the cumulative frequency of all symbols that come before the
+  fl: CDF_PROB_TOP minus the cumulative frequency of all symbols that come
+  before the
        one to be encoded.
-  fh: 32768 minus the cumulative frequency of all symbols up to and including
+  fh: CDF_PROB_TOP minus the cumulative frequency of all symbols up to and
+  including
        the one to be encoded.*/
 static void od_ec_encode_q15(od_ec_enc *enc, unsigned fl, unsigned fh, int s,
                              int nsyms) {
@@ -158,21 +161,25 @@ static void od_ec_encode_q15(od_ec_enc *enc, unsigned fl, unsigned fh, int s,
   OD_ASSERT(32768U <= r);
   OD_ASSERT(fh <= fl);
   OD_ASSERT(fl <= 32768U);
+  OD_ASSERT(7 - EC_PROB_SHIFT - CDF_SHIFT >= 0);
   const int N = nsyms - 1;
-  if (fl < 32768U) {
-    u = ((r >> 8) * (uint32_t)(fl >> EC_PROB_SHIFT) >> (7 - EC_PROB_SHIFT)) +
+  if (fl < CDF_PROB_TOP) {
+    u = ((r >> 8) * (uint32_t)(fl >> EC_PROB_SHIFT) >>
+         (7 - EC_PROB_SHIFT - CDF_SHIFT)) +
         EC_MIN_PROB * (N - (s - 1));
-    v = ((r >> 8) * (uint32_t)(fh >> EC_PROB_SHIFT) >> (7 - EC_PROB_SHIFT)) +
+    v = ((r >> 8) * (uint32_t)(fh >> EC_PROB_SHIFT) >>
+         (7 - EC_PROB_SHIFT - CDF_SHIFT)) +
         EC_MIN_PROB * (N - (s + 0));
     l += r - u;
     r = u - v;
   } else {
-    r -= ((r >> 8) * (uint32_t)(fh >> EC_PROB_SHIFT) >> (7 - EC_PROB_SHIFT)) +
+    r -= ((r >> 8) * (uint32_t)(fh >> EC_PROB_SHIFT) >>
+          (7 - EC_PROB_SHIFT - CDF_SHIFT)) +
          EC_MIN_PROB * (N - (s + 0));
   }
   od_ec_enc_normalize(enc, l, r);
 #if OD_MEASURE_EC_OVERHEAD
-  enc->entropy -= OD_LOG2((double)(OD_ICDF(fh) - OD_ICDF(fl)) / 32768.);
+  enc->entropy -= OD_LOG2((double)(OD_ICDF(fh) - OD_ICDF(fl)) / CDF_PROB_TOP.);
   enc->nb_symbols++;
 #endif
 }
@@ -195,8 +202,7 @@ void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned f) {
   r = val ? v : r - v;
   od_ec_enc_normalize(enc, l, r);
 #if OD_MEASURE_EC_OVERHEAD
-  enc->entropy -=
-      OD_LOG2((double)(val ? 32768 - OD_ICDF(f) : OD_ICDF(f)) / 32768.);
+  enc->entropy -= OD_LOG2((double)(val ? f : (32768 - f)) / 32768.);
   enc->nb_symbols++;
 #endif
 }
@@ -214,7 +220,7 @@ void od_ec_encode_cdf_q15(od_ec_enc *enc, int s, const uint16_t *icdf,
   (void)nsyms;
   OD_ASSERT(s >= 0);
   OD_ASSERT(s < nsyms);
-  OD_ASSERT(icdf[nsyms - 1] == OD_ICDF(32768U));
+  OD_ASSERT(icdf[nsyms - 1] == OD_ICDF(CDF_PROB_TOP));
   od_ec_encode_q15(enc, s > 0 ? icdf[s - 1] : OD_ICDF(0), icdf[s], s, nsyms);
 }
 
