@@ -72,7 +72,7 @@ function loadComplete() {
     The maxLength attribute is the maximum number of text characters for text
     fields, when type has the value of Text or Password.
 
-    Retrieve the maxLenght attribute of the 1st INPUT element and examine
+    Retrieve the maxLength attribute of the 1st INPUT element and examine
     its value.
 
 * @author NIST

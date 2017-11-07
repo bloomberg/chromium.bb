@@ -224,7 +224,7 @@ class PolicyOpcode {
 enum StringMatchOptions {
   CASE_SENSITIVE = 0,    // Pay or Not attention to the case as defined by
   CASE_INSENSITIVE = 1,  // RtlCompareUnicodeString windows API.
-  EXACT_LENGHT = 2       // Don't do substring match. Do full string match.
+  EXACT_LENGTH = 2       // Don't do substring match. Do full string match.
 };
 
 // Opcodes that do string comparisons take a parameter that is the starting
@@ -362,7 +362,7 @@ class OpcodeFactory {
 
   // Allocates (and copies) a string (of size length) inside the buffer and
   // returns the displacement with respect to start.
-  ptrdiff_t AllocRelative(void* start, const wchar_t* str, size_t lenght);
+  ptrdiff_t AllocRelative(void* start, const wchar_t* str, size_t length);
 
   // Points to the lowest currently available address of the memory
   // used to make the opcodes. This pointer increments as opcodes are made.

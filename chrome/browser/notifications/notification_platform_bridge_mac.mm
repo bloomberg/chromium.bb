@@ -155,12 +155,12 @@ base::string16 CreateNotificationContext(
   // These numbers have been obtained through experimentation on various
   // Mac OS platforms.
 
-  constexpr size_t kMaxDomainLenghtAlert = 19;
-  constexpr size_t kMaxDomainLenghtBanner = 28;
+  constexpr size_t kMaxDomainLengthAlert = 19;
+  constexpr size_t kMaxDomainLengthBanner = 28;
 
   size_t max_characters = IsPersistentNotification(notification)
-                              ? kMaxDomainLenghtAlert
-                              : kMaxDomainLenghtBanner;
+                              ? kMaxDomainLengthAlert
+                              : kMaxDomainLengthBanner;
 
   base::string16 origin = url_formatter::FormatOriginForSecurityDisplay(
       url::Origin::Create(notification.origin_url()),

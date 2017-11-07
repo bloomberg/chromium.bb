@@ -106,7 +106,7 @@ struct SparseHeader {
   uint32_t magic;          // Structure identifier (equal to kIndexMagic).
   int32_t parent_key_len;  // Key length for the parent entry.
   int32_t last_block;      // Index of the last written block.
-  int32_t last_block_len;  // Lenght of the last written block.
+  int32_t last_block_len;  // Length of the last written block.
   int32_t dummy[10];
 };
 

@@ -30,7 +30,7 @@ NTSTATUS NtCreateFileInTarget(HANDLE* target_file_handle,
                               ULONG create_disposition,
                               ULONG create_options,
                               PVOID ea_buffer,
-                              ULONG ea_lenght,
+                              ULONG ea_length,
                               HANDLE target_process) {
   NtCreateFileFunction NtCreateFile = nullptr;
   ResolveNTFunctionPtr("NtCreateFile", &NtCreateFile);
@@ -39,7 +39,7 @@ NTSTATUS NtCreateFileInTarget(HANDLE* target_file_handle,
   NTSTATUS status =
       NtCreateFile(&local_handle, desired_access, obj_attributes,
                    io_status_block, nullptr, file_attributes, share_access,
-                   create_disposition, create_options, ea_buffer, ea_lenght);
+                   create_disposition, create_options, ea_buffer, ea_length);
   if (!NT_SUCCESS(status)) {
     return status;
   }

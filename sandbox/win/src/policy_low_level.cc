@@ -206,7 +206,7 @@ bool PolicyRule::GenStringOpcode(RuleType rule_type,
     *skip_count = 0;
   } else {
     if (last_call) {
-      match_opts = static_cast<StringMatchOptions>(EXACT_LENGHT | match_opts);
+      match_opts = static_cast<StringMatchOptions>(EXACT_LENGTH | match_opts);
     }
     op = opcode_factory_->MakeOpWStringMatch(parameter, fragment->c_str(), 0,
                                              match_opts, options);

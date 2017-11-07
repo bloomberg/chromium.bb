@@ -157,7 +157,7 @@ function abortWriteFile(volumeId, entry, path, callback) {
   });
 }
 
-// Truncates file entry/path to lenght |lenght|.
+// Truncates file entry/path to length |length|.
 function truncateFile(volumeId, entry, path, length, expectSuccess, callback) {
   var message = 'Truncating file: \'' + path + '\' to length ' + length + '.';
   getFile(volumeId, entry, path, false, true, function(entry) {
