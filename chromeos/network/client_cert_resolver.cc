@@ -304,9 +304,12 @@ ClientCertResolver::ClientCertResolver()
       network_state_handler_(nullptr),
       managed_network_config_handler_(nullptr),
       testing_clock_(nullptr),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 ClientCertResolver::~ClientCertResolver() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (network_state_handler_)
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   if (CertLoader::IsInitialized())
@@ -318,6 +321,7 @@ ClientCertResolver::~ClientCertResolver() {
 void ClientCertResolver::Init(
     NetworkStateHandler* network_state_handler,
     ManagedNetworkConfigurationHandler* managed_network_config_handler) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(network_state_handler);
   network_state_handler_ = network_state_handler;
   network_state_handler_->AddObserver(this, FROM_HERE);
@@ -330,14 +334,17 @@ void ClientCertResolver::Init(
 }
 
 void ClientCertResolver::AddObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.AddObserver(observer);
 }
 
 void ClientCertResolver::RemoveObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
 }
 
 bool ClientCertResolver::IsAnyResolveTaskRunning() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return resolve_task_running_;
 }
 
@@ -390,6 +397,7 @@ void ClientCertResolver::SetClockForTesting(base::Clock* clock) {
 }
 
 void ClientCertResolver::NetworkListChanged() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "NetworkListChanged.";
   if (!ClientCertificatesLoaded())
     return;
@@ -423,6 +431,7 @@ void ClientCertResolver::NetworkListChanged() {
 
 void ClientCertResolver::NetworkConnectionStateChanged(
     const NetworkState* network) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!ClientCertificatesLoaded())
     return;
   if (!network->IsConnectedState() && !network->IsConnectingState())
@@ -431,6 +440,7 @@ void ClientCertResolver::NetworkConnectionStateChanged(
 
 void ClientCertResolver::OnCertificatesLoaded(
     const net::ScopedCERTCertificateList& cert_list) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "OnCertificatesLoaded.";
   if (!ClientCertificatesLoaded())
     return;
@@ -447,6 +457,7 @@ void ClientCertResolver::OnCertificatesLoaded(
 
 void ClientCertResolver::PolicyAppliedToNetwork(
     const std::string& service_path) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "PolicyAppliedToNetwork " << service_path;
   if (!ClientCertificatesLoaded())
     return;
@@ -465,6 +476,7 @@ void ClientCertResolver::PolicyAppliedToNetwork(
 
 void ClientCertResolver::ResolveNetworks(
     const NetworkStateHandler::NetworkStateList& networks) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::unique_ptr<std::vector<NetworkAndCertPattern>> networks_to_resolve(
       new std::vector<NetworkAndCertPattern>);
 
@@ -508,7 +520,10 @@ void ClientCertResolver::ResolveNetworks(
 
   if (networks_to_resolve->empty()) {
     VLOG(1) << "No networks to resolve.";
-    NotifyResolveRequestCompleted();
+    // If a resolve task is running, it will notify observers when it's
+    // finished.
+    if (!resolve_task_running_)
+      NotifyResolveRequestCompleted();
     return;
   }
 
@@ -537,6 +552,7 @@ void ClientCertResolver::ResolveNetworks(
 }
 
 void ClientCertResolver::ResolvePendingNetworks() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NetworkStateHandler::NetworkStateList networks;
   network_state_handler_->GetNetworkListByType(NetworkTypePattern::Default(),
                                                true /* configured_only */,
@@ -556,6 +572,7 @@ void ClientCertResolver::ResolvePendingNetworks() {
 
 void ClientCertResolver::ConfigureCertificates(
     std::unique_ptr<NetworkCertMatches> matches) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (NetworkCertMatches::const_iterator it = matches->begin();
        it != matches->end(); ++it) {
     VLOG(1) << "Configuring certificate of network " << it->service_path;
@@ -581,6 +598,7 @@ void ClientCertResolver::ConfigureCertificates(
                         base::Bind(&LogError, it->service_path));
     network_state_handler_->RequestUpdateForNetwork(it->service_path);
   }
+  resolve_task_running_ = false;
   if (queued_networks_to_resolve_.empty())
     NotifyResolveRequestCompleted();
   else
@@ -588,9 +606,11 @@ void ClientCertResolver::ConfigureCertificates(
 }
 
 void ClientCertResolver::NotifyResolveRequestCompleted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!resolve_task_running_);
+
   VLOG(2) << "Notify observers: " << (network_properties_changed_ ? "" : "no ")
           << "networks changed.";
-  resolve_task_running_ = false;
   const bool changed = network_properties_changed_;
   network_properties_changed_ = false;
   for (auto& observer : observers_)
