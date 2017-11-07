@@ -3575,4 +3575,40 @@ TEST(LayerAnimatorObserverNotificationOrderTest,
   EXPECT_TRUE(observer.ScheduledEpochIsBeforeStartedEpoch());
 }
 
+// Verifies that an observer can be attached to a LayerAnimationSequence that
+// has already been scheduled.
+TEST(LayerAnimatorObserverNotificationOrderTest,
+     ObserverAddedAfterAnimationStarts) {
+  TestLayerAnimationDelegate delegate;
+  scoped_refptr<LayerAnimator> animator(CreateDefaultTestAnimator(&delegate));
+
+  constexpr base::TimeDelta kAnimationDuration =
+      base::TimeDelta::FromSeconds(1);
+  LayerAnimationSequence* sequence = new LayerAnimationSequence(
+      LayerAnimationElement::CreateBrightnessElement(1.0f, kAnimationDuration));
+  animator->StartAnimation(sequence);
+
+  TestLayerAnimationObserver observer;
+  observer.set_requires_notification_when_animator_destroyed(true);
+  animator->AddObserver(&observer);
+
+  EXPECT_EQ(observer.last_attached_sequence(), sequence);
+  EXPECT_EQ(observer.last_scheduled_sequence(), nullptr);
+  EXPECT_EQ(observer.last_started_sequence(), nullptr);
+  EXPECT_EQ(observer.last_aborted_sequence(), nullptr);
+  EXPECT_EQ(observer.last_ended_sequence(), nullptr);
+  EXPECT_EQ(observer.last_detached_sequence(), nullptr);
+
+  animator->StopAnimating();
+
+  EXPECT_EQ(observer.last_attached_sequence(), sequence);
+  EXPECT_EQ(observer.last_scheduled_sequence(), nullptr);
+  EXPECT_EQ(observer.last_started_sequence(), nullptr);
+  EXPECT_EQ(observer.last_aborted_sequence(), nullptr);
+  EXPECT_EQ(observer.last_ended_sequence(), sequence);
+  EXPECT_EQ(observer.last_detached_sequence(), sequence);
+
+  animator->RemoveObserver(&observer);
+}
+
 }  // namespace ui

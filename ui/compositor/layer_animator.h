@@ -200,8 +200,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   // animations and notifies all observers.
   void AbortAllAnimations() { StopAnimatingInternal(true); }
 
-  // These functions are used for adding or removing observers from the observer
-  // list. The observers are notified when animations end.
+  // Adds/remove |observer| from the observer list. Observers are notified when
+  // animations are scheduled, start, end or are aborted. They may also be
+  // notified when they're attached/detached from a LayerAnimationSequence (see
+  // LayerAnimationObserver).
   void AddObserver(LayerAnimationObserver* observer);
   void RemoveObserver(LayerAnimationObserver* observer);
 
