@@ -5,7 +5,7 @@
 </head>
 <body>
 <script>
-description('Tests the basic operation of NetInfo.');
+description('Tests the basic operation of saveData attribute in NetInfo.');
 
 shouldBe('typeof window.internals.observeGC', '"function"',
 'this test requires window.internals');
@@ -18,32 +18,31 @@ shouldBeDefined("navigator.connection.effectiveType");
 shouldBeDefined("navigator.connection.rtt");
 shouldBeDefined("navigator.connection.downlink");
 
-var typeChangeListener = function(e) {
-    shouldBe("typeof connection.type", '"string"');
-    shouldBe('connection.type', 'newConnectionType');
-    shouldBe('connection.saveData', 'false');
-    shouldBe('connection.downlinkMax', 'newDownlinkMax');
-    shouldBe('connection.effectiveType', 'newEffectiveType');
-    shouldBe('connection.rtt', 'newRtt', false, newRttMaxNoise);
-    shouldBe('connection.downlink', 'newDownlink', false, newDownlinkMaxNoise);
-    finishJSTest();
-}
+shouldBe("typeof connection.type", '"string"');
+shouldBe('connection.type', 'initialType');
+shouldBe('connection.saveData', 'false');
+shouldBe('connection.downlinkMax', 'initialDownlinkMax');
+shouldBe('connection.effectiveType', 'initialEffectiveType');
+shouldBe('connection.rtt', 'newRtt', false, newRttMaxNoise);
+shouldBe('connection.downlink', 'newDownlink', false, newDownlinkMaxNoise);
+
 
 var changeListener = function(e) {
     shouldBe("typeof connection.type", '"string"');
     shouldBe('connection.type', 'initialType');
-    shouldBe('connection.saveData', 'false');
+    shouldBe('connection.saveData', 'true');
     shouldBe('connection.downlinkMax', 'initialDownlinkMax');
-    shouldBe('connection.effectiveType', 'newEffectiveType');
+    shouldBe('connection.effectiveType', 'initialEffectiveType');
     shouldBe('connection.rtt', 'newRtt', false, newRttMaxNoise);
     shouldBe('connection.downlink', 'newDownlink', false, newDownlinkMaxNoise);
     connection.removeEventListener('change', changeListener);
-    connection.addEventListener('typechange', typeChangeListener);
-    internals.setNetworkConnectionInfoOverride(isTypeOnline(newConnectionType), newConnectionType, newDownlinkMax);
+    internals.setSaveDataEnabled(false);
+    finishJSTest();
 }
 
 connection.addEventListener('change', changeListener);
-internals.setNetworkQualityInfoOverride(newEffectiveType, newRtt, newDownlink);
+// Changing saveData should trigger a callback.
+internals.setSaveDataEnabled(true);
 
 </script>
 </body>

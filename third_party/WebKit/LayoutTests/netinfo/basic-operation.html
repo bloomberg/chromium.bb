@@ -12,6 +12,7 @@ shouldBe('typeof window.internals.observeGC', '"function"',
 
 shouldBeDefined("navigator.connection");
 shouldBeDefined("navigator.connection.type");
+shouldBeDefined("navigator.connection.saveData");
 shouldBeDefined("navigator.connection.downlinkMax");
 shouldBeDefined("navigator.connection.effectiveType");
 shouldBeDefined("navigator.connection.rtt");
@@ -20,6 +21,7 @@ shouldBeDefined("navigator.connection.downlink");
 var typeChangeListener = function(e) {
     shouldBe("typeof connection.type", '"string"');
     shouldBe('connection.type', 'initialType');
+    shouldBe('connection.saveData', 'false');
     shouldBe('connection.downlinkMax', 'initialDownlinkMax');
     shouldBe('connection.effectiveType', 'initialEffectiveType');
     shouldBe('connection.rtt', 'initialRtt', false, initialRttMaxNoise);
@@ -30,6 +32,7 @@ var typeChangeListener = function(e) {
 var changeListener = function(e) {
     shouldBe("typeof connection.type", '"string"');
     shouldBe('connection.type', 'newConnectionType');
+    shouldBe('connection.saveData', 'false');
     shouldBe('connection.downlinkMax', 'newDownlinkMax');
     shouldBe('connection.effectiveType', 'initialEffectiveType');
     shouldBe('connection.rtt', 'initialRtt', false, initialRttMaxNoise);
