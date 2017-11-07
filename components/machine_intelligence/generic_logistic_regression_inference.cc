@@ -70,8 +70,7 @@ float GenericLogisticRegressionInference::PredictScore(
   return Sigmoid(proto_.bias() + activation);
 }
 
-bool GenericLogisticRegressionInference::PredictDecision(
-    const RankerExample& example) {
+bool GenericLogisticRegressionInference::Predict(const RankerExample& example) {
   return PredictScore(example) >= GetThreshold();
 }
 

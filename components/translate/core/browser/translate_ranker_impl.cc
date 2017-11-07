@@ -21,6 +21,7 @@
 #include "components/machine_intelligence/proto/ranker_model.pb.h"
 #include "components/machine_intelligence/proto/translate_ranker_model.pb.h"
 #include "components/machine_intelligence/ranker_model.h"
+#include "components/machine_intelligence/ranker_model_loader_impl.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/variations/variations_associated_data.h"
@@ -159,12 +160,13 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
               translate::kTranslateRankerPreviousLanguageMatchesOverride)),
       weak_ptr_factory_(this) {
   if (is_query_enabled_ || is_enforcement_enabled_) {
-    model_loader_ = base::MakeUnique<machine_intelligence::RankerModelLoader>(
-        base::Bind(&ValidateModel),
-        base::Bind(&TranslateRankerImpl::OnModelAvailable,
-                   weak_ptr_factory_.GetWeakPtr()),
-        TranslateDownloadManager::GetInstance()->request_context(), model_path,
-        model_url, kUmaPrefix);
+    model_loader_ =
+        base::MakeUnique<machine_intelligence::RankerModelLoaderImpl>(
+            base::Bind(&ValidateModel),
+            base::Bind(&TranslateRankerImpl::OnModelAvailable,
+                       weak_ptr_factory_.GetWeakPtr()),
+            TranslateDownloadManager::GetInstance()->request_context(),
+            model_path, model_url, kUmaPrefix);
     // Kick off the initial load from cache.
     model_loader_->NotifyOfRankerActivity();
   }

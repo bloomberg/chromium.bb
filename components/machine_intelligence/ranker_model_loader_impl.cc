@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/machine_intelligence/ranker_model_loader.h"
+#include "components/machine_intelligence/ranker_model_loader_impl.h"
 
 #include <utility>
 
@@ -20,7 +20,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/machine_intelligence/proto/ranker_model.pb.h"
-#include "components/machine_intelligence/ranker_model.h"
 #include "components/machine_intelligence/ranker_url_fetcher.h"
 
 namespace machine_intelligence {
@@ -87,7 +86,7 @@ void SaveToFile(const GURL& model_url,
 
 }  // namespace
 
-RankerModelLoader::RankerModelLoader(
+RankerModelLoaderImpl::RankerModelLoaderImpl(
     ValidateModelCallback validate_model_cb,
     OnModelAvailableCallback on_model_available_cb,
     net::URLRequestContextGetter* request_context_getter,
@@ -106,11 +105,11 @@ RankerModelLoader::RankerModelLoader(
       url_fetcher_(base::MakeUnique<RankerURLFetcher>()),
       weak_ptr_factory_(this) {}
 
-RankerModelLoader::~RankerModelLoader() {
+RankerModelLoaderImpl::~RankerModelLoaderImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void RankerModelLoader::NotifyOfRankerActivity() {
+void RankerModelLoaderImpl::NotifyOfRankerActivity() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (state_) {
     case LoaderState::NOT_STARTED:
@@ -137,19 +136,20 @@ void RankerModelLoader::NotifyOfRankerActivity() {
   }
 }
 
-void RankerModelLoader::StartLoadFromFile() {
+void RankerModelLoaderImpl::StartLoadFromFile() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, LoaderState::NOT_STARTED);
   DCHECK(!model_path_.empty());
   state_ = LoaderState::LOADING_FROM_FILE;
   load_start_time_ = base::TimeTicks::Now();
-  base::PostTaskAndReplyWithResult(background_task_runner_.get(), FROM_HERE,
-                                   base::Bind(&LoadFromFile, model_path_),
-                                   base::Bind(&RankerModelLoader::OnFileLoaded,
-                                              weak_ptr_factory_.GetWeakPtr()));
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
+      base::Bind(&LoadFromFile, model_path_),
+      base::Bind(&RankerModelLoaderImpl::OnFileLoaded,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void RankerModelLoader::OnFileLoaded(const std::string& data) {
+void RankerModelLoaderImpl::OnFileLoaded(const std::string& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, LoaderState::LOADING_FROM_FILE);
 
@@ -196,7 +196,7 @@ void RankerModelLoader::OnFileLoaded(const std::string& data) {
   NotifyOfRankerActivity();
 }
 
-void RankerModelLoader::StartLoadFromURL() {
+void RankerModelLoaderImpl::StartLoadFromURL() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, LoaderState::IDLE);
   DCHECK(model_url_.is_valid());
@@ -217,7 +217,7 @@ void RankerModelLoader::StartLoadFromURL() {
       load_start_time_ + base::TimeDelta::FromMinutes(kMinRetryDelayMins);
   bool request_started =
       url_fetcher_->Request(model_url_,
-                            base::Bind(&RankerModelLoader::OnURLFetched,
+                            base::Bind(&RankerModelLoaderImpl::OnURLFetched,
                                        weak_ptr_factory_.GetWeakPtr()),
                             request_context_getter_.get());
 
@@ -231,7 +231,8 @@ void RankerModelLoader::StartLoadFromURL() {
   }
 }
 
-void RankerModelLoader::OnURLFetched(bool success, const std::string& data) {
+void RankerModelLoaderImpl::OnURLFetched(bool success,
+                                         const std::string& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(state_, LoaderState::LOADING_FROM_URL);
 
@@ -276,7 +277,7 @@ void RankerModelLoader::OnURLFetched(bool success, const std::string& data) {
   on_model_available_cb_.Run(std::move(model));
 }
 
-std::unique_ptr<RankerModel> RankerModelLoader::CreateAndValidateModel(
+std::unique_ptr<RankerModel> RankerModelLoaderImpl::CreateAndValidateModel(
     const std::string& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   MyScopedHistogramTimer timer(uma_prefix_ + kParsetimerHistogram);
@@ -289,7 +290,7 @@ std::unique_ptr<RankerModel> RankerModelLoader::CreateAndValidateModel(
   return model;
 }
 
-RankerModelStatus RankerModelLoader::ReportModelStatus(
+RankerModelStatus RankerModelLoaderImpl::ReportModelStatus(
     RankerModelStatus model_status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
