@@ -114,7 +114,7 @@ TEST_F(StringUnitTest, SubstringOfWidth) {
 
   EXPECT_NSEQ(SubstringOfWidth(@"asdf", attributes, 100, NO), @"asdf");
 
-  // construct some string of known lenghts
+  // construct some string of known lengths
   NSString* leading = @"some text";
   NSString* trailing = @"some other text";
   NSString* mid = @"some text for the method to do some actual work";

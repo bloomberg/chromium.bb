@@ -41,7 +41,7 @@ class LoopbackServerEntity;
 namespace {
 
 static const int kCurrentLoopbackServerProtoVersion = 1;
-static const int kKeystoreKeyLenght = 16;
+static const int kKeystoreKeyLength = 16;
 
 // Properties of the bookmark bar permanent folders.
 static const char kBookmarkBarFolderServerTag[] = "bookmark_bar";
@@ -154,7 +154,7 @@ void LoopbackServer::Init() {
 
 std::string LoopbackServer::GenerateNewKeystoreKey() const {
   // TODO(pastarmovj): Check if true random bytes is ok or alpha-nums is needed?
-  return base::RandBytesAsString(kKeystoreKeyLenght);
+  return base::RandBytesAsString(kKeystoreKeyLength);
 }
 
 bool LoopbackServer::CreatePermanentBookmarkFolder(

@@ -57,7 +57,7 @@ const char kSetTextBoxValueJS[] =
 const char kStartTestJS[] =
     "window.domAutomationController.send(startTest(%d));";
 
-// Maximum lenght of the result array in KeyEventTestData structure.
+// Maximum length of the result array in KeyEventTestData structure.
 const size_t kMaxResultLength = 10;
 
 // A structure holding test data of a keyboard event.

@@ -68,7 +68,7 @@
 		// Now, check that our rectangle is an instance of SVGRect by accessing
 		// specific methods in order to get its x, y, width and height attributes.
 		//
-		var x = rect.x.baseVal.value; // SVGRect -> SVGAnimatedLenght -> SVGLength -> long
+		var x = rect.x.baseVal.value; // SVGRect -> SVGAnimatedLength -> SVGLength -> long
 		var y = rect.y.baseVal.value; 
 		var width = rect.width.baseVal.value; 
 		var height = rect.height.baseVal.value;

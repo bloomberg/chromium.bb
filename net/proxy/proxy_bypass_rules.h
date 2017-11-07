@@ -123,7 +123,7 @@ class NET_EXPORT ProxyBypassRules {
   //   Examples:
   //     "127.0.1", "[0:0::1]", "[::1]", "http://[::1]:99"
   //
-  // (4)  IP_LITERAL "/" PREFIX_LENGHT_IN_BITS
+  // (4)  IP_LITERAL "/" PREFIX_LENGTH_IN_BITS
   //
   //   Match any URL that is to an IP literal that falls between the
   //   given range. IP range is specified using CIDR notation.

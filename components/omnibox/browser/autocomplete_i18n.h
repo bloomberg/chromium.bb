@@ -15,7 +15,7 @@
 // Any time this is used the result will be incorrect in some cases that
 // certain users will be able to discern. Ideally, this class would be deleted
 // and we would do full Unicode case-sensitivity mappings using
-// base::i18n::ToLower. However, ToLower can change the lenghts of strings,
+// base::i18n::ToLower. However, ToLower can change the lengths of strings,
 // making computations of offsets or prefix lengths difficult. Getting all
 // edge cases correct will require careful implementation and testing. In the
 // mean time, we use this simpler approach.
