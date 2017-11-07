@@ -141,6 +141,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', ('nvidia', 0x1cb3), 'd3d11'], bug=728670)
     self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
         ['win', ('nvidia', 0x1cb3), 'd3d11'], bug=728670)
+    self.Flaky('conformance2/rendering/attrib-type-match.html',
+        ['win', ('nvidia', 0x1cb3), 'd3d11'], bug=782254)
 
     # WIN / OpenGL / NVIDIA failures
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
