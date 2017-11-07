@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -17,9 +16,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace translate {
-
-const base::Feature kTranslateAcceptLanguagesOptimization{
-    "TranslateAcceptLanguagesOptimization", base::FEATURE_DISABLED_BY_DEFAULT};
 
 TranslateAcceptLanguages::TranslateAcceptLanguages(
     PrefService* prefs,
@@ -50,19 +46,7 @@ bool TranslateAcceptLanguages::CanBeAcceptLanguage(
   const std::string locale =
       TranslateDownloadManager::GetInstance()->application_locale();
 
-  if (base::FeatureList::IsEnabled(kTranslateAcceptLanguagesOptimization))
-    return l10n_util::IsLanguageAccepted(locale, accept_language);
-
-  std::vector<std::string> accept_language_codes;
-  l10n_util::GetAcceptLanguagesForLocale(locale, &accept_language_codes);
-
-  if (std::find(accept_language_codes.begin(),
-                accept_language_codes.end(),
-                accept_language) != accept_language_codes.end()) {
-    return true;
-  }
-
-  return false;
+  return l10n_util::IsLanguageAccepted(locale, accept_language);
 }
 
 bool TranslateAcceptLanguages::IsAcceptLanguage(const std::string& language) {
