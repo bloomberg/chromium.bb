@@ -236,6 +236,7 @@ body.alternate-logo #logo-non-white {
   font-size: 18px;
   height: 44px;
   line-height: 36px;
+  margin-bottom: 8px;
   max-width: 672px;
   outline: none;
   position: relative;
@@ -349,7 +350,7 @@ body.fakebox-focused #fakebox-cursor {
 
 #most-visited {
   height: 100%;
-  margin-top: 64px;
+  margin-top: 56px;
   overflow: hidden;
   text-align: -webkit-center;
   user-select: none;
