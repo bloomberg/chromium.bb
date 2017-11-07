@@ -16,13 +16,11 @@ import shutil
 import subprocess
 import sys
 
-
 SCRIPTS_DIR = os.path.abspath(os.path.dirname(__file__))
 FFMPEG_DIR = os.path.abspath(os.path.join(SCRIPTS_DIR, '..', '..'))
 CHROMIUM_ROOT_DIR = os.path.abspath(os.path.join(FFMPEG_DIR, '..', '..'))
-NDK_ROOT_DIR = os.path.abspath(os.path.join(CHROMIUM_ROOT_DIR, 'third_party',
-                                            'android_tools', 'ndk'))
-
+NDK_ROOT_DIR = os.path.abspath(
+    os.path.join(CHROMIUM_ROOT_DIR, 'third_party', 'android_tools', 'ndk'))
 
 BRANDINGS = [
     'Chrome',
@@ -30,11 +28,10 @@ BRANDINGS = [
     'Chromium',
 ]
 
-
 USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]
 
 Valid combinations are android     [ia32|x64|mipsel|mips64el|arm-neon|arm64]
-                       linux       [ia32|x64|mipsel|mips64el|arm|arm-neon|arm64]
+                       linux       [ia32|x64|arm|arm-neon|arm64]
                        linux-noasm [x64]
                        mac         [x64]
                        win         [ia32|x64]
@@ -42,17 +39,10 @@ Valid combinations are android     [ia32|x64|mipsel|mips64el|arm-neon|arm64]
 Platform specific build notes:
   android:
     Script can be run on a normal x64 Ubuntu box with an Android-ready Chromium
-    checkout: https://code.google.com/p/chromium/wiki/AndroidBuildInstructions
+    checkout: https://chromium.googlesource.com/chromium/src/+/master/docs/android_build_instructions.md
 
   linux ia32/x64:
     Script can run on a normal Ubuntu box.
-
-  linux mipsel:
-    Script must be run inside of ChromeOS checkout. Follow instructions in this doc:
-        https://docs.google.com/document/d/14bqZ9NISsyEO3948wehhJ7wc9deTIz-yHUhF1MQp7Po/edit?pref=2&pli=1#bookmark=id.9xsx8g59oaay
-
-  linux mips64el:
-    Script can run on a normal Ubuntu with mips64el cross-toolchain in $PATH.
 
   linux arm/arm-neon:
     Script must be run inside of ChromeOS checkout. Follow instructions in this doc:
@@ -187,10 +177,12 @@ def SetupAndroidToolchain(target_arch):
     sysroot_arch = 'mips64'
     toolchain_bin_prefix = toolchain_dir_prefix = 'mips64el-linux-android'
 
-  sysroot = (NDK_ROOT_DIR + '/platforms/android-' + toolchain_level +
-             '/arch-' + sysroot_arch)
-  gcc_toolchain = (NDK_ROOT_DIR + '/toolchains/' + toolchain_dir_prefix + '-' +
-                   toolchain_version + '/prebuilt/linux-x86_64/')
+  sysroot = (
+      NDK_ROOT_DIR + '/platforms/android-' + toolchain_level + '/arch-' +
+      sysroot_arch)
+  gcc_toolchain = (
+      NDK_ROOT_DIR + '/toolchains/' + toolchain_dir_prefix + '-' +
+      toolchain_version + '/prebuilt/linux-x86_64/')
 
   return [
       '--enable-cross-compile',
@@ -212,25 +204,25 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
       [os.path.join(FFMPEG_DIR, 'configure')] + configure_flags, cwd=config_dir)
 
   RewriteFile(
-      os.path.join(config_dir, 'config.h'),
-      r'(#define HAVE_VALGRIND_VALGRIND_H [01])',
-      (r'#define HAVE_VALGRIND_VALGRIND_H 0 /* \1 -- forced to 0. See https://crbug.com/590440 */'))
+      os.path.join(config_dir,
+                   'config.h'), r'(#define HAVE_VALGRIND_VALGRIND_H [01])',
+      (r'#define HAVE_VALGRIND_VALGRIND_H 0 /* \1 -- forced to 0. See https://crbug.com/590440 */'
+      ))
 
   if target_os == 'android':
-      RewriteFile(
-          os.path.join(config_dir, 'config.h'),
-          r'(#define HAVE_POSIX_MEMALIGN [01])',
-          (r'#define HAVE_POSIX_MEMALIGN 0 /* \1 -- forced to 0. See https://crbug.com/604451 */'))
-
+    RewriteFile(
+        os.path.join(config_dir,
+                     'config.h'), r'(#define HAVE_POSIX_MEMALIGN [01])',
+        (r'#define HAVE_POSIX_MEMALIGN 0 /* \1 -- forced to 0. See https://crbug.com/604451 */'
+        ))
 
   # Linux configs is also used on Fuchsia. They are mostly compatible with
   # Fuchsia except that Fuchsia doesn't support sysctl(). On Linux sysctl()
   # isn't actually used, so it's safe to set HAVE_SYSCTL to 0.
   if target_os == 'linux':
-      RewriteFile(
-          os.path.join(config_dir, 'config.h'),
-          r'(#define HAVE_SYSCTL [01])',
-          (r'#define HAVE_SYSCTL 0 /* \1 -- forced to 0 for Fuchsia */'))
+    RewriteFile(
+        os.path.join(config_dir, 'config.h'), r'(#define HAVE_SYSCTL [01])',
+        (r'#define HAVE_SYSCTL 0 /* \1 -- forced to 0 for Fuchsia */'))
 
   # Windows linking resolves external symbols. Since generate_gn.py does not
   # need a functioning set of libraries, ignore unresolved symbols here.
@@ -238,10 +230,9 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   # windows. We munge the output of configure here to avoid this LDFLAGS setting
   # triggering mis-detection during configure execution.
   if target_os == 'win':
-      RewriteFile(
-          os.path.join(config_dir, 'ffbuild/config.mak'),
-          r'(LDFLAGS=.*)',
-          (r'\1 -FORCE:UNRESOLVED'))
+    RewriteFile(
+        os.path.join(config_dir, 'ffbuild/config.mak'), r'(LDFLAGS=.*)',
+        (r'\1 -FORCE:UNRESOLVED'))
 
   if target_os in (host_os, host_os + '-noasm', 'android') and not config_only:
     libraries = [
@@ -252,8 +243,8 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
     PrintAndCheckCall(
         ['make', '-j%d' % parallel_jobs] + libraries, cwd=config_dir)
     for lib in libraries:
-      shutil.copy(os.path.join(config_dir, lib),
-                  os.path.join(config_dir, 'out'))
+      shutil.copy(
+          os.path.join(config_dir, lib), os.path.join(config_dir, 'out'))
   elif config_only:
     print('Skipping build step as requested.')
   else:
@@ -267,24 +258,27 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
 
   if target_arch in ('arm', 'arm-neon', 'arm64'):
     RewriteFile(
-        os.path.join(config_dir, 'config.h'),
-        r'(#define HAVE_VFP_ARGS [01])',
+        os.path.join(config_dir, 'config.h'), r'(#define HAVE_VFP_ARGS [01])',
         (r'/* \1 -- softfp/hardfp selection is done by the chrome build */'))
   if target_os == 'win':
     RewriteFile(
-        os.path.join(config_dir, 'config.h'),
-        r'(#define HAVE_INLINE_ASM [01])',
+        os.path.join(config_dir, 'config.h'), r'(#define HAVE_INLINE_ASM [01])',
         (r'/* \1 -- inline asm selection is done by the chrome build */'))
 
 
 def main(argv):
   parser = optparse.OptionParser(usage=USAGE)
-  parser.add_option('--branding', action='append', dest='brandings',
-                    choices=BRANDINGS,
-                    help='Branding to build; determines e.g. supported codecs')
-  parser.add_option('--config-only', action='store_true',
-                    help='Skip the build step. Useful when a given platform '
-                    'is not necessary for generate_gn.py')
+  parser.add_option(
+      '--branding',
+      action='append',
+      dest='brandings',
+      choices=BRANDINGS,
+      help='Branding to build; determines e.g. supported codecs')
+  parser.add_option(
+      '--config-only',
+      action='store_true',
+      help='Skip the build step. Useful when a given platform '
+      'is not necessary for generate_gn.py')
   options, args = parser.parse_args(argv)
 
   if len(args) < 2:
@@ -316,8 +310,8 @@ def main(argv):
         'Target OS     : %s\n'
         'Host arch     : %s\n'
         'Target arch   : %s\n'
-        'Parallel jobs : %d\n' % (
-            host_os, target_os, host_arch, target_arch, parallel_jobs))
+        'Parallel jobs : %d\n' % (host_os, target_os, host_arch, target_arch,
+                                  parallel_jobs))
 
   configure_flags = collections.defaultdict(list)
 
@@ -367,8 +361,8 @@ def main(argv):
       '--enable-parser=opus,vorbis,flac,mpegaudio',
 
       # Setup include path so Chromium's libopus can be used.
-      '--extra-cflags=-I' + os.path.join(CHROMIUM_ROOT_DIR,
-                                         'third_party/opus/src/include'),
+      '--extra-cflags=-I' +
+      os.path.join(CHROMIUM_ROOT_DIR, 'third_party/opus/src/include'),
 
       # Disable usage of Linux Performance API. Not used in production code, but
       # missing system headers break some Android builds.
@@ -390,7 +384,6 @@ def main(argv):
     configure_flags['Common'].extend([
         # --optflags doesn't append multiple entries, so set all at once.
         '--optflags="-O2"',
-
         '--enable-decoder=theora,vp8',
         '--enable-parser=vp3,vp8',
     ])
@@ -440,6 +433,10 @@ def main(argv):
             # the chrome build.
             '--extra-cflags=-mfloat-abi=softfp',
         ])
+        if target_arch == 'arm':
+          print('arm-neon is the only supported arm arch for Android.\n')
+          return 1
+
         if target_arch == 'arm-neon':
           configure_flags['Common'].extend([
               '--extra-cflags=-mfpu=neon',
@@ -456,9 +453,12 @@ def main(argv):
               '--enable-cross-compile',
               '--target-os=linux',
               '--cross-prefix=armv7a-cros-linux-gnueabi-',
+              '--extra-cflags=--target=armv7a-cros-linux-gnueabi',
+              '--extra-ldflags=--target=armv7a-cros-linux-gnueabi',
               '--extra-cflags=-mtune=cortex-a8',
               # NOTE: we don't need softfp for this hardware.
               '--extra-cflags=-mfloat-abi=hard',
+              '--sysroot=/usr/armv7a-cros-linux-gnueabi',
           ])
 
         if target_arch == 'arm-neon':
@@ -477,6 +477,10 @@ def main(argv):
             '--enable-cross-compile',
             '--cross-prefix=/usr/bin/aarch64-linux-gnu-',
             '--target-os=linux',
+            '--extra-cflags=--target=aarch64-linux-gnu',
+            '--extra-ldflags=--target=aarch64-linux-gnu',
+            '--sysroot=' + os.path.join(
+                CHROMIUM_ROOT_DIR, 'build/linux/debian_jessie_arm64-sysroot'),
         ])
       configure_flags['Common'].extend([
           '--arch=aarch64',
@@ -485,66 +489,48 @@ def main(argv):
       ])
     elif target_arch == 'mipsel':
       if target_os != 'android':
-        configure_flags['Common'].extend([
-            '--enable-cross-compile',
-            '--cross-prefix=mipsel-cros-linux-gnu-',
-            '--target-os=linux',
-            '--extra-cflags=-EL',
-            '--extra-ldflags=-EL',
-            '--extra-ldflags=-mips32',
-        ])
-      else:
-        configure_flags['Common'].extend([
-            '--extra-cflags=-mhard-float',
-        ])
+        print('MIPS is only supported on Android.\n')
+        return 1
+
+      # These flags taken from android chrome build with target_cpu='mipsel'
       configure_flags['Common'].extend([
-          '--arch=mips',
-          '--extra-cflags=-mips32',
-          '--disable-mipsfpu',
+          '--arch=mipsel',
+          '--disable-mips32r6',
+          '--disable-mips32r5',
+          '--disable-mips32r2',
           '--disable-mipsdsp',
           '--disable-mipsdspr2',
+          '--disable-msa',
+          '--enable-mipsfpu',
+          '--extra-cflags=-march=mipsel',
+          '--extra-cflags=-mcpu=mips32',
+          # Required to avoid errors about dynamic relocation w/o -fPIC.
+          '--extra-ldflags=-z notext'
       ])
+
     elif target_arch == 'mips64el':
-      if target_os != "android":
-        if target_arch == host_arch:
-          configure_flags['Common'].extend([
-              '--target-os=linux',
-              '--arch=mips',
-              '--extra-cflags=-mips64r2',
-              '--extra-cflags=-EL',
-              '--extra-ldflags=-mips64r2',
-              '--extra-ldflags=-EL',
-              '--disable-mipsfpu',
-              '--disable-mipsdsp',
-              '--disable-mipsdspr2',
-              '--disable-mips32r2',
-        ])
-        else:
-          configure_flags['Common'].extend([
-              '--enable-cross-compile',
-              '--cross-prefix=mips64el-linux-gnuabi64-',
-              '--target-os=linux',
-              '--arch=mips',
-              '--extra-cflags=-mips64r2',
-              '--extra-cflags=-EL',
-              '--extra-ldflags=-mips64r2',
-              '--extra-ldflags=-EL',
-              '--disable-mipsfpu',
-              '--disable-mipsdsp',
-              '--disable-mipsdspr2',
-              '--disable-mips32r2',
-        ])
-      else:
-        configure_flags['Common'].extend([
-            '--arch=mips',
-            '--cpu=i6400',
-            '--extra-cflags=-mhard-float',
-            '--extra-cflags=-mips64r6',
-            '--disable-msa',
-        ])
+      if target_os != 'android':
+        print('MIPS is only supported on Android.\n')
+        return 1
+      # These flags taken from android chrome build with target_cpu='mips64el'
+      configure_flags['Common'].extend([
+          '--arch=mips64el',
+          '--enable-mips64r6',
+          '--enable-msa',
+          '--enable-mipsfpu',
+          '--disable-mips64r2',
+          '--disable-mipsdsp',
+          '--disable-mipsdspr2',
+          '--extra-cflags=-march=mips64el',
+          '--extra-cflags=-mcpu=mips64r6',
+          # Required to avoid errors about dynamic relocation w/o -fPIC.
+          '--extra-ldflags=-z notext'
+      ])
     else:
-      print('Error: Unknown target arch %r for target OS %r!' % (
-          target_arch, target_os), file=sys.stderr)
+      print(
+          'Error: Unknown target arch %r for target OS %r!' % (target_arch,
+                                                               target_os),
+          file=sys.stderr)
       return 1
 
   if target_os == 'linux-noasm':
@@ -564,16 +550,18 @@ def main(argv):
     # Clang Linux will use the first 'ld' it finds on the path, which will
     # typically be the system one, so explicitly configure use of Clang's
     # ld.lld, to ensure that things like cross-compilation and LTO work.
-    # This does not work for ia32 targets, so only apply for x64.
-    if target_os == 'linux' or target_os == 'linux-noasm' or target_os == 'android':
+    # This does not work for arm64.
+    if target_arch not in ['arm64', 'ia32']:
       configure_flags['Common'].append('--extra-ldflags=-fuse-ld=lld')
 
   # Should be run on Mac.
   if target_os == 'mac':
     if host_os != 'mac':
-      print('Script should be run on a Mac host. If this is not possible\n'
-            'try a merge of config files with new linux ia32 config.h\n'
-            'by hand.\n', file=sys.stderr)
+      print(
+          'Script should be run on a Mac host. If this is not possible\n'
+          'try a merge of config files with new linux ia32 config.h\n'
+          'by hand.\n',
+          file=sys.stderr)
       return 1
 
     # Mac dylib building resolves external symbols. We need to explicitly
@@ -590,8 +578,10 @@ def main(argv):
           '--extra-ldflags=-m64',
       ])
     else:
-      print('Error: Unknown target arch %r for target OS %r!' % (
-          target_arch, target_os), file=sys.stderr)
+      print(
+          'Error: Unknown target arch %r for target OS %r!' % (target_arch,
+                                                               target_os),
+          file=sys.stderr)
 
   # Should be run on Windows.
   if target_os == 'win':
@@ -654,29 +644,21 @@ def main(argv):
 
   # Only build Chromium, Chrome for ia32, x86 non-android platforms.
   if target_os != 'android':
-    do_build_ffmpeg('Chromium',
-                    configure_flags['Common'] +
-                    configure_flags['Chromium'] +
-                    configure_args)
-    do_build_ffmpeg('Chrome',
-                    configure_flags['Common'] +
-                    configure_flags['Chrome'] +
-                    configure_args)
+    do_build_ffmpeg('Chromium', configure_flags['Common'] +
+                    configure_flags['Chromium'] + configure_args)
+    do_build_ffmpeg(
+        'Chrome',
+        configure_flags['Common'] + configure_flags['Chrome'] + configure_args)
   else:
-    do_build_ffmpeg('Chromium',
-                    configure_flags['Common'] +
-                    configure_args)
-    do_build_ffmpeg('Chrome',
-                    configure_flags['Common'] +
-                    configure_flags['ChromeAndroid'] +
-                    configure_args)
+    do_build_ffmpeg('Chromium', configure_flags['Common'] + configure_args)
+    do_build_ffmpeg('Chrome', configure_flags['Common'] +
+                    configure_flags['ChromeAndroid'] + configure_args)
 
   if target_os in ['linux', 'linux-noasm']:
     # ChromeOS enables MPEG4 which requires error resilience :(
-    chrome_os_flags = (configure_flags['Common'] +
-                       configure_flags['Chrome'] +
-                       configure_flags['ChromeOS'] +
-                       configure_args)
+    chrome_os_flags = (
+        configure_flags['Common'] + configure_flags['Chrome'] +
+        configure_flags['ChromeOS'] + configure_args)
     chrome_os_flags.remove('--disable-error-resilience')
     do_build_ffmpeg('ChromeOS', chrome_os_flags)
 

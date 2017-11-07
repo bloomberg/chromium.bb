@@ -77,3 +77,7 @@ Current patches:
     Fixes the conditionals on Linux so that these symbols are hidden and
     adds the Chromium-specific private_extern extension for hiding these
     symbols on OSX.
+
+  libavcodec/mips/aacdec_mips.c
+    update_ltp_mips() function fails to compile:
+        "error: couldn't allocate output register for constraint 'r'"
