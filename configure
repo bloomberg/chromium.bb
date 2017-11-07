@@ -532,6 +532,9 @@ post_process_cmdline() {
     # Enable LBD/HBD txfm consistency tool
     soft_enable txmg
 
+    # Enable using 8x8 TMV to realize the decoder speedup.
+    soft_enable tmv
+
     # Fix up experiment dependencies
     enabled lv_map && disable_feature mrc_tx
     enabled eob_first && enable_feature lv_map

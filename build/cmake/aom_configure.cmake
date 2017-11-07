@@ -56,8 +56,8 @@ if (NOT ENABLE_ADOPTED_EXPERIMENTS)
     unset(var_helpstring)
     get_property(var_helpstring CACHE ${var} PROPERTY HELPSTRING)
     if ("${var_helpstring}" STREQUAL "AV1 experiment flag.")
-      if ("${var}" MATCHES "CONFIG_TXMG")
-       # TXMG is required for configure compatibility.
+      if ("${var}" MATCHES "CONFIG_TMV\|CONFIG_TXMG")
+       # TXMG and TMV are required for configure compatibility.
       else ()
        set(${var} 0)
      endif ()
