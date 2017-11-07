@@ -34,11 +34,13 @@ class ProxyResolverService : public service_manager::Service {
   void OnProxyResolverFactoryRequest(
       proxy_resolver::mojom::ProxyResolverFactoryRequest request);
 
-  // State needed to manage service lifecycle and lifecycle of bound clients.
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
+  ProxyResolverFactoryImpl proxy_resolver_factory_;
+
   service_manager::BinderRegistry registry_;
 
-  ProxyResolverFactoryImpl proxy_resolver_factory_;
+  // State needed to manage service lifecycle and lifecycle of bound clients.
+  // Should be last in the list, just like a WeakPtrFactory.
+  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverService);
 };
