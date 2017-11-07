@@ -5,10 +5,6 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_URL_CONSTANTS_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_URL_CONSTANTS_H_
 
-namespace chrome {
-
 extern const char kUploadURL[];
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_URL_CONSTANTS_H_

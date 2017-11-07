@@ -7,15 +7,11 @@
 
 #include <string>
 
-namespace chrome {
-
 // Minimum length for the CDM Storage ID Key.
 static const size_t kMinimumCdmStorageIdKeyLength = 32;
 
 // Returns a browser specific value of at least |kMinimumCdmStorageKeyLength|
 // characters, which will be used in the computation of the CDM Storage ID.
 std::string GetCdmStorageIdKey();
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_CDM_STORAGE_ID_KEY_H_

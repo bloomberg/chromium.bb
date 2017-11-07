@@ -16,7 +16,6 @@ class Origin;
 }
 
 // This handles computing the Storage Id for platform verification.
-namespace chrome {
 
 using CdmStorageIdCallback =
     base::OnceCallback<void(const std::vector<uint8_t>& storage_id)>;
@@ -28,7 +27,5 @@ using CdmStorageIdCallback =
 void ComputeStorageId(const std::vector<uint8_t>& profile_salt,
                       const url::Origin& origin,
                       CdmStorageIdCallback callback);
-
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_CDM_STORAGE_ID_H_
