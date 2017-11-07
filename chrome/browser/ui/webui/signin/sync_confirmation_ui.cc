@@ -12,6 +12,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -24,9 +25,19 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncConfirmationHost);
   source->SetJsonPath("strings.js");
-  source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
-  source->AddResourcePath("sync_confirmation.css", IDR_SYNC_CONFIRMATION_CSS);
-  source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
+
+  if (signin::IsDiceEnabledForProfile(profile->GetPrefs())) {
+    source->SetDefaultResource(IDR_DICE_SYNC_CONFIRMATION_HTML);
+    source->AddResourcePath("sync_confirmation.css",
+                            IDR_DICE_SYNC_CONFIRMATION_CSS);
+    source->AddResourcePath("sync_confirmation.js",
+                            IDR_DICE_SYNC_CONFIRMATION_JS);
+  } else {
+    source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);
+    source->AddResourcePath("sync_confirmation.css", IDR_SYNC_CONFIRMATION_CSS);
+    source->AddResourcePath("sync_confirmation.js", IDR_SYNC_CONFIRMATION_JS);
+  }
+
   source->AddResourcePath("signin_shared_css.html", IDR_SIGNIN_SHARED_CSS_HTML);
   source->AddBoolean("isSyncAllowed", is_sync_allowed);
 
