@@ -264,6 +264,7 @@ class SupervisedUserWhitelistComponentInstallerPolicy
   update_client::CrxInstaller::Result OnCustomInstall(
       const base::DictionaryValue& manifest,
       const base::FilePath& install_dir) override;
+  void OnCustomUninstall() override;
   void ComponentReady(const base::Version& version,
                       const base::FilePath& install_dir,
                       std::unique_ptr<base::DictionaryValue> manifest) override;
@@ -309,6 +310,8 @@ SupervisedUserWhitelistComponentInstallerPolicy::OnCustomInstall(
       success ? update_client::InstallError::NONE
               : update_client::InstallError::GENERIC_ERROR);
 }
+
+void SupervisedUserWhitelistComponentInstallerPolicy::OnCustomUninstall() {}
 
 void SupervisedUserWhitelistComponentInstallerPolicy::ComponentReady(
     const base::Version& version,

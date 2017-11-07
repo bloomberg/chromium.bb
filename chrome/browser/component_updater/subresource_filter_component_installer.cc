@@ -62,6 +62,8 @@ SubresourceFilterComponentInstallerPolicy::OnCustomInstall(
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
+void SubresourceFilterComponentInstallerPolicy::OnCustomUninstall() {}
+
 void SubresourceFilterComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,

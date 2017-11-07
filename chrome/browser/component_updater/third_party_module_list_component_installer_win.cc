@@ -68,6 +68,8 @@ ThirdPartyModuleListComponentInstallerPolicy::OnCustomInstall(
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
+void ThirdPartyModuleListComponentInstallerPolicy::OnCustomUninstall() {}
+
 // NOTE: This is always called on the main UI thread. It is called once every
 // startup to notify of an already installed component, and may be called
 // repeatedly after that every time a new component is ready.

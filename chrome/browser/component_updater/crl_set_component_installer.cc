@@ -54,6 +54,7 @@ class CRLSetPolicy : public ComponentInstallerPolicy {
   update_client::CrxInstaller::Result OnCustomInstall(
       const base::DictionaryValue& manifest,
       const base::FilePath& install_dir) override;
+  void OnCustomUninstall() override;
   bool VerifyInstallation(const base::DictionaryValue& manifest,
                           const base::FilePath& install_dir) const override;
   void ComponentReady(const base::Version& version,
@@ -85,6 +86,8 @@ update_client::CrxInstaller::Result CRLSetPolicy::OnCustomInstall(
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
+
+void CRLSetPolicy::OnCustomUninstall() {}
 
 bool CRLSetPolicy::VerifyInstallation(const base::DictionaryValue& manifest,
                                       const base::FilePath& install_dir) const {
