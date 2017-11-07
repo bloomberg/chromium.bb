@@ -6,15 +6,15 @@
 // Ozone window system used by VaapiVideoDecodeAccelerator to produce
 // output pictures.
 
-#ifndef MEDIA_GPU_VAAPI_DRM_PICTURE_H_
-#define MEDIA_GPU_VAAPI_DRM_PICTURE_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_DRM_PICTURE_H_
+#define MEDIA_GPU_VAAPI_VAAPI_DRM_PICTURE_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "media/gpu/vaapi_picture.h"
+#include "media/gpu/vaapi/vaapi_picture.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -69,4 +69,4 @@ class VaapiDrmPicture : public VaapiPicture {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_DRM_PICTURE_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_DRM_PICTURE_H_

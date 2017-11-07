@@ -7,8 +7,8 @@
 // (X11/Ozone) and used by VaapiVideoDecodeAccelerator to produce
 // output pictures.
 
-#ifndef MEDIA_GPU_VAAPI_PICTURE_H_
-#define MEDIA_GPU_VAAPI_PICTURE_H_
+#ifndef MEDIA_GPU_VAAPI_VAAPI_PICTURE_H_
+#define MEDIA_GPU_VAAPI_VAAPI_PICTURE_H_
 
 #include <stdint.h>
 
@@ -94,4 +94,4 @@ class VaapiPicture {
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_VAAPI_PICTURE_H_
+#endif  // MEDIA_GPU_VAAPI_VAAPI_PICTURE_H_

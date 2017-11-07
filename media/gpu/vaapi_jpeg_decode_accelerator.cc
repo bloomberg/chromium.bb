@@ -19,7 +19,7 @@
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/shared_memory_region.h"
-#include "media/gpu/vaapi_picture.h"
+#include "media/gpu/vaapi/vaapi_picture.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "

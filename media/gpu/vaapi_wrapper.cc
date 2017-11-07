@@ -21,7 +21,7 @@
 // Auto-generated for dlopen libva libraries
 #include "media/gpu/vaapi/va_stubs.h"
 
-#include "media/gpu/vaapi_picture.h"
+#include "media/gpu/vaapi/vaapi_picture.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gl/gl_bindings.h"
 
