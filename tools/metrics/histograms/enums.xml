@@ -20394,6 +20394,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="HistogramNameHash">
+  <summary>
+    These numbers are the lower 32 bits of the hash of the metric name.
+  </summary>
   <int value="-2055973512" label="Login.ConsumerNewUsersAllowed"/>
   <int value="-2021219906"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.NotCellular"/>
