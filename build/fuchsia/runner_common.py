@@ -10,6 +10,7 @@ to run, or starts the bootserver to allow running on a hardware device."""
 
 import argparse
 import os
+import platform
 import re
 import shutil
 import signal
@@ -532,17 +533,22 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
       ]
 
     # Configure the machine & CPU to emulate, based on the target architecture.
+    # Enable lightweight virtualization (KVM) if the host and guest OS run on
+    # the same architecture.
     if bootfs_data.target_cpu == 'arm64':
       qemu_command.extend([
           '-machine','virt',
           '-cpu', 'cortex-a53',
       ])
+      if platform.machine() == 'aarch64':
+        qemu_command.append('-enable-kvm')
     else:
       qemu_command.extend([
-          '-enable-kvm',
           '-machine', 'q35',
           '-cpu', 'host,migratable=no',
       ])
+      if platform.machine() == 'x86_64':
+        qemu_command.append('-enable-kvm')
 
     if test_launcher_summary_output:
       # Make and mount a 100M minfs formatted image that is used to copy the
