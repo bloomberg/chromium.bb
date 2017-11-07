@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "build/build_config.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
@@ -171,19 +172,31 @@ class LocalStorageContextMojo::LevelDBWrapperHolder final
       : context_(context), origin_(origin) {
     // Delay for a moment after a value is set in anticipation
     // of other values being set, so changes are batched.
-    const int kCommitDefaultDelaySecs = 5;
+    constexpr base::TimeDelta kCommitDefaultDelaySecs =
+        base::TimeDelta::FromSeconds(5);
 
     // To avoid excessive IO we apply limits to the amount of data being written
     // and the frequency of writes.
     const int kMaxBytesPerHour = kPerStorageAreaQuota;
     const int kMaxCommitsPerHour = 60;
 
+    LevelDBWrapperImpl::Options options;
+    options.max_size = kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance;
+    options.default_commit_delay = kCommitDefaultDelaySecs;
+    options.max_bytes_per_hour = kMaxBytesPerHour;
+    options.max_commits_per_hour = kMaxCommitsPerHour;
+#if defined(OS_ANDROID)
+    options.cache_mode = LevelDBWrapperImpl::CacheMode::KEYS_ONLY_WHEN_POSSIBLE;
+#else
+    options.cache_mode = LevelDBWrapperImpl::CacheMode::KEYS_AND_VALUES;
+    if (base::SysInfo::IsLowEndDevice()) {
+      options.cache_mode =
+          LevelDBWrapperImpl::CacheMode::KEYS_ONLY_WHEN_POSSIBLE;
+    }
+#endif
     level_db_wrapper_ = std::make_unique<LevelDBWrapperImpl>(
         context_->database_.get(),
-        kDataPrefix + origin_.Serialize() + kOriginSeparator,
-        kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
-        base::TimeDelta::FromSeconds(kCommitDefaultDelaySecs), kMaxBytesPerHour,
-        kMaxCommitsPerHour, this);
+        kDataPrefix + origin_.Serialize() + kOriginSeparator, this, options);
     level_db_wrapper_ptr_ = level_db_wrapper_.get();
   }
 
@@ -222,7 +235,7 @@ class LocalStorageContextMojo::LevelDBWrapperHolder final
       item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
       LocalStorageOriginMetaData data;
       data.set_last_modified(base::Time::Now().ToInternalValue());
-      data.set_size_bytes(level_db_wrapper()->bytes_used());
+      data.set_size_bytes(level_db_wrapper()->storage_used());
       item->value = leveldb::StdStringToUint8Vector(data.SerializeAsString());
     }
     operations.push_back(std::move(item));
@@ -981,7 +994,7 @@ void LocalStorageContextMojo::GetStatistics(size_t* total_cache_size,
   *total_cache_size = 0;
   *unused_wrapper_count = 0;
   for (const auto& it : level_db_wrappers_) {
-    *total_cache_size += it.second->level_db_wrapper()->bytes_used();
+    *total_cache_size += it.second->level_db_wrapper()->memory_used();
     if (!it.second->has_bindings())
       (*unused_wrapper_count)++;
   }

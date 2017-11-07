@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -42,6 +43,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   using ValueMapCallback = base::OnceCallback<void(std::unique_ptr<ValueMap>)>;
   using Change =
       std::pair<std::vector<uint8_t>, base::Optional<std::vector<uint8_t>>>;
+  using KeysOnlyMap = std::map<std::vector<uint8_t>, size_t>;
 
   class CONTENT_EXPORT Delegate {
    public:
@@ -57,21 +59,45 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
     virtual void OnMapLoaded(leveldb::mojom::DatabaseError error);
   };
 
+  enum class CacheMode {
+    // The cache stores only keys (required to maintain max size constraints)
+    // when there is only one client binding to save memory. The client is
+    // asked to send old values on mutations for sending notifications to
+    // observers.
+    KEYS_ONLY_WHEN_POSSIBLE,
+    // The cache always stores keys and values.
+    KEYS_AND_VALUES
+  };
+
+  // Options provided to constructor.
+  struct Options {
+    CacheMode cache_mode = CacheMode::KEYS_AND_VALUES;
+
+    // Max bytes of storage that can be used by key value pairs.
+    size_t max_size = 0;
+    // Minimum time between 2 commits to disk.
+    base::TimeDelta default_commit_delay;
+    // Maximum number of bytes written to disk in one hour.
+    int max_bytes_per_hour = 0;
+    // Maximum number of disk write batches in one hour.
+    int max_commits_per_hour = 0;
+  };
+
   // |no_bindings_callback| will be called when this object has no more
   // bindings and all pending modifications have been processed.
   LevelDBWrapperImpl(leveldb::mojom::LevelDBDatabase* database,
                      const std::string& prefix,
-                     size_t max_size,
-                     base::TimeDelta default_commit_delay,
-                     int max_bytes_per_hour,
-                     int max_commits_per_hour,
-                     Delegate* delegate);
+                     Delegate* delegate,
+                     const Options& options);
   ~LevelDBWrapperImpl() override;
 
   void Bind(mojom::LevelDBWrapperRequest request);
 
-  bool empty() const { return bytes_used_ == 0; }
-  size_t bytes_used() const { return bytes_used_; }
+  // The total bytes used by items which counts towards the quota.
+  size_t storage_used() const { return storage_used_; }
+  // The physical memory used by the cache.
+  size_t memory_used() const { return memory_used_; }
+  bool empty() const { return storage_used_ == 0; }
 
   bool has_pending_load_tasks() const {
     return !on_load_complete_tasks_.empty();
@@ -97,6 +123,10 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   void OnMemoryDump(const std::string& name,
                     base::trace_event::ProcessMemoryDump* pmd);
 
+  // Sets cache mode to either store only keys or keys and values. See
+  // SetCacheMode().
+  void SetCacheModeForTesting(CacheMode cache_mode);
+
   // LevelDBWrapper:
   void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;
   void Put(const std::vector<uint8_t>& key,
@@ -116,6 +146,12 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
       GetAllCallback callback) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, SetOnlyKeysWithoutDatabase);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, CommitOnDifferentCacheModes);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, GetAllWhenCacheOnlyKeys);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, GetAllAfterSetCacheMode);
+  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, SetCacheModeConsistent);
+
   // Used to rate limit commits.
   class RateLimiter {
    public:
@@ -139,13 +175,26 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
     base::TimeDelta time_quantum_;
   };
 
+  enum class LoadState { UNLOADED = 0, KEYS_ONLY, KEYS_AND_VALUES };
+
   struct CommitBatch {
     bool clear_all_first;
-    std::set<std::vector<uint8_t>> changed_keys;
+    // Values in this map are only used if |keys_only_map_| is loaded.
+    std::map<std::vector<uint8_t>, base::Optional<std::vector<uint8_t>>>
+        changed_values;
 
     CommitBatch();
     ~CommitBatch();
   };
+
+  // Changes the cache (a copy of map stored in memory) to contain only keys
+  // instead of keys and values. The only keys mode can be set only when there
+  // is one client binding and it automatically changes to keys and values mode
+  // when more than one binding exists. The max size constraints are still
+  // valid. Notification to the observers when an item is mutated depends on the
+  // |client_old_value| when cache contains only keys. Changing the mode and
+  // using GetAll() when only keys are stored would cause extra disk access.
+  void SetCacheMode(CacheMode cache_mode);
 
   void OnConnectionError();
   void LoadMap(const base::Closure& completion_callback);
@@ -158,16 +207,22 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   base::TimeDelta ComputeCommitDelay() const;
   void CommitChanges();
   void OnCommitComplete(leveldb::mojom::DatabaseError error);
+  void UnloadMapIfPossible();
+  bool IsMapReloadNeeded() const;
+  LoadState CurrentLoadState() const;
 
   std::vector<uint8_t> prefix_;
   mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
   mojo::AssociatedInterfacePtrSet<mojom::LevelDBObserver> observers_;
   Delegate* delegate_;
   leveldb::mojom::LevelDBDatabase* database_;
-  std::unique_ptr<ValueMap> map_;
+  std::unique_ptr<ValueMap> keys_values_map_;
+  std::unique_ptr<KeysOnlyMap> keys_only_map_;
+  LoadState desired_load_state_;
   std::vector<base::Closure> on_load_complete_tasks_;
-  size_t bytes_used_;
+  size_t storage_used_;
   size_t max_size_;
+  size_t memory_used_;
   base::TimeTicks start_time_;
   base::TimeDelta default_commit_delay_;
   RateLimiter data_rate_limiter_;
