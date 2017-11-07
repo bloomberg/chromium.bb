@@ -564,7 +564,7 @@ void inspect(void *pbi, void *data) {
   }
   if (layers & SKIP_LAYER) {
     buf +=
-        put_block_info(buf, skip_map, "skip", offsetof(insp_mi_data, skip), 1);
+        put_block_info(buf, skip_map, "skip", offsetof(insp_mi_data, skip), 0);
   }
   if (layers & FILTER_LAYER) {
 #if CONFIG_DUAL_FILTER
