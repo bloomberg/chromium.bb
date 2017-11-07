@@ -398,7 +398,6 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
       prefs::kPrintPreviewUseSystemDefaultPrinter);
   source->AddBoolean("useSystemDefaultPrinter", system_default_printer);
 #endif
-  source->AddBoolean("showLocalManageButton", true);
 }
 
 content::WebUIDataSource* CreateNewPrintPreviewUISource(Profile* profile) {
