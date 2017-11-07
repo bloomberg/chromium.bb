@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chromeos/cert_loader.h"
 #include "chromeos/chromeos_export.h"
@@ -140,6 +141,8 @@ class CHROMEOS_EXPORT ClientCertResolver : public NetworkStateHandlerObserver,
 
   // Can be set for testing.
   base::Clock* testing_clock_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ClientCertResolver> weak_ptr_factory_;
 

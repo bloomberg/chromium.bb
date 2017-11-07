@@ -595,4 +595,39 @@ TEST_F(ClientCertResolverTest, PopulateIdentityFromCert) {
   EXPECT_EQ(2, network_properties_changed_count_);
 }
 
+// Test for crbug.com/781276. A notification which results in no networks to be
+// resolved should not alter the state of IsAnyResolveTaskRunning().
+TEST_F(ClientCertResolverTest, TestResolveTaskQueued) {
+  // Set up ClientCertResolver and let it run initially
+  SetupTestCerts("client_1", true /* import issuer */);
+  StartCertLoader();
+  SetupWifi();
+  SetupNetworkHandlers();
+  SetupPolicyMatchingIssuerPEM(onc::ONC_SOURCE_USER_POLICY, "");
+  scoped_task_environment_.RunUntilIdle();
+
+  // Pretend that policy was applied, this shall queue a resolving task.
+  static_cast<NetworkPolicyObserver*>(client_cert_resolver_.get())
+      ->PolicyAppliedToNetwork(kWifiStub);
+  EXPECT_TRUE(client_cert_resolver_->IsAnyResolveTaskRunning());
+  // Pretend that the network list has changed. One resolving task should still
+  // be queued.
+  static_cast<NetworkStateHandlerObserver*>(client_cert_resolver_.get())
+      ->NetworkListChanged();
+  EXPECT_TRUE(client_cert_resolver_->IsAnyResolveTaskRunning());
+  // Pretend that certificates have changed. One resolving task should still be
+  // queued.
+  static_cast<CertLoader::Observer*>(client_cert_resolver_.get())
+      ->OnCertificatesLoaded(CertLoader::Get()->all_certs());
+  EXPECT_TRUE(client_cert_resolver_->IsAnyResolveTaskRunning());
+
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_FALSE(client_cert_resolver_->IsAnyResolveTaskRunning());
+  // Verify that the resolver positively matched the pattern in the policy with
+  // the test client cert and configured the network.
+  std::string pkcs11_id;
+  GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
+  EXPECT_EQ(test_cert_id_, pkcs11_id);
+}
+
 }  // namespace chromeos
