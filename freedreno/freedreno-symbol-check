@@ -33,6 +33,7 @@ fd_device_version
 fd_pipe_del
 fd_pipe_get_param
 fd_pipe_new
+fd_pipe_new2
 fd_pipe_wait
 fd_pipe_wait_timeout
 fd_ringbuffer_cmd_count
