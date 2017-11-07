@@ -68,7 +68,7 @@ Result BytesConsumerTestUtil::ReplayingBytesConsumer::BeginRead(
     case Command::kError: {
       Error e(String::FromUTF8(command.Body().data(), command.Body().size()));
       commands_.pop_front();
-      GetError(std::move(e));
+      MakeErrored(std::move(e));
       return Result::kError;
     }
     case Command::kWait:
@@ -145,7 +145,8 @@ void BytesConsumerTestUtil::ReplayingBytesConsumer::Close() {
   ++notification_token_;
 }
 
-void BytesConsumerTestUtil::ReplayingBytesConsumer::GetError(const Error& e) {
+void BytesConsumerTestUtil::ReplayingBytesConsumer::MakeErrored(
+    const Error& e) {
   commands_.clear();
   offset_ = 0;
   error_ = e;
