@@ -17116,6 +17116,7 @@
             "poppy-release",
             "pyro-release",
             "quawks-release",
+            "rainier-release",
             "reef-release",
             "reef-uni-release",
             "reks-release",
@@ -22212,6 +22213,82 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
+        ]
+    },
+    "rainier-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "rainier"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "rainier-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "rainier"
+        ]
+    },
+    "rainier-full": {
+        "_template": "full",
+        "boards": [
+            "rainier"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "rainier-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "rainier"
+        ]
+    },
+    "rainier-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "rainier"
+        ],
+        "important": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "rainier-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "rainier"
+        ],
+        "vm_tests": []
+    },
+    "rainier-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "rainier"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "rainier-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "rainier"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "rainier-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "rainier"
         ]
     },
     "rambi-chrome-pfq": {

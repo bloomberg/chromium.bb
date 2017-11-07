@@ -1214,6 +1214,18 @@
       ]
     },
     {
+      "name": "rainier",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "scarlet",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "reef",
       "configs": [
         {
