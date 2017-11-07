@@ -3329,6 +3329,17 @@ TEST(NetworkQualityEstimatorTest,
   EXPECT_EQ(0u, rtt_observer.observations().size());
   EXPECT_EQ(0u, throughput_observer.observations().size());
 
+  estimator.AddAndNotifyObserversOfRTT(nqe::internal::Observation(
+      1, base::TimeTicks::Now(), base::Optional<int32_t>(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
+  estimator.AddAndNotifyObserversOfThroughput(nqe::internal::Observation(
+      1, base::TimeTicks::Now(), base::Optional<int32_t>(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
+  EXPECT_EQ(1u, rtt_observer.observations().size());
+  EXPECT_EQ(1u, throughput_observer.observations().size());
+  EXPECT_EQ(1u, estimator.rtt_ms_observations_.Size());
+  EXPECT_EQ(1u, estimator.downstream_throughput_kbps_observations_.Size());
+
   // Simulate reading of prefs.
   estimator.OnPrefsRead(read_prefs);
   histogram_tester.ExpectUniqueSample("NQE.Prefs.ReadSize", read_prefs.size(),
@@ -3341,36 +3352,50 @@ TEST(NetworkQualityEstimatorTest,
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1500),
             rtt_observer.last_rtt(
                 NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE));
+  EXPECT_EQ(3u, rtt_observer.observations().size());
+
+  // RTT observation with source
+  // NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE should be removed
+  // from |estimator.rtt_ms_observations_| when a cached estimate is received.
+  EXPECT_EQ(2u, estimator.rtt_ms_observations_.Size());
 
   // When a cached estimate is available, RTT observations from the external
   // estimate provider and platform must be discarded.
-  EXPECT_EQ(2u, rtt_observer.observations().size());
   estimator.AddAndNotifyObserversOfRTT(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
   estimator.AddAndNotifyObserversOfRTT(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM));
-  EXPECT_EQ(2u, rtt_observer.observations().size());
+  EXPECT_EQ(3u, rtt_observer.observations().size());
+  EXPECT_EQ(2u, estimator.rtt_ms_observations_.Size());
   estimator.AddAndNotifyObserversOfRTT(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
-  EXPECT_EQ(3u, rtt_observer.observations().size());
+  EXPECT_EQ(4u, rtt_observer.observations().size());
+  EXPECT_EQ(3u, estimator.rtt_ms_observations_.Size());
 
   // When a cached estimate is available, throughput observations from the
   // external estimate provider and platform must be discarded.
-  EXPECT_EQ(1u, throughput_observer.observations().size());
+  EXPECT_EQ(2u, throughput_observer.observations().size());
+  // Throughput observation with source
+  // NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE should be removed
+  // from |estimator.downstream_throughput_kbps_observations_| when a cached
+  // estimate is received.
+  EXPECT_EQ(1u, estimator.downstream_throughput_kbps_observations_.Size());
   estimator.AddAndNotifyObserversOfThroughput(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE));
   estimator.AddAndNotifyObserversOfThroughput(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM));
-  EXPECT_EQ(1u, throughput_observer.observations().size());
+  EXPECT_EQ(2u, throughput_observer.observations().size());
+  EXPECT_EQ(1u, estimator.downstream_throughput_kbps_observations_.Size());
   estimator.AddAndNotifyObserversOfThroughput(nqe::internal::Observation(
       1, base::TimeTicks::Now(), base::Optional<int32_t>(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
-  EXPECT_EQ(2u, throughput_observer.observations().size());
+  EXPECT_EQ(3u, throughput_observer.observations().size());
+  EXPECT_EQ(2u, estimator.downstream_throughput_kbps_observations_.Size());
 
   base::RunLoop().RunUntilIdle();
 }
