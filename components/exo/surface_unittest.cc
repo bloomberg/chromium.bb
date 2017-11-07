@@ -845,5 +845,22 @@ TEST_P(SurfaceTest, RemoveSubSurface) {
   EXPECT_FALSE(surface->HasPendingDamageForTesting(gfx::Rect(20, 10, 64, 128)));
 }
 
+TEST_P(SurfaceTest, DestroyAttachedBuffer) {
+  gfx::Size buffer_size(1, 1);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  RunAllPendingInMessageLoop();
+
+  // Make sure surface size is still valid after buffer is destroyed.
+  buffer.reset();
+  surface->Commit();
+  EXPECT_FALSE(surface->content_size().IsEmpty());
+}
+
 }  // namespace
 }  // namespace exo

@@ -255,10 +255,12 @@ class Surface final : public ui::PropertyHandler {
 
     base::WeakPtr<Buffer>& buffer();
     const base::WeakPtr<Buffer>& buffer() const;
+    const gfx::Size& size() const;
     void Reset(base::WeakPtr<Buffer> buffer);
 
    private:
     base::WeakPtr<Buffer> buffer_;
+    gfx::Size size_;
 
     DISALLOW_COPY_AND_ASSIGN(BufferAttachment);
   };
@@ -284,7 +286,7 @@ class Surface final : public ui::PropertyHandler {
   void UpdateContentSize();
 
   // This returns true when the surface has some contents assigned to it.
-  bool has_contents() const { return !!current_buffer_.buffer(); }
+  bool has_contents() const { return !current_buffer_.size().IsEmpty(); }
 
   // This window has the layer which contains the Surface contents.
   std::unique_ptr<aura::Window> window_;
