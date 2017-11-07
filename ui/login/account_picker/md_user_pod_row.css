@@ -1182,6 +1182,32 @@ html[dir=rtl] .small-pod.extra-small .small-pod-name {
   right: 76px;
 }
 
+.pod-background {
+  background-color: rgba(0, 0, 0, 0.9);
+  border-radius: 4px;
+  display: none;
+  position: absolute;
+}
+
+.large-pod .pod-background {
+  height: 378px;
+  left: -16px;
+  top: -16px;
+  width: 338px;
+}
+
+.small-pod .pod-background {
+  height: 90px;
+  left: -8px;
+  top: -8px;
+  width: 320px;
+}
+
+.pod.show-pod-background:not(.expanded) .large-pod .pod-background,
+.pod.show-pod-background .small-pod:not(.extra-small) .pod-background {
+  display: block;
+}
+
 @keyframes switch-image {
   from { transform: rotate3d(0, 1, 0, 90deg); }
   to { transform: none; }

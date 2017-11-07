@@ -20,6 +20,10 @@
   border-top: 1px solid #000;
 }
 
+#login-header-bar.translucent-background {
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
 html[screen=lock] .login-header-bar-hidden,
 html[screen=oobe] .login-header-bar-hidden {
   opacity: 0;

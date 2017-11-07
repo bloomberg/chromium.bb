@@ -937,11 +937,20 @@ void SigninScreenHandler::OnCurrentScreenChanged(OobeScreen current_screen,
   }
 }
 
+void SigninScreenHandler::OnWallpaperDataChanged() {}
+
 void SigninScreenHandler::OnWallpaperColorsChanged() {
   UpdateAccountPickerColors();
 }
 
-void SigninScreenHandler::OnWallpaperDataChanged() {}
+void SigninScreenHandler::OnWallpaperBlurChanged() {
+  bool show_pod_background =
+      GetAshConfig() == ash::Config::MASH
+          ? false
+          : !ash::Shell::Get()->wallpaper_controller()->IsWallpaperBlurred();
+  CallJSOrDefer("login.AccountPickerScreen.togglePodBackground",
+                show_pod_background);
+}
 
 void SigninScreenHandler::ClearAndEnablePassword() {
   core_oobe_view_->ResetSignInUI(false);
@@ -1303,9 +1312,10 @@ void SigninScreenHandler::HandleAccountPickerReady() {
     OnLockScreenNoteStateChanged(
         lock_screen_apps::StateController::Get()->GetLockScreenNoteState());
   }
-  // Color calculation of the first wallpaper may have completed before the
-  // instance is initialized, so make sure the colors are properly updated.
-  UpdateAccountPickerColors();
+  // The wallpaper may have been set before the instance is initialized, so make
+  // sure the colors and blur state are updated.
+  OnWallpaperColorsChanged();
+  OnWallpaperBlurChanged();
   if (delegate_)
     delegate_->OnSigninScreenReady();
 }
