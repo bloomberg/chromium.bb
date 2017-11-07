@@ -119,9 +119,10 @@ class BookmarkChangeProcessor : public bookmarks::BookmarkModelObserver,
       int index);
 
   // Sets the favicon of the given bookmark node from the given sync node.
+  // Returns whether the favicon was set in the bookmark node.
   // |profile| is the profile that contains the HistoryService and BookmarkModel
   // for the bookmark in question.
-  static void SetBookmarkFavicon(const syncer::BaseNode* sync_node,
+  static bool SetBookmarkFavicon(const syncer::BaseNode* sync_node,
                                  const bookmarks::BookmarkNode* bookmark_node,
                                  bookmarks::BookmarkModel* model,
                                  syncer::SyncClient* sync_client);
