@@ -28,7 +28,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone 7",
-      "os": "10.0",
+      "os": "11.0",
       "xcode version": "9.0"
     },
     {
