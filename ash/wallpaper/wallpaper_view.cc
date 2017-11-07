@@ -74,8 +74,7 @@ class LayerControlView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(LayerControlView);
 };
 
-// Returns the color used to darken the wallpaper, needed by login, lock, OOBE
-// and add user screens.
+// Returns the color used to dim the wallpaper.
 SkColor GetWallpaperDarkenColor() {
   SkColor darken_color =
       Shell::Get()->wallpaper_controller()->GetProminentColor(
@@ -160,7 +159,7 @@ void WallpaperView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   cc::PaintFlags flags;
-  if (controller->ShouldApplyDimAndBlur()) {
+  if (controller->ShouldApplyDimming()) {
     flags.setColorFilter(SkColorFilter::MakeModeFilter(
         GetWallpaperDarkenColor(), SkBlendMode::kDarken));
   }

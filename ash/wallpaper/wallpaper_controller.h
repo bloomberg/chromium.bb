@@ -127,9 +127,15 @@ class ASH_EXPORT WallpaperController
   // Opens the set wallpaper page in the browser.
   void OpenSetWallpaperPage();
 
-  // Wallpaper should be dimmed and blurred when showing login, lock, OOBE or
-  // add user screens.
-  bool ShouldApplyDimAndBlur() const;
+  // Wallpaper should be dimmed for login, lock, OOBE and add user screens.
+  bool ShouldApplyDimming() const;
+
+  // Wallpaper should be blurred for login, lock, OOBE and add user screens,
+  // except when the wallpaper is set by device policy. See crbug.com/775591.
+  bool ShouldApplyBlur() const;
+
+  // Returns whether the current wallpaper is blurred.
+  bool IsWallpaperBlurred() const { return is_wallpaper_blurred_; }
 
   // mojom::WallpaperController overrides:
   void AddObserver(mojom::WallpaperObserverAssociatedPtrInfo observer) override;
@@ -189,6 +195,9 @@ class ASH_EXPORT WallpaperController
   // Returns true if the wallpaper moved.
   bool MoveToUnlockedContainer();
 
+  // Returns whether the current wallpaper is set by device policy.
+  bool IsDevicePolicyWallpaper() const;
+
   // When wallpaper resizes, we can check which displays will be affected. For
   // simplicity, we only lock the compositor for the internal display.
   void GetInternalDisplayCompositorLock();
@@ -231,6 +240,8 @@ class ASH_EXPORT WallpaperController
   base::OneShotTimer timer_;
 
   int wallpaper_reload_delay_;
+
+  bool is_wallpaper_blurred_ = false;
 
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 

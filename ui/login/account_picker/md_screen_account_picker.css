@@ -78,6 +78,10 @@ html[screen=lock] #signin-banner.message-set {
   visibility: hidden;
 }
 
+.small-pod-container.show-overflow {
+  overflow: visible;
+}
+
 .small-pod-container::-webkit-scrollbar {
    width: 0;
 }

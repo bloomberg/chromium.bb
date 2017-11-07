@@ -103,15 +103,14 @@ uint32_t WallpaperResizer::GetImageId(const gfx::ImageSkia& image) {
   return image_rep.is_null() ? 0 : image_rep.sk_bitmap().getGenerationID();
 }
 
-WallpaperResizer::WallpaperResizer(
-    const gfx::ImageSkia& image,
-    const gfx::Size& target_size,
-    WallpaperLayout layout,
-    scoped_refptr<base::TaskRunner> task_runner)
+WallpaperResizer::WallpaperResizer(const gfx::ImageSkia& image,
+                                   const gfx::Size& target_size,
+                                   const WallpaperInfo& wallpaper_info,
+                                   scoped_refptr<base::TaskRunner> task_runner)
     : image_(image),
       original_image_id_(GetImageId(image_)),
       target_size_(target_size),
-      layout_(layout),
+      wallpaper_info_(wallpaper_info),
       task_runner_(std::move(task_runner)),
       weak_ptr_factory_(this) {
   image_.MakeThreadSafe();
@@ -126,8 +125,8 @@ void WallpaperResizer::StartResize() {
   SkBitmap* resized_bitmap = new SkBitmap;
   if (!task_runner_->PostTaskAndReply(
           FROM_HERE,
-          base::Bind(&Resize, image_, target_size_, layout_, resized_bitmap,
-                     base::RetainedRef(task_runner_)),
+          base::Bind(&Resize, image_, target_size_, wallpaper_info_.layout,
+                     resized_bitmap, base::RetainedRef(task_runner_)),
           base::Bind(&WallpaperResizer::OnResizeFinished,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Owned(resized_bitmap)))) {

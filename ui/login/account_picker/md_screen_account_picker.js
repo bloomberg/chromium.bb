@@ -38,6 +38,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'setPublicSessionKeyboardLayouts',
       'setLockScreenAppsState',
       'setOverlayColors',
+      'togglePodBackground',
     ],
 
     preferredWidth_: 0,
@@ -76,14 +77,23 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     },
 
     /**
-      * Sets login screen overlay colors based on colors extracted from the
-      * wallpaper.
-      * @param {string} maskColor Color for the gradient mask.
-      * @param {string} scrollColor Color for the small pods container.
-      */
-     setOverlayColors: function(maskColor, scrollColor) {
+     * Sets login screen overlay colors based on colors extracted from the
+     * wallpaper.
+     * @param {string} maskColor Color for the gradient mask.
+     * @param {string} scrollColor Color for the small pods container.
+     */
+    setOverlayColors: function(maskColor, scrollColor) {
       $('pod-row').setOverlayColors(maskColor, scrollColor);
-     },
+    },
+
+    /**
+     * Toggles the background behind user pods.
+     * @param {boolean} showPodBackground Whether to add background behind user
+     *     pods.
+     */
+    togglePodBackground: function(showPodBackground) {
+      $('pod-row').togglePodBackground(showPodBackground);
+    },
 
     /**
      * When the account picker is being used to lock the screen, pressing the
@@ -147,7 +157,8 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
         return;
       }
       chrome.send('getTabletModeState');
-      if (!this.firstShown_) return;
+      if (!this.firstShown_)
+        return;
       this.firstShown_ = false;
 
       // Ensure that login is actually visible.
@@ -198,7 +209,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       }
     },
 
-   /**
+    /**
      * Loads given users in pod row.
      * @param {array} users Array of user.
      * @param {boolean} showGuest Whether to show guest session button.
@@ -382,10 +393,8 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * @param {boolean} multipleRecommendedLocales Whether |locales| contains
      *     two or more recommended locales
      */
-    setPublicSessionLocales: function(userID,
-                                      locales,
-                                      defaultLocale,
-                                      multipleRecommendedLocales) {
+    setPublicSessionLocales: function(
+        userID, locales, defaultLocale, multipleRecommendedLocales) {
       $('pod-row').setPublicSessionLocales(userID,
                                            locales,
                                            defaultLocale,

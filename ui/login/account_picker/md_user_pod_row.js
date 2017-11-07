@@ -428,7 +428,7 @@ cr.define('login', function() {
         parentPod.passwordEntryContainerElement.classList.toggle(
             'custom-icon-shown', validIcon);
       }
-      this.hidden = validIcon ? false : true;
+      this.hidden = !validIcon;
     },
 
     /**
@@ -2913,6 +2913,9 @@ cr.define('login', function() {
     // LANDSCAPE_MODE_LIMIT or PORTRAIT_MODE_LIMIT.
     overlayColors_: {maskColor: undefined, scrollColor: undefined},
 
+    // Whether we should add background behind user pods.
+    showPodBackground_: false,
+
     /** @override */
     decorate: function() {
       // Event listeners that are installed for the time period during which
@@ -4041,6 +4044,7 @@ cr.define('login', function() {
         }
       }
       this.updateSigninBannerPosition_();
+      this.togglePodBackground(this.showPodBackground_);
     },
 
     /**
@@ -4233,6 +4237,41 @@ cr.define('login', function() {
      */
     getMaskGradient_: function(maskColor) {
       return 'linear-gradient(' + maskColor + ', transparent)';
+    },
+
+    /**
+     * Toggles the background behind user pods.
+     * @param {boolean} showPodBackground Whether to add background behind user
+     *     pods.
+     */
+    togglePodBackground: function(showPodBackground) {
+      this.showPodBackground_ = showPodBackground;
+      var pods = this.pods;
+      for (var pod of pods)
+        pod.classList.toggle('show-pod-background', showPodBackground);
+      $('login-header-bar')
+          .classList.toggle('translucent-background', showPodBackground);
+
+      var isShowingScrollList =
+          this.smallPodsContainer.classList.contains('scroll');
+      if (isShowingScrollList) {
+        if (showPodBackground) {
+          // The scroll list should use a fixed color to make sure the pods are
+          // legible.
+          this.smallPodsContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+        } else if (this.overlayColors_.scrollColor) {
+          // Change the background back to the color extracted from wallpaper.
+          this.smallPodsContainer.style.backgroundColor =
+              this.overlayColors_.scrollColor;
+        }
+      }
+      // Edge case: when we add pod background, we also need to add extra
+      // padding to the pods if they are not placed on top of the scroll list.
+      // The padding may result in overflow, so we allow showing overflow here.
+      // An alternative is to adjust the size of the small pods container, but
+      // we want to avoid changing the pod placement for this edge case.
+      this.smallPodsContainer.classList.toggle(
+          'show-overflow', showPodBackground && !isShowingScrollList);
     },
 
     /**

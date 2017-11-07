@@ -19,6 +19,9 @@ class ASH_EXPORT WallpaperControllerObserver {
   // WallpaperController, e.g. WallpaperController::SetWallpaperImage().
   virtual void OnWallpaperColorsChanged() {}
 
+  // Invoked when the blur state of the wallpaper changes.
+  virtual void OnWallpaperBlurChanged() {}
+
  protected:
   virtual ~WallpaperControllerObserver() {}
 };
