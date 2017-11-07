@@ -39,3 +39,8 @@ the "--interactive" flag:
 
 % ./third_party/catapult/telemetry/bin/snap_page --browser=system \
     --url='https://www.youtube.com' --snapshot-path=youtube.html --interactive
+
+And to upload the resulting html and images:
+
+% $DEPOT_TOOLS_HOME/upload_to_google_storage.py -t 25 \
+    -b chrome-partner-telemetry cnn.html cnn/*
