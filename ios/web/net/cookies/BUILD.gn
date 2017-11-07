@@ -6,12 +6,17 @@ import("//ios/build/config.gni")
 
 source_set("cookies") {
   deps = [
+    "//base:base",
+    "//ios/net",
+    "//ios/web/public:public",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
   ]
 
   sources = [
     "wk_cookie_util.h",
     "wk_cookie_util.mm",
+    "wk_http_system_cookie_store.h",
+    "wk_http_system_cookie_store.mm",
   ]
 
   libs = [ "WebKit.framework" ]

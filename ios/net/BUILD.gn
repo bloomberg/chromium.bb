@@ -78,12 +78,31 @@ source_set("net") {
   }
 }
 
+source_set("test_support") {
+  testonly = true
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":net",
+    "//base",
+    "//ios/testing:ios_test_support",
+    "//net:test_support",
+  ]
+  sources = [
+    "cookies/cookie_store_ios_test_util.h",
+    "cookies/cookie_store_ios_test_util.mm",
+    "cookies/system_cookie_store_unittest_template.h",
+  ]
+}
+
 test("ios_net_unittests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":net",
+    ":test_support",
     "//base",
     "//base/test:run_all_unittests",
+    "//ios/testing:ios_test_support",
     "//net:test_support",
     "//testing/gtest",
     "//url",
@@ -93,8 +112,6 @@ test("ios_net_unittests") {
     "cookies/cookie_cache_unittest.cc",
     "cookies/cookie_creation_time_manager_unittest.mm",
     "cookies/cookie_store_ios_persistent_unittest.mm",
-    "cookies/cookie_store_ios_test_util.h",
-    "cookies/cookie_store_ios_test_util.mm",
     "cookies/cookie_store_ios_unittest.mm",
     "cookies/ns_http_system_cookie_store_unittest.mm",
     "cookies/system_cookie_util_unittest.mm",
