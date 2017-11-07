@@ -493,8 +493,8 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
   // create new WTH for primary display instead of reusing.
   if (primary_tree_host_for_replace_ &&
       (GetRootWindowSettings(GetWindow(primary_tree_host_for_replace_))
-               ->display_id == display::DisplayManager::kUnifiedDisplayId ||
-       display.id() == display::DisplayManager::kUnifiedDisplayId)) {
+               ->display_id == display::kUnifiedDisplayId ||
+       display.id() == display::kUnifiedDisplayId)) {
     DCHECK_EQ(display::kInvalidDisplayId, primary_display_id);
     primary_display_id = display.id();
 
@@ -756,7 +756,7 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
       GetDisplayManager()->GetDisplayInfo(display.id());
   AshWindowTreeHostInitParams params_with_bounds(init_params);
   params_with_bounds.initial_bounds = display_info.bounds_in_native();
-  if (display.id() == display::DisplayManager::kUnifiedDisplayId) {
+  if (display.id() == display::kUnifiedDisplayId) {
     params_with_bounds.offscreen = true;
     params_with_bounds.mirroring_delegate = mirror_window_controller();
   }

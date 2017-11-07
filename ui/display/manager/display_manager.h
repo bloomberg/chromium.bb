@@ -98,9 +98,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     UNIFIED,
   };
 
-  // The display ID for a virtual display assigned to a unified desktop.
-  static int64_t kUnifiedDisplayId;
-
   explicit DisplayManager(std::unique_ptr<Screen> screen);
 #if defined(OS_CHROMEOS)
   ~DisplayManager() override;
