@@ -3341,7 +3341,8 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
   if (IsRangeValueSupported()) {
     base::string16 value = GetRangeValueText();
     SanitizeStringAttributeForIA2(value, &value);
-    result.push_back(L"valuetext:" + value);
+    if (!value.empty())
+      result.push_back(L"valuetext:" + value);
   }
 
   // Expose dropeffect attribute.
@@ -3656,6 +3657,11 @@ int AXPlatformNodeWin::MSAAState() {
   // Handle STATE_SYSTEM_LINKED
   if (GetData().role == AX_ROLE_LINK)
     msaa_state |= STATE_SYSTEM_LINKED;
+
+  // Special case for indeterminate progressbar.
+  if (GetData().role == AX_ROLE_PROGRESS_INDICATOR &&
+      !HasFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE))
+    msaa_state |= STATE_SYSTEM_MIXED;
 
   return msaa_state;
 }
