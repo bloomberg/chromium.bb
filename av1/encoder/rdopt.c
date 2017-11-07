@@ -4639,18 +4639,12 @@ int inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_stats,
 static uint32_t get_block_residue_hash(MACROBLOCK *x, BLOCK_SIZE bsize) {
   const int rows = block_size_high[bsize];
   const int cols = block_size_wide[bsize];
-  const int diff_stride = cols;
   const struct macroblock_plane *const p = &x->plane[0];
   const int16_t *diff = &p->src_diff[0];
-  uint8_t hash_data[MAX_SB_SQUARE];
-  for (int r = 0; r < rows; ++r) {
-    for (int c = 0; c < cols; ++c) {
-      hash_data[cols * r + c] = clip_pixel(diff[c] + 128);
-    }
-    diff += diff_stride;
-  }
-  return (av1_get_crc_value(&x->tx_rd_record.crc_calculator, hash_data,
-                            rows * cols)
+  uint16_t hash_data[MAX_SB_SQUARE];
+  memcpy(hash_data, diff, sizeof(*hash_data) * rows * cols);
+  return (av1_get_crc_value(&x->tx_rd_record.crc_calculator,
+                            (uint8_t *)hash_data, 2 * rows * cols)
           << 7) +
          bsize;
 }
