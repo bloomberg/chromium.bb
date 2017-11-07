@@ -6,6 +6,9 @@
 
 #include "cc/paint/skia_paint_canvas.h"
 #include "platform/runtime_enabled_features.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
+#include "third_party/khronos/GLES3/gl3.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "ui/gfx/color_space.h"
 
@@ -173,6 +176,46 @@ sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpace() const {
       break;
   }
   return SkColorSpace::MakeRGB(gamma, gamut);
+}
+
+gfx::BufferFormat CanvasColorParams::GetBufferFormat() const {
+  static_assert(kN32_SkColorType == kRGBA_8888_SkColorType ||
+                    kN32_SkColorType == kBGRA_8888_SkColorType,
+                "Unexpected kN32_SkColorType value.");
+  constexpr gfx::BufferFormat kN32BufferFormat =
+      kN32_SkColorType == kRGBA_8888_SkColorType ? gfx::BufferFormat::RGBA_8888
+                                                 : gfx::BufferFormat::BGRA_8888;
+
+  if (pixel_format_ == kF16CanvasPixelFormat)
+    return gfx::BufferFormat::RGBA_F16;
+
+  return kN32BufferFormat;
+}
+
+GLenum CanvasColorParams::GLInternalFormat() const {
+  // TODO(junov): try GL_RGB when opacity_mode_ == kOpaque
+  static_assert(kN32_SkColorType == kRGBA_8888_SkColorType ||
+                    kN32_SkColorType == kBGRA_8888_SkColorType,
+                "Unexpected kN32_SkColorType value.");
+  constexpr GLenum kN32GLInternalBufferFormat =
+      kN32_SkColorType == kRGBA_8888_SkColorType ? GL_RGBA : GL_BGRA_EXT;
+  if (pixel_format_ == kF16CanvasPixelFormat)
+    return GL_RGBA;
+
+  return kN32GLInternalBufferFormat;
+}
+
+GLenum CanvasColorParams::GLType() const {
+  switch (pixel_format_) {
+    case kRGBA8CanvasPixelFormat:
+      return GL_UNSIGNED_BYTE;
+    case kF16CanvasPixelFormat:
+      return GL_HALF_FLOAT;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return GL_UNSIGNED_BYTE;
 }
 
 }  // namespace blink

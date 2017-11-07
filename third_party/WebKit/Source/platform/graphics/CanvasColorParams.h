@@ -9,6 +9,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+#include "ui/gfx/buffer_types.h"
 
 class SkCanvas;
 
@@ -81,6 +82,11 @@ class PLATFORM_EXPORT CanvasColorParams {
   sk_sp<SkColorSpace> GetSkColorSpace() const;
   SkAlphaType GetSkAlphaType() const;
   const SkSurfaceProps* GetSkSurfaceProps() const;
+
+  // Gpu memory buffer parameters
+  gfx::BufferFormat GetBufferFormat() const;
+  uint32_t GLInternalFormat() const;
+  uint32_t GLType() const;
 
  private:
   CanvasColorSpace color_space_ = kSRGBCanvasColorSpace;

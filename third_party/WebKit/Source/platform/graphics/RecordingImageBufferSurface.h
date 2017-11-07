@@ -38,7 +38,7 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   PaintCanvas* Canvas() override;
   void DisableDeferral(DisableDeferralReason) override;
   sk_sp<PaintRecord> GetRecord() override;
-  void Flush(FlushReason) override;
+
   void DidDraw(const FloatRect&) override;
   bool IsValid() const override { return true; }
   bool IsRecording() const override { return !fallback_surface_; }
@@ -62,7 +62,7 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
 
   // Passthroughs to fallback surface
   bool Restore() override;
-  WebLayer* Layer() const override;
+  WebLayer* Layer() override;
   bool IsAccelerated() const override;
   void SetIsHidden(bool) override;
 
@@ -73,8 +73,8 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
     kFallbackReasonCanvasNotClearedBetweenFrames = 1,
     kFallbackReasonRunawayStateStack = 2,
     kFallbackReasonWritePixels = 3,
-    kFallbackReasonFlushInitialClear = 4,
-    kFallbackReasonFlushForDrawImageOfWebGL = 5,
+    // kFallbackReasonFlushInitialClear = 4,
+    // kFallbackReasonFlushForDrawImageOfWebGL = 5,
     kFallbackReasonSnapshotForGetImageData = 6,
     kFallbackReasonSnapshotForPaint = 8,
     kFallbackReasonSnapshotForToDataURL = 9,

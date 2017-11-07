@@ -270,27 +270,6 @@ void RecordingImageBufferSurface::DoPaintInvalidation(
   }
 }
 
-static RecordingImageBufferSurface::FallbackReason FlushReasonToFallbackReason(
-    FlushReason reason) {
-  switch (reason) {
-    case kFlushReasonUnknown:
-      return RecordingImageBufferSurface::kFallbackReasonUnknown;
-    case kFlushReasonInitialClear:
-      return RecordingImageBufferSurface::kFallbackReasonFlushInitialClear;
-    case kFlushReasonDrawImageOfWebGL:
-      return RecordingImageBufferSurface::
-          kFallbackReasonFlushForDrawImageOfWebGL;
-  }
-  NOTREACHED();
-  return RecordingImageBufferSurface::kFallbackReasonUnknown;
-}
-
-void RecordingImageBufferSurface::Flush(FlushReason reason) {
-  if (!fallback_surface_)
-    FallBackToRasterCanvas(FlushReasonToFallbackReason(reason));
-  fallback_surface_->Flush(reason);
-}
-
 void RecordingImageBufferSurface::WillOverwriteCanvas() {
   frame_was_cleared_ = true;
   previous_frame_.reset();
@@ -411,7 +390,7 @@ bool RecordingImageBufferSurface::Restore() {
   return ImageBufferSurface::Restore();
 }
 
-WebLayer* RecordingImageBufferSurface::Layer() const {
+WebLayer* RecordingImageBufferSurface::Layer() {
   if (fallback_surface_)
     return fallback_surface_->Layer();
   return ImageBufferSurface::Layer();

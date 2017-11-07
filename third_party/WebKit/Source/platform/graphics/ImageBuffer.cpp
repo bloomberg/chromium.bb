@@ -310,18 +310,6 @@ void ImageBuffer::Draw(GraphicsContext& context,
   surface_->Draw(context, dest_rect, src_rect, op);
 }
 
-void ImageBuffer::Flush(FlushReason reason) {
-  if (surface_->Canvas()) {
-    surface_->Flush(reason);
-  }
-}
-
-void ImageBuffer::FlushGpu(FlushReason reason) {
-  if (surface_->Canvas()) {
-    surface_->FlushGpu(reason);
-  }
-}
-
 bool ImageBuffer::GetImageData(const IntRect& rect,
                                WTF::ArrayBufferContents& contents) const {
   uint8_t bytes_per_pixel = surface_->ColorParams().BytesPerPixel();
