@@ -61,6 +61,17 @@ void CopyProperties(bool* called,
   *result_out = result.Clone();
 }
 
+// Copies service_path and guid returned for CreateShillConfiguration.
+void CopyServiceResult(bool* called,
+                       std::string* service_path_out,
+                       std::string* guid_out,
+                       const std::string& service_path,
+                       const std::string& guid) {
+  *called = true;
+  *service_path_out = service_path;
+  *guid_out = guid;
+}
+
 static std::string PrettyJson(const base::DictionaryValue& value) {
   std::string pretty;
   base::JSONWriter::WriteWithOptions(
@@ -605,22 +616,30 @@ TEST_F(NetworkConfigurationHandlerTest, ClearProperties_Error) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NetworkConfigurationHandlerMockTest, CreateConfiguration) {
-  std::string networkName = "MyNetwork";
-  std::string key = "SSID";
-  std::string type = "wifi";
-  std::string profile = "profile path";
-  base::DictionaryValue value;
-  shill_property_util::SetSSID(networkName, &value);
-  value.SetKey(shill::kTypeProperty, base::Value(type));
-  value.SetKey(shill::kProfileProperty, base::Value(profile));
+TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
+  constexpr char kGuid[] = "/service/2";
+  constexpr char kNetworkName[] = "MyNetwork";
 
-  EXPECT_CALL(*mock_manager_client_,
-              ConfigureServiceForProfile(dbus::ObjectPath(profile), _, _, _))
-      .WillOnce(Invoke(
-          this, &NetworkConfigurationHandlerMockTest::OnConfigureService));
-  CreateConfiguration("/service/2", value);
+  base::DictionaryValue value;
+  shill_property_util::SetSSID(kNetworkName, &value);
+  value.SetString(shill::kTypeProperty, "wifi");
+  value.SetString(shill::kProfileProperty, "profile path");
+  value.SetString(shill::kGuidProperty, kGuid);
+
+  bool success = false;
+  std::string service_path;
+  std::string guid;
+  network_configuration_handler_->CreateShillConfiguration(
+      value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
+      base::Bind(&CopyServiceResult, &success, &service_path, &guid),
+      base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(success);
+  // In FakeShillManagerClient, instead of re-implementing shill's behavior,
+  // guid is used for service_path.
+  EXPECT_EQ(service_path, kGuid);
+  EXPECT_EQ(guid, kGuid);
 }
 
 TEST_F(NetworkConfigurationHandlerMockTest, RemoveConfiguration) {
