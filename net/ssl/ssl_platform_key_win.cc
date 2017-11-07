@@ -136,9 +136,12 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
       return {
           SSL_SIGN_RSA_PKCS1_SHA1, SSL_SIGN_RSA_PKCS1_SHA512,
           SSL_SIGN_RSA_PKCS1_SHA384, SSL_SIGN_RSA_PKCS1_SHA256,
+          // 1024-bit keys are too small for SSL_SIGN_RSA_PSS_SHA512.
+          SSL_SIGN_RSA_PSS_SHA384, SSL_SIGN_RSA_PSS_SHA256,
       };
     }
-    return SSLPrivateKey::DefaultAlgorithmPreferences(type_);
+    return SSLPrivateKey::DefaultAlgorithmPreferences(type_,
+                                                      true /* supports PSS */);
   }
 
   Error SignDigest(uint16_t algorithm,
@@ -146,32 +149,43 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
                    std::vector<uint8_t>* signature) override {
     crypto::OpenSSLErrStackTracer tracer(FROM_HERE);
 
-    BCRYPT_PKCS1_PADDING_INFO rsa_padding_info = {0};
+    BCRYPT_PKCS1_PADDING_INFO pkcs1_padding_info = {0};
+    BCRYPT_PSS_PADDING_INFO pss_padding_info = {0};
     void* padding_info = nullptr;
     DWORD flags = 0;
-    if (type_ == EVP_PKEY_RSA) {
-      switch (EVP_MD_type(SSL_get_signature_algorithm_digest(algorithm))) {
+    if (SSL_get_signature_algorithm_key_type(algorithm) == EVP_PKEY_RSA) {
+      const WCHAR* hash_alg;
+      const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
+      switch (EVP_MD_type(md)) {
         case NID_md5_sha1:
-          rsa_padding_info.pszAlgId = nullptr;
+          hash_alg = nullptr;
           break;
         case NID_sha1:
-          rsa_padding_info.pszAlgId = BCRYPT_SHA1_ALGORITHM;
+          hash_alg = BCRYPT_SHA1_ALGORITHM;
           break;
         case NID_sha256:
-          rsa_padding_info.pszAlgId = BCRYPT_SHA256_ALGORITHM;
+          hash_alg = BCRYPT_SHA256_ALGORITHM;
           break;
         case NID_sha384:
-          rsa_padding_info.pszAlgId = BCRYPT_SHA384_ALGORITHM;
+          hash_alg = BCRYPT_SHA384_ALGORITHM;
           break;
         case NID_sha512:
-          rsa_padding_info.pszAlgId = BCRYPT_SHA512_ALGORITHM;
+          hash_alg = BCRYPT_SHA512_ALGORITHM;
           break;
         default:
           NOTREACHED();
           return ERR_FAILED;
       }
-      padding_info = &rsa_padding_info;
-      flags |= BCRYPT_PAD_PKCS1;
+      if (SSL_is_signature_algorithm_rsa_pss(algorithm)) {
+        pss_padding_info.pszAlgId = hash_alg;
+        pss_padding_info.cbSalt = EVP_MD_size(md);
+        padding_info = &pss_padding_info;
+        flags |= BCRYPT_PAD_PSS;
+      } else {
+        pkcs1_padding_info.pszAlgId = hash_alg;
+        padding_info = &pkcs1_padding_info;
+        flags |= BCRYPT_PAD_PKCS1;
+      }
     }
 
     DWORD signature_len;

@@ -32,7 +32,8 @@ class TestSSLPlatformKey : public ThreadedSSLPrivateKey::Delegate {
   ~TestSSLPlatformKey() override {}
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
-    return SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_id(key_.get()));
+    return SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_id(key_.get()),
+                                                      true /* supports PSS */);
   }
 
   Error SignDigest(uint16_t algorithm,
@@ -43,6 +44,13 @@ class TestSSLPlatformKey : public ThreadedSSLPrivateKey::Delegate {
         !EVP_PKEY_CTX_set_signature_md(
             ctx.get(), SSL_get_signature_algorithm_digest(algorithm))) {
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    }
+
+    if (SSL_is_signature_algorithm_rsa_pss(algorithm)) {
+      if (!EVP_PKEY_CTX_set_rsa_padding(ctx.get(), RSA_PKCS1_PSS_PADDING) ||
+          !EVP_PKEY_CTX_set_rsa_pss_saltlen(ctx.get(), -1 /* hash length */)) {
+        return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+      }
     }
 
     const uint8_t* input_ptr = reinterpret_cast<const uint8_t*>(input.data());

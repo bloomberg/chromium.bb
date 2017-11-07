@@ -56,7 +56,8 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
   ~SSLPlatformKeyNSS() override {}
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
-    return SSLPrivateKey::DefaultAlgorithmPreferences(type_);
+    return SSLPrivateKey::DefaultAlgorithmPreferences(type_,
+                                                      true /* supports PSS */);
   }
 
   Error SignDigest(uint16_t algorithm,
@@ -67,9 +68,38 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
         const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(input.data()));
     digest_item.len = input.size();
 
+    CK_MECHANISM_TYPE mechanism = PK11_MapSignKeyType(key_->keyType);
+    SECItem param = {siBuffer, nullptr, 0};
+    CK_RSA_PKCS_PSS_PARAMS pss_params;
     bssl::UniquePtr<uint8_t> free_digest_info;
-    if (SSL_get_signature_algorithm_key_type(algorithm) == EVP_PKEY_RSA) {
-      // PK11_Sign expects the caller to prepend the DigestInfo.
+    if (SSL_is_signature_algorithm_rsa_pss(algorithm)) {
+      const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
+      switch (EVP_MD_type(md)) {
+        case NID_sha256:
+          pss_params.hashAlg = CKM_SHA256;
+          pss_params.mgf = CKG_MGF1_SHA256;
+          break;
+        case NID_sha384:
+          pss_params.hashAlg = CKM_SHA384;
+          pss_params.mgf = CKG_MGF1_SHA384;
+          break;
+        case NID_sha512:
+          pss_params.hashAlg = CKM_SHA512;
+          pss_params.mgf = CKG_MGF1_SHA512;
+          break;
+        default:
+          LOG(ERROR) << "Unexpected hash algorithm";
+          return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+      }
+      // Use the hash length for the salt length.
+      pss_params.sLen = EVP_MD_size(md);
+      mechanism = CKM_RSA_PKCS_PSS;
+      param.data = reinterpret_cast<unsigned char*>(&pss_params);
+      param.len = sizeof(pss_params);
+    } else if (SSL_get_signature_algorithm_key_type(algorithm) ==
+               EVP_PKEY_RSA) {
+      // PK11_SignWithMechanism expects the caller to prepend the DigestInfo for
+      // PKCS #1.
       int hash_nid = EVP_MD_type(SSL_get_signature_algorithm_digest(algorithm));
       int is_alloced;
       size_t prefix_len;
@@ -92,9 +122,10 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
     signature_item.data = signature->data();
     signature_item.len = signature->size();
 
-    SECStatus rv = PK11_Sign(key_.get(), &signature_item, &digest_item);
+    SECStatus rv = PK11_SignWithMechanism(key_.get(), mechanism, &param,
+                                          &signature_item, &digest_item);
     if (rv != SECSuccess) {
-      LogPRError("PK11_Sign failed");
+      LogPRError("PK11_SignWithMechanism failed");
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     }
     signature->resize(signature_item.len);

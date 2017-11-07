@@ -20,6 +20,7 @@
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/rsa.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 using net::test::IsOk;
@@ -35,14 +36,22 @@ bool VerifyWithOpenSSL(uint16_t algorithm,
   bssl::UniquePtr<EVP_PKEY_CTX> ctx(EVP_PKEY_CTX_new(key, nullptr));
   if (!ctx || !EVP_PKEY_verify_init(ctx.get()) ||
       !EVP_PKEY_CTX_set_signature_md(
-          ctx.get(), SSL_get_signature_algorithm_digest(algorithm)) ||
-      !EVP_PKEY_verify(
+          ctx.get(), SSL_get_signature_algorithm_digest(algorithm))) {
+    return false;
+  }
+  if (SSL_is_signature_algorithm_rsa_pss(algorithm)) {
+    if (!EVP_PKEY_CTX_set_rsa_padding(ctx.get(), RSA_PKCS1_PSS_PADDING) ||
+        !EVP_PKEY_CTX_set_rsa_pss_saltlen(
+            ctx.get(), -1 /* salt length is digest length */)) {
+      return false;
+    }
+  }
+  if (!EVP_PKEY_verify(
           ctx.get(), reinterpret_cast<const uint8_t*>(signature.data()),
           signature.size(), reinterpret_cast<const uint8_t*>(digest.data()),
           digest.size())) {
     return false;
   }
-
   return true;
 }
 
@@ -95,6 +104,16 @@ void TestSSLPrivateKeyMatches(SSLPrivateKey* key, const std::string& pkcs8) {
     // BoringSSL will skip signatures algorithms that don't match the key type.
     if (EVP_PKEY_id(openssl_key.get()) !=
         SSL_get_signature_algorithm_key_type(algorithm)) {
+      continue;
+    }
+    // If the RSA key is too small for the hash, skip the algorithm. BoringSSL
+    // will filter this algorithm out and decline using it. In particular,
+    // 1024-bit RSA keys cannot sign RSA-PSS with SHA-512 and test keys are
+    // often 1024 bits.
+    if (SSL_is_signature_algorithm_rsa_pss(algorithm) &&
+        static_cast<size_t>(EVP_PKEY_size(openssl_key.get())) <
+            2 * EVP_MD_size(SSL_get_signature_algorithm_digest(algorithm)) +
+                2) {
       continue;
     }
 
