@@ -2303,10 +2303,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
 #endif
 #if CONFIG_LOOP_RESTORATION
-      for (int p = 0; p < MAX_MB_PLANE; ++p) {
-        set_default_wiener(td->xd.wiener_info + p);
-        set_default_sgrproj(td->xd.sgrproj_info + p);
-      }
+      av1_reset_loop_restoration(&td->xd);
 #endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES

@@ -1233,6 +1233,10 @@ static INLINE TX_SIZE av1_get_tx_size(int plane, const MACROBLOCKD *xd) {
 void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
                             BLOCK_SIZE bsize);
 
+#if CONFIG_LOOP_RESTORATION
+void av1_reset_loop_restoration(MACROBLOCKD *xd);
+#endif  // CONFIG_LOOP_RESTORATION
+
 typedef void (*foreach_transformed_block_visitor)(int plane, int block,
                                                   int blk_row, int blk_col,
                                                   BLOCK_SIZE plane_bsize,

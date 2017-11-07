@@ -3123,10 +3123,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #endif
         mode_bc.allow_update_cdf = !cm->large_scale_tile;
 #if CONFIG_LOOP_RESTORATION
-        for (int p = 0; p < MAX_MB_PLANE; ++p) {
-          set_default_wiener(cpi->td.mb.e_mbd.wiener_info + p);
-          set_default_sgrproj(cpi->td.mb.e_mbd.sgrproj_info + p);
-        }
+        av1_reset_loop_restoration(&cpi->td.mb.e_mbd);
 #endif  // CONFIG_LOOP_RESTORATION
 
         aom_start_encode(&mode_bc, buf->data + data_offset);
@@ -3310,10 +3307,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #endif  // CONFIG_ANS
         mode_bc.allow_update_cdf = 1;
 #if CONFIG_LOOP_RESTORATION
-        for (int p = 0; p < MAX_MB_PLANE; ++p) {
-          set_default_wiener(cpi->td.mb.e_mbd.wiener_info + p);
-          set_default_sgrproj(cpi->td.mb.e_mbd.sgrproj_info + p);
-        }
+        av1_reset_loop_restoration(&cpi->td.mb.e_mbd);
 #endif  // CONFIG_LOOP_RESTORATION
 
         aom_start_encode(&mode_bc, dst + total_size);
@@ -4884,10 +4878,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 #endif  // CONFIG_ANS
         mode_bc.allow_update_cdf = 1;
 #if CONFIG_LOOP_RESTORATION
-        for (int p = 0; p < MAX_MB_PLANE; ++p) {
-          set_default_wiener(cpi->td.mb.e_mbd.wiener_info + p);
-          set_default_sgrproj(cpi->td.mb.e_mbd.sgrproj_info + p);
-        }
+        av1_reset_loop_restoration(&cpi->td.mb.e_mbd);
 #endif  // CONFIG_LOOP_RESTORATION
 
         aom_start_encode(&mode_bc, dst + total_size);
