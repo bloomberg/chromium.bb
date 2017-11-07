@@ -43,6 +43,17 @@ class CONTENT_EXPORT WebRTCEventLogHost {
   base::WeakPtr<WebRTCEventLogHost> GetWeakPtr();
 
  private:
+  // Tracks which peer connections have log files associated.
+  struct PeerConnectionKey {
+    bool operator==(const PeerConnectionKey& other) const {
+      return render_process_id == other.render_process_id &&
+             peer_connection_local_id == other.peer_connection_local_id;
+    }
+    int render_process_id;
+    int peer_connection_local_id;
+  };
+  static std::vector<PeerConnectionKey>& ActivePeerConnectionsWithLogFiles();
+
   // Actually start the eventlog for a single PeerConnection using the path
   // stored in base_file_path_.
   void StartEventLogForPeerConnection(int peer_connection_local_id);
@@ -50,6 +61,12 @@ class CONTENT_EXPORT WebRTCEventLogHost {
   // Send the platform file to the render process using an IPC message.
   void SendEventLogFileToRenderer(int peer_connection_local_id,
                                   IPC::PlatformFileForTransit file_for_transit);
+
+  // Management of |active_peer_connections_with_log_files_|, which tracks
+  // which PCs have associated log files.
+  // RtcEventLogRemoved() returns whether actual removal took place.
+  void RtcEventLogAdded(int peer_connection_local_id);
+  bool RtcEventLogRemoved(int peer_connection_local_id);
 
   // The render process ID that this object is associated with.
   const int render_process_id_;
@@ -60,9 +77,6 @@ class CONTENT_EXPORT WebRTCEventLogHost {
 
   // The local identifiers of all the currently active PeerConnections.
   std::vector<int> active_peer_connection_local_ids_;
-
-  // Number of active log files that have been opened.
-  static int number_active_log_files_;
 
   // Track if the RTC event log is currently active.
   bool rtc_event_logging_enabled_;
