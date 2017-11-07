@@ -37,12 +37,14 @@ using bookmarks_helper::AddURL;
 using bookmarks_helper::AllModelsMatch;
 using bookmarks_helper::AllModelsMatchVerifier;
 using bookmarks_helper::CheckFaviconExpired;
+using bookmarks_helper::CheckHasNoFavicon;
 using bookmarks_helper::ContainsDuplicateBookmarks;
 using bookmarks_helper::CountAllBookmarks;
 using bookmarks_helper::CountBookmarksWithTitlesMatching;
 using bookmarks_helper::CountBookmarksWithUrlsMatching;
 using bookmarks_helper::CountFoldersWithTitlesMatching;
 using bookmarks_helper::CreateFavicon;
+using bookmarks_helper::DeleteFaviconMappings;
 using bookmarks_helper::ExpireFavicon;
 using bookmarks_helper::GetBookmarkBarNode;
 using bookmarks_helper::GetManagedNode;
@@ -304,6 +306,35 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* bookmark11 = GetUniqueNodeByURL(1, page_url1);
   SetTitle(1, bookmark11, std::string(kNewTitle));
   ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_DeleteFavicon) {
+  const GURL page_url("http://www.google.com/a");
+  const GURL icon_url("http://www.google.com/favicon.ico");
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  const BookmarkNode* bookmark0 = AddURL(0, kGenericURLTitle, page_url);
+  ASSERT_NE(nullptr, bookmark0);
+
+  SetFavicon(0, bookmark0, icon_url, CreateFavicon(SK_ColorWHITE),
+             bookmarks_helper::FROM_UI);
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
+
+  DeleteFaviconMappings(0, bookmark0, bookmarks_helper::FROM_UI);
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
+
+  // Set the title for |page_url|. This should not revert the deletion of
+  // favicon mappings.
+  const char kNewTitle[] = "New Title";
+  ASSERT_STRNE(kGenericURLTitle, kNewTitle);
+  const BookmarkNode* bookmark1 = GetUniqueNodeByURL(1, page_url);
+  SetTitle(1, bookmark1, std::string(kNewTitle));
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
+
+  // |page_url| should still have no mapping.
+  CheckHasNoFavicon(0, page_url);
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddNonHTTPBMs) {
