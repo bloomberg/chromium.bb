@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_audio_config.idl modified Fri Jan 24 16:19:35 2014. */
+/* From ppb_audio_config.idl modified Mon Oct 23 15:24:19 2017. */
 
 #ifndef PPAPI_C_PPB_AUDIO_CONFIG_H_
 #define PPAPI_C_PPB_AUDIO_CONFIG_H_
@@ -49,7 +49,8 @@ enum {
 typedef enum {
   PP_AUDIOSAMPLERATE_NONE = 0,
   PP_AUDIOSAMPLERATE_44100 = 44100,
-  PP_AUDIOSAMPLERATE_48000 = 48000
+  PP_AUDIOSAMPLERATE_48000 = 48000,
+  PP_AUDIOSAMPLERATE_LAST = PP_AUDIOSAMPLERATE_48000
 } PP_AudioSampleRate;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_AudioSampleRate, 4);
 /**

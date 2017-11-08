@@ -50,6 +50,7 @@ enum PP_FlashSetting {
    * failed.
    */
   PP_FLASHSETTING_3DENABLED = 1,
+  PP_FLASHSETTING_FIRST = PP_FLASHSETTING_3DENABLED,
 
   /**
    * Specifies if the given instance is in private/incognito/off-the-record mode
@@ -92,7 +93,8 @@ enum PP_FlashSetting {
    *
    * This should only be enabled if PP_FLASHSETTING_STAGE3DENABLED is true.
    */
-  PP_FLASHSETTING_STAGE3DBASELINEENABLED = 7
+  PP_FLASHSETTING_STAGE3DBASELINEENABLED = 7,
+  PP_FLASHSETTING_LAST = PP_FLASHSETTING_STAGE3DBASELINEENABLED
 };
 
 /**
