@@ -586,3 +586,31 @@ class UserGroupTest(image_test_lib.ImageTestCase):
   def TestGroups(self):
     """Enforces a whitelist of known group IDs."""
     self._CheckFile('group')
+
+
+class CroshTest(image_test_lib.ImageTestCase):
+  """Check crosh code."""
+
+  # Base directory for crosh code.
+  CROSH_DIR = 'usr/share/crosh'
+
+  def TestUnknownModules(self):
+    """Only permit a whitelist of known, allowed crosh modules on the system."""
+    # Do *not* add modules to this list until they've been reviewed by security
+    # or someone in the crosh/OWNERS list.  Insecure code here can easily cause
+    # compromise of CrOS system security in verified mode.  It has happened.
+    WHITELIST = {
+        'dev.d': {'50-crosh.sh'},
+        'extra.d': {'30-cups.sh'},
+        'removable.d': {'50-crosh.sh'},
+    }
+
+    base_path = os.path.join(image_test_lib.ROOT_A, self.CROSH_DIR)
+    for mod_dir, good_modules in WHITELIST.items():
+      mod_path = os.path.join(base_path, mod_dir)
+      if not os.path.exists(mod_path):
+        continue
+
+      found_modules = set(os.listdir(mod_path))
+      unknown_modules = found_modules - good_modules
+      self.assertEqual(set(), unknown_modules)
