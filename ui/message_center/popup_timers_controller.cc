@@ -14,10 +14,20 @@ namespace message_center {
 namespace {
 
 base::TimeDelta GetTimeoutForNotification(Notification* notification) {
-  if (notification->notifier_id().type == NotifierId::WEB_PAGE ||
-      notification->priority() > DEFAULT_PRIORITY) {
+// Web Notifications are given a longer on-screen time on non-Chrome OS
+// platforms as there is no notification center to dismiss them to.
+#if defined(OS_CHROMEOS)
+  const bool use_high_priority_delay =
+      notification->priority() > DEFAULT_PRIORITY;
+#else
+  const bool use_high_priority_delay =
+      notification->priority() > DEFAULT_PRIORITY ||
+      notification->notifier_id().type == NotifierId::WEB_PAGE;
+#endif
+
+  if (use_high_priority_delay)
     return base::TimeDelta::FromSeconds(kAutocloseHighPriorityDelaySeconds);
-  }
+
   return base::TimeDelta::FromSeconds(kAutocloseDefaultDelaySeconds);
 }
 
