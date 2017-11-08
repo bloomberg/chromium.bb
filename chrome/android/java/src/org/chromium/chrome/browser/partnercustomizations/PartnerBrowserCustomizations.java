@@ -65,8 +65,34 @@ public class PartnerBrowserCustomizations {
 
     /** Partner customizations provided by ContentProvider package. */
     public static class ProviderPackage implements Provider {
+        private static Boolean sValid;
+
+        private boolean isValidInternal() {
+            ProviderInfo providerInfo =
+                    ContextUtils.getApplicationContext().getPackageManager().resolveContentProvider(
+                            sProviderAuthority, 0);
+            if (providerInfo == null) return false;
+
+            if ((providerInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0
+                    && !sIgnoreBrowserProviderSystemPackageCheck) {
+                Log.w(TAG,
+                        "Browser Customizations content provider package, "
+                                + providerInfo.packageName + ", is not a system package. "
+                                + "This could be a malicious attempt from a third party "
+                                + "app, so skip reading the browser content provider.");
+                return false;
+            }
+            return true;
+        }
+
+        private boolean isValid() {
+            if (sValid == null) sValid = isValidInternal();
+            return sValid;
+        }
+
         @Override
         public String getHomepage() {
+            if (!isValid()) return null;
             String homepage = null;
             Cursor cursor = ContextUtils.getApplicationContext().getContentResolver().query(
                     buildQueryUri(PARTNER_HOMEPAGE_PATH), null, null, null, null);
@@ -79,6 +105,7 @@ public class PartnerBrowserCustomizations {
 
         @Override
         public boolean isIncognitoModeDisabled() {
+            if (!isValid()) return false;
             boolean disabled = false;
             Cursor cursor = ContextUtils.getApplicationContext().getContentResolver().query(
                     buildQueryUri(PARTNER_DISABLE_INCOGNITO_MODE_PATH), null, null, null, null);
@@ -91,6 +118,7 @@ public class PartnerBrowserCustomizations {
 
         @Override
         public boolean isBookmarksEditingDisabled() {
+            if (!isValid()) return false;
             boolean disabled = false;
             Cursor cursor = ContextUtils.getApplicationContext().getContentResolver().query(
                     buildQueryUri(PARTNER_DISABLE_BOOKMARKS_EDITING_PATH), null, null, null, null);
@@ -221,20 +249,6 @@ public class PartnerBrowserCustomizations {
                     if (!systemOrPreStable) {
                         // Only allow partner customization if this browser is a system package, or
                         // is in pre-stable channels.
-                        return null;
-                    }
-
-                    ProviderInfo providerInfo = context.getPackageManager()
-                            .resolveContentProvider(sProviderAuthority, 0);
-                    if (providerInfo == null) return null;
-
-                    if ((providerInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0
-                            && !sIgnoreBrowserProviderSystemPackageCheck) {
-                        Log.w(TAG,
-                                "Browser Customizations content provider package, "
-                                        + providerInfo.packageName + ", is not a system package. "
-                                        + "This could be a malicious attempt from a third party "
-                                        + "app, so skip reading the browser content provider.");
                         return null;
                     }
 
