@@ -2055,7 +2055,8 @@ NSString* const kTransitionToolbarAnimationKey =
   // Add the snapshot and update its frame.
   self.transitionToolbarSnapshot =
       [self.transitionToolbarOwner.toolbarSnapshotProvider
-          snapshotForStackViewWithWidth:CGRectGetWidth(self.view.frame)];
+          snapshotForStackViewWithWidth:CGRectGetWidth(self.view.frame)
+                         safeAreaInsets:SafeAreaInsetsForView(self.view)];
   CGFloat toolbarHeight = self.transitionToolbarSnapshot.frame.size.height;
 
   CALayer* mask = [CALayer layer];

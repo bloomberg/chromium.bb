@@ -190,13 +190,20 @@
   return toolbarSnapshotView;
 }
 
-- (UIView*)snapshotForStackViewWithWidth:(CGFloat)width {
+- (UIView*)snapshotForStackViewWithWidth:(CGFloat)width
+                          safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   CGRect oldFrame = self.webToolbarController.view.frame;
   CGRect newFrame = oldFrame;
   newFrame.size.width = width;
+
   self.webToolbarController.view.frame = newFrame;
+  [self.webToolbarController activateFakeSafeAreaInsets:safeAreaInsets];
+
   UIView* toolbarSnapshotView = [self snapshotForTabSwitcher];
+
   self.webToolbarController.view.frame = oldFrame;
+  [self.webToolbarController deactivateFakeSafeAreaInsets];
+
   return toolbarSnapshotView;
 }
 
