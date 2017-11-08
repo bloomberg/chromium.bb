@@ -2059,6 +2059,7 @@ if (enable_java_templates) {
                                "app_as_shared_lib",
                                "include_all_resources",
                                "shared_resources",
+                               "support_zh_hk",
                              ])
       srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
       r_text_out_path = "${target_gen_dir}/${target_name}_R.txt"
@@ -2092,6 +2093,7 @@ if (enable_java_templates) {
                                "exclude_xxxhdpi",
                                "png_to_webp",
                                "shared_resources",
+                               "support_zh_hk",
                                "xxxhdpi_whitelist",
                              ])
       deps = [

@@ -1515,6 +1515,10 @@ if (enable_java_templates) {
         ]
       }
 
+      if (defined(invoker.support_zh_hk) && invoker.support_zh_hk) {
+        args += [ "--support-zh-hk" ]
+      }
+
       if (defined(invoker.args)) {
         args += invoker.args
       }
@@ -1647,6 +1651,9 @@ if (enable_java_templates) {
         if (defined(invoker.xxxhdpi_whitelist)) {
           args += [ "--xxxhdpi-whitelist=${invoker.xxxhdpi_whitelist}" ]
         }
+      }
+      if (defined(invoker.support_zh_hk) && invoker.support_zh_hk) {
+        args += [ "--support-zh-hk" ]
       }
     }
 

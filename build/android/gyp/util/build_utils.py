@@ -46,6 +46,12 @@ def TempDir():
     shutil.rmtree(dirname)
 
 
+def IterFiles(root_dir):
+  for root, _, files in os.walk(root_dir):
+    for f in files:
+      yield os.path.join(root, f)
+
+
 def MakeDirectory(dir_path):
   try:
     os.makedirs(dir_path)
