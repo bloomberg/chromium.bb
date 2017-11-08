@@ -1,12 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
-<script src="../../inspector/console-test.js"></script>
-<script src="../../inspector/indexeddb/indexeddb-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-async function test() {
+(async function() {
+  TestRunner.addResult(`Tests refreshing the database information and data views.\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('resources');
+
   var databaseName = 'testDatabase';
   var objectStoreName1 = 'testObjectStore1';
   var objectStoreName2 = 'testObjectStore2';
@@ -126,10 +127,4 @@ async function test() {
   dumpObjectStores();
 
   TestRunner.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests refreshing the database information and data views.</p>
-</body>
-</html>
+})();

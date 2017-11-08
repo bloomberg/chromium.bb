@@ -6491,7 +6491,7 @@ crbug.com/591099 http/tests/devtools/extensions/extensions-audits.html [ Crash F
 crbug.com/591099 http/tests/devtools/extensions/extensions-network.html [ Crash Failure Pass ]
 crbug.com/591099 http/tests/devtools/extensions/extensions-sidebar.html [ Crash Failure ]
 crbug.com/591099 http/tests/devtools/extensions/extensions-timeline-api.html [ Crash Failure Pass ]
-crbug.com/591099 http/tests/devtools/indexeddb/resources-panel.html [ Crash Failure Pass Timeout ]
+crbug.com/591099 http/tests/devtools/indexeddb/resources-panel.js [ Crash Failure Pass Timeout ]
 crbug.com/591099 http/tests/devtools/layers/layer-canvas-log.html [ Crash Failure Pass ]
 crbug.com/591099 http/tests/devtools/layers/layer-replay-scale.html [ Crash Failure Pass ]
 crbug.com/591099 http/tests/devtools/layers/layer-sticky-position-constraint-get.html [ Crash Failure Pass ]

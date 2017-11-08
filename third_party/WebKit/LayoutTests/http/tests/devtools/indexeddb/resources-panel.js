@@ -1,15 +1,16 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/indexeddb/indexeddb-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
-<script src="../../inspector/console-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests IndexedDB tree element on resources panel.\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+
   var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
   var indexedDBModel;
   var withoutIndexedDBURL = 'http://localhost:8000/inspector/indexeddb/resources/without-indexed-db.html';
-  var originalURL = 'http://127.0.0.1:8000/devtools/indexeddb/resources-panel.html';
+  var originalURL = 'http://127.0.0.1:8000/devtools/indexeddb/resources-panel.js';
   var databaseName = 'testDatabase';
   var objectStoreName = 'testObjectStore';
   var indexName = 'testIndexName';
@@ -102,11 +103,4 @@ function test() {
     UI.panels.resources._sidebar.indexedDBListTreeElement.collapse();
     TestRunner.completeTest();
   }
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests IndexedDB tree element on resources panel.</p>
-</body>
-</html>
+})();
