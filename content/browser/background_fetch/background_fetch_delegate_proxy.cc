@@ -315,11 +315,12 @@ void BackgroundFetchDelegateProxy::DidStartRequest(
 
   const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
       job_details.current_request_map[guid];
+  DCHECK_EQ(guid, request_info->download_guid());
 
   request_info->PopulateWithResponse(std::move(response));
 
   if (job_details.controller)
-    job_details.controller->DidStartRequest(request_info, guid);
+    job_details.controller->DidStartRequest(request_info);
 }
 
 void BackgroundFetchDelegateProxy::OnDownloadUpdated(
@@ -338,8 +339,10 @@ void BackgroundFetchDelegateProxy::OnDownloadUpdated(
 
   // TODO(peter): Should we update the |request_info| with the progress?
   if (job_details.controller) {
-    job_details.controller->DidUpdateRequest(
-        job_details.current_request_map[guid], guid, bytes_downloaded);
+    const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
+        job_details.current_request_map[guid];
+    DCHECK_EQ(guid, request_info->download_guid());
+    job_details.controller->DidUpdateRequest(request_info, bytes_downloaded);
   }
 }
 
@@ -359,10 +362,11 @@ void BackgroundFetchDelegateProxy::OnDownloadComplete(
 
   const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
       job_details.current_request_map[guid];
+  DCHECK_EQ(guid, request_info->download_guid());
   request_info->SetResult(std::move(result));
 
   if (job_details.controller)
-    job_details.controller->DidCompleteRequest(request_info, guid);
+    job_details.controller->DidCompleteRequest(request_info);
 }
 
 }  // namespace content

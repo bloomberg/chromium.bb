@@ -87,19 +87,17 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
  public:
   FakeController() : weak_ptr_factory_(this) {}
 
-  void DidStartRequest(const scoped_refptr<BackgroundFetchRequestInfo>& request,
-                       const std::string& download_guid) override {
+  void DidStartRequest(
+      const scoped_refptr<BackgroundFetchRequestInfo>& request) override {
     request_started_ = true;
   }
 
   void DidUpdateRequest(
       const scoped_refptr<BackgroundFetchRequestInfo>& request,
-      const std::string& download_guid,
       uint64_t bytes_downloaded) override {}
 
   void DidCompleteRequest(
-      const scoped_refptr<BackgroundFetchRequestInfo>& request,
-      const std::string& download_guid) override {
+      const scoped_refptr<BackgroundFetchRequestInfo>& request) override {
     request_completed_ = true;
   }
 

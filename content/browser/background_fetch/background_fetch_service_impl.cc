@@ -165,7 +165,7 @@ bool BackgroundFetchServiceImpl::ValidateDeveloperId(
 
 bool BackgroundFetchServiceImpl::ValidateUniqueId(
     const std::string& unique_id) {
-  if (!base::IsValidGUID(unique_id)) {
+  if (!base::IsValidGUIDOutputString(unique_id)) {
     bad_message::ReceivedBadMessage(render_process_id_,
                                     bad_message::BFSI_INVALID_UNIQUE_ID);
     return false;
