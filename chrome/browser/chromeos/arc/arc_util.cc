@@ -20,8 +20,10 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
@@ -357,6 +359,40 @@ bool IsActiveDirectoryUserForProfile(const Profile* profile) {
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   return user ? user->IsActiveDirectoryUser() : false;
+}
+
+bool IsArcOobeOptInActive() {
+  // Check if Chrome OS OOBE or OPA OptIn flow is currently showing.
+  // TODO(b/65861628): Rename the method since it is no longer accurate.
+  // Redesign the OptIn flow since there is no longer reason to have two
+  // different OptIn flows.
+  chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
+  if (!host)
+    return false;
+
+  // Make sure the wizard controller is active and have the ARC ToS screen
+  // showing for the voice interaction OptIn flow.
+  if (host->IsVoiceInteractionOobe()) {
+    const chromeos::WizardController* wizard_controller =
+        host->GetWizardController();
+    if (!wizard_controller)
+      return false;
+    const chromeos::BaseScreen* screen = wizard_controller->current_screen();
+    if (!screen)
+      return false;
+    return screen->screen_id() ==
+           chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
+  }
+
+  // Use the legacy logic for first sign-in OOBE OptIn flow. Make sure the user
+  // is new and the swtich is appended.
+  if (!user_manager::UserManager::Get()->IsCurrentUserNew())
+    return false;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableArcOOBEOptIn)) {
+    return false;
+  }
+  return true;
 }
 
 void UpdateArcFileSystemCompatibilityPrefIfNeeded(
