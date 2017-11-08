@@ -179,7 +179,6 @@ class ShieldButton : public views::Button {
       gfx::Point location(event->location());
       views::View::ConvertPointToScreen(this, &location);
       switch (event->type()) {
-        case ui::ET_GESTURE_SCROLL_BEGIN:
         case ui::ET_GESTURE_TAP_DOWN:
           listener()->HandlePressEvent(location);
           break;
