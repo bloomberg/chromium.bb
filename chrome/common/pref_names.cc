@@ -895,6 +895,11 @@ const char kInstantTetheringBleAdvertisingSupported[] =
 // Boolean pref indicating whether someone can cast to the device.
 const char kCastReceiverEnabled[] = "cast_receiver.enabled";
 
+// String pref indicating what is the minimum version of Chrome required to
+// allow user sign in. If the string is empty or blank no restrictions will
+// be applied. See base::Version for exact string format.
+const char kMinimumAllowedChromeVersion[] = "minimum_req.version";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

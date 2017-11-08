@@ -1273,6 +1273,8 @@ source_set("chromeos") {
     "policy/heartbeat_scheduler.h",
     "policy/login_profile_policy_provider.cc",
     "policy/login_profile_policy_provider.h",
+    "policy/minimum_version_policy_handler.cc",
+    "policy/minimum_version_policy_handler.h",
     "policy/network_configuration_updater.cc",
     "policy/network_configuration_updater.h",
     "policy/off_hours/device_off_hours_controller.cc",

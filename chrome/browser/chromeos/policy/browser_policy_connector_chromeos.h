@@ -43,6 +43,7 @@ class ActiveDirectoryPolicyManager;
 class DeviceCloudPolicyInitializer;
 class DeviceLocalAccountPolicyService;
 struct EnrollmentConfig;
+class MinimumVersionPolicyHandler;
 class NetworkConfigurationUpdater;
 class ProxyPolicyProvider;
 class ServerBackedStateKeysBroker;
@@ -135,6 +136,10 @@ class BrowserPolicyConnectorChromeOS
     return state_keys_broker_.get();
   }
 
+  MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() const {
+    return minimum_version_policy_handler_.get();
+  }
+
   // The browser-global PolicyService is created before Profiles are ready, to
   // provide managed values for the local state PrefService. It includes a
   // policy provider that forwards policies from a delegate policy provider.
@@ -198,6 +203,8 @@ class BrowserPolicyConnectorChromeOS
       device_remote_commands_invalidator_;
 
   std::unique_ptr<BluetoothPolicyHandler> bluetooth_policy_handler_;
+
+  std::unique_ptr<MinimumVersionPolicyHandler> minimum_version_policy_handler_;
 
   // This policy provider is used on Chrome OS to feed user policy into the
   // global PolicyService instance. This works by installing the cloud policy
