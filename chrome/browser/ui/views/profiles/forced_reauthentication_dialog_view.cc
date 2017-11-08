@@ -123,7 +123,7 @@ bool ForcedReauthenticationDialogView::Accept() {
   if (GetTimeRemaining() < base::TimeDelta::FromSeconds(kCloseDirectlyTimer)) {
     Signout(signin_manager_);
   } else {
-    browser_->signin_view_controller()->ShowModalSignin(
+    browser_->signin_view_controller()->ShowSignin(
         profiles::BubbleViewMode::BUBBLE_VIEW_MODE_GAIA_REAUTH, browser_,
         signin_metrics::AccessPoint::ACCESS_POINT_FORCE_SIGNIN_WARNING);
   }
