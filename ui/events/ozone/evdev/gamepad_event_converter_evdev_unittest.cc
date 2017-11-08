@@ -16,6 +16,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
@@ -80,8 +81,8 @@ class GamepadEventConverterEvdevTest : public testing::Test {
     int evdev_io[2];
     if (pipe(evdev_io))
       PLOG(FATAL) << "failed pipe";
-    ui::ScopedInputDevice events_in(evdev_io[0]);
-    ui::ScopedInputDevice events_out(evdev_io[1]);
+    base::ScopedFD events_in(evdev_io[0]);
+    base::ScopedFD events_out(evdev_io[1]);
 
     ui::EventDeviceInfo devinfo;
     CapabilitiesToDeviceInfo(caps, &devinfo);

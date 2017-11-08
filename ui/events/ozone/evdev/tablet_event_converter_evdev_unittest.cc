@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
@@ -110,7 +111,7 @@ namespace ui {
 
 class MockTabletEventConverterEvdev : public TabletEventConverterEvdev {
  public:
-  MockTabletEventConverterEvdev(ScopedInputDevice fd,
+  MockTabletEventConverterEvdev(base::ScopedFD fd,
                                 base::FilePath path,
                                 CursorDelegateEvdev* cursor,
                                 const EventDeviceInfo& devinfo,
@@ -163,7 +164,7 @@ class MockTabletCursorEvdev : public CursorDelegateEvdev {
 };
 
 MockTabletEventConverterEvdev::MockTabletEventConverterEvdev(
-    ScopedInputDevice fd,
+    base::ScopedFD fd,
     base::FilePath path,
     CursorDelegateEvdev* cursor,
     const EventDeviceInfo& devinfo,
@@ -226,7 +227,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
     int evdev_io[2];
     if (pipe(evdev_io))
       PLOG(FATAL) << "failed pipe";
-    ui::ScopedInputDevice events_in(evdev_io[0]);
+    base::ScopedFD events_in(evdev_io[0]);
     events_out_.reset(evdev_io[1]);
 
     ui::EventDeviceInfo devinfo;
@@ -259,7 +260,7 @@ class TabletEventConverterEvdevTest : public testing::Test {
 
   std::vector<std::unique_ptr<ui::Event>> dispatched_events_;
 
-  ui::ScopedInputDevice events_out_;
+  base::ScopedFD events_out_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletEventConverterEvdevTest);
 };

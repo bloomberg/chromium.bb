@@ -115,7 +115,7 @@ const int kTrackingIdForUnusedSlot = -1;
 namespace ui {
 
 TouchEventConverterEvdev::TouchEventConverterEvdev(
-    ScopedInputDevice fd,
+    base::ScopedFD fd,
     base::FilePath path,
     int id,
     const EventDeviceInfo& devinfo,
@@ -129,7 +129,6 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
                           devinfo.product_id()),
       input_device_fd_(std::move(fd)),
       dispatcher_(dispatcher) {
-
   touch_evdev_debug_buffer_.Initialize(devinfo);
 }
 

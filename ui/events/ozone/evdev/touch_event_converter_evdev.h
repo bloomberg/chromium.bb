@@ -20,13 +20,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
-#include "ui/events/ozone/evdev/scoped_input_device.h"
 #include "ui/events/ozone/evdev/touch_evdev_debug_buffer.h"
 
 namespace ui {
@@ -38,7 +38,7 @@ struct InProgressTouchEvdev;
 class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
     : public EventConverterEvdev {
  public:
-  TouchEventConverterEvdev(ScopedInputDevice fd,
+  TouchEventConverterEvdev(base::ScopedFD fd,
                            base::FilePath path,
                            int id,
                            const EventDeviceInfo& devinfo,
@@ -99,7 +99,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   int NextTrackingId();
 
   // Input device file descriptor.
-  ScopedInputDevice input_device_fd_;
+  base::ScopedFD input_device_fd_;
 
   // Dispatcher for events.
   DeviceEventDispatcherEvdev* dispatcher_;

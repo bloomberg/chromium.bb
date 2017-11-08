@@ -8,6 +8,7 @@
 #include <bitset>
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/devices/input_device.h"
@@ -19,7 +20,6 @@
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
-#include "ui/events/ozone/evdev/scoped_input_device.h"
 
 struct input_event;
 
@@ -30,7 +30,7 @@ class DeviceEventDispatcherEvdev;
 class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
     : public EventConverterEvdev {
  public:
-  EventConverterEvdevImpl(ScopedInputDevice fd,
+  EventConverterEvdevImpl(base::ScopedFD fd,
                           base::FilePath path,
                           int id,
                           const EventDeviceInfo& info,
@@ -66,7 +66,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   void FlushEvents(const input_event& input);
 
   // Input device file descriptor.
-  ScopedInputDevice input_device_fd_;
+  base::ScopedFD input_device_fd_;
 
   // Input modalities for this device.
   bool has_keyboard_;

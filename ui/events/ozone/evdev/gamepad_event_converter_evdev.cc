@@ -11,7 +11,6 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
-#include "ui/events/ozone/evdev/scoped_input_device.h"
 #include "ui/events/ozone/gamepad/gamepad_event.h"
 #include "ui/events/ozone/gamepad/gamepad_provider_ozone.h"
 #include "ui/events/ozone/gamepad/webgamepad_constants.h"
@@ -90,7 +89,7 @@ bool GamepadEventConverterEvdev::Axis::ValueChangeSignificantly(
 }
 
 GamepadEventConverterEvdev::GamepadEventConverterEvdev(
-    ScopedInputDevice fd,
+    base::ScopedFD fd,
     base::FilePath path,
     int id,
     const EventDeviceInfo& devinfo,

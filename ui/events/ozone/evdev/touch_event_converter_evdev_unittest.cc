@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
@@ -86,7 +87,7 @@ struct GenericEventParams {
 
 class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
  public:
-  MockTouchEventConverterEvdev(ScopedInputDevice fd,
+  MockTouchEventConverterEvdev(base::ScopedFD fd,
                                base::FilePath path,
                                const EventDeviceInfo& devinfo,
                                DeviceEventDispatcherEvdev* dispatcher);
@@ -170,7 +171,7 @@ class MockDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
 };
 
 MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(
-    ScopedInputDevice fd,
+    base::ScopedFD fd,
     base::FilePath path,
     const EventDeviceInfo& devinfo,
     DeviceEventDispatcherEvdev* dispatcher)
@@ -219,7 +220,7 @@ class TouchEventConverterEvdevTest : public testing::Test {
     int evdev_io[2];
     if (pipe(evdev_io))
       PLOG(FATAL) << "failed pipe";
-    ScopedInputDevice events_in(evdev_io[0]);
+    base::ScopedFD events_in(evdev_io[0]);
     events_out_.reset(evdev_io[1]);
 
     // Device creation happens on a worker thread since it may involve blocking
@@ -273,7 +274,7 @@ class TouchEventConverterEvdevTest : public testing::Test {
   std::unique_ptr<ui::MockTouchEventConverterEvdev> device_;
   std::unique_ptr<ui::MockDeviceEventDispatcherEvdev> dispatcher_;
 
-  ScopedInputDevice events_out_;
+  base::ScopedFD events_out_;
 
   void DispatchCallback(const GenericEventParams& params) {
     dispatched_events_.push_back(params);

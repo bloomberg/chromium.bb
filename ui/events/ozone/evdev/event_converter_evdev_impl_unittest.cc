@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +22,6 @@
 #include "ui/events/ozone/evdev/event_converter_test_util.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
-#include "ui/events/ozone/evdev/scoped_input_device.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 
 namespace ui {
@@ -30,7 +30,7 @@ const char kTestDevicePath[] = "/dev/input/test-device";
 
 class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
  public:
-  MockEventConverterEvdevImpl(ScopedInputDevice fd,
+  MockEventConverterEvdevImpl(base::ScopedFD fd,
                               CursorDelegateEvdev* cursor,
                               DeviceEventDispatcherEvdev* dispatcher)
       : EventConverterEvdevImpl(std::move(fd),
@@ -94,7 +94,7 @@ class EventConverterEvdevImplTest : public testing::Test {
     int evdev_io[2];
     if (pipe(evdev_io))
       PLOG(FATAL) << "failed pipe";
-    ui::ScopedInputDevice events_in(evdev_io[0]);
+    base::ScopedFD events_in(evdev_io[0]);
     events_out_.reset(evdev_io[1]);
 
     cursor_.reset(new ui::MockCursorEvdev());
@@ -160,7 +160,7 @@ class EventConverterEvdevImplTest : public testing::Test {
 
   std::vector<std::unique_ptr<ui::Event>> dispatched_events_;
 
-  ui::ScopedInputDevice events_out_;
+  base::ScopedFD events_out_;
 
   DISALLOW_COPY_AND_ASSIGN(EventConverterEvdevImplTest);
 };
