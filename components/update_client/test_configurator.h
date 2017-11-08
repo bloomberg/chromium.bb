@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/configurator.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -22,6 +23,10 @@ namespace net {
 class TestURLRequestContextGetter;
 class URLRequestContextGetter;
 }  // namespace net
+
+namespace service_manager {
+class Connector;
+}
 
 namespace update_client {
 
@@ -81,7 +86,8 @@ class TestConfigurator : public Configurator {
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
   net::URLRequestContextGetter* RequestContext() const override;
-  scoped_refptr<OutOfProcessPatcher> CreateOutOfProcessPatcher() const override;
+  std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
+      const override;
   bool EnabledDeltas() const override;
   bool EnabledComponentUpdates() const override;
   bool EnabledBackgroundDownloader() const override;
@@ -104,6 +110,8 @@ class TestConfigurator : public Configurator {
   friend class base::RefCountedThreadSafe<TestConfigurator>;
   ~TestConfigurator() override;
 
+  class TestPatchService;
+
   std::string brand_;
   int initial_time_;
   int ondemand_time_;
@@ -113,6 +121,8 @@ class TestConfigurator : public Configurator {
   GURL update_check_url_;
   GURL ping_url_;
 
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
   scoped_refptr<net::TestURLRequestContextGetter> context_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConfigurator);

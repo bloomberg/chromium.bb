@@ -18,6 +18,10 @@ namespace base {
 class DictionaryValue;
 }  // namespace base
 
+namespace service_manager {
+class Connector;
+}
+
 namespace update_client {
 
 extern const char kOp[];
@@ -27,7 +31,6 @@ extern const char kInput[];
 extern const char kPatch[];
 
 class CrxInstaller;
-class OutOfProcessPatcher;
 enum class UnpackerError;
 
 class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
@@ -129,10 +132,8 @@ class DeltaUpdateOpCreate : public DeltaUpdateOp {
 // unpacking directory.
 class DeltaUpdateOpPatch : public DeltaUpdateOp {
  public:
-  // |out_of_process_patcher| may be NULL.
-  DeltaUpdateOpPatch(
-      const std::string& operation,
-      const scoped_refptr<OutOfProcessPatcher>& out_of_process_patcher);
+  DeltaUpdateOpPatch(const std::string& operation,
+                     service_manager::Connector* connector);
 
  private:
   ~DeltaUpdateOpPatch() override;
@@ -150,16 +151,15 @@ class DeltaUpdateOpPatch : public DeltaUpdateOp {
   void DonePatching(ComponentPatcher::Callback callback, int result);
 
   std::string operation_;
-  const scoped_refptr<OutOfProcessPatcher> out_of_process_patcher_;
+  service_manager::Connector* connector_;
   base::FilePath patch_abs_path_;
   base::FilePath input_abs_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DeltaUpdateOpPatch);
 };
 
-DeltaUpdateOp* CreateDeltaUpdateOp(
-    const std::string& operation,
-    const scoped_refptr<OutOfProcessPatcher>& out_of_process_patcher);
+DeltaUpdateOp* CreateDeltaUpdateOp(const std::string& operation,
+                                   service_manager::Connector* connector);
 
 }  // namespace update_client
 

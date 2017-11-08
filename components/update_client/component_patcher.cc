@@ -20,6 +20,7 @@
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace update_client {
 
@@ -48,11 +49,11 @@ ComponentPatcher::ComponentPatcher(
     const base::FilePath& input_dir,
     const base::FilePath& unpack_dir,
     scoped_refptr<CrxInstaller> installer,
-    scoped_refptr<OutOfProcessPatcher> out_of_process_patcher)
+    std::unique_ptr<service_manager::Connector> connector)
     : input_dir_(input_dir),
       unpack_dir_(unpack_dir),
       installer_(installer),
-      out_of_process_patcher_(out_of_process_patcher) {}
+      connector_(std::move(connector)) {}
 
 ComponentPatcher::~ComponentPatcher() {
 }
@@ -87,8 +88,7 @@ void ComponentPatcher::PatchNextFile() {
 
   std::string operation;
   if (command_args->GetString(kOp, &operation)) {
-    current_operation_ =
-        CreateDeltaUpdateOp(operation, out_of_process_patcher_);
+    current_operation_ = CreateDeltaUpdateOp(operation, connector_.get());
   }
 
   if (!current_operation_.get()) {

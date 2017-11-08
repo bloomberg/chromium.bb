@@ -39,11 +39,14 @@ namespace base {
 class FilePath;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace update_client {
 
 class CrxInstaller;
 class DeltaUpdateOp;
-class OutOfProcessPatcher;
 enum class UnpackerError;
 
 // The type of a patch file.
@@ -66,7 +69,7 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
   ComponentPatcher(const base::FilePath& input_dir,
                    const base::FilePath& unpack_dir,
                    scoped_refptr<CrxInstaller> installer,
-                   scoped_refptr<OutOfProcessPatcher> out_of_process_patcher);
+                   std::unique_ptr<service_manager::Connector> connector);
 
   // Starts patching files. This member function returns immediately, after
   // posting a task to do the patching. When patching has been completed,
@@ -90,7 +93,7 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
   const base::FilePath input_dir_;
   const base::FilePath unpack_dir_;
   scoped_refptr<CrxInstaller> installer_;
-  scoped_refptr<OutOfProcessPatcher> out_of_process_patcher_;
+  std::unique_ptr<service_manager::Connector> connector_;
   Callback callback_;
   std::unique_ptr<base::ListValue> commands_;
   base::ListValue::const_iterator next_command_;

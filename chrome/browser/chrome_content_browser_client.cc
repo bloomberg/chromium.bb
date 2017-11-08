@@ -156,6 +156,7 @@
 #include "components/nacl/common/nacl_constants.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
+#include "components/patch_service/public/interfaces/constants.mojom.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -3140,6 +3141,9 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
   (*services)[chrome::mojom::kFileUtilServiceName] =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_FILE_UTILITY_NAME);
 #endif
+
+  (*services)[patch::mojom::kServiceName] =
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PATCH_NAME);
 
 #if BUILDFLAG(ENABLE_MUS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMash))

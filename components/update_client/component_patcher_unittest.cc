@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/update_client/component_patcher.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,13 +13,14 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "components/update_client/component_patcher.h"
+#include "components/patch_service/patch_service.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/component_patcher_unittest.h"
 #include "components/update_client/test_installer.h"
 #include "components/update_client/update_client_errors.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -148,9 +150,15 @@ TEST_F(ComponentPatcherOperationTest, CheckCourgetteOperation) {
   command_args->SetString("input", "binary_input.bin");
   command_args->SetString("patch", "binary_courgette_patch.bin");
 
+  // The operation needs a connector to access the PatchService.
+  service_manager::TestConnectorFactory connector_factory(
+      std::make_unique<patch::PatchService>());
+  std::unique_ptr<service_manager::Connector> connector =
+      connector_factory.CreateConnector();
+
   TestCallback callback;
   scoped_refptr<DeltaUpdateOp> op =
-      CreateDeltaUpdateOp("courgette", nullptr /* out_of_process_patcher */);
+      CreateDeltaUpdateOp("courgette", connector.get());
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
           base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));
@@ -181,9 +189,15 @@ TEST_F(ComponentPatcherOperationTest, CheckBsdiffOperation) {
   command_args->SetString("input", "binary_input.bin");
   command_args->SetString("patch", "binary_bsdiff_patch.bin");
 
+  // The operation needs a connector to access the PatchService.
+  service_manager::TestConnectorFactory connector_factory(
+      std::make_unique<patch::PatchService>());
+  std::unique_ptr<service_manager::Connector> connector =
+      connector_factory.CreateConnector();
+
   TestCallback callback;
   scoped_refptr<DeltaUpdateOp> op =
-      CreateDeltaUpdateOp("bsdiff", nullptr /* out_of_process_patcher */);
+      CreateDeltaUpdateOp("bsdiff", connector.get());
   op->Run(command_args.get(), input_dir_.GetPath(), unpack_dir_.GetPath(),
           installer_.get(),
           base::BindOnce(&TestCallback::Set, base::Unretained(&callback)));

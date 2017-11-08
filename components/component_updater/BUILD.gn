@@ -71,6 +71,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/update_client:test_support",
+    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -88,6 +88,7 @@
           "test",
           "url_loader"
         ],
+        "patch_service": [ "patch_file" ],
         "ui": [ "display_output_protection" ],
         "service_manager": [
           "service_manager:client_process",

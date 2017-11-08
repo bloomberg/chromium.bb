@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
@@ -24,6 +24,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/update_query_params.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -56,7 +59,7 @@ class ChromeConfigurator : public update_client::Configurator {
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
   net::URLRequestContextGetter* RequestContext() const override;
-  scoped_refptr<update_client::OutOfProcessPatcher> CreateOutOfProcessPatcher()
+  std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;
   bool EnabledComponentUpdates() const override;
@@ -159,9 +162,12 @@ net::URLRequestContextGetter* ChromeConfigurator::RequestContext() const {
   return configurator_impl_.RequestContext();
 }
 
-scoped_refptr<update_client::OutOfProcessPatcher>
-ChromeConfigurator::CreateOutOfProcessPatcher() const {
-  return base::MakeRefCounted<ChromeOutOfProcessPatcher>();
+std::unique_ptr<service_manager::Connector>
+ChromeConfigurator::CreateServiceManagerConnector() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->Clone();
 }
 
 bool ChromeConfigurator::EnabledDeltas() const {

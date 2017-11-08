@@ -22,10 +22,13 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace update_client {
 
 class ActivityDataService;
-class OutOfProcessPatcher;
 
 // Controls the component updater behavior.
 // TODO(sorin): this class will be split soon in two. One class controls
@@ -95,10 +98,10 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   // The source of contexts for all the url requests.
   virtual net::URLRequestContextGetter* RequestContext() const = 0;
 
-  // Returns a new out of process patcher. May be NULL for implementations
-  // that patch in-process.
-  virtual scoped_refptr<update_client::OutOfProcessPatcher>
-  CreateOutOfProcessPatcher() const = 0;
+  // Returns a new connector to the service manager. That connector is not bound
+  // to any thread yet.
+  virtual std::unique_ptr<service_manager::Connector>
+  CreateServiceManagerConnector() const = 0;
 
   // True means that this client can handle delta updates.
   virtual bool EnabledDeltas() const = 0;
