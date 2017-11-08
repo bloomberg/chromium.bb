@@ -78,7 +78,7 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
   void SubmitFrame();
 
   EGLSyncKHR InsertFence(bool implicit);
-  void FenceRetired(EGLSyncKHR fence, PendingFrame* frame);
+  void FenceRetired(PendingFrame* frame);
 
   void SwapCompleted(const SwapCompletionCallback& callback,
                      gfx::SwapResult result);
