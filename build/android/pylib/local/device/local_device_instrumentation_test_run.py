@@ -21,6 +21,7 @@ from devil.android import logcat_monitor
 from devil.android.tools import system_app
 from devil.utils import reraiser_thread
 from incremental_install import installer
+from pylib import constants
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import output_manager
@@ -600,9 +601,20 @@ class LocalDeviceInstrumentationTestRun(
   def _GetTestsFromRunner(self):
     test_apk_path = self._test_instance.test_apk.path
     pickle_path = '%s-runner.pickle' % test_apk_path
+    # For incremental APKs, the code doesn't live in the apk, so instead check
+    # the timestamp of the target's .stamp file.
+    if self._test_instance.test_apk_incremental_install_json:
+      with open(self._test_instance.test_apk_incremental_install_json) as f:
+        data = json.load(f)
+      out_dir = constants.GetOutDirectory()
+      test_mtime = max(
+          os.path.getmtime(os.path.join(out_dir, p)) for p in data['dex_files'])
+    else:
+      test_mtime = os.path.getmtime(test_apk_path)
+
     try:
       return instrumentation_test_instance.GetTestsFromPickle(
-          pickle_path, test_apk_path)
+          pickle_path, test_mtime)
     except instrumentation_test_instance.TestListPickleException as e:
       logging.info('Could not get tests from pickle: %s', e)
     logging.info('Getting tests by having %s list them.',
@@ -645,8 +657,7 @@ class LocalDeviceInstrumentationTestRun(
     # Get the first viable list of raw tests
     raw_tests = [tl for tl in raw_test_lists if tl][0]
 
-    instrumentation_test_instance.SaveTestsToPickle(
-        pickle_path, test_apk_path, raw_tests)
+    instrumentation_test_instance.SaveTestsToPickle(pickle_path, raw_tests)
     return raw_tests
 
   def _SaveTraceData(self, trace_device_file, device, test_class):
