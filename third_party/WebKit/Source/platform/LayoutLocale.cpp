@@ -118,7 +118,7 @@ const LayoutLocale* LayoutLocale::Get(const AtomicString& locale) {
 
   auto result = FontGlobalContext::GetLayoutLocaleMap().insert(locale, nullptr);
   if (result.is_new_entry)
-    result.stored_value->value = WTF::AdoptRef(new LayoutLocale(locale));
+    result.stored_value->value = base::AdoptRef(new LayoutLocale(locale));
   return result.stored_value->value.get();
 }
 
@@ -148,7 +148,7 @@ const LayoutLocale& LayoutLocale::GetSystem() {
 
 scoped_refptr<LayoutLocale> LayoutLocale::CreateForTesting(
     const AtomicString& locale) {
-  return WTF::AdoptRef(new LayoutLocale(locale));
+  return base::AdoptRef(new LayoutLocale(locale));
 }
 
 Hyphenation* LayoutLocale::GetHyphenation() const {

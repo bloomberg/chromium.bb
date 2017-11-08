@@ -43,7 +43,7 @@ class WebRTCICECandidatePrivate final
       const WebString& candidate,
       const WebString& sdp_mid,
       unsigned short sdp_m_line_index) {
-    return WTF::AdoptRef(
+    return base::AdoptRef(
         new WebRTCICECandidatePrivate(candidate, sdp_mid, sdp_m_line_index));
   }
 

@@ -79,7 +79,7 @@ class PLATFORM_EXPORT FontFeatureSettings
 
  public:
   static scoped_refptr<FontFeatureSettings> Create() {
-    return WTF::AdoptRef(new FontFeatureSettings());
+    return base::AdoptRef(new FontFeatureSettings());
   }
 
  private:
@@ -93,7 +93,7 @@ class PLATFORM_EXPORT FontVariationSettings
 
  public:
   static scoped_refptr<FontVariationSettings> Create() {
-    return WTF::AdoptRef(new FontVariationSettings());
+    return base::AdoptRef(new FontVariationSettings());
   }
 
   unsigned GetHash() const;

@@ -50,7 +50,7 @@ class PLATFORM_EXPORT RotateTransformOperation : public TransformOperation {
       const Rotation& rotation,
       OperationType type) {
     DCHECK(IsMatchingOperationType(type));
-    return WTF::AdoptRef(new RotateTransformOperation(rotation, type));
+    return base::AdoptRef(new RotateTransformOperation(rotation, type));
   }
 
   bool operator==(const RotateTransformOperation& other) const {
@@ -108,7 +108,7 @@ class PLATFORM_EXPORT RotateAroundOriginTransformOperation final
  public:
   static scoped_refptr<RotateAroundOriginTransformOperation>
   Create(double angle, double origin_x, double origin_y) {
-    return WTF::AdoptRef(
+    return base::AdoptRef(
         new RotateAroundOriginTransformOperation(angle, origin_x, origin_y));
   }
 

@@ -399,7 +399,7 @@ Canvas2DLayerBridge::CreateGpuMemoryBufferBackedTexture() {
 
   ResetSkiaTextureBinding(context_provider_wrapper_);
 
-  return WTF::AdoptRef(new Canvas2DLayerBridge::ImageInfo(
+  return base::AdoptRef(new Canvas2DLayerBridge::ImageInfo(
       std::move(gpu_memory_buffer), image_id, texture_id));
 }
 

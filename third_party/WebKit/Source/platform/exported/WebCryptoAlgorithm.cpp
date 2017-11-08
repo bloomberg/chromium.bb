@@ -325,9 +325,8 @@ class WebCryptoAlgorithmPrivate
 WebCryptoAlgorithm::WebCryptoAlgorithm(
     WebCryptoAlgorithmId id,
     std::unique_ptr<WebCryptoAlgorithmParams> params)
-    : private_(
-          WTF::AdoptRef(new WebCryptoAlgorithmPrivate(id, std::move(params)))) {
-}
+    : private_(base::AdoptRef(
+          new WebCryptoAlgorithmPrivate(id, std::move(params)))) {}
 
 WebCryptoAlgorithm WebCryptoAlgorithm::CreateNull() {
   return WebCryptoAlgorithm();

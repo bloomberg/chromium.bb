@@ -42,7 +42,7 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
       float percentage,
       IntSize crossfade_size,
       const IntSize& size) {
-    return WTF::AdoptRef(
+    return base::AdoptRef(
         new CrossfadeGeneratedImage(std::move(from_image), std::move(to_image),
                                     percentage, crossfade_size, size));
   }

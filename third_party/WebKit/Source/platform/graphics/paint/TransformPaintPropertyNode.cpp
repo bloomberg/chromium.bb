@@ -12,7 +12,7 @@ namespace blink {
 // scroll node.
 TransformPaintPropertyNode* TransformPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(TransformPaintPropertyNode, root,
-                    WTF::AdoptRef(new TransformPaintPropertyNode(
+                    base::AdoptRef(new TransformPaintPropertyNode(
                         nullptr, TransformationMatrix(), FloatPoint3D(), false,
                         0, kCompositingReasonNone, CompositorElementId(),
                         ScrollPaintPropertyNode::Root())));

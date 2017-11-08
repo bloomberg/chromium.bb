@@ -16,7 +16,7 @@ class PLATFORM_EXPORT PaintGeneratedImage : public GeneratedImage {
  public:
   static scoped_refptr<PaintGeneratedImage> Create(sk_sp<PaintRecord> record,
                                                    const IntSize& size) {
-    return WTF::AdoptRef(new PaintGeneratedImage(std::move(record), size));
+    return base::AdoptRef(new PaintGeneratedImage(std::move(record), size));
   }
   ~PaintGeneratedImage() override {}
 

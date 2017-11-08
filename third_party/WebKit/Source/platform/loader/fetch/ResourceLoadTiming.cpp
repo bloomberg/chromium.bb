@@ -27,7 +27,7 @@ ResourceLoadTiming::ResourceLoadTiming()
       push_end_(0) {}
 
 scoped_refptr<ResourceLoadTiming> ResourceLoadTiming::Create() {
-  return WTF::AdoptRef(new ResourceLoadTiming);
+  return base::AdoptRef(new ResourceLoadTiming);
 }
 
 scoped_refptr<ResourceLoadTiming> ResourceLoadTiming::DeepCopy() {

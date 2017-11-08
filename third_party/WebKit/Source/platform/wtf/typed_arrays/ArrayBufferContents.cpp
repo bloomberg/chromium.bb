@@ -53,14 +53,14 @@ ArrayBufferContents::AdjustAmountOfExternalAllocatedMemoryFunction
 #endif
 
 ArrayBufferContents::ArrayBufferContents()
-    : holder_(WTF::AdoptRef(new DataHolder())) {}
+    : holder_(base::AdoptRef(new DataHolder())) {}
 
 ArrayBufferContents::ArrayBufferContents(
     unsigned num_elements,
     unsigned element_byte_size,
     SharingType is_shared,
     ArrayBufferContents::InitializationPolicy policy)
-    : holder_(WTF::AdoptRef(new DataHolder())) {
+    : holder_(base::AdoptRef(new DataHolder())) {
   // Do not allow 32-bit overflow of the total size.
   unsigned total_size = num_elements * element_byte_size;
   if (num_elements) {
@@ -75,7 +75,7 @@ ArrayBufferContents::ArrayBufferContents(
 ArrayBufferContents::ArrayBufferContents(DataHandle data,
                                          unsigned size_in_bytes,
                                          SharingType is_shared)
-    : holder_(WTF::AdoptRef(new DataHolder())) {
+    : holder_(base::AdoptRef(new DataHolder())) {
   if (data) {
     holder_->Adopt(std::move(data), size_in_bytes, is_shared);
   } else {

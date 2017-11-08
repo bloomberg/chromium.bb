@@ -15,7 +15,7 @@ class WebContentSettingCallbacksPrivate
  public:
   static scoped_refptr<WebContentSettingCallbacksPrivate> Create(
       std::unique_ptr<ContentSettingCallbacks> callbacks) {
-    return WTF::AdoptRef(
+    return base::AdoptRef(
         new WebContentSettingCallbacksPrivate(std::move(callbacks)));
   }
 

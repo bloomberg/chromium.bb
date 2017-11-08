@@ -69,7 +69,7 @@ class FakeWebTaskRunner::BaseTaskRunner : public base::SingleThreadTaskRunner {
 };
 
 FakeWebTaskRunner::FakeWebTaskRunner()
-    : data_(WTF::AdoptRef(new Data)),
+    : data_(base::AdoptRef(new Data)),
       base_task_runner_(new BaseTaskRunner(data_)) {}
 
 FakeWebTaskRunner::FakeWebTaskRunner(

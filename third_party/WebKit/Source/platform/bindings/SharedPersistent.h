@@ -48,7 +48,7 @@ class SharedPersistent : public RefCounted<SharedPersistent<T>> {
  public:
   static scoped_refptr<SharedPersistent<T>> Create(v8::Local<T> value,
                                                    v8::Isolate* isolate) {
-    return WTF::AdoptRef(new SharedPersistent<T>(value, isolate));
+    return base::AdoptRef(new SharedPersistent<T>(value, isolate));
   }
 
   v8::Local<T> NewLocal(v8::Isolate* isolate) const {

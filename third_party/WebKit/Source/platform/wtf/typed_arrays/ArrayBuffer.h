@@ -141,14 +141,14 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::Create(const void* source,
                                ArrayBufferContents::kDontInitialize);
   if (UNLIKELY(!contents.Data()))
     OOM_CRASH();
-  scoped_refptr<ArrayBuffer> buffer = WTF::AdoptRef(new ArrayBuffer(contents));
+  scoped_refptr<ArrayBuffer> buffer = base::AdoptRef(new ArrayBuffer(contents));
   memcpy(buffer->Data(), source, byte_length);
   return buffer;
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::Create(ArrayBufferContents& contents) {
   CHECK(contents.DataMaybeShared());
-  return WTF::AdoptRef(new ArrayBuffer(contents));
+  return base::AdoptRef(new ArrayBuffer(contents));
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::CreateOrNull(
@@ -173,7 +173,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::Create(
                                ArrayBufferContents::kNotShared, policy);
   if (UNLIKELY(!contents.Data()))
     OOM_CRASH();
-  return WTF::AdoptRef(new ArrayBuffer(contents));
+  return base::AdoptRef(new ArrayBuffer(contents));
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::CreateOrNull(
@@ -184,7 +184,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::CreateOrNull(
                                ArrayBufferContents::kNotShared, policy);
   if (!contents.Data())
     return nullptr;
-  return WTF::AdoptRef(new ArrayBuffer(contents));
+  return base::AdoptRef(new ArrayBuffer(contents));
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(
@@ -199,7 +199,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(const void* source,
   ArrayBufferContents contents(byte_length, 1, ArrayBufferContents::kShared,
                                ArrayBufferContents::kDontInitialize);
   CHECK(contents.DataShared());
-  scoped_refptr<ArrayBuffer> buffer = WTF::AdoptRef(new ArrayBuffer(contents));
+  scoped_refptr<ArrayBuffer> buffer = base::AdoptRef(new ArrayBuffer(contents));
   memcpy(buffer->DataShared(), source, byte_length);
   return buffer;
 }
@@ -211,7 +211,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(
   ArrayBufferContents contents(num_elements, element_byte_size,
                                ArrayBufferContents::kShared, policy);
   CHECK(contents.DataShared());
-  return WTF::AdoptRef(new ArrayBuffer(contents));
+  return base::AdoptRef(new ArrayBuffer(contents));
 }
 
 ArrayBuffer::ArrayBuffer(ArrayBufferContents& contents)

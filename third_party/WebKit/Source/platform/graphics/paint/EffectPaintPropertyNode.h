@@ -41,7 +41,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       CompositingReasons direct_compositing_reasons = kCompositingReasonNone,
       const CompositorElementId& compositor_element_id = CompositorElementId(),
       const FloatPoint& paint_offset = FloatPoint()) {
-    return WTF::AdoptRef(new EffectPaintPropertyNode(
+    return base::AdoptRef(new EffectPaintPropertyNode(
         std::move(parent), std::move(local_transform_space),
         std::move(output_clip), color_filter, std::move(filter), opacity,
         blend_mode, direct_compositing_reasons, compositor_element_id,
@@ -106,7 +106,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // an effect node before it has been updated, to later detect changes.
   scoped_refptr<EffectPaintPropertyNode> Clone() const {
-    return WTF::AdoptRef(new EffectPaintPropertyNode(
+    return base::AdoptRef(new EffectPaintPropertyNode(
         Parent(), local_transform_space_, output_clip_, color_filter_, filter_,
         opacity_, blend_mode_, direct_compositing_reasons_,
         compositor_element_id_, paint_offset_));

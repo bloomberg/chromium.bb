@@ -12,7 +12,7 @@ scoped_refptr<ScriptState> ScriptState::Create(
     v8::Local<v8::Context> context,
     scoped_refptr<DOMWrapperWorld> world) {
   scoped_refptr<ScriptState> script_state =
-      WTF::AdoptRef(new ScriptState(context, std::move(world)));
+      base::AdoptRef(new ScriptState(context, std::move(world)));
   // This AddRef() is for keeping this ScriptState alive as long as the
   // v8::Context is alive.  This is Release()d in the weak callback of the
   // v8::Context.

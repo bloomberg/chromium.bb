@@ -17,13 +17,13 @@ template <typename T>
 class RefVector : public RefCounted<RefVector<T>> {
  public:
   static scoped_refptr<RefVector> Create() {
-    return WTF::AdoptRef(new RefVector<T>);
+    return base::AdoptRef(new RefVector<T>);
   }
   static scoped_refptr<RefVector> Create(const Vector<T>& vector) {
-    return WTF::AdoptRef(new RefVector<T>(vector));
+    return base::AdoptRef(new RefVector<T>(vector));
   }
   static scoped_refptr<RefVector> Create(Vector<T>&& vector) {
-    return WTF::AdoptRef(new RefVector<T>(std::move(vector)));
+    return base::AdoptRef(new RefVector<T>(std::move(vector)));
   }
   scoped_refptr<RefVector> Copy() { return Create(GetVector()); }
 

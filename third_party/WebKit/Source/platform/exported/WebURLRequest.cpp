@@ -48,7 +48,7 @@ class URLRequestExtraDataContainer : public ResourceRequest::ExtraData {
  public:
   static scoped_refptr<URLRequestExtraDataContainer> Create(
       WebURLRequest::ExtraData* extra_data) {
-    return WTF::AdoptRef(new URLRequestExtraDataContainer(extra_data));
+    return base::AdoptRef(new URLRequestExtraDataContainer(extra_data));
   }
 
   ~URLRequestExtraDataContainer() override {}

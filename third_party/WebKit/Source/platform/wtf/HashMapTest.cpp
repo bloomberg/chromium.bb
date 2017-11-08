@@ -129,7 +129,7 @@ TEST(HashMapTest, RefPtrAsKey) {
   bool is_deleted = false;
   DummyRefCounted::ref_invokes_count_ = 0;
   scoped_refptr<DummyRefCounted> ptr =
-      WTF::AdoptRef(new DummyRefCounted(is_deleted));
+      base::AdoptRef(new DummyRefCounted(is_deleted));
   EXPECT_EQ(0, DummyRefCounted::ref_invokes_count_);
   HashMap<scoped_refptr<DummyRefCounted>, int> map;
   map.insert(ptr, 1);
@@ -162,7 +162,7 @@ TEST(HashMaptest, RemoveAdd) {
   Map map;
 
   scoped_refptr<DummyRefCounted> ptr =
-      WTF::AdoptRef(new DummyRefCounted(is_deleted));
+      base::AdoptRef(new DummyRefCounted(is_deleted));
   EXPECT_EQ(0, DummyRefCounted::ref_invokes_count_);
 
   map.insert(1, ptr);
@@ -182,7 +182,7 @@ TEST(HashMaptest, RemoveAdd) {
   for (int i = 1; i < 100; i++) {
     bool is_deleted2 = false;
     scoped_refptr<DummyRefCounted> ptr2 =
-        WTF::AdoptRef(new DummyRefCounted(is_deleted2));
+        base::AdoptRef(new DummyRefCounted(is_deleted2));
     map.insert(i, ptr2);
     EXPECT_FALSE(is_deleted2);
     ptr2 = nullptr;

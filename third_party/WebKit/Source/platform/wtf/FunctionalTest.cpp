@@ -91,7 +91,7 @@ class Number {
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
   static scoped_refptr<Number> Create(int value) {
-    return WTF::AdoptRef(new Number(value));
+    return base::AdoptRef(new Number(value));
   }
 
   ~Number() { value_ = 0; }

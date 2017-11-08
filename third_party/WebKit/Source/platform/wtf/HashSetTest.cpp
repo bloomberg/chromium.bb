@@ -157,7 +157,7 @@ TEST(HashSetTest, HashSetOwnPtr) {
 TEST(HashSetTest, HashSetRefPtr) {
   bool is_deleted = false;
   scoped_refptr<DummyRefCounted> ptr =
-      WTF::AdoptRef(new DummyRefCounted(is_deleted));
+      base::AdoptRef(new DummyRefCounted(is_deleted));
   EXPECT_EQ(0, DummyRefCounted::ref_invokes_count_);
   HashSet<scoped_refptr<DummyRefCounted>> set;
   set.insert(ptr);

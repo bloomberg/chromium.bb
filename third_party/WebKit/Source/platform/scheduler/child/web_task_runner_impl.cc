@@ -19,7 +19,8 @@ namespace scheduler {
 scoped_refptr<WebTaskRunnerImpl> WebTaskRunnerImpl::Create(
     scoped_refptr<TaskQueue> task_queue,
     base::Optional<TaskType> task_type) {
-  return WTF::AdoptRef(new WebTaskRunnerImpl(std::move(task_queue), task_type));
+  return base::AdoptRef(
+      new WebTaskRunnerImpl(std::move(task_queue), task_type));
 }
 
 bool WebTaskRunnerImpl::RunsTasksInCurrentSequence() {

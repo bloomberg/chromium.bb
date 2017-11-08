@@ -405,7 +405,7 @@ class DrawingBufferForTests : public DrawingBuffer {
     std::unique_ptr<Extensions3DUtil> extensions_util =
         Extensions3DUtil::Create(context_provider->ContextGL());
     scoped_refptr<DrawingBufferForTests> drawing_buffer =
-        WTF::AdoptRef(new DrawingBufferForTests(
+        base::AdoptRef(new DrawingBufferForTests(
             std::move(context_provider), using_gpu_compositing,
             std::move(extensions_util), client, preserve));
     if (!drawing_buffer->Initialize(

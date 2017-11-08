@@ -45,7 +45,7 @@ inline EncodedFormData::EncodedFormData(const EncodedFormData& data)
 EncodedFormData::~EncodedFormData() {}
 
 scoped_refptr<EncodedFormData> EncodedFormData::Create() {
-  return WTF::AdoptRef(new EncodedFormData);
+  return base::AdoptRef(new EncodedFormData);
 }
 
 scoped_refptr<EncodedFormData> EncodedFormData::Create(const void* data,
@@ -69,7 +69,7 @@ scoped_refptr<EncodedFormData> EncodedFormData::Create(
 }
 
 scoped_refptr<EncodedFormData> EncodedFormData::Copy() const {
-  return WTF::AdoptRef(new EncodedFormData(*this));
+  return base::AdoptRef(new EncodedFormData(*this));
 }
 
 scoped_refptr<EncodedFormData> EncodedFormData::DeepCopy() const {

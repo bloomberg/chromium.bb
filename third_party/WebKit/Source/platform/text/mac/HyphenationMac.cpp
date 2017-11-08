@@ -56,7 +56,7 @@ scoped_refptr<Hyphenation> Hyphenation::PlatformGetHyphenation(
       AdoptCF(CFLocaleCreate(kCFAllocatorDefault, locale_cf_string.Get()));
   if (!CFStringIsHyphenationAvailableForLocale(locale_cf.Get()))
     return nullptr;
-  return WTF::AdoptRef(new HyphenationCF(locale_cf));
+  return base::AdoptRef(new HyphenationCF(locale_cf));
 }
 
 }  // namespace blink

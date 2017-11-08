@@ -40,7 +40,7 @@ namespace ArenaTestHelpers {
 class TrackedAllocator final : public PODArena::FastMallocAllocator {
  public:
   static scoped_refptr<TrackedAllocator> Create() {
-    return WTF::AdoptRef(new TrackedAllocator);
+    return base::AdoptRef(new TrackedAllocator);
   }
 
   void* Allocate(size_t size) override {

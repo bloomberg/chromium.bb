@@ -46,7 +46,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
       CompositorElementId compositor_element_id) {
-    return WTF::AdoptRef(new ScrollPaintPropertyNode(
+    return base::AdoptRef(new ScrollPaintPropertyNode(
         std::move(parent), container_rect, contents_rect,
         user_scrollable_horizontal, user_scrollable_vertical,
         main_thread_scrolling_reasons, compositor_element_id));
@@ -118,7 +118,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // a scroll node before it has been updated, to later detect changes.
   scoped_refptr<ScrollPaintPropertyNode> Clone() const {
     scoped_refptr<ScrollPaintPropertyNode> cloned =
-        WTF::AdoptRef(new ScrollPaintPropertyNode(
+        base::AdoptRef(new ScrollPaintPropertyNode(
             Parent(), container_rect_, contents_rect_,
             user_scrollable_horizontal_, user_scrollable_vertical_,
             main_thread_scrolling_reasons_, compositor_element_id_));

@@ -67,7 +67,7 @@ class HbFontCacheEntry : public RefCounted<HbFontCacheEntry> {
  public:
   static scoped_refptr<HbFontCacheEntry> Create(hb_font_t* hb_font) {
     DCHECK(hb_font);
-    return WTF::AdoptRef(new HbFontCacheEntry(hb_font));
+    return base::AdoptRef(new HbFontCacheEntry(hb_font));
   }
 
   hb_font_t* HbFont() { return hb_font_.get(); }

@@ -42,7 +42,7 @@ class PLATFORM_EXPORT CalculationValue : public RefCounted<CalculationValue> {
  public:
   static scoped_refptr<CalculationValue> Create(PixelsAndPercent value,
                                                 ValueRange range) {
-    return WTF::AdoptRef(new CalculationValue(value, range));
+    return base::AdoptRef(new CalculationValue(value, range));
   }
 
   float Evaluate(float max_value) const {

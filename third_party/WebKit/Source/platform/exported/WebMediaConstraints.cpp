@@ -97,13 +97,13 @@ class WebMediaConstraintsPrivate final
 scoped_refptr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create() {
   WebMediaTrackConstraintSet basic;
   WebVector<WebMediaTrackConstraintSet> advanced;
-  return WTF::AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));
+  return base::AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));
 }
 
 scoped_refptr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::Create(
     const WebMediaTrackConstraintSet& basic,
     const WebVector<WebMediaTrackConstraintSet>& advanced) {
-  return WTF::AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));
+  return base::AdoptRef(new WebMediaConstraintsPrivate(basic, advanced));
 }
 
 WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(

@@ -62,7 +62,7 @@ scoped_refptr<WebMediaDeviceInfoPrivate> WebMediaDeviceInfoPrivate::Create(
     WebMediaDeviceInfo::MediaDeviceKind kind,
     const WebString& label,
     const WebString& group_id) {
-  return WTF::AdoptRef(
+  return base::AdoptRef(
       new WebMediaDeviceInfoPrivate(device_id, kind, label, group_id));
 }
 
