@@ -65,7 +65,7 @@ _URL_BASE = 'file://media_cases/'
 # The following section contains base classes for pages.
 #
 
-class MediaPage(page_module.Page):
+class _MediaPage(page_module.Page):
 
   def __init__(self, url, page_set, tags, extra_browser_args=None,
                traffic_setting=traffic_setting_module.NONE):
@@ -77,13 +77,13 @@ class MediaPage(page_module.Page):
       for t in tags:
         assert t in _PAGE_TAGS_LIST
     assert not ('src' in tags and 'mse' in tags)
-    super(MediaPage, self).__init__(
+    super(_MediaPage, self).__init__(
         url=url, page_set=page_set, tags=tags, name=name,
         extra_browser_args=extra_browser_args,
         traffic_setting=traffic_setting)
 
 
-class BeginningToEndPlayPage(MediaPage):
+class _BeginningToEndPlayPage(_MediaPage):
   """A normal play page simply plays the given media until the end."""
 
   def __init__(self, url, page_set, tags, extra_browser_args=None,
@@ -91,7 +91,7 @@ class BeginningToEndPlayPage(MediaPage):
     tags.append('beginning_to_end')
     tags.append('src')
     self.add_browser_metrics = True
-    super(BeginningToEndPlayPage, self).__init__(
+    super(_BeginningToEndPlayPage, self).__init__(
         url, page_set, tags, extra_browser_args,
         traffic_setting=traffic_setting)
 
@@ -103,7 +103,8 @@ class BeginningToEndPlayPage(MediaPage):
     if self.page_set.measure_memory:
       action_runner.MeasureMemory()
 
-class SeekPage(MediaPage):
+
+class _SeekPage(_MediaPage):
   """A seek page seeks twice in the video and measures the seek time."""
 
   def __init__(self, url, page_set, tags, extra_browser_args=None,
@@ -113,7 +114,7 @@ class SeekPage(MediaPage):
     tags.append('src')
     self.skip_basic_metrics = True
     self._action_timeout = action_timeout_in_seconds
-    super(SeekPage, self).__init__(
+    super(_SeekPage, self).__init__(
         url, page_set, tags, extra_browser_args,
         traffic_setting=traffic_setting)
 
@@ -134,7 +135,8 @@ class SeekPage(MediaPage):
     if self.page_set.measure_memory:
       action_runner.MeasureMemory()
 
-class BackgroundPlaybackPage(MediaPage):
+
+class _BackgroundPlaybackPage(_MediaPage):
   """A Background playback page plays the given media in a background tab.
 
   The motivation for this test case is crbug.com/678663.
@@ -152,7 +154,7 @@ class BackgroundPlaybackPage(MediaPage):
     # not turn off video playback in the background.
     extra_browser_args = extra_browser_args or []
     extra_browser_args.append('--disable-media-suspend')
-    super(BackgroundPlaybackPage, self).__init__(
+    super(_BackgroundPlaybackPage, self).__init__(
         url, page_set, tags, extra_browser_args)
 
   def RunPageInteractions(self, action_runner):
@@ -173,11 +175,18 @@ class BackgroundPlaybackPage(MediaPage):
       action_runner.MeasureMemory()
 
 
-class MSEPage(MediaPage):
+class _MSEPage(_MediaPage):
+  # TODO(crouleau): Figure out a way to make MSE pages provide consistent
+  # data. Currently the data haa a lot of outliers for time_to_play and other
+  # startup metrics. To do this, we must either:
+  # 1. Tell Telemetry to repeat these pages (this requires Telemetry's
+  # providing this option in the API.)
+  # 2. Edit the page to reload and run multiple times (you can clear the cache
+  # with tab.CleanCache). This requires crbug/775264.
 
   def __init__(self, url, page_set, tags, extra_browser_args=None):
     tags.append('mse')
-    super(MSEPage, self).__init__(
+    super(_MSEPage, self).__init__(
         url, page_set, tags, extra_browser_args)
 
   def RunPageInteractions(self, action_runner):
@@ -186,284 +195,6 @@ class MSEPage(MediaPage):
     test_failed = action_runner.EvaluateJavaScript('window.__testFailed')
     if test_failed:
       raise RuntimeError(action_runner.EvaluateJavaScript('window.__testError'))
-
-
-#
-# The following section contains concrete test page definitions.
-#
-
-class Page2(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page2, self).__init__(
-      url=_URL_BASE+'video.html?src=crowd.ogg&type=audio',
-      page_set=page_set,
-      tags=['vorbis', 'audio_only'])
-
-
-class Page4(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page4, self).__init__(
-      url=_URL_BASE + 'video.html?src=crowd1080.webm',
-      page_set=page_set,
-      tags=['is_50fps', 'vp8', 'vorbis', 'audio_video'])
-
-
-class Page7(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page7, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio',
-      page_set=page_set,
-      tags=['vorbis', 'audio_only'])
-
-
-class Page8(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page8, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.wav&type=audio',
-      page_set=page_set,
-      tags=['pcm', 'audio_only'])
-
-
-class Page11(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page11, self).__init__(
-      url=_URL_BASE + 'video.html?src=crowd1080.mp4',
-      page_set=page_set,
-      tags=['is_50fps', 'h264', 'aac', 'audio_video'])
-
-
-class Page12(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page12, self).__init__(
-      url=_URL_BASE + 'video.html?src=crowd2160.mp4',
-      page_set=page_set,
-      tags=['is_4k', 'is_50fps', 'h264', 'aac', 'audio_video'])
-
-
-class Page13(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page13, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio',
-      page_set=page_set,
-      tags=['mp3', 'audio_only'])
-
-
-class Page14(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page14, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.mp4',
-      page_set=page_set,
-      tags=['h264', 'aac', 'audio_video'])
-
-
-class Page15(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page15, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.m4a&type=audio',
-      page_set=page_set,
-      tags=['aac', 'audio_only'])
-
-
-class Page16(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page16, self).__init__(
-      url=_URL_BASE + 'video.html?src=garden2_10s.webm',
-      page_set=page_set,
-      tags=['is_4k', 'vp8', 'vorbis', 'audio_video'])
-
-
-class Page17(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page17, self).__init__(
-      url=_URL_BASE + 'video.html?src=garden2_10s.mp4',
-      page_set=page_set,
-      tags=['is_4k', 'h264', 'aac', 'audio_video'])
-
-
-class Page19(SeekPage):
-
-  def __init__(self, page_set):
-    super(Page19, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio&seek',
-      page_set=page_set,
-      tags=['vorbis', 'audio_only'])
-
-
-class Page20(SeekPage):
-
-  def __init__(self, page_set):
-    super(Page20, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.wav&type=audio&seek',
-      page_set=page_set,
-      tags=['pcm', 'audio_only'])
-
-
-class Page23(SeekPage):
-
-  def __init__(self, page_set):
-    super(Page23, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio&seek',
-      page_set=page_set,
-      tags=['mp3', 'audio_only'])
-
-
-class Page24(SeekPage):
-
-  def __init__(self, page_set):
-    super(Page24, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.mp4&seek',
-      page_set=page_set,
-      tags=['h264', 'aac', 'audio_video'])
-
-
-class Page25(SeekPage):
-
-  def __init__(self, page_set):
-    super(Page25, self).__init__(
-      url=_URL_BASE + 'video.html?src=garden2_10s.webm&seek',
-      page_set=page_set,
-      tags=['is_4k', 'vp8', 'vorbis', 'audio_video'])
-
-
-class Page26(SeekPage):
-
-  def __init__(self, page_set):
-    super(Page26, self).__init__(
-      url=_URL_BASE + 'video.html?src=garden2_10s.mp4&seek',
-      page_set=page_set,
-      tags=['is_4k', 'h264', 'aac', 'audio_video'])
-
-
-class Page30(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page30, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
-      page_set=page_set,
-      tags=['vp9', 'opus', 'audio_video'])
-
-
-class Page31(SeekPage):
-
-  def __init__(self, page_set):
-    super(Page31, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.vp9.webm&seek',
-      page_set=page_set,
-      tags=['vp9', 'opus', 'audio_video'])
-
-
-class Page32(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page32, self).__init__(
-      url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm',
-      page_set=page_set,
-      tags=['vp9', 'video_only'])
-
-
-class Page33(SeekPage):
-
-  def __init__(self, page_set):
-    super(Page33, self).__init__(
-      url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm&seek',
-      page_set=page_set,
-      tags=['vp9', 'video_only', 'seek'])
-
-
-class Page34(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page34, self).__init__(
-      url=_URL_BASE + 'video.html?src=crowd720_vp9.webm',
-      page_set=page_set,
-      tags=['vp9', 'video_only'])
-
-
-class Page36(SeekPage):
-
-  def __init__(self, page_set):
-    super(Page36, self).__init__(
-      url=(_URL_BASE + 'video.html?src='
-           'smpte_3840x2160_60fps_vp9.webm&seek'),
-      page_set=page_set,
-      tags=['is_4k', 'vp9', 'video_only'],
-      action_timeout_in_seconds=120)
-
-
-class Page37(BackgroundPlaybackPage):
-
-  def __init__(self, page_set):
-    super(Page37, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.vp9.webm&background',
-      page_set=page_set,
-      tags=['vp9', 'opus', 'audio_video'])
-
-
-class Page38(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page38, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.mp4&busyjs',
-      page_set=page_set,
-      tags=['h264', 'aac', 'audio_video', 'busyjs'])
-
-
-class Page39(MSEPage):
-
-  def __init__(self, page_set):
-    super(Page39, self).__init__(
-      url=_URL_BASE + 'mse.html?media=aac_audio.mp4,h264_video.mp4',
-      page_set=page_set,
-      tags=['h264', 'aac', 'audio_video'])
-
-
-class Page40(MSEPage):
-
-  def __init__(self, page_set):
-    super(Page40, self).__init__(
-      url=(_URL_BASE + 'mse.html?'
-           'media=aac_audio.mp4,h264_video.mp4&waitForPageLoaded=true'),
-      page_set=page_set,
-      tags=['h264', 'aac', 'audio_video'])
-
-
-class Page41(MSEPage):
-
-  def __init__(self, page_set):
-    super(Page41, self).__init__(
-      url=_URL_BASE + 'mse.html?media=aac_audio.mp4',
-      page_set=page_set,
-      tags=['aac', 'audio_only'])
-
-
-class Page42(MSEPage):
-
-  def __init__(self, page_set):
-    super(Page42, self).__init__(
-      url=_URL_BASE + 'mse.html?media=h264_video.mp4',
-      page_set=page_set,
-      tags=['h264', 'video_only'])
-
-
-class Page43(BeginningToEndPlayPage):
-
-  def __init__(self, page_set):
-    super(Page43, self).__init__(
-      url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
-      page_set=page_set,
-      tags=['vp9', 'opus', 'audio_video'],
-      traffic_setting=traffic_setting_module.REGULAR_3G)
 
 
 class MediaCasesStorySet(story.StorySet):
@@ -477,60 +208,132 @@ class MediaCasesStorySet(story.StorySet):
 
     self.measure_memory = measure_memory
 
-    # TODO(crouleau): Clean up this PageX stuff. Either
-    # 1. Add magic that will add all pages to the StorySet
-    # automatically so that the following is unnecessary. See
-    # https://stackoverflow.com/questions/1796180. Just add all classes with
-    # name like "PageX" where X is a number.
-    # or
-    # 2. Don't use classes at all and instead just have a list containing
-    # configuration for each one.
+    pages = [
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=crowd.ogg&type=audio',
+            page_set=self,
+            tags=['vorbis', 'audio_only']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=crowd1080.webm',
+            page_set=self,
+            tags=['is_50fps', 'vp8', 'vorbis', 'audio_video']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio',
+            page_set=self,
+            tags=['vorbis', 'audio_only']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=tulip2.wav&type=audio',
+            page_set=self,
+            tags=['pcm', 'audio_only']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=crowd1080.mp4',
+            page_set=self,
+            tags=['is_50fps', 'h264', 'aac', 'audio_video']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=crowd2160.mp4',
+            page_set=self,
+            tags=['is_4k', 'is_50fps', 'h264', 'aac', 'audio_video']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio',
+            page_set=self,
+            tags=['mp3', 'audio_only']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=tulip2.mp4',
+            page_set=self,
+            tags=['h264', 'aac', 'audio_video']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=tulip2.m4a&type=audio',
+            page_set=self,
+            tags=['aac', 'audio_only']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=garden2_10s.webm',
+            page_set=self,
+            tags=['is_4k', 'vp8', 'vorbis', 'audio_video']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=garden2_10s.mp4',
+            page_set=self,
+            tags=['is_4k', 'h264', 'aac', 'audio_video']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
+            page_set=self,
+            tags=['vp9', 'opus', 'audio_video'],
+            traffic_setting=traffic_setting_module.REGULAR_3G),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=tulip2.vp9.webm',
+            page_set=self,
+            tags=['vp9', 'opus', 'audio_video']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm',
+            page_set=self,
+            tags=['vp9', 'video_only']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=crowd720_vp9.webm',
+            page_set=self,
+            tags=['vp9', 'video_only']),
+        _BeginningToEndPlayPage(
+            url=_URL_BASE + 'video.html?src=tulip2.mp4&busyjs',
+            page_set=self,
+            tags=['h264', 'aac', 'audio_video', 'busyjs']),
+        _SeekPage(
+            url=_URL_BASE + 'video.html?src=tulip2.ogg&type=audio&seek',
+            page_set=self,
+            tags=['vorbis', 'audio_only']),
+        _SeekPage(
+            url=_URL_BASE + 'video.html?src=tulip2.wav&type=audio&seek',
+            page_set=self,
+            tags=['pcm', 'audio_only']),
+        _SeekPage(
+            url=_URL_BASE + 'video.html?src=tulip2.mp3&type=audio&seek',
+            page_set=self,
+            tags=['mp3', 'audio_only']),
+        _SeekPage(
+            url=_URL_BASE + 'video.html?src=tulip2.mp4&seek',
+            page_set=self,
+            tags=['h264', 'aac', 'audio_video']),
+        _SeekPage(
+            url=_URL_BASE + 'video.html?src=garden2_10s.webm&seek',
+            page_set=self,
+            tags=['is_4k', 'vp8', 'vorbis', 'audio_video']),
+        _SeekPage(
+            url=_URL_BASE + 'video.html?src=garden2_10s.mp4&seek',
+            page_set=self,
+            tags=['is_4k', 'h264', 'aac', 'audio_video']),
+        _SeekPage(
+            url=_URL_BASE + 'video.html?src=tulip2.vp9.webm&seek',
+            page_set=self,
+            tags=['vp9', 'opus', 'audio_video']),
+        _SeekPage(
+            url=_URL_BASE + 'video.html?src=crowd1080_vp9.webm&seek',
+            page_set=self,
+            tags=['vp9', 'video_only', 'seek']),
+        _SeekPage(
+            url=(_URL_BASE + 'video.html?src='
+                 'smpte_3840x2160_60fps_vp9.webm&seek'),
+            page_set=self,
+            tags=['is_4k', 'vp9', 'video_only'],
+            action_timeout_in_seconds=120),
+        _BackgroundPlaybackPage(
+            url=_URL_BASE + 'video.html?src=tulip2.vp9.webm&background',
+            page_set=self,
+            tags=['vp9', 'opus', 'audio_video']),
+        _MSEPage(
+            url=_URL_BASE + 'mse.html?media=aac_audio.mp4,h264_video.mp4',
+            page_set=self,
+            tags=['h264', 'aac', 'audio_video']),
+        _MSEPage(
+            url=(_URL_BASE + 'mse.html?'
+                 'media=aac_audio.mp4,h264_video.mp4&waitForPageLoaded=true'),
+            page_set=self,
+            tags=['h264', 'aac', 'audio_video']),
+        _MSEPage(
+            url=_URL_BASE + 'mse.html?media=aac_audio.mp4',
+            page_set=self,
+            tags=['aac', 'audio_only']),
+        _MSEPage(
+            url=_URL_BASE + 'mse.html?media=h264_video.mp4',
+            page_set=self,
+            tags=['h264', 'video_only']),
+    ]
 
-    # Normal play tests.
-    self.AddStory(Page2(self))
-    self.AddStory(Page4(self))
-    self.AddStory(Page7(self))
-    self.AddStory(Page8(self))
-    self.AddStory(Page11(self))
-    self.AddStory(Page12(self))
-    self.AddStory(Page13(self))
-    self.AddStory(Page14(self))
-    self.AddStory(Page15(self))
-    self.AddStory(Page16(self))
-    self.AddStory(Page17(self))
-    self.AddStory(Page30(self))
-    self.AddStory(Page32(self))
-    self.AddStory(Page34(self))
-
-    # Seek tests.
-    self.AddStory(Page19(self))
-    self.AddStory(Page20(self))
-    self.AddStory(Page23(self))
-    self.AddStory(Page24(self))
-    self.AddStory(Page25(self))
-    self.AddStory(Page26(self))
-    self.AddStory(Page31(self))
-    self.AddStory(Page33(self))
-    self.AddStory(Page36(self))
-
-    # Background playback tests.
-    self.AddStory(Page37(self))
-
-    # Tests with high JS load.
-    self.AddStory(Page38(self))
-
-    # Tests with a simulated constrained network connection.
-    self.AddStory(Page43(self))
-
-    # MSE tests.
-    # TODO(crouleau): Figure out a way to make MSE pages provide consistent
-    # data. Currently the data haa a lot of outliers for time_to_play and other
-    # startup metrics. To do this, we must either:
-    # 1. Tell Telemetry to repeat these pages (this requires Telemetry's
-    # providing this option in the API.)
-    # 2. Edit the page to reload and run multiple times (you can clear the cache
-    # with tab.CleanCache). This requires crbug/775264.
-    self.AddStory(Page39(self))
-    self.AddStory(Page40(self))
-    self.AddStory(Page41(self))
-    self.AddStory(Page42(self))
+    for page in pages:
+      self.AddStory(page)
