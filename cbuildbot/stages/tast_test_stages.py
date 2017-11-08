@@ -80,11 +80,8 @@ def _CopyResultsDir(src, dest):
   shutil.copytree(src, dest, ignore=GetSymlinks)
 
 
-# TODO(derat): Remove generic_stages.ForgivingBuilderStage after this is no
-# longer experimental.
 class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
-                      generic_stages.ArchivingStageMixin,
-                      generic_stages.ForgivingBuilderStage):
+                      generic_stages.ArchivingStageMixin):
   """Runs Tast integration tests in a virtual machine."""
 
   # Time allotted to cros_run_tast_vm_test to clean up (i.e. shut down the

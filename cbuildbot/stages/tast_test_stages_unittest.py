@@ -186,9 +186,19 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                      num_failed_tests + 1)
 
   def _VerifyStageResult(self, result, description):
-    """Verifies that the stage reported the expected result."""
+    """Verifies that the stage reported the expected result.
+
+    Args:
+      result: Either a string result constant from results_lib.Results
+              (e.g. SUCCESS, FORGIVEN, SKIPPED) or (in the case of a failure)
+              the exception class thrown by the test (e.g.
+              failures_lib.TestFailure).
+      description: String exactly matching description in results_lib.Results().
+    """
     self.assertEqual(
-        [(r.name, r.result, r.description) for r in results_lib.Results.Get()],
+        [(r.name,
+          r.result.__class__ if isinstance(r.result, Exception) else r.result,
+          r.description) for r in results_lib.Results.Get()],
         [('TastVMTest', result, description)])
 
   def testSuccess(self):
@@ -210,8 +220,8 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     ]
     self._run_command_exit_code = 1
 
-    self.RunStage()
-    self._VerifyStageResult(results_lib.Results.FORGIVEN,
+    self.assertRaises(failures_lib.TestFailure, self.RunStage)
+    self._VerifyStageResult(failures_lib.TestFailure,
                             tast_test_stages.FAILURE_EXIT_CODE % 1)
 
     self._mock_create_test_root.assert_called_once_with(self.build_root)
@@ -226,8 +236,8 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         {'name': 'example.Fail', 'errors': [{'reason': 'Failed!'}]},
     ]
 
-    self.RunStage()
-    self._VerifyStageResult(results_lib.Results.FORGIVEN,
+    self.assertRaises(failures_lib.TestFailure, self.RunStage)
+    self._VerifyStageResult(failures_lib.TestFailure,
                             tast_test_stages.FAILURE_TESTS_FAILED % 1)
 
     self._mock_create_test_root.assert_called_once_with(self.build_root)
@@ -254,8 +264,8 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._SetSuite('missing_results_test_suite', [])
     self._test_results_data = None
 
-    self.RunStage()
-    self._VerifyStageResult(results_lib.Results.FORGIVEN,
+    self.assertRaises(failures_lib.TestFailure, self.RunStage)
+    self._VerifyStageResult(failures_lib.TestFailure,
                             tast_test_stages.FAILURE_NO_RESULTS %
                             self._test_root)
 
@@ -264,8 +274,8 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._SetSuite('bad_results_test_suite', [])
     self._test_results_data = 'bogus'
 
-    self.RunStage()
-    self._VerifyStageResult(results_lib.Results.FORGIVEN,
+    self.assertRaises(failures_lib.TestFailure, self.RunStage)
+    self._VerifyStageResult(failures_lib.TestFailure,
                             tast_test_stages.FAILURE_BAD_RESULTS %
                             (self._GetResultsFilePath(),
                              'No JSON object could be decoded'))
