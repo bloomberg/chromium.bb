@@ -4,19 +4,35 @@
 
 #include "components/exo/wm_helper.h"
 
+#include "ash/public/cpp/config.h"
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/singleton.h"
 #include "ui/aura/client/drag_drop_delegate.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/events/devices/input_device_manager.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace exo {
 namespace {
 WMHelper* g_instance = nullptr;
+
+aura::Window* GetPrimaryRoot() {
+  return ash::Shell::Get()->GetPrimaryRootWindow();
 }
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // WMHelper, public:
 
-WMHelper::WMHelper() {}
+WMHelper::WMHelper()
+    : vsync_manager_(
+          GetPrimaryRoot()->layer()->GetCompositor()->vsync_manager()) {}
 
 WMHelper::~WMHelper() {}
 
@@ -37,55 +53,62 @@ bool WMHelper::HasInstance() {
   return !!g_instance;
 }
 
-void WMHelper::AddActivationObserver(ActivationObserver* observer) {
-  activation_observers_.AddObserver(observer);
+void WMHelper::AddActivationObserver(wm::ActivationChangeObserver* observer) {
+  ash::Shell::Get()->activation_client()->AddObserver(observer);
 }
 
-void WMHelper::RemoveActivationObserver(ActivationObserver* observer) {
-  activation_observers_.RemoveObserver(observer);
+void WMHelper::RemoveActivationObserver(
+    wm::ActivationChangeObserver* observer) {
+  ash::Shell::Get()->activation_client()->RemoveObserver(observer);
 }
 
-void WMHelper::AddFocusObserver(FocusObserver* observer) {
-  focus_observers_.AddObserver(observer);
+void WMHelper::AddFocusObserver(aura::client::FocusChangeObserver* observer) {
+  aura::client::GetFocusClient(GetPrimaryRoot())->AddObserver(observer);
 }
 
-void WMHelper::RemoveFocusObserver(FocusObserver* observer) {
-  focus_observers_.RemoveObserver(observer);
+void WMHelper::RemoveFocusObserver(
+    aura::client::FocusChangeObserver* observer) {
+  aura::client::GetFocusClient(GetPrimaryRoot())->RemoveObserver(observer);
 }
 
-void WMHelper::AddCursorObserver(CursorObserver* observer) {
-  cursor_observers_.AddObserver(observer);
+void WMHelper::AddCursorObserver(aura::client::CursorClientObserver* observer) {
+  // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
+  if (ash::Shell::GetAshConfig() == ash::Config::CLASSIC)
+    ash::Shell::Get()->cursor_manager()->AddObserver(observer);
 }
 
-void WMHelper::RemoveCursorObserver(CursorObserver* observer) {
-  cursor_observers_.RemoveObserver(observer);
+void WMHelper::RemoveCursorObserver(
+    aura::client::CursorClientObserver* observer) {
+  if (ash::Shell::GetAshConfig() == ash::Config::CLASSIC)
+    ash::Shell::Get()->cursor_manager()->RemoveObserver(observer);
 }
 
-void WMHelper::AddTabletModeObserver(TabletModeObserver* observer) {
-  tablet_mode_observers_.AddObserver(observer);
+void WMHelper::AddTabletModeObserver(ash::TabletModeObserver* observer) {
+  ash::Shell::Get()->tablet_mode_controller()->AddObserver(observer);
 }
 
-void WMHelper::RemoveTabletModeObserver(TabletModeObserver* observer) {
-  tablet_mode_observers_.RemoveObserver(observer);
+void WMHelper::RemoveTabletModeObserver(ash::TabletModeObserver* observer) {
+  ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(observer);
 }
 
-void WMHelper::AddInputDeviceEventObserver(InputDeviceEventObserver* observer) {
-  input_device_event_observers_.AddObserver(observer);
+void WMHelper::AddInputDeviceEventObserver(
+    ui::InputDeviceEventObserver* observer) {
+  ui::InputDeviceManager::GetInstance()->AddObserver(observer);
 }
 
 void WMHelper::RemoveInputDeviceEventObserver(
-    InputDeviceEventObserver* observer) {
-  input_device_event_observers_.RemoveObserver(observer);
+    ui::InputDeviceEventObserver* observer) {
+  ui::InputDeviceManager::GetInstance()->RemoveObserver(observer);
 }
 
 void WMHelper::AddDisplayConfigurationObserver(
-    DisplayConfigurationObserver* observer) {
-  display_config_observers_.AddObserver(observer);
+    ash::WindowTreeHostManager::Observer* observer) {
+  ash::Shell::Get()->window_tree_host_manager()->AddObserver(observer);
 }
 
 void WMHelper::RemoveDisplayConfigurationObserver(
-    DisplayConfigurationObserver* observer) {
-  display_config_observers_.RemoveObserver(observer);
+    ash::WindowTreeHostManager::Observer* observer) {
+  ash::Shell::Get()->window_tree_host_manager()->RemoveObserver(observer);
 }
 
 void WMHelper::AddDragDropObserver(DragDropObserver* observer) {
@@ -104,74 +127,14 @@ void WMHelper::ResetDragDropDelegate(aura::Window* window) {
   aura::client::SetDragDropDelegate(window, nullptr);
 }
 
-void WMHelper::AddVSyncObserver(VSyncObserver* observer) {
-  vsync_observers_.AddObserver(observer);
-  // Mimic CompositorVSyncManager::AddObserver's notification on addition.
-  observer->OnUpdateVSyncParameters(vsync_timebase_, vsync_interval_);
+void WMHelper::AddVSyncObserver(
+    ui::CompositorVSyncManager::Observer* observer) {
+  vsync_manager_->AddObserver(observer);
 }
 
-void WMHelper::RemoveVSyncObserver(VSyncObserver* observer) {
-  vsync_observers_.RemoveObserver(observer);
-}
-
-void WMHelper::NotifyWindowActivated(aura::Window* gained_active,
-                                     aura::Window* lost_active) {
-  for (ActivationObserver& observer : activation_observers_)
-    observer.OnWindowActivated(gained_active, lost_active);
-}
-
-void WMHelper::NotifyWindowFocused(aura::Window* gained_focus,
-                                   aura::Window* lost_focus) {
-  for (FocusObserver& observer : focus_observers_)
-    observer.OnWindowFocused(gained_focus, lost_focus);
-}
-
-void WMHelper::NotifyCursorVisibilityChanged(bool is_visible) {
-  for (CursorObserver& observer : cursor_observers_)
-    observer.OnCursorVisibilityChanged(is_visible);
-}
-
-void WMHelper::NotifyCursorSizeChanged(ui::CursorSize cursor_size) {
-  for (CursorObserver& observer : cursor_observers_)
-    observer.OnCursorSizeChanged(cursor_size);
-}
-
-void WMHelper::NotifyCursorDisplayChanged(const display::Display& display) {
-  for (CursorObserver& observer : cursor_observers_)
-    observer.OnCursorDisplayChanged(display);
-}
-
-void WMHelper::NotifyTabletModeStarted() {
-  for (TabletModeObserver& observer : tablet_mode_observers_)
-    observer.OnTabletModeStarted();
-}
-
-void WMHelper::NotifyTabletModeEnding() {
-  for (TabletModeObserver& observer : tablet_mode_observers_)
-    observer.OnTabletModeEnding();
-}
-
-void WMHelper::NotifyTabletModeEnded() {
-  for (TabletModeObserver& observer : tablet_mode_observers_)
-    observer.OnTabletModeEnded();
-}
-
-void WMHelper::NotifyKeyboardDeviceConfigurationChanged() {
-  for (InputDeviceEventObserver& observer : input_device_event_observers_)
-    observer.OnKeyboardDeviceConfigurationChanged();
-}
-
-void WMHelper::NotifyDisplayConfigurationChanged() {
-  for (DisplayConfigurationObserver& observer : display_config_observers_)
-    observer.OnDisplayConfigurationChanged();
-}
-
-void WMHelper::NotifyUpdateVSyncParameters(base::TimeTicks timebase,
-                                           base::TimeDelta interval) {
-  vsync_timebase_ = timebase;
-  vsync_interval_ = interval;
-  for (VSyncObserver& observer : vsync_observers_)
-    observer.OnUpdateVSyncParameters(timebase, interval);
+void WMHelper::RemoveVSyncObserver(
+    ui::CompositorVSyncManager::Observer* observer) {
+  vsync_manager_->RemoveObserver(observer);
 }
 
 void WMHelper::OnDragEntered(const ui::DropTargetEvent& event) {
@@ -198,4 +161,94 @@ int WMHelper::OnPerformDrop(const ui::DropTargetEvent& event) {
   // DRAG_MOVE.
   return ui::DragDropTypes::DRAG_MOVE;
 }
+
+const display::ManagedDisplayInfo& WMHelper::GetDisplayInfo(
+    int64_t display_id) const {
+  return ash::Shell::Get()->display_manager()->GetDisplayInfo(display_id);
+}
+
+aura::Window* WMHelper::GetPrimaryDisplayContainer(int container_id) {
+  return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                                  container_id);
+}
+
+aura::Window* WMHelper::GetActiveWindow() const {
+  return ash::Shell::Get()->activation_client()->GetActiveWindow();
+}
+
+aura::Window* WMHelper::GetFocusedWindow() const {
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+  return focus_client->GetFocusedWindow();
+}
+
+ui::CursorSize WMHelper::GetCursorSize() const {
+  // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
+  if (ash::Shell::GetAshConfig() == ash::Config::MUS)
+    return ui::CursorSize::kNormal;
+  return ash::Shell::Get()->cursor_manager()->GetCursorSize();
+}
+
+const display::Display& WMHelper::GetCursorDisplay() const {
+  // TODO(crbug.com/631103): Mushrome doesn't have a cursor manager yet.
+  if (ash::Shell::GetAshConfig() == ash::Config::MUS) {
+    static const display::Display display;
+    return display;
+  }
+  return ash::Shell::Get()->cursor_manager()->GetDisplay();
+}
+
+void WMHelper::AddPreTargetHandler(ui::EventHandler* handler) {
+  ash::Shell::Get()->AddPreTargetHandler(handler);
+}
+
+void WMHelper::PrependPreTargetHandler(ui::EventHandler* handler) {
+  ash::Shell::Get()->PrependPreTargetHandler(handler);
+}
+
+void WMHelper::RemovePreTargetHandler(ui::EventHandler* handler) {
+  ash::Shell::Get()->RemovePreTargetHandler(handler);
+}
+
+void WMHelper::AddPostTargetHandler(ui::EventHandler* handler) {
+  ash::Shell::Get()->AddPostTargetHandler(handler);
+}
+
+void WMHelper::RemovePostTargetHandler(ui::EventHandler* handler) {
+  ash::Shell::Get()->RemovePostTargetHandler(handler);
+}
+
+bool WMHelper::IsTabletModeWindowManagerEnabled() const {
+  return ash::Shell::Get()
+      ->tablet_mode_controller()
+      ->IsTabletModeWindowManagerEnabled();
+}
+
+double WMHelper::GetDefaultDeviceScaleFactor() const {
+  if (!display::Display::HasInternalDisplay())
+    return 1.0;
+
+  if (display::Display::HasForceDeviceScaleFactor())
+    return display::Display::GetForcedDeviceScaleFactor();
+
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+  const display::ManagedDisplayInfo& display_info =
+      display_manager->GetDisplayInfo(display::Display::InternalDisplayId());
+  for (auto& mode : display_info.display_modes()) {
+    if (mode.is_default())
+      return mode.device_scale_factor();
+  }
+
+  NOTREACHED();
+  return 1.0f;
+}
+
+bool WMHelper::AreVerifiedSyncTokensNeeded() const {
+  // For mus and mash, the compositor isn't sharing GPU the channel with
+  // exo, so it cannot consume unverified sync token generated by exo.
+  // We need verify sync tokens before sending them to the compositor.
+  return ash::Shell::GetAshConfig() != ash::Config::CLASSIC;
+}
+
 }  // namespace exo

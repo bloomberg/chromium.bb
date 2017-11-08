@@ -14,6 +14,7 @@
 #include "components/exo/surface_tree_host.h"
 #include "components/exo/wm_helper.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/client/cursor_client_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
@@ -41,8 +42,8 @@ class SurfaceTreeHost;
 class Pointer : public SurfaceTreeHost,
                 public SurfaceObserver,
                 public ui::EventHandler,
-                public WMHelper::CursorObserver,
-                public WMHelper::DisplayConfigurationObserver {
+                public aura::client::CursorClientObserver,
+                public ash::WindowTreeHostManager::Observer {
  public:
   explicit Pointer(PointerDelegate* delegate);
   ~Pointer() override;
@@ -71,11 +72,11 @@ class Pointer : public SurfaceTreeHost,
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // Overridden from WMHelper::CursorObserver:
+  // Overridden from ui::client::CursorClientObserver:
   void OnCursorSizeChanged(ui::CursorSize cursor_size) override;
   void OnCursorDisplayChanged(const display::Display& display) override;
 
-  // Overridden from WMHelper::DisplayConfigurationObserver:
+  // Overridden from ash::WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
  private:

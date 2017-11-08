@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
@@ -16,7 +17,7 @@
 #include "base/strings/string16.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/surface_tree_host.h"
-#include "components/exo/wm_helper.h"
+
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor_lock.h"
@@ -25,6 +26,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
 class WindowResizer;
@@ -58,8 +60,8 @@ class ShellSurface : public SurfaceTreeHost,
                      public display::DisplayObserver,
                      public ash::wm::WindowStateObserver,
                      public aura::WindowObserver,
-                     public WMHelper::ActivationObserver,
-                     public WMHelper::DisplayConfigurationObserver,
+                     public wm::ActivationChangeObserver,
+                     public ash::WindowTreeHostManager::Observer,
                      public ui::CompositorLockClient {
  public:
   enum class BoundsMode { SHELL, CLIENT, FIXED };
@@ -274,12 +276,12 @@ class ShellSurface : public SurfaceTreeHost,
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // Overridden from WMHelper::ActivationObserver:
-  void OnWindowActivated(
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
+  // Overridden from wm::ActivationChangeObserver:
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
+                         aura::Window* lost_active) override;
 
-  // Overridden from WMHelper::DisplayConfigurationObserver:
+  // Overridden from ash::WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
 
   // Overridden from ui::EventHandler:

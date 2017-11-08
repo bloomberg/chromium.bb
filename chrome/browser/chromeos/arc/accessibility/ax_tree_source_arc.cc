@@ -502,7 +502,8 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
     out_data->AddBoolAttribute(ui::AX_ATTR_SCROLLABLE, true);
   }
 
-  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
+  exo::WMHelper* wm_helper =
+      exo::WMHelper::HasInstance() ? exo::WMHelper::GetInstance() : nullptr;
 
   // To get bounds of a node which can be passed to AXNodeData.location,
   // - Root node must exist.

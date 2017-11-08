@@ -14,7 +14,7 @@
 #include "components/exo/display.h"
 #include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
-#include "components/exo/wm_helper_ash.h"
+#include "components/exo/wm_helper.h"
 
 namespace ash {
 
@@ -62,7 +62,7 @@ WaylandServerController::~WaylandServerController() {
 }
 
 WaylandServerController::WaylandServerController() {
-  wm_helper_ = std::make_unique<exo::WMHelperAsh>();
+  wm_helper_ = std::make_unique<exo::WMHelper>();
   exo::WMHelper::SetInstance(wm_helper_.get());
   // TODO(penghuang): wire up notification surface manager.
   // http://crbug.com/768439

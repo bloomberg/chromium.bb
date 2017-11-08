@@ -24,6 +24,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/surface.h"
+#include "components/exo/wm_helper.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -1084,11 +1085,11 @@ void ShellSurface::OnWindowDestroying(aura::Window* window) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WMHelper::ActivationObserver overrides:
+// wm::ActivationChangeObserver overrides:
 
-void ShellSurface::OnWindowActivated(
-    aura::Window* gained_active,
-    aura::Window* lost_active) {
+void ShellSurface::OnWindowActivated(ActivationReason reason,
+                                     aura::Window* gained_active,
+                                     aura::Window* lost_active) {
   if (!widget_)
     return;
 
@@ -1101,7 +1102,7 @@ void ShellSurface::OnWindowActivated(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WMHelper::DisplayConfigurationObserver overrides:
+// ash::WindowTreeHostManager::Observer overrides:
 
 void ShellSurface::OnDisplayConfigurationChanged() {
   if (bounds_mode_ != BoundsMode::CLIENT)

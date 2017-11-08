@@ -9,6 +9,7 @@
 #include "components/exo/keyboard_device_configuration_delegate.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
+#include "components/exo/wm_helper.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"
@@ -309,7 +310,7 @@ void Keyboard::OnKeyboardDeviceConfigurationChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WMHelper::TabletModeObserver overrides:
+// ash::TabletModeObserver overrides:
 
 void Keyboard::OnTabletModeStarted() {
   OnKeyboardDeviceConfigurationChanged();

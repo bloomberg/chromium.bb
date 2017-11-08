@@ -14,7 +14,6 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
 #include "components/exo/shell_surface.h"
-#include "components/exo/wm_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -25,40 +24,6 @@ namespace arc {
 
 class ArcAccessibilityHelperBridgeTest : public testing::Test {
  public:
-  class FakeWMHelper : public exo::WMHelper {
-   public:
-    FakeWMHelper() = default;
-
-   private:
-    const display::ManagedDisplayInfo& GetDisplayInfo(
-        int64_t display_id) const override {
-      static const display::ManagedDisplayInfo info;
-      return info;
-    }
-    aura::Window* GetPrimaryDisplayContainer(int container_id) override {
-      return nullptr;
-    }
-    aura::Window* GetActiveWindow() const override { return nullptr; }
-    aura::Window* GetFocusedWindow() const override { return nullptr; }
-    ui::CursorSize GetCursorSize() const override {
-      return ui::CursorSize::kNormal;
-    }
-    const display::Display& GetCursorDisplay() const override {
-      static const display::Display display;
-      return display;
-    }
-    void AddPreTargetHandler(ui::EventHandler* handler) override {}
-    void PrependPreTargetHandler(ui::EventHandler* handler) override {}
-    void RemovePreTargetHandler(ui::EventHandler* handler) override {}
-    void AddPostTargetHandler(ui::EventHandler* handler) override {}
-    void RemovePostTargetHandler(ui::EventHandler* handler) override {}
-    bool IsTabletModeWindowManagerEnabled() const override { return false; }
-    double GetDefaultDeviceScaleFactor() const override { return 1.0; }
-    bool AreVerifiedSyncTokensNeeded() const override { return false; }
-
-    DISALLOW_COPY_AND_ASSIGN(FakeWMHelper);
-  };
-
   class TestArcAccessibilityHelperBridge : public ArcAccessibilityHelperBridge {
    public:
     TestArcAccessibilityHelperBridge(content::BrowserContext* browser_context,
@@ -84,8 +49,6 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
   ArcAccessibilityHelperBridgeTest() = default;
 
   void SetUp() override {
-    wm_helper_ = std::make_unique<FakeWMHelper>();
-    exo::WMHelper::SetInstance(wm_helper_.get());
     testing_profile_ = std::make_unique<TestingProfile>();
     bridge_service_ = std::make_unique<ArcBridgeService>();
     accessibility_helper_bridge_ =
@@ -98,8 +61,6 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
     accessibility_helper_bridge_.reset();
     bridge_service_.reset();
     testing_profile_.reset();
-    exo::WMHelper::SetInstance(nullptr);
-    wm_helper_.reset();
   }
 
   TestArcAccessibilityHelperBridge* accessibility_helper_bridge() {
@@ -108,7 +69,6 @@ class ArcAccessibilityHelperBridgeTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<FakeWMHelper> wm_helper_;
   std::unique_ptr<TestingProfile> testing_profile_;
   std::unique_ptr<ArcBridgeService> bridge_service_;
   std::unique_ptr<TestArcAccessibilityHelperBridge>
