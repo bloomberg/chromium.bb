@@ -21,7 +21,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
-#include "content/common/frame_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,6 +40,7 @@
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "third_party/WebKit/common/frame_policy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -70,7 +70,7 @@ void CreateChildFrameOnUI(
     const std::string& frame_name,
     const std::string& frame_unique_name,
     const base::UnguessableToken& devtools_frame_token,
-    const FramePolicy& frame_policy,
+    const blink::FramePolicy& frame_policy,
     const FrameOwnerProperties& frame_owner_properties,
     int new_routing_id,
     mojo::ScopedMessagePipeHandle interface_provider_request_handle) {

@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "content/common/frame_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -12,7 +11,8 @@
 #include "content/test/test_render_frame_host.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
-#include "third_party/WebKit/public/web/WebSandboxFlags.h"
+#include "third_party/WebKit/common/frame_policy.h"
+#include "third_party/WebKit/common/sandbox_flags.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

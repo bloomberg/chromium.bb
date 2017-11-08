@@ -573,7 +573,6 @@ source_set("blink_headers") {
     "web/WebRemoteFrame.h",
     "web/WebRemoteFrameClient.h",
     "web/WebRenderTheme.h",
-    "web/WebSandboxFlags.h",
     "web/WebScopedUserGesture.h",
     "web/WebScopedWindowFocusAllowedIndicator.h",
     "web/WebScriptController.h",

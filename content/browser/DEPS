@@ -110,7 +110,7 @@ include_rules = [
   "+third_party/WebKit/public/web/WebMediaPlayerAction.h",
   "+third_party/WebKit/public/web/WebPluginAction.h",
   "+third_party/WebKit/public/web/WebPopupType.h",
-  "+third_party/WebKit/public/web/WebSandboxFlags.h",
+  "+third_party/WebKit/common/sandbox_flags.h",
   "+third_party/WebKit/public/web/WebSerializedScriptValueVersion.h",
   "+third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h",
   "+third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h",

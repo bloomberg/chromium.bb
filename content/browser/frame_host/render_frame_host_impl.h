@@ -87,6 +87,7 @@ class ListValue;
 }
 
 namespace blink {
+struct FramePolicy;
 struct WebRemoteScrollProperties;
 }
 
@@ -123,7 +124,6 @@ class WebBluetoothServiceImpl;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct FrameOwnerProperties;
-struct FramePolicy;
 struct FileChooserParams;
 struct ResourceResponse;
 struct SubresourceLoaderParams;
@@ -284,7 +284,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                           const std::string& frame_name,
                           const std::string& frame_unique_name,
                           const base::UnguessableToken& devtools_frame_token,
-                          const FramePolicy& frame_policy,
+                          const blink::FramePolicy& frame_policy,
                           const FrameOwnerProperties& frame_owner_properties);
 
   // Update this frame's state at the appropriate time when a navigation
@@ -781,7 +781,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnUpdateToUniqueOrigin(bool is_potentially_trustworthy_unique_origin);
   void OnDidChangeFramePolicy(int32_t frame_routing_id,
-                              const FramePolicy& frame_policy);
+                              const blink::FramePolicy& frame_policy);
   void OnDidChangeFrameOwnerProperties(int32_t frame_routing_id,
                                        const FrameOwnerProperties& properties);
   void OnUpdateTitle(const base::string16& title,
