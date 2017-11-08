@@ -24,6 +24,7 @@ namespace {
 void WaitForFence(EGLDisplay display, EGLSyncKHR fence) {
   eglClientWaitSyncKHR(display, fence, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
                        EGL_FOREVER_KHR);
+  eglDestroySyncKHR(display, fence);
 }
 
 }  // namespace
@@ -143,7 +144,7 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
       base::Bind(&WaitForFence, GetDisplay(), fence);
 
   base::Closure fence_retired_callback = base::Bind(
-      &GbmSurfaceless::FenceRetired, weak_factory_.GetWeakPtr(), fence, frame);
+      &GbmSurfaceless::FenceRetired, weak_factory_.GetWeakPtr(), frame);
 
   base::PostTaskWithTraitsAndReply(
       FROM_HERE,
@@ -237,8 +238,7 @@ EGLSyncKHR GbmSurfaceless::InsertFence(bool implicit) {
                           implicit ? attrib_list : NULL);
 }
 
-void GbmSurfaceless::FenceRetired(EGLSyncKHR fence, PendingFrame* frame) {
-  eglDestroySyncKHR(GetDisplay(), fence);
+void GbmSurfaceless::FenceRetired(PendingFrame* frame) {
   frame->ready = true;
   SubmitFrame();
 }
