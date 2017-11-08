@@ -346,8 +346,8 @@ class MojoAsyncResourceHandlerTestBase {
         true,                                    // is_main_frame
         false,                                   // allow_download
         true,                                    // is_async
-        PREVIEWS_OFF                             // previews_state
-        );
+        PREVIEWS_OFF,                            // previews_state
+        nullptr);                                // navigation_ui_data
 
     ResourceRequest request;
     base::WeakPtr<mojo::StrongBinding<mojom::URLLoaderFactory>> weak_binding =

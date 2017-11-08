@@ -80,7 +80,7 @@ std::unique_ptr<net::URLRequest> RequestURL(
 
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,
-      true, true, true, content::PREVIEWS_OFF);
+      true, true, true, content::PREVIEWS_OFF, nullptr);
 
   request->Start();
   base::RunLoop().RunUntilIdle();

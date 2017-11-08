@@ -298,7 +298,7 @@ std::unique_ptr<net::URLRequest> CreateURLRequest(
   request->set_site_for_cookies(url);
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(), resource_type, nullptr, -1, -1, -1, is_main_frame, false,
-      true, content::PREVIEWS_OFF);
+      true, content::PREVIEWS_OFF, nullptr);
   request->Start();
   return request;
 }

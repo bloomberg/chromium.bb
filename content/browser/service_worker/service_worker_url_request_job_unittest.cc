@@ -381,7 +381,7 @@ class ServiceWorkerURLRequestJobTest
     ResourceRequestInfo::AllocateForTesting(
         request_.get(), resource_type, browser_context_->GetResourceContext(),
         -1, -1, -1, resource_type == RESOURCE_TYPE_MAIN_FRAME, true, true,
-        PREVIEWS_OFF);
+        PREVIEWS_OFF, nullptr);
 
     request_->set_method("GET");
     request_->Start();

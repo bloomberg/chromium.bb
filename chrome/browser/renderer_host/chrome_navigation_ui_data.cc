@@ -36,6 +36,11 @@ std::unique_ptr<content::NavigationUIData> ChromeNavigationUIData::Clone()
     copy->SetExtensionNavigationUIData(extension_data_->DeepCopy());
 #endif
 
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  if (offline_page_data_)
+    copy->SetOfflinePageNavigationUIData(offline_page_data_->DeepCopy());
+#endif
+
   return std::move(copy);
 }
 
@@ -43,5 +48,13 @@ std::unique_ptr<content::NavigationUIData> ChromeNavigationUIData::Clone()
 void ChromeNavigationUIData::SetExtensionNavigationUIData(
     std::unique_ptr<extensions::ExtensionNavigationUIData> extension_data) {
   extension_data_ = std::move(extension_data);
+}
+#endif
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+void ChromeNavigationUIData::SetOfflinePageNavigationUIData(
+    std::unique_ptr<offline_pages::OfflinePageNavigationUIData>
+        offline_page_data) {
+  offline_page_data_ = std::move(offline_page_data);
 }
 #endif

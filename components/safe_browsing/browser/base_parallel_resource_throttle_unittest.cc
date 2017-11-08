@@ -166,7 +166,7 @@ class BaseParallelResourceThrottleTest : public testing::Test {
                                               TRAFFIC_ANNOTATION_FOR_TESTS);
     content::ResourceRequestInfo::AllocateForTesting(
         request_.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -1, -1, -1,
-        true, true, true, content::PREVIEWS_OFF);
+        true, true, true, content::PREVIEWS_OFF, nullptr);
 
     database_manager_ = new TestDatabaseManager();
     url_checker_delegate_ = new TestUrlCheckerDelegate(database_manager_);

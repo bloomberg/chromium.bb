@@ -105,7 +105,8 @@ class ContentResourceProviderTest : public testing::Test {
         resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
         false,  // allow_download
         false,  // is_async
-        content::PREVIEWS_OFF);
+        content::PREVIEWS_OFF,
+        nullptr);  // navigation_ui_data
   }
 
   std::unique_ptr<net::URLRequest> CreateRequestByType(

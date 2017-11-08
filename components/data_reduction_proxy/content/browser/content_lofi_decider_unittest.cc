@@ -106,7 +106,8 @@ class ContentLoFiDeciderTest : public testing::Test {
         resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
         false,  // allow_download
         false,  // is_async
-        previews_state);
+        previews_state,
+        nullptr);  // navigation_ui_data
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest(

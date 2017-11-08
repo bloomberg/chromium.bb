@@ -36,6 +36,7 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -52,6 +53,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/nacl/common/features.h"
+#include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
 #include "components/offline_pages/features/features.h"
 #include "components/policy/core/common/cloud/policy_header_io_helper.h"
 #include "components/previews/content/previews_content_util.h"
@@ -967,4 +969,21 @@ ChromeResourceDispatcherHostDelegate::CreateClientCertStore(
     content::ResourceContext* resource_context) {
   return ProfileIOData::FromResourceContext(resource_context)->
       CreateClientCertStore();
+}
+
+bool ChromeResourceDispatcherHostDelegate::AllowRenderingMhtmlOverHttp(
+    net::URLRequest* request) const {
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  // It is OK to load the saved offline copy, in MHTML format.
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  ChromeNavigationUIData* navigation_data =
+      static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
+  if (!navigation_data)
+    return false;
+  offline_pages::OfflinePageNavigationUIData* offline_page_data =
+      navigation_data->GetOfflinePageNavigationUIData();
+  return offline_page_data && offline_page_data->is_offline_page();
+#else
+  return false;
+#endif
 }

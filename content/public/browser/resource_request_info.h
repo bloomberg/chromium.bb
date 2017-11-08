@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
@@ -19,7 +20,6 @@ class URLRequest;
 }
 
 namespace content {
-class NavigationUIData;
 class ResourceContext;
 class WebContents;
 
@@ -40,16 +40,18 @@ class ResourceRequestInfo {
   // download is not associated with a frame, the IDs can be all -1.
   //
   // NOTE: Add more parameters if you need to initialize other fields.
-  CONTENT_EXPORT static void AllocateForTesting(net::URLRequest* request,
-                                                ResourceType resource_type,
-                                                ResourceContext* context,
-                                                int render_process_id,
-                                                int render_view_id,
-                                                int render_frame_id,
-                                                bool is_main_frame,
-                                                bool allow_download,
-                                                bool is_async,
-                                                PreviewsState previews_state);
+  CONTENT_EXPORT static void AllocateForTesting(
+      net::URLRequest* request,
+      ResourceType resource_type,
+      ResourceContext* context,
+      int render_process_id,
+      int render_view_id,
+      int render_frame_id,
+      bool is_main_frame,
+      bool allow_download,
+      bool is_async,
+      PreviewsState previews_state,
+      std::unique_ptr<NavigationUIData> navigation_ui_data);
 
   // Returns the associated RenderFrame for a given process. Returns false, if
   // there is no associated RenderFrame. This method does not rely on the

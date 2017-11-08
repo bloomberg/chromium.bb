@@ -110,7 +110,7 @@ void TestAnnotateOnIOThread(base::RunLoop* ui_run_loop,
     content::ResourceRequestInfo::AllocateForTesting(
         request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr,
         render_process_id, -1, render_frame_id, true, true, true,
-        content::PREVIEWS_OFF);
+        content::PREVIEWS_OFF, nullptr);
   }
 
   // An invalid tab ID to check that the annotator always sets the tab ID. -2 is
