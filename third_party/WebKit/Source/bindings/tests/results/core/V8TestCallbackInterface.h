@@ -8,41 +8,49 @@
 // DO NOT MODIFY!
 
 // clang-format off
+
 #ifndef V8TestCallbackInterface_h
 #define V8TestCallbackInterface_h
 
 #include "bindings/tests/idls/core/TestCallbackInterface.h"
 #include "core/CoreExport.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScopedPersistent.h"
+#include "platform/bindings/CallbackInterfaceBase.h"
 
 namespace blink {
 
-class V8TestCallbackInterface final : public TestCallbackInterface {
+class CORE_EXPORT V8TestCallbackInterface final
+    : public TestCallbackInterface,
+      public CallbackInterfaceBase {
  public:
-  static V8TestCallbackInterface* Create(v8::Local<v8::Function> callback, ScriptState* scriptState) {
-    return new V8TestCallbackInterface(callback, scriptState);
+  static V8TestCallbackInterface* Create(v8::Local<v8::Object> callback_object) {
+    return new V8TestCallbackInterface(callback_object);
   }
 
-  ~V8TestCallbackInterface() override;
-
-  virtual void Trace(blink::Visitor*);
+  ~V8TestCallbackInterface() override = default;
 
   void voidMethod() override;
+
   bool booleanMethod() override;
+
   void voidMethodBooleanArg(bool boolArg) override;
+
   void voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) override;
+
   void voidMethodFloatArg(float floatArg) override;
+
   void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
+
   void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) override;
+
   void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) override;
+
   void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
 
  private:
-  CORE_EXPORT V8TestCallbackInterface(v8::Local<v8::Function>, ScriptState*);
-
-  ScopedPersistent<v8::Function> callback_;
-  scoped_refptr<ScriptState> script_state_;
+  V8TestCallbackInterface(v8::Local<v8::Object> callback_object)
+      : CallbackInterfaceBase(callback_object, kNotSingleOperation) {}
 };
-}
+
+}  // namespace blink
+
 #endif  // V8TestCallbackInterface_h

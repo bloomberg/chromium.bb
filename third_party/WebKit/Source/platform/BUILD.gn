@@ -473,6 +473,8 @@ jumbo_component("platform") {
     "bindings/ActiveScriptWrappable.h",
     "bindings/CallbackFunctionBase.cpp",
     "bindings/CallbackFunctionBase.h",
+    "bindings/CallbackInterfaceBase.cpp",
+    "bindings/CallbackInterfaceBase.h",
     "bindings/ConditionalFeatures.cpp",
     "bindings/ConditionalFeatures.h",
     "bindings/DOMDataStore.h",

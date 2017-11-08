@@ -323,6 +323,8 @@ def implemented_as(idl_type):
     base_idl_type = idl_type.base_type
     if base_idl_type in IdlType.implemented_as_interfaces:
         return IdlType.implemented_as_interfaces[base_idl_type]
+    elif idl_type.is_callback_function or idl_type.is_callback_interface:
+        return 'V8%s' % base_idl_type
     return base_idl_type
 
 

@@ -217,12 +217,13 @@ static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
     return;
   }
 
-  TestCallbackInterface* testCallbackInterfaceTypeArg;
-  if (info.Length() <= 0 || !info[0]->IsFunction()) {
+  V8TestCallbackInterface* testCallbackInterfaceTypeArg;
+  if (0 < info.Length() && info[0]->IsFunction()) {
+    testCallbackInterfaceTypeArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
+  } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", "The callback provided as parameter 1 is not a function."));
     return;
   }
-  testCallbackInterfaceTypeArg = V8TestCallbackInterface::Create(v8::Local<v8::Function>::Cast(info[0]), ScriptState::Current(info.GetIsolate()));
 
   impl->voidMethodTestCallbackInterfaceTypeArg(testCallbackInterfaceTypeArg);
 }

@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
+#include "core/dom/ExecutionContext.h"
 
 namespace blink {
 
@@ -28,6 +29,16 @@ v8::Local<v8::Value> V8Deserialize(v8::Isolate* isolate,
   if (value)
     return value->Deserialize(isolate);
   return v8::Null(isolate);
+}
+
+bool IsCallbackFunctionRunnable(
+    const ScriptState* callback_relevant_script_state) {
+  if (!callback_relevant_script_state->ContextIsValid())
+    return false;
+  const ExecutionContext* execution_context =
+      ExecutionContext::From(callback_relevant_script_state);
+  return execution_context && !execution_context->IsContextPaused() &&
+         !execution_context->IsContextDestroyed();
 }
 
 }  // namespace blink

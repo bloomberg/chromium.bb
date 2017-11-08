@@ -36,18 +36,18 @@ BooleanOrTestCallbackInterface BooleanOrTestCallbackInterface::FromBoolean(bool 
   return container;
 }
 
-TestCallbackInterface* BooleanOrTestCallbackInterface::GetAsTestCallbackInterface() const {
+V8TestCallbackInterface* BooleanOrTestCallbackInterface::GetAsTestCallbackInterface() const {
   DCHECK(IsTestCallbackInterface());
   return test_callback_interface_;
 }
 
-void BooleanOrTestCallbackInterface::SetTestCallbackInterface(TestCallbackInterface* value) {
+void BooleanOrTestCallbackInterface::SetTestCallbackInterface(V8TestCallbackInterface* value) {
   DCHECK(IsNull());
   test_callback_interface_ = value;
   type_ = SpecificType::kTestCallbackInterface;
 }
 
-BooleanOrTestCallbackInterface BooleanOrTestCallbackInterface::FromTestCallbackInterface(TestCallbackInterface* value) {
+BooleanOrTestCallbackInterface BooleanOrTestCallbackInterface::FromTestCallbackInterface(V8TestCallbackInterface* value) {
   BooleanOrTestCallbackInterface container;
   container.SetTestCallbackInterface(value);
   return container;
@@ -69,7 +69,7 @@ void V8BooleanOrTestCallbackInterface::ToImpl(v8::Isolate* isolate, v8::Local<v8
     return;
 
   if (V8TestCallbackInterface::hasInstance(v8Value, isolate)) {
-    TestCallbackInterface* cppValue = V8TestCallbackInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
+    V8TestCallbackInterface* cppValue = V8TestCallbackInterface::ToImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.SetTestCallbackInterface(cppValue);
     return;
   }
