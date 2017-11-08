@@ -24,6 +24,7 @@ class CustomClassLoaderClassWriter extends ClassWriter {
      *
      * See https://github.com/llbit/ow2-asm/blob/master/src/org/objectweb/asm/ClassWriter.java.
      */
+    @Override
     protected final String getCommonSuperClass(final String type1, final String type2) {
         Class<?> c, d;
         try {
