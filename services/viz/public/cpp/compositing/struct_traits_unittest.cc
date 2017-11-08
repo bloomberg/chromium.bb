@@ -618,8 +618,9 @@ TEST_F(StructTraitsTest, ReturnedResource) {
   const gpu::CommandBufferId command_buffer_id(
       gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
   const uint64_t release_count = 0xdeadbeefdead;
-  const gpu::SyncToken sync_token(command_buffer_namespace, extra_data_field,
-                                  command_buffer_id, release_count);
+  gpu::SyncToken sync_token(command_buffer_namespace, extra_data_field,
+                            command_buffer_id, release_count);
+  sync_token.SetVerifyFlush();
   const int count = 1234;
   const bool lost = true;
 
@@ -1104,6 +1105,7 @@ TEST_F(StructTraitsTest, TransferableResource) {
   mailbox_holder.sync_token =
       gpu::SyncToken(command_buffer_namespace, extra_data_field,
                      command_buffer_id, release_count);
+  mailbox_holder.sync_token.SetVerifyFlush();
   mailbox_holder.texture_target = texture_target;
   TransferableResource input;
   input.id = id;
@@ -1252,6 +1254,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Texture) {
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
                             gpu::CommandBufferId::FromUnsafeValue(0x123),
                             71234838);
+  sync_token.SetVerifyFlush();
   base::RunLoop run_loop;
   auto callback = SingleReleaseCallback::Create(base::Bind(
       [](base::Closure quit_closure, const gpu::SyncToken& expected_sync_token,
@@ -1295,8 +1298,9 @@ TEST_F(StructTraitsTest, TextureMailbox) {
   const gpu::CommandBufferId command_buffer_id(
       gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
   const uint64_t release_count = 0xdeadbeefdeadL;
-  const gpu::SyncToken sync_token(command_buffer_namespace, extra_data_field,
-                                  command_buffer_id, release_count);
+  gpu::SyncToken sync_token(command_buffer_namespace, extra_data_field,
+                            command_buffer_id, release_count);
+  sync_token.SetVerifyFlush();
   const uint32_t texture_target = 1337;
   const gfx::Size size_in_pixels(93, 24);
   const bool is_overlay_candidate = true;
