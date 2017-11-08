@@ -968,8 +968,8 @@ device::mojom::WakeLock* RenderFrameDevToolsAgentHost::GetWakeLock() {
         web_contents()->GetWakeLockContext();
     if (wake_lock_context) {
       wake_lock_context->GetWakeLock(
-          device::mojom::WakeLockType::PreventDisplaySleep,
-          device::mojom::WakeLockReason::ReasonOther, "DevTools",
+          device::mojom::WakeLockType::kPreventDisplaySleep,
+          device::mojom::WakeLockReason::kOther, "DevTools",
           std::move(request));
     }
   }

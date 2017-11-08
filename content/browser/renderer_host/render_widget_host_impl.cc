@@ -2797,8 +2797,8 @@ device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
       connector->BindInterface(device::mojom::kServiceName,
                                mojo::MakeRequest(&wake_lock_provider));
       wake_lock_provider->GetWakeLockWithoutContext(
-          device::mojom::WakeLockType::PreventDisplaySleep,
-          device::mojom::WakeLockReason::ReasonOther, "GetSnapshot",
+          device::mojom::WakeLockType::kPreventDisplaySleep,
+          device::mojom::WakeLockReason::kOther, "GetSnapshot",
           std::move(request));
     }
   }

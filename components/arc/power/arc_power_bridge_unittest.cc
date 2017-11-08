@@ -166,55 +166,55 @@ TEST_F(ArcPowerBridgeTest, ScreenBrightness) {
 TEST_F(ArcPowerBridgeTest, DifferentWakeLocks) {
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
   EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
   EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleepAllowDimming));
+                   WakeLockType::kPreventDisplaySleepAllowDimming));
 
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::DIM);
   EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
   EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleepAllowDimming));
+                   WakeLockType::kPreventDisplaySleepAllowDimming));
 
   ReleaseDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
   EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
   EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleepAllowDimming));
+                   WakeLockType::kPreventDisplaySleepAllowDimming));
 
   ReleaseDisplayWakeLock(mojom::DisplayWakeLockType::DIM);
   EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
   EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleepAllowDimming));
+                   WakeLockType::kPreventDisplaySleepAllowDimming));
 }
 
 TEST_F(ArcPowerBridgeTest, ConsolidateWakeLocks) {
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
   EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
 
   // Acquiring a second Android wake lock of the same time shouldn't result in a
   // second device service wake lock being requested.
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
   EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
 
   ReleaseDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
   EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
 
   // The device service wake lock should only be released when all Android wake
   // locks have been released.
   ReleaseDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
   EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
 }
 
 TEST_F(ArcPowerBridgeTest, ReleaseWakeLocksWhenInstanceClosed) {
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
   ASSERT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
 
   // If the instance is closed, all wake locks should be released.
   base::RunLoop run_loop;
@@ -222,14 +222,14 @@ TEST_F(ArcPowerBridgeTest, ReleaseWakeLocksWhenInstanceClosed) {
   DestroyPowerInstance();
   run_loop.Run();
   EXPECT_EQ(0, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
 
   // Check that wake locks can be requested after the instance becomes ready
   // again.
   CreatePowerInstance();
   AcquireDisplayWakeLock(mojom::DisplayWakeLockType::BRIGHT);
   EXPECT_EQ(1, wake_lock_provider_->GetActiveWakeLocksOfType(
-                   WakeLockType::PreventDisplaySleep));
+                   WakeLockType::kPreventDisplaySleep));
 }
 
 }  // namespace arc

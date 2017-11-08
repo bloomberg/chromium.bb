@@ -627,8 +627,8 @@ device::mojom::WakeLock* EncryptionMigrationScreenHandler::GetWakeLock() {
   connector->BindInterface(device::mojom::kServiceName,
                            mojo::MakeRequest(&wake_lock_provider));
   wake_lock_provider->GetWakeLockWithoutContext(
-      device::mojom::WakeLockType::PreventAppSuspension,
-      device::mojom::WakeLockReason::ReasonOther,
+      device::mojom::WakeLockType::kPreventAppSuspension,
+      device::mojom::WakeLockReason::kOther,
       "Encryption migration is in progress...", std::move(request));
   return wake_lock_.get();
 }

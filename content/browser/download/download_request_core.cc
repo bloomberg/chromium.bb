@@ -157,8 +157,8 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
     connector->BindInterface(device::mojom::kServiceName,
                              mojo::MakeRequest(&wake_lock_provider));
     wake_lock_provider->GetWakeLockWithoutContext(
-        device::mojom::WakeLockType::PreventAppSuspension,
-        device::mojom::WakeLockReason::ReasonOther, "Download in progress",
+        device::mojom::WakeLockType::kPreventAppSuspension,
+        device::mojom::WakeLockReason::kOther, "Download in progress",
         mojo::MakeRequest(&wake_lock_));
 
     wake_lock_->RequestWakeLock();

@@ -275,12 +275,12 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
       {
         uint32_t flags = 0;
         switch (type_) {
-          case mojom::WakeLockType::PreventDisplaySleep:
-          case mojom::WakeLockType::PreventDisplaySleepAllowDimming:
+          case mojom::WakeLockType::kPreventDisplaySleep:
+          case mojom::WakeLockType::kPreventDisplaySleepAllowDimming:
             flags |= INHIBIT_MARK_SESSION_IDLE;
             flags |= INHIBIT_SUSPEND_SESSION;
             break;
-          case mojom::WakeLockType::PreventAppSuspension:
+          case mojom::WakeLockType::kPreventAppSuspension:
             flags |= INHIBIT_SUSPEND_SESSION;
             break;
         }
@@ -289,15 +289,15 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
       break;
     case FREEDESKTOP_API:
       switch (type_) {
-        case mojom::WakeLockType::PreventDisplaySleep:
-        case mojom::WakeLockType::PreventDisplaySleepAllowDimming:
+        case mojom::WakeLockType::kPreventDisplaySleep:
+        case mojom::WakeLockType::kPreventDisplaySleepAllowDimming:
           object_proxy = bus_->GetObjectProxy(
               kFreeDesktopAPIScreenServiceName,
               dbus::ObjectPath(kFreeDesktopAPIScreenObjectPath));
           method_call.reset(new dbus::MethodCall(
               kFreeDesktopAPIScreenInterfaceName, "Inhibit"));
           break;
-        case mojom::WakeLockType::PreventAppSuspension:
+        case mojom::WakeLockType::kPreventAppSuspension:
           object_proxy = bus_->GetObjectProxy(
               kFreeDesktopAPIPowerServiceName,
               dbus::ObjectPath(kFreeDesktopAPIPowerObjectPath));
@@ -375,15 +375,15 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
       break;
     case FREEDESKTOP_API:
       switch (type_) {
-        case mojom::WakeLockType::PreventDisplaySleep:
-        case mojom::WakeLockType::PreventDisplaySleepAllowDimming:
+        case mojom::WakeLockType::kPreventDisplaySleep:
+        case mojom::WakeLockType::kPreventDisplaySleepAllowDimming:
           object_proxy = bus_->GetObjectProxy(
               kFreeDesktopAPIScreenServiceName,
               dbus::ObjectPath(kFreeDesktopAPIScreenObjectPath));
           method_call.reset(new dbus::MethodCall(
               kFreeDesktopAPIScreenInterfaceName, "UnInhibit"));
           break;
-        case mojom::WakeLockType::PreventAppSuspension:
+        case mojom::WakeLockType::kPreventAppSuspension:
           object_proxy = bus_->GetObjectProxy(
               kFreeDesktopAPIPowerServiceName,
               dbus::ObjectPath(kFreeDesktopAPIPowerObjectPath));
@@ -500,10 +500,10 @@ PowerSaveBlocker::PowerSaveBlocker(
       blocking_task_runner_(blocking_task_runner) {
   delegate_->Init();
 
-  if (type == mojom::WakeLockType::PreventDisplaySleep ||
-      type == mojom::WakeLockType::PreventDisplaySleepAllowDimming) {
+  if (type == mojom::WakeLockType::kPreventDisplaySleep ||
+      type == mojom::WakeLockType::kPreventDisplaySleepAllowDimming) {
     freedesktop_suspend_delegate_ = new Delegate(
-        mojom::WakeLockType::PreventAppSuspension, description,
+        mojom::WakeLockType::kPreventAppSuspension, description,
         true /* freedesktop_only */, ui_task_runner, blocking_task_runner);
     freedesktop_suspend_delegate_->Init();
   }

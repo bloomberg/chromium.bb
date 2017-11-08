@@ -2742,8 +2742,8 @@ device::mojom::WakeLock* WebContentsImpl::GetRendererWakeLock() {
       return nullptr;
     }
     wake_lock_context->GetWakeLock(
-        device::mojom::WakeLockType::PreventDisplaySleep,
-        device::mojom::WakeLockReason::ReasonOther, "Wake Lock API",
+        device::mojom::WakeLockType::kPreventDisplaySleep,
+        device::mojom::WakeLockReason::kOther, "Wake Lock API",
         mojo::MakeRequest(&renderer_wake_lock_));
   }
   return renderer_wake_lock_.get();

@@ -79,15 +79,15 @@ class FakeWakeLockManager {
 
       // Has an active wake lock already, perform ChangeType:
       switch (type) {
-        case device::mojom::WakeLockType::PreventAppSuspension:
+        case device::mojom::WakeLockType::kPreventAppSuspension:
           requests_.push_back(BLOCK_APP_SUSPENSION);
           requests_.push_back(UNBLOCK_DISPLAY_SLEEP);
           break;
-        case device::mojom::WakeLockType::PreventDisplaySleep:
+        case device::mojom::WakeLockType::kPreventDisplaySleep:
           requests_.push_back(BLOCK_DISPLAY_SLEEP);
           requests_.push_back(UNBLOCK_APP_SUSPENSION);
           break;
-        case device::mojom::WakeLockType::PreventDisplaySleepAllowDimming:
+        case device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming:
           NOTREACHED() << "Unexpected wake lock type " << type;
           break;
       }
@@ -99,13 +99,13 @@ class FakeWakeLockManager {
     // Wake lock is not active, so activate it:
     if (!is_active_) {
       switch (type) {
-        case device::mojom::WakeLockType::PreventAppSuspension:
+        case device::mojom::WakeLockType::kPreventAppSuspension:
           requests_.push_back(BLOCK_APP_SUSPENSION);
           break;
-        case device::mojom::WakeLockType::PreventDisplaySleep:
+        case device::mojom::WakeLockType::kPreventDisplaySleep:
           requests_.push_back(BLOCK_DISPLAY_SLEEP);
           break;
-        case device::mojom::WakeLockType::PreventDisplaySleepAllowDimming:
+        case device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming:
           NOTREACHED() << "Unexpected wake lock type " << type;
           break;
       }
@@ -119,13 +119,13 @@ class FakeWakeLockManager {
     if (!is_active_)
       return;
     switch (type_) {
-      case device::mojom::WakeLockType::PreventAppSuspension:
+      case device::mojom::WakeLockType::kPreventAppSuspension:
         requests_.push_back(UNBLOCK_APP_SUSPENSION);
         break;
-      case device::mojom::WakeLockType::PreventDisplaySleep:
+      case device::mojom::WakeLockType::kPreventDisplaySleep:
         requests_.push_back(UNBLOCK_DISPLAY_SLEEP);
         break;
-      case device::mojom::WakeLockType::PreventDisplaySleepAllowDimming:
+      case device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming:
         NOTREACHED() << "Unexpected wake lock type " << type_;
         break;
     }

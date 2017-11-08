@@ -104,8 +104,8 @@ struct DriveUploader::UploadFileInfo {
         weak_ptr_factory_(this) {
     if (wake_lock_provider) {
       wake_lock_provider->GetWakeLockWithoutContext(
-          device::mojom::WakeLockType::PreventAppSuspension,
-          device::mojom::WakeLockReason::ReasonOther, "Upload in progress",
+          device::mojom::WakeLockType::kPreventAppSuspension,
+          device::mojom::WakeLockReason::kOther, "Upload in progress",
           mojo::MakeRequest(&wake_lock));
       wake_lock->RequestWakeLock();
     }

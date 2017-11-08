@@ -59,9 +59,9 @@ void WakeLockResourceThrottle::RequestWakeLock() {
     connector->BindInterface(device::mojom::kServiceName,
                              mojo::MakeRequest(&wake_lock_provider));
     wake_lock_provider->GetWakeLockWithoutContext(
-        device::mojom::WakeLockType::PreventAppSuspension,
-        device::mojom::WakeLockReason::ReasonOther,
-        "Uploading data to " + host_, mojo::MakeRequest(&wake_lock_));
+        device::mojom::WakeLockType::kPreventAppSuspension,
+        device::mojom::WakeLockReason::kOther, "Uploading data to " + host_,
+        mojo::MakeRequest(&wake_lock_));
 
     wake_lock_->RequestWakeLock();
   }

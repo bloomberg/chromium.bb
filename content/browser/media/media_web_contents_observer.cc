@@ -272,8 +272,8 @@ device::mojom::WakeLock* MediaWebContentsObserver::GetAudioWakeLock() {
         web_contents()->GetWakeLockContext();
     if (wake_lock_context) {
       wake_lock_context->GetWakeLock(
-          device::mojom::WakeLockType::PreventAppSuspension,
-          device::mojom::WakeLockReason::ReasonAudioPlayback, "Playing audio",
+          device::mojom::WakeLockType::kPreventAppSuspension,
+          device::mojom::WakeLockReason::kAudioPlayback, "Playing audio",
           std::move(request));
     }
   }
@@ -289,8 +289,8 @@ device::mojom::WakeLock* MediaWebContentsObserver::GetVideoWakeLock() {
         web_contents()->GetWakeLockContext();
     if (wake_lock_context) {
       wake_lock_context->GetWakeLock(
-          device::mojom::WakeLockType::PreventDisplaySleep,
-          device::mojom::WakeLockReason::ReasonVideoPlayback, "Playing video",
+          device::mojom::WakeLockType::kPreventDisplaySleep,
+          device::mojom::WakeLockReason::kVideoPlayback, "Playing video",
           std::move(request));
     }
   }
