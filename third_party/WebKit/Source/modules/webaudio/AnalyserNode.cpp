@@ -41,7 +41,7 @@ AnalyserHandler::AnalyserHandler(AudioNode& node, float sample_rate)
 
 scoped_refptr<AnalyserHandler> AnalyserHandler::Create(AudioNode& node,
                                                        float sample_rate) {
-  return WTF::AdoptRef(new AnalyserHandler(node, sample_rate));
+  return base::AdoptRef(new AnalyserHandler(node, sample_rate));
 }
 
 AnalyserHandler::~AnalyserHandler() {

@@ -54,7 +54,7 @@ scoped_refptr<MediaStreamAudioSourceHandler>
 MediaStreamAudioSourceHandler::Create(
     AudioNode& node,
     std::unique_ptr<AudioSourceProvider> audio_source_provider) {
-  return WTF::AdoptRef(new MediaStreamAudioSourceHandler(
+  return base::AdoptRef(new MediaStreamAudioSourceHandler(
       node, std::move(audio_source_provider)));
 }
 

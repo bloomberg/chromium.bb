@@ -80,7 +80,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
   class ResultCancel : public CryptoResultCancel {
    public:
     static scoped_refptr<ResultCancel> Create() {
-      return WTF::AdoptRef(new ResultCancel);
+      return base::AdoptRef(new ResultCancel);
     }
 
     bool Cancelled() const override;

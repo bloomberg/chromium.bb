@@ -82,8 +82,8 @@ scoped_refptr<OscillatorHandler> OscillatorHandler::Create(
     PeriodicWave* wave_table,
     AudioParamHandler& frequency,
     AudioParamHandler& detune) {
-  return WTF::AdoptRef(new OscillatorHandler(node, sample_rate, oscillator_type,
-                                             wave_table, frequency, detune));
+  return base::AdoptRef(new OscillatorHandler(
+      node, sample_rate, oscillator_type, wave_table, frequency, detune));
 }
 
 OscillatorHandler::~OscillatorHandler() {

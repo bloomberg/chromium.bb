@@ -48,7 +48,7 @@ scoped_refptr<AudioBasicProcessorHandler> AudioBasicProcessorHandler::Create(
     AudioNode& node,
     float sample_rate,
     std::unique_ptr<AudioProcessor> processor) {
-  return WTF::AdoptRef(new AudioBasicProcessorHandler(
+  return base::AdoptRef(new AudioBasicProcessorHandler(
       node_type, node, sample_rate, std::move(processor)));
 }
 

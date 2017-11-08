@@ -86,7 +86,7 @@ class DataConsumerHandleTestUtil {
     class Context : public ThreadSafeRefCounted<Context> {
      public:
       static scoped_refptr<Context> Create() {
-        return WTF::AdoptRef(new Context);
+        return base::AdoptRef(new Context);
       }
       void RecordAttach(const String& handle) {
         MutexLocker locker(logging_mutex_);
@@ -267,7 +267,7 @@ class DataConsumerHandleTestUtil {
                                           public WebDataConsumerHandle::Client {
    public:
     using Self = ThreadingHandleNotificationTest;
-    static scoped_refptr<Self> Create() { return WTF::AdoptRef(new Self); }
+    static scoped_refptr<Self> Create() { return base::AdoptRef(new Self); }
 
     void Run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
@@ -299,7 +299,7 @@ class DataConsumerHandleTestUtil {
         public WebDataConsumerHandle::Client {
    public:
     using Self = ThreadingHandleNoNotificationTest;
-    static scoped_refptr<Self> Create() { return WTF::AdoptRef(new Self); }
+    static scoped_refptr<Self> Create() { return base::AdoptRef(new Self); }
 
     void Run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
@@ -369,7 +369,7 @@ class DataConsumerHandleTestUtil {
     class Context final : public ThreadSafeRefCounted<Context> {
      public:
       static scoped_refptr<Context> Create() {
-        return WTF::AdoptRef(new Context);
+        return base::AdoptRef(new Context);
       }
 
       // This function cannot be called after creating a tee.
