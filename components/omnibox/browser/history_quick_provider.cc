@@ -60,12 +60,6 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   // autocomplete behavior here.
   if (in_memory_url_index_) {
     DoAutocomplete();
-    // TODO(crbug.com/46623): Theoretically, this would be in
-    // |DoAutocomplete()| but it's already crowded.  If |Do...| were factored
-    // (namely, moving the WYT logic to a subroutine) we should move this call
-    // back into |Do...|.
-    if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions))
-      ConvertOpenTabMatches();
   }
 }
 
@@ -94,6 +88,8 @@ void HistoryQuickProvider::DoAutocomplete() {
     // Mark this max_match_score as being used.
     max_match_score--;
   }
+  if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions))
+    ConvertOpenTabMatches();
 }
 
 int HistoryQuickProvider::FindMaxMatchScore(
@@ -195,31 +191,6 @@ int HistoryQuickProvider::FindMaxMatchScore(
         url_what_you_typed_match_score - 1);
   }
   return max_match_score;
-}
-
-void HistoryQuickProvider::ConvertOpenTabMatches() {
-  for (auto& match : matches_) {
-    // If URL is in a tab, change type, update classification.
-    if (client()->IsTabOpenWithURL(match.destination_url)) {
-      match.type = AutocompleteMatchType::TAB_SEARCH;
-      // TODO(crbug.com/46623): Make i18n constant.
-      const base::string16 switch_tab_message =
-          base::UTF8ToUTF16("Switch to tab - ");
-      match.description = switch_tab_message + match.description;
-      // Add classfication for the prefix.
-      if (match.description_class[0].style != ACMatchClassification::NONE) {
-        match.description_class.insert(
-            match.description_class.begin(),
-            ACMatchClassification(0, ACMatchClassification::NONE));
-      }
-      // Shift the rest.
-      for (auto& classification : match.description_class) {
-        if (classification.offset != 0 ||
-            classification.style != ACMatchClassification::NONE)
-          classification.offset += switch_tab_message.size();
-      }
-    }
-  }
 }
 
 AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(

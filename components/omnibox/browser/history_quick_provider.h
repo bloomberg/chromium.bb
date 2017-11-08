@@ -51,10 +51,6 @@ class HistoryQuickProvider : public HistoryProvider {
   // it if we believe that there will be a URL-what-you-typed match.
   int FindMaxMatchScore(const ScoredHistoryMatches& matches);
 
-  // Converts matches whose URL matches a tab's URL to TAB_SEARCH matches.
-  // Fixes up the description as well.
-  void ConvertOpenTabMatches();
-
   // Creates an AutocompleteMatch from |history_match|, assigning it
   // the score |score|.
   AutocompleteMatch QuickMatchToACMatch(const ScoredHistoryMatch& history_match,

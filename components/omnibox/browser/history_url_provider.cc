@@ -898,6 +898,8 @@ void HistoryURLProvider::QueryComplete(
       }
       matches_.push_back(HistoryMatchToACMatch(*params, i, relevance));
     }
+    if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions))
+      ConvertOpenTabMatches();
   }
 
   done_ = true;
