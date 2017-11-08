@@ -100,9 +100,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // VPN property accessors
   const std::string& vpn_provider_type() const { return vpn_provider_type_; }
-  const std::string& third_party_vpn_provider_extension_id() const {
-    return third_party_vpn_provider_extension_id_;
-  }
+  const std::string& vpn_provider_id() const { return vpn_provider_id_; }
 
   // Tether accessors and setters.
   int battery_percentage() const { return battery_percentage_; }
@@ -237,7 +235,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // VPN properties, used to construct the display name and to show the correct
   // configuration dialog.
   std::string vpn_provider_type_;
-  std::string third_party_vpn_provider_extension_id_;
+  // Extension ID or Arc package name for extension or Arc provider VPNs.
+  std::string vpn_provider_id_;
 
   // Tether properties.
   std::string carrier_;

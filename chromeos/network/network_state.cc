@@ -184,16 +184,17 @@ bool NetworkState::PropertyChanged(const std::string& key,
       return false;
     }
 
-    if (vpn_provider_type == shill::kProviderThirdPartyVpn) {
-      // If the network uses a third-party VPN provider, copy over the
-      // provider's extension ID, which is held in |shill::kHostProperty|.
-      if (!dict->GetStringWithoutPathExpansion(
-              shill::kHostProperty, &third_party_vpn_provider_extension_id_)) {
+    if (vpn_provider_type == shill::kProviderThirdPartyVpn ||
+        vpn_provider_type == shill::kProviderArcVpn) {
+      // If the network uses a third-party or Arc VPN provider,
+      // |shill::kHostProperty| contains the extension ID or Arc package name.
+      if (!dict->GetStringWithoutPathExpansion(shill::kHostProperty,
+                                               &vpn_provider_id_)) {
         NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
         return false;
       }
     } else {
-      third_party_vpn_provider_extension_id_.clear();
+      vpn_provider_id_.clear();
     }
 
     vpn_provider_type_ = vpn_provider_type;
@@ -253,10 +254,10 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
         new base::DictionaryValue);
     provider_property->SetKey(shill::kTypeProperty,
                               base::Value(vpn_provider_type_));
-    if (vpn_provider_type_ == shill::kProviderThirdPartyVpn) {
-      provider_property->SetKey(
-          shill::kHostProperty,
-          base::Value(third_party_vpn_provider_extension_id_));
+    if (vpn_provider_type_ == shill::kProviderThirdPartyVpn ||
+        vpn_provider_type_ == shill::kProviderArcVpn) {
+      provider_property->SetKey(shill::kHostProperty,
+                                base::Value(vpn_provider_id_));
     }
     dictionary->SetWithoutPathExpansion(shill::kProviderProperty,
                                         std::move(provider_property));

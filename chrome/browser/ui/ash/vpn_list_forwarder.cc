@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
-
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/vpn_list.mojom.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -24,6 +22,24 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "services/service_manager/public/cpp/connector.h"
+
+namespace mojo {
+
+template <>
+struct TypeConverter<ash::mojom::ArcVpnProviderPtr,
+                     app_list::ArcVpnProviderManager::ArcVpnProvider*> {
+  static ash::mojom::ArcVpnProviderPtr Convert(
+      const app_list::ArcVpnProviderManager::ArcVpnProvider* input) {
+    auto result = ash::mojom::ArcVpnProvider::New();
+    result->app_name = input->app_name;
+    result->package_name = input->package_name;
+    result->app_id = input->app_id;
+    result->last_launch_time = input->last_launch_time;
+    return result;
+  }
+};
+
+}  // namespace mojo
 
 namespace {
 
@@ -56,7 +72,7 @@ VpnListForwarder::VpnListForwarder() : weak_factory_(this) {
   if (user_manager::UserManager::Get()->GetPrimaryUser()) {
     // If a user is logged in, start observing the primary user's extension
     // registry immediately.
-    AttachToPrimaryUserExtensionRegistry();
+    AttachToPrimaryUserProfile();
   } else {
     // If no user is logged in, wait until the first user logs in (thus becoming
     // the primary user) and a profile is created for that user.
@@ -68,6 +84,33 @@ VpnListForwarder::VpnListForwarder() : weak_factory_(this) {
 VpnListForwarder::~VpnListForwarder() {
   if (extension_registry_)
     extension_registry_->RemoveObserver(this);
+  if (arc_vpn_provider_manager_)
+    arc_vpn_provider_manager_->RemoveObserver(this);
+
+  vpn_list_ = nullptr;
+}
+
+void VpnListForwarder::OnArcVpnProvidersRefreshed(
+    const std::vector<
+        std::unique_ptr<app_list::ArcVpnProviderManager::ArcVpnProvider>>&
+        arc_vpn_providers) {
+  std::vector<ash::mojom::ArcVpnProviderPtr> arc_vpn_provider_ptrs;
+  for (const auto& arc_vpn_provider : arc_vpn_providers) {
+    arc_vpn_provider_ptrs.emplace_back(
+        ash::mojom::ArcVpnProvider::From(arc_vpn_provider.get()));
+  }
+  vpn_list_->SetArcVpnProviders(std::move(arc_vpn_provider_ptrs));
+}
+
+void VpnListForwarder::OnArcVpnProviderUpdated(
+    app_list::ArcVpnProviderManager::ArcVpnProvider* arc_vpn_provider) {
+  vpn_list_->AddOrUpdateArcVPNProvider(
+      ash::mojom::ArcVpnProvider::From(arc_vpn_provider));
+}
+
+void VpnListForwarder::OnArcVpnProviderRemoved(
+    const std::string& package_name) {
+  vpn_list_->RemoveArcVPNProvider(package_name);
 }
 
 void VpnListForwarder::OnExtensionLoaded(
@@ -109,9 +152,8 @@ void VpnListForwarder::Observe(int type,
   // the profile, then start observing the primary user's extension registry.
   registrar_.RemoveAll();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VpnListForwarder::AttachToPrimaryUserExtensionRegistry,
-                     weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&VpnListForwarder::AttachToPrimaryUserProfile,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void VpnListForwarder::UpdateVPNProviders() {
@@ -135,12 +177,17 @@ void VpnListForwarder::UpdateVPNProviders() {
   if (!sent_providers_ && third_party_providers.empty())
     return;
 
-  // It's rare to install or uninstall VPN provider extensions, so don't bother
-  // caching the interface pointer between calls to this function.
-  ash::mojom::VpnListPtr vpn_list = ConnectToVpnList();
-  vpn_list->SetThirdPartyVpnProviders(std::move(third_party_providers));
+  vpn_list_->SetThirdPartyVpnProviders(std::move(third_party_providers));
 
   sent_providers_ = true;
+}
+
+void VpnListForwarder::AttachToPrimaryUserProfile() {
+  DCHECK(!vpn_list_);
+  vpn_list_ = ConnectToVpnList();
+  DCHECK(vpn_list_);
+  AttachToPrimaryUserExtensionRegistry();
+  AttachToPrimaryUserArcVpnProviderManager();
 }
 
 void VpnListForwarder::AttachToPrimaryUserExtensionRegistry() {
@@ -150,4 +197,12 @@ void VpnListForwarder::AttachToPrimaryUserExtensionRegistry() {
   extension_registry_->AddObserver(this);
 
   UpdateVPNProviders();
+}
+
+void VpnListForwarder::AttachToPrimaryUserArcVpnProviderManager() {
+  arc_vpn_provider_manager_ =
+      app_list::ArcVpnProviderManager::Get(GetProfileForPrimaryUser());
+
+  if (arc_vpn_provider_manager_)
+    arc_vpn_provider_manager_->AddObserver(this);
 }

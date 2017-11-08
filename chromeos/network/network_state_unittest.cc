@@ -213,7 +213,7 @@ TEST_F(NetworkStateTest, VPNThirdPartyProvider) {
   EXPECT_TRUE(SetProperty(shill::kProviderProperty, std::move(provider)));
   SignalInitialPropertiesReceived();
   EXPECT_EQ(network_state_.vpn_provider_type(), shill::kProviderThirdPartyVpn);
-  EXPECT_EQ(network_state_.third_party_vpn_provider_extension_id(),
+  EXPECT_EQ(network_state_.vpn_provider_id(),
             "third-party-vpn-provider-extension-id");
 }
 
