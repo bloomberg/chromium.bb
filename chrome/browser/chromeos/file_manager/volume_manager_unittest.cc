@@ -181,8 +181,9 @@ class VolumeManagerTest : public testing::Test {
               file_system_provider_service_.get(),
               base::Bind(&ProfileEnvironment::GetFakeMtpStorageInfo,
                          base::Unretained(this)))) {
-      file_system_provider_service_->SetFileSystemFactoryForTesting(base::Bind(
-          &chromeos::file_system_provider::FakeProvidedFileSystem::Create));
+      file_system_provider_service_->SetDefaultFileSystemFactoryForTesting(
+          base::Bind(
+              &chromeos::file_system_provider::FakeProvidedFileSystem::Create));
     }
 
     Profile* profile() const { return profile_.get(); }

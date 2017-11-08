@@ -41,6 +41,7 @@ namespace {
 
 const char kProviderId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kDisplayName[] = "Camera Pictures";
+const char kCustomProviderId[] = "custom_provider_id";
 
 // The dot in the file system ID is there in order to check that saving to
 // preferences works correctly. File System ID is used as a key in
@@ -182,6 +183,21 @@ scoped_refptr<extensions::Extension> CreateFakeExtension(
 }  // namespace
 
 class FileSystemProviderServiceTest : public testing::Test {
+ public:
+  std::unique_ptr<ProvidedFileSystemInterface> CreateDefaultFakeFileSystem(
+      Profile* profile,
+      const ProvidedFileSystemInfo& file_system_info) {
+    called_default_factory_ = true;
+    return base::MakeUnique<FakeProvidedFileSystem>(file_system_info);
+  }
+
+  std::unique_ptr<ProvidedFileSystemInterface> CreateCustomFakeFileSystem(
+      Profile* profile,
+      const ProvidedFileSystemInfo& file_system_info) {
+    called_custom_factory_ = true;
+    return base::MakeUnique<FakeProvidedFileSystem>(file_system_info);
+  }
+
  protected:
   FileSystemProviderServiceTest() : profile_(NULL) {}
 
@@ -199,7 +215,7 @@ class FileSystemProviderServiceTest : public testing::Test {
     extension_registry_.reset(new extensions::ExtensionRegistry(profile_));
 
     service_.reset(new Service(profile_, extension_registry_.get()));
-    service_->SetFileSystemFactoryForTesting(
+    service_->SetDefaultFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
     extension_ = CreateFakeExtension(kProviderId);
 
@@ -210,6 +226,8 @@ class FileSystemProviderServiceTest : public testing::Test {
     fake_watcher_.entry_path = base::FilePath(FILE_PATH_LITERAL("/a/b/c"));
     fake_watcher_.recursive = true;
     fake_watcher_.last_tag = "hello-world";
+    called_default_factory_ = false;
+    called_custom_factory_ = false;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -222,7 +240,35 @@ class FileSystemProviderServiceTest : public testing::Test {
   scoped_refptr<extensions::Extension> extension_;
   FakeRegistry* registry_;  // Owned by Service.
   Watcher fake_watcher_;
+  bool called_default_factory_;
+  bool called_custom_factory_;
 };
+
+TEST_F(FileSystemProviderServiceTest, RegisterFileSystemFactory) {
+  service_->RegisterFileSystemFactory(
+      kCustomProviderId,
+      base::Bind(&FileSystemProviderServiceTest::CreateCustomFakeFileSystem,
+                 base::Unretained(this)));
+  service_->SetDefaultFileSystemFactoryForTesting(
+      base::Bind(&FileSystemProviderServiceTest::CreateDefaultFakeFileSystem,
+                 base::Unretained(this)));
+
+  EXPECT_FALSE(FileSystemProviderServiceTest::called_default_factory_);
+
+  EXPECT_EQ(base::File::FILE_OK,
+            service_->MountFileSystem(
+                kProviderId, MountOptions(kFileSystemId, kDisplayName)));
+
+  EXPECT_TRUE(FileSystemProviderServiceTest::called_default_factory_);
+
+  EXPECT_FALSE(FileSystemProviderServiceTest::called_custom_factory_);
+
+  EXPECT_EQ(base::File::FILE_OK,
+            service_->MountFileSystem(
+                kCustomProviderId, MountOptions(kFileSystemId, kDisplayName)));
+
+  EXPECT_TRUE(FileSystemProviderServiceTest::called_custom_factory_);
+}
 
 TEST_F(FileSystemProviderServiceTest, MountFileSystem) {
   LoggingObserver observer;

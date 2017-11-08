@@ -57,7 +57,7 @@ Service::Service(Profile* profile,
                  extensions::ExtensionRegistry* extension_registry)
     : profile_(profile),
       extension_registry_(extension_registry),
-      file_system_factory_(base::Bind(&CreateProvidedFileSystem)),
+      default_file_system_factory_(base::Bind(&CreateProvidedFileSystem)),
       registry_(new Registry(profile)),
       weak_ptr_factory_(this) {
   extension_registry_->AddObserver(this);
@@ -100,10 +100,10 @@ void Service::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void Service::SetFileSystemFactoryForTesting(
+void Service::SetDefaultFileSystemFactoryForTesting(
     const FileSystemFactoryCallback& factory_callback) {
   DCHECK(!factory_callback.is_null());
-  file_system_factory_ = factory_callback;
+  default_file_system_factory_ = factory_callback;
 }
 
 void Service::SetRegistryForTesting(
@@ -186,8 +186,10 @@ base::File::Error Service::MountFileSystemInternal(
     return base::File::FILE_ERROR_INVALID_OPERATION;
   }
 
+  Service::FileSystemFactoryCallback factory =
+      GetFileSystemFactory(file_system_info.provider_id());
   std::unique_ptr<ProvidedFileSystemInterface> file_system =
-      file_system_factory_.Run(profile_, file_system_info);
+      factory.Run(profile_, file_system_info);
   DCHECK(file_system);
   ProvidedFileSystemInterface* file_system_ptr = file_system.get();
   file_system_map_[FileSystemKey(provider_id, options.file_system_id)] =
@@ -456,6 +458,23 @@ void Service::OnWatcherListChanged(
     const ProvidedFileSystemInfo& file_system_info,
     const Watchers& watchers) {
   registry_->RememberFileSystem(file_system_info, watchers);
+}
+
+// TODO(baileyberro): Remove CHECK() and update provider_id to class.
+// BUG=781666
+void Service::RegisterFileSystemFactory(
+    const std::string& provider_id,
+    FileSystemFactoryCallback file_system_factory) {
+  CHECK_NE(32, static_cast<int>(provider_id.length()));
+  file_system_factory_map_[provider_id] = file_system_factory;
+}
+
+Service::FileSystemFactoryCallback Service::GetFileSystemFactory(
+    const std::string& provider_id) {
+  auto it = file_system_factory_map_.find(provider_id);
+  if (it != file_system_factory_map_.end())
+    return it->second;
+  return default_file_system_factory_;
 }
 
 }  // namespace file_system_provider
