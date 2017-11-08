@@ -44,6 +44,8 @@ class CORE_EXPORT WebInputMethodControllerImpl
   WebTextInputInfo TextInputInfo() override;
   int ComputeWebTextInputNextPreviousFlags() override;
   WebTextInputType TextInputType() override;
+  WebRange CompositionRange() override;
+
   WebRange GetSelectionOffsets() const;
 
   void Trace(blink::Visitor*);

@@ -2219,7 +2219,8 @@ void RenderWidget::GetCompositionRange(gfx::Range* range) {
   if (GetFocusedPepperPluginInsideWidget())
     return;
 #endif
-  WebRange web_range = GetWebWidget()->CompositionRange();
+  blink::WebInputMethodController* controller = GetInputMethodController();
+  WebRange web_range = controller ? controller->CompositionRange() : WebRange();
   if (web_range.IsNull()) {
     *range = gfx::Range::InvalidRange();
     return;
