@@ -80,6 +80,11 @@ class UtilitySandboxedProcessLauncherDelegate
   ~UtilitySandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
+  bool ShouldLaunchElevated() override {
+    return sandbox_type_ ==
+           service_manager::SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES;
+  }
+
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
     if (exposed_dir_.empty())
       return true;
