@@ -28,14 +28,14 @@ namespace resource_coordinator {
 //
 // These values are used in the TabManager.SessionRestore.SwitchToTab UMA.
 //
-// TODO(lpy): *switch to the new done signal (network and cpu quiescence) when
-// available.
-//
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
 enum TabLoadingState {
   TAB_IS_NOT_LOADING = 0,
   TAB_IS_LOADING = 1,
+  // A tab is considered loaded when DidStopLoading is called from WebContents
+  // for now. We are in the progress to deprecate using it, and use
+  // PageAlmostIdle signal from resource coordinator instead.
   TAB_IS_LOADED = 2,
   TAB_LOADING_STATE_MAX,
 };
@@ -59,8 +59,9 @@ class TabManager::WebContentsData
   void WasShown() override;
   void WebContentsDestroyed() override;
 
-  // Idle signal received from GRC.
-  void NotifyAlmostIdle() {}
+  // Called by TabManager::ResourceCoordinatorSignalObserver to notify that a
+  // tab is considered loaded.
+  void NotifyTabIsLoaded();
 
   // Returns true if the tab has been discarded to save memory.
   bool IsDiscarded();

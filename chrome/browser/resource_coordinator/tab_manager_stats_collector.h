@@ -139,9 +139,9 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
   // user navigates to a new page and |contents| is resused.
   void OnDidStartMainFrameNavigation(content::WebContents* contents);
 
-  // Called by TabManager when a tab finishes loading. Used as the signal to
+  // Called by TabManager when a tab is considered loaded. Used as the signal to
   // record tab switch load time metrics for |contents|.
-  void OnDidStopLoading(content::WebContents* contents);
+  void OnTabIsLoaded(content::WebContents* contents);
 
   // Called by TabManager when a WebContents is destroyed. Used to clean up
   // |foreground_contents_switched_to_times_| if we were tracking this tab and

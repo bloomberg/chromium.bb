@@ -77,6 +77,7 @@ void PageSignalGeneratorImpl::BindToInterface(
 
 void PageSignalGeneratorImpl::NotifyPageAlmostIdleIfPossible(
     const FrameCoordinationUnitImpl* frame_cu) {
+  DCHECK(IsPageAlmostIdleSignalEnabled());
   if (!frame_cu->IsMainFrame())
     return;
   if (!frame_cu->IsAlmostIdle())

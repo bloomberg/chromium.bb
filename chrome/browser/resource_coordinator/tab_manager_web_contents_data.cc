@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 using base::TimeTicks;
 using content::WebContents;
@@ -41,15 +42,9 @@ void TabManager::WebContentsData::DidStartLoading() {
 }
 
 void TabManager::WebContentsData::DidStopLoading() {
-  // We may already be in the stopped state if this is being invoked due to an
-  // iframe loading new content.
-  //
-  // TODO(lpy): switch to the new done signal (network and cpu quiescence) when
-  // available.
-  if (tab_data_.tab_loading_state != TAB_IS_LOADED) {
-    SetTabLoadingState(TAB_IS_LOADED);
-    g_browser_process->GetTabManager()->OnDidStopLoading(web_contents());
-  }
+  if (IsPageAlmostIdleSignalEnabled())
+    return;
+  NotifyTabIsLoaded();
 }
 
 void TabManager::WebContentsData::DidStartNavigation(
@@ -116,6 +111,15 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
   SetTabLoadingState(TAB_IS_NOT_LOADING);
   SetIsInSessionRestore(false);
   g_browser_process->GetTabManager()->OnWebContentsDestroyed(web_contents());
+}
+
+void TabManager::WebContentsData::NotifyTabIsLoaded() {
+  // We may already be in the stopped state if this is being invoked due to an
+  // iframe loading new content.
+  if (tab_data_.tab_loading_state != TAB_IS_LOADED) {
+    SetTabLoadingState(TAB_IS_LOADED);
+    g_browser_process->GetTabManager()->OnTabIsLoaded(web_contents());
+  }
 }
 
 bool TabManager::WebContentsData::IsDiscarded() {
