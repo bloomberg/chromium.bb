@@ -7,6 +7,7 @@ const KEY_COLUMNS = ['log-type', 'log-description', 'log-url'];
 const ENABLE_BLACKLIST_BUTTON = 'Enable Blacklist';
 const IGNORE_BLACKLIST_BUTTON = 'Ignore Blacklist';
 const IGNORE_BLACKLIST_MESSAGE = 'Blacklist decisions are ignored.';
+const URL_THRESHOLD = 40;  // Maximum URL length
 
 /**
  * Convert milliseconds to human readable date/time format.
@@ -95,6 +96,31 @@ function setupLogSearch() {
 }
 
 /**
+ * Shorten long URL string so that it can be displayed nicely on mobile devices.
+ * If |url| is longer than URL_THRESHOLD, then it will be shorten, and a tooltip
+ * element will be added so that user can see the original URL.
+ *
+ * @param {string} url The given URL string.
+ * @return An DOM node with the original URL if the length is within THRESHOLD,
+ * or the shorten URL with a tooltip element at the end of the string.
+ */
+function createUrlElement(url) {
+  let urlTd = document.createElement('td');
+  urlTd.setAttribute('class', 'log-url');
+
+  if (url.length <= URL_THRESHOLD) {
+    urlTd.textContent = url;
+  } else {
+    urlTd.textContent = url.substring(0, URL_THRESHOLD - 3) + '...';
+    let tooltip = document.createElement('span');
+    tooltip.setAttribute('class', 'url-tooltip');
+    tooltip.textContent = url;
+    urlTd.appendChild(tooltip);
+  }
+  return urlTd;
+}
+
+/**
  * Initialize the button to clear out all the log messages. This button only
  * remove the logs from the UI, and does not effect any decision made.
  */
@@ -143,11 +169,7 @@ InterventionsInternalPageImpl.prototype = {
     descriptionTd.textContent = log.description;
     tableRow.appendChild(descriptionTd);
 
-    // TODO(thanhdle): Truncate url and show full url when user clicks on it.
-    // crbug.com/773019
-    let urlTd = document.createElement('td');
-    urlTd.setAttribute('class', 'log-url');
-    urlTd.textContent = log.url.url;
+    let urlTd = createUrlElement(log.url.url);
     tableRow.appendChild(urlTd);
   },
 
