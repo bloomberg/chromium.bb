@@ -403,6 +403,8 @@ void ProfilingProcessHost::RequestProcessDump(base::ProcessId pid,
 
 void ProfilingProcessHost::RequestProcessReport(base::ProcessId pid,
                                                 std::string trigger_name) {
+  // https://crbug.com/753218: Add e2e tests for this code path.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (!connector_) {
     DLOG(ERROR)
         << "Requesting process dump when profiling process hasn't started.";

@@ -43,6 +43,8 @@ class BackgroundProfilingTriggers {
   void PerformMemoryUsageChecks();
   void PerformMemoryUsageChecksOnIOThread();
 
+  void TriggerMemoryReportForProcessOnUIThread(base::ProcessId pid);
+
   // Timer to periodically check memory consumption and upload a slow-report.
   base::RepeatingTimer timer_;
   ProfilingProcessHost* host_;
