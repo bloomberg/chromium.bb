@@ -4979,7 +4979,8 @@ def CMDsplit(parser, args):
   the shared OWNERS file.
   """
   parser.add_option("-d", "--description", dest="description_file",
-                    help="A text file containing a CL description. ")
+                    help="A text file containing a CL description in which "
+                         "$directory will be replaced by each CL's directory.")
   parser.add_option("-c", "--comment", dest="comment_file",
                     help="A text file containing a CL comment.")
   options, _ = parser.parse_args(args)
