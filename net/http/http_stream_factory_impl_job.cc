@@ -39,6 +39,8 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
+#include "net/quic/chromium/bidirectional_stream_quic_impl.h"
+#include "net/quic/chromium/quic_http_stream.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -1087,18 +1089,22 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
       return result;
 
     if (stream_type_ == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-      bidirectional_stream_impl_ =
-          quic_request_.CreateBidirectionalStreamImpl();
-      if (!bidirectional_stream_impl_) {
+      std::unique_ptr<QuicChromiumClientSession::Handle> session =
+          quic_request_.ReleaseSessionHandle();
+      if (!session) {
         // Quic session is closed before stream can be created.
         return ERR_CONNECTION_CLOSED;
       }
+      bidirectional_stream_impl_.reset(
+          new BidirectionalStreamQuicImpl(std::move(session)));
     } else {
-      stream_ = quic_request_.CreateStream();
-      if (!stream_) {
+      std::unique_ptr<QuicChromiumClientSession::Handle> session =
+          quic_request_.ReleaseSessionHandle();
+      if (!session) {
         // Quic session is closed before stream can be created.
         return ERR_CONNECTION_CLOSED;
       }
+      stream_.reset(new QuicHttpStream(std::move(session)));
     }
     next_state_ = STATE_NONE;
     return OK;

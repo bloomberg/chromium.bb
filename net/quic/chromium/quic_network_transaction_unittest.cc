@@ -42,6 +42,7 @@
 #include "net/quic/chromium/mock_crypto_client_stream_factory.h"
 #include "net/quic/chromium/mock_quic_data.h"
 #include "net/quic/chromium/quic_chromium_alarm_factory.h"
+#include "net/quic/chromium/quic_http_stream.h"
 #include "net/quic/chromium/quic_http_utils.h"
 #include "net/quic/chromium/quic_stream_factory_peer.h"
 #include "net/quic/chromium/quic_test_packet_maker.h"

@@ -33,11 +33,9 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verifier.h"
 #include "net/dns/host_resolver.h"
-#include "net/http/bidirectional_stream_impl.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
-#include "net/quic/chromium/bidirectional_stream_quic_impl.h"
 #include "net/quic/chromium/crypto/channel_id_chromium.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
 #include "net/quic/chromium/properties_based_quic_server_info.h"
@@ -46,6 +44,7 @@
 #include "net/quic/chromium/quic_chromium_packet_reader.h"
 #include "net/quic/chromium/quic_chromium_packet_writer.h"
 #include "net/quic/chromium/quic_crypto_client_stream_factory.h"
+#include "net/quic/chromium/quic_http_stream.h"
 #include "net/quic/chromium/quic_server_info.h"
 #include "net/quic/core/crypto/proof_verifier.h"
 #include "net/quic/core/crypto/quic_random.h"
@@ -633,19 +632,12 @@ base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
   return factory_->GetTimeDelayForWaitingJob(server_id_);
 }
 
-std::unique_ptr<HttpStream> QuicStreamRequest::CreateStream() {
+std::unique_ptr<QuicChromiumClientSession::Handle>
+QuicStreamRequest::ReleaseSessionHandle() {
   if (!session_ || !session_->IsConnected())
     return nullptr;
 
-  return std::make_unique<QuicHttpStream>(std::move(session_));
-}
-
-std::unique_ptr<BidirectionalStreamImpl>
-QuicStreamRequest::CreateBidirectionalStreamImpl() {
-  if (!session_ || !session_->IsConnected())
-    return nullptr;
-
-  return std::make_unique<BidirectionalStreamQuicImpl>(std::move(session_));
+  return std::move(session_);
 }
 
 QuicStreamFactory::QuicStreamFactory(
