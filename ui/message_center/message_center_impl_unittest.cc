@@ -355,10 +355,15 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
   popup_timers_controller->OnNotificationDisplayed("id1", DISPLAY_SOURCE_POPUP);
   ASSERT_EQ(popup_timers_controller->timer_finished(), 0);
 
+#if defined(OS_CHROMEOS)
+  const int dismiss_time = kAutocloseDefaultDelaySeconds;
+#else
+  const int dismiss_time = kAutocloseHighPriorityDelaySeconds;
+#endif
+
   // Fast forward the |task_runner| by one second less than the auto-close timer
   // frequency for Web Notifications. (As set by the |notifier_id|.)
-  task_runner->FastForwardBy(
-      base::TimeDelta::FromSeconds(kAutocloseHighPriorityDelaySeconds - 1));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(dismiss_time - 1));
   ASSERT_EQ(popup_timers_controller->timer_finished(), 0);
 
   // Trigger a replacement of the notification in the timer controller.
@@ -366,8 +371,7 @@ TEST_F(MessageCenterImplTest, PopupTimersControllerRestartOnUpdate) {
 
   // Fast forward the |task_runner| by one second less than the auto-close timer
   // frequency for Web Notifications again. It should have been reset.
-  task_runner->FastForwardBy(
-      base::TimeDelta::FromSeconds(kAutocloseHighPriorityDelaySeconds - 1));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(dismiss_time - 1));
   ASSERT_EQ(popup_timers_controller->timer_finished(), 0);
 
   // Now fast forward the |task_runner| by two seconds (to avoid flakiness),

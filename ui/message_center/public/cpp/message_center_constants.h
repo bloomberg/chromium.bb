@@ -93,9 +93,9 @@ const SkColor kNotificationDefaultAccentColor = gfx::kChromeIconGrey;
 // Not used when --enabled-new-style-notification is set.
 const size_t kNotificationMaximumItems = 5;
 
-// Timing. Web Notifications always use high-priority timings. Given the absence
-// of a notification center on non-Chrome OS platforms, this improves users'
-// ability to interact with the toasts.
+// Timing. Web Notifications always use high-priority timings except on
+// Chrome OS. Given the absence of a notification center on non-Chrome OS
+// platforms, this improves users' ability to interact with the toasts.
 const int kAutocloseDefaultDelaySeconds = 8;
 const int kAutocloseHighPriorityDelaySeconds = 25;
 
