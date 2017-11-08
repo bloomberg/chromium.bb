@@ -13,6 +13,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/chromium/mock_crypto_client_stream_factory.h"
+#include "net/quic/chromium/quic_http_stream.h"
 #include "net/quic/chromium/test_task_runner.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -115,9 +116,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
                   env->net_log, &net_error_details, callback.callback());
 
   callback.WaitForResult();
-  std::unique_ptr<HttpStream> stream = request.CreateStream();
-  if (!stream.get())
+  std::unique_ptr<QuicChromiumClientSession::Handle> session =
+      request.ReleaseSessionHandle();
+  if (!session)
     return 0;
+  std::unique_ptr<HttpStream> stream(new QuicHttpStream(std::move(session)));
 
   HttpRequestInfo request_info;
   request_info.method = kMethod;
