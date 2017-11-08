@@ -217,7 +217,6 @@ ScrollbarPart ScrollbarThemeOverlay::HitTest(
   return kThumbPart;
 }
 
-// static
 ScrollbarThemeOverlay& ScrollbarThemeOverlay::MobileTheme() {
   static ScrollbarThemeOverlay* theme;
   if (!theme) {
@@ -228,13 +227,8 @@ ScrollbarThemeOverlay& ScrollbarThemeOverlay::MobileTheme() {
     theme = new ScrollbarThemeOverlay(
         style.thumb_thickness, style.scrollbar_margin,
         ScrollbarThemeOverlay::kDisallowHitTest, Color(style.color));
-    theme->is_mobile_theme_ = true;
   }
   return *theme;
-}
-
-bool ScrollbarThemeOverlay::IsMobileTheme() const {
-  return is_mobile_theme_;
 }
 
 bool ScrollbarThemeOverlay::UsesNinePatchThumbResource() const {

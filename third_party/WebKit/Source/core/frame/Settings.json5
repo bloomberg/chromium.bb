@@ -585,12 +585,6 @@
       initial: false,
     },
 
-    // Forces Android Overlay Scrollbar for mobile emulator.
-    {
-      name: "forceAndroidOverlayScrollbar",
-      initial: false,
-    },
-
     // Forces initialization of main world, even if no scripts will be executed.
     // Used by inspector to report all contexts.
     {
