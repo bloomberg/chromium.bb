@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -97,8 +98,10 @@ void InitializeAddressFromProfile(const AutofillProfile& profile,
   address->locality = base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_CITY));
   address->dependent_locality =
       base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY));
-  address->postal_code =
-      base::UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP));
+  // The validation is case insensitive, and the postal codes are always upper
+  // case.
+  address->postal_code = base::UTF16ToUTF8(
+      base::i18n::ToUpper(profile.GetRawInfo(ADDRESS_HOME_ZIP)));
 }
 
 void SetEmptyValidityIfEmpty(AutofillProfile* profile) {
