@@ -59815,19 +59815,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.DetachableBase.ActivePercent" units="%">
+  <owner>kitching@google.com</owner>
+  <summary>
+    Ratio of time a detachable base keyboard is active, i.e. when the USB
+    interface is not auto-suspended.  Reported every 30 seconds when the base is
+    connected.
+  </summary>
+</histogram>
+
 <histogram name="Platform.DetachableBase.PairResult"
     enum="DetachableBasePairResult">
   <owner>kitching@google.com</owner>
   <summary>Result of a detachable base pair operation.</summary>
 </histogram>
 
-<histogram name="Platform.DetachableBase.ROUpdateMetric"
+<histogram name="Platform.DetachableBase.ROUpdateResult"
     enum="DetachableBaseROUpdateResult">
   <owner>kitching@google.com</owner>
   <summary>Result of a detachable base RO firmware update.</summary>
 </histogram>
 
-<histogram name="Platform.DetachableBase.RWUpdateMetric"
+<histogram name="Platform.DetachableBase.RWUpdateResult"
     enum="DetachableBaseRWUpdateResult">
   <owner>kitching@google.com</owner>
   <summary>Result of a detachable base RW firmware update.</summary>
