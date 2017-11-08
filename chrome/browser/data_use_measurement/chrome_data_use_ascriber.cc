@@ -395,8 +395,8 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
     std::vector<net::URLRequest*> pending_url_requests;
     entry->GetPendingURLRequests(&pending_url_requests);
     for (net::URLRequest* request : pending_url_requests) {
-      AscribeRecorderWithRequest(request, old_frame_entry);
       entry->MovePendingURLRequestTo(&(*old_frame_entry), request);
+      AscribeRecorderWithRequest(request, old_frame_entry);
     }
     data_use_recorders_.erase(entry);
 
