@@ -50,11 +50,9 @@ class DistillerPageIOS : public DistillerPage, public web::WebStateObserver {
 
  private:
   friend class DistillerWebStateObserver;
+
   // Called once the |script_| has been evaluated on the page.
   void HandleJavaScriptResult(id result);
-
-  // Converts result of WKWebView script evaluation to base::Value
-  std::unique_ptr<base::Value> ValueResultFromScriptResult(id wk_result);
 
   // web::WebStateObserver implementation.
   void PageLoaded(

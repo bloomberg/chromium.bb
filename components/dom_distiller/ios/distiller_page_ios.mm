@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -38,14 +39,14 @@ namespace {
 // limit the risk of broken JS calls.
 
 int const kMaximumParsingRecursionDepth = 6;
+
 // Converts result of WKWebView script evaluation to base::Value, parsing
 // |wk_result| up to a depth of |max_depth|.
-std::unique_ptr<base::Value> ValueResultFromScriptResult(id wk_result,
-                                                         int max_depth) {
-  if (!wk_result)
-    return nullptr;
-
-  std::unique_ptr<base::Value> result;
+base::Value ValueResultFromScriptResult(id wk_result, int max_depth) {
+  base::Value result;
+  if (!wk_result) {
+    return result;
+  }
 
   if (max_depth < 0) {
     DLOG(WARNING) << "JS maximum recursion depth exceeded.";
@@ -54,53 +55,60 @@ std::unique_ptr<base::Value> ValueResultFromScriptResult(id wk_result,
 
   CFTypeID result_type = CFGetTypeID(reinterpret_cast<CFTypeRef>(wk_result));
   if (result_type == CFStringGetTypeID()) {
-    result.reset(new base::Value(base::SysNSStringToUTF16(wk_result)));
-    DCHECK(result->IsType(base::Value::Type::STRING));
+    result = base::Value(base::SysNSStringToUTF8(wk_result));
+    DCHECK_EQ(result.type(), base::Value::Type::STRING);
   } else if (result_type == CFNumberGetTypeID()) {
     // Different implementation is here.
     if ([wk_result intValue] != [wk_result doubleValue]) {
-      result.reset(new base::Value([wk_result doubleValue]));
-      DCHECK(result->IsType(base::Value::Type::DOUBLE));
+      result = base::Value([wk_result doubleValue]);
+      DCHECK_EQ(result.type(), base::Value::Type::DOUBLE);
     } else {
-      result.reset(new base::Value([wk_result intValue]));
-      DCHECK(result->IsType(base::Value::Type::INTEGER));
+      result = base::Value([wk_result intValue]);
+      DCHECK_EQ(result.type(), base::Value::Type::INTEGER);
     }
     // End of different implementation.
   } else if (result_type == CFBooleanGetTypeID()) {
-    result.reset(new base::Value(static_cast<bool>([wk_result boolValue])));
-    DCHECK(result->IsType(base::Value::Type::BOOLEAN));
+    result = base::Value(static_cast<bool>([wk_result boolValue]));
+    DCHECK_EQ(result.type(), base::Value::Type::BOOLEAN);
   } else if (result_type == CFNullGetTypeID()) {
-    result = base::MakeUnique<base::Value>();
-    DCHECK(result->IsType(base::Value::Type::NONE));
+    DCHECK_EQ(result.type(), base::Value::Type::NONE);
   } else if (result_type == CFDictionaryGetTypeID()) {
-    std::unique_ptr<base::DictionaryValue> dictionary =
-        base::MakeUnique<base::DictionaryValue>();
+    base::Value dictionary(base::Value::Type::DICTIONARY);
     for (id key in wk_result) {
       NSString* obj_c_string = base::mac::ObjCCast<NSString>(key);
-      const std::string path = base::SysNSStringToUTF8(obj_c_string);
-      std::unique_ptr<base::Value> value =
+      base::Value value =
           ValueResultFromScriptResult(wk_result[obj_c_string], max_depth - 1);
-      if (value) {
-        dictionary->Set(path, std::move(value));
+
+      if (value.type() == base::Value::Type::NONE) {
+        return result;
       }
+
+      std::vector<base::StringPiece> path =
+          base::SplitStringPiece(base::SysNSStringToUTF8(obj_c_string), ".",
+                                 base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+      dictionary.SetPath(path, std::move(value));
     }
     result = std::move(dictionary);
+    DCHECK_EQ(result.type(), base::Value::Type::DICTIONARY);
   } else if (result_type == CFArrayGetTypeID()) {
-    std::unique_ptr<base::ListValue> list = base::MakeUnique<base::ListValue>();
+    std::vector<base::Value> list;
     for (id list_item in wk_result) {
-      std::unique_ptr<base::Value> value =
-      ValueResultFromScriptResult(list_item, max_depth - 1);
-      if (value) {
-        list->Append(std::move(value));
+      base::Value value = ValueResultFromScriptResult(list_item, max_depth - 1);
+      if (value.type() == base::Value::Type::NONE) {
+        return result;
       }
+
+      list.push_back(std::move(value));
     }
-    result = std::move(list);
+    result = base::Value(list);
+    DCHECK_EQ(result.type(), base::Value::Type::LIST);
   } else {
     NOTREACHED();  // Convert other types as needed.
   }
   return result;
 }
-}
+
+}  // namespace
 
 namespace dom_distiller {
 
@@ -180,17 +188,10 @@ void DistillerPageIOS::OnLoadURLDone(
 }
 
 void DistillerPageIOS::HandleJavaScriptResult(id result) {
-  auto resultValue = base::MakeUnique<base::Value>();
-  if (result) {
-    resultValue = ValueResultFromScriptResult(result);
-  }
-  OnDistillationDone(url_, resultValue.get());
-}
+  base::Value result_as_value =
+      ValueResultFromScriptResult(result, kMaximumParsingRecursionDepth);
 
-std::unique_ptr<base::Value> DistillerPageIOS::ValueResultFromScriptResult(
-    id wk_result) {
-  return ::ValueResultFromScriptResult(wk_result,
-                                       kMaximumParsingRecursionDepth);
+  OnDistillationDone(url_, &result_as_value);
 }
 
 void DistillerPageIOS::PageLoaded(
