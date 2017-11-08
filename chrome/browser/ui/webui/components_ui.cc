@@ -63,6 +63,7 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
   source->SetJsonPath("strings.js");
   source->AddResourcePath("components.js", IDR_COMPONENTS_JS);
   source->SetDefaultResource(IDR_COMPONENTS_HTML);
+  source->UseGzip();
   return source;
 }
 

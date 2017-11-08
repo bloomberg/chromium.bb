@@ -57,6 +57,7 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
   source->AddResourcePath("policy_base.js", IDR_POLICY_BASE_JS);
   source->AddResourcePath("policy.js", IDR_POLICY_JS);
   source->SetDefaultResource(IDR_POLICY_HTML);
+  source->UseGzip();
   return source;
 }
 

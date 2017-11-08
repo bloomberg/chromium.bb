@@ -110,6 +110,7 @@ TaskSchedulerInternalsUI::TaskSchedulerInternalsUI(content::WebUI* web_ui)
       "index.js", IDR_TASK_SCHEDULER_INTERNALS_RESOURCES_INDEX_JS);
   html_source->SetDefaultResource(
       IDR_TASK_SCHEDULER_INTERNALS_RESOURCES_INDEX_HTML);
+  html_source->UseGzip();
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
 }
