@@ -10,6 +10,10 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
+#include "core/html_element_type_helpers.h"
+#include "core/layout/LayoutTableCell.h"
+#include "core/layout/LayoutTableRow.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -20,9 +24,139 @@
 
 namespace blink {
 
-static void FrameContentAsPlainText(size_t max_chars,
-                                    LocalFrame* frame,
-                                    StringBuilder& output) {
+namespace {
+
+bool IsRenderedAndVisible(const Node& node) {
+  if (node.GetLayoutObject() &&
+      node.GetLayoutObject()->Style()->Visibility() == EVisibility::kVisible)
+    return true;
+  if (node.IsElementNode() && ToElement(node).HasDisplayContentsStyle())
+    return true;
+  return false;
+}
+
+size_t RequiredLineBreaksAround(const Node& node) {
+  if (!IsRenderedAndVisible(node))
+    return 0;
+  if (node.IsTextNode())
+    return 0;
+  if (IsHTMLParagraphElement(node))
+    return 2;
+  if (LayoutObject* layout_object = node.GetLayoutObject()) {
+    if (!layout_object->Style()->IsDisplayInlineType())
+      return 1;
+    if (layout_object->Style()->Display() == EDisplay::kTableCaption)
+      return 1;
+  }
+  return 0;
+}
+
+// This class dumps innerText of a node into a StringBuilder, following the spec
+// [*] but with a simplified whitespace handling algorithm when processing text
+// nodes: only leading and trailing collapsed whitespaces are removed; all other
+// whitespace characters are left as-is, without any collapsing or conversion.
+// For example, from HTML <p>\na\n\nb\n</p>, we get text dump "a\n\nb".
+// [*] https://developer.mozilla.org/en-US/docs/Web/API/Node/innerText
+class TextDumper final {
+  STACK_ALLOCATED();
+
+ public:
+  TextDumper(StringBuilder& builder, size_t max_length)
+      : builder_(builder), max_length_(max_length) {}
+
+  void DumpTextFrom(const Node& node) {
+    DCHECK(!has_emitted_);
+    DCHECK(!required_line_breaks_);
+    HandleNode(node);
+  }
+
+ private:
+  void HandleNode(const Node& node) {
+    const size_t required_line_breaks_around = RequiredLineBreaksAround(node);
+    AddRequiredLineBreaks(required_line_breaks_around);
+
+    for (const Node& child : NodeTraversal::ChildrenOf(node)) {
+      HandleNode(child);
+      if (builder_.length() >= max_length_)
+        return;
+    }
+
+    if (!IsRenderedAndVisible(node))
+      return;
+
+    if (node.IsTextNode())
+      return HandleTextNode(ToText(node));
+
+    if (IsHTMLBRElement(node))
+      return DumpText("\n");
+
+    if (LayoutObject* layout_object = node.GetLayoutObject()) {
+      if (layout_object->IsTableCell() &&
+          ToLayoutTableCell(layout_object)->NextCell())
+        return DumpText("\t");
+      if (layout_object->IsTableRow() &&
+          ToLayoutTableRow(layout_object)->NextRow())
+        return DumpText("\n");
+    }
+
+    AddRequiredLineBreaks(required_line_breaks_around);
+  }
+
+  void HandleTextNode(const Text& node) {
+    const LayoutText* layout_text = node.GetLayoutObject();
+    if (!layout_text)
+      return;
+    if (layout_text->IsTextFragment() &&
+        ToLayoutTextFragment(layout_text)->IsRemainingTextLayoutObject()) {
+      const LayoutText* first_letter =
+          ToLayoutText(AssociatedLayoutObjectOf(node, 0));
+      if (first_letter && first_letter != layout_text)
+        HandleLayoutText(*first_letter);
+    }
+    HandleLayoutText(*layout_text);
+  }
+
+  void HandleLayoutText(const LayoutText& text) {
+    if (!text.HasNonCollapsedText())
+      return;
+    size_t text_start = text.CaretMinOffset();
+    size_t text_end = text.CaretMaxOffset();
+    String dump = text.GetText().Substring(text_start, text_end - text_start);
+    DumpText(dump);
+  }
+
+  void AddRequiredLineBreaks(size_t required) {
+    required_line_breaks_ = std::max(required, required_line_breaks_);
+  }
+
+  void DumpText(String text) {
+    if (!text.length())
+      return;
+
+    if (has_emitted_ && required_line_breaks_) {
+      for (size_t i = 0; i < required_line_breaks_; ++i)
+        builder_.Append('\n');
+    }
+    required_line_breaks_ = 0;
+    builder_.Append(text);
+    has_emitted_ = true;
+
+    if (builder_.length() > max_length_)
+      builder_.Resize(max_length_);
+  }
+
+  bool has_emitted_ = false;
+  size_t required_line_breaks_ = 0;
+
+  StringBuilder& builder_;
+  const size_t max_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextDumper);
+};
+
+void FrameContentAsPlainText(size_t max_chars,
+                             LocalFrame* frame,
+                             StringBuilder& output) {
   Document* document = frame->GetDocument();
   if (!document)
     return;
@@ -33,23 +167,8 @@ static void FrameContentAsPlainText(size_t max_chars,
   DCHECK(!frame->View()->NeedsLayout());
   DCHECK(!document->NeedsLayoutTreeUpdate());
 
-  // Select the document body.
-  if (document->body()) {
-    const EphemeralRange range =
-        EphemeralRange::RangeOfContents(*document->body());
-
-    // The text iterator will walk nodes giving us text. This is similar to
-    // the plainText() function in core/editing/TextIterator.h, but we
-    // implement the maximum size and also copy the results directly into a
-    // wstring, avoiding the string conversion.
-    for (TextIterator it(range.StartPosition(), range.EndPosition());
-         !it.AtEnd(); it.Advance()) {
-      it.GetText().AppendTextToStringBuilder(output, 0,
-                                             max_chars - output.length());
-      if (output.length() >= max_chars)
-        return;  // Filled up the buffer.
-    }
-  }
+  if (document->documentElement())
+    TextDumper(output, max_chars).DumpTextFrom(*document->documentElement());
 
   // The separator between frames when the frames are converted to plain text.
   const LChar kFrameSeparator[] = {'\n', '\n'};
@@ -93,6 +212,8 @@ static void FrameContentAsPlainText(size_t max_chars,
       return;  // Filled up the buffer.
   }
 }
+
+}  // namespace
 
 WebString WebFrameContentDumper::DeprecatedDumpFrameTreeAsText(
     WebLocalFrame* frame,

@@ -36,6 +36,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
+#include "third_party/WebKit/public/web/WebFrameContentDumper.h"
 #include "third_party/WebKit/public/web/WebFrameSerializer.h"
 #include "third_party/WebKit/public/web/WebFrameSerializerClient.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -449,7 +450,8 @@ class DomSerializerTests : public ContentBrowserTest,
       '%', 0x2285, 0x00b9, '\'', 0
     };
     WebString value = body_element.GetAttribute("title");
-    WebString content = doc.ContentAsTextForTesting();
+    WebString content = blink::WebFrameContentDumper::DumpWebViewAsText(
+        web_frame->View(), 1024);
     ASSERT_TRUE(base::UTF16ToWide(value.Utf16()) == parsed_value);
     ASSERT_TRUE(base::UTF16ToWide(content.Utf16()) == parsed_value);
 

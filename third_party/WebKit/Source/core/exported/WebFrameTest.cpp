@@ -4731,7 +4731,7 @@ TEST_P(ParameterizedWebFrameTest, GetContentAsPlainText) {
 
   text = WebFrameContentDumper::DumpWebViewAsText(
       web_view_helper.WebView(), std::numeric_limits<size_t>::max());
-  EXPECT_EQ("Hello world\n\nsub\ntext", text.Utf8());
+  EXPECT_EQ("Hello world\n\nsub\n\ntext", text.Utf8());
 
   // Get the frame text where the subframe separator falls on the boundary of
   // what we'll take. There used to be a crash in this case.
@@ -9058,7 +9058,7 @@ TEST_P(WebFrameSwapTest, SwapFirstChild) {
   FrameTestHelpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
   std::string content =
       WebFrameContentDumper::DumpWebViewAsText(WebView(), 1024).Utf8();
-  EXPECT_EQ("  \n\nhello\n\nb \n\na\n\nc", content);
+  EXPECT_EQ("\n\nhello\n\nb\n\n\na\n\nc", content);
 }
 
 void WebFrameTest::SwapAndVerifyMiddleChildConsistency(
@@ -9094,7 +9094,7 @@ TEST_P(WebFrameSwapTest, SwapMiddleChild) {
   FrameTestHelpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
   std::string content =
       WebFrameContentDumper::DumpWebViewAsText(WebView(), 1024).Utf8();
-  EXPECT_EQ("  \n\na\n\nhello\n\nc", content);
+  EXPECT_EQ("\n\na\n\nhello\n\nc", content);
 }
 
 void WebFrameTest::SwapAndVerifyLastChildConsistency(const char* const message,
@@ -9124,7 +9124,7 @@ TEST_P(WebFrameSwapTest, SwapLastChild) {
   FrameTestHelpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
   std::string content =
       WebFrameContentDumper::DumpWebViewAsText(WebView(), 1024).Utf8();
-  EXPECT_EQ("  \n\na\n\nb \n\na\n\nhello", content);
+  EXPECT_EQ("\n\na\n\nb\n\n\na\n\nhello", content);
 }
 
 TEST_P(WebFrameSwapTest, DetachProvisionalFrame) {
@@ -9187,7 +9187,7 @@ TEST_P(WebFrameSwapTest, SwapParentShouldDetachChildren) {
   FrameTestHelpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
   std::string content =
       WebFrameContentDumper::DumpWebViewAsText(WebView(), 1024).Utf8();
-  EXPECT_EQ("  \n\na\n\nhello\n\nc", content);
+  EXPECT_EQ("\n\na\n\nhello\n\nc", content);
 }
 
 TEST_P(WebFrameSwapTest, SwapPreservesGlobalContext) {
