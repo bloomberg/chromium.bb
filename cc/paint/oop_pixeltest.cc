@@ -54,6 +54,7 @@ class OopPixelTest : public testing::Test {
         &image_factory_, base::ThreadTaskRunnerHandle::Get());
 
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
+    ASSERT_TRUE(context_->GetCapabilities().supports_oop_raster);
   }
 
   void TearDown() override { context_.reset(); }
