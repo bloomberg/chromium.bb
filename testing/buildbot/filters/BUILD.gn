@@ -48,6 +48,7 @@ source_set("content_browsertests_filters") {
     "//testing/buildbot/filters/site-per-process.content_browsertests.filter",
     "//testing/buildbot/filters/mojo.fyi.mus.content_browsertests.filter",
     "//testing/buildbot/filters/mojo.fyi.viz.content_browsertests.filter",
+    "//testing/buildbot/filters/viz.content_browsertests.filter",
   ]
 }
 

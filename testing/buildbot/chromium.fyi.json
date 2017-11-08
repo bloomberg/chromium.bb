@@ -4393,8 +4393,7 @@
         "name": "viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "hard_timeout": 1500,
-          "shards": 5
+          "shards": 2
         },
         "test": "content_browsertests"
       },
