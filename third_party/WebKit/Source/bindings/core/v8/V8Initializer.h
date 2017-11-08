@@ -42,6 +42,8 @@ class CORE_EXPORT V8Initializer {
   static void ReportRejectedPromisesOnMainThread();
   static void MessageHandlerInMainThread(v8::Local<v8::Message>,
                                          v8::Local<v8::Value>);
+  static void MessageHandlerInWorker(v8::Local<v8::Message>,
+                                     v8::Local<v8::Value>);
 };
 
 }  // namespace blink

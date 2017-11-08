@@ -723,14 +723,15 @@ void V8ScriptRunner::SetCacheTimeStamp(CachedMetadataHandler* cache_handler) {
 
 void V8ScriptRunner::ReportException(v8::Isolate* isolate,
                                      v8::Local<v8::Value> exception) {
-  // TODO(adamk): Handle calls on worker threads.
-  DCHECK(IsMainThread());
   DCHECK(!exception.IsEmpty());
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#report-the-error
   v8::Local<v8::Message> message =
       v8::Exception::CreateMessage(isolate, exception);
-  V8Initializer::MessageHandlerInMainThread(message, exception);
+  if (IsMainThread())
+    V8Initializer::MessageHandlerInMainThread(message, exception);
+  else
+    V8Initializer::MessageHandlerInWorker(message, exception);
 }
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::CallExtraHelper(

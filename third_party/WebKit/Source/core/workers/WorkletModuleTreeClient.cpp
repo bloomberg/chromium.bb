@@ -36,6 +36,24 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
     return;
   }
 
+  // "Note: Specifically, if a script fails to parse or fails to load over the
+  // network, it will reject the promise. If the script throws an error while
+  // first evaluating the promise it will resolve as classes may have been
+  // registered correctly."
+  // https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
+  //
+  // When a network failure happens, |module_script| should be nullptr and the
+  // case should already be handled above.
+  //
+  // Check whether a syntax error happens.
+  if (module_script->IsErrored()) {
+    outside_settings_task_runner_->PostTask(
+        BLINK_FROM_HERE,
+        CrossThreadBind(&WorkletPendingTasks::Abort,
+                        WrapCrossThreadPersistent(pending_tasks_.Get())));
+    return;
+  }
+
   // TODO(nhiroki): Call WorkerReportingProxy::WillEvaluateWorkerScript() or
   // something like that (e.g., WillEvaluateModuleScript()).
   // Step 4: "Run a module script given script."
