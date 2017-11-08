@@ -89,13 +89,6 @@ const size_t kNumOfLoadingSlots = 1;
 // value.
 const int kAdjustmentIntervalSeconds = 10;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-// For each period of this length record a statistic to indicate whether or not
-// the user experienced a low memory event. If this interval is changed,
-// Tabs.Discard.DiscardInLastMinute must be replaced with a new statistic.
-const int kRecentTabDiscardIntervalSeconds = 60;
-#endif
-
 // The time during which a tab is protected from discarding after it stops being
 // audible.
 const int kAudioProtectionTimeSeconds = 60;
@@ -225,7 +218,6 @@ constexpr base::TimeDelta TabManager::kDefaultMinTimeToPurge;
 
 TabManager::TabManager()
     : discard_count_(0),
-      recent_tab_discard_(false),
       discard_once_(false),
 #if !defined(OS_CHROMEOS)
       minimum_protection_time_(base::TimeDelta::FromMinutes(10)),
@@ -292,11 +284,6 @@ void TabManager::Start() {
 // MemoryPressureMonitor is not implemented on Linux so far and tabs are never
 // discarded.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  if (!recent_tab_discard_timer_.IsRunning()) {
-    recent_tab_discard_timer_.Start(
-        FROM_HERE, TimeDelta::FromSeconds(kRecentTabDiscardIntervalSeconds),
-        this, &TabManager::RecordRecentTabDiscard);
-  }
   start_time_ = NowTicks();
   // Create a |MemoryPressureListener| to listen for memory events when
   // MemoryCoordinator is disabled. When MemoryCoordinator is enabled
@@ -341,7 +328,6 @@ void TabManager::Start() {
 
 void TabManager::Stop() {
   update_timer_.Stop();
-  recent_tab_discard_timer_.Stop();
   force_load_timer_->Stop();
   memory_pressure_listener_.reset();
 }
@@ -715,19 +701,6 @@ void TabManager::RecordDiscardStatistics() {
   last_discard_time_ = NowTicks();
 }
 
-void TabManager::RecordRecentTabDiscard() {
-  // If Chrome is shutting down, do not do anything.
-  if (g_browser_process->IsShuttingDown())
-    return;
-
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // If the interval is changed, so should the histogram name.
-  UMA_HISTOGRAM_BOOLEAN("Tabs.Discard.DiscardInLastMinute",
-                        recent_tab_discard_);
-  // Reset for the next interval.
-  recent_tab_discard_ = false;
-}
-
 void TabManager::PurgeBrowserMemory() {
   // Based on experimental evidence, attempts to free memory from renderers
   // have been too slow to use in OOM situations (V8 garbage collection) or
@@ -926,7 +899,6 @@ WebContents* TabManager::DiscardWebContentsAt(int index,
   // Find a different approach that doesn't do that, perhaps based on
   // RenderFrameProxyHosts.
   delete old_contents;
-  recent_tab_discard_ = true;
 
   return null_contents;
 }
