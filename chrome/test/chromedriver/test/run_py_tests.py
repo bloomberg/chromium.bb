@@ -36,6 +36,7 @@ import server
 from webelement import WebElement
 import webserver
 
+
 _TEST_DATA_DIR = os.path.join(chrome_paths.GetTestData(), 'chromedriver')
 
 if util.IsLinux():
@@ -994,7 +995,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testPendingConsoleLog(self):
     new_logs = [""]
     def GetPendingLogs(driver):
-      new_logs[0] = driver.GetLog('browser')
+      response = driver.GetLog('browser')
+      new_logs[0] = [x for x in response if x['source'] == 'console-api']
       return new_logs[0]
 
     self._driver.Load(self.GetHttpUrlForFile(
