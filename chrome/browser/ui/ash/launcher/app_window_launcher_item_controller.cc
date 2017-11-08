@@ -138,9 +138,9 @@ void AppWindowLauncherItemController::OnWindowPropertyChanged(
     intptr_t old) {
   if (key == aura::client::kDrawAttentionKey) {
     ash::ShelfItemStatus status;
-    // Active windows don't draw attention because the user is looking at them.
-    if (window->GetProperty(aura::client::kDrawAttentionKey) &&
-        !wm::IsActiveWindow(window)) {
+    if (wm::IsActiveWindow(window)) {
+      status = ash::STATUS_ACTIVE;
+    } else if (window->GetProperty(aura::client::kDrawAttentionKey)) {
       status = ash::STATUS_ATTENTION;
     } else {
       status = ash::STATUS_RUNNING;

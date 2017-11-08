@@ -473,7 +473,10 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
   else
     web_contents_to_app_id_[contents] = shelf_id.app_id;
 
-  SetItemStatus(shelf_id, GetAppState(shelf_id.app_id));
+  SetItemStatus(shelf_id, (app_state == APP_STATE_WINDOW_ACTIVE ||
+                           app_state == APP_STATE_ACTIVE)
+                              ? ash::STATUS_ACTIVE
+                              : GetAppState(shelf_id.app_id));
 }
 
 ash::ShelfID ChromeLauncherController::GetShelfIDForWebContents(
@@ -1054,19 +1057,26 @@ void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
 
 ash::ShelfItemStatus ChromeLauncherController::GetAppState(
     const std::string& app_id) {
-  for (auto& it : web_contents_to_app_id_) {
-    if (it.second == app_id) {
-      Browser* browser = chrome::FindBrowserWithWebContents(it.first);
+  ash::ShelfItemStatus status = ash::STATUS_CLOSED;
+  for (WebContentsToAppIDMap::iterator it = web_contents_to_app_id_.begin();
+       it != web_contents_to_app_id_.end(); ++it) {
+    if (it->second == app_id) {
+      Browser* browser = chrome::FindBrowserWithWebContents(it->first);
       // Usually there should never be an item in our |web_contents_to_app_id_|
       // list which got deleted already. However - in some situations e.g.
       // Browser::SwapTabContent there is temporarily no associated browser.
-      // TODO(jamescook): This test may not be necessary anymore.
       if (!browser)
         continue;
-      return ash::STATUS_RUNNING;
+      if (browser->window()->IsActive()) {
+        return browser->tab_strip_model()->GetActiveWebContents() == it->first
+                   ? ash::STATUS_ACTIVE
+                   : ash::STATUS_RUNNING;
+      } else {
+        status = ash::STATUS_RUNNING;
+      }
     }
   }
-  return ash::STATUS_CLOSED;
+  return status;
 }
 
 ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
