@@ -360,8 +360,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<OmniboxUI>;
   if (url.host_piece() == chrome::kChromeUIPasswordManagerInternalsHost)
     return &NewWebUI<PasswordManagerInternalsUI>;
-  if (url.host_piece() == chrome::kChromeUIPhysicalWebHost)
-    return &NewWebUI<PhysicalWebUI>;
   if (url.host_piece() == chrome::kChromeUIPredictorsHost)
     return &NewWebUI<PredictorsUI>;
   if (url.host() == chrome::kChromeUIQuotaInternalsHost)
@@ -482,6 +480,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(OS_ANDROID)
   if (url.host_piece() == chrome::kChromeUIOfflineInternalsHost)
     return &NewWebUI<OfflineInternalsUI>;
+  if (url.host_piece() == chrome::kChromeUIPhysicalWebHost)
+    return &NewWebUI<PhysicalWebUI>;
   if (url.host_piece() == chrome::kChromeUISnippetsInternalsHost &&
       !profile->IsOffTheRecord())
     return &NewWebUI<SnippetsInternalsUI>;
