@@ -98,7 +98,8 @@ class DeployChrome(object):
     self.staging_dir = staging_dir
     if not self.options.staging_only:
       self.device = remote.RemoteDevice(options.to, port=options.port,
-                                        ping=options.ping)
+                                        ping=options.ping,
+                                        private_key=options.private_key)
     self._target_dir_is_still_readonly = multiprocessing.Event()
 
     self.copy_paths = chrome_util.GetCopyPaths('chrome')
@@ -397,6 +398,9 @@ def _CreateParser():
                       help='Target directory on device to deploy Chrome into.')
   parser.add_argument('-g', '--gs-path', type='gs_path',
                       help='GS path that contains the chrome to deploy.')
+  parser.add_argument('--private-key', type='path', default=None,
+                      help='An ssh private key to use when deploying to '
+                           'a CrOS device.')
   parser.add_argument('--nostartui', action='store_false', dest='startui',
                       default=True,
                       help="Don't restart the ui daemon after deployment.")
