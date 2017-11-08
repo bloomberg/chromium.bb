@@ -399,8 +399,7 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateWithTaskRunner(
   std::unique_ptr<policy::AsyncPolicyLoader> policy_loader;
 #if defined(OS_WIN)
   policy_loader.reset(new policy::PolicyLoaderWin(
-      file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome",
-      nullptr));  // nullptr = don't use GPO / always read from the registry.
+      file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome"));
 #elif defined(OS_MACOSX)
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
   policy_loader.reset(new policy::PolicyLoaderMac(
