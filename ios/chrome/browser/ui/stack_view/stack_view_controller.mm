@@ -769,7 +769,7 @@ NSString* const kTransitionToolbarAnimationKey =
   [self.view addSubview:[_toolbarController view]];
   [_toolbarController didMoveToParentViewController:self];
 
-  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+  if (IsSafeAreaCompatibleToolbarEnabled()) {
     [[_toolbarController view].leadingAnchor
         constraintEqualToAnchor:self.view.leadingAnchor]
         .active = YES;
@@ -807,7 +807,7 @@ NSString* const kTransitionToolbarAnimationKey =
   }
   [self.view addSubview:_scrollView];
 
-  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+  if (IsSafeAreaCompatibleToolbarEnabled()) {
     [_scrollView setTranslatesAutoresizingMaskIntoConstraints:NO];
     [NSLayoutConstraint activateConstraints:@[
       [_scrollView.topAnchor
@@ -836,7 +836,7 @@ NSString* const kTransitionToolbarAnimationKey =
 
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
-  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+  if (IsSafeAreaCompatibleToolbarEnabled()) {
     [_toolbarController heightConstraint].constant =
         ToolbarHeightWithTopOfScreenOffset(
             [_toolbarController statusBarOffset]);
@@ -860,7 +860,7 @@ NSString* const kTransitionToolbarAnimationKey =
     // Calls like -viewportSizeWasChanged should instead be called in
     // viewDidLayoutSubviews, but since stack_view_controller is going away in
     // the near future, it's easier to put this here instead of refactoring.
-    if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    if (IsSafeAreaCompatibleToolbarEnabled()) {
       [self.view layoutIfNeeded];
     }
 
@@ -1714,7 +1714,7 @@ NSString* const kTransitionToolbarAnimationKey =
   CGRect currentCardFrame =
       AlignRectOriginAndSizeToPixels(LayoutRectGetRect(currentCardLayout));
 
-  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+  if (IsSafeAreaCompatibleToolbarEnabled()) {
     // Forces a layout because the views may not yet be positioned correctly
     // due to a screen rotation.
     [self.view layoutIfNeeded];
@@ -2016,7 +2016,7 @@ NSString* const kTransitionToolbarAnimationKey =
   [_activeCardSet.displayView
       insertSubview:self.transitionToolbarController.view
        aboveSubview:_activeCardSet.currentCard.view];
-  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar) &&
+  if (IsSafeAreaCompatibleToolbarEnabled() &&
       self.transitionToolbarController && _activeCardSet.currentCard.view) {
     [self.transitionToolbarController.view.leadingAnchor
         constraintEqualToAnchor:_activeCardSet.displayView.leadingAnchor]

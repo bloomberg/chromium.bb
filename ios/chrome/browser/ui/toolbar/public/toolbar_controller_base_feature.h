@@ -7,9 +7,6 @@
 
 #include "base/feature_list.h"
 
-// Feature to choose whether the toolbar respects the safe area.
-extern const base::Feature kSafeAreaCompatibleToolbar;
-
 // Feature to choose whether the toolbar uses UIViewPropertyAnimators.
 extern const base::Feature kPropertyAnimationsToolbar;
 

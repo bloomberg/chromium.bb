@@ -6,7 +6,6 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 
@@ -15,7 +14,7 @@
 #endif
 
 CGFloat ToolbarHeightWithTopOfScreenOffset(CGFloat status_bar_offset) {
-  DCHECK(base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar));
+  DCHECK(IsSafeAreaCompatibleToolbarEnabled());
   InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
   CGRect frame = kToolbarFrame[idiom];
   if (idiom == IPHONE_IDIOM) {
