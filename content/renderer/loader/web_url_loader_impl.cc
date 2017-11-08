@@ -1034,116 +1034,6 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
   OnCompletedRequest(completion_status);
 }
 
-// static
-net::NetworkTrafficAnnotationTag
-WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
-    const blink::WebURLRequest& request) {
-  switch (request.GetRequestContext()) {
-    case WebURLRequest::kRequestContextUnspecified:
-    case WebURLRequest::kRequestContextAudio:
-    case WebURLRequest::kRequestContextBeacon:
-    case WebURLRequest::kRequestContextCSPReport:
-    case WebURLRequest::kRequestContextDownload:
-    case WebURLRequest::kRequestContextEventSource:
-    case WebURLRequest::kRequestContextFetch:
-    case WebURLRequest::kRequestContextFont:
-    case WebURLRequest::kRequestContextForm:
-    case WebURLRequest::kRequestContextFrame:
-    case WebURLRequest::kRequestContextHyperlink:
-    case WebURLRequest::kRequestContextIframe:
-    case WebURLRequest::kRequestContextImage:
-    case WebURLRequest::kRequestContextImageSet:
-    case WebURLRequest::kRequestContextImport:
-    case WebURLRequest::kRequestContextInternal:
-    case WebURLRequest::kRequestContextLocation:
-    case WebURLRequest::kRequestContextManifest:
-    case WebURLRequest::kRequestContextPing:
-    case WebURLRequest::kRequestContextPrefetch:
-    case WebURLRequest::kRequestContextScript:
-    case WebURLRequest::kRequestContextServiceWorker:
-    case WebURLRequest::kRequestContextSharedWorker:
-    case WebURLRequest::kRequestContextSubresource:
-    case WebURLRequest::kRequestContextStyle:
-    case WebURLRequest::kRequestContextTrack:
-    case WebURLRequest::kRequestContextVideo:
-    case WebURLRequest::kRequestContextWorker:
-    case WebURLRequest::kRequestContextXMLHttpRequest:
-    case WebURLRequest::kRequestContextXSLT:
-      return net::DefineNetworkTrafficAnnotation("blink_resource_loader", R"(
-      semantics {
-        sender: "Blink Resource Loader"
-        description:
-          "Blink-initiated request, which includes all resources for "
-          "normal page loads, chrome URLs, and downloads."
-        trigger:
-          "The user navigates to a URL or downloads a file. Also when a "
-          "webpage, ServiceWorker, or chrome:// uses any network communication."
-        data: "Anything the initiator wants to send."
-        destination: OTHER
-      }
-      policy {
-        cookies_allowed: YES
-        cookies_store: "user"
-        setting: "These requests cannot be disabled in settings."
-        policy_exception_justification:
-          "Not implemented. Without these requests, Chrome will be unable "
-          "to load any webpage."
-      })");
-
-    case WebURLRequest::kRequestContextEmbed:
-    case WebURLRequest::kRequestContextObject:
-    case WebURLRequest::kRequestContextPlugin:
-      return net::DefineNetworkTrafficAnnotation(
-          "blink_extension_resource_loader", R"(
-        semantics {
-          sender: "Blink Resource Loader"
-          description:
-            "Blink-initiated request for resources required for NaCl instances "
-            "tagged with <embed> or <object>, or installed extensions."
-          trigger:
-            "An extension or NaCl instance may initiate a request at any time, "
-            "even in the background."
-          data: "Anything the initiator wants to send."
-          destination: OTHER
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "user"
-          setting:
-            "These requests cannot be disabled in settings, but they are "
-            "sent only if user installs extensions."
-          chrome_policy {
-            ExtensionInstallBlacklist {
-              ExtensionInstallBlacklist: {
-                entries: '*'
-              }
-            }
-          }
-        })");
-
-    case WebURLRequest::kRequestContextFavicon:
-      return net::DefineNetworkTrafficAnnotation("favicon_loader", R"(
-        semantics {
-          sender: "Blink Resource Loader"
-          description:
-            "Chrome sends a request to download favicon for a URL."
-          trigger:
-            "Navigating to a URL."
-          data: "None."
-          destination: WEBSITE
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "user"
-          setting: "These requests cannot be disabled in settings."
-          policy_exception_justification:
-            "Not implemented."
-        })");
-  }
-
-  return net::NetworkTrafficAnnotationTag::NotReached();
-}
-
 // WebURLLoaderImpl::RequestPeerImpl ------------------------------------------
 
 WebURLLoaderImpl::RequestPeerImpl::RequestPeerImpl(Context* context)
@@ -1406,6 +1296,118 @@ void WebURLLoaderImpl::SetDefersLoading(bool value) {
 void WebURLLoaderImpl::DidChangePriority(WebURLRequest::Priority new_priority,
                                          int intra_priority_value) {
   context_->DidChangePriority(new_priority, intra_priority_value);
+}
+
+// static
+// We have this function at the bottom of this file because it confuses
+// syntax highliting.
+net::NetworkTrafficAnnotationTag
+WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
+    const blink::WebURLRequest& request) {
+  switch (request.GetRequestContext()) {
+    case WebURLRequest::kRequestContextUnspecified:
+    case WebURLRequest::kRequestContextAudio:
+    case WebURLRequest::kRequestContextBeacon:
+    case WebURLRequest::kRequestContextCSPReport:
+    case WebURLRequest::kRequestContextDownload:
+    case WebURLRequest::kRequestContextEventSource:
+    case WebURLRequest::kRequestContextFetch:
+    case WebURLRequest::kRequestContextFont:
+    case WebURLRequest::kRequestContextForm:
+    case WebURLRequest::kRequestContextFrame:
+    case WebURLRequest::kRequestContextHyperlink:
+    case WebURLRequest::kRequestContextIframe:
+    case WebURLRequest::kRequestContextImage:
+    case WebURLRequest::kRequestContextImageSet:
+    case WebURLRequest::kRequestContextImport:
+    case WebURLRequest::kRequestContextInternal:
+    case WebURLRequest::kRequestContextLocation:
+    case WebURLRequest::kRequestContextManifest:
+    case WebURLRequest::kRequestContextPing:
+    case WebURLRequest::kRequestContextPrefetch:
+    case WebURLRequest::kRequestContextScript:
+    case WebURLRequest::kRequestContextServiceWorker:
+    case WebURLRequest::kRequestContextSharedWorker:
+    case WebURLRequest::kRequestContextSubresource:
+    case WebURLRequest::kRequestContextStyle:
+    case WebURLRequest::kRequestContextTrack:
+    case WebURLRequest::kRequestContextVideo:
+    case WebURLRequest::kRequestContextWorker:
+    case WebURLRequest::kRequestContextXMLHttpRequest:
+    case WebURLRequest::kRequestContextXSLT:
+      return net::DefineNetworkTrafficAnnotation("blink_resource_loader", R"(
+      semantics {
+        sender: "Blink Resource Loader"
+        description:
+          "Blink-initiated request, which includes all resources for "
+          "normal page loads, chrome URLs, and downloads."
+        trigger:
+          "The user navigates to a URL or downloads a file. Also when a "
+          "webpage, ServiceWorker, or chrome:// uses any network communication."
+        data: "Anything the initiator wants to send."
+        destination: OTHER
+      }
+      policy {
+        cookies_allowed: YES
+        cookies_store: "user"
+        setting: "These requests cannot be disabled in settings."
+        policy_exception_justification:
+          "Not implemented. Without these requests, Chrome will be unable "
+          "to load any webpage."
+      })");
+
+    case WebURLRequest::kRequestContextEmbed:
+    case WebURLRequest::kRequestContextObject:
+    case WebURLRequest::kRequestContextPlugin:
+      return net::DefineNetworkTrafficAnnotation(
+          "blink_extension_resource_loader", R"(
+        semantics {
+          sender: "Blink Resource Loader"
+          description:
+            "Blink-initiated request for resources required for NaCl instances "
+            "tagged with <embed> or <object>, or installed extensions."
+          trigger:
+            "An extension or NaCl instance may initiate a request at any time, "
+            "even in the background."
+          data: "Anything the initiator wants to send."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting:
+            "These requests cannot be disabled in settings, but they are "
+            "sent only if user installs extensions."
+          chrome_policy {
+            ExtensionInstallBlacklist {
+              ExtensionInstallBlacklist: {
+                entries: '*'
+              }
+            }
+          }
+        })");
+
+    case WebURLRequest::kRequestContextFavicon:
+      return net::DefineNetworkTrafficAnnotation("favicon_loader", R"(
+        semantics {
+          sender: "Blink Resource Loader"
+          description:
+            "Chrome sends a request to download favicon for a URL."
+          trigger:
+            "Navigating to a URL."
+          data: "None."
+          destination: WEBSITE
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user"
+          setting: "These requests cannot be disabled in settings."
+          policy_exception_justification:
+            "Not implemented."
+        })");
+  }
+
+  return net::NetworkTrafficAnnotationTag::NotReached();
 }
 
 }  // namespace content
