@@ -35,14 +35,17 @@ class CompositorFrameSinkImpl : public mojom::CompositorFrameSink {
                              uint64_t submit_time) override;
   void DidNotProduceFrame(const BeginFrameAck& begin_frame_ack) override;
 
+  CompositorFrameSinkSupport* support() const { return support_.get(); }
+
  private:
   void OnClientConnectionLost();
 
   mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client_;
   mojo::Binding<mojom::CompositorFrameSink> compositor_frame_sink_binding_;
 
-  // Must be destroyed before |compositor_frame_sink_client_|.
-  std::unique_ptr<CompositorFrameSinkSupport> support_;
+  // Must be destroyed before |compositor_frame_sink_client_|. This must never
+  // change for the lifetime of CompositorFrameSinkImpl.
+  const std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkImpl);
 };

@@ -365,7 +365,7 @@ void Surface::NotifyAggregatedDamage(const gfx::Rect& damage_rect) {
     return;
 
   active_frame_data_->aggregated_damage_callback.Run(
-      surface_id().local_surface_id(), damage_rect);
+      surface_id().local_surface_id(), damage_rect, active_frame_data_->frame);
 }
 
 void Surface::AddDestructionDependency(SurfaceSequence sequence) {

@@ -36,6 +36,8 @@ class SurfaceSynchronizationTest;
 
 namespace viz {
 
+class CapturableFrameSink;
+class CompositorFrameSinkSupport;
 class DisplayProvider;
 class FrameSinkManagerClient;
 
@@ -160,6 +162,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
   void RecursivelyDetachBeginFrameSource(const FrameSinkId& frame_sink_id,
                                          BeginFrameSource* source);
 
+  // TODO(crbug.com/754872): To be used by FrameSinkVideoCapturerImpl in
+  // an upcoming change.
+  CapturableFrameSink* FindCapturableFrameSink(
+      const FrameSinkId& frame_sink_id);
+
   // Returns true if |child framesink| is or has |search_frame_sink_id| as a
   // child.
   bool ChildContains(const FrameSinkId& child_frame_sink_id,
@@ -199,9 +206,13 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
 
   HitTestManager hit_test_manager_;
 
-  std::unordered_map<FrameSinkId,
-                     std::unique_ptr<mojom::CompositorFrameSink>,
-                     FrameSinkIdHash>
+  struct SinkAndSupport {
+    SinkAndSupport();
+    ~SinkAndSupport();
+    std::unique_ptr<mojom::CompositorFrameSink> sink;
+    CompositorFrameSinkSupport* support;  // Owned by |sink|.
+  };
+  std::unordered_map<FrameSinkId, SinkAndSupport, FrameSinkIdHash>
       compositor_frame_sinks_;
 
   THREAD_CHECKER(thread_checker_);

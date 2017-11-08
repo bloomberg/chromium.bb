@@ -11,9 +11,11 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display_embedder/display_provider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_impl.h"
+#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_client.h"
 #include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 #include "components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h"
+#include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
 
 #if DCHECK_IS_ON()
 #include <sstream>
@@ -29,6 +31,10 @@ FrameSinkManagerImpl::FrameSinkSourceMapping::FrameSinkSourceMapping(
 
 FrameSinkManagerImpl::FrameSinkSourceMapping::~FrameSinkSourceMapping() =
     default;
+
+FrameSinkManagerImpl::SinkAndSupport::SinkAndSupport() = default;
+
+FrameSinkManagerImpl::SinkAndSupport::~SinkAndSupport() = default;
 
 FrameSinkManagerImpl::FrameSinkManagerImpl(
     SurfaceManager::LifetimeType lifetime_type,
@@ -106,11 +112,13 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
   auto display = display_provider_->CreateDisplay(
       frame_sink_id, surface_handle, renderer_settings, &begin_frame_source);
 
-  compositor_frame_sinks_[frame_sink_id] =
-      base::MakeUnique<RootCompositorFrameSinkImpl>(
-          this, frame_sink_id, std::move(display),
-          std::move(begin_frame_source), std::move(request), std::move(client),
-          std::move(display_private_request));
+  auto frame_sink = std::make_unique<RootCompositorFrameSinkImpl>(
+      this, frame_sink_id, std::move(display), std::move(begin_frame_source),
+      std::move(request), std::move(client),
+      std::move(display_private_request));
+  SinkAndSupport& entry = compositor_frame_sinks_[frame_sink_id];
+  entry.support = frame_sink->support();
+  entry.sink = std::move(frame_sink);
 }
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
@@ -120,9 +128,11 @@ void FrameSinkManagerImpl::CreateCompositorFrameSink(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
 
-  compositor_frame_sinks_[frame_sink_id] =
-      base::MakeUnique<CompositorFrameSinkImpl>(
-          this, frame_sink_id, std::move(request), std::move(client));
+  auto frame_sink = std::make_unique<CompositorFrameSinkImpl>(
+      this, frame_sink_id, std::move(request), std::move(client));
+  SinkAndSupport& entry = compositor_frame_sinks_[frame_sink_id];
+  entry.support = frame_sink->support();
+  entry.sink = std::move(frame_sink);
 }
 
 void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
@@ -310,6 +320,14 @@ void FrameSinkManagerImpl::RecursivelyDetachBeginFrameSource(
   for (size_t i = 0; i < children.size(); ++i) {
     RecursivelyDetachBeginFrameSource(children[i], source);
   }
+}
+
+CapturableFrameSink* FrameSinkManagerImpl::FindCapturableFrameSink(
+    const FrameSinkId& frame_sink_id) {
+  const auto it = compositor_frame_sinks_.find(frame_sink_id);
+  if (it == compositor_frame_sinks_.end())
+    return nullptr;
+  return it->second.support;
 }
 
 bool FrameSinkManagerImpl::ChildContains(

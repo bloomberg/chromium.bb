@@ -965,6 +965,9 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   CHECK(debug_weak_this.get());
 
   if (!damage_rect.IsEmpty()) {
+    // The following call can cause one or more copy requests to be added to the
+    // Surface. Therefore, no code before this point should have assumed
+    // anything about the presence or absence of copy requests after this point.
     surface->NotifyAggregatedDamage(damage_rect);
     manager_->SurfaceSubtreeDamaged(surface->surface_id());
   }
