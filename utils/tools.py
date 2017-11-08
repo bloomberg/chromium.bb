@@ -206,7 +206,13 @@ def cached(func):
       cache[args] = v
     return v
 
+  wrapper.__cache__ = cache
   return wrapper
+
+
+def clear_cache(func):
+  """Clears all accumulated cached results of the given decorated function."""
+  func.__cache__.clear()
 
 
 class Unbuffered(object):
