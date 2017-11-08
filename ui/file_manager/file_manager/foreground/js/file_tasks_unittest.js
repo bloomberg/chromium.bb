@@ -369,3 +369,71 @@ function testOpenWithMostRecentlyExecuted(callback) {
   });
   reportPromise(promise, callback);
 }
+
+function testChooseZipArchiverOverZipUnpacker(callback) {
+  var zipUnpackerTaskId = 'oedeeodfidgoollimchfdnbmhcpnklnd|app|zip';
+  var zipArchiverTaskId = 'dmboannefpncccogfdikhmhpmdnddgoe|app|open';
+
+  chrome.commandLinePrivate.hasSwitch = function(name, callback) {
+    callback(name == 'enable-zip-archiver-unpacker');
+  };
+
+  window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
+    setTimeout(
+        callback.bind(
+            null,
+            [
+              {
+                taskId: zipArchiverTaskId,
+                isDefault: false,
+                isGenericFileHandler: false,
+                title: 'Zip Archiver',
+              },
+              // Zip unpacker. Will be hidden because Zip Archiver is enabled.
+              {
+                taskId: zipUnpackerTaskId,
+                isDefault: false,
+                isGenericFileHandler: false,
+                title: 'ZIP unpacker',
+              },
+            ]),
+        0);
+  };
+  // None of the tasks has ever been executed.
+  var taskHistory = {
+    getLastExecutedTime: function(id) {
+      return 0;
+    },
+    recordTaskExecuted: function(taskId) {}
+  };
+  var executedTask = null;
+  window.chrome.fileManagerPrivate.executeTask = function(
+      taskId, entries, onViewFiles) {
+    executedTask = taskId;
+    onViewFiles('success');
+  };
+
+  var mockFileSystem = new MockFileSystem('volumeId');
+  var mockEntry = new MockFileEntry(mockFileSystem, '/test.zip');
+  var promise = new Promise(function(resolve, reject) {
+    var fileManager = getMockFileManager();
+    fileManager.ui.defaultTaskPicker = {
+      showDefaultTaskDialog: function(
+          title, message, items, defaultIdx, onSuccess) {
+        failWithMessage('run zip archiver', 'default task picker was shown');
+      }
+    };
+
+    FileTasks
+        .create(
+            fileManager.volumeManager, fileManager.metadataModel,
+            fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
+            taskHistory)
+        .then(function(tasks) {
+          tasks.executeDefault();
+          assertEquals(zipArchiverTaskId, executedTask);
+          resolve();
+        });
+  });
+  reportPromise(promise, callback);
+}
