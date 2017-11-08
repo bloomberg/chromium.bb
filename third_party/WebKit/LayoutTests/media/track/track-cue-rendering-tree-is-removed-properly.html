@@ -5,7 +5,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <video>
-    <track src="captions-webvtt/captions.vtt" kind="captions" mode="showing">
+    <track src="captions-webvtt/captions.vtt" kind="captions" default>
 </video>
 <script>
 async_test(function(t) {
@@ -18,7 +18,11 @@ async_test(function(t) {
         video.textContent = "";
 
         // Text track should not be rendered anymore.
-        assert_throws(null, function() { textTrackDisplayElement(video); });
+        try {
+          textTrackDisplayElement(video);
+          assert_unreached("textTrackDisplayElement did not throw");
+        } catch (e) {
+        }
     });
 });
 </script>
