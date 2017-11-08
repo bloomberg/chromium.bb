@@ -44,3 +44,5 @@ inline static void FREE_DTOA_LOCK(size_t n) {
 }
 
 #include "base/third_party/dmg_fp/dtoa.cc"
+
+#undef Long  // To avoid breaking jni code in jumbo builds
