@@ -15,8 +15,7 @@ const gInvalidTestCases = [
   { value: '10deg', desc: 'a string angle'},
   { value: CSS.number(10), desc: 'a number CSSUnitValue'},
   { value: CSS.s(10), desc: 'a time dimension CSSUnitValue'},
-  // FIXME(): Uncomment this once we have CSSMathValues.
-  //{ value: new CSSMathSum(CSS.px(1), CSS.px(1)), desc: 'a CSSMathValue of length type' },
+  { value: new CSSMathSum(CSS.px(1)), desc: 'a CSSMathValue of length type' },
 ];
 
 for (const {value, desc} of gInvalidTestCases) {
@@ -37,9 +36,8 @@ for (const attr of ['ax', 'ay']) {
 }
 
 const gValidTestCases = [
-  { value: CSS.deg(3.14), desc: 'a positive degree angle' },
-  { value: CSS.deg(0), desc: 'a zero degree angle' },
-  { value: CSS.rad(-3.14), desc: 'a negative radian angle' },
+  { value: CSS.deg(-3.14), desc: 'an angle CSSUnitValue' },
+  { value: new CSSMathSum(CSS.deg(1)), desc: 'a CSSMathValue of angle type' },
 ];
 
 for (const {value: ax, desc: axDesc} of gValidTestCases) {

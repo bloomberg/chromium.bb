@@ -15,8 +15,7 @@ const gInvalidTestCases = [
   { value: '10px', desc: 'a string length'},
   { value: CSS.number(10), desc: 'a number CSSUnitValue'},
   { value: CSS.s(10), desc: 'a time dimension CSSUnitValue'},
-  // FIXME(): Uncomment this once we have CSSMathValues.
-  //{ value: new CSSMathSum(CSS.deg(1), CSS.deg(1)), desc: 'a CSSMathValue of angle type' },
+  { value: new CSSMathSum(CSS.deg(1)), desc: 'a CSSMathValue of angle type' },
 ];
 
 for (const {value, desc} of gInvalidTestCases) {
@@ -39,8 +38,8 @@ for (const attr of ['x', 'y']) {
 const gValidTestCases = [
   { value: CSS.px(1), desc: 'a length CSSUnitValue' },
   { value: CSS.percent(10), desc: 'a percent CSSUnitValue' },
-  // FIXME(): Uncomment this once we have CSSMathValues.
-  //{ value: new CSSMathSum(CSS.px(1), CSS.px(1)), desc: 'a CSSMathValue of length type' },
+  { value: new CSSMathSum(CSS.px(1)), desc: 'a CSSMathValue of length type' },
+  { value: new CSSMathSum(CSS.percent(1)), desc: 'a CSSMathValue of percent type' },
 ];
 
 for (const {value: x, desc: xDesc} of gValidTestCases) {
