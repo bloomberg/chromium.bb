@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
@@ -79,13 +80,13 @@ public class ResourceExtractor {
             // A missing file means Chrome has updated. Delete stale files first.
             deleteFiles(existingFileNames);
 
+            AssetManager assetManager = ContextUtils.getApplicationAssets();
             byte[] buffer = new byte[BUFFER_SIZE];
             for (String assetName : mAssetsToExtract) {
                 File output = new File(outputDir, assetName + extractSuffix);
                 TraceEvent.begin("ExtractResource");
                 try {
-                    InputStream inputStream =
-                            ContextUtils.getApplicationContext().getAssets().open(assetName);
+                    InputStream inputStream = assetManager.open(assetName);
                     extractResourceHelper(inputStream, output, buffer);
                 } catch (IOException e) {
                     // The app would just crash later if files are missing.

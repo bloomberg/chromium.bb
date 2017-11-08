@@ -5,8 +5,10 @@
 package org.chromium.base;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
 
@@ -121,5 +123,22 @@ public class ContextUtils {
             throw new RuntimeException("Global application context cannot be set to null.");
         }
         sApplicationContext = appContext;
+    }
+
+    /**
+     * In most cases, {@link Context#getAssets()} can be used directly. Modified resources are
+     * used downstream and are set up on application startup, and this method provides access to
+     * regular assets before that initialization is complete.
+     *
+     * This method should ONLY be used for accessing files within the assets folder.
+     *
+     * @return Application assets.
+     */
+    public static AssetManager getApplicationAssets() {
+        Context context = getApplicationContext();
+        while (context instanceof ContextWrapper) {
+            context = ((ContextWrapper) context).getBaseContext();
+        }
+        return context.getAssets();
     }
 }
