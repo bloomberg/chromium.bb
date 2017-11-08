@@ -204,6 +204,55 @@ suite('network-config', function() {
       });
     });
 
+    test('Ethernet', function() {
+      var ethernet = {
+        GUID: 'ethernetguid',
+        Name: 'Ethernet',
+        Type: 'Ethernet',
+        Ethernet: {Authentication: 'None'}
+      };
+      api_.addNetworksForTest([ethernet]);
+      setNetworkConfig({GUID: 'ethernetguid', Name: '', Type: 'Ethernet'});
+      return flushAsync().then(() => {
+        assertEquals('ethernetguid', networkConfig.guid);
+        assertEquals('None', networkConfig.security_);
+        let outer = networkConfig.$$('#outer');
+        assertFalse(!!outer);
+      });
+    });
+
+    test('Ethernet EAP', function() {
+      var ethernet = {
+        GUID: 'ethernetguid',
+        Name: 'Ethernet',
+        Type: 'Ethernet',
+        Ethernet: {Authentication: 'None'}
+      };
+      var ethernetEap = {
+        GUID: 'eapguid',
+        Name: 'EthernetEap',
+        Type: 'Ethernet',
+        Ethernet: {
+          Authentication: '8021X',
+          EAP: {Outer: 'PEAP'},
+        }
+      };
+      api_.addNetworksForTest([ethernet, ethernetEap]);
+      setNetworkConfig({GUID: 'ethernetguid', Name: '', Type: 'Ethernet'});
+      return flushAsync().then(() => {
+        assertEquals('eapguid', networkConfig.guid);
+        assertEquals('WPA-EAP', networkConfig.security_);
+        assertEquals(
+            'PEAP',
+            networkConfig.get(
+                'Ethernet.EAP.Outer', networkConfig.networkProperties));
+        let outer = networkConfig.$$('#outer');
+        assertTrue(!!outer);
+        assertTrue(!outer.disabled);
+        assertEquals('PEAP', outer.value);
+      });
+    });
+
   });
 
 });

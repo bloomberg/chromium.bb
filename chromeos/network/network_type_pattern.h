@@ -26,8 +26,11 @@ class CHROMEOS_EXPORT NetworkTypePattern {
   // Matches non virtual networks.
   static NetworkTypePattern NonVirtual();
 
-  // Matches ethernet networks (with or without EAP).
+  // Matches ethernet networks.
   static NetworkTypePattern Ethernet();
+
+  // Matches ethernet or ethernet EAP networks.
+  static NetworkTypePattern EthernetOrEthernetEAP();
 
   static NetworkTypePattern WiFi();
   static NetworkTypePattern Cellular();

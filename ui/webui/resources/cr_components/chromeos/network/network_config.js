@@ -432,12 +432,17 @@ Polymer({
       this.close_();
       return;
     }
-    this.propertiesReceived_ = true;
-    this.networkProperties = properties;
-    this.error_ = properties.ErrorState || '';
 
-    // Set the current shareNetwork_ value when porperties are received.
-    this.setShareNetwork_();
+    if (properties.Type == CrOnc.Type.ETHERNET &&
+        this.get('Ethernet.Authentication', properties) !=
+            CrOnc.Authentication.WEP_8021X) {
+      // Ethernet may have EAP properties set in a separate EthernetEap
+      // configuration. Request that before calling |setNetworkProperties_|.
+      this.networkingPrivate.getNetworks(
+          {networkType: CrOnc.Type.ETHERNET, visible: false, configured: true},
+          this.getEthernetEap_.bind(this, properties));
+      return;
+    }
 
     if (properties.Type == CrOnc.Type.VPN) {
       this.vpnSaveCredentials_ =
@@ -445,6 +450,56 @@ Polymer({
           !!this.get('VPN.IPsec.SaveCredentials', properties) ||
           !!this.get('VPN.L2TP.SaveCredentials', properties);
     }
+
+    this.setNetworkProperties_(properties);
+  },
+
+  /**
+   * @param {!chrome.networkingPrivate.NetworkProperties} properties
+   * @private
+   */
+  setNetworkProperties_: function(properties) {
+    this.propertiesReceived_ = true;
+    this.networkProperties = properties;
+    this.error_ = properties.ErrorState || '';
+
+    // Set the current shareNetwork_ value when porperties are received.
+    this.setShareNetwork_();
+  },
+
+  /**
+   * networkingPrivate.getNetworks callback. Expects an array of Ethernet
+   * networks and looks for an EAP configuration to apply.
+   * @param {!chrome.networkingPrivate.NetworkProperties} properties
+   * @param {!Array<chrome.networkingPrivate.NetworkStateProperties>} networks
+   * @private
+   */
+  getEthernetEap_: function(properties, networks) {
+    if (this.getRuntimeError_()) {
+      this.setNetworkProperties_(properties);
+      return;
+    }
+
+    // Look for an existing EAP configuration. This may be stored in a
+    // separate 'Ethernet EAP Parameters' configuration.
+    var ethernetEap = networks.find(function(network) {
+      return !!network.Ethernet &&
+          network.Ethernet.Authentication == CrOnc.Authentication.WEP_8021X;
+    });
+    if (!ethernetEap) {
+      this.setNetworkProperties_(properties);
+      return;
+    }
+
+    this.networkingPrivate.getProperties(ethernetEap.GUID, (eapProperties) => {
+      if (!this.getRuntimeError_() && eapProperties.Ethernet.EAP) {
+        this.guid = eapProperties.GUID;
+        this.security_ = CrOnc.Security.WPA_EAP;
+        properties.GUID = eapProperties.GUID;
+        properties.Ethernet.EAP = eapProperties.Ethernet.EAP;
+      }
+      this.setNetworkProperties_(properties);
+    });
   },
 
   /**
@@ -597,6 +652,11 @@ Polymer({
       this.set('WiFi.Security', this.security_, this.configProperties_);
       // Set the share value to its default when the security type changes.
       this.setShareNetwork_();
+    } else if (this.type == CrOnc.Type.ETHERNET) {
+      var auth = this.security_ == CrOnc.Security.WPA_EAP ?
+          CrOnc.Authentication.WEP_8021X :
+          CrOnc.Authentication.NONE;
+      this.set('Ethernet.Authentication', auth, this.configProperties_);
     }
     if (this.security_ == CrOnc.Security.WPA_EAP) {
       var eap = this.getEap_(this.configProperties_, true);
@@ -891,9 +951,12 @@ Polymer({
    */
   computeEapOuterItems_: function(
       guid, shareNetwork, shareAllowEnable, shareDefault) {
-    if ((guid && shareNetwork) || (!shareAllowEnable && shareDefault)) {
-      // If a network must be shared, hide the TLS option. Otherwise selecting
-      // TLS will turn off and disable the shared state.
+    // If a network must be shared, hide the TLS option. Otherwise selecting
+    // TLS will turn off and disable the shared state. NOTE: Ethernet EAP may
+    // be set at the Device level, but will be saved as a User configuration.
+    if (this.type != CrOnc.Type.ETHERNET &&
+        ((this.getSource_() != CrOnc.Source.NONE && shareNetwork) ||
+         (!shareAllowEnable && shareDefault))) {
       return [CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TTLS];
     }
     return [
