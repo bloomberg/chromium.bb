@@ -169,7 +169,10 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       for (size_t i = 1; i < tokens.size(); i++) {
         if (EqualIgnoringASCIICase(tokens[i], "'self'")) {
           origins.push_back(self_origin->ToUrlOrigin());
-        } else if (EqualIgnoringASCIICase(tokens[i], "'src'")) {
+        } else if (src_origin && EqualIgnoringASCIICase(tokens[i], "'src'")) {
+          // Only iframe allow attribute can define src origin.
+          // When parsing feature policy header, src is disallowed and
+          // src_origin = nullptr.
           origins.push_back(src_origin->ToUrlOrigin());
         } else if (EqualIgnoringASCIICase(tokens[i], "'none'")) {
           continue;
