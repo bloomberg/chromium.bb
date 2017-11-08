@@ -58,6 +58,9 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
   void OnPaint(gfx::Canvas* canvas) override;
   bool CanProcessEventsWithinSubtree() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
  protected:
   // Overridden from views::View.
