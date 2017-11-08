@@ -148,10 +148,12 @@ void UserMediaClientImpl::RequestUserMedia(
   // The value returned by isProcessingUserGesture() is used by the browser to
   // make decisions about the permissions UI. Its value can be lost while
   // switching threads, so saving its value here.
+  bool user_gesture = blink::WebUserGestureIndicator::IsProcessingUserGesture(
+      web_request.OwnerDocument().IsNull()
+          ? nullptr
+          : web_request.OwnerDocument().GetFrame());
   std::unique_ptr<UserMediaRequest> request_info =
-      std::make_unique<UserMediaRequest>(
-          request_id, web_request,
-          blink::WebUserGestureIndicator::IsProcessingUserGesture());
+      std::make_unique<UserMediaRequest>(request_id, web_request, user_gesture);
   pending_request_infos_.push_back(Request(std::move(request_info)));
   if (!is_processing_request_) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
