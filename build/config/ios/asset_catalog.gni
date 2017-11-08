@@ -107,7 +107,7 @@ template("asset_catalog") {
                                "sources",
                              ])
 
-      sources = get_target_outputs(":$_copy_target_name")
+      sources = _outputs
       outputs = [
         "{{bundle_resources_dir}}/{{source_file_part}}",
       ]
