@@ -847,21 +847,21 @@ class ArcSessionOobeOptInTest : public ArcSessionManagerTest {
 TEST_F(ArcSessionOobeOptInTest, OobeOptInActive) {
   // OOBE OptIn is active in case of OOBE controller is alive and the ARC ToS
   // screen is currently showing.
-  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  EXPECT_FALSE(IsArcOobeOptInActive());
   CreateLoginDisplayHost();
-  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  EXPECT_FALSE(IsArcOobeOptInActive());
   GetFakeUserManager()->set_current_user_new(true);
-  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  EXPECT_FALSE(IsArcOobeOptInActive());
   AppendEnableArcOOBEOptInSwitch();
-  EXPECT_TRUE(ArcSessionManager::IsOobeOptInActive());
+  EXPECT_TRUE(IsArcOobeOptInActive());
   login_display_host()->StartVoiceInteractionOobe();
-  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  EXPECT_FALSE(IsArcOobeOptInActive());
   login_display_host()->StartWizard(
       chromeos::OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
-  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  EXPECT_FALSE(IsArcOobeOptInActive());
   login_display_host()->StartWizard(
       chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
-  EXPECT_TRUE(ArcSessionManager::IsOobeOptInActive());
+  EXPECT_TRUE(IsArcOobeOptInActive());
 }
 
 class ArcSessionOobeOptInNegotiatorTest

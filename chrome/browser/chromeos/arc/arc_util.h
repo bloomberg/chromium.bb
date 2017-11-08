@@ -115,6 +115,9 @@ bool AreArcAllOptInPreferencesIgnorableForProfile(const Profile* profile);
 // Active Directory user.
 bool IsActiveDirectoryUserForProfile(const Profile* profile);
 
+// Returns true if ChromeOS OOBE opt-in window is currently showing.
+bool IsArcOobeOptInActive();
+
 // Checks and updates the preference value whether the underlying filesystem
 // for the profile is compatible with ARC, when necessary. After it's done (or
 // skipped), |callback| is run either synchronously or asynchronously.
