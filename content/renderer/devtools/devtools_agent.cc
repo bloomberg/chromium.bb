@@ -56,11 +56,9 @@ class WebKitClientMessageLoopImpl
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     base::RunLoop* const previous_run_loop = run_loop_;
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     run_loop_ = &run_loop;
 
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
     run_loop.Run();
 
     run_loop_ = previous_run_loop;
