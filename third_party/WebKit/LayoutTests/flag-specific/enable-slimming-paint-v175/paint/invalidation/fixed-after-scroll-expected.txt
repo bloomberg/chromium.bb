@@ -35,6 +35,10 @@
     {
       "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
       "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
+      "reason": "style change"
     }
   ]
 }

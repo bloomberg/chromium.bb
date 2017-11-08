@@ -68,7 +68,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='target'",
-      "reason": "compositing update"
+      "reason": "style change"
     }
   ]
 }

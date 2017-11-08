@@ -30,7 +30,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='outer'",
-      "reason": "background"
+      "reason": "style change"
     }
   ]
 }

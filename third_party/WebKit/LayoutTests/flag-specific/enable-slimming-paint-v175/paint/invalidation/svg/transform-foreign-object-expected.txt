@@ -18,6 +18,16 @@
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGForeignObject foreignObject",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "style change"
+    }
   ]
 }
 

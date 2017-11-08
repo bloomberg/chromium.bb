@@ -22,19 +22,19 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGText text",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "RootInlineBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'Test'",
-      "reason": "geometry"
+      "reason": "style change"
     }
   ]
 }

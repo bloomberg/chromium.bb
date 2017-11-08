@@ -33,11 +33,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='container' class='relative'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
-      "reason": "geometry"
+      "reason": "style change"
     }
   ]
 }
