@@ -367,14 +367,12 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
             @Override
             public void paste() {
-                mWebContents.paste();
-                mWebContents.dismissTextHandles();
+                SelectionPopupController.this.paste();
             }
 
             @Override
             public void pasteAsPlainText() {
-                mWebContents.pasteAsPlainText();
-                mWebContents.dismissTextHandles();
+                SelectionPopupController.this.pasteAsPlainText();
             }
 
             @Override
@@ -736,16 +734,13 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             selectAll();
         } else if (id == R.id.select_action_menu_cut) {
             cut();
-            mode.finish();
         } else if (id == R.id.select_action_menu_copy) {
             copy();
             mode.finish();
         } else if (id == R.id.select_action_menu_paste) {
             paste();
-            mode.finish();
         } else if (BuildInfo.isAtLeastO() && id == R.id.select_action_menu_paste_as_plain_text) {
             pasteAsPlainText();
-            mode.finish();
         } else if (id == R.id.select_action_menu_share) {
             share();
             mode.finish();
