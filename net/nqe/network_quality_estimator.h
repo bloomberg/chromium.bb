@@ -372,6 +372,8 @@ class NET_EXPORT NetworkQualityEstimator
   FRIEND_TEST_ALL_PREFIXES(
       NetworkQualityEstimatorTest,
       TestComputeIncreaseInTransportRTTPartialHostsOverlap);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
+                           ObservationDiscardedIfCachedEstimateAvailable);
 
   // Defines how a metric (e.g, transport RTT) should be used when computing
   // the effective connection type.
@@ -527,8 +529,10 @@ class NET_EXPORT NetworkQualityEstimator
   void GatherEstimatesForNextConnectionType();
 
   // Updates the value of |cached_estimate_applied_| if |observation| is
-  // computed from a cached estimate.
-  void MaybeUpdateCachedEstimateApplied(const Observation& observation);
+  // computed from a cached estimate. |buffer| is the observation buffer to
+  // which the cached estimate is being added to.
+  void MaybeUpdateCachedEstimateApplied(const Observation& observation,
+                                        ObservationBuffer* buffer);
 
   // Returns true if |observation| should be added to the observation buffer.
   bool ShouldAddObservation(const Observation& observation) const;

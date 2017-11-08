@@ -335,6 +335,73 @@ TEST(NetworkQualityObservationBufferTest, DisallowedObservationSources) {
   }
 }
 
+// Verifies that the percentiles are correctly computed when some of the
+// observation sources are disallowed. All observations have the same timestamp.
+TEST(NetworkQualityObservationBufferTest, RemoveObservations) {
+  std::map<std::string, std::string> variation_params;
+  NetworkQualityEstimatorParams params(variation_params);
+  base::SimpleTestTickClock tick_clock;
+  tick_clock.Advance(base::TimeDelta::FromMinutes(1));
+
+  ObservationBuffer buffer(&params, &tick_clock, 0.5, 1.0);
+  const base::TimeTicks now = tick_clock.NowTicks();
+
+  // Insert samples from {1,2,3,..., 100}. First insert odd samples, then even
+  // samples. This helps in verifying that the order of samples does not matter.
+  for (int i = 1; i <= 99; i += 2) {
+    buffer.AddObservation(Observation(i, now, INT32_MIN,
+                                      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
+  }
+  EXPECT_EQ(50u, buffer.Size());
+
+  // Add samples for TCP and QUIC observations which should not be taken into
+  // account when computing the percentile.
+  for (int i = 1; i <= 99; i += 2) {
+    buffer.AddObservation(Observation(10000, now, INT32_MIN,
+                                      NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
+    buffer.AddObservation(Observation(10000, now, INT32_MIN,
+                                      NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC));
+  }
+  EXPECT_EQ(150u, buffer.Size());
+
+  for (int i = 2; i <= 100; i += 2) {
+    buffer.AddObservation(Observation(i, now, INT32_MIN,
+                                      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
+  }
+  EXPECT_EQ(200u, buffer.Size());
+
+  bool deleted_observation_sources[NETWORK_QUALITY_OBSERVATION_SOURCE_MAX] = {
+      false};
+
+  // Since all entries in |deleted_observation_sources| are set to false, no
+  // observations should be deleted.
+  buffer.RemoveObservationsWithSource(deleted_observation_sources);
+  EXPECT_EQ(200u, buffer.Size());
+
+  // 50 TCP and 50 QUIC observations should be deleted.
+  deleted_observation_sources[NETWORK_QUALITY_OBSERVATION_SOURCE_TCP] = true;
+  deleted_observation_sources[NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC] = true;
+  buffer.RemoveObservationsWithSource(deleted_observation_sources);
+  EXPECT_EQ(100u, buffer.Size());
+
+  for (int i = 0; i <= 100; ++i) {
+    // Checks if the difference between the two integers is less than 1. This is
+    // required because computed percentiles may be slightly different from
+    // what is expected due to floating point computation errors and integer
+    // rounding off errors.
+    base::Optional<int32_t> result =
+        buffer.GetPercentile(base::TimeTicks(), INT32_MIN, i,
+                             std::vector<NetworkQualityObservationSource>()
+                             /*disallowed_observation_sources*/);
+    EXPECT_TRUE(result.has_value());
+    EXPECT_NEAR(result.value(), i, 1);
+  }
+
+  deleted_observation_sources[NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP] = true;
+  buffer.RemoveObservationsWithSource(deleted_observation_sources);
+  EXPECT_EQ(0u, buffer.Size());
+}
+
 TEST(NetworkQualityObservationBufferTest, TestGetMedianRTTSince) {
   std::map<std::string, std::string> variation_params;
   NetworkQualityEstimatorParams params(variation_params);

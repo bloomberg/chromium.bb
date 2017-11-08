@@ -154,6 +154,18 @@ void ObservationBuffer::GetPercentileForEachHostWithCounts(
   }
 }
 
+void ObservationBuffer::RemoveObservationsWithSource(
+    bool deleted_observation_sources[NETWORK_QUALITY_OBSERVATION_SOURCE_MAX]) {
+  observations_.erase(
+      std::remove_if(
+          observations_.begin(), observations_.end(),
+          [deleted_observation_sources](const Observation& observation) {
+            return deleted_observation_sources[static_cast<size_t>(
+                observation.source())];
+          }),
+      observations_.end());
+}
+
 void ObservationBuffer::ComputeWeightedObservations(
     const base::TimeTicks& begin_timestamp,
     const base::Optional<int32_t>& current_signal_strength,
