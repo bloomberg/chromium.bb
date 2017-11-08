@@ -26,6 +26,7 @@
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/model/model.h"
+#include "chrome/browser/vr/pose_util.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/vr_gl_util.h"
@@ -98,15 +99,6 @@ static constexpr int kNumSamplesPerPixelBrowserUi = 2;
 static constexpr int kNumSamplesPerPixelWebVr = 1;
 
 static constexpr float kRedrawSceneAngleDeltaDegrees = 1.0;
-
-// Provides the direction the head is looking towards as a 3x1 unit vector.
-gfx::Vector3dF GetForwardVector(const gfx::Transform& head_pose) {
-  // Same as multiplying the inverse of the rotation component of the matrix by
-  // (0, 0, -1, 0).
-  return gfx::Vector3dF(-head_pose.matrix().get(2, 0),
-                        -head_pose.matrix().get(2, 1),
-                        -head_pose.matrix().get(2, 2));
-}
 
 gfx::Transform PerspectiveMatrixFromView(const gvr::Rectf& fov,
                                          float z_near,
@@ -556,7 +548,7 @@ void VrShellGl::UpdateController(const gfx::Transform& head_pose,
     controller_data.connected = false;
   browser_->UpdateGamepadData(controller_data);
 
-  HandleControllerInput(laser_origin, GetForwardVector(head_pose),
+  HandleControllerInput(laser_origin, vr::GetForwardVector(head_pose),
                         current_time);
 }
 
@@ -820,7 +812,7 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   }
 
   gfx::Vector3dF forward_vector =
-      GetForwardVector(render_info_primary_.head_pose);
+      vr::GetForwardVector(render_info_primary_.head_pose);
 
   // Update the render position of all UI elements (including desktop).
   bool scene_changed = ui_->scene()->OnBeginFrame(current_time, forward_vector);
@@ -840,10 +832,9 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   bool redraw_needed = controller_dirty || scene_changed || textures_changed ||
                        content_frame_available_;
 
-  gfx::Vector3dF old_forward_vector = GetForwardVector(last_used_head_pose_);
-  float angle =
-      gfx::AngleBetweenVectorsInDegrees(forward_vector, old_forward_vector);
-  bool head_moved = std::abs(angle) > kRedrawSceneAngleDeltaDegrees;
+  bool head_moved = vr::HeadMoveExceedsThreshold(last_used_head_pose_,
+                                                 render_info_primary_.head_pose,
+                                                 kRedrawSceneAngleDeltaDegrees);
 
   bool dirty = ShouldDrawWebVr() || head_moved || redraw_needed;
 
