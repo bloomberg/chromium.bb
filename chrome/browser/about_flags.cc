@@ -2204,6 +2204,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalKeyboardLockUiDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kExperimentalKeyboardLockUI)},
 #if defined(OS_ANDROID)
+    {"progress-bar-throttle", flag_descriptions::kProgressBarThrottleName,
+     flag_descriptions::kProgressBarThrottleDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kProgressBarThrottleFeature)},
     {"progress-bar-completion", flag_descriptions::kProgressBarCompletionName,
      flag_descriptions::kProgressBarCompletionDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kProgressBarCompletionChoices)},
