@@ -323,7 +323,11 @@ public class AccountSigninView extends FrameLayout {
             accountNames = result.get();
         } catch (GmsAvailabilityException e) {
             dismissGmsUpdatingDialog();
-            showGmsErrorDialog(e.getGmsAvailabilityReturnCode());
+            if (e.isUserResolvableError()) {
+                showGmsErrorDialog(e.getGmsAvailabilityReturnCode());
+            } else {
+                Log.e(TAG, "Unresolvable GmsAvailabilityException.", e);
+            }
             return;
         } catch (GmsJustUpdatedException e) {
             dismissGmsErrorDialog();
