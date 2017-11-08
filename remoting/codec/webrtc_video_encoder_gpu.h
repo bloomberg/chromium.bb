@@ -6,6 +6,7 @@
 #define REMOTING_CODEC_WEBRTC_VIDEO_ENCODER_GPU_H_
 
 #include "media/video/video_encode_accelerator.h"
+#include "remoting/codec/encoder_bitrate_filter.h"
 #include "remoting/codec/webrtc_video_encoder.h"
 #include "remoting/codec/webrtc_video_encoder_selector.h"
 
@@ -103,6 +104,8 @@ class WebrtcVideoEncoderGpu : public WebrtcVideoEncoder,
 
   base::flat_map<base::TimeDelta, WebrtcVideoEncoder::EncodeCallback>
       callbacks_;
+
+  EncoderBitrateFilter bitrate_filter_;
 
   base::WeakPtrFactory<WebrtcVideoEncoderGpu> weak_factory_;
 

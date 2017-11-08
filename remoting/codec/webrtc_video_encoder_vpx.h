@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "remoting/codec/encoder_bitrate_filter.h"
 #include "remoting/codec/scoped_vpx_codec.h"
 #include "remoting/codec/webrtc_video_encoder.h"
 #include "remoting/codec/webrtc_video_encoder_selector.h"
@@ -104,6 +105,8 @@ class WebrtcVideoEncoderVpx : public WebrtcVideoEncoder {
 
   base::DefaultTickClock default_tick_clock_;
   base::TickClock* clock_;
+
+  EncoderBitrateFilter bitrate_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(WebrtcVideoEncoderVpx);
 };

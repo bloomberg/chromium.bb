@@ -45,6 +45,12 @@ const int kVp9AqModeCyclicRefresh = 3;
 
 const int kDefaultTargetBitrateKbps = 1000;
 
+// Minimum target bitrate per megapixel. The value is chosen experimentally such
+// that when screen is not changing the codec converges to the target quantizer
+// above in less than 10 frames.
+// TODO(zijiehe): This value is for VP8 only; reconsider the value for VP9.
+const int kVp8MinimumTargetBitrateKbpsPerMegapixel = 2500;
+
 void SetCommonCodecParameters(vpx_codec_enc_cfg_t* config,
                               const webrtc::DesktopSize& size) {
   // Use millisecond granularity time base.
@@ -296,6 +302,11 @@ void WebrtcVideoEncoderVpx::SetLosslessColor(bool want_lossless) {
 void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
                                    const FrameParams& params,
                                    EncodeCallback done) {
+  // TODO(zijiehe): Replace "if (frame)" with "DCHECK(frame)".
+  if (frame) {
+    bitrate_filter_.SetFrameSize(frame->size().width(), frame->size().height());
+  }
+
   webrtc::DesktopSize previous_frame_size =
       image_ ? webrtc::DesktopSize(image_->w, image_->h)
              : webrtc::DesktopSize();
@@ -408,7 +419,8 @@ void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
 
 WebrtcVideoEncoderVpx::WebrtcVideoEncoderVpx(bool use_vp9)
     : use_vp9_(use_vp9),
-      clock_(&default_tick_clock_) {
+      clock_(&default_tick_clock_),
+      bitrate_filter_(kVp8MinimumTargetBitrateKbpsPerMegapixel) {
   // Indicates config is still uninitialized.
   config_.g_timebase.den = 0;
 }
@@ -480,11 +492,13 @@ void WebrtcVideoEncoderVpx::UpdateConfig(const FrameParams& params) {
 
   bool changed = false;
 
-  if (params.bitrate_kbps >= 0 &&
-      config_.rc_target_bitrate !=
-          static_cast<unsigned int>(params.bitrate_kbps)) {
-    config_.rc_target_bitrate = params.bitrate_kbps;
-    changed = true;
+  if (params.bitrate_kbps >= 0) {
+    bitrate_filter_.SetBandwidthEstimateKbps(params.bitrate_kbps);
+    if (config_.rc_target_bitrate !=
+        static_cast<unsigned int>(bitrate_filter_.GetTargetBitrateKbps())) {
+      config_.rc_target_bitrate = bitrate_filter_.GetTargetBitrateKbps();
+      changed = true;
+    }
   }
 
   if (params.vpx_min_quantizer >= 0 &&

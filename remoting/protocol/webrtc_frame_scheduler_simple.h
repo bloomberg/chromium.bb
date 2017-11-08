@@ -46,26 +46,6 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   void SetCurrentTimeForTest(base::TimeTicks now);
 
  private:
-  // Helper class used to calculate target encoder bitrate.
-  class EncoderBitrateFilter {
-   public:
-    EncoderBitrateFilter();
-    ~EncoderBitrateFilter();
-
-    void SetBandwidthEstimate(int bandwidth_kbps, base::TimeTicks now);
-    void SetFrameSize(webrtc::DesktopSize size);
-    int GetTargetBitrateKbps() const;
-
-   private:
-    void UpdateTargetBitrate();
-
-    base::queue<std::pair<base::TimeTicks, int>> bandwidth_samples_;
-    int bandwidth_samples_sum_ = 0;
-
-    int minimum_bitrate_ = 0;
-    int current_target_bitrate_ = 0;
-  };
-
   void ScheduleNextFrame();
   void CaptureNextFrame();
 
@@ -93,8 +73,6 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   base::TimeTicks latest_frame_encode_start_time_;
 
   LeakyBucket pacing_bucket_;
-
-  EncoderBitrateFilter encoder_bitrate_;
 
   // Set to true when a frame is being captured or encoded.
   bool frame_pending_ = false;
