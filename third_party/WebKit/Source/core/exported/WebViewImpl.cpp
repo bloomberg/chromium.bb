@@ -2175,29 +2175,6 @@ void WebViewImpl::SetFocus(bool enable) {
 
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
 // well. This code needs to be refactored  (http://crbug.com/629721).
-WebRange WebViewImpl::CompositionRange() {
-  LocalFrame* focused = FocusedLocalFrameAvailableForIme();
-  if (!focused)
-    return WebRange();
-
-  const EphemeralRange range =
-      focused->GetInputMethodController().CompositionEphemeralRange();
-  if (range.IsNull())
-    return WebRange();
-
-  Element* editable =
-      focused->Selection().RootEditableElementOrDocumentElement();
-  DCHECK(editable);
-
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  editable->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  return PlainTextRange::Create(*editable, range);
-}
-
-// TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
-// well. This code needs to be refactored  (http://crbug.com/629721).
 bool WebViewImpl::SelectionBounds(WebRect& anchor, WebRect& focus) const {
   const Frame* frame = FocusedCoreFrame();
   if (!frame || !frame->IsLocalFrame())
@@ -2384,7 +2361,11 @@ void WebViewImpl::DidLosePointerLock() {
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
 // well. This code needs to be refactored  (http://crbug.com/629721).
 bool WebViewImpl::GetCompositionCharacterBounds(WebVector<WebRect>& bounds) {
-  WebRange range = CompositionRange();
+  WebInputMethodController* controller = GetActiveWebInputMethodController();
+  if (!controller)
+    return false;
+
+  WebRange range = controller->CompositionRange();
   if (range.IsEmpty())
     return false;
 

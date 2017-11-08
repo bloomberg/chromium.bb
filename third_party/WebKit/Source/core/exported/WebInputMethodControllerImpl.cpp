@@ -147,6 +147,21 @@ WebTextInputType WebInputMethodControllerImpl::TextInputType() {
   return GetFrame()->GetInputMethodController().TextInputType();
 }
 
+WebRange WebInputMethodControllerImpl::CompositionRange() {
+  EphemeralRange range =
+      GetFrame()->GetInputMethodController().CompositionEphemeralRange();
+
+  if (range.IsNull())
+    return WebRange();
+
+  Element* editable =
+      GetFrame()->Selection().RootEditableElementOrDocumentElement();
+
+  editable->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  return PlainTextRange::Create(*editable, range);
+}
+
 WebRange WebInputMethodControllerImpl::GetSelectionOffsets() const {
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.

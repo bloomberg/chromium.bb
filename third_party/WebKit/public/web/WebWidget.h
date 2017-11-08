@@ -153,10 +153,6 @@ class WebWidget {
   // Called to inform the WebWidget that it has gained or lost keyboard focus.
   virtual void SetFocus(bool) {}
 
-  // Fetches the character range of the current composition, also called the
-  // "marked range."
-  virtual WebRange CompositionRange() { return WebRange(); }
-
   // Returns the anchor and focus bounds of the current selection.
   // If the selection range is empty, it returns the caret bounds.
   virtual bool SelectionBounds(WebRect& anchor, WebRect& focus) const {

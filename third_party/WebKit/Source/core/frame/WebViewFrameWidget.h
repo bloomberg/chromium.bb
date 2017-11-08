@@ -69,7 +69,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
                                          bool has_scrolled_by_touch) override;
   void MouseCaptureLost() override;
   void SetFocus(bool) override;
-  WebRange CompositionRange() override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool SelectionTextDirection(WebTextDirection& start,
                               WebTextDirection& end) const override;

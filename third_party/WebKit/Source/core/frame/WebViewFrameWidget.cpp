@@ -130,10 +130,6 @@ void WebViewFrameWidget::SetFocus(bool enable) {
   return web_view_->SetFocus(enable);
 }
 
-WebRange WebViewFrameWidget::CompositionRange() {
-  return web_view_->CompositionRange();
-}
-
 bool WebViewFrameWidget::SelectionBounds(WebRect& anchor,
                                          WebRect& focus) const {
   return web_view_->SelectionBounds(anchor, focus);

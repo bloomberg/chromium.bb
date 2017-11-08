@@ -95,7 +95,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                            float browser_controls_delta) override;
   void MouseCaptureLost() override;
   void SetFocus(bool enable) override;
-  WebRange CompositionRange() override;
   WebColor BackgroundColor() const override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool SelectionTextDirection(WebTextDirection& start,
