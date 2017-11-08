@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//build/config/android/config.gni")
 
 java_library("build_hooks_java") {
   java_files = [ "java/org/chromium/build/BuildHooks.java" ]
@@ -13,8 +14,21 @@ java_library("build_hooks_java") {
   deps = [
     "//third_party/bazel/desugar:desugar_runtime_java",
   ]
+  srcjar_deps = [ ":base_build_hooks_config" ]
   no_build_hooks = true
   supports_android = true
+}
+
+java_cpp_template("base_build_hooks_config") {
+  sources = [
+    "java/templates/BuildHooksConfig.template",
+  ]
+  package_path = "org/chromium/build"
+
+  defines = []
+  if (report_java_assert) {
+    defines += [ "_REPORT_JAVA_ASSERT" ]
+  }
 }
 
 build_hooks_android_impl = "java/org/chromium/build/BuildHooksAndroidImpl.java"

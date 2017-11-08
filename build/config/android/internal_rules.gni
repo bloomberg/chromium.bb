@@ -1110,7 +1110,7 @@ if (enable_java_templates) {
 
     _enable_assert =
         defined(invoker.enable_build_hooks) && invoker.enable_build_hooks &&
-        (is_java_debug || dcheck_always_on)
+        (is_java_debug || dcheck_always_on || report_java_assert)
 
     _enable_custom_resources = defined(invoker.enable_build_hooks_android) &&
                                invoker.enable_build_hooks_android
