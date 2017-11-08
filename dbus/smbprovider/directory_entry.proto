@@ -8,7 +8,9 @@ option optimize_for = LITE_RUNTIME;
 
 package smbprovider;
 
-// ErrorType matches 1:1 to FileSystemProvider#ProviderError in Chromium.
+// ErrorType matches 1:1 to FileSystemProvider#ProviderError in Chromium up
+// until ERROR_PROVIDER_ERROR_COUNT. The ErrorTypes past that are specific to
+// SmbProvider.
 enum ErrorType {
   ERROR_NONE = 0;
   ERROR_OK = 1;
@@ -30,7 +32,10 @@ enum ErrorType {
   ERROR_IO = 17;
   // Count of ProviderError.
   ERROR_PROVIDER_ERROR_COUNT = 18;
-  ERROR_DBUS_PARSE_FAILED = 1000;
+  // The following errors are not ProviderErrors, instead they are specific to
+  // SmbProvider. The jump in int value is to account for possible future
+  // additions to ProviderError.
+  ERROR_DBUS_PARSE_FAILED = 50;
 }
 
 message DirectoryEntry {
@@ -46,4 +51,15 @@ message DirectoryEntry {
 // calls.
 message DirectoryEntryList {
   repeated DirectoryEntry entries = 1;
+}
+
+// MountOptions is used for passing inputs into SmbProvider.Mount().
+message MountOptions {
+  // Path of the share to be mounted. (e.g. "smb://qnap/testshare")
+  optional string path = 1;
+}
+
+// UnmountOptions is used for passing inputs into SmbProvider.Unmount().
+message UnmountOptions {
+  optional int32 mount_id = 1;
 }
