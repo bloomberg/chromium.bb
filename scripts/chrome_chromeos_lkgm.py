@@ -54,15 +54,13 @@ class ChromeLGTMCommitter(object):
 
   def CheckoutChromeLKGM(self):
     """Checkout CHROMEOS_LKGM file for chrome into tmp checkout dir."""
-    if not os.path.exists(self._checkout_dir):
-      cros_build_lib.RunCommand(
-          ['git', 'clone', '--depth', '1', constants.CHROMIUM_GOB_URL,
-           self._checkout_dir])
-    else:
-      cros_build_lib.RunCommand(
-          ['git', 'fetch', '--depth', '1', 'origin'], cwd=self._checkout_dir)
-      cros_build_lib.RunCommand(
-          ['git', 'checkout', '-f', 'origin/master'], cwd=self._checkout_dir)
+    # TODO(stevenjb): if checkout_dir exists, use 'fetch --depth 1' and
+    # 'checkout -f origin/master' instead of 'clone --depth 1'.
+    osutils.RmDir(self._checkout_dir, ignore_missing=True)
+
+    cros_build_lib.RunCommand(
+        ['git', 'clone', '--depth', '1', constants.CHROMIUM_GOB_URL,
+         self._checkout_dir])
 
     cros_build_lib.RunCommand(
         ['git', 'branch', '-D', 'lkgm-roll'], cwd=self._checkout_dir,
@@ -119,7 +117,7 @@ class ChromeLGTMCommitter(object):
       # Log the change for debugging.
       cros_build_lib.RunCommand(['git', 'log', '--pretty=full'],
                                 cwd=self._checkout_dir)
-      logging.warning('UPLOAD LKGM FAILED: %r' % e)
+      raise LKGMNotCommitted('Could not submit LKGM: upload failed: %r' % e)
 
   def _TryLandNewLKGM(self):
     """Fetches latest, rebases the CL, and lands the rebased CL."""
@@ -188,9 +186,13 @@ def main(argv):
   committer = ChromeLGTMCommitter(args.workdir, lkgm=args.lkgm,
                                   dryrun=args.dryrun,
                                   user_email=args.user_email)
-  committer.CheckoutChromeLKGM()
-  committer.CommitNewLKGM()
-  committer.UploadNewLKGM()
-  committer.LandNewLKGM()
+  try:
+    committer.CheckoutChromeLKGM()
+    committer.CommitNewLKGM()
+    committer.UploadNewLKGM()
+    committer.LandNewLKGM()
+  except LKGMNotCommitted as e:
+    # TODO(stevenjb): Do not catch exceptions (i.e. fail) once this works.
+    logging.warning('LKGM Commit failed: %r' % e)
 
   return 0

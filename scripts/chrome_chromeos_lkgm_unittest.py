@@ -29,6 +29,7 @@ class BaseChromeLGTMCommitterTest(cros_test_lib.MockTempDirTestCase):
     self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
         self.tempdir, '1001.0.0', False, 'user@test.org')
     self.lkgm_file = os.path.join(self.tempdir, constants.PATH_TO_CHROME_LKGM)
+    self.old_lkgm = None
     self.pass_status = builder_status_lib.BuilderStatus(
         constants.BUILDER_STATUS_PASSED, None)
     self.fail_status = builder_status_lib.BuilderStatus(
@@ -41,14 +42,18 @@ class ChromeLGTMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
                                 BaseChromeLGTMCommitterTest):
   """Test cros_chromeos_lkgm.Committer."""
 
+  def _createOldLkgm(self, items):  # pylint: disable=unused-argument
+    # Write out an old lkgm file as if we got it from a git fetch.
+    osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
+    osutils.WriteFile(self.lkgm_file, self.old_lkgm)
+
   def testCheckoutChromeLKGM(self):
     "Tests that we can read/obtain the old LKGM from mocked out git."
-    # Write out an old lkgm file as if we got it from a git fetch.
-    old_lkgm = '1234.0.0'
-    osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
-    osutils.WriteFile(self.lkgm_file, old_lkgm)
+    self.old_lkgm = '1234.0.0'
+    self.rc.AddCmdResult(partial_mock.In('clone'), returncode=0,
+                         side_effect=self._createOldLkgm)
     self.committer.CheckoutChromeLKGM()
-    self.assertTrue(self.committer._old_lkgm, old_lkgm)
+    self.assertTrue(self.committer._old_lkgm, self.old_lkgm)
 
   def testCommitNewLKGM(self):
     """Tests that we can commit a new LKGM file."""
@@ -85,14 +90,14 @@ class ChromeLGTMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
 
   def testOlderLKGMFails(self):
     """Tests that trying to update to an older lkgm version fails."""
-    old_lkgm = '1002.0.0'
-    osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
-    osutils.WriteFile(self.lkgm_file, old_lkgm)
+    self.old_lkgm = '1002.0.0'
+    self.rc.AddCmdResult(partial_mock.In('clone'), returncode=0,
+                         side_effect=self._createOldLkgm)
 
     self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
         self.tempdir, '1001.0.0', False, 'user@test.org')
     self.committer.CheckoutChromeLKGM()
-    self.assertTrue(self.committer._old_lkgm, old_lkgm)
+    self.assertTrue(self.committer._old_lkgm, self.old_lkgm)
 
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.assertRaises(chrome_chromeos_lkgm.LKGMNotValid,
@@ -100,11 +105,11 @@ class ChromeLGTMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
 
   def testVersionWithChromeBranch(self):
     """Tests passing a version with a chrome branch strips the branch."""
-    old_lkgm = '1002.0.0'
-    osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
-    osutils.WriteFile(self.lkgm_file, old_lkgm)
+    self.old_lkgm = '1002.0.0'
+    self.rc.AddCmdResult(partial_mock.In('clone'), returncode=0,
+                         side_effect=self._createOldLkgm)
     self.committer.CheckoutChromeLKGM()
-    self.assertTrue(self.committer._old_lkgm, old_lkgm)
+    self.assertTrue(self.committer._old_lkgm, self.old_lkgm)
 
     self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
         self.tempdir, '1003.0.0-rc2', False, 'user@test.org')
