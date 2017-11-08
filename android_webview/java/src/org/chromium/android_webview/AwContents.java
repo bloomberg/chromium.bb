@@ -2057,8 +2057,8 @@ public class AwContents implements SmartClipProvider {
     public void killRenderProcess() {
         if (TRACE) Log.i(TAG, "%s killRenderProcess", this);
         if (isDestroyedOrNoOperation(WARN)) {
-            throw new IllegalStateException("killRenderProcess() shouldn't invoked after render"
-                    + " process is gone or webview is destoryed");
+            throw new IllegalStateException("killRenderProcess() shouldn't be invoked after render"
+                    + " process is gone or webview is destroyed");
         }
         nativeKillRenderProcess(mNativeAwContents);
     }
