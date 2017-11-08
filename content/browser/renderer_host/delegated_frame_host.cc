@@ -450,7 +450,8 @@ void DelegatedFrameHost::DidCreateNewRendererCompositorFrameSink(
 
 void DelegatedFrameHost::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame) {
+    viz::CompositorFrame frame,
+    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
 #if defined(OS_CHROMEOS)
   DCHECK(!resize_lock_ || !client_->IsAutoResizeEnabled());
 #endif
@@ -515,10 +516,8 @@ void DelegatedFrameHost::SubmitCompositorFrame(
 
     // If surface synchronization is off, then OnFirstSurfaceActivation will be
     // called in the same call stack.
-    // TODO(kenrb): Supply HitTestRegionList data here as described in
-    // crbug.com/750755.
-    bool result = support_->SubmitCompositorFrame(local_surface_id,
-                                                  std::move(frame), nullptr);
+    bool result = support_->SubmitCompositorFrame(
+        local_surface_id, std::move(frame), std::move(hit_test_region_list));
     DCHECK(result);
 
     DCHECK(enable_surface_synchronization_ || has_primary_surface_);

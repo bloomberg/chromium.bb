@@ -61,6 +61,7 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "media/base/video_frame.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/ui/common/switches.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebImeTextSpan.h"
@@ -938,7 +939,8 @@ void RenderWidgetHostViewAura::DidCreateNewRendererCompositorFrameSink(
 
 void RenderWidgetHostViewAura::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame) {
+    viz::CompositorFrame frame,
+    viz::mojom::HitTestRegionListPtr hit_test_region_list) {
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
   // Override the background color to the current compositor background.
@@ -957,8 +959,8 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
   }
 
   if (delegated_frame_host_) {
-    delegated_frame_host_->SubmitCompositorFrame(local_surface_id,
-                                                 std::move(frame));
+    delegated_frame_host_->SubmitCompositorFrame(
+        local_surface_id, std::move(frame), std::move(hit_test_region_list));
   }
   if (frame.metadata.selection.start != selection_start_ ||
       frame.metadata.selection.end != selection_end_) {
@@ -1659,7 +1661,7 @@ viz::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
       gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
 
   // It is possible that the renderer has not yet produced a surface, in which
-  // case we return our current namespace.
+  // case we return our current FrameSinkId.
   if (!id.is_valid())
     return GetFrameSinkId();
   return id.frame_sink_id();

@@ -310,7 +310,7 @@ void BrowserCompositorMac::SubmitCompositorFrame(
                                                           pixel_size);
   }
   delegated_frame_host_->SubmitCompositorFrame(local_surface_id,
-                                               std::move(frame));
+                                               std::move(frame), nullptr);
 }
 
 void BrowserCompositorMac::OnDidNotProduceFrame(const viz::BeginFrameAck& ack) {
