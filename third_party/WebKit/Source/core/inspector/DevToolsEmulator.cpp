@@ -68,7 +68,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* web_view)
       is_mobile_layout_theme_enabled_(false),
       original_default_minimum_page_scale_factor_(0),
       original_default_maximum_page_scale_factor_(0),
-      use_solid_color_scrollbar_(false),
       embedder_text_autosizing_enabled_(
           web_view->GetPage()->GetSettings().TextAutosizingEnabled()),
       embedder_device_scale_adjustment_(
@@ -279,10 +278,6 @@ void DevToolsEmulator::EnableMobileEmulation() {
       RuntimeEnabledFeatures::MobileLayoutThemeEnabled();
   RuntimeEnabledFeatures::SetMobileLayoutThemeEnabled(true);
   ComputedStyle::InvalidateInitialStyle();
-  web_view_->GetPage()->GetSettings().SetForceAndroidOverlayScrollbar(true);
-  use_solid_color_scrollbar_ =
-      web_view_->GetPage()->GetSettings().GetUseSolidColorScrollbars();
-  web_view_->GetPage()->GetSettings().SetUseSolidColorScrollbars(true);
   web_view_->GetPage()->GetSettings().SetViewportStyle(
       WebViewportStyle::kMobile);
   web_view_->GetPage()->GetSettings().SetViewportEnabled(true);
@@ -318,9 +313,6 @@ void DevToolsEmulator::DisableMobileEmulation() {
   RuntimeEnabledFeatures::SetMobileLayoutThemeEnabled(
       is_mobile_layout_theme_enabled_);
   ComputedStyle::InvalidateInitialStyle();
-  web_view_->GetPage()->GetSettings().SetUseSolidColorScrollbars(
-      use_solid_color_scrollbar_);
-  web_view_->GetPage()->GetSettings().SetForceAndroidOverlayScrollbar(false);
   web_view_->GetPage()->GetSettings().SetViewportEnabled(false);
   web_view_->GetPage()->GetSettings().SetViewportMetaEnabled(false);
   web_view_->GetPage()->GetVisualViewport().InitializeScrollbars();
