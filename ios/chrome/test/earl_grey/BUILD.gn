@@ -7,6 +7,7 @@ import("//ios/chrome/test/earl_grey/chrome_ios_eg_test.gni")
 group("all_tests") {
   testonly = true
   deps = [
+    ":ios_chrome_bookmarks_egtests",
     ":ios_chrome_device_check_egtests",
     ":ios_chrome_external_url_egtests",
     ":ios_chrome_flaky_egtests",
@@ -47,6 +48,12 @@ chrome_ios_eg_test("ios_chrome_reading_list_egtests") {
   ]
 }
 
+chrome_ios_eg_test("ios_chrome_bookmarks_egtests") {
+  deps = [
+    "//ios/chrome/browser/ui/bookmarks:eg_tests",
+  ]
+}
+
 chrome_ios_eg_test("ios_chrome_settings_egtests") {
   deps = [
     "//ios/chrome/browser/ui/settings:eg_tests",
@@ -58,7 +65,6 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
     "//ios/chrome/browser/ui:eg_tests",
     "//ios/chrome/browser/ui/activity_services:eg_tests",
     "//ios/chrome/browser/ui/alert_coordinator:eg_tests",
-    "//ios/chrome/browser/ui/bookmarks:eg_tests",
     "//ios/chrome/browser/ui/content_suggestions:eg_tests",
     "//ios/chrome/browser/ui/dialogs:eg_tests",
     "//ios/chrome/browser/ui/find_bar:eg_tests",
@@ -104,6 +110,7 @@ chrome_ios_eg_test("ios_chrome_multitasking_egtests") {
     "//ios/chrome/app/application_delegate:application_delegate_internal",
 
     # Depends on all EarlGrey test suites to create multitasking tests suite.
+    ":ios_chrome_bookmarks_egtests_deps_group",
     ":ios_chrome_integration_egtests_deps_group",
     ":ios_chrome_settings_egtests_deps_group",
     ":ios_chrome_ui_egtests_deps_group",
@@ -138,6 +145,7 @@ chrome_ios_eg_test("ios_chrome_flaky_egtests") {
 
     # Depends on all EarlGrey test suites to run all the FLAKY_ tests found.
     # When adding a new test application, please follow the same pattern.
+    ":ios_chrome_bookmarks_egtests_deps_group",
     ":ios_chrome_integration_egtests_deps_group",
     ":ios_chrome_settings_egtests_deps_group",
     ":ios_chrome_ui_egtests_deps_group",
