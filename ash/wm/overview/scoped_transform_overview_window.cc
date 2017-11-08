@@ -512,7 +512,6 @@ void ScopedTransformOverviewWindow::OnGestureEvent(ui::GestureEvent* event) {
     gfx::Point location(event->location());
     ::wm::ConvertPointToScreen(minimized_widget_->GetNativeWindow(), &location);
     switch (event->type()) {
-      case ui::ET_GESTURE_SCROLL_BEGIN:
       case ui::ET_GESTURE_TAP_DOWN:
         selector_item_->HandlePressEvent(location);
         break;
