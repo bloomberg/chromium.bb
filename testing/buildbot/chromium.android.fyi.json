@@ -2274,16 +2274,13 @@
     "isolated_scripts": [
       {
         "args": [
-          "system_health.memory_mobile",
+          "heap_profiling.mobile.disabled",
           "-v",
-          "--upload-results",
           "--output-format=chartjson",
-          "--browser=android-chromium",
-          "--story-filter=load:search:google",
-          "--extra-browser-args=\"--enable-heap-profiling\""
+          "--browser=android-chromium"
         ],
         "isolate_name": "telemetry_perf_tests",
-        "name": "system_health.memory_mobile",
+        "name": "heap_profiling.mobile.disabled",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2292,7 +2289,56 @@
               "device_type": "hammerhead"
             }
           ],
-          "hard_timeout": 960
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "heap_profiling.mobile.native",
+          "-v",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "heap_profiling.mobile.native",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      },
+      {
+        "args": [
+          "heap_profiling.mobile.pseudo",
+          "-v",
+          "--output-format=chartjson",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "heap_profiling.mobile.pseudo",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
         }
       }
     ]
