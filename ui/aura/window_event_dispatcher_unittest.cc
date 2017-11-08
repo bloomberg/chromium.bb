@@ -2162,8 +2162,7 @@ class WindowEventDispatcherTestWithMessageLoop
     message_loop()->task_runner()->PostTask(
         FROM_HERE, message_loop()->QuitWhenIdleClosure());
 
-    base::MessageLoop::ScopedNestableTaskAllower allow(message_loop());
-    base::RunLoop loop;
+    base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
     loop.Run();
     EXPECT_EQ(0, handler_.num_mouse_events());
 
@@ -2309,9 +2308,7 @@ class TriggerNestedLoopOnRightMousePress : public ui::test::TestEventHandler {
     TestEventHandler::OnMouseEvent(mouse);
     if (mouse->type() == ui::ET_MOUSE_PRESSED &&
         mouse->IsOnlyRightMouseButton()) {
-      base::MessageLoop::ScopedNestableTaskAllower allow(
-          base::MessageLoopForUI::current());
-      base::RunLoop run_loop;
+      base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
       scoped_refptr<base::TaskRunner> task_runner =
           base::ThreadTaskRunnerHandle::Get();
       if (!callback_.is_null())
@@ -3100,9 +3097,7 @@ class NestedLocationDelegate : public test::TestWindowDelegate {
   void InInitialMessageLoop(base::RunLoop* initial_run_loop) {
     // See comments in OnMouseEvent() for details on which this creates another
     // RunLoop.
-    base::MessageLoop::ScopedNestableTaskAllower allow_nestable_tasks(
-        base::MessageLoop::current());
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     base::MessageLoop::current()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&NestedLocationDelegate::InRunMessageLoop,
                               base::Unretained(this), &run_loop));
