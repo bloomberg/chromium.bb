@@ -26,7 +26,11 @@ void SetCurrentFeatureSessionType(FeatureSessionType session_type) {
   // |ScopedCurrentFeatureSessionType|.
   CHECK(g_current_session_type == kDefaultSessionType ||
         session_type == g_current_session_type);
-  g_current_session_type = session_type;
+  // In certain unit tests, SetCurrentFeatureSessionType() can be called
+  // within the same process (where e.g. utility processes run as a separate
+  // thread). Don't write if the value is the same to avoid TSAN failures.
+  if (session_type != g_current_session_type)
+    g_current_session_type = session_type;
 }
 
 std::unique_ptr<base::AutoReset<FeatureSessionType>>
