@@ -89,7 +89,7 @@ SerializedScriptValue::SerializeAndSwallowExceptions(
 }
 
 scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create() {
-  return WTF::AdoptRef(new SerializedScriptValue);
+  return base::AdoptRef(new SerializedScriptValue);
 }
 
 scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
@@ -102,7 +102,7 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
   DataBufferPtr data_buffer = AllocateBuffer(data_buffer_size.ValueOrDie());
   data.CopyTo(reinterpret_cast<UChar*>(data_buffer.get()), 0, data.length());
 
-  return WTF::AdoptRef(new SerializedScriptValue(
+  return base::AdoptRef(new SerializedScriptValue(
       std::move(data_buffer), data_buffer_size.ValueOrDie()));
 }
 
@@ -227,7 +227,7 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
   std::copy(data, data + length, data_buffer.get());
   SwapWiredDataIfNeeded(data_buffer.get(), length);
 
-  return WTF::AdoptRef(
+  return base::AdoptRef(
       new SerializedScriptValue(std::move(data_buffer), length));
 }
 
@@ -246,7 +246,7 @@ scoped_refptr<SerializedScriptValue> SerializedScriptValue::Create(
   });
   SwapWiredDataIfNeeded(data_buffer.get(), buffer->size());
 
-  return WTF::AdoptRef(
+  return base::AdoptRef(
       new SerializedScriptValue(std::move(data_buffer), buffer->size()));
 }
 
