@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -167,9 +168,11 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   if (triggering_extension) {
-    heading_ = new views::Label(l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PROMPT_UNINSTALL_TRIGGERED_BY_EXTENSION,
-        base::UTF8ToUTF16(triggering_extension->name())));
+    heading_ = new views::Label(
+        l10n_util::GetStringFUTF16(
+            IDS_EXTENSION_PROMPT_UNINSTALL_TRIGGERED_BY_EXTENSION,
+            base::UTF8ToUTF16(triggering_extension->name())),
+        CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     heading_->SetAllowCharacterBreak(true);
