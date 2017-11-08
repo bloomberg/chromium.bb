@@ -1832,7 +1832,7 @@ bool LargeObjectPage::Contains(Address object) {
 
 void HeapDoesNotContainCache::Flush() {
   if (has_entries_) {
-    for (int i = 0; i < kNumberOfEntries; ++i)
+    for (size_t i = 0; i < kNumberOfEntries; ++i)
       entries_[i] = nullptr;
     has_entries_ = false;
   }
