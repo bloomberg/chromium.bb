@@ -542,7 +542,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   txfm_param.tx_set_type =
       get_ext_tx_set_type(txfm_param.tx_size, plane_bsize, is_inter_block(mbmi),
                           cm->reduced_tx_set_used);
-#if CONFIG_MRC_TX || CONFIG_LGT
+#if CONFIG_MRC_TX
   txfm_param.is_inter = is_inter_block(mbmi);
 #endif
 #if CONFIG_MRC_TX

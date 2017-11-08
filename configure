@@ -311,7 +311,6 @@ EXPERIMENT_LIST="
     aom_qm
     ext_comp_refs
     smooth_hv
-    lgt
     bgsprite
     var_tx_no_tx_mode
     simplify_tx_mode
@@ -574,7 +573,6 @@ post_process_cmdline() {
     if enabled daala_tx4 || enabled daala_tx8 || enabled daala_tx16 ||
         enabled daala_tx32 || enabled daala_tx64; then
       disable_feature txmg
-      disable_feature lgt
       enable_feature lowbitdepth
     fi
     if enabled ext_partition_types; then

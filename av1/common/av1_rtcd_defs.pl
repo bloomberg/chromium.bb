@@ -70,7 +70,7 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 # Inverse dct
 #
 add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-if (aom_config("CONFIG_DAALA_TX4") ne "yes" && aom_config("CONFIG_LGT") ne "yes") {
+if (aom_config("CONFIG_DAALA_TX4") ne "yes") {
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     specialize qw/av1_iht4x4_16_add sse2/;
   } else {
@@ -105,7 +105,7 @@ add_proto qw/void av1_iht8x32_256_add/, "const tran_low_t *input, uint8_t *dest,
 add_proto qw/void av1_iht32x8_256_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
 
 add_proto qw/void av1_iht8x8_64_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";
-if (aom_config("CONFIG_DAALA_TX8") ne "yes" && aom_config("CONFIG_LGT") ne "yes") {
+if (aom_config("CONFIG_DAALA_TX8") ne "yes") {
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     specialize qw/av1_iht8x8_64_add sse2/;
   } else {
@@ -115,7 +115,7 @@ if (aom_config("CONFIG_DAALA_TX8") ne "yes" && aom_config("CONFIG_LGT") ne "yes"
 
 add_proto qw/void av1_iht16x16_256_add/, "const tran_low_t *input, uint8_t *output, int pitch, const struct txfm_param *param";
 
-if (aom_config("CONFIG_DAALA_TX16") ne "yes" && aom_config("CONFIG_LGT") ne "yes") {
+if (aom_config("CONFIG_DAALA_TX16") ne "yes") {
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     specialize qw/av1_iht16x16_256_add sse2 avx2/;
   } else {
