@@ -167,9 +167,9 @@ void SVGElement::ReportAttributeParsingError(SVGParsingError error,
 
 String SVGElement::title() const {
   // According to spec, we should not return titles when hovering over root
-  // <svg> elements (those <title> elements are the title of the document, not a
-  // tooltip) so we instantly return.
-  if (IsOutermostSVGSVGElement())
+  // <svg> elements imported as a standalone document(those <title> elements
+  // are the title of the document, not a tooltip) so we instantly return.
+  if (IsSVGSVGElement(*this) && this == GetDocument().documentElement())
     return String();
 
   if (InUseShadowTree()) {
