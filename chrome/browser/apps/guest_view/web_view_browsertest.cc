@@ -3950,6 +3950,155 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
   }
 }
 
+// Tests scroll latching behaviour with WebViews.
+// Only applicable with OOPIF-based guests when scroll latching is enabled.
+// We can move these tests to a more general fixture once the features
+// have landed (crbug.com/533069 and crbug.com/526463).
+class WebViewGuestScrollLatchingTest : public WebViewTestBase {
+ protected:
+  WebViewGuestScrollLatchingTest() {}
+  ~WebViewGuestScrollLatchingTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WebViewTestBase::SetUpCommandLine(command_line);
+    feature_list_.InitWithFeatures(
+        {features::kTouchpadAndWheelScrollLatching, features::kAsyncWheelEvents,
+         features::kGuestViewCrossProcessFrames},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewGuestScrollLatchingTest);
+};
+
+namespace {
+
+class InputEventAckWaiter
+    : public content::RenderWidgetHost::InputEventObserver {
+ public:
+  InputEventAckWaiter(blink::WebInputEvent::Type ack_type_waiting_for,
+                      bool expected_consumed)
+      : message_loop_runner_(new content::MessageLoopRunner),
+        ack_type_waiting_for_(ack_type_waiting_for),
+        expected_consumed_(expected_consumed),
+        desired_ack_type_received_(false) {}
+  ~InputEventAckWaiter() override {}
+
+  void OnInputEventAck(content::InputEventAckSource,
+                       content::InputEventAckState state,
+                       const blink::WebInputEvent& event) override {
+    const bool consumed = (content::INPUT_EVENT_ACK_STATE_CONSUMED == state);
+    if (event.GetType() == ack_type_waiting_for_ &&
+        consumed == expected_consumed_) {
+      desired_ack_type_received_ = true;
+      if (message_loop_runner_->loop_running())
+        message_loop_runner_->Quit();
+    }
+  }
+
+  void Wait() {
+    if (!desired_ack_type_received_) {
+      message_loop_runner_->Run();
+    }
+  }
+
+  void Reset() {
+    desired_ack_type_received_ = false;
+    message_loop_runner_ = new content::MessageLoopRunner;
+  }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  blink::WebInputEvent::Type ack_type_waiting_for_;
+  bool expected_consumed_;
+  bool desired_ack_type_received_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputEventAckWaiter);
+};
+
+}  // namespace
+
+// Test that when we bubble scroll from a guest, the guest does not also
+// consume the scroll.
+IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
+                       ScrollLatchingPreservedInGuests) {
+  LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
+
+  content::WebContents* embedder_contents = GetEmbedderWebContents();
+
+  std::vector<content::WebContents*> guest_web_contents_list;
+  GetGuestViewManager()->WaitForNumGuestsCreated(1u);
+  GetGuestViewManager()->GetGuestWebContentsList(&guest_web_contents_list);
+  ASSERT_EQ(1u, guest_web_contents_list.size());
+
+  content::WebContents* guest_contents = guest_web_contents_list[0];
+  content::RenderWidgetHostView* guest_host_view =
+      guest_contents->GetRenderWidgetHostView();
+
+  content::RenderWidgetHostView* embedder_host_view =
+      embedder_contents->GetRenderWidgetHostView();
+  ASSERT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
+  ASSERT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+
+  gfx::Point guest_scroll_location(1, 1);
+  gfx::Point guest_scroll_location_in_root =
+      guest_host_view->TransformPointToRootCoordSpace(guest_scroll_location);
+
+  // When the guest is already scrolled to the top, scroll up so that we bubble
+  // scroll.
+  blink::WebGestureEvent scroll_begin(
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  scroll_begin.source_device = blink::kWebGestureDeviceTouchpad;
+  scroll_begin.x = guest_scroll_location.x();
+  scroll_begin.y = guest_scroll_location.y();
+  scroll_begin.global_x = guest_scroll_location_in_root.x();
+  scroll_begin.global_y = guest_scroll_location_in_root.y();
+  scroll_begin.data.scroll_begin.delta_x_hint = 0;
+  scroll_begin.data.scroll_begin.delta_y_hint = 5;
+  content::SimulateGestureEvent(guest_contents, scroll_begin,
+                                ui::LatencyInfo(ui::SourceEventType::WHEEL));
+
+  InputEventAckWaiter update_waiter(
+      blink::WebGestureEvent::kGestureScrollUpdate, false);
+  guest_contents->GetRenderViewHost()->GetWidget()->AddInputEventObserver(
+      &update_waiter);
+  blink::WebGestureEvent scroll_update(
+      blink::WebGestureEvent::kGestureScrollUpdate,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  scroll_update.source_device = scroll_begin.source_device;
+  scroll_update.x = scroll_begin.x;
+  scroll_update.y = scroll_begin.y;
+  scroll_update.global_x = scroll_begin.global_x;
+  scroll_update.global_y = scroll_begin.global_y;
+  scroll_update.data.scroll_update.delta_x =
+      scroll_begin.data.scroll_begin.delta_x_hint;
+  scroll_update.data.scroll_update.delta_y =
+      scroll_begin.data.scroll_begin.delta_y_hint;
+  content::SimulateGestureEvent(guest_contents, scroll_update,
+                                ui::LatencyInfo(ui::SourceEventType::WHEEL));
+  update_waiter.Wait();
+  update_waiter.Reset();
+
+  ASSERT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
+
+  // Now we switch directions and scroll down. The guest can scroll in this
+  // direction, but since we're bubbling, the guest should not consume this.
+  scroll_update.data.scroll_update.delta_y = -5;
+  content::SimulateGestureEvent(guest_contents, scroll_update,
+                                ui::LatencyInfo(ui::SourceEventType::WHEEL));
+  update_waiter.Wait();
+
+  EXPECT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
+
+  guest_contents->GetRenderViewHost()->GetWidget()->RemoveInputEventObserver(
+      &update_waiter);
+}
+
 INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
                         WebViewGuestScrollTouchTest,
                         testing::Combine(testing::Bool(), testing::Bool()));
