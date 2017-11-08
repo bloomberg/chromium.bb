@@ -9,7 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
+#include "chrome/browser/banners/app_banner_infobar_delegate_android.h"
 #include "jni/AppBannerInfoBarAndroid_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gfx/android/java_bitmap.h"

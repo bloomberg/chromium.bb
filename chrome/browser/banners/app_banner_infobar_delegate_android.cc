@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
+#include "chrome/browser/banners/app_banner_infobar_delegate_android.h"
 
 #include <utility>
 
@@ -75,7 +75,7 @@ bool AppBannerInfoBarDelegateAndroid::Create(
       app_title, native_app_data, icon, native_app_package_name, referrer));
   return InfoBarService::FromWebContents(web_contents)
       ->AddInfoBar(base::MakeUnique<AppBannerInfoBarAndroid>(
-           std::move(infobar_delegate), native_app_data));
+          std::move(infobar_delegate), native_app_data));
 }
 
 AppBannerInfoBarDelegateAndroid::~AppBannerInfoBarDelegateAndroid() {
@@ -216,10 +216,8 @@ bool AppBannerInfoBarDelegateAndroid::AcceptNativeApp(
   ScopedJavaLocalRef<jstring> jreferrer(
       ConvertUTF8ToJavaString(env, referrer_));
 
-  bool was_opened =
-      Java_AppBannerInfoBarDelegateAndroid_installOrOpenNativeApp(
-          env, java_delegate_, tab->GetJavaObject(),
-          native_app_data_, jreferrer);
+  bool was_opened = Java_AppBannerInfoBarDelegateAndroid_installOrOpenNativeApp(
+      env, java_delegate_, tab->GetJavaObject(), native_app_data_, jreferrer);
 
   if (was_opened)
     TrackDismissEvent(DISMISS_EVENT_APP_OPEN);
