@@ -160,6 +160,15 @@
       <message name="IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK" desc="This appears in the Page Info bubble when a HTTPS site is loaded with an invalid certificate, e.g. https://wrong.host.badssl.com/. Text of the link that launches the Certificate Viewer.">
         Invalid
       </message>
+      <message name="IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT" desc="Title of the certificate button in the Page Info bubble, shown when a HTTPS site is loaded. Clicking this button will show the certificate viewer.">
+        Certificate <ph name="CERTIFICATE_VALIDITY">$1<ex>(Invalid)</ex></ph>
+      </message>
+      <message name="IDS_PAGE_INFO_CERTIFICATE_VALID_PARENTHESIZED" desc="Button text used as part of IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT when the Page Information bubble has been opened for a site with a valid certificate.">
+        (Valid)
+      </message>
+      <message name="IDS_PAGE_INFO_CERTIFICATE_INVALID_PARENTHESIZED" desc="Button text used as part of IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT when the Page Information bubble has been opened for a site with an invalid certificate.">
+        (Invalid)
+      </message>
       <message name="IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP" desc="The text of the tooltip on IDS_PAGE_INFO_CERTIFICATE_VALID_LINK.">
         Show certificate (issued by <ph name="ISSUER">$1<ex>Let's Encrypt X3</ex></ph>)
       </message>
@@ -175,6 +184,12 @@
       </message>
       <message name="IDS_PAGE_INFO_NUM_COOKIES" desc="The label of the counts for allowed cookies that are in use on the page.">
         {NUM_COOKIES, plural, =1 {1 in use} other {# in use}}
+      </message>
+      <message name="IDS_PAGE_INFO_COOKIES_BUTTON_TEXT" desc="The label on a button in the Page Information Window that, when clicked, opens a dialog where cookies can be managed by the user.">
+          Cookies <ph name="NUM_COOKIES">$1<ex>(4 in use)</ex></ph>
+      </message>
+      <message name="IDS_PAGE_INFO_NUM_COOKIES_PARENTHESIZED" desc="The label of the counts for allowed cookies that are in use on the page. This text will be used in IDS_PAGE_INFO_COOKIES_BUTTON_TEXT.">
+        ({NUM_COOKIES, plural, =1 {1 in use} other {# in use}})
       </message>
       <message name="IDS_PAGE_INFO_COOKIES_TOOLTIP" desc="The text of the tooltip on IDS_PAGE_INFO_NUM_COOKIES.">
         Show cookies
