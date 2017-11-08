@@ -99,7 +99,7 @@ base::string16 ScreenLayoutObserverTest::GetSecondDisplayName() {
 base::string16 ScreenLayoutObserverTest::GetMirroringDisplayName() {
   DCHECK(display_manager()->IsInMirrorMode());
   return base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(
-      display_manager()->GetMirroringDstDisplayIdList()[0]));
+      display_manager()->GetMirroringDestinationDisplayIdList()[0]));
 }
 
 const message_center::Notification*

@@ -87,7 +87,8 @@ void DisplayConfigurationController::SetDisplayLayout(
 }
 
 void DisplayConfigurationController::SetMirrorMode(bool mirror) {
-  if (display_manager_->num_connected_displays() > 2) {
+  if (!display_manager_->is_multi_mirroring_enabled() &&
+      display_manager_->num_connected_displays() > 2) {
     ShowDisplayErrorNotification(
         l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_MIRRORING_NOT_SUPPORTED),
         false);

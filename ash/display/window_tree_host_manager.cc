@@ -725,6 +725,11 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
   for (auto& observer : observers_)
     observer.OnDisplayConfigurationChanged();
   UpdateMouseLocationAfterDisplayChange();
+
+  // Enable cursor compositing, so that cursor could be mirrored to destination
+  // displays along with other display content through reflector.
+  if (display_manager->is_multi_mirroring_enabled())
+    Shell::Get()->UpdateCursorCompositingEnabled();
 }
 
 display::DisplayConfigurator* WindowTreeHostManager::display_configurator() {

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_constants.h"
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
@@ -74,22 +75,24 @@ class ASH_EXPORT CursorWindowController {
 
   const gfx::ImageSkia& GetCursorImageForTest() const;
 
-  bool is_cursor_compositing_enabled_;
-  aura::Window* container_;
+  aura::Window* container_ = nullptr;
+
+  // The current cursor-compositing state.
+  bool is_cursor_compositing_enabled_ = false;
 
   // The bounds of the container in screen coordinates.
   gfx::Rect bounds_in_screen_;
 
   // The native_type of the cursor, see definitions in cursor.h
-  ui::CursorType cursor_type_;
+  ui::CursorType cursor_type_ = ui::CursorType::kNone;
 
   // The last requested cursor visibility.
-  bool visible_;
+  bool visible_ = true;
 
-  ui::CursorSize cursor_size_;
+  ui::CursorSize cursor_size_ = ui::CursorSize::kNormal;
   gfx::Point hot_point_;
 
-  int large_cursor_size_in_dip_;
+  int large_cursor_size_in_dip_ = ash::kDefaultLargeCursorSize;
 
   // The display on which the cursor is drawn.
   // For mirroring mode, the display is always the primary display.

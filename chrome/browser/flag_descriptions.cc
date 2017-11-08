@@ -428,6 +428,11 @@ const char kEnableMidiManagerDynamicInstantiationName[] =
 const char kEnableMidiManagerDynamicInstantiationDescription[] =
     "Enable MIDIManager dynamic instantiation for Web MIDI.";
 
+const char kEnableMultiMirroringName[] =
+    "Display mirroring across multiple displays.";
+const char kEnableMultiMirroringDescription[] =
+    "Enable Display mirroring across multiple displays.";
+
 const char kEnableNavigationTracingName[] = "Enable navigation tracing";
 const char kEnableNavigationTracingDescription[] =
     "This is to be used in conjunction with the trace-upload-url flag. "

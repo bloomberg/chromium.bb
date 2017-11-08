@@ -277,6 +277,9 @@ extern const char kEnablePolicyToolDescription[];
 extern const char kEnableMidiManagerDynamicInstantiationName[];
 extern const char kEnableMidiManagerDynamicInstantiationDescription[];
 
+extern const char kEnableMultiMirroringName[];
+extern const char kEnableMultiMirroringDescription[];
+
 extern const char kEnableNavigationTracingName[];
 extern const char kEnableNavigationTracingDescription[];
 

@@ -54,6 +54,8 @@ class MirrorOnBootTest : public AshTestBase {
 
 using MirrorWindowControllerTest = AshTestBase;
 
+// TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
+// default, because cursor compositing will be enabled for software mirroring.
 TEST_F(MirrorWindowControllerTest, MirrorCursorBasic) {
   MirrorWindowTestApi test_api;
   aura::test::TestWindowDelegate test_window_delegate;
@@ -100,6 +102,8 @@ TEST_F(MirrorWindowControllerTest, MirrorCursorBasic) {
   EXPECT_TRUE(test_api.GetCursorWindow()->IsVisible());
 }
 
+// TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
+// default, because cursor compositing will be enabled for software mirroring.
 TEST_F(MirrorWindowControllerTest, MirrorCursorRotate) {
   MirrorWindowTestApi test_api;
   aura::test::TestWindowDelegate test_window_delegate;
@@ -154,6 +158,8 @@ TEST_F(MirrorWindowControllerTest, MirrorCursorRotate) {
 // Make sure that the mirror cursor's location is same as
 // the source display's host location in the mirror root window's
 // coordinates.
+// TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
+// default, because cursor compositing will be enabled for software mirroring.
 TEST_F(MirrorWindowControllerTest, MirrorCursorLocations) {
   MirrorWindowTestApi test_api;
   display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
@@ -188,6 +194,8 @@ TEST_F(MirrorWindowControllerTest, MirrorCursorLocations) {
 
 // Test the behavior of the cursor when entering software mirror mode swaps the
 // cursor's display.
+// TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
+// default, because cursor compositing will be enabled for software mirroring.
 TEST_F(MirrorWindowControllerTest, MirrorCursorMoveOnEnter) {
   aura::Env* env = aura::Env::GetInstance();
   Shell* shell = Shell::Get();
@@ -259,7 +267,8 @@ TEST_F(MirrorWindowControllerTest, DockMode) {
 
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
-  EXPECT_EQ(external_id, display_manager()->GetMirroringDstDisplayIdList()[0]);
+  EXPECT_EQ(external_id,
+            display_manager()->GetMirroringDestinationDisplayIdList()[0]);
 
   // dock mode.
   display_info_list.clear();
@@ -277,7 +286,8 @@ TEST_F(MirrorWindowControllerTest, DockMode) {
   display_manager()->OnNativeDisplaysChanged(display_info_list);
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
-  EXPECT_EQ(external_id, display_manager()->GetMirroringDstDisplayIdList()[0]);
+  EXPECT_EQ(external_id,
+            display_manager()->GetMirroringDestinationDisplayIdList()[0]);
 }
 
 TEST_F(MirrorOnBootTest, MirrorOnBoot) {

@@ -3575,6 +3575,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkLoggingToFileDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kLogNetLog)},
 
+#if defined(OS_CHROMEOS)
+    {"enable-multi-mirroring", flag_descriptions::kEnableMultiMirroringName,
+     flag_descriptions::kEnableMultiMirroringDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kEnableMultiMirroring)},
+#endif  // defined(OS_CHROMEOS)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
