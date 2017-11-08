@@ -46,6 +46,8 @@ def _ParseArgs(args):
   parser.add_argument('--output-apk',
                       help='Path to the output file',
                       required=True)
+  parser.add_argument('--apk-pak-info-path',
+                      help='Path to the *.apk.pak.info file')
   parser.add_argument('--dex-file',
                       help='Path to the classes.dex to use')
   parser.add_argument('--native-libs',
@@ -183,6 +185,21 @@ def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress):
                                  compress=compress)
 
 
+def _MergePakInfoFiles(pak_info_path, asset_list):
+  lines = set()
+  for asset_details in asset_list:
+    src = asset_details.split(':')[0]
+    if src.endswith('.pak'):
+      with open(src + '.info', 'r') as src_info_file:
+        lines.update(src_info_file.readlines())
+  # Ensure that parent dirs exist before writing new files.
+  info_dir = os.path.dirname(pak_info_path)
+  if not os.path.exists(info_dir):
+    os.makedirs(info_dir)
+  with open(pak_info_path, 'w') as merged_info_file:
+    merged_info_file.writelines(sorted(lines))
+
+
 def main(args):
   args = build_utils.ExpandFileArgs(args)
   options = _ParseArgs(args)
@@ -220,6 +237,10 @@ def main(args):
     # Included via .build_config, so need to write it to depfile.
     depfile_deps.append(src_path)
     input_strings.append(dest_path)
+
+  output_paths = [options.output_apk]
+  if options.apk_pak_info_path:
+    output_paths.append(options.apk_pak_info_path)
 
   def on_stale_md5():
     tmp_apk = options.output_apk + '.tmp'
@@ -302,6 +323,10 @@ def main(args):
               build_utils.AddToZipHermetic(
                   out_apk, apk_path, data=java_resource_jar.read(apk_path))
 
+        if options.apk_pak_info_path:
+          _MergePakInfoFiles(options.apk_pak_info_path,
+                             options.assets + options.uncompressed_assets)
+
       shutil.move(tmp_apk, options.output_apk)
     finally:
       if os.path.exists(tmp_apk):
@@ -312,7 +337,7 @@ def main(args):
       options,
       input_paths=input_paths + depfile_deps,
       input_strings=input_strings,
-      output_paths=[options.output_apk],
+      output_paths=output_paths,
       depfile_deps=depfile_deps)
 
 

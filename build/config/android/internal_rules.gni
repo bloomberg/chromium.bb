@@ -1740,6 +1740,15 @@ if (enable_java_templates) {
         # TODO(mlopatkin) We are relying on the fact that assets_build_config is
         # an APK build_config.
         args += [ "--java-resources=@FileArg($_rebased_build_config:java_resources_jars)" ]
+
+        if (defined(invoker.apk_name)) {
+          # The supersize tool will search in this directory for each apk.
+          _apk_pak_info_path = "size-info/${invoker.apk_name}.apk.pak.info"
+          args += [
+            "--apk-pak-info-path",
+            _apk_pak_info_path,
+          ]
+        }
       }
       if (defined(invoker.write_asset_list) && invoker.write_asset_list) {
         args += [ "--write-asset-list" ]
@@ -1960,6 +1969,10 @@ if (enable_java_templates) {
 
       if (defined(_dex_path)) {
         dex_path = _dex_path
+      }
+
+      if (defined(invoker.apk_name)) {
+        apk_name = invoker.apk_name
       }
 
       output_apk_path = _packaged_apk_path

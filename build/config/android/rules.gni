@@ -2474,6 +2474,9 @@ if (enable_java_templates) {
       dex_path = _final_dex_path
       load_library_from_apk = _load_library_from_apk
 
+      # This is used to generate *.apk.pak.info files.
+      apk_name = invoker.apk_name
+
       keystore_name = _keystore_name
       keystore_path = _keystore_path
       keystore_password = _keystore_password
