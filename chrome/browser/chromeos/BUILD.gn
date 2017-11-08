@@ -1454,6 +1454,8 @@ source_set("chromeos") {
     "settings/system_settings_provider.h",
     "settings/token_encryptor.cc",
     "settings/token_encryptor.h",
+    "smb_client/smb_file_system.cc",
+    "smb_client/smb_file_system.h",
     "status/data_promo_notification.cc",
     "status/data_promo_notification.h",
     "status/network_menu.cc",
