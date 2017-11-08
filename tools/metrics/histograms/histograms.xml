@@ -74658,6 +74658,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Search.ContextualSearchPeekPromoCount" units="count">
+  <obsolete>
+    Removed because the feature no longer exists.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>pedrosimonetti@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -74672,6 +74675,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Search.ContextualSearchPeekPromoCountUntilOpened"
     units="count">
+  <obsolete>
+    Removed because the feature no longer exists.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>pedrosimonetti@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -74685,6 +74691,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Search.ContextualSearchPeekPromoOutcome"
     enum="ContextualSearchPeekPromoOutcome">
+  <obsolete>
+    Removed because the feature no longer exists.
+  </obsolete>
   <owner>donnd@chromium.org</owner>
   <owner>pedrosimonetti@chromium.org</owner>
   <owner>twellington@chromium.org</owner>

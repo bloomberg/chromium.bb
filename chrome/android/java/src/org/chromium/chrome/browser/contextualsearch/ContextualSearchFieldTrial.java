@@ -25,12 +25,6 @@ public class ContextualSearchFieldTrial {
     static final String MANDATORY_PROMO_LIMIT = "mandatory_promo_limit";
     static final int MANDATORY_PROMO_DEFAULT_LIMIT = 10;
 
-    private static final String PEEK_PROMO_FORCED = "peek_promo_forced";
-    @VisibleForTesting
-    static final String PEEK_PROMO_ENABLED = "peek_promo_enabled";
-    private static final String PEEK_PROMO_MAX_SHOW_COUNT = "peek_promo_max_show_count";
-    private static final int PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT = 10;
-
     private static final String DISABLE_SEARCH_TERM_RESOLUTION = "disable_search_term_resolution";
     private static final String WAIT_AFTER_TAP_DELAY_MS = "wait_after_tap_delay_ms";
 
@@ -99,8 +93,6 @@ public class ContextualSearchFieldTrial {
     private static Boolean sDisableSearchTermResolution;
     private static Boolean sIsMandatoryPromoEnabled;
     private static Integer sMandatoryPromoLimit;
-    private static Boolean sIsPeekPromoEnabled;
-    private static Integer sPeekPromoMaxCount;
     private static Boolean sIsTranslationDisabled;
     private static Boolean sIsEnglishTargetTranslationEnabled;
     private static Integer sScreenTopSuppressionDps;
@@ -199,35 +191,6 @@ public class ContextualSearchFieldTrial {
                     MANDATORY_PROMO_DEFAULT_LIMIT);
         }
         return sMandatoryPromoLimit.intValue();
-    }
-
-    /**
-     * @return Whether the Peek Promo is forcibly enabled (used for testing).
-     */
-    static boolean isPeekPromoForced() {
-        return CommandLine.getInstance().hasSwitch(PEEK_PROMO_FORCED);
-    }
-
-    /**
-     * @return Whether the Peek Promo is enabled.
-     */
-    static boolean isPeekPromoEnabled() {
-        if (sIsPeekPromoEnabled == null) {
-            sIsPeekPromoEnabled = getBooleanParam(PEEK_PROMO_ENABLED);
-        }
-        return sIsPeekPromoEnabled.booleanValue();
-    }
-
-    /**
-     * @return The maximum number of times the Peek Promo should be displayed.
-     */
-    static int getPeekPromoMaxShowCount() {
-        if (sPeekPromoMaxCount == null) {
-            sPeekPromoMaxCount = getIntParamValueOrDefault(
-                    PEEK_PROMO_MAX_SHOW_COUNT,
-                    PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT);
-        }
-        return sPeekPromoMaxCount.intValue();
     }
 
     /**
