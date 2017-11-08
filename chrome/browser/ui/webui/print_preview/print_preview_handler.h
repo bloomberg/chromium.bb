@@ -264,9 +264,6 @@ class PrintPreviewHandler
   // Populates |settings| according to the current locale.
   void GetNumberFormatAndMeasurementSystem(base::DictionaryValue* settings);
 
-  bool GetPreviewDataAndTitle(scoped_refptr<base::RefCountedBytes>* data,
-                              base::string16* title) const;
-
   PdfPrinterHandler* GetPdfPrinterHandler();
 
   // Called when printers are detected.
