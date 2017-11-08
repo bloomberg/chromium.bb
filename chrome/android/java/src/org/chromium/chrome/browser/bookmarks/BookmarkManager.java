@@ -56,8 +56,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     private ViewGroup mMainView;
     private BookmarkModel mBookmarkModel;
     private BookmarkUndoController mUndoController;
-    private final ObserverList<BookmarkUIObserver> mUIObservers =
-            new ObserverList<BookmarkUIObserver>();
+    private final ObserverList<BookmarkUIObserver> mUIObservers = new ObserverList<>();
     private BasicNativePage mNativePage;
     private SelectableListLayout<BookmarkId> mSelectableListLayout;
     private RecyclerView mRecyclerView;
@@ -107,18 +106,6 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         }
     };
 
-    private final Runnable mModelLoadedRunnable = new Runnable() {
-        @Override
-        public void run() {
-            mAdapter.onBookmarkDelegateInitialized(BookmarkManager.this);
-            mToolbar.onBookmarkDelegateInitialized(BookmarkManager.this);
-            if (!TextUtils.isEmpty(mInitialUrl)) {
-                setState(BookmarkUIState.createStateFromUrl(mInitialUrl,
-                        mBookmarkModel));
-            }
-        }
-    };
-
     /**
      * Creates an instance of {@link BookmarkManager}. It also initializes resources,
      * bookmark models and jni bridges.
@@ -143,7 +130,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
 
         @SuppressWarnings("unchecked")
         SelectableListLayout<BookmarkId> selectableList =
-                (SelectableListLayout<BookmarkId>) mMainView.findViewById(R.id.selectable_list);
+                mMainView.findViewById(R.id.selectable_list);
         mSelectableListLayout = selectableList;
         mEmptyView = mSelectableListLayout.initializeEmptyView(
                 VectorDrawableCompat.create(
@@ -169,7 +156,14 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         mBookmarkModel.addObserver(mBookmarkModelObserver);
         initializeToLoadingState();
         if (!sPreventLoadingForTesting) {
-            mBookmarkModel.finishLoadingBookmarkModel(mModelLoadedRunnable);
+            Runnable modelLoadedRunnable = () -> {
+                mAdapter.onBookmarkDelegateInitialized(BookmarkManager.this);
+                mToolbar.onBookmarkDelegateInitialized(BookmarkManager.this);
+                if (!TextUtils.isEmpty(mInitialUrl)) {
+                    setState(BookmarkUIState.createStateFromUrl(mInitialUrl, mBookmarkModel));
+                }
+            };
+            mBookmarkModel.finishLoadingBookmarkModel(modelLoadedRunnable);
         }
 
         mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());
