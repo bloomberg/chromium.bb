@@ -1200,6 +1200,8 @@ void PpapiCdmAdapter::OnDeferredInitializationDone(cdm::StreamType stream_type,
 }
 
 void PpapiCdmAdapter::RequestStorageId(uint32_t version) {
+  PP_DCHECK(version < 0x80000000);  // Reserved versions not allowed.
+
   // If persistent storage is not allowed, no need to get the Storage ID.
   // As well, only allow the request if the current version (or "latest")
   // is requested.
