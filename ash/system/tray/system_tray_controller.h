@@ -56,6 +56,7 @@ class ASH_EXPORT SystemTrayController : public mojom::SystemTray {
   void ShowNetworkConfigure(const std::string& network_id);
   void ShowNetworkCreate(const std::string& type);
   void ShowThirdPartyVpnCreate(const std::string& extension_id);
+  void ShowArcVpnCreate(const std::string& app_id);
   void ShowNetworkSettings(const std::string& network_id);
   void RequestRestartForUpdate();
 

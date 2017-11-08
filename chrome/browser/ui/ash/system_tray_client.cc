@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -56,6 +57,7 @@
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
+#include "ui/events/event_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -377,19 +379,23 @@ void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
 
 void SystemTrayClient::ShowThirdPartyVpnCreate(
     const std::string& extension_id) {
-  const user_manager::User* primary_user =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  if (!primary_user)
-    return;
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
 
-  Profile* profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
   if (!profile)
     return;
 
   // Request that the third-party VPN provider show its "add network" dialog.
   chromeos::VpnServiceFactory::GetForBrowserContext(profile)
       ->SendShowAddDialogToExtension(extension_id);
+}
+
+void SystemTrayClient::ShowArcVpnCreate(const std::string& app_id) {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+
+  if (!profile)
+    return;
+
+  arc::LaunchApp(profile, app_id, ui::EF_NONE);
 }
 
 void SystemTrayClient::ShowNetworkSettings(const std::string& network_id) {
