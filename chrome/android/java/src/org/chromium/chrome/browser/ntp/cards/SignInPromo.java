@@ -337,7 +337,7 @@ public class SignInPromo extends OptionalLeaf {
         @Override
         public void onBindViewHolder() {
             super.onBindViewHolder();
-            updatePersonalizedSigninPromo();
+            bindPersonalizedSigninPromo();
         }
 
         @Override
@@ -363,6 +363,11 @@ public class SignInPromo extends OptionalLeaf {
         }
 
         private void updatePersonalizedSigninPromo() {
+            mSigninPromoController.detach();
+            bindPersonalizedSigninPromo();
+        }
+
+        private void bindPersonalizedSigninPromo() {
             DisplayableProfileData profileData = null;
             Account[] accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
             if (accounts.length > 0) {
