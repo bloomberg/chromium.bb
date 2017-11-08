@@ -691,6 +691,9 @@ void NavigationHandleImpl::WillFailRequest(
   complete_callback_ = callback;
   state_ = WILL_FAIL_REQUEST;
 
+  if (ssl_info.has_value())
+    ssl_status_ = SSLStatus(ssl_info.value());
+
   // Notify each throttle of the request.
   base::Closure on_defer_callback_copy = on_defer_callback_for_testing_;
   NavigationThrottle::ThrottleCheckResult result = CheckWillFailRequest();
