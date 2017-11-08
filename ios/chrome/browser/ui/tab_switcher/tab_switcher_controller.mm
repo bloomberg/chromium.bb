@@ -202,6 +202,17 @@ enum class SnapshotViewOption {
                               forProtocol:@protocol(BrowserCommands)];
     [_dispatcher startDispatchingToTarget:endpoint
                               forProtocol:@protocol(ApplicationCommands)];
+    // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
+    // passed protocol conforms to, so ApplicationSettingsCommands is explicitly
+    // dispatched to the endpoint as well. Since this is potentially
+    // fragile, DCHECK that it should still work (if the endpoint is nonnull).
+    DCHECK(
+        !endpoint ||
+        [endpoint conformsToProtocol:@protocol(ApplicationSettingsCommands)]);
+    [_dispatcher
+        startDispatchingToTarget:endpoint
+                     forProtocol:@protocol(ApplicationSettingsCommands)];
+
     // self.dispatcher shouldn't be used in this init method, so duplicate the
     // typecast to pass dispatcher into child objects.
     id<ApplicationCommands, BrowserCommands> passableDispatcher =
