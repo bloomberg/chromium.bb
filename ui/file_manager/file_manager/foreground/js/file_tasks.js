@@ -191,7 +191,11 @@ FileTasks.create = function(
 
       FileTasks.zipArchiverUnpackerEnabledPromise_.then(function(
           zipArchiverUnpackerEnabled) {
-        if (!zipArchiverUnpackerEnabled) {
+        if (zipArchiverUnpackerEnabled) {
+          taskItems = taskItems.filter(function(item) {
+            return item.taskId !== FileTasks.ZIP_UNPACKER_TASK_ID;
+          });
+        } else {
           taskItems = taskItems.filter(function(item) {
             return item.taskId !== FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID;
           });
