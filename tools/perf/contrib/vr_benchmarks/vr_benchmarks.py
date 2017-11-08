@@ -24,6 +24,14 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
         'preference files to edit and how to do so. '
         'See examples in //chrome/android/'
         'shared_preference_files/test/')
+    parser.add_option(
+        '--disable-screen-reset',
+        action='store_true',
+        default=False,
+        help='Disables turning screen off and on after each story. '
+        'This is useful for local testing when turning off the '
+        'screen leads to locking the phone, which makes Telemetry '
+        'not produce valid results.')
 
 
 @benchmark.Owner(emails=['bsheedy@chromium.org', 'leilei@chromium.org'])
