@@ -226,8 +226,8 @@ WTF::String DisplayItem::AsDebugString() const {
 }
 
 void DisplayItem::PropertiesAsJSON(JSONObject& json) const {
-  if (!HasValidClient()) {
-    json.SetBoolean("validClient", false);
+  if (IsTombstone()) {
+    json.SetBoolean("ISTOMBSTONE", true);
     json.SetString("originalDebugString", ClientDebugString());
     return;
   }

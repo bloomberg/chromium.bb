@@ -40,21 +40,20 @@ class PLATFORM_EXPORT DisplayItemList
   }
 
   DisplayItem& AppendByMoving(DisplayItem& item) {
-#ifndef NDEBUG
-    String original_debug_string = item.AsDebugString();
-#endif
-    DCHECK(item.HasValidClient());
+    DCHECK(!item.IsTombstone());
     DisplayItem& result =
         ContiguousContainer::AppendByMoving(item, item.DerivedSize());
     // ContiguousContainer::AppendByMoving() calls an in-place constructor
     // on item which replaces it with a tombstone/"dead display item" that
-    // can be safely destructed but should never be used.
-    DCHECK(!item.HasValidClient());
-#ifndef NDEBUG
-    // Save original debug string in the old item to help debugging.
-    item.SetClientDebugString(original_debug_string);
-#endif
+    // can be safely destructed but should never be used except for debugging.
+    DCHECK(item.IsTombstone());
+    DCHECK(item.GetId() == result.GetId());
+    // We need |visual_rect_| and |outset_for_raster_effects_| of the old
+    // display item for raster invalidation. As their values were initialized
+    // to default values in DisplayItem's default constructor, now copy their
+    // original values back from |result|.
     item.visual_rect_ = result.visual_rect_;
+    item.outset_for_raster_effects_ = result.outset_for_raster_effects_;
     return result;
   }
 
@@ -90,6 +89,8 @@ class PLATFORM_EXPORT DisplayItemList
                                size_t end_index,
                                JsonFlags,
                                JSONArray&) const;
+
+  static String ClientDebugName(const DisplayItemClient&, JsonFlags);
 };
 
 }  // namespace blink

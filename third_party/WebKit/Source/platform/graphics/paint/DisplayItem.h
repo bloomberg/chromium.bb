@@ -186,7 +186,8 @@ class PLATFORM_EXPORT DisplayItem {
         outset_for_raster_effects_(client.VisualRectOutsetForRasterEffects()),
         type_(type),
         derived_size_(derived_size),
-        skipped_cache_(false)
+        skipped_cache_(false),
+        is_tombstone_(false)
 #ifndef NDEBUG
         ,
         client_debug_string_(client.DebugName())
@@ -210,7 +211,7 @@ class PLATFORM_EXPORT DisplayItem {
     const Type type;
   };
 
-  Id GetId() const { return Id(*client_, type_); }
+  Id GetId() const { return Id(*client_, GetType()); }
 
   virtual void Replay(GraphicsContext&) const {}
 
@@ -233,7 +234,7 @@ class PLATFORM_EXPORT DisplayItem {
   // item.
   void UpdateVisualRect() { visual_rect_ = client_->VisualRect(); }
 
-  Type GetType() const { return type_; }
+  Type GetType() const { return static_cast<Type>(type_); }
 
   // Size of this object in memory, used to move it with memcpy.
   // This is not sizeof(*this), because it needs to account for the size of
@@ -312,11 +313,13 @@ class PLATFORM_EXPORT DisplayItem {
   DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D)
 
   static bool IsScrollHitTestType(Type type) { return type == kScrollHitTest; }
-  bool IsScrollHitTest() const { return IsScrollHitTestType(type_); }
+  bool IsScrollHitTest() const { return IsScrollHitTestType(GetType()); }
 
   // TODO(pdr): Should this return true for IsScrollHitTestType too?
   static bool IsCacheableType(Type type) { return IsDrawingType(type); }
-  bool IsCacheable() const { return !SkippedCache() && IsCacheableType(type_); }
+  bool IsCacheable() const {
+    return !SkippedCache() && IsCacheableType(GetType());
+  }
 
   virtual bool IsBegin() const { return false; }
   virtual bool IsEnd() const { return false; }
@@ -328,16 +331,16 @@ class PLATFORM_EXPORT DisplayItem {
 #endif
 
   virtual bool Equals(const DisplayItem& other) const {
+    DCHECK(!is_tombstone_);
     return client_ == other.client_ && type_ == other.type_ &&
            derived_size_ == other.derived_size_ &&
            skipped_cache_ == other.skipped_cache_;
   }
 
-  // True if the client is non-null. Because m_client is const, this should
-  // never be false except when we explicitly create a tombstone/"dead display
-  // item" as part of moving an item from one list to another (see:
-  // DisplayItemList::appendByMoving).
-  bool HasValidClient() const { return client_; }
+  // True if this DisplayItem is the tombstone/"dead display item" as part of
+  // moving an item from one list to another. See the default constructor of
+  // DisplayItem.
+  bool IsTombstone() const { return is_tombstone_; }
 
   virtual bool DrawsContent() const { return false; }
 
@@ -350,18 +353,17 @@ class PLATFORM_EXPORT DisplayItem {
 #endif
 
  private:
-  // The default DisplayItem constructor is only used by
-  // ContiguousContainer::appendByMoving where an invalid DisplaItem is
-  // constructed at the source location.
   template <typename T, unsigned alignment>
   friend class ContiguousContainer;
   friend class DisplayItemList;
 
-  DisplayItem()
-      : client_(nullptr),
-        type_(kUninitializedType),
-        derived_size_(sizeof(*this)),
-        skipped_cache_(false) {}
+  // The default DisplayItem constructor is only used by ContiguousContainer::
+  // AppendByMoving() where a tombstone DisplayItem is constructed at the source
+  // location. Only set is_tombstone_ to true, leaving other fields as-is so
+  // that we can get their original values for debugging. |visual_rect_| and
+  // |outset_for_raster_effects_| are special, see DisplayItemList::
+  // AppendByMoving().
+  DisplayItem() : is_tombstone_(true) {}
 
   const DisplayItemClient* client_;
   LayoutRect visual_rect_;
@@ -369,9 +371,10 @@ class PLATFORM_EXPORT DisplayItem {
 
   static_assert(kTypeLast < (1 << 16),
                 "DisplayItem::Type should fit in 16 bits");
-  const Type type_ : 16;
-  const unsigned derived_size_ : 8;  // size of the actual derived class
+  unsigned type_ : 16;
+  unsigned derived_size_ : 8;  // size of the actual derived class
   unsigned skipped_cache_ : 1;
+  unsigned is_tombstone_ : 1;
 
 #ifndef NDEBUG
   WTF::String client_debug_string_;

@@ -50,7 +50,7 @@ void DisplayItemList::AppendSubsequenceAsJSON(size_t begin_index,
 
     bool show_client_debug_name = options & kShowClientDebugName;
 #if DCHECK_IS_ON()
-    if (display_item.HasValidClient()) {
+    if (!display_item.IsTombstone()) {
       if (display_item.Client().IsAlive())
         show_client_debug_name = true;
       else

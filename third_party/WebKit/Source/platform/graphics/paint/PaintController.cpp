@@ -387,7 +387,7 @@ size_t PaintController::FindMatchingItemFromIndex(
   const Vector<size_t>& indices = it->value;
   for (size_t index : indices) {
     const DisplayItem& existing_item = list[index];
-    if (!existing_item.HasValidClient())
+    if (existing_item.IsTombstone())
       continue;
     DCHECK(existing_item.Client() == id.client);
     if (id == existing_item.GetId())
@@ -426,7 +426,7 @@ size_t PaintController::FindCachedItem(const DisplayItem::Id& id) {
     // We encounter an item that has already been copied which indicates we
     // can't do sequential matching.
     const DisplayItem& item = current_paint_artifact_.GetDisplayItemList()[i];
-    if (!item.HasValidClient())
+    if (item.IsTombstone())
       break;
     if (id == item.GetId()) {
 #ifndef NDEBUG
@@ -459,10 +459,8 @@ size_t PaintController::FindOutOfOrderCachedItemForward(
   for (size_t i = next_item_to_index_;
        i < current_paint_artifact_.GetDisplayItemList().size(); ++i) {
     const DisplayItem& item = current_paint_artifact_.GetDisplayItemList()[i];
-    if (!item.HasValidClient()) {
-      // This item has been copied in a cached subsequence.
+    if (item.IsTombstone())
       continue;
-    }
     if (id == item.GetId()) {
 #ifndef NDEBUG
       ++num_sequential_matches_;
@@ -528,9 +526,9 @@ void PaintController::CopyCachedSubsequence(size_t begin_index,
   for (size_t current_index = begin_index; current_index < end_index;
        ++current_index) {
     cached_item = &current_paint_artifact_.GetDisplayItemList()[current_index];
-    DCHECK(cached_item->HasValidClient());
+    DCHECK(!cached_item->IsTombstone());
     // TODO(chrishtr); remove this hack once crbug.com/712660 is resolved.
-    if (!cached_item->HasValidClient())
+    if (cached_item->IsTombstone())
       continue;
 #if DCHECK_IS_ON()
     DCHECK(cached_item->Client().IsAlive());
@@ -827,7 +825,7 @@ void PaintController::GenerateRasterInvalidationsComparingChunks(
         current_paint_artifact_.GetDisplayItemList()[old_index];
     const DisplayItemClient* client_to_invalidate_old_visual_rect = nullptr;
 
-    if (!old_item.HasValidClient()) {
+    if (old_item.IsTombstone()) {
       // old_item has been moved into new_display_item_list_ as a cached item.
       size_t moved_to_index = items_moved_into_new_list_[old_index];
       if (new_display_item_list_[moved_to_index].DrawsContent()) {
