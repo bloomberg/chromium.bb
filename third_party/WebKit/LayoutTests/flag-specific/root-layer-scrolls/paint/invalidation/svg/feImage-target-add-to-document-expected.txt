@@ -19,7 +19,7 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 110, 110],
-          "reason": "style change"
+          "reason": "full"
         }
       ]
     }
@@ -27,7 +27,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGRect rect",
-      "reason": "style change"
+      "reason": "full"
     }
   ]
 }
