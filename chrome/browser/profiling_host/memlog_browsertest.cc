@@ -212,24 +212,15 @@ class MemlogBrowserTest : public InProcessBrowserTest,
     SCOPED_TRACE("Validating Browser Allocations");
     base::Value* heaps_v2 =
         FindHeapsV2(base::Process::Current().Pid(), dump_json);
-
-    if (GetParam() == switches::kMemlogModeAll ||
-        GetParam() == switches::kMemlogModeBrowser ||
-        GetParam() == switches::kMemlogModeMinimal) {
-      ASSERT_TRUE(heaps_v2);
-      ASSERT_NO_FATAL_FAILURE(
-          ValidateDump(heaps_v2, kBrowserAllocSize * kBrowserAllocCount,
-                       kBrowserAllocCount, "malloc", nullptr));
-      ASSERT_NO_FATAL_FAILURE(
-          ValidateDump(heaps_v2, total_variadic_allocations_,
-                       kBrowserAllocCount, "malloc", nullptr));
-      ASSERT_NO_FATAL_FAILURE(ValidateDump(
-          heaps_v2, kPartitionAllocSize * kPartitionAllocCount,
-          kPartitionAllocCount, "partition_alloc", kPartitionAllocTypeName));
-    } else {
-      ASSERT_FALSE(heaps_v2) << "There should be no heap dump for the browser.";
-    }
-
+    ASSERT_NO_FATAL_FAILURE(
+        ValidateDump(heaps_v2, kBrowserAllocSize * kBrowserAllocCount,
+                     kBrowserAllocCount, "malloc", nullptr));
+    ASSERT_NO_FATAL_FAILURE(ValidateDump(heaps_v2, total_variadic_allocations_,
+                                         kBrowserAllocCount, "malloc",
+                                         nullptr));
+    ASSERT_NO_FATAL_FAILURE(ValidateDump(
+        heaps_v2, kPartitionAllocSize * kPartitionAllocCount,
+        kPartitionAllocCount, "partition_alloc", kPartitionAllocTypeName));
     EXPECT_TRUE(HasProcessWithName(dump_json, "Browser"));
   }
 
@@ -338,7 +329,6 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
 
   MakeTestAllocations();
 
-  // Attempt to dump a browser process.
   {
     base::FilePath browser_dumpfile_path =
         temp_dir.GetPath().Append(FILE_PATH_LITERAL("browserdump.json.gz"));
@@ -346,18 +336,11 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
 
     std::unique_ptr<base::Value> dump_json =
         ReadDumpFile(browser_dumpfile_path);
-    if (GetParam() == switches::kMemlogModeAll ||
-        GetParam() == switches::kMemlogModeBrowser ||
-        GetParam() == switches::kMemlogModeMinimal) {
-      ASSERT_TRUE(dump_json);
-      EXPECT_FALSE(HasProcessWithName(dump_json.get(), "Renderer"));
-      ValidateBrowserAllocations(dump_json.get());
-    } else {
-      ASSERT_FALSE(dump_json) << "Browser process unexpectedly profiled.";
-    }
+    ASSERT_TRUE(dump_json);
+    ValidateBrowserAllocations(dump_json.get());
+    EXPECT_FALSE(HasProcessWithName(dump_json.get(), "Renderer"));
   }
 
-  // Attempt to dump a renderer process.
   {
     base::ProcessId renderer_pid = base::GetProcId(browser()
                                                        ->tab_strip_model()
@@ -370,24 +353,18 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
     DumpProcess(renderer_pid, renderer_dumpfile_path);
     std::unique_ptr<base::Value> dump_json =
         ReadDumpFile(renderer_dumpfile_path);
-    // TODO(ajwong): Test kMemlogModeRendererSampling correctly.
-    // http://crbug.com/780955
     if (GetParam() == switches::kMemlogModeAll) {
       ASSERT_TRUE(dump_json);
       ValidateRendererAllocations(dump_json.get());
       EXPECT_FALSE(HasProcessWithName(dump_json.get(), "Browser"));
     } else {
-      ASSERT_FALSE(dump_json) << "Renderer process unexpectedly profiled.";
+      ASSERT_FALSE(dump_json)
+          << "Renderer should not be dumpable unless kMemlogModeAll!";
     }
   }
-
-  // Attempt to dump a gpu process.
-  // TODO(ajwong): Implement this.  http://crbug.com/780955
 }
 
-// Ensure invocations via TracingController can generate a valid JSON file with
-// expected data.
-IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, TracingControllerEndToEnd) {
+IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEndTracing) {
   if (!GetParam()) {
     // Test that nothing has been started if the flag is not passed. Then early
     // exit.
@@ -416,7 +393,7 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, TracingControllerEndToEnd) {
       content::TracingController::CreateStringEndpoint(
           std::move(finish_sink_callback));
   base::OnceClosure stop_tracing_closure = base::BindOnce(
-      base::IgnoreResult<bool (content::TracingController::*)(  // NOLINT
+      base::IgnoreResult<bool (content::TracingController::*)(
           const scoped_refptr<content::TracingController::TraceDataEndpoint>&)>(
           &content::TracingController::StopTracing),
       base::Unretained(content::TracingController::GetInstance()), sink);
@@ -441,31 +418,19 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, TracingControllerEndToEnd) {
   ASSERT_TRUE(dump_json);
   ValidateBrowserAllocations(dump_json.get());
   ValidateRendererAllocations(dump_json.get());
-  // TODO(ajwong): Test GPU dumps  http://crbug.com/780955
 }
 
 // TODO(ajwong): Test what happens if profiling process crashes.
-// http://crbug.com/780955
 
 INSTANTIATE_TEST_CASE_P(NoMemlog,
                         MemlogBrowserTest,
                         ::testing::Values(static_cast<const char*>(nullptr)));
-INSTANTIATE_TEST_CASE_P(Minimal,
+INSTANTIATE_TEST_CASE_P(BrowserOnly,
                         MemlogBrowserTest,
                         ::testing::Values(switches::kMemlogModeMinimal));
 INSTANTIATE_TEST_CASE_P(AllProcesses,
                         MemlogBrowserTest,
                         ::testing::Values(switches::kMemlogModeAll));
-INSTANTIATE_TEST_CASE_P(BrowserOnly,
-                        MemlogBrowserTest,
-                        ::testing::Values(switches::kMemlogModeBrowser));
-INSTANTIATE_TEST_CASE_P(GpuOnly,
-                        MemlogBrowserTest,
-                        ::testing::Values(switches::kMemlogModeGpu));
-INSTANTIATE_TEST_CASE_P(
-    RendererSampling,
-    MemlogBrowserTest,
-    ::testing::Values(switches::kMemlogModeRendererSampling));
 
 }  // namespace
 
