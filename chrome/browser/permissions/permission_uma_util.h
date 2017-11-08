@@ -101,10 +101,6 @@ class PermissionUmaUtil {
   static const char kPermissionsPromptDenied[];
   static const char kPermissionsPromptDeniedGesture[];
   static const char kPermissionsPromptDeniedNoGesture[];
-  static const char kPermissionsPromptRequestsPerPrompt[];
-  static const char kPermissionsPromptMergedBubbleTypes[];
-  static const char kPermissionsPromptMergedBubbleAccepted[];
-  static const char kPermissionsPromptMergedBubbleDenied[];
   static const char kPermissionsPromptAcceptedPriorDismissCountPrefix[];
   static const char kPermissionsPromptAcceptedPriorIgnoreCountPrefix[];
   static const char kPermissionsPromptDeniedPriorDismissCountPrefix[];

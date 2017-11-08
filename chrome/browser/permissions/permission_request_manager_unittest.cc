@@ -512,8 +512,6 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedGestureBubble) {
       1);
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt, 1, 1);
   histograms.ExpectTotalCount("Permissions.Engagement.Accepted.Quota", 0);
 
   Accept();
@@ -599,18 +597,6 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
       PermissionUmaUtil::kPermissionsPromptShown,
       static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
       1);
-  histograms.ExpectBucketCount(
-      PermissionUmaUtil::kPermissionsPromptMergedBubbleTypes,
-      static_cast<base::HistogramBase::Sample>(
-          PermissionRequestType::PERMISSION_MEDIASTREAM_MIC),
-      1);
-  histograms.ExpectBucketCount(
-      PermissionUmaUtil::kPermissionsPromptMergedBubbleTypes,
-      static_cast<base::HistogramBase::Sample>(
-          PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA),
-      1);
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt, 2, 1);
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptShownGesture, 0);
   histograms.ExpectTotalCount(
@@ -623,16 +609,6 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptAccepted,
       static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
-      1);
-  histograms.ExpectBucketCount(
-      PermissionUmaUtil::kPermissionsPromptMergedBubbleAccepted,
-      static_cast<base::HistogramBase::Sample>(
-          PermissionRequestType::PERMISSION_MEDIASTREAM_MIC),
-      1);
-  histograms.ExpectBucketCount(
-      PermissionUmaUtil::kPermissionsPromptMergedBubbleAccepted,
-      static_cast<base::HistogramBase::Sample>(
-          PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA),
       1);
   histograms.ExpectUniqueSample(
       "Permissions.Engagement.Accepted.AudioAndVideoCapture",
@@ -655,16 +631,6 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedDeniedBubble) {
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptDenied,
       static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
-      1);
-  histograms.ExpectBucketCount(
-      PermissionUmaUtil::kPermissionsPromptMergedBubbleDenied,
-      static_cast<base::HistogramBase::Sample>(
-          PermissionRequestType::PERMISSION_MEDIASTREAM_MIC),
-      1);
-  histograms.ExpectBucketCount(
-      PermissionUmaUtil::kPermissionsPromptMergedBubbleDenied,
-      static_cast<base::HistogramBase::Sample>(
-          PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA),
       1);
   histograms.ExpectUniqueSample(
       "Permissions.Engagement.Denied.AudioAndVideoCapture",
