@@ -19,3 +19,4 @@ List of changes made to original code:
   - fixed parsing of long exponents, see exp_length.patch and crbug.com/542881
   - made hexdig array const
   - removed deprecated `register` keyword
+  - #undef Long so that it won't change Long in other files in jumbo builds
