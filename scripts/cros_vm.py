@@ -8,7 +8,9 @@
 from __future__ import print_function
 
 import argparse
+import distutils.version
 import os
+import re
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -93,6 +95,33 @@ class VM(object):
     if recreate:
       osutils.SafeMakedirs(self.vm_dir)
 
+  @cros_build_lib.MemoizedSingleCall
+  def QemuVersion(self):
+    """Determine QEMU version."""
+    version_str = self._RunCommand([self.qemu_path, '--version'],
+                                   capture_output=True).output
+    # version string looks like one of these:
+    # QEMU emulator version 2.0.0 (Debian 2.0.0+dfsg-2ubuntu1.36), Copyright (c)
+    # 2003-2008 Fabrice Bellard
+    #
+    # QEMU emulator version 2.6.0, Copyright (c) 2003-2008 Fabrice Bellard
+    #
+    # qemu-x86_64 version 2.10.1
+    # Copyright (c) 2003-2017 Fabrice Bellard and the QEMU Project developers
+    m = re.search(r"version ([0-9.]+)", version_str)
+    if not m:
+      raise VMError('Unable to determine QEMU version from:\n%s.' % version_str)
+    return m.group(1)
+
+  def _CheckQemuMinVersion(self):
+    """Ensure minimum QEMU version."""
+    min_qemu_version = '2.6.0'
+    logging.info('QEMU version %s', self.QemuVersion())
+    LooseVersion = distutils.version.LooseVersion
+    if LooseVersion(self.QemuVersion()) < LooseVersion(min_qemu_version):
+      raise VMError('QEMU %s is the minimum supported version. You have %s.'
+                    % (min_qemu_version, self.QemuVersion()))
+
   def Run(self):
     """Performs an action, one of start, stop, or run a command in the VM.
 
@@ -135,7 +164,9 @@ class VM(object):
       os.mkfifo(pipe, 0600)
     osutils.Touch(self.pidfile)
 
-    args = [self.qemu_path, '-m', '2G', '-smp', '4', '-vga', 'cirrus',
+    self._CheckQemuMinVersion()
+
+    args = [self.qemu_path, '-m', '2G', '-smp', '4', '-vga', 'virtio',
             '-daemonize',
             '-pidfile', self.pidfile,
             '-chardev', 'pipe,id=control_pipe,path=%s' % self.kvm_monitor,
@@ -143,7 +174,7 @@ class VM(object):
             '-mon', 'chardev=control_pipe',
             '-net', 'nic,model=virtio',
             '-net', 'user,hostfwd=tcp:127.0.0.1:%d-:22' % self.ssh_port,
-            '-drive', 'file=%s,index=0,media=disk,cache=unsafe'
+            '-drive', 'file=%s,index=0,media=disk,cache=unsafe,format=raw'
             % self.image_path]
     if self.enable_kvm:
       args.append('-enable-kvm')
