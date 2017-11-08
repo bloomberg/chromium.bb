@@ -1662,8 +1662,6 @@ static_library("test_support_common") {
     "shelf/overflow_button_test_api.h",
     "shelf/shelf_button_pressed_metric_tracker_test_api.cc",
     "shelf/shelf_button_pressed_metric_tracker_test_api.h",
-    "shelf/shelf_test_api.cc",
-    "shelf/shelf_test_api.h",
     "shelf/shelf_view_test_api.cc",
     "shelf/shelf_view_test_api.h",
     "shell/toplevel_window.cc",

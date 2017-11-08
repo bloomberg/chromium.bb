@@ -37,8 +37,6 @@ WebviewLoginTest.*
 AcceleratorCommandsFullscreenBrowserTest.*
 AcceleratorCommandsPlatformAppFullscreenBrowserTest.*
 ArcAppLauncherBrowserTest.*
-ShelfBrowserTest.*
-ShelfGuestSessionBrowserTest.*
 SoundsManagerTestImpl.*
 SystemTrayClientClockTest.*
 SystemTrayClientEnterpriseTest.*
