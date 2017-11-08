@@ -659,6 +659,7 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
 
   auto* driver = driver_factory_->GetDriverForFrame(
       password_manager_client_bindings_.GetCurrentTargetFrame());
+  DCHECK(driver);
   password_manager_.SetGenerationElementAndReasonForForm(
       driver, form, generation_element, is_manually_triggered);
   gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
@@ -666,7 +667,7 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   popup_controller_ =
       autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
           popup_controller_, element_bounds_in_screen_space, form, max_length,
-          &password_manager_, driver, observer_, web_contents(),
+          &password_manager_, driver->AsWeakPtr(), observer_, web_contents(),
           web_contents()->GetNativeView());
   popup_controller_->Show(true /* display_password */);
 }
@@ -674,15 +675,16 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
 void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const gfx::RectF& bounds,
     const autofill::PasswordForm& form) {
+  auto* driver = driver_factory_->GetDriverForFrame(
+      password_manager_client_bindings_.GetCurrentTargetFrame());
+  DCHECK(driver);
   gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
   popup_controller_ =
       autofill::PasswordGenerationPopupControllerImpl::GetOrCreate(
           popup_controller_, element_bounds_in_screen_space, form,
           0,  // Unspecified max length.
-          &password_manager_,
-          driver_factory_->GetDriverForFrame(
-              password_manager_client_bindings_.GetCurrentTargetFrame()),
-          observer_, web_contents(), web_contents()->GetNativeView());
+          &password_manager_, driver->AsWeakPtr(), observer_, web_contents(),
+          web_contents()->GetNativeView());
   popup_controller_->Show(false /* display_password */);
 }
 
