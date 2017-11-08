@@ -97,7 +97,7 @@ INSTANTIATE_TEST_CASE_P(
 
         TestCase("55.00", "BRL", "en_US", "R$55.00", "BRL"),
         TestCase("55.00", "BRL", "fr_CA", "55,00 R$", "BRL"),
-        TestCase("55.00", "BRL", "pt_BR", "R$55,00", "BRL"),
+        TestCase("55.00", "BRL", "pt_BR", "R$ 55,00", "BRL"),
 
         TestCase("55.00", "RUB", "en_US", "55.00", "RUB"),
         TestCase("55.00", "RUB", "fr_CA", "55,00", "RUB"),
