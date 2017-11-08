@@ -504,6 +504,9 @@ NSString* const kTransitionToolbarAnimationKey =
   BOOL _isBeingDismissed;
   // |YES| if the stack view is currently active.
   BOOL _isActive;
+  // |YES| if the stack view has been told to restore internal state, but has
+  // not yet become active.
+  BOOL _preparingForActive;
   // Records whether a memory warning occurred in the current session.
   BOOL _receivedMemoryWarningInSession;
   // |YES| if there is card set animation being processed. For testing only.
@@ -625,6 +628,9 @@ NSString* const kTransitionToolbarAnimationKey =
   DCHECK(otrModel);
   DCHECK(activeModel == otrModel || activeModel == mainModel);
   DCHECK(!_isActive);
+  DCHECK(!_preparingForActive);
+  _preparingForActive = YES;
+
   CardSet* mainCardSet = [[CardSet alloc] initWithModel:mainModel];
   CardSet* otrCardSet = [[CardSet alloc] initWithModel:otrModel];
   CardSet* activeCardSet =
@@ -643,7 +649,7 @@ NSString* const kTransitionToolbarAnimationKey =
 }
 
 - (void)setOtrTabModel:(TabModel*)otrModel {
-  DCHECK(_isActive);
+  DCHECK(_isActive || _preparingForActive);
   DCHECK(_mainCardSet == _activeCardSet);
   DCHECK([otrModel count] == 0);
   DCHECK([[_otrCardSet tabModel] count] == 0);
@@ -846,6 +852,7 @@ NSString* const kTransitionToolbarAnimationKey =
 
 - (void)viewWillAppear:(BOOL)animated {
   _isActive = YES;
+  _preparingForActive = NO;
   // Sizing steps need to be done here rather than viewDidLoad since they
   // depend on the view bounds being correct. Setting initial card size should
   // be done only once, however, and viewWillAppear: can be called more than
