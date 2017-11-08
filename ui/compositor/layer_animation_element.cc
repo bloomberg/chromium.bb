@@ -70,7 +70,8 @@ class InterpolatedTransformTransition : public LayerAnimationElement {
 
   bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetTransformFromAnimation(
-        interpolated_transform_->Interpolate(static_cast<float>(t)));
+        interpolated_transform_->Interpolate(static_cast<float>(t)),
+        PropertyChangeReason::FROM_ANIMATION);
     return true;
   }
 
@@ -104,7 +105,8 @@ class BoundsTransition : public LayerAnimationElement {
 
   bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetBoundsFromAnimation(
-        gfx::Tween::RectValueBetween(t, start_, target_));
+        gfx::Tween::RectValueBetween(t, start_, target_),
+        PropertyChangeReason::FROM_ANIMATION);
     return true;
   }
 
@@ -139,7 +141,8 @@ class VisibilityTransition : public LayerAnimationElement {
   }
 
   bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
-    delegate->SetVisibilityFromAnimation(t == 1.0 ? target_ : start_);
+    delegate->SetVisibilityFromAnimation(t == 1.0 ? target_ : start_,
+                                         PropertyChangeReason::FROM_ANIMATION);
     return t == 1.0;
   }
 
@@ -175,7 +178,8 @@ class BrightnessTransition : public LayerAnimationElement {
 
   bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetBrightnessFromAnimation(
-        gfx::Tween::FloatValueBetween(t, start_, target_));
+        gfx::Tween::FloatValueBetween(t, start_, target_),
+        PropertyChangeReason::FROM_ANIMATION);
     return true;
   }
 
@@ -211,7 +215,8 @@ class GrayscaleTransition : public LayerAnimationElement {
 
   bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetGrayscaleFromAnimation(
-        gfx::Tween::FloatValueBetween(t, start_, target_));
+        gfx::Tween::FloatValueBetween(t, start_, target_),
+        PropertyChangeReason::FROM_ANIMATION);
     return true;
   }
 
@@ -247,7 +252,8 @@ class ColorTransition : public LayerAnimationElement {
 
   bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetColorFromAnimation(
-        gfx::Tween::ColorValueBetween(t, start_, target_));
+        gfx::Tween::ColorValueBetween(t, start_, target_),
+        PropertyChangeReason::FROM_ANIMATION);
     return true;
   }
 
@@ -282,7 +288,8 @@ class TemperatureTransition : public LayerAnimationElement {
 
   bool OnProgress(double t, LayerAnimationDelegate* delegate) override {
     delegate->SetTemperatureFromAnimation(
-        gfx::Tween::FloatValueBetween(t, start_, target_));
+        gfx::Tween::FloatValueBetween(t, start_, target_),
+        PropertyChangeReason::FROM_ANIMATION);
     return true;
   }
 
@@ -384,20 +391,25 @@ class ThreadedOpacityTransition : public ThreadedLayerAnimationElement {
   std::string DebugName() const override { return "ThreadedOpacityTransition"; }
   void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetOpacityForAnimation();
+    delegate->SetOpacityFromAnimation(delegate->GetOpacityForAnimation(),
+                                      PropertyChangeReason::FROM_ANIMATION);
   }
 
   void OnAbort(LayerAnimationDelegate* delegate) override {
     if (delegate && Started()) {
       ThreadedLayerAnimationElement::OnAbort(delegate);
-      delegate->SetOpacityFromAnimation(gfx::Tween::FloatValueBetween(
-          gfx::Tween::CalculateValue(tween_type(), last_progressed_fraction()),
-              start_,
-              target_));
+      delegate->SetOpacityFromAnimation(
+          gfx::Tween::FloatValueBetween(
+              gfx::Tween::CalculateValue(tween_type(),
+                                         last_progressed_fraction()),
+              start_, target_),
+          PropertyChangeReason::FROM_ANIMATION);
     }
   }
 
   void OnEnd(LayerAnimationDelegate* delegate) override {
-    delegate->SetOpacityFromAnimation(target_);
+    delegate->SetOpacityFromAnimation(target_,
+                                      PropertyChangeReason::FROM_ANIMATION);
   }
 
   std::unique_ptr<cc::Animation> CreateCCAnimation() override {
@@ -449,20 +461,25 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
   }
   void OnStart(LayerAnimationDelegate* delegate) override {
     start_ = delegate->GetTransformForAnimation();
+    delegate->SetTransformFromAnimation(delegate->GetTransformForAnimation(),
+                                        PropertyChangeReason::FROM_ANIMATION);
   }
 
   void OnAbort(LayerAnimationDelegate* delegate) override {
     if (delegate && Started()) {
       ThreadedLayerAnimationElement::OnAbort(delegate);
-      delegate->SetTransformFromAnimation(gfx::Tween::TransformValueBetween(
-          gfx::Tween::CalculateValue(tween_type(), last_progressed_fraction()),
-          start_,
-          target_));
+      delegate->SetTransformFromAnimation(
+          gfx::Tween::TransformValueBetween(
+              gfx::Tween::CalculateValue(tween_type(),
+                                         last_progressed_fraction()),
+              start_, target_),
+          PropertyChangeReason::FROM_ANIMATION);
     }
   }
 
   void OnEnd(LayerAnimationDelegate* delegate) override {
-    delegate->SetTransformFromAnimation(target_);
+    delegate->SetTransformFromAnimation(target_,
+                                        PropertyChangeReason::FROM_ANIMATION);
   }
 
   std::unique_ptr<cc::Animation> CreateCCAnimation() override {

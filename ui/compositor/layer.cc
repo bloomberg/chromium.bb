@@ -1124,7 +1124,8 @@ bool Layer::ConvertPointFromAncestor(const Layer* ancestor,
   return result;
 }
 
-void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
+void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
+                                   PropertyChangeReason reason) {
   if (bounds == bounds_)
     return;
 
@@ -1154,7 +1155,8 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
   }
 }
 
-void Layer::SetTransformFromAnimation(const gfx::Transform& transform) {
+void Layer::SetTransformFromAnimation(const gfx::Transform& transform,
+                                      PropertyChangeReason reason) {
   if (transform == cc_layer_->transform())
     return;
   cc_layer_->SetTransform(transform);
@@ -1162,7 +1164,8 @@ void Layer::SetTransformFromAnimation(const gfx::Transform& transform) {
     delegate_->OnLayerTransformed();
 }
 
-void Layer::SetOpacityFromAnimation(float opacity) {
+void Layer::SetOpacityFromAnimation(float opacity,
+                                    PropertyChangeReason reason) {
   float old_opacity = cc_layer_->opacity();
   cc_layer_->SetOpacity(opacity);
   if (delegate_ && old_opacity != opacity)
@@ -1170,7 +1173,8 @@ void Layer::SetOpacityFromAnimation(float opacity) {
   ScheduleDraw();
 }
 
-void Layer::SetVisibilityFromAnimation(bool visible) {
+void Layer::SetVisibilityFromAnimation(bool visible,
+                                       PropertyChangeReason reason) {
   if (visible_ == visible)
     return;
 
@@ -1178,23 +1182,26 @@ void Layer::SetVisibilityFromAnimation(bool visible) {
   cc_layer_->SetHideLayerAndSubtree(!visible_);
 }
 
-void Layer::SetBrightnessFromAnimation(float brightness) {
+void Layer::SetBrightnessFromAnimation(float brightness,
+                                       PropertyChangeReason reason) {
   layer_brightness_ = brightness;
   SetLayerFilters();
 }
 
-void Layer::SetGrayscaleFromAnimation(float grayscale) {
+void Layer::SetGrayscaleFromAnimation(float grayscale,
+                                      PropertyChangeReason reason) {
   layer_grayscale_ = grayscale;
   SetLayerFilters();
 }
 
-void Layer::SetColorFromAnimation(SkColor color) {
+void Layer::SetColorFromAnimation(SkColor color, PropertyChangeReason reason) {
   DCHECK_EQ(type_, LAYER_SOLID_COLOR);
   cc_layer_->SetBackgroundColor(color);
   SetFillsBoundsOpaquely(SkColorGetA(color) == 0xFF);
 }
 
-void Layer::SetTemperatureFromAnimation(float temperature) {
+void Layer::SetTemperatureFromAnimation(float temperature,
+                                        PropertyChangeReason reason) {
   layer_temperature_ = temperature;
 
   // If we only tone down the blue scale, the screen will look very green so we

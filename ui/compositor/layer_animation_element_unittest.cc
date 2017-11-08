@@ -33,13 +33,20 @@ TEST(TargetValueTest, VerifyLayerAnimationDelegateConstructor) {
   const SkColor kColor = SK_ColorCYAN;
 
   TestLayerAnimationDelegate delegate;
-  delegate.SetBoundsFromAnimation(kBounds);
-  delegate.SetTransformFromAnimation(kTransform);
-  delegate.SetOpacityFromAnimation(kOpacity);
-  delegate.SetVisibilityFromAnimation(kVisibility);
-  delegate.SetBrightnessFromAnimation(kBrightness);
-  delegate.SetGrayscaleFromAnimation(kGrayscale);
-  delegate.SetColorFromAnimation(kColor);
+  delegate.SetBoundsFromAnimation(kBounds,
+                                  PropertyChangeReason::NOT_FROM_ANIMATION);
+  delegate.SetTransformFromAnimation(kTransform,
+                                     PropertyChangeReason::NOT_FROM_ANIMATION);
+  delegate.SetOpacityFromAnimation(kOpacity,
+                                   PropertyChangeReason::NOT_FROM_ANIMATION);
+  delegate.SetVisibilityFromAnimation(kVisibility,
+                                      PropertyChangeReason::NOT_FROM_ANIMATION);
+  delegate.SetBrightnessFromAnimation(kBrightness,
+                                      PropertyChangeReason::NOT_FROM_ANIMATION);
+  delegate.SetGrayscaleFromAnimation(kGrayscale,
+                                     PropertyChangeReason::NOT_FROM_ANIMATION);
+  delegate.SetColorFromAnimation(kColor,
+                                 PropertyChangeReason::NOT_FROM_ANIMATION);
 
   LayerAnimationElement::TargetValue target_value(&delegate);
 
@@ -70,11 +77,14 @@ TEST(LayerAnimationElementTest, TransformElement) {
   for (int i = 0; i < 2; ++i) {
     start_time = effective_start_time + delta;
     element->set_requested_start_time(start_time);
-    delegate.SetTransformFromAnimation(start_transform);
+    delegate.SetTransformFromAnimation(
+        start_transform, PropertyChangeReason::NOT_FROM_ANIMATION);
     element->Start(&delegate, 1);
     element->Progress(start_time, &delegate);
     CheckApproximatelyEqual(start_transform,
                             delegate.GetTransformForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
     effective_start_time = start_time + delta;
     element->set_effective_start_time(effective_start_time);
     element->Progress(effective_start_time, &delegate);
@@ -91,6 +101,8 @@ TEST(LayerAnimationElementTest, TransformElement) {
     EXPECT_FLOAT_EQ(1.0, element->last_progressed_fraction());
     CheckApproximatelyEqual(target_transform,
                             delegate.GetTransformForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
   }
 
   LayerAnimationElement::TargetValue target_value(&delegate);
@@ -115,12 +127,17 @@ TEST(LayerAnimationElementTest, BoundsElement) {
   for (int i = 0; i < 2; ++i) {
     start_time += delta;
     element->set_requested_start_time(start_time);
-    delegate.SetBoundsFromAnimation(start);
+    delegate.SetBoundsFromAnimation(start,
+                                    PropertyChangeReason::NOT_FROM_ANIMATION);
     element->Start(&delegate, 1);
     element->Progress(start_time, &delegate);
     CheckApproximatelyEqual(start, delegate.GetBoundsForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
     element->Progress(start_time + delta/2, &delegate);
     CheckApproximatelyEqual(middle, delegate.GetBoundsForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
 
     base::TimeDelta element_duration;
     EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
@@ -128,6 +145,8 @@ TEST(LayerAnimationElementTest, BoundsElement) {
 
     element->Progress(start_time + delta, &delegate);
     CheckApproximatelyEqual(target, delegate.GetBoundsForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
   }
 
   LayerAnimationElement::TargetValue target_value(&delegate);
@@ -151,7 +170,8 @@ TEST(LayerAnimationElementTest, OpacityElement) {
   for (int i = 0; i < 2; ++i) {
     start_time = effective_start_time + delta;
     element->set_requested_start_time(start_time);
-    delegate.SetOpacityFromAnimation(start);
+    delegate.SetOpacityFromAnimation(start,
+                                     PropertyChangeReason::NOT_FROM_ANIMATION);
     element->Start(&delegate, 1);
     element->Progress(start_time, &delegate);
     EXPECT_FLOAT_EQ(start, element->last_progressed_fraction());
@@ -170,6 +190,8 @@ TEST(LayerAnimationElementTest, OpacityElement) {
     element->Progress(effective_start_time + delta, &delegate);
     EXPECT_FLOAT_EQ(target, element->last_progressed_fraction());
     EXPECT_FLOAT_EQ(target, delegate.GetOpacityForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
   }
 
   LayerAnimationElement::TargetValue target_value(&delegate);
@@ -191,12 +213,17 @@ TEST(LayerAnimationElementTest, VisibilityElement) {
   for (int i = 0; i < 2; ++i) {
     start_time += delta;
     element->set_requested_start_time(start_time);
-    delegate.SetVisibilityFromAnimation(start);
+    delegate.SetVisibilityFromAnimation(
+        start, PropertyChangeReason::NOT_FROM_ANIMATION);
     element->Start(&delegate, 1);
     element->Progress(start_time, &delegate);
     EXPECT_TRUE(delegate.GetVisibilityForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
     element->Progress(start_time + delta/2, &delegate);
     EXPECT_TRUE(delegate.GetVisibilityForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
 
     base::TimeDelta element_duration;
     EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
@@ -204,6 +231,8 @@ TEST(LayerAnimationElementTest, VisibilityElement) {
 
     element->Progress(start_time + delta, &delegate);
     EXPECT_FALSE(delegate.GetVisibilityForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
   }
 
   LayerAnimationElement::TargetValue target_value(&delegate);
@@ -226,12 +255,17 @@ TEST(LayerAnimationElementTest, BrightnessElement) {
   for (int i = 0; i < 2; ++i) {
     start_time += delta;
     element->set_requested_start_time(start_time);
-    delegate.SetBrightnessFromAnimation(start);
+    delegate.SetBrightnessFromAnimation(
+        start, PropertyChangeReason::NOT_FROM_ANIMATION);
     element->Start(&delegate, 1);
     element->Progress(start_time, &delegate);
     EXPECT_FLOAT_EQ(start, delegate.GetBrightnessForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
     element->Progress(start_time + delta/2, &delegate);
     EXPECT_FLOAT_EQ(middle, delegate.GetBrightnessForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
 
     base::TimeDelta element_duration;
     EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
@@ -239,6 +273,8 @@ TEST(LayerAnimationElementTest, BrightnessElement) {
 
     element->Progress(start_time + delta, &delegate);
     EXPECT_FLOAT_EQ(target, delegate.GetBrightnessForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
   }
 
   LayerAnimationElement::TargetValue target_value(&delegate);
@@ -261,12 +297,17 @@ TEST(LayerAnimationElementTest, GrayscaleElement) {
   for (int i = 0; i < 2; ++i) {
     start_time += delta;
     element->set_requested_start_time(start_time);
-    delegate.SetGrayscaleFromAnimation(start);
+    delegate.SetGrayscaleFromAnimation(
+        start, PropertyChangeReason::NOT_FROM_ANIMATION);
     element->Start(&delegate, 1);
     element->Progress(start_time, &delegate);
     EXPECT_FLOAT_EQ(start, delegate.GetGrayscaleForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
     element->Progress(start_time + delta/2, &delegate);
     EXPECT_FLOAT_EQ(middle, delegate.GetGrayscaleForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
 
     base::TimeDelta element_duration;
     EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
@@ -274,6 +315,8 @@ TEST(LayerAnimationElementTest, GrayscaleElement) {
 
     element->Progress(start_time + delta, &delegate);
     EXPECT_FLOAT_EQ(target, delegate.GetGrayscaleForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
   }
 
   LayerAnimationElement::TargetValue target_value(&delegate);
@@ -338,11 +381,15 @@ TEST(LayerAnimationElementTest, AbortOpacityElement) {
   gfx::Tween::Type tween_type = gfx::Tween::EASE_IN;
   element->set_tween_type(tween_type);
 
-  delegate.SetOpacityFromAnimation(start);
+  delegate.SetOpacityFromAnimation(start,
+                                   PropertyChangeReason::NOT_FROM_ANIMATION);
+  delegate.ExpectLastPropertyChangeReason(
+      PropertyChangeReason::NOT_FROM_ANIMATION);
 
   // Aborting the element before it has started should not update the delegate.
   element->Abort(&delegate);
   EXPECT_FLOAT_EQ(start, delegate.GetOpacityForAnimation());
+  delegate.ExpectLastPropertyChangeReasonIsUnset();
 
   start_time += delta;
   element->set_requested_start_time(start_time);
@@ -358,6 +405,7 @@ TEST(LayerAnimationElementTest, AbortOpacityElement) {
   element->Abort(&delegate);
   EXPECT_FLOAT_EQ(gfx::Tween::CalculateValue(tween_type, 0.5),
                   delegate.GetOpacityForAnimation());
+  delegate.ExpectLastPropertyChangeReason(PropertyChangeReason::FROM_ANIMATION);
 }
 
 // Check that a threaded transform element updates the delegate as expected when
@@ -377,11 +425,15 @@ TEST(LayerAnimationElementTest, AbortTransformElement) {
   gfx::Tween::Type tween_type = gfx::Tween::EASE_IN;
   element->set_tween_type(tween_type);
 
-  delegate.SetTransformFromAnimation(start_transform);
+  delegate.SetTransformFromAnimation(start_transform,
+                                     PropertyChangeReason::NOT_FROM_ANIMATION);
+  delegate.ExpectLastPropertyChangeReason(
+      PropertyChangeReason::NOT_FROM_ANIMATION);
 
   // Aborting the element before it has started should not update the delegate.
   element->Abort(&delegate);
   CheckApproximatelyEqual(start_transform, delegate.GetTransformForAnimation());
+  delegate.ExpectLastPropertyChangeReasonIsUnset();
 
   start_time += delta;
   element->set_requested_start_time(start_time);
@@ -399,6 +451,7 @@ TEST(LayerAnimationElementTest, AbortTransformElement) {
                          gfx::Tween::CalculateValue(tween_type, 0.5));
   CheckApproximatelyEqual(target_transform,
                           delegate.GetTransformForAnimation());
+  delegate.ExpectLastPropertyChangeReason(PropertyChangeReason::FROM_ANIMATION);
 }
 
 // Check that an opacity element is not threaded if the start and target values
@@ -407,20 +460,24 @@ TEST(LayerAnimationElementTest, OpacityElementIsThreaded) {
   TestLayerAnimationDelegate delegate;
   float start = 0.0;
   float target = 1.0;
-  delegate.SetOpacityFromAnimation(start);
+  delegate.SetOpacityFromAnimation(start,
+                                   PropertyChangeReason::NOT_FROM_ANIMATION);
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   std::unique_ptr<LayerAnimationElement> element =
       LayerAnimationElement::CreateOpacityElement(target, delta);
   EXPECT_TRUE(element->IsThreaded(&delegate));
   element->ProgressToEnd(&delegate);
   EXPECT_FLOAT_EQ(target, delegate.GetOpacityForAnimation());
+  delegate.ExpectLastPropertyChangeReason(PropertyChangeReason::FROM_ANIMATION);
 
   start = 1.0;
-  delegate.SetOpacityFromAnimation(start);
+  delegate.SetOpacityFromAnimation(start,
+                                   PropertyChangeReason::NOT_FROM_ANIMATION);
   element = LayerAnimationElement::CreateOpacityElement(target, delta);
   EXPECT_FALSE(element->IsThreaded(&delegate));
   element->ProgressToEnd(&delegate);
   EXPECT_FLOAT_EQ(target, delegate.GetOpacityForAnimation());
+  delegate.ExpectLastPropertyChangeReason(PropertyChangeReason::FROM_ANIMATION);
 }
 
 TEST(LayerAnimationElementTest, ToString) {

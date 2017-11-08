@@ -108,7 +108,8 @@ void WindowRotation::OnStart(ui::LayerAnimationDelegate* delegate) {}
 
 bool WindowRotation::OnProgress(double t,
                                 ui::LayerAnimationDelegate* delegate) {
-  delegate->SetTransformFromAnimation(interpolated_transform_->Interpolate(t));
+  delegate->SetTransformFromAnimation(interpolated_transform_->Interpolate(t),
+                                      ui::PropertyChangeReason::FROM_ANIMATION);
   return true;
 }
 

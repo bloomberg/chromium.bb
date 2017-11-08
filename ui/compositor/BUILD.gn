@@ -63,6 +63,7 @@ component("compositor") {
     "paint_context.h",
     "paint_recorder.cc",
     "paint_recorder.h",
+    "property_change_reason.h",
     "reflector.cc",
     "reflector.h",
     "scoped_animation_duration_scale_mode.cc",

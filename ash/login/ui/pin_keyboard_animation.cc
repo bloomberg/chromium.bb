@@ -35,8 +35,10 @@ bool PinKeyboardAnimation::OnProgress(double current,
                                       ui::LayerAnimationDelegate* delegate) {
   const double tweened = gfx::Tween::CalculateValue(tween_type_, current);
   delegate->SetOpacityFromAnimation(
-      gfx::Tween::FloatValueBetween(tweened, start_opacity_, end_opacity_));
-  delegate->SetTransformFromAnimation(transform_->Interpolate(tweened));
+      gfx::Tween::FloatValueBetween(tweened, start_opacity_, end_opacity_),
+      ui::PropertyChangeReason::FROM_ANIMATION);
+  delegate->SetTransformFromAnimation(transform_->Interpolate(tweened),
+                                      ui::PropertyChangeReason::FROM_ANIMATION);
   return true;
 }
 

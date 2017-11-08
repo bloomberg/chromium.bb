@@ -460,14 +460,22 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
                                 gfx::PointF* point) const;
 
   // Implementation of LayerAnimatorDelegate
-  void SetBoundsFromAnimation(const gfx::Rect& bounds) override;
-  void SetTransformFromAnimation(const gfx::Transform& transform) override;
-  void SetOpacityFromAnimation(float opacity) override;
-  void SetVisibilityFromAnimation(bool visibility) override;
-  void SetBrightnessFromAnimation(float brightness) override;
-  void SetGrayscaleFromAnimation(float grayscale) override;
-  void SetColorFromAnimation(SkColor color) override;
-  void SetTemperatureFromAnimation(float temperature) override;
+  void SetBoundsFromAnimation(const gfx::Rect& bounds,
+                              PropertyChangeReason reason) override;
+  void SetTransformFromAnimation(const gfx::Transform& transform,
+                                 PropertyChangeReason reason) override;
+  void SetOpacityFromAnimation(float opacity,
+                               PropertyChangeReason reason) override;
+  void SetVisibilityFromAnimation(bool visibility,
+                                  PropertyChangeReason reason) override;
+  void SetBrightnessFromAnimation(float brightness,
+                                  PropertyChangeReason reason) override;
+  void SetGrayscaleFromAnimation(float grayscale,
+                                 PropertyChangeReason reason) override;
+  void SetColorFromAnimation(SkColor color,
+                             PropertyChangeReason reason) override;
+  void SetTemperatureFromAnimation(float temperature,
+                                   PropertyChangeReason reason) override;
   void ScheduleDrawForAnimation() override;
   const gfx::Rect& GetBoundsForAnimation() const override;
   gfx::Transform GetTransformForAnimation() const override;

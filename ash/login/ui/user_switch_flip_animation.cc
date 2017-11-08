@@ -70,7 +70,8 @@ bool UserSwitchFlipAnimation::OnProgress(double current,
     current *= 2;
     const double tweened = gfx::Tween::CalculateValue(tween_type_, current);
     delegate->SetTransformFromAnimation(
-        first_half_transform_->Interpolate(tweened));
+        first_half_transform_->Interpolate(tweened),
+        ui::PropertyChangeReason::FROM_ANIMATION);
   }
 
   // Second half.
@@ -81,7 +82,8 @@ bool UserSwitchFlipAnimation::OnProgress(double current,
     current = (current - 0.5) * 2;
     const double tweened = gfx::Tween::CalculateValue(tween_type_, current);
     delegate->SetTransformFromAnimation(
-        second_half_transform_->Interpolate(tweened));
+        second_half_transform_->Interpolate(tweened),
+        ui::PropertyChangeReason::FROM_ANIMATION);
   }
 
   return true;

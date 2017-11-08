@@ -50,9 +50,11 @@ bool ScreenRotationAnimation::OnProgress(double current,
                                          ui::LayerAnimationDelegate* delegate) {
   const double tweened = gfx::Tween::CalculateValue(tween_type_, current);
   delegate->SetTransformFromAnimation(
-      interpolated_transform_->Interpolate(tweened));
-  delegate->SetOpacityFromAnimation(gfx::Tween::FloatValueBetween(
-      tweened, initial_opacity_, target_opacity_));
+      interpolated_transform_->Interpolate(tweened),
+      ui::PropertyChangeReason::FROM_ANIMATION);
+  delegate->SetOpacityFromAnimation(
+      gfx::Tween::FloatValueBetween(tweened, initial_opacity_, target_opacity_),
+      ui::PropertyChangeReason::FROM_ANIMATION);
   return true;
 }
 
@@ -68,7 +70,8 @@ void ScreenRotationAnimation::OnAbort(ui::LayerAnimationDelegate* delegate) {
 
   TargetValue target_value;
   OnGetTarget(&target_value);
-  delegate->SetTransformFromAnimation(target_value.transform);
+  delegate->SetTransformFromAnimation(target_value.transform,
+                                      ui::PropertyChangeReason::FROM_ANIMATION);
 }
 
 }  // namespace ash

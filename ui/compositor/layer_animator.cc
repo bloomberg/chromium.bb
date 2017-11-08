@@ -86,25 +86,26 @@ LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
 // It is worth noting that SetFoo avoids invoking the usual animation machinery
 // if the transition duration is zero -- in this case we just set the property
 // on the layer animation delegate immediately.
-#define ANIMATED_PROPERTY(type, property, name, member_type, member)    \
-  void LayerAnimator::Set##name(type value) {                           \
-    base::TimeDelta duration = GetTransitionDuration();                 \
-    if (duration.is_zero() && delegate() &&                             \
-        (preemption_strategy_ != ENQUEUE_NEW_ANIMATION)) {              \
-      StopAnimatingProperty(LayerAnimationElement::property);           \
-      delegate()->Set##name##FromAnimation(value);                      \
-      return;                                                           \
-    }                                                                   \
-    std::unique_ptr<LayerAnimationElement> element =                    \
-        LayerAnimationElement::Create##name##Element(value, duration);  \
-    element->set_tween_type(tween_type_);                               \
-    StartAnimation(new LayerAnimationSequence(std::move(element)));     \
-  }                                                                     \
-                                                                        \
-  member_type LayerAnimator::GetTarget##name() const {                  \
-    LayerAnimationElement::TargetValue target(delegate());              \
-    GetTargetValue(&target);                                            \
-    return target.member;                                               \
+#define ANIMATED_PROPERTY(type, property, name, member_type, member)   \
+  void LayerAnimator::Set##name(type value) {                          \
+    base::TimeDelta duration = GetTransitionDuration();                \
+    if (duration.is_zero() && delegate() &&                            \
+        (preemption_strategy_ != ENQUEUE_NEW_ANIMATION)) {             \
+      StopAnimatingProperty(LayerAnimationElement::property);          \
+      delegate()->Set##name##FromAnimation(                            \
+          value, PropertyChangeReason::NOT_FROM_ANIMATION);            \
+      return;                                                          \
+    }                                                                  \
+    std::unique_ptr<LayerAnimationElement> element =                   \
+        LayerAnimationElement::Create##name##Element(value, duration); \
+    element->set_tween_type(tween_type_);                              \
+    StartAnimation(new LayerAnimationSequence(std::move(element)));    \
+  }                                                                    \
+                                                                       \
+  member_type LayerAnimator::GetTarget##name() const {                 \
+    LayerAnimationElement::TargetValue target(delegate());             \
+    GetTargetValue(&target);                                           \
+    return target.member;                                              \
   }
 
 ANIMATED_PROPERTY(
