@@ -604,6 +604,30 @@ void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
 }
 #endif
 
+void RenderWidget::SetLocalSurfaceIdForAutoResize(
+    uint64_t sequence_number,
+    const content::ScreenInfo& screen_info,
+    const viz::LocalSurfaceId& local_surface_id) {
+  bool screen_info_changed = screen_info_ != screen_info;
+
+  screen_info_ = screen_info;
+  if (device_scale_factor_ != screen_info_.device_scale_factor) {
+    device_scale_factor_ = screen_info_.device_scale_factor;
+    OnDeviceScaleFactorChanged();
+  }
+
+  if (screen_info_changed) {
+    for (auto& observer : render_frame_proxies_)
+      observer.OnScreenInfoChanged(screen_info);
+
+    // Notify all BrowserPlugins of the updated ScreenInfo.
+    if (BrowserPluginManager::Get())
+      BrowserPluginManager::Get()->ScreenInfoChanged(screen_info);
+  }
+
+  AutoResizeCompositor(local_surface_id);
+}
+
 void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
   if (screen_metrics_emulator_)
     screen_metrics_emulator_->OnShowContextMenu(params);
@@ -768,10 +792,15 @@ void RenderWidget::OnResize(const ResizeParams& params) {
 
 void RenderWidget::OnSetLocalSurfaceIdForAutoResize(
     uint64_t sequence_number,
+    const gfx::Size& min_size,
+    const gfx::Size& max_size,
+    const content::ScreenInfo& screen_info,
     const viz::LocalSurfaceId& local_surface_id) {
   if (!auto_resize_mode_ || resize_or_repaint_ack_num_ != sequence_number)
     return;
-  AutoResizeCompositor(local_surface_id);
+
+  SetLocalSurfaceIdForAutoResize(sequence_number, screen_info,
+                                 local_surface_id);
 }
 
 void RenderWidget::OnEnableDeviceEmulation(

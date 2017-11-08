@@ -313,6 +313,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
+  void UpdateScreenInfo(gfx::NativeView view) override;
   bool IsSurfaceAvailableForCopy() const override;
   void CopyFromSurface(const gfx::Rect& src_rect,
                        const gfx::Size& output_size,

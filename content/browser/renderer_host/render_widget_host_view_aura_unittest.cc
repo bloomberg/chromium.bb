@@ -243,11 +243,45 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   }
 
   double get_last_device_scale_factor() { return last_device_scale_factor_; }
+  void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
+                             const gfx::Size& new_size,
+                             uint64_t sequence_number) override {
+    RenderWidgetHostViewBase* rwhv = rwh_->GetView();
+    if (rwhv)
+      rwhv->ResizeDueToAutoResize(new_size, sequence_number);
+  }
   void ScreenInfoChanged() override {
     display::Screen* screen = display::Screen::GetScreen();
     const display::Display display = screen->GetPrimaryDisplay();
     last_device_scale_factor_ = display.device_scale_factor();
   }
+
+  void GetScreenInfo(ScreenInfo* result) override {
+    display::Screen* screen = display::Screen::GetScreen();
+    const display::Display display = screen->GetPrimaryDisplay();
+    result->rect = display.bounds();
+    result->available_rect = display.work_area();
+    result->depth = display.color_depth();
+    result->depth_per_component = display.depth_per_component();
+    result->is_monochrome = display.is_monochrome();
+    result->device_scale_factor = display.device_scale_factor();
+    result->color_space = display.color_space();
+    result->color_space.GetICCProfile(&result->icc_profile);
+
+    // The Display rotation and the ScreenInfo orientation are not the same
+    // angle. The former is the physical display rotation while the later is the
+    // rotation required by the content to be shown properly on the screen, in
+    // other words, relative to the physical display.
+    result->orientation_angle = display.RotationAsDegree();
+    if (result->orientation_angle == 90)
+      result->orientation_angle = 270;
+    else if (result->orientation_angle == 270)
+      result->orientation_angle = 90;
+
+    result->orientation_type =
+        RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
+  }
+
   void set_pre_handle_keyboard_event_result(
       KeyboardEventProcessingResult result) {
     pre_handle_keyboard_event_result_ = result;
@@ -2237,6 +2271,56 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   EXPECT_EQ(ViewMsg_Resize::ID, sink_->GetMessageAt(0)->type());
   EXPECT_EQ(1.0f, view_delegate->get_last_device_scale_factor());
   EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
+}
+
+// This test verifies that in AutoResize mode a new
+// ViewMsg_SetLocalSurfaceIdForAutoResize message is sent when ScreenInfo
+// changes and that message contains the latest ScreenInfo.
+TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  sink_->ClearMessages();
+  widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
+  ViewHostMsg_ResizeOrRepaint_ACK_Params params;
+  params.view_size = gfx::Size(75, 75);
+  params.sequence_number = 1;
+  widget_host_->OnResizeOrRepaintACK(params);
+
+  // RenderWidgetHostImpl has delayed auto-resize processing. Yield here to
+  // let it complete.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_EQ(1u, sink_->message_count());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    EXPECT_EQ(ViewMsg_SetLocalSurfaceIdForAutoResize::ID, msg->type());
+    ViewMsg_SetLocalSurfaceIdForAutoResize::Param params;
+    ViewMsg_SetLocalSurfaceIdForAutoResize::Read(msg, &params);
+    EXPECT_EQ(1u, std::get<0>(params));  // sequence_number
+    EXPECT_EQ("50x50", std::get<1>(params).ToString());
+    EXPECT_EQ("100x100", std::get<2>(params).ToString());
+    EXPECT_EQ(1, std::get<3>(params).device_scale_factor);
+  }
+
+  sink_->ClearMessages();
+  aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
+
+  EXPECT_EQ(2u, sink_->message_count());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(1);
+    EXPECT_EQ(ViewMsg_SetLocalSurfaceIdForAutoResize::ID, msg->type());
+    ViewMsg_SetLocalSurfaceIdForAutoResize::Param params;
+    ViewMsg_SetLocalSurfaceIdForAutoResize::Read(msg, &params);
+    EXPECT_EQ(1u, std::get<0>(params));  // sequence_number
+    EXPECT_EQ("50x50", std::get<1>(params).ToString());
+    EXPECT_EQ("100x100", std::get<2>(params).ToString());
+    EXPECT_EQ(2, std::get<3>(params).device_scale_factor);
+  }
 }
 
 // Checks that InputMsg_CursorVisibilityChange IPC messages are dispatched

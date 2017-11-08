@@ -506,6 +506,12 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   void OnEnablePreferredSizeChangedMode();
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize(const gfx::Size& new_size);
+  void OnSetLocalSurfaceIdForAutoResize(
+      uint64_t sequence_number,
+      const gfx::Size& min_size,
+      const gfx::Size& max_size,
+      const content::ScreenInfo& screen_info,
+      const viz::LocalSurfaceId& local_surface_id);
   void OnEnumerateDirectoryResponse(int id,
                                     const std::vector<base::FilePath>& paths);
   void OnMediaPlayerActionAt(const gfx::Point& location,

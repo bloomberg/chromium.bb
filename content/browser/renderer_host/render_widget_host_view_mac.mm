@@ -1110,6 +1110,18 @@ void RenderWidgetHostViewMac::SetTooltipText(
   }
 }
 
+void RenderWidgetHostViewMac::UpdateScreenInfo(gfx::NativeView view) {
+  RenderWidgetHostViewBase::UpdateScreenInfo(view);
+
+  if (!render_widget_host_->auto_resize_enabled())
+    return;
+
+  local_surface_id_ = local_surface_id_allocator_.GenerateId();
+  render_widget_host_->DidAllocateLocalSurfaceIdForAutoResize(
+      render_widget_host_->last_auto_resize_request_number());
+  browser_compositor_->GetDelegatedFrameHost()->WasResized();
+}
+
 bool RenderWidgetHostViewMac::SupportsSpeech() const {
   return [NSApp respondsToSelector:@selector(speakString:)] &&
          [NSApp respondsToSelector:@selector(stopSpeaking:)];
@@ -1782,8 +1794,13 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     }
     RenderWidgetHostImpl* host =
         RenderWidgetHostImpl::From(GetRenderWidgetHost());
-    if (host && host->delegate())
+    if (host) {
+      if (host->auto_resize_enabled()) {
+        host->DidAllocateLocalSurfaceIdForAutoResize(
+            host->last_auto_resize_request_number());
+      }
       host->WasResized();
+    }
   }
 
   UpdateBackingStoreProperties();
