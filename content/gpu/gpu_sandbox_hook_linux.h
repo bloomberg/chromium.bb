@@ -9,8 +9,9 @@
 
 namespace content {
 
-service_manager::SandboxSeccompBPF::PreSandboxHook GetGpuProcessPreSandboxHook(
-    bool use_amd_specific_policies);
+bool GpuProcessPreSandboxHook(
+    service_manager::BPFBasePolicy* policy,
+    service_manager::SandboxSeccompBPF::Options options);
 
 }  // namespace content
 
