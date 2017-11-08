@@ -30,7 +30,6 @@
 // See: third_party/skia/src/core/SkLiteDL.h.
 
 namespace cc {
-class ImageDecodeCache;
 
 class CC_PAINT_EXPORT ThreadsafeMatrix : public SkMatrix {
  public:
@@ -112,7 +111,7 @@ class CC_PAINT_EXPORT PaintOp {
   bool IsValid() const;
 
   struct SerializeOptions {
-    ImageDecodeCache* decode_cache = nullptr;
+    ImageProvider* image_provider = nullptr;
   };
 
   struct DeserializeOptions {};

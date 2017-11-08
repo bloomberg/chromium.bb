@@ -395,7 +395,7 @@ size_t DrawImageOp::Serialize(const PaintOp* base_op,
   auto* op = static_cast<const DrawImageOp*>(base_op);
   PaintOpWriter helper(memory, size);
   helper.Write(op->flags);
-  helper.Write(op->image, options.decode_cache);
+  helper.Write(op->image, options.image_provider);
   helper.Write(op->left);
   helper.Write(op->top);
   return helper.size();
@@ -408,7 +408,7 @@ size_t DrawImageRectOp::Serialize(const PaintOp* base_op,
   auto* op = static_cast<const DrawImageRectOp*>(base_op);
   PaintOpWriter helper(memory, size);
   helper.Write(op->flags);
-  helper.Write(op->image, options.decode_cache);
+  helper.Write(op->image, options.image_provider);
   helper.Write(op->src);
   helper.Write(op->dst);
   helper.Write(op->constraint);
