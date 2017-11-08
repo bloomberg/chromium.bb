@@ -659,10 +659,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   // If the experimental AGC is enabled, check for overridden config params.
   if (properties.goog_experimental_auto_gain_control) {
     auto startup_min_volume = GetStartupMinVolumeForAgc();
-    constexpr int kClippingLevelMin = 70;
-    // TODO(hlundin) Make this value default in WebRTC and clean up here.
-    config.Set<webrtc::ExperimentalAgc>(new webrtc::ExperimentalAgc(
-        true, startup_min_volume.value_or(0), kClippingLevelMin));
+    config.Set<webrtc::ExperimentalAgc>(
+        new webrtc::ExperimentalAgc(true, startup_min_volume.value_or(0)));
   }
 
   // Create and configure the webrtc::AudioProcessing.
