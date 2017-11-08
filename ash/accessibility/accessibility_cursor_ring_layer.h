@@ -15,7 +15,7 @@ namespace ash {
 // moving, to make it easier to find visually.
 class ASH_EXPORT AccessibilityCursorRingLayer : public FocusRingLayer {
  public:
-  AccessibilityCursorRingLayer(FocusRingLayerDelegate* delegate,
+  AccessibilityCursorRingLayer(AccessibilityLayerDelegate* delegate,
                                int red,
                                int green,
                                int blue);

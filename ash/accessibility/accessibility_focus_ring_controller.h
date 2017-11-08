@@ -24,7 +24,7 @@ namespace ash {
 // the focused object, cursor, and/or caret for accessibility.
 // TODO(mash): Provide mojo API for access from chrome.
 class ASH_EXPORT AccessibilityFocusRingController
-    : public FocusRingLayerDelegate {
+    : public AccessibilityLayerDelegate {
  public:
   // Get the single instance of this class.
   static AccessibilityFocusRingController* GetInstance();
@@ -75,7 +75,7 @@ class ASH_EXPORT AccessibilityFocusRingController
   virtual int GetMargin() const;
 
  private:
-  // FocusRingLayerDelegate overrides.
+  // AccessibilityLayerDelegate overrides.
   void OnDeviceScaleFactorChanged() override;
   void OnAnimationStep(base::TimeTicks timestamp) override;
 

@@ -17,7 +17,7 @@ namespace ash {
 // a range of text on a page.
 class ASH_EXPORT AccessibilityFocusRingLayer : public FocusRingLayer {
  public:
-  explicit AccessibilityFocusRingLayer(FocusRingLayerDelegate* delegate);
+  explicit AccessibilityFocusRingLayer(AccessibilityLayerDelegate* delegate);
   ~AccessibilityFocusRingLayer() override;
 
   // Create the layer and update its bounds and position in the hierarchy.

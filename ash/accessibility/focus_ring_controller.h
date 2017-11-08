@@ -24,7 +24,7 @@ namespace ash {
 // FocusRingController manages the focus ring around the focused view. It
 // follows widget focus change and update the focus ring layer when the focused
 // view of the widget changes.
-class ASH_EXPORT FocusRingController : public FocusRingLayerDelegate,
+class ASH_EXPORT FocusRingController : public AccessibilityLayerDelegate,
                                        public views::WidgetObserver,
                                        public views::WidgetFocusChangeListener,
                                        public views::FocusChangeListener {
@@ -36,7 +36,7 @@ class ASH_EXPORT FocusRingController : public FocusRingLayerDelegate,
   void SetVisible(bool visible);
 
  private:
-  // FocusRingLayerDelegate.
+  // AccessibilityLayerDelegate.
   void OnDeviceScaleFactorChanged() override;
   void OnAnimationStep(base::TimeTicks timestamp) override;
 
