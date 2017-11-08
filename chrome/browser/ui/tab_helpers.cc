@@ -30,6 +30,7 @@
 #include "chrome/browser/language/chrome_language_detection_client.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
+#include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
 #include "chrome/browser/metrics/renderer_uptime_web_contents_observer.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/predictor_tab_helper.h"
@@ -223,6 +224,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
   NavigationCorrectionTabObserver::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
+  OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
   PDFPluginPlaceholderObserver::CreateForWebContents(web_contents);
   PermissionRequestManager::CreateForWebContents(web_contents);
