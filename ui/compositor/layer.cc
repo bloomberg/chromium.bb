@@ -1129,7 +1129,6 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
   if (bounds == bounds_)
     return;
 
-  base::Closure closure;
   const gfx::Rect old_bounds = bounds_;
   bounds_ = bounds;
 
