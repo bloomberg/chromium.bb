@@ -235,13 +235,18 @@ NSString* LocationBarDecoration::GetAccessibilityLabel() {
   return nil;
 }
 
+NSRect LocationBarDecoration::GetTrackingFrame(NSRect frame) {
+  return frame;
+}
+
 CrTrackingArea* LocationBarDecoration::SetupTrackingArea(NSRect frame,
                                                          NSView* control_view) {
   if (!AcceptsMousePress() || !control_view)
     return nil;
 
+  NSRect tracking_frame = GetTrackingFrame(frame);
   if (control_view == tracking_area_owner_ && tracking_area_.get() &&
-      NSEqualRects([tracking_area_ rect], frame)) {
+      NSEqualRects([tracking_area_ rect], tracking_frame)) {
     return tracking_area_.get();
   }
 
@@ -254,7 +259,7 @@ CrTrackingArea* LocationBarDecoration::SetupTrackingArea(NSRect frame,
   }
 
   tracking_area_.reset([[CrTrackingArea alloc]
-      initWithRect:frame
+      initWithRect:tracking_frame
            options:NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow
              owner:tracking_delegate_.get()
           userInfo:nil]);

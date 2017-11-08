@@ -160,6 +160,18 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   }
 }
 
+NSRect BubbleDecoration::GetTrackingFrame(NSRect frame) {
+  NSRect tracking_frame = GetBackgroundFrame(frame);
+
+  // Include the divider width in the frame.
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout())
+    tracking_frame.origin.x -= 1;
+  else
+    tracking_frame.size.width += 1;
+
+  return tracking_frame;
+}
+
 NSFont* BubbleDecoration::GetFont() const {
   return [attributes_ objectForKey:NSFontAttributeName];
 }
