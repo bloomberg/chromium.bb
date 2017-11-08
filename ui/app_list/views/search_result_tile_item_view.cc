@@ -63,7 +63,7 @@ SearchResultTileItemView::SearchResultTileItemView(
   SetVisible(false);
 
   if (is_play_store_search_enabled) {
-    const gfx::FontList& font = FullscreenAppListAppTitleFont();
+    const gfx::FontList& font = AppListAppTitleFont();
     rating_ = new views::Label;
     rating_->SetEnabledColor(kSearchAppRatingColor);
     rating_->SetFontList(font);
@@ -120,13 +120,13 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   SetPrice(item_->formatted_price());
 
   if (is_fullscreen_app_list_enabled_) {
-    const gfx::FontList& font = FullscreenAppListAppTitleFont();
+    const gfx::FontList& font = AppListAppTitleFont();
     if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
       set_is_recommendation(true);
 
       title()->SetFontList(font);
       title()->SetLineHeight(font.GetHeight());
-      title()->SetEnabledColor(kGridTitleColorFullscreen);
+      title()->SetEnabledColor(kGridTitleColor);
     } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
       // Set solid color background to avoid broken text. See crbug.com/746563.
       if (rating_) {
