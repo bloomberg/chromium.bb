@@ -98,6 +98,7 @@ TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
   ASSERT_TRUE(element->IsAccelerated());
 
   // Force the page to paint.
+  element->FinalizeFrame();
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Fetch the layer associated with the <canvas>, and check that it was
