@@ -11,17 +11,7 @@ config("config") {
   visibility = [ ":material_internationalization_ios" ]
 }
 
-ios_info_plist("info_plist") {
-  info_plist = "src/Sources/Info.plist"
-  executable_name = "MDFInternationalization"
-  extra_substitutions = [
-    "PRODUCT_BUNDLE_IDENTIFIER=$ios_app_bundle_id_prefix.$chromium_bundle_id.$executable_name",
-    "CURRENT_PROJECT_VERSION=1.0",
-  ]
-}
-
 ios_framework_bundle("material_internationalization_ios") {
-  info_plist_target = ":info_plist"
   output_name = "MDFInternationalization"
   sources = [
     "src/Sources/MDFInternationalization.h",
@@ -51,5 +41,15 @@ ios_framework_bundle("material_internationalization_ios") {
     "//build/config/compiler:enable_arc",
     "//build/config/compiler:no_chromium_code",
     "//build/config/gcc:symbol_visibility_default",
+  ]
+
+  _project_version = "1.0"
+  _bundle_identifier =
+      "$ios_app_bundle_id_prefix.$chromium_bundle_id.$output_name"
+
+  info_plist = "src/Sources/Info.plist"
+  extra_substitutions = [
+    "PRODUCT_BUNDLE_IDENTIFIER=$_bundle_identifier",
+    "CURRENT_PROJECT_VERSION=$_project_version",
   ]
 }
