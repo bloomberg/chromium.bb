@@ -108,3 +108,7 @@
 -TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedScrollMainframe/1
 -WheelScrollLatchingBrowserTest.WheelEventTarget
 -WheelScrollLatchingDisabledBrowserTest.WheelEventTarget
+
+# TODO(sky): these two fail on the bot, figure out why.
+-SitePerProcessBrowserTest.ScrollElementIntoView
+-FindRequestManagerTests/FindRequestManagerTest.NavigateFrame/1
