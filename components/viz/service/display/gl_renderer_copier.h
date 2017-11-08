@@ -87,15 +87,23 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
 
   // The collection of resources that might be cached over multiple copy
   // requests from the same source.
+  //
+  // TODO(crbug.com/781986): Post-impl clean-up to make this mechanism simpler.
   struct VIZ_SERVICE_EXPORT CacheEntry {
     uint32_t purge_count_at_last_use = 0;
-    std::array<GLuint, 3> object_names{{0, 0, 0}};
+    std::array<GLuint, 8> object_names;
     std::unique_ptr<GLHelper::ScalerInterface> scaler;
+    std::unique_ptr<I420Converter> i420_converter;
 
     // Index in |object_names| of the various objects that might be cached.
     static constexpr int kFramebufferCopyTexture = 0;
     static constexpr int kResultTexture = 1;
-    static constexpr int kReadbackFramebuffer = 2;
+    static constexpr int kYPlaneTexture = 2;
+    static constexpr int kUPlaneTexture = 3;
+    static constexpr int kVPlaneTexture = 4;
+    static constexpr int kReadbackFramebuffer = 5;
+    static constexpr int kReadbackFramebufferU = 6;
+    static constexpr int kReadbackFramebufferV = 7;
 
     CacheEntry();
     CacheEntry(CacheEntry&&);
@@ -141,16 +149,30 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
                          const gfx::Rect& result_rect,
                          const gfx::ColorSpace& color_space);
 
-  // Returns a GL object name found in the cache, or creates a new one
-  // on-demand. The caller takes ownership of the object.
-  GLuint TakeCachedObjectOrCreate(const base::UnguessableToken& for_source,
-                                  int which);
+  // Processes the next phase of an I420_PLANES copy request by using the
+  // I420Converter to planarize the given |source_texture| and then starting
+  // readback of the planes via a pixel transfer buffer. This method does NOT
+  // take ownership of the |source_texture|.
+  void StartI420ReadbackFromTexture(std::unique_ptr<CopyOutputRequest> request,
+                                    GLuint source_texture,
+                                    const gfx::Size& source_texture_size,
+                                    const gfx::Rect& copy_rect,
+                                    const gfx::Rect& result_rect,
+                                    const gfx::ColorSpace& color_space);
 
-  // Stashes a GL object name into the cache, or deletes the object if it should
-  // not be cached.
-  void CacheObjectOrDelete(const base::UnguessableToken& for_source,
-                           int which,
-                           GLuint object_name);
+  // Returns the GL object names found in the cache, or creates new ones
+  // on-demand. The caller takes ownership of the objects.
+  void TakeCachedObjectsOrCreate(const base::UnguessableToken& for_source,
+                                 int first,
+                                 int count,
+                                 GLuint* names);
+
+  // Stashes GL object names into the cache, or deletes the objects if they
+  // should not be cached.
+  void CacheObjectsOrDelete(const base::UnguessableToken& for_source,
+                            int first,
+                            int count,
+                            const GLuint* names);
 
   // Returns a cached scaler for the given request, or creates one on-demand.
   std::unique_ptr<GLHelper::ScalerInterface> TakeCachedScalerOrCreate(
@@ -159,6 +181,17 @@ class VIZ_SERVICE_EXPORT GLRendererCopier {
   // Stashes a scaler into the cache, or deletes it if it should not be cached.
   void CacheScalerOrDelete(const base::UnguessableToken& for_source,
                            std::unique_ptr<GLHelper::ScalerInterface> scaler);
+
+  // Returns a cached I420 converter for the given source, or creates one
+  // on-demand.
+  std::unique_ptr<I420Converter> TakeCachedI420ConverterOrCreate(
+      const base::UnguessableToken& for_source);
+
+  // Stashes an I420 converter into the cache, or deletes it if it should not be
+  // cached.
+  void CacheI420ConverterOrDelete(
+      const base::UnguessableToken& for_source,
+      std::unique_ptr<I420Converter> i420_converter);
 
   // Frees any objects currently stashed in the given CacheEntry.
   void FreeCachedResources(CacheEntry* entry);

@@ -11,8 +11,8 @@ include_rules = [
   "+gpu/vulkan",
   "+media/base",
   "+skia",
-  "+third_party/skia",
   "+third_party/khronos",
+  "+third_party/skia",
   "+ui/latency",
   "+ui/gl/ca_renderer_layer_params.h",
   "+ui/gl/dc_renderer_layer_params.h",
@@ -29,5 +29,6 @@ specific_include_rules = {
     "+components/viz/service/frame_sinks",
     "+components/viz/test",
     "+gpu/GLES2",
+    "+third_party/libyuv",
   ],
 }

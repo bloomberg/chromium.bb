@@ -570,19 +570,6 @@ void SoftwareRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
 
 void SoftwareRenderer::CopyDrawnRenderPass(
     std::unique_ptr<CopyOutputRequest> request) {
-  // SoftwareRenderer supports RGBA_BITMAP only. For legacy reasons, if a
-  // RGBA_TEXTURE request is being made, clients are prepared to accept
-  // RGBA_BITMAP results.
-  //
-  // TODO(miu): Get rid of the legacy behavior and send empty results for
-  // RGBA_TEXTURE requests once tab capture is moved into VIZ.
-  // http://crbug.com/754872
-  switch (request->result_format()) {
-    case CopyOutputRequest::ResultFormat::RGBA_BITMAP:
-    case CopyOutputRequest::ResultFormat::RGBA_TEXTURE:
-      break;
-  }
-
   // Finalize the source subrect, as the entirety of the RenderPass's output
   // optionally clamped to the requested copy area. Then, compute the result
   // rect, which is the selection clamped to the maximum possible result bounds.
@@ -645,8 +632,20 @@ void SoftwareRenderer::CopyDrawnRenderPass(
       return;
   }
 
-  request->SendResult(
-      std::make_unique<CopyOutputSkBitmapResult>(result_rect, bitmap));
+  // Deliver the result. SoftwareRenderer supports RGBA_BITMAP and I420_PLANES
+  // only. For legacy reasons, if a RGBA_TEXTURE request is being made, clients
+  // are prepared to accept RGBA_BITMAP results.
+  //
+  // TODO(crbug/754872): Get rid of the legacy behavior and send empty results
+  // for RGBA_TEXTURE requests once tab capture is moved into VIZ.
+  const CopyOutputResult::Format result_format =
+      (request->result_format() == CopyOutputResult::Format::RGBA_TEXTURE)
+          ? CopyOutputResult::Format::RGBA_BITMAP
+          : request->result_format();
+  // Note: The CopyOutputSkBitmapResult automatically provides I420 format
+  // conversion, if needed.
+  request->SendResult(std::make_unique<CopyOutputSkBitmapResult>(
+      result_format, result_rect, bitmap));
 }
 
 void SoftwareRenderer::SetEnableDCLayers(bool enable) {

@@ -469,7 +469,7 @@ class VIZ_COMMON_EXPORT GLHelper {
 
 // Splits an RGBA source texture's image into separate Y, U, and V planes. The U
 // and V planes are half-width and half-height, according to the I420 standard.
-class I420Converter {
+class VIZ_COMMON_EXPORT I420Converter {
  public:
   I420Converter();
   virtual ~I420Converter();
