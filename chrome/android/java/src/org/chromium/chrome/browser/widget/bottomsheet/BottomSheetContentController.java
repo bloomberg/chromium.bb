@@ -360,6 +360,9 @@ public class BottomSheetContentController
         ViewGroup snackbarContainer =
                 (ViewGroup) mActivity.findViewById(R.id.bottom_sheet_snackbar_container);
         ((MarginLayoutParams) snackbarContainer.getLayoutParams()).bottomMargin = mBottomNavHeight;
+
+        setMenuBackgroundColor(
+                mTabModelSelector != null ? mTabModelSelector.isIncognitoSelected() : false);
     }
 
     /**
