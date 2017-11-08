@@ -156,7 +156,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void DidReceiveRendererFrame();
 
   // Notification that a resize or move session ended on the native widget.
-  void UpdateScreenInfo(gfx::NativeView view);
+  virtual void UpdateScreenInfo(gfx::NativeView view);
 
   // Tells if the display property (work area/scale factor) has
   // changed since the last time.
