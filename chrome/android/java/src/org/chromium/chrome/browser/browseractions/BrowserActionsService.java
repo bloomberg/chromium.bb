@@ -16,6 +16,7 @@ import android.text.TextUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -219,9 +220,12 @@ public class BrowserActionsService extends Service {
                         .setLocalOnly(true)
                         .setAutoCancel(true)
                         .setContentText(this.getString(R.string.browser_actions_notification_text));
-        sTitleResId = hasBrowserActionsNotification()
-                ? R.string.browser_actions_multi_links_open_notification_title
-                : R.string.browser_actions_single_link_open_notification_title;
+        if (hasBrowserActionsNotification()) {
+            sTitleResId = R.string.browser_actions_multi_links_open_notification_title;
+        } else {
+            sTitleResId = R.string.browser_actions_single_link_open_notification_title;
+            RecordUserAction.record("BrowserActions.TabOpenedNotificationCreated");
+        }
         builder.setContentTitle(this.getString(sTitleResId));
         sNotificationIntent = buildNotificationIntent(tabId);
         PendingIntent notifyPendingIntent = PendingIntent.getActivity(
@@ -282,6 +286,17 @@ public class BrowserActionsService extends Service {
         if (!IntentUtils.safeHasExtra(intent, EXTRA_IS_SINGLE_URL)) return false;
         boolean isSingleUrl = IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_SINGLE_URL, false);
         return isSingleUrl == isOverviewVisible;
+    }
+
+    /**
+     * Checks whether an Intent is sent from the notification of opening tabs in background. If
+     * so record user action of clicking the notification.
+     * @param intent The {@link Intent} to check.
+     */
+    public static void recordTabOpenedNotificationClicked(Intent intent) {
+        if (IntentUtils.safeHasExtra(intent, EXTRA_IS_SINGLE_URL)) {
+            RecordUserAction.record("BrowserActions.TabOpenedNotificationClicked");
+        }
     }
 
     /**

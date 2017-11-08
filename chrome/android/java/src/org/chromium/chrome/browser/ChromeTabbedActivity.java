@@ -513,6 +513,7 @@ public class ChromeTabbedActivity
         @LaunchIntentDispatcher.Action
         int action = maybeDispatchExplicitMainViewIntent(
                 intentForDispatching, sExplicitMainViewIntentDispatchedOnNewIntent);
+        BrowserActionsService.recordTabOpenedNotificationClicked(intent);
         if (action != LaunchIntentDispatcher.Action.CONTINUE) {
             // Pressing back button in CCT should bring user to the caller activity.
             moveTaskToBack(true);
