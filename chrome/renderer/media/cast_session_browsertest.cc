@@ -9,8 +9,6 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 
-namespace chrome {
-
 typedef ChromeRenderViewTest CastSessionBrowserTest;
 
 // Tests that CastSession is created and destroyed properly inside
@@ -28,5 +26,3 @@ TEST_F(CastSessionBrowserTest, CreateAndDestroy) {
   session = NULL;
   base::RunLoop().RunUntilIdle();
 }
-
-}  // namespace chrome

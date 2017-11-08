@@ -284,7 +284,7 @@ class ChromeContentRendererClient
   std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
 
-  chrome::ChromeKeySystemsProvider key_systems_provider_;
+  ChromeKeySystemsProvider key_systems_provider_;
 
   safe_browsing::mojom::SafeBrowsingPtr safe_browsing_;
 

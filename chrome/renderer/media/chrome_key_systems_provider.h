@@ -14,8 +14,6 @@
 #include "base/time/time.h"
 #include "media/base/key_system_properties.h"
 
-namespace chrome {
-
 typedef std::vector<std::unique_ptr<media::KeySystemProperties>>
     KeySystemPropertiesVector;
 typedef base::Callback<void(KeySystemPropertiesVector*)>
@@ -62,7 +60,5 @@ class ChromeKeySystemsProvider {
 
   DISALLOW_COPY_AND_ASSIGN(ChromeKeySystemsProvider);
 };
-
-}  // namespace chrome
 
 #endif  // CHROME_RENDERER_MEDIA_CHROME_KEY_SYSTEMS_PROVIDER_H_

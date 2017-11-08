@@ -15,8 +15,6 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-namespace chrome {
-
 namespace {
 
 class TestKeySystemProperties : public media::KeySystemProperties {
@@ -151,5 +149,3 @@ TEST(ChromeKeySystemsProviderTest, IsKeySystemsUpdateNeeded) {
   EXPECT_FALSE(key_systems_provider.IsKeySystemsUpdateNeeded());
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 }
-
-}  // namespace chrome

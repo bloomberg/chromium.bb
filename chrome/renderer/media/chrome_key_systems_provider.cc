@@ -9,8 +9,6 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-namespace chrome {
-
 ChromeKeySystemsProvider::ChromeKeySystemsProvider()
     : has_updated_(false),
       is_update_needed_(true),
@@ -79,5 +77,3 @@ void ChromeKeySystemsProvider::SetProviderDelegateForTesting(
     const KeySystemsProviderDelegate& test_provider) {
   test_provider_ = test_provider;
 }
-
-}  // namespace chrome
