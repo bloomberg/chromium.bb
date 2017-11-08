@@ -307,9 +307,15 @@ void VrTestContext::ExitPresent() {}
 void VrTestContext::ExitFullscreen() {}
 void VrTestContext::NavigateBack() {}
 void VrTestContext::ExitCct() {}
-void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {}
+void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
+  if (mode == UiUnsupportedMode::kUnhandledPageInfo)
+    ui_->SetExitVrPromptEnabled(true, mode);
+}
 void VrTestContext::OnExitVrPromptResult(vr::UiUnsupportedMode reason,
-                                         vr::ExitVrPromptChoice choice) {}
+                                         vr::ExitVrPromptChoice choice) {
+  LOG(ERROR) << "exit prompt result: " << choice;
+  ui_->SetExitVrPromptEnabled(false, UiUnsupportedMode::kCount);
+}
 void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}
 
 }  // namespace vr
