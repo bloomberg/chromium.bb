@@ -88,7 +88,8 @@ class SharedAndroidVrPageState(shared_page_state.SharedPageState):
 
   def WillRunStory(self, page):
     super(SharedAndroidVrPageState, self).WillRunStory(page)
-    self._CycleScreen()
+    if not self._finder_options.disable_screen_reset:
+      self._CycleScreen()
 
   def TearDownState(self):
     super(SharedAndroidVrPageState, self).TearDownState()
