@@ -1355,6 +1355,32 @@ void RenderFrameHostImpl::OnCreateChildFrame(
                         frame_owner_properties);
 }
 
+void RenderFrameHostImpl::DidNavigate(
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    bool is_same_document_navigation) {
+  // Keep track of the last committed URL and origin in the RenderFrameHost
+  // itself.  These allow GetLastCommittedURL and GetLastCommittedOrigin to
+  // stay correct even if the render_frame_host later becomes pending deletion.
+  // The URL is set regardless of whether it's for a net error or not.
+  frame_tree_node_->SetCurrentURL(params.url);
+  SetLastCommittedOrigin(params.origin);
+
+  // Separately, update the frame's last successful URL except for net error
+  // pages, since those do not end up in the correct process after transfers
+  // (see https://crbug.com/560511).  Instead, the next cross-process navigation
+  // or transfer should decide whether to swap as if the net error had not
+  // occurred.
+  // TODO(creis): Remove this block and always set the URL once transfers handle
+  // network errors or PlzNavigate is enabled.  See https://crbug.com/588314.
+  if (!params.url_is_unreachable)
+    last_successful_url_ = params.url;
+
+  // After setting the last committed origin, reset the feature policy in the
+  // RenderFrameHost to a blank policy based on the parent frame.
+  if (!is_same_document_navigation)
+    ResetFeaturePolicy();
+}
+
 void RenderFrameHostImpl::SetLastCommittedOrigin(const url::Origin& origin) {
   last_committed_origin_ = origin;
   CSPContext::SetSelf(origin);

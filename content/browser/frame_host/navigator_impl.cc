@@ -644,27 +644,7 @@ void NavigatorImpl::DidNavigate(
         site_instance);
   }
 
-  // Keep track of the last committed URL and origin in the RenderFrameHost
-  // itself.  These allow GetLastCommittedURL and GetLastCommittedOrigin to
-  // stay correct even if the render_frame_host later becomes pending deletion.
-  // The URL is set regardless of whether it's for a net error or not.
-  frame_tree_node->SetCurrentURL(params.url);
-  render_frame_host->SetLastCommittedOrigin(params.origin);
-
-  // Separately, update the frame's last successful URL except for net error
-  // pages, since those do not end up in the correct process after transfers
-  // (see https://crbug.com/560511).  Instead, the next cross-process navigation
-  // or transfer should decide whether to swap as if the net error had not
-  // occurred.
-  // TODO(creis): Remove this block and always set the URL once transfers handle
-  // network errors or PlzNavigate is enabled.  See https://crbug.com/588314.
-  if (!params.url_is_unreachable)
-    render_frame_host->set_last_successful_url(params.url);
-
-  // After setting the last committed origin, reset the feature policy in the
-  // RenderFrameHost to a blank policy based on the parent frame.
-  if (!is_same_document_navigation)
-    render_frame_host->ResetFeaturePolicy();
+  render_frame_host->DidNavigate(params, is_same_document_navigation);
 
   // Send notification about committed provisional loads. This notification is
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include
