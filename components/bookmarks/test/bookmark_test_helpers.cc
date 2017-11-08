@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
@@ -100,9 +99,7 @@ std::string::size_type AddNodesFromString(BookmarkModel* model,
 void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   if (model->loaded())
     return;
-  base::RunLoop run_loop;
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
 
   BookmarkLoadObserver observer(run_loop.QuitClosure());
   model->AddObserver(&observer);
