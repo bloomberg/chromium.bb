@@ -182,9 +182,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
 
   in_move_loop_ = true;
   canceled_ = false;
-  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-  base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
 
