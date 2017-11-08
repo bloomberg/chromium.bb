@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/toolbar/toolbar_view.h"
 
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_view_delegate.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 
 @implementation ToolbarView
 
@@ -16,7 +16,7 @@
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-    if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    if (IsSafeAreaCompatibleToolbarEnabled()) {
       // The minimal width of the toolbar.
       // Must be less than or equal to the smallest UIWindow size Chrome can
       // be in, which as of M64 is 320.
