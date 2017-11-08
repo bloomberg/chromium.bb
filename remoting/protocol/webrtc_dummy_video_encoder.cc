@@ -55,15 +55,10 @@ bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
 
 WebrtcDummyVideoEncoder::WebrtcDummyVideoEncoder(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer,
-    webrtc::VideoCodecType type)
+    base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer)
     : main_task_runner_(main_task_runner),
       state_(kUninitialized),
-      codec_type_(type),
-      video_channel_state_observer_(video_channel_state_observer) {
-  DCHECK(type == webrtc::kVideoCodecVP8 || type == webrtc::kVideoCodecVP9 ||
-         type == webrtc::kVideoCodecH264);
-}
+      video_channel_state_observer_(video_channel_state_observer) {}
 
 WebrtcDummyVideoEncoder::~WebrtcDummyVideoEncoder() {}
 
@@ -160,16 +155,16 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
 
   webrtc::CodecSpecificInfo codec_specific_info;
   memset(&codec_specific_info, 0, sizeof(codec_specific_info));
-  codec_specific_info.codecType = codec_type_;
+  codec_specific_info.codecType = frame.codec;
 
-  if (codec_type_ == webrtc::kVideoCodecVP8) {
+  if (frame.codec == webrtc::kVideoCodecVP8) {
     webrtc::CodecSpecificInfoVP8* vp8_info =
         &codec_specific_info.codecSpecific.VP8;
     vp8_info->simulcastIdx = 0;
     vp8_info->temporalIdx = webrtc::kNoTemporalIdx;
     vp8_info->tl0PicIdx = webrtc::kNoTl0PicIdx;
     vp8_info->pictureId = webrtc::kNoPictureId;
-  } else if (codec_type_ == webrtc::kVideoCodecVP9) {
+  } else if (frame.codec == webrtc::kVideoCodecVP9) {
     webrtc::CodecSpecificInfoVP9* vp9_info =
         &codec_specific_info.codecSpecific.VP9;
     vp9_info->inter_pic_predicted = !frame.key_frame;
@@ -185,7 +180,7 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     vp9_info->spatial_idx = webrtc::kNoSpatialIdx;
     vp9_info->tl0_pic_idx = webrtc::kNoTl0PicIdx;
     vp9_info->picture_id = webrtc::kNoPictureId;
-  } else if (codec_type_ == webrtc::kVideoCodecH264) {
+  } else if (frame.codec == webrtc::kVideoCodecH264) {
 #if defined(USE_H264_ENCODER)
     webrtc::CodecSpecificInfoH264* h264_info =
         &codec_specific_info.codecSpecific.H264;
@@ -199,7 +194,7 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
   }
 
   webrtc::RTPFragmentationHeader header;
-  if (codec_type_ == webrtc::kVideoCodecH264) {
+  if (frame.codec == webrtc::kVideoCodecH264) {
 #if defined(USE_H264_ENCODER)
     if (!GetRTPFragmentationHeaderH264(&header, buffer, buffer_size)) {
       return webrtc::EncodedImageCallback::Result(
@@ -238,7 +233,7 @@ webrtc::VideoEncoder* WebrtcDummyVideoEncoderFactory::CreateVideoEncoder(
     const cricket::VideoCodec& codec) {
   webrtc::VideoCodecType type = webrtc::PayloadStringToCodecType(codec.name);
   WebrtcDummyVideoEncoder* encoder = new WebrtcDummyVideoEncoder(
-      main_task_runner_, video_channel_state_observer_, type);
+      main_task_runner_, video_channel_state_observer_);
   base::AutoLock lock(lock_);
   encoders_.push_back(base::WrapUnique(encoder));
   if (encoder_created_callback_) {
