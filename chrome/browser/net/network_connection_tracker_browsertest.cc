@@ -111,8 +111,9 @@ class NetworkConnectionTrackerBrowserTest
 };
 
 // Basic test to make sure NetworkConnectionTracker is set up.
+// TODO: reenable, this test is flaky. http://crbug.com/782491.
 IN_PROC_BROWSER_TEST_P(NetworkConnectionTrackerBrowserTest,
-                       NetworkConnectionTracker) {
+                       DISABLED_NetworkConnectionTracker) {
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
   // NetworkService on ChromeOS doesn't yet have a NetworkChangeManager
   // implementation. OSX uses a separate binary for service processes and
