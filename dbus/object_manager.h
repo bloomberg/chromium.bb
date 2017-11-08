@@ -41,7 +41,7 @@
 //       dbus::Property<std::string> name;
 //       dbus::Property<uint16_t> version;
 //       dbus::Property<dbus::ObjectPath> parent;
-//       dbus::Property<std::vector<std::string> > children;
+//       dbus::Property<std::vector<std::string>> children;
 //
 //       Properties(dbus::ObjectProxy* object_proxy,
 //                  const PropertyChangedCallback callback)

@@ -41,7 +41,7 @@
 //       dbus::Property<std::string> name;
 //       dbus::Property<uint16_t> version;
 //       dbus::Property<dbus::ObjectPath> parent;
-//       dbus::Property<std::vector<std::string> > children;
+//       dbus::Property<std::vector<std::string>> children;
 //
 //       Properties(dbus::ObjectProxy* object_proxy,
 //                  const PropertyChangedCallback callback)
@@ -62,7 +62,7 @@
 //
 // Example (continued):
 //
-//     typedef std::map<std::pair<dbus::ObjectProxy*, Properties*> > Object;
+//     typedef std::map<std::pair<dbus::ObjectProxy*, Properties*>> Object;
 //     typedef std::map<dbus::ObjectPath, Object> ObjectMap;
 //     ObjectMap object_map_;
 //

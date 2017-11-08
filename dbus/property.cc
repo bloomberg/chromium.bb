@@ -489,11 +489,11 @@ void Property<ObjectPath>::AppendSetValueToWriter(MessageWriter* writer) {
 }
 
 //
-// Property<std::vector<std::string> > specialization.
+// Property<std::vector<std::string>> specialization.
 //
 
 template <>
-bool Property<std::vector<std::string> >::PopValueFromReader(
+bool Property<std::vector<std::string>>::PopValueFromReader(
     MessageReader* reader) {
   MessageReader variant_reader(NULL);
   if (!reader->PopVariant(&variant_reader))
@@ -504,7 +504,7 @@ bool Property<std::vector<std::string> >::PopValueFromReader(
 }
 
 template <>
-void Property<std::vector<std::string> >::AppendSetValueToWriter(
+void Property<std::vector<std::string>>::AppendSetValueToWriter(
     MessageWriter* writer) {
   MessageWriter variant_writer(NULL);
   writer->OpenVariant("as", &variant_writer);
@@ -513,11 +513,11 @@ void Property<std::vector<std::string> >::AppendSetValueToWriter(
 }
 
 //
-// Property<std::vector<ObjectPath> > specialization.
+// Property<std::vector<ObjectPath>> specialization.
 //
 
 template <>
-bool Property<std::vector<ObjectPath> >::PopValueFromReader(
+bool Property<std::vector<ObjectPath>>::PopValueFromReader(
     MessageReader* reader) {
   MessageReader variant_reader(NULL);
   if (!reader->PopVariant(&variant_reader))
@@ -528,7 +528,7 @@ bool Property<std::vector<ObjectPath> >::PopValueFromReader(
 }
 
 template <>
-void Property<std::vector<ObjectPath> >::AppendSetValueToWriter(
+void Property<std::vector<ObjectPath>>::AppendSetValueToWriter(
     MessageWriter* writer) {
   MessageWriter variant_writer(NULL);
   writer->OpenVariant("ao", &variant_writer);
@@ -537,7 +537,7 @@ void Property<std::vector<ObjectPath> >::AppendSetValueToWriter(
 }
 
 //
-// Property<std::vector<uint8_t> > specialization.
+// Property<std::vector<uint8_t>> specialization.
 //
 
 template <>
@@ -800,8 +800,8 @@ template class Property<uint64_t>;
 template class Property<double>;
 template class Property<std::string>;
 template class Property<ObjectPath>;
-template class Property<std::vector<std::string> >;
-template class Property<std::vector<ObjectPath> >;
+template class Property<std::vector<std::string>>;
+template class Property<std::vector<ObjectPath>>;
 template class Property<std::vector<uint8_t>>;
 template class Property<std::map<std::string, std::string>>;
 template class Property<std::vector<std::pair<std::vector<uint8_t>, uint16_t>>>;

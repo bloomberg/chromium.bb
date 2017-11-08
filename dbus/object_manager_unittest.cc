@@ -37,8 +37,8 @@ class ObjectManagerTest
   struct Properties : public PropertySet {
     Property<std::string> name;
     Property<int16_t> version;
-    Property<std::vector<std::string> > methods;
-    Property<std::vector<ObjectPath> > objects;
+    Property<std::vector<std::string>> methods;
+    Property<std::vector<ObjectPath>> objects;
 
     Properties(ObjectProxy* object_proxy,
                const std::string& interface_name,
@@ -215,8 +215,8 @@ class ObjectManagerTest
   std::string last_name_value_;
   bool timeout_expired_;
 
-  std::vector<std::pair<ObjectPath, std::string> > added_objects_;
-  std::vector<std::pair<ObjectPath, std::string> > removed_objects_;
+  std::vector<std::pair<ObjectPath, std::string>> added_objects_;
+  std::vector<std::pair<ObjectPath, std::string>> removed_objects_;
   std::vector<std::string> updated_properties_;
 
   bool method_callback_called_;
