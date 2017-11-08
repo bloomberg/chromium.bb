@@ -197,7 +197,8 @@ HTMLMapElement* TreeScope::GetImageMap(const String& url) const {
 
 // If the point is not in the viewport, returns false. Otherwise, adjusts the
 // point to account for the frame's zoom and scroll.
-static bool PointInFrameContentIfVisible(Document& document, IntPoint& point) {
+static bool PointInFrameContentIfVisible(Document& document,
+                                         DoublePoint& point_in_frame) {
   LocalFrame* frame = document.GetFrame();
   if (!frame)
     return false;
@@ -208,54 +209,49 @@ static bool PointInFrameContentIfVisible(Document& document, IntPoint& point) {
   // The VisibleContentRect check below requires that scrollbars are up-to-date.
   document.UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  FloatPoint point_in_document_content(point);
-  point_in_document_content.Scale(frame->PageZoomFactor(),
-                                  frame->PageZoomFactor());
+  DoublePoint point_in_content(point_in_frame);
+  point_in_content.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
   auto* scrollable_area = frame_view->LayoutViewportScrollableArea();
-  point_in_document_content.Move(scrollable_area->GetScrollOffset());
-  IntPoint rounded_point_in_document_content =
-      RoundedIntPoint(point_in_document_content);
+  point_in_content.Move(scrollable_area->GetScrollOffset());
   if (!scrollable_area->VisibleContentRect().Contains(
-          rounded_point_in_document_content)) {
+          RoundedIntPoint(point_in_content))) {
     return false;
   }
 
   // If the root layer handles scrolling, the point only needs to be adjusted by
   // the frame's scale.
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    FloatPoint scaled_point(point);
-    scaled_point.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
-    point = RoundedIntPoint(scaled_point);
+    point_in_frame.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
     return true;
   }
 
-  point = rounded_point_in_document_content;
+  point_in_frame = point_in_content;
   return true;
 }
 
 HitTestResult HitTestInDocument(Document* document,
-                                int x,
-                                int y,
+                                double x,
+                                double y,
                                 const HitTestRequest& request) {
   if (!document->IsActive())
     return HitTestResult();
 
-  IntPoint hit_point(x, y);
+  DoublePoint hit_point(x, y);
   if (!PointInFrameContentIfVisible(*document, hit_point))
     return HitTestResult();
 
-  HitTestResult result(request, hit_point);
+  HitTestResult result(request, LayoutPoint(hit_point));
   document->GetLayoutViewItem().HitTest(result);
   return result;
 }
 
-Element* TreeScope::ElementFromPoint(int x, int y) const {
+Element* TreeScope::ElementFromPoint(double x, double y) const {
   return HitTestPoint(x, y,
                       HitTestRequest::kReadOnly | HitTestRequest::kActive);
 }
 
-Element* TreeScope::HitTestPoint(int x,
-                                 int y,
+Element* TreeScope::HitTestPoint(double x,
+                                 double y,
                                  const HitTestRequest& request) const {
   HitTestResult result =
       HitTestInDocument(&RootNode().GetDocument(), x, y, request);
@@ -306,16 +302,17 @@ HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(
   return elements;
 }
 
-HeapVector<Member<Element>> TreeScope::ElementsFromPoint(int x, int y) const {
+HeapVector<Member<Element>> TreeScope::ElementsFromPoint(double x,
+                                                         double y) const {
   Document& document = RootNode().GetDocument();
-  IntPoint hit_point(x, y);
+  DoublePoint hit_point(x, y);
   if (!PointInFrameContentIfVisible(document, hit_point))
     return HeapVector<Member<Element>>();
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
                          HitTestRequest::kListBased |
                          HitTestRequest::kPenetratingList);
-  HitTestResult result(request, hit_point);
+  HitTestResult result(request, LayoutPoint(hit_point));
   document.GetLayoutViewItem().HitTest(result);
 
   return ElementsFromHitTestResult(result);

@@ -355,8 +355,8 @@ class CORE_EXPORT Document : public ContainerNode,
                            ExceptionState&);
   Element* createElement(const QualifiedName&, CreateElementFlags);
 
-  Element* ElementFromPoint(int x, int y) const;
-  HeapVector<Member<Element>> ElementsFromPoint(int x, int y) const;
+  Element* ElementFromPoint(double x, double y) const;
+  HeapVector<Member<Element>> ElementsFromPoint(double x, double y) const;
   Range* caretRangeFromPoint(int x, int y);
   Element* scrollingElement();
   // When calling from C++ code, use this method. scrollingElement() is

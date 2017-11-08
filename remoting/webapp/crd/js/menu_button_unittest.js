@@ -55,8 +55,8 @@ QUnit.test('should dismiss when anything outside the menu is clicked',
     function(assert) {
   var menu = menuButton.menu();
   menuButton.button().click();
-  var x = menu.offsetRight + 1;
-  var y = menu.offsetBottom + 1;
+  var x = menu.offsetLeft + menu.offsetWidth + 1;
+  var y = menu.offsetTop + menu.offsetHeight + 1;
   var notMenu = document.elementFromPoint(x, y);
   console.assert(notMenu != menu, 'Unable to click outside menu.');
   notMenu.click();
