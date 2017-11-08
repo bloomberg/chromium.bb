@@ -2,8 +2,14 @@
 
 rolldeps() {
   STEP="roll-deps" &&
-  REVIEWERS=`paste -s -d, third_party/freetype/OWNERS` &&
+  REVIEWERS=$(paste -s -d, third_party/freetype/OWNERS) &&
   roll-dep -r "${REVIEWERS}" "$@" src/third_party/freetype/src/
+}
+
+addtrybots() {
+  STEP="add trybots" &&
+  OLD_MSG=$(git show -s --format=%B HEAD) &&
+  git commit --amend -m"$OLD_MSG" -m"CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_chromium_msan_rel_ng"
 }
 
 checkmodules() {
@@ -14,7 +20,7 @@ checkmodules() {
 mergeinclude() {
   INCLUDE=$1 &&
   STEP="merge ${INCLUDE}: check for merge conflicts" &&
-  TMPFILE=`mktemp` &&
+  TMPFILE=$(mktemp) &&
   git -C third_party/freetype/src/ cat-file blob HEAD@{1}:include/freetype/config/${INCLUDE} >> ${TMPFILE} &&
   git merge-file third_party/freetype/include/freetype-custom-config/${INCLUDE} ${TMPFILE} third_party/freetype/src/include/freetype/config/${INCLUDE} &&
   rm ${TMPFILE} &&
@@ -23,8 +29,8 @@ mergeinclude() {
 
 updatereadme() {
   STEP="update README.chromium" &&
-  FTVERSION=`git -C third_party/freetype/src/ describe --long` &&
-  FTCOMMIT=`git -C third_party/freetype/src/ rev-parse HEAD` &&
+  FTVERSION=$(git -C third_party/freetype/src/ describe --long) &&
+  FTCOMMIT=$(git -C third_party/freetype/src/ rev-parse HEAD) &&
   sed -i "s/^Version: .*\$/Version: ${FTVERSION%-*}/" third_party/freetype/README.chromium &&
   sed -i "s/^Revision: .*\$/Revision: ${FTCOMMIT}/" third_party/freetype/README.chromium &&
   git add third_party/freetype/README.chromium
@@ -36,6 +42,7 @@ commit() {
 }
 
 rolldeps "$@" &&
+addtrybots &&
 checkmodules &&
 mergeinclude ftoption.h &&
 mergeinclude ftconfig.h &&
