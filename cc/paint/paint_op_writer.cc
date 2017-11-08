@@ -96,7 +96,8 @@ void PaintOpWriter::Write(const PaintFlags& flags) {
   Write(flags.shader_.get());
 }
 
-void PaintOpWriter::Write(const PaintImage& image, ImageDecodeCache* cache) {
+void PaintOpWriter::Write(const PaintImage& image,
+                          ImageProvider* image_provider) {
   // TODO(enne): implement PaintImage serialization: http://crbug.com/737629
 }
 

@@ -14,7 +14,7 @@ class SkRRect;
 
 namespace cc {
 
-class ImageDecodeCache;
+class ImageProvider;
 class PaintShader;
 
 class CC_PAINT_EXPORT PaintOpWriter {
@@ -45,7 +45,7 @@ class CC_PAINT_EXPORT PaintOpWriter {
 
   void Write(const SkPath& path);
   void Write(const PaintFlags& flags);
-  void Write(const PaintImage& image, ImageDecodeCache* cache);
+  void Write(const PaintImage& image, ImageProvider* image_provider);
   void Write(const sk_sp<SkData>& data);
   void Write(const sk_sp<SkTextBlob>& blob);
   void Write(const PaintShader* shader);
