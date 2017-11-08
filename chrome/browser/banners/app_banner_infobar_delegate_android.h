@@ -14,7 +14,6 @@
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/image/image.h"
 
 namespace content {
 class WebContents;
@@ -70,8 +69,11 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
                          const base::android::JavaParamRef<jobject>& obj,
                          jboolean success);
 
+  const SkBitmap& GetPrimaryIcon() const;
+
   // ConfirmInfoBarDelegate:
   bool Accept() override;
+  base::string16 GetMessageText() const override;
 
  private:
   // Delegate for promoting a web app.
@@ -105,9 +107,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  gfx::Image GetIcon() const override;
   void InfoBarDismissed() override;
-  base::string16 GetMessageText() const override;
   int GetButtons() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
