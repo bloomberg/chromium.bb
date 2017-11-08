@@ -8,4 +8,7 @@ public_deps = [
   "//storage/browser",
 ]
 traits_headers = [ "//components/arc/file_system/file_system_struct_traits.h" ]
+sources = [
+  "//components/arc/file_system/file_system_struct_traits.cc",
+]
 type_mappings = [ "arc.mojom.ChangeType=storage::WatcherManager::ChangeType" ]
