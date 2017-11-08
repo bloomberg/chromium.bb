@@ -859,32 +859,21 @@ SHA256HashValue X509Certificate::CalculateFingerprint256(OSCertHandle cert) {
   return sha256;
 }
 
-// static
-SHA256HashValue X509Certificate::CalculateCAFingerprint256(
-    const OSCertHandles& intermediates) {
+SHA256HashValue X509Certificate::CalculateChainFingerprint256() const {
   SHA256HashValue sha256;
   memset(sha256.data, 0, sizeof(sha256.data));
 
   SHA256_CTX sha256_ctx;
   SHA256_Init(&sha256_ctx);
-  for (CRYPTO_BUFFER* cert : intermediates) {
+  SHA256_Update(&sha256_ctx, CRYPTO_BUFFER_data(cert_handle_),
+                CRYPTO_BUFFER_len(cert_handle_));
+  for (CRYPTO_BUFFER* cert : intermediate_ca_certs_) {
     SHA256_Update(&sha256_ctx, CRYPTO_BUFFER_data(cert),
                   CRYPTO_BUFFER_len(cert));
   }
   SHA256_Final(sha256.data, &sha256_ctx);
 
   return sha256;
-}
-
-// static
-SHA256HashValue X509Certificate::CalculateChainFingerprint256(
-    OSCertHandle leaf,
-    const OSCertHandles& intermediates) {
-  OSCertHandles chain;
-  chain.push_back(leaf);
-  chain.insert(chain.end(), intermediates.begin(), intermediates.end());
-
-  return CalculateCAFingerprint256(chain);
 }
 
 // static

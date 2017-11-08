@@ -2169,8 +2169,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateExplanations) {
 
   // There should be one explanation containing the server's certificate chain.
   net::SHA256HashValue cert_chain_fingerprint =
-      net::X509Certificate::CalculateChainFingerprint256(
-          cert->os_cert_handle(), cert->GetIntermediateCertificates());
+      cert->CalculateChainFingerprint256();
 
   // Read the certificate out of the first explanation.
   const base::ListValue* certificate;
@@ -2190,9 +2189,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateExplanations) {
       net::X509Certificate::CreateFromDERCertChain(cert_string_piece);
   ASSERT_TRUE(explanation_cert);
   EXPECT_EQ(cert_chain_fingerprint,
-            net::X509Certificate::CalculateChainFingerprint256(
-                explanation_cert->os_cert_handle(),
-                explanation_cert->GetIntermediateCertificates()));
+            explanation_cert->CalculateChainFingerprint256());
 }
 
 // Download tests are flaky on Android: https://crbug.com/7546

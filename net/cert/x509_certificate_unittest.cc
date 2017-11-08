@@ -495,29 +495,6 @@ TEST(X509CertificateTest, CAFingerprints) {
                                         intermediates);
   ASSERT_TRUE(cert_chain3);
 
-  SHA256HashValue cert_chain1_ca_fingerprint_256 = {
-      {0x51, 0x15, 0x30, 0x49, 0x97, 0x54, 0xf8, 0xb4, 0x17, 0x41, 0x6b,
-       0x58, 0x78, 0xb0, 0x89, 0xd2, 0xc3, 0xae, 0x66, 0xc1, 0x16, 0x80,
-       0xa0, 0x78, 0xe7, 0x53, 0x45, 0xa2, 0xfb, 0x80, 0xe1, 0x07}};
-  SHA256HashValue cert_chain2_ca_fingerprint_256 = {
-      {0x00, 0xbd, 0x2b, 0x0e, 0xdd, 0x83, 0x40, 0xb1, 0x74, 0x6c, 0xc3,
-       0x95, 0xc0, 0xe3, 0x55, 0xb2, 0x16, 0x58, 0x53, 0xfd, 0xb9, 0x3c,
-       0x52, 0xda, 0xdd, 0xa8, 0x22, 0x8b, 0x07, 0x00, 0x2d, 0xce}};
-  // The SHA-256 hash of nothing.
-  SHA256HashValue cert_chain3_ca_fingerprint_256 = {
-      {0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4,
-       0xc8, 0x99, 0x6f, 0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b,
-       0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55}};
-  EXPECT_EQ(cert_chain1_ca_fingerprint_256,
-            X509Certificate::CalculateCAFingerprint256(
-                cert_chain1->GetIntermediateCertificates()));
-  EXPECT_EQ(cert_chain2_ca_fingerprint_256,
-            X509Certificate::CalculateCAFingerprint256(
-                cert_chain2->GetIntermediateCertificates()));
-  EXPECT_EQ(cert_chain3_ca_fingerprint_256,
-            X509Certificate::CalculateCAFingerprint256(
-                cert_chain3->GetIntermediateCertificates()));
-
   SHA256HashValue cert_chain1_chain_fingerprint_256 = {
       {0xac, 0xff, 0xcc, 0x63, 0x0d, 0xd0, 0xa7, 0x19, 0x78, 0xb5, 0x8a,
        0x47, 0x8b, 0x67, 0x97, 0xcb, 0x8d, 0xe1, 0x6a, 0x8a, 0x57, 0x70,
@@ -531,17 +508,11 @@ TEST(X509CertificateTest, CAFingerprints) {
        0x6a, 0xa6, 0x02, 0x73, 0x30, 0x3e, 0x34, 0x1b, 0x43, 0xc2, 0x7c,
        0x98, 0x52, 0x9f, 0x34, 0x7f, 0x55, 0x97, 0xe9, 0x1a, 0x10}};
   EXPECT_EQ(cert_chain1_chain_fingerprint_256,
-            X509Certificate::CalculateChainFingerprint256(
-                cert_chain1->os_cert_handle(),
-                cert_chain1->GetIntermediateCertificates()));
+            cert_chain1->CalculateChainFingerprint256());
   EXPECT_EQ(cert_chain2_chain_fingerprint_256,
-            X509Certificate::CalculateChainFingerprint256(
-                cert_chain2->os_cert_handle(),
-                cert_chain2->GetIntermediateCertificates()));
+            cert_chain2->CalculateChainFingerprint256());
   EXPECT_EQ(cert_chain3_chain_fingerprint_256,
-            X509Certificate::CalculateChainFingerprint256(
-                cert_chain3->os_cert_handle(),
-                cert_chain3->GetIntermediateCertificates()));
+            cert_chain3->CalculateChainFingerprint256());
 }
 
 TEST(X509CertificateTest, ParseSubjectAltNames) {
