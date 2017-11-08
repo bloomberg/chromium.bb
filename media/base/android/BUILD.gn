@@ -98,6 +98,7 @@ if (is_android) {
       "//media:test_support",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/libyuv",
       "//third_party/widevine/cdm:headers",
       "//ui/gfx:color_space",
     ]
