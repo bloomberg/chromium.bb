@@ -6,6 +6,7 @@
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
 import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
+import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/toolchain/toolchain.gni")
@@ -2449,6 +2450,11 @@ if (enable_java_templates) {
         }
       }
     }
+
+    if (use_cfi_diag || is_ubsan || is_ubsan_security || is_ubsan_vptr) {
+      _extra_native_libs += [ "$clang_base_path/lib/clang/$clang_version/lib/linux/libclang_rt.ubsan_standalone-arm-android.so" ]
+    }
+
     if (defined(invoker.loadable_modules) && invoker.loadable_modules != []) {
       _extra_native_libs_even_when_incremental += invoker.loadable_modules
     }
