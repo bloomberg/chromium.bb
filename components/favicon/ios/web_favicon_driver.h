@@ -67,6 +67,7 @@ class WebFaviconDriver : public web::WebStateObserver,
   void FaviconUrlUpdated(
       web::WebState* web_state,
       const std::vector<web::FaviconURL>& candidates) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   // Invoked when new favicon URL candidates are received.
   void FaviconUrlUpdatedInternal(
@@ -77,6 +78,10 @@ class WebFaviconDriver : public web::WebStateObserver,
 
   // Caches the favicon URLs candidates for same-document navigations.
   std::vector<favicon::FaviconURL> candidates_;
+
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebFaviconDriver);
 };
