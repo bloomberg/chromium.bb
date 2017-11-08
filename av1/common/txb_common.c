@@ -333,8 +333,8 @@ void av1_get_base_level_counts(const uint8_t *const levels,
   }
 }
 
-void av1_get_br_level_counts(const uint8_t *const levels, const int width,
-                             const int height, uint8_t *const level_counts) {
+void av1_get_br_level_counts_c(const uint8_t *const levels, const int width,
+                               const int height, uint8_t *const level_counts) {
   const int stride = width + TX_PAD_HOR;
   const int level_minus_1 = NUM_BASE_LEVELS;
 

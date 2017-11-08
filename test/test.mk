@@ -154,6 +154,7 @@ LIBAOM_TEST_SRCS-$(HAVE_SSE4_1)        += simd_sse4_test.cc
 LIBAOM_TEST_SRCS-$(HAVE_AVX2)          += simd_avx2_test.cc
 LIBAOM_TEST_SRCS-$(HAVE_NEON)          += simd_neon_test.cc
 LIBAOM_TEST_SRCS-yes                   += intrapred_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_LV_MAP)      += txb_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_INTRABC)     += intrabc_test.cc
 #LIBAOM_TEST_SRCS-$(CONFIG_AV1_DECODER) += av1_thread_test.cc
 LIBAOM_TEST_SRCS-$(CONFIG_AV1_ENCODER) += dct16x16_test.cc

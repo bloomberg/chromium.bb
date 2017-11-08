@@ -67,6 +67,14 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 }
 
 #
+# txb
+#
+if (aom_config("CONFIG_LV_MAP") eq "yes") {
+  add_proto qw/void av1_get_br_level_counts/, "const uint8_t *const levels, const int width, const int height, uint8_t *const level_counts";
+  specialize qw/av1_get_br_level_counts sse2/;
+}
+
+#
 # Inverse dct
 #
 add_proto qw/void av1_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, const struct txfm_param *param";

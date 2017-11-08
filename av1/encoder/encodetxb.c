@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "aom_ports/mem.h"
 #include "av1/common/scan.h"
 #include "av1/common/blockd.h"
 #include "av1/common/idct.h"
@@ -321,7 +322,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-  uint8_t level_counts[MAX_TX_SQUARE];
+  DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
 
   (void)blk_row;
   (void)blk_col;
@@ -635,7 +636,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   const int16_t *scan = scan_order->scan;
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-  uint8_t level_counts[MAX_TX_SQUARE];
+  DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
 
   LV_MAP_COEFF_COST *coeff_costs = &x->coeff_costs[txs_ctx][plane_type];
 
@@ -2144,7 +2145,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const int height = tx_size_high[tx_size];
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
-  uint8_t level_counts[MAX_TX_SQUARE];
+  DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
   const uint8_t allow_update_cdf = args->allow_update_cdf;
 
   TX_SIZE txsize_ctx = get_txsize_context(tx_size);

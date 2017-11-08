@@ -391,7 +391,7 @@ static INLINE int get_nz_map_ctx_from_count(int count,
   const int width = 1 << bwl;
 
   int ctx = 0;
-  int tx_class = get_tx_class(tx_type);
+  const TX_CLASS tx_class = get_tx_class(tx_type);
   int offset;
   if (tx_class == TX_CLASS_2D)
     offset = 0;
@@ -455,7 +455,7 @@ static INLINE int get_nz_map_ctx(const uint8_t *const levels,
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
 
-  int tx_class = get_tx_class(tx_type);
+  const TX_CLASS tx_class = get_tx_class(tx_type);
 #if USE_CAUSAL_BASE_CTX
   int mag = 0;
   int count = get_nz_count_mag(levels, bwl, row, col, tx_class, &mag);
@@ -577,8 +577,5 @@ void av1_init_lv_map(AV1_COMMON *cm);
 void av1_get_base_level_counts(const uint8_t *const levels,
                                const int level_minus_1, const int width,
                                const int height, uint8_t *const level_counts);
-
-void av1_get_br_level_counts(const uint8_t *const levels, const int width,
-                             const int height, uint8_t *const level_counts);
 
 #endif  // AV1_COMMON_TXB_COMMON_H_

@@ -169,6 +169,12 @@ if (NOT BUILD_SHARED_LIBS)
       endif ()
     endif ()
 
+    if (CONFIG_LV_MAP)
+      set(AOM_UNIT_TEST_COMMON_SOURCES
+          ${AOM_UNIT_TEST_COMMON_SOURCES}
+          "${AOM_ROOT}/test/txb_test.cc")
+    endif ()
+
     set(AOM_UNIT_TEST_COMMON_INTRIN_NEON
         ${AOM_UNIT_TEST_COMMON_INTRIN_NEON}
         "${AOM_ROOT}/test/simd_cmp_neon.cc")
