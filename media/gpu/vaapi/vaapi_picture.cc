@@ -29,4 +29,8 @@ VaapiPicture::~VaapiPicture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+bool VaapiPicture::AllowOverlay() const {
+  return false;
+}
+
 }  // namespace media
