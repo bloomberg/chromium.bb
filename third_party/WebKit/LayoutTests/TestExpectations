@@ -3861,4 +3861,3 @@ crbug.com/781171 [ Android ] external/wpt/css/css-timing/step-timing-functions-o
 
 # Sheriff failures 2017-11-07
 crbug.com/782067 [ Mac10.10 Mac10.11 ] fast/css/no-recalc-on-no-op-inline-style-changes.html [ Pass Failure ]
-crbug.com/782095 [ Win ] media/track/track-kind.html [ Pass Timeout ]
