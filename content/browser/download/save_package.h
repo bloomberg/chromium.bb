@@ -152,14 +152,14 @@ class CONTENT_EXPORT SavePackage
               const base::FilePath& file_full_path,
               const base::FilePath& directory_full_path);
 
+  ~SavePackage() override;
+
   void InitWithDownloadItem(
       const SavePackageDownloadCreatedCallback& download_created_callback,
       DownloadItemImpl* item);
 
   // Callback for WebContents::GenerateMHTML().
   void OnMHTMLGenerated(int64_t size);
-
-  ~SavePackage() override;
 
   // Notes from Init() above applies here as well.
   void InternalInit();
@@ -246,7 +246,7 @@ class CONTENT_EXPORT SavePackage
 
   // Helper for finding a SaveItem with the given url, or falling back to
   // creating a SaveItem with the given parameters.
-  SaveItem* CreatePendingSaveItemDeduplicatingByUrl(
+  void CreatePendingSaveItemDeduplicatingByUrl(
       int container_frame_tree_node_id,
       int save_item_frame_tree_node_id,
       const GURL& url,
@@ -394,12 +394,12 @@ class CONTENT_EXPORT SavePackage
   DownloadItemImpl* download_ = nullptr;
 
   // The URL of the page the user wants to save.
-  GURL page_url_;
+  const GURL page_url_;
   base::FilePath saved_main_file_path_;
   base::FilePath saved_main_directory_path_;
 
   // The title of the page the user wants to save.
-  base::string16 title_;
+  const base::string16 title_;
 
   // Used to calculate package download speed (in files per second).
   const base::TimeTicks start_tick_;
