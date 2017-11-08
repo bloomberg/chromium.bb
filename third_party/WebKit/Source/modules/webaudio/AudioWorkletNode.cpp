@@ -63,8 +63,8 @@ scoped_refptr<AudioWorkletHandler> AudioWorkletHandler::Create(
     String name,
     HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map,
     const AudioWorkletNodeOptions& options) {
-  return WTF::AdoptRef(new AudioWorkletHandler(
-      node, sample_rate, name, param_handler_map, options));
+  return base::AdoptRef(new AudioWorkletHandler(node, sample_rate, name,
+                                                param_handler_map, options));
 }
 
 void AudioWorkletHandler::Process(size_t frames_to_process) {

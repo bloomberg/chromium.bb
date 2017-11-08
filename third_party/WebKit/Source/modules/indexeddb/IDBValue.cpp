@@ -79,18 +79,18 @@ IDBValue::~IDBValue() {
 }
 
 scoped_refptr<IDBValue> IDBValue::Create() {
-  return WTF::AdoptRef(new IDBValue());
+  return base::AdoptRef(new IDBValue());
 }
 
 scoped_refptr<IDBValue> IDBValue::Create(const WebIDBValue& value,
                                          v8::Isolate* isolate) {
-  return WTF::AdoptRef(new IDBValue(value, isolate));
+  return base::AdoptRef(new IDBValue(value, isolate));
 }
 
 scoped_refptr<IDBValue> IDBValue::Create(const IDBValue* value,
                                          IDBKey* primary_key,
                                          const IDBKeyPath& key_path) {
-  return WTF::AdoptRef(new IDBValue(value, primary_key, key_path));
+  return base::AdoptRef(new IDBValue(value, primary_key, key_path));
 }
 
 scoped_refptr<IDBValue> IDBValue::Create(
@@ -99,9 +99,9 @@ scoped_refptr<IDBValue> IDBValue::Create(
     std::unique_ptr<Vector<WebBlobInfo>> blob_info,
     const IDBKey* primary_key,
     const IDBKeyPath& key_path) {
-  return WTF::AdoptRef(new IDBValue(std::move(unwrapped_data),
-                                    std::move(blob_data), std::move(blob_info),
-                                    primary_key, key_path));
+  return base::AdoptRef(new IDBValue(std::move(unwrapped_data),
+                                     std::move(blob_data), std::move(blob_info),
+                                     primary_key, key_path));
 }
 
 Vector<String> IDBValue::GetUUIDs() const {

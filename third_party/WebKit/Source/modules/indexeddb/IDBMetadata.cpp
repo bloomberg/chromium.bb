@@ -42,12 +42,12 @@ IDBObjectStoreMetadata::IDBObjectStoreMetadata(const String& name,
 scoped_refptr<IDBObjectStoreMetadata> IDBObjectStoreMetadata::CreateCopy()
     const {
   scoped_refptr<IDBObjectStoreMetadata> copy =
-      WTF::AdoptRef(new IDBObjectStoreMetadata(name, id, key_path,
-                                               auto_increment, max_index_id));
+      base::AdoptRef(new IDBObjectStoreMetadata(name, id, key_path,
+                                                auto_increment, max_index_id));
 
   for (const auto& it : indexes) {
     IDBIndexMetadata* index = it.value.get();
-    scoped_refptr<IDBIndexMetadata> index_copy = WTF::AdoptRef(
+    scoped_refptr<IDBIndexMetadata> index_copy = base::AdoptRef(
         new IDBIndexMetadata(index->name, index->id, index->key_path,
                              index->unique, index->multi_entry));
     copy->indexes.insert(it.key, std::move(index_copy));
@@ -76,7 +76,7 @@ IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& web_metadata)
     const WebIDBMetadata::ObjectStore& web_object_store =
         web_metadata.object_stores[i];
     scoped_refptr<IDBObjectStoreMetadata> object_store =
-        WTF::AdoptRef(new IDBObjectStoreMetadata(
+        base::AdoptRef(new IDBObjectStoreMetadata(
             web_object_store.name, web_object_store.id,
             IDBKeyPath(web_object_store.key_path),
             web_object_store.auto_increment, web_object_store.max_index_id));
@@ -84,7 +84,7 @@ IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& web_metadata)
     for (size_t j = 0; j < web_object_store.indexes.size(); ++j) {
       const WebIDBMetadata::Index& web_index = web_object_store.indexes[j];
       scoped_refptr<IDBIndexMetadata> index =
-          WTF::AdoptRef(new IDBIndexMetadata(
+          base::AdoptRef(new IDBIndexMetadata(
               web_index.name, web_index.id, IDBKeyPath(web_index.key_path),
               web_index.unique, web_index.multi_entry));
       object_store->indexes.Set(web_index.id, std::move(index));

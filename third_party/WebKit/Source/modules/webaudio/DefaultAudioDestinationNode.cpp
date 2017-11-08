@@ -49,7 +49,7 @@ scoped_refptr<DefaultAudioDestinationHandler>
 DefaultAudioDestinationHandler::Create(
     AudioNode& node,
     const WebAudioLatencyHint& latency_hint) {
-  return WTF::AdoptRef(new DefaultAudioDestinationHandler(node, latency_hint));
+  return base::AdoptRef(new DefaultAudioDestinationHandler(node, latency_hint));
 }
 
 DefaultAudioDestinationHandler::~DefaultAudioDestinationHandler() {

@@ -91,9 +91,9 @@ scoped_refptr<PannerHandler> PannerHandler::Create(
     AudioParamHandler& orientation_x,
     AudioParamHandler& orientation_y,
     AudioParamHandler& orientation_z) {
-  return WTF::AdoptRef(new PannerHandler(node, sample_rate, position_x,
-                                         position_y, position_z, orientation_x,
-                                         orientation_y, orientation_z));
+  return base::AdoptRef(new PannerHandler(node, sample_rate, position_x,
+                                          position_y, position_z, orientation_x,
+                                          orientation_y, orientation_z));
 }
 
 PannerHandler::~PannerHandler() {

@@ -103,7 +103,7 @@ class IDBTransactionTest : public ::testing::Test {
         kWebIDBTransactionModeReadOnly, db_.Get());
 
     IDBKeyPath store_key_path("primaryKey");
-    scoped_refptr<IDBObjectStoreMetadata> store_metadata = WTF::AdoptRef(
+    scoped_refptr<IDBObjectStoreMetadata> store_metadata = base::AdoptRef(
         new IDBObjectStoreMetadata("store", kStoreId, store_key_path, true, 1));
     store_ = IDBObjectStore::Create(store_metadata, transaction_);
   }

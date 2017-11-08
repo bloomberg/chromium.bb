@@ -108,7 +108,7 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
                                                  double default_value,
                                                  float min_value,
                                                  float max_value) {
-    return WTF::AdoptRef(new AudioParamHandler(
+    return base::AdoptRef(new AudioParamHandler(
         context, param_type, param_name, default_value, min_value, max_value));
   }
 

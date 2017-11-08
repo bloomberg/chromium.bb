@@ -32,7 +32,7 @@ scoped_refptr<ConstantSourceHandler> ConstantSourceHandler::Create(
     AudioNode& node,
     float sample_rate,
     AudioParamHandler& offset) {
-  return WTF::AdoptRef(new ConstantSourceHandler(node, sample_rate, offset));
+  return base::AdoptRef(new ConstantSourceHandler(node, sample_rate, offset));
 }
 
 ConstantSourceHandler::~ConstantSourceHandler() {

@@ -773,7 +773,7 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
   ++metadata_->max_index_id;
 
   scoped_refptr<IDBIndexMetadata> index_metadata =
-      WTF::AdoptRef(new IDBIndexMetadata(
+      base::AdoptRef(new IDBIndexMetadata(
           name, index_id, key_path, options.unique(), options.multiEntry()));
   IDBIndex* index = IDBIndex::Create(index_metadata, this, transaction_.Get());
   index_map_.Set(name, index);
