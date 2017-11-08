@@ -7,7 +7,6 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/v8_performance_observer_callback.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/testing/NullExecutionContext.h"
 #include "core/timing/PerformanceBase.h"
@@ -15,6 +14,7 @@
 #include "core/timing/PerformanceObserver.h"
 #include "core/timing/PerformanceObserverInit.h"
 #include "platform/loader/fetch/ResourceResponse.h"
+#include "public/platform/TaskType.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

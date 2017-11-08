@@ -166,13 +166,13 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return parent_frame_task_runners_.Get();
   }
 
-  scheduler::WorkerGlobalScopeScheduler* GetGlobalScopeScheduler() const {
-    return global_scope_scheduler_.get();
-  }
-
   // For ServiceWorkerScriptStreaming. Returns nullptr otherwise.
   virtual InstalledScriptsManager* GetInstalledScriptsManager() {
     return nullptr;
+  }
+
+  scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType type) {
+    return global_scope_scheduler_->GetTaskRunner(type);
   }
 
  protected:

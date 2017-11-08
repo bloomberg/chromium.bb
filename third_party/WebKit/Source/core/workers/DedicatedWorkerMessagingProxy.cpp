@@ -7,7 +7,6 @@
 #include <memory>
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -21,6 +20,7 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/WTF.h"
+#include "public/platform/TaskType.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom-blink.h"
 #include "third_party/WebKit/public/platform/dedicated_worker_factory.mojom-blink.h"
@@ -106,7 +106,8 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
         CrossThreadUnretained(&WorkerObjectProxy()), std::move(message),
         WTF::Passed(std::move(channels)),
         CrossThreadUnretained(GetWorkerThread()));
-    TaskRunnerHelper::Get(TaskType::kPostedMessage, GetWorkerThread())
+    GetWorkerThread()
+        ->GetTaskRunner(TaskType::kPostedMessage)
         ->PostTask(BLINK_FROM_HERE, std::move(task));
   } else {
     queued_early_tasks_.push_back(
@@ -125,7 +126,8 @@ void DedicatedWorkerMessagingProxy::WorkerThreadCreated() {
         std::move(queued_task.message),
         WTF::Passed(std::move(queued_task.channels)),
         CrossThreadUnretained(GetWorkerThread()));
-    TaskRunnerHelper::Get(TaskType::kPostedMessage, GetWorkerThread())
+    GetWorkerThread()
+        ->GetTaskRunner(TaskType::kPostedMessage)
         ->PostTask(BLINK_FROM_HERE, std::move(task));
   }
   queued_early_tasks_.clear();
@@ -171,7 +173,8 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   // The HTML spec requires to queue an error event using the DOM manipulation
   // task source.
   // https://html.spec.whatwg.org/multipage/workers.html#runtime-script-errors-2
-  TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetWorkerThread())
+  GetWorkerThread()
+      ->GetTaskRunner(TaskType::kDOMManipulation)
       ->PostTask(BLINK_FROM_HERE,
                  CrossThreadBind(
                      &DedicatedWorkerObjectProxy::ProcessUnhandledException,

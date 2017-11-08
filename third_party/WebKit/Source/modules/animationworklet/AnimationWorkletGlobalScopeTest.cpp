@@ -11,7 +11,6 @@
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/GlobalScopeCreationParams.h"
@@ -25,6 +24,7 @@
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/text/TextPosition.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebURLRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,7 +77,7 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
   void RunTestOnWorkletThread(TestCalback callback) {
     std::unique_ptr<WorkerThread> worklet = CreateAnimationWorkletThread();
     WaitableEvent waitable_event;
-    TaskRunnerHelper::Get(TaskType::kUnthrottled, worklet.get())
+    worklet->GetTaskRunner(TaskType::kUnthrottled)
         ->PostTask(BLINK_FROM_HERE,
                    CrossThreadBind(callback, CrossThreadUnretained(this),
                                    CrossThreadUnretained(worklet.get()),

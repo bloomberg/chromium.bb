@@ -7,7 +7,6 @@
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/GlobalScopeCreationParams.h"
@@ -18,6 +17,7 @@
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -64,7 +64,8 @@ void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
     scoped_refptr<WebTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
-  TaskRunnerHelper::Get(TaskType::kUnspecedLoading, GetWorkerThread())
+  GetWorkerThread()
+      ->GetTaskRunner(TaskType::kUnspecedLoading)
       ->PostTask(BLINK_FROM_HERE,
                  CrossThreadBind(
                      &ThreadedWorkletObjectProxy::FetchAndInvokeScript,

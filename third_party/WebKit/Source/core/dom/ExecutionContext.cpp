@@ -30,7 +30,6 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/PausableObject.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/EventTarget.h"
 #include "core/events/ErrorEvent.h"
 #include "core/frame/UseCounter.h"
@@ -42,6 +41,7 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 

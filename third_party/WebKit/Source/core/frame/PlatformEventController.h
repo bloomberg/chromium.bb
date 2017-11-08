@@ -6,10 +6,10 @@
 #define PlatformEventController_h
 
 #include "core/CoreExport.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 

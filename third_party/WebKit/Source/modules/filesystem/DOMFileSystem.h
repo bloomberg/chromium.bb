@@ -33,13 +33,13 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "modules/ModulesExport.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/EntriesCallback.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {

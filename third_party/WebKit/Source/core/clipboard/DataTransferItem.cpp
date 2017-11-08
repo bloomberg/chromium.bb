@@ -35,10 +35,10 @@
 #include "core/clipboard/DataObjectItem.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebTraceLocation.h"
 
 namespace blink {
