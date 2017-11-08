@@ -127,30 +127,10 @@ void BrowserShortcutLauncherItemController::UpdateBrowserItemState() {
   DCHECK_GE(browser_index, 0);
   ash::ShelfItem browser_item = shelf_model_->items()[browser_index];
   ash::ShelfItemStatus browser_status = ash::STATUS_CLOSED;
-
-  Browser* browser = BrowserList::GetInstance()->GetLastActive();
-  if (browser && browser->window()->IsActive() &&
-      IsBrowserRepresentedInBrowserList(browser)) {
-    // Check if the active browser / tab is a browser which is not an app,
-    // a windowed app, a popup or any other item which is not a browser of
-    // interest.
-    browser_status = ash::STATUS_ACTIVE;
-    // If an app that has item is running in active WebContents, browser item
-    // status cannot be active.
-    content::WebContents* contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-    if (contents &&
-        (ChromeLauncherController::instance()->GetShelfIDForWebContents(
-             contents) != browser_item.id))
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (IsBrowserRepresentedInBrowserList(browser)) {
       browser_status = ash::STATUS_RUNNING;
-  }
-
-  if (browser_status == ash::STATUS_CLOSED) {
-    for (auto* browser : *BrowserList::GetInstance()) {
-      if (IsBrowserRepresentedInBrowserList(browser)) {
-        browser_status = ash::STATUS_RUNNING;
-        break;
-      }
+      break;
     }
   }
 

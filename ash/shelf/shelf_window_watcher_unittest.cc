@@ -161,7 +161,7 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
   EXPECT_EQ(3, model_->item_count());
 
   int index_w2 = model_->ItemIndexByID(id_w2);
-  EXPECT_EQ(STATUS_ACTIVE, model_->items()[index_w2].status);
+  EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w2].status);
 
   // ShelfItem is removed when the item type window property is cleared.
   widget1->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
@@ -176,40 +176,6 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
   EXPECT_EQ(1, model_->item_count());
 }
 
-TEST_F(ShelfWindowWatcherTest, ActivateWindow) {
-  // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
-  std::unique_ptr<views::Widget> widget1 =
-      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  std::unique_ptr<views::Widget> widget2 =
-      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-
-  // Create a ShelfItem for the first window.
-  ShelfID id_w1 = CreateShelfItem(widget1->GetNativeWindow());
-  EXPECT_EQ(2, model_->item_count());
-  int index_w1 = model_->ItemIndexByID(id_w1);
-  EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
-
-  // Create a ShelfItem for the second window.
-  ShelfID id_w2 = CreateShelfItem(widget2->GetNativeWindow());
-  EXPECT_EQ(3, model_->item_count());
-  int index_w2 = model_->ItemIndexByID(id_w2);
-  EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
-  EXPECT_EQ(STATUS_ACTIVE, model_->items()[index_w2].status);
-
-  // The ShelfItem for the first window is active when the window is activated.
-  widget1->Activate();
-  EXPECT_EQ(STATUS_ACTIVE, model_->items()[index_w1].status);
-  EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w2].status);
-
-  // The ShelfItem for the second window is active when the window is activated.
-  widget2->Activate();
-  EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
-  EXPECT_EQ(STATUS_ACTIVE, model_->items()[index_w2].status);
-}
-
 TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   // Create a ShelfItem for a new window.
   EXPECT_EQ(1, model_->item_count());
@@ -219,7 +185,7 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
-  EXPECT_EQ(STATUS_ACTIVE, model_->items()[index].status);
+  EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);
 
   // Update the window's ShelfItemType.
   widget->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
@@ -240,7 +206,7 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
-  EXPECT_EQ(STATUS_ACTIVE, model_->items()[index].status);
+  EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);
 
   // Maximize the window.
   wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeWindow());
@@ -274,7 +240,7 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
   EXPECT_EQ(2, model_->item_count());
 
   int index = model_->ItemIndexByID(id);
-  EXPECT_EQ(STATUS_ACTIVE, model_->items()[index].status);
+  EXPECT_EQ(STATUS_RUNNING, model_->items()[index].status);
 
   // Simulate dragging of the window and check its item is not changed.
   std::unique_ptr<WindowResizer> resizer(

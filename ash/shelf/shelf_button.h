@@ -33,15 +33,12 @@ class ASH_EXPORT ShelfButton : public views::Button {
     STATE_HOVERED = 1 << 0,
     // Underlying ShelfItem has a running instance.
     STATE_RUNNING = 1 << 1,
-    // Underlying ShelfItem is active (i.e. has focus).
-    STATE_ACTIVE = 1 << 2,
     // Underlying ShelfItem needs user's attention.
-    STATE_ATTENTION = 1 << 3,
-    STATE_FOCUSED = 1 << 4,
+    STATE_ATTENTION = 1 << 2,
     // Hide the status (temporarily for some animations).
-    STATE_HIDDEN = 1 << 5,
+    STATE_HIDDEN = 1 << 3,
     // Button is being dragged.
-    STATE_DRAGGING = 1 << 6,
+    STATE_DRAGGING = 1 << 4,
   };
 
   ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view);
@@ -82,8 +79,6 @@ class ASH_EXPORT ShelfButton : public views::Button {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
-  void OnFocus() override;
-  void OnBlur() override;
 
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
