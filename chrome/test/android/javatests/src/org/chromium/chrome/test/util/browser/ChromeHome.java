@@ -53,7 +53,11 @@ public @interface ChromeHome {
         @Override
         protected void before() throws Throwable {
             boolean enabled = getRequestedState();
-            if (enabled) updateCommandLine();
+            if (enabled) {
+                Features.getInstance().enable(ChromeFeatureList.CHROME_HOME);
+            } else {
+                Features.getInstance().disable(ChromeFeatureList.CHROME_HOME);
+            }
             setPrefs(enabled);
         }
 

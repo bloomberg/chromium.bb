@@ -22,9 +22,9 @@ import android.support.test.filters.SmallTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
@@ -50,8 +51,7 @@ public class ChannelsUpdaterTest {
     private Resources mMockResources;
 
     @Rule
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public Features.Processor processor = new Features.Processor();
+    public TestRule processor = new Features.JUnitProcessor();
 
     @Rule
     public NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
@@ -141,7 +141,7 @@ public class ChannelsUpdaterTest {
     @SmallTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @TargetApi(Build.VERSION_CODES.O)
-    @Features(@Features.Register(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS))
+    @EnableFeatures(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS)
     public void testUpdateChannels_createsExpectedChannelsAndUpdatesPref() throws Exception {
         ChannelsUpdater updater = new ChannelsUpdater(
                 true /* isAtLeastO */, mMockSharedPreferences, mChannelsInitializer, 21);
@@ -160,7 +160,7 @@ public class ChannelsUpdaterTest {
     @SmallTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @TargetApi(Build.VERSION_CODES.O)
-    @Features(@Features.Register(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS))
+    @EnableFeatures(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS)
     public void testUpdateChannels_deletesLegacyChannelsAndCreatesExpectedOnes() throws Exception {
         // Set up any legacy channels.
         for (String id : ChannelDefinitions.getLegacyChannelIds()) {
