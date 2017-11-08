@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/renderer_host/media/fake_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
@@ -128,10 +129,9 @@ class VideoCaptureTest : public testing::Test,
   void SetUp() override {
     SetBrowserClientForTesting(&browser_client_);
 
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseFakeDeviceForMediaStream);
     media_stream_manager_ = std::make_unique<MediaStreamManager>(
-        audio_system_.get(), audio_manager_->GetTaskRunner());
+        audio_system_.get(), audio_manager_->GetTaskRunner(),
+        base::MakeUnique<FakeVideoCaptureProvider>());
     media_stream_manager_->UseFakeUIFactoryForTests(
         base::Bind(&VideoCaptureTest::CreateFakeUI, base::Unretained(this)));
 
