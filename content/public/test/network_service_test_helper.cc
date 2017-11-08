@@ -43,6 +43,10 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     std::move(callback).Run();
   }
 
+  void SimulateCrash() override {
+    CHECK(false) << "Crash NetworkService process for testing.";
+  }
+
   void BindRequest(content::mojom::NetworkServiceTestRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
