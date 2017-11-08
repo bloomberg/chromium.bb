@@ -11,7 +11,7 @@ var ROOT_PATH = '../../../../../';
 
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
-GEN('#include "base/command_line.h"');
+GEN('#include "chrome/common/chrome_features.h"');
 
 function MaterialBookmarksFocusTest() {}
 
@@ -20,8 +20,7 @@ MaterialBookmarksFocusTest.prototype = {
 
   browsePreload: 'chrome://bookmarks',
 
-  commandLineSwitches:
-      [{switchName: 'enable-features', switchValue: 'MaterialDesignBookmarks'}],
+  featureList: ['features::kMaterialDesignBookmarks', ''],
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_command_manager.js',

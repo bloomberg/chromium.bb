@@ -12,6 +12,7 @@ GEN_INCLUDE([
   ROOT_PATH + 'chrome/test/data/webui/a11y/accessibility_test.js',
   ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js',
 ]);
+GEN('#include "chrome/common/chrome_features.h"');
 
 /**
  * Test fixture for Accessibility of Chrome Extensions.
@@ -25,11 +26,8 @@ var ExtensionsA11yTestFixture = class extends PolymerTest {
   }
 
   /** @override */
-  get commandLineSwitches() {
-    return [{
-      switchName: 'enable-features',
-      switchValue: 'MaterialDesignExtensions',
-    }];
+  get featureList() {
+    return ['features::kMaterialDesignExtensions', ''];
   }
 
   // Include files that define the mocha tests.

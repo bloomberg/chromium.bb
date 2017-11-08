@@ -6,6 +6,7 @@
  * @fileoverview Test suite for the SysInternals WebUI. (CrOS only)
  */
 const ROOT_PATH = '../../../../../';
+GEN('#include "chrome/common/chrome_features.h"');
 
 /* Set up this global variable to disable sending the update request. */
 DONT_SEND_UPDATE_REQUEST = true;
@@ -21,8 +22,8 @@ SysInternalsBrowserTest.prototype = {
 
   isAsync: true,
 
-  commandLineSwitches:
-      [{switchName: 'enable-features', switchValue: 'SysInternals'}],
+  featureList:
+      ['features::kSysInternals', ''],
 
   extraLibraries: [
     'api_test.js',
