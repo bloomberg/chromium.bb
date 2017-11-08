@@ -39,6 +39,16 @@ void TopSitesCache::SetThumbnails(const URLToImagesMap& images) {
   images_ = images;
 }
 
+void TopSitesCache::ClearUnreferencedThumbnails() {
+  URLToImagesMap images_to_keep;
+  for (const std::pair<GURL, Images>& entry : images_) {
+    if (IsKnownURL(entry.first)) {
+      images_to_keep.insert(entry);
+    }
+  }
+  images_ = std::move(images_to_keep);
+}
+
 Images* TopSitesCache::GetImage(const GURL& url) {
   return &images_[GetCanonicalURL(url)];
 }
