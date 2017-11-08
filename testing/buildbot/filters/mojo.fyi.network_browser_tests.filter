@@ -2,6 +2,8 @@
 # See https://crbug.com/769401
 
 # Crashed tests that haven't been categorized.
+-DicePrepareMigrationBrowserTest.Signin
+-DicePrepareMigrationBrowserTest.Signout
 -ExtensionsA11yTestFixture.BASIC_EXTENSIONS_region
 -WebViewTests/WebViewSurfaceSynchronizationTest.AutosizeBeforeNavigation/0
 -WebViewTests/WebViewSurfaceSynchronizationTest.AutosizeBeforeNavigation/1
@@ -2004,6 +2006,7 @@
 -SBNavigationObserverBrowserTest.TypeInURLDownload
 -SBNavigationObserverBrowserTest.VerifySanitizeReferrerChain
 -SBNavigationObserverBrowserTest.WindowLocationRedirect
+-SSLUITestCommittedInterstitials.ErrorPage
 -SSLUITest.BadCertFollowedByGoodCert
 -SSLUITest.DisplayedContentWithCertErrorsClearedOnNavigation
 -SSLUITest.TestBadHTTPSDownload
