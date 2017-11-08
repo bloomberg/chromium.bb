@@ -61,8 +61,7 @@ class NET_EXPORT TransportSecurityPersister
   TransportSecurityPersister(
       TransportSecurityState* state,
       const base::FilePath& profile_path,
-      const scoped_refptr<base::SequencedTaskRunner>& background_runner,
-      bool readonly);
+      const scoped_refptr<base::SequencedTaskRunner>& background_runner);
   ~TransportSecurityPersister() override;
 
   // Called by the TransportSecurityState when it changes its state.
@@ -136,9 +135,6 @@ class NET_EXPORT TransportSecurityPersister
 
   scoped_refptr<base::SequencedTaskRunner> foreground_runner_;
   scoped_refptr<base::SequencedTaskRunner> background_runner_;
-
-  // Whether or not we're in read-only mode.
-  const bool readonly_;
 
   base::WeakPtrFactory<TransportSecurityPersister> weak_ptr_factory_;
 

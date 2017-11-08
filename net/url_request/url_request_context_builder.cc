@@ -200,7 +200,6 @@ URLRequestContextBuilder::URLRequestContextBuilder()
       http_cache_enabled_(true),
       throttling_enabled_(false),
       cookie_store_set_by_client_(false),
-      transport_security_persister_readonly_(false),
       net_log_(nullptr),
       shared_host_resolver_(nullptr),
       pac_quick_check_enabled_(true),
@@ -466,8 +465,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     context->set_transport_security_persister(
         std::make_unique<TransportSecurityPersister>(
             context->transport_security_state(),
-            transport_security_persister_path_, task_runner,
-            transport_security_persister_readonly_));
+            transport_security_persister_path_, task_runner));
   }
 
   if (http_server_properties_) {

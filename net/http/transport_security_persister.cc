@@ -289,13 +289,11 @@ bool DeserializeExpectCTState(const base::DictionaryValue* parsed,
 TransportSecurityPersister::TransportSecurityPersister(
     TransportSecurityState* state,
     const base::FilePath& profile_path,
-    const scoped_refptr<base::SequencedTaskRunner>& background_runner,
-    bool readonly)
+    const scoped_refptr<base::SequencedTaskRunner>& background_runner)
     : transport_security_state_(state),
       writer_(profile_path.AppendASCII("TransportSecurity"), background_runner),
       foreground_runner_(base::ThreadTaskRunnerHandle::Get()),
       background_runner_(background_runner),
-      readonly_(readonly),
       weak_ptr_factory_(this) {
   transport_security_state_->SetDelegate(this);
 
@@ -319,8 +317,7 @@ void TransportSecurityPersister::StateIsDirty(TransportSecurityState* state) {
   DCHECK(foreground_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(transport_security_state_, state);
 
-  if (!readonly_)
-    writer_.ScheduleWrite(this);
+  writer_.ScheduleWrite(this);
 }
 
 bool TransportSecurityPersister::SerializeData(std::string* output) {

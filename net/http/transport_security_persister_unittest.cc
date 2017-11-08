@@ -38,9 +38,8 @@ class TransportSecurityPersisterTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(base::MessageLoopForIO::IsCurrent());
-    persister_.reset(new TransportSecurityPersister(
-        &state_, temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get(),
-        false));
+    persister_ = std::make_unique<TransportSecurityPersister>(
+        &state_, temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get());
   }
 
  protected:

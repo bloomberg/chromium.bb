@@ -357,12 +357,14 @@ void ChromeBrowserStateIOData::Init(
       std::move(profile_params_->proxy_config_service),
       true /* quick_check_enabled */);
   transport_security_state_.reset(new net::TransportSecurityState());
-  transport_security_persister_.reset(new net::TransportSecurityPersister(
-      transport_security_state_.get(), profile_params_->path,
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
-      IsOffTheRecord()));
+  if (!IsOffTheRecord()) {
+    transport_security_persister_ =
+        std::make_unique<net::TransportSecurityPersister>(
+            transport_security_state_.get(), profile_params_->path,
+            base::CreateSequencedTaskRunnerWithTraits(
+                {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                 base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
+  }
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("domain_security_policy", R"(
