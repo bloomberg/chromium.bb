@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/payment_currency_amount.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_details_modifier.h"
@@ -17,46 +16,6 @@
 
 namespace payments {
 namespace {
-
-// Returns the card type associated with the given BasicCardType.
-autofill::CreditCard::CardType GetBasicCardType(
-    const mojom::BasicCardType& type) {
-  switch (type) {
-    case mojom::BasicCardType::CREDIT:
-      return autofill::CreditCard::CARD_TYPE_CREDIT;
-    case mojom::BasicCardType::DEBIT:
-      return autofill::CreditCard::CARD_TYPE_DEBIT;
-    case mojom::BasicCardType::PREPAID:
-      return autofill::CreditCard::CARD_TYPE_PREPAID;
-  }
-  NOTREACHED();
-  return autofill::CreditCard::CARD_TYPE_UNKNOWN;
-}
-
-// Returns the card network name associated with a given BasicCardNetwork. Names
-// are inspired by https://www.w3.org/Payments/card-network-ids.
-std::string GetBasicCardNetworkName(const mojom::BasicCardNetwork& network) {
-  switch (network) {
-    case mojom::BasicCardNetwork::AMEX:
-      return "amex";
-    case mojom::BasicCardNetwork::DINERS:
-      return "diners";
-    case mojom::BasicCardNetwork::DISCOVER:
-      return "discover";
-    case mojom::BasicCardNetwork::JCB:
-      return "jcb";
-    case mojom::BasicCardNetwork::MASTERCARD:
-      return "mastercard";
-    case mojom::BasicCardNetwork::MIR:
-      return "mir";
-    case mojom::BasicCardNetwork::UNIONPAY:
-      return "unionpay";
-    case mojom::BasicCardNetwork::VISA:
-      return "visa";
-  }
-  NOTREACHED();
-  return std::string();
-}
 
 PaymentCurrencyAmount ConvertPaymentCurrencyAmount(
     const mojom::PaymentCurrencyAmountPtr& amount_entry) {
@@ -108,6 +67,43 @@ PaymentShippingOption ConvertPaymentShippingOption(
 }
 
 }  // namespace
+
+autofill::CreditCard::CardType GetBasicCardType(
+    const mojom::BasicCardType& type) {
+  switch (type) {
+    case mojom::BasicCardType::CREDIT:
+      return autofill::CreditCard::CARD_TYPE_CREDIT;
+    case mojom::BasicCardType::DEBIT:
+      return autofill::CreditCard::CARD_TYPE_DEBIT;
+    case mojom::BasicCardType::PREPAID:
+      return autofill::CreditCard::CARD_TYPE_PREPAID;
+  }
+  NOTREACHED();
+  return autofill::CreditCard::CARD_TYPE_UNKNOWN;
+}
+
+std::string GetBasicCardNetworkName(const mojom::BasicCardNetwork& network) {
+  switch (network) {
+    case mojom::BasicCardNetwork::AMEX:
+      return "amex";
+    case mojom::BasicCardNetwork::DINERS:
+      return "diners";
+    case mojom::BasicCardNetwork::DISCOVER:
+      return "discover";
+    case mojom::BasicCardNetwork::JCB:
+      return "jcb";
+    case mojom::BasicCardNetwork::MASTERCARD:
+      return "mastercard";
+    case mojom::BasicCardNetwork::MIR:
+      return "mir";
+    case mojom::BasicCardNetwork::UNIONPAY:
+      return "unionpay";
+    case mojom::BasicCardNetwork::VISA:
+      return "visa";
+  }
+  NOTREACHED();
+  return std::string();
+}
 
 PaymentMethodData ConvertPaymentMethodData(
     const mojom::PaymentMethodDataPtr& method_data_entry) {

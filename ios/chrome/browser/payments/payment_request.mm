@@ -301,23 +301,25 @@ const PaymentDetailsModifier* PaymentRequest::GetApplicableModifier(
   }
 
   for (const auto& modifier : web_payment_request_.details.modifiers) {
-    std::vector<std::string> supported_networks;
-    std::set<autofill::CreditCard::CardType> supported_types;
+    std::set<std::string> supported_card_networks_set;
+    std::set<autofill::CreditCard::CardType> supported_card_types_set;
     // The following 4 variables are unused.
     std::set<std::string> unused_basic_card_specified_networks;
-    std::set<std::string> unused_supported_card_networks_set;
+    std::vector<std::string> unused_supported_card_networks;
     std::vector<GURL> unused_url_payment_method_identifiers;
     std::set<std::string> unused_payment_method_identifiers;
-    PopulateValidatedMethodData({modifier.method_data}, &supported_networks,
-                                &unused_basic_card_specified_networks,
-                                &unused_supported_card_networks_set,
-                                &supported_types,
-                                &unused_url_payment_method_identifiers,
-                                &unused_payment_method_identifiers);
+    PopulateValidatedMethodData(
+        {modifier.method_data}, &unused_supported_card_networks,
+        &unused_basic_card_specified_networks, &supported_card_networks_set,
+        &supported_card_types_set, &unused_url_payment_method_identifiers,
+        &unused_payment_method_identifiers);
 
     if (selected_instrument->IsValidForModifier(
-            modifier.method_data.supported_methods, supported_networks,
-            supported_types, !modifier.method_data.supported_types.empty())) {
+            modifier.method_data.supported_methods,
+            !modifier.method_data.supported_networks.empty(),
+            supported_card_networks_set,
+            !modifier.method_data.supported_types.empty(),
+            supported_card_types_set)) {
       return &modifier;
     }
   }

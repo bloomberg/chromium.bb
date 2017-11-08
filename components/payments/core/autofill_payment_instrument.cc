@@ -124,42 +124,41 @@ base::string16 AutofillPaymentInstrument::GetSublabel() const {
 }
 
 bool AutofillPaymentInstrument::IsValidForModifier(
-    const std::vector<std::string>& method,
-    const std::vector<std::string>& supported_networks,
-    const std::set<autofill::CreditCard::CardType>& supported_types,
-    bool supported_types_specified) const {
+    const std::vector<std::string>& methods,
+    bool supported_networks_specified,
+    const std::set<std::string>& supported_networks,
+    bool supported_types_specified,
+    const std::set<autofill::CreditCard::CardType>& supported_types) const {
   // This instrument only matches basic-card.
-  if (std::find(method.begin(), method.end(), "basic-card") == method.end())
+  if (std::find(methods.begin(), methods.end(), "basic-card") == methods.end())
     return false;
 
   // If supported_types is not specified and this instrument matches the method,
   // the modifier is applicable. If supported_types is populated, it must
   // contain this card's type to be applicable. The same is true for
   // supported_networks.
-  bool is_supported_type =
-      std::find(supported_types.begin(), supported_types.end(),
-                credit_card_.card_type()) != supported_types.end();
+  if (supported_types_specified) {
+    // supported_types may contain CARD_TYPE_UNKNOWN because of the parsing
+    // function so the local card only matches if it's because the website
+    // didn't specify types (meaning they don't care).
+    if (credit_card_.card_type() ==
+        autofill::CreditCard::CardType::CARD_TYPE_UNKNOWN) {
+      return false;
+    }
 
-  // supported_types may contain CARD_TYPE_UNKNOWN because of the parsing
-  // function so the local card only matches if it's because the website didn't
-  // specify types (meaning they don't care).
-  if (is_supported_type &&
-      credit_card_.card_type() ==
-          autofill::CreditCard::CardType::CARD_TYPE_UNKNOWN &&
-      supported_types_specified)
-    return false;
+    if (supported_types.find(credit_card_.card_type()) == supported_types.end())
+      return false;
+  }
 
-  bool is_supported_network = supported_networks.empty();
-  if (!is_supported_network) {
+  if (supported_networks_specified) {
     std::string basic_card_network =
         autofill::data_util::GetPaymentRequestData(credit_card_.network())
             .basic_card_issuer_network;
-    is_supported_network =
-        std::find(supported_networks.begin(), supported_networks.end(),
-                  basic_card_network) != supported_networks.end();
+    if (supported_networks.find(basic_card_network) == supported_networks.end())
+      return false;
   }
 
-  return is_supported_type && is_supported_network;
+  return true;
 }
 
 void AutofillPaymentInstrument::OnFullCardRequestSucceeded(

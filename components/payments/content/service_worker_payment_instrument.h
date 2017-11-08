@@ -34,11 +34,12 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   void RecordUse() override;
   base::string16 GetLabel() const override;
   base::string16 GetSublabel() const override;
-  bool IsValidForModifier(
-      const std::vector<std::string>& method,
-      const std::vector<std::string>& supported_networks,
-      const std::set<autofill::CreditCard::CardType>& supported_types,
-      bool supported_types_specified) const override;
+  bool IsValidForModifier(const std::vector<std::string>& methods,
+                          bool supported_networks_specified,
+                          const std::set<std::string>& supported_networks,
+                          bool supported_types_specified,
+                          const std::set<autofill::CreditCard::CardType>&
+                              supported_types) const override;
   const gfx::ImageSkia* icon_image_skia() const override;
 
  private:
