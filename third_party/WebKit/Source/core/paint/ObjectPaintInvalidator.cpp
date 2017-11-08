@@ -141,22 +141,24 @@ DISABLE_CFI_PERF
 void ObjectPaintInvalidator::InvalidatePaintOfPreviousVisualRect(
     const LayoutBoxModelObject& paint_invalidation_container,
     PaintInvalidationReason reason) {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   // It's caller's responsibility to ensure enclosingSelfPaintingLayer's
   // needsRepaint is set.  Don't set the flag here because getting
   // enclosingSelfPaintLayer has cost and the caller can use various ways (e.g.
   // PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
   DCHECK(!object_.PaintingLayer() || object_.PaintingLayer()->NeedsRepaint());
 
-  // These disablers are valid because we want to use the current
-  // compositing/invalidation status.
-  DisablePaintInvalidationStateAsserts invalidation_disabler;
-  DisableCompositingQueryAsserts compositing_disabler;
+  // For SPv175, raster invalidation will be issued after painting.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    // These disablers are valid because we want to use the current
+    // compositing/invalidation status.
+    DisablePaintInvalidationStateAsserts invalidation_disabler;
+    DisableCompositingQueryAsserts compositing_disabler;
 
-  LayoutRect invalidation_rect = object_.FragmentsVisualRectBoundingBox();
-  InvalidatePaintUsingContainer(paint_invalidation_container, invalidation_rect,
-                                reason);
-  object_.InvalidateDisplayItemClients(reason);
+    LayoutRect invalidation_rect = object_.FragmentsVisualRectBoundingBox();
+    InvalidatePaintUsingContainer(paint_invalidation_container,
+                                  invalidation_rect, reason);
+    object_.InvalidateDisplayItemClients(reason);
+  }
 
   // This method may be used to invalidate paint of an object changing paint
   // invalidation container.  Clear previous visual rect on the original paint
@@ -176,9 +178,6 @@ void ObjectPaintInvalidator::
   TraverseNonCompositingDescendantsInPaintOrder(
       object_, [&paint_invalidation_container](const LayoutObject& object) {
         SetPaintingLayerNeedsRepaintDuringTraverse(object);
-        // For SPv175, raster invalidation will be issued after painting.
-        if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-          return;
         ObjectPaintInvalidator(object).InvalidatePaintOfPreviousVisualRect(
             paint_invalidation_container, PaintInvalidationReason::kSubtree);
       });
@@ -202,7 +201,6 @@ void ObjectPaintInvalidator::
 void ObjectPaintInvalidator::
     InvalidatePaintIncludingNonSelfPaintingLayerDescendants(
         const LayoutBoxModelObject& paint_invalidation_container) {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
   SlowSetPaintingLayerNeedsRepaint();
   InvalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
       paint_invalidation_container);

@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [158, 74, 50, 50],
-          "reason": "geometry"
+          "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [100, 74, 50, 50],
-          "reason": "geometry"
+          "reason": "style change"
         }
       ]
     }
@@ -26,7 +26,7 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "geometry"
+      "reason": "style change"
     }
   ]
 }

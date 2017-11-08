@@ -62,95 +62,95 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='box'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "RootInlineBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutInline (relative positioned) SPAN id='child'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'A B C'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'D E F'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'G H I'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'J K L'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'M N O'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'P Q R'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'S T U'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'V W X'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "InlineTextBox 'Y Z'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "geometry"
+      "reason": "style change"
     }
   ]
 }

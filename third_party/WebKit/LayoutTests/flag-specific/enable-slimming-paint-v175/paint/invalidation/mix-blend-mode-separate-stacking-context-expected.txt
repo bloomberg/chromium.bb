@@ -80,6 +80,10 @@
     {
       "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='fourth'",
       "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV",
+      "reason": "style change"
     }
   ]
 }

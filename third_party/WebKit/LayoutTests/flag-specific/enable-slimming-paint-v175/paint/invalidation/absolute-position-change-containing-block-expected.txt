@@ -29,11 +29,11 @@
     },
     {
       "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
-      "reason": "geometry"
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "geometry"
+      "reason": "style change"
     }
   ]
 }
