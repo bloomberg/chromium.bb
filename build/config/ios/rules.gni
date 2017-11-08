@@ -169,6 +169,16 @@ template("lipo_binary") {
 #       entitlements (must generate a single file as output); cannot be
 #       defined if entitlements_path is set.
 #
+#   disable_entitlements
+#       (optional, defaults to false) boolean, control whether entitlements willi
+#       be embedded in the application during signature. If false and no
+#       entitlements are provided, default empty entitlements will be used.
+#
+#   disable_embedded_mobileprovision
+#       (optional, default to false) boolean, control whether mobile provisions
+#       will be embedded in the bundle. If true, the existing
+#       embedded.mobileprovision will be deleted.
+#
 #   xcode_extra_attributes
 #       (optional) scope, extra attributes for Xcode projects.
 #
@@ -231,19 +241,31 @@ template("create_signed_bundle") {
 
   _bundle_extension = invoker.bundle_extension
 
-  if (!defined(invoker.entitlements_target)) {
-    _entitlements_path = "//build/config/ios/entitlements.plist"
-    if (defined(invoker.entitlements_path)) {
-      _entitlements_path = invoker.entitlements_path
-    }
-  } else {
-    assert(!defined(invoker.entitlements_path),
-           "Cannot define both entitlements_path and entitlements_target " +
-               "for $target_name")
+  _enable_embedded_mobileprovision = true
+  if (defined(invoker.disable_embedded_mobileprovision)) {
+    _enable_embedded_mobileprovision = !invoker.disable_embedded_mobileprovision
+  }
 
-    _entitlements_target_outputs =
-        get_target_outputs(invoker.entitlements_target)
-    _entitlements_path = _entitlements_target_outputs[0]
+  _enable_entitlements = true
+  if (defined(invoker.disable_entitlements)) {
+    _enable_entitlements = !invoker.disable_entitlements
+  }
+
+  if (_enable_entitlements) {
+    if (!defined(invoker.entitlements_target)) {
+      _entitlements_path = "//build/config/ios/entitlements.plist"
+      if (defined(invoker.entitlements_path)) {
+        _entitlements_path = invoker.entitlements_path
+      }
+    } else {
+      assert(!defined(invoker.entitlements_path),
+             "Cannot define both entitlements_path and entitlements_target " +
+                 "for $target_name")
+
+      _entitlements_target_outputs =
+          get_target_outputs(invoker.entitlements_target)
+      _entitlements_path = _entitlements_target_outputs[0]
+    }
   }
 
   _enable_code_signing = ios_enable_code_signing
@@ -287,24 +309,25 @@ template("create_signed_bundle") {
       }
       deps += invoker.bundle_deps
     }
-    if (defined(invoker.entitlements_target)) {
-      if (!defined(deps)) {
-        deps = []
-      }
-      deps += [ invoker.entitlements_target ]
+    if (!defined(deps)) {
+      deps = []
     }
 
     code_signing_script = "//build/config/ios/codesign.py"
-    code_signing_sources = [
-      _entitlements_path,
-      _bundle_binary_path,
-    ]
+    code_signing_sources = [ _bundle_binary_path ]
+    if (_enable_entitlements) {
+      if (defined(invoker.entitlements_target)) {
+        deps += [ invoker.entitlements_target ]
+      }
+      code_signing_sources += [ _entitlements_path ]
+    }
     code_signing_outputs = [ "$bundle_contents_dir/$_output_name" ]
     if (_enable_code_signing) {
       code_signing_outputs +=
           [ "$bundle_contents_dir/_CodeSignature/CodeResources" ]
     }
-    if (ios_code_signing_identity != "" && !use_ios_simulator) {
+    if (ios_code_signing_identity != "" && !use_ios_simulator &&
+        _enable_embedded_mobileprovision) {
       code_signing_outputs +=
           [ "$bundle_contents_dir/embedded.mobileprovision" ]
     }
@@ -327,10 +350,16 @@ template("create_signed_bundle") {
       "code-sign-bundle",
       "-t=" + ios_sdk_name,
       "-i=" + ios_code_signing_identity,
-      "-e=" + rebase_path(_entitlements_path, root_build_dir),
       "-b=" + rebase_path(_bundle_binary_path, root_build_dir),
-      rebase_path(bundle_root_dir, root_build_dir),
     ]
+    if (_enable_entitlements) {
+      code_signing_args +=
+          [ "-e=" + rebase_path(_entitlements_path, root_build_dir) ]
+    }
+    if (!_enable_embedded_mobileprovision) {
+      code_signing_args += [ "--disable-embedded-mobileprovision" ]
+    }
+    code_signing_args += [ rebase_path(bundle_root_dir, root_build_dir) ]
     if (!_enable_code_signing) {
       code_signing_args += [ "--disable-code-signature" ]
     }
@@ -1428,6 +1457,12 @@ template("ios_framework_bundle") {
       output_name = _output_name
       bundle_binary_target = ":$_lipo_shared_library_target"
       bundle_binary_output = _output_name
+
+      # Framework do not have entitlements nor mobileprovision because they use
+      # the one from the bundle using them (.app or .appex) as they are just
+      # dynamic library with shared code.
+      disable_entitlements = true
+      disable_embedded_mobileprovision = true
 
       if (!defined(deps)) {
         deps = []

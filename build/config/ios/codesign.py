@@ -334,6 +334,10 @@ class CodeSignBundleAction(Action):
         '--disable-code-signature', action='store_true', dest='no_signature',
         help='disable code signature')
     parser.add_argument(
+        '--disable-embedded-mobileprovision', action='store_false',
+        default=True, dest='embedded_mobileprovision',
+        help='disable finding and embedding mobileprovision')
+    parser.add_argument(
         '--platform', '-t', required=True,
         help='platform the signed bundle is targeting')
     parser.add_argument(
@@ -410,22 +414,25 @@ class CodeSignBundleAction(Action):
 
     codesign_extra_args = []
 
-    # Find mobile provisioning profile and embeds it into the bundle (if a code
-    # signing identify has been provided, fails if no valid mobile provisioning
-    # is found).
-    provisioning_profile_required = args.identity != '-'
-    provisioning_profile = FindProvisioningProfile(
-        bundle.identifier, provisioning_profile_required)
-    if provisioning_profile and args.platform != 'iphonesimulator':
-      provisioning_profile.Install(embedded_provisioning_profile)
+    if args.embedded_mobileprovision:
+      # Find mobile provisioning profile and embeds it into the bundle (if a
+      # code signing identify has been provided, fails if no valid mobile
+      # provisioning is found).
+      provisioning_profile_required = args.identity != '-'
+      provisioning_profile = FindProvisioningProfile(
+          bundle.identifier, provisioning_profile_required)
+      if provisioning_profile and args.platform != 'iphonesimulator':
+        provisioning_profile.Install(embedded_provisioning_profile)
 
-      temporary_entitlements_file = tempfile.NamedTemporaryFile(suffix='.xcent')
-      codesign_extra_args.extend(
-          ['--entitlements', temporary_entitlements_file.name])
+        if args.entitlements_path is not None:
+          temporary_entitlements_file = \
+              tempfile.NamedTemporaryFile(suffix='.xcent')
+          codesign_extra_args.extend(
+              ['--entitlements', temporary_entitlements_file.name])
 
-      entitlements = GenerateEntitlements(
-          args.entitlements_path, provisioning_profile, bundle.identifier)
-      entitlements.WriteTo(temporary_entitlements_file.name)
+          entitlements = GenerateEntitlements(
+              args.entitlements_path, provisioning_profile, bundle.identifier)
+          entitlements.WriteTo(temporary_entitlements_file.name)
 
     CodeSignBundle(bundle.path, args.identity, codesign_extra_args)
 
