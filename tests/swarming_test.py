@@ -171,22 +171,20 @@ class SwarmingServerHandler(httpserver_mock.MockHandler):
 
   def do_GET(self):
     logging.info('S GET %s', self.path)
-    if self.path in ('/on/load', '/on/quit'):
-      self._octet_stream('')
-    elif self.path == '/auth/api/v1/server/oauth_config':
-      self._json({
+    if self.path == '/auth/api/v1/server/oauth_config':
+      self.send_json({
           'client_id': 'c',
           'client_not_so_secret': 's',
           'primary_url': self.server.url})
     elif self.path == '/auth/api/v1/accounts/self':
-      self._json({'identity': 'user:joe', 'xsrf_token': 'foo'})
+      self.send_json({'identity': 'user:joe', 'xsrf_token': 'foo'})
     else:
       m = re.match(r'/api/swarming/v1/task/(\d+)/request', self.path)
       if m:
         logging.info('%s', m.group(1))
-        self._json(self.server.tasks[int(m.group(1))])
+        self.send_json(self.server.tasks[int(m.group(1))])
       else:
-        self._json( {'a': 'b'})
+        self.send_json( {'a': 'b'})
         #raise NotImplementedError(self.path)
 
   def do_POST(self):
@@ -267,10 +265,8 @@ class TestIsolated(auto_stub.TestCase, Common):
 
   def tearDown(self):
     try:
-      self._isolate.close_start()
-      self._swarming.close_start()
-      self._isolate.close_end()
-      self._swarming.close_end()
+      self._isolate.close()
+      self._swarming.close()
     finally:
       Common.tearDown(self)
       auto_stub.TestCase.tearDown(self)

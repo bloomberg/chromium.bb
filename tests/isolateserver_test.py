@@ -812,9 +812,8 @@ class IsolateServerStorageSmokeTest(unittest.TestCase):
 
   def tearDown(self):
     try:
-      self.server.close_start()
       file_path.rmtree(self.tempdir)
-      self.server.close_end()
+      self.server.close()
     finally:
       super(IsolateServerStorageSmokeTest, self).tearDown()
 

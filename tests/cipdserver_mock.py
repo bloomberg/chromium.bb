@@ -15,15 +15,13 @@ class CipdServerHandler(httpserver_mock.MockHandler):
 
   def do_GET(self):
     logging.info('GET %s', self.path)
-    if self.path in ('/on/load', '/on/quit'):
-      self._octet_stream('')
-    elif self.path == '/auth/api/v1/server/oauth_config':
-      self._json({
+    if self.path == '/auth/api/v1/server/oauth_config':
+      self.send_json({
         'client_id': 'c',
         'client_not_so_secret': 's',
         'primary_url': self.server.url})
     elif self.path.startswith('/_ah/api/repo/v1/instance/resolve?'):
-      self._json({
+      self.send_json({
         'status': 'SUCCESS',
         'instance_id': 'a' * 40,
       })
@@ -31,17 +29,17 @@ class CipdServerHandler(httpserver_mock.MockHandler):
       qs = urlparse.parse_qs(urlparse.urlparse(self.path).query)
       pkg_name = qs.get('package_name', [])
       if not pkg_name:
-        self._json({
+        self.send_json({
           'status': 'FAILED',
           'error_message': 'package_name not specified',
         })
       if '$' in pkg_name[0]:
-        self._json({
+        self.send_json({
           'status': 'FAILED',
           'error_message': 'unknown package %r' % pkg_name[0],
         })
       else:
-        self._json({
+        self.send_json({
           'status': 'SUCCESS',
           'client_binary': {
             'fetch_url': self.server.url + '/fake_google_storage/cipd_client',
@@ -50,7 +48,7 @@ class CipdServerHandler(httpserver_mock.MockHandler):
     elif self.path == '/fake_google_storage/cipd_client':
       # The content is not actually used because run_isolated_test.py
       # mocks popen.
-      self._octet_stream('#!/usr/sh\n')
+      self.send_octet_stream('#!/usr/sh\n')
     else:
       raise NotImplementedError(self.path)
 

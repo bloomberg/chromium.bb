@@ -66,27 +66,25 @@ class IsolateServerHandler(httpserver_mock.MockHandler):
     if namespace not in self.server.contents:
       self.server.contents[namespace] = {}
     self.server.contents[namespace][embedded['d']] = content
-    self._json({'ok': True})
+    self.send_json({'ok': True})
 
   ### Mocked HTTP Methods
 
   def do_GET(self):
     logging.info('GET %s', self.path)
-    if self.path in ('/on/load', '/on/quit'):
-      self._octet_stream('')
-    elif self.path == '/auth/api/v1/server/oauth_config':
-      self._json({
+    if self.path == '/auth/api/v1/server/oauth_config':
+      self.send_json({
           'client_id': 'c',
           'client_not_so_secret': 's',
           'primary_url': self.server.url})
     elif self.path == '/auth/api/v1/accounts/self':
-      self._json({'identity': 'user:joe', 'xsrf_token': 'foo'})
+      self.send_json({'identity': 'user:joe', 'xsrf_token': 'foo'})
     else:
       raise NotImplementedError(self.path)
 
   def do_POST(self):
     logging.info('POST %s', self.path)
-    body = self._read_body()
+    body = self.read_body()
     if self.path.startswith('/api/isolateservice/v1/preupload'):
       response = {'items': []}
       def append_entry(entry, index, li):
@@ -114,7 +112,7 @@ class IsolateServerHandler(httpserver_mock.MockHandler):
             's': i['size'],
         }, index, response['items'])
       logging.info('Returning %s' % response)
-      self._json(response)
+      self.send_json(response)
     elif self.path.startswith('/api/isolateservice/v1/store_inline'):
       self._storage_helper(body)
     elif self.path.startswith('/api/isolateservice/v1/finalize_gs_upload'):
@@ -126,22 +124,22 @@ class IsolateServerHandler(httpserver_mock.MockHandler):
       if data is None:
         logging.error(
             'Failed to retrieve %s / %s', namespace, request['digest'])
-      self._json({'content': data})
+      self.send_json({'content': data})
     elif self.path.startswith('/api/isolateservice/v1/server_details'):
-      self._json({'server_version': 'such a good version'})
+      self.send_json({'server_version': 'such a good version'})
     else:
       raise NotImplementedError(self.path)
 
   def do_PUT(self):
     if self.server.discard_content:
       body = '<skipped>'
-      self._drop_body()
+      self.drop_body()
     else:
-      body = self._read_body()
+      body = self.read_body()
     if self.path.startswith('/FAKE_GCS/'):
       namespace, h = self.path[len('/FAKE_GCS/'):].split('/', 1)
       self.server.contents.setdefault(namespace, {})[h] = body
-      self._octet_stream('')
+      self.send_octet_stream('')
     else:
       raise NotImplementedError(self.path)
 

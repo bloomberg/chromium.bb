@@ -122,13 +122,20 @@ class RunIsolatedTestBase(auto_stub.TestCase):
         logging_utils.OptionParserWithLogging, 'logger_root',
         logging.Logger('unittest'))
 
-    self.cipd_server = cipdserver_mock.MockCipdServer()
+    self._cipd_server = None  # initialized lazily
 
   def tearDown(self):
     # Remove mocks.
     super(RunIsolatedTestBase, self).tearDown()
     file_path.rmtree(self.tempdir)
-    self.cipd_server.close()
+    if self._cipd_server:
+      self._cipd_server.close()
+
+  @property
+  def cipd_server(self):
+    if not self._cipd_server:
+      self._cipd_server = cipdserver_mock.MockCipdServer()
+    return self._cipd_server
 
   @property
   def run_test_temp_dir(self):
