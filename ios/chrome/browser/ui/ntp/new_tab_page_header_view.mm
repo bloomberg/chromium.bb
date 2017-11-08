@@ -217,12 +217,16 @@
   return nil;
 }
 
-- (UIView*)snapshotForStackViewWithWidth:(CGFloat)width {
+- (UIView*)snapshotForStackViewWithWidth:(CGFloat)width
+                          safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   UIView* toolbar = _toolbarController.view;
   CGRect oldFrame = toolbar.frame;
   CGRect newFrame = oldFrame;
   newFrame.size.width = width;
+
   toolbar.frame = newFrame;
+  [_toolbarController activateFakeSafeAreaInsets:safeAreaInsets];
+
   UIView* toolbarSnapshotView;
   if ([toolbar window]) {
     // Take a snapshot only if it has been added to the view hierarchy.
@@ -232,7 +236,10 @@
     [toolbarSnapshotView layer].contents = static_cast<id>(
         CaptureViewWithOption(toolbar, 0, kClientSideRendering).CGImage);
   }
+
   toolbar.frame = oldFrame;
+  [_toolbarController deactivateFakeSafeAreaInsets];
+
   return toolbarSnapshotView;
 }
 
