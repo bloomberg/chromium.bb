@@ -138,29 +138,6 @@ class AutofillField : public FormFieldData {
     return username_vote_type_;
   }
 
-  // Set |field_data|'s value to |value|. Uses |field|, |address_language_code|,
-  // and |app_locale| as hints when filling exceptional cases like phone number
-  // values and <select> fields. Returns |true| if the field has been filled,
-  // |false| otherwise.
-  static bool FillFormField(const AutofillField& field,
-                            const base::string16& value,
-                            const std::string& address_language_code,
-                            const std::string& app_locale,
-                            FormFieldData* field_data);
-
-  // Returns the phone number value for the given |field|. The returned value
-  // might be |number|, or could possibly be a meaningful subset |number|, if
-  // that's appropriate for the field.
-  static base::string16 GetPhoneNumberValue(const AutofillField& field,
-                                            const base::string16& number,
-                                            const FormFieldData& field_data);
-
-  // Returns the index of the shortest entry in the given select field of which
-  // |value| is a substring. Returns -1 if no such entry exists.
-  static int FindShortestSubstringMatchInSelect(const base::string16& value,
-                                                bool ignore_whitespace,
-                                                const FormFieldData* field);
-
  private:
   // Whether the heuristics or server predict a credit card field.
   bool IsCreditCardPrediction() const;
