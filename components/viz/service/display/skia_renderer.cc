@@ -17,6 +17,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -89,7 +90,7 @@ void SkiaRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("cc", "SkiaRenderer::BeginDrawingFrame");
   // Copied from GLRenderer.
   bool use_sync_query_ = false;
-  scoped_refptr<cc::ResourceProvider::Fence> read_lock_fence;
+  scoped_refptr<ResourceFence> read_lock_fence;
   // TODO(weiliangc): Implement use_sync_query_. (crbug.com/644851)
   if (use_sync_query_) {
     NOTIMPLEMENTED();
@@ -305,10 +306,10 @@ void SkiaRenderer::PrepareSurfaceForPass(
 
 bool SkiaRenderer::IsSoftwareResource(ResourceId resource_id) const {
   switch (resource_provider_->GetResourceType(resource_id)) {
-    case cc::ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER:
-    case cc::ResourceProvider::RESOURCE_TYPE_GL_TEXTURE:
+    case ResourceType::kGpuMemoryBuffer:
+    case ResourceType::kTexture:
       return false;
-    case cc::ResourceProvider::RESOURCE_TYPE_BITMAP:
+    case ResourceType::kBitmap:
       return true;
   }
 

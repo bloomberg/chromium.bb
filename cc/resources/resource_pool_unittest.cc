@@ -29,7 +29,7 @@ class ResourcePoolTest : public testing::Test {
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
-                             ResourceProvider::TEXTURE_HINT_DEFAULT,
+                             viz::ResourceTextureHint::kDefault,
                              ResourcePool::kDefaultExpirationDelay, false);
   }
 
@@ -162,7 +162,7 @@ TEST_F(ResourcePoolTest, BusyResourcesEventuallyFreed) {
   // to run.
   resource_pool_ =
       ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
-                           ResourceProvider::TEXTURE_HINT_DEFAULT,
+                           viz::ResourceTextureHint::kDefault,
                            base::TimeDelta::FromMilliseconds(10), false);
 
   // Limits high enough to not be hit by this test.
@@ -203,7 +203,7 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
   // to run.
   resource_pool_ =
       ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
-                           ResourceProvider::TEXTURE_HINT_DEFAULT,
+                           viz::ResourceTextureHint::kDefault,
                            base::TimeDelta::FromMilliseconds(100), false);
 
   // Limits high enough to not be hit by this test.
@@ -413,7 +413,7 @@ TEST_F(ResourcePoolTest, ExactRequestsRespected) {
 
   resource_pool_ =
       ResourcePool::Create(resource_provider_.get(), task_runner_.get(),
-                           ResourceProvider::TEXTURE_HINT_DEFAULT,
+                           viz::ResourceTextureHint::kDefault,
                            base::TimeDelta::FromMilliseconds(100), true);
 
   // Create unused resource with size 100x100.

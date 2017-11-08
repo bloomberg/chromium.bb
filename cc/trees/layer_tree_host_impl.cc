@@ -2463,7 +2463,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   if (!compositor_context_provider) {
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
-                             ResourceProvider::TEXTURE_HINT_DEFAULT,
+                             viz::ResourceTextureHint::kDefault,
                              ResourcePool::kDefaultExpirationDelay,
                              settings_.disallow_non_exact_resource_reuse);
 
@@ -2479,7 +2479,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
 
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
-                             ResourceProvider::TEXTURE_HINT_FRAMEBUFFER,
+                             viz::ResourceTextureHint::kFramebuffer,
                              ResourcePool::kDefaultExpirationDelay,
                              settings_.disallow_non_exact_resource_reuse);
 
@@ -2519,11 +2519,10 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     return;
   }
 
-  *resource_pool =
-      ResourcePool::Create(resource_provider_.get(), GetTaskRunner(),
-                           ResourceProvider::TEXTURE_HINT_DEFAULT,
-                           ResourcePool::kDefaultExpirationDelay,
-                           settings_.disallow_non_exact_resource_reuse);
+  *resource_pool = ResourcePool::Create(
+      resource_provider_.get(), GetTaskRunner(),
+      viz::ResourceTextureHint::kDefault, ResourcePool::kDefaultExpirationDelay,
+      settings_.disallow_non_exact_resource_reuse);
 
   const int max_copy_texture_chromium_size =
       compositor_context_provider->ContextCapabilities()
@@ -4252,7 +4251,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   }
 
   id = resource_provider_->CreateResource(
-      upload_size, ResourceProvider::TEXTURE_HINT_DEFAULT, format,
+      upload_size, viz::ResourceTextureHint::kDefault, format,
       gfx::ColorSpace::CreateSRGB());
 
   if (!scaled) {

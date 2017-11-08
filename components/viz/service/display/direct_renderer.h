@@ -132,7 +132,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   void SetScissorTestRectInDrawSpace(const gfx::Rect& draw_space_rect);
 
   static gfx::Size RenderPassTextureSize(const RenderPass* render_pass);
-  static cc::ResourceProvider::TextureHint RenderPassTextureHint(
+  static ResourceTextureHint RenderPassTextureHint(
       const RenderPass* render_pass);
 
   void FlushPolygons(

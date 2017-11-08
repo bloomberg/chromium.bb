@@ -46,12 +46,13 @@ viz::ResourceId LayerTreeResourceProvider::CreateResourceFromTextureMailbox(
   // DisplayResourceProvider::LockForRead().
   viz::ResourceId id = next_id_++;
   DCHECK(mailbox.IsValid());
-  Resource* resource = resource =
-      InsertResource(id, Resource(mailbox.size_in_pixels(), Resource::EXTERNAL,
-                                  TEXTURE_HINT_DEFAULT,
-                                  mailbox.IsTexture() ? RESOURCE_TYPE_GL_TEXTURE
-                                                      : RESOURCE_TYPE_BITMAP,
-                                  viz::RGBA_8888, mailbox.color_space()));
+  viz::internal::Resource* resource = InsertResource(
+      id, viz::internal::Resource(
+              mailbox.size_in_pixels(), viz::internal::Resource::EXTERNAL,
+              viz::ResourceTextureHint::kDefault,
+              mailbox.IsTexture() ? viz::ResourceType::kTexture
+                                  : viz::ResourceType::kBitmap,
+              viz::RGBA_8888, mailbox.color_space()));
   if (mailbox.IsTexture()) {
     GLenum filter = mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR;
     resource->filter = filter;
@@ -118,16 +119,16 @@ void LayerTreeResourceProvider::PrepareSendToParent(
 
   // This function goes through the array multiple times, store the resources
   // as pointers so we don't have to look up the resource id multiple times.
-  std::vector<Resource*> resources;
+  std::vector<viz::internal::Resource*> resources;
   resources.reserve(resource_ids.size());
   for (const viz::ResourceId id : resource_ids)
     resources.push_back(GetResource(id));
 
   // Lazily create any mailboxes and verify all unverified sync tokens.
   std::vector<GLbyte*> unverified_sync_tokens;
-  std::vector<Resource*> need_synchronization_resources;
-  for (Resource* resource : resources) {
-    if (!ResourceProvider::IsGpuResourceType(resource->type))
+  std::vector<viz::internal::Resource*> need_synchronization_resources;
+  for (viz::internal::Resource* resource : resources) {
+    if (!resource->is_gpu_resource_type())
       continue;
 
     CreateMailbox(resource);
@@ -163,8 +164,8 @@ void LayerTreeResourceProvider::PrepareSendToParent(
   }
 
   // Set sync token after verification.
-  for (Resource* resource : need_synchronization_resources) {
-    DCHECK(ResourceProvider::IsGpuResourceType(resource->type));
+  for (viz::internal::Resource* resource : need_synchronization_resources) {
+    DCHECK(resource->is_gpu_resource_type());
     resource->UpdateSyncToken(new_sync_token);
     resource->SetSynchronized();
   }
@@ -172,13 +173,14 @@ void LayerTreeResourceProvider::PrepareSendToParent(
   // Transfer Resources
   DCHECK_EQ(resources.size(), resource_ids.size());
   for (size_t i = 0; i < resources.size(); ++i) {
-    Resource* source = resources[i];
+    viz::internal::Resource* source = resources[i];
     const viz::ResourceId id = resource_ids[i];
 
     DCHECK(!settings_.delegated_sync_points_required ||
            !source->needs_sync_token());
     DCHECK(!settings_.delegated_sync_points_required ||
-           Resource::LOCALLY_USED != source->synchronization_state());
+           viz::internal::Resource::LOCALLY_USED !=
+               source->synchronization_state());
 
     viz::TransferableResource resource;
     TransferResource(source, id, &resource);
@@ -201,7 +203,7 @@ void LayerTreeResourceProvider::ReceiveReturnsFromParent(
     if (map_iterator == resources_.end())
       continue;
 
-    Resource* resource = &map_iterator->second;
+    viz::internal::Resource* resource = &map_iterator->second;
 
     CHECK_GE(resource->exported_count, returned.count);
     resource->exported_count -= returned.count;
@@ -211,7 +213,7 @@ void LayerTreeResourceProvider::ReceiveReturnsFromParent(
 
     if (returned.sync_token.HasData()) {
       DCHECK(!resource->has_shared_bitmap_id);
-      if (resource->origin == Resource::INTERNAL) {
+      if (resource->origin == viz::internal::Resource::INTERNAL) {
         DCHECK(resource->gl_id);
         gl->WaitSyncTokenCHROMIUM(returned.sync_token.GetConstData());
         resource->SetSynchronized();
@@ -231,7 +233,7 @@ void LayerTreeResourceProvider::ReceiveReturnsFromParent(
 }
 
 void LayerTreeResourceProvider::TransferResource(
-    Resource* source,
+    viz::internal::Resource* source,
     viz::ResourceId id,
     viz::TransferableResource* resource) {
   DCHECK(!source->locked_for_write);
@@ -251,7 +253,7 @@ void LayerTreeResourceProvider::TransferResource(
 #endif
   resource->color_space = source->color_space;
 
-  if (source->type == RESOURCE_TYPE_BITMAP) {
+  if (source->type == viz::ResourceType::kBitmap) {
     DCHECK(source->shared_bitmap);
     resource->mailbox_holder.mailbox = source->shared_bitmap_id;
     resource->is_software = true;
@@ -271,8 +273,9 @@ LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer ::
     ScopedWriteLockGpuMemoryBuffer(LayerTreeResourceProvider* resource_provider,
                                    viz::ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
-  Resource* resource = resource_provider->LockForWrite(resource_id);
-  DCHECK_EQ(resource->type, ResourceProvider::RESOURCE_TYPE_GPU_MEMORY_BUFFER);
+  viz::internal::Resource* resource =
+      resource_provider->LockForWrite(resource_id);
+  DCHECK_EQ(resource->type, viz::ResourceType::kGpuMemoryBuffer);
   size_ = resource->size;
   format_ = resource->format;
   usage_ = resource->usage;
@@ -282,7 +285,8 @@ LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer ::
 
 LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer::
     ~ScopedWriteLockGpuMemoryBuffer() {
-  Resource* resource = resource_provider_->GetResource(resource_id_);
+  viz::internal::Resource* resource =
+      resource_provider_->GetResource(resource_id_);
   // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
   // http://crbug.com/554541
   if (gpu_memory_buffer_) {

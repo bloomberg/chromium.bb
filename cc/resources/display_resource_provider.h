@@ -142,7 +142,9 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
   // Sets the current read fence. If a resource is locked for read
   // and has read fences enabled, the resource will not allow writes
   // until this fence has passed.
-  void SetReadLockFence(Fence* fence) { current_read_lock_fence_ = fence; }
+  void SetReadLockFence(viz::ResourceFence* fence) {
+    current_read_lock_fence_ = fence;
+  }
 
   // Creates accounting for a child. Returns a child ID.
   int CreateChild(const ReturnCallback& return_callback);
@@ -157,7 +159,7 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
   // Gets the child->parent resource ID map.
   const ResourceIdMap& GetChildToParentMap(int child) const;
 
-  // Receives resources from a child, moving them from mailboxes. Resource IDs
+  // Receives resources from a child, moving them from mailboxes. ResourceIds
   // passed are in the child namespace, and will be translated to the parent
   // namespace, added to the child->parent map.
   // This adds the resources to the working set in the ResourceProvider without
@@ -180,7 +182,7 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
  private:
   friend class ScopedBatchReturnResources;
 
-  const Resource* LockForRead(viz::ResourceId id);
+  const viz::internal::Resource* LockForRead(viz::ResourceId id);
   void UnlockForRead(viz::ResourceId id);
 
   struct Child {
@@ -202,7 +204,7 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
 
   void SetBatchReturnResources(bool aggregate);
 
-  scoped_refptr<Fence> current_read_lock_fence_;
+  scoped_refptr<viz::ResourceFence> current_read_lock_fence_;
   ChildMap children_;
   base::flat_map<viz::ResourceId, sk_sp<SkImage>> resource_sk_image_;
 

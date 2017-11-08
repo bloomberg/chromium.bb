@@ -184,7 +184,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
   struct RenderPassRequirements {
     gfx::Size size;
-    cc::ResourceProvider::TextureHint hint;
+    ResourceTextureHint hint = ResourceTextureHint::kDefault;
   };
   base::flat_map<RenderPassId, RenderPassRequirements> render_passes_in_frame;
   for (const auto& pass : render_passes_in_draw_order) {
@@ -209,7 +209,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
     }
 
     gfx::Size required_size = it->second.size;
-    cc::ResourceProvider::TextureHint required_hint = it->second.hint;
+    ResourceTextureHint required_hint = it->second.hint;
     cc::ScopedResource* texture = pair.second.get();
     DCHECK(texture);
 
@@ -680,11 +680,12 @@ gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
 }
 
 // static
-cc::ResourceProvider::TextureHint DirectRenderer::RenderPassTextureHint(
+ResourceTextureHint DirectRenderer::RenderPassTextureHint(
     const RenderPass* render_pass) {
-  return render_pass->generate_mipmap
-             ? cc::ResourceProvider::TEXTURE_HINT_MIPMAP_FRAMEBUFFER
-             : cc::ResourceProvider::TEXTURE_HINT_FRAMEBUFFER;
+  ResourceTextureHint hint = ResourceTextureHint::kFramebuffer;
+  if (render_pass->generate_mipmap)
+    hint |= ResourceTextureHint::kMipmap;
+  return hint;
 }
 
 void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {

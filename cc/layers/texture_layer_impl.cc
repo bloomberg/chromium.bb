@@ -96,10 +96,9 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
       texture_copy_->Free();
 
     if (!texture_copy_->id()) {
-      texture_copy_->Allocate(texture_mailbox_.size_in_pixels(),
-                              ResourceProvider::TEXTURE_HINT_DEFAULT,
-                              resource_provider->best_texture_format(),
-                              gfx::ColorSpace());
+      texture_copy_->Allocate(
+          texture_mailbox_.size_in_pixels(), viz::ResourceTextureHint::kDefault,
+          resource_provider->best_texture_format(), gfx::ColorSpace());
     }
 
     if (texture_copy_->id()) {

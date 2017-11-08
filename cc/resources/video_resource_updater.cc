@@ -260,7 +260,7 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
   // TODO(danakj): Abstract out hw/sw resource create/delete from
   // ResourceProvider and stop using ResourceProvider in this class.
   const viz::ResourceId resource_id = resource_provider_->CreateResource(
-      plane_size, ResourceProvider::TEXTURE_HINT_DEFAULT, format, color_space);
+      plane_size, viz::ResourceTextureHint::kDefault, format, color_space);
   DCHECK_NE(resource_id, 0u);
 
   gpu::Mailbox mailbox;

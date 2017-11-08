@@ -43,6 +43,8 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/resources/resource.h"
+#include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/service/display/draw_polygon.h"
 #include "components/viz/service/display/dynamic_geometry_binding.h"
 #include "components/viz/service/display/layer_quad.h"
@@ -302,15 +304,14 @@ class GLRenderer::SyncQuery {
   }
   virtual ~SyncQuery() { gl_->DeleteQueriesEXT(1, &query_id_); }
 
-  scoped_refptr<cc::ResourceProvider::Fence> Begin() {
+  scoped_refptr<ResourceFence> Begin() {
     DCHECK(!IsPending());
     // Invalidate weak pointer held by old fence.
     weak_ptr_factory_.InvalidateWeakPtrs();
     // Note: In case the set of drawing commands issued before End() do not
     // depend on the query, defer BeginQueryEXT call until Set() is called and
     // query is required.
-    return base::WrapRefCounted<cc::ResourceProvider::Fence>(
-        new Fence(weak_ptr_factory_.GetWeakPtr()));
+    return base::MakeRefCounted<Fence>(weak_ptr_factory_.GetWeakPtr());
   }
 
   void Set() {
@@ -354,12 +355,12 @@ class GLRenderer::SyncQuery {
   }
 
  private:
-  class Fence : public cc::ResourceProvider::Fence {
+  class Fence : public ResourceFence {
    public:
     explicit Fence(base::WeakPtr<GLRenderer::SyncQuery> query)
         : query_(query) {}
 
-    // Overridden from cc::ResourceProvider::Fence:
+    // ResourceFence implementation.
     void Set() override {
       DCHECK(query_);
       query_->Set();
@@ -535,7 +536,7 @@ void GLRenderer::ClearFramebuffer() {
 void GLRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("cc", "GLRenderer::BeginDrawingFrame");
 
-  scoped_refptr<cc::ResourceProvider::Fence> read_lock_fence;
+  scoped_refptr<ResourceFence> read_lock_fence;
   if (use_sync_query_) {
     // Block until oldest sync query has passed if the number of pending queries
     // ever reach kMaxPendingSyncQueries.
@@ -3400,8 +3401,7 @@ void GLRenderer::ScheduleRenderPassDrawQuad(
   if (!overlay_resource_pool_) {
     overlay_resource_pool_ = cc::ResourcePool::Create(
         resource_provider_, base::ThreadTaskRunnerHandle::Get().get(),
-        cc::ResourceProvider::TEXTURE_HINT_OVERLAY,
-        base::TimeDelta::FromSeconds(3),
+        ResourceTextureHint::kOverlay, base::TimeDelta::FromSeconds(3),
         settings_->disallow_non_exact_resource_reuse);
   }
 
