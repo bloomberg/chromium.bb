@@ -13,8 +13,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/hash.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
 #include "chrome/browser/browser_process.h"
@@ -80,67 +82,6 @@ HRESULT CreateActivationFactory(wchar_t const (&class_name)[size], T** object) {
       ScopedHString::Create(base::StringPiece16(class_name, size - 1));
   return base::win::RoGetActivationFactory(ref_class_name.get(),
                                            IID_PPV_ARGS(object));
-}
-
-// TODO(finnur): Make this a member function of the class and unit test it.
-// Obtain an IToastNotification interface from a given XML (provided by the
-// NotificationTemplateBuilder).
-HRESULT GetToastNotification(
-    const NotificationTemplateBuilder& notification_template_builder,
-    winui::Notifications::IToastNotification** toast_notification) {
-  *toast_notification = nullptr;
-
-  ScopedHString ref_class_name =
-      ScopedHString::Create(RuntimeClass_Windows_Data_Xml_Dom_XmlDocument);
-  mswr::ComPtr<IInspectable> inspectable;
-  HRESULT hr =
-      base::win::RoActivateInstance(ref_class_name.get(), &inspectable);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Unable to activate the XML Document";
-    return hr;
-  }
-
-  mswr::ComPtr<winxml::Dom::IXmlDocumentIO> document_io;
-  hr = inspectable.As<winxml::Dom::IXmlDocumentIO>(&document_io);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Failed to get XmlDocument as IXmlDocumentIO";
-    return hr;
-  }
-
-  base::string16 notification_template =
-      notification_template_builder.GetNotificationTemplate();
-  ScopedHString ref_template = ScopedHString::Create(notification_template);
-  hr = document_io->LoadXml(ref_template.get());
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Unable to load the template's XML into the document";
-    return hr;
-  }
-
-  mswr::ComPtr<winxml::Dom::IXmlDocument> document;
-  hr = document_io.As<winxml::Dom::IXmlDocument>(&document);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Unable to get as XMLDocument";
-    return hr;
-  }
-
-  mswr::ComPtr<winui::Notifications::IToastNotificationFactory>
-      toast_notification_factory;
-  hr = CreateActivationFactory(
-      RuntimeClass_Windows_UI_Notifications_ToastNotification,
-      toast_notification_factory.GetAddressOf());
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Unable to create the IToastNotificationFactory";
-    return hr;
-  }
-
-  hr = toast_notification_factory->CreateToastNotification(document.Get(),
-                                                           toast_notification);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Unable to create the IToastNotification";
-    return hr;
-  }
-
-  return S_OK;
 }
 
 // Perform |operation| on a notification once the profile has been loaded.
@@ -248,7 +189,7 @@ void NotificationPlatformBridgeWin::Display(
   std::unique_ptr<NotificationTemplateBuilder> notification_template =
       NotificationTemplateBuilder::Build(notification);
   mswr::ComPtr<winui::Notifications::IToastNotification> toast;
-  hr = GetToastNotification(*notification_template, &toast);
+  hr = GetToastNotification(notification, *notification_template, &toast);
   if (FAILED(hr)) {
     LOG(ERROR) << "Unable to get a toast notification";
     return;
@@ -334,6 +275,100 @@ HRESULT NotificationPlatformBridgeWin::OnDismissed(
   if (data) {
     ForwardNotificationOperation(data, NotificationCommon::CLOSE);
     notifications_.erase(data);
+  }
+
+  return S_OK;
+}
+
+HRESULT NotificationPlatformBridgeWin::GetToastNotification(
+    const message_center::Notification& notification,
+    const NotificationTemplateBuilder& notification_template_builder,
+    winui::Notifications::IToastNotification** toast_notification) {
+  *toast_notification = nullptr;
+
+  ScopedHString ref_class_name =
+      ScopedHString::Create(RuntimeClass_Windows_Data_Xml_Dom_XmlDocument);
+  mswr::ComPtr<IInspectable> inspectable;
+  HRESULT hr =
+      base::win::RoActivateInstance(ref_class_name.get(), &inspectable);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Unable to activate the XML Document";
+    return hr;
+  }
+
+  mswr::ComPtr<winxml::Dom::IXmlDocumentIO> document_io;
+  hr = inspectable.As<winxml::Dom::IXmlDocumentIO>(&document_io);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to get XmlDocument as IXmlDocumentIO";
+    return hr;
+  }
+
+  base::string16 notification_template =
+      notification_template_builder.GetNotificationTemplate();
+  ScopedHString ref_template = ScopedHString::Create(notification_template);
+  hr = document_io->LoadXml(ref_template.get());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Unable to load the template's XML into the document";
+    return hr;
+  }
+
+  mswr::ComPtr<winxml::Dom::IXmlDocument> document;
+  hr = document_io.As<winxml::Dom::IXmlDocument>(&document);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Unable to get as XMLDocument";
+    return hr;
+  }
+
+  mswr::ComPtr<winui::Notifications::IToastNotificationFactory>
+      toast_notification_factory;
+  hr = CreateActivationFactory(
+      RuntimeClass_Windows_UI_Notifications_ToastNotification,
+      toast_notification_factory.GetAddressOf());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Unable to create the IToastNotificationFactory";
+    return hr;
+  }
+
+  hr = toast_notification_factory->CreateToastNotification(document.Get(),
+                                                           toast_notification);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Unable to create the IToastNotification";
+    return hr;
+  }
+
+  winui::Notifications::IToastNotification2* toast2ptr = nullptr;
+  hr = (*toast_notification)->QueryInterface(&toast2ptr);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to get IToastNotification2 object";
+    return hr;
+  }
+
+  mswr::ComPtr<winui::Notifications::IToastNotification2> toast2;
+  toast2.Attach(toast2ptr);
+
+  // Set the Group and Tag values for the notification, in order to group the
+  // notifications by origin and support replacing notification by tag. Both of
+  // these values have a limit of 64 characters, which is problematic because
+  // they are out of our control and, at least Tag, can contain just about
+  // anything. Therefore we use a hash of the origin and the id (which contains
+  // the tag value) to produce uniqueness that fits within the specified limits.
+  // Furthermore, collisions are not the end of the world because uniqueness is
+  // decided based on the pair [group, tag] as opposed to just the tag.
+  ScopedHString group = ScopedHString::Create(
+      base::UintToString16(base::Hash(notification.origin_url().spec())));
+  ScopedHString tag = ScopedHString::Create(
+      base::UintToString16(base::Hash(notification.id())));
+
+  hr = toast2->put_Group(group.get());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to set Group";
+    return hr;
+  }
+
+  hr = toast2->put_Tag(tag.get());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to set Tag";
+    return hr;
   }
 
   return S_OK;
