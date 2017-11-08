@@ -40,9 +40,10 @@ BLACKLIST_LINT_FILTERS = [
 ### Description checks
 
 def CheckChangedConfigs(input_api, output_api):
-  import urllib2
-  import json
   import collections
+  import base64
+  import json
+  import urllib2
 
   import auth
   import git_cl
@@ -107,7 +108,8 @@ def CheckChangedConfigs(input_api, output_api):
       if dr == '/' or file_path.startswith(dr):
         cs_to_files[cs].append({
           'path': file_path[len(dr):] if dr != '/' else file_path,
-          'content': '\n'.join(f.NewContents())
+          'content': base64.b64encode(
+              '\n'.join(f.NewContents()).encode('utf-8'))
         })
   outputs = []
   for cs, f in cs_to_files.iteritems():
