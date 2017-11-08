@@ -315,6 +315,8 @@ update_client::CrxInstaller::Result SwReporterInstallerPolicy::OnCustomInstall(
   return update_client::CrxInstaller::Result(0);
 }
 
+void SwReporterInstallerPolicy::OnCustomUninstall() {}
+
 void SwReporterInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,

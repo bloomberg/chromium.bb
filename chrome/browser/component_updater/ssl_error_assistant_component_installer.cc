@@ -72,6 +72,8 @@ SSLErrorAssistantComponentInstallerPolicy::OnCustomInstall(
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
+void SSLErrorAssistantComponentInstallerPolicy::OnCustomUninstall() {}
+
 base::FilePath SSLErrorAssistantComponentInstallerPolicy::GetInstalledPath(
     const base::FilePath& base) {
   return base.Append(kConfigBinaryPbFileName);

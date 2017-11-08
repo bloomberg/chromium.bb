@@ -107,6 +107,15 @@ CrOSComponentInstallerPolicy::OnCustomInstall(
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
 
+void CrOSComponentInstallerPolicy::OnCustomUninstall() {
+  chromeos::ImageLoaderClient* loader =
+      chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
+  if (loader) {
+    loader->RemoveComponent(
+        name, base::BindOnce(base::Callback<void(base::Optional<bool>)>()));
+  }
+}
+
 void CrOSComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& path,
