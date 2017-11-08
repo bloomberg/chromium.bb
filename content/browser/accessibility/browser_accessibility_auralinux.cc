@@ -520,8 +520,9 @@ static AtkObject* browser_accessibility_ref_child(AtkObject* atk_object,
   if (index < 0 || index >= static_cast<gint>(obj->PlatformChildCount()))
     return nullptr;
 
-  AtkObject* result = ToBrowserAccessibilityAuraLinux(
-      obj->InternalGetChild(index))->GetAtkObject();
+  AtkObject* result =
+      ToBrowserAccessibilityAuraLinux(obj->PlatformGetChild(index))
+          ->GetAtkObject();
   g_object_ref(result);
   return result;
 }
