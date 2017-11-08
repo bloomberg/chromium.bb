@@ -2421,14 +2421,6 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   [self closeSettingsUI];
 }
 
-- (void)closeSettingsAndOpenNewIncognitoTab {
-  [self closeSettingsAnimated:NO
-                   completion:^{
-                     [self switchModesAndOpenNewTab:[OpenNewTabCommand
-                                                        incognitoTabCommand]];
-                   }];
-}
-
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
   // Assume that settings always wants the dispatcher from the main BVC.
   return self.mainBVC.dispatcher;
