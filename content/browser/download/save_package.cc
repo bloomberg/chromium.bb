@@ -139,7 +139,7 @@ class SavePackageRequestHandle : public DownloadRequestHandleInterface {
   }
 
  private:
-  base::WeakPtr<SavePackage> save_package_;
+  base::WeakPtr<SavePackage> const save_package_;
 };
 
 }  // namespace
@@ -335,13 +335,9 @@ void SavePackage::OnMHTMLGenerated(int64_t size) {
 
   download_->OnAllDataSaved(size, std::unique_ptr<crypto::SecureHash>());
 
-  if (!download_manager_->GetDelegate()) {
-    Finish();
-    return;
-  }
-
-  if (download_manager_->GetDelegate()->ShouldCompleteDownload(
-          download_, base::Bind(&SavePackage::Finish, this))) {
+  auto* delegate = download_manager_->GetDelegate();
+  if (!delegate || delegate->ShouldCompleteDownload(
+                       download_, base::Bind(&SavePackage::Finish, this))) {
     Finish();
   }
 }
@@ -360,6 +356,7 @@ uint32_t SavePackage::GetMaxPathLengthForDirectory(
 #endif
 }
 
+// static
 bool SavePackage::TruncateBaseNameToFitPathConstraints(
     const base::FilePath& dir_path,
     const base::FilePath::StringType& file_name_ext,
@@ -430,58 +427,63 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
   // Check whether we already have same name in a case insensitive manner.
   FileNameSet::const_iterator iter = file_name_set_.find(file_name);
   if (iter == file_name_set_.end()) {
+    DCHECK(!file_name.empty());
     file_name_set_.insert(file_name);
+    generated_name->assign(file_name);
+    return true;
+  }
+
+  // Found same name, increase the ordinal number for the file name.
+  base_name = base::FilePath(*iter).RemoveExtension().BaseName().value();
+  base::FilePath::StringType base_file_name = StripOrdinalNumber(base_name);
+
+  // We need to make sure the length of base file name plus maximum ordinal
+  // number path will be less than or equal to kMaxFilePathLength.
+  if (!TruncateBaseNameToFitPathConstraints(
+          saved_main_directory_path_, file_name_ext,
+          max_path - kMaxFileOrdinalNumberPartLength, &base_file_name)) {
+    return false;
+  }
+
+  // Prepare the new ordinal number.
+  uint32_t ordinal_number;
+  FileNameCountMap::iterator it = file_name_count_map_.find(base_file_name);
+  if (it == file_name_count_map_.end()) {
+    // First base-name-conflict resolving, use 1 as initial ordinal number.
+    file_name_count_map_[base_file_name] = 1;
+    ordinal_number = 1;
   } else {
-    // Found same name, increase the ordinal number for the file name.
-    base_name = base::FilePath(*iter).RemoveExtension().BaseName().value();
-    base::FilePath::StringType base_file_name = StripOrdinalNumber(base_name);
+    // We have met same base-name conflict, use latest ordinal number.
+    ordinal_number = it->second;
+  }
 
-    // We need to make sure the length of base file name plus maximum ordinal
-    // number path will be less than or equal to kMaxFilePathLength.
-    if (!TruncateBaseNameToFitPathConstraints(
-            saved_main_directory_path_, file_name_ext,
-            max_path - kMaxFileOrdinalNumberPartLength, &base_file_name))
+  if (ordinal_number > kMaxFileOrdinalNumber - 1) {
+    // Use a random file from temporary file.
+    base::FilePath temp_file;
+    base::CreateTemporaryFile(&temp_file);
+    file_name = temp_file.RemoveExtension().BaseName().value();
+    // Get safe pure file name.
+    if (!TruncateBaseNameToFitPathConstraints(saved_main_directory_path_,
+                                              base::FilePath::StringType(),
+                                              max_path, &file_name)) {
       return false;
-
-    // Prepare the new ordinal number.
-    uint32_t ordinal_number;
-    FileNameCountMap::iterator it = file_name_count_map_.find(base_file_name);
-    if (it == file_name_count_map_.end()) {
-      // First base-name-conflict resolving, use 1 as initial ordinal number.
-      file_name_count_map_[base_file_name] = 1;
-      ordinal_number = 1;
-    } else {
-      // We have met same base-name conflict, use latest ordinal number.
-      ordinal_number = it->second;
     }
-
-    if (ordinal_number > (kMaxFileOrdinalNumber - 1)) {
-      // Use a random file from temporary file.
-      base::FilePath temp_file;
-      base::CreateTemporaryFile(&temp_file);
-      file_name = temp_file.RemoveExtension().BaseName().value();
-      // Get safe pure file name.
-      if (!TruncateBaseNameToFitPathConstraints(saved_main_directory_path_,
-                                                base::FilePath::StringType(),
-                                                max_path, &file_name))
-        return false;
-    } else {
-      for (int i = ordinal_number; i < kMaxFileOrdinalNumber; ++i) {
-        base::FilePath::StringType new_name = base_file_name +
-            base::StringPrintf(FILE_PATH_LITERAL("(%d)"), i) + file_name_ext;
-        if (file_name_set_.find(new_name) == file_name_set_.end()) {
-          // Resolved name conflict.
-          file_name = new_name;
-          file_name_count_map_[base_file_name] = ++i;
-          break;
-        }
+  } else {
+    for (int i = ordinal_number; i < kMaxFileOrdinalNumber; ++i) {
+      base::FilePath::StringType new_name =
+          base_file_name + base::StringPrintf(FILE_PATH_LITERAL("(%d)"), i) +
+          file_name_ext;
+      if (!base::ContainsKey(file_name_set_, new_name)) {
+        // Resolved name conflict.
+        file_name = new_name;
+        file_name_count_map_[base_file_name] = ++i;
+        break;
       }
     }
-
-    file_name_set_.insert(file_name);
   }
 
   DCHECK(!file_name.empty());
+  file_name_set_.insert(file_name);
   generated_name->assign(file_name);
 
   return true;
@@ -833,33 +835,7 @@ int64_t SavePackage::CurrentSpeed() const {
 
 void SavePackage::DoSavingProcess() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (save_type_ == SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
-    // We guarantee that images and JavaScripts must be downloaded first.
-    // So when finishing all those sub-resources, we will know which
-    // sub-resource's link can be replaced with local file path, which
-    // sub-resource's link need to be replaced with absolute URL which
-    // point to its internet address because it got error when saving its data.
-
-    // Start a new SaveItem job if we still have job in waiting queue.
-    if (waiting_item_queue_.size()) {
-      DCHECK_EQ(NET_FILES, wait_state_);
-      const SaveItem* save_item = waiting_item_queue_.front().get();
-      if (save_item->save_source() != SaveFileCreateInfo::SAVE_FILE_FROM_DOM) {
-        SaveNextFile(false);
-      } else if (!in_process_count()) {
-        // If there is no in-process SaveItem, it means all sub-resources
-        // have been processed. Now we need to start serializing HTML DOM
-        // for the current page to get the generated HTML data.
-        wait_state_ = HTML_DATA;
-        // All non-HTML resources have been finished, start all remaining
-        // HTML files.
-        SaveNextFile(true);
-      }
-    } else if (in_process_count()) {
-      // Continue asking for HTML data.
-      DCHECK_EQ(HTML_DATA, wait_state_);
-    }
-  } else {
+  if (save_type_ != SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
     // Save as HTML only or MHTML.
     DCHECK_EQ(NET_FILES, wait_state_);
     DCHECK((save_type_ == SAVE_PAGE_TYPE_AS_ONLY_HTML) ||
@@ -869,6 +845,33 @@ void SavePackage::DoSavingProcess() {
       DCHECK_EQ(all_save_items_count_, waiting_item_queue_.size());
       SaveNextFile(false);
     }
+    return;
+  }
+
+  // We guarantee that images and JavaScripts must be downloaded first.
+  // So when finishing all those sub-resources, we will know which
+  // sub-resource's link can be replaced with local file path, which
+  // sub-resource's link need to be replaced with absolute URL which
+  // point to its internet address because it got error when saving its data.
+
+  // Start a new SaveItem job if we still have job in waiting queue.
+  if (!waiting_item_queue_.empty()) {
+    DCHECK_EQ(NET_FILES, wait_state_);
+    const SaveItem* save_item = waiting_item_queue_.front().get();
+    if (save_item->save_source() != SaveFileCreateInfo::SAVE_FILE_FROM_DOM) {
+      SaveNextFile(false);
+    } else if (!in_process_count()) {
+      // If there is no in-process SaveItem, it means all sub-resources
+      // have been processed. Now we need to start serializing HTML DOM
+      // for the current page to get the generated HTML data.
+      wait_state_ = HTML_DATA;
+      // All non-HTML resources have been finished, start all remaining
+      // HTML files.
+      SaveNextFile(true);
+    }
+  } else if (in_process_count()) {
+    // Continue asking for HTML data.
+    DCHECK_EQ(HTML_DATA, wait_state_);
   }
 }
 
@@ -1143,7 +1146,7 @@ SaveItem* SavePackage::CreatePendingSaveItem(
   return save_item;
 }
 
-SaveItem* SavePackage::CreatePendingSaveItemDeduplicatingByUrl(
+void SavePackage::CreatePendingSaveItemDeduplicatingByUrl(
     int container_frame_tree_node_id,
     int save_item_frame_tree_node_id,
     const GURL& url,
@@ -1155,20 +1158,15 @@ SaveItem* SavePackage::CreatePendingSaveItemDeduplicatingByUrl(
   // Frames should not be deduplicated by URL.
   DCHECK_NE(SaveFileCreateInfo::SAVE_FILE_FROM_DOM, save_source);
 
-  SaveItem* save_item;
   auto it = url_to_save_item_.find(url);
   if (it != url_to_save_item_.end()) {
-    save_item = it->second;
     frame_tree_node_id_to_contained_save_items_[container_frame_tree_node_id]
-        .push_back(save_item);
+        .push_back(it->second);
   } else {
-    save_item = CreatePendingSaveItem(container_frame_tree_node_id,
-                                      save_item_frame_tree_node_id, url,
-                                      referrer, save_source);
-    url_to_save_item_[url] = save_item;
+    url_to_save_item_[url] = CreatePendingSaveItem(container_frame_tree_node_id,
+                                                   save_item_frame_tree_node_id,
+                                                   url, referrer, save_source);
   }
-
-  return save_item;
 }
 
 void SavePackage::EnqueueSavableResource(int container_frame_tree_node_id,
@@ -1267,8 +1265,7 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
                 url_formatter::IDNToUnicode(page_url.host()));
       }
     } else {
-      name_with_proper_ext =
-          base::FilePath::FromUTF8Unsafe(std::string("dataurl"));
+      name_with_proper_ext = base::FilePath::FromUTF8Unsafe("dataurl");
     }
   }
 
@@ -1327,14 +1324,14 @@ const base::FilePath::CharType* SavePackage::ExtensionForMimeType(
   static const struct {
     const char* mime_type;
     const base::FilePath::CharType* suggested_extension;
-  } extensions[] = {
-    { "text/html", kDefaultHtmlExtension },
-    { "text/xml", FILE_PATH_LITERAL("xml") },
-    { "application/xhtml+xml", FILE_PATH_LITERAL("xhtml") },
-    { "text/plain", FILE_PATH_LITERAL("txt") },
-    { "text/css", FILE_PATH_LITERAL("css") },
+  } kExtensions[] = {
+      {"text/html", kDefaultHtmlExtension},
+      {"text/xml", FILE_PATH_LITERAL("xml")},
+      {"application/xhtml+xml", FILE_PATH_LITERAL("xhtml")},
+      {"text/plain", FILE_PATH_LITERAL("txt")},
+      {"text/css", FILE_PATH_LITERAL("css")},
   };
-  for (const auto& extension : extensions) {
+  for (const auto& extension : kExtensions) {
     if (contents_mime_type == extension.mime_type)
       return extension.suggested_extension;
   }
