@@ -14,8 +14,7 @@ buildflag_header("av1_features") {
   header = "av1_features.h"
 
   flags = [
-    # Allow source code to conditionally include AV1 support.
-    "USE_AV1=$use_av1",
+    "ENABLE_AV1_DECODER=$enable_av1_decoder",
   ]
 }
 
@@ -287,7 +286,7 @@ if (current_cpu == "arm" && arm_assembly_sources != []) {
 }
 
 static_library("libaom") {
-  if (use_av1) {
+  if (enable_av1_decoder) {
     if (!is_debug && is_win) {
       configs -= [ "//build/config/compiler:default_optimization" ]
       configs += [ "//build/config/compiler:optimize_max" ]
