@@ -1075,8 +1075,8 @@ void ProfileIOData::Init(
 
   builder->set_network_delegate(std::move(network_delegate));
 
-  builder->set_transport_security_persister_path(profile_params_->path);
-  builder->set_transport_security_persister_readonly(IsOffTheRecord());
+  if (!IsOffTheRecord())
+    builder->set_transport_security_persister_path(profile_params_->path);
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;

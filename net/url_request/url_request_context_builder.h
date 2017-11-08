@@ -278,17 +278,6 @@ class NET_EXPORT URLRequestContextBuilder {
     transport_security_persister_path_ = transport_security_persister_path;
   }
 
-  // Sets whether the TransportSecurityPersister only reads persisted
-  // information, or also writes it. By default, it both reads and writes.
-  //
-  // TODO(mmenke): Consider removing this in favor of the above method. See:
-  // https://crbug.com/743251.
-  void set_transport_security_persister_readonly(
-      bool transport_security_persister_readonly) {
-    transport_security_persister_readonly_ =
-        transport_security_persister_readonly;
-  }
-
   void SetSpdyAndQuicEnabled(bool spdy_enabled,
                              bool quic_enabled);
 
@@ -394,7 +383,6 @@ class NET_EXPORT URLRequestContextBuilder {
   HttpNetworkSession::Params http_network_session_params_;
   CreateHttpTransactionFactoryCallback create_http_network_transaction_factory_;
   base::FilePath transport_security_persister_path_;
-  bool transport_security_persister_readonly_;
   NetLog* net_log_;
   std::unique_ptr<HostResolver> host_resolver_;
   net::HostResolver* shared_host_resolver_;

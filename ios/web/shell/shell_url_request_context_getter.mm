@@ -100,11 +100,11 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         base::WrapUnique(new net::MultiLogCTVerifier));
     storage_->set_ct_policy_enforcer(
         base::WrapUnique(new net::CTPolicyEnforcer));
-    transport_security_persister_.reset(new net::TransportSecurityPersister(
-        url_request_context_->transport_security_state(), base_path_,
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND}),
-        false));
+    transport_security_persister_ =
+        std::make_unique<net::TransportSecurityPersister>(
+            url_request_context_->transport_security_state(), base_path_,
+            base::CreateSequencedTaskRunnerWithTraits(
+                {base::MayBlock(), base::TaskPriority::BACKGROUND}));
     storage_->set_channel_id_service(base::MakeUnique<net::ChannelIDService>(
         new net::DefaultChannelIDStore(nullptr)));
     storage_->set_http_server_properties(
