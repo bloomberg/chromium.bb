@@ -23,7 +23,8 @@ bool TabRendererData::operator==(const TabRendererData& other) {
          url == other.url && crashed_status == other.crashed_status &&
          incognito == other.incognito && show_icon == other.show_icon &&
          pinned == other.pinned && blocked == other.blocked &&
-         app == other.app && alert_state == other.alert_state;
+         app == other.app && alert_state == other.alert_state &&
+         should_hide_throbber == other.should_hide_throbber;
 }
 
 bool TabRendererData::IsCrashed() const {

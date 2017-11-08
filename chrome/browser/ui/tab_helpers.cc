@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_dialogs.h"
+#include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -250,6 +251,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // TODO(vabr): Remove TabSpecificContentSettings from here once their function
   // is taken over by ChromeContentSettingsClient. http://crbug.com/387075
   TabSpecificContentSettings::CreateForWebContents(web_contents);
+  TabUIHelper::CreateForWebContents(web_contents);
   ukm::InitializeSourceUrlRecorderForWebContents(web_contents);
   vr::VrTabHelper::CreateForWebContents(web_contents);
 

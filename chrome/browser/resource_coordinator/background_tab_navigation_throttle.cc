@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -42,6 +43,13 @@ BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(
            .IsInitialNavigation()) {
     return nullptr;
   }
+
+  // TabUIHelper is initialized in TabHelpers::AttachTabHelpers for every tab
+  // and is used to show customized favicon and title for the delayed tab. If
+  // the corresponding TabUIHelper is null, it indicates that this WebContents
+  // is not a tab, e.g., it can be a BrowserPlugin.
+  if (!TabUIHelper::FromWebContents(navigation_handle->GetWebContents()))
+    return nullptr;
 
   return base::MakeUnique<BackgroundTabNavigationThrottle>(navigation_handle);
 }
