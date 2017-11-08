@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "extensions/features/features.h"
@@ -29,6 +30,15 @@ using ProcessMemoryDumpPtr =
     memory_instrumentation::mojom::ProcessMemoryDumpPtr;
 
 namespace {
+
+void AddCommonGpuMetricsToBuilder(ukm::builders::Memory_Experimental* builder,
+                                  const ProcessMemoryDumpPtr& pmd) {
+  DCHECK(builder);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB(
+      "Memory.Experimental.Gpu2.CommandBuffer",
+      pmd->chrome_dump->command_buffer_total_kb / 1024);
+  builder->SetCommandBuffer(pmd->chrome_dump->command_buffer_total_kb / 1024);
+}
 
 void EmitBrowserMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
                               ukm::SourceId ukm_source_id,
@@ -52,6 +62,14 @@ void EmitBrowserMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.PrivateMemoryFootprint",
                                 pmd->os_dump->private_footprint_kb / 1024);
   builder.SetPrivateMemoryFootprint(pmd->os_dump->private_footprint_kb / 1024);
+
+  // It is possible to run without a separate GPU process.
+  // When that happens, we should log common GPU metrics from the browser proc.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kInProcessGPU)) {
+    AddCommonGpuMetricsToBuilder(&builder, pmd);
+  }
+
   if (uptime)
     builder.SetUptime(uptime.value().InSeconds());
   builder.Record(ukm_recorder);
@@ -134,10 +152,7 @@ void EmitGpuMemoryMetrics(const ProcessMemoryDumpPtr& pmd,
                                 pmd->chrome_dump->malloc_total_kb / 1024);
   builder.SetMalloc(pmd->chrome_dump->malloc_total_kb / 1024);
 
-  UMA_HISTOGRAM_MEMORY_LARGE_MB(
-      "Memory.Experimental.Gpu2.CommandBuffer",
-      pmd->chrome_dump->command_buffer_total_kb / 1024);
-  builder.SetCommandBuffer(pmd->chrome_dump->command_buffer_total_kb / 1024);
+  AddCommonGpuMetricsToBuilder(&builder, pmd);
 
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Gpu2.PrivateMemoryFootprint",
