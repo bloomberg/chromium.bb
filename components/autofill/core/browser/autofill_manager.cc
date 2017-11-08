@@ -48,6 +48,7 @@
 #include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/fill_util.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number.h"
@@ -1378,9 +1379,9 @@ void AutofillManager::FillOrPreviewDataModelForm(
       if (iter.SameFieldAs(field)) {
         base::string16 value =
             data_model.GetInfo(autofill_field->Type(), app_locale_);
-        if (AutofillField::FillFormField(*autofill_field, value,
-                                         profile_language_code, app_locale_,
-                                         &iter)) {
+        if (fill_util::FillFormField(*autofill_field, value,
+                                     profile_language_code, app_locale_,
+                                     &iter)) {
           // Mark the cached field as autofilled, so that we can detect when a
           // user edits an autofilled field (for metrics).
           autofill_field->is_autofilled = true;
@@ -1441,9 +1442,8 @@ void AutofillManager::FillOrPreviewDataModelForm(
                          (result.fields[i].SameFieldAs(field) ||
                           result.fields[i].form_control_type == "select-one" ||
                           result.fields[i].value.empty());
-    if (AutofillField::FillFormField(*cached_field, value,
-                                     profile_language_code, app_locale_,
-                                     &result.fields[i])) {
+    if (fill_util::FillFormField(*cached_field, value, profile_language_code,
+                                 app_locale_, &result.fields[i])) {
       // Mark the cached field as autofilled, so that we can detect when a
       // user edits an autofilled field (for metrics).
       form_structure->field(i)->is_autofilled = true;
@@ -1613,7 +1613,7 @@ std::vector<Suggestion> AutofillManager::GetProfileSuggestions(
   // Adjust phone number to display in prefix/suffix case.
   if (autofill_field.Type().GetStorableType() == PHONE_HOME_NUMBER) {
     for (size_t i = 0; i < suggestions.size(); ++i) {
-      suggestions[i].value = AutofillField::GetPhoneNumberValue(
+      suggestions[i].value = fill_util::GetPhoneNumberValue(
           autofill_field, suggestions[i].value, field);
     }
   }
