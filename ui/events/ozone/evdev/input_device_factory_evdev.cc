@@ -109,10 +109,11 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
   }
 
   // Graphics tablet
-  if (devinfo.HasTablet())
+  if (devinfo.HasTablet()) {
     return base::WrapUnique<EventConverterEvdev>(new TabletEventConverterEvdev(
         std::move(fd), params.path, params.id, params.cursor, devinfo,
         params.dispatcher));
+  }
 
   if (devinfo.HasGamepad()) {
     return base::WrapUnique<EventConverterEvdev>(new GamepadEventConverterEvdev(
@@ -321,11 +322,16 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
 
   for (const auto& it : converters_) {
     EventConverterEvdev* converter = it.second.get();
-    // The device was activated/deactivated we need to notify so
-    // Interactions MQs can be updated.
-    if (converter->IsEnabled() != IsDeviceEnabled(converter))
+
+    bool should_be_enabled = IsDeviceEnabled(converter);
+    bool was_enabled = converter->IsEnabled();
+    if (should_be_enabled != was_enabled) {
+      converter->SetEnabled(should_be_enabled);
+
+      // The device was activated/deactivated we need to notify so
+      // Interactions MQs can be updated.
       UpdateDirtyFlags(converter);
-    converter->SetEnabled(IsDeviceEnabled(converter));
+    }
 
     if (converter->type() == InputDeviceType::INPUT_DEVICE_INTERNAL &&
         converter->HasKeyboard()) {
@@ -337,6 +343,7 @@ void InputDeviceFactoryEvdev::ApplyInputDeviceSettings() {
     converter->SetTouchEventLoggingEnabled(
         input_device_settings_.touch_event_logging_enabled);
   }
+
   NotifyDevicesUpdated();
 }
 
@@ -500,10 +507,7 @@ void InputDeviceFactoryEvdev::EnablePalmSuppression(bool enabled) {
   if (enabled == palm_suppression_enabled_)
     return;
   palm_suppression_enabled_ = enabled;
-
-  for (const auto& it : converters_) {
-    it.second->SetEnabled(IsDeviceEnabled(it.second.get()));
-  }
+  ApplyInputDeviceSettings();
 }
 
 }  // namespace ui

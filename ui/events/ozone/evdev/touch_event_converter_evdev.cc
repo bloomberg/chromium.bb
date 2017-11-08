@@ -40,10 +40,10 @@ namespace {
 const int kMaxTrackingId = 0xffff;  // TRKID_MAX in kernel.
 
 struct TouchCalibration {
-  int bezel_left;
-  int bezel_right;
-  int bezel_top;
-  int bezel_bottom;
+  int bezel_left = 0;
+  int bezel_right = 0;
+  int bezel_top = 0;
+  int bezel_bottom = 0;
 };
 
 // Convert tilt from [min, min + num_values) to [-90deg, +90deg)
@@ -187,7 +187,7 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
 
   // Apply --touch-calibration.
   if (type() == INPUT_DEVICE_INTERNAL) {
-    TouchCalibration cal = {};
+    TouchCalibration cal;
     GetTouchCalibration(&cal);
     x_min_tuxels_ += cal.bezel_left;
     x_num_tuxels_ -= cal.bezel_left + cal.bezel_right;

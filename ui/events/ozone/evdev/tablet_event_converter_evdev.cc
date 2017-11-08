@@ -172,17 +172,18 @@ void TabletEventConverterEvdev::DispatchMouseButton(const input_event& input) {
 
   unsigned int button;
   // These are the same as X11 behaviour
-  if (input.code == BTN_TOUCH)
+  if (input.code == BTN_TOUCH) {
     button = BTN_LEFT;
-  else if (input.code == BTN_STYLUS2)
+  } else if (input.code == BTN_STYLUS2) {
     button = BTN_RIGHT;
-  else if (input.code == BTN_STYLUS)
+  } else if (input.code == BTN_STYLUS) {
     if (one_side_btn_pen_)
       button = BTN_RIGHT;
     else
       button = BTN_MIDDLE;
-  else
+  } else {
     return;
+  }
 
   if (abs_value_dirty_) {
     UpdateCursor();

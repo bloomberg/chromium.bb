@@ -34,13 +34,7 @@
 GesturesProp::GesturesProp(const std::string& name,
                            const PropertyType type,
                            const size_t count)
-    : name_(name),
-      type_(type),
-      count_(count),
-      get_(NULL),
-      set_(NULL),
-      handler_data_(NULL) {
-}
+    : name_(name), type_(type), count_(count) {}
 
 std::vector<int> GesturesProp::GetIntValue() const {
   NOTREACHED();

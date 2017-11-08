@@ -36,14 +36,14 @@ struct ConfigurationSection;
 // A struct holding device properties that are useful when interacting with
 // the gestures lib.
 struct GestureDeviceProperties {
-  int area_left;
-  int area_right;
-  int area_top;
-  int area_bottom;
-  int res_y;
-  int res_x;
-  int orientation_minimum;
-  int orientation_maximum;
+  int area_left = 0;
+  int area_right = 0;
+  int area_top = 0;
+  int area_bottom = 0;
+  int res_y = 0;
+  int res_x = 0;
+  int orientation_minimum = 0;
+  int orientation_maximum = 0;
   GesturesPropBool raw_passthrough;
   GesturesPropBool dump_debug_log;
 };
@@ -330,9 +330,9 @@ struct GesturesProp {
 
   // Handler function pointers and the data to be passed to them when the
   // property is accessed.
-  GesturesPropGetHandler get_;
-  GesturesPropSetHandler set_;
-  void* handler_data_;
+  GesturesPropGetHandler get_ = nullptr;
+  GesturesPropSetHandler set_ = nullptr;
+  void* handler_data_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GesturesProp);
 };
