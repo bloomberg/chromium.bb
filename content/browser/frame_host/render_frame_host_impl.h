@@ -287,8 +287,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
                           const FramePolicy& frame_policy,
                           const FrameOwnerProperties& frame_owner_properties);
 
-  // Update this frame's last committed origin.
-  void SetLastCommittedOrigin(const url::Origin& origin);
+  // Update this frame's state at the appropriate time when a navigation
+  // commits. This is called by NavigatorImpl::DidNavigate as a helper, in the
+  // midst of a DidCommitProvisionalLoad call.
+  void DidNavigate(const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+                   bool is_same_document_navigation);
 
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
@@ -304,9 +307,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The most recent non-net-error URL to commit in this frame.  In almost all
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() { return last_successful_url_; }
-  void set_last_successful_url(const GURL& url) {
-    last_successful_url_ = url;
-  }
 
   // Returns the associated WebUI or null if none applies.
   WebUIImpl* web_ui() const { return web_ui_.get(); }
@@ -614,10 +614,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns the feature policy which should be enforced on this RenderFrame.
   blink::FeaturePolicy* feature_policy() { return feature_policy_.get(); }
-
-  // Clears any existing policy and constructs a new policy for this frame,
-  // based on its parent frame.
-  void ResetFeaturePolicy();
 
   // Tells the renderer that this RenderFrame will soon be swapped out, and thus
   // not to create any new modal dialogs until it happens.  This must be done
@@ -987,10 +983,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Called by |beforeunload_timeout_| when the beforeunload timeout fires.
   void BeforeUnloadTimeout();
 
+  // Update this frame's last committed origin.
+  void SetLastCommittedOrigin(const url::Origin& origin);
+
   // Called when a navigation commits succesfully to |url|. This will update
   // |last_committed_site_url_| if it's not equal to the site url corresponding
   // to |url|.
   void SetLastCommittedSiteUrl(const GURL& url);
+
+  // Clears any existing policy and constructs a new policy for this frame,
+  // based on its parent frame.
+  void ResetFeaturePolicy();
 
   // PlzNavigate: Called when the frame has consumed the StreamHandle and it
   // can be released.
