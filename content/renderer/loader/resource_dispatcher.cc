@@ -363,21 +363,16 @@ void ResourceDispatcher::OnRequestComplete(
     request_info->peer = std::move(new_peer);
   }
 
-  base::TimeTicks renderer_completion_time = ToRendererCompletionTime(
-      *request_info, request_complete_data.completion_time);
-
   // The request ID will be removed from our pending list in the destructor.
   // Normally, dispatching this message causes the reference-counted request to
   // die immediately.
   // TODO(kinuko): Revisit here. This probably needs to call request_info->peer
   // but the past attempt to change it seems to have caused crashes.
   // (crbug.com/547047)
-  peer->OnCompletedRequest(request_complete_data.error_code,
-                           request_complete_data.exists_in_cache,
-                           renderer_completion_time,
-                           request_complete_data.encoded_data_length,
-                           request_complete_data.encoded_body_length,
-                           request_complete_data.decoded_body_length);
+  ResourceRequestCompletionStatus renderer_status(request_complete_data);
+  renderer_status.completion_time = ToRendererCompletionTime(
+      *request_info, request_complete_data.completion_time);
+  peer->OnCompletedRequest(renderer_status);
 }
 
 bool ResourceDispatcher::RemovePendingRequest(int request_id) {

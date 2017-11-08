@@ -80,12 +80,8 @@ void TestRequestPeer::OnReceivedCachedMetadata(const char* data, int len) {
   context_->cached_metadata = std::vector<char>(data, data + len);
 }
 
-void TestRequestPeer::OnCompletedRequest(int error_code,
-                                         bool stale_copy_in_cache,
-                                         const base::TimeTicks& completion_time,
-                                         int64_t total_transfer_size,
-                                         int64_t encoded_body_size,
-                                         int64_t decoded_body_size) {
+void TestRequestPeer::OnCompletedRequest(
+    const ResourceRequestCompletionStatus& completion_status) {
   if (context_->cancelled)
     return;
   EXPECT_TRUE(context_->received_response);

@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -137,12 +138,7 @@ void ReplaceContentPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
 }
 
 void ReplaceContentPeer::OnCompletedRequest(
-    int error_code,
-    bool stale_copy_in_cache,
-    const base::TimeTicks& completion_time,
-    int64_t total_transfer_size,
-    int64_t encoded_body_size,
-    int64_t decoded_body_size) {
+    const content::ResourceRequestCompletionStatus& completion_status) {
   content::ResourceResponseInfo info;
   ProcessResponseInfo(info, &info, mime_type_);
   info.content_length = static_cast<int>(data_.size());
@@ -151,7 +147,7 @@ void ReplaceContentPeer::OnCompletedRequest(
     original_peer_->OnReceivedData(base::MakeUnique<content::FixedReceivedData>(
         data_.data(), data_.size()));
   }
-  original_peer_->OnCompletedRequest(net::OK, stale_copy_in_cache,
-                                     completion_time, total_transfer_size,
-                                     encoded_body_size, decoded_body_size);
+  content::ResourceRequestCompletionStatus ok_status(completion_status);
+  ok_status.error_code = net::OK;
+  original_peer_->OnCompletedRequest(ok_status);
 }
