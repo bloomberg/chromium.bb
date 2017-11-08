@@ -236,6 +236,24 @@ component("capture_lib") {
   }
 }
 
+source_set("test_support") {
+  sources = [
+    "video/mock_video_frame_receiver.cc",
+    "video/mock_video_frame_receiver.h",
+  ]
+
+  deps = [
+    ":capture_lib",
+    "//base/test:test_support",
+    "//media:test_support",
+    "//media/capture/mojo:image_capture",
+    "//testing/gmock",
+    "//ui/gfx:test_support",
+  ]
+
+  testonly = true
+}
+
 test("capture_unittests") {
   sources = [
     "content/animated_content_sampler_unittest.cc",
@@ -253,6 +271,7 @@ test("capture_unittests") {
 
   deps = [
     ":capture",
+    ":test_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//media:test_support",
