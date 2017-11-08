@@ -223,22 +223,18 @@ find_matching_rules(
 			default:
 				k = 0;
 				while (k < rule->charslen - 1) {
-					if (data[k + 1] == '>' || data[k + 1] == '|') {
+					if (data[k + 1] == '>') {
 						data[k++] = '1';
 						memset(&data[k], '-', text_len - k);
 						break;
-					} else if (data[k] == 's')
-						data[k++] = '0';
-					else
+					} else
 						data[k++] = 'x';
 				}
 			}
-			if (data[rule->charslen] == '>' || data[rule->charslen] == '|') {
+			if (data[rule->charslen] == '>') {
 				data[rule->charslen - 1] = '1';
 				memset(&data[rule->charslen], '-', text_len - rule->charslen);
-			} else if (data[rule->charslen - 1] == '|')
-				data[rule->charslen - 1] = '0';
-			else
+			} else
 				data[rule->charslen - 1] = 'x';
 			debug("%s", data);
 
