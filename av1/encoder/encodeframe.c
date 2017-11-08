@@ -934,8 +934,8 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   const uint8_t allow_update_cdf = tile_data->allow_update_cdf;
 
   // delta quant applies to both intra and inter
-  int super_block_upper_left =
-      ((mi_row & MAX_MIB_MASK) == 0) && ((mi_col & MAX_MIB_MASK) == 0);
+  const int super_block_upper_left = ((mi_row & (cm->mib_size - 1)) == 0) &&
+                                     ((mi_col & (cm->mib_size - 1)) == 0);
 
   const int seg_ref_active =
       segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
