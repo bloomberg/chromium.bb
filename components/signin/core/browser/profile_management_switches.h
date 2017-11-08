@@ -32,13 +32,14 @@ extern const char kAccountConsistencyFeatureMethodParameter[];
 // Account consistency method feature values.
 extern const char kAccountConsistencyFeatureMethodMirror[];
 extern const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[];
+extern const char kAccountConsistencyFeatureMethodDicePrepareMigration[];
 extern const char kAccountConsistencyFeatureMethodDiceMigration[];
 extern const char kAccountConsistencyFeatureMethodDice[];
 
 // TODO(https://crbug.com/777774): Cleanup this enum and remove related
 // functions once Dice is fully rolled out, and/or Mirror code is removed on
 // desktop.
-enum class AccountConsistencyMethod {
+enum class AccountConsistencyMethod : int {
   // No account consistency.
   kDisabled,
 
@@ -47,6 +48,10 @@ enum class AccountConsistencyMethod {
 
   // No account consistency, but Dice fixes authentication errors.
   kDiceFixAuthErrors,
+
+  // Chrome uses the Dice signin flow and silently collects tokens associated
+  // with Gaia cookies to prepare for the migration.
+  kDicePrepareMigration,
 
   // Account management UI on Gaia webpages is enabled once the accounts become
   // consistent.
@@ -68,16 +73,19 @@ AccountConsistencyMethod GetAccountConsistencyMethod();
 // management UI is available in the avatar bubble.
 bool IsAccountConsistencyMirrorEnabled();
 
-// Returns true if the account consistency method is kDiceFixAuthErrors,
-// kDiceMigration or kDice.
+// Returns true if the account consistency method is kDiceFixAuthErrors or
+// greater.
 bool IsDiceFixAuthErrorsEnabled();
+
+// Returns true if the account consistency method is kDicePrepareMigration or
+// greater.
+bool IsDicePrepareMigrationEnabled();
 
 // Returns true if Dice account consistency is enabled or if the Dice migration
 // process is in progress (account consistency method is kDice or
 // kDiceMigration).
 // To check wether Dice is enabled (i.e. the migration is complete), use
 // IsDiceEnabledForProfile().
-// WARNING: returns false when the method is kDiceFixAuthErrors.
 bool IsDiceMigrationEnabled();
 
 ////////////////////////////////////////////////////////////////////////////////

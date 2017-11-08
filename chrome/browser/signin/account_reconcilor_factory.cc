@@ -14,8 +14,7 @@
 AccountReconcilorFactory::AccountReconcilorFactory()
     : BrowserContextKeyedServiceFactory(
           "AccountReconcilor",
-          BrowserContextDependencyManager::GetInstance()),
-      are_new_profiles_ignored_(false) {
+          BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ChromeSigninClientFactory::GetInstance());
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
@@ -36,20 +35,15 @@ AccountReconcilorFactory* AccountReconcilorFactory::GetInstance() {
   return base::Singleton<AccountReconcilorFactory>::get();
 }
 
-void AccountReconcilorFactory::IgnoreNewProfilesForTesting() {
-  are_new_profiles_ignored_ = true;
-}
-
 KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  bool is_new_profile =
-      are_new_profiles_ignored_ ? false : profile->IsNewProfile();
   AccountReconcilor* reconcilor = new AccountReconcilor(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile),
       ChromeSigninClientFactory::GetForProfile(profile),
-      GaiaCookieManagerServiceFactory::GetForProfile(profile), is_new_profile);
+      GaiaCookieManagerServiceFactory::GetForProfile(profile),
+      profile->IsNewProfile());
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }
