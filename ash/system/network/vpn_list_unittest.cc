@@ -13,6 +13,8 @@
 
 using ash::mojom::ThirdPartyVpnProvider;
 using ash::mojom::ThirdPartyVpnProviderPtr;
+using ash::mojom::ArcVpnProvider;
+using ash::mojom::ArcVpnProviderPtr;
 
 namespace ash {
 
@@ -77,6 +79,75 @@ TEST_F(VpnListTest, ThirdPartyProviders) {
                            extension_providers.end(), extension_provider1));
   EXPECT_EQ(1u, std::count(extension_providers.begin(),
                            extension_providers.end(), extension_provider2));
+}
+
+TEST_F(VpnListTest, ArcProviders) {
+  VpnList vpn_list;
+
+  // Initial refresh.
+  base::Time launchTime1 = base::Time::Now();
+  std::vector<ArcVpnProviderPtr> arc_vpn_providers;
+  ArcVpnProviderPtr arc_vpn_provider1 = ArcVpnProvider::New();
+  arc_vpn_provider1->package_name = "package.name.foo1";
+  arc_vpn_provider1->app_name = "ArcVPNMonster1";
+  arc_vpn_provider1->app_id = "arc_app_id1";
+  arc_vpn_provider1->last_launch_time = launchTime1;
+  arc_vpn_providers.push_back(std::move(arc_vpn_provider1));
+
+  vpn_list.SetArcVpnProviders(std::move(arc_vpn_providers));
+
+  VPNProvider arc_provider1 = VPNProvider::CreateArcVPNProvider(
+      "package.name.foo1", "ArcVPNMonster1", "arc_app_id1", launchTime1);
+
+  std::vector<VPNProvider> arc_providers = vpn_list.arc_vpn_providers();
+  EXPECT_EQ(1u, arc_providers.size());
+  EXPECT_EQ(1u, std::count(arc_providers.begin(), arc_providers.end(),
+                           arc_provider1));
+  EXPECT_EQ(launchTime1, arc_providers[0].last_launch_time);
+
+  // package.name.foo2 gets installed.
+  ArcVpnProviderPtr arc_vpn_provider2 = ArcVpnProvider::New();
+  arc_vpn_provider2->package_name = "package.name.foo2";
+  arc_vpn_provider2->app_name = "ArcVPNMonster2";
+  arc_vpn_provider2->app_id = "arc_app_id2";
+  arc_vpn_provider2->last_launch_time = base::Time::Now();
+
+  vpn_list.AddOrUpdateArcVPNProvider(std::move(arc_vpn_provider2));
+  VPNProvider arc_provider2 = VPNProvider::CreateArcVPNProvider(
+      "package.name.foo2", "ArcVPNMonster2", "arc_app_id2", base::Time::Now());
+
+  arc_providers = vpn_list.arc_vpn_providers();
+  EXPECT_EQ(2u, arc_providers.size());
+  EXPECT_EQ(1u, std::count(arc_providers.begin(), arc_providers.end(),
+                           arc_provider1));
+  EXPECT_EQ(1u, std::count(arc_providers.begin(), arc_providers.end(),
+                           arc_provider2));
+
+  // package.name.foo1 gets uninstalled.
+  vpn_list.RemoveArcVPNProvider("package.name.foo1");
+
+  arc_providers = vpn_list.arc_vpn_providers();
+  EXPECT_EQ(1u, arc_providers.size());
+  EXPECT_EQ(1u, std::count(arc_providers.begin(), arc_providers.end(),
+                           arc_provider2));
+
+  // package.name.foo2 changes due to update or system language change.
+  base::Time launchTime2 = base::Time::Now();
+  ArcVpnProviderPtr arc_vpn_provider2_rename = ArcVpnProvider::New();
+  arc_vpn_provider2_rename->package_name = "package.name.foo2";
+  arc_vpn_provider2_rename->app_name = "ArcVPNMonster2Rename";
+  arc_vpn_provider2_rename->app_id = "arc_app_id2_rename";
+  arc_vpn_provider2_rename->last_launch_time = launchTime2;
+
+  vpn_list.AddOrUpdateArcVPNProvider(std::move(arc_vpn_provider2_rename));
+  arc_provider2.provider_name = "ArcVPNMonster2Rename";
+  arc_provider2.app_id = "arc_app_id2_rename";
+
+  arc_providers = vpn_list.arc_vpn_providers();
+  EXPECT_EQ(1u, arc_providers.size());
+  EXPECT_EQ(1u, std::count(arc_providers.begin(), arc_providers.end(),
+                           arc_provider2));
+  EXPECT_EQ(launchTime2, arc_providers[0].last_launch_time);
 }
 
 TEST_F(VpnListTest, Observers) {
