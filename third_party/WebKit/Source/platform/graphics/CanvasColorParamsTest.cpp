@@ -55,14 +55,15 @@ TEST(CanvasColorParamsTest, MatchSkColorSpaceWithGfxColorSpace) {
             ? SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat
             : SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
 
-    color_space_xform_canvas->apply(
+    EXPECT_TRUE(color_space_xform_canvas->apply(
         transformed_color_format, transformed_pixel_canvas.get(),
         SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat, src_pixel.get(),
-        1, SkAlphaType::kPremul_SkAlphaType);
-    color_space_xform_media->apply(
+        1, SkAlphaType::kPremul_SkAlphaType));
+
+    EXPECT_TRUE(color_space_xform_media->apply(
         transformed_color_format, transformed_pixel_media.get(),
         SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat, src_pixel.get(),
-        1, SkAlphaType::kPremul_SkAlphaType);
+        1, SkAlphaType::kPremul_SkAlphaType));
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         transformed_pixel_canvas.get(), transformed_pixel_media.get(), 1,

@@ -38,9 +38,10 @@ ColorSpaceGamut GetColorSpaceGamut(SkColorSpace* color_space) {
   in[0][3] = 255;
   in[1][3] = 255;
   in[2][3] = 255;
-  transform->apply(SkColorSpaceXform::kRGBA_F32_ColorFormat, out,
-                   SkColorSpaceXform::kRGBA_8888_ColorFormat, in, 3,
-                   kOpaque_SkAlphaType);
+  bool color_converison_successful = transform->apply(
+      SkColorSpaceXform::kRGBA_F32_ColorFormat, out,
+      SkColorSpaceXform::kRGBA_8888_ColorFormat, in, 3, kOpaque_SkAlphaType);
+  DCHECK(color_converison_successful);
   float score = out[0][0] * out[1][1] * out[2][2];
 
   if (score < 0.9)

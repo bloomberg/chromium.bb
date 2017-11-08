@@ -1168,9 +1168,9 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
         SkColorSpaceXform::New(src_rgb_color_space.get(), color_space.get());
     std::unique_ptr<uint8_t[]> transformed_pixel(
         new uint8_t[image_info.bytesPerPixel()]());
-    color_space_xform->apply(color_format, transformed_pixel.get(),
-                             color_format32, src_pixel, 1,
-                             SkAlphaType::kUnpremul_SkAlphaType);
+    EXPECT_TRUE(color_space_xform->apply(color_format, transformed_pixel.get(),
+                                         color_format32, src_pixel, 1,
+                                         SkAlphaType::kUnpremul_SkAlphaType));
 
     ColorCorrectionTestUtils::CompareColorCorrectedPixels(
         converted_pixel.get(), transformed_pixel.get(), 1,
