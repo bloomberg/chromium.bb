@@ -7,13 +7,14 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/WeakPtr.h"
+#include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoader.h"
 
 namespace blink {
 
 class WebData;
-struct WebURLError;
 class WebURLLoaderClient;
 class WebURLLoaderMockFactoryImpl;
 class WebURLLoaderTestDelegate;
@@ -37,7 +38,7 @@ class WebURLLoaderMock : public WebURLLoader {
   void ServeAsynchronousRequest(WebURLLoaderTestDelegate* delegate,
                                 const WebURLResponse& response,
                                 const WebData& data,
-                                const WebURLError& error);
+                                const Optional<WebURLError>& error);
 
   // Simulates the redirect being served.
   WebURL ServeRedirect(const WebURLRequest& request,
@@ -46,7 +47,7 @@ class WebURLLoaderMock : public WebURLLoader {
   // WebURLLoader methods:
   void LoadSynchronously(const WebURLRequest& request,
                          WebURLResponse& response,
-                         WebURLError& error,
+                         Optional<WebURLError>& error,
                          WebData& data,
                          int64_t& encoded_data_length,
                          int64_t& encoded_body_length) override;

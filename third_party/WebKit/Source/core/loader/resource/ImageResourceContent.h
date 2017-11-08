@@ -12,6 +12,7 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/ImageOrientation.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceStatus.h"
 #include "platform/weborigin/KURL.h"
@@ -107,7 +108,7 @@ class CORE_EXPORT ImageResourceContent final
   const KURL& Url() const;
   bool IsAccessAllowed(SecurityOrigin*);
   const ResourceResponse& GetResponse() const;
-  const ResourceError& GetResourceError() const;
+  Optional<ResourceError> GetResourceError() const;
   // DEPRECATED: ImageResourceContents consumers shouldn't need to worry about
   // whether the underlying Resource is being revalidated.
   bool IsCacheValidator() const;

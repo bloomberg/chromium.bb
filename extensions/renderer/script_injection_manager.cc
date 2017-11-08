@@ -224,8 +224,10 @@ void ScriptInjectionManager::RFOHelper::OnStop() {
   // for 204/205/downloads since these don't notify the renderer. However the
   // browser does fire the OnStop IPC. So use that signal instead to avoid
   // keeping the frame in a START state indefinitely which leads to deadlocks.
-  if (content::IsBrowserSideNavigationEnabled())
-    DidFailProvisionalLoad(blink::WebURLError());
+  if (content::IsBrowserSideNavigationEnabled()) {
+    DidFailProvisionalLoad(blink::WebURLError(
+        blink::WebURLError::Domain::kNet, net::ERR_FAILED, blink::WebURL()));
+  }
 }
 
 void ScriptInjectionManager::RFOHelper::OnExecuteCode(

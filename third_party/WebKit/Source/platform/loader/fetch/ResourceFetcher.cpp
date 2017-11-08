@@ -952,8 +952,10 @@ void ResourceFetcher::InsertAsPreloadIfNecessary(Resource* resource,
   // CSP layout tests verify that preloads are subject to access checks by
   // seeing if they are in the `preload started` list. Therefore do not add
   // them to the list if the load is immediately denied.
-  if (resource->GetResourceError().IsAccessCheck())
+  if (resource->LoadFailedOrCanceled() &&
+      resource->GetResourceError().IsAccessCheck()) {
     return;
+  }
   PreloadKey key(params.Url(), type);
   if (preloads_.find(key) == preloads_.end()) {
     preloads_.insert(key, resource);

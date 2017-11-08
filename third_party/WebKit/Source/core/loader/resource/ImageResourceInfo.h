@@ -8,9 +8,11 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceStatus.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -43,7 +45,7 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
       SecurityOrigin*,
       DoesCurrentFrameHaveSingleSecurityOrigin) const = 0;
   virtual bool HasCacheControlNoStoreHeader() const = 0;
-  virtual const ResourceError& GetResourceError() const = 0;
+  virtual Optional<ResourceError> GetResourceError() const = 0;
 
   // TODO(hiroshige): Remove this once MemoryCache becomes further weaker.
   virtual void SetDecodedSize(size_t) = 0;

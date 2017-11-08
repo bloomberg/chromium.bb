@@ -1094,7 +1094,8 @@ TEST_F(FrameFetchContextTest, DispatchDidFinishLoadingWhenDetached) {
 TEST_F(FrameFetchContextTest, DispatchDidFailWhenDetached) {
   dummy_page_holder = nullptr;
 
-  fetch_context->DispatchDidFail(8, ResourceError(), 5, false);
+  fetch_context->DispatchDidFail(8, ResourceError::Failure(NullURL()), 5,
+                                 false);
   // Should not crash.
 }
 

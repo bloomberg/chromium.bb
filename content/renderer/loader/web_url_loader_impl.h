@@ -96,7 +96,7 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
   // WebURLLoader methods:
   void LoadSynchronously(const blink::WebURLRequest& request,
                          blink::WebURLResponse& response,
-                         blink::WebURLError& error,
+                         base::Optional<blink::WebURLError>& error,
                          blink::WebData& data,
                          int64_t& encoded_data_length,
                          int64_t& encoded_body_length) override;

@@ -31,9 +31,10 @@
 #ifndef WebURLLoader_h
 #define WebURLLoader_h
 
+#include <stdint.h>
 #include "WebCommon.h"
 #include "WebURLRequest.h"
-#include <stdint.h>
+#include "base/optional.h"
 
 namespace blink {
 
@@ -52,7 +53,7 @@ class WebURLLoader {
   // synchronous load!!
   virtual void LoadSynchronously(const WebURLRequest&,
                                  WebURLResponse&,
-                                 WebURLError&,
+                                 base::Optional<WebURLError>&,
                                  WebData&,
                                  int64_t& encoded_data_length,
                                  int64_t& encoded_body_length) = 0;

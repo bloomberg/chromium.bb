@@ -51,7 +51,9 @@ class NullImageResourceInfo final
     return true;
   }
   bool HasCacheControlNoStoreHeader() const override { return false; }
-  const ResourceError& GetResourceError() const override { return error_; }
+  Optional<ResourceError> GetResourceError() const override {
+    return WTF::nullopt;
+  }
 
   void SetDecodedSize(size_t) override {}
   void WillAddClientOrObserver() override {}
@@ -63,7 +65,6 @@ class NullImageResourceInfo final
 
   const KURL url_;
   const ResourceResponse response_;
-  const ResourceError error_;
 };
 
 }  // namespace
@@ -568,7 +569,7 @@ const ResourceResponse& ImageResourceContent::GetResponse() const {
   return info_->GetResponse();
 }
 
-const ResourceError& ImageResourceContent::GetResourceError() const {
+Optional<ResourceError> ImageResourceContent::GetResourceError() const {
   return info_->GetResourceError();
 }
 

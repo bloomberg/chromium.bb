@@ -35,37 +35,8 @@
 
 namespace blink {
 
-WebURLError::WebURLError(const ResourceError& error) {
-  *this = error;
-}
-
-WebURLError& WebURLError::operator=(const ResourceError& error) {
-  if (error.IsNull()) {
-    *this = WebURLError();
-  } else {
-    domain_ = error.GetDomain();
-    reason_ = error.ErrorCode();
-    url_ = KURL(error.FailingURL());
-    has_copy_in_cache_ = error.StaleCopyInCache();
-    is_web_security_violation_ = error.IsAccessCheck();
-  }
-  return *this;
-}
-
-WebURLError::operator ResourceError() const {
-  if (!reason_)
-    return ResourceError();
-  ResourceError resource_error(domain_, reason_, url_);
-  resource_error.SetStaleCopyInCache(has_copy_in_cache_);
-  resource_error.SetIsAccessCheck(is_web_security_violation_);
-  return resource_error;
-}
-
 std::ostream& operator<<(std::ostream& out, const WebURLError::Domain domain) {
   switch (domain) {
-    case WebURLError::Domain::kEmpty:
-      out << "(null)";
-      break;
     case WebURLError::Domain::kNet:
       out << "net";
       break;

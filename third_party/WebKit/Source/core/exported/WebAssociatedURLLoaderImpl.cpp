@@ -46,6 +46,7 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashSet.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
@@ -149,7 +150,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
   WebAssociatedURLLoaderClient* client_;
   WebAssociatedURLLoaderOptions options_;
   network::mojom::FetchRequestMode fetch_request_mode_;
-  WebURLError error_;
+  Optional<WebURLError> error_;
 
   TaskRunnerTimer<ClientAdapter> error_timer_;
   bool enable_error_notifications_;
@@ -296,13 +297,13 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::DidFail(
   loader_->ClientAdapterDone();
 
   did_fail_ = true;
-  error_ = WebURLError(error);
+  error_ = static_cast<WebURLError>(error);
   if (enable_error_notifications_)
     NotifyError(&error_timer_);
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::DidFailRedirectCheck() {
-  DidFail(ResourceError());
+  DidFail(ResourceError::Failure(NullURL()));
 }
 
 void WebAssociatedURLLoaderImpl::ClientAdapter::EnableErrorNotifications() {
@@ -317,8 +318,10 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::EnableErrorNotifications() {
 void WebAssociatedURLLoaderImpl::ClientAdapter::NotifyError(TimerBase* timer) {
   DCHECK_EQ(timer, &error_timer_);
 
-  if (client_)
-    ReleaseClient()->DidFail(error_);
+  if (client_) {
+    DCHECK(error_);
+    ReleaseClient()->DidFail(*error_);
+  }
   // |this| may be dead here.
 }
 

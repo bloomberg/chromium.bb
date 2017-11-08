@@ -215,8 +215,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
     // The response should have started, but must not have finished, or failed.
     EXPECT_TRUE(did_receive_response_);
     EXPECT_FALSE(did_finish_);
-    EXPECT_EQ(net::OK, error_.reason());
-    EXPECT_EQ(blink::WebURLError::Domain::kEmpty, error_.domain());
+    EXPECT_FALSE(error_);
 
     received_data_.append(data, dataLength);
 
@@ -264,7 +263,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   bool did_receive_response() const { return did_receive_response_; }
   const std::string& received_data() const { return received_data_; }
   bool did_finish() const { return did_finish_; }
-  const blink::WebURLError& error() const { return error_; }
+  const base::Optional<blink::WebURLError>& error() const { return error_; }
   const blink::WebURLResponse& response() const { return response_; }
 
  private:
@@ -281,7 +280,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   bool did_receive_response_;
   std::string received_data_;
   bool did_finish_;
-  blink::WebURLError error_;
+  base::Optional<blink::WebURLError> error_;
   blink::WebURLResponse response_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebURLLoaderClient);
@@ -357,8 +356,7 @@ class WebURLLoaderImplTest : public testing::Test {
                                strlen(kTestData));
     EXPECT_TRUE(client()->did_finish());
     // There should be no error.
-    EXPECT_EQ(net::OK, client()->error().reason());
-    EXPECT_EQ(blink::WebURLError::Domain::kEmpty, client()->error().domain());
+    EXPECT_FALSE(client()->error());
   }
 
   void DoFailRequest() {
@@ -367,8 +365,9 @@ class WebURLLoaderImplTest : public testing::Test {
                                strlen(kTestData), strlen(kTestData),
                                strlen(kTestData));
     EXPECT_FALSE(client()->did_finish());
-    EXPECT_EQ(net::ERR_FAILED, client()->error().reason());
-    EXPECT_EQ(blink::WebURLError::Domain::kNet, client()->error().domain());
+    ASSERT_TRUE(client()->error());
+    EXPECT_EQ(net::ERR_FAILED, client()->error()->reason());
+    EXPECT_EQ(blink::WebURLError::Domain::kNet, client()->error()->domain());
   }
 
   void DoReceiveResponseFtp() {
@@ -478,8 +477,7 @@ TEST_F(WebURLLoaderImplTest, DataURL) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ("blah!", client()->received_data());
   EXPECT_TRUE(client()->did_finish());
-  EXPECT_EQ(net::OK, client()->error().reason());
-  EXPECT_EQ(blink::WebURLError::Domain::kEmpty, client()->error().domain());
+  EXPECT_FALSE(client()->error());
 }
 
 TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveResponse) {
@@ -544,8 +542,7 @@ TEST_F(WebURLLoaderImplTest, DataURLDefersLoading) {
   EXPECT_TRUE(client()->did_finish());
 
   EXPECT_EQ("blah!", client()->received_data());
-  EXPECT_EQ(net::OK, client()->error().reason());
-  EXPECT_EQ(blink::WebURLError::Domain::kEmpty, client()->error().domain());
+  EXPECT_FALSE(client()->error());
 }
 
 TEST_F(WebURLLoaderImplTest, DefersLoadingBeforeStart) {
@@ -701,7 +698,7 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   dispatcher()->set_sync_load_response(sync_load_response);
 
   blink::WebURLResponse response;
-  blink::WebURLError error;
+  base::Optional<blink::WebURLError> error;
   blink::WebData data;
   int64_t encoded_data_length = 0;
   int64_t encoded_body_length = 0;
