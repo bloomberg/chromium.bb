@@ -32,6 +32,7 @@ class WebStateTopSitesObserver
   void NavigationItemCommitted(
       web::WebState* web_state,
       const web::LoadCommittedDetails& load_details) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   // Underlying TopSites instance, may be null during testing.
   TopSites* top_sites_;
