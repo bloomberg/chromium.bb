@@ -10,7 +10,21 @@ body {
 }
 
 button {
-  margin-bottom: 5px;
+  background: rgb(53, 106, 222);
+  border-radius: 5px;
+  box-shadow: 2px silver;
+  color: white;
+  font-size: 65%;
+  font-weight: bold;
+  margin: 5px 0;
+  padding: 5px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+#clear-log-button {
+  float: right;
 }
 
 .hidden-tab {
