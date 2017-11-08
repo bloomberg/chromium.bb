@@ -34,6 +34,7 @@ content::WebUIDataSource* CreateInstantHTMLSource() {
   source->AddResourcePath("instant.js", IDR_INSTANT_JS);
   source->AddResourcePath("instant.css", IDR_INSTANT_CSS);
   source->SetDefaultResource(IDR_INSTANT_HTML);
+  source->UseGzip();
   return source;
 }
 

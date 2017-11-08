@@ -90,6 +90,7 @@ content::WebUIDataSource* CreateMemoryInternalsUIHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUIMemoryInternalsHost);
   source->SetDefaultResource(IDR_MEMORY_INTERNALS_HTML);
   source->AddResourcePath("memory_internals.js", IDR_MEMORY_INTERNALS_JS);
+  source->UseGzip();
   return source;
 }
 

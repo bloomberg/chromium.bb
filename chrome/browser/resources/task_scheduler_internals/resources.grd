@@ -14,13 +14,16 @@
     <includes>
       <include name="IDR_TASK_SCHEDULER_INTERNALS_RESOURCES_INDEX_HTML"
                file="index.html"
-               type="BINDATA" />
+               type="BINDATA"
+               compress="gzip" />
       <include name="IDR_TASK_SCHEDULER_INTERNALS_RESOURCES_INDEX_CSS"
                file="index.css"
-               type="BINDATA" />
+               type="BINDATA"
+               compress="gzip" />
       <include name="IDR_TASK_SCHEDULER_INTERNALS_RESOURCES_INDEX_JS"
                file="index.js"
-               type="BINDATA" />
+               type="BINDATA"
+               compress="gzip" />
     </includes>
   </release>
 </grit>

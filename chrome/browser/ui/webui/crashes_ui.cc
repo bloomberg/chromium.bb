@@ -56,6 +56,7 @@ content::WebUIDataSource* CreateCrashesUIHTMLSource() {
   source->SetJsonPath("strings.js");
   source->AddResourcePath(crash::kCrashesUICrashesJS, IDR_CRASH_CRASHES_JS);
   source->SetDefaultResource(IDR_CRASH_CRASHES_HTML);
+  source->UseGzip();
   return source;
 }
 
