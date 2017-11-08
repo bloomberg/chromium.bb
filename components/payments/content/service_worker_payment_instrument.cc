@@ -37,6 +37,9 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
     icon_image_ =
         gfx::ImageSkia::CreateFrom1xBitmap(*(stored_payment_app_info_->icon))
             .DeepCopy();
+  } else {
+    // Create an empty icon image to avoid using invalid icon resource id.
+    icon_image_ = gfx::ImageSkia::CreateFrom1xBitmap(SkBitmap()).DeepCopy();
   }
 }
 
