@@ -709,6 +709,14 @@ def _PostParseCheck(parser, options, site_config):
   if build_config.debug:
     options.debug = True
 
+  if not (config_lib.isTryjobConfig(build_config) or
+          options.buildbot or
+          options.debug):
+    cros_build_lib.Die(
+        'Refusing to run non-tryjob config as a tryjob.\n'
+        'Please see "repo sync && cros tryjob --list %s" for alternatives.',
+        build_config.name)
+
   # The --version option is not compatible with an external target unless the
   # --buildbot option is specified.  More correctly, only "paladin versions"
   # will work with external targets, and those are only used with --buildbot.
