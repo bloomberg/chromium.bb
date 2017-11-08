@@ -150,14 +150,14 @@ int WebAXObject::AxID() const {
   if (IsDetached())
     return -1;
 
-  return private_->AxObjectID();
+  return private_->AXObjectID();
 }
 
 int WebAXObject::GenerateAXID() const {
   if (IsDetached())
     return -1;
 
-  return private_->AxObjectCache().GenerateAXID();
+  return private_->AXObjectCache().GenerateAXID();
 }
 
 bool WebAXObject::UpdateLayoutAndCheckValidity() {
@@ -1494,7 +1494,8 @@ WebAXObject WebAXObject::FromWebNode(const WebNode& web_node) {
 // static
 WebAXObject WebAXObject::FromWebDocument(const WebDocument& web_document) {
   const Document* document = web_document.ConstUnwrap<Document>();
-  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
+  AXObjectCacheImpl* cache =
+      ToAXObjectCacheImpl(document->GetOrCreateAXObjectCache());
   return cache ? WebAXObject(cache->GetOrCreate(
                      ToLayoutView(LayoutAPIShim::LayoutObjectFrom(
                          document->GetLayoutViewItem()))))
@@ -1505,7 +1506,8 @@ WebAXObject WebAXObject::FromWebDocument(const WebDocument& web_document) {
 WebAXObject WebAXObject::FromWebDocumentByID(const WebDocument& web_document,
                                              int ax_id) {
   const Document* document = web_document.ConstUnwrap<Document>();
-  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
+  AXObjectCacheImpl* cache =
+      ToAXObjectCacheImpl(document->GetOrCreateAXObjectCache());
   return cache ? WebAXObject(cache->ObjectFromAXID(ax_id)) : WebAXObject();
 }
 
@@ -1513,7 +1515,8 @@ WebAXObject WebAXObject::FromWebDocumentByID(const WebDocument& web_document,
 WebAXObject WebAXObject::FromWebDocumentFocused(
     const WebDocument& web_document) {
   const Document* document = web_document.ConstUnwrap<Document>();
-  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(document->AxObjectCache());
+  AXObjectCacheImpl* cache =
+      ToAXObjectCacheImpl(document->GetOrCreateAXObjectCache());
   return cache ? WebAXObject(cache->FocusedObject()) : WebAXObject();
 }
 

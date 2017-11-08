@@ -65,7 +65,7 @@ AXObject* AXListBox::ActiveDescendant() {
   int active_index = select->ActiveSelectionEndListIndex();
   if (active_index >= 0 && active_index < static_cast<int>(select->length())) {
     HTMLOptionElement* option = select->item(active_index_);
-    return AxObjectCache().Get(option);
+    return AXObjectCache().Get(option);
   }
 
   return nullptr;
@@ -84,7 +84,7 @@ void AXListBox::ActiveIndexChanged() {
   if (!select->IsFocused())
     return;
 
-  AxObjectCache().PostNotification(
+  AXObjectCache().PostNotification(
       this, AXObjectCacheImpl::kAXActiveDescendantChanged);
 }
 

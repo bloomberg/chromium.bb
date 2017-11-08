@@ -40,7 +40,7 @@ void AXRadioInput::UpdatePosAndSetSize(int position) {
 void AXRadioInput::RequestUpdateToNextNode(bool forward) {
   HTMLInputElement* next_element =
       RadioInputType::NextRadioButtonInGroup(GetInputElement(), forward);
-  AXObject* next_axobject = AxObjectCache().Get(next_element);
+  AXObject* next_axobject = AXObjectCache().Get(next_element);
   if (!next_axobject || !next_axobject->IsAXRadioInput())
     return;
 
@@ -52,7 +52,7 @@ void AXRadioInput::RequestUpdateToNextNode(bool forward) {
   // modify m_posInSet and updates m_setSize as size is increased.
 
   ToAXRadioInput(next_axobject)->UpdatePosAndSetSize(position);
-  AxObjectCache().PostNotification(next_axobject,
+  AXObjectCache().PostNotification(next_axobject,
                                    AXObjectCacheImpl::kAXAriaAttributeChanged);
   ToAXRadioInput(next_axobject)->RequestUpdateToNextNode(forward);
 }
@@ -88,7 +88,7 @@ bool AXRadioInput::CalculatePosInSet() {
   HTMLInputElement* prev_element =
       RadioInputType::NextRadioButtonInGroup(GetInputElement(), false);
   if (prev_element) {
-    AXObject* object = AxObjectCache().Get(prev_element);
+    AXObject* object = AXObjectCache().Get(prev_element);
     // If the previous element doesn't have AXObject yet, caculate position
     // from the first element.  Otherwise, get position from the previous
     // AXObject.

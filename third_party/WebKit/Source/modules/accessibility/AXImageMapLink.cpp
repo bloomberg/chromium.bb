@@ -65,7 +65,7 @@ AXObject* AXImageMapLink::ComputeParent() const {
   if (!MapElement())
     return nullptr;
 
-  return AxObjectCache().GetOrCreate(MapElement()->GetLayoutObject());
+  return AXObjectCache().GetOrCreate(MapElement()->GetLayoutObject());
 }
 
 AccessibilityRole AXImageMapLink::RoleValue() const {
@@ -120,7 +120,7 @@ void AXImageMapLink::GetRelativeBounds(
     return;
 
   out_bounds_in_container = area->GetPath(layout_object).BoundingRect();
-  *out_container = AxObjectCache().GetOrCreate(layout_object);
+  *out_container = AXObjectCache().GetOrCreate(layout_object);
 }
 
 void AXImageMapLink::Trace(blink::Visitor* visitor) {

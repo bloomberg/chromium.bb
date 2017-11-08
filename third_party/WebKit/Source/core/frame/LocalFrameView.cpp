@@ -1337,7 +1337,7 @@ void LocalFrameView::UpdateLayout() {
 
   layout_count_++;
 
-  if (AXObjectCache* cache = document->AxObjectCache()) {
+  if (AXObjectCache* cache = document->GetOrCreateAXObjectCache()) {
     const KURL& url = document->Url();
     if (url.IsValid() && !url.IsAboutBlankURL())
       cache->HandleLayoutComplete(document);
@@ -4003,7 +4003,7 @@ bool LocalFrameView::VisualViewportSuppliesScrollbars() {
              controller.GlobalRootScroller()) == LayoutViewportScrollableArea();
 }
 
-AXObjectCache* LocalFrameView::AxObjectCache() const {
+AXObjectCache* LocalFrameView::ExistingAXObjectCache() const {
   if (GetFrame().GetDocument())
     return GetFrame().GetDocument()->ExistingAXObjectCache();
   return nullptr;

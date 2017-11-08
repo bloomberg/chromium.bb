@@ -2614,7 +2614,7 @@ StyleResolver& Document::EnsureStyleResolver() const {
 
 void Document::Initialize() {
   DCHECK_EQ(lifecycle_.GetState(), DocumentLifecycle::kInactive);
-  DCHECK(!ax_object_cache_ || this != &AxObjectCacheOwner());
+  DCHECK(!ax_object_cache_ || this != &AXObjectCacheOwner());
 
   layout_view_ = new LayoutView(this);
   SetLayoutObject(layout_view_);
@@ -2723,7 +2723,7 @@ void Document::Shutdown() {
   }
   sequential_focus_navigation_starting_point_ = nullptr;
 
-  if (this == &AxObjectCacheOwner())
+  if (this == &AXObjectCacheOwner())
     ClearAXObjectCache();
 
   layout_view_ = nullptr;
@@ -2731,7 +2731,7 @@ void Document::Shutdown() {
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());
 
-  if (this != &AxObjectCacheOwner()) {
+  if (this != &AXObjectCacheOwner()) {
     if (AXObjectCache* cache = ExistingAXObjectCache()) {
       // Documents that are not a root document use the AXObjectCache in
       // their root document. Node::removedFrom is called after the
@@ -2806,7 +2806,7 @@ void Document::RemoveAllEventListeners() {
     dom_window->RemoveAllEventListeners();
 }
 
-Document& Document::AxObjectCacheOwner() const {
+Document& Document::AXObjectCacheOwner() const {
   // Every document has its own axObjectCache if accessibility is enabled,
   // except for page popups, which share the axObjectCache of their owner.
   Document* doc = const_cast<Document*>(this);
@@ -2815,13 +2815,13 @@ Document& Document::AxObjectCacheOwner() const {
     return doc->GetFrame()
         ->PagePopupOwner()
         ->GetDocument()
-        .AxObjectCacheOwner();
+        .AXObjectCacheOwner();
   }
   return *doc;
 }
 
 void Document::ClearAXObjectCache() {
-  DCHECK_EQ(&AxObjectCacheOwner(), this);
+  DCHECK_EQ(&AXObjectCacheOwner(), this);
   // Clear the cache member variable before calling delete because attempts
   // are made to access it during destruction.
   if (ax_object_cache_)
@@ -2830,7 +2830,7 @@ void Document::ClearAXObjectCache() {
 }
 
 AXObjectCache* Document::ExistingAXObjectCache() const {
-  auto& cache_owner = AxObjectCacheOwner();
+  auto& cache_owner = AXObjectCacheOwner();
 
   // If the layoutObject is gone then we are in the process of destruction.
   // This method will be called before m_frame = nullptr.
@@ -2840,7 +2840,7 @@ AXObjectCache* Document::ExistingAXObjectCache() const {
   return cache_owner.ax_object_cache_.Get();
 }
 
-AXObjectCache* Document::AxObjectCache() const {
+AXObjectCache* Document::GetOrCreateAXObjectCache() const {
   Settings* settings = GetSettings();
   if (!settings || !settings->GetAccessibilityEnabled())
     return nullptr;
@@ -2850,7 +2850,7 @@ AXObjectCache* Document::AxObjectCache() const {
   // which share the AXObjectCache of their owner.
   //
   // See http://crbug.com/532249
-  Document& cache_owner = AxObjectCacheOwner();
+  Document& cache_owner = AXObjectCacheOwner();
 
   // If the document has already been detached, do not make a new axObjectCache.
   if (!cache_owner.GetLayoutView())
@@ -3231,8 +3231,8 @@ void Document::ImplicitClose() {
 
   if (GetFrame() && !GetLayoutViewItem().IsNull() &&
       GetSettings()->GetAccessibilityEnabled()) {
-    if (AXObjectCache* cache = AxObjectCache()) {
-      if (this == &AxObjectCacheOwner())
+    if (AXObjectCache* cache = GetOrCreateAXObjectCache()) {
+      if (this == &AXObjectCacheOwner())
         cache->HandleLoadComplete(this);
       else
         cache->HandleLayoutComplete(this);
@@ -4582,9 +4582,10 @@ bool Document::SetFocusedElement(Element* new_focused_element,
   if (!focus_change_blocked && focused_element_) {
     // Create the AXObject cache in a focus change because Chromium relies on
     // it.
-    if (AXObjectCache* cache = AxObjectCache())
+    if (AXObjectCache* cache = GetOrCreateAXObjectCache()) {
       cache->HandleFocusedUIElementChanged(old_focused_element,
                                            new_focused_element);
+    }
   }
 
   if (!focus_change_blocked && GetPage()) {

@@ -529,7 +529,7 @@ void AXObjectCacheImpl::InvalidateTableSubtree(AXObject* subtree) {
     }
   }
 
-  AXID ax_id = subtree->AxObjectID();
+  AXID ax_id = subtree->AXObjectID();
   Remove(ax_id);
 }
 
@@ -611,7 +611,7 @@ AXID AXObjectCacheImpl::GenerateAXID() const {
 
 AXID AXObjectCacheImpl::GetOrCreateAXID(AXObject* obj) {
   // check for already-assigned ID
-  const AXID existing_axid = obj->AxObjectID();
+  const AXID existing_axid = obj->AXObjectID();
   if (existing_axid) {
     DCHECK(ids_in_use_.Contains(existing_axid));
     return existing_axid;
@@ -630,7 +630,7 @@ void AXObjectCacheImpl::RemoveAXID(AXObject* object) {
   if (!object)
     return;
 
-  AXID obj_id = object->AxObjectID();
+  AXID obj_id = object->AXObjectID();
   if (!obj_id)
     return;
   DCHECK(!HashTraits<AXID>::IsDeletedValue(obj_id));
@@ -725,7 +725,7 @@ void AXObjectCacheImpl::NotificationPostTimerFired(TimerBase*) {
   for (i = 0; i < count; ++i) {
     AXObject* obj = notifications_to_post_[i].first;
 
-    if (!obj->AxObjectID())
+    if (!obj->AXObjectID())
       continue;
 
     if (obj->IsDetached())
@@ -1052,7 +1052,7 @@ void AXObjectCacheImpl::PostPlatformNotification(AXObject* obj,
     return;
   // Send via WebFrameClient
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(
-      obj->GetDocument()->AxObjectCacheOwner().GetFrame());
+      obj->GetDocument()->AXObjectCacheOwner().GetFrame());
   if (webframe && webframe->Client()) {
     webframe->Client()->PostAccessibilityEvent(
         WebAXObject(obj), static_cast<WebAXEvent>(notification));

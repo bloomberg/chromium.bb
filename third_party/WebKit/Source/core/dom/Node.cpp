@@ -1056,7 +1056,7 @@ void Node::AttachLayoutTree(AttachContext& context) {
   ClearNeedsStyleRecalc();
   ClearNeedsReattachLayoutTree();
 
-  if (AXObjectCache* cache = GetDocument().AxObjectCache())
+  if (AXObjectCache* cache = GetDocument().GetOrCreateAXObjectCache())
     cache->UpdateCacheAfterNodeIsAttached(this);
 }
 

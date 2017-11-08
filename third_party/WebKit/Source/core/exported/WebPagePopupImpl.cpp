@@ -348,7 +348,7 @@ AXObject* WebPagePopupImpl::RootAXObject() {
   Document* document = ToLocalFrame(page_->MainFrame())->GetDocument();
   if (!document)
     return nullptr;
-  AXObjectCache* cache = document->AxObjectCache();
+  AXObjectCache* cache = document->GetOrCreateAXObjectCache();
   DCHECK(cache);
   return ToAXObjectCacheBase(cache)->GetOrCreate(ToLayoutView(
       LayoutAPIShim::LayoutObjectFrom(document->GetLayoutViewItem())));

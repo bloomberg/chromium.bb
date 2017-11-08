@@ -72,13 +72,13 @@ void AXSpinButton::AddChildren() {
   have_children_ = true;
 
   AXSpinButtonPart* incrementor =
-      ToAXSpinButtonPart(AxObjectCache().GetOrCreate(kSpinButtonPartRole));
+      ToAXSpinButtonPart(AXObjectCache().GetOrCreate(kSpinButtonPartRole));
   incrementor->SetIsIncrementor(true);
   incrementor->SetParent(this);
   children_.push_back(incrementor);
 
   AXSpinButtonPart* decrementor =
-      ToAXSpinButtonPart(AxObjectCache().GetOrCreate(kSpinButtonPartRole));
+      ToAXSpinButtonPart(AXObjectCache().GetOrCreate(kSpinButtonPartRole));
   decrementor->SetIsIncrementor(false);
   decrementor->SetParent(this);
   children_.push_back(decrementor);

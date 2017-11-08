@@ -87,7 +87,7 @@ void AXTableColumn::HeaderObjectsForColumn(AXObjectVector& headers) {
       if (!layout_cell)
         continue;
 
-      AXObject* cell = AxObjectCache().GetOrCreate(layout_cell->GetNode());
+      AXObject* cell = AXObjectCache().GetOrCreate(layout_cell->GetNode());
       if (!cell || !cell->IsTableCell() || headers.Contains(cell))
         continue;
 

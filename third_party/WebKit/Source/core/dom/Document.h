@@ -575,9 +575,9 @@ class CORE_EXPORT Document : public ContainerNode,
   LayoutView* GetLayoutView() const { return layout_view_; }
   LayoutViewItem GetLayoutViewItem() const;
 
-  Document& AxObjectCacheOwner() const;
+  Document& AXObjectCacheOwner() const;
   AXObjectCache* ExistingAXObjectCache() const;
-  AXObjectCache* AxObjectCache() const;
+  AXObjectCache* GetOrCreateAXObjectCache() const;
   void ClearAXObjectCache();
 
   // to get visually ordered hebrew and arabic pages right

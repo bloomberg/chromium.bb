@@ -712,7 +712,7 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
   if (IsDetached())
     return;
 
-  AXObjectCacheImpl& cache = AxObjectCache();
+  AXObjectCacheImpl& cache = AXObjectCache();
 
   if (cache.ModificationCount() == last_modification_count_)
     return;
@@ -772,7 +772,7 @@ bool AXObject::ComputeIsInertOrAriaHidden(
       if (ignored_reasons) {
         HTMLDialogElement* dialog = GetActiveDialogElement(GetNode());
         if (dialog) {
-          AXObject* dialog_object = AxObjectCache().GetOrCreate(dialog);
+          AXObject* dialog_object = AXObjectCache().GetOrCreate(dialog);
           if (dialog_object) {
             ignored_reasons->push_back(
                 IgnoredReason(kAXActiveModalDialog, dialog_object));
@@ -854,7 +854,7 @@ const AXObject* AXObject::InertRoot() const {
                          : FlatTreeTraversal::ParentElement(*node);
   while (element) {
     if (element->hasAttribute(inertAttr))
-      return AxObjectCache().GetOrCreate(element);
+      return AXObjectCache().GetOrCreate(element);
     element = FlatTreeTraversal::ParentElement(*element);
   }
 
@@ -895,8 +895,8 @@ bool AXObject::DispatchEventToAOMEventListeners(Event& event,
   // time an event is received that actually would have triggered an
   // event listener. However, if the user grants this permission, it
   // persists for this origin from then on.
-  if (!AxObjectCache().CanCallAOMEventListeners()) {
-    AxObjectCache().RequestAOMEventListenerPermission();
+  if (!AXObjectCache().CanCallAOMEventListeners()) {
+    AXObjectCache().RequestAOMEventListenerPermission();
     return false;
   }
 
@@ -1280,7 +1280,7 @@ String AXObject::AriaTextAlternative(bool recursive,
         text_alternative =
             TextFromAriaLabelledby(visited_copy, related_objects, ids);
         if (!ids.IsEmpty())
-          AxObjectCache().UpdateReverseRelations(this, ids);
+          AXObjectCache().UpdateReverseRelations(this, ids);
         if (!text_alternative.IsNull()) {
           if (name_sources) {
             NameSource& source = name_sources->back();
@@ -1336,7 +1336,7 @@ String AXObject::TextFromElements(
   AXRelatedObjectVector local_related_objects;
 
   for (const auto& element : elements) {
-    AXObject* ax_element = AxObjectCache().GetOrCreate(element);
+    AXObject* ax_element = AXObjectCache().GetOrCreate(element);
     if (ax_element) {
       found_valid_element = true;
 
@@ -1692,8 +1692,8 @@ AXObject* AXObject::ParentObject() const {
   if (parent_)
     return parent_;
 
-  if (AxObjectCache().IsAriaOwned(this))
-    return AxObjectCache().GetAriaOwnedParent(this);
+  if (AXObjectCache().IsAriaOwned(this))
+    return AXObjectCache().GetAriaOwnedParent(this);
 
   return ComputeParent();
 }
@@ -1770,7 +1770,7 @@ void AXObject::AddAccessibleNodeChildren() {
     return;
 
   for (const auto& child : accessible_node->GetChildren())
-    children_.push_back(AxObjectCache().GetOrCreate(child));
+    children_.push_back(AXObjectCache().GetOrCreate(child));
 }
 
 Element* AXObject::GetElement() const {
@@ -1886,7 +1886,7 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
   // explicit container element that the coordinates are relative to must be
   // provided too.
   if (!explicit_element_rect_.IsEmpty()) {
-    *out_container = AxObjectCache().ObjectFromAXID(explicit_container_id_);
+    *out_container = AXObjectCache().ObjectFromAXID(explicit_container_id_);
     if (*out_container) {
       out_bounds_in_container = FloatRect(explicit_element_rect_);
       return;
@@ -2103,8 +2103,8 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
       target_rect, ScrollAlignment::kAlignCenterIfNeeded,
       ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll, false,
       kScrollBehaviorAuto);
-  AxObjectCache().PostNotification(
-      AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
+  AXObjectCache().PostNotification(
+      AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       AXObjectCacheImpl::kAXLocationChanged);
   return true;
 }
@@ -2128,8 +2128,8 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
   layout_object->ScrollRectToVisible(target_rect, scroll_alignment,
                                      scroll_alignment, kProgrammaticScroll,
                                      false, kScrollBehaviorAuto);
-  AxObjectCache().PostNotification(
-      AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
+  AXObjectCache().PostNotification(
+      AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       AXObjectCacheImpl::kAXLocationChanged);
   return true;
 }
@@ -2146,8 +2146,8 @@ bool AXObject::OnNativeScrollToGlobalPointAction(
       target_rect, ScrollAlignment::kAlignLeftAlways,
       ScrollAlignment::kAlignTopAlways, kProgrammaticScroll, false,
       kScrollBehaviorAuto);
-  AxObjectCache().PostNotification(
-      AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
+  AXObjectCache().PostNotification(
+      AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       AXObjectCacheImpl::kAXLocationChanged);
   return true;
 }

@@ -379,7 +379,7 @@ void AXTable::AddChildren() {
     return;
 
   LayoutTable* table = ToLayoutTable(layout_object_);
-  AXObjectCacheImpl& ax_cache = AxObjectCache();
+  AXObjectCacheImpl& ax_cache = AXObjectCache();
 
   Node* table_node = table->GetNode();
   if (!IsHTMLTableElement(table_node))
@@ -451,7 +451,7 @@ AXObject* AXTable::HeaderContainer() {
     return header_container_.Get();
 
   AXMockObject* table_header =
-      ToAXMockObject(AxObjectCache().GetOrCreate(kTableHeaderContainerRole));
+      ToAXMockObject(AXObjectCache().GetOrCreate(kTableHeaderContainerRole));
   table_header->SetParent(this);
 
   header_container_ = table_header;

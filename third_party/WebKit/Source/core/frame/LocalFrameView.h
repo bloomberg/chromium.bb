@@ -1061,7 +1061,7 @@ class CORE_EXPORT LocalFrameView final
 
   void UpdateScrollCorner();
 
-  AXObjectCache* AxObjectCache() const;
+  AXObjectCache* ExistingAXObjectCache() const;
 
   void SetLayoutSizeInternal(const IntSize&);
 
