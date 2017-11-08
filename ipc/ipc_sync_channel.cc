@@ -682,9 +682,7 @@ void SyncChannel::WaitForReply(mojo::SyncHandleRegistry* registry,
 }
 
 void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
-  base::RunLoop nested_loop;
+  base::RunLoop nested_loop(base::RunLoop::Type::kNestableTasksAllowed);
   ReceivedSyncMsgQueue::NestedSendDoneWatcher watcher(context, &nested_loop);
   nested_loop.Run();
 }
