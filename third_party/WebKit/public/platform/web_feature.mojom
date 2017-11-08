@@ -1754,6 +1754,7 @@ enum WebFeature {
   kV8ErrorCaptureStackTrace = 2222,
   kV8ErrorPrepareStackTrace = 2223,
   kV8ErrorStackTraceLimit = 2224,
+  kPaintWorklet = 2225,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
