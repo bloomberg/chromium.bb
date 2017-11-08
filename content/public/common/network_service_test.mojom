@@ -22,4 +22,7 @@ interface NetworkServiceTest {
   // updated to |type| and broadcasts will be sent to
   // NetworkConnectionManagerClient implementations.
   SimulateNetworkChange(ConnectionType type) => ();
+
+  // Crash the process where network service is running.
+  SimulateCrash();
 };

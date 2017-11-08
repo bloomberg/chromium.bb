@@ -22,7 +22,8 @@ mojom::NetworkService* GetNetworkService() {
   static mojom::NetworkServicePtr* g_network_service =
       new mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
-  if (!g_network_service->is_bound()) {
+  if (!g_network_service->is_bound() ||
+      g_network_service->encountered_error()) {
     ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
         mojom::kNetworkServiceName, g_network_service);
 
