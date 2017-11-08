@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests how split widget saving to settings works.\n`);
+
+
   var settingIndex = 0;
   function createAndShowSplitWidget(
       isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, shouldSaveShowMode) {
@@ -123,10 +125,4 @@ function test() {
   testSplitWidgetSizes(true, false);
   testSplitWidgetSizes(true, true);
   TestRunner.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests how split widget saving to settings works.</p>
-</body>
-</html>
+})();

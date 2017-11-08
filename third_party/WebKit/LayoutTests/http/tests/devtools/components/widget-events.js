@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`This tests that events are properly propagated through Widget hierarchy.\n`);
+
+
   var TestWidget = class extends UI.Widget {
     constructor(widgetName) {
       super();
@@ -335,15 +337,4 @@ function test() {
       next();
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-This tests that events are properly propagated through Widget hierarchy.
-</p>
-
-</body>
-</html>
+})();

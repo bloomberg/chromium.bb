@@ -1,8 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script type="text/javascript">
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests DataGrid column auto size calculation.\n`);
+  await TestRunner.loadHTML(`
+      <a href="https://bugs.webkit.org/show_bug.cgi?id=101363">Bug 101363</a>
+    `);
+
   runtime.loadModulePromise('data_grid').then(function() {
     function testAutoSize(widths, minPercent, maxPercent) {
       TestRunner.addResult(
@@ -27,12 +32,4 @@ function test() {
     testAutoSize([3, 10, 7, 7, 13, 13, 9, 10, 15, 15, 20, 20, 14, 14, 12, 12, 12, 10, 9, 14, 10, 6, 7, 10, 18], 5);
     TestRunner.completeTest();
   });
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests DataGrid column auto size calculation.</p>
-<a href="https://bugs.webkit.org/show_bug.cgi?id=101363">Bug 101363</a>
-</body>
-</html>
+})();

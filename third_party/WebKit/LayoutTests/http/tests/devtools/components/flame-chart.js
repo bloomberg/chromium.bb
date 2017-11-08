@@ -1,12 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
-function initialize_flameChartTest()
-{
-InspectorTest.preloadModule("perf_ui");
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-InspectorTest.FlameChartProvider = class {
+(async function() {
+  TestRunner.addResult(`Smoke test for basic FlameChart functionality.\n`);
+
+  await TestRunner.loadModule("perf_ui");
+
+   class FlameChartProvider {
     constructor(entries, groups, defaults) {
         this._entries = entries;
         this._defaults = defaults || {};
@@ -66,12 +67,8 @@ InspectorTest.FlameChartProvider = class {
 
     highlightEntry(entryIndex) {
     }
-}
+  }
 
-}
-
-
-function test() {
   var entries = [
     {start: 1000, end: 5000, level: 0, title: 'AAAAAAAAAAAAAAAAAAAAAA'},
     {start: 2000, end: 3000, level: 1, title: 'bbbb'},
@@ -81,7 +78,7 @@ function test() {
   ];
 
   try {
-    var provider = new InspectorTest.FlameChartProvider(entries, null);
+    var provider = new FlameChartProvider(entries, null);
     var flameChart = new PerfUI.FlameChart(provider, new PerfUI.FlameChartDelegate());
     flameChart.update();
     TestRunner.addResult('PASSED');
@@ -89,11 +86,4 @@ function test() {
     TestRunner.addResult('Failed: ' + e.stack);
   }
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Smoke test for basic FlameChart functionality.</p>
-</body>
-</html>
+})();

@@ -1,12 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
-var initialize_Test = function() {
-    InspectorTest.preloadModule("inline_editor");
-};
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests CSSLength.parse, CSSShadowModel.parseTextShadow, and CSSShadowModel.parseBoxShadow.\n`);
+  await TestRunner.loadModule("inline_editor");
+
   TestRunner.addResult('-----CSSLengths-----');
   dumpCSSLength('10px');
   dumpCSSLength('10PX');
@@ -111,12 +110,4 @@ function test() {
     var statusText = shadows.length !== 0 ? 'Succeeded: ' + output.join(', ') : 'Failed';
     TestRunner.addResult('"' + shadowText + '", Parsing ' + statusText);
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>Tests CSSLength.parse, CSSShadowModel.parseTextShadow, and CSSShadowModel.parseBoxShadow.</p>
-</body>
-</html>
+})();

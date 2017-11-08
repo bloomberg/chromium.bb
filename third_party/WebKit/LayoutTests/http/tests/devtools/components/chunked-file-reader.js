@@ -1,10 +1,12 @@
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<script src="../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-async function test() {
+(async function() {
+  TestRunner.addResult(
+      `This tests that ChunkedFileReader properly re-assembles chunks, especially in case these contain multibyte characters.\n`);
+
+
   var text = [
     'Латынь из моды вышла ныне:\n', 'Так, если правду вам сказать,\n', 'Он знал довольно по-латыне,\n',
     'Чтоб эпиграфы разбирать\n'
@@ -25,15 +27,4 @@ async function test() {
   TestRunner.assertEquals(text.join(''), output.data(), 'Read text is different from written text');
   TestRunner.addResult('DONE');
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-This tests that ChunkedFileReader properly re-assembles chunks, especially in case these contain multibyte characters.
-</p>
-
-</body>
-</html>
+})();

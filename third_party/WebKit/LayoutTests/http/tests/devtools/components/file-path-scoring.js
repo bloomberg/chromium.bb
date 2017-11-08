@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/sources-test.js"></script>
-<script src="../resources/example-fileset-for-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Test file path scoring function\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.addScriptTag('../resources/example-fileset-for-test.js');
+
   const TestQueries = [
     ['textepl', './Source/devtools/front_end/TextEditor.pl'],
     ['defted', './Source/devtools/front_end/DefaultTextEditor.pl'],
@@ -78,10 +80,4 @@ function test() {
       result += '<';
     return result + ' (score: ' + score + ')';
   }
-};
-</script>
-</head>
-<body onload="runTest()">
-<p>Test file path scoring function</p>
-</body>
-</html>
+})();

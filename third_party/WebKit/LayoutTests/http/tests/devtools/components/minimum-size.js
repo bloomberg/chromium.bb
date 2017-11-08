@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests how widget minimum size works.\n`);
+
+
   function showRootSplitWidget(splitWidget) {
     splitWidget.element.style.position = 'absolute';
     splitWidget.element.style.top = '0';
@@ -127,10 +129,4 @@ function test() {
   dumpBoundingBoxes(widgets);
 
   TestRunner.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests how widget minimum size works.</p>
-</body>
-</html>
+})();

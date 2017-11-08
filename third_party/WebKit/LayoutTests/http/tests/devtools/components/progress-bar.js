@@ -1,72 +1,60 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script type="text/javascript">
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function initialize_ProgressBarTest()
-{
+(async function() {
+  TestRunner.addResult(`Tests inspector's composite progress bar.\n`);
 
-InspectorTest.MockProgressIndicator = function()
-{
-}
 
-InspectorTest.MockProgressIndicator.prototype = {
+  var MockProgressIndicator = function() {};
+
+  MockProgressIndicator.prototype = {
     // Implementation of Common.Progress interface.
-    isCanceled: function()
-    {
-        return this._isCanceled;
+    isCanceled: function() {
+      return this._isCanceled;
     },
 
-    done: function()
-    {
-        TestRunner.addResult("progress indicator: done");
+    done: function() {
+      TestRunner.addResult('progress indicator: done');
     },
 
-    setTotalWork: function(totalWork)
-    {
-        this._totalWork = totalWork;
+    setTotalWork: function(totalWork) {
+      this._totalWork = totalWork;
     },
 
-    setWorked: function(worked, title)
-    {
-        this._worked = worked;
-        if (typeof title !== "undefined")
-            this._title = title;
-    },
-
-    setTitle: function(title)
-    {
+    setWorked: function(worked, title) {
+      this._worked = worked;
+      if (typeof title !== 'undefined')
         this._title = title;
     },
 
-    // Test methods.
-    cancel: function()
-    {
-        this._isCanceled = true;
+    setTitle: function(title) {
+      this._title = title;
     },
 
-    dump: function()
-    {
-        const roundFactor = 10000;
+    // Test methods.
+    cancel: function() {
+      this._isCanceled = true;
+    },
 
-        var worked = this._worked;
-        var totalWork = this._totalWork;
+    dump: function() {
+      const roundFactor = 10000;
 
-        if (typeof worked === "number")
-            worked = Math.round(worked * roundFactor) / roundFactor;
-        if (typeof totalWork === "number")
-            totalWork = Math.round(totalWork * roundFactor) / roundFactor;
+      var worked = this._worked;
+      var totalWork = this._totalWork;
 
-        TestRunner.addResult("progress: `" + this._title + "' " + worked + " out of " + totalWork + " done.");
-    }    
-}
+      if (typeof worked === 'number')
+        worked = Math.round(worked * roundFactor) / roundFactor;
+      if (typeof totalWork === 'number')
+        totalWork = Math.round(totalWork * roundFactor) / roundFactor;
 
-}
+      TestRunner.addResult('progress: `' + this._title + '\' ' + worked + ' out of ' + totalWork + ' done.');
+    }
+  };
 
-var test = function() {
   TestRunner.runTestSuite([
     function testOneSubProgress(next) {
-      var indicator = new InspectorTest.MockProgressIndicator();
+      var indicator = new MockProgressIndicator();
       var composite = new Common.CompositeProgress(indicator);
       var subProgress = composite.createSubProgress();
 
@@ -85,7 +73,7 @@ var test = function() {
     },
 
     function testMultipleSubProgresses(next) {
-      var indicator = new InspectorTest.MockProgressIndicator();
+      var indicator = new MockProgressIndicator();
       var composite = new Common.CompositeProgress(indicator);
       var subProgress1 = composite.createSubProgress();
       var subProgress2 = composite.createSubProgress(3);
@@ -118,7 +106,7 @@ var test = function() {
     },
 
     function testCancel(next) {
-      var indicator = new InspectorTest.MockProgressIndicator();
+      var indicator = new MockProgressIndicator();
       var composite = new Common.CompositeProgress(indicator);
       var subProgress = composite.createSubProgress();
 
@@ -130,7 +118,7 @@ var test = function() {
     },
 
     function testNested(next) {
-      var indicator = new InspectorTest.MockProgressIndicator();
+      var indicator = new MockProgressIndicator();
       var composite0 = new Common.CompositeProgress(indicator);
       var subProgress01 = composite0.createSubProgress();
       var composite1 = new Common.CompositeProgress(subProgress01);
@@ -157,11 +145,4 @@ var test = function() {
       next();
     }
   ]);
-};
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests inspector's composite progress bar.</p>
-</body>
-</html>
+})();

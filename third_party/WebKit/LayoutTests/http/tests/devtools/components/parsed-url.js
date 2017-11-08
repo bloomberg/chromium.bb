@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script type="text/javascript">
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests inspector ParsedURL class\n`);
+
+
   function parseAndDumpURL(url) {
     var parsedURL = new Common.ParsedURL(url);
 
@@ -58,11 +60,4 @@ function test() {
   testSplitLineColumn('http://www.chromium.org/foo.js:10:20');
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests inspector ParsedURL class</p>
-</body>
-</html>
+})();
