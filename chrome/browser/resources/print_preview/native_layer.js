@@ -295,8 +295,6 @@ cr.define('print_preview', function() {
      * @param {!print_preview.Destination} destination Destination to print to.
      * @param {!print_preview.PrintTicketStore} printTicketStore Used to get the
      *     state of the print ticket.
-     * @param {cloudprint.CloudPrintInterface} cloudPrintInterface Interface
-     *     to Google Cloud Print.
      * @param {!print_preview.DocumentInfo} documentInfo Document data model.
      * @param {boolean=} opt_isOpenPdfInPreview Whether to open the PDF in the
      *     system's preview application.
@@ -306,8 +304,8 @@ cr.define('print_preview', function() {
      *     finished or rejected.
      */
     print(
-        destination, printTicketStore, cloudPrintInterface, documentInfo,
-        opt_isOpenPdfInPreview, opt_showSystemDialog) {
+        destination, printTicketStore, documentInfo, opt_isOpenPdfInPreview,
+        opt_showSystemDialog) {
       assert(
           printTicketStore.isTicketValid(),
           'Trying to print when ticket is not valid');
