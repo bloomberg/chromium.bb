@@ -119,6 +119,84 @@ XFAIL_TESTS =					\
 	squash_space				\
 	compbrlAtCursor
 
+dist_braille_specs_TESTS =				  \
+	braille-specs/ar-ar-g1_harness.yaml		  \
+	braille-specs/ar-fa_harness.yaml		  \
+	braille-specs/chr-us-g1_harness.yaml		  \
+	braille-specs/da-dk-g08.yaml			  \
+	braille-specs/da-dk-g16.yaml			  \
+	braille-specs/da-dk-g16-dictionary_harness.yaml	  \
+	braille-specs/da-dk-g16-lit.yaml		  \
+	braille-specs/da-dk-g18-dictionary_harness.yaml	  \
+	braille-specs/da-dk-g18.yaml			  \
+	braille-specs/da-dk-g26.yaml			  \
+	braille-specs/da-dk-g26-dictionary_harness.yaml	  \
+	braille-specs/da-dk-g26-lit.yaml		  \
+	braille-specs/da-dk-g26l.yaml			  \
+	braille-specs/da-dk-g26l-lit.yaml		  \
+	braille-specs/da-dk-g28-dictionary_harness.yaml	  \
+	braille-specs/da-dk-g28.yaml			  \
+	braille-specs/da-dk-g28l.yaml			  \
+	braille-specs/el-backward.yaml			  \
+	braille-specs/el-forward.yaml			  \
+	braille-specs/en-GB-g2_backward.yaml		  \
+	braille-specs/en-GB-g2_harness.yaml		  \
+	braille-specs/en-gb-g1_harness.yaml		  \
+	braille-specs/en-ueb-02-stand_alone.yaml	  \
+	braille-specs/en-ueb-03-symbols.yaml		  \
+	braille-specs/en-ueb-05-grade_1_mode.yaml	  \
+	braille-specs/en-ueb-06-numeric_mode.yaml	  \
+	braille-specs/en-ueb-08-capitalization.yaml	  \
+	braille-specs/en-ueb-09-typeforms.yaml		  \
+	braille-specs/en-ueb-10-07-contractions.yaml	  \
+	braille-specs/en-ueb-10-13-contractions.yaml	  \
+	braille-specs/en-ueb-g1_backward.yaml		  \
+	braille-specs/en-ueb-g1_harness.yaml		  \
+	braille-specs/en-ueb-g2-dictionary_harness.yaml	  \
+	braille-specs/en-ueb-g2_backward.yaml		  \
+	braille-specs/en-ueb-g2_backward_no_dis.yaml	  \
+	braille-specs/en-ueb-math.yaml			  \
+	braille-specs/en-ueb-symbols_harness.yaml	  \
+	braille-specs/en-us-comp8-ext-back_harness.yaml	  \
+	braille-specs/en-us-comp8-ext-for_harness.yaml	  \
+	braille-specs/en-us-g2-dictionary_harness.yaml	  \
+	braille-specs/en-us-g2-end-emphasis_harness.yaml  \
+	braille-specs/eo-g1_harness.yaml		  \
+	braille-specs/ethio-g1_harness.yaml		  \
+	braille-specs/fa-ir-comp8-harness.yaml		  \
+	braille-specs/fa-ir-g1-harness.yaml		  \
+	braille-specs/fi_harness.yaml			  \
+	braille-specs/fr-bfu-comp6.yaml			  \
+	braille-specs/fr-bfu-g2_harness.yaml		  \
+	braille-specs/fr-fr-g1.yaml			  \
+	braille-specs/ga-g1_harness.yaml		  \
+	braille-specs/ga-g2_harness.yaml		  \
+	braille-specs/hr-8dots_harness.yaml		  \
+	braille-specs/hu-hu-comp8_backward.yaml		  \
+	braille-specs/hu-hu-comp8_harness.yaml		  \
+	braille-specs/hu-hu-g1_backward.yaml		  \
+	braille-specs/hu-hu-g1_harness.yaml		  \
+	braille-specs/hu-hu-g1-hyph_harness.yaml	  \
+	braille-specs/iu-ca-g1_harness.yaml		  \
+	braille-specs/ko-2006-g2_harness.yaml		  \
+	braille-specs/ko-g2_harness.yaml		  \
+	braille-specs/lt_harness.yaml			  \
+	braille-specs/lv_harness.yaml			  \
+	braille-specs/mn-MN_harness.yaml		  \
+	braille-specs/nl-NL-g0_harness.yaml		  \
+	braille-specs/nl-g0_harness.yaml		  \
+	braille-specs/no_8dot_harness.yaml		  \
+	braille-specs/no_g1_harness.yaml		  \
+	braille-specs/no_g2_harness.yaml		  \
+	braille-specs/no_harness.yaml			  \
+	braille-specs/pl-pl-comp8_harness.yaml		  \
+	braille-specs/sk-g1_harness.yaml		  \
+	braille-specs/sr-g1_harness.yaml		  \
+	braille-specs/ta-ta-g1_harness.yaml		  \
+	braille-specs/vi-g1_backward.yaml		  \
+	braille-specs/vi-g1_harness.yaml		  \
+	braille-specs/zh-chn.yaml
+
 dist_yaml_TESTS =			  \
 	yaml/back_cont_then_punc.yaml	  \
 	yaml/begcaps_endcaps.yaml	  \
@@ -147,13 +225,14 @@ TEST_EXTENSIONS = .yaml
 YAML_LOG_COMPILER =  $(WINE) $(top_builddir)/tools/lou_checkyaml$(EXEEXT)
 LOG_COMPILE = $(WINE)
 
-EXTRA_DIST = $(dist_yaml_TESTS)
+EXTRA_DIST = $(dist_yaml_TESTS) $(dist_braille_specs_TESTS)
 
 XFAIL_TESTS += ueb_test_data.pl
 
 TESTS =				     \
 	$(program_TESTS)	     \
 	$(dist_check_SCRIPTS)	     \
+	$(dist_braille_specs_TESTS)  \
 	$(dist_yaml_TESTS)
 
 AM_TESTS_ENVIRONMENT =								\
