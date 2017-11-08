@@ -5,7 +5,6 @@
 import os
 
 from page_sets.system_health import chrome_stories
-from page_sets.system_health import loading_stories
 from page_sets.system_health import platforms
 from page_sets.system_health import system_health_story
 
@@ -40,20 +39,6 @@ class SystemHealthBlankStorySet(story.StorySet):
     super(SystemHealthBlankStorySet, self).__init__()
     self.AddStory(
         chrome_stories.BlankAboutBlankStory(self, take_memory_measurement))
-
-
-class DesktopHeapProfilingStorySet(story.StorySet):
-  """Small story set containing loading stories and invoking memory dumps."""
-  def __init__(self):
-    super(DesktopHeapProfilingStorySet, self).__init__(
-        archive_data_file=('../data/system_health_desktop.json'),
-        cloud_storage_bucket=story.PARTNER_BUCKET)
-    self.AddStory(
-        loading_stories.LoadGoogleStory(self, take_memory_measurement=True))
-    self.AddStory(
-        loading_stories.LoadTwitterStory(self, take_memory_measurement=True))
-    self.AddStory(
-        loading_stories.LoadCnnStory(self, take_memory_measurement=True))
 
 
 class DesktopSystemHealthStorySet(SystemHealthStorySet):
