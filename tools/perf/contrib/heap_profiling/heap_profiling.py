@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 from benchmarks import loading_metrics_category
 
 from core import perf_benchmark
@@ -12,14 +14,31 @@ from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
 
 import page_sets
+from page_sets.system_health import loading_stories
+
+
+_PAGE_SETS_DATA = os.path.join(os.path.dirname(page_sets.__file__), 'data')
+
+
+class _HeapProfilingStorySet(story.StorySet):
+  """Small story set containing loading stories and invoking memory dumps."""
+  def __init__(self, platform):
+    super(_HeapProfilingStorySet, self).__init__(
+        archive_data_file=
+            os.path.join(_PAGE_SETS_DATA, 'system_health_%s.json' % platform),
+        cloud_storage_bucket=story.PARTNER_BUCKET)
+    self.AddStory(
+        loading_stories.LoadGoogleStory(self, take_memory_measurement=True))
+    self.AddStory(
+        loading_stories.LoadTwitterStory(self, take_memory_measurement=True))
+    self.AddStory(
+        loading_stories.LoadCnnStory(self, take_memory_measurement=True))
 
 
 class _HeapProfilingBenchmark(perf_benchmark.PerfBenchmark):
   """Bechmark to measure heap profiling overhead."""
-  BROWSER_OPTIONS = NotImplemented
-
-  page_set = page_sets.DesktopHeapProfilingStorySet
-  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
+  PROFILING_MODE = NotImplemented
+  PLATFORM = NotImplemented
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
@@ -37,9 +56,17 @@ class _HeapProfilingBenchmark(perf_benchmark.PerfBenchmark):
         chrome_trace_config.MemoryDumpConfig())
     return options
 
+  def CreateStorySet(self, options):
+    return _HeapProfilingStorySet(self.PLATFORM)
+
   def SetExtraBrowserOptions(self, options):
     super(_HeapProfilingBenchmark, self).SetExtraBrowserOptions(options)
-    options.AppendExtraBrowserArgs(self.BROWSER_OPTIONS)
+    args = []
+    if self.PROFILING_MODE == 'pseudo':
+      args += ['--enable-heap-profiling']
+    elif self.PROFILING_MODE == 'native':
+      args += ['--enable-heap-profiling=native']
+    options.AppendExtraBrowserArgs(args)
 
   def GetExpectations(self):
     class DefaultExpectations(story.expectations.StoryExpectations):
@@ -48,25 +75,61 @@ class _HeapProfilingBenchmark(perf_benchmark.PerfBenchmark):
     return DefaultExpectations()
 
 
-class PseudoHeapProfilingBenchmark(_HeapProfilingBenchmark):
-  BROWSER_OPTIONS = ['--enable-heap-profiling']
+class PseudoHeapProfilingDesktopBenchmark(_HeapProfilingBenchmark):
+  PROFILING_MODE = 'pseudo'
+  PLATFORM = 'desktop'
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   @classmethod
   def Name(cls):
-    return 'heap_profiling.pseudo'
+    return 'heap_profiling.desktop.pseudo'
 
 
-class NativeHeapProfilingBenchmark(_HeapProfilingBenchmark):
-  BROWSER_OPTIONS = ['--enable-heap-profiling=native']
-
-  @classmethod
-  def Name(cls):
-    return 'heap_profiling.native'
-
-
-class DisabledHeapProfilingBenchmark(_HeapProfilingBenchmark):
-  BROWSER_OPTIONS = []
+class NativeHeapProfilingDesktopBenchmark(_HeapProfilingBenchmark):
+  PROFILING_MODE = 'native'
+  PLATFORM = 'desktop'
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   @classmethod
   def Name(cls):
-    return 'heap_profiling.disabled'
+    return 'heap_profiling.desktop.native'
+
+
+class DisabledHeapProfilingDesktopBenchmark(_HeapProfilingBenchmark):
+  PROFILING_MODE = 'disabled'
+  PLATFORM = 'desktop'
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
+
+  @classmethod
+  def Name(cls):
+    return 'heap_profiling.desktop.disabled'
+
+
+class PseudoHeapProfilingMobileBenchmark(_HeapProfilingBenchmark):
+  PROFILING_MODE = 'pseudo'
+  PLATFORM = 'mobile'
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
+
+  @classmethod
+  def Name(cls):
+    return 'heap_profiling.mobile.pseudo'
+
+
+class NativeHeapProfilingMobileBenchmark(_HeapProfilingBenchmark):
+  PROFILING_MODE = 'native'
+  PLATFORM = 'mobile'
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
+
+  @classmethod
+  def Name(cls):
+    return 'heap_profiling.mobile.native'
+
+
+class DisabledHeapProfilingMobileBenchmark(_HeapProfilingBenchmark):
+  PROFILING_MODE = 'disabled'
+  PLATFORM = 'mobile'
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
+
+  @classmethod
+  def Name(cls):
+    return 'heap_profiling.mobile.disabled'
