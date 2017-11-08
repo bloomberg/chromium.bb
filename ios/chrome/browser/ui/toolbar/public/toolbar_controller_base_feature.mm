@@ -10,5 +10,5 @@ const base::Feature kSafeAreaCompatibleToolbar{
 extern const base::Feature kPropertyAnimationsToolbar{
     "PropertyAnimationsToolbar", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kToolbarSnapshotAnimation{
-    "ToolbarSnapshotAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kToolbarSnapshotAnimation{"ToolbarSnapshotAnimation",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
