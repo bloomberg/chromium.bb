@@ -1,4 +1,9 @@
+import("//build/config/gclient_args.gni")
+
 declare_args() {
   # Enable decoding AV1 video files.
-  use_av1 = false
+  enable_av1_decoder = checkout_libaom
 }
+
+# Ensure that enable_av1_decoder is set iff the library is checked out.
+assert(!enable_av1_decoder || checkout_libaom)
