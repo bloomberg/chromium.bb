@@ -198,8 +198,6 @@ class WebstoreProviderTest : public InProcessBrowserTest {
 
       mock_server_response_.clear();
     }
-
-    webstore_provider_->Stop();
   }
 
   std::string GetResultTitles() const {

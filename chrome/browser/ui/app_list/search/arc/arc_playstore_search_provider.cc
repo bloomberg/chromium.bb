@@ -84,8 +84,6 @@ void ArcPlayStoreSearchProvider::Start(bool is_voice_query,
                  weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
 
-void ArcPlayStoreSearchProvider::Stop() {}
-
 void ArcPlayStoreSearchProvider::OnResults(
     base::TimeTicks query_start_time,
     arc::mojom::AppDiscoveryRequestState state,

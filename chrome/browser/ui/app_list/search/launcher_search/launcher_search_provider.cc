@@ -30,16 +30,6 @@ LauncherSearchProvider::~LauncherSearchProvider() {
 
 void LauncherSearchProvider::Start(bool /*is_voice_query*/,
                                    const base::string16& query) {
-  // Clear previously added search results.
-  ClearResults();
-
-  DelayQuery(base::Bind(&LauncherSearchProvider::StartInternal,
-                        weak_ptr_factory_.GetWeakPtr(), query));
-}
-
-void LauncherSearchProvider::Stop() {
-  // Since app_list code can call Stop() at any time, we stop timer here in
-  // order not to start query after Stop() is called.
   query_timer_.Stop();
 
   // Clear all search results of the previous query. Since results are
@@ -53,6 +43,12 @@ void LauncherSearchProvider::Stop() {
   // that no query is running at service side.
   if (service->IsQueryRunning())
     service->OnQueryEnded();
+
+  // Clear previously added search results.
+  ClearResults();
+
+  DelayQuery(base::Bind(&LauncherSearchProvider::StartInternal,
+                        weak_ptr_factory_.GetWeakPtr(), query));
 }
 
 void LauncherSearchProvider::SetSearchResults(

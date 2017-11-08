@@ -28,9 +28,6 @@ class APP_LIST_EXPORT SearchProvider {
   // Invoked to start a query.
   virtual void Start(bool is_voice_query, const base::string16& query) = 0;
 
-  // Invoked to stop the current query and no more results changes.
-  virtual void Stop() = 0;
-
   void set_result_changed_callback(const ResultChangedCallback& callback) {
     result_changed_callback_ = callback;
   }
