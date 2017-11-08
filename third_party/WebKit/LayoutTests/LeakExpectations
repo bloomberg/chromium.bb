@@ -15,12 +15,12 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Leak ]
 
 # -----------------------------------------------------------------
-# Untriaged but known leaks of SuspendableObject (fast).
+# Untriaged but known leaks of PausableObject (fast).
 # -----------------------------------------------------------------
 crbug.com/661182 fast/loader/open-in-srcdoc-unload.html [ Leak ]
 
 # -----------------------------------------------------------------
-# Untriaged but known leaks of SuspendableObject (http).
+# Untriaged but known leaks of PausableObject (http).
 # -----------------------------------------------------------------
 crbug.com/506754 http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 virtual/mojo-loading/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]

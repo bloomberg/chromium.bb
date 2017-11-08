@@ -86,7 +86,7 @@ void WebLeakDetectorImpl::OnLeakDetectionComplete() {
       InstanceCounters::CounterValue(InstanceCounters::kLayoutObjectCounter);
   result.number_of_live_resources =
       InstanceCounters::CounterValue(InstanceCounters::kResourceCounter);
-  result.number_of_live_suspendable_objects =
+  result.number_of_live_pausable_objects =
       InstanceCounters::CounterValue(InstanceCounters::kPausableObjectCounter);
   result.number_of_live_script_promises =
       InstanceCounters::CounterValue(InstanceCounters::kScriptPromiseCounter);
