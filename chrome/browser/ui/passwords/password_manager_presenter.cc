@@ -329,7 +329,13 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
 
 std::vector<std::unique_ptr<autofill::PasswordForm>>
 PasswordManagerPresenter::GetAllPasswords() {
-  return std::vector<std::unique_ptr<autofill::PasswordForm>>();
+  std::vector<std::unique_ptr<autofill::PasswordForm>> ret_val;
+
+  for (const auto& form : password_list_) {
+    ret_val.push_back(base::MakeUnique<autofill::PasswordForm>(*form));
+  }
+
+  return ret_val;
 }
 
 const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
