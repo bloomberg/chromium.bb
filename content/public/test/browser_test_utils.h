@@ -165,6 +165,10 @@ void SimulateGestureFlingSequence(WebContents* web_contents,
                                   const gfx::Point& point,
                                   const gfx::Vector2dF& velocity);
 
+void SimulateGestureEvent(WebContents* web_contents,
+                          const blink::WebGestureEvent& gesture_event,
+                          const ui::LatencyInfo& latency);
+
 // Taps the screen at |point|.
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point);
 

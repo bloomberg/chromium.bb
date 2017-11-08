@@ -845,6 +845,14 @@ void SimulateGestureFlingSequence(WebContents* web_contents,
   widget_host->ForwardGestureEvent(fling_start);
 }
 
+void SimulateGestureEvent(WebContents* web_contents,
+                          const blink::WebGestureEvent& gesture_event,
+                          const ui::LatencyInfo& latency) {
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      web_contents->GetRenderWidgetHostView());
+  view->ProcessGestureEvent(gesture_event, latency);
+}
+
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
   blink::WebGestureEvent tap(
       blink::WebGestureEvent::kGestureTap, 0,
