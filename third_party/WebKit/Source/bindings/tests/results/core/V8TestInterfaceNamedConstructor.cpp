@@ -148,20 +148,20 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
   if (!stringArg.Prepare())
     return;
 
-  defaultUndefinedOptionalBooleanArg = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), (1 < info.Length() ? info[1] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate()))), exceptionState);
+  defaultUndefinedOptionalBooleanArg = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), info[1], exceptionState);
   if (exceptionState.HadException())
     return;
 
-  defaultUndefinedOptionalLongArg = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), (2 < info.Length() ? info[2] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate()))), exceptionState, kNormalConversion);
+  defaultUndefinedOptionalLongArg = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[2], exceptionState, kNormalConversion);
   if (exceptionState.HadException())
     return;
 
-  defaultUndefinedOptionalStringArg = (3 < info.Length() ? info[3] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate())));
+  defaultUndefinedOptionalStringArg = info[3];
   if (!defaultUndefinedOptionalStringArg.Prepare())
     return;
 
   if (!info[4]->IsUndefined()) {
-    defaultNullStringOptionalstringArg = (4 < info.Length() ? info[4] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate())));
+    defaultNullStringOptionalstringArg = info[4];
     if (!defaultNullStringOptionalstringArg.Prepare())
       return;
   } else {
@@ -179,7 +179,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
     V8SetReturnValue(info, wrapper);
     return;
   }
-  optionalStringArg = (5 < info.Length() ? info[5] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate())));
+  optionalStringArg = info[5];
   if (!optionalStringArg.Prepare())
     return;
 

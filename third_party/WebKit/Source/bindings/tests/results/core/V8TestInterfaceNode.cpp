@@ -256,7 +256,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethod(con
     V8SetReturnValueFast(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg(), impl);
     return;
   }
-  optionalBooleanArgument = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), (0 < info.Length() ? info[0] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate()))), exceptionState);
+  optionalBooleanArgument = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
@@ -279,7 +279,7 @@ static void perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArgMethodForM
     V8SetReturnValueForMainWorld(info, impl->perWorldBindingsTestInterfaceEmptyMethodOptionalBooleanArg());
     return;
   }
-  optionalBooleanArgument = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), (0 < info.Length() ? info[0] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate()))), exceptionState);
+  optionalBooleanArgument = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 
