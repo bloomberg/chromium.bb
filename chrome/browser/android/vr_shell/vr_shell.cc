@@ -900,6 +900,7 @@ jlong Init(JNIEnv* env,
            jboolean web_vr_autopresentation_expected,
            jboolean in_cct,
            jboolean browsing_disabled,
+           jboolean has_or_can_request_audio_permission,
            jlong gvr_api,
            jboolean reprojected_rendering,
            jfloat display_width_meters,
@@ -912,6 +913,8 @@ jlong Init(JNIEnv* env,
   ui_initial_state.in_web_vr = for_web_vr;
   ui_initial_state.web_vr_autopresentation_expected =
       web_vr_autopresentation_expected;
+  ui_initial_state.has_or_can_request_audio_permission =
+      has_or_can_request_audio_permission;
 
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, reinterpret_cast<ui::WindowAndroid*>(window_android),

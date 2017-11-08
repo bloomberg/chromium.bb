@@ -24,6 +24,7 @@ struct Model {
 
   bool recognizing_speech = false;
   int speech_recognition_state = 0;
+  bool has_or_can_request_audio_permission = true;
 
   ControllerModel controller;
   ReticleModel reticle;

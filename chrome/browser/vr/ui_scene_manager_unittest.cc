@@ -275,6 +275,19 @@ TEST_F(UiSceneManagerTest, VoiceSearchHiddenInIncognito) {
   EXPECT_FALSE(IsVisible(kVoiceSearchButton));
 }
 
+TEST_F(UiSceneManagerTest, VoiceSearchHiddenWhenCantAskForPermission) {
+  MakeManager(kNotInCct, kNotInWebVr);
+  model_->experimental_features_enabled = true;
+
+  model_->has_or_can_request_audio_permission = true;
+  EXPECT_TRUE(OnBeginFrame());
+  EXPECT_TRUE(IsVisible(kVoiceSearchButton));
+
+  model_->has_or_can_request_audio_permission = false;
+  EXPECT_TRUE(OnBeginFrame());
+  EXPECT_FALSE(IsVisible(kVoiceSearchButton));
+}
+
 TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   MakeAutoPresentedManager();
 

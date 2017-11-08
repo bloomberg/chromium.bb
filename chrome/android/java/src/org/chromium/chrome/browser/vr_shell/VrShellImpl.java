@@ -331,10 +331,15 @@ public class VrShellImpl
 
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
         boolean browsingDisabled = !VrShellDelegate.isVrShellEnabled(mDelegate.getVrSupportLevel());
+        boolean hasOrCanRequestAudioPermission =
+                mActivity.getWindowAndroid().hasPermission(android.Manifest.permission.RECORD_AUDIO)
+                || mActivity.getWindowAndroid().canRequestPermission(
+                           android.Manifest.permission.RECORD_AUDIO);
         mNativeVrShell = nativeInit(mDelegate, mContentVrWindowAndroid.getNativePointer(), forWebVr,
                 webVrAutopresentationExpected, inCct, browsingDisabled,
-                getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
-                displayHeightMeters, dm.widthPixels, dm.heightPixels);
+                hasOrCanRequestAudioPermission, getGvrApi().getNativeGvrContext(),
+                mReprojectedRendering, displayWidthMeters, displayHeightMeters, dm.widthPixels,
+                dm.heightPixels);
 
         reparentAllTabs(mContentVrWindowAndroid);
         swapToTab(currentTab);
@@ -836,9 +841,9 @@ public class VrShellImpl
 
     private native long nativeInit(VrShellDelegate delegate, long nativeWindowAndroid,
             boolean forWebVR, boolean webVrAutopresentationExpected, boolean inCct,
-            boolean browsingDisabled, long gvrApi, boolean reprojectedRendering,
-            float displayWidthMeters, float displayHeightMeters, int displayWidthPixels,
-            int displayHeightPixels);
+            boolean browsingDisabled, boolean hasOrCanRequestAudioPermission, long gvrApi,
+            boolean reprojectedRendering, float displayWidthMeters, float displayHeightMeters,
+            int displayWidthPixels, int displayHeightPixels);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(
             long nativeVrShell, Tab tab, AndroidUiGestureTarget androidUiGestureTarget);
