@@ -59379,6 +59379,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Permissions.Prompt.MergedBubbleAccepted"
     enum="PermissionRequestType">
+  <obsolete>
+    Redundant since M61 (bug 728483) as we now only merge Mic+Camera. The same
+    counts are available in Permissions.Prompt.Accepted.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <summary>
@@ -59389,6 +59393,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Permissions.Prompt.MergedBubbleDenied"
     enum="PermissionRequestType">
+  <obsolete>
+    Redundant since M61 (bug 728483) as we now only merge Mic+Camera. The same
+    counts are available in Permissions.Prompt.Denied.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <summary>
@@ -59399,6 +59407,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Permissions.Prompt.MergedBubbleTypes"
     enum="PermissionRequestType">
+  <obsolete>
+    Redundant since M61 (bug 728483) as we now only merge Mic+Camera. The same
+    counts are available in Permissions.Prompt.Shown.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <summary>
@@ -59408,6 +59420,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Permissions.Prompt.RequestsPerPrompt">
+  <obsolete>
+    Redundant since M61 (bug 728483) as we now only merge Mic+Camera. The same
+    counts are available in Permissions.Prompt.Shown.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <summary>

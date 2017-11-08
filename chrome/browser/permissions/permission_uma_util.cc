@@ -250,14 +250,6 @@ const char PermissionUmaUtil::kPermissionsPromptDeniedGesture[] =
     "Permissions.Prompt.Denied.Gesture";
 const char PermissionUmaUtil::kPermissionsPromptDeniedNoGesture[] =
     "Permissions.Prompt.Denied.NoGesture";
-const char PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt[] =
-    "Permissions.Prompt.RequestsPerPrompt";
-const char PermissionUmaUtil::kPermissionsPromptMergedBubbleTypes[] =
-    "Permissions.Prompt.MergedBubbleTypes";
-const char PermissionUmaUtil::kPermissionsPromptMergedBubbleAccepted[] =
-    "Permissions.Prompt.MergedBubbleAccepted";
-const char PermissionUmaUtil::kPermissionsPromptMergedBubbleDenied[] =
-    "Permissions.Prompt.MergedBubbleDenied";
 const char
     PermissionUmaUtil::kPermissionsPromptAcceptedPriorDismissCountPrefix[] =
         "Permissions.Prompt.Accepted.PriorDismissCount.";
@@ -439,16 +431,6 @@ void PermissionUmaUtil::PermissionPromptShown(
   }
 
   RecordPermissionPromptShown(permission_prompt_type, permission_gesture_type);
-
-  UMA_HISTOGRAM_ENUMERATION(kPermissionsPromptRequestsPerPrompt,
-                            requests.size(), 10);
-
-  if (requests.size() > 1) {
-    for (const auto* request : requests) {
-      PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleTypes,
-                                 request->GetPermissionRequestType());
-    }
-  }
 }
 
 void PermissionUmaUtil::PermissionPromptResolved(
@@ -779,16 +761,6 @@ void PermissionUmaUtil::RecordPromptDecided(
   if (requests.size() > 1) {
     permission_prompt_type = PermissionRequestType::MULTIPLE;
     permission_gesture_type = PermissionRequestGestureType::UNKNOWN;
-    for (size_t i = 0; i < requests.size(); ++i) {
-      const auto* request = requests[i];
-      if (accepted) {
-        PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleAccepted,
-                                   request->GetPermissionRequestType());
-      } else {
-        PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleDenied,
-                                   request->GetPermissionRequestType());
-      }
-    }
   }
 
   if (accepted) {
