@@ -179,7 +179,7 @@ static void voidMethodLongSequenceArgMethod(const v8::FunctionCallbackInfo<v8::V
     impl->voidMethodLongSequenceArg();
     return;
   }
-  longSequenceArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), (0 < info.Length() ? info[0] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate()))), exceptionState);
+  longSequenceArg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
 

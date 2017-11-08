@@ -176,7 +176,7 @@ static void forEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  thisArg = ScriptValue(ScriptState::Current(info.GetIsolate()), (1 < info.Length() ? info[1] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate()))));
+  thisArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
 
   impl->forEachForBinding(scriptState, ScriptValue(scriptState, info.Holder()), callback, thisArg, exceptionState);
   if (exceptionState.HadException()) {

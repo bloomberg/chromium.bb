@@ -161,7 +161,7 @@ static void voidMethodOptionalCallbackFunctionInArgMethod(const v8::FunctionCall
     return;
   }
   if (0 < info.Length() && info[0]->IsFunction()) {
-    voidCallbackFunctionArg = V8VoidCallbackFunction::Create(ScriptState::Current(info.GetIsolate()), (0 < info.Length() ? info[0] : static_cast<v8::Local<v8::Value>>(v8::Undefined(info.GetIsolate()))));
+    voidCallbackFunctionArg = V8VoidCallbackFunction::Create(ScriptState::Current(info.GetIsolate()), info[0]);
   } else if (0 >= info.Length() || info[0]->IsNullOrUndefined()) {
     voidCallbackFunctionArg = nullptr;
   } else {
