@@ -830,6 +830,22 @@ void UiSceneManager::CreateCloseButton() {
 void UiSceneManager::CreateExitPrompt() {
   std::unique_ptr<UiElement> element;
 
+  // Place an invisible but hittable plane behind the exit prompt, to keep the
+  // reticle roughly planar with the content if near content.
+  auto backplane = base::MakeUnique<ExitPromptBackplane>(base::Bind(
+      &UiSceneManager::OnExitPromptBackplaneClicked, base::Unretained(this)));
+  exit_prompt_backplane_ = backplane.get();
+  element = std::move(backplane);
+  element->set_name(kExitPromptBackplane);
+  element->set_draw_phase(kPhaseForeground);
+  element->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
+  element->SetTranslate(0.0, kContentVerticalOffset + kExitPromptVerticalOffset,
+                        kTextureOffset - kContentDistance);
+  element->AddBinding(VR_BIND_FUNC(
+      bool, UiSceneManager, this, browsing_mode() && model->prompting_to_exit(),
+      UiElement, element.get(), SetVisible));
+  scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
+
   std::unique_ptr<ExitPrompt> exit_prompt = base::MakeUnique<ExitPrompt>(
       512,
       base::Bind(&UiSceneManager::OnExitPromptChoice, base::Unretained(this),
@@ -840,26 +856,10 @@ void UiSceneManager::CreateExitPrompt() {
   element = std::move(exit_prompt);
   element->set_name(kExitPrompt);
   element->set_draw_phase(kPhaseForeground);
+  element->SetVisible(true);
   element->SetSize(kExitPromptWidth, kExitPromptHeight);
-  element->SetTranslate(0.0, kContentVerticalOffset + kExitPromptVerticalOffset,
-                        kTextureOffset - kContentDistance);
-  element->AddBinding(VR_BIND(bool, UiSceneManager, this,
-                              browsing_mode() && model->prompting_to_exit(),
-                              UiElement, element.get(), SetVisible(value)));
-  scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
-
-  // Place an invisible but hittable plane behind the exit prompt, to keep the
-  // reticle roughly planar with the content if near content.
-  auto backplane = base::MakeUnique<ExitPromptBackplane>(base::Bind(
-      &UiSceneManager::OnExitPromptBackplaneClicked, base::Unretained(this)));
-  exit_prompt_backplane_ = backplane.get();
-  element = std::move(backplane);
-  element->set_name(kExitPromptBackplane);
-  element->set_draw_phase(kPhaseForeground);
-  element->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
-  element->SetTranslate(0.0, 0.0, -kTextureOffset);
-  exit_prompt_backplane_ = element.get();
-  scene_->AddUiElement(kExitPrompt, std::move(element));
+  element->SetTranslate(0.0, 0.0, kTextureOffset);
+  scene_->AddUiElement(kExitPromptBackplane, std::move(element));
 }
 
 void UiSceneManager::CreateToasts(Model* model) {

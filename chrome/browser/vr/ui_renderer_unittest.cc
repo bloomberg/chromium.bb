@@ -80,7 +80,8 @@ TEST_P(UiRendererTest, UiRendererSortingTest) {
 
   for (size_t i = 0; i < sorted.size(); ++i) {
     EXPECT_NE(0, sorted[i]->name());
-    EXPECT_EQ(GetParam().expected_order[i], sorted[i]->name());
+    EXPECT_EQ(UiElementNameToString(GetParam().expected_order[i]),
+              sorted[i]->DebugName());
   }
 }
 
@@ -102,8 +103,8 @@ TestParams params[] = {
          kScreenCaptureIndicator,
          kBluetoothConnectedIndicator,
          kLocationAccessIndicator,
-         kExitPrompt,
          kExitPromptBackplane,
+         kExitPrompt,
          kUrlBar,
          kLoadingIndicator,
          kLoadingIndicatorForeground,
