@@ -499,43 +499,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
                           std::vector<RequestInfo>,
                           std::greater<RequestInfo>>;
 
-  // EmbeddedWorkerInstance Listener implementation which calls a callback
-  // on receiving a particular IPC message. ResponseMessage is the type of
-  // the IPC message to listen for, while CallbackType should be a callback
-  // with same arguments as the IPC message.
-  // Additionally only calls the callback for messages with a specific request
-  // id, which must be the first argument of the IPC message.
-  template <typename ResponseMessage,
-            typename CallbackType,
-            typename Signature = typename CallbackType::RunType>
-  class EventResponseHandler;
-
-  template <typename ResponseMessage, typename CallbackType, typename... Args>
-  class EventResponseHandler<ResponseMessage, CallbackType, void(Args...)>
-      : public EmbeddedWorkerInstance::Listener {
-   public:
-    EventResponseHandler(const base::WeakPtr<EmbeddedWorkerInstance>& worker,
-                         int request_id,
-                         const CallbackType& callback)
-        : worker_(worker), request_id_(request_id), callback_(callback) {
-      worker_->AddListener(this);
-    }
-    ~EventResponseHandler() override {
-      if (worker_)
-        worker_->RemoveListener(this);
-    }
-    bool OnMessageReceived(const IPC::Message& message) override;
-
-   private:
-    void RunCallback(Args... args) {
-      callback_.Run(std::forward<Args>(args)...);
-    }
-
-    base::WeakPtr<EmbeddedWorkerInstance> const worker_;
-    const int request_id_;
-    const CallbackType callback_;
-  };
-
   // The timeout timer interval.
   static constexpr base::TimeDelta kTimeoutTimerDelay =
       base::TimeDelta::FromSeconds(30);
@@ -826,31 +789,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };
-
-template <typename ResponseMessage, typename CallbackType, typename... Args>
-bool ServiceWorkerVersion::EventResponseHandler<
-    ResponseMessage,
-    CallbackType,
-    void(Args...)>::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() != ResponseMessage::ID)
-    return false;
-  int received_request_id;
-  bool result = base::PickleIterator(message).ReadInt(&received_request_id);
-  if (!result || received_request_id != request_id_)
-    return false;
-
-  CallbackType protect(callback_);
-  // Essentially same code as what IPC_MESSAGE_FORWARD expands to.
-  void* param = nullptr;
-  if (!ResponseMessage::Dispatch(&message, this, this, param,
-                                 &EventResponseHandler::RunCallback))
-    message.set_dispatch_error();
-
-  // At this point |this| can have been deleted, so don't do anything other
-  // than returning.
-
-  return true;
-}
 
 }  // namespace content
 
