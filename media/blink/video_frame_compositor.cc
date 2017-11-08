@@ -134,6 +134,18 @@ scoped_refptr<VideoFrame> VideoFrameCompositor::GetCurrentFrame() {
   return current_frame_;
 }
 
+scoped_refptr<VideoFrame> VideoFrameCompositor::GetCurrentFrameOnAnyThread() {
+  base::AutoLock lock(current_frame_lock_);
+  return current_frame_;
+}
+
+void VideoFrameCompositor::SetCurrentFrame(
+    const scoped_refptr<VideoFrame>& frame) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  base::AutoLock lock(current_frame_lock_);
+  current_frame_ = frame;
+}
+
 void VideoFrameCompositor::PutCurrentFrame() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   rendered_last_frame_ = true;
@@ -147,7 +159,7 @@ bool VideoFrameCompositor::UpdateCurrentFrame(base::TimeTicks deadline_min,
 
 bool VideoFrameCompositor::HasCurrentFrame() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return static_cast<bool>(current_frame_);
+  return static_cast<bool>(GetCurrentFrame());
 }
 
 void VideoFrameCompositor::Start(RenderCallback* callback) {
@@ -192,12 +204,11 @@ void VideoFrameCompositor::PaintSingleFrame(
   }
 }
 
-scoped_refptr<VideoFrame>
-VideoFrameCompositor::GetCurrentFrameAndUpdateIfStale() {
+void VideoFrameCompositor::UpdateCurrentFrameIfStale() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (IsClientSinkAvailable() || !rendering_ || !is_background_rendering_)
-    return current_frame_;
+    return;
 
   DCHECK(!last_background_render_.is_null());
 
@@ -206,24 +217,12 @@ VideoFrameCompositor::GetCurrentFrameAndUpdateIfStale() {
 
   // Cap updates to 250Hz which should be more than enough for everyone.
   if (interval < base::TimeDelta::FromMilliseconds(4))
-    return current_frame_;
+    return;
 
   // Update the interval based on the time between calls and call background
   // render which will give this information to the client.
   last_interval_ = interval;
   BackgroundRender();
-
-  return current_frame_;
-}
-
-base::TimeDelta VideoFrameCompositor::GetCurrentFrameTimestamp() const {
-  // When the VFC is stopped, |callback_| is cleared; this synchronously
-  // prevents CallRender() from invoking ProcessNewFrame(), and so
-  // |current_frame_| won't change again until after Start(). (Assuming that
-  // PaintSingleFrame() is not also called while stopped.)
-  if (!current_frame_)
-    return base::TimeDelta();
-  return current_frame_->timestamp();
 }
 
 void VideoFrameCompositor::SetOnNewProcessedFrameCallback(
@@ -237,8 +236,8 @@ bool VideoFrameCompositor::ProcessNewFrame(
     bool repaint_duplicate_frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (frame && current_frame_ && !repaint_duplicate_frame &&
-      frame->unique_id() == current_frame_->unique_id()) {
+  if (frame && GetCurrentFrame() && !repaint_duplicate_frame &&
+      frame->unique_id() == GetCurrentFrame()->unique_id()) {
     return false;
   }
 
@@ -246,7 +245,7 @@ bool VideoFrameCompositor::ProcessNewFrame(
   // subsequent PutCurrentFrame() call it will mark it as rendered.
   rendered_last_frame_ = false;
 
-  current_frame_ = frame;
+  SetCurrentFrame(frame);
 
   if (!new_processed_frame_cb_.is_null())
     base::ResetAndReturn(&new_processed_frame_cb_).Run(base::TimeTicks::Now());
@@ -276,14 +275,14 @@ bool VideoFrameCompositor::CallRender(base::TimeTicks deadline_min,
   if (!callback_) {
     // Even if we no longer have a callback, return true if we have a frame
     // which |client_| hasn't seen before.
-    return !rendered_last_frame_ && current_frame_;
+    return !rendered_last_frame_ && GetCurrentFrame();
   }
 
   DCHECK(rendering_);
 
   // If the previous frame was never rendered and we're not in background
   // rendering mode (nor have just exited it), let the client know.
-  if (!rendered_last_frame_ && current_frame_ && !background_rendering &&
+  if (!rendered_last_frame_ && GetCurrentFrame() && !background_rendering &&
       !is_background_rendering_) {
     callback_->OnFrameDropped();
   }
