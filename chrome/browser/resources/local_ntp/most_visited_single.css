@@ -70,11 +70,11 @@ a:visited {
   width: var(--tile-width);
 }
 
-/* Min height for showing 1 row: 4px + 128px */
-/* Min height for showing 2 rows: 4px + 128px + 16px + 128px */
+/* Min height for showing 1 row: 4px + 128px + 8px */
+/* Min height for showing 2 rows: 4px + 128px + 16px + 128px + 8px */
 
 /* Minimal layout: 1 row, 2 columns; only first 2 tiles are visible. */
-@media (min-height: 132px) {
+@media (min-height: 140px) {
   .mv-tile:nth-child(-n+2),
   .mv-empty-tile:nth-child(-n+2) {
     display: inline-block;
@@ -83,7 +83,7 @@ a:visited {
 
 /* width >= (3 cols * (16px + 154px))
  * 1 row, 3 columns; first 3 tiles are visible. */
-@media (min-height: 132px) and (min-width: 510px) {
+@media (min-height: 140px) and (min-width: 510px) {
   .mv-tile:nth-child(-n+3),
   .mv-empty-tile:nth-child(-n+3) {
     display: inline-block;
@@ -92,7 +92,7 @@ a:visited {
 
 /* width >= (4 cols * (16px + 154px))
  * 1 row, 4 columns; first 4 tiles are visible. */
-@media (min-height: 132px) and (min-width: 680px) {
+@media (min-height: 140px) and (min-width: 680px) {
   .mv-tile:nth-child(-n+4),
   .mv-empty-tile:nth-child(-n+4) {
     display: inline-block;
@@ -100,7 +100,7 @@ a:visited {
 }
 
 /* 2 rows, 2 columns; only first 4 tiles are visible. */
-@media (min-height: 276px) {
+@media (min-height: 284px) {
   .mv-tile:nth-child(-n+4),
   .mv-empty-tile:nth-child(-n+4) {
     display: inline-block;
@@ -109,7 +109,7 @@ a:visited {
 
 /* width >= (3 cols * (16px + 154px))
  * 2 rows, 3 columns; first 6 tiles are visible. */
-@media (min-height: 276px) and (min-width: 510px) {
+@media (min-height: 284px) and (min-width: 510px) {
   .mv-tile:nth-child(-n+6),
   .mv-empty-tile:nth-child(-n+6) {
     display: inline-block;
@@ -118,7 +118,7 @@ a:visited {
 
 /* width >= (4 cols * (16px + 154px))
  * 2 rows, 4 columns; first 8 tiles are visible. */
-@media (min-height: 276px) and (min-width: 680px) {
+@media (min-height: 284px) and (min-width: 680px) {
   .mv-tile:nth-child(-n+8),
   .mv-empty-tile:nth-child(-n+8) {
     display: inline-block;

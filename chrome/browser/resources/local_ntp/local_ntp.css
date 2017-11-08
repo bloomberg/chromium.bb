@@ -17,8 +17,8 @@ html {
    * values in most_visited_single.css. */
   --mv-tiles-height: calc(
       4px + var(--tile-height) + var(--tile-margin) + var(--tile-height) + 8px);
-  /* Base height 16px, plus 10px each of padding on top and bottom. */
-  --mv-notice-height: calc(10px + 16px + 10px);
+  /* Base height 16px, plus 8px each of padding on top and bottom. */
+  --mv-notice-height: calc(8px + 16px + 8px);
   height: 100%;
 }
 
@@ -412,7 +412,7 @@ html[dir=rtl] #mv-notice-x {
   font-size: 12px;
   font-weight: bold;
   opacity: 1;
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
 #mv-notice span {
