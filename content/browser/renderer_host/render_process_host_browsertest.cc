@@ -734,8 +734,9 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
     rph->RemoveObserver(this);
 }
 
+// TODO(yhirano): reenable, fails on TSAN bots, http://crbug.com/782037 .
 IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
-                       KeepAliveRendererProcess) {
+                       DISABLED_KeepAliveRendererProcess) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
