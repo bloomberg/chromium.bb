@@ -1,0 +1,33 @@
+This is a testharness.js-based test.
+PASS Constructing a CSSSkew with a keyword throws a TypeError
+PASS Constructing a CSSSkew with a double throws a TypeError
+PASS Constructing a CSSSkew with a unitless zero throws a TypeError
+PASS Constructing a CSSSkew with a string angle throws a TypeError
+PASS Constructing a CSSSkew with a number CSSUnitValue throws a TypeError
+PASS Constructing a CSSSkew with a time dimension CSSUnitValue throws a TypeError
+PASS Constructing a CSSSkew with a CSSMathValue of length type throws a TypeError
+PASS Updating CSSSkew.ax with a keyword throws a TypeError
+PASS Updating CSSSkew.ax with a double throws a TypeError
+PASS Updating CSSSkew.ax with a unitless zero throws a TypeError
+PASS Updating CSSSkew.ax with a string angle throws a TypeError
+PASS Updating CSSSkew.ax with a number CSSUnitValue throws a TypeError
+PASS Updating CSSSkew.ax with a time dimension CSSUnitValue throws a TypeError
+PASS Updating CSSSkew.ax with a CSSMathValue of length type throws a TypeError
+PASS Updating CSSSkew.ay with a keyword throws a TypeError
+PASS Updating CSSSkew.ay with a double throws a TypeError
+PASS Updating CSSSkew.ay with a unitless zero throws a TypeError
+PASS Updating CSSSkew.ay with a string angle throws a TypeError
+PASS Updating CSSSkew.ay with a number CSSUnitValue throws a TypeError
+PASS Updating CSSSkew.ay with a time dimension CSSUnitValue throws a TypeError
+PASS Updating CSSSkew.ay with a CSSMathValue of length type throws a TypeError
+PASS CSSSkew can be constructed from an angle CSSUnitValue and an angle CSSUnitValue
+FAIL CSSSkew can be constructed from an angle CSSUnitValue and a CSSMathValue of angle type Failed to construct 'CSSSkew': CSSSkew does not support non-angles
+FAIL CSSSkew can be constructed from a CSSMathValue of angle type and an angle CSSUnitValue Failed to construct 'CSSSkew': CSSSkew does not support non-angles
+FAIL CSSSkew can be constructed from a CSSMathValue of angle type and a CSSMathValue of angle type Failed to construct 'CSSSkew': CSSSkew does not support non-angles
+PASS CSSSkew.ax can be updated to an angle CSSUnitValue
+FAIL CSSSkew.ax can be updated to a CSSMathValue of angle type Failed to set the 'ax' property on 'CSSSkew': Must specify an angle unit
+PASS CSSSkew.ay can be updated to an angle CSSUnitValue
+FAIL CSSSkew.ay can be updated to a CSSMathValue of angle type Failed to set the 'ay' property on 'CSSSkew': Must specify an angle unit
+PASS Modifying CSSSkew.is2D is a no-op
+Harness: the test ran to completion.
+
