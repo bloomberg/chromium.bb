@@ -56,12 +56,6 @@ extern const char kSyncPasswordChromeSettingsHistogram[];
 // HostContentSettingsMap instance.
 class PasswordProtectionService : public history::HistoryServiceObserver {
  public:
-  // TODO(jialiul): Remove all these aliases, since they are unnecessary.
-  using SyncAccountType =
-      LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType;
-  using TriggerType = LoginReputationClientRequest::TriggerType;
-  using VerdictType = LoginReputationClientResponse::VerdictType;
-
   // The outcome of the request. These values are used for UMA.
   // DO NOT CHANGE THE ORDERING OF THESE VALUES.
   enum RequestOutcome {
@@ -129,16 +123,18 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Looks up |settings| to find the cached verdict response. If verdict is not
   // available or is expired, return VERDICT_TYPE_UNSPECIFIED. Can be called on
   // any thread.
-  VerdictType GetCachedVerdict(const GURL& url,
-                               TriggerType trigger_type,
-                               LoginReputationClientResponse* out_response);
+  LoginReputationClientResponse::VerdictType GetCachedVerdict(
+      const GURL& url,
+      LoginReputationClientRequest::TriggerType trigger_type,
+      LoginReputationClientResponse* out_response);
 
   // Stores |verdict| in |settings| based on its |trigger_type|, |url|,
   // |verdict| and |receive_time|.
-  virtual void CacheVerdict(const GURL& url,
-                            TriggerType trigger_type,
-                            LoginReputationClientResponse* verdict,
-                            const base::Time& receive_time);
+  virtual void CacheVerdict(
+      const GURL& url,
+      LoginReputationClientRequest::TriggerType trigger_type,
+      LoginReputationClientResponse* verdict,
+      const base::Time& receive_time);
 
   // Removes all the expired verdicts from cache.
   void CleanUpExpiredVerdicts();
@@ -152,7 +148,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                     const GURL& password_form_frame_url,
                     bool matches_sync_password,
                     const std::vector<std::string>& matching_domains,
-                    TriggerType trigger_type,
+                    LoginReputationClientRequest::TriggerType trigger_type,
                     bool password_field_exists);
 
   virtual void MaybeStartPasswordFieldOnFocusRequest(
@@ -187,10 +183,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   void RecordWarningAction(WarningUIType ui_type, WarningAction action);
 
   // If we want to show password reuse modal warning.
-  static bool ShouldShowModalWarning(TriggerType trigger_type,
-                                     bool matches_sync_password,
-                                     SyncAccountType account_type,
-                                     VerdictType verdict_type);
+  static bool ShouldShowModalWarning(
+      LoginReputationClientRequest::TriggerType trigger_type,
+      bool matches_sync_password,
+      LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
+          account_type,
+      LoginReputationClientResponse::VerdictType verdict_type);
 
   // Shows modal warning dialog on the current |web_contents| and pass the
   // |verdict_token| to callback of this dialog.
@@ -226,13 +224,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
  protected:
   friend class PasswordProtectionRequest;
-  FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest, VerifyCanSendPing);
 
   // Chrome can send password protection ping if it is allowed by Finch config
   // and if Safe Browsing can compute reputation of |main_frame_url| (e.g.
   // Safe Browsing is not able to compute reputation of a private IP or
   // a local host). |matches_sync_password| is used for UMA metric recording.
-  bool CanSendPing(const base::Feature& feature,
+  bool CanSendPing(LoginReputationClientRequest::TriggerType trigger_type,
                    const GURL& main_frame_url,
                    bool matches_sync_password);
 
@@ -249,7 +246,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   // Gets the total number of verdicts of the specified |trigger_type| we cached
   // for this profile. This counts both expired and active verdicts.
-  virtual int GetStoredVerdictCount(TriggerType trigger_type);
+  virtual int GetStoredVerdictCount(
+      LoginReputationClientRequest::TriggerType trigger_type);
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter() {
     return request_context_getter_;
@@ -268,21 +266,24 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       int event_tab_id,  // -1 if tab id is not available.
       LoginReputationClientRequest::Frame* frame) = 0;
 
-  void FillUserPopulation(TriggerType trigger_type,
-                          LoginReputationClientRequest* request_proto);
+  void FillUserPopulation(
+      LoginReputationClientRequest::TriggerType trigger_type,
+      LoginReputationClientRequest* request_proto);
 
   virtual bool IsExtendedReporting() = 0;
 
   virtual bool IsIncognito() = 0;
 
-  virtual bool IsPingingEnabled(const base::Feature& feature,
-                                RequestOutcome* reason) = 0;
+  virtual bool IsPingingEnabled(
+      LoginReputationClientRequest::TriggerType trigger_type,
+      RequestOutcome* reason) = 0;
 
   virtual bool IsHistorySyncEnabled() = 0;
 
   // Gets the type of sync account associated with current profile or
   // |NOT_SIGNED_IN|.
-  virtual SyncAccountType GetSyncAccountType() = 0;
+  virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
+  GetSyncAccountType() = 0;
 
   // Records a Chrome Sync event for the result of the URL reputation lookup
   // if the user enters their sync password on a website.
@@ -331,11 +332,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   // Helper function called by RemoveContentSettingsOnURLsDeleted(..). It
   // calculate the number of verdicts of |type| that associate with |url|.
-  int GetVerdictCountForURL(const GURL& url, TriggerType type);
+  int GetVerdictCountForURL(const GURL& url,
+                            LoginReputationClientRequest::TriggerType type);
 
   // Remove verdict of |type| from |cache_dictionary|. Return false if no
   // verdict removed, true otherwise.
-  bool RemoveExpiredVerdicts(TriggerType type,
+  bool RemoveExpiredVerdicts(LoginReputationClientRequest::TriggerType type,
                              base::DictionaryValue* cache_dictionary);
 
   static bool ParseVerdictEntry(base::DictionaryValue* verdict_entry,
@@ -358,9 +360,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const LoginReputationClientResponse* verdict,
       const base::Time& receive_time);
 
-  static void RecordNoPingingReason(const base::Feature& feature,
-                                    RequestOutcome reason,
-                                    bool matches_sync_password);
+  static void RecordNoPingingReason(
+      LoginReputationClientRequest::TriggerType trigger_type,
+      RequestOutcome reason,
+      bool matches_sync_password);
   // Number of verdict stored for this profile for password on focus pings.
   int stored_verdict_count_password_on_focus_;
 

@@ -48,12 +48,6 @@ const base::Feature kLocalDatabaseManagerEnabled{
 const base::Feature kParallelUrlCheck{"S13nSafeBrowsingParallelUrlCheck",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kPasswordFieldOnFocusPinging{
-    "PasswordFieldOnFocusPinging", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kProtectedPasswordEntryPinging{
-    "ProtectedPasswordEntryPinging", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -79,8 +73,6 @@ constexpr struct {
     {&kGoogleBrandedPhishingWarning, true},
     {&kLocalDatabaseManagerEnabled, true},
     {&kParallelUrlCheck, true},
-    {&kPasswordFieldOnFocusPinging, false},
-    {&kProtectedPasswordEntryPinging, false},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
     {&kV4OnlyEnabled, true},

@@ -139,11 +139,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   bool IsIncognito() override;
 
-  // Checks if Finch config allows sending pings to Safe Browsing Server.
-  // If not, indicated its reason by modifying |reason|.
-  // |feature| should be either kLowReputationPinging or
-  // kProtectedPasswordEntryPinging.
-  bool IsPingingEnabled(const base::Feature& feature,
+  // Checks if pinging should be enabled based on the |trigger_type| and user
+  // state, updates |reason| accordingly.
+  bool IsPingingEnabled(LoginReputationClientRequest::TriggerType trigger_type,
                         RequestOutcome* reason) override;
 
   // If user enabled history syncing.
@@ -152,7 +150,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) override;
 
-  PasswordProtectionService::SyncAccountType GetSyncAccountType() override;
+  LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
+  GetSyncAccountType() override;
 
   void MaybeLogPasswordReuseLookupEvent(
       content::WebContents* web_contents,

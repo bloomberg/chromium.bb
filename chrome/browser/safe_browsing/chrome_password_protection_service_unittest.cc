@@ -252,22 +252,22 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Password field on focus pinging is enabled on !incognito && SBER.
   PasswordProtectionService::RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_FALSE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
   EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION, reason);
 
   service_->ConfigService(false /*incognito*/, true /*SBER*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_FALSE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
   EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
 
   service_->ConfigService(true /*incognito*/, true /*SBER*/);
-  EXPECT_FALSE(
-      service_->IsPingingEnabled(kPasswordFieldOnFocusPinging, &reason));
+  EXPECT_FALSE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, &reason));
   EXPECT_EQ(PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO, reason);
 }
 
@@ -276,20 +276,20 @@ TEST_F(ChromePasswordProtectionServiceTest,
   // Protected password entry pinging is enabled for all safe browsing users.
   PasswordProtectionService::RequestOutcome reason;
   service_->ConfigService(false /*incognito*/, false /*SBER*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kProtectedPasswordEntryPinging, &reason));
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
 
   service_->ConfigService(false /*incognito*/, true /*SBER*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kProtectedPasswordEntryPinging, &reason));
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
 
   service_->ConfigService(true /*incognito*/, false /*SBER*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kProtectedPasswordEntryPinging, &reason));
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
 
   service_->ConfigService(true /*incognito*/, true /*SBER*/);
-  EXPECT_TRUE(
-      service_->IsPingingEnabled(kProtectedPasswordEntryPinging, &reason));
+  EXPECT_TRUE(service_->IsPingingEnabled(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT, &reason));
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyGetSyncAccountType) {

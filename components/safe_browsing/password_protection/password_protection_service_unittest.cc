@@ -104,9 +104,8 @@ class TestPasswordProtectionService : public PasswordProtectionService {
 
   void set_incognito(bool enabled) { is_incognito_ = enabled; }
 
-  bool IsPingingEnabled(const base::Feature& feature,
+  bool IsPingingEnabled(LoginReputationClientRequest::TriggerType trigger_type,
                         RequestOutcome* reason) override {
-    checked_feature_name_ = feature.name;
     return true;
   }
 
@@ -134,8 +133,6 @@ class TestPasswordProtectionService : public PasswordProtectionService {
     return latest_request_ ? latest_request_->request_proto() : nullptr;
   }
 
-  std::string checked_feature_name() { return checked_feature_name_; }
-
   MOCK_METHOD3(FillReferrerChain,
                void(const GURL&, int, LoginReputationClientRequest::Frame*));
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
@@ -152,7 +149,6 @@ class TestPasswordProtectionService : public PasswordProtectionService {
   bool is_incognito_;
   PasswordProtectionRequest* latest_request_;
   std::unique_ptr<LoginReputationClientResponse> latest_response_;
-  std::string checked_feature_name_;
   DISALLOW_COPY_AND_ASSIGN(TestPasswordProtectionService);
 };
 
@@ -1030,21 +1026,6 @@ TEST_P(PasswordProtectionServiceTest,
   } else {
     EXPECT_EQ(0, reuse_event.domains_matching_password_size());
   }
-}
-
-TEST_P(PasswordProtectionServiceTest, VerifyCanSendPing) {
-  GURL suspicious_url("http://phishing.com");
-  EXPECT_TRUE(password_protection_service_->CanSendPing(
-      kProtectedPasswordEntryPinging, suspicious_url,
-      true /* is_sync_password */));
-  EXPECT_EQ(kProtectedPasswordEntryPinging.name,
-            password_protection_service_->checked_feature_name());
-
-  EXPECT_TRUE(password_protection_service_->CanSendPing(
-      kPasswordFieldOnFocusPinging, suspicious_url,
-      false /* is_sync_password */));
-  EXPECT_EQ(kPasswordFieldOnFocusPinging.name,
-            password_protection_service_->checked_feature_name());
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
