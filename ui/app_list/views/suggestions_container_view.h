@@ -56,8 +56,6 @@ class SuggestionsContainerView : public SearchResultContainerView {
 
   PaginationModel* const pagination_model_;  // Owned by AppsGridView.
 
-  const bool is_fullscreen_app_list_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(SuggestionsContainerView);
 };
 
