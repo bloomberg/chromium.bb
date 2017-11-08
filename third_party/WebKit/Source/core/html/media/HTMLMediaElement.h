@@ -325,6 +325,8 @@ class CORE_EXPORT HTMLMediaElement
 
   WebMediaPlayer::LoadType GetLoadType() const;
 
+  bool HasMediaSource() const { return media_source_; }
+
  protected:
   HTMLMediaElement(const QualifiedName&, Document&);
   ~HTMLMediaElement() override;

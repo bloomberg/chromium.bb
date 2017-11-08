@@ -46,7 +46,7 @@ bool MediaControlDownloadButtonElement::ShouldDisplayDownloadButton() {
   }
 
   // Local files and blobs (including MSE) should not have a download button.
-  if (url.IsLocalFile() || url.ProtocolIs("blob"))
+  if (url.IsLocalFile())
     return false;
 
   // MediaStream can't be downloaded.
@@ -54,7 +54,7 @@ bool MediaControlDownloadButtonElement::ShouldDisplayDownloadButton() {
     return false;
 
   // MediaSource can't be downloaded.
-  if (HTMLMediaSource::Lookup(url))
+  if (MediaElement().HasMediaSource())
     return false;
 
   // HLS stream shouldn't have a download button.

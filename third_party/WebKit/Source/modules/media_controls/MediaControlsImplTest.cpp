@@ -560,6 +560,12 @@ TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedInfiniteDuration) {
       std::numeric_limits<double>::infinity(), false /* requestSeek */);
   SimulateLoadedMetadata();
   EXPECT_FALSE(IsElementVisible(*download_button));
+
+  // Download button should be shown if the duration changes back to finite.
+  MediaControls().MediaElement().DurationChanged(20.0f,
+                                                 false /* requestSeek */);
+  SimulateLoadedMetadata();
+  EXPECT_TRUE(IsElementVisible(*download_button));
 }
 
 TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedHLS) {

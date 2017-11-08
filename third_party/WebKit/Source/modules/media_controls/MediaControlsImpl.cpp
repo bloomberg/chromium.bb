@@ -1177,7 +1177,10 @@ void MediaControlsImpl::OnTimeUpdate() {
 }
 
 void MediaControlsImpl::OnDurationChange() {
+  BatchedControlUpdate batch(this);
+
   const double duration = MediaElement().duration();
+  bool was_finite_duration = std::isfinite(duration_display_->CurrentValue());
 
   // Update the displayed current time/duration.
   duration_display_->SetCurrentValue(duration);
@@ -1188,6 +1191,10 @@ void MediaControlsImpl::OnDurationChange() {
 
   // Update the timeline (the UI with the seek marker).
   timeline_->SetDuration(duration);
+  if (!was_finite_duration && std::isfinite(duration)) {
+    download_button_->SetIsWanted(
+        download_button_->ShouldDisplayDownloadButton());
+  }
 }
 
 void MediaControlsImpl::OnPlay() {
