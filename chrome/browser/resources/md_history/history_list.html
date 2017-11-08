@@ -75,6 +75,8 @@
     <template is="cr-lazy-render" id="sharedMenu">
       <dialog is="cr-action-menu">
         <button id="menuMoreButton" class="dropdown-item"
+            hidden="[[!canSearchMoreFromSite_(
+                searchedTerm, actionMenuModel_.item.domain)]]"
             on-tap="onMoreFromSiteTap_">
           $i18n{moreFromSite}
         </button>

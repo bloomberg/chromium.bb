@@ -240,10 +240,22 @@ suite('<history-list>', function() {
     PolymerTest.flushTasks().then(function () {
       registerMessageCallback('queryHistory', this, function (info) {
         assertEquals('www.google.com', info[0]);
+        app.historyResult(
+            createHistoryInfo('www.google.com'), TEST_HISTORY_RESULTS);
+
         PolymerTest.flushTasks().then(function() {
           assertEquals(
               'www.google.com',
               toolbar.$['main-toolbar'].getSearchField().getValue());
+
+          element.$.sharedMenu.get().close();
+          MockInteractions.tap(items[0].$['menu-button']);
+          assertTrue(element.$$('#menuMoreButton').hidden);
+
+          element.$.sharedMenu.get().close();
+          MockInteractions.tap(items[1].$['menu-button']);
+          assertFalse(element.$$('#menuMoreButton').hidden);
+
           done();
         });
       });

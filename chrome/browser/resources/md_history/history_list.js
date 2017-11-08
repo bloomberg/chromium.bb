@@ -468,6 +468,16 @@ Polymer({
   },
 
   /**
+   * @param {string} searchedTerm
+   * @param {string} domain
+   * @return {boolean}
+   * @private
+   */
+  canSearchMoreFromSite_: function(searchedTerm, domain) {
+    return searchedTerm === '' || searchedTerm !== domain;
+  },
+
+  /**
    * @param {HistoryQuery} info
    * @param {!Array<HistoryEntry>} results
    * @private
