@@ -43,6 +43,34 @@ SystemTrayClientEnterpriseTest.*
 SystemTrayClientTest.*
 VolumeControllerTest.*
 
+# Tests from //chrome/browser/ui/views.
+AutofillPopupBaseViewTest.*
+AutofillPopupViewViewsTest.*
+BookmarkBubbleSignInDelegateTest.*
+BrowserTestParam.*
+BrowserViewFocusTest.*
+BrowserViewTest.*
+CertificateSelectorTest.*
+CollectedCookiesViewsTest.*
+ConstrainedWindowViewTest.*
+ExtensionUninstallDialogViewBrowserTest.*
+ImeWindowBrowserTest.*
+KeyboardAccessTest.*
+LocationIconViewBrowserTest.*
+MediaRouterUIBrowserTest.*
+NavigationAccessibilityTest.*
+OmniboxViewViewsTest.*
+SSLClientCertificateSelectorTest.*
+StarViewTest.*
+TabScrubberTest.*
+TaskManagerViewTest.*
+TranslateBubbleViewBrowserTest.*
+TranslateLanguageBrowserTest.*
+TryChromeDialogBrowserTest.*
+TryChromeDialogBrowserTestBase.*
+WebDialogBrowserTest.*
+WebNotificationTrayTest.*
+
 # Tests from elsewhere.
 BrowserDialogTest.*
 CastSessionBrowserTest.*
