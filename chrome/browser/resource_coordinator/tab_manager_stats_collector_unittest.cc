@@ -118,12 +118,12 @@ class TabManagerStatsCollectorTabSwitchTest
 
   void FinishLoadingForegroundTab() {
     SetForegroundTabLoadingState(TAB_IS_LOADED);
-    tab_manager_stats_collector()->OnDidStopLoading(foreground_tab_);
+    tab_manager_stats_collector()->OnTabIsLoaded(foreground_tab_);
   }
 
   void FinishLoadingBackgroundTab() {
     SetBackgroundTabLoadingState(TAB_IS_LOADED);
-    tab_manager_stats_collector()->OnDidStopLoading(background_tab_);
+    tab_manager_stats_collector()->OnTabIsLoaded(background_tab_);
   }
 
   void SwitchToBackgroundTab() {

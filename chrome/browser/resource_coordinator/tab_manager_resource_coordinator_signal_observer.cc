@@ -27,7 +27,7 @@ void TabManager::ResourceCoordinatorSignalObserver::NotifyPageAlmostIdle(
     content::WebContents* web_contents) {
   auto* web_contents_data =
       TabManager::WebContentsData::FromWebContents(web_contents);
-  web_contents_data->NotifyAlmostIdle();
+  web_contents_data->NotifyTabIsLoaded();
 }
 
 void TabManager::ResourceCoordinatorSignalObserver::

@@ -1228,13 +1228,13 @@ void TabManager::OnDidFinishNavigation(
   }
 }
 
-void TabManager::OnDidStopLoading(content::WebContents* contents) {
+void TabManager::OnTabIsLoaded(content::WebContents* contents) {
   DCHECK_EQ(TAB_IS_LOADED, GetWebContentsData(contents)->tab_loading_state());
   bool was_in_background_tab_opening_session =
       IsInBackgroundTabOpeningSession();
 
   loading_contents_.erase(contents);
-  stats_collector_->OnDidStopLoading(contents);
+  stats_collector_->OnTabIsLoaded(contents);
   LoadNextBackgroundTabIfNeeded();
 
   if (was_in_background_tab_opening_session &&
