@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/grit/components_resources.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/web/public/url_data_source_ios.h"
@@ -88,9 +89,10 @@ std::string ChromeURLs() {
   html += "<h2>List of Chrome URLs</h2>\n<ul>\n";
   std::vector<std::string> hosts(kChromeHostURLs,
                                  kChromeHostURLs + kNumberOfChromeHostURLs);
-  // Remove chrome://bookmarks from list of hosts for iPhone because it is not
-  // possible to open bookmarks via URL on the iPhone form factor.
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE) {
+  // Remove chrome://bookmarks from list of hosts when it is disabled (on iPhone
+  // or when new bookmarks feature is enabled).
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE ||
+      base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     hosts.erase(
         std::remove(hosts.begin(), hosts.end(), kChromeUIBookmarksHost));
   }
