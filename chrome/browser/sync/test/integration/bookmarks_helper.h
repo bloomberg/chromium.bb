@@ -115,6 +115,14 @@ void ExpireFavicon(int profile, const bookmarks::BookmarkNode* node);
 // Checks whether the favicon at |icon_url| for |profile| is expired;
 void CheckFaviconExpired(int profile, const GURL& icon_url);
 
+// Deletes the favicon mappings for |node| in the bookmark model for |profile|.
+void DeleteFaviconMappings(int profile,
+                           const bookmarks::BookmarkNode* node,
+                           FaviconSource favicon_source);
+
+// Checks whether |page_url| for |profile| has no favicon mappings.
+void CheckHasNoFavicon(int profile, const GURL& page_url);
+
 // Changes the url of the node |node| in the bookmark model of profile
 // |profile| to |new_url|. Returns a pointer to the node with the changed url.
 const bookmarks::BookmarkNode* SetURL(int profile,

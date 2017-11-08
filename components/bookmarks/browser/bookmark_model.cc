@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -1025,6 +1026,9 @@ void BookmarkModel::OnFaviconDataAvailable(
     // Couldn't load the touch icon, fallback to the regular favicon.
     DCHECK(client_->PreferTouchIcon());
     LoadFavicon(node, favicon_base::IconType::kFavicon);
+  } else {
+    // No favicon available, but we still notify observers.
+    FaviconLoaded(node);
   }
 }
 
