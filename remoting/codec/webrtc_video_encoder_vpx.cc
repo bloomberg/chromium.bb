@@ -372,6 +372,11 @@ void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
 
   std::unique_ptr<EncodedFrame> encoded_frame(new EncodedFrame());
   encoded_frame->size = frame_size;
+  if (use_vp9_) {
+    encoded_frame->codec = webrtc::kVideoCodecVP9;
+  } else {
+    encoded_frame->codec = webrtc::kVideoCodecVP8;
+  }
 
   while (!got_data) {
     const vpx_codec_cx_pkt_t* vpx_packet =

@@ -186,6 +186,7 @@ void WebrtcVideoEncoderGpu::BitstreamBufferReady(int32_t bitstream_buffer_id,
   encoded_frame->size = webrtc::DesktopSize(input_coded_size_.width(),
                                             input_coded_size_.height());
   encoded_frame->quantizer = 0;
+  encoded_frame->codec = webrtc::kVideoCodecH264;
 
   UseOutputBitstreamBufferId(bitstream_buffer_id);
 

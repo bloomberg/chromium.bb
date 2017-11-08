@@ -35,8 +35,7 @@ class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
 
   WebrtcDummyVideoEncoder(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer,
-      webrtc::VideoCodecType type);
+      base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer);
   ~WebrtcDummyVideoEncoder() override;
 
   // webrtc::VideoEncoder overrides.
@@ -63,7 +62,6 @@ class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
   base::Lock lock_;
   State state_;
   webrtc::EncodedImageCallback* encoded_callback_ = nullptr;
-  webrtc::VideoCodecType codec_type_;
 
   base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer_;
 };
