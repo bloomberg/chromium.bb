@@ -332,9 +332,6 @@ ANDROID_MASTER_ARC_DEV_BUILD_TARGETS = {
     'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
-    'AOSP_ARM_USERDEBUG': ('linux-aosp_bertha_arm-userdebug', r'\.zip$'),
-    'AOSP_X86_USERDEBUG': ('linux-aosp_bertha_x86-userdebug', r'\.zip$'),
-    'AOSP_X86_64_USERDEBUG': ('linux-aosp_bertha_x86_64-userdebug', r'\.zip$'),
 }
 ANDROID_MNC_BUILD_TARGETS = {
     # TODO(b/29509721): Workaround to roll adb with system image. We want to
