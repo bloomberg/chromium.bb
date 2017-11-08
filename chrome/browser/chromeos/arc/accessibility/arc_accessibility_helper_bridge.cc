@@ -17,6 +17,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
+#include "components/exo/wm_helper.h"
 #include "ui/arc/notification/arc_notification_surface.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -441,6 +442,7 @@ aura::Window* ArcAccessibilityHelperBridge::GetActiveWindow() {
 }
 
 void ArcAccessibilityHelperBridge::OnWindowActivated(
+    ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
   if (gained_active == lost_active)

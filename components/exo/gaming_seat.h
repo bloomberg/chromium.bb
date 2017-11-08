@@ -23,7 +23,8 @@ class GamepadDelegate;
 // This class represents one gaming seat. It uses /device/gamepad or
 // ozone/gamepad as backend and notifies corresponding GamepadDelegate of any
 // gamepad changes.
-class GamingSeat : public WMHelper::FocusObserver, public ui::GamepadObserver {
+class GamingSeat : public aura::client::FocusChangeObserver,
+                   public ui::GamepadObserver {
  public:
   // This class will monitor gamepad connection changes and manage gamepad
   // returned by gaming_seat_delegate.
@@ -31,7 +32,7 @@ class GamingSeat : public WMHelper::FocusObserver, public ui::GamepadObserver {
 
   ~GamingSeat() override;
 
-  // Overridden from WMHelper::FocusObserver:
+  // Overridden from ui::aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
 

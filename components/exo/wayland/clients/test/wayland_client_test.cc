@@ -19,7 +19,7 @@
 #include "components/exo/display.h"
 #include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
-#include "components/exo/wm_helper_ash.h"
+#include "components/exo/wm_helper.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -141,7 +141,7 @@ void WaylandClientTest::SetUpOnUIThread(base::WaitableEvent* event) {
   gesture_config->set_long_press_time_in_ms(1000);
   gesture_config->set_max_touch_move_in_pixels_for_click(5);
 
-  wm_helper_ = base::MakeUnique<WMHelperAsh>();
+  wm_helper_ = base::MakeUnique<WMHelper>();
   WMHelper::SetInstance(wm_helper_.get());
   display_ = base::MakeUnique<Display>(nullptr, nullptr);
   wayland_server_ = exo::wayland::Server::Create(display_.get());

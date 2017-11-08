@@ -91,6 +91,7 @@ source_set("wayland") {
     "//ui/events:events_base",
     "//ui/views",
     "//ui/wm:wm",
+    "//ui/wm/public",
   ]
 
   if (use_ozone) {

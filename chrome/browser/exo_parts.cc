@@ -20,7 +20,7 @@
 #include "components/exo/display.h"
 #include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
-#include "components/exo/wm_helper_ash.h"
+#include "components/exo/wm_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/arc/notification/arc_notification_surface_manager_impl.h"
 
@@ -158,7 +158,7 @@ ExoParts::ExoParts() {
   arc_notification_surface_manager_ =
       base::MakeUnique<arc::ArcNotificationSurfaceManagerImpl>();
   DCHECK(!ash_util::IsRunningInMash());
-  wm_helper_ = base::MakeUnique<exo::WMHelperAsh>();
+  wm_helper_ = base::MakeUnique<exo::WMHelper>();
   exo::WMHelper::SetInstance(wm_helper_.get());
   display_ =
       base::MakeUnique<exo::Display>(arc_notification_surface_manager_.get(),

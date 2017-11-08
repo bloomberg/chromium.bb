@@ -330,7 +330,7 @@ void Pointer::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WMHelper::CursorObserver overrides:
+// ui::client::CursorClientObserver overrides:
 
 void Pointer::OnCursorSizeChanged(ui::CursorSize cursor_size) {
   if (focus_surface_)
@@ -343,7 +343,7 @@ void Pointer::OnCursorDisplayChanged(const display::Display& display) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WMHelper::DisplayConfigurationObserver overrides:
+// ash::WindowTreeHostManager::Observer overrides:
 
 void Pointer::OnDisplayConfigurationChanged() {
   UpdatePointerSurface(root_surface());

@@ -17,7 +17,7 @@
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_helper.h"
-#include "components/exo/wm_helper_ash.h"
+#include "components/exo/wm_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/arc/notification/arc_notification_content_view.h"
 #include "ui/arc/notification/arc_notification_delegate.h"
@@ -56,39 +56,6 @@ class MockKeyboardDelegate : public exo::KeyboardDelegate {
   MOCK_METHOD1(OnKeyboardLeave, void(exo::Surface*));
   MOCK_METHOD3(OnKeyboardKey, uint32_t(base::TimeTicks, ui::DomCode, bool));
   MOCK_METHOD1(OnKeyboardModifiers, void(int));
-};
-
-class TestWMHelper : public exo::WMHelper {
- public:
-  TestWMHelper() = default;
-  ~TestWMHelper() override = default;
-
-  const display::ManagedDisplayInfo& GetDisplayInfo(
-      int64_t display_id) const override {
-    static const display::ManagedDisplayInfo info;
-    return info;
-  }
-  aura::Window* GetPrimaryDisplayContainer(int container_id) override {
-    return nullptr;
-  }
-  aura::Window* GetActiveWindow() const override { return nullptr; }
-  aura::Window* GetFocusedWindow() const override { return nullptr; }
-  ui::CursorSize GetCursorSize() const override {
-    return ui::CursorSize::kNormal;
-  }
-  const display::Display& GetCursorDisplay() const override {
-    static const display::Display display;
-    return display;
-  }
-  void AddPreTargetHandler(ui::EventHandler* handler) override {}
-  void PrependPreTargetHandler(ui::EventHandler* handler) override {}
-  void RemovePreTargetHandler(ui::EventHandler* handler) override {}
-  void AddPostTargetHandler(ui::EventHandler* handler) override {}
-  void RemovePostTargetHandler(ui::EventHandler* handler) override {}
-  bool IsTabletModeWindowManagerEnabled() const override { return false; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestWMHelper);
 };
 
 aura::Window* GetFocusedWindow() {
@@ -212,7 +179,7 @@ class ArcNotificationContentViewTest : public ash::AshTestBase {
   void SetUp() override {
     ash::AshTestBase::SetUp();
 
-    wm_helper_ = std::make_unique<exo::WMHelperAsh>();
+    wm_helper_ = std::make_unique<exo::WMHelper>();
     exo::WMHelper::SetInstance(wm_helper_.get());
     DCHECK(exo::WMHelper::HasInstance());
 

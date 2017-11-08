@@ -32,7 +32,7 @@ GamingSeat::~GamingSeat() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WMHelper::FocusObserver overrides:
+// ui::aura::client::FocusChangeObserver overrides:
 
 void GamingSeat::OnWindowFocused(aura::Window* gained_focus,
                                  aura::Window* lost_focus) {

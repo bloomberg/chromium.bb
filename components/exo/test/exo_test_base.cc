@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "components/exo/test/exo_test_helper.h"
-#include "components/exo/wm_helper_ash.h"
+#include "components/exo/wm_helper.h"
 #include "ui/wm/core/wm_core_switches.h"
 
 namespace exo {
@@ -25,7 +25,7 @@ void ExoTestBase::SetUp() {
   // Disable window animation when running tests.
   command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
   AshTestBase::SetUp();
-  wm_helper_ = std::make_unique<WMHelperAsh>();
+  wm_helper_ = std::make_unique<WMHelper>();
   WMHelper::SetInstance(wm_helper_.get());
 }
 

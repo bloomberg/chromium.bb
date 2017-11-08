@@ -14,11 +14,11 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/common/accessibility_helper.mojom.h"
 #include "components/arc/instance_holder.h"
-#include "components/exo/wm_helper.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/accessibility/ax_host_delegate.h"
 #include "ui/arc/notification/arc_notification_surface_manager.h"
+#include "ui/wm/public/activation_change_observer.h"
 
 class Profile;
 
@@ -38,7 +38,7 @@ class ArcAccessibilityHelperBridge
     : public KeyedService,
       public mojom::AccessibilityHelperHost,
       public InstanceHolder<mojom::AccessibilityHelperInstance>::Observer,
-      public exo::WMHelper::ActivationObserver,
+      public wm::ActivationChangeObserver,
       public AXTreeSourceArc::Delegate,
       public ArcAppListPrefs::Observer,
       public ArcNotificationSurfaceManager::Observer {
@@ -90,8 +90,9 @@ class ArcAccessibilityHelperBridge
   virtual aura::Window* GetActiveWindow();
 
  private:
-  // exo::WMHelper::ActivationObserver overrides.
-  void OnWindowActivated(aura::Window* gained_active,
+  // wm::ActivationChangeObserver overrides.
+  void OnWindowActivated(ActivationReason reason,
+                         aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
   void OnActionResult(const ui::AXActionData& data, bool result) const;

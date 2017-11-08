@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "components/arc/ime/arc_ime_bridge.h"
-#include "components/exo/wm_helper.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/text_input_client.h"
@@ -42,7 +42,7 @@ class ArcImeService : public KeyedService,
                       public ArcImeBridge::Delegate,
                       public aura::EnvObserver,
                       public aura::WindowObserver,
-                      public exo::WMHelper::FocusObserver,
+                      public aura::client::FocusChangeObserver,
                       public keyboard::KeyboardControllerObserver,
                       public ui::TextInputClient {
  public:
@@ -79,7 +79,7 @@ class ArcImeService : public KeyedService,
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override;
 
-  // Overridden from exo::WMHelper::FocusObserver:
+  // Overridden from aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
 

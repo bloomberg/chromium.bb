@@ -22,6 +22,7 @@ class COMPOSITOR_EXPORT CompositorVSyncManager
  public:
   class Observer {
    public:
+    virtual ~Observer() = default;
     virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                          base::TimeDelta interval) = 0;
   };
