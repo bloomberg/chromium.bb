@@ -756,6 +756,7 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
   // thread safe cache ...) as this method is invoked during startup at which
   // point the caches haven't been updated yet.
   cache_->SetTopSites(top_sites);
+  cache_->ClearUnreferencedThumbnails();
 
   // See if we have any temp thumbnails for the new sites, and promote them to
   // proper thumbnails.

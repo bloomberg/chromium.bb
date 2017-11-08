@@ -7,9 +7,12 @@
 #include <stddef.h>
 
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +37,11 @@ class TopSitesCacheTest : public testing::Test {
 
   // Initializes |top_sites_| and |cache_| based on |spec|.
   void InitTopSiteCache(const char** spec, size_t size);
+
+  bool HasPageThumbnail(const GURL& url) {
+    scoped_refptr<base::RefCountedMemory> memory;
+    return cache_.GetPageThumbnail(url, &memory);
+  }
 
   MostVisitedURLList top_sites_;
   TopSitesCache cache_;
@@ -253,6 +261,44 @@ TEST_F(TopSitesCacheTest, CacheForcedURLs) {
 
   EXPECT_EQ(2u, cache_.GetNumForcedURLs());
   EXPECT_EQ(2u, cache_.GetNumNonForcedURLs());
+}
+
+TEST_F(TopSitesCacheTest, ClearUnreferencedThumbnails) {
+  InitTopSiteCache(kTopSitesSpecBasic, arraysize(kTopSitesSpecBasic));
+
+  // A "primary" URL.
+  const GURL url1("http://www.google.com");
+  ASSERT_TRUE(cache_.IsKnownURL(url1));
+  // A URL that's part of a redirect chain.
+  const GURL url2("https://www.gogle.com");
+  ASSERT_TRUE(cache_.IsKnownURL(url2));
+
+  // Add thumbnails for these two URLs.
+  Images thumbnail1;
+  thumbnail1.thumbnail =
+      new base::RefCountedBytes(std::vector<unsigned char>());
+  Images thumbnail2;
+  thumbnail2.thumbnail =
+      new base::RefCountedBytes(std::vector<unsigned char>());
+  URLToImagesMap images;
+  images[cache_.GetCanonicalURL(url1)] = thumbnail1;
+  images[cache_.GetCanonicalURL(url2)] = thumbnail2;
+  cache_.SetThumbnails(images);
+
+  ASSERT_TRUE(HasPageThumbnail(url1));
+  ASSERT_TRUE(HasPageThumbnail(url2));
+
+  // Since both URLs are known, ClearUnreferencedThumbnails should do nothing.
+  cache_.ClearUnreferencedThumbnails();
+  EXPECT_TRUE(HasPageThumbnail(url1));
+  EXPECT_TRUE(HasPageThumbnail(url2));
+
+  // After the top sites themselves are cleared, ClearUnreferencedThumbnails
+  // should clear the corresponding thumbnails.
+  cache_.SetTopSites(MostVisitedURLList());
+  cache_.ClearUnreferencedThumbnails();
+  EXPECT_FALSE(HasPageThumbnail(url1));
+  EXPECT_FALSE(HasPageThumbnail(url2));
 }
 
 }  // namespace

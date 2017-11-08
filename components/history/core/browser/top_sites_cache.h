@@ -51,6 +51,8 @@ class TopSitesCache {
   void SetThumbnails(const URLToImagesMap& images);
   const URLToImagesMap& images() const { return images_; }
 
+  void ClearUnreferencedThumbnails();
+
   // Returns the thumbnail as an Image for the specified url. This adds an entry
   // for |url| if one has not yet been added.
   Images* GetImage(const GURL& url);
