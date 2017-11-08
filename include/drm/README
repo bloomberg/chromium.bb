@@ -102,19 +102,14 @@ Status: Trivial.
 
 nouveau_drm.h
  - Missing macros NOUVEAU_GETPARAM*, NOUVEAU_DRM_HEADER_PATCHLEVEL, structs,
-enums, using stdint.h over the __u* types.
+enums
 Status: ?
-
-qxl_drm.h
- - Using the stdint.h uint*_t over the respective __u* ones
-Status: Trivial.
 
 r128_drm.h
  - Broken compat ioctls.
 
 radeon_drm.h
- - Missing RADEON_TILING_R600_NO_SCANOUT, CIK_TILE_MODE_*, broken UMS ioctls,
-using stdint types.
+ - Missing RADEON_TILING_R600_NO_SCANOUT, CIK_TILE_MODE_*, broken UMS ioctls
  - Both kernel and libdrm: missing padding -
 drm_radeon_gem_{create,{g,s}et_tiling,set_domain} others ?
 Status: ?
